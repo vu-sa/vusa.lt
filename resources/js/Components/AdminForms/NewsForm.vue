@@ -46,9 +46,7 @@
         Nuotrauka
       </template>
       <NFormItem required label="Nuotrauka">
-        <NMessageProvider>
           <UploadImageWithCropper v-model:url="form.image" folder="news" />
-        </NMessageProvider>
       </NFormItem>
       <NFormItem label="Nuotraukos autorius">
         <NInput v-model:value="form.image_author" type="text" placeholder="Žmogus arba organizacija.." />
@@ -75,7 +73,6 @@ import {
   NDatePicker,
   NFormItem,
   NInput,
-  NMessageProvider,
   NSelect,
   NSwitch,
 } from "naive-ui";

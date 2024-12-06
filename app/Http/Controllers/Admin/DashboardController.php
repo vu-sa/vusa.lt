@@ -167,13 +167,13 @@ class DashboardController extends Controller
 
     public function userSettings()
     {
-        $user = User::find(Auth::id());
+        $user = User::query()->find(Auth::id()) ?? abort(404);
 
         $user->load('roles:id,name',
             'current_duties:id,name,institution_id',
             'current_duties.roles:id,name', 'current_duties.roles.permissions:id,name',
             'current_duties.institution:id,tenant_id',
-            'current_duties.institution.tenant:id,shortname');
+            'current_duties.institution.tenant:id,shortname')->makeVisible(['name_was_changed', 'show_pronouns']);
 
         return Inertia::render('Admin/ShowUserSettings', [
             'user' => $user->toFullArray(),
@@ -184,7 +184,12 @@ class DashboardController extends Controller
     {
         $user = User::find(Auth::id());
 
-        $user->update($request->all());
+        if ($user->name !== $request->input('name') && ! $user->nameWasChanged) {
+            $user->name_was_changed = true;
+            $user->update($request->all());
+        } else {
+            $user->update($request->except('name'));
+        }
 
         return redirect()->back()->with('success', 'Nustatymai išsaugoti.');
     }

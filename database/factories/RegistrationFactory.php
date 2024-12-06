@@ -2,10 +2,11 @@
 
 namespace Database\Factories;
 
+use App\Models\Form;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Role>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Registration>
  */
 class RegistrationFactory extends Factory
 {
@@ -17,7 +18,8 @@ class RegistrationFactory extends Factory
     public function definition(): array
     {
         return [
-            'data' => ['data_1' => 'data', 'data_2' => 'data', 'data_3' => 'data'],
+            'user_id' => null,
+            'form_id' => Form::factory(),
         ];
     }
 }

@@ -2,7 +2,6 @@
 
 namespace App\Models\Pivots;
 
-use App\Models\Contact;
 use App\Models\Duty;
 use App\Models\StudyProgram;
 use App\Models\Traits\HasTranslations;
@@ -55,11 +54,6 @@ class Dutiable extends MorphPivot
     public function user()
     {
         return $this->belongsTo(User::class, 'dutiable_id');
-    }
-
-    public function contact()
-    {
-        return $this->belongsTo(Contact::class, 'dutiable_id');
     }
 
     public function tenants()

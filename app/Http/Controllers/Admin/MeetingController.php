@@ -40,18 +40,6 @@ class MeetingController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    // public function create()
-    // {
-    //     $this->authorize('create', [Meeting::class, $this->authorizer]);
-
-    //     return Inertia::render('Admin/Representation/CreateMeeting');
-    // }
-
-    /**
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -139,10 +127,12 @@ class MeetingController extends Controller
     {
         $this->authorize('delete', $meeting);
 
+        $redirect_url = request()->redirect_to ?? back()->getTargetUrl();
+
         // delete meeting
         $meeting->delete();
 
-        return back()->with('success', 'Posėdis ištrintas sėkmingai!');
+        return redirect($redirect_url)->with('success', 'Posėdis ištrintas sėkmingai!');
     }
 
     public function restore(Meeting $meeting)

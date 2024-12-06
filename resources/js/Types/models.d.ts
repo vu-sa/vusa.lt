@@ -33,16 +33,16 @@ declare global {
       is_international: boolean
       date: string
       end_date?: string|null
-      category?: string|null
       tenant_id: number
       created_at: string
       updated_at: string
       registration_form_id?: number|null
+      category_id?: number|null
       // mutators
       translations: unknown
       // relations
       tenant?: Tenant
-      registration_form?: RegistrationForm
+      category?: Category
       media?: Medium[]
     }
 
@@ -55,8 +55,9 @@ declare global {
       created_at: string
       updated_at: string
       // relations
-      banners?: Banner
       pages?: Page[]
+      news?: News[]
+      calendars?: Calendar[]
     }
 
     export interface ChangelogItem {
@@ -86,24 +87,6 @@ declare global {
       commentable?: Comment
       comments?: Comment[]
       user?: User
-      activities?: Activity[]
-    }
-
-    export interface Contact {
-      // columns
-      id: string
-      name: string
-      email?: string|null
-      phone?: string|null
-      profile_photo_path?: string|null
-      created_at: string
-      updated_at: string
-      deleted_at?: string|null
-      extra_attributes?: string[]|null
-      // relations
-      duties?: Duty[]
-      commentable?: Contact
-      comments?: Comment[]
       activities?: Activity[]
     }
 
@@ -193,7 +176,8 @@ declare global {
       // relations
       dutiables?: Dutiable[]
       users?: User[]
-      contacts?: Contact[]
+      current_users?: User[]
+      previous_users?: User[]
       types?: Type[]
       institution?: Institution
       roles?: Role[]
@@ -202,7 +186,67 @@ declare global {
       notifications?: DatabaseNotification[]
     }
 
+    export interface FieldResponse {
+      // columns
+      id: number
+      registration_id: number
+      form_field_id: number
+      response: string[]
+      created_at: string
+      updated_at: string
+      // relations
+      registration?: Registration
+      form_field?: FormField
+    }
+
     export interface File {
+    }
+
+    export interface Form {
+      // columns
+      id: string
+      name: string[]
+      description?: string[]|null
+      user_id?: string|null
+      tenant_id: number
+      path?: string[]|null
+      publish_time?: string|null
+      created_at: string
+      updated_at: string
+      deleted_at?: string|null
+      // mutators
+      translations: unknown
+      // relations
+      form_fields?: FormField[]
+      registrations?: Registration[]
+      user?: User
+      tenant?: Tenant
+      training?: Training
+    }
+
+    export interface FormField {
+      // columns
+      id: number
+      form_id: string
+      label: string[]
+      description?: string[]|null
+      type: string
+      subtype?: string|null
+      options?: string[]|null
+      is_required: boolean
+      order: number
+      default_value?: string[]|null
+      placeholder?: string[]|null
+      use_model_options: boolean
+      options_model?: string|null
+      options_model_field?: string|null
+      created_at: string
+      updated_at: string
+      // mutators
+      translations: unknown
+      // relations
+      form?: Form
+      field_responses?: FieldResponse[]
     }
 
     export interface Goal {
@@ -272,6 +316,7 @@ declare global {
       documents?: Document[]
       matters?: Matter[]
       meetings?: Meeting[]
+      users?: User
       commentable?: Institution
       comments?: Comment[]
       outgoing_relationships?: Relationship[]
@@ -332,6 +377,20 @@ declare global {
       files?: SharepointFile[]
       tasks?: Task[]
       activities?: Activity[]
+    }
+
+    export interface Membership {
+      // columns
+      id: string
+      name: string[]
+      tenant_id: number
+      created_at: string
+      updated_at: string
+      // mutators
+      translations: unknown
+      // relations
+      tenant?: Tenant
+      users?: User[]
     }
 
     export interface Model {
@@ -467,8 +526,8 @@ declare global {
       // relations
       dutiable?: Dutiable
       duty?: Duty
+      study_program?: StudyProgram
       user?: User
-      contact?: Contact
     }
 
     export interface GoalMatter {
@@ -480,6 +539,21 @@ declare global {
       // relations
       goal?: Goal
       matter?: Matter
+    }
+
+    export interface MembershipUser {
+      // columns
+      id: number
+      membership_id: string
+      user_id: string
+      start_date: string
+      end_date?: string|null
+      status: string
+      created_at: string
+      updated_at: string
+      // relations
+      membership?: Membership
+      user?: User
     }
 
     export interface Relationshipable {
@@ -534,26 +608,52 @@ declare global {
       type?: Type
     }
 
+    export interface TaskTraining {
+      // columns
+      id: number
+      task_id: string
+      training_id: string
+      name: string[]
+      description: string[]
+      due_date: string
+      created_at: string
+      updated_at: string
+      // mutators
+      translations: unknown
+      // relations
+      tasks?: Task
+      user?: Training
+    }
+
+    export interface Trainingable {
+      // columns
+      id: number
+      training_id: string
+      trainingable_type: string
+      trainingable_id: number
+      tenant_id?: number|null
+      quota?: number|null
+      created_at: string
+      updated_at: string
+      // relations
+      trainingable?: Trainingable
+      user?: User
+      duty?: Duty
+      institution?: Institution
+      membership?: Membership
+      tenant?: Tenant
+    }
+
     export interface Registration {
       // columns
       id: number
-      registration_form_id: number
-      data: string[]
+      user_id?: string|null
+      form_id: string
       created_at: string
       updated_at: string
       // relations
-      registration_form?: RegistrationForm
-    }
-
-    export interface RegistrationForm {
-      // columns
-      id: number
-      user_id?: number|null
-      data: string
-      created_at: string
-      updated_at: string
-      // relations
-      registrations?: Registration[]
+      form?: Form
+      field_responses?: FieldResponse[]
     }
 
     export interface Relationship {
@@ -611,6 +711,7 @@ declare global {
       translations: unknown
       // relations
       reservations?: Reservation[]
+      active_reservations?: Reservation[]
       tenant?: Tenant
       category?: ResourceCategory
       media?: Medium[]
@@ -675,6 +776,7 @@ declare global {
       id: string
       name: string[]
       degree: string
+      tenant_id: number
       created_at: string
       updated_at: string
       // mutators
@@ -729,6 +831,37 @@ declare global {
       pages?: Page[]
       main_pages?: MainPage[]
       resources?: Resource[]
+      users?: User
+      reservations?: Reservation
+    }
+
+    export interface Training {
+      // columns
+      id: string
+      name: string[]
+      description: string[]
+      address?: string|null
+      meeting_url?: string|null
+      image?: string|null
+      status: string
+      start_time: string
+      end_time?: string|null
+      organizer_id: string
+      institution_id: string
+      form_id?: string|null
+      max_participants?: number|null
+      is_online: boolean
+      is_hybrid: boolean
+      created_at: string
+      updated_at: string
+      // mutators
+      translations: unknown
+      // relations
+      trainingables?: Trainingable[]
+      organizer?: User
+      users?: User[]
+      institution?: Institution
+      form?: Form
     }
 
     export interface Type {
@@ -780,20 +913,22 @@ declare global {
       last_action?: string|null
       last_changelog_check?: string|null
       microsoft_token?: string|null
-      updated_at?: string|null
+      updated_at: string
       created_at: string
       profile_photo_path?: string|null
       deleted_at?: string|null
+      name_was_changed?: boolean
       // mutators
       translations: unknown
       // relations
-      banners?: Banner[]
-      calendar?: Calendar[]
       doings?: Doing[]
       duties?: Duty[]
+      previous_duties?: Duty[]
+      current_duties?: Duty[]
       dutiables?: Dutiable[]
       tasks?: Task[]
       reservations?: Reservation[]
+      memberships?: Membership[]
       roles?: Role[]
       permissions?: Permission[]
       activities?: Activity[]

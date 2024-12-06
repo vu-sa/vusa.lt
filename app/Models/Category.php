@@ -14,13 +14,18 @@ class Category extends Model
         'description',
     ];
 
-    public function banners()
-    {
-        return $this->belongsTo(Banner::class, 'alias', 'category');
-    }
-
     public function pages()
     {
-        return $this->hasMany(Page::class, 'category_id');
+        return $this->hasMany(Page::class);
+    }
+
+    public function news()
+    {
+        return $this->hasMany(News::class);
+    }
+
+    public function calendars()
+    {
+        return $this->hasMany(Calendar::class);
     }
 }

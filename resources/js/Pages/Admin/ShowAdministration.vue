@@ -87,13 +87,19 @@ const menuItems: MenuItemsType = computed(() => [
         show: auth?.can.create.institution
       },
       {
-        title: $t('Kontaktai'),
-        icon: Icons.CONTACT,
-        href: route('contacts.index'),
-        show: auth?.can.create.contact
+        title: $t('Narystės'),
+        icon: Icons.INSTITUTION,
+        href: route('memberships.index'),
+        show: true
+      },
+      {
+        title: $t('Mokymai'),
+        icon: Icons.TRAINING,
+        href: route('trainings.index'),
+        show: true
       },
     ],
-    show: auth?.can.create.user || auth?.can.create.duty || auth?.can.create.institution || auth?.can.create.contact
+    show: auth?.can.create.user || auth?.can.create.duty || auth?.can.create.institution
   },
   {
     category: $t('Svetainė'),
@@ -214,6 +220,17 @@ const menuItems: MenuItemsType = computed(() => [
       },
     ],
     show: auth?.can.create.institution || auth?.can.create.meeting || auth?.can.create.user || auth?.can.create.doing || auth?.can.create.goal || auth?.can.create.goalGroup || auth?.can.create.matter || auth?.can.create.sharepointFile
+  },
+  {
+    category: $t('Formos'),
+    items: [
+      {
+        title: $t('Formos'),
+        href: route('forms.index'),
+        show: true
+      },
+    ],
+    show: true
   },
   {
     category: $t('Rezervacijos'),

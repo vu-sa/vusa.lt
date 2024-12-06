@@ -1,9 +1,9 @@
 <template>
   <NPopover class="rounded-sm" :show-arrow="false" raw style="max-width: 200px">
     <template #trigger>
-      <UserAvatar v-if="!showName" :user="user" :size="size" />
+      <UserAvatar v-if="!showName" :user :size />
       <div v-else class="inline-flex items-center gap-2">
-        <UserAvatar :user="user" :size="size" />
+        <UserAvatar :user :size />
         <span :class="[size > 16 ? 'text-base' : 'text-sm']"> {{ user.name }}</span>
       </div>
     </template>

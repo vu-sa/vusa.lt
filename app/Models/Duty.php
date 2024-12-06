@@ -75,11 +75,6 @@ class Duty extends Model implements AuthorizableContract
             ->withTimestamps();
     }
 
-    public function contacts()
-    {
-        return $this->morphedByMany(Contact::class, 'dutiable')->using(Dutiable::class)->withTimestamps();
-    }
-
     public function matters()
     {
         return $this->hasManyDeepFromRelations($this->institution(), (new Institution)->matters());

@@ -1,19 +1,12 @@
 <template>
-  <NDataTable
-    :data="tasks"
-    :scroll-x="800"
-    :bordered="false"
-    :columns="tasks.length > 0 ? columns() : []"
-    :row-class-name="rowClassName"
-    ><template #empty
-      ><div
-        class="flex flex-col items-center justify-center gap-2 text-zinc-400"
-      >
-        <NIcon :size="24" :component="IconsRegular.TASK"></NIcon>
+  <NDataTable :data="tasks" :scroll-x="800" :bordered="false" :columns :row-class-name="rowClassName">
+    <template #empty>
+      <div class="flex flex-col items-center justify-center gap-2 text-zinc-400">
+        <NIcon :size="24" :component="IconsRegular.TASK" />
         <span>Užduočių nėra.</span>
-      </div></template
-    ></NDataTable
-  >
+      </div>
+    </template>
+  </NDataTable>
 </template>
 
 <script setup lang="tsx">
@@ -26,7 +19,7 @@ import {
   NIcon,
 } from "naive-ui";
 import { Link, router, usePage } from "@inertiajs/vue3";
-import { ref } from "vue";
+import { computed, ref } from "vue";
 
 import { trans as $t } from "laravel-vue-i18n";
 import IconsFilled from "@/Types/Icons/filled";
@@ -34,9 +27,11 @@ import IconsRegular from "@/Types/Icons/regular";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import UsersAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
 
-defineProps<{
+const props = defineProps<{
   tasks: App.Entities.Task[];
 }>();
+
+const tasks = ref(props.tasks);
 
 const loading = ref(false);
 
@@ -47,26 +42,26 @@ const rowClassName = (row: App.Entities.Task) => {
   return "";
 };
 
-const columns: () => DataTableColumns<App.Entities.Task> = () => [
+const columns = computed<DataTableColumns<App.Entities.Task>>(() => [
   {
     align: "center",
     key: "checkbox",
     render(row) {
       return (
         <NCheckbox
-          themeOverrides={{ borderRadius: "50%", border: "1px solid" }}
+          themeOverrides={{ border: "1px solid" }}
           size="large"
+          onUpdate:checked={() => updateTaskCompletion(row)}
           disabled={
             !row.users?.find(
               (user) => user.id === usePage().props.auth?.user?.id,
             )
           }
-          onUpdate:checked={() => updateTaskCompletion(row)}
           checked={row.completed_at !== null}
         />
       );
     },
-    width: 60,
+    width: 40,
     fixed: "left",
   },
   {
@@ -74,7 +69,7 @@ const columns: () => DataTableColumns<App.Entities.Task> = () => [
       return $t("forms.fields.title");
     },
     key: "name",
-    width: 150,
+    width: 180,
     ellipsis: {
       tooltip: true,
     },
@@ -140,7 +135,7 @@ const columns: () => DataTableColumns<App.Entities.Task> = () => [
       ) : null;
     },
   },
-];
+]);
 
 const iconComponent = (row: App.Entities.Task) => {
   switch (row.taskable_type) {
@@ -158,15 +153,24 @@ const iconComponent = (row: App.Entities.Task) => {
 const updateTaskCompletion = (task: App.Entities.Task) => {
   loading.value = true;
 
+  const updateValue = task.completed_at === null 
+
+  // find task from taskRef
+  const taskRef = tasks.value.find((t) => t.id === task.id);
+
+  // update task
+  taskRef.completed_at = task.completed_at === null ? new Date() : null;
+
   router.post(
     route("tasks.updateCompletionStatus", task.id),
     {
-      completed: task.completed_at === null,
+      completed: updateValue,
     },
     {
       onSuccess: () => {
         loading.value = false;
       },
+      preserveScroll: true,
     },
   );
 };

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Pivots\Dutiable;
+use App\Models\Pivots\MembershipUser;
 use App\Models\Traits\HasTranslations;
 use App\Models\Traits\HasUnitRelation;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -49,11 +50,13 @@ class User extends Authenticatable
         'last_changelog_check',
         'last_action',
         'microsoft_token',
+        'name_was_changed',
     ];
 
     protected $casts = [
         'last_action' => 'datetime',
         'show_pronouns' => 'boolean',
+        'name_was_changed' => 'boolean',
     ];
 
     public function getActivitylogOptions(): LogOptions
@@ -113,16 +116,6 @@ class User extends Authenticatable
         return $this->email;
     }
 
-    public function banners()
-    {
-        return $this->hasMany(Banner::class, 'user_id', 'id');
-    }
-
-    public function calendar()
-    {
-        return $this->hasMany(Calendar::class, 'user_id', 'id');
-    }
-
     public function doings()
     {
         return $this->belongsToMany(Doing::class);
@@ -180,6 +173,11 @@ class User extends Authenticatable
     public function reservations()
     {
         return $this->belongsToMany(Reservation::class)->withTimestamps();
+    }
+
+    public function memberships()
+    {
+        return $this->belongsToMany(Membership::class)->using(MembershipUser::class)->withTimestamps()->withPivot('start_date', 'end_date');
     }
 
     // TODO: refactor to use the new method

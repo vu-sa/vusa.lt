@@ -7,35 +7,34 @@
       <strong>First</strong>, copy the link!
     </p>
 
-    <NMessageProvider>
-      <div class="mt-2 flex flex-col gap-1">
-        <p v-if="$page.props.app.locale === 'en'" class="font-bold">
-          All events:
+    <div class="mt-2 flex flex-col gap-1">
+      <p v-if="$page.props.app.locale === 'en'" class="font-bold">
+        All events:
+      </p>
+      <div class="flex gap-4">
+        <div class="flex items-center rounded-2xl bg-zinc-100/50 px-4 dark:bg-zinc-700/50">
+          <span>{{ route("calendar.ics") }}</span>
+        </div>
+        <CopyToClipboardButton show-icon :text-to-copy="route('calendar.ics')"
+          error-text="Nepavyko nukopijuoti nuorodos..." success-text="Nuoroda nukopijuota!">
+          {{ $t("Kopijuoti") }}
+        </CopyToClipboardButton>
+      </div>
+      <template v-if="$page.props.app.locale === 'en'">
+        <p class="font-bold">
+          Events held in English or accessible for non-Lithuanian speakers:
         </p>
+
         <div class="flex gap-4">
-          <div class="flex items-center rounded-2xl bg-zinc-100/50 px-4 dark:bg-zinc-700/50">
-            <span>{{ route("calendar.ics") }}</span>
+          <div class="flex items-center rounded-2xl bg-zinc-100/50 px-4">
+            <span>{{ route("calendar.ics", { lang: "en" }) }}</span>
           </div>
-          <CopyToClipboardButton show-icon :text-to-copy="route('calendar.ics')"
-            error-text="Nepavyko nukopijuoti nuorodos..." success-text="Nuoroda nukopijuota!">
+          <CopyToClipboardButton :text-to-copy="route('calendar.ics', { lang: 'en' })">
             {{ $t("Kopijuoti") }}
           </CopyToClipboardButton>
         </div>
-        <template v-if="$page.props.app.locale === 'en'">
-          <p class="font-bold">
-            Events held in English or accessible for non-Lithuanian speakers:
-          </p>
-
-          <div class="flex gap-4">
-            <div class="flex items-center rounded-2xl bg-zinc-100/50 px-4">
-              <span>{{ route("calendar.ics", { lang: "en" }) }}</span>
-            </div>
-            <CopyToClipboardButton :text-to-copy="route('calendar.ics', { lang: 'en' })">{{ $t("Kopijuoti") }}
-            </CopyToClipboardButton>
-          </div>
-        </template>
-      </div>
-    </NMessageProvider>
+      </template>
+    </div>
     <NDivider />
     <NTabs animated>
       <NTabPane name="Google">
@@ -111,7 +110,7 @@
 
 <script setup lang="tsx">
 import { trans as $t } from "laravel-vue-i18n";
-import { NDivider, NMessageProvider, NTabPane, NTabs } from "naive-ui";
+import { NDivider, NTabPane, NTabs } from "naive-ui";
 import CardModal from "@/Components/Modals/CardModal.vue";
 import CopyToClipboardButton from "../Buttons/CopyToClipboardButton.vue";
 

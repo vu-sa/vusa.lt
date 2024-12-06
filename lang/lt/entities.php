@@ -48,4 +48,7 @@ return [
         'model_list' => ':model sąrašas',
         'help' => 'Kaip veikia :model?',
     ],
+    'membership' => [
+        'model' => '{1} narystė|[2,9] narystės|[10,*] narystės',
+    ],
 ];

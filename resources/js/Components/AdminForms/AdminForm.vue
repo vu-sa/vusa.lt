@@ -25,8 +25,11 @@
 <script setup lang="ts">
 import { useDialog } from 'naive-ui';
 import { trans as $t } from 'laravel-vue-i18n';
+import { inject, watch, type Ref } from 'vue';
+import { useDebounceFn } from '@vueuse/core';
 
-defineProps<{
+const { model } = defineProps<{
+  model: Record<string, any>;
   enableDelete?: boolean;
 }>();
 
@@ -49,4 +52,17 @@ const handleDelete = () => {
     },
   });
 }
+
+const autosave = inject<Ref<boolean>>('autosave');
+
+// add autosave on form dirty with debounce
+const autosaveFn = useDebounceFn(() => {
+  emit('submit:form');
+}, 5000);
+
+watch(() => model.isDirty, () => {
+  if (model.isDirty && autosave) {
+    autosaveFn();
+  }
+}, { deep: true });
 </script>

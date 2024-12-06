@@ -25,7 +25,7 @@
       class="flex min-h-screen flex-col justify-between bg-zinc-50 text-zinc-800 antialiased dark:bg-zinc-900 dark:text-zinc-300">
       <MainNavigation :is-theme-dark="isDark" />
 
-      <main class="pt-12 pb-8">
+      <main class="pb-8 pt-12">
         <!-- <Suspense> -->
         <div>
           <FadeTransition appear>
@@ -67,12 +67,11 @@
       <SiteFooter />
     </div>
   </NConfigProvider>
-
 </template>
 
 <script setup lang="ts">
-import { NConfigProvider, darkTheme } from "naive-ui";
-import { computed, onMounted, ref, toValue } from "vue";
+import { NConfigProvider, darkTheme, useMessage } from "naive-ui";
+import { computed, onMounted, ref, toValue, watch } from "vue";
 import { useDark, useStorage } from "@vueuse/core";
 
 import { Head, usePage } from "@inertiajs/vue3";
@@ -132,6 +131,38 @@ const themeOverrides = {
 };
 
 const cookieConsent = useStorage("cookie-consent", false);
+
+const message = useMessage();
+
+const successMessage = computed(() => usePage().props.flash.success);
+const infoMessage = computed(() => usePage().props.flash.info);
+const errorMessage = computed(() => usePage().props.errors);
+
+watch(successMessage, (successMessage) => {
+  if (successMessage) {
+    message.success(successMessage);
+    usePage().props.flash.success = null;
+  }
+});
+
+watch(infoMessage, (infoMessage) => {
+  if (infoMessage) {
+    message.info(infoMessage);
+    usePage().props.flash.info = null;
+  }
+});
+
+watch(errorMessage, (errorMessage) => {
+  if (errorMessage) {
+    // loop over the object and display each error
+    for (const [key, value] of Object.entries(errorMessage)) {
+      message.error(`${key}: ${value}`);
+
+      // In public page, show only one error message at a time
+      break
+    }
+  }
+});
 
 onMounted(() => {
   mounted.value = true;
