@@ -75,4 +75,9 @@ class Training extends Model
     {
         return $this->belongsTo(Form::class);
     }
+
+    public function tasks()
+    {
+        return $this->hasMany(TrainingTask::class);
+    }
 }

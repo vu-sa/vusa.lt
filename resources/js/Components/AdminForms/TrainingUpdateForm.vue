@@ -89,13 +89,14 @@
       <NTabPane name="dalyviai" tab="Kas gali dalyvauti?">
         <NDynamicInput v-model:value="form.trainingables" class="mt-4" @create="onTrainingablesCreate">
           <template #default="{ value }">
-            <div class="flex gap-4 w-full">
+            <div class="flex w-full gap-4">
               <NFormItem label="Tipas">
                 <NSelect v-model:value="value.trainingable_type" class="min-w-40" :options="trainingableTypeOptions" />
               </NFormItem>
               <NFormItem v-if="value.trainingable_type" label="Pasirinkimas" class="min-w-80">
-                <NSelect v-model:value="value.trainingable_id" filterable :options="trainingableTypes[value.trainingable_type].values"
-                  value-field="id" :label-field="value.trainingable_type === 'App\\Models\\Type' ? 'title' : 'name'" />
+                <NSelect v-model:value="value.trainingable_id" filterable
+                  :options="trainingableTypes[value.trainingable_type].values" value-field="id"
+                  :label-field="value.trainingable_type === 'App\\Models\\Type' ? 'title' : 'name'" />
               </NFormItem>
             </div>
           </template>
@@ -117,9 +118,36 @@
           @close="showProgrammePlanner = false" />
       </NTabPane>
       <NTabPane name="uzduotys" tab="Užduotys">
-        <div class="m-4">
-          Užduotys
-        </div>
+        <FormElement class="mt-4">
+          <template #title>
+            Užduotys
+          </template>
+          <NDynamicInput v-model:value="form.tasks" @create="onTasksCreate">
+            <template #default="{ value, index }">
+              <NFormItem label="Užduotis">
+                <div class="flex items-start gap-4">
+                  <MultiLocaleInput v-model:input="value.name" />
+                  <NButtonGroup class="ml-4">
+                    <NButton @click="onTasksCreateAdd">
+                      <template #icon>
+                        <!-- add -->
+                        <IFluentAdd24Filled />
+                      </template>
+                    </NButton>
+                    <NButton @click="onTasksRemove(index)">
+                      <template #icon>
+                        <IFluentDelete24Filled />
+                      </template>
+                    </NButton>
+                  </NButtonGroup>
+                </div>
+              </NFormItem>
+            </template>
+            <template #action>
+              <div />
+            </template>
+          </NDynamicInput>
+        </FormElement>
       </NTabPane>
     </NTabs>
     <template #buttons>
@@ -193,6 +221,25 @@ const onTrainingablesCreate = () => {
     trainingable_type: null,
     trainingable_id: null
   };
+};
+
+const onTasksCreate = () => {
+  return {
+    name: { lt: '', en: '' },
+  };
+};
+
+const onTasksCreateAdd = () => {
+  form.tasks.push({
+    name: { lt: "", en: "" },
+  });
+  //return {
+  //  name: { lt: '', en: '' },
+  //};
+};
+
+const onTasksRemove = (index: number) => {
+  form.tasks.splice(index, 1);
 };
 
 const showProgrammePlanner = ref(false);

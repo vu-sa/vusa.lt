@@ -57,6 +57,11 @@ class UpdateTrainingRequest extends FormRequest
             'max_participants' => 'nullable|integer',
             'is_online' => 'required|boolean',
             'is_hybrid' => 'required|boolean',
+            'trainingables' => 'array',
+            'trainingables.*.trainingable_id' => 'string',
+            'trainingables.*.trainingable_type' => 'string',
+            'tasks' => 'array',
+            'tasks.*.name' => 'array',
         ];
     }
 }

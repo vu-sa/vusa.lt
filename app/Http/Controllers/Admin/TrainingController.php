@@ -76,7 +76,7 @@ class TrainingController extends Controller
      */
     public function edit(Training $training)
     {
-        $training->load('form', 'tenant', 'organizer', 'trainingables');
+        $training->load('form', 'tenant', 'organizer', 'trainingables', 'tasks');
 
         return Inertia::render('Admin/People/EditTraining', [
 
@@ -86,6 +86,7 @@ class TrainingController extends Controller
                     ...($training->form ? $training->form->toFullArray() : []),
                     'form_fields' => $training->form?->formFields()->orderBy('order')->get()->map->toFullArray(),
                 ],
+                'tasks' => $training->tasks->map->toFullArray(),
             ],
             'trainingableTypes' => [
                 User::class => ['type' => User::class, 'name' => 'Narys', 'values' => User::query()->get(['id', 'name'])],
@@ -103,11 +104,15 @@ class TrainingController extends Controller
      */
     public function update(UpdateTrainingRequest $request, Training $training)
     {
-        $training->update($request->except('trainingables'));
+        $training->update($request->except('trainingables', 'tasks'));
 
         $training->trainingables()->delete();
 
         $training->trainingables()->createMany($request->trainingables);
+
+        $training->tasks()->delete();
+
+        $training->tasks()->createMany($request->tasks);
 
         return back()->with('success', 'Mokymų šablonas atnaujintas');
     }

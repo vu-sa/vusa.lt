@@ -47,13 +47,12 @@ return new class extends Migration
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
 
-        Schema::create('task_training', function (Blueprint $table) {
+        Schema::create('training_tasks', function (Blueprint $table) {
             $table->id();
-            $table->foreignUlid('task_id')->references('id')->on('tasks');
             $table->foreignUlid('training_id')->references('id')->on('trainings');
             $table->json('name');
-            $table->json('description');
-            $table->date('due_date');
+            $table->json('description')->nullable();
+            $table->date('due_date')->nullable();
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
