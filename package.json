@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@azure/msal-browser": "^3.20.0",
-    "@inertiajs/vue3": "^1.0.8",
+    "@inertiajs/vue3": "^2.0.0",
     "@observablehq/plot": "^0.6.16",
     "@pnp/graph": "^4.3.0",
     "@pnp/sp": "^4.3.0",
@@ -41,7 +41,6 @@
     "fuse.js": "^7.0.0",
     "gsap": "^3.12.5",
     "happy-dom": "^15.0.0",
-    "laravel-precognition-vue-inertia": "^0.5.3",
     "laravel-vue-i18n": "^2.3.2",
     "latinize": "^2.0.0",
     "lucide-vue-next": "^0.468.0",

@@ -11,11 +11,11 @@
         "php": "^8.3",
         "ajcastro/eager-load-pivot-relations": "^0.3.0",
         "guzzlehttp/guzzle": "^7.2",
-        "inertiajs/inertia-laravel": "^1.0",
+        "inertiajs/inertia-laravel": "^2.0",
         "intervention/image": "^3.0",
         "intervention/image-laravel": "^1.2",
         "itsgoingd/clockwork": "^5.3",
-        "laravel/framework": "11.32.0",
+        "laravel/framework": "^11.32.0",
         "laravel/pulse": "^1.2",
         "laravel/scout": "^10.0",
         "laravel/telescope": "^5.0",
@@ -78,7 +78,8 @@
         ],
         "post-update-cmd": [
             "@php artisan vendor:publish --tag=laravel-assets --ansi --force",
-            "@php artisan typescript:transform"
+            "@php artisan typescript:transform",
+            "@php artisan model:typer --optional-relations --optional-nullables --global > resources/js/Types/models.d.ts"
         ],
         "post-root-package-install": [
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
