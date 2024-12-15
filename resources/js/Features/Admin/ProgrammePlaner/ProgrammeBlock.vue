@@ -102,7 +102,10 @@ function createProgrammePart() {
       lt: 'Programos dalis ' + (block.value.parts.length + 1),
       en: 'Programme Part ' + (block.value.parts.length + 1),
     },
-    description: 'Programme Part Description',
+    description: {
+      lt: 'Programos dalies aprašymas',
+      en: 'Programme Part Description',
+    },
     instructor: 'Programme Instructor',
     duration: 45,
   });

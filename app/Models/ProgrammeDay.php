@@ -12,7 +12,7 @@ class ProgrammeDay extends Model
     /** @use HasFactory<\Database\Factories\ProgrammeDayFactory> */
     use HasFactory, HasTranslations;
 
-    protected $fillable = ['title', 'date'];
+    protected $fillable = ['title', 'date', 'start_time'];
 
     public $translatable = ['title'];
 
@@ -28,5 +28,16 @@ class ProgrammeDay extends Model
     public function elements()
     {
         return $this->hasMany(ProgrammeElement::class);
+    }
+
+    // Sections is a morphMany relationship
+    public function sections()
+    {
+        return $this->morphMany(ProgrammeSection::class, 'elementable', 'programme_day_elements')->using(ProgrammeElement::class);
+    }
+
+    public function parts()
+    {
+        return $this->morphedByMany(ProgrammePart::class, 'elementable', 'programme_day_elements')->using(ProgrammeElement::class);
     }
 }

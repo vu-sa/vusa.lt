@@ -86,6 +86,7 @@
 <script setup lang="ts">
 import { inject, nextTick, provide, ref } from 'vue';
 import { useSortable } from '@vueuse/integrations/useSortable';
+import { router } from "@inertiajs/vue3";
 
 import ProgrammePart from './ProgrammePart.vue';
 import ProgrammeSection from './ProgrammeSection.vue';
@@ -107,7 +108,7 @@ useSortable<HTMLDivElement | null>(elementsEl, day.value?.elements, {
   animation: 100,
   async onAdd({ newIndex }: { newIndex: number }) {
     await nextTick();
-    
+
     day.value?.elements?.splice(newIndex, 0, movedElement.value as App.Entities.ProgrammeSection | App.Entities.ProgrammePart);
   },
   onRemove({ oldIndex }: { oldIndex: number }) {
@@ -143,7 +144,10 @@ function createProgrammePart() {
       lt: 'Programos dali ' + (day.value.elements.length + 1),
       en: 'Programme Part ' + (day.value.elements.length + 1),
     },
-    description: 'Programme Part Description',
+    description: {
+      lt: 'Programos dalies aprašymas',
+      en: 'Programme Part Description',
+    },
     instructor: 'Programme Part Instructor',
     duration: 45,
   });
@@ -152,6 +156,17 @@ function createProgrammePart() {
 function deleteProgrammeElement(index: number) {
   if (!day.value) return;
 
+  // check if part
+  if (day.value.elements[index].type === 'part' && typeof day.value.elements[index].id !== 'string') {
+
+    router.delete(route('programmeParts.destroy', { programmePart: day.value.elements[index].id }), {
+      preserveScroll: true,
+    });
+  } else if (day.value.elements[index].type === 'section' && typeof day.value.elements[index].id !== 'string') {
+    router.delete(route('programmeSections.destroy', { programmeSection: day.value.elements[index].id }), {
+      preserveScroll: true,
+    });
+  }
   day.value.elements?.splice(index, 1);
 }
 

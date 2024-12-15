@@ -22,11 +22,15 @@
     </template>
     Pridėti programos dieną
   </NButton>
+  <NButton type="primary" @click="submitForm">
+    Išsaugoti
+  </NButton>
 </template>
 
 <script setup lang="ts">
 import { provide, ref, useTemplateRef } from 'vue';
 import { useSortable } from '@vueuse/integrations/useSortable'
+import { router } from "@inertiajs/vue3";
 
 import ProgrammeDay from './ProgrammeDay.vue';
 
@@ -70,6 +74,19 @@ function createDay() {
 }
 
 function deleteProgrammeDay(index: number) {
-  programmeDays.value?.splice(index, 1);
+  router.delete(route('programmeDays.destroy', { programmeDay: programmeDays.value[index].id }), {
+    onSuccess: () => {
+      programmeDays.value?.splice(index, 1);
+    },
+    preserveScroll: true,
+  });
+}
+
+function submitForm() {
+  router.patch(route('programmes.update', { programme: props.programme.id }), {
+    days: programmeDays.value,
+  }, {
+    preserveScroll: true,
+  });
 }
 </script>

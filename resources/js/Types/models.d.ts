@@ -676,7 +676,7 @@ declare global {
       id: number
       programme_id: number
       title: string[]
-      date: string
+      start_time: string
       created_at: string
       updated_at: string
       // mutators
@@ -684,6 +684,7 @@ declare global {
       // relations
       programme?: Programme
       elements?: ProgrammeElement[]
+      parts?: ProgrammePart[]
     }
 
     export interface ProgrammePart {
@@ -691,8 +692,8 @@ declare global {
       id: number
       title: string[]
       description?: string[]|null
-      start_time?: string|null
       duration: number
+      start_time?: string|null
       created_at: string
       updated_at: string
       // mutators
@@ -706,6 +707,8 @@ declare global {
       // columns
       id: number
       title: string[]
+      duration: number
+      start_time?: string|null
       created_at: string
       updated_at: string
       // mutators

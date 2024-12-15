@@ -24,6 +24,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('programme_id')->constrained()->onDelete('cascade');
             $table->json('title');
+            $table->json('description')->nullable();
+            $table->integer('order');
             $table->dateTime('start_time');
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();

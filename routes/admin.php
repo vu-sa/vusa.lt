@@ -57,7 +57,11 @@ Route::post('notification/markAllAsRead', [UserNotificationsController::class, '
 
 Route::resource('memberships', MembershipController::class);
 Route::post('memberships/{membership}/users/import', [MembershipController::class, 'importUsers'])->name('membershipUsers.import');
+
 Route::resource('trainings', TrainingController::class);
+Route::resource('programmes', ProgrammeController::class);
+Route::resource('programmeDays', ProgrammeDayController::class)->only(['destroy']);
+Route::resource('programmeParts', ProgrammePartController::class)->only(['destroy']);
 
 Route::resource('calendar', CalendarController::class);
 Route::post('calendar/{calendar}/media/{media}', [CalendarController::class, 'destroyMedia'])->name('calendar.destroyMedia');
