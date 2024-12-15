@@ -7,6 +7,11 @@
       <ProgrammeDay v-for="(day, index) in programmeDays" :key="day.id" v-model:day="programmeDays[index]"
         :data-id="day.id">
         <template #buttons>
+          <NButton size="tiny" secondary circle @click="showDayEditModal = true; selectedDay = day">
+            <template #icon>
+              <IFluentEdit24Filled />
+            </template>
+          </NButton>
           <NButton size="tiny" secondary circle @click="deleteProgrammeDay(index)">
             <template #icon>
               <IFluentDelete24Filled />
@@ -16,6 +21,22 @@
       </ProgrammeDay>
     </div>
   </div>
+  <CardModal v-model:show="showDayEditModal" @close="showDayEditModal = false">
+    <NFormItem label="Dienos pavadinimas">
+      <MultiLocaleInput v-model:input="selectedDay.title" />
+    </NFormItem>
+    <NFormItem label="Dienos pradžios laikas">
+      <NDatePicker v-model:value="selectedDay.start_time" :first-day-of-week="0" :format="'yyyy-MM-dd HH:mm'"
+        :time-picker-props="{
+          format: 'HH:mm',
+          minutes: 5,
+          hours: Array.from({ length: 22 - 8 + 1 }, (v, i) => i + 8),
+        }" type="datetime" clearable :actions="['confirm']" />
+    </NFormItem>
+    <NButton @click="showDayEditModal = false">
+      Uždaryti
+    </NButton>
+  </CardModal>
   <NButton rounded @click="createDay">
     <template #icon>
       <IFluentCalendarAdd24Regular />
@@ -33,6 +54,8 @@ import { useSortable } from '@vueuse/integrations/useSortable'
 import { router } from "@inertiajs/vue3";
 
 import ProgrammeDay from './ProgrammeDay.vue';
+import MultiLocaleInput from '@/Components/FormItems/MultiLocaleInput.vue';
+import CardModal from '@/Components/Modals/CardModal.vue';
 
 defineEmits<{
   (e: "close"): void;
@@ -46,6 +69,9 @@ const props = defineProps<{
 
 const programmeEl = useTemplateRef<HTMLDivElement | null>('programmeEl')
 const programmeDays = ref(props.programme.days);
+
+const selectedDay = ref<App.Entities.ProgrammeDay | null>(null);
+const showDayEditModal = ref(false);
 
 const showTimes = ref(false);
 provide('show-times', showTimes);
@@ -87,6 +113,9 @@ function submitForm() {
     days: programmeDays.value,
   }, {
     preserveScroll: true,
+    onSuccess: () => {
+      programmeDays.value = props.programme.days
+    },
   });
 }
 </script>

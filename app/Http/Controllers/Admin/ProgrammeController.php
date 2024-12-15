@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StoreProgrammeRequest;
+use Illuminate\Http\Request;
 use App\Http\Requests\UpdateProgrammeRequest;
 use App\Models\Programme;
 use App\Models\ProgrammeDay;
@@ -36,7 +36,7 @@ class ProgrammeController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreProgrammeRequest $request)
+    public function store(Request $request)
     {
         //
     }
@@ -69,7 +69,8 @@ class ProgrammeController extends Controller
                 $day = ProgrammeDay::query()->findOrNew($dayData['id']);
 
                 $day->title = $dayData['title'];
-                $day->start_time = Carbon::parse($dayData['start_time']);
+                $day->start_time = $dayData['start_time'];
+                $day->order = $dayIndex;
 
                 // Associate day with programme
                 $programme->days()->save($day);
@@ -129,6 +130,8 @@ class ProgrammeController extends Controller
                 }
             }
         });
+
+        return back()->with('success', 'Programme updated successfully');
     }
 
     /**

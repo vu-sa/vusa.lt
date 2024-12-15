@@ -152,7 +152,7 @@ const routeToSubmit = computed(() => {
 
 const form = useForm('reservation',
   props.reservation,
-;
+);
 
 const date = ref<[number, number]>([form.start_time, form.end_time]);
 

@@ -7,6 +7,9 @@
           class="rounded-lg px-2 py-0.5 text-left font-bold transition hover:bg-zinc-200/70">
           {{ part.title[$page.props.app.locale] }}
         </button>
+        <span class="text-gray-500">
+          {{ part?.id ? 'ID: ' + part.id : '' }}
+        </span>
         <slot name="buttons" />
       </div>
       <div>

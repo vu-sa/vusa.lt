@@ -14,7 +14,7 @@ class ProgrammeDay extends Model
 
     protected $fillable = ['title', 'date', 'start_time'];
 
-    public $translatable = ['title'];
+    public $translatable = ['title', 'description'];
 
     protected $casts = [
         'start_time' => 'datetime',
@@ -27,7 +27,7 @@ class ProgrammeDay extends Model
 
     public function elements()
     {
-        return $this->hasMany(ProgrammeElement::class);
+        return $this->hasMany(ProgrammeElement::class)->orderBy('order');
     }
 
     // Sections is a morphMany relationship

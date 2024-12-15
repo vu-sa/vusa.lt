@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Carbon;
 
 class UpdateProgrammeRequest extends FormRequest
 {
@@ -12,6 +13,26 @@ class UpdateProgrammeRequest extends FormRequest
     public function authorize(): bool
     {
         return true;
+    }
+
+    public function prepareForValidation()
+    {
+        $days = $this->input('days');
+
+        foreach ($days as &$day) {
+            // if is null or is string, continue
+            if ($day['start_time'] === null) {
+                continue;
+            } elseif (is_string($day['start_time'])) {
+                $day['start_time'] = Carbon::parse($day['start_time'])->setTimezone('Europe/Vilnius')->toDateTimeString();
+            } else {
+                $day['start_time'] = Carbon::parse($day['start_time'] / 1000)->setTimezone('Europe/Vilnius')->toDateTimeString();
+            }
+        }
+
+        $this->merge([
+            'days' => $days,
+        ]);
     }
 
     /**

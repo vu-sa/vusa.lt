@@ -6,6 +6,9 @@
         <IFluentCalendar24Regular />
         {{ day.title[$page.props.app.locale] }}
       </button>
+      <span>
+        {{ day?.id ? 'ID: ' + day.id : '' }}
+      </span>
       <span class="px-2 text-zinc-500">
         {{ formatStaticTime(day.start_time, { month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) }}
       </span>
@@ -41,7 +44,7 @@
         <NInput v-model:value="selectedPart.instructor" />
       </NFormItem>
       <NFormItem label="Aprašymas">
-        <NInput v-model:value="selectedPart.description" />
+        <MultiLocaleInput v-model:input="selectedPart.description" />
       </NFormItem>
       <NButton @click="showPartEditModal = false">
         Uždaryti
@@ -84,7 +87,7 @@
 </template>
 
 <script setup lang="ts">
-import { inject, nextTick, provide, ref } from 'vue';
+import { inject, nextTick, onMounted, provide, ref } from 'vue';
 import { useSortable } from '@vueuse/integrations/useSortable';
 import { router } from "@inertiajs/vue3";
 
@@ -99,24 +102,6 @@ const day = defineModel<App.Entities.ProgrammeDay>('day')
 const elementsEl = ref<HTMLDivElement | null>('elementsEl');
 
 const { movedElement, updateMovedElement } = inject('movedElement');
-
-useSortable<HTMLDivElement | null>(elementsEl, day.value?.elements, {
-  handle: '.element-handle',
-  group: {
-    name: 'elements',
-  },
-  animation: 100,
-  async onAdd({ newIndex }: { newIndex: number }) {
-    await nextTick();
-
-    day.value?.elements?.splice(newIndex, 0, movedElement.value as App.Entities.ProgrammeSection | App.Entities.ProgrammePart);
-  },
-  onRemove({ oldIndex }: { oldIndex: number }) {
-    updateMovedElement(day.value?.elements?.[oldIndex] as App.Entities.ProgrammeSection | App.Entities.ProgrammePart);
-
-    day.value?.elements?.splice(oldIndex, 1);
-  }
-});
 
 function createProgrammeSection() {
   if (!day.value) return;
@@ -186,4 +171,56 @@ function handleEditElement(element: App.Entities.ProgrammePart | App.Entities.Pr
     showSectionEditModal.value = true;
   }
 }
+
+function createSortableElement() {
+  const sortable = useSortable<HTMLDivElement | null>(elementsEl, day.value?.elements, {
+    handle: '.element-handle',
+    group: {
+      name: 'elements',
+    },
+    animation: 100,
+    async onAdd({ newIndex }: { newIndex: number }) {
+      await nextTick();
+
+      day.value?.elements?.splice(newIndex, 0, movedElement.value as App.Entities.ProgrammeSection | App.Entities.ProgrammePart);
+
+      // Only attach on the server if the elements are already there
+      if (typeof movedElement.value.id !== 'string' && typeof day.value?.id !== 'string') {
+        if (movedElement.value.type === 'part') {
+          router.post(route('programmeParts.attach', movedElement.value.id), {
+            programmeDay: day.value.id,
+            order: newIndex
+          }, {
+            preserveScroll: true,
+          });
+        } else if (movedElement.value.type === 'section') {
+          router.post(route('programmeSections.attach', { programmeDay: day.value.id, programmeSection: movedElement.value.id, order: newIndex }), {
+            preserveScroll: true,
+          });
+        }
+      }
+    },
+    onRemove({ oldIndex }: { oldIndex: number }) {
+      updateMovedElement(day.value?.elements?.[oldIndex] as App.Entities.ProgrammeSection | App.Entities.ProgrammePart);
+
+      if (typeof movedElement.value.id !== 'string' && typeof day.value?.id !== 'string') {
+        if (movedElement.value.type === 'part') {
+          router.post(route('programmeParts.detach', { programmePart: movedElement.value.id }), { programmeDay: day.value.id }, {
+            preserveScroll: true,
+          });
+        } else if (movedElement.value.type === 'section') {
+          router.delete(route('programmeSections.detach', { programmeDay: day.value.id, programmeSection: movedElement.value.id }), {
+            preserveScroll: true,
+          });
+        }
+      }
+
+      day.value?.elements?.splice(oldIndex, 1);
+    }
+  });
+
+  return sortable
+}
+
+createSortableElement();
 </script>

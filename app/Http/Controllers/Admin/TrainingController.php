@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateTrainingRequest;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Membership;
+use App\Models\Programme;
 use App\Models\ProgrammePart;
 use App\Models\ProgrammeSection;
 use App\Models\Training;
@@ -61,6 +62,16 @@ class TrainingController extends Controller
         $training->organizer_id = auth()->id();
 
         $training->save();
+
+        $programme = new Programme([
+            'title' => ['lt' => 'Programa'],
+        ]);
+
+        $programme->start_date = $training->start_time;
+
+        $programme->save();
+
+        $training->programmes()->attach($programme->id);
 
         return redirect()->route('trainings.index')->with('success', 'Mokymų šablonas sukurtas');
     }

@@ -20,4 +20,18 @@ class ProgrammePartController extends Controller
 
         return back()->with('success', 'Programme part deleted.');
     }
+
+    public function attach(ProgrammePart $programmePart)
+    {
+        $programmePart->programmeDays()->attach(request('programmeDay'), ['order' => request('order')]);
+
+        return back()->with('success', 'Programme part attached to day.');
+    }
+
+    public function detach(ProgrammePart $programmePart)
+    {
+        $programmePart->programmeDays()->detach(request('programmeDay'));
+
+        return back()->with('success', 'Programme part detached from day.');
+    }
 }
