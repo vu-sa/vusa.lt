@@ -9,7 +9,6 @@ use App\Models\ProgrammePart;
 use App\Models\ProgrammeSection;
 use App\Models\Tenant;
 use App\Models\Training;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
 
