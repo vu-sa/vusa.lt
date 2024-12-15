@@ -53,7 +53,7 @@ const handleDelete = () => {
   });
 }
 
-const autosave = inject<Ref<boolean>>('autosave');
+const autosave = inject<Ref<boolean> | null>('autosave', null);
 
 // add autosave on form dirty with debounce
 const autosaveFn = useDebounceFn(() => {

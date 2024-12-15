@@ -60,6 +60,11 @@ declare namespace App.Entities {
 
   export type Page = models.Page;
   export type Permission = models.Permission;
+  export type Programme = models.Programme;
+  export type ProgrammeDay = models.ProgrammeDay;
+  export type ProgrammeBlock = models.ProgrammeBlock;
+  export type ProgrammePart = models.ProgrammePart;
+  export type ProgrammeSection = models.ProgrammeSection;
   export type Registration = models.Registration;
   export type Relationship = models.Relationship;
   export type Relationshipable = models.Relationshipable;

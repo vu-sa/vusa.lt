@@ -80,4 +80,9 @@ class Training extends Model
     {
         return $this->hasMany(TrainingTask::class);
     }
+
+    public function programmes()
+    {
+        return $this->morphToMany(Programme::class, 'programmable');
+    }
 }

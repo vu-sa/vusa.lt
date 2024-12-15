@@ -1,19 +1,31 @@
 <template>
-  <!-- <CardModal :show class="max-w-7xl" display-directive="show" @close="$emit('close')">-->
+  <NFormItem label="Rodyti laikus">
+    <NSwitch v-model:value="showTimes" />
+  </NFormItem>
   <div class="flex flex-col gap-4">
-    <div ref="programmeEl" class="flex flex-col border">
-      <ProgrammeDay v-for="(day, index) in programme" :key="day.id"
-        v-model:day="programme[index]" :data-id="programme.id" class="border" />
+    <div ref="programmeEl" class="mb-3 flex flex-col gap-2">
+      <ProgrammeDay v-for="(day, index) in programmeDays" :key="day.id" v-model:day="programmeDays[index]"
+        :data-id="day.id">
+        <template #buttons>
+          <NButton size="tiny" secondary circle @click="deleteProgrammeDay(index)">
+            <template #icon>
+              <IFluentDelete24Filled />
+            </template>
+          </NButton>
+        </template>
+      </ProgrammeDay>
     </div>
   </div>
-  <NButton @click="createDay">
+  <NButton rounded @click="createDay">
+    <template #icon>
+      <IFluentCalendarAdd24Regular />
+    </template>
     Pridėti programos dieną
   </NButton>
-  <!-- </CardModal> -->
 </template>
 
 <script setup lang="ts">
-import { ref, useTemplateRef } from 'vue';
+import { provide, ref, useTemplateRef } from 'vue';
 import { useSortable } from '@vueuse/integrations/useSortable'
 
 import ProgrammeDay from './ProgrammeDay.vue';
@@ -23,25 +35,41 @@ defineEmits<{
 }>();
 
 const props = defineProps<{
+  programme: App.Entities.Programme
   show: boolean;
   startTime: Date;
 }>();
 
 const programmeEl = useTemplateRef<HTMLDivElement | null>('programmeEl')
+const programmeDays = ref(props.programme.days);
 
-const programme = ref([]);
+const showTimes = ref(false);
+provide('show-times', showTimes);
 
-useSortable<HTMLDivElement | null>(programmeEl, programme, {
-  handle: '.section-handle',
+const movedElement = ref<App.Entities.ProgrammeSection | App.Entities.ProgrammePart | null>(null);
+const updateMovedElement = (element: App.Entities.ProgrammeSection | App.Entities.ProgrammePart) => {
+  movedElement.value = element;
+}
+provide('movedElement', { movedElement, updateMovedElement });
+
+useSortable<HTMLDivElement | null>(programmeEl, programmeDays, {
+  handle: '.day-handle',
 });
 
 function createDay() {
-  programme.value.push({
-    id: 'programme-day-' + String(programme.value.length + 1),
-    name: 'Programme Day ' + (programme.value.length + 1),
+  programmeDays.value?.push({
+    id: 'programme-day-' + Math.random().toString(36).substring(7),
+    title: {
+      lt: String(programmeDays.value.length + 1) + ' diena',
+      en: String(programmeDays.value.length + 1) + ' day',
+    },
     type: 'day',
     elements: [],
-    start_time: new Date(props.startTime.getTime() + 1000 * 60 * 60 * 24 * programme.value.length),
+    start_time: (new Date(props.startTime.getTime() + 1000 * 60 * 60 * 24 * programmeDays.value.length)).toISOString(),
   });
+}
+
+function deleteProgrammeDay(index: number) {
+  programmeDays.value?.splice(index, 1);
 }
 </script>

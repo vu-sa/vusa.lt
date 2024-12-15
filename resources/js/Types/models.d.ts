@@ -556,6 +556,21 @@ declare global {
       user?: User
     }
 
+    export interface ProgrammeElement {
+      // columns
+      id: number
+      programme_day_id: number
+      elementable_type: string
+      elementable_id: number
+      order: number
+      created_at: string
+      updated_at: string
+      // relations
+      elementable?: ProgrammeElement
+      day?: ProgrammeDay
+      blocks?: ProgrammeBlock[]
+    }
+
     export interface Relationshipable {
       // columns
       id: number
@@ -608,29 +623,12 @@ declare global {
       type?: Type
     }
 
-    export interface TaskTraining {
-      // columns
-      id: number
-      task_id: string
-      training_id: string
-      name: string[]
-      description: string[]
-      due_date: string
-      created_at: string
-      updated_at: string
-      // mutators
-      translations: unknown
-      // relations
-      tasks?: Task
-      user?: Training
-    }
-
     export interface Trainingable {
       // columns
       id: number
       training_id: string
       trainingable_type: string
-      trainingable_id: number
+      trainingable_id: string
       tenant_id?: number|null
       quota?: number|null
       created_at: string
@@ -642,6 +640,79 @@ declare global {
       institution?: Institution
       membership?: Membership
       tenant?: Tenant
+    }
+
+    export interface Programme {
+      // columns
+      id: number
+      title: string[]
+      description?: string[]|null
+      start_date: string
+      created_at: string
+      updated_at: string
+      // mutators
+      translations: unknown
+      // relations
+      days?: ProgrammeDay[]
+      programmable?: Programme
+    }
+
+    export interface ProgrammeBlock {
+      // columns
+      id: number
+      programme_section_id: number
+      title: string[]
+      description?: string[]|null
+      created_at: string
+      updated_at: string
+      // mutators
+      translations: unknown
+      // relations
+      parts?: ProgrammePart[]
+    }
+
+    export interface ProgrammeDay {
+      // columns
+      id: number
+      programme_id: number
+      title: string[]
+      date: string
+      created_at: string
+      updated_at: string
+      // mutators
+      translations: unknown
+      // relations
+      programme?: Programme
+      elements?: ProgrammeElement[]
+    }
+
+    export interface ProgrammePart {
+      // columns
+      id: number
+      title: string[]
+      description?: string[]|null
+      start_time?: string|null
+      duration: number
+      created_at: string
+      updated_at: string
+      // mutators
+      translations: unknown
+      // relations
+      programme_days?: ProgrammeDay[]
+      programme_blocks?: ProgrammeBlock[]
+    }
+
+    export interface ProgrammeSection {
+      // columns
+      id: number
+      title: string[]
+      created_at: string
+      updated_at: string
+      // mutators
+      translations: unknown
+      // relations
+      programme_days?: ProgrammeDay[]
+      blocks?: ProgrammeBlock[]
     }
 
     export interface Registration {
@@ -862,6 +933,23 @@ declare global {
       users?: User[]
       institution?: Institution
       form?: Form
+      tasks?: TrainingTask[]
+      programmes?: Programme[]
+    }
+
+    export interface TrainingTask {
+      // columns
+      id: number
+      training_id: string
+      name: string[]
+      description?: string[]|null
+      due_date?: string|null
+      created_at: string
+      updated_at: string
+      // mutators
+      translations: unknown
+      // relations
+      training?: Training
     }
 
     export interface Type {

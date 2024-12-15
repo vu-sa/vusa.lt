@@ -13,15 +13,11 @@ import { provide, ref } from "vue";
 import Icons from "@/Types/Icons/regular";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
-import TrainingUpdateForm from "@/Components/AdminForms/TrainingUpdateForm.vue";
+import TrainingUpdateForm, { type TrainingableTypes } from "@/Components/AdminForms/TrainingUpdateForm.vue";
 
 defineProps<{
-  training: Array<App.Entities.Training>;
-  trainingableTypes: {
-    type: string,
-    name: string,
-    values: { value: string, name: string }[]
-  }[];
+  training: App.Entities.Training;
+  trainingableTypes: TrainingableTypes
 }>();
 
 //provide("autosave", ref(true));

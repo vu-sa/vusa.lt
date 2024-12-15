@@ -8,6 +8,8 @@ use App\Http\Requests\UpdateTrainingRequest;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Membership;
+use App\Models\ProgrammePart;
+use App\Models\ProgrammeSection;
 use App\Models\Training;
 use App\Models\Type;
 use App\Models\User;
@@ -87,6 +89,49 @@ class TrainingController extends Controller
                     'form_fields' => $training->form?->formFields()->orderBy('order')->get()->map->toFullArray(),
                 ],
                 'tasks' => $training->tasks->map->toFullArray(),
+                'programme' => collect([
+                    $training->load('programmes.days.elements.elementable')->programmes->map(function ($programme) {
+                        return [
+                            ...$programme->toFullArray(),
+                            'days' => $programme->days->map(function ($day) {
+                                return [
+                                    ...$day->toFullArray(),
+                                    'type' => 'day',
+                                    'elements' => $day->elements->map(function ($element) {
+                                        // check if elementable is a section or part
+                                        $elementable = $element->elementable;
+
+                                        if ($elementable instanceof ProgrammeSection) {
+                                            return [
+                                                ...$elementable->toFullArray(),
+                                                'blocks' => $elementable->blocks->map(function ($block) {
+                                                    return [
+                                                        ...$block->toFullArray(),
+                                                        'parts' => $block->parts->map(function ($part) {
+                                                            return [
+                                                                ...$part->toFullArray(),
+                                                                'type' => 'part',
+                                                            ];
+                                                        }),
+                                                        'type' => 'block',
+                                                    ];
+                                                }),
+                                                'type' => 'section',
+                                            ];
+                                        }
+
+                                        if ($elementable instanceof ProgrammePart) {
+                                            return [
+                                                ...$elementable->toFullArray(),
+                                                'type' => 'part',
+                                            ];
+                                        }
+                                    }),
+                                ];
+                            }),
+                        ];
+                    })->first(),
+                ])->first(),
             ],
             'trainingableTypes' => [
                 User::class => ['type' => User::class, 'name' => 'Narys', 'values' => User::query()->get(['id', 'name'])],

@@ -87,38 +87,40 @@
     </FormElement>
     <NTabs type="segment" animated>
       <NTabPane name="dalyviai" tab="Kas gali dalyvauti?">
-        <NDynamicInput v-model:value="form.trainingables" class="mt-4" @create="onTrainingablesCreate">
-          <template #default="{ value }">
-            <div class="flex w-full gap-4">
-              <NFormItem label="Tipas">
-                <NSelect v-model:value="value.trainingable_type" class="min-w-40" :options="trainingableTypeOptions" />
-              </NFormItem>
-              <NFormItem v-if="value.trainingable_type" label="Pasirinkimas" class="min-w-80">
-                <NSelect v-model:value="value.trainingable_id" filterable
-                  :options="trainingableTypes[value.trainingable_type].values" value-field="id"
-                  :label-field="value.trainingable_type === 'App\\Models\\Type' ? 'title' : 'name'" />
-              </NFormItem>
-            </div>
+        <FormElement no-divider class="mt-4 min-h-64">
+          <template #title>
+            Dalyviai
           </template>
-        </NDynamicInput>
+          <NDynamicInput v-model:value="form.trainingables" class="mt-4" @create="onTrainingablesCreate">
+            <template #default="{ value }">
+              <div class="flex w-full gap-4">
+                <NFormItem label="Tipas">
+                  <NSelect v-model:value="value.trainingable_type" class="min-w-40"
+                    :options="trainingableTypeOptions" />
+                </NFormItem>
+                <NFormItem v-if="value.trainingable_type" label="Pasirinkimas" class="min-w-80">
+                  <NSelect v-model:value="value.trainingable_id" filterable
+                    :options="trainingableTypes[value.trainingable_type].values" value-field="id"
+                    :label-field="value.trainingable_type === 'App\\Models\\Type' ? 'title' : 'name'" />
+                </NFormItem>
+              </div>
+            </template>
+          </NDynamicInput>
+        </FormElement>
       </NTabPane>
       <NTabPane class="my-4 rounded-xl border border-zinc-500" name="registracija" tab="Registracijos forma">
-        <div class="m-4">
+        <div class="m-4 min-h-64">
           <FormForm :form="formTemplate" @submit:form="handleFormFormSubmit" />
         </div>
       </NTabPane>
       <NTabPane name="programa" tab="Programa" display-directive="show">
-        <!-- <NButton @click="showProgrammePlanner = true">
-          <template #icon>
-            <IFluentAdd24Filled />
-          </template>
-          {{ $t('Sudaryti programą') }}
-</NButton> -->
-        <ProgrammePlanner :start-time="new Date(form.start_time)" :show="showProgrammePlanner"
+        <div class="mt-4 min-h-64">
+        <ProgrammePlanner :programme="training.programme" :start-time="new Date(form.start_time)" :show="showProgrammePlanner"
           @close="showProgrammePlanner = false" />
+        </div>
       </NTabPane>
       <NTabPane name="uzduotys" tab="Užduotys">
-        <FormElement class="mt-4">
+        <FormElement no-divider class="mt-4 min-h-64">
           <template #title>
             Užduotys
           </template>
@@ -189,7 +191,7 @@ interface TrainingableType<T> {
   values: Array<{ id: number; name: string }>;
 }
 
-interface TrainingableTypes {
+export interface TrainingableTypes {
   'App\\Models\\User': TrainingableType<App.Entities.User>;
   'App\\Models\\Duty': TrainingableType<App.Entities.Duty>;
   'App\\Models\\Institution': TrainingableType<App.Entities.Institution>;
