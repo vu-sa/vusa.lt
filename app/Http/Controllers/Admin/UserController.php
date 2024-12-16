@@ -294,10 +294,18 @@ class UserController extends Controller
 
         if ($duty) {
             //# TEST: if only current users from duty are allowed to login
+
+            // get count of current users
+            $count = $duty->current_users()->count();
+
+            if ($count > 1) {
+                return redirect()->route('home', ['subdomain' => 'www', 'lang' => app()->getLocale()])->with('error', 'Nepavyko prisijungti su pareigybiniu paštu, nes pareigybinis paštas turi daugiau nei vieną aktyvų vartotoją. Susisiekite su administratoriumi.');
+            }
+
             $user = $duty->current_users()->first();
 
             if (! $user) {
-                return redirect()->route('home', ['subdomain' => 'www', 'lang' => app()->getLocale()])->with('error', 'Nepavyko prisijungti, nes pareigybinis paštas neturi aktyvausvartotojo. Bandykite ištrinti slapukus arba naudoti naršyklės privatų rėžimą.');
+                return redirect()->route('home', ['subdomain' => 'www', 'lang' => app()->getLocale()])->with('error', 'Nepavyko prisijungti su pareigybiniu paštu, nes pareigybinis paštas neturi aktyvaus vartotojo. Bandykite ištrinti slapukus arba naudoti naršyklės privatų rėžimą.');
             }
 
             $user->microsoft_token = $microsoftUser->token;
