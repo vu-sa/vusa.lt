@@ -20,4 +20,3 @@ class ProgrammeBlockController extends Controller
         return back()->with('success', 'Programme block deleted.');
     }
 }
-
