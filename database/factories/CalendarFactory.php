@@ -6,7 +6,6 @@ use App\Models\Calendar;
 use App\Models\Category;
 use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 
 class CalendarFactory extends Factory
