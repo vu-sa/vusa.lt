@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Calendar;
+use App\Models\Category;
 use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Arr;
@@ -35,7 +36,7 @@ class CalendarFactory extends Factory
             'organizer' => ['lt' => fake()->name, 'en' => fake()->name],
             'date' => $date,
             'end_date' => $end_date,
-            'category' => Arr::random(['red', 'yellow', 'grey']),
+            'category_id' => Category::factory(),
             'cto_url' => ['lt' => fake()->url, 'en' => fake()->url],
             'is_international' => fake()->boolean,
             'is_draft' => fake()->boolean,

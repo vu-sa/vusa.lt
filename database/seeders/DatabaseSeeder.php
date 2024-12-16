@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Banner;
 use App\Models\Calendar;
+use App\Models\Category;
 use App\Models\Doing;
 use App\Models\Duty;
 use App\Models\Goal;
@@ -37,6 +38,7 @@ class DatabaseSeeder extends Seeder
         $this->call(MemberRegistrationFormSeeder::class);
 
         $tenants = Tenant::all();
+        $categories = Category::all();
 
         Institution::factory(50)
             ->has(Matter::factory(3))
@@ -60,7 +62,7 @@ class DatabaseSeeder extends Seeder
         $this->call(DeleteAndSeedPermissions::class);
 
         Banner::factory(20)->recycle($tenants)->create();
-        Calendar::factory(50)->recycle($tenants)->create();
+        Calendar::factory(50)->recycle($tenants)->recycle($categories)->create();
         News::factory(75)->recycle($tenants)->create();
         Page::factory(75)->recycle($tenants)->create();
 

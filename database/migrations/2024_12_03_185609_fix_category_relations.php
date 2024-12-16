@@ -18,9 +18,7 @@ return new class extends Migration
 
         Schema::table('calendar', function (Blueprint $table) {
             $table->dropForeign(['category']);
-            $table->dropColumn('category');
-            $table->unsignedInteger('category_id')->nullable();
-            $table->foreign('category_id')->references('id')->on('categories');
+            $table->renameColumn('category', 'category_id');
         });
 
         foreach ($calendars as $calendar) {
@@ -29,6 +27,11 @@ return new class extends Migration
                 DB::table('calendar')->where('id', $calendar->id)->update(['category_id' => $category->id]);
             }
         }
+
+        Schema::table('calendar', function (Blueprint $table) {
+            $table->unsignedInteger('category_id')->nullable()->change();
+            $table->foreign('category_id')->references('id')->on('categories')->nullOnDelete();
+        });
     }
 
     /**
