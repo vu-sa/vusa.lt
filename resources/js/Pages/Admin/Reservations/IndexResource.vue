@@ -1,6 +1,6 @@
 <template>
   <IndexPageLayout :title="capitalize($tChoice('entities.resource.model', 2))" model-name="resources"
-    :icon="Icons.RESOURCE" :can-use-routes="canUseRoutes" :columns="columns" :paginated-models="resources" />
+    :icon="Icons.RESOURCE" :can-use-routes :columns :paginated-models="resources" />
 </template>
 
 <script setup lang="tsx">
@@ -8,6 +8,7 @@ import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
 import {
   type DataTableColumns,
   type DataTableSortState,
+  NIcon,
   NImage,
   NImageGroup,
   NSpace,
@@ -68,6 +69,15 @@ const columns = computed<DataTableColumns<App.Entities.Resource>>(() => [
         </section>
       );
     },
+  },
+  {
+    key: "image",
+    render(row) {
+      return row.media?.[0]?.original_url ?
+        <NImage class="my-auto" showToolbar={false} width="50" height="50" objectFit="contain" src={row.media?.[0]?.original_url} alt={row.name} /> :
+        <NIcon component={Icons.RESOURCE} />;
+    },
+    width: 55,
   },
   {
     title() {
