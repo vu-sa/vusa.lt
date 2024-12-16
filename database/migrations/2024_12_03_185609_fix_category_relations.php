@@ -17,7 +17,7 @@ return new class extends Migration
         $categories = Category::all(['id', 'alias']);
 
         Schema::table('calendar', function (Blueprint $table) {
-            $table->dropForeign('calendar_category_foreign');
+            $table->dropForeign(['category']);
             $table->dropColumn('category');
             $table->unsignedInteger('category_id')->nullable();
             $table->foreign('category_id')->references('id')->on('categories');
