@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UpdateProgrammeRequest;
 use App\Models\Programme;
+use App\Models\ProgrammeBlock;
 use App\Models\ProgrammeDay;
 use App\Models\ProgrammePart;
 use App\Models\ProgrammeSection;
@@ -76,42 +77,47 @@ class ProgrammeController extends Controller
 
                 foreach ($dayData['elements'] as $elementIndex => $elementData) {
                     if ($elementData['type'] === 'section') {
-                        /*        $section = ProgrammeSection::query()->findOrNew($elementData['id']);*/
-                        /**/
-                        /*        $section->title = $elementData['title'];*/
-                        /*        $section->description = $elementData['description'] ?? null;*/
-                        /*        $section->duration = $elementData['duration'];*/
-                        /*        $section->start_time = $elementData['start_time'];*/
-                        /**/
-                        /*        $section->save();*/
-                        /**/
-                        /*        // Associate section with day*/
-                        /*        $day->sections()->syncWithoutDetaching([$section->id]);*/
-                        /**/
-                        /*        foreach ($elementData['blocks'] as $blockIndex => $blockData) {*/
-                        /*            $block = $section->elementable->blocks()->updateOrCreate(*/
-                        /*                ['id' => $blockData['id'] ?? null],*/
-                        /*                [*/
-                        /*                    'programme_section_id' => $section->elementable->id,*/
-                        /*                    'title' => $blockData['title'],*/
-                        /*                    'description' => $blockData['description'] ?? null,*/
-                        /*                    'order' => $blockIndex,*/
-                        /*                ]*/
-                        /*            );*/
-                        /**/
-                        /*            foreach ($blockData['parts'] as $partIndex => $partData) {*/
-                        /*                $block->parts()->updateOrCreate(*/
-                        /*                    ['id' => $partData['id'] ?? null],*/
-                        /*                    [*/
-                        /*                        'title' => $partData['title'],*/
-                        /*                        'description' => $partData['description'] ?? null,*/
-                        /*                        'duration' => $partData['duration'],*/
-                        /*                        'start_time' => $partData['start_time'],*/
-                        /*                        'order' => $partIndex,*/
-                        /*                    ]*/
-                        /*                );*/
-                        /*            }*/
-                        /*        }*/
+                        $section = ProgrammeSection::query()->findOrNew($elementData['id']);
+
+                        $section->title = $elementData['title'];
+                        $section->duration = $elementData['duration'];
+
+                        $section->save();
+
+                        // Check if section is already associated with day
+                        if (! $day->sections->contains('id', $section->id)) {
+                            $day->sections()->save($section, ['order' => $elementIndex]);
+                        } else {
+                            $day->sections()->updateExistingPivot($section->id, ['order' => $elementIndex]);
+                        }
+
+                        foreach ($elementData['blocks'] as $blockIndex => $blockData) {
+                            $block = ProgrammeBlock::query()->findOrNew($blockData['id']);
+
+                            $block->title = $blockData['title'];
+                            $block->description = $blockData['description'] ?? null;
+
+                            $block->programme_section_id = $section->id;
+
+                            $block->save();
+
+                            foreach ($blockData['parts'] as $partIndex => $partData) {
+                                $part = ProgrammePart::query()->findOrNew($partData['id']);
+
+                                $part->title = $partData['title'];
+                                $part->description = $partData['description'] ?? null;
+                                $part->duration = $partData['duration'];
+
+                                $part->save();
+
+                                // Check if part is already associated with block
+                                if (! $block->parts->contains('id', $part->id)) {
+                                    $block->parts()->save($part, ['order' => $partIndex]);
+                                } else {
+                                    $block->parts()->updateExistingPivot($part->id, ['order' => $partIndex]);
+                                }
+                            }
+                        }
                     } elseif ($elementData['type'] === 'part') {
                         $part = ProgrammePart::query()->findOrNew($elementData['id']);
 
@@ -124,6 +130,8 @@ class ProgrammeController extends Controller
                             $day->parts()->save($part, ['order' => $elementIndex]);
                         } else {
                             $day->parts()->updateExistingPivot($part->id, ['order' => $elementIndex]);
+
+                            $part->save();
                         }
                     }
                 }

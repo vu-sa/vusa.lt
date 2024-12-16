@@ -50,8 +50,10 @@
 
 <script setup lang="ts">
 import { computed, inject, type Ref } from 'vue';
-import ProgrammeBlock from './ProgrammeBlock.vue';
+import { router } from "@inertiajs/vue3";
+
 import { formatStaticTime } from '@/Utils/IntlTime';
+import ProgrammeBlock from './ProgrammeBlock.vue';
 
 const section = defineModel<App.Entities.ProgrammeSection | App.Entities.ProgrammePart>('element')
 
@@ -88,6 +90,14 @@ const sectionEndTime = computed(() => {
 });
 
 function deleteProgrammeBlock(index: number) {
+
+  if (typeof section.value?.blocks[index].id !== 'string') {
+
+    router.delete(route('programmeBlocks.destroy', { programmeBlock: section.value?.blocks[index].id }), {
+      preserveScroll: true,
+    });
+  }
+
   section.value?.blocks?.splice(index, 1);
 }
 </script>

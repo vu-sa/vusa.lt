@@ -55,6 +55,7 @@
 <script setup lang="ts">
 import { useSortable } from '@vueuse/integrations/useSortable.mjs';
 import { inject, nextTick, ref, useTemplateRef } from 'vue';
+import { router } from "@inertiajs/vue3";
 
 import ProgrammePart from './ProgrammePart.vue';
 import MultiLocaleInput from '@/Components/FormItems/MultiLocaleInput.vue';
@@ -83,12 +84,26 @@ useSortable<HTMLDivElement | null>(blockPartEl, block.value?.parts, {
   animation: 200,
   async onAdd({ newIndex }: { newIndex: number }) {
     await nextTick();
-    
+
     block.value?.parts?.splice(newIndex, 0, movedElement.value as App.Entities.ProgrammePart);
-    //if (handleMoveElement) handleMoveElement(evt)
+
+    if (typeof movedElement.value.id !== 'string' && typeof block.value?.id !== 'string') {
+      router.post(route('programmeParts.attach', movedElement.value.id), {
+        programmeBlock: block.value?.id,
+        order: newIndex
+      }, {
+        preserveScroll: true,
+      });
+    }
   },
   onRemove({ oldIndex }: { oldIndex: number }) {
     updateMovedElement(block.value?.parts?.[oldIndex] as App.Entities.ProgrammePart);
+
+    if (typeof movedElement.value.id !== 'string' && typeof block.value?.id !== 'string') {
+      router.post(route('programmeParts.detach', { programmePart: movedElement.value.id }), { programmeBlock: block.value.id }, {
+        preserveScroll: true,
+      });
+    }
 
     block.value?.parts?.splice(oldIndex, 1);
   }
@@ -117,6 +132,14 @@ function handleEditPart(part: App.Entities.ProgrammePart) {
 }
 
 function deleteProgrammePart(index: number) {
+  if (!block.value?.parts) return;
+
+  if (typeof block.value.parts[index].id !== 'string') {
+    router.delete(route('programmeParts.destroy', { programmePart: block.value.parts[index].id }), {
+      preserveScroll: true,
+    });
+  }
+
   block.value?.parts?.splice(index, 1);
 }
 </script>

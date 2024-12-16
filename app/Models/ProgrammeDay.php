@@ -33,7 +33,7 @@ class ProgrammeDay extends Model
     // Sections is a morphMany relationship
     public function sections()
     {
-        return $this->morphMany(ProgrammeSection::class, 'elementable', 'programme_day_elements')->using(ProgrammeElement::class);
+        return $this->morphedByMany(ProgrammeSection::class, 'elementable', 'programme_day_elements')->using(ProgrammeElement::class);
     }
 
     public function parts()

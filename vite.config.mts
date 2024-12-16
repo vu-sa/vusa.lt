@@ -32,6 +32,10 @@ export default defineConfig({
     vueDocsPlugin,
     laravel([
       "resources/js/app.ts", 
+      // Compiles the same way as app.ts
+      //"resources/js/admin.ts",
+      //"resources/js/public.ts",
+
       // Also build .css, because it is used in minimal.blade.php
       "resources/css/app.css"
     ]),

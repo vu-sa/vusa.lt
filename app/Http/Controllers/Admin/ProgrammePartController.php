@@ -23,15 +23,27 @@ class ProgrammePartController extends Controller
 
     public function attach(ProgrammePart $programmePart)
     {
-        $programmePart->programmeDays()->attach(request('programmeDay'), ['order' => request('order')]);
+        if (request('programmeDay')) {
+            $programmePart->programmeDays()->attach(request('programmeDay'), ['order' => request('order')]);
 
-        return back()->with('success', 'Programme part attached to day.');
+            return back()->with('success', 'Programme part attached to day.');
+        } elseif (request('programmeBlock')) {
+            $programmePart->programmeBlocks()->attach(request('programmeBlock'));
+
+            return back()->with('success', 'Programme part attached to block.');
+        }
     }
 
     public function detach(ProgrammePart $programmePart)
     {
-        $programmePart->programmeDays()->detach(request('programmeDay'));
+        if (request('programmeBlock')) {
+            $programmePart->programmeBlocks()->detach(request('programmeBlock'));
 
-        return back()->with('success', 'Programme part detached from day.');
+            return back()->with('success', 'Programme part detached from block.');
+        } elseif (request('programmeDay')) {
+            $programmePart->programmeDays()->detach(request('programmeDay'));
+
+            return back()->with('success', 'Programme part detached from day.');
+        }
     }
 }

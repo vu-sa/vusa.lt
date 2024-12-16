@@ -61,9 +61,15 @@ Route::post('memberships/{membership}/users/import', [MembershipController::clas
 Route::resource('trainings', TrainingController::class);
 Route::resource('programmes', ProgrammeController::class);
 Route::resource('programmeDays', ProgrammeDayController::class)->only(['destroy']);
+Route::resource('programmeBlocks', ProgrammeBlockController::class)->only(['destroy']);
+
 Route::resource('programmeParts', ProgrammePartController::class)->only(['destroy']);
 Route::post('programmeParts/{programmePart}/attach', [ProgrammePartController::class, 'attach'])->name('programmeParts.attach');
 Route::post('programmeParts/{programmePart}/detach', [ProgrammePartController::class, 'detach'])->name('programmeParts.detach');
+
+Route::resource('programmeSections', ProgrammeSectionController::class)->only(['destroy']);
+Route::post('programmeSections/{programmeSection}/attach', [ProgrammeSectionController::class, 'attach'])->name('programmeSections.attach');
+Route::post('programmeSections/{programmeSection}/detach', [ProgrammeSectionController::class, 'detach'])->name('programmeSections.detach');
 
 Route::resource('calendar', CalendarController::class);
 Route::post('calendar/{calendar}/media/{media}', [CalendarController::class, 'destroyMedia'])->name('calendar.destroyMedia');
