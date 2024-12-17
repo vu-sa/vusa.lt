@@ -81,7 +81,12 @@ class TrainingController extends Controller
      */
     public function show(Training $training)
     {
-        //
+        $training->load('programmes', 'activities', 'form', 'tenant', 'organizer', 'trainingables', 'tasks');
+
+        return Inertia::render('Admin/People/ShowTraining', [
+            'training' => $training,
+            'userIsRegistered' => $training->form->registrations->contains('user_id', auth()->id()),
+        ]);
     }
 
     /**
@@ -181,5 +186,37 @@ class TrainingController extends Controller
         $training->delete();
 
         return redirect()->route('trainings.index')->with('success', 'Mokymų šablonas ištrintas');
+    }
+
+    public function showRegistration(Training $training)
+    {
+        $training->load('form');
+
+
+        $training->form = [
+            $training->form->toArray(),
+            'form_fields' => $training->form->formFields->map(function ($field) {
+                $options = $field->options;
+
+                if ($field->use_model_options) {
+                    $options = $field->options_model::all()->map(function ($model) use ($field) {
+                        return [
+                            'value' => $model->id,
+                            'label' => $model->{$field->options_model_field},
+                        ];
+                    });
+                }
+
+                return [
+                    ...$field->toArray(),
+                    'options' => $options,
+                ];
+            }),
+        ];
+
+        // NOTE: Form formation repeated in PublicPageController:349
+        return Inertia::render('Admin/People/ShowTrainingRegistration', [
+            'training' => $training,
+        ]);
     }
 }

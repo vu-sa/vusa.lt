@@ -23,6 +23,7 @@ class StoreRegistrationRequest extends FormRequest
     {
         return [
             'data' => 'required|array',
+            'user_id' => 'nullable|exists:users,id',
         ];
     }
 }

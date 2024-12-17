@@ -209,7 +209,7 @@ const emit = defineEmits<{
   (event: "delete"): void;
 }>();
 
-const form = useForm("training", training);
+const form = useForm(`TrainingUpdate${training.id}`, training);
 
 const trainingableTypeOptions = computed(() => {
   return Object.keys(trainingableTypes).map((key) => ({

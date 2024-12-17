@@ -7,14 +7,16 @@ use App\Models\Traits\HasTranslations;
 use App\Models\Traits\HasUnitRelation;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Laravel\Scout\Searchable;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 class Training extends Model
 {
-    /** @use HasFactory<\Database\Factories\TrainingFactory> */
-    use HasFactory, HasRelationships, HasTranslations, HasUlids, HasUnitRelation, Searchable;
+    use HasFactory, HasRelationships, HasTranslations, HasUlids, HasUnitRelation, Searchable, LogsActivity;
+
+    public $table = 'trainings';
 
     protected $fillable = [
         'name',
@@ -38,6 +40,11 @@ class Training extends Model
         'is_online' => 'boolean',
         'is_hybrid' => 'boolean',
     ];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()->logUnguarded()->logOnlyDirty();
+    }
 
     public function toSearchableArray()
     {

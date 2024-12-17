@@ -27,6 +27,8 @@ class RegistrationController extends Controller
 
         $registration->form()->associate($form);
 
+        $registration->user_id = $request->validated()['user_id'];
+
         $formData = $request->validated()['data'];
         $fieldResponses = new Collection;
 

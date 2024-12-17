@@ -33,7 +33,7 @@ declare global {
       is_international: boolean
       date: string
       end_date?: string | null
-      category?: string | null
+      category_id?: number | null
       tenant_id: number
       created_at: string
       updated_at: string
@@ -187,6 +187,13 @@ declare global {
     }
 
     export interface FieldResponse {
+      // columns
+      id: number
+      registration_id: number
+      form_field_id: number
+      response: string[]
+      created_at: string
+      updated_at: string
       // relations
       registration?: Registration
       form_field?: FormField
@@ -196,6 +203,17 @@ declare global {
     }
 
     export interface Form {
+      // columns
+      id: string
+      name: string[]
+      description?: string[] | null
+      user_id?: string | null
+      tenant_id: number
+      path?: string[] | null
+      publish_time?: string | null
+      created_at: string
+      updated_at: string
+      deleted_at?: string | null
       // mutators
       translations: unknown
       // relations
@@ -207,6 +225,23 @@ declare global {
     }
 
     export interface FormField {
+      // columns
+      id: number
+      form_id: string
+      label: string[]
+      description?: string[] | null
+      type: string
+      subtype?: string | null
+      options?: string[] | null
+      is_required: boolean
+      order: number
+      default_value?: string[] | null
+      placeholder?: string[] | null
+      use_model_options: boolean
+      options_model?: string | null
+      options_model_field?: string | null
+      created_at: string
+      updated_at: string
       // mutators
       translations: unknown
       // relations
@@ -345,6 +380,12 @@ declare global {
     }
 
     export interface Membership {
+      // columns
+      id: string
+      name: string[]
+      tenant_id: number
+      created_at: string
+      updated_at: string
       // mutators
       translations: unknown
       // relations
@@ -501,12 +542,29 @@ declare global {
     }
 
     export interface MembershipUser {
+      // columns
+      id: number
+      membership_id: string
+      user_id: string
+      start_date: string
+      end_date?: string | null
+      status: string
+      created_at: string
+      updated_at: string
       // relations
       membership?: Membership
       user?: User
     }
 
     export interface ProgrammeElement {
+      // columns
+      id: number
+      programme_day_id: number
+      elementable_type: string
+      elementable_id: number
+      order: number
+      created_at: string
+      updated_at: string
       // relations
       elementable?: ProgrammeElement
       day?: ProgrammeDay
@@ -566,6 +624,15 @@ declare global {
     }
 
     export interface Trainingable {
+      // columns
+      id: number
+      training_id: string
+      trainingable_type: string
+      trainingable_id: string
+      tenant_id?: number | null
+      quota?: number | null
+      created_at: string
+      updated_at: string
       // relations
       trainingable?: Trainingable
       user?: User
@@ -576,6 +643,13 @@ declare global {
     }
 
     export interface Programme {
+      // columns
+      id: number
+      title: string[]
+      description?: string[] | null
+      start_date: string
+      created_at: string
+      updated_at: string
       // mutators
       translations: unknown
       // relations
@@ -584,6 +658,13 @@ declare global {
     }
 
     export interface ProgrammeBlock {
+      // columns
+      id: number
+      programme_section_id: number
+      title: string[]
+      description?: string[] | null
+      created_at: string
+      updated_at: string
       // mutators
       translations: unknown
       // relations
@@ -591,6 +672,15 @@ declare global {
     }
 
     export interface ProgrammeDay {
+      // columns
+      id: number
+      programme_id: number
+      title: string[]
+      description?: string[] | null
+      order: number
+      start_time: string
+      created_at: string
+      updated_at: string
       // mutators
       translations: unknown
       // relations
@@ -601,6 +691,15 @@ declare global {
     }
 
     export interface ProgrammePart {
+      // columns
+      id: number
+      title: string[]
+      description?: string[] | null
+      instructor?: string | null
+      duration: number
+      start_time?: string | null
+      created_at: string
+      updated_at: string
       // mutators
       translations: unknown
       // relations
@@ -609,6 +708,13 @@ declare global {
     }
 
     export interface ProgrammeSection {
+      // columns
+      id: number
+      title: string[]
+      duration: number
+      start_time?: string | null
+      created_at: string
+      updated_at: string
       // mutators
       translations: unknown
       // relations
@@ -619,8 +725,8 @@ declare global {
     export interface Registration {
       // columns
       id: number
-      registration_form_id: number
-      data: string
+      user_id?: string | null
+      form_id: string
       created_at: string
       updated_at: string
       // relations
@@ -808,6 +914,24 @@ declare global {
     }
 
     export interface Training {
+      // columns
+      id: string
+      name: string[]
+      description: string[]
+      address?: string | null
+      meeting_url?: string | null
+      image?: string | null
+      status: string
+      start_time: string
+      end_time?: string | null
+      organizer_id: string
+      institution_id: string
+      form_id?: string | null
+      max_participants?: number | null
+      is_online: boolean
+      is_hybrid: boolean
+      created_at: string
+      updated_at: string
       // mutators
       translations: unknown
       // relations
@@ -818,9 +942,18 @@ declare global {
       form?: Form
       tasks?: TrainingTask[]
       programmes?: Programme[]
+      activities?: Activity[]
     }
 
     export interface TrainingTask {
+      // columns
+      id: number
+      training_id: string
+      name: string[]
+      description?: string[] | null
+      due_date?: string | null
+      created_at: string
+      updated_at: string
       // mutators
       translations: unknown
       // relations
@@ -876,10 +1009,11 @@ declare global {
       last_action?: string | null
       last_changelog_check?: string | null
       microsoft_token?: string | null
-      updated_at?: string | null
+      updated_at: string
       created_at: string
       profile_photo_path?: string | null
       deleted_at?: string | null
+      name_was_changed?: boolean
       // mutators
       translations: unknown
       // relations
