@@ -35,6 +35,7 @@ return new class extends Migration
             $table->id();
             $table->json('title');
             $table->json('description')->nullable();
+            $table->string('instructor')->nullable();
             $table->integer('duration');
             $table->time('start_time')->nullable();
             $table->timestamp('created_at')->useCurrent();

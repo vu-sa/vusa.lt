@@ -12,7 +12,7 @@ class ProgrammePart extends Model
     /** @use HasFactory<\Database\Factories\ProgrammePartFactory> */
     use HasFactory, HasTranslations;
 
-    protected $fillable = ['title', 'description', 'start_time', 'duration'];
+    protected $fillable = ['title', 'description', 'start_time', 'duration', 'instructor'];
 
     public $translatable = ['title', 'description'];
 

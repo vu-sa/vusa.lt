@@ -20,6 +20,8 @@
                 {
                   hour: 'numeric', minute: '2-digit'
                 }) }}
+
+            {{ part.instructor ? ' | ' + part.instructor : '' }}
           </template>
           <template v-else>
             {{ part.duration }} min.

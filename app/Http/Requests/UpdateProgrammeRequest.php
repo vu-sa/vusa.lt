@@ -52,6 +52,7 @@ class UpdateProgrammeRequest extends FormRequest
             'days.*.elements.*.title' => 'required|array',
             'days.*.elements.*.description' => 'nullable|array',
             'days.*.elements.*.duration' => 'required|integer|min:1',
+            'days.*.elements.*.instructor' => 'nullable|string',
             'days.*.elements.*.start_time' => 'nullable|date_format:H:i:s',
             'days.*.elements.*.type' => 'required|string|in:section,part',
             'days.*.elements.*.blocks' => 'nullable|array',
@@ -64,6 +65,7 @@ class UpdateProgrammeRequest extends FormRequest
             'days.*.elements.*.blocks.*.parts.*.description' => 'nullable|array',
             'days.*.elements.*.blocks.*.parts.*.duration' => 'required|integer|min:1',
             'days.*.elements.*.blocks.*.parts.*.start_time' => 'nullable|date_format:H:i:s',
+            'days.*.elements.*.blocks.*.parts.*.instructor' => 'nullable|string',
         ];
     }
 }
