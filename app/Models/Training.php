@@ -14,7 +14,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 class Training extends Model
 {
-    use HasFactory, HasRelationships, HasTranslations, HasUlids, HasUnitRelation, Searchable, LogsActivity;
+    use HasFactory, HasRelationships, HasTranslations, HasUlids, HasUnitRelation, LogsActivity, Searchable;
 
     public $table = 'trainings';
 

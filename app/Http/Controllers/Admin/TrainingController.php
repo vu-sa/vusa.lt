@@ -192,7 +192,6 @@ class TrainingController extends Controller
     {
         $training->load('form');
 
-
         $training->form = [
             $training->form->toArray(),
             'form_fields' => $training->form->formFields->map(function ($field) {
