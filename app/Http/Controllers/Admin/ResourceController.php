@@ -116,9 +116,11 @@ class ResourceController extends Controller
             ->each(fn ($image) => $image->delete());
 
         // then add new media
-        foreach ($request->validated('media') as $image) {
-            if ($image['status'] === 'pending' && $image['file']) {
-                $resource->addMedia($image['file'])->toMediaCollection('images');
+        if ($request->validated('media')) {
+            foreach ($request->validated('media') as $image) {
+                if ($image['status'] === 'pending' && $image['file']) {
+                    $resource->addMedia($image['file'])->toMediaCollection('images');
+                }
             }
         }
 

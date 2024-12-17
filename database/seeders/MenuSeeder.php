@@ -36,12 +36,14 @@ class MenuSeeder extends Seeder
                     'order' => 0,
                     'name' => 'Naujienos',
                     'url' => route('newsArchive', ['lang' => 'lt', 'subdomain' => 'www', 'newsString' => 'naujienos']),
-                ], [
-                    'parent_id' => 1,
-                    'order' => 1,
-                    'name' => 'Narių registracija',
-                    'url' => route('memberRegistration', ['lang' => 'lt']),
-                ], [
+                ],
+                /*[*/
+                /*'parent_id' => 1,*/
+                /*'order' => 1,*/
+                /*'name' => 'Narių registracija',*/
+                /*'url' => route('memberRegistration', ['lang' => 'lt']),*/
+                /*],*/
+                [
                     'parent_id' => 2,
                     'order' => 0,
                     'name' => 'Kontaktų paieška',

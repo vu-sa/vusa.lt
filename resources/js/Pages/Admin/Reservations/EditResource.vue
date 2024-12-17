@@ -6,7 +6,7 @@
     </NCard>
     <UpsertModelLayout>
       <ResourceForm enable-delete :resource :categories :assignable-tenants
-        @submit:form="(form) => form.patch(route('resources.update', resource.id), { preserveScroll: true })"
+        @submit:form="handleResourceUpdate"
         @delete="() => router.delete(route('resource.destroy', resource.id))" />
     </UpsertModelLayout>
   </PageContent>
@@ -33,9 +33,19 @@ export type ResourceEditType = Omit<
   // media: models.Media[];
 };
 
-defineProps<{
+const { resource } = defineProps<{
   resource: ResourceEditType;
   categories: any
   assignableTenants: Array<App.Entities.Tenant>;
 }>();
+
+function handleResourceUpdate(form: InertiaForm<ResourceForm>) {
+  form.transform((data) => ({
+    ...data,
+    _method: "patch"
+  })).post(route('resources.update', resource.id), {
+    preserveScroll: true,
+    forceFormData: true,
+  });
+}
 </script>

@@ -34,9 +34,7 @@
         <strong>this student calendar</strong> to „Google“ or „Outlook“ ..? 🗓
       </p>
     </div>
-    <NMessageProvider>
       <CalendarSyncModal v-model:show-modal="showModal" @close="showModal = false" />
-    </NMessageProvider>
     <div class="relative mx-auto">
       <div class="relative flex w-fit items-center justify-center lg:top-4">
         <template v-if="showPhotos">
@@ -96,7 +94,7 @@
 
 <script setup lang="ts">
 import { Head } from "@inertiajs/vue3";
-import { NButton, NMessageProvider } from "naive-ui";
+import { NButton } from "naive-ui";
 import { computed, ref } from "vue";
 
 import CalendarCard from "@/Components/Calendar/CalendarCard.vue";

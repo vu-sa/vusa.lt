@@ -72,7 +72,7 @@ const isSameDay = (date1: string, date2: string) => {
 const calendarAttributes = props.calendarEvents.map((event) => {
   let eventColor: string | { class: string };
 
-  switch (event.category) {
+  switch (event.category?.alias) {
     case "freshmen-camps":
     case "vu-sa-conferences":
       eventColor = "yellow";
@@ -125,5 +125,9 @@ calendarAttributes.push({
 .vc-container {
   font-family: "Inter", sans-serif !important;
   border: 0 !important;
+}
+
+.my-calendar :deep(.vc-dot) {
+  box-shadow: 0px 0px 1px 0px rgba(0, 0, 0, 0.6);
 }
 </style>

@@ -8,6 +8,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     {!! isset($SEOData) ? seo($SEOData) : null !!}
+    
+    @if (isset($JSONLD_Schemas) && is_array($JSONLD_Schemas))
+        @foreach($JSONLD_Schemas as $schema)
+            {!! $schema->toScript() !!}
+        @endforeach
+    @endif
+            
         
     <meta name="theme-color" content="#252528" media="(prefers-color-scheme: dark)" />
     <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />

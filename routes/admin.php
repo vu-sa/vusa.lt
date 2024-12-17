@@ -55,12 +55,27 @@ Route::resource('users.comments', CommentController::class)->only(['store', 'upd
 Route::post('notification/{id}/markAsRead', [UserNotificationsController::class, 'markAsRead'])->name('notifications.markAsRead');
 Route::post('notification/markAllAsRead', [UserNotificationsController::class, 'markAllAsRead'])->name('notifications.markAllAsRead');
 
-Route::resource('contacts', ContactController::class);
+Route::resource('memberships', MembershipController::class);
+Route::post('memberships/{membership}/users/import', [MembershipController::class, 'importUsers'])->name('membershipUsers.import');
+
+Route::resource('trainings', TrainingController::class);
+Route::get('trainings/{training}/registration', [TrainingController::class, 'showRegistration'])->name('trainings.showRegistration');
+
+Route::resource('programmes', ProgrammeController::class);
+Route::resource('programmeDays', ProgrammeDayController::class)->only(['destroy']);
+Route::resource('programmeBlocks', ProgrammeBlockController::class)->only(['destroy']);
+
+Route::resource('programmeParts', ProgrammePartController::class)->only(['destroy']);
+Route::post('programmeParts/{programmePart}/attach', [ProgrammePartController::class, 'attach'])->name('programmeParts.attach');
+Route::post('programmeParts/{programmePart}/detach', [ProgrammePartController::class, 'detach'])->name('programmeParts.detach');
+
+Route::resource('programmeSections', ProgrammeSectionController::class)->only(['destroy']);
+Route::post('programmeSections/{programmeSection}/attach', [ProgrammeSectionController::class, 'attach'])->name('programmeSections.attach');
+Route::post('programmeSections/{programmeSection}/detach', [ProgrammeSectionController::class, 'detach'])->name('programmeSections.detach');
 
 Route::resource('calendar', CalendarController::class);
 Route::post('calendar/{calendar}/media/{media}', [CalendarController::class, 'destroyMedia'])->name('calendar.destroyMedia');
 Route::post('calendar/{calendar}/duplicate', [CalendarController::class, 'duplicate'])->name('calendar.duplicate');
-Route::resource('registrationForms', RegistrationFormController::class)->only(['store', 'show', 'index']);
 
 Route::resource('matters', MatterController::class)->except(['edit', 'update']);
 Route::resource('goals', GoalController::class);
@@ -68,7 +83,7 @@ Route::post('matters/{matter}/attach', [MatterController::class, 'attachGoal'])-
 Route::resource('goalGroups', GoalGroupController::class)->except(['show']);
 Route::resource('doings', DoingController::class);
 Route::resource('agendaItems', AgendaItemController::class)->except(['index', 'create']);
-Route::resource('meetings', MeetingController::class);
+Route::resource('meetings', MeetingController::class)->except(['create']);
 
 Route::resource('resources', ResourceController::class);
 Route::resource('resourceCategories', ResourceCategoryController::class);
@@ -91,6 +106,8 @@ Route::post('institutions/reorderDuties', [InstitutionController::class, 'reorde
 Route::resource('institutions', InstitutionController::class);
 
 Route::resource('tenants', TenantController::class);
+
+Route::resource('forms', FormController::class);
 
 Route::resource('types', TypeController::class);
 Route::resource('relationships', RelationshipController::class);

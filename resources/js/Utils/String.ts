@@ -44,7 +44,6 @@ export const addressivize = (name: string | null) => {
     .replace(/is$/, "i")
     .replace(/us$/, "au")
     .replace(/ys$/, "y")
-    .replace(/iai$/, "iai")
 }
 
 export const genitivizeEveryWord = (name: string | null) => {

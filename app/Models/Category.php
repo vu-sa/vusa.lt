@@ -2,11 +2,12 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Category extends Model
 {
-    protected $table = 'categories';
+    use HasFactory;
 
     protected $fillable = [
         'name',
@@ -14,13 +15,18 @@ class Category extends Model
         'description',
     ];
 
-    public function banners()
-    {
-        return $this->belongsTo(Banner::class, 'alias', 'category');
-    }
-
     public function pages()
     {
-        return $this->hasMany(Page::class, 'category_id');
+        return $this->hasMany(Page::class);
+    }
+
+    public function news()
+    {
+        return $this->hasMany(News::class);
+    }
+
+    public function calendars()
+    {
+        return $this->hasMany(Calendar::class);
     }
 }

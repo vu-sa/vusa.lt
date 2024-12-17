@@ -190,7 +190,7 @@ class NewsController extends Controller
 
             // find page that has other lang id
             $current_other_lang_page = News::where('other_lang_id', $news->id)->first();
-            
+
             if ($current_other_lang_page) {
                 $current_other_lang_page->other_lang_id = null;
                 $current_other_lang_page->save();

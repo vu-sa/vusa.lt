@@ -97,7 +97,6 @@ const formDisabled = computed(() => {
 });
 
 const renderTag = (category) => {
-  console.log(category);
   return <span class="inline-flex items-center gap-2"><Icon icon={`fluent:${category.icon}`} />{category.label}</span>;
 }
 
