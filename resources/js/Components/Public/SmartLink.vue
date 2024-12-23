@@ -3,6 +3,7 @@
     :is="useInertiaRouter ? Link : 'a'"
     v-if="href"
     :href="href"
+    :prefetch="useInertiaRouter ? prefetch : false"
     :target="target ?? useInertiaRouter ? undefined : '_blank'"
   >
     <slot />
@@ -19,6 +20,7 @@ import { computed } from "vue";
 const props = defineProps<{
   href?: string | null;
   target?: string;
+  prefetch?: boolean
 }>();
 
 const getSubdomainFromHrefOrPath = (href: string) => {

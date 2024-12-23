@@ -1,6 +1,6 @@
 <template>
   <NDropdown placement="top-end" :options :delay="750">
-    <SmartLink title="Change language" :href="$page.props.otherLangURL ?? `/${otherLocale}`">
+    <SmartLink prefetch title="Change language" :href="$page.props.otherLangURL ?? `/${otherLocale}`">
       <div class="flex gap-1">
         <img alt="Change language" :src="`https://hatscripts.github.io/circle-flags/flags/${locale === 'lt' ? 'lt' : 'gb'
           }.svg`" width="16">

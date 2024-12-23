@@ -27,7 +27,7 @@
           'lg:rounded-md lg:shadow-md': hasScrolledDown,
         }">
         <div class="flex flex-row items-center space-x-4">
-          <SmartLink title="Grįžti į pagrindinį puslapį" :href="`${$page.props.app.url}/${$page.props.app.locale}`"
+          <SmartLink prefetch title="Grįžti į pagrindinį puslapį" :href="`${$page.props.app.url}/${$page.props.app.locale}`"
             target="_self">
             <AppLogo :is-theme-dark class="w-24 md:w-32" />
           </SmartLink>

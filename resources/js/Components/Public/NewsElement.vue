@@ -25,14 +25,14 @@
     </header>
 
     <div class="grid gap-8 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-      <Link v-for="item in news" :key="item.id" :href="route('news', {
+      <SmartLink prefetch v-for="item in news" :key="item.id" :href="route('news', {
         lang: item.lang,
         news: item.permalink ?? '',
         newsString: 'naujiena',
         subdomain: item.alias === 'vusa' ? 'www' : item.alias,
       })">
       <NewsCard :news="item" />
-      </Link>
+      </SmartLink>
     </div>
   </div>
 </template>
