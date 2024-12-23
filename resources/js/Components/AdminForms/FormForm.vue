@@ -46,7 +46,12 @@
         Formos elementai
       </template>
       <template #description>
-        Registracijų skaičius: {{ form.registrations_count ?? 0 }}
+        <p>Registracijų skaičius: {{ form.registrations_count ?? 0 }}</p>
+        <p v-if="form.registrations_count > 0">
+          <Link :href="route('forms.show', form.id)">
+          Peržiūrėti registracijas
+          </Link>
+        </p>
       </template>
       <SortableFormFieldsTable v-model="form.form_fields" class="mt-2">
         <template #default="{ model }">
@@ -94,7 +99,7 @@
 </template>
 
 <script setup lang="ts">
-import { useForm } from "@inertiajs/vue3";
+import { Link, useForm } from "@inertiajs/vue3";
 import { computed, ref } from "vue";
 
 import { formFieldTemplate } from "@/Types/formTemplates";
