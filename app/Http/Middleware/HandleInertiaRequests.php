@@ -77,13 +77,9 @@ class HandleInertiaRequests extends Middleware
                 // since inertia responses cannot have a 40X status code, we have to pass it in the flash data
                 'statusCode' => fn () => $request->session()->get('statusCode'),
             ],
-            'tenants' => fn () => $this->getTenantsForInertia(),
+            'search' => fn () => $request->session()->get('search'),
             // 'tenants' property is shared in public pages from \App\Http\Controllers\PublicController.php
-            'search' => [
-                'calendar' => $request->session()->get('search_calendar') ?? [],
-                'news' => $request->session()->get('search_news') ?? [],
-                'pages' => $request->session()->get('search_pages') ?? [],
-            ],
+            'tenants' => fn () => $this->getTenantsForInertia(),
         ]);
     }
 

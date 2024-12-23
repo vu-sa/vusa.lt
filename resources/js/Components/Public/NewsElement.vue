@@ -25,33 +25,14 @@
     </header>
 
     <div class="grid gap-8 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-      <HomeCard v-for="item in news" :key="item.id" :has-mini-content="false" :has-below-card="true">
-        <template #mini />
-        <template #below-card>
-          <!-- <NIcon class="mr-2" size="20"> <CalendarLtr20Regular /> </NIcon>VU SA
-              ataskaitinė-rinkiminė konferencija -->
-          <IFluentClock20Regular />
-          {{ formatStaticTime(new Date(item.publish_time), { year: "numeric", month: "long", day: "numeric" },
-            $page.props.app.locale) }}
-        </template>
-        <template #image>
-          <Link :title="item.title" :preserve-scroll="false" :href="route('news', {
-            lang: item.lang,
-            news: item.permalink ?? '',
-            newsString: 'naujiena',
-            subdomain: item.alias === 'vusa' ? 'www' : item.alias,
-          })
-            "><img :src="item.image"
-            class="mb-1 h-52 w-full rounded-sm object-cover shadow-md duration-200 hover:shadow-lg md:h-40"></Link>
-        </template>
-        <Link :title="item.title" class="no-underline" :preserve-scroll="false" :href="route('news', {
-          lang: item.lang,
-          news: item.permalink ?? '',
-          newsString: 'naujiena',
-          subdomain: item.alias === 'vusa' ? 'www' : item.alias,
-        })
-          ">{{ item.title }}</Link>
-      </HomeCard>
+      <Link v-for="item in news" :key="item.id" :href="route('news', {
+        lang: item.lang,
+        news: item.permalink ?? '',
+        newsString: 'naujiena',
+        subdomain: item.alias === 'vusa' ? 'www' : item.alias,
+      })">
+      <NewsCard :news="item" />
+      </Link>
     </div>
   </div>
 </template>
@@ -60,9 +41,8 @@
 import { trans as $t } from "laravel-vue-i18n";
 import { Link } from "@inertiajs/vue3";
 
-import { formatStaticTime } from "@/Utils/IntlTime";
-import HomeCard from "@/Components/Public/HomeCard.vue";
 import SmartLink from "./SmartLink.vue";
+import NewsCard from "../Cards/NewsCard.vue";
 
 defineProps<{
   news: App.Entities.News[] | null;

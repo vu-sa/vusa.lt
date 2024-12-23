@@ -68,6 +68,13 @@ declare module "@inertiajs/core" {
         permalink: string;
         title: string;
       } | null>;
+      documents: Array<{
+        id: number;
+        title: string;
+        language: "Lietuvių" | "English";
+        anonymous_url: string;
+        document_date: string;
+      } | null>;
     };
   }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Public;
 use App\Http\Controllers\PublicController;
 use App\Mail\ConfirmMemberRegistration;
 use App\Models\Calendar;
+use App\Models\Document;
 use App\Models\News;
 use App\Models\Page;
 use App\Models\Tenant;
@@ -96,39 +97,15 @@ class MainController extends PublicController
         // get search query
         $search = request()->data['input'];
 
-        // search calendar events by title and get 5 most recent with only title, date and id, but spaces are not important
-        $calendar = Calendar::search($search)->orderBy('date', 'desc')->take(5)->get()->map(function ($calendar) {
-            return [
-                'id' => $calendar->id,
-                'title' => $calendar->title,
-                'date' => $calendar->date,
-                'permalink' => $calendar->permalink,
-                'lang' => $calendar->lang,
-            ];
-        });
+        $calendar = Calendar::search($search)->orderBy('date', 'desc')->take(5)->get(['id', 'title', 'date', 'permalink', 'lang']);
 
-        // search news by title and get 5 most recent with only title, publish_time and id and permalink
-        $news = News::search($search)->orderBy('publish_time', 'desc')->take(5)->get()->map(function ($news) {
-            return [
-                'id' => $news->id,
-                'title' => $news->title,
-                'publish_time' => $news->publish_time,
-                'permalink' => $news->permalink,
-                'lang' => $news->lang,
-            ];
-        });
+        $news = News::search($search)->orderBy('publish_time', 'desc')->take(5)->get(['id', 'title', 'publish_time', 'image', 'permalink', 'lang']);
 
-        // search pages by title and get 5 most recent with only title, id and permalink
-        $pages = Page::search($search)->orderBy('created_at', 'desc')->take(5)->get()->map(function ($page) {
-            return [
-                'id' => $page->id,
-                'title' => $page->title,
-                'permalink' => $page->permalink,
-                'lang' => $page->lang,
-            ];
-        });
+        $pages = Page::search($search)->orderBy('created_at', 'desc')->take(5)->get(['id', 'title', 'permalink', 'lang']);
 
-        return back()->with('search_calendar', $calendar)->with('search_news', $news)->with('search_pages', $pages);
+        $documents = Document::search($search)->orderBy('document_date', 'desc')->take(5)->get(['id', 'name', 'title', 'document_date', 'anonymous_url', 'language', 'content_type', 'created_at', 'summary']);
+
+        return back()->with('search', ['calendar' => $calendar, 'news' => $news, 'pages' => $pages, 'documents' => $documents]);
     }
 
     public function sendFeedback(Request $request)
