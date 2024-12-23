@@ -85,7 +85,7 @@ class TrainingController extends Controller
 
         return Inertia::render('Admin/People/ShowTraining', [
             'training' => $training,
-            'userIsRegistered' => $training->form->registrations->contains('user_id', auth()->id()),
+            'userIsRegistered' => $training->form?->registrations->contains('user_id', auth()->id()),
         ]);
     }
 
