@@ -20,7 +20,7 @@
         <NInput v-model:value="form.shortname_vu" />
       </NFormItem>
       <NFormItem label="Pagrindinė įstaiga">
-        <NSelect v-model:value="form.primary_institution_id" :options="institutionOptions" clearable />
+        <NSelect v-model:value="form.primary_institution_id" filterable :options="institutionOptions" clearable />
       </NFormItem>
     </FormElement>
   </AdminForm>
