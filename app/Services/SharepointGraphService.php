@@ -431,6 +431,8 @@ class SharepointGraphService
             $document->title = isset($driveItem['listItem']['fields']['Title']) ? $driveItem['listItem']['fields']['Title'] : $driveItem['name'];
             $document->eTag = $driveItem['listItem']['eTag'];
             $document->document_date = isset($driveItem['listItem']['fields']['Date']) ? Carbon::parseFromLocale(time: $driveItem['listItem']['fields']['Date'], timezone: 'UTC')->setTimezone('Europe/Vilnius') : null;
+            $document->effective_date = isset($driveItem['listItem']['fields']['Effective_x0020_Date']) ? Carbon::parseFromLocale(time: $driveItem['listItem']['fields']['Effective_x0020_Date'], timezone: 'UTC')->setTimezone('Europe/Vilnius') : null;
+            $document->expiration_date = isset($driveItem['listItem']['fields']['Expiration_x0020_Date0']) ? Carbon::parseFromLocale(time: $driveItem['listItem']['fields']['Expiration_x0020_Date0'], timezone: 'UTC')->setTimezone('Europe/Vilnius') : null;
 
             $document->language = isset($driveItem['listItem']['fields']['Language']) ? $driveItem['listItem']['fields']['Language'] : null;
             $document->content_type = isset($driveItem['listItem']['fields']['Turinys']['Label']) ? $driveItem['listItem']['fields']['Turinys']['Label'] : null;

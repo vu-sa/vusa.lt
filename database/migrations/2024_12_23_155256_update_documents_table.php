@@ -14,6 +14,8 @@ return new class extends Migration
         Schema::table('documents', function (Blueprint $table) {
             $table->string('name', 500)->change();
             $table->string('title', 500)->change();
+            $table->date('effective_date')->nullable();
+            $table->date('expiration_date')->nullable();
         });
     }
 
@@ -25,6 +27,8 @@ return new class extends Migration
         Schema::table('documents', function (Blueprint $table) {
             $table->string('name', 200)->change();
             $table->string('title', 200)->change();
+            $table->dropColumn('effective_date');
+            $table->dropColumn('expiration_date');
         });
     }
 };

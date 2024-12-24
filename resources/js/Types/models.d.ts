@@ -308,6 +308,7 @@ declare global {
       deleted_at?: string | null
       // mutators
       related_institutions: unknown
+      maybe_short_name: unknown
       translations: unknown
       // relations
       duties?: Duty[]
