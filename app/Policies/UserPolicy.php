@@ -39,7 +39,6 @@ class UserPolicy extends ModelPolicy
      *
      * @return \Illuminate\Auth\Access\Response|bool
      */
-
     public function merge(User $user)
     {
         return $this->authorizer->forUser($user)->check($this->pluralModelName.'.update.*');
