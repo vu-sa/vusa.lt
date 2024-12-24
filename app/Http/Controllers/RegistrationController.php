@@ -2,22 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\MemberRegistrationCreated;
 use App\Http\Requests\StoreRegistrationRequest;
 use App\Models\Form;
 use App\Models\FormField;
 use App\Models\Registration;
+use App\Settings\FormSettings;
 use Illuminate\Database\Eloquent\Collection;
 
 class RegistrationController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
-
     /**
      * Store a newly created resource in storage.
      */
@@ -27,7 +21,9 @@ class RegistrationController extends Controller
 
         $registration->form()->associate($form);
 
-        $registration->user_id = $request->validated()['user_id'];
+        if ($request->has('user_id')) {
+            $registration->user_id = $request->validated()['user_id'];
+        }
 
         $formData = $request->validated()['data'];
         $fieldResponses = new Collection;
@@ -55,22 +51,8 @@ class RegistrationController extends Controller
 
         $registration->fieldResponses()->saveMany($fieldResponses);
 
+        MemberRegistrationCreated::dispatchIf($form->id === app(FormSettings::class)->member_registration_form_id, $registration);
+
         return back()->with('success', 'Registracija sėkmingai išsiųsta!');
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Registration $registration)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Registration $registration)
-    {
-        //
     }
 }

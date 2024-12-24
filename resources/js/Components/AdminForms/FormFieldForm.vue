@@ -109,9 +109,14 @@ const options = [
   },
 ];
 
+// NOTE: Used in mailables to know which fields to use (also in validation sometimes)
 const subtypeOptions = computed(() => {
   if (model.type === "string") {
     return [
+      {
+        value: "name",
+        label: "Vardas",
+      },
       {
         value: "email",
         label: "El. paštas",

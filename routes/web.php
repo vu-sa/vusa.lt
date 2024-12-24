@@ -44,7 +44,6 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
 
         Route::get('kategorija/{category:alias}', [Public\PublicPageController::class, 'category'])->name('category');
 
-        Route::post('nariu-registracija', [Public\MainController::class, 'storeMemberRegistration'])->name('memberRegistration.store');
         Route::get('kalendorius/ics', [Public\MainController::class, 'publicAllEventCalendar'])->name('calendar.ics');
         Route::post('search', [Public\MainController::class, 'search'])->name('search');
 
@@ -53,7 +52,7 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
         // Redirect reports to external subdomains
         Route::redirect('ataskaita-2022', 'https://ataskaita2022.vusa.lt', 301);
         Route::redirect('ataskaita-2023', 'https://ataskaita2023.vusa.lt', 301);
-        Route::redirect('nariu-registracija', 'https://www.vusa.lt/registracija/nariu-registracija', 301);
+        Route::redirect('nariu-registracija', config('app.url').'/registracija/nariu-registracija', 301)->name('member-registration');
     });
 
     Route::domain('{subdomain}.'.explode('.', config('app.url'), 2)[1])->group(function () {

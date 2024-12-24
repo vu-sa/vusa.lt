@@ -116,4 +116,9 @@ class Institution extends Model
             }
         });
     }
+
+    public function getMaybeShortNameAttribute()
+    {
+        return $this->short_name ?? $this->name;
+    }
 }

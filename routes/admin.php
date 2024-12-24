@@ -111,6 +111,7 @@ Route::resource('institutions', InstitutionController::class);
 Route::resource('tenants', TenantController::class);
 
 Route::resource('forms', FormController::class);
+Route::resource('registrations', RegistrationController::class)->only('show');
 
 Route::resource('types', TypeController::class);
 Route::resource('relationships', RelationshipController::class);

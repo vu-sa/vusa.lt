@@ -2,6 +2,9 @@
 
 namespace App\Mail;
 
+use App\Helpers\GenitivizeHelper;
+use App\Models\Duty;
+use App\Models\Institution;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
@@ -10,30 +13,18 @@ class ConfirmMemberRegistration extends Mailable
 {
     use Queueable, SerializesModels;
 
-    /**
-     * The order instance.
-     *
-     * @var \App\Models\Registration
-     */
-    public $registration;
-
-    public $registerLocation;
-
-    public $chairPerson;
-
-    public $chairEmail;
+    public string $contactName;
 
     /**
      * Create a new message instance.
      *
      * @return void
      */
-    public function __construct($registration, $registerLocation, $chairPerson, $chairEmail)
+    public function __construct(public string $name, public Institution $institution, public Duty $dutyContact)
     {
-        $this->registration = $registration;
-        $this->registerLocation = $registerLocation;
-        $this->chairPerson = $chairPerson;
-        $this->chairEmail = $chairEmail;
+        $user = $dutyContact->current_users()->first();
+
+        $this->contactName = $user?->name ? GenitivizeHelper::genitivizeEveryWord($user->name) : $dutyContact->email;
     }
 
     /**
@@ -43,8 +34,8 @@ class ConfirmMemberRegistration extends Mailable
      */
     public function build()
     {
-        return $this->subject('📝 '.__('mail.confirmRegistrationTitle').' '.$this->registerLocation)
-            ->replyTo($this->chairEmail)
+        return $this->subject('📝 '.__('mail.confirm.title', ['institution' => $this->institution->getMaybeShortNameAttribute()]))
+            ->replyTo($this->dutyContact->email)
             ->markdown('emails.memberRegistration.confirm');
     }
 }

@@ -3,18 +3,14 @@
 namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\PublicController;
-use App\Mail\ConfirmMemberRegistration;
 use App\Models\Calendar;
 use App\Models\Document;
 use App\Models\News;
 use App\Models\Page;
 use App\Models\Tenant;
-use App\Models\User;
-use App\Notifications\MemberRegistered;
 use App\Services\IcalendarService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Notification;
 
 class MainController extends PublicController
 {
@@ -23,64 +19,6 @@ class MainController extends PublicController
         return response((new IcalendarService)->get())
             ->header('Content-Type', 'text/calendar; charset=utf-8');
     }
-
-    // TODO: redo
-
-    /*public function storeMemberRegistration()*/
-    /*{*/
-    /*    // store registration*/
-    /*    // 1 registration is to MIF camp, 2 is for VU SA and PKP members*/
-    /**/
-    /*    $data = request()->all();*/
-    /*    if ($data['registrationForm'] == 3) {*/
-    /*        $this->storeRegistration(RegistrationForm::find(3));*/
-    /**/
-    /*        return;*/
-    /*    } else {*/
-    /*        $this->storeRegistration(RegistrationForm::find(2));*/
-    /*        $registerLocation = new Tenant;*/
-    /*        $chairPerson = new User;*/
-    /**/
-    /*        // if whereToRegister is int, then it is a tenant id*/
-    /*        if (is_int($data['whereToRegister'])) {*/
-    /*            $registerTenant = Tenant::find($data['whereToRegister']);*/
-    /*            $registerLocation = __($registerTenant->fullname);*/
-    /*            $chairDuty = $registerTenant->duties()->whereHas('types', function ($query) {*/
-    /*                $query->where('slug', 'pirmininkas');*/
-    /*            })->first();*/
-    /*            $chairPerson = $chairDuty->current_users->first();*/
-    /*            $chairEmail = $chairDuty->email;*/
-    /*        } else {*/
-    /*            switch ($data['whereToRegister']) {*/
-    /*                case 'hema':*/
-    /*                    $registerLocation = 'HEMA ('.__('Istorinių Europos kovos menų klubas').')';*/
-    /*                    $chairEmail = 'hema@vusa.lt';*/
-    /*                    break;*/
-    /**/
-    /*                case 'jek':*/
-    /*                    $registerLocation = 'VU '.__('Jaunųjų energetikų klubas');*/
-    /*                    $chairEmail = 'vujek@jek.lt';*/
-    /*                    break;*/
-    /**/
-    /*                default:*/
-    /*                    abort(500);*/
-    /*                    break;*/
-    /*            }*/
-    /*        }*/
-    /**/
-    /*        // send mail to the registered person*/
-    /*        Mail::to($data['email'])->send(new ConfirmMemberRegistration($data, $registerLocation, $chairPerson, $chairEmail));*/
-    /*        Notification::send($chairPerson, new MemberRegistered($data, $registerLocation, $chairEmail));*/
-    /*    }*/
-    /*}*/
-    /**/
-    /*public function storeRegistration(RegistrationForm $registrationForm)*/
-    /*{*/
-    /*    $registration = new Registration;*/
-    /*    $registration->data = request()->except('registrationForm', 'tenant');*/
-    /*    $registration->registration_form_id = $registrationForm->id;*/
-    /*    $registration->save();*/
-    /*}*/
 
     public function getMainNews()
     {

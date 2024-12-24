@@ -26,6 +26,7 @@ class MemberRegistrationFormSeeder extends Seeder
         $nameField->setTranslation('label', 'lt', 'Vardas ir pavardė');
         $nameField->setTranslation('label', 'en', 'Name and surname');
         $nameField->type = 'string';
+        $nameField->subtype = 'name';
         $nameField->is_required = true;
         $nameField->order = 0;
 
@@ -59,10 +60,9 @@ class MemberRegistrationFormSeeder extends Seeder
         $tenantField->type = 'enum';
         $tenantField->is_required = true;
         $tenantField->order = 3;
-        $tenantField->options = [
-            ['value' => 16, 'label' => ['lt' => 'VU SA', 'en' => 'VU SR']],
-            ['value' => 17, 'label' => ['lt' => 'VU SA PKP', 'en' => 'VU SR PCP']],
-        ];
+        $tenantField->use_model_options = true;
+        $tenantField->options_model = \App\Models\Tenant::class;
+        $tenantField->options_model_field = 'fullname';
 
         $tenantField->form()->associate($form);
         $tenantField->save();
