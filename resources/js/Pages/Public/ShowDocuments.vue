@@ -37,14 +37,14 @@
             </NButton>
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <div class="mt-4 grid w-full grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 items-center gap-4">
+            <div class="mt-4 grid w-full grid-cols-1 items-center gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <NFormItem class="grow" label="Padalinys" :show-feedback="false">
-                <NSelect v-model:value="form.tenants" clearable size="small" multiple :options="tenantOptions" placeholder="VU SA"
-                  max-tag-count="responsive" />
+                <NSelect v-model:value="form.tenants" :consistent-menu-width="false" clearable size="small" multiple
+                  :options="tenantOptions" placeholder="VU SA" max-tag-count="responsive" />
               </NFormItem>
               <NFormItem class="grow" label="Turinio tipas" :show-feedback="false">
-                <NSelect v-model:value="form.contentTypes" clearable size="small" :options="contentTypeOptions" placeholder="Ataskaitos"
-                  multiple />
+                <NSelect v-model:value="form.contentTypes" :consistent-menu-width="false" clearable size="small"
+                  :options="contentTypeOptions" placeholder="Ataskaitos" multiple />
               </NFormItem>
               <NFormItem label="Kalba" :show-feedback="false">
                 <NCheckboxGroup v-model:value="form.language" size="small">
@@ -106,7 +106,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { router, useForm, usePage } from '@inertiajs/vue3';
-import { useStorage } from '@vueuse/core';
+import { useDebounceFn, useStorage } from '@vueuse/core';
 
 import Collapsible from '@/Components/ShadcnVue/ui/collapsible/Collapsible.vue';
 import CollapsibleContent from '@/Components/ShadcnVue/ui/collapsible/CollapsibleContent.vue';
@@ -178,6 +178,18 @@ const contentTypeOptions = props.allContentTypes.map((contentType) => ({
   label: contentType,
   value: contentType
 }));
+
+const handleSearchDebounce = useDebounceFn(() => {
+  handleSearch();
+}, 500);
+
+function isStartDateDisabled(date) {
+  return form.dateRange[1] && date > form.dateRange[1];
+}
+
+function isEndDateDisabled(date) {
+  return form.dateRange[0] && date < form.dateRange[0];
+}
 
 function handleSearch() {
   searchLoading.value = true;
