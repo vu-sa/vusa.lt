@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Events\RegistrationCreated;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Registration extends Model

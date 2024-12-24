@@ -2,8 +2,8 @@
 
 return [
     'greeting' => 'Labas, :name!',
-    'confirm' => [ 
-        'title' =>  'Sėkmingai užregistravote į :institution!',
+    'confirm' => [
+        'title' => 'Sėkmingai užregistravote į :institution!',
         'heading' => 'Patvirtinimas apie sėkmingą užsiregistravimą',
         'intro' => 'Įgyvendindant VU Studentų atstovybės ir kitų organizacijų veiklas kiekvieną dieną stengiamės kurti geresnę aplinką studentams ir studentėms Universitete – džiaugiamės, kad susidomėjai mūsų veikla ir planuoji prisidėti prie mūsų gretų! O kas toliau... 🤔',
         'subheading' => 'Kokią registraciją gavome',

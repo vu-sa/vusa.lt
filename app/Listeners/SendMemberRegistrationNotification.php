@@ -59,7 +59,7 @@ class SendMemberRegistrationNotification implements ShouldQueue
 
         // Finalize variables
 
-        $institution = Tenant::query()->find($tenantResponse->response["value"])->primary_institution()->first();
+        $institution = Tenant::query()->find($tenantResponse->response['value'])->primary_institution()->first();
 
         // Find duty for tenant which has a role set in FormSettings::class
         $mailableDuties = $institution->duties()->whereHas('roles', function ($query) {
@@ -69,7 +69,7 @@ class SendMemberRegistrationNotification implements ShouldQueue
         Mail::to($emailResponse->response['value'])->send(new ConfirmMemberRegistration(
             AddressivizeHelper::addressivizeEveryWord($nameResponse->response['value']), $institution, $mailableDuties->first()));
 
-        foreach($mailableDuties as $mailableDuty) {
+        foreach ($mailableDuties as $mailableDuty) {
             Notification::send($mailableDuty->current_users()->first(), new MemberRegistered($event->registration->id, $nameResponse->response['value'], $institution, $mailableDuty->email));
         }
     }
