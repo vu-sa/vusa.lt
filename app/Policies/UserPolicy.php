@@ -35,6 +35,17 @@ class UserPolicy extends ModelPolicy
     }
 
     /**
+     * Determine whether the user can merge models.
+     *
+     * @return \Illuminate\Auth\Access\Response|bool
+     */
+
+    public function merge(User $user)
+    {
+        return $this->authorizer->forUser($user)->check($this->pluralModelName.'.update.*');
+    }
+
+    /**
      * Determine whether the user can update the model.
      *
      * @return \Illuminate\Auth\Access\Response|bool
@@ -57,11 +68,13 @@ class UserPolicy extends ModelPolicy
      */
     public function delete(User $user, User $model)
     {
-        if ($this->commonChecker($user, $model, CRUDEnum::DELETE()->label, $this->pluralModelName)) {
-            return true;
-        }
+        /*if ($this->commonChecker($user, $model, CRUDEnum::DELETE()->label, $this->pluralModelName)) {*/
+        /*    return true;*/
+        /*}*/
+        /**/
+        /*return false;*/
 
-        return false;
+        $this->authorizer->forUser($user)->check($this->pluralModelName.'.delete.*');
     }
 
     /**

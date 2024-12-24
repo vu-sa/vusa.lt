@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\SendWelcomeEmail;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\MergeUsersRequest;
 use App\Http\Requests\StoreUserRequest;
 use App\Models\Duty;
 use App\Models\Role;
@@ -338,6 +339,52 @@ class UserController extends Controller
         return back()->withErrors([
             'email' => __('auth.failed'),
         ])->onlyInput('email');
+    }
+
+    public function merge()
+    {
+        $this->authorize('merge', User::class);
+
+        $indexer = new ModelIndexer(new User);
+
+        $users = $indexer
+            ->setEloquentQuery([
+                fn (Builder $query) => $query->with([
+                    'duties:id,institution_id',
+                    'duties.institution:id,tenant_id',
+                    'duties.institution.tenant:id,shortname',
+                ])->withCount('duties')])
+            ->builder->get(['id', 'name', 'email']);
+
+        return Inertia::render('Admin/People/MergeUser', [
+            'users' => $users,
+        ]);
+    }
+
+    public function mergeUsers(MergeUsersRequest $request)
+    {
+        $keptUser = User::query()->find($request->kept_user_id);
+
+        $mergedUser = User::query()->find($request->merged_user_id);
+
+        DB::transaction(function () use ($keptUser, $mergedUser) {
+            // transfer duties, doings, tasks, memberships, reservations
+            foreach ($mergedUser->duties as $duty) {
+                $mergedUser->duties()->updateExistingPivot($duty->id, ['dutiable_id' => $keptUser->id]);
+            }
+
+            $mergedUser->doings()->update(['user_id' => $keptUser->id]);
+
+            $mergedUser->tasks()->update(['user_id' => $keptUser->id]);
+
+            $mergedUser->memberships()->update(['user_id' => $keptUser->id]);
+
+            $mergedUser->reservations()->update(['user_id' => $keptUser->id]);
+
+            $mergedUser->forceDelete();
+        });
+
+        return back()->with('success', 'Kontaktai sėkmingai sujungti!');
     }
 
     public function logout(Request $request)

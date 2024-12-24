@@ -47,6 +47,9 @@ Route::resource('navigation', NavigationController::class)->except(['show']);
 /*Route::get('navigation/editAll', [NavigationController::class, 'editAll'])->name('navigation.editAll');*/
 Route::post('navigation/updateOrder', [NavigationController::class, 'updateOrder'])->name('navigation.updateOrder');
 Route::post('navigation/updateColumn', [NavigationController::class, 'updateColumn'])->name('navigation.updateColumn');
+
+Route::get('users/merge', [UserController::class, 'merge'])->name('users.merge');
+Route::post('users/merge', [UserController::class, 'mergeUsers'])->name('users.mergeUsers');
 Route::resource('users', UserController::class);
 
 Route::post('users/{user}/sendWelcomeEmail', [UserController::class, 'sendWelcomeEmail'])->name('users.sendWelcomeEmail');
