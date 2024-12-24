@@ -373,6 +373,7 @@ class UserController extends Controller
                 $mergedUser->duties()->updateExistingPivot($duty->id, ['dutiable_id' => $keptUser->id]);
             }
 
+            // TODO: some how manage mergeable relationships
             $mergedUser->doings()->update(['user_id' => $keptUser->id]);
 
             $mergedUser->tasks()->update(['user_id' => $keptUser->id]);

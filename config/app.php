@@ -194,6 +194,10 @@ return [
         // ...
     ])->toArray(),
 
+    /*
+    * Other settings
+    */
+
     // Add proxy ip to get the real ip
     'proxy' => env('PROXY_IP', null),
 ];

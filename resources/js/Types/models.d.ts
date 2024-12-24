@@ -911,6 +911,7 @@ declare global {
       resources?: Resource[]
       users?: User
       reservations?: Reservation
+      primary_institution?: Institution
     }
 
     export interface Training {

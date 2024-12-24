@@ -8,11 +8,12 @@
 
 <script setup lang="ts">
 import { z } from "zod";
-import AutoForm from "@/Components/ShadcnVue/ui/auto-form/AutoForm.vue";
 import { useForm } from 'vee-validate'
 import { toTypedSchema } from "@vee-validate/zod";
 import { ref, watch } from "vue";
-import { router } from "@inertiajs/vue3";
+import { router, usePage } from "@inertiajs/vue3";
+
+import AutoForm from "@/Components/ShadcnVue/ui/auto-form/AutoForm.vue";
 
 const { form } = defineProps<{
   form: Record<string, any>;
