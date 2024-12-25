@@ -36,15 +36,15 @@ html.dark {
 .typography {
 
   h1 {
-    @apply scroll-m-20 text-4xl font-bold tracking-tight lg:text-5xl
+    @apply scroll-mt-32 text-4xl font-bold tracking-tight lg:text-5xl
   }
 
   h2 {
-    @apply scroll-m-20 border-b border-zinc-200 dark:border-zinc-600 pb-2 text-3xl font-semibold transition-colors first:mt-2
+    @apply scroll-mt-32 border-b border-zinc-200 dark:border-zinc-600 pb-2 text-3xl font-semibold transition-colors first:mt-2
   }
 
   h3 {
-    @apply scroll-m-20 text-2xl font-semibold tracking-tight
+    @apply scroll-mt-32 text-2xl font-semibold tracking-tight
   }
 
   table p {
@@ -56,7 +56,7 @@ html.dark {
   }
 
   p {
-    @apply [&:not(:first-child)]:mt-6 my-4
+    @apply [&:not(:first-child)]:mt-6 mt-4 mb-5
   }
 
   ul, ol {

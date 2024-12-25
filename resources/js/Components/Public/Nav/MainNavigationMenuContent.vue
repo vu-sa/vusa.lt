@@ -33,6 +33,9 @@
                 <div class="inline-flex items-center" :class="textClasses(link)">
                   <Icon v-if="link.icon" :icon="`fluent:${link.icon}`" class="mr-2 size-5" />
                   {{ link.name }}
+                  <NTag size="tiny" round borderless v-if="link.small_text" type="error" class="ml-2">
+                    {{ link.small_text }}
+                  </NTag>
                 </div>
                 <p v-if="link.description" class="mt-1 line-clamp-2 text-sm leading-snug text-zinc-500/90">
                   {{ link.description }}
@@ -83,15 +86,15 @@ const emit = defineEmits(['closeMenu', 'moveUp', 'moveDown']);
 const linkTypes = {
   link: {
     textClass: 'hover:underline focus:underline',
-    blockClass: 'py-1 px-2.5 hover:bg-transparent focus:bg-transparent hover:underline',
+    blockClass: 'py-1 px-2.5 my-0.5 hover:bg-transparent focus:bg-transparent hover:underline',
   },
   'block-link': {
     textClass: 'no-underline',
-    blockClass: 'p-2.5 hover:bg-zinc-100 focus:bg-zinc-100 dark:hover:bg-zinc-800 dark:focus:bg-zinc-800',
+    blockClass: 'p-2 hover:bg-zinc-100 my-0.5 focus:bg-zinc-100 dark:hover:bg-zinc-800 dark:focus:bg-zinc-800',
   },
   'category-link': {
     textClass: 'no-underline',
-    blockClass: 'p-2.5 font-bold hover:bg-zinc-100 focus:bg-zinc-100 dark:hover:bg-zinc-800 dark:focus:bg-zinc-800',
+    blockClass: 'p-2.5 font-bold my-1 hover:bg-zinc-100 focus:bg-zinc-100 dark:hover:bg-zinc-800 dark:focus:bg-zinc-800 [&:not(:first-child)]:mt-2' 
   },
   'full-height-background-link': {
     blockClass: 'h-full',
