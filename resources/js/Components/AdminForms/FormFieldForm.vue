@@ -3,9 +3,7 @@
     <NFormItem label="Pavadinimas" path="label" required>
       <MultiLocaleInput v-model:input="model.label" />
     </NFormItem>
-    <NFormItem label="Trumpas paaiškinimas" path="description">
-      <MultiLocaleInput v-model:input="model.description" />
-    </NFormItem>
+    <MultiLocaleTiptapFormItem v-model:input="model.description" path="description" label="Trumpas paaiškinimas" />
     <NFormItem label="Tipas" path="type" required>
       <NSelect v-model:value="model.type" :disabled="hasRegistrations" :options />
     </NFormItem>
@@ -68,7 +66,9 @@ import {
 } from "naive-ui";
 import { computed, ref } from "vue";
 import { useForm } from "@inertiajs/vue3";
+
 import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";
+import MultiLocaleTiptapFormItem from "../FormItems/MultiLocaleTiptapFormItem.vue";
 
 // import { modelDefaults } from "@/Types/formOptions";
 

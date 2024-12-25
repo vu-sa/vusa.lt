@@ -36,6 +36,14 @@ trait HasTranslations
         $attributes = parent::toArray();
         foreach ($this->getTranslatableAttributes() as $field) {
             $attributes[$field] = $this->getTranslations($field);
+
+            // check if empty array, if so, set lt and en to empty string
+            if (empty($attributes[$field])) {
+                $attributes[$field] = [
+                    'lt' => '',
+                    'en' => '',
+                ];
+            }
         }
 
         return $attributes;

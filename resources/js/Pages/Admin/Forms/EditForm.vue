@@ -2,7 +2,7 @@
   <PageContent :title="form.name.lt" :back-url="route('forms.index')">
     <UpsertModelLayout>
       <FormForm :form :assignable-tenants :field-model-fields :field-model-options enable-delete
-        @submit:form="(form) => form.patch(route('forms.update', form.id), { preserveScroll: true })"
+        @submit:form="handleFormSubmitted"
         @delete="() => router.delete(route('forms.destroy', form.id))" />
     </UpsertModelLayout>
   </PageContent>
@@ -21,4 +21,9 @@ defineProps<{
   fieldModelOptions: Record<string, any>[];
   fieldModelFields: Record<string, any>[];
 }>();
+
+// Since the form has nested properties, we don't use useForm() helper and use router instead
+function handleFormSubmitted(form: any) {
+  router.patch(route('forms.update', form.id), form);
+}
 </script>

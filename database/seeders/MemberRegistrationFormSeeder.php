@@ -85,7 +85,28 @@ class MemberRegistrationFormSeeder extends Seeder
         $registrationField->form()->associate($form);
         $registrationField->save();
 
-        // TODO: Add field of activity field
+        $fieldOfActivityField = new \App\Models\FormField;
+
+        $fieldOfActivityField->setTranslation('label', 'lt', 'Labiausiai dominanti veiklos sritis');
+        $fieldOfActivityField->setTranslation('label', 'en', 'The most interesting field of activity');
+
+        $fieldOfActivityField->type = 'enum';
+        $fieldOfActivityField->is_required = true;
+        $fieldOfActivityField->order = 5;
+
+        $fieldOfActivityField->options = [
+            ['value' => 'Representation', 'label' => ['lt' => 'Atstovavimo veikla', 'en' => 'Representation']],
+            ['value' => 'Academic field', 'label' => ['lt' => 'Akademinė sritis', 'en' => 'Academic field']],
+            ['value' => 'Social field', 'label' => ['lt' => 'Socialinė sritis', 'en' => 'Social field']],
+            ['value' => 'Communication', 'label' => ['lt' => 'Komunikacija', 'en' => 'Communication']],
+            ['value' => 'Student integration', 'label' => ['lt' => 'Studentų integracija', 'en' => 'Student integration']],
+            ['value' => 'Organizational activities', 'label' => ['lt' => 'Organizacinė sritis', 'en' => 'Organizational field']],
+            ['value' => 'Marketing', 'label' => ['lt' => 'Marketingo sritis', 'en' => 'Marketing']],
+            ['value' => 'Other', 'label' => ['lt' => 'Kita', 'en' => 'Other']],
+        ];
+
+        $fieldOfActivityField->form()->associate($form);
+        $fieldOfActivityField->save();
 
         $gdprField = new \App\Models\FormField;
 
@@ -94,7 +115,7 @@ class MemberRegistrationFormSeeder extends Seeder
 
         $gdprField->type = 'boolean';
         $gdprField->is_required = true;
-        $gdprField->order = 5;
+        $gdprField->order = 6;
 
         $gdprField->form()->associate($form);
         $gdprField->save();
@@ -106,7 +127,7 @@ class MemberRegistrationFormSeeder extends Seeder
 
         $privacyField->type = 'boolean';
         $privacyField->is_required = true;
-        $privacyField->order = 6;
+        $privacyField->order = 7;
 
         $privacyField->form()->associate($form);
         $privacyField->save();

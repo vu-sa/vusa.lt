@@ -100,7 +100,7 @@
 
 <script setup lang="ts">
 import { Link, useForm } from "@inertiajs/vue3";
-import { computed, ref } from "vue";
+import { computed, reactive, ref } from "vue";
 
 import { formFieldTemplate } from "@/Types/formTemplates";
 import FormElement from "./FormElement.vue";
@@ -130,7 +130,7 @@ const locale = ref("lt");
 const showFormFieldModal = ref(false);
 const selectedFormField = ref(formFieldTemplate);
 
-const form = useForm("registrationForm", props.form);
+const form = reactive(props.form);
 
 const hasRegistrations = computed(() => form?.registrations_count > 0);
 

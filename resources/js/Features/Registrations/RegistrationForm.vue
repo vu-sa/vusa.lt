@@ -1,5 +1,11 @@
 <template>
   <AutoForm :form="autoform" class="space-y-6" :schema="formSchema" :field-config="formFieldConfig" @submit="onSubmit">
+    <template v-for="field in fieldsWithDescription" #[`form-field-${field.id}`]="slotProps" :key="field.id">
+      <div class="mb-6">
+        <AutoFormField v-bind="slotProps" />
+        <div class="text-sm mt-1 text-zinc-600 dark:text-zinc-400" v-html="field.description" />
+      </div>
+    </template>
     <NButton attr-type="submit" type="primary">
       {{ $t("Pateikti") }}
     </NButton>
@@ -14,6 +20,7 @@ import { ref, watch } from "vue";
 import { router, usePage } from "@inertiajs/vue3";
 
 import AutoForm from "@/Components/ShadcnVue/ui/auto-form/AutoForm.vue";
+import AutoFormField from "@/Components/ShadcnVue/ui/auto-form/AutoFormField.vue";
 
 const { form } = defineProps<{
   form: Record<string, any>;
@@ -24,6 +31,7 @@ const emit = defineEmits<{
 }>()
 
 const schema = {}
+const fieldsWithDescription = ref([]);
 
 const removeInertiaBeforeEventListener = ref<VoidFunction | null>(null);
 
@@ -78,17 +86,25 @@ form.form_fields.forEach((field: Record<string, any>) => {
     fieldSchema = fieldSchema.default(field.default_value);
   }
 
+  if (field.description) {
+    fieldsWithDescription.value.push({
+      id: field.id,
+      description: field.description,
+    });
+  }
+
   schema['form-field-' + field.id] = fieldSchema;
 });
 
 const formSchema = z.object(schema);
+
+console.log(fieldsWithDescription);
 
 const formFieldConfig = form.form_fields.reduce((acc, field: Record<string, any>) => {
 
   const description = Array.isArray(field.description) ? "" : field.description
 
   acc['form-field-' + field.id] = {
-    description,
     label: field.label,
   };
 

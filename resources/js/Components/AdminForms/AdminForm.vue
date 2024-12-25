@@ -61,7 +61,7 @@ const autosaveFn = useDebounceFn(() => {
 }, 5000);
 
 watch(() => model.isDirty, () => {
-  if (model.isDirty && autosave) {
+  if (model?.isDirty && autosave) {
     autosaveFn();
   }
 }, { deep: true });

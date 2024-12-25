@@ -55,8 +55,8 @@ export const formTemplate: Pick<
 
 export const formFieldTemplate: Pick<App.Entities.FormField, "label" | "description" | "default_value" | "placeholder" | "type" | "subtype" | "is_required">
   = {
-  label: { lt: "" },
-  description: { lt: "" },
+  label: { lt: "", en: "" },
+  description: { lt: "", en: "" },
   default_value: { lt: "" },
   placeholder: { lt: "" },
   type: "string",

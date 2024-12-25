@@ -148,7 +148,7 @@
     <div class="mt-3 grid grid-cols-[auto,_30px] items-center gap-2 only:mt-0">
       <div class="max-h-96  w-full overflow-y-scroll">
         <EditorContent :editor="editor"
-          class="min-h-24 rounded-md border dark:border-zinc-900/80 dark:bg-zinc-800/70" />
+          class="min-h-24 rounded-sm dark:bg-zinc-700" />
         <div v-if="editor && maxCharacters" class="mt-4 text-xs text-gray-500 dark:text-gray-400">
           {{ editor.storage.characterCount.characters() }}
         </div>
