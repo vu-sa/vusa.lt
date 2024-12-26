@@ -13,6 +13,16 @@
           minutes: 5,
         }" type="datetime" :placeholder="`${$t('Kada vyksta posėdis')}?`" clearable :actions="['confirm']" />
     </NFormItem>
+    <NFormItem class="w-full" path="type_id" required>
+      <template #label>
+        <span class="inline-flex items-center gap-1">
+          <NIcon :component="Icons.TYPE" />
+          <span>{{ $tChoice("forms.fields.type", 0) }}</span>
+        </span>
+      </template>
+      <NSelect v-model:value="meetingForm.type_id" :options="meetingTypes" label-field="title" value-field="id"
+        placeholder="Koks posėdžio tipas?" />
+    </NFormItem>
     <NButton @click="handleSubmit">
       {{ $t("Toliau") }}...
     </NButton>
@@ -24,11 +34,6 @@ import { trans as $t } from "laravel-vue-i18n";
 import {
   type FormInst,
   type FormRules,
-  NButton,
-  NDatePicker,
-  NForm,
-  NFormItem,
-  NIcon,
 } from "naive-ui";
 import { ref } from "vue";
 
@@ -81,4 +86,18 @@ const handleSubmit = () => {
     }
   });
 };
+
+const fetchMeetingTypes = async () => {
+  const response = await fetch(route("api.types.index"));
+  const data: App.Entities.Type[] = await response.json();
+
+  return data.filter((type) => type.model_type === "App\\Models\\Meeting");
+};
+
+const meetingTypes = await fetchMeetingTypes();
+
+// get props.meeting.types[0].id if exists
+if (props.meeting.types?.length) {
+  meetingForm.value.type_id = props.meeting.types[0].id;
+}
 </script>

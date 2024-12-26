@@ -8,7 +8,7 @@
           <IFluentAddCircle24Filled />
         </template>
       </NewGridItemButton>
-      <NewMeetingModal :institution="institution" :show-modal="showModal" @close="showModal = false" />
+      <NewMeetingModal :institution :show-modal @close="showModal = false" />
     </template>
   </div>
 </template>

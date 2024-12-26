@@ -60,8 +60,6 @@ const { membership } = defineProps<{
   assignableTenants: Array<App.Entities.Tenant>;
 }>();
 
-console.log(route('membershipUsers.import', membership.id))
-
 defineEmits<{
   (event: "submit:form", form: unknown): void;
   (event: "delete"): void;

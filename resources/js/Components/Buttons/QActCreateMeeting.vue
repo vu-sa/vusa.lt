@@ -9,7 +9,7 @@
   </div>
 </template>
 
-<script setup lang="tsx">
+<script setup lang="ts">
 import { ref } from "vue";
 
 import NewMeetingModal from "../Modals/NewMeetingModal.vue";

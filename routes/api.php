@@ -24,4 +24,5 @@ Route::prefix('v1')->group(function () {
     // Route::middleware(['auth:api'])->group(function () {
     // Route::apiResource('goals', 'GoalController')->only(['index']);
     // });
+    Route::apiResource('types', 'TypeController');
 });

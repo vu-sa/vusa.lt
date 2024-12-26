@@ -34,6 +34,7 @@ class StoreMeetingRequest extends FormRequest
         return [
             'start_time' => 'required|date:Y-m-d H:i',
             'institution_id' => 'required|ulid',
+            'type_id' => 'nullable|integer',
         ];
     }
 }

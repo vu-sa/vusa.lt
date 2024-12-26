@@ -1,12 +1,23 @@
 <template>
   <ShowPageLayout :model="meeting" :breadcrumb-options :related-models
     :title="`${mainInstitution?.name} (${meetingTitle})`" :current-tab="currentTab" @change:tab="currentTab = $event">
+    <template #title>
+      {{ `${mainInstitution?.name} (${meetingTitle})` }}
+    </template>
+    <template #after-heading>
+      <NTag v-for="type in meeting.types" :key="type.id" size="small" class="mr-2">
+        {{ type.title }}
+      </NTag>
+    </template>
     <template #more-options>
       <MoreOptionsButton edit delete @edit-click="showMeetingModal = true" @delete-click="handleMeetingDelete" />
       <CardModal v-model:show="showMeetingModal" title="Redaguoti posėdžio datą" @close="showMeetingModal = false">
-        <MeetingForm class="mt-2" :meeting="meeting" @submit="handleMeetingFormSubmit" />
+        <Suspense>
+          <MeetingForm class="mt-2" :meeting="meeting" @submit="handleMeetingFormSubmit" />
+        </Suspense>
       </CardModal>
     </template>
+    <div />
     <div class="my-4 flex items-center gap-4">
       <NButton size="small" @click="showAgendaItemStoreModal = true">
         {{ $t("Pridėti klausimų") }}
@@ -276,6 +287,6 @@ const handleAgendaItemsFormSubmit = (agendaItems: Record<string, any>) => {
 };
 
 const handleMeetingDelete = () => {
-  router.delete(route("meetings.destroy", props.meeting.id ), { data: { redirect_to: route('institutions.show', mainInstitution.id) } });
+  router.delete(route("meetings.destroy", props.meeting.id), { data: { redirect_to: route('institutions.show', mainInstitution.id) } });
 };
 </script>
