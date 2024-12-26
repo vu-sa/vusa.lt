@@ -29,8 +29,6 @@ class TrainingFactory extends Factory
             'institution_id' => \App\Models\Institution::factory(),
             'form_id' => \App\Models\Form::factory(),
             'max_participants' => $this->faker->numberBetween(1, 100),
-            'is_online' => $this->faker->boolean,
-            'is_hybrid' => $this->faker->boolean,
         ];
     }
 }

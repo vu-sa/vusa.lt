@@ -129,4 +129,14 @@ export default [
     icon: Icons.PERMISSION,
     key: pluralizeModels(ModelEnum.PERMISSION),
   },
+  {
+    title: "Mokymai",
+    icon: Icons.TRAINING,
+    key: pluralizeModels(ModelEnum.TRAINING),
+  },
+  { 
+    title: "Formos",
+    icon: Icons.FORM,
+    key: pluralizeModels(ModelEnum.FORM),
+  },
 ];

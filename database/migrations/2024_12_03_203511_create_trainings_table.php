@@ -29,8 +29,6 @@ return new class extends Migration
             $table->foreignUlid('institution_id')->references('id')->on('institutions');
             $table->foreignUlid('form_id')->nullable()->references('id')->on('forms');
             $table->unsignedInteger('max_participants')->nullable();
-            $table->boolean('is_online')->default(false);
-            $table->boolean('is_hybrid')->default(false);
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });

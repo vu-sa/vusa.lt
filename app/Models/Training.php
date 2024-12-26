@@ -28,8 +28,6 @@ class Training extends Model
         'meeting_url',
         'image',
         'max_participants',
-        'is_online',
-        'is_hybrid',
     ];
 
     public $translatable = ['name', 'description'];
@@ -37,8 +35,6 @@ class Training extends Model
     protected $casts = [
         'start_time' => 'datetime',
         'end_time' => 'datetime',
-        'is_online' => 'boolean',
-        'is_hybrid' => 'boolean',
     ];
 
     public function getActivitylogOptions(): LogOptions

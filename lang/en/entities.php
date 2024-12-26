@@ -10,6 +10,9 @@ return [
     'tenant' => [
         'model' => '{1} unit|[2,*] units',
     ],
+    'training' => [
+        'model' => '{1} training|[2,*] trainings',
+    ],
     'reservation' => [
         'model' => '{1} reservation|[2,*] reservations',
         'managers' => '{1} reservation manager|[2,*] reservation managers',

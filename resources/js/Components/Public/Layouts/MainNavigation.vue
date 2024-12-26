@@ -5,7 +5,7 @@
         <div class="flex justify-end px-4 duration-300 ease-in-out group-hover:translate-y-0" :class="{
           'translate-y-full': hasScrolledDown,
         }">
-          <div class="flex w-fit gap-4 px-8">
+          <div class="flex w-fit gap-4">
             <SearchButton size="tiny" text-color="#767875">
               {{ $t('Paieška') }}
             </SearchButton>

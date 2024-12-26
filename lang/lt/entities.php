@@ -23,6 +23,9 @@ return [
     'meeting' => [
         'model' => '{1} susitikimas|[2,9] susitikimai|[10,*] susitikimų',
     ],
+    'training' => [
+        'model' => '{1} mokymas|[2,9] mokymai|[10,*] mokymų',
+    ],
     'tenant' => [
         'model' => '{1} padalinys|[2,9] padaliniai|[10,*] padalinių',
     ],

@@ -30,6 +30,7 @@ class ProgrammeSeeder extends Seeder
         $day = ProgrammeDay::factory()->create([
             'programme_id' => $programme->id,
             'start_time' => (new Carbon($training->start_date))->setTime(9, 0, 0),
+            'order' => rand(0, 10),
         ]);
 
         $part = ProgrammePart::factory()->hasAttached($day, ['order' => 0])->create(['duration' => 45]);

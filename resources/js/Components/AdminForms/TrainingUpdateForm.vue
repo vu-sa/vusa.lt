@@ -64,18 +64,10 @@
       <template #title>
         Papildoma informacija
       </template>
-      <NFormItem label="Mokymų tipas">
-        <NCheckbox v-model:checked="form.is_online">
-          Nuotoliniai mokymai
-        </NCheckbox>
-        <NCheckbox v-model:checked="form.is_hybrid" :disabled="!form.is_online">
-          Yra galimybė dalyvauti tiek nuotoliu, tiek vietoje
-        </NCheckbox>
-      </NFormItem>
-      <NFormItem v-if="!form.is_online || form.is_hybrid" label="Mokymų adresas">
+      <NFormItem label="Mokymų adresas">
         <NInput v-model:value="form.address" />
       </NFormItem>
-      <NFormItem v-if="form.is_online" label="Susitikimo nuoroda">
+      <NFormItem label="Susitikimo nuoroda">
         <NInput v-model:value="form.meeting_url" />
       </NFormItem>
       <NFormItem label="Nuotrauka">
@@ -258,12 +250,6 @@ const formTemplate = training.form?.id ? training.form : {
   form_fields: [],
   tenant_id: training.tenant.id,
 };
-
-watch(() => form.is_online, (value) => {
-  if (!value) {
-    form.is_hybrid = false;
-  }
-});
 
 // NOTE: Duplicated in InstitutionSelectorForm.vue
 const institutions = computed(() => {
