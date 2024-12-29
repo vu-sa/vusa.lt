@@ -139,4 +139,5 @@ export default [
     icon: Icons.FORM,
     key: pluralizeModels(ModelEnum.FORM),
   },
+  { title: "Narystės", icon: Icons.MEMBERSHIP, key: pluralizeModels(ModelEnum.MEMBERSHIP) },
 ];

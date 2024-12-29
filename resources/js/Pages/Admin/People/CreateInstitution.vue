@@ -1,5 +1,5 @@
 <template>
-  <PageContent title="Nauja institucija" :heading-icon="Icons.INSTITUTION">
+  <PageContent :title="$page.props.seo.title" :heading-icon="Icons.INSTITUTION">
     <UpsertModelLayout>
       <InstitutionForm :assignable-tenants :institution :institution-types
         @submit:form="(form) => form.post(route('institutions.store'))" />

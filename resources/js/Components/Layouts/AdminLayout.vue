@@ -1,5 +1,6 @@
 <template>
-<Head :title="title" />
+
+  <Head :title="title" />
 
   <NDrawer v-model:show="isDrawerActive" :width="325" placement="left">
     <NDrawerContent closable>
@@ -9,12 +10,12 @@
     </NDrawerContent>
   </NDrawer>
   <div
-    class="relative grid min-h-screen bg-zinc-50 dark:bg-zinc-900 max-md:grid-rows-[7.3rem,_auto] md:grid-cols-[18rem,_auto] md:gap-4">
+    class="relative grid min-h-screen bg-zinc-50 dark:bg-zinc-900 max-md:grid-rows-[7.3rem,_auto] md:grid-cols-[1fr,_auto] md:gap-4">
     <div
-      class="sticky top-4 z-50 my-4 ml-4 flex flex-col overflow-y-auto rounded-md border border-zinc-200/90 bg-gradient-to-b from-white to-zinc-100 shadow-inner dark:border-zinc-700 dark:from-zinc-900 dark:to-[#141416] max-md:mr-4 max-md:w-[calc(100vw-3rem)] md:h-[calc(100svh-2rem)]">
+      class="sticky top-4 z-50 my-4 ml-4 flex flex-col overflow-y-auto rounded-md border border-zinc-200/90 bg-gradient-to-b from-white to-zinc-100 shadow-inner dark:border-zinc-700 dark:from-zinc-900 dark:to-[#141416] max-md:mr-4 max-md:w-[calc(100vw-3rem)] md:h-[calc(100svh-2rem)] md:w-64">
       <div class="flex items-center gap-2">
         <Link class="size-fit" :href="route('dashboard')">
-        <AppLogo class="mr-auto w-32 p-4 md:w-36" />
+        <AppLogo class="mr-auto w-32 p-3 md:w-36" />
         </Link>
         <TaskIndicatorButton size="small" />
         <NNotificationProvider placement="bottom-right">

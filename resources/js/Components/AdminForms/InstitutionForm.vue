@@ -114,7 +114,7 @@
           </a>
         </div>
       </template>
-      <div v-if="institution.duties.length > 0">
+      <div v-if="institution.duties && institution.duties.length > 0">
         <InfoText>
           Tempk
           <IFluentReOrderDotsVertical24Regular class="inline" /> ikoną, kad pakeistum pareigų eiliškumą.
