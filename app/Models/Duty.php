@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Pivots\Dutiable;
+use App\Models\Pivots\Trainable;
 use App\Models\Traits\HasTranslations;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -125,5 +126,10 @@ class Duty extends Model implements AuthorizableContract
     public function resources()
     {
         return $this->hasManyDeepFromRelations($this->tenants(), (new Tenant)->resources());
+    }
+
+    public function availableTrainings()
+    {
+        return $this->morphToMany(Training::class, 'trainable')->using(Trainable::class);
     }
 }

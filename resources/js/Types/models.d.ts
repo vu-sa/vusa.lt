@@ -180,6 +180,7 @@ declare global {
       previous_users?: User[]
       types?: Type[]
       institution?: Institution
+      available_trainings?: Training[]
       roles?: Role[]
       permissions?: Permission[]
       activities?: Activity[]
@@ -374,6 +375,7 @@ declare global {
       agenda_items?: AgendaItem[]
       institutions?: Institution[]
       comments?: Comment[]
+      types?: Type[]
       commentable?: Meeting
       files?: SharepointFile[]
       tasks?: Task[]
@@ -624,18 +626,9 @@ declare global {
       type?: Type
     }
 
-    export interface Trainingable {
-      // columns
-      id: number
-      training_id: string
-      trainingable_type: string
-      trainingable_id: string
-      tenant_id?: number | null
-      quota?: number | null
-      created_at: string
-      updated_at: string
+    export interface Trainable {
       // relations
-      trainingable?: Trainingable
+      trainable?: Trainable
       user?: User
       duty?: Duty
       institution?: Institution
@@ -937,7 +930,7 @@ declare global {
       // mutators
       translations: unknown
       // relations
-      trainingables?: Trainingable[]
+      trainables?: Trainable[]
       organizer?: User
       users?: User[]
       institution?: Institution
@@ -979,6 +972,7 @@ declare global {
       institutions?: Institution[]
       duties?: Duty[]
       doings?: Doing[]
+      meetings?: Meeting[]
       roles?: Role[]
       descendants?: Type[]
       parent?: Type
@@ -1027,6 +1021,8 @@ declare global {
       tasks?: Task[]
       reservations?: Reservation[]
       memberships?: Membership[]
+      trainings?: Training[]
+      available_trainings_through_user?: Training[]
       roles?: Role[]
       permissions?: Permission[]
       activities?: Activity[]

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Pivots\MembershipUser;
+use App\Models\Pivots\Trainable;
 use App\Models\Traits\HasTranslations;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -37,5 +38,10 @@ class Membership extends Model
     public function users()
     {
         return $this->belongsToMany(User::class)->using(MembershipUser::class)->withTimestamps()->withPivot('start_date', 'end_date');
+    }
+
+    public function availableTrainings()
+    {
+        return $this->morphToMany(Training::class, 'trainable')->using(Trainable::class);
     }
 }

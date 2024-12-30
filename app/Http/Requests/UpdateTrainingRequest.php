@@ -55,9 +55,9 @@ class UpdateTrainingRequest extends FormRequest
             'start_time' => 'required|date',
             'end_time' => 'nullable|date|after:start_time',
             'max_participants' => 'nullable|integer',
-            'trainingables' => 'array',
-            'trainingables.*.trainingable_id' => 'string',
-            'trainingables.*.trainingable_type' => 'string',
+            'trainables' => 'array',
+            'trainables.*.trainable_id' => 'string',
+            'trainables.*.trainable_type' => 'string',
             'tasks' => 'array',
             'tasks.*.name' => 'array',
         ];

@@ -33,11 +33,11 @@ return new class extends Migration
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
 
-        Schema::create('trainingables', function (Blueprint $table) {
+        Schema::create('trainables', function (Blueprint $table) {
             $table->id();
             $table->foreignUlid('training_id')->references('id')->on('trainings');
-            $table->string('trainingable_type');
-            $table->ulid('trainingable_id');
+            $table->string('trainable_type');
+            $table->ulid('trainable_id');
             $table->unsignedInteger('tenant_id')->nullable();
             $table->foreign('tenant_id')->references('id')->on('tenants');
             $table->integer('quota')->nullable();
@@ -72,7 +72,7 @@ return new class extends Migration
     {
         Schema::dropIfExists('training_user');
         Schema::dropIfExists('task_training');
-        Schema::dropIfExists('trainingables');
+        Schema::dropIfExists('trainables');
         Schema::dropIfExists('trainings');
     }
 };

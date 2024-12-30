@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Models\Pivots\Trainingable;
+use App\Models\Pivots\Trainable;
 use App\Models\Traits\HasTranslations;
 use App\Models\Traits\HasUnitRelation;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -49,9 +49,9 @@ class Training extends Model
         ];
     }
 
-    public function trainingables()
+    public function trainables()
     {
-        return $this->hasMany(Trainingable::class);
+        return $this->hasMany(Trainable::class);
     }
 
     public function organizer()

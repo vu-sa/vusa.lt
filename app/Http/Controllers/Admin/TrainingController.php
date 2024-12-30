@@ -81,7 +81,7 @@ class TrainingController extends Controller
      */
     public function show(Training $training)
     {
-        $training->load('activities', 'form', 'tenant', 'organizer', 'trainingables', 'tasks');
+        $training->load('activities', 'form', 'tenant', 'organizer', 'trainables', 'tasks', 'institution');
 
         $training->load('programmes.days.elements');
 
@@ -128,6 +128,8 @@ class TrainingController extends Controller
                 }),
             ],
             'userIsRegistered' => $training->form?->registrations->contains('user_id', auth()->id()),
+            'userCanRegister' => auth()->user()->allAvailableTrainings()->contains('id', $training->id),
+            'registeredUserCount' => $training->form?->registrations->count(),
         ]);
     }
 
@@ -136,7 +138,7 @@ class TrainingController extends Controller
      */
     public function edit(Training $training)
     {
-        $training->load('form', 'tenant', 'organizer', 'trainingables', 'tasks');
+        $training->load('form', 'tenant', 'organizer', 'trainables', 'tasks');
 
         return Inertia::render('Admin/People/EditTraining', [
 
@@ -191,7 +193,7 @@ class TrainingController extends Controller
                     })->first(),
                 ])->first(),
             ],
-            'trainingableTypes' => [
+            'trainableTypes' => [
                 User::class => ['type' => User::class, 'name' => 'Narys', 'values' => User::query()->get(['id', 'name'])],
                 Duty::class => ['type' => Duty::class, 'name' => 'Pareiga', 'values' => Duty::query()->get(['id', 'name'])],
                 Institution::class => ['type' => Institution::class, 'name' => 'Institucija', 'values' => Institution::query()->get(['id', 'name'])],
@@ -207,11 +209,11 @@ class TrainingController extends Controller
      */
     public function update(UpdateTrainingRequest $request, Training $training)
     {
-        $training->update($request->except('trainingables', 'tasks'));
+        $training->update($request->except('trainables', 'tasks'));
 
-        $training->trainingables()->delete();
+        $training->trainables()->delete();
 
-        $training->trainingables()->createMany($request->trainingables);
+        $training->trainables()->createMany($request->trainables);
 
         $training->tasks()->delete();
 

@@ -83,17 +83,17 @@
           <template #title>
             Dalyviai
           </template>
-          <NDynamicInput v-model:value="form.trainingables" class="mt-4" @create="onTrainingablesCreate">
+          <NDynamicInput v-model:value="form.trainables" class="mt-4" @create="onTrainablesCreate">
             <template #default="{ value }">
               <div class="flex w-full gap-4">
                 <NFormItem label="Tipas">
-                  <NSelect v-model:value="value.trainingable_type" class="min-w-40"
-                    :options="trainingableTypeOptions" />
+                  <NSelect v-model:value="value.trainable_type" class="min-w-40"
+                    :options="trainableTypeOptions" />
                 </NFormItem>
-                <NFormItem v-if="value.trainingable_type" label="Pasirinkimas" class="min-w-80">
-                  <NSelect v-model:value="value.trainingable_id" filterable
-                    :options="trainingableTypes[value.trainingable_type].values" value-field="id"
-                    :label-field="value.trainingable_type === 'App\\Models\\Type' ? 'title' : 'name'" />
+                <NFormItem v-if="value.trainable_type" label="Pasirinkimas" class="min-w-80">
+                  <NSelect v-model:value="value.trainable_id" filterable
+                    :options="trainableTypes[value.trainable_type].values" value-field="id"
+                    :label-field="value.trainable_type === 'App\\Models\\Type' ? 'title' : 'name'" />
                 </NFormItem>
               </div>
             </template>
@@ -177,23 +177,23 @@ import FormForm from "./FormForm.vue";
 import UserPopover from "../Avatars/UserPopover.vue";
 import ProgrammePlanner from "@/Features/Admin/ProgrammePlanner/ProgrammePlanner.vue";
 
-interface TrainingableType<T> {
+interface TrainableType<T> {
   type: T;
   name: string;
   values: Array<{ id: number; name: string }>;
 }
 
-export interface TrainingableTypes {
-  'App\\Models\\User': TrainingableType<App.Entities.User>;
-  'App\\Models\\Duty': TrainingableType<App.Entities.Duty>;
-  'App\\Models\\Institution': TrainingableType<App.Entities.Institution>;
-  'App\\Models\\Membership': TrainingableType<App.Entities.Membership>;
-  'App\\Models\\Type': TrainingableType<{ id: number; title: string }>;
+export interface TrainableTypes {
+  'App\\Models\\User': TrainableType<App.Entities.User>;
+  'App\\Models\\Duty': TrainableType<App.Entities.Duty>;
+  'App\\Models\\Institution': TrainableType<App.Entities.Institution>;
+  'App\\Models\\Membership': TrainableType<App.Entities.Membership>;
+  'App\\Models\\Type': TrainableType<{ id: number; title: string }>;
 }
 
-const { training, trainingableTypes } = defineProps<{
+const { training, trainableTypes } = defineProps<{
   training: App.Entities.Training;
-  trainingableTypes: TrainingableTypes
+  trainableTypes: TrainableTypes
 }>();
 
 const emit = defineEmits<{
@@ -203,17 +203,17 @@ const emit = defineEmits<{
 
 const form = useForm(`TrainingUpdate${training.id}`, training);
 
-const trainingableTypeOptions = computed(() => {
-  return Object.keys(trainingableTypes).map((key) => ({
-    label: trainingableTypes[key].name,
+const trainableTypeOptions = computed(() => {
+  return Object.keys(trainableTypes).map((key) => ({
+    label: trainableTypes[key].name,
     value: key,
   }));
 });
 
-const onTrainingablesCreate = () => {
+const onTrainablesCreate = () => {
   return {
-    trainingable_type: null,
-    trainingable_id: null
+    trainable_type: null,
+    trainable_id: null
   };
 };
 

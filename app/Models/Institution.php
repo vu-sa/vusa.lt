@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Actions\GetInstitutionManagers;
 use App\Events\FileableNameUpdated;
+use App\Models\Pivots\Trainable;
 use App\Models\Traits\HasComments;
 use App\Models\Traits\HasContentRelationships;
 use App\Models\Traits\HasSharepointFiles;
@@ -120,5 +121,10 @@ class Institution extends Model
     public function getMaybeShortNameAttribute()
     {
         return $this->short_name ?? $this->name;
+    }
+
+    public function availableTrainings()
+    {
+        return $this->morphToMany(Training::class, 'trainable')->using(Trainable::class);
     }
 }

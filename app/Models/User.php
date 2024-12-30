@@ -4,8 +4,10 @@ namespace App\Models;
 
 use App\Models\Pivots\Dutiable;
 use App\Models\Pivots\MembershipUser;
+use App\Models\Pivots\Trainable;
 use App\Models\Traits\HasTranslations;
 use App\Models\Traits\HasUnitRelation;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -184,5 +186,37 @@ class User extends Authenticatable
     public function isSuperAdmin(): bool
     {
         return $this->hasRole(config('permission.super_admin_role_name'));
+    }
+
+    public function trainings()
+    {
+        return $this->belongsToMany(Training::class, 'training_user')->withTimestamps();
+    }
+
+    public function availableTrainingsThroughUser()
+    {
+        return $this->morphToMany(Training::class, 'trainable')->using(Trainable::class)->withTimestamps();
+    }
+
+    /**
+     * @return Collection<Training>
+     */
+    public function allAvailableTrainings()
+    {
+        $avThDuty = $this->load('current_duties.availableTrainings')->current_duties->map(function ($duty) {
+            return $duty->availableTrainings;
+        })->flatten();
+
+        $avThUser = $this->availableTrainingsThroughUser()->get();
+
+        $avThInstitution = $this->load('institutions.availableTrainings')->institutions->map(function ($institution) {
+            return $institution->availableTrainings;
+        })->flatten();
+
+        $avThMembership = $this->load('memberships.availableTrainings')->memberships->map(function ($membership) {
+            return $membership->availableTrainings;
+        })->flatten();
+
+        return $avThDuty->merge($avThUser)->merge($avThInstitution)->merge($avThMembership)->unique('id');
     }
 }

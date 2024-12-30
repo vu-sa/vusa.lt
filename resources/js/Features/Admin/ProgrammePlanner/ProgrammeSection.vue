@@ -1,8 +1,8 @@
 <template>
-  <div class="my-2 rounded-md border bg-zinc-50/50 p-4 shadow-sm">
+  <div class="my-2 rounded-md border bg-zinc-50/50 p-4 shadow-sm dark:border-zinc-900 dark:bg-zinc-800">
     <div class="mb-2 flex flex-row items-center gap-4">
       <button
-        class="inline-flex items-center gap-2 rounded-md px-2 py-1 text-2xl font-bold tracking-tight transition hover:bg-zinc-200"
+        class="inline-flex items-center gap-2 rounded-md px-2 py-1 text-2xl font-bold tracking-tight transition hover:bg-zinc-200 dark:hover:bg-zinc-700"
         :class="[handleClass]">
         <IFluentWindowBulletList20Filled /> {{ section?.title[$page.props.app.locale] ?? section?.title }}
       </button>
