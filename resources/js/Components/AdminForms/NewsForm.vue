@@ -46,7 +46,7 @@
         Nuotrauka
       </template>
       <NFormItem required label="Nuotrauka">
-          <UploadImageWithCropper v-model:url="form.image" folder="news" />
+        <UploadImageWithCropper v-model:url="form.image" folder="news" />
       </NFormItem>
       <NFormItem label="Nuotraukos autorius">
         <NInput v-model:value="form.image_author" type="text" placeholder="Žmogus arba organizacija.." />
@@ -59,7 +59,7 @@
       <template #description>
         <p>Šiuo metu naudojamas <strong>tik paieškos rezultatuose</strong>. Maksimalus ženklų skaičius: 200.</p>
       </template>
-      <TipTap v-model="form.short" disable-tables :max-characters="200" html :search-files="$page.props.search.other" />
+      <TipTap v-model="form.short" disable-tables :max-characters="200" html />
     </FormElement>
     <h4 class="mb-4 text-3xl font-bold">
       Turinys

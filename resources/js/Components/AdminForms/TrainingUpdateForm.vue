@@ -106,7 +106,7 @@
         </div>
       </NTabPane>
       <NTabPane name="programa" tab="Programa" display-directive="show">
-        <div class="mt-4 min-h-64">
+        <div class="mt-4 min-h-64 rounded-md border border-black p-4">
           <ProgrammePlanner editable show-time-switch :programme="training.programme"
             :start-time="new Date(form.start_time)" />
         </div>
@@ -162,7 +162,7 @@
 </template>
 
 <script setup lang="tsx">
-import { useForm, usePage } from "@inertiajs/vue3";
+import { router, useForm, usePage } from "@inertiajs/vue3";
 import { NIcon } from "naive-ui";
 import { computed, ref, watch } from "vue";
 
@@ -279,9 +279,7 @@ const handleFormFormSubmit = (form: unknown) => {
       preserveScroll: true,
     });
   } else {
-    form.patch(route('forms.update', training.form_id), {
-      preserveScroll: true,
-    });
+    router.patch(route('forms.update', training.form_id), form);
   }
 };
 </script>

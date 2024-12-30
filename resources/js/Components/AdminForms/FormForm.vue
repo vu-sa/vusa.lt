@@ -130,6 +130,7 @@ const locale = ref("lt");
 const showFormFieldModal = ref(false);
 const selectedFormField = ref(formFieldTemplate);
 
+// Differently from other components, we use reactive because of nested form fields
 const form = reactive(props.form);
 
 const hasRegistrations = computed(() => form?.registrations_count > 0);

@@ -3,7 +3,7 @@
     <div class="flex flex-col">
       <slot />
     </div>
-    <div class="flex justify-end gap-5">
+    <div class="mt-3 flex justify-end gap-4">
       <slot name="buttons">
         <NButton v-if="enableDelete" text type="error" @click="handleDelete">
           <template #icon>

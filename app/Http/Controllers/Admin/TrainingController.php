@@ -234,6 +234,10 @@ class TrainingController extends Controller
     {
         $training->load('form');
 
+        if ($training->form?->registrations->contains('user_id', auth()->id())) {
+            return redirect()->route('trainings.show', $training)->with('success', 'Jūs jau užsiregistravote į šiuos mokymus!');
+        }
+
         $training->form = [
             $training->form->toArray(),
             'form_fields' => $training->form->formFields->map(function ($field) {

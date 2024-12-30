@@ -37,15 +37,17 @@
       Uždaryti
     </NButton>
   </CardModal>
-  <NButton v-if="editable" rounded @click="createDay">
-    <template #icon>
-      <IFluentCalendarAdd24Regular />
-    </template>
-    Pridėti programos dieną
-  </NButton>
-  <NButton v-if="editable" type="primary" @click="submitForm">
-    Išsaugoti
-  </NButton>
+  <div class="flex items-center justify-between gap-2">
+    <NButton v-if="editable" rounded @click="createDay">
+      <template #icon>
+        <IFluentCalendarAdd24Regular />
+      </template>
+      Pridėti programos dieną
+    </NButton>
+    <NButton v-if="editable" type="primary" @click="submitForm">
+      Išsaugoti
+    </NButton>
+  </div>
 </template>
 
 <script setup lang="ts">
