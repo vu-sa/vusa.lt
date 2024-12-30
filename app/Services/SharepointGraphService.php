@@ -109,19 +109,19 @@ class SharepointGraphService
         return $this->parseDriveItems($driveItems);
     }
 
-    /*public function getDriveItemByIdWithListItem(string $driveItemId): Models\DriveItem*/
-    /*{*/
-    /*    $requestConfiguration = new DriveItemItemRequestBuilderGetRequestConfiguration();*/
-    /*    $queryParameters = DriveItemItemRequestBuilderGetRequestConfiguration::createQueryParameters();*/
+    /* public function getDriveItemByIdWithListItem(string $driveItemId): Models\DriveItem */
+    /* { */
+    /*    $requestConfiguration = new DriveItemItemRequestBuilderGetRequestConfiguration(); */
+    /*    $queryParameters = DriveItemItemRequestBuilderGetRequestConfiguration::createQueryParameters(); */
     /**/
-    /*    $queryParameters->expand = ['listItem'];*/
+    /*    $queryParameters->expand = ['listItem']; */
     /**/
-    /*    $requestConfiguration->queryParameters = $queryParameters;*/
+    /*    $requestConfiguration->queryParameters = $queryParameters; */
     /**/
-    /*    $driveItem = $this->graph->drives()->byDriveId($this->driveId)->items()->byDriveItemId($driveItemId)->get($requestConfiguration)->wait();*/
+    /*    $driveItem = $this->graph->drives()->byDriveId($this->driveId)->items()->byDriveItemId($driveItemId)->get($requestConfiguration)->wait(); */
     /**/
-    /*    return $driveItem;*/
-    /*}*/
+    /*    return $driveItem; */
+    /* } */
 
     public function getDriveItemByListItem(string $siteId, string $listId, string $listItemId): Models\DriveItem
     {
@@ -161,7 +161,7 @@ class SharepointGraphService
 
     public function updateListItem(string $listId, $listItemId, array $fields): Models\FieldValueSet
     {
-        /*dd($fields, $this->siteId, $listId, $listItemId);*/
+        /* dd($fields, $this->siteId, $listId, $listItemId); */
 
         $requestConfiguration = new FieldsRequestBuilderPatchRequestConfiguration;
         $fieldValueSet = new FieldValueSet;
@@ -438,7 +438,7 @@ class SharepointGraphService
             $document->content_type = isset($driveItem['listItem']['fields']['Turinys']['Label']) ? $driveItem['listItem']['fields']['Turinys']['Label'] : null;
 
             $document->summary = $driveItem['listItem']['fields']['Summary'] ?? null;
-            /*$document->thumbnail_url = $driveItem['thumbnails'][0]['large']['url'];*/
+            /* $document->thumbnail_url = $driveItem['thumbnails'][0]['large']['url']; */
 
             $document->anonymous_url = collect($driveItem['permissions'])->filter(function ($permission) {
 

@@ -61,14 +61,14 @@ class NewsController extends PublicController
                     ];
                 }),
                 'content' => $news->content,
-                /*'content' => [*/
-                /*    ...$news->content->toArray(),*/
-                /*    'parts' => $news->content->parts->map(function ($part) {*/
-                /*        return [*/
-                /*            ...$part->parseTipTapElements()->toArray(),*/
-                /*        ];*/
-                /*    }),*/
-                /*],*/
+                /* 'content' => [ */
+                /*    ...$news->content->toArray(), */
+                /*    'parts' => $news->content->parts->map(function ($part) { */
+                /*        return [ */
+                /*            ...$part->parseTipTapElements()->toArray(), */
+                /*        ]; */
+                /*    }), */
+                /* ], */
                 'image' => $image,
                 'tenant' => $news->tenant->shortname,
             ],

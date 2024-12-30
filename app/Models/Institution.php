@@ -79,7 +79,7 @@ class Institution extends Model
 
     public function users(): HasManyDeep
     {
-        /*report('Institution::users() is deprecated. Use Institution::duties()->users() instead.');*/
+        /* report('Institution::users() is deprecated. Use Institution::duties()->users() instead.'); */
 
         return $this->hasManyDeepFromRelations($this->duties(), (new Duty)->users());
     }

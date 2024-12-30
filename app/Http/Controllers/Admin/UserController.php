@@ -272,7 +272,7 @@ class UserController extends Controller
     {
         $microsoftUser = Socialite::driver('microsoft')->stateless()->user();
 
-        /*dd(Socialite::driver('microsoft')->stateless());*/
+        /* dd(Socialite::driver('microsoft')->stateless()); */
 
         // pirmiausia ieškome per vartotoją, per paštą
         $user = User::where('email', $microsoftUser->email)->first();
@@ -294,7 +294,7 @@ class UserController extends Controller
         $duty = Duty::where('email', $microsoftUser->email)->first();
 
         if ($duty) {
-            //# TEST: if only current users from duty are allowed to login
+            // # TEST: if only current users from duty are allowed to login
 
             // get count of current users
             $count = $duty->current_users()->count();

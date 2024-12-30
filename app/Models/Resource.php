@@ -93,7 +93,7 @@ class Resource extends Model implements HasMedia
     // $resource->leftCapacityAtTimePeriod("2023-05-01 00:00:00", "2023-07-10 23:59:59");
     public function getCapacityAtDateTimeRange($from, $to, array $exceptReservations = [], array $exceptResources = []): array
     {
-        /*dd($exceptReservations, $exceptResources);*/
+        /* dd($exceptReservations, $exceptResources); */
         // if $from and $to are numbers (timestamps), convert them to Carbon
         if (is_numeric($from)) {
             $from = Carbon::createFromTimestampMs($from);

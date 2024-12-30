@@ -34,7 +34,7 @@ class ContactController extends PublicController
                 return [
                     ...$institution->toArray(),
                     // shorten description and add ellipsis
-                    //'description' => Str::limit(strip_tags($institution->description), 100, '...'),
+                    // 'description' => Str::limit(strip_tags($institution->description), 100, '...'),
                     //  TODO: better solution for displaying description or remove completely
                     'description' => '',
                 ];

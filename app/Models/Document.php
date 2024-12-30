@@ -73,9 +73,9 @@ class Document extends Model
         $driveItem = $graph->getDriveItemByListItem($this->sharepoint_site_id, $this->sharepoint_list_id, $this->sharepoint_id);
 
         // Add thumbnails
-        /*collect($driveItem->getThumbnails())->each(function ($thumbnailSet) {*/
-        /*    $this->thumbnail_url = $thumbnailSet->getLarge()->getUrl();*/
-        /*});*/
+        /* collect($driveItem->getThumbnails())->each(function ($thumbnailSet) { */
+        /*    $this->thumbnail_url = $thumbnailSet->getLarge()->getUrl(); */
+        /* }); */
 
         $anonymous_permission = $graph->getDriveItemPublicLink($driveItem->getId());
 
@@ -84,10 +84,10 @@ class Document extends Model
 
             $this->anonymous_url = $anonymous_permission->getLink()->getWebUrl();
 
-            /*$this->anonymous_url_expiration_date = Carbon::parse($anonymous_permission->getExpirationDateTime());*/
+            /* $this->anonymous_url_expiration_date = Carbon::parse($anonymous_permission->getExpirationDateTime()); */
         } else {
             $this->anonymous_url = $anonymous_permission->getLink()->getWebUrl();
-            /*$this->anonymous_url_expiration_date = Carbon::parse($anonymous_permission->getExpirationDateTime());*/
+            /* $this->anonymous_url_expiration_date = Carbon::parse($anonymous_permission->getExpirationDateTime()); */
         }
 
         $this->checked_at = Carbon::now();

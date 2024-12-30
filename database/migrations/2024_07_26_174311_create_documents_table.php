@@ -24,8 +24,8 @@ return new class extends Migration
             $table->string('language')->nullable()->index();
             $table->string('summary')->nullable();
             $table->text('anonymous_url')->nullable();
-            /*$table->date('anonymous_url_expiration_date')->nullable();*/
-            /*$table->text('thumbnail_url')->nullable();*/
+            /* $table->date('anonymous_url_expiration_date')->nullable(); */
+            /* $table->text('thumbnail_url')->nullable(); */
             $table->boolean('is_active')->default(true);
             $table->string('sharepoint_site_id', 50);
             $table->string('sharepoint_list_id', 50);

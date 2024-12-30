@@ -172,14 +172,14 @@ class PublicPageController extends PublicController
             'page' => [
                 ...$page->only('id', 'title', 'lang', 'category', 'tenant', 'permalink', 'other_lang_id'),
                 'content' => $page->content,
-                /*'content' => [*/
-                /*    ...$page->content->toArray(),*/
-                /*    'parts' => $page->content->parts->map(function ($part) {*/
-                /*        return [*/
-                /*            ...$part->parseTipTapElements()->toArray(),*/
-                /*        ];*/
-                /*    }),*/
-                /*]*/
+                /* 'content' => [ */
+                /*    ...$page->content->toArray(), */
+                /*    'parts' => $page->content->parts->map(function ($part) { */
+                /*        return [ */
+                /*            ...$part->parseTipTapElements()->toArray(), */
+                /*        ]; */
+                /*    }), */
+                /* ] */
             ],
         ])->withViewData([
             'SEOData' => $seo,

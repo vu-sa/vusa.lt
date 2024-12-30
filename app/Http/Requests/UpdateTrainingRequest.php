@@ -21,7 +21,7 @@ class UpdateTrainingRequest extends FormRequest
             return;
         }
 
-        /*dd(request()->all());*/
+        /* dd(request()->all()); */
 
         $this->merge([
             'start_time' => Carbon::parse($this->input('start_time') / 1000)->setTimezone('Europe/Vilnius')->toDateTimeString(),

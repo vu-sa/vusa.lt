@@ -140,7 +140,7 @@ class ModelIndexer
 
         foreach ($this->filters as $name => $value) {
             $this->builder->when(
-                //# When is not empty, filter
+                // # When is not empty, filter
                 $value !== [],
                 function (Builder $query) use ($name, $value) {
                     $query->whereIn($name, $value);

@@ -67,11 +67,11 @@ class UserPolicy extends ModelPolicy
      */
     public function delete(User $user, User $model)
     {
-        /*if ($this->commonChecker($user, $model, CRUDEnum::DELETE()->label, $this->pluralModelName)) {*/
-        /*    return true;*/
-        /*}*/
+        /* if ($this->commonChecker($user, $model, CRUDEnum::DELETE()->label, $this->pluralModelName)) { */
+        /*    return true; */
+        /* } */
         /**/
-        /*return false;*/
+        /* return false; */
 
         $this->authorizer->forUser($user)->check($this->pluralModelName.'.delete.*');
     }
