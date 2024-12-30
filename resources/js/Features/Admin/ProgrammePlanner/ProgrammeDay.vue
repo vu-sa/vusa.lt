@@ -4,11 +4,11 @@
       <button
         class="day-handle inline-flex items-center gap-3 rounded-lg px-2 py-0.5 text-2xl font-black transition hover:bg-zinc-200">
         <IFluentCalendar24Regular />
-        {{ day.title[$page.props.app.locale] }}
+        {{ day.title[$page.props.app.locale] ?? day?.title }}
       </button>
-      <span>
+      <!-- span>
         {{ day?.id ? 'ID: ' + day.id : '' }}
-      </span>
+      </span -->
       <span class="px-2 text-zinc-500">
         {{ formatStaticTime(day.start_time, { month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) }}
       </span>
@@ -18,7 +18,7 @@
       <component :is="element?.type === 'section' ? ProgrammeSection : ProgrammePart"
         v-for="(element, index) in day.elements" :key="element?.id ?? index" v-model:element="day.elements[index]"
         :parent="day" handle-class="element-handle" :data-id="element.id" :data-type="element.type">
-        <template #buttons>
+        <template v-if="editable" #buttons>
           <NButton size="tiny" secondary circle @click="handleEditElement(element)">
             <template #icon>
               <IFluentEdit24Filled />
@@ -61,7 +61,7 @@
         Išsaugoti
       </NButton>
     </CardModal>
-    <div class="mt-2 flex gap-1">
+    <div v-if="editable" class="mt-2 flex gap-1">
       <NTooltip>
         <template #trigger>
           <NButton size="small" circle @click="createProgrammePart">
@@ -102,6 +102,7 @@ const day = defineModel<App.Entities.ProgrammeDay>('day')
 const elementsEl = ref<HTMLDivElement | null>('elementsEl');
 
 const { movedElement, updateMovedElement } = inject('movedElement');
+const editable = inject<boolean>('editable');
 
 function createProgrammeSection() {
   if (!day.value) return;
@@ -222,5 +223,5 @@ function createSortableElement() {
   return sortable
 }
 
-createSortableElement();
+if (editable) createSortableElement();
 </script>

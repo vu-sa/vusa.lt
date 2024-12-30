@@ -107,8 +107,8 @@
       </NTabPane>
       <NTabPane name="programa" tab="Programa" display-directive="show">
         <div class="mt-4 min-h-64">
-        <ProgrammePlanner :programme="training.programme" :start-time="new Date(form.start_time)" :show="showProgrammePlanner"
-          @close="showProgrammePlanner = false" />
+          <ProgrammePlanner editable show-time-switch :programme="training.programme"
+            :start-time="new Date(form.start_time)" />
         </div>
       </NTabPane>
       <NTabPane name="uzduotys" tab="Užduotys">
@@ -175,7 +175,7 @@ import TipTap from "@/Components/TipTap/OriginalTipTap.vue";
 import UploadImageWithCropper from "../Buttons/UploadImageWithCropper.vue";
 import FormForm from "./FormForm.vue";
 import UserPopover from "../Avatars/UserPopover.vue";
-import ProgrammePlanner from "@/Features/Admin/ProgrammePlaner/ProgrammePlanner.vue";
+import ProgrammePlanner from "@/Features/Admin/ProgrammePlanner/ProgrammePlanner.vue";
 
 interface TrainingableType<T> {
   type: T;
@@ -235,8 +235,6 @@ const onTasksCreateAdd = () => {
 const onTasksRemove = (index: number) => {
   form.tasks.splice(index, 1);
 };
-
-const showProgrammePlanner = ref(false);
 
 form.start_time = new Date(form.start_time).getTime();
 form.end_time = form.end_time ? new Date(form.end_time).getTime() : null;

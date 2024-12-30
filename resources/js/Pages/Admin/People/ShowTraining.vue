@@ -29,11 +29,16 @@
     <div class="typography mt-4">
       <div v-html="training.description" />
     </div>
+    <h2 class="mt-4">
+      Programa
+    </h2>
+    <ProgrammePlanner show-times :programme="training.programmes?.at(0)" />
   </AdminContentPage>
 </template>
 
 <script setup lang="tsx">
 import AdminContentPage from "@/Components/Layouts/AdminContentPage.vue";
+import ProgrammePlanner from "@/Features/Admin/ProgrammePlanner/ProgrammePlanner.vue";
 import { Link } from "@inertiajs/vue3";
 import { NCard } from "naive-ui";
 

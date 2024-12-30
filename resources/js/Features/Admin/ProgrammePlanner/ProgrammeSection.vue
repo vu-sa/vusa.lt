@@ -4,7 +4,7 @@
       <button
         class="inline-flex items-center gap-2 rounded-md px-2 py-1 text-2xl font-bold tracking-tight transition hover:bg-zinc-200"
         :class="[handleClass]">
-        <IFluentWindowBulletList20Filled /> {{ section?.title[$page.props.app.locale] }}
+        <IFluentWindowBulletList20Filled /> {{ section?.title[$page.props.app.locale] ?? section?.title }}
       </button>
       <span v-if="showTimes" class="text-zinc-500">
         {{ formatStaticTime(new Date(sectionStartTime), { hour: 'numeric', minute: '2-digit' }) }}-{{
@@ -26,7 +26,7 @@
     <div class="mb-2 grid grid-cols-2 gap-x-4">
       <ProgrammeBlock v-for="(block, index) in section.blocks" :key="block.id" v-model:block="section.blocks[index]"
         :section-start-time>
-        <template #buttons>
+        <template v-if="editable" #buttons>
           <NButton size="tiny" secondary circle @click="deleteProgrammeBlock(index)">
             <template #icon>
               <IFluentDelete24Filled />
@@ -35,7 +35,7 @@
         </template>
       </ProgrammeBlock>
     </div>
-    <NTooltip>
+    <NTooltip v-if="editable">
       <template #trigger>
         <NButton size="small" circle @click="createProgrammeBlock">
           <template #icon>
@@ -63,6 +63,7 @@ const { parent } = defineProps<{
 }>();
 
 const showTimes = inject<Ref<boolean>>('show-times');
+const editable = inject<Ref<boolean>>('editable');
 
 function createProgrammeBlock() {
   section.value?.blocks?.push({

@@ -1,6 +1,6 @@
 <template>
   <!-- Dinaminės nuorodos į administravimo puslapius -->
-  <div class="gap mt-4 flex flex-col px-6">
+  <div class="gap mt-4 flex flex-col px-6 h-full">
     <span class="mb-2 text-xs uppercase text-zinc-500">{{ $t('Funkcijos') }}</span>
     <Link v-if="$page.props.auth?.can.create.meeting" :href="route('dashboard.atstovavimas')">
     <NButton quaternary text>
@@ -63,7 +63,7 @@
     </div>
   </div> -->
   <!-- Nuorodos esančios visada -->
-  <div class="mt-auto flex flex-col items-start justify-end gap-5 px-6">
+  <div class="mt-auto flex flex-col items-start justify-end gap-5">
     <a href="https://www.vusa.lt/docs" target="_blank">
       <NButton quaternary text>
         <template #icon>

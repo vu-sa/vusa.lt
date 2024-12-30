@@ -81,10 +81,52 @@ class TrainingController extends Controller
      */
     public function show(Training $training)
     {
-        $training->load('programmes', 'activities', 'form', 'tenant', 'organizer', 'trainingables', 'tasks');
+        $training->load('activities', 'form', 'tenant', 'organizer', 'trainingables', 'tasks');
+
+        $training->load('programmes.days.elements');
 
         return Inertia::render('Admin/People/ShowTraining', [
-            'training' => $training,
+            'training' => [
+                ...$training->toArray(),
+                'programmes' => $training->programmes->map(function ($programme) {
+                    return [
+                        ...$programme->toArray(),
+                        'days' => $programme->days->map(function ($day) {
+                            return [
+                                ...$day->toArray(),
+                                'elements' => $day->elements->map(function ($element) {
+                                    if ($element->elementable instanceof ProgrammeSection) {
+                                        return [
+                                            ...$element->elementable->toArray(),
+                                            'blocks' => $element->elementable->blocks->map(function ($block) {
+                                                return [
+                                                    ...$block->toArray(),
+                                                    'parts' => $block->parts->map(function ($part) {
+                                                        return [
+                                                            ...$part->toArray(),
+                                                            'type' => 'part',
+                                                        ];
+                                                    }),
+                                                    'type' => 'block',
+                                                ];
+                                            }),
+                                            'type' => 'section',
+                                        ];
+                                    }
+
+                                    if ($element->elementable instanceof ProgrammePart) {
+                                        return [
+                                            ...$element->elementable->toArray(),
+                                            'type' => 'part',
+                                        ];
+                                    }
+                                }),
+                                'type' => 'day',
+                            ];
+                        }),
+                    ];
+                }),
+            ],
             'userIsRegistered' => $training->form?->registrations->contains('user_id', auth()->id()),
         ]);
     }

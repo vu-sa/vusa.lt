@@ -1,13 +1,13 @@
 <template>
   <div class="my-2 flex flex-col gap-3 rounded-lg border bg-zinc-100/70 p-4 shadow-sm">
     <div class="inline-flex items-center gap-3 p-1 text-xl font-bold">
-      <IFluentLayerDiagonal24Regular /> {{ block.title[$page.props.app.locale] }}
+      <IFluentLayerDiagonal24Regular /> {{ block.title[$page.props.app.locale] ?? block.title }}
       <slot name="buttons" />
     </div>
     <div ref="blockPartEl">
       <ProgrammePart v-for="(part, index) in block?.parts" :key="part.id" v-model:element="block.parts[index]"
         :data-id="part.id" :data-type="part.type" handle-class="block-part-handle" :section-start-time :parent="block">
-        <template #buttons>
+        <template v-if="editable" #buttons>
           <NButton size="tiny" secondary circle @click="handleEditPart(part)">
             <template #icon>
               <IFluentEdit24Filled />
@@ -39,7 +39,7 @@
         Uždaryti
       </NButton>
     </CardModal>
-    <NTooltip>
+    <NTooltip v-if="editable">
       <template #trigger>
         <NButton size="small" secondary circle @click="createProgrammePart">
           <template #icon>
@@ -65,6 +65,8 @@ defineProps<{
   sectionStartTime: number;
 }>();
 
+const editable = inject<boolean>('editable');
+
 const showPartEditModal = ref(false);
 const selectedPart = ref<App.Entities.ProgrammePart | null>(null);
 
@@ -73,7 +75,7 @@ const blockPartEl = useTemplateRef<HTMLDivElement | null>('blockPartEl');
 
 const { movedElement, updateMovedElement } = inject('movedElement');
 
-useSortable<HTMLDivElement | null>(blockPartEl, block.value?.parts, {
+if (editable) useSortable<HTMLDivElement | null>(blockPartEl, block.value?.parts, {
   handle: '.block-part-handle',
   group: {
     name: 'elements',

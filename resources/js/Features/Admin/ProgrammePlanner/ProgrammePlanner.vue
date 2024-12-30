@@ -1,12 +1,12 @@
 <template>
-  <NFormItem label="Rodyti laikus">
+  <NFormItem v-if="showTimeSwitch" label="Rodyti laikus">
     <NSwitch v-model:value="showTimes" />
   </NFormItem>
   <div class="flex flex-col gap-4">
     <div ref="programmeEl" class="mb-3 flex flex-col gap-2">
       <ProgrammeDay v-for="(day, index) in programmeDays" :key="day.id" v-model:day="programmeDays[index]"
         :data-id="day.id">
-        <template #buttons>
+        <template v-if="showEditDeleteButtons" #buttons>
           <NButton size="tiny" secondary circle @click="showDayEditModal = true; selectedDay = day">
             <template #icon>
               <IFluentEdit24Filled />
@@ -37,13 +37,13 @@
       Uždaryti
     </NButton>
   </CardModal>
-  <NButton rounded @click="createDay">
+  <NButton v-if="editable" rounded @click="createDay">
     <template #icon>
       <IFluentCalendarAdd24Regular />
     </template>
     Pridėti programos dieną
   </NButton>
-  <NButton type="primary" @click="submitForm">
+  <NButton v-if="editable" type="primary" @click="submitForm">
     Išsaugoti
   </NButton>
 </template>
@@ -63,7 +63,9 @@ defineEmits<{
 
 const props = defineProps<{
   programme: App.Entities.Programme
-  show: boolean;
+  editable?: boolean;
+  showTimes: boolean;
+  showTimeSwitch?: boolean;
   startTime: Date;
 }>();
 
@@ -73,8 +75,10 @@ const programmeDays = ref(props.programme.days);
 const selectedDay = ref<App.Entities.ProgrammeDay | null>(null);
 const showDayEditModal = ref(false);
 
-const showTimes = ref(false);
+const showTimes = ref(props.showTimes);
 provide('show-times', showTimes);
+
+provide('editable', props.editable);
 
 const movedElement = ref<App.Entities.ProgrammeSection | App.Entities.ProgrammePart | null>(null);
 const updateMovedElement = (element: App.Entities.ProgrammeSection | App.Entities.ProgrammePart) => {
@@ -82,7 +86,7 @@ const updateMovedElement = (element: App.Entities.ProgrammeSection | App.Entitie
 }
 provide('movedElement', { movedElement, updateMovedElement });
 
-useSortable<HTMLDivElement | null>(programmeEl, programmeDays, {
+if (props.editable) useSortable<HTMLDivElement | null>(programmeEl, programmeDays, {
   handle: '.day-handle',
 });
 

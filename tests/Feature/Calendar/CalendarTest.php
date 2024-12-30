@@ -70,3 +70,7 @@ describe('auth: simple user', function () {
         asUser($this->user)->delete(route('calendar.destroy', $calendar))->assertStatus(302);
     });
 });
+
+describe('auth: calendar manager', function () {
+    test('saves images to calendar')->todo();
+})->todo();

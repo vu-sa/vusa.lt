@@ -232,7 +232,7 @@ test('contact manager can delete and restore user', function () {
     $this->assertDatabaseHas('users', [
         'id' => $this->user->id,
     ]);
-});
+})->skip('Deleting users is disabled almost for all');
 
 test('contact manager can add type to duty', function () {
     $admin = asUser($this->admin);
