@@ -88,3 +88,30 @@ html.dark {
 .n-form-item {
   align-items: start;
 }
+
+.archive-document-link {
+  /* Add pseudo class with icon */
+  background-color: rgb(244 244 245);
+  padding: 0.1rem 0.3rem;
+  color: unset;
+  text-decoration: none;
+  transition-duration: 0.2s;
+  border-radius: 0.3rem;
+  font-size: 0.8rem;
+}
+
+.archive-document-link::before {
+  margin-right: 0.3rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23000' d='M6 2a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9.828a2 2 0 0 0-.586-1.414l-5.828-5.828A2 2 0 0 0 12.172 2zm-.5 2a.5.5 0 0 1 .5-.5h6V8a2 2 0 0 0 2 2h4.5v10a.5.5 0 0 1-.5.5H6a.5.5 0 0 1-.5-.5zm11.88 4.5H14a.5.5 0 0 1-.5-.5V4.62z'/%3E%3C/svg%3E");
+  background-size: 10px 10px;
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  content: "";
+}
+
+.archive-document-link:hover {
+  background-color: rgb(230 230 231);
+  color: #bd2835;
+  text-decoration: underline;
+}

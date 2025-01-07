@@ -7,13 +7,13 @@
       <TiptapFormattingButtons v-model:editor="editor" />
       <NButtonGroup size="small">
         <TiptapLinkButton :editor="editor"
-          @submit="(url) => editor?.chain().focus().extendMarkRange('link').setLink({ href: url }).run()" />
-        <NButton :disabled="!editor.isActive('link')"
-          @click="editor?.chain().focus().unsetLink().run()">
+          @submit="(url) => editor?.chain().focus().extendMarkRange('link').setLink({ href: url, class: '' }).run()" @document:submit="(url) => editor?.chain().focus().extendMarkRange('link').setLink({ href: url, class: 'archive-document-link plain' }).run()"
+        />
+        <NButton :disabled="!editor.isActive('link')" @click="editor?.chain().focus().unsetLink().run()">
           <template #icon>
             <IFluentLinkDismiss20Filled />
           </template>
-        </NButton> 
+        </NButton>
       </NButtonGroup>
       <NButton size="small" @click="editor?.chain().focus().unsetAllMarks().run()">
         <template #icon>
@@ -147,8 +147,7 @@
     </div>
     <div class="mt-3 grid grid-cols-[auto,_30px] items-center gap-2 only:mt-0">
       <div class="max-h-96  w-full overflow-y-scroll">
-        <EditorContent :editor="editor"
-          class="min-h-24 rounded-md border dark:border-0 dark:bg-zinc-800" />
+        <EditorContent :editor="editor" class="min-h-24 rounded-md border dark:border-0 dark:bg-zinc-800" />
         <div v-if="editor && maxCharacters" class="mt-4 text-xs text-gray-500 dark:text-gray-400">
           {{ editor.storage.characterCount.characters() }}
         </div>
@@ -323,6 +322,7 @@ function handleUpdate() {
 
 <style>
 .tiptap {
+
   p,
   ul,
   ol,
@@ -338,7 +338,8 @@ function handleUpdate() {
     list-style-type: decimal;
   }
 
-  ul, ol {
+  ul,
+  ol {
     padding-left: 1.5rem;
   }
 
