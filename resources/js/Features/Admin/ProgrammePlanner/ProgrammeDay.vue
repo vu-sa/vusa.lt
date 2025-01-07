@@ -131,10 +131,10 @@ function createProgrammePart() {
       en: 'Programme Part ' + (day.value.elements.length + 1),
     },
     description: {
-      lt: 'Programos dalies aprašymas',
-      en: 'Programme Part Description',
+      lt: '',
+      en: '',
     },
-    instructor: 'Programme Part Instructor',
+    instructor: null,
     duration: 45,
   });
 }

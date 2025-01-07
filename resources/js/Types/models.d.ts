@@ -132,6 +132,8 @@ declare global {
       created_at?: string
       checked_at?: string | null
       updated_at?: string
+      effective_date?: string | null
+      expiration_date?: string | null
       // relations
       institution?: Institution
     }
@@ -319,6 +321,7 @@ declare global {
       matters?: Matter[]
       meetings?: Meeting[]
       users?: User
+      available_trainings?: Training[]
       commentable?: Institution
       comments?: Comment[]
       outgoing_relationships?: Relationship[]
@@ -394,6 +397,7 @@ declare global {
       // relations
       tenant?: Tenant
       users?: User[]
+      available_trainings?: Training[]
     }
 
     export interface Model {
@@ -627,6 +631,15 @@ declare global {
     }
 
     export interface Trainable {
+      // columns
+      id: number
+      training_id: string
+      trainable_type: string
+      trainable_id: string
+      tenant_id?: number | null
+      quota?: number | null
+      created_at: string
+      updated_at: string
       // relations
       trainable?: Trainable
       user?: User
@@ -923,8 +936,6 @@ declare global {
       institution_id: string
       form_id?: string | null
       max_participants?: number | null
-      is_online: boolean
-      is_hybrid: boolean
       created_at: string
       updated_at: string
       // mutators

@@ -23,7 +23,7 @@
           {{ part?.instructor ? ' | ' + part.instructor : '' }}
         </template>
         <template v-else>
-          {{ part?.duration }} min.
+          {{ part?.duration }} min. {{ part?.instructor ? ' | ' + part.instructor : '' }}
         </template>
       </div>
     </div>

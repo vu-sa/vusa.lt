@@ -27,6 +27,11 @@
       <ProgrammeBlock v-for="(block, index) in section.blocks" :key="block.id" v-model:block="section.blocks[index]"
         :section-start-time>
         <template v-if="editable" #buttons>
+          <NButton size="tiny" secondary circle @click="showBlockEditModal = true; selectedBlock = block">
+            <template #icon>
+              <IFluentEdit24Filled />
+            </template>
+          </NButton>
           <NButton size="tiny" secondary circle @click="deleteProgrammeBlock(index)">
             <template #icon>
               <IFluentDelete24Filled />
@@ -45,15 +50,25 @@
       </template>
       Pridėti programos bloką
     </NTooltip>
+    <CardModal v-model:show="showBlockEditModal" @close="showBlockEditModal = false">
+      <NFormItem label="Dienos pavadinimas">
+        <MultiLocaleInput v-model:input="selectedBlock.title" />
+      </NFormItem>
+      <NButton @click="showBlockEditModal = false">
+        Uždaryti
+      </NButton>
+    </CardModal>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, inject, type Ref } from 'vue';
+import { computed, inject, ref, type Ref } from 'vue';
 import { router } from "@inertiajs/vue3";
 
 import { formatStaticTime } from '@/Utils/IntlTime';
 import ProgrammeBlock from './ProgrammeBlock.vue';
+import CardModal from '@/Components/Modals/CardModal.vue';
+import MultiLocaleInput from '@/Components/FormItems/MultiLocaleInput.vue';
 
 const section = defineModel<App.Entities.ProgrammeSection | App.Entities.ProgrammePart>('element')
 
@@ -64,6 +79,9 @@ const { parent } = defineProps<{
 
 const showTimes = inject<Ref<boolean>>('show-times');
 const editable = inject<Ref<boolean>>('editable');
+
+const showBlockEditModal = ref(false);
+const selectedBlock = ref<App.Entities.ProgrammeBlock | null>(null);
 
 function createProgrammeBlock() {
   section.value?.blocks?.push({

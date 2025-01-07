@@ -107,6 +107,7 @@ class ProgrammeController extends Controller
                                 $part->title = $partData['title'];
                                 $part->description = $partData['description'] ?? null;
                                 $part->duration = $partData['duration'];
+                                $part->instructor = $partData['instructor'] ?? null;
 
                                 $part->save();
 
@@ -124,6 +125,7 @@ class ProgrammeController extends Controller
                         $part->title = $elementData['title'];
                         $part->description = $elementData['description'] ?? null;
                         $part->duration = $elementData['duration'];
+                        $part->instructor = $elementData['instructor'] ?? null;
 
                         // Check if part is already associated with day
                         if (! $day->parts->contains('id', $part->id)) {

@@ -6,7 +6,7 @@
     <div ref="programmeEl" class="mb-3 flex flex-col gap-2">
       <ProgrammeDay v-for="(day, index) in programmeDays" :key="day.id" v-model:day="programmeDays[index]"
         :data-id="day.id">
-        <template v-if="showEditDeleteButtons" #buttons>
+        <template v-if="editable" #buttons>
           <NButton size="tiny" secondary circle @click="showDayEditModal = true; selectedDay = day">
             <template #icon>
               <IFluentEdit24Filled />
