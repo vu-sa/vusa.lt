@@ -4,13 +4,11 @@
     <NewsElement :news="news" />
   </div>
 
-  <IndividualStudies />
-
   <EventCalendar :show-photos="true" :calendar :upcoming-events />
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent } from "vue";
+import { defineAsyncComponent } from "vue";
 
 defineProps<{
   news: Array<App.Entities.News>;
@@ -31,9 +29,4 @@ const NewsElement = defineAsyncComponent(
 //  // eslint-disable-next-line no-secrets/no-secrets
 //  () => import("@/Components/Public/FullWidth/SummerCamps.vue"),
 //);
-
-const IndividualStudies = defineAsyncComponent(
-  // eslint-disable-next-line no-secrets/no-secrets
-  () => import("@/Components/Public/FullWidth/IndividualStudies.vue"),
-);
 </script>
