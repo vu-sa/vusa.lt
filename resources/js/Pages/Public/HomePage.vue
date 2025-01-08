@@ -1,6 +1,12 @@
 <template>
   <!-- <SummerCamps v-if="$page.props.app.locale === 'lt'" /> -->
-  <div v-if="news.length > 0" class="mx-auto mt-2">
+  <template v-if="$page.props.auth?.user">
+    <h2 class="text-4xl font-bold tracking-tight">
+      {{ $t('Labas') }}, {{ userNameAddress }}! 👋
+    </h2>
+    <AdminMultiHomeCards />
+  </template>
+  <div v-if="news.length > 0" class="mx-auto mt-8">
     <NewsElement :news="news" />
   </div>
 
@@ -8,7 +14,10 @@
 </template>
 
 <script setup lang="ts">
-import { defineAsyncComponent } from "vue";
+import AdminMultiHomeCards from "@/Components/Cards/AdminMultiHomeCards.vue";
+import { addressivize } from "@/Utils/String";
+import { usePage } from "@inertiajs/vue3";
+import { computed, defineAsyncComponent } from "vue";
 
 defineProps<{
   news: Array<App.Entities.News>;
@@ -17,13 +26,29 @@ defineProps<{
 }>();
 
 const EventCalendar = defineAsyncComponent(
-  // eslint-disable-next-line no-secrets/no-secrets
+   
   () => import("@/Components/Public/FullWidth/EventCalendarElement.vue"),
 );
 
 const NewsElement = defineAsyncComponent(
   () => import("@/Components/Public/NewsElement.vue"),
 );
+
+
+const userNameAddress = computed(() => {
+  const name = usePage().props.auth?.user.name;
+
+  // Split
+  const split = name?.split(" ");
+
+  if (!split) {
+    return "";
+  }
+
+  const firstName = split[0];
+
+  return usePage().props.app.locale === 'lt' ? addressivize(firstName) : firstName;
+});
 
 //const SummerCamps = defineAsyncComponent(
 //  // eslint-disable-next-line no-secrets/no-secrets

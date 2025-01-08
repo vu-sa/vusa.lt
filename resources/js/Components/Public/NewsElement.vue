@@ -2,9 +2,9 @@
   <div class="mb-4 rounded-lg py-4 lg:mb-8">
     <header class="mb-4 flex flex-wrap items-center justify-between gap-1">
       <div>
-        <h1 class="lg:mb-0">
+        <h2 class="lg:mb-0 text-4xl">
           {{ $t("Naujienos") }}
-        </h1>
+        </h2>
         <!-- <p class="text-zinc-800 dark:text-zinc-50">
           {{
             $t("Karščiausios universiteto naujienos tiesiai iš studentų lūpų")
