@@ -109,19 +109,19 @@ class SharepointGraphService
         return $this->parseDriveItems($driveItems);
     }
 
-    /*public function getDriveItemByIdWithListItem(string $driveItemId): Models\DriveItem*/
-    /*{*/
-    /*    $requestConfiguration = new DriveItemItemRequestBuilderGetRequestConfiguration();*/
-    /*    $queryParameters = DriveItemItemRequestBuilderGetRequestConfiguration::createQueryParameters();*/
+    /* public function getDriveItemByIdWithListItem(string $driveItemId): Models\DriveItem */
+    /* { */
+    /*    $requestConfiguration = new DriveItemItemRequestBuilderGetRequestConfiguration(); */
+    /*    $queryParameters = DriveItemItemRequestBuilderGetRequestConfiguration::createQueryParameters(); */
     /**/
-    /*    $queryParameters->expand = ['listItem'];*/
+    /*    $queryParameters->expand = ['listItem']; */
     /**/
-    /*    $requestConfiguration->queryParameters = $queryParameters;*/
+    /*    $requestConfiguration->queryParameters = $queryParameters; */
     /**/
-    /*    $driveItem = $this->graph->drives()->byDriveId($this->driveId)->items()->byDriveItemId($driveItemId)->get($requestConfiguration)->wait();*/
+    /*    $driveItem = $this->graph->drives()->byDriveId($this->driveId)->items()->byDriveItemId($driveItemId)->get($requestConfiguration)->wait(); */
     /**/
-    /*    return $driveItem;*/
-    /*}*/
+    /*    return $driveItem; */
+    /* } */
 
     public function getDriveItemByListItem(string $siteId, string $listId, string $listItemId): Models\DriveItem
     {
@@ -161,7 +161,7 @@ class SharepointGraphService
 
     public function updateListItem(string $listId, $listItemId, array $fields): Models\FieldValueSet
     {
-        /*dd($fields, $this->siteId, $listId, $listItemId);*/
+        /* dd($fields, $this->siteId, $listId, $listItemId); */
 
         $requestConfiguration = new FieldsRequestBuilderPatchRequestConfiguration;
         $fieldValueSet = new FieldValueSet;
@@ -431,12 +431,14 @@ class SharepointGraphService
             $document->title = isset($driveItem['listItem']['fields']['Title']) ? $driveItem['listItem']['fields']['Title'] : $driveItem['name'];
             $document->eTag = $driveItem['listItem']['eTag'];
             $document->document_date = isset($driveItem['listItem']['fields']['Date']) ? Carbon::parseFromLocale(time: $driveItem['listItem']['fields']['Date'], timezone: 'UTC')->setTimezone('Europe/Vilnius') : null;
+            $document->effective_date = isset($driveItem['listItem']['fields']['Effective_x0020_Date']) ? Carbon::parseFromLocale(time: $driveItem['listItem']['fields']['Effective_x0020_Date'], timezone: 'UTC')->setTimezone('Europe/Vilnius') : null;
+            $document->expiration_date = isset($driveItem['listItem']['fields']['Expiration_x0020_Date0']) ? Carbon::parseFromLocale(time: $driveItem['listItem']['fields']['Expiration_x0020_Date0'], timezone: 'UTC')->setTimezone('Europe/Vilnius') : null;
 
             $document->language = isset($driveItem['listItem']['fields']['Language']) ? $driveItem['listItem']['fields']['Language'] : null;
             $document->content_type = isset($driveItem['listItem']['fields']['Turinys']['Label']) ? $driveItem['listItem']['fields']['Turinys']['Label'] : null;
 
             $document->summary = $driveItem['listItem']['fields']['Summary'] ?? null;
-            /*$document->thumbnail_url = $driveItem['thumbnails'][0]['large']['url'];*/
+            /* $document->thumbnail_url = $driveItem['thumbnails'][0]['large']['url']; */
 
             $document->anonymous_url = collect($driveItem['permissions'])->filter(function ($permission) {
 

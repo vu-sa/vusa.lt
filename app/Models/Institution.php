@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Actions\GetInstitutionManagers;
 use App\Events\FileableNameUpdated;
+use App\Models\Pivots\Trainable;
 use App\Models\Traits\HasComments;
 use App\Models\Traits\HasContentRelationships;
 use App\Models\Traits\HasSharepointFiles;
@@ -78,7 +79,7 @@ class Institution extends Model
 
     public function users(): HasManyDeep
     {
-        /*report('Institution::users() is deprecated. Use Institution::duties()->users() instead.');*/
+        /* report('Institution::users() is deprecated. Use Institution::duties()->users() instead.'); */
 
         return $this->hasManyDeepFromRelations($this->duties(), (new Duty)->users());
     }
@@ -115,5 +116,15 @@ class Institution extends Model
                 FileableNameUpdated::dispatch($institution);
             }
         });
+    }
+
+    public function getMaybeShortNameAttribute()
+    {
+        return $this->short_name ?? $this->name;
+    }
+
+    public function availableTrainings()
+    {
+        return $this->morphToMany(Training::class, 'trainable')->using(Trainable::class);
     }
 }

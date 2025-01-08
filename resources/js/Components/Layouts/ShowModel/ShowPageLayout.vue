@@ -1,5 +1,5 @@
 <template>
-  <AdminContentPage :title="title">
+  <AdminContentPage :title>
     <template #above-header>
       <template v-if="breadcrumbOptions">
         <AdminBreadcrumbDisplayer :options="breadcrumbOptions" class="mb-4 w-full" />

@@ -56,6 +56,9 @@
       <NFormItem label="Aprašymas">
         <NInput v-model:value="form.extra_attributes.description" type="textarea" placeholder="Įrašyti aprašymą..." />
       </NFormItem>
+      <NFormItem label="Mažas tekstas">
+        <NInput v-model:value="form.extra_attributes.small_text" type="text" placeholder="Įrašyti trumpą tekstą, atkreipiantį dėmesį į nuorodą..." />
+      </NFormItem>
       <NFormItem label="Foninis paveikslėlis">
         <img v-if="form.extra_attributes.image" class="mr-4 size-20 object-cover" :src="form.extra_attributes.image"
           alt="image">

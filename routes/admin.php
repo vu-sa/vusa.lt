@@ -44,9 +44,12 @@ Route::post('mainPage/update-order', [MainPageController::class, 'updateOrder'])
 Route::resource('mainPage', MainPageController::class)->except(['show']);
 Route::resource('banners', BannerController::class)->except(['show']);
 Route::resource('navigation', NavigationController::class)->except(['show']);
-/*Route::get('navigation/editAll', [NavigationController::class, 'editAll'])->name('navigation.editAll');*/
+/* Route::get('navigation/editAll', [NavigationController::class, 'editAll'])->name('navigation.editAll'); */
 Route::post('navigation/updateOrder', [NavigationController::class, 'updateOrder'])->name('navigation.updateOrder');
 Route::post('navigation/updateColumn', [NavigationController::class, 'updateColumn'])->name('navigation.updateColumn');
+
+Route::get('users/merge', [UserController::class, 'merge'])->name('users.merge');
+Route::post('users/merge', [UserController::class, 'mergeUsers'])->name('users.mergeUsers');
 Route::resource('users', UserController::class);
 
 Route::post('users/{user}/sendWelcomeEmail', [UserController::class, 'sendWelcomeEmail'])->name('users.sendWelcomeEmail');
@@ -55,12 +58,27 @@ Route::resource('users.comments', CommentController::class)->only(['store', 'upd
 Route::post('notification/{id}/markAsRead', [UserNotificationsController::class, 'markAsRead'])->name('notifications.markAsRead');
 Route::post('notification/markAllAsRead', [UserNotificationsController::class, 'markAllAsRead'])->name('notifications.markAllAsRead');
 
-Route::resource('contacts', ContactController::class);
+Route::resource('memberships', MembershipController::class);
+Route::post('memberships/{membership}/users/import', [MembershipController::class, 'importUsers'])->name('membershipUsers.import');
+
+Route::resource('trainings', TrainingController::class);
+Route::get('trainings/{training}/registration', [TrainingController::class, 'showRegistration'])->name('trainings.showRegistration');
+
+Route::resource('programmes', ProgrammeController::class);
+Route::resource('programmeDays', ProgrammeDayController::class)->only(['destroy']);
+Route::resource('programmeBlocks', ProgrammeBlockController::class)->only(['destroy']);
+
+Route::resource('programmeParts', ProgrammePartController::class)->only(['destroy']);
+Route::post('programmeParts/{programmePart}/attach', [ProgrammePartController::class, 'attach'])->name('programmeParts.attach');
+Route::post('programmeParts/{programmePart}/detach', [ProgrammePartController::class, 'detach'])->name('programmeParts.detach');
+
+Route::resource('programmeSections', ProgrammeSectionController::class)->only(['destroy']);
+Route::post('programmeSections/{programmeSection}/attach', [ProgrammeSectionController::class, 'attach'])->name('programmeSections.attach');
+Route::post('programmeSections/{programmeSection}/detach', [ProgrammeSectionController::class, 'detach'])->name('programmeSections.detach');
 
 Route::resource('calendar', CalendarController::class);
 Route::post('calendar/{calendar}/media/{media}', [CalendarController::class, 'destroyMedia'])->name('calendar.destroyMedia');
 Route::post('calendar/{calendar}/duplicate', [CalendarController::class, 'duplicate'])->name('calendar.duplicate');
-Route::resource('registrationForms', RegistrationFormController::class)->only(['store', 'show', 'index']);
 
 Route::resource('matters', MatterController::class)->except(['edit', 'update']);
 Route::resource('goals', GoalController::class);
@@ -68,7 +86,7 @@ Route::post('matters/{matter}/attach', [MatterController::class, 'attachGoal'])-
 Route::resource('goalGroups', GoalGroupController::class)->except(['show']);
 Route::resource('doings', DoingController::class);
 Route::resource('agendaItems', AgendaItemController::class)->except(['index', 'create']);
-Route::resource('meetings', MeetingController::class);
+Route::resource('meetings', MeetingController::class)->except(['create']);
 
 Route::resource('resources', ResourceController::class);
 Route::resource('resourceCategories', ResourceCategoryController::class);
@@ -91,6 +109,9 @@ Route::post('institutions/reorderDuties', [InstitutionController::class, 'reorde
 Route::resource('institutions', InstitutionController::class);
 
 Route::resource('tenants', TenantController::class);
+
+Route::resource('forms', FormController::class);
+Route::resource('registrations', RegistrationController::class)->only('show');
 
 Route::resource('types', TypeController::class);
 Route::resource('relationships', RelationshipController::class);
@@ -118,5 +139,8 @@ Route::get('sharepoint/getDriveItems', [SharepointFileController::class, 'getDri
 Route::get('sharepoint/{id}/permissions', [SharepointFileController::class, 'getDriveItemPublicLink'])->name('sharepoint.getDriveItemPublicLink');
 Route::get('sharepoint/{type}/{id}', [SharepointFileController::class, 'getTypesDriveItems'])->name('sharepoint.getTypesDriveItems');
 Route::post('sharepoint/{id}/permissions/createPublic', [SharepointFileController::class, 'createPublicPermission'])->name('sharepoint.createPublicPermission');
+
+Route::get('settings/forms', [SettingsController::class, 'editFormSettings'])->name('forms.settings.edit');
+Route::post('settings/forms', [SettingsController::class, 'updateFormSettings'])->name('forms.settings.update');
 
 Route::post('/logout', [UserController::class, 'logout'])->name('logout');

@@ -66,9 +66,17 @@ class CalendarController extends Controller
     {
         $calendar = new Calendar;
 
-        $calendar = $calendar->fill($request->validated());
+        $calendar = $calendar->fill($request->except('images'));
 
         $calendar->save();
+
+        $images = $request->file('images');
+
+        if ($images) {
+            foreach ($images as $image) {
+                $calendar->addMedia($image['file'])->toMediaCollection('images');
+            }
+        }
 
         return redirect()->route('calendar.index')->with('success', 'Kalendoriaus įvykis sėkmingai sukurtas!');
     }
@@ -98,9 +106,17 @@ class CalendarController extends Controller
         $this->authorize('update', $calendar);
 
         return Inertia::render('Admin/Calendar/EditCalendarEvent', [
-            'calendar' => $calendar->toFullArray(),
+            'calendar' => [
+                ...$calendar->toFullArray(),
+                'images' => $calendar->getMedia('images')->map(fn ($image) => [
+                    'id' => $image->id,
+                    'name' => $image->name,
+                    'url' => $image->original_url,
+                    'status' => 'finished',
+                ]
+                ),
+            ],
             'categories' => Category::all(),
-            'images' => $calendar->getMedia('images'),
             'assignableTenants' => GetTenantsForUpserts::execute('calendars.update.padalinys', $this->authorizer),
         ]);
     }

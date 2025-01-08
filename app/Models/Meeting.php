@@ -68,6 +68,11 @@ class Meeting extends Model
         return $this->hasManyDeepFromRelations($this->institutions(), (new Institution)->tenant());
     }
 
+    public function types()
+    {
+        return $this->morphToMany(Type::class, 'typeable');
+    }
+
     protected static function booted()
     {
         static::saved(function (Meeting $meeting) {

@@ -301,8 +301,6 @@ async function openPicker() {
         port.postMessage({
           type: "activate",
         });
-
-        console.log(port, "port");
       }
     }
   });

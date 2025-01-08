@@ -85,11 +85,6 @@ export default [
     key: pluralizeModels(ModelEnum.GOAL),
   },
   {
-    title: "Kontaktai",
-    icon: Icons.CONTACT,
-    key: pluralizeModels(ModelEnum.CONTACT),
-  },
-  {
     title: "Rezervacijos",
     icon: Icons.RESERVATION,
     key: pluralizeModels(ModelEnum.RESERVATION),
@@ -134,4 +129,15 @@ export default [
     icon: Icons.PERMISSION,
     key: pluralizeModels(ModelEnum.PERMISSION),
   },
+  {
+    title: "Mokymai",
+    icon: Icons.TRAINING,
+    key: pluralizeModels(ModelEnum.TRAINING),
+  },
+  { 
+    title: "Formos",
+    icon: Icons.FORM,
+    key: pluralizeModels(ModelEnum.FORM),
+  },
+  { title: "Narystės", icon: Icons.MEMBERSHIP, key: pluralizeModels(ModelEnum.MEMBERSHIP) },
 ];

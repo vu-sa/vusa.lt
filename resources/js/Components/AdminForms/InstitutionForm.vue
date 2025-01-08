@@ -114,7 +114,7 @@
           </a>
         </div>
       </template>
-      <div v-if="institution.duties.length > 0">
+      <div v-if="institution.duties && institution.duties.length > 0">
         <InfoText>
           Tempk
           <IFluentReOrderDotsVertical24Regular class="inline" /> ikoną, kad pakeistum pareigų eiliškumą.
@@ -189,18 +189,6 @@ const locale = ref("lt");
 const dutiesWereReordered = ref(false);
 
 const form = useForm("institution", props.institution);
-
-if (Array.isArray(form.short_name)) {
-  form.short_name = { lt: "", en: "" };
-}
-
-if (Array.isArray(form.description)) {
-  form.description = { lt: "", en: "" };
-}
-
-if (Array.isArray(form.address)) {
-  form.address = { lt: "", en: "" };
-}
 
 const options = props.assignableTenants.map((tenant) => ({
   value: tenant.id,

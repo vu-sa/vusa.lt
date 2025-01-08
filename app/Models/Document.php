@@ -33,8 +33,10 @@ class Document extends Model
         return $this->hasManyDeepFromRelations($this->institution(), (new Institution)->tenant());
     }
 
+    // Also used in SharepointGraphService::batchProcessDocuments
     public function refreshFromSharepoint()
     {
+        // For metadata fields
         $contentField = 'Turinys'; // Content Type
         $institutionField = 'Padalinys'; // Entity
 
@@ -51,6 +53,8 @@ class Document extends Model
         }
 
         $this->document_date = isset($additionalData['Date']) ? Carbon::parseFromLocale(time: $additionalData['Date'], timezone: 'UTC')->setTimezone('Europe/Vilnius') : $this->document_date;
+        $this->effective_date = isset($additionalData['Effective_x0020_Date']) ? Carbon::parseFromLocale(time: $additionalData['Effective_x0020_Date'], timezone: 'UTC')->setTimezone('Europe/Vilnius') : $this->effective_date;
+        $this->expiration_date = isset($additionalData['Expiration_x0020_Date0']) ? Carbon::parseFromLocale(time: $additionalData['Expiration_x0020_Date0'], timezone: 'UTC')->setTimezone('Europe/Vilnius') : $this->expiration_date;
 
         $this->name = $additionalData['Name'] ?? $this->name;
         $this->title = $additionalData['Title'] ?? $this->title;
@@ -69,9 +73,9 @@ class Document extends Model
         $driveItem = $graph->getDriveItemByListItem($this->sharepoint_site_id, $this->sharepoint_list_id, $this->sharepoint_id);
 
         // Add thumbnails
-        /*collect($driveItem->getThumbnails())->each(function ($thumbnailSet) {*/
-        /*    $this->thumbnail_url = $thumbnailSet->getLarge()->getUrl();*/
-        /*});*/
+        /* collect($driveItem->getThumbnails())->each(function ($thumbnailSet) { */
+        /*    $this->thumbnail_url = $thumbnailSet->getLarge()->getUrl(); */
+        /* }); */
 
         $anonymous_permission = $graph->getDriveItemPublicLink($driveItem->getId());
 
@@ -80,10 +84,10 @@ class Document extends Model
 
             $this->anonymous_url = $anonymous_permission->getLink()->getWebUrl();
 
-            /*$this->anonymous_url_expiration_date = Carbon::parse($anonymous_permission->getExpirationDateTime());*/
+            /* $this->anonymous_url_expiration_date = Carbon::parse($anonymous_permission->getExpirationDateTime()); */
         } else {
             $this->anonymous_url = $anonymous_permission->getLink()->getWebUrl();
-            /*$this->anonymous_url_expiration_date = Carbon::parse($anonymous_permission->getExpirationDateTime());*/
+            /* $this->anonymous_url_expiration_date = Carbon::parse($anonymous_permission->getExpirationDateTime()); */
         }
 
         $this->checked_at = Carbon::now();

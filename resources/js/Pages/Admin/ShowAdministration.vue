@@ -9,7 +9,7 @@
           <template v-for="item in category.items">
             <Link v-if="item.show" :key="item.title" :href="item.href">
             <button
-              class="group relative flex w-full flex-col gap-3 rounded-md border border-zinc-100 bg-gradient-to-br from-white to-white p-4 text-left text-sm leading-4 text-zinc-700 shadow-sm duration-500 hover:shadow-lg dark:border-zinc-800 dark:from-zinc-900 dark:to-neutral-800 dark:text-zinc-300 dark:hover:shadow-white/20">
+              class="group relative flex w-full flex-col gap-3 rounded-md border border-zinc-100 bg-gradient-to-br from-white to-white p-4 text-left text-sm leading-4 text-zinc-700 shadow-sm duration-500 hover:shadow-lg dark:border-0 dark:from-zinc-900 dark:to-neutral-800 dark:text-zinc-300 dark:hover:shadow-white/10">
               <component :is="item.icon" width="28" height="28" />
               {{ item.title }}
               <!-- Add favorite button -->
@@ -64,6 +64,7 @@ const changeFavorite = (item: { title: string }) => {
   }
 };
 
+// TODO: use entities.ts?
 const menuItems: MenuItemsType = computed(() => [
   {
     category: $t('Žmonės'),
@@ -87,13 +88,19 @@ const menuItems: MenuItemsType = computed(() => [
         show: auth?.can.create.institution
       },
       {
-        title: $t('Kontaktai'),
-        icon: Icons.CONTACT,
-        href: route('contacts.index'),
-        show: auth?.can.create.contact
+        title: $t('Narystės'),
+        icon: Icons.INSTITUTION,
+        href: route('memberships.index'),
+        show: auth?.can.create.membership
+      },
+      {
+        title: $t('Mokymai'),
+        icon: Icons.TRAINING,
+        href: route('trainings.index'),
+        show: auth?.can.create.training
       },
     ],
-    show: auth?.can.create.user || auth?.can.create.duty || auth?.can.create.institution || auth?.can.create.contact
+    show: auth?.can.create.user || auth?.can.create.duty || auth?.can.create.institution
   },
   {
     category: $t('Svetainė'),
@@ -214,6 +221,18 @@ const menuItems: MenuItemsType = computed(() => [
       },
     ],
     show: auth?.can.create.institution || auth?.can.create.meeting || auth?.can.create.user || auth?.can.create.doing || auth?.can.create.goal || auth?.can.create.goalGroup || auth?.can.create.matter || auth?.can.create.sharepointFile
+  },
+  {
+    category: $t('Formos'),
+    items: [
+      {
+        title: $t('Formos'),
+        href: route('forms.index'),
+        icon: Icons.FORM,
+        show: auth?.can.create.form
+      },
+    ],
+    show: auth?.can.create.form
   },
   {
     category: $t('Rezervacijos'),

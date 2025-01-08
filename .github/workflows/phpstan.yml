@@ -39,4 +39,4 @@ jobs:
         run: php artisan key:generate
       - name: "Running Static Analysis"
         run: |
-          vendor/phpstan/phpstan/phpstan --no-progress --memory-limit=256M analyze
+          vendor/phpstan/phpstan/phpstan --no-progress --memory-limit=384M analyze

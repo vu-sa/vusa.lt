@@ -6,11 +6,10 @@ use App\Http\Controllers\PublicController;
 use App\Models\Calendar;
 use App\Models\Category;
 use App\Models\Document;
+use App\Models\Form;
 use App\Models\Navigation;
 use App\Models\News;
 use App\Models\Page;
-use App\Models\Tenant;
-use App\Services\CuratorRegistrationService;
 use App\Services\ResourceServices\InstitutionService;
 use Datetime;
 use Illuminate\Database\Eloquent\Builder;
@@ -51,12 +50,12 @@ class PublicPageController extends PublicController
     {
         if (app()->getLocale() === 'en') {
             return Cache::remember('calendar_en', 60 * 30, function () {
-                return Calendar::where('is_international', true)->where('is_draft', false)
+                return Calendar::query()->with('category')->where('is_international', true)->where('is_draft', false)
                     ->orderBy('date', 'desc')->take(100)->get();
             });
         } else {
             return Cache::remember('calendar_lt', 60 * 30, function () {
-                return Calendar::query()->where('is_draft', false)->orderBy('date', 'desc')->take(100)->get();
+                return Calendar::query()->with('category')->where('is_draft', false)->orderBy('date', 'desc')->take(100)->get();
             });
         }
     }
@@ -80,7 +79,7 @@ class PublicPageController extends PublicController
             return $event->end_date ? $event->end_date > date('Y-m-d H:i:s') : $event->date > date('Y-m-d H:i:s');
         })->sortBy(function ($event) {
             return $event->date;
-        }, SORT_DESC)->take(8)->values()->load('tenant:id,alias,fullname,shortname');
+        }, SORT_DESC)->take(8)->values();
 
         $seo = $this->shareAndReturnSEOObject(title: __('Pagrindinis puslapis').' - '.$this->tenant->shortname);
 
@@ -120,24 +119,6 @@ class PublicPageController extends PublicController
                     'images' => $calendar->getMedia('images'),
                 ];
             }),
-        ])->withViewData([
-            'SEOData' => $seo,
-        ]);
-    }
-
-    public function curatorRegistration()
-    {
-        $this->getBanners();
-        $this->getTenantLinks();
-        $this->shareOtherLangURL('curatorRegistration');
-
-        $seo = $this->shareAndReturnSEOObject(
-            title: 'Kuratoriaus registracija - VU SA',
-            description: 'Kuratorių registracija - VU SA'
-        );
-
-        return Inertia::render('Public/CuratorRegistration', [
-            'curatorTenants' => (new CuratorRegistrationService)->getRegistrationTenantsWithData(),
         ])->withViewData([
             'SEOData' => $seo,
         ]);
@@ -191,14 +172,14 @@ class PublicPageController extends PublicController
             'page' => [
                 ...$page->only('id', 'title', 'lang', 'category', 'tenant', 'permalink', 'other_lang_id'),
                 'content' => $page->content,
-                /*'content' => [*/
-                /*    ...$page->content->toArray(),*/
-                /*    'parts' => $page->content->parts->map(function ($part) {*/
-                /*        return [*/
-                /*            ...$part->parseTipTapElements()->toArray(),*/
-                /*        ];*/
-                /*    }),*/
-                /*]*/
+                /* 'content' => [ */
+                /*    ...$page->content->toArray(), */
+                /*    'parts' => $page->content->parts->map(function ($part) { */
+                /*        return [ */
+                /*            ...$part->parseTipTapElements()->toArray(), */
+                /*        ]; */
+                /*    }), */
+                /* ] */
             ],
         ])->withViewData([
             'SEOData' => $seo,
@@ -346,22 +327,45 @@ class PublicPageController extends PublicController
             );
     }
 
-    public function memberRegistration()
+    public function registrationPage($lang, $registrationString, string $registrationForm)
     {
+
         $this->getBanners();
         $this->getTenantLinks();
-        $this->shareOtherLangURL('memberRegistration');
 
-        $tenants = Tenant::select('id', 'fullname', 'shortname')->where('shortname', '!=', 'VU SA')->where('type', 'padalinys')->
-            orderBy('shortname')->get();
+        $form = Form::query()->whereJsonContains('path->'.$lang, $registrationForm)->with(['formFields' => function ($query) {
+            $query->orderBy('order');
+        }])->firstOrFail();
+
+        $otherLocale = app()->getLocale() === 'lt' ? 'en' : 'lt';
+
+        Inertia::share('otherLangURL', route('registrationPage', ['lang' => $otherLocale, 'registrationString' => $otherLocale === 'lt' ? 'registracija' : 'registration', 'registrationForm' => $form->getTranslation('path', $otherLocale)]));
 
         $seo = $this->shareAndReturnSEOObject(
-            title: __('Prašymas tapti VU SA (arba VU SA PKP) nariu').' - VU SA',
-            description: app()->getLocale() === 'lt' ? 'Tapti VU SA nariu gali kiekvienas Vilniaus universiteto studentas, kuris nori aktyviai dalyvauti studentų atstovybės veikloje.' : 'Every Vilnius University student who wants to actively participate in the activities of the student representation can become a member of VU SR.',
+            title: $form->name.' - '.$this->tenant->shortname,
         );
 
-        return Inertia::render('Public/MemberRegistration', [
-            'tenantOptions' => $tenants,
+        return Inertia::render('Public/RegistrationPage', [
+            'form' => [
+                ...$form->toArray(),
+                'form_fields' => $form->formFields->map(function ($field) {
+                    $options = $field->options;
+
+                    if ($field->use_model_options) {
+                        $options = $field->options_model::all()->map(function ($model) use ($field) {
+                            return [
+                                'value' => $model->id,
+                                'label' => $model->{$field->options_model_field},
+                            ];
+                        });
+                    }
+
+                    return [
+                        ...$field->toArray(),
+                        'options' => $options,
+                    ];
+                }),
+            ],
         ])->withViewData([
             'SEOData' => $seo,
         ]);
@@ -379,24 +383,33 @@ class PublicPageController extends PublicController
         );
 
         if (request()->all() === []) {
-            $documents = Document::query()->with('institution');
+            $documents = Document::query()->with('institution')
+                ->orderBy('document_date', 'desc');
         } else {
 
-            $documents = Document::search(request()->title)->query(function (Builder $query) {
+            $documents = Document::search(request()->q)->query(function (Builder $query) {
                 $query->with('institution.tenant')->when(request()->has('tenants'), function (Builder $query) {
                     $query->whereHas('institution.tenant', fn ($query) => $query->whereIn('tenants.shortname', request()->tenants));
                 })->when(request()->has('contentTypes'), function (Builder $query) {
                     $query->whereIn('content_type', request()->contentTypes);
                 })->when(request()->has('language'), function (Builder $query) {
                     $query->where('language', request()->language);
-                })->when(request()->has('dateRange') && request('dateRange'), function (Builder $query) {
-                    $query->whereBetween('document_date', [Carbon::createFromTimestamp(request()->dateRange[0] / 1000), Carbon::createFromTimestamp(request()->dateRange[1] / 1000)])->orderBy('document_date', 'desc');
+                    // if has at least one of the dates: dateFrom or dateTo
+                })->when(request()->has('dateFrom') || request()->has('dateTo'), function (Builder $query) {
+                    $dateFrom = request()->dateFrom ? Carbon::parse(request()->dateFrom / 1000) : null;
+                    $dateTo = request()->dateTo ? Carbon::parse(request()->dateTo / 1000) : null;
+
+                    $query->when($dateFrom, function (Builder $query) use ($dateFrom) {
+                        $query->where('document_date', '>=', $dateFrom);
+                    })->when($dateTo, function (Builder $query) use ($dateTo) {
+                        $query->where('document_date', '<=', $dateTo);
+                    });
                 });
             });
         }
 
         return Inertia::render('Public/ShowDocuments', [
-            'documents' => $documents->where('is_active', true)->get(),
+            'documents' => $documents->where('is_active', true)->orderBy('document_date', 'desc')->paginate(20),
             // Filter null values from content_type
             'allContentTypes' => Document::query()->select('content_type')->whereNotNull('content_type')->distinct()->pluck('content_type')->sort()->values(),
         ])->withViewData([

@@ -38,9 +38,12 @@ class EventServiceProvider extends ServiceProvider
         \App\Events\ReservationResourceCreated::class => [
             \App\Listeners\ReservationResource\HandleReservationResourceCreated::class,
         ],
-        /*\App\Events\TaskCreated::class => [*/
-        /*    \App\Listeners\HandleTaskCreated::class,*/
-        /*],*/
+        \App\Events\MemberRegistrationCreated::class => [
+            \App\Listeners\SendMemberRegistrationNotification::class,
+        ],
+        /* \App\Events\TaskCreated::class => [ */
+        /*    \App\Listeners\HandleTaskCreated::class, */
+        /* ], */
     ];
 
     /**

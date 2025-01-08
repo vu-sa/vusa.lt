@@ -3,19 +3,14 @@
 namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\PublicController;
-use App\Mail\ConfirmMemberRegistration;
 use App\Models\Calendar;
+use App\Models\Document;
 use App\Models\News;
 use App\Models\Page;
-use App\Models\Registration;
-use App\Models\RegistrationForm;
 use App\Models\Tenant;
-use App\Models\User;
-use App\Notifications\MemberRegistered;
 use App\Services\IcalendarService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Notification;
 
 class MainController extends PublicController
 {
@@ -23,62 +18,6 @@ class MainController extends PublicController
     {
         return response((new IcalendarService)->get())
             ->header('Content-Type', 'text/calendar; charset=utf-8');
-    }
-
-    public function storeMemberRegistration()
-    {
-        // store registration
-        // 1 registration is to MIF camp, 2 is for VU SA and PKP members
-
-        $data = request()->all();
-        if ($data['registrationForm'] == 3) {
-            $this->storeRegistration(RegistrationForm::find(3));
-
-            return;
-        } else {
-            $this->storeRegistration(RegistrationForm::find(2));
-            $registerLocation = new Tenant;
-            $chairPerson = new User;
-
-            // if whereToRegister is int, then it is a tenant id
-            if (is_int($data['whereToRegister'])) {
-                $registerTenant = Tenant::find($data['whereToRegister']);
-                $registerLocation = __($registerTenant->fullname);
-                $chairDuty = $registerTenant->duties()->whereHas('types', function ($query) {
-                    $query->where('slug', 'pirmininkas');
-                })->first();
-                $chairPerson = $chairDuty->current_users->first();
-                $chairEmail = $chairDuty->email;
-            } else {
-                switch ($data['whereToRegister']) {
-                    case 'hema':
-                        $registerLocation = 'HEMA ('.__('Istorinių Europos kovos menų klubas').')';
-                        $chairEmail = 'hema@vusa.lt';
-                        break;
-
-                    case 'jek':
-                        $registerLocation = 'VU '.__('Jaunųjų energetikų klubas');
-                        $chairEmail = 'vujek@jek.lt';
-                        break;
-
-                    default:
-                        abort(500);
-                        break;
-                }
-            }
-
-            // send mail to the registered person
-            Mail::to($data['email'])->send(new ConfirmMemberRegistration($data, $registerLocation, $chairPerson, $chairEmail));
-            Notification::send($chairPerson, new MemberRegistered($data, $registerLocation, $chairEmail));
-        }
-    }
-
-    public function storeRegistration(RegistrationForm $registrationForm)
-    {
-        $registration = new Registration;
-        $registration->data = request()->except('registrationForm', 'tenant');
-        $registration->registration_form_id = $registrationForm->id;
-        $registration->save();
     }
 
     public function getMainNews()
@@ -96,39 +35,15 @@ class MainController extends PublicController
         // get search query
         $search = request()->data['input'];
 
-        // search calendar events by title and get 5 most recent with only title, date and id, but spaces are not important
-        $calendar = Calendar::search($search)->orderBy('date', 'desc')->take(5)->get()->map(function ($calendar) {
-            return [
-                'id' => $calendar->id,
-                'title' => $calendar->title,
-                'date' => $calendar->date,
-                'permalink' => $calendar->permalink,
-                'lang' => $calendar->lang,
-            ];
-        });
+        $calendar = Calendar::search($search)->orderBy('date', 'desc')->take(5)->get(['id', 'title', 'date', 'permalink', 'lang']);
 
-        // search news by title and get 5 most recent with only title, publish_time and id and permalink
-        $news = News::search($search)->orderBy('publish_time', 'desc')->take(5)->get()->map(function ($news) {
-            return [
-                'id' => $news->id,
-                'title' => $news->title,
-                'publish_time' => $news->publish_time,
-                'permalink' => $news->permalink,
-                'lang' => $news->lang,
-            ];
-        });
+        $news = News::search($search)->orderBy('publish_time', 'desc')->take(5)->get(['id', 'title', 'publish_time', 'image', 'permalink', 'lang']);
 
-        // search pages by title and get 5 most recent with only title, id and permalink
-        $pages = Page::search($search)->orderBy('created_at', 'desc')->take(5)->get()->map(function ($page) {
-            return [
-                'id' => $page->id,
-                'title' => $page->title,
-                'permalink' => $page->permalink,
-                'lang' => $page->lang,
-            ];
-        });
+        $pages = Page::search($search)->orderBy('created_at', 'desc')->take(5)->get(['id', 'title', 'permalink', 'lang']);
 
-        return back()->with('search_calendar', $calendar)->with('search_news', $news)->with('search_pages', $pages);
+        $documents = Document::search($search)->orderBy('document_date', 'desc')->take(5)->get(['id', 'name', 'title', 'document_date', 'anonymous_url', 'language', 'content_type', 'created_at', 'summary']);
+
+        return back()->with('search', ['calendar' => $calendar, 'news' => $news, 'pages' => $pages, 'documents' => $documents]);
     }
 
     public function sendFeedback(Request $request)

@@ -151,7 +151,6 @@ const moveUp = (parent, link) => {
   let linkArrayIndex = -1;
   // Find links index by iterating through links array
   for (let i = 0; i < contents.value[contentsIndex].links.length; i++) {
-    console.log(contents.value[contentsIndex].links[i]);
     if (contents.value[contentsIndex].links[i].find((item) => item.id === link.id)) {
       linkArrayIndex = i;
       break;
@@ -181,7 +180,6 @@ const moveDown = (parent, link) => {
   let linkArrayIndex = -1;
   // Find links index by iterating through links array
   for (let i = 0; i < contents.value[contentsIndex].links.length; i++) {
-    console.log(contents.value[contentsIndex].links[i]);
     if (contents.value[contentsIndex].links[i].find((item) => item.id === link.id)) {
       linkArrayIndex = i;
       break;
@@ -212,7 +210,6 @@ const changeColumn = (link, direction) => {
 };
 
 const handleDelete = (link) => {
-  console.log(link);
   router.delete(route("navigation.destroy", link.id));
 };
 </script>

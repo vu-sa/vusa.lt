@@ -3,20 +3,19 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 
 class Registration extends Model
 {
+    /** @use HasFactory<\Database\Factories\RegistrationFactory> */
     use HasFactory;
 
-    protected $casts = [
-        'data' => 'array',
-        'updated_at' => 'datetime:Y-m-d H:i:s',
-        'created_at' => 'datetime:Y-m-d H:i:s',
-    ];
-
-    public function registrationForm()
+    public function form()
     {
-        return $this->belongsTo(RegistrationForm::class, 'registration_form_id', 'id');
+        return $this->belongsTo(Form::class);
+    }
+
+    public function fieldResponses()
+    {
+        return $this->hasMany(FieldResponse::class);
     }
 }

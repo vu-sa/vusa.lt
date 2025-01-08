@@ -30,6 +30,7 @@ export const modelTypes = {
     uppercase(ModelEnum.DUTY),
     uppercase(ModelEnum.DOING),
     uppercase(ModelEnum.INSTITUTION),
+    uppercase(ModelEnum.MEETING),
   ],
 };
 

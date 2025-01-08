@@ -1,5 +1,5 @@
 <template>
-  <PageContent :title="institution.name[$page.props.app.locale]" :back-url="route('institutions.index')"
+  <PageContent :title="$page.props.seo.title" :back-url="route('institutions.index')"
     :heading-icon="Icons.INSTITUTION">
     <template #after-heading>
       <PreviewModelButton v-if="institution.alias" public-route="contacts.alias" :route-props="{

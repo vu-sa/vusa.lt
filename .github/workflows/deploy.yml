@@ -35,6 +35,8 @@ jobs:
           composer install -q --no-ansi --no-interaction --no-scripts --no-dev
           tar -czf vendor.tar.gz vendor
       - name: install and build npm deps
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         run: |
           npm ci
           # TODO: Possible to maybe use this: https://import-meta-env.org/guide/getting-started/introduction.html#guide

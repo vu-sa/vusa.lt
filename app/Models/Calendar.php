@@ -38,17 +38,9 @@ class Calendar extends Model implements HasMedia
         return $this->belongsTo(Tenant::class);
     }
 
-    //# Undefined property: App\Models\Calendar::$category, when generating types
-    // "@php artisan model:typer --global > resources/js/Types/models.d.ts"
-    // sail artisan model:typer --optional-relations --optional-nullables --global > resources/js/Types/models.d.ts
     public function category(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
-        return $this->belongsTo(Category::class, 'category', 'alias', 'category');
-    }
-
-    public function registrationForm()
-    {
-        return $this->belongsTo(RegistrationForm::class, 'registration_form_id', 'id');
+        return $this->belongsTo(Category::class);
     }
 
     public function registerMediaCollections(): void

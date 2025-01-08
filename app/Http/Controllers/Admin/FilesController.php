@@ -36,7 +36,7 @@ class FilesController extends Controller
     {
         $path = $request->path ?? 'public/files';
 
-        //# If path doesn't have public/files in it, change it to public/files
+        // # If path doesn't have public/files in it, change it to public/files
 
         if (! str_contains($path, 'public/files')) {
             $path = 'public/files';

@@ -40,18 +40,6 @@ class MeetingController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    // public function create()
-    // {
-    //     $this->authorize('create', [Meeting::class, $this->authorizer]);
-
-    //     return Inertia::render('Admin/Representation/CreateMeeting');
-    // }
-
-    /**
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -66,6 +54,8 @@ class MeetingController extends Controller
 
         $meeting->institutions()->attach($request->safe()->institution_id);
 
+        $meeting->types()->attach($request->safe()->type_id);
+
         return back()->with(['success' => 'Posėdis sukurtas sėkmingai!', 'data' => $meeting]);
     }
 
@@ -79,7 +69,7 @@ class MeetingController extends Controller
     {
         $this->authorize('view', $meeting);
 
-        $meeting->load('institutions', 'activities.causer', 'files', 'comments', 'agendaItems')->load(['tasks' => function ($query) {
+        $meeting->load('institutions', 'activities.causer', 'files', 'comments', 'agendaItems', 'types')->load(['tasks' => function ($query) {
             $query->with('users', 'taskable');
         }]);
 
@@ -122,10 +112,13 @@ class MeetingController extends Controller
         ]);
 
         $validated['start_time'] = Carbon::createFromTimestamp($validated['start_time'] / 1000, 'Europe/Vilnius')->toDateTime();
+
         $validated['title'] = Carbon::parse($validated['start_time'])->locale('lt-LT')->isoFormat('YYYY MMMM DD [d.] HH.mm [val.]').' posėdis';
 
         $meeting->fill($validated);
         $meeting->save();
+
+        $meeting->types()->sync([$request->type_id]);
 
         return back()->with('success', 'Posėdis atnaujintas sėkmingai!');
     }
@@ -139,10 +132,11 @@ class MeetingController extends Controller
     {
         $this->authorize('delete', $meeting);
 
-        // delete meeting
+        $redirect_url = request()->redirect_to ?? back()->getTargetUrl();
+
         $meeting->delete();
 
-        return back()->with('success', 'Posėdis ištrintas sėkmingai!');
+        return redirect($redirect_url)->with('success', 'Posėdis ištrintas sėkmingai!');
     }
 
     public function restore(Meeting $meeting)

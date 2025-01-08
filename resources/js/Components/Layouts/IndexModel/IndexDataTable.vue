@@ -3,8 +3,8 @@
     @update:other="handleShowOther" @sweep="sweepSearch" />
   <!-- Dialog provider is used for the delete button -->
   <NDialogProvider>
-    <NDataTable remote :data="paginatedModels.data" :columns="columnsWithActions" :loading="loading"
-      :pagination="pagination" :row-key="(row) => row.id" pagination-behavior-on-filter="first" v-bind="$attrs"
+    <NDataTable remote :data="paginatedModels.data" :columns="columnsWithActions" :loading :pagination="pagination"
+      :row-key="(row) => row.id" pagination-behavior-on-filter="first" v-bind="$attrs"
       @update:sorter="handleSorterChange" @update:page="handleChange" @update:filters="handleFiltersChange"
       @update-checked-row-keys="handleCheckedRowKeysChange" />
   </NDialogProvider>
@@ -32,6 +32,7 @@ const props = defineProps<{
   paginatedModels: PaginatedModels<Record<string, any>>;
   modelName: string;
   showRoute?: string;
+  duplicateRoute?: string;
   editRoute?: string;
   destroyRoute?: string;
 }>();
@@ -178,7 +179,7 @@ const columnsWithActions = computed(() => {
     ...props.columns,
     {
       title:
-        props.showRoute || props.editRoute || props.destroyRoute
+        props.showRoute || props.editRoute || props.destroyRoute || props.duplicateRoute
           ? $t("Veiksmai")
           : null,
       key: "actions",
@@ -189,6 +190,7 @@ const columnsWithActions = computed(() => {
           routes: {
             show: props.showRoute,
             edit: props.editRoute,
+            duplicate: props.duplicateRoute,
             destroy: props.destroyRoute,
           },
           model: row,

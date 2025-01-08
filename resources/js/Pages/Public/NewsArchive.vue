@@ -12,20 +12,7 @@
       subdomain: $page.props.tenant?.subdomain ?? 'www',
     })
       ">
-    <HomeCard :has-mini-content="false" :has-below-card="true">
-      <template #mini />
-      <template #below-card>
-        <!-- <NIcon class="mr-2" size="20"> <CalendarLtr20Regular /> </NIcon>VU SA
-                ataskaitinė-rinkiminė konferencija -->
-        <IFluentClock24Filled />
-        {{ formatStaticTime(new Date(item.publish_time), { year: "numeric", month: "long", day: "numeric" },
-          $page.props.app.locale) }}
-      </template>
-      <template #image>
-        <img :src="item.image" class="mb-1 h-40 w-full rounded-sm object-cover shadow-md duration-200 hover:shadow-lg">
-      </template>
-      {{ item.title }}
-    </HomeCard>
+    <NewsCard :news="item" />
     </Link>
   </div>
   <NPagination style="overflow-x: auto" class="mb-2 mt-12" :item-count="props.news.total"
@@ -35,8 +22,7 @@
 <script setup lang="ts">
 import { Link, router } from "@inertiajs/vue3";
 
-import { formatStaticTime } from "@/Utils/IntlTime";
-import HomeCard from "@/Components/Public/HomeCard.vue";
+import NewsCard from "../../Components/Cards/NewsCard.vue";
 
 const props = defineProps<{
   news: PaginatedModels<App.Entities.News>;

@@ -1,10 +1,10 @@
 <template>
   <NPopover class="rounded-sm" :show-arrow="false" raw style="max-width: 200px">
     <template #trigger>
-      <UserAvatar v-if="!showName" :user="user" :size="size" />
-      <div v-else class="inline-flex items-center gap-2">
-        <UserAvatar :user="user" :size="size" />
-        <span :class="[size > 16 ? 'text-base' : 'text-sm']"> {{ user.name }}</span>
+      <UserAvatar v-if="!showName" v-bind="$attrs" :user :size />
+      <div v-else v-bind="$attrs" class="inline-flex items-center gap-2">
+        <UserAvatar :user :size />
+        <span :class="[size > 20 ? 'text-base' : 'text-sm']"> {{ user.name }}</span>
       </div>
     </template>
     <img v-if="photo" class="w-full rounded-t-sm" :src="photo" alt="">

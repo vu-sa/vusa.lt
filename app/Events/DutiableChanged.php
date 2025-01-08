@@ -10,17 +10,12 @@ class DutiableChanged
 {
     use Dispatchable, SerializesModels;
 
-    public $dutiable;
-
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct($dutiable)
-    {
-        $this->dutiable = $dutiable;
-    }
+    public function __construct(public $dutiable) {}
 
     /**
      * Get the channels the event should broadcast on.

@@ -1,6 +1,5 @@
 /* eslint-disable no-secrets/no-secrets */
 import Alert24Regular from "~icons/fluent/alert24-regular";
-import BookContacts28Regular from "~icons/fluent/book-contacts28-regular";
 import BookQuestionMark24Regular from "~icons/fluent/book-question-mark24-regular";
 import Bookmark24Regular from "~icons/fluent/bookmark24-regular";
 import CalendarLtr24Regular from "~icons/fluent/calendar-ltr24-regular";
@@ -20,6 +19,7 @@ import ImageArrowBack24Regular from "~icons/fluent/image-arrow-back24-regular";
 import Important24Regular from "~icons/fluent/important24-regular";
 import Navigation24Regular from "~icons/fluent/navigation24-regular";
 import News24Regular from "~icons/fluent/news24-regular";
+import Notebook24Regular from "~icons/fluent/notebook24-regular";
 import PeopleSearch24Regular from "~icons/fluent/people-search24-regular";
 import PeopleTeam24Regular from "~icons/fluent/people-team24-regular";
 import Person24Regular from "~icons/fluent/person24-regular";
@@ -45,11 +45,11 @@ const modelIcons: Record<keyof typeof ModelEnum, Component> = {
   CATEGORY: TextBulletListSquare24Regular,
   CHANGELOG_ITEM: DocumentBulletList24Regular,
   COMMENT: Comment24Regular,
-  CONTACT: BookContacts28Regular,
   DOCUMENT: DocumentMultiple24Regular,
   DOING: Important24Regular,
   DUTIABLE: PersonClock24Regular,
   DUTY: PuzzlePiece24Regular,
+  FORM: DocumentBulletList24Regular,
   GOAL: StarLineHorizontal324Regular,
   GOAL_GROUP: Sparkle24Regular,
   INSTITUTION: PeopleTeam24Regular,
@@ -71,6 +71,7 @@ const modelIcons: Record<keyof typeof ModelEnum, Component> = {
   TAG: Tag24Regular,
   TASK: TaskListSquareLtr24Regular,
   TENANT: PeopleSearch24Regular,
+  TRAINING: Notebook24Regular,
   TYPE: DocumentSettings20Regular,
   USER: Person24Regular,
 };

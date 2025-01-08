@@ -1,13 +1,11 @@
 @component('mail::message')
 # Informacija apie užpildytą registraciją
 
-Gaunate šį laišką, nes [VU SA registracijos puslapyje](https://vusa.lt/nariu-registracija) buvo užpildyta registracija į {{ $registerLocation }}.
+Labas! Gavai šį laišką, nes [VU SA registracijos puslapyje]({{ route('member-registration') }}) {{ $name }} užpildė registraciją į *{{ $institution->name }}*.
 
-- Vardas: {{ $registration['name'] }}
-- El. paštas: [{{ $registration['email'] }}](mailto:{{ $registration['email'] }})
-- Telefono numeris: {{ $registration['phone'] }}
-- Kursas: {{ $registration['course'] }}
+Visą registracijos informaciją gali pamatyti [čia]({{ route('registrations.show', $registration_id) }}).
 
-Atitinkamą laišką gavo ir užsiregistravęs asmuo, kuriam (-ai) buvo pranešta, kad su juo bus susisiekta. 😊
+Atitinkamą laišką gavo ir užsiregistravęs asmuo, kuriam (-ai) buvo pranešta, kad su juo bus susisiekta.
 
+Sėkmės!
 @endcomponent

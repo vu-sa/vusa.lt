@@ -5,9 +5,6 @@ declare namespace App.Entities {
   export type Category = models.Category;
   export type ChangelogItem = models.ChangelogItem;
   export type Comment = models.Comment;
-  export interface Contact extends models.Contact {
-    comments: Array<models.Comment>;
-  }
 
   export type Document = Omit<models.Document, "sharepoint_id" | "eTag" | "public_url_created_at" | "sharepoint_site_id" | "sharepoint_list_id" | "created_at" | "updated_at">
 
@@ -29,6 +26,11 @@ declare namespace App.Entities {
     roles_count?: number | null;
   }
 
+  export type FieldResponse = models.FieldResponse;
+
+  export type Form = models.Form;
+  export type FormField = models.FormField;
+
   export type Goal = models.Goal;
   export type GoalGroup = models.GoalGroup;
   export type GoalMatter = models.GoalMatter;
@@ -40,6 +42,7 @@ declare namespace App.Entities {
   // }
 
   export type Meeting = models.Meeting;
+  export type Membership = models.Membership;
 
   export type Navigation = models.Navigation;
   export type News = models.News;
@@ -55,11 +58,14 @@ declare namespace App.Entities {
     updated_at: string;
   }
 
-  export type Tenant = models.Tenant;
   export type Page = models.Page;
   export type Permission = models.Permission;
+  export type Programme = models.Programme;
+  export type ProgrammeDay = models.ProgrammeDay;
+  export type ProgrammeBlock = models.ProgrammeBlock;
+  export type ProgrammePart = models.ProgrammePart;
+  export type ProgrammeSection = models.ProgrammeSection;
   export type Registration = models.Registration;
-  export type RegistrationForm = models.RegistrationForm;
   export type Relationship = models.Relationship;
   export type Relationshipable = models.Relationshipable;
   export type Reservation =
@@ -91,6 +97,8 @@ declare namespace App.Entities {
   export type StudyProgram = models.StudyProgram;
   export type Tag = models.Tag;
   export type Task = models.Task;
+  export type Tenant = models.Tenant;
+  export type Training = models.Training;
   export type Type = models.Type;
 
   export type User =

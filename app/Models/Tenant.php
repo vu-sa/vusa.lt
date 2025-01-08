@@ -71,4 +71,9 @@ class Tenant extends Model
     {
         return $this;
     }
+
+    public function primary_institution()
+    {
+        return $this->belongsTo(Institution::class, 'primary_institution_id');
+    }
 }

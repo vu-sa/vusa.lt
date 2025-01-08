@@ -102,7 +102,7 @@
 </template>
 
 <script setup lang="tsx">
-import { router } from "@inertiajs/vue3";
+import { router, useForm } from "@inertiajs/vue3";
 import {
   NButton,
   NCheckbox,
@@ -116,7 +116,6 @@ import {
   type SelectOption,
 } from "naive-ui";
 import { computed, ref, watch } from "vue";
-import { useForm } from "laravel-precognition-vue-inertia";
 
 import { RESERVATION_DESCRIPTIONS } from "@/Constants/I18n/Descriptions";
 import { RESERVATION_PLACEHOLDERS } from "@/Constants/I18n/Placeholders";
@@ -151,9 +150,7 @@ const routeToSubmit = computed(() => {
     : route(props.modelRoute);
 });
 
-const form = useForm(
-  props.reservation?.id ? "patch" : "post",
-  routeToSubmit.value,
+const form = useForm('reservation',
   props.reservation,
 );
 
@@ -211,7 +208,9 @@ const allResourceOptions = computed(() => {
 });
 
 const submit = () => {
-  form.submit({
+  form.submit(
+    props.reservation?.id ? "patch" : "post",
+    routeToSubmit.value, {
     preserveScroll: true,
   });
 };

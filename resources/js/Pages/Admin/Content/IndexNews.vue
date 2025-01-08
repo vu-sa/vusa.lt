@@ -23,6 +23,7 @@ const canUseRoutes = {
   create: true,
   show: false,
   edit: true,
+  duplicate: true,
   destroy: true,
 };
 
@@ -98,11 +99,7 @@ const columns = computed<DataTableColumns<App.Entities.News>>(() => [
         >
           {row.other_language_news?.title}
         </a>
-      ) : (
-          <NButton size="tiny" onClick={() => duplicateNews(row.id)}>
-              Duplikuoti
-          </NButton>
-      );
+      ) : null;
     },
   },
   {
@@ -133,8 +130,4 @@ const columns = computed<DataTableColumns<App.Entities.News>>(() => [
     },
   },
 ]);
-
-function duplicateNews(id: number) {
-  router.post(route("news.duplicate", { id }));
-}
 </script>

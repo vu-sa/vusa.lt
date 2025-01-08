@@ -1,13 +1,8 @@
 <template>
-  <PageContent
-    title="Naujas pasikeitimas"
-    :back-url="route('changelogItems.index')"
-  >
+  <PageContent title="Naujas pasikeitimas" :back-url="route('changelogItems.index')">
     <UpsertModelLayout :errors="$page.props.errors">
-      <ChangelogItemForm
-        :changelog-item="changelogItemTemplate"
-        model-route="changelogItems.store"
-      />
+      <ChangelogItemForm :changelog-item="changelogItemTemplate"
+        @submit:form="(form) => form.post(route('changelogItems.store'))" />
     </UpsertModelLayout>
   </PageContent>
 </template>

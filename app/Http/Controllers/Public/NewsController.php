@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\PublicController;
 use App\Models\News;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Tiptap\Editor;
@@ -16,14 +15,7 @@ class NewsController extends PublicController
         $this->getBanners();
         $this->getTenantLinks();
 
-        if (substr($news->image, 0, 4) == 'http') {
-            $image = $news->image;
-            $seoImage = $news->image;
-        } else {
-            $image = Storage::get(str_replace('uploads', 'public', $news->image)) === null ? '/images/icons/naujienu_foto.png' : $news->image;
-            // Make seo image absolute
-            $seoImage = $news->image ? url($news->image) : null;
-        }
+        $image = $news->getImageUrl();
 
         $other_lang_page = $news->other_language_news;
 
@@ -69,19 +61,20 @@ class NewsController extends PublicController
                     ];
                 }),
                 'content' => $news->content,
-                /*'content' => [*/
-                /*    ...$news->content->toArray(),*/
-                /*    'parts' => $news->content->parts->map(function ($part) {*/
-                /*        return [*/
-                /*            ...$part->parseTipTapElements()->toArray(),*/
-                /*        ];*/
-                /*    }),*/
-                /*],*/
+                /* 'content' => [ */
+                /*    ...$news->content->toArray(), */
+                /*    'parts' => $news->content->parts->map(function ($part) { */
+                /*        return [ */
+                /*            ...$part->parseTipTapElements()->toArray(), */
+                /*        ]; */
+                /*    }), */
+                /* ], */
                 'image' => $image,
                 'tenant' => $news->tenant->shortname,
             ],
         ])->withViewData([
             'SEOData' => $seo,
+            'JSONLD_Schemas' => [$news->toNewsArticleSchema()],
         ]);
     }
 

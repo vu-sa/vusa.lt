@@ -46,11 +46,7 @@ class HandleInertiaRequests extends Middleware
     {
         $user = $this->getLoggedInUserForInertia();
 
-        $isSuperAdmin = false;
-
-        if (! is_null($user)) {
-            $isSuperAdmin = $user->hasRole(config('permission.super_admin_role_name'));
-        }
+        $isSuperAdmin = $user?->isSuperAdmin() ?? false;
 
         return array_merge(parent::share($request), [
             'app' => [
@@ -81,13 +77,12 @@ class HandleInertiaRequests extends Middleware
                 // since inertia responses cannot have a 40X status code, we have to pass it in the flash data
                 'statusCode' => fn () => $request->session()->get('statusCode'),
             ],
-            'tenants' => fn () => $this->getTenantsForInertia(),
-            // 'tenants' property is shared in public pages from \App\Http\Controllers\PublicController.php
-            'search' => [
-                'calendar' => $request->session()->get('search_calendar') ?? [],
-                'news' => $request->session()->get('search_news') ?? [],
-                'pages' => $request->session()->get('search_pages') ?? [],
+            'seo' => [
+                'title' => fn () => $request->session()->get('seo.title'),
             ],
+            'search' => fn () => $request->session()->get('search'),
+            // 'tenants' property is shared in public pages from \App\Http\Controllers\PublicController.php
+            'tenants' => fn () => $this->getTenantsForInertia(),
         ]);
     }
 

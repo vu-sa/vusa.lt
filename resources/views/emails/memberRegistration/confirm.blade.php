@@ -1,15 +1,15 @@
 @component('mail::message')
-# {{ __('mail.confirmRegistration1') }} ✅
+# {{ __('mail.confirm.heading') }} ✅
 
-{{ __('mail.greeting', ['name' => $registration['name'] ]) }}
+{{ __('mail.greeting', ['name' => $name ]) }} 👋
 
-## {{ __('mail.confirmRegistration2') }}
+{{ __('mail.confirm.intro') }}
 
-- {{ __('mail.confirmRegistration3') }}: {{ $registerLocation }}
-- {{ __('mail.confirmRegistration4') }}: [{{ $chairPerson?->name ?? $chairPerson?->email }}](mailto:{{ $chairPerson?->email }})
+## {{ __('mail.confirm.subheading') }}
 
-{{ __('mail.confirmRegistration5') }}
+- {{ __('mail.confirm.institution') }}: {{ $institution->name }}
 
-{{ __('mail.confirmRegistration6') }} 👋
-{{ __(config('app.name')) }}
+{{ __('mail.confirm.more_info1') }} [{{ $contactName }}](mailto:{{ $dutyContact->email }}), {{ __('mail.confirm.more_info2') }}
+
+{{ __('mail.confirm.goodbye') }}
 @endcomponent

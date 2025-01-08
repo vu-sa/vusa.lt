@@ -46,6 +46,11 @@ class Type extends Model
         return $this->morphedByMany(Doing::class, 'typeable');
     }
 
+    public function meetings()
+    {
+        return $this->morphedByMany(Meeting::class, 'typeable');
+    }
+
     public function roles()
     {
         return $this->belongsToMany(Role::class)->using(RoleType::class);

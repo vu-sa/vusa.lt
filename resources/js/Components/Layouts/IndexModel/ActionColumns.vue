@@ -14,6 +14,7 @@ import { useDialog } from 'naive-ui';
 
 import IFluentArrowCounterclockwise28Regular from "~icons/fluent/arrow-counterclockwise28-regular";
 import IFluentArrowForward20Filled from "~icons/fluent/arrow-forward20-filled";
+import IFluentCopy24Filled from "~icons/fluent/copy24-filled";
 import IFluentDelete20Filled from "~icons/fluent/delete20-filled";
 import IFluentEdit20Filled from "~icons/fluent/edit20-filled";
 
@@ -22,6 +23,7 @@ import { type DropdownOption } from 'naive-ui';
 const props = defineProps<{
   routes: {
     show?: string;
+    duplicate?: string;
     edit?: string;
     destroy?: string;
   };
@@ -33,16 +35,22 @@ const dialog = useDialog();
 
 const options: DropdownOption[] = [
   {
-    title: $t('Redaguoti'),
-    key: 'edit',
-    show: !!props.routes.edit && !props.model.deleted_at,
-    icon: () => h(IFluentEdit20Filled),
-  },
-  {
     title: $t('Peržiūrėti'),
     key: 'show',
     show: !!props.routes.show && !props.model.deleted_at,
     icon: () => h(IFluentArrowForward20Filled),
+  },
+  {
+    title: $t('Duplikuoti'),
+    key: 'duplicate',
+    show: !!props.routes.duplicate && !props.model.deleted_at,
+    icon: () => h(IFluentCopy24Filled),
+  },
+  {
+    title: $t('Redaguoti'),
+    key: 'edit',
+    show: !!props.routes.edit && !props.model.deleted_at,
+    icon: () => h(IFluentEdit20Filled),
   },
   {
     title: $t('Ištrinti'),
@@ -63,6 +71,11 @@ const handleAction = (key: string) => {
     case 'edit':
       if (props.routes.edit) {
         router.visit(route(props.routes.edit, props.model.id));
+      }
+      break;
+    case 'duplicate':
+      if (props.routes.duplicate) {
+        router.post(route(props.routes.duplicate, props.model.id));
       }
       break;
     case 'show':

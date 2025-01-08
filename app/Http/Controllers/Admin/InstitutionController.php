@@ -55,6 +55,8 @@ class InstitutionController extends Controller
     {
         $this->authorize('create', Institution::class);
 
+        Inertia::share('seo.title', 'Nauja institucija');
+
         return Inertia::render('Admin/People/CreateInstitution', [
             'assignableTenants' => GetTenantsForUpserts::execute('institutions.create.padalinys', $this->authorizer),
             'institutionTypes' => Type::where('model_type', Institution::class)->get(),
@@ -118,6 +120,8 @@ class InstitutionController extends Controller
         $institution->load('types')->load(['duties' => function ($query) {
             $query->with('current_users')->orderBy('order', 'asc');
         }]);
+
+        Inertia::share('seo.title', $institution->name);
 
         return Inertia::render('Admin/People/EditInstitution', [
             'institution' => [

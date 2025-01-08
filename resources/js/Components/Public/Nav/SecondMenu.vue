@@ -1,6 +1,6 @@
 <template>
-  <section class="z-5 relative grid grid-cols-[min-content,_1fr] rounded-b-lg pl-12">
-    <SmartLink href="/"
+  <section class="z-5 relative grid grid-cols-[min-content,_1fr] rounded-b-2xl pl-12">
+    <SmartLink prefetch href="/"
       class="my-auto mr-6 whitespace-nowrap text-sm font-bold text-gray-900 dark:text-gray-200 dark:hover:text-vusa-red">
       {{
         $page.props.tenant?.shortname

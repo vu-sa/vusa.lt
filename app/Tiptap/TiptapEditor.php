@@ -20,12 +20,12 @@ class TiptapEditor extends Editor
             /* TODO: add video */
             'extensions' => [
                 // NOTE: StarterKit adds double tags
-                /*new \Tiptap\Extensions\StarterKit([*/
-                /*    'heading' => false,*/
-                /*    'codeBlock' => false,*/
-                /*    'bold' => false,*/
-                /*    'italic' => false,*/
-                /*]),*/
+                /* new \Tiptap\Extensions\StarterKit([ */
+                /*    'heading' => false, */
+                /*    'codeBlock' => false, */
+                /*    'bold' => false, */
+                /*    'italic' => false, */
+                /* ]), */
                 new CustomHeading([
                     'levels' => [2, 3, 4],
                 ]),

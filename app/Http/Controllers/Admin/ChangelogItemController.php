@@ -53,7 +53,7 @@ class ChangelogItemController extends Controller
 
     public function approveForUser(): RedirectResponse
     {
-        $user = User::find(auth()->id()); //->makeVisible('last_changelog_check');
+        $user = User::find(auth()->id()); // ->makeVisible('last_changelog_check');
 
         // get newest changelog item
         $user->last_changelog_check = ChangelogItem::query()->orderBy('date', 'desc')->first()->date;

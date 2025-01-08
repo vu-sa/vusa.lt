@@ -5,12 +5,12 @@
       <RichContentTiptapHTML v-if="!html" :json_content="element.json_content" />
       <div v-else v-html="element.html" />
     </template>
-    <RichContentCard v-else-if="element.type === 'shadcn-card'" class="not-typography mt-4" :element="element">
+    <RichContentCard v-else-if="element.type === 'shadcn-card'" class="not-typography mb-4" :element="element">
       <RichContentTiptapHTML v-if="!html" :json_content="element.json_content" />
       <div v-else v-html="element.html" />
     </RichContentCard>
     <RichContentAccordion v-else-if="element.type === 'shadcn-accordion'" :element :html />
-    <div v-else-if="element.type === 'image-grid'" class="mt-4">
+    <div v-else-if="element.type === 'image-grid'" class="space-y-4">
       <NImageGroup :show-toolbar="false">
         <div class="grid grid-flow-row-dense grid-cols-6 gap-4">
           <div v-for="(image, index) in element.json_content" :key="index" :class="getClassesForImage(image.colspan)">

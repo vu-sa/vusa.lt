@@ -6,7 +6,7 @@ return [
         'title' => 'Pavadinimas',
         'short_name' => 'Trumpas pavadinimas',
         'date' => 'Data',
-        'due_date' => 'Atlikimo data',
+        'due_date' => 'Atlikti iki',
         'subject' => 'Subjektas',
         'email' => 'El. paštas',
         'password' => 'Slaptažodis',

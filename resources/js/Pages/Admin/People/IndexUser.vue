@@ -1,5 +1,5 @@
 <template>
-  <IndexPageLayout :title="$t('Nariai')" model-name="users" :can-use-routes="canUseRoutes" :columns="columns"
+  <IndexPageLayout :title="$t('Nariai')" model-name="users" :can-use-routes :columns
     :paginated-models="users" :icon="Icons.USER" />
 </template>
 
