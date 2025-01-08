@@ -13,7 +13,8 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    # Use 2024 Ubuntu, because of newer node version
+    runs-on: ubuntu-24.04
     environment: Production
     steps:
       - name: checkout
