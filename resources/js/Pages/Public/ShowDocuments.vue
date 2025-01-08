@@ -1,116 +1,70 @@
 <template>
-  <h1 class="pt-8 text-gray-900 dark:text-zinc-50 text-2xl md:text-2xl">
-    Dokumentai
-  </h1>
-  <div class="mt-4 flex max-w-4xl flex-col items-center justify-center">
-    <div class="flex w-full flex-row flex-wrap items-center gap-8">
-      <NForm>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3 lg:grid-cols-3">
-          <NFormItem label="Pavadinimas" :show-feedback="false">
-            <NInput v-model:value="form.title" clearable size="large" round type="text"
-              placeholder="Ieškoti pagal pavadinimą..." />
-          </NFormItem>
-          <NFormItem label="Nuo..." :show-feedback="false">
-            <NDatePicker v-model:value="form.dateRange[0]" size="large" clearable placeholder="2023-05-01" />
-          </NFormItem>
-          <NFormItem label="Iki..." :show-feedback="false">
-            <NDatePicker v-model:value="form.dateRange[1]" size="large" clearable placeholder="2024-05-01" />
-          </NFormItem>
-        </div>
-          <NFormItem :show-feedback="false">
-            <NButton type="primary" round size="large" :loading="searchLoading" @click="handleSearch">
-              <template #icon>
-                <IFluentSearch20Filled />
-              </template>
-              Ieškoti
-            </NButton>
-          </NFormItem>
-
-        <Collapsible v-model:open="openAdditionalOptions" class="mt-4">
-          <CollapsibleTrigger>
-            <NButton strong size="tiny" text icon-placement="right">
-              Papildomi filtrai
-              <template #icon>
-                <IFluentChevronDown24Regular v-if="!openAdditionalOptions" />
-                <IFluentChevronUp24Regular v-else />
-              </template>
-            </NButton>
-          </CollapsibleTrigger>
-          <CollapsibleContent>
-            <div class="mt-4 grid w-full grid-cols-1 items-center gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              <NFormItem class="grow" label="Padalinys" :show-feedback="false">
-                <NSelect v-model:value="form.tenants" :consistent-menu-width="false" clearable size="small" multiple
-                  :options="tenantOptions" placeholder="VU SA" max-tag-count="responsive" />
-              </NFormItem>
-              <NFormItem class="grow" label="Turinio tipas" :show-feedback="false">
-                <NSelect v-model:value="form.contentTypes" :consistent-menu-width="false" clearable size="small"
-                  :options="contentTypeOptions" placeholder="Ataskaitos" multiple />
-              </NFormItem>
-              <NFormItem label="Kalba" :show-feedback="false">
-                <NCheckboxGroup v-model:value="form.language" size="small">
-                  <NCheckbox value="Lietuvių">
-                    🇱🇹 LT
-                  </NCheckbox>
-                  <NCheckbox value="Anglų">
-                    🇬🇧 EN
-                  </NCheckbox>
-                </NCheckboxGroup>
-              </NFormItem>
-            </div>
-          </CollapsibleContent>
-        </Collapsible>
-      </NForm>
-      <!-- <div class="flex w-72 flex-col">
-        <Label for="date" class="mb-1 text-sm font-normal text-zinc-600">
-          Pavadinimas
-        </Label>
-        <div class="relative w-full max-w-sm items-center">
-
-          <Input id="search" type="text" placeholder="Ieškoti pagal pavadinimą..." class="rounded-full px-10" />
-          <span class="absolute inset-y-0 start-0 flex items-center justify-center px-2">
+  <div class="mt-4 grid grid-cols-1 items-start justify-center gap-8 sm:grid-cols-[minmax(25%,_200px),_1fr]">
+    <NForm
+      class="flex flex-col gap-3 rounded-lg border border-zinc-200 bg-gradient-to-b from-white to-zinc-50 p-6 shadow-sm">
+      <p class="mb-3 text-xl font-bold">
+        Filtrai
+      </p>
+      <NFormItem :show-label="false" :show-feedback="false">
+        <NCheckboxGroup v-model:value="form.contentTypes" @update:value="handleSearch">
+          <NCheckbox v-for="contentType in contentTypeOptions" :key="contentType.value" :value="contentType.value">
+            {{ contentType.label }}
+          </NCheckbox>
+        </NCheckboxGroup>
+      </NFormItem>
+      <NFormItem label="Padalinys" :show-feedback="false">
+        <NSelect v-model:value="form.tenants" :consistent-menu-width="false" clearable multiple
+          :options="tenantOptions" placeholder="VU SA" max-tag-count="responsive" @update:value="handleSearch" />
+      </NFormItem>
+      <NFormItem label="Kalba" :show-feedback="false">
+        <NCheckboxGroup v-model:value="form.language" @update:value="handleSearch">
+          <NCheckbox value="Lietuvių">
+            🇱🇹 LT
+          </NCheckbox>
+          <NCheckbox value="Anglų">
+            🇬🇧 EN
+          </NCheckbox>
+        </NCheckboxGroup>
+      </NFormItem>
+      <NDivider />
+      <NFormItem label="Nuo..." :show-feedback="false">
+        <NDatePicker v-model:value="form.dateFrom" clearable placeholder="2023-05-01" @update:value="handleSearch" />
+      </NFormItem>
+      <NFormItem label="Iki..." :show-feedback="false">
+        <NDatePicker v-model:value="form.dateTo" clearable placeholder="2024-05-01" @update:value="handleSearch" />
+      </NFormItem>
+    </NForm>
+    <div>
+      <h1 class="mt-0">
+        Dokumentai
+      </h1>
+      <NInputGroup>
+        <NInput v-model:value="form.q" clearable type="text" placeholder="Ieškoti pagal pavadinimą..."
+          @keyup.enter="handleSearch" />
+        <NButton type="primary" :loading="searchLoading" @click="handleSearch">
+          <template #icon>
             <IFluentSearch20Filled />
-          </span>
-          <div class="absolute inset-y-0 end-4 flex items-center justify-center">
-            <Button rounded class="border-stone-700" :disabled="searchLoading" @click="handleSearch">
-              <IFluentArrowRight16Regular v-if="!searchLoading" />
-              <IFluentSpinnerIos16Filled v-else class="animate-spin" />
-            </Button>
-          </div>
-        </div>
+          </template>
+          Ieškoti
+        </NButton>
+      </NInputGroup>
+      <div v-if="documents.length" class="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2 2xl:grid-cols-3">
+        <SmartLink v-for="documentItem in documents" :key="documentItem.id" :href="documentItem.anonymous_url">
+          <DocumentCard :document-item />
+        </SmartLink>
       </div>
-      <div class="flex flex-col">
-        <Label for="date" class="mb-1 text-sm font-normal text-zinc-600">
-          Dokumento data
-        </Label>
-        <DateRangePicker />
-      </div>
-      <div class="flex flex-col">
-        <Label for="tenant" class="mb-1 text-sm font-normal text-zinc-600">
-          Padalinys
-        </Label>
-        <Select />
-      </div>
--->
+      <p v-else class="mt-8 self-start font-bold text-zinc-500">
+        Dokumentų pagal užklausą nerasta.
+      </p>
     </div>
-    <div v-if="documents.length" class="col-span-2 mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2">
-      <SmartLink v-for="documentItem in documents" :key="documentItem.id" :href="documentItem.anonymous_url">
-        <DocumentCard :document-item />
-      </SmartLink>
-    </div>
-    <p v-else class="mt-8 self-start font-bold text-zinc-500">
-      Dokumentų pagal užklausą nerasta.
-    </p>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { router, useForm, usePage } from '@inertiajs/vue3';
-import { useDebounceFn, useStorage } from '@vueuse/core';
+import { router, usePage } from '@inertiajs/vue3';
+import { useDebounceFn } from '@vueuse/core';
 
-import Collapsible from '@/Components/ShadcnVue/ui/collapsible/Collapsible.vue';
-import CollapsibleContent from '@/Components/ShadcnVue/ui/collapsible/CollapsibleContent.vue';
-import CollapsibleTrigger from '@/Components/ShadcnVue/ui/collapsible/CollapsibleTrigger.vue';
 import SmartLink from '@/Components/Public/SmartLink.vue';
 import DocumentCard from '@/Components/Cards/DocumentCard.vue';
 
@@ -120,17 +74,50 @@ const props = defineProps<{
   allContentTypes: App.Entities.Document['content_type'][];
 }>();
 
-const form = useForm('DocumentsSearch', {
-  title: undefined,
-  dateRange: [undefined, undefined],
-  tenants: undefined,
-  contentTypes: undefined,
-  language: undefined,
+const params = new URLSearchParams(window.location.search);
+
+// parse tenants and contentTypes array params (in form of 'tenants[0]=value')
+
+let tenantParams = [];
+
+for (let i = 0; i < 29; i++) {
+  if (params.has(`tenants[${i}]`)) {
+    tenantParams.push(params.get(`tenants[${i}]`));
+  } else {
+    break;
+  }
+}
+
+let contentTypeParams = [];
+
+for (let i = 0; i < 29; i++) {
+  if (params.has(`contentTypes[${i}]`)) {
+    contentTypeParams.push(params.get(`contentTypes[${i}]`));
+  } else {
+    break;
+  }
+}
+
+let languageParams = [];
+
+for (let i = 0; i < 2; i++) {
+  if (params.has(`language[${i}]`)) {
+    languageParams.push(params.get(`language[${i}]`));
+  } else {
+    break;
+  }
+}
+
+const form = ref({
+  q: params.get('q') || undefined,
+  dateFrom: params.get('dateFrom') ? Number(params.get('dateFrom')) : undefined,
+  dateTo: params.get('dateTo') ? Number(params.get('dateTo')) : undefined,
+  tenants: tenantParams || undefined,
+  contentTypes: contentTypeParams || undefined,
+  language: languageParams || undefined
 });
 
 const searchLoading = ref(false);
-
-const openAdditionalOptions = useStorage('documents-OpenAdditionalOptions', false);
 
 const tenantOptions = usePage().props.tenants.reduce((acc, tenant) => {
   if (tenant.type === 'pagrindinis') {
@@ -183,21 +170,21 @@ const handleSearchDebounce = useDebounceFn(() => {
   handleSearch();
 }, 500);
 
-function isStartDateDisabled(date) {
-  return form.dateRange[1] && date > form.dateRange[1];
-}
-
-function isEndDateDisabled(date) {
-  return form.dateRange[0] && date < form.dateRange[0];
-}
+//function isStartDateDisabled(date) {
+//  return form.dateRange[1] && date > form.dateRange[1];
+//}
+//
+//function isEndDateDisabled(date) {
+//  return form.dateRange[0] && date < form.dateRange[0];
+//}
 
 function handleSearch() {
   searchLoading.value = true;
-  router.visit(route('documents',
-    { lang: usePage().props.app.locale, ...form.data() }), {
+
+  console.log(form.value)
+
+  router.visit(route('documents', { lang: usePage().props.app.locale, ...form.value }), {
     only: ['documents'],
-    preserveState: true,
-    preserveScroll: true,
     onSuccess: () => {
       searchLoading.value = false;
     }

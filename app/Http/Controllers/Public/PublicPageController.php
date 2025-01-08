@@ -382,19 +382,31 @@ class PublicPageController extends PublicController
             description: 'VU SA dokumentai'
         );
 
+        $filters = json_decode(base64_decode(request()->input('filters')), true);
+
+        /* dd($filters); */
+
         if (request()->all() === []) {
             $documents = Document::query()->with('institution');
         } else {
 
-            $documents = Document::search(request()->title)->query(function (Builder $query) {
+            $documents = Document::search(request()->q)->query(function (Builder $query) {
                 $query->with('institution.tenant')->when(request()->has('tenants'), function (Builder $query) {
                     $query->whereHas('institution.tenant', fn ($query) => $query->whereIn('tenants.shortname', request()->tenants));
                 })->when(request()->has('contentTypes'), function (Builder $query) {
                     $query->whereIn('content_type', request()->contentTypes);
                 })->when(request()->has('language'), function (Builder $query) {
                     $query->where('language', request()->language);
-                })->when(request()->has('dateRange') && request('dateRange'), function (Builder $query) {
-                    $query->whereBetween('document_date', [Carbon::createFromTimestamp(request()->dateRange[0] / 1000), Carbon::createFromTimestamp(request()->dateRange[1] / 1000)])->orderBy('document_date', 'desc');
+                    // if has at least one of the dates: dateFrom or dateTo
+                })->when(request()->has('dateFrom') || request()->has('dateTo'), function (Builder $query) {
+                    $dateFrom = request()->dateFrom ? Carbon::parse(request()->dateFrom / 1000) : null;
+                    $dateTo = request()->dateTo ? Carbon::parse(request()->dateTo / 1000) : null;
+
+                    $query->when($dateFrom, function (Builder $query) use ($dateFrom) {
+                        $query->where('document_date', '>=', $dateFrom);
+                    })->when($dateTo, function (Builder $query) use ($dateTo) {
+                        $query->where('document_date', '<=', $dateTo);
+                    })->orderBy('document_date', 'desc');
                 });
             });
         }
