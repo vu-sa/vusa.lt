@@ -4,7 +4,6 @@ use App\Models\Form;
 use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
-use Inertia\Testing\AssertableInertia as Assert;
 
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 

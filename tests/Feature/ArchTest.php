@@ -2,12 +2,12 @@
 
 arch()
     ->expect('App')
-    /*->toUseStrictTypes()*/
+    /* ->toUseStrictTypes() */
     ->not->toUse(['die', 'dd', 'dump']);
- 
-/*arch()*/
-/*    ->expect('App\Http')*/
-/*    ->toOnlyBeUsedIn('App\Http');*/
- 
+
+/* arch() */
+/*    ->expect('App\Http') */
+/*    ->toOnlyBeUsedIn('App\Http'); */
+
 arch()->preset()->php();
-/*arch()->preset()->security()->ignoring('md5');*/
+/* arch()->preset()->security()->ignoring('md5'); */
