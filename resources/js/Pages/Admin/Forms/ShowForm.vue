@@ -43,8 +43,6 @@ const data = props.form.registrations.map((registration) => {
   return row;
 });
 
-console.log(data);
-
 const registrationColumns = props.form.form_fields.map((field) => {
   const columns = {
     title: field.label,

@@ -273,7 +273,6 @@ onBeforeUnmount(() => {
 });
 
 function attachVideoUrl(url: string) {
-  console.log(url)
   editor.value?.chain().focus().setVideo(url).run();
 }
 

@@ -91,13 +91,13 @@ const menuItems: MenuItemsType = computed(() => [
         title: $t('Narystės'),
         icon: Icons.INSTITUTION,
         href: route('memberships.index'),
-        show: true
+        show: auth?.can.create.membership
       },
       {
         title: $t('Mokymai'),
         icon: Icons.TRAINING,
         href: route('trainings.index'),
-        show: true
+        show: auth?.can.create.training
       },
     ],
     show: auth?.can.create.user || auth?.can.create.duty || auth?.can.create.institution
@@ -229,10 +229,10 @@ const menuItems: MenuItemsType = computed(() => [
         title: $t('Formos'),
         href: route('forms.index'),
         icon: Icons.FORM,
-        show: true
+        show: auth?.can.create.form
       },
     ],
-    show: true
+    show: auth?.can.create.form
   },
   {
     category: $t('Rezervacijos'),

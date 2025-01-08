@@ -155,8 +155,6 @@ const handleFileSelect = (file: MyDriveItem) => {
 
 const handleFileDblClick = (file: MyDriveItem) => {
 
-  console.log("file", file);
-
   if (file.name === "...") {
     // remove last folder from path
     path.value = path.value.split("/").slice(0, -1).join("/");

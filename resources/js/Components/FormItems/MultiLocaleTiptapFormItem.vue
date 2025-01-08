@@ -27,6 +27,4 @@ const inputLang = ref(usePage().props.app.locale)
 const input = defineModel<{ lt: string; en: string }>("input", {
   default: { lt: "", en: "" },
 });
-
-console.log(input.value);
 </script>

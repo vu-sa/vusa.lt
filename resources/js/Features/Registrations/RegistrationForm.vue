@@ -98,8 +98,6 @@ form.form_fields.forEach((field: Record<string, any>) => {
 
 const formSchema = z.object(schema);
 
-console.log(fieldsWithDescription);
-
 const formFieldConfig = form.form_fields.reduce((acc, field: Record<string, any>) => {
 
   const description = Array.isArray(field.description) ? "" : field.description

@@ -16,8 +16,6 @@ const { training } = defineProps<{
   training: App.Entities.Training;
 }>();
 
-console.log(training.form);
-
 const handleSubmit = (data: Record<string, any>) => {
   router.post(
     route('registrations.store', { form: training.form.id } ),
