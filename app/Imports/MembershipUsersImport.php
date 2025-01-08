@@ -8,12 +8,7 @@ use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 
 class MembershipUsersImport implements WithMultipleSheets
 {
-    public Membership $membership;
-
-    public function __construct(Membership $membership)
-    {
-        $this->membership = $membership;
-    }
+    public function __construct(public Membership $membership) {}
 
     /**
      * @param  Collection  $collection

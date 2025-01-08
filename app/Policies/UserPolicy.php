@@ -73,7 +73,7 @@ class UserPolicy extends ModelPolicy
         /**/
         /* return false; */
 
-        $this->authorizer->forUser($user)->check($this->pluralModelName.'.delete.*');
+        return $this->authorizer->forUser($user)->check($this->pluralModelName.'.delete.*');
     }
 
     /**

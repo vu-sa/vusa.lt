@@ -22,14 +22,6 @@ class FormPolicy extends ModelPolicy
     }
 
     /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user, Form $form): bool
-    {
-        //
-    }
-
-    /**
      * Determine whether the user can update the model.
      */
     public function update(User $user, Form $form): bool
@@ -51,13 +43,5 @@ class FormPolicy extends ModelPolicy
         }
 
         return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Form $form): bool
-    {
-        //
     }
 }

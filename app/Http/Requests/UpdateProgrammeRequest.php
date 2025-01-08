@@ -12,6 +12,7 @@ class UpdateProgrammeRequest extends FormRequest
      */
     public function authorize(): bool
     {
+        // TODO: figure out how to authorize this request
         return true;
     }
 

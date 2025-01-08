@@ -30,7 +30,7 @@
         <div class="flex flex-row items-center space-x-4">
           <SmartLink prefetch title="Grįžti į pagrindinį puslapį" class="leading-3"
             :href="`${$page.props.app.url}/${$page.props.app.locale}`" target="_self">
-            <button class="w-24 rounded-xl p-0.5 transition hover:bg-zinc-400/10 dark:hover:bg-zinc-100/10 md:w-28">
+            <button class="w-24 rounded-lg px-2 py-1 transition hover:bg-zinc-400/10 dark:hover:bg-zinc-100/10 md:w-28">
               <AppLogo :is-theme-dark />
             </button>
           </SmartLink>

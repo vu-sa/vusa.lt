@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class FieldResponse extends Model
 {
@@ -22,7 +23,7 @@ class FieldResponse extends Model
         return $this->belongsTo(Registration::class);
     }
 
-    public function formField()
+    public function formField(): BelongsTo
     {
         return $this->belongsTo(FormField::class);
     }

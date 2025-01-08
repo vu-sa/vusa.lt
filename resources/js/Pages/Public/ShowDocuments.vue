@@ -1,7 +1,7 @@
 <template>
-  <div class="mt-4 grid grid-cols-1 items-start justify-center gap-8 sm:grid-cols-[minmax(25%,_200px),_1fr]">
+  <div class="mt-4 grid grid-cols-1 items-start justify-center gap-12 sm:grid-cols-[minmax(25%,_200px),_1fr]">
     <NForm
-      class="flex flex-col gap-3 rounded-lg border border-zinc-200 bg-gradient-to-b from-white to-zinc-50 p-6 shadow-sm">
+      class="flex flex-col gap-3 rounded-lg border border-zinc-200 bg-gradient-to-b from-white to-zinc-50 p-6 shadow-sm dark:border-zinc-900 dark:from-zinc-800 dark:to-zinc-900">
       <p class="mb-3 text-xl font-bold">
         Filtrai
       </p>
@@ -189,6 +189,7 @@ function handleSearch() {
 
   router.visit(route('documents', { lang: usePage().props.app.locale, ...form.value }), {
     only: ['documents'],
+    preserveScroll: true,
     onSuccess: () => {
       searchLoading.value = false;
     }
@@ -198,6 +199,7 @@ function handleSearch() {
 const handlePageChange = (page) => {
   router.visit(route('documents', { lang: usePage().props.app.locale, ...form.value, page }), {
     only: ['documents'],
+    preserveScroll: true,
     onSuccess: () => {
       searchLoading.value = false;
     }

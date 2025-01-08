@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Traits\HasTranslations;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Laravel\Scout\Searchable;
 
@@ -33,7 +34,7 @@ class Form extends Model
         ];
     }
 
-    public function formFields()
+    public function formFields(): HasMany
     {
         return $this->hasMany(FormField::class);
     }

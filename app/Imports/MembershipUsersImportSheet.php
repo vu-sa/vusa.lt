@@ -11,12 +11,7 @@ use PhpOffice\PhpSpreadsheet\Shared\Date;
 
 class MembershipUsersImportSheet implements ToCollection, WithHeadingRow
 {
-    public Membership $membership;
-
-    public function __construct(Membership $membership)
-    {
-        $this->membership = $membership;
-    }
+    public function __construct(public Membership $membership) {}
 
     public function collection(Collection $rows)
     {

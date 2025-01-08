@@ -74,7 +74,7 @@ class NewsController extends PublicController
             ],
         ])->withViewData([
             'SEOData' => $seo,
-            'JSONLD_Schemas' => [$news->toNewsArticleSchema(), $news->toNewsArticleSchema()],
+            'JSONLD_Schemas' => [$news->toNewsArticleSchema()],
         ]);
     }
 
