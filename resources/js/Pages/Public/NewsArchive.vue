@@ -9,7 +9,7 @@
       lang: item.lang,
       news: item.permalink ?? '',
       newsString: 'naujiena',
-      subdomain: $page.props.padalinys?.subdomain ?? 'www',
+      subdomain: $page.props.tenant?.subdomain ?? 'www',
     })
       ">
     <NewsCard :news="item" />
