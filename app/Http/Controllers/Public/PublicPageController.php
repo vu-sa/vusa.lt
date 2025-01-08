@@ -403,13 +403,13 @@ class PublicPageController extends PublicController
                         $query->where('document_date', '>=', $dateFrom);
                     })->when($dateTo, function (Builder $query) use ($dateTo) {
                         $query->where('document_date', '<=', $dateTo);
-                    })->orderBy('document_date', 'desc');
+                    });
                 });
             });
         }
 
         return Inertia::render('Public/ShowDocuments', [
-            'documents' => $documents->where('is_active', true)->paginate(20),
+            'documents' => $documents->where('is_active', true)->orderBy('document_date', 'desc')->paginate(20),
             // Filter null values from content_type
             'allContentTypes' => Document::query()->select('content_type')->whereNotNull('content_type')->distinct()->pluck('content_type')->sort()->values(),
         ])->withViewData([
