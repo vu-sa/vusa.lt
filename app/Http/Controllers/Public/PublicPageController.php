@@ -382,12 +382,9 @@ class PublicPageController extends PublicController
             description: 'VU SA dokumentai'
         );
 
-        $filters = json_decode(base64_decode(request()->input('filters')), true);
-
-        /* dd($filters); */
-
         if (request()->all() === []) {
-            $documents = Document::query()->with('institution');
+            $documents = Document::query()->with('institution')
+                ->orderBy('document_date', 'desc');
         } else {
 
             $documents = Document::search(request()->q)->query(function (Builder $query) {
@@ -412,7 +409,7 @@ class PublicPageController extends PublicController
         }
 
         return Inertia::render('Public/ShowDocuments', [
-            'documents' => $documents->where('is_active', true)->get(),
+            'documents' => $documents->where('is_active', true)->paginate(20),
             // Filter null values from content_type
             'allContentTypes' => Document::query()->select('content_type')->whereNotNull('content_type')->distinct()->pluck('content_type')->sort()->values(),
         ])->withViewData([

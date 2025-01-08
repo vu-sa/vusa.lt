@@ -13,8 +13,8 @@
         </NCheckboxGroup>
       </NFormItem>
       <NFormItem label="Padalinys" :show-feedback="false">
-        <NSelect v-model:value="form.tenants" :consistent-menu-width="false" clearable multiple
-          :options="tenantOptions" placeholder="VU SA" max-tag-count="responsive" @update:value="handleSearch" />
+        <NSelect v-model:value="form.tenants" :consistent-menu-width="false" clearable multiple :options="tenantOptions"
+          placeholder="VU SA" max-tag-count="responsive" @update:value="handleSearch" />
       </NFormItem>
       <NFormItem label="Kalba" :show-feedback="false">
         <NCheckboxGroup v-model:value="form.language" @update:value="handleSearch">
@@ -28,16 +28,19 @@
       </NFormItem>
       <NDivider />
       <NFormItem label="Nuo..." :show-feedback="false">
-        <NDatePicker v-model:value="form.dateFrom" clearable placeholder="2023-05-01" @update:value="handleSearch" />
+        <NDatePicker v-model:value="form.dateFrom" clearable placeholder="2023-05-01"
+          :is-date-disabled="isStartDateDisabled" @update:value="handleSearch" />
       </NFormItem>
       <NFormItem label="Iki..." :show-feedback="false">
-        <NDatePicker v-model:value="form.dateTo" clearable placeholder="2024-05-01" @update:value="handleSearch" />
+        <NDatePicker v-model:value="form.dateTo" clearable placeholder="2024-05-01"
+          :is-date-disabled="isEndDateDisabled" @update:value="handleSearch" />
       </NFormItem>
     </NForm>
     <div>
       <h1 class="mt-0">
         Dokumentai
       </h1>
+
       <NInputGroup>
         <NInput v-model:value="form.q" clearable type="text" placeholder="Ieškoti pagal pavadinimą..."
           @keyup.enter="handleSearch" />
@@ -48,14 +51,21 @@
           Ieškoti
         </NButton>
       </NInputGroup>
-      <div v-if="documents.length" class="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2 2xl:grid-cols-3">
-        <SmartLink v-for="documentItem in documents" :key="documentItem.id" :href="documentItem.anonymous_url">
+      <div class="my-4">
+        Iš viso rezultatų: <strong>{{ documents.total }}</strong>
+      </div>
+      <NPagination v-if="documents.total > 20" style="overflow-x: auto" class="mt-4" :item-count="documents.total"
+        :page="documents.current_page" :page-size="20" :show-quick-jumper="true" @update:page="handlePageChange" />
+      <div v-if="documents.data.length" class="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2 2xl:grid-cols-3">
+        <SmartLink v-for="documentItem in documents.data" :key="documentItem.id" :href="documentItem.anonymous_url">
           <DocumentCard :document-item />
         </SmartLink>
       </div>
       <p v-else class="mt-8 self-start font-bold text-zinc-500">
         Dokumentų pagal užklausą nerasta.
       </p>
+      <NPagination v-if="documents.total > 20" style="overflow-x: auto" class="mt-6" :item-count="documents.total"
+        :page="documents.current_page" :page-size="20" :show-quick-jumper="true" @update:page="handlePageChange" />
     </div>
   </div>
 </template>
@@ -70,7 +80,7 @@ import DocumentCard from '@/Components/Cards/DocumentCard.vue';
 
 const props = defineProps<{
   //documents: PaginatedModels<App.Entities.Document>;
-  documents: App.Entities.Document[];
+  documents: PaginatedModels<App.Entities.Document>;
   allContentTypes: App.Entities.Document['content_type'][];
 }>();
 
@@ -166,22 +176,16 @@ const contentTypeOptions = props.allContentTypes.map((contentType) => ({
   value: contentType
 }));
 
-const handleSearchDebounce = useDebounceFn(() => {
-  handleSearch();
-}, 500);
+function isStartDateDisabled(date) {
+  return form.value.dateTo && date > form.value.dateTo;
+}
 
-//function isStartDateDisabled(date) {
-//  return form.dateRange[1] && date > form.dateRange[1];
-//}
-//
-//function isEndDateDisabled(date) {
-//  return form.dateRange[0] && date < form.dateRange[0];
-//}
+function isEndDateDisabled(date) {
+  return form.value.dateFrom && date < form.value.dateFrom;
+}
 
 function handleSearch() {
   searchLoading.value = true;
-
-  console.log(form.value)
 
   router.visit(route('documents', { lang: usePage().props.app.locale, ...form.value }), {
     only: ['documents'],
@@ -190,4 +194,13 @@ function handleSearch() {
     }
   });
 }
+
+const handlePageChange = (page) => {
+  router.visit(route('documents', { lang: usePage().props.app.locale, ...form.value, page }), {
+    only: ['documents'],
+    onSuccess: () => {
+      searchLoading.value = false;
+    }
+  });
+};
 </script>
