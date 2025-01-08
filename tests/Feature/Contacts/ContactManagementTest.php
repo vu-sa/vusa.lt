@@ -26,7 +26,7 @@ function makeContactManager($tenant): User
     return $user;
 }
 
-test('simple user cant access all users in admin', function () {
+test('simple user can\'t access all users', function () {
     $user = asUser($this->user);
 
     $user->get(route('dashboard'));
@@ -42,7 +42,7 @@ test('simple user cant access all users in admin', function () {
         );
 });
 
-test('simple user cant create contact', function () {
+test('simple user can\'t create contact', function () {
     $user = asUser($this->user);
 
     $user->get(route('dashboard'));
@@ -75,7 +75,7 @@ test('simple user cant create contact', function () {
     ]);
 });
 
-test('contact manager cant create user without duty', function () {
+test('contact manager can\'t create user without duty', function () {
     $admin = asUser($this->admin);
 
     $admin->get(route('dashboard'));
