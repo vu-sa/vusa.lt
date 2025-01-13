@@ -2,7 +2,7 @@
   <div>
     <NForm ref="form" :rules="agendaItemRules" :model="agendaItemsForm">
       <FadeTransition>
-        <SuggestionAlert :show-alert="showAlert" @alert-closed="showAlert = false">
+        <SuggestionAlert :show-alert @alert-closed="showAlert = false">
           <template v-if="$page.props.app.locale === 'lt'">
             <p class="mt-0">
               <span>Kiekvienas posėdis turi</span>

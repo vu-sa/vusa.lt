@@ -25,16 +25,15 @@
           </template>
         </NStep>
       </NSteps>
-      <FadeTransition mode="out-in">
-        <InstitutionSelectorForm v-if="current === 1" class="flex w-full flex-col items-start justify-center"
-          @submit="handleInstitutionSelect" />
-        <Suspense v-else-if="current === 2">
-          <MeetingForm class="flex w-full flex-col items-start justify-center" :meeting-types :meeting="meetingTemplate"
-            @submit="handleMeetingFormSubmit" />
-        </Suspense>
-        <AgendaItemsForm v-else-if="current === 3" class="w-full" :loading="loading"
-          @submit="handleAgendaItemsFormSubmit" />
-      </FadeTransition>
+      <Suspense>
+        <FadeTransition mode="out-in">
+          <InstitutionSelectorForm v-if="current === 1" class="flex w-full flex-col items-start justify-center"
+            @submit="handleInstitutionSelect" />
+          <MeetingForm v-else-if="current === 2" class="flex w-full flex-col items-start justify-center"
+            :meeting="meetingTemplate" @submit="handleMeetingFormSubmit" />
+          <AgendaItemsForm v-else-if="current === 3" :loading @submit="handleAgendaItemsFormSubmit" />
+        </FadeTransition>
+      </Suspense>
     </div>
     <FadeTransition>
       <ModalHelperButton v-if="!showAlert && current === 3" @click="showAlert = true" />
