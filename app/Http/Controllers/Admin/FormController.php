@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetTenantsForUpserts;
+use App\Exports\FormRegistrationsExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreFormRequest;
 use App\Http\Requests\UpdateFormRequest;
@@ -12,7 +13,9 @@ use App\Models\Tenant;
 use App\Models\Training;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ModelIndexer;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
+use Maatwebsite\Excel\Facades\Excel;
 
 class FormController extends Controller
 {
@@ -184,5 +187,15 @@ class FormController extends Controller
         $form->delete();
 
         return redirect()->route('forms.index')->with('success', 'Form deleted.');
+    }
+
+    public function export(Form $form)
+    {
+        $this->authorize('update', $form);
+
+        // slugify the form name up to 16 char, and add datetime
+        $fileName = substr(Str::slug($form->name), 0, 20).'-'.now()->format('Y-m-d-H-i-s');
+
+        return Excel::download(new FormRegistrationsExport($form), $fileName . '.xlsx');
     }
 }
