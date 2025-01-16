@@ -269,13 +269,14 @@ const institutions = computed(() => {
     );
 });
 
+
 const handleFormFormSubmit = (form: unknown) => {
   if (training.form_id === null) {
-    form.transform((data) => ({
-      ...data,
+    router.post(route('forms.store'), {
+      ...form,
       training_id: training.id,
       redirect_to: route('trainings.edit', training.id),
-    })).post(route('forms.store'), {
+    }, {
       preserveScroll: true,
     });
   } else {
