@@ -196,6 +196,6 @@ class FormController extends Controller
         // slugify the form name up to 16 char, and add datetime
         $fileName = substr(Str::slug($form->name), 0, 20).'-'.now()->format('Y-m-d-H-i-s');
 
-        return Excel::download(new FormRegistrationsExport($form), $fileName . '.xlsx');
+        return Excel::download(new FormRegistrationsExport($form), $fileName.'.xlsx');
     }
 }

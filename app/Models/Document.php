@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Services\SharepointGraphService;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Carbon;
 use Laravel\Scout\Searchable;
@@ -49,7 +48,7 @@ class Document extends Model
             return Carbon::now()->isBefore($this->expiration_date);
         }
 
-        return Carbon::now()->isAfter($this->effective_date) && Carbon::now()->isBefore($this->expiration_date); 
+        return Carbon::now()->isAfter($this->effective_date) && Carbon::now()->isBefore($this->expiration_date);
     }
 
     // Also used in SharepointGraphService::batchProcessDocuments

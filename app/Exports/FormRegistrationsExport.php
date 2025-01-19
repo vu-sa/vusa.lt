@@ -27,7 +27,7 @@ class FormRegistrationsExport implements FromArray
             $this->form->formFields->each(function ($formField) use (&$registrationArray, $registration) {
                 $fieldResponse = $registration->fieldResponses->firstWhere('form_field_id', $formField->id);
 
-                $registrationArray[] = $fieldResponse ? $fieldResponse->response["value"] : null;
+                $registrationArray[] = $fieldResponse ? $fieldResponse->response['value'] : null;
             });
 
             $finalArray[] = $registrationArray;

@@ -409,7 +409,7 @@ class PublicPageController extends PublicController
         }
 
         $paginated = $documents->where('is_active', true)->orderBy('document_date', 'desc')->paginate(20);
-            
+
         $collection = $paginated->getCollection()->append('is_in_effect');
 
         return Inertia::render('Public/ShowDocuments', [
