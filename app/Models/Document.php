@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Services\SharepointGraphService;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Carbon;
 use Laravel\Scout\Searchable;
@@ -31,6 +32,24 @@ class Document extends Model
     public function tenant()
     {
         return $this->hasManyDeepFromRelations($this->institution(), (new Institution)->tenant());
+    }
+
+    // Check if after effective date or before expiration date. If one is missing, it is ignored.
+    protected function getIsInEffectAttribute()
+    {
+        if ($this->effective_date === null && $this->expiration_date === null) {
+            return null;
+        }
+
+        if ($this->effective_date !== null && $this->expiration_date === null) {
+            return Carbon::now()->isAfter($this->effective_date);
+        }
+
+        if ($this->effective_date === null && $this->expiration_date !== null) {
+            return Carbon::now()->isBefore($this->expiration_date);
+        }
+
+        return Carbon::now()->isAfter($this->effective_date) && Carbon::now()->isBefore($this->expiration_date); 
     }
 
     // Also used in SharepointGraphService::batchProcessDocuments

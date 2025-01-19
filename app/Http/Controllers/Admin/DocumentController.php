@@ -72,10 +72,10 @@ class DocumentController extends Controller
         $result = $document->refreshFromSharepoint();
 
         if ($result === null) {
-            return redirect()->route('documents.index')->with('info', 'Document is already up to date.');
+            return back()->with('info', 'Document is already up to date.');
         }
 
-        return redirect()->route('documents.index')->with('success', 'Document has been successfully refreshed.');
+        return back()->with('success', 'Document has been successfully refreshed.');
     }
 
     /**

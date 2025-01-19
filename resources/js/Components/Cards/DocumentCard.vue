@@ -1,6 +1,6 @@
 <template>
   <Card
-    class="3xl:w-fit flex flex-col justify-items-center border border-zinc-300/50 bg-gradient-to-br from-white to-zinc-50 shadow-sm duration-200 hover:shadow-md dark:border-zinc-800/60 dark:bg-zinc-800/50 dark:from-zinc-800 dark:to-zinc-800">
+    class="3xl:w-fit relative flex flex-col justify-items-center border border-zinc-300/50 bg-gradient-to-br from-white to-zinc-50 shadow-sm duration-200 hover:shadow-md dark:border-zinc-800/60 dark:bg-zinc-800/50 dark:from-zinc-800 dark:to-zinc-800">
     <!-- <img :src="documentItem.thumbnail_url" class="mx-4 w-auto rounded-md border"
 :class="[documentItem.summary ? 'h-40' : 'h-28']"> -->
     <div class="my-2 flex flex-col">
@@ -49,6 +49,19 @@
                 <span>{{ documentItem.language }}</span>
 </div> -->
       </CardFooter>
+    </div>
+    <div class="absolute bottom-3 right-4 h-fit">
+      <NTooltip v-if="documentItem.is_in_effect !== null">
+        <template #trigger>
+          <button v-if="documentItem.is_in_effect === true"
+            class="size-4 rounded-full bg-gradient-to-br from-green-500 to-green-700" />
+          <button v-else-if="documentItem.is_in_effect === false"
+            class="size-4 rounded-full bg-gradient-to-br from-red-400 to-red-800" />
+        </template>
+        Galiojimo laikas:
+        {{ documentItem.effective_date ? 'nuo ' + documentItem.effective_date : null }}
+        {{ documentItem.expiration_date ? 'iki ' + documentItem.expiration_date : null }}
+      </NTooltip>
     </div>
   </Card>
 </template>

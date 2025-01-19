@@ -97,7 +97,7 @@
       <NPagination v-if="documents.total > 20" :page-slot="7" class="mt-4" :item-count="documents.total"
         :page="documents.current_page" :page-size="20" @update:page="handlePageChange" />
       <div v-if="documents.data.length" class="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2 2xl:grid-cols-3">
-        <SmartLink v-for="documentItem in documents.data" :key="documentItem.id" :href="documentItem.anonymous_url">
+        <SmartLink class="h-fit" v-for="documentItem in documents.data" :key="documentItem.id" :href="documentItem.anonymous_url">
           <DocumentCard :document-item />
         </SmartLink>
       </div>

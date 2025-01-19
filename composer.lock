@@ -2469,24 +2469,24 @@
         },
         {
             "name": "intervention/gif",
-            "version": "4.2.0",
+            "version": "4.2.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Intervention/gif.git",
-                "reference": "42c131a31b93c440ad49061b599fa218f06f93be"
+                "reference": "6addac2c68b4bc0e37d0d3ccedda57eb84729c49"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Intervention/gif/zipball/42c131a31b93c440ad49061b599fa218f06f93be",
-                "reference": "42c131a31b93c440ad49061b599fa218f06f93be",
+                "url": "https://api.github.com/repos/Intervention/gif/zipball/6addac2c68b4bc0e37d0d3ccedda57eb84729c49",
+                "reference": "6addac2c68b4bc0e37d0d3ccedda57eb84729c49",
                 "shasum": ""
             },
             "require": {
                 "php": "^8.1"
             },
             "require-dev": {
-                "phpstan/phpstan": "^1",
-                "phpunit/phpunit": "^10.0",
+                "phpstan/phpstan": "^2.1",
+                "phpunit/phpunit": "^10.0 || ^11.0",
                 "slevomat/coding-standard": "~8.0",
                 "squizlabs/php_codesniffer": "^3.8"
             },
@@ -2517,7 +2517,7 @@
             ],
             "support": {
                 "issues": "https://github.com/Intervention/gif/issues",
-                "source": "https://github.com/Intervention/gif/tree/4.2.0"
+                "source": "https://github.com/Intervention/gif/tree/4.2.1"
             },
             "funding": [
                 {
@@ -2533,20 +2533,20 @@
                     "type": "ko_fi"
                 }
             ],
-            "time": "2024-09-20T13:35:02+00:00"
+            "time": "2025-01-05T10:52:39+00:00"
         },
         {
             "name": "intervention/image",
-            "version": "3.10.2",
+            "version": "3.11.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Intervention/image.git",
-                "reference": "1c68e5fdf443374f3580c5b920a7f177eccdab85"
+                "reference": "6b9ce4fc4485d30117e13935b25bc55a8b894a79"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Intervention/image/zipball/1c68e5fdf443374f3580c5b920a7f177eccdab85",
-                "reference": "1c68e5fdf443374f3580c5b920a7f177eccdab85",
+                "url": "https://api.github.com/repos/Intervention/image/zipball/6b9ce4fc4485d30117e13935b25bc55a8b894a79",
+                "reference": "6b9ce4fc4485d30117e13935b25bc55a8b894a79",
                 "shasum": ""
             },
             "require": {
@@ -2556,7 +2556,7 @@
             },
             "require-dev": {
                 "mockery/mockery": "^1.6",
-                "phpstan/phpstan": "^2",
+                "phpstan/phpstan": "^2.1",
                 "phpunit/phpunit": "^10.0 || ^11.0",
                 "slevomat/coding-standard": "~8.0",
                 "squizlabs/php_codesniffer": "^3.8"
@@ -2593,7 +2593,7 @@
             ],
             "support": {
                 "issues": "https://github.com/Intervention/image/issues",
-                "source": "https://github.com/Intervention/image/tree/3.10.2"
+                "source": "https://github.com/Intervention/image/tree/3.11.0"
             },
             "funding": [
                 {
@@ -2609,30 +2609,30 @@
                     "type": "ko_fi"
                 }
             ],
-            "time": "2025-01-04T07:31:37+00:00"
+            "time": "2025-01-18T15:42:14+00:00"
         },
         {
             "name": "intervention/image-laravel",
-            "version": "1.3.0",
+            "version": "1.4.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Intervention/image-laravel.git",
-                "reference": "24738a017d42a6fa8d9adabdbd69a2c19c5b0d30"
+                "reference": "6ee3d2266b823127497345c0aaf958223d0f4c84"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Intervention/image-laravel/zipball/24738a017d42a6fa8d9adabdbd69a2c19c5b0d30",
-                "reference": "24738a017d42a6fa8d9adabdbd69a2c19c5b0d30",
+                "url": "https://api.github.com/repos/Intervention/image-laravel/zipball/6ee3d2266b823127497345c0aaf958223d0f4c84",
+                "reference": "6ee3d2266b823127497345c0aaf958223d0f4c84",
                 "shasum": ""
             },
             "require": {
                 "illuminate/support": "^8|^9|^10|^11",
-                "intervention/image": "^3.7",
+                "intervention/image": "^3.11",
                 "php": "^8.1"
             },
             "require-dev": {
                 "orchestra/testbench": "^8.18",
-                "phpunit/phpunit": "^10.0"
+                "phpunit/phpunit": "^10.0 || ^11.0"
             },
             "type": "library",
             "extra": {
@@ -2674,7 +2674,7 @@
             ],
             "support": {
                 "issues": "https://github.com/Intervention/image-laravel/issues",
-                "source": "https://github.com/Intervention/image-laravel/tree/1.3.0"
+                "source": "https://github.com/Intervention/image-laravel/tree/1.4.0"
             },
             "funding": [
                 {
@@ -2684,9 +2684,13 @@
                 {
                     "url": "https://github.com/Intervention",
                     "type": "github"
+                },
+                {
+                    "url": "https://ko-fi.com/interventionphp",
+                    "type": "ko_fi"
                 }
             ],
-            "time": "2024-06-15T08:20:20+00:00"
+            "time": "2025-01-18T15:56:47+00:00"
         },
         {
             "name": "itsgoingd/clockwork",
@@ -8037,26 +8041,26 @@
         },
         {
             "name": "spatie/calendar-links",
-            "version": "1.11.0",
+            "version": "1.11.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/spatie/calendar-links.git",
-                "reference": "da41e7edae84859d3d598b0b3ce3233c843c3e46"
+                "reference": "bf4645d6a2d8eb32248a5b0b7da7976a13e5e2b5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spatie/calendar-links/zipball/da41e7edae84859d3d598b0b3ce3233c843c3e46",
-                "reference": "da41e7edae84859d3d598b0b3ce3233c843c3e46",
+                "url": "https://api.github.com/repos/spatie/calendar-links/zipball/bf4645d6a2d8eb32248a5b0b7da7976a13e5e2b5",
+                "reference": "bf4645d6a2d8eb32248a5b0b7da7976a13e5e2b5",
                 "shasum": ""
             },
             "require": {
                 "php": "^8.1"
             },
             "require-dev": {
-                "friendsofphp/php-cs-fixer": "^3.48",
-                "phpunit/phpunit": "^10.1",
+                "friendsofphp/php-cs-fixer": "^3.49",
+                "phpunit/phpunit": "^10.5",
                 "spatie/phpunit-snapshot-assertions": "^5.1",
-                "vimeo/psalm": "^5.20"
+                "vimeo/psalm": "^5.22"
             },
             "type": "library",
             "autoload": {
@@ -8084,7 +8088,7 @@
             ],
             "support": {
                 "issues": "https://github.com/spatie/calendar-links/issues",
-                "source": "https://github.com/spatie/calendar-links/tree/1.11.0"
+                "source": "https://github.com/spatie/calendar-links/tree/1.11.1"
             },
             "funding": [
                 {
@@ -8092,7 +8096,7 @@
                     "type": "custom"
                 }
             ],
-            "time": "2024-02-19T05:59:13+00:00"
+            "time": "2025-01-16T16:49:47+00:00"
         },
         {
             "name": "spatie/enum",
@@ -8232,16 +8236,16 @@
         },
         {
             "name": "spatie/image",
-            "version": "3.7.5",
+            "version": "3.8.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/spatie/image.git",
-                "reference": "8a4f258e01f080218b2e13b42981ad220e919c40"
+                "reference": "06cf293f66c833704935ba18e16c784d7e8433a7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spatie/image/zipball/8a4f258e01f080218b2e13b42981ad220e919c40",
-                "reference": "8a4f258e01f080218b2e13b42981ad220e919c40",
+                "url": "https://api.github.com/repos/spatie/image/zipball/06cf293f66c833704935ba18e16c784d7e8433a7",
+                "reference": "06cf293f66c833704935ba18e16c784d7e8433a7",
                 "shasum": ""
             },
             "require": {
@@ -8289,7 +8293,7 @@
                 "spatie"
             ],
             "support": {
-                "source": "https://github.com/spatie/image/tree/3.7.5"
+                "source": "https://github.com/spatie/image/tree/3.8.0"
             },
             "funding": [
                 {
@@ -8301,7 +8305,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-01-13T13:19:27+00:00"
+            "time": "2025-01-17T10:19:44+00:00"
         },
         {
             "name": "spatie/image-optimizer",
