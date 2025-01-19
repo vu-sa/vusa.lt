@@ -9,7 +9,7 @@
     </Head>
 
     <Head>
-      <link rel="preconnect" href="https://embed.tawk.to">
+      <link rel="preconnect" href="https://embed.tawk.to" crossorigin="anonymous">
       <link rel="preload" href="https://cdn.userway.org/widgetapp/images/body_wh.svg" as="image">
       <template v-for="headItem in seo">
         <title v-if="headItem.tag === 'title'">
