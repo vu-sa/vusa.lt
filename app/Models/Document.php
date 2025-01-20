@@ -80,7 +80,7 @@ class Document extends Model
         $this->language = $additionalData['Language'] ?? $this->language;
 
         if (isset($additionalData[$institutionField]['Label'])) {
-            $this->institution()->associate(Institution::query()->where('name', $additionalData[$institutionField]['Label'])->orWhere('short_name', $additionalData[$institutionField]['Label'])->first());
+            $this->institution()->associate(Institution::query()->where('name->lt', $additionalData[$institutionField]['Label'])->orWhere('short_name->lt', $additionalData[$institutionField]['Label'])->first());
         }
 
         $this->content_type = isset($additionalData[$contentField]['Label']) ? $additionalData[$contentField]['Label'] : $this->content_type;
