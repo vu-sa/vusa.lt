@@ -2,7 +2,7 @@
   <IndexPageLayout :title="capitalize($tChoice('entities.document.model', 2))" model-name="documents" :scroll-x="1600"
     :icon="Icons.DOCUMENT" :can-use-routes :columns :paginated-models="documents">
     <template #create-button>
-      <FilePicker :loading round size="tiny" :theme-overrides="{ border: '1.2px solid' }" @pick="handleDocumentPick">
+      <FilePicker v-if="$page.props.app.url.startsWith('https')" :loading round size="tiny" :theme-overrides="{ border: '1.2px solid' }" @pick="handleDocumentPick">
         <template #default>
           {{ $t("forms.add") }}
         </template>
@@ -40,6 +40,7 @@ const canUseRoutes = {
   create: false,
   show: false,
   edit: false,
+  duplicate: false,
   destroy: true,
 };
 

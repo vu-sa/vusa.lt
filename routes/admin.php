@@ -110,6 +110,7 @@ Route::resource('institutions', InstitutionController::class);
 
 Route::resource('tenants', TenantController::class);
 
+Route::get('forms/{form}/export', [FormController::class, 'export'])->name('forms.export');
 Route::resource('forms', FormController::class);
 Route::resource('registrations', RegistrationController::class)->only('show');
 

@@ -173,5 +173,7 @@ const onSubmit = (data: Record<string, any>) => {
   }, {});
 
   emit('submit', transformedData);
+
+  autoform.resetForm();
 };
 </script>

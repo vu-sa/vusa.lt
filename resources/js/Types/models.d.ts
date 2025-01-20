@@ -134,6 +134,8 @@ declare global {
       updated_at?: string
       effective_date?: string | null
       expiration_date?: string | null
+      // mutators
+      is_in_effect: unknown
       // relations
       institution?: Institution
     }
