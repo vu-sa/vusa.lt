@@ -9,7 +9,7 @@
       <NTabPane name="url" tab="Paprasta nuoroda">
         <div class="flex flex-col items-baseline gap-2">
           <NFormItem class="w-full" label="Nuoroda" :show-feedback="false">
-            <NInput v-model:value="url" placeholder="https://..." />
+            <NInput v-model:value="urlRef" placeholder="https://..." />
           </NFormItem>
           <NButton type="primary" @click="addLink">
             Įkelti
@@ -18,7 +18,7 @@
       </NTabPane>
       <NTabPane name="file" tab="Failas iš vusa.lt failų">
         <Suspense>
-          <FileSelector v-if="showModal" @submit="addLink" />
+          <FileSelector v-if="showModal" @submit="addFileLink" />
           <div v-else class="h-32" />
           <template #fallback>
             <div class="flex h-32 items-center justify-center">
@@ -53,25 +53,27 @@ const emit = defineEmits<{
 }>()
 
 const showModal = ref(false);
-const url = ref("");
+const urlRef = ref("");
 
 function handleOpenModal() {
-  url.value = props.editor?.getAttributes('link').href
+  urlRef.value = props.editor?.getAttributes('link').href
   showModal.value = true;
 }
 
-function addLink(file: string | PointerEvent) {
+function addLink() {
 
-  if (typeof file === 'string') {
-    url.value = file;
-    emit('submit', url.value);
+  if (typeof urlRef.value === 'string') {
+    emit('submit', urlRef.value);
   }
 
-  if (url.value.startsWith("public")) {
-    url.value = "/uploads/" + url.value.substring(url.value.indexOf("/") + 1);
-    emit('submit', url.value);
-  }
+  showModal.value = false;
+}
 
+function addFileLink(file: string) {
+  if (file.startsWith("public")) {
+    emit('submit', "/uploads/" + file.substring(file.indexOf("/") + 1));
+  }
+  emit('submit', file);
   showModal.value = false;
 }
 
