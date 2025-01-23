@@ -14,7 +14,7 @@
   "dependencies": {
     "@azure/msal-browser": "^3.20.0",
     "@codecov/vite-plugin": "^1.7.0",
-    "@inertiajs/vue3": "^2.0.0",
+    "@inertiajs/vue3": "^2.0.3",
     "@observablehq/plot": "^0.6.16",
     "@pnp/graph": "^4.3.0",
     "@pnp/sp": "^4.3.0",
@@ -43,7 +43,7 @@
     "fuse.js": "^7.0.0",
     "gsap": "^3.12.5",
     "happy-dom": "^16.0.0",
-    "laravel-vue-i18n": "^2.3.2",
+    "laravel-vue-i18n": "github:justinaskav/laravel-vue-i18n#main",
     "latinize": "^2.0.0",
     "lucide-vue-next": "^0.473.0",
     "posthog-js": "^1.40.1",
