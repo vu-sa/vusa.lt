@@ -2,7 +2,7 @@
   <AdminContentPage>
     <div class="relative h-72 w-full rounded-md">
       <img :src="training.image" class="size-full rounded-lg object-cover">
-      <div class="absolute bottom-0 h-1/2 w-full rounded-b-md bg-gradient-to-b from-transparent to-zinc-900" />
+      <div class="absolute bottom-0 h-1/2 w-full rounded-b-md bg-linear-to-b from-transparent to-zinc-900" />
       <div class="absolute bottom-0 grid grid-cols-2 p-6">
         <div>
           <h2 class="mb-0 text-3xl font-extrabold tracking-tight text-white">

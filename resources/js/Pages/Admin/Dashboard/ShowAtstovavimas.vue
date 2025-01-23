@@ -101,7 +101,7 @@
           id: $page.props.app.locale,
           firstDayOfWeek: 2,
           masks: { weekdays: 'WW' },
-        }" color="red" borderless class="rounded-md shadow-sm" :attributes="calendarAttributes">
+        }" color="red" borderless class="rounded-md shadow-xs" :attributes="calendarAttributes">
           <template #day-popover="{ attributes, dayTitle }">
             <div class="max-w-md">
               <div class="mb-1 text-center text-xs font-semibold text-gray-300 dark:text-zinc-700">
@@ -170,7 +170,7 @@
             id: $page.props.app.locale,
             firstDayOfWeek: 2,
             masks: { weekdays: 'WW' },
-          }" color="red" borderless class="rounded-md shadow-sm" :attributes="tenantCalendarAttributes">
+          }" color="red" borderless class="rounded-md shadow-xs" :attributes="tenantCalendarAttributes">
             <template #day-popover="{ attributes, dayTitle }">
               <div class="max-w-md">
                 <div class="mb-1 text-center text-xs font-semibold text-gray-300 dark:text-zinc-700">
@@ -479,7 +479,7 @@ onMounted(() => {
 
 <style scoped>
 .my-calendar :deep(.vc-container.vc-dark) {
-  @apply bg-zinc-800;
+  background-color: #29292e;
 }
 
 .my-calendar :deep(button.vc-arrow) {

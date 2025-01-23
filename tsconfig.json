@@ -44,7 +44,8 @@
       "unplugin-vue-define-options/macros-global",
       "@microsoft/microsoft-graph-types",
       "vitest/globals",
-      "unplugin-icons/types/vue"
+      "unplugin-icons/types/vue",
+      "vite-plugin-ziggy/routes"
     ],
     "allowSyntheticDefaultImports": true,
     "sourceMap": true,

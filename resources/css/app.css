@@ -1,6 +1,95 @@
-@import "tailwindcss/base";
-@import "tailwindcss/components";
-@import "tailwindcss/utilities";
+@import 'tailwindcss';
+
+@plugin 'tailwindcss-animate';
+
+@source '../views';
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../js';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+  --animate-collapsible-down: collapsible-down 0.2s ease-in-out;
+  --animate-collapsible-up: collapsible-up 0.2s ease-in-out;
+
+  --color-vusa-red: #bd2835;
+  --color-vusa-red-secondary: #8c1d27;
+  --color-vusa-red-tertiary: #bb2734;
+  --color-vusa-red-quaternary: #d74350;
+  --color-vusa-red-dark: #5d131a;
+  --color-vusa-yellow: #fbb01b;
+  --color-vusa-yellow-secondary: #de9503;
+  --color-vusa-yellow-tertiary: #fbb120;
+  --color-vusa-yellow-quaternary: #fcc557;
+  --color-vusa-yellow-dark: #a77002;
+
+  --grid-template-columns-ram-fill: repeat(auto-fill, minmax(320px, 1fr));
+  --grid-template-columns-ram-fit: repeat(auto-fit, minmax(320px, 1fr));
+
+  @keyframes accordion-down {
+    from {
+      height: 0;
+    }
+    to {
+      height: var(--radix-accordion-content-height);
+    }
+  }
+  @keyframes accordion-up {
+    from {
+      height: var(--radix-accordion-content-height);
+    }
+    to {
+      height: 0;
+    }
+  }
+  @keyframes collapsible-down {
+    from {
+      height: 0;
+    }
+    to {
+      height: var(--radix-collapsible-content-height);
+    }
+  }
+  @keyframes collapsible-up {
+    from {
+      height: var(--radix-collapsible-content-height);
+    }
+    to {
+      height: 0;
+    }
+  }
+}
+
+@utility container {
+  margin-inline: auto;
+  padding-inline: 2rem;
+  @media (width >= --theme(--breakpoint-sm)) {
+    max-width: none;
+  }
+  @media (width >= 1400px) {
+    max-width: 1400px;
+  }
+}
+
+/*
+  The default border color has changed to `currentColor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentColor);
+  }
+}
 
 @layer base {
 
@@ -56,7 +145,7 @@ html.dark {
   }
 
   p {
-    @apply [&:not(:first-child)]:mt-6 mt-4 mb-5
+    @apply not-first:mt-6 mt-4 mb-5
   }
 
   ul, ol {

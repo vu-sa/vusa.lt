@@ -14,7 +14,7 @@
       <NImageGroup :show-toolbar="false">
         <div class="grid grid-flow-row-dense grid-cols-6 gap-4">
           <div v-for="(image, index) in element.json_content" :key="index" :class="getClassesForImage(image.colspan)">
-            <NImage :src="image.image" width="100%" class="size-full rounded-md shadow-sm" object-fit="cover" />
+            <NImage :src="image.image" width="100%" class="size-full rounded-md shadow-xs" object-fit="cover" />
           </div>
         </div>
       </NImageGroup>

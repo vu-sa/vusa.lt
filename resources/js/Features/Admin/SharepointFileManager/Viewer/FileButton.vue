@@ -1,6 +1,6 @@
 <template>
   <button v-bind="$attrs" role="button" :class="[small ? 'size-28' : 'size-48']"
-    class="grid cursor-pointer grid-rows-[7fr_4fr] items-center rounded-lg border p-0 shadow-sm transition hover:shadow-md focus:outline-none focus:ring focus:ring-vusa-yellow dark:border-zinc-900 dark:bg-zinc-900 dark:focus:ring-vusa-red">
+    class="grid cursor-pointer grid-rows-[7fr_4fr] items-center rounded-lg border p-0 shadow-xs transition hover:shadow-md focus:outline-hidden focus:ring-3 focus:ring-vusa-yellow dark:border-zinc-900 dark:bg-zinc-900 dark:focus:ring-vusa-red">
     <div class="align-center flex h-full justify-center overflow-hidden rounded-t-md">
       <FadeTransition mode="out-in">
         <img v-if="thumbnail && showThumbnail" class="size-full rounded-t-md object-cover object-top" :src="thumbnail">

@@ -1,6 +1,6 @@
 <template>
   <NSpin :show="spinning">
-    <NCard size="small" class="my-2 cursor-pointer overflow-hidden shadow-sm" style="border-radius: 0.5em" hoverable
+    <NCard size="small" class="my-2 cursor-pointer overflow-hidden shadow-xs" style="border-radius: 0.5em" hoverable
       as="button"><template #header>
         {{ doing.title }}
       </template>

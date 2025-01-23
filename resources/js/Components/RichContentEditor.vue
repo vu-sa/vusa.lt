@@ -21,7 +21,7 @@
     </FadeTransition>
     <TransitionGroup ref="el" tag="div">
       <div v-for="content, index in contents" :key="content?.id ?? content?.key"
-        class="relative grid w-full grid-cols-[24px,_1fr] gap-4 border border-zinc-300 p-3 shadow-sm first:rounded-t-lg last:rounded-b-lg dark:border-zinc-700/40 dark:bg-zinc-800/5">
+        class="relative grid w-full grid-cols-[24px__1fr] gap-4 border border-zinc-300 p-3 shadow-xs first:rounded-t-lg last:rounded-b-lg dark:border-zinc-700/40 dark:bg-zinc-800/5">
         <NButton class="handle" style="height: 100%;" quaternary size="small">
           <template #icon>
             <IFluentReOrderDotsVertical24Regular />

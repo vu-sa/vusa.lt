@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="grid grid-cols-[auto,_1fr] items-center gap-x-6 gap-y-4 max-sm:grid-cols-2">
+    <div class="grid grid-cols-[auto__1fr] items-center gap-x-6 gap-y-4 max-sm:grid-cols-2">
       <NButtonGroup>
         <!-- Add file or folder   -->
         <NButton size="small" @click="showFileUploadModal = true">
@@ -23,7 +23,7 @@
         {{ shownPath }}
       </div>
     </div>
-    <div class="mt-4 flex flex-wrap gap-4 rounded-md border border-zinc-200 p-8 shadow-sm dark:border-zinc-50/10">
+    <div class="mt-4 flex flex-wrap gap-4 rounded-md border border-zinc-200 p-8 shadow-xs dark:border-zinc-50/10">
       <FileButton v-if="props.path !== 'public/files'" :key="'back'" :small
         class="dark:from-zinc-800/90 dark:to-zinc-700/90" :icon-string="'folder'" :name="'..'" @dblclick="handleBack" />
       <FileButton v-for="folder in shownDirectories" :key="folder.id" :small

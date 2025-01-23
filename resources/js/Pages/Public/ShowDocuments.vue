@@ -1,8 +1,8 @@
 <template>
-  <div class="mt-4 grid grid-cols-1 items-start justify-center gap-6 md:grid-cols-[minmax(220px,_25%),_1fr] lg:gap-12">
+  <div class="mt-4 grid grid-cols-1 items-start justify-center gap-6 md:grid-cols-[minmax(220px,25%)__1fr] lg:gap-12">
     <Collapsible
       v-model:open="areFiltersOpen"
-      class=" rounded-lg border border-zinc-200 bg-gradient-to-b from-white to-zinc-50 p-4 shadow-sm dark:border-zinc-900 dark:from-zinc-800 dark:to-zinc-900">
+      class=" rounded-lg border border-zinc-200 bg-linear-to-b from-white to-zinc-50 p-4 shadow-xs dark:border-zinc-900 dark:from-zinc-800 dark:to-zinc-900">
       <CollapsibleTrigger>
         <div class="flex items-center gap-4">
           <strong class="text-lg">

@@ -39,17 +39,17 @@
       <div class="relative flex w-fit items-center justify-center lg:top-4">
         <template v-if="showPhotos">
           <img
-            class="absolute -left-32 top-8 max-w-48 rounded-lg object-cover shadow-xl blur brightness-50 lg:-top-24 lg:max-w-64"
+            class="absolute -left-32 top-8 max-w-48 rounded-lg object-cover shadow-xl blur-sm brightness-50 lg:-top-24 lg:max-w-64"
             src="/images/photos/vu.jpg">
           <img
-            class="absolute -left-16 top-12 z-[1] max-w-48 rounded-lg object-cover shadow-xl blur-sm brightness-75 lg:-top-12 lg:max-w-64"
+            class="absolute -left-16 top-12 z-1 max-w-48 rounded-lg object-cover shadow-xl blur-xs brightness-75 lg:-top-12 lg:max-w-64"
             src="/images/photos/stovykla.jpg">
           <img
-            class="absolute left-12 top-14 z-[1] rounded-lg object-cover shadow-2xl brightness-125 contrast-100 sm:left-24 md:left-32 lg:left-48 lg:max-w-64"
+            class="absolute left-12 top-14 z-1 rounded-lg object-cover shadow-2xl brightness-125 contrast-100 sm:left-24 md:left-32 lg:left-48 lg:max-w-64"
             src="/images/photos/pirmakursiu_stovykla_kaune.jpg">
         </template>
         <FadeTransition>
-          <EventCalendar class="relative z-[5]" :calendar-events="calendar" :locale="$page.props.app.locale" />
+          <EventCalendar class="relative z-5" :calendar-events="calendar" :locale="$page.props.app.locale" />
         </FadeTransition>
       </div>
     </div>

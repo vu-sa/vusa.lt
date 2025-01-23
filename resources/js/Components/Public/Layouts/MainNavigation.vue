@@ -22,7 +22,7 @@
         </div>
       </nav>
       <nav
-        class="relative z-10 flex bg-white py-0.5 pl-3 pr-6 text-zinc-800 shadow-md transition duration-500 group-hover:rounded-b-none group-hover:rounded-t-2xl group-hover:delay-500 dark:bg-zinc-800 dark:text-white max-lg:rounded-xl max-md:gap-2 md:grid md:grid-cols-[auto,_1fr,_120px] md:gap-12 md:px-10 lg:rounded-t-2xl"
+        class="relative z-10 flex bg-white py-0.5 pl-3 pr-6 text-zinc-800 shadow-md transition duration-500 group-hover:rounded-b-none group-hover:rounded-t-2xl group-hover:delay-500 dark:bg-zinc-800 dark:text-white max-lg:rounded-xl max-md:gap-2 md:grid md:grid-cols-[auto__1fr__120px] md:gap-12 md:px-10 lg:rounded-t-2xl"
         :class="{
           'lg:rounded-2xl lg:shadow-lg': hasScrolledDown,
           'ease-in lg:shadow-none': !hasScrolledDown,
@@ -64,9 +64,9 @@
       <SecondMenu v-if="
         $page.props.tenant?.links &&
         $page.props.tenant?.links.length > 0
-      " class="bg-gradient-to-br from-stone-50 to-neutral-100 shadow-md duration-300 ease-in-out group-hover:translate-y-0 group-hover:opacity-100 dark:from-zinc-800 dark:to-[rgb(23,_23,_25)] max-lg:hidden "
+      " class="bg-linear-to-br from-stone-50 to-neutral-100 shadow-md duration-300 ease-in-out group-hover:translate-y-0 group-hover:opacity-100 dark:from-zinc-800 dark:to-[rgb(23,_23,_25)] max-lg:hidden "
         :class="{
-          '-translate-y-full opacity-0 shadow-sm': hasScrolledDown,
+          '-translate-y-full opacity-0 shadow-xs': hasScrolledDown,
           'opacity-100': !hasScrolledDown,
         }" />
     </div>

@@ -1,5 +1,5 @@
 <template>
-  <div class="mt-4 rounded-md border border-zinc-200 p-8 shadow-sm dark:border-zinc-50/10">
+  <div class="mt-4 rounded-md border border-zinc-200 p-8 shadow-xs dark:border-zinc-50/10">
     <template v-if="startingPath">
       <div class="flex flex-wrap gap-4">
         <div class="flex w-fit flex-wrap items-center gap-2">

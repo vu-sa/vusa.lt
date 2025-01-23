@@ -23,7 +23,7 @@
       </template>
       <template #image>
         <img
-          class="col-span-4 my-4 h-auto w-[65ch] rounded-sm object-cover shadow-md duration-200 hover:shadow-lg"
+          class="col-span-4 my-4 h-auto w-[65ch] rounded-xs object-cover shadow-md duration-200 hover:shadow-lg"
           :src="article.image"
         >
       </template>

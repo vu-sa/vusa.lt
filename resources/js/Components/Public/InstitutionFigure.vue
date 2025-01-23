@@ -3,7 +3,7 @@
     'md:grid-cols-[1fr_2fr]': institution.image_url && !onlyVertical,
   }">
     <img v-if="institution.image_url && !imageError" :src="institution.image_url" :alt="institution.name ?? ''"
-      class="h-56 w-full rounded-sm object-cover shadow-lg" :class="[imageError ? 'hidden' : '']" style="object-position: 50% 35%"
+      class="h-56 w-full rounded-xs object-cover shadow-lg" :class="[imageError ? 'hidden' : '']" style="object-position: 50% 35%"
       @error="imageError = true">
     <div class="w-full" :class="[imageError ? 'col-span-full' : '']">
       <div>
@@ -17,7 +17,7 @@
         })
           ">
           <img v-if="institution.logo_url" :alt="institution.name"
-            class="size-16 rounded-full border border-zinc-600/50 bg-white object-contain shadow-sm"
+            class="size-16 rounded-full border border-zinc-600/50 bg-white object-contain shadow-xs"
             :src="institution.logo_url">
           <div>
             <div class="flex items-center gap-6">

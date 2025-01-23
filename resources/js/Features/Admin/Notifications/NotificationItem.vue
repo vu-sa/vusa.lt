@@ -1,6 +1,6 @@
 <template>
   <div role="button"
-    class="flex max-w-sm cursor-pointer items-center gap-2 rounded-sm p-2 text-zinc-700 transition hover:bg-zinc-200/80 dark:text-zinc-50 dark:hover:bg-zinc-800/80"
+    class="flex max-w-sm cursor-pointer items-center gap-2 rounded-xs p-2 text-zinc-700 transition hover:bg-zinc-200/80 dark:text-zinc-50 dark:hover:bg-zinc-800/80"
     @click="router.visit(notification.data.object.url)">
     <div v-if="notificationType" class="w-full text-xs text-zinc-700 dark:text-zinc-300">
       <component :is="getNotificationComponent(notificationType)" :notification="notification" />

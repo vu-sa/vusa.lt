@@ -35,7 +35,7 @@
           :key="index"
           class="flex w-36 items-center justify-center border border-zinc-300 p-3 dark:border-zinc-600"
         >
-          <span class="rounded-sm text-xs text-zinc-500">Neužimta vieta</span>
+          <span class="rounded-xs text-xs text-zinc-500">Neužimta vieta</span>
         </div>
       </div>
       <NDivider />

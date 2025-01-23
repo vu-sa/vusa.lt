@@ -3,7 +3,7 @@
     :heading-icon="Icons.MAIN_PAGE">
     <UpsertModelLayout :errors="$page.props.errors" :model="mainPage">
       <h2>{{ tenant.shortname }} greitosios nuorodos</h2>
-      <div ref="el" class="mb-4 flex flex-col gap-1 rounded-sm border p-4 shadow-sm">
+      <div ref="el" class="mb-4 flex flex-col gap-1 rounded-xs border p-4 shadow-xs">
         <NButtonGroup v-for="item in mainPageList" :key="item.id" size="small">
           <NButton secondary class="handle">
             <template #icon>

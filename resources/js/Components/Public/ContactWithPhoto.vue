@@ -1,8 +1,8 @@
 <template>
   <figure
-    class="grid rounded-lg border border-zinc-200/50 bg-zinc-50 shadow-sm duration-200 hover:shadow-md dark:border-zinc-900/60 dark:bg-zinc-800"
+    class="grid rounded-lg border border-zinc-200/50 bg-zinc-50 shadow-xs duration-200 hover:shadow-md dark:border-zinc-900/60 dark:bg-zinc-800"
     :class="{
-      'gap-2 xl:grid-cols-[2fr,_3fr]': imageUrl,
+      'gap-2 xl:grid-cols-[2fr__3fr]': imageUrl,
     }">
     <img v-if="imageUrl" :src="imageUrl" class="h-40 w-full object-cover max-xl:rounded-t-md xl:rounded-l-md"
       loading="lazy" style="object-position: 50% 20%" :alt="contact?.name">

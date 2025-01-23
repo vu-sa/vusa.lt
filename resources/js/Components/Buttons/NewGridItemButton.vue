@@ -1,6 +1,6 @@
 <template>
   <NButton ghost
-    class="h-full min-h-32 max-w-sm flex-col justify-center gap-4 rounded-sm border px-2 py-4 text-zinc-500 duration-200 hover:shadow-inner dark:border-zinc-700 dark:shadow-zinc-900"
+    class="h-full min-h-32 max-w-sm flex-col justify-center gap-4 rounded-xs border px-2 py-4 text-zinc-500 duration-200 hover:shadow-inner dark:border-zinc-700 dark:shadow-zinc-900"
     @click="$emit('click')">
     <template #icon>
       <NIcon size="40">

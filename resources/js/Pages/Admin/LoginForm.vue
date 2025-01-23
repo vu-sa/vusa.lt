@@ -132,7 +132,7 @@ const rules = {
     {
       required: true,
       message: $t("validation.required", { attribute: $t("El. paštas") }),
-      trigger: "blur",
+      trigger: "blur-sm",
     },
   ],
   password: [
@@ -141,7 +141,7 @@ const rules = {
       message: $t("validation.required", {
         attribute: $t("forms.fields.password"),
       }),
-      trigger: "blur",
+      trigger: "blur-sm",
     },
   ],
 };

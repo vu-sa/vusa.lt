@@ -1,6 +1,6 @@
 <template>
   <div
-    class="my-2 flex flex-col gap-3 rounded-lg border bg-zinc-100/70 p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+    class="my-2 flex flex-col gap-3 rounded-lg border bg-zinc-100/70 p-4 shadow-xs dark:border-zinc-800 dark:bg-zinc-900">
     <div class="inline-flex items-center gap-3 p-1 text-xl font-bold">
       <IFluentLayerDiagonal24Regular /> {{ block.title[$page.props.app.locale] ?? block.title }}
       <slot name="buttons" />

@@ -63,17 +63,17 @@ const formRef = ref<FormInst | null>(null);
 const rules: FormRules = {
   // title: {
   //   required: true,
-  //   trigger: ["blur"],
+  //   trigger: ["blur-sm"],
   // },
   start_time: {
     required: true,
-    trigger: ["blur"],
+    trigger: ["blur-sm"],
     message: $t("validation.required", { attribute: $t("Data") }),
     type: "number",
   },
   // type_id: {
   //   required: true,
-  //   trigger: ["blur"],
+  //   trigger: ["blur-sm"],
   // },
 };
 

@@ -9,7 +9,7 @@
           <template v-for="item in category.items">
             <Link v-if="item.show" :key="item.title" :href="item.href">
             <button
-              class="group relative flex w-full flex-col gap-3 rounded-md border border-zinc-100 bg-gradient-to-br from-white to-white p-4 text-left text-sm leading-4 text-zinc-700 shadow-sm duration-500 hover:shadow-lg dark:border-0 dark:from-zinc-900 dark:to-neutral-800 dark:text-zinc-300 dark:hover:shadow-white/10">
+              class="group relative flex w-full flex-col gap-3 rounded-md border border-zinc-100 bg-linear-to-br from-white to-white p-4 text-left text-sm leading-4 text-zinc-700 shadow-xs duration-500 hover:shadow-lg dark:border-0 dark:from-zinc-900 dark:to-neutral-800 dark:text-zinc-300 dark:hover:shadow-white/10">
               <component :is="item.icon" width="28" height="28" />
               {{ item.title }}
               <!-- Add favorite button -->

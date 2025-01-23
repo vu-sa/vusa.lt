@@ -105,7 +105,7 @@ const rules: FormRules = {
     {
       required: true,
       message: "Pasirinkite tipą",
-      trigger: ["blur", "change"],
+      trigger: ["blur-sm", "change"],
     },
   ],
   // keywordsValue: [
@@ -118,7 +118,7 @@ const rules: FormRules = {
     {
       required: true,
       message: "Pasirinkite dokumento datą",
-      trigger: ["blur", "change"],
+      trigger: ["blur-sm", "change"],
       type: "number",
     },
   ],
@@ -126,7 +126,7 @@ const rules: FormRules = {
     {
       required: true,
       message: "Įkelkite failą",
-      trigger: ["blur", "change"],
+      trigger: ["blur-sm", "change"],
       // type is file object
       type: "object",
     },

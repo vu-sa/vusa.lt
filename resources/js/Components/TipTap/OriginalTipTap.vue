@@ -145,7 +145,7 @@
         </template>
       </NButton>
     </div>
-    <div class="mt-3 grid grid-cols-[auto,_30px] items-center gap-2 only:mt-0">
+    <div class="mt-3 grid grid-cols-[auto__30px] items-center gap-2 only:mt-0">
       <div class="max-h-96  w-full overflow-y-scroll">
         <EditorContent :editor="editor" class="min-h-24 rounded-md border dark:border-0 dark:bg-zinc-800" />
         <div v-if="editor && maxCharacters" class="mt-4 text-xs text-gray-500 dark:text-gray-400">
@@ -213,7 +213,7 @@ const showTableToolbar = ref(false);
 const editor = useEditor({
   editorProps: {
     attributes: {
-      class: "focus:outline-none px-3 py-2 w-full",
+      class: "focus:outline-hidden px-3 py-2 w-full",
     },
   },
   extensions: [
@@ -350,7 +350,7 @@ function handleUpdate() {
 
   blockquote {
     padding-left: 1rem;
-    @apply border-l-4 border-gray-200;
+    border-left: 4px solid #e2e8f0;
   }
 
   /* For placeholder  */

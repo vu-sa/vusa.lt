@@ -55,7 +55,7 @@
       </template>
       <SortableFormFieldsTable v-model="form.form_fields" class="mt-2">
         <template #default="{ model }">
-          <div class="grid grid-cols-[20px_,22px,_1fr,_80px] items-center gap-1 pr-2 text-zinc-700 dark:text-zinc-200">
+          <div class="grid grid-cols-[20px__22px__1fr__80px] items-center gap-1 pr-2 text-zinc-700 dark:text-zinc-200">
             <div class="flex flex-row items-center gap-2 pr-1.5">
               <IFluentTextT24Regular v-if="model.type === 'string'" />
               <IFluentCheckboxChecked24Regular v-if="model.type === 'boolean'" />

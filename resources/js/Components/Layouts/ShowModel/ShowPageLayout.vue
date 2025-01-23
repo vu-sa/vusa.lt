@@ -17,7 +17,7 @@
     <template #title>
       <slot name="title" />
     </template>
-    <div class="grid grid-rows-[minmax(300px,_50vh)_minmax(450px,_auto)] gap-4">
+    <div class="grid grid-rows-[minmax(300px,50vh)_minmax(450px,auto)] gap-4">
       <div class="overflow-y-auto">
         <slot />
       </div>

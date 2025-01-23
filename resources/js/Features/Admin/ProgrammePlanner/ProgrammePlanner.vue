@@ -38,7 +38,7 @@
     </NButton>
   </CardModal>
   <div class="flex items-center justify-between gap-2">
-    <NButton v-if="editable" rounded @click="createDay">
+    <NButton v-if="editable" rounded-sm @click="createDay">
       <template #icon>
         <IFluentCalendarAdd24Regular />
       </template>

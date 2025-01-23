@@ -1,5 +1,5 @@
 <template>
-  <section class="z-5 relative grid grid-cols-[min-content,_1fr] rounded-b-2xl pl-12">
+  <section class="z-5 relative grid grid-cols-[min-content__1fr] rounded-b-2xl pl-12">
     <SmartLink prefetch href="/"
       class="my-auto mr-6 whitespace-nowrap text-sm font-bold text-gray-900 dark:text-gray-200 dark:hover:text-vusa-red">
       {{
@@ -11,7 +11,7 @@
     <nav class="relative inline-flex items-center gap-5 overflow-hidden whitespace-nowrap py-2 text-xs">
       <MainPageLink v-for="link in $page.props.tenant?.links" :key="link?.id" :main-page-link="link" />
       <div
-        class="pointer-events-none absolute right-0 top-0 h-full w-16 rounded-br-md bg-gradient-to-r from-transparent to-zinc-100 dark:to-zinc-900" />
+        class="pointer-events-none absolute right-0 top-0 h-full w-16 rounded-br-md bg-linear-to-r from-transparent to-zinc-100 dark:to-zinc-900" />
     </nav>
   </section>
 </template>

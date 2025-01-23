@@ -17,8 +17,8 @@
       <span />
       <span />
     </section>
-    <div class="absolute top-0 h-6 w-full bg-gradient-to-b from-white to-transparent dark:from-zinc-900" />
-    <div class="absolute bottom-0 h-5 w-full bg-gradient-to-b from-transparent to-white dark:to-zinc-900" />
+    <div class="absolute top-0 h-6 w-full bg-linear-to-b from-white to-transparent dark:from-zinc-900" />
+    <div class="absolute bottom-0 h-5 w-full bg-linear-to-b from-transparent to-white dark:to-zinc-900" />
     <div class="absolute bottom-8 left-[4%] z-10 px-10 py-4 text-white md:max-w-[50%]">
       <p class="text-4xl font-extrabold tracking-wide sm:text-5xl">
         Rugsėjo 6 d.
@@ -32,7 +32,7 @@
       </p>
       <a href="https://www.facebook.com/events/484501527532466" class="mt-4 block sm:w-1/2" target="_blank">
         <button
-          class="w-full justify-self-end rounded-full bg-gradient-to-b from-orange-600 to-amber-500 px-4 py-2 font-bold text-white shadow-xl transition-shadow"
+          class="w-full justify-self-end rounded-full bg-linear-to-b from-orange-600 to-amber-500 px-4 py-2 font-bold text-white shadow-xl transition-shadow"
         >Dalyvauk!</button></a>
     </div>
   </div>

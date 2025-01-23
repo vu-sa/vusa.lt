@@ -5,8 +5,8 @@
       <link rel="preload" href="/images/photos/stovykla.jpg" as="image">
     </Head>
 
-    <ShapeDivider1 class="absolute -top-1 z-[1]" />
-    <ShapeDivider1 class="absolute -bottom-2 z-[1] rotate-180 lg:-bottom-1" />
+    <ShapeDivider1 class="absolute -top-1 z-1" />
+    <ShapeDivider1 class="absolute -bottom-2 z-1 rotate-180 lg:-bottom-1" />
     <div class="relative">
       <img src="/images/photos/stovykla.jpg" loading="lazy"
         class="mt-2 h-32 w-full object-cover brightness-50 lg:my-1 lg:h-64" style="object-position: 0% 45%">

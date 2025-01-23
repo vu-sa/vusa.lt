@@ -1,5 +1,5 @@
 <template>
-  <NTabs class="my-2 rounded-sm" type="segment">
+  <NTabs class="my-2 rounded-xs" type="segment">
     <NTabPane name="edit" display-directive="show">
       <template #tab>
         <IFluentEdit24Filled class="mr-2" />

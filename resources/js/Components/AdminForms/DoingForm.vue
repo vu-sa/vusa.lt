@@ -71,11 +71,11 @@ const formRef = ref(null);
 const rules = {
   title: {
     required: true,
-    trigger: ["blur"],
+    trigger: ["blur-sm"],
   },
   date: {
     required: true,
-    trigger: ["blur"],
+    trigger: ["blur-sm"],
     message: "Veiklos data yra privaloma",
   },
 };
