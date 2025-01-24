@@ -34,7 +34,7 @@
         <strong>this student calendar</strong> to „Google“ or „Outlook“ ..? 🗓
       </p>
     </div>
-      <CalendarSyncModal v-model:show-modal="showModal" @close="showModal = false" />
+    <CalendarSyncModal v-model:show-modal="showModal" @close="showModal = false" />
     <div class="relative mx-auto">
       <div class="relative flex w-fit items-center justify-center lg:top-4">
         <template v-if="showPhotos">

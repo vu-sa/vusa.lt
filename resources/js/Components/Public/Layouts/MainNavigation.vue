@@ -83,7 +83,7 @@
 
 <script setup lang="tsx">
 import { breakpointsTailwind, useBreakpoints } from "@vueuse/core";
-import { computed, ref, watch } from "vue";
+import { computed, defineAsyncComponent, ref, watch } from "vue";
 import { usePage } from "@inertiajs/vue3";
 
 import AppLogo from "@/Components/AppLogo.vue";
@@ -96,7 +96,8 @@ import SecondMenu from "../Nav/SecondMenu.vue";
 import SmartLink from "../SmartLink.vue";
 
 import LineHorizontal320Filled from "~icons/fluent/line-horizontal-3-20-filled";
-import MainMenuMobile from "../Nav/MainMenuMobile.vue";
+
+const MainMenuMobile = defineAsyncComponent(() => import("../Nav/MainMenuMobile.vue"));
 
 defineProps<{
   isThemeDark: boolean;

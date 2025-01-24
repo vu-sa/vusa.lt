@@ -3,7 +3,9 @@
   "compilerOptions": {
     // Base options
     "esModuleInterop": true,
-    "target": "ES2017",
+    "allowSyntheticDefaultImports": true,
+    // Since it's build with Vite, target is not used
+    "target": "ESNext",
     "allowJs": false,
     "resolveJsonModule": true,
     "moduleDetection": "force",
@@ -21,9 +23,9 @@
     "module": "esnext",
     "moduleResolution": "bundler",
     "lib": [
-      "es2022",
-      "dom",
-      "dom.iterable"
+      "ES2020",
+      "DOM",
+      "DOM.Iterable"
     ],
 
     // JSX
@@ -47,7 +49,6 @@
       "unplugin-icons/types/vue",
       "vite-plugin-ziggy/routes"
     ],
-    "allowSyntheticDefaultImports": true,
     "sourceMap": true,
     "baseUrl": ".",
     // For `<script setup>`

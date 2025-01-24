@@ -31,7 +31,7 @@
     @googlefonts
 
     {{-- CSS and JS --}}
-    @vite('resources/js/app.ts')
+    @vite(['resources/js/app.ts'])
 
     {{-- Ziggy Routes --}}
     @routes

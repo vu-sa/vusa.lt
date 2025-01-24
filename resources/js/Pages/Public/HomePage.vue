@@ -14,7 +14,6 @@
 </template>
 
 <script setup lang="ts">
-import AdminMultiHomeCards from "@/Components/Cards/AdminMultiHomeCards.vue";
 import { addressivize } from "@/Utils/String";
 import { usePage } from "@inertiajs/vue3";
 import { computed, defineAsyncComponent } from "vue";
@@ -26,7 +25,6 @@ defineProps<{
 }>();
 
 const EventCalendar = defineAsyncComponent(
-   
   () => import("@/Components/Public/FullWidth/EventCalendarElement.vue"),
 );
 
@@ -34,6 +32,9 @@ const NewsElement = defineAsyncComponent(
   () => import("@/Components/Public/NewsElement.vue"),
 );
 
+const AdminMultiHomeCards = defineAsyncComponent(
+  () => import("@/Components/Cards/AdminMultiHomeCards.vue"),
+);
 
 const userNameAddress = computed(() => {
   const name = usePage().props.auth?.user.name;
