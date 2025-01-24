@@ -295,6 +295,39 @@ class PublicPageController extends PublicController
         return $this->calendarEventMain('lt', $calendar);
     }
 
+    public function calendarMain($lang, string $year, string $month, string $day, string $slug) {
+
+        // Find the calendar event by date and slug
+        $calendarEvents = Calendar::query()->whereDate('date', $year.'-'.$month.'-'.$day)->get();
+
+        $returnableEvent = null;
+
+        // Sluggify each event title and compare with the slug from the URL
+        $calendarEvents->each(function ($event) use ($slug, &$returnableEvent) {
+            $sluggifiedTitle = Str::slug($event->title);
+            if ($sluggifiedTitle === $slug) {
+                $returnableEvent = $event;
+            }
+        });
+
+        if ($returnableEvent === null) {
+            abort(404);
+        }
+
+        return $this->calendarEventMain($lang, $returnableEvent);
+    }
+
+    public function calendarEventRedirect($lang, Calendar $calendar)
+    {
+        return redirect(route('calendar.event.2', [
+            'year' => $calendar->date->format('Y'),
+            'month' => $calendar->date->format('m'),
+            'day' => $calendar->date->format('d'),
+            'slug' => Str::slug($calendar->title),
+            'lang' => app()->getLocale(),
+        ]), 301);
+    }
+
     public function calendarEventMain($lang, Calendar $calendar)
     {
         $this->getBanners();

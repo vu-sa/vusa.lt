@@ -1,6 +1,5 @@
 <template>
-
-  <Head>
+<Head>
     <link rel="preload" href="/images/photos/pirmakursiu_stovykla_kaune.jpg" as="image">
     <link rel="preload" href="/images/photos/vu.jpg" as="image">
     <link rel="preload" href="/images/photos/stovykla.jpg" as="image">
@@ -38,13 +37,13 @@
     <div class="relative mx-auto">
       <div class="relative flex w-fit items-center justify-center lg:top-4">
         <template v-if="showPhotos">
-          <img
+          <img alt="Vilniaus universitetas"
             class="absolute -left-32 top-8 max-w-48 rounded-lg object-cover shadow-xl blur-sm brightness-50 lg:-top-24 lg:max-w-64"
             src="/images/photos/vu.jpg">
-          <img
+          <img alt="Pirmakursių stovykla"
             class="absolute -left-16 top-12 z-1 max-w-48 rounded-lg object-cover shadow-xl blur-xs brightness-75 lg:-top-12 lg:max-w-64"
             src="/images/photos/stovykla.jpg">
-          <img
+          <img alt="Pirmakursių stovykla Kaune"
             class="absolute left-12 top-14 z-1 rounded-lg object-cover shadow-2xl brightness-125 contrast-100 sm:left-24 md:left-32 lg:left-48 lg:max-w-64"
             src="/images/photos/pirmakursiu_stovykla_kaune.jpg">
         </template>
@@ -59,11 +58,8 @@
       {{ $t('Artėjantys renginiai') }}
     </h2>
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-      <a v-for="event in eventsByHavingImages.hasImages" :key="event.id" class="hidden w-full md:block" :href="route('calendar.event', {
-        calendar: event.id,
-        lang: $page.props.app.locale,
-      })
-        ">
+      <a v-for="event in eventsByHavingImages.hasImages" :key="event.id" class="hidden w-full md:block"
+        :href="getCalendarEvent2Route(event, $page.props.app.locale)">
         <CalendarCard hide-footer :calendar-event="event" />
       </a>
       <div v-for="event in eventsByHavingImages.noImages" :key="event[0].id" class="hidden h-full md:block">
@@ -79,11 +75,8 @@
       </div>
       <div class="block w-fit md:hidden">
         <div class="flex flex-col gap-4">
-          <a v-for="event in upcomingEvents.slice(0, 3)" :key="event.id" :href="route('calendar.event', {
-            calendar: event.id,
-            lang: $page.props.app.locale,
-          })
-            ">
+          <a v-for="event in upcomingEvents.slice(0, 3)" :key="event.id"
+            :href="getCalendarEvent2Route(event, $page.props.app.lang)">
             <CalendarCard :calendar-event="event" />
           </a>
         </div>
@@ -101,6 +94,7 @@ import CalendarCard from "@/Components/Calendar/CalendarCard.vue";
 import CalendarSyncModal from "@/Components/Modals/CalendarSyncModal.vue";
 import EventCalendar from "@/Components/Calendar/EventCalendar.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
+import { getCalendarEvent2Route } from "@/Utils/Route";
 
 const props = defineProps<{
   calendar: Array<App.Entities.Calendar>;
