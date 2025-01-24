@@ -295,7 +295,8 @@ class PublicPageController extends PublicController
         return $this->calendarEventMain('lt', $calendar);
     }
 
-    public function calendarMain($lang, string $year, string $month, string $day, string $slug) {
+    public function calendarMain($lang, string $year, string $month, string $day, string $slug)
+    {
 
         // Find the calendar event by date and slug
         $calendarEvents = Calendar::query()->whereDate('date', $year.'-'.$month.'-'.$day)->get();
