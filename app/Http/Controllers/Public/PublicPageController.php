@@ -11,41 +11,16 @@ use App\Models\Navigation;
 use App\Models\News;
 use App\Models\Page;
 use App\Services\ResourceServices\InstitutionService;
-use Datetime;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
-use Spatie\CalendarLinks\Link;
 use Tiptap\Editor;
 
 class PublicPageController extends PublicController
 {
-    // TODO: add all pages to dev seed
-    private function getCalendarGoogleLink($calendarEvent)
-    {
-        // check if event date is after end date, if so, return null
-        // TODO: check in frontend
-        if ($calendarEvent->end_date && $calendarEvent->date > $calendarEvent->end_date) {
-            return null;
-        }
-
-        $googleLink = Link::create(
-            $calendarEvent->title,
-            DateTime::createFromFormat('Y-m-d H:i:s', $calendarEvent->date),
-            $calendarEvent->end_date
-                ? DateTime::createFromFormat('Y-m-d H:i:s', $calendarEvent->end_date)
-                : Carbon::parse($calendarEvent->date)->addHour()->toDateTime()
-        )
-            ->description(strip_tags($calendarEvent->description))
-            ->address($calendarEvent->location ?? '')
-            ->google();
-
-        return $googleLink;
-    }
-
     protected function getEventsForCalendar()
     {
         if (app()->getLocale() === 'en') {
@@ -103,14 +78,14 @@ class PublicPageController extends PublicController
                     'important' => $news->important,
                 ];
             }),
-            'calendar' => $calendar->map(function ($calendar) {
+            'calendar' => $calendar->map(function (Calendar $calendar) {
                 return [
                     'id' => $calendar->id,
                     'date' => $calendar->date,
                     'end_date' => $calendar->end_date,
                     'title' => $calendar->title,
                     'category' => $calendar->category,
-                    'googleLink' => $this->getCalendarGoogleLink($calendar),
+                    'googleLink' => $calendar->googleLink(),
                 ];
             }),
             'upcomingEvents' => $upcomingEvents->map(function ($calendar) {
@@ -352,7 +327,7 @@ class PublicPageController extends PublicController
                 'images' => $calendar->getMedia('images'),
             ],
             'calendar' => $this->getEventsForCalendar(),
-            'googleLink' => $this->getCalendarGoogleLink($calendar, app()->getLocale()),
+            'googleLink' => $calendar->googleLink(),
         ])
             ->withViewData(
                 [
