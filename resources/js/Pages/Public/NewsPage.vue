@@ -15,17 +15,15 @@
       <template #time>
         <!-- <NIcon class="mr-2" size="16"> <Clock20Regular /> </NIcon> -->
         {{ formatStaticTime(new Date(article.publish_time), { year: "numeric", month: "long", day: "numeric" },
-                            $page.props.app.locale
+          $page.props.app.locale
         ) }}
       </template>
       <template #title>
         {{ article.title }}
       </template>
       <template #image>
-        <img
-          class="col-span-4 my-4 h-auto w-[65ch] rounded-sm object-cover shadow-md duration-200 hover:shadow-lg"
-          :src="article.image"
-        >
+        <img class="mb-1 rounded-sm object-cover shadow-md duration-200 hover:shadow-lg" :src="article.image">
+        <span v-if="article.image_author">{{ article.image_author }}</span>
       </template>
       <em v-if="$page.props.otherLangURL" class="typography col-span-full text-sm">
         {{ $t("Puslapis egzistuoja kita kalba") }}!
