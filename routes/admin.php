@@ -108,6 +108,8 @@ Route::resource('dutiables', DutiableController::class)->except(['index', 'show'
 Route::post('institutions/reorderDuties', [InstitutionController::class, 'reorderDuties'])->name('institutions.reorderDuties');
 Route::resource('institutions', InstitutionController::class);
 
+Route::get('tenants/{tenant}/main-page', [TenantController::class, 'editMainPage'])->name('tenants.editMainPage');
+Route::post('tenants/{tenant}/main-page', [TenantController::class, 'updateMainPage'])->name('tenants.updateMainPage');
 Route::resource('tenants', TenantController::class);
 
 Route::get('forms/{form}/export', [FormController::class, 'export'])->name('forms.export');

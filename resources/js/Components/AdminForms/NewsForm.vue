@@ -124,11 +124,6 @@ const languageOptions = [
   },
 ];
 
-function updateContents() {
-  // Use usePage flash.data to grab page.contents and update form.contents
-  form.content = usePage().props.flash.data?.content
-}
-
 if (props.modelRoute == "news.store") {
   watch(
     () => form.title,

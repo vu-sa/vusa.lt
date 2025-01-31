@@ -91,4 +91,22 @@ class TenantController extends Controller
 
         return redirect()->route('tenants.index')->with('success', 'Tenant deleted.');
     }
+
+    public function editMainPage(Tenant $tenant)
+    {
+        $this->authorize('update', $tenant);
+
+        return Inertia::render('Admin/People/EditMainPage', [
+            'tenant' => $tenant,
+        ]);
+    }
+
+    public function updateMainPage(UpdateTenantRequest $request, Tenant $tenant)
+    {
+        $tenant->fill($request->validated());
+
+        $tenant->save();
+
+        return redirect()->route('tenants.index')->with('success', 'Tenant updated.');
+    }
 }
