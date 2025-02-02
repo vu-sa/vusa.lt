@@ -1,13 +1,6 @@
 <template>
-  <IndexPageLayout
-    title="Greitosios nuorodos"
-    model-name="mainPage"
-    :can-use-routes="canUseRoutes"
-    :columns="columns"
-    :paginated-models="mainPage"
-    :icon="Icons.MAIN_PAGE"
-  >
-  </IndexPageLayout>
+  <IndexPageLayout title="Greitosios nuorodos" model-name="quickLinks" :can-use-routes="canUseRoutes" :columns="columns"
+    :paginated-models="quickLinks" :icon="Icons.QUICK_LINK" />
 </template>
 
 <script setup lang="tsx">
@@ -21,7 +14,7 @@ import Icons from "@/Types/Icons/regular";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 
 defineProps<{
-  mainPage: PaginatedModels<App.Entities.MainPage>;
+  quickLinks: PaginatedModels<App.Entities.QuickLink>;
 }>();
 
 const canUseRoutes = {
@@ -44,7 +37,7 @@ const filters = ref<Record<string, any>>({
 
 provide("filters", filters);
 
-const columns = computed<DataTableColumns<App.Entities.MainPage>>(() => [
+const columns = computed<DataTableColumns<App.Entities.QuickLink>>(() => [
   {
     title: "Pavadinimas",
     key: "text",

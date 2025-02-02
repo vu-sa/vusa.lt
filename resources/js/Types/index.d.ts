@@ -42,7 +42,7 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
   tenant:
   | (Pick<App.Entities.Tenant, "id" | "alias" | "shortname" | "type"> & {
     subdomain: string;
-    links: Array<App.Entities.MainPage | null>;
+    links: Array<App.Entities.QuickLink | null>;
     banners: Array<App.Entities.Banner> | [];
   })
   | undefined;

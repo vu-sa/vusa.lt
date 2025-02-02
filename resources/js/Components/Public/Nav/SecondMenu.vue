@@ -9,7 +9,7 @@
       }}
     </SmartLink>
     <nav class="relative inline-flex items-center gap-5 overflow-hidden whitespace-nowrap py-2 text-xs">
-      <MainPageLink v-for="link in $page.props.tenant?.links" :key="link?.id" :main-page-link="link" />
+      <QuickLink v-for="link in $page.props.tenant?.links" :key="link?.id" :quick-link="link" />
       <div
         class="pointer-events-none absolute right-0 top-0 h-full w-16 rounded-br-md bg-linear-to-r from-transparent to-zinc-100 dark:to-zinc-900" />
     </nav>
@@ -17,6 +17,6 @@
 </template>
 
 <script setup lang="ts">
-import MainPageLink from "./MainPageLink.vue";
+import QuickLink from "./QuickLink.vue";
 import SmartLink from "../SmartLink.vue";
 </script>

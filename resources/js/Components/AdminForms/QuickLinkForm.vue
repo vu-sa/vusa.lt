@@ -17,14 +17,14 @@
         <template #label>
           <div class="inline-flex items-center gap-2">
             <span>Padalinys, kuriam priklauso institucija</span>
-            <NButton v-if="mainPage.tenant_id" secondary tag="a" size="tiny" type="primary" round target="_blank" :href="route('mainPage.edit-order', {
-              tenant: mainPage.tenant_id,
-              lang: mainPage.lang,
+            <NButton v-if="quickLink.tenant_id" secondary tag="a" size="tiny" type="primary" round target="_blank" :href="route('quickLinks.edit-order', {
+              tenant: quickLink.tenant_id,
+              lang: quickLink.lang,
             })
               ">
               Atnaujinti nuorodų tvarką
               <template #icon>
-                <NIcon :component="Icons.MAIN_PAGE" />
+                <NIcon :component="Icons.QUICK_LINK" />
               </template>
             </NButton>
           </div>
@@ -44,12 +44,12 @@
         "Nuoroda" ir sugeneruojama atitinkamo puslapio nuoroda.
       </template>
       <NFormItem label="Nuorodos tipas">
-        <NSelect v-model:value="form.type" :options="mainPageType" :render-label="renderLabel"
+        <NSelect v-model:value="form.type" :options="quickLinksType" :render-label="renderLabel"
           @update:value="handleTypeChange" />
       </NFormItem>
       <NFormItem v-if="form.type !== 'url'" label="Pasirinkite puslapį">
         <NSelect v-model:value="pageSelection" filterable :options="typeOptions" placeholder="Pasirinkti puslapį..."
-          @update:value="createMainPageLink" />
+          @update:value="createQuickLinkLink" />
       </NFormItem>
       <NFormItem :show-feedback="false" label="Nuoroda">
         <NInputGroup>
@@ -78,7 +78,7 @@ import Icons from "@/Types/Icons/regular";
 import FluentIconSelect from "../FormItems/FluentIconSelect.vue";
 
 const props = defineProps<{
-  mainPage: App.Entities.MainPage;
+  quickLink: App.Entities.QuickLink;
   tenantOptions: Record<string, any>[];
   typeOptions: Record<string, any>[];
 }>();
@@ -88,7 +88,7 @@ defineEmits<{
   (event: "delete"): void;
 }>();
 
-const form = useForm("mainPage", props.mainPage);
+const form = useForm("quickLinks", props.quickLink);
 const pageSelection = ref(null);
 
 const options = props.tenantOptions.map((padalinys) => ({
@@ -107,7 +107,7 @@ const languageOptions = [
   },
 ];
 
-const mainPageType = [
+const quickLinksType = [
   {
     value: "url",
     label: "Nuoroda",
@@ -170,7 +170,7 @@ const handleTypeChange = (value: string) => {
   });
 };
 
-const createMainPageLink = (value: string, option) => {
+const createQuickLinkLink = (value: string, option) => {
   if (form.type === "url") {
     return;
   }

@@ -4,13 +4,13 @@ namespace App\Policies;
 
 use App\Enums\CRUDEnum;
 use App\Enums\ModelEnum;
-use App\Models\MainPage;
+use App\Models\QuickLink;
 use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Auth\Access\HandlesAuthorization;
 use Illuminate\Support\Str;
 
-class MainPagePolicy extends ModelPolicy
+class QuickLinkPolicy extends ModelPolicy
 {
     use HandlesAuthorization;
 
@@ -18,7 +18,7 @@ class MainPagePolicy extends ModelPolicy
     {
         parent::__construct($authorizer);
 
-        $this->pluralModelName = Str::plural(ModelEnum::MAIN_PAGE()->label);
+        $this->pluralModelName = Str::plural(ModelEnum::QUICK_LINK()->label);
     }
 
     /**
@@ -26,9 +26,9 @@ class MainPagePolicy extends ModelPolicy
      *
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function view(User $user, MainPage $mainPage)
+    public function view(User $user, QuickLink $quickLink)
     {
-        if ($this->commonChecker($user, $mainPage, CRUDEnum::READ()->label, $this->pluralModelName, false)) {
+        if ($this->commonChecker($user, $quickLink, CRUDEnum::READ()->label, $this->pluralModelName, false)) {
             return true;
         }
 
@@ -40,9 +40,9 @@ class MainPagePolicy extends ModelPolicy
      *
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function update(User $user, MainPage $mainPage)
+    public function update(User $user, QuickLink $quickLink)
     {
-        if ($this->commonChecker($user, $mainPage, CRUDEnum::UPDATE()->label, $this->pluralModelName, false)) {
+        if ($this->commonChecker($user, $quickLink, CRUDEnum::UPDATE()->label, $this->pluralModelName, false)) {
             return true;
         }
 
@@ -54,9 +54,9 @@ class MainPagePolicy extends ModelPolicy
      *
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function delete(User $user, MainPage $mainPage)
+    public function delete(User $user, QuickLink $quickLink)
     {
-        if ($this->commonChecker($user, $mainPage, CRUDEnum::DELETE()->label, $this->pluralModelName, false)) {
+        if ($this->commonChecker($user, $quickLink, CRUDEnum::DELETE()->label, $this->pluralModelName, false)) {
             return true;
         }
 
@@ -68,7 +68,7 @@ class MainPagePolicy extends ModelPolicy
      *
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function forceDelete(User $user, MainPage $mainPage)
+    public function forceDelete(User $user, QuickLink $quickLink)
     {
         return false;
     }

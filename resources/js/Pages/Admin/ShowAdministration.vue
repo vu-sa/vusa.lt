@@ -119,9 +119,9 @@ const menuItems: MenuItemsType = computed(() => [
       },
       {
         title: $t('Greitosios nuorodos'),
-        icon: Icons.MAIN_PAGE,
-        href: route('mainPage.index'),
-        show: auth?.can.create.mainPage,
+        icon: Icons.QUICK_LINK,
+        href: route('quickLinks.index'),
+        show: auth?.can.create.quickLink,
       },
       {
         title: $t('Baneriai'),
@@ -160,7 +160,7 @@ const menuItems: MenuItemsType = computed(() => [
         show: auth?.can.create.document
       },
     ],
-    show: auth?.can.create.page || auth?.can.create.news || auth?.can.create.mainPage || auth?.can.create.document || auth?.can.create.banner || auth?.can.create.navigation || auth?.can.create.calendar || auth?.can.create.category
+    show: auth?.can.create.page || auth?.can.create.news || auth?.can.create.quickLink || auth?.can.create.document || auth?.can.create.banner || auth?.can.create.navigation || auth?.can.create.calendar || auth?.can.create.category
   },
   {
     category: $t('Atstovavimas'),

@@ -29,13 +29,13 @@
 
       <div class="grid grid-cols-2 gap-2">
         <NFormItem label="Nuorodos tipas">
-          <NSelect v-model:value="form.linkType" :options="mainPageType" :render-label="renderLabel"
+          <NSelect v-model:value="form.linkType" :options="quickLinkType" :render-label="renderLabel"
             @update:value="(changedValue) => handleTypeChange(changedValue)" />
         </NFormItem>
         <NFormItem v-if="form.linkType !== 'url'" label="Pasirinkite puslapį">
           <NSelect v-model:value="form.pageSelection" filterable :options="typeOptions"
             placeholder="Pasirinkti puslapį..."
-            @update:value="(changedValue, option) => createMainPageLink(changedValue, option)" />
+            @update:value="(changedValue, option) => createQuickLinkLink(changedValue, option)" />
         </NFormItem>
       </div>
       <NFormItem required label="Nuoroda">
@@ -134,7 +134,7 @@ const columnOptions = [
 
 const currentLang = usePage().props.app.locale;
 
-const mainPageType = [
+const quickLinkType = [
   {
     value: "url",
     label: "Nuoroda",
@@ -210,7 +210,7 @@ const handleTypeChange = (changedValue: string) => {
   });
 };
 
-const createMainPageLink = (changedValue: string, option) => {
+const createQuickLinkLink = (changedValue: string, option) => {
   if (form.linkType === "url") {
     return;
   }

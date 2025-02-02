@@ -9,12 +9,12 @@ use App\Models\Doing;
 use App\Models\Duty;
 use App\Models\Goal;
 use App\Models\Institution;
-use App\Models\MainPage;
 use App\Models\Matter;
 use App\Models\Meeting;
 use App\Models\News;
 use App\Models\Page;
 use App\Models\Pivots\AgendaItem;
+use App\Models\QuickLink;
 use App\Models\Reservation;
 use App\Models\Resource;
 use App\Models\Tenant;
@@ -76,7 +76,7 @@ class DatabaseSeeder extends Seeder
         Goal::factory(10)->recycle($tenants)->create();
 
         foreach ($tenants as $tenant) {
-            MainPage::factory(6)
+            QuickLink::factory(6)
                 ->recycle($tenant)
                 ->state(new Sequence(['lang' => 'lt'], ['lang' => 'en']))
                 ->state(new Sequence(
@@ -89,6 +89,6 @@ class DatabaseSeeder extends Seeder
                 ))->create();
         }
 
-        MainPage::factory(200)->recycle($tenants)->create();
+        QuickLink::factory(200)->recycle($tenants)->create();
     }
 }

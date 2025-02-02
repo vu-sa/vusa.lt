@@ -1,14 +1,14 @@
 <template>
-  <PageContent title="Naujas pradinio puslapio mygtukas" :back-url="route('mainPage.index')">
+  <PageContent title="Naujas pradinio puslapio mygtukas" :back-url="route('quickLinks.index')">
     <UpsertModelLayout>
-      <MainPageForm :tenant-options :type-options :main-page
-        @submit:form="(form) => form.post(route('mainPage.store'))" />
+      <QuickLinkForm :tenant-options :type-options :quick-link
+        @submit:form="(form) => form.post(route('quickLinks.store'))" />
     </UpsertModelLayout>
   </PageContent>
 </template>
 
 <script setup lang="ts">
-import MainPageForm from "@/Components/AdminForms/MainPageForm.vue";
+import QuickLinkForm from "@/Components/AdminForms/QuickLinkForm.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 
@@ -17,7 +17,7 @@ defineProps<{
   typeOptions: Record<string, any>[];
 }>();
 
-const mainPage = {
+const quickLink = {
   text: "",
   link: "",
   lang: "lt",

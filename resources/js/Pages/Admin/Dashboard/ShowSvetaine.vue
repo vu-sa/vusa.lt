@@ -75,25 +75,25 @@
           </template>
         </NCard>
         <NCard title="Visų naujienų statistika">
-          <div class="mx-auto w-fit" ref="wrapper" />
+          <div ref="wrapper" class="mx-auto w-fit" />
         </NCard>
         <NCard :segmented="{
           footer: 'soft',
         }">
           <template #header>
             <div class="inline-flex items-center gap-2">
-              <component :is="Icons.MAIN_PAGE" />
+              <component :is="Icons.QUICK_LINK" />
               Greitieji mygtukai
             </div>
           </template>
           <span class="inline-block text-4xl font-bold">
-            <NNumberAnimation :from="0" :to="providedTenant?.main_pages?.length" />
+            <NNumberAnimation :from="0" :to="providedTenant?.quick_links?.length" />
           </span>
           <template #footer>
-            <Link :href="route('mainPage.index')">
+            <Link :href="route('quickLinks.index')">
             <NButton size="small" secondary>
               <template #icon>
-                <Icons.MAIN_PAGE />
+                <Icons.QUICK_LINK />
               </template>
               {{ $t('Rodyti visus') }}
             </NButton>

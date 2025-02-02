@@ -2,19 +2,19 @@
 
 namespace Database\Factories;
 
-use App\Models\MainPage;
+use App\Models\QuickLink;
 use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Arr;
 
-class MainPageFactory extends Factory
+class QuickLinkFactory extends Factory
 {
     /**
      * The name of the factory's corresponding model.
      *
      * @var string
      */
-    protected $model = MainPage::class;
+    protected $model = QuickLink::class;
 
     /**
      * Define the model's default state.

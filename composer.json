@@ -38,7 +38,7 @@
         "spatie/laravel-model-states": "^2.4",
         "spatie/laravel-permission": "^6.4",
         "spatie/laravel-settings": "^3.4",
-        "spatie/laravel-translatable": "^6.5",
+        "spatie/laravel-translatable": "6.9.3",
         "spatie/schema-org": "^3.23",
         "staudenmeir/eloquent-has-many-deep": "^v1.18",
         "symfony/psr-http-message-bridge": "^7.1",

@@ -7,9 +7,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Calendar;
 use App\Models\Category;
 use App\Models\Institution;
-use App\Models\MainPage;
 use App\Models\News;
 use App\Models\Page;
+use App\Models\QuickLink;
 use App\Models\Tenant;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ModelIndexer;
@@ -17,7 +17,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
-class MainPageController extends Controller
+class QuickLinkController extends Controller
 {
     public function __construct(public Authorizer $authorizer) {}
 
@@ -28,18 +28,18 @@ class MainPageController extends Controller
      */
     public function index(Request $request)
     {
-        $this->authorize('viewAny', MainPage::class);
+        $this->authorize('viewAny', QuickLink::class);
 
-        $indexer = new ModelIndexer(new MainPage);
+        $indexer = new ModelIndexer(new QuickLink);
 
-        $mainPage = $indexer
+        $quickLinks = $indexer
             ->setEloquentQuery()
             ->filterAllColumns()
             ->sortAllColumns()
             ->builder->paginate(15);
 
-        return Inertia::render('Admin/Content/IndexMainPage', [
-            'mainPage' => $mainPage,
+        return Inertia::render('Admin/Content/IndexQuickLink', [
+            'quickLinks' => $quickLinks,
         ]);
     }
 
@@ -50,11 +50,11 @@ class MainPageController extends Controller
      */
     public function create()
     {
-        $this->authorize('create', MainPage::class);
+        $this->authorize('create', QuickLink::class);
 
-        return Inertia::render('Admin/Content/CreateMainPage', [
-            'typeOptions' => Inertia::lazy(fn () => $this->getMainPageTypeOptions(request()->input('type'))),
-            'tenantOptions' => GetTenantsForUpserts::execute('mainPages.create.padalinys', $this->authorizer),
+        return Inertia::render('Admin/Content/CreateQuickLink', [
+            'typeOptions' => Inertia::lazy(fn () => $this->getQuickLinkTypeOptions(request()->input('type'))),
+            'tenantOptions' => GetTenantsForUpserts::execute('quickLinkss.create.padalinys', $this->authorizer),
         ]);
     }
 
@@ -65,7 +65,7 @@ class MainPageController extends Controller
      */
     public function store(Request $request)
     {
-        $this->authorize('create', MainPage::class);
+        $this->authorize('create', QuickLink::class);
 
         $request->validate([
             'text' => 'required',
@@ -79,17 +79,17 @@ class MainPageController extends Controller
         }
 
         DB::transaction(function () use ($request, $tenant_id) {
-            $mainPage = new MainPage;
-            $mainPage->text = $request->text;
-            $mainPage->link = $request->link;
-            $mainPage->lang = $request->lang;
-            $mainPage->icon = $request->icon;
-            $mainPage->is_important = $request->is_important;
-            $mainPage->tenant()->associate($tenant_id);
-            $mainPage->save();
+            $quickLinks = new QuickLink;
+            $quickLinks->text = $request->text;
+            $quickLinks->link = $request->link;
+            $quickLinks->lang = $request->lang;
+            $quickLinks->icon = $request->icon;
+            $quickLinks->is_important = $request->is_important;
+            $quickLinks->tenant()->associate($tenant_id);
+            $quickLinks->save();
         });
 
-        return redirect()->route('mainPage.index')->with('success', 'Sėkmingai sukurta greitoji nuoroda!');
+        return redirect()->route('quickLinks.index')->with('success', 'Sėkmingai sukurta greitoji nuoroda!');
     }
 
     /**
@@ -97,9 +97,9 @@ class MainPageController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function edit(MainPage $mainPage)
+    public function edit(QuickLink $quickLinks)
     {
-        $this->authorize('update', $mainPage);
+        $this->authorize('update', $quickLinks);
 
         // $routes = Route::getRoutes();
 
@@ -121,10 +121,10 @@ class MainPageController extends Controller
 
         // dd($routesWithoutParams);
 
-        return Inertia::render('Admin/Content/EditMainPage', [
-            'mainPage' => $mainPage,
-            'tenantOptions' => GetTenantsForUpserts::execute('mainPages.update.padalinys', $this->authorizer),
-            'typeOptions' => Inertia::lazy(fn () => $this->getMainPageTypeOptions(request()->input('type'))),
+        return Inertia::render('Admin/Content/EditQuickLink', [
+            'quickLinks' => $quickLinks,
+            'tenantOptions' => GetTenantsForUpserts::execute('quickLinkss.update.padalinys', $this->authorizer),
+            'typeOptions' => Inertia::lazy(fn () => $this->getQuickLinkTypeOptions(request()->input('type'))),
         ]);
     }
 
@@ -133,17 +133,17 @@ class MainPageController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, MainPage $mainPage)
+    public function update(Request $request, QuickLink $quickLinks)
     {
-        $this->authorize('update', $mainPage);
+        $this->authorize('update', $quickLinks);
 
         $request->validate([
             'text' => 'required',
             'link' => 'required',
         ]);
 
-        DB::transaction(function () use ($request, $mainPage) {
-            $mainPage->update($request->only('text', 'link', 'lang', 'icon', 'is_important'));
+        DB::transaction(function () use ($request, $quickLinks) {
+            $quickLinks->update($request->only('text', 'link', 'lang', 'icon', 'is_important'));
         });
 
         return back()->with('success', 'Sėkmingai atnaujinta greitoji nuoroda!');
@@ -154,23 +154,23 @@ class MainPageController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function destroy(MainPage $mainPage)
+    public function destroy(QuickLink $quickLinks)
     {
-        $this->authorize('delete', $mainPage);
+        $this->authorize('delete', $quickLinks);
 
-        $mainPage->delete();
+        $quickLinks->delete();
 
-        return redirect()->route('mainPage.index')->with('info', 'Sėkmingai ištrinta greitoji nuoroda!');
+        return redirect()->route('quickLinks.index')->with('info', 'Sėkmingai ištrinta greitoji nuoroda!');
     }
 
     public function editOrder(Tenant $tenant, string $lang)
     {
-        $mainPages = MainPage::query()->where('tenant_id', $tenant->id)->where('lang', $lang)->orderBy('order')->get();
+        $quickLinkss = QuickLink::query()->where('tenant_id', $tenant->id)->where('lang', $lang)->orderBy('order')->get();
 
-        $this->authorize('update', $mainPages->first());
+        $this->authorize('update', $quickLinkss->first());
 
-        return Inertia::render('Admin/Content/EditMainPageOrder', [
-            'mainPages' => $mainPages,
+        return Inertia::render('Admin/Content/EditQuickLinkOrder', [
+            'quickLinkss' => $quickLinkss,
             'tenant' => $tenant,
         ]);
     }
@@ -182,21 +182,21 @@ class MainPageController extends Controller
         ]);
 
         foreach ($request->orderList as $idAndOrder) {
-            $this->authorize('update', [MainPage::class, MainPage::find($idAndOrder['id']), $this->authorizer]);
+            $this->authorize('update', [QuickLink::class, QuickLink::find($idAndOrder['id']), $this->authorizer]);
         }
 
         DB::transaction(function () use ($request) {
             foreach ($request->orderList as $idAndOrder) {
-                $mainPage = MainPage::find($idAndOrder['id']);
-                $mainPage->order = $idAndOrder['order'];
-                $mainPage->save();
+                $quickLinks = QuickLink::find($idAndOrder['id']);
+                $quickLinks->order = $idAndOrder['order'];
+                $quickLinks->save();
             }
         });
 
-        return redirect()->route('mainPage.index')->with('success', 'Sėkmingai atnaujinta greitųjų nuorodų tvarka!');
+        return redirect()->route('quickLinks.index')->with('success', 'Sėkmingai atnaujinta greitųjų nuorodų tvarka!');
     }
 
-    public static function getMainPageTypeOptions($type)
+    public static function getQuickLinkTypeOptions($type)
     {
         switch ($type) {
             case 'url':

@@ -5,11 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Laravel\Scout\Searchable;
 
-class MainPage extends Model
+class QuickLink extends Model
 {
     use HasFactory, Searchable;
-
-    protected $table = 'main_page';
 
     protected $guarded = [];
 

@@ -332,23 +332,6 @@ declare global {
       activities?: Activity[]
     }
 
-    export interface MainPage {
-      // columns
-      id: number
-      link?: string | null
-      text?: string | null
-      icon?: string | null
-      order?: number | null
-      is_active: boolean
-      is_important: boolean
-      tenant_id: number
-      lang?: string | null
-      created_at: string
-      updated_at: string
-      // relations
-      tenant?: Tenant
-    }
-
     export interface Matter {
       // columns
       id: string
@@ -731,6 +714,23 @@ declare global {
       blocks?: ProgrammeBlock[]
     }
 
+    export interface QuickLink {
+      // columns
+      id: number
+      link?: string | null
+      text?: string | null
+      icon?: string | null
+      order?: number | null
+      is_active: boolean
+      is_important: boolean
+      tenant_id: number
+      lang?: string | null
+      created_at: string
+      updated_at: string
+      // relations
+      tenant?: Tenant
+    }
+
     export interface Registration {
       // columns
       id: number
@@ -909,6 +909,7 @@ declare global {
       address?: string | null
       shortname_vu?: string | null
       primary_institution_id?: string | null
+      content_id?: number | null
       // relations
       banners?: Banner[]
       calendar?: Calendar[]
@@ -916,7 +917,7 @@ declare global {
       institutions?: Institution[]
       news?: News[]
       pages?: Page[]
-      main_pages?: MainPage[]
+      quick_links?: QuickLink[]
       resources?: Resource[]
       users?: User
       reservations?: Reservation

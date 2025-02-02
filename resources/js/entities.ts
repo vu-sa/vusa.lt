@@ -31,8 +31,8 @@ export default [
   },
   {
     title: "Greitieji mygtukai",
-    icon: Icons.MAIN_PAGE,
-    key: pluralizeModels(ModelEnum.MAIN_PAGE),
+    icon: Icons.QUICK_LINK,
+    key: pluralizeModels(ModelEnum.QUICK_LINK),
   },
   {
     title: "Navigacija",
