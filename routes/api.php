@@ -28,7 +28,7 @@ Route::prefix('v1')->group(function () {
     // });
     Route::apiResource('types', 'TypeController')->only(['index']);
     Route::apiResource('documents', 'DocumentController')->only(['index']);
-    /*Route::get('calendar', CalendarController::class);*/
+    /* Route::get('calendar', CalendarController::class); */
     Route::group(['prefix' => '{lang}', 'where' => ['lang' => 'lt|en']], function () {
         Route::get('news/{tenant:alias}', [NewsController::class, 'getTenantNews'])->name('news.tenant.index');
     });
