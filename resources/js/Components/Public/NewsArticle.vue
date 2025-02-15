@@ -13,7 +13,7 @@
     <h1 class="col-span-4 mb-2 mt-0 text-center">
       <slot name="title" />
     </h1>
-    <div class="col-span-4 my-4 h-auto w-[65ch] text-center">
+    <div class="col-span-4 my-4 h-auto max-w-prose text-center">
       <slot name="image" />
     </div>
     <slot />
