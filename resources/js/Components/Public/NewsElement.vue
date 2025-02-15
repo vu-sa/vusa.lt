@@ -25,13 +25,13 @@
     </header>
 
     <div class="grid gap-8 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-      <SmartLink prefetch v-for="item in news" :key="item.id" :href="route('news', {
+      <SmartLink v-for="item in news" :key="item.id" prefetch :href="route('news', {
         lang: item.lang,
         news: item.permalink ?? '',
         newsString: 'naujiena',
-        subdomain: item.alias === 'vusa' ? 'www' : item.alias,
+        subdomain: $page.props.tenant?.subdomain ?? 'www',
       })">
-      <NewsCard :news="item" />
+        <NewsCard :news="item" />
       </SmartLink>
     </div>
   </div>
@@ -39,12 +39,17 @@
 
 <script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
-import { Link } from "@inertiajs/vue3";
 
 import SmartLink from "./SmartLink.vue";
 import NewsCard from "../Cards/NewsCard.vue";
+import { usePage } from "@inertiajs/vue3";
 
-defineProps<{
-  news: App.Entities.News[] | null;
-}>();
+const news = await fetch(
+  route("api.news.tenant.index", {
+    lang: usePage().props.app.locale,
+    tenant: usePage().props.tenant?.alias,
+  })
+).then((response) => response.json());
+
+console.log(news)
 </script>

@@ -33,8 +33,8 @@ export const genitivize = (name: string | null) => {
     .replace(/ė$/, "ės");
 };
 
-export const addressivize = (name: string | null) => {
-  if (name === null) {
+export const addressivize = (name: string | null | undefined) => {
+  if (name === null || name === undefined) {
     return "";
   }
 

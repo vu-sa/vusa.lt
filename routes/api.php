@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Api\CalendarController;
+use App\Http\Controllers\Api\NewsController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -26,4 +28,8 @@ Route::prefix('v1')->group(function () {
     // });
     Route::apiResource('types', 'TypeController')->only(['index']);
     Route::apiResource('documents', 'DocumentController')->only(['index']);
+    /*Route::get('calendar', CalendarController::class);*/
+    Route::group(['prefix' => '{lang}', 'where' => ['lang' => 'lt|en']], function () {
+        Route::get('news/{tenant:alias}', [NewsController::class, 'getTenantNews'])->name('news.tenant.index');
+    });
 });

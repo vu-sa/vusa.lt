@@ -40,13 +40,6 @@ class PublicPageController extends PublicController
         $this->getBanners();
         $this->getTenantLinks();
 
-        // get last 4 news by publishing date
-        $news = News::with('tenant')->where([['tenant_id', '=', $this->tenant->id], ['lang', app()->getLocale()], ['draft', '=', 0]])
-            ->where('publish_time', '<=', date('Y-m-d H:i:s'))
-            ->orderBy('publish_time', 'desc')
-            ->take(4)
-            ->get();
-
         $calendar = $this->getEventsForCalendar();
 
         // get 4 upcoming events by end_date if it exists, otherwise by date
@@ -59,25 +52,7 @@ class PublicPageController extends PublicController
         $seo = $this->shareAndReturnSEOObject(title: __('Pagrindinis puslapis').' - '.$this->tenant->shortname);
 
         return Inertia::render('Public/HomePage', [
-            'news' => $news->map(function ($news) {
-                return [
-                    'id' => $news->id,
-                    'title' => $news->title,
-                    'lang' => $news->lang,
-                    'alias' => $news->tenant->alias,
-                    // publish time to date format YYYY-MM-DD HH:MM
-                    'publish_time' => date('Y-m-d H:i', strtotime($news->publish_time)),
-                    'permalink' => $news->permalink,
-                    'image' => function () use ($news) {
-                        if (substr($news->image, 0, 4) == 'http') {
-                            return $news->image;
-                        } else {
-                            return Storage::get(str_replace('uploads', 'public', $news->image)) == null ? '/images/icons/naujienu_foto.png' : $news->image;
-                        }
-                    },
-                    'important' => $news->important,
-                ];
-            }),
+            'content' => $this->tenant->content,
             'calendar' => $calendar->map(function (Calendar $calendar) {
                 return [
                     'id' => $calendar->id,
@@ -86,12 +61,6 @@ class PublicPageController extends PublicController
                     'title' => $calendar->title,
                     'category' => $calendar->category,
                     'googleLink' => $calendar->googleLink(),
-                ];
-            }),
-            'upcomingEvents' => $upcomingEvents->map(function ($calendar) {
-                return [
-                    ...$calendar->toArray(),
-                    'images' => $calendar->getMedia('images'),
                 ];
             }),
         ])->withViewData([

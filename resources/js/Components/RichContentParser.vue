@@ -19,19 +19,26 @@
         </div>
       </NImageGroup>
     </div>
+    <Suspense v-else-if="element.type = 'news'" class="mx-auto mt-8">
+      <NewsElement />
+    </Suspense>
+
+    <!-- <EventCalendar :show-photos="true" :calendar :upcoming-events />-->
   </template>
 </template>
 
 <script setup lang="ts">
-import { NImage, NImageGroup } from 'naive-ui';
 import { defineAsyncComponent } from 'vue';
-import RichContentTiptapHTML from './RichContentTiptapHTML.vue';
 
 const RichContentCard = defineAsyncComponent(() => import('@/Components/RichContentCard.vue'));
 
 const RichContentAccordion = defineAsyncComponent(() => import('@/Components/RichContentAccordion.vue'));
 
-//const RichContentTiptapHTML = defineAsyncComponent(() => import('@/Components/RichContentTiptapHTML.vue'));
+const RichContentTiptapHTML = defineAsyncComponent(() => import('@/Components/RichContentTiptapHTML.vue'));
+
+const EventCalendar = defineAsyncComponent(() => import("@/Components/Public/FullWidth/EventCalendarElement.vue"));
+
+const NewsElement = defineAsyncComponent(() => import("@/Components/Public/NewsElement.vue"));
 
 const props = defineProps<{
   content: models.ContentPart[];

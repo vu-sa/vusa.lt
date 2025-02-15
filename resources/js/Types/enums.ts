@@ -17,6 +17,12 @@ export enum CRUDEnum {
   "UPDATE" = "update",
   "DELETE" = "delete",
 }
+export enum ContentPartEnum {
+  "IMAGE_GRID" = "image-grid",
+  "SHADCN_ACCORDION" = "shadcn-accordion",
+  "SHADCN_CARD" = "shadcn-card",
+  "TIPTAP" = "tiptap",
+}
 export enum LocaleEnum {
   "LT" = "lt",
   "EN" = "en",

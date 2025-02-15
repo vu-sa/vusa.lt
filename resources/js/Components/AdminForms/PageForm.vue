@@ -69,7 +69,7 @@ const otherPageOptions = computed(() => {
   return props.otherLangPages
     .map((page) => ({
       value: page.id,
-      label: `${page.title} (${page.padalinys?.shortname})`,
+      label: `${page.title} (${page.tenant?.shortname})`,
     }))
     .reverse();
 });

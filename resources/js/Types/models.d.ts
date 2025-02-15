@@ -922,6 +922,7 @@ declare global {
       users?: User
       reservations?: Reservation
       primary_institution?: Institution
+      content?: Content
     }
 
     export interface Training {

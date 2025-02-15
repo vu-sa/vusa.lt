@@ -203,19 +203,21 @@ function handleElementRemove(index: number) {
   nextTick(() => commit());
 }
 
-const imageGridOptions = [{
-  label: '1/1',
-  value: 'col-span-full',
-}, {
-  label: '1/3',
-  value: 'col-span-2',
-}, {
-  label: '2/3',
-  value: 'col-span-4',
-}, {
-  label: '1/2',
-  value: 'col-span-3',
-}]
+const imageGridOptions = [
+  {
+    label: '1/1',
+    value: 'col-span-full',
+  }, {
+    label: '1/3',
+    value: 'col-span-2',
+  }, {
+    label: '2/3',
+    value: 'col-span-4',
+  }, {
+    label: '1/2',
+    value: 'col-span-3',
+  }
+]
 
 const contentTypes = [
   {

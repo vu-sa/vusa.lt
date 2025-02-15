@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTenantRequest;
 use App\Http\Requests\UpdateTenantRequest;
+use App\Models\Content;
 use App\Models\Institution;
 use App\Models\Tenant;
 use App\Services\ModelAuthorizer as Authorizer;
@@ -96,8 +97,16 @@ class TenantController extends Controller
     {
         $this->authorize('update', $tenant);
 
-        return Inertia::render('Admin/People/EditMainPage', [
-            'tenant' => $tenant,
+        $tenant->load('content.parts');
+
+        if ($tenant->content === null) {
+            $content = new Content;
+            $content->save();
+            $tenant->content()->associate($content);
+        }
+
+        return Inertia::render('Admin/Content/EditHomePage', [
+            'tenant' => $tenant->load('content.parts'),
         ]);
     }
 
