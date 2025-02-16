@@ -1,9 +1,9 @@
 <template>
-  <div class="mb-4 rounded-lg py-4 lg:mb-8">
+  <div v-if="news.length > 0" class="mb-4 rounded-lg py-4 lg:mb-8">
     <header class="mb-4 flex flex-wrap items-center justify-between gap-1">
       <div>
         <h2 class="lg:mb-0 text-4xl">
-          {{ $t("Naujienos") }}
+          {{ $t(element.json_content?.title) }}
         </h2>
         <!-- <p class="text-zinc-800 dark:text-zinc-50">
           {{
@@ -39,10 +39,15 @@
 
 <script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
+import { usePage } from "@inertiajs/vue3";
 
 import SmartLink from "./SmartLink.vue";
 import NewsCard from "../Cards/NewsCard.vue";
-import { usePage } from "@inertiajs/vue3";
+import type { News } from '@/Types/contentParts';
+
+defineProps<{
+  element: News;  
+}>();
 
 const news = await fetch(
   route("api.news.tenant.index", {
@@ -50,6 +55,4 @@ const news = await fetch(
     tenant: usePage().props.tenant?.alias,
   })
 ).then((response) => response.json());
-
-console.log(news)
 </script>

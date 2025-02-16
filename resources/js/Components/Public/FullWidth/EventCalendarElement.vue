@@ -5,7 +5,7 @@
     <link rel="preload" href="/images/photos/stovykla.jpg" as="image">
   </Head>
 
-  <div class="mt-8 flex flex-col-reverse gap-4 lg:mt-32 lg:flex-row">
+  <div class="mt-8 flex flex-col-reverse gap-4 lg:flex-row">
     <div
       class="typography flex w-fit max-w-prose flex-col items-center justify-center text-base lg:h-4/5 lg:w-1/2 lg:items-start 2xl:w-3/4">
       <p v-if="$page.props.app.locale === 'lt'" class="text-2xl font-bold lg:w-2/3">
@@ -36,7 +36,7 @@
     <CalendarSyncModal v-model:show-modal="showModal" @close="showModal = false" />
     <div class="relative mx-auto">
       <div class="relative flex w-fit items-center justify-center lg:top-4">
-        <template v-if="showPhotos">
+        <!-- <template v-if="showPhotos">
           <img alt="Vilniaus universitetas"
             class="absolute -left-32 top-8 max-w-48 rounded-lg object-cover shadow-xl blur-sm brightness-50 lg:-top-24 lg:max-w-64"
             src="/images/photos/vu.jpg">
@@ -46,7 +46,7 @@
           <img alt="Pirmakursių stovykla Kaune"
             class="absolute left-12 top-14 z-1 rounded-lg object-cover shadow-2xl brightness-125 contrast-100 sm:left-24 md:left-32 lg:left-48 lg:max-w-64"
             src="/images/photos/pirmakursiu_stovykla_kaune.jpg">
-        </template>
+</template> -->
         <FadeTransition>
           <EventCalendar class="relative z-5" :calendar-events="calendar" :locale="$page.props.app.locale" />
         </FadeTransition>
@@ -56,18 +56,20 @@
 </template>
 
 <script setup lang="ts">
-import { Head } from "@inertiajs/vue3";
+import { Head, usePage } from "@inertiajs/vue3";
 import { NButton } from "naive-ui";
-import { computed, ref } from "vue";
+import { ref } from "vue";
 
 import CalendarSyncModal from "@/Components/Modals/CalendarSyncModal.vue";
 import EventCalendar from "@/Components/Calendar/EventCalendar.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 
-const props = defineProps<{
-  calendar: Array<App.Entities.Calendar>;
-  showPhotos: boolean;
-}>();
-
 const showModal = ref(false);
+
+const calendar = await fetch(
+  route("api.calendar.tenant.index", {
+    lang: usePage().props.app.locale,
+    tenant: usePage().props.tenant?.alias,
+  })
+).then((response) => response.json());
 </script>

@@ -122,6 +122,53 @@
               </template>
             </NDynamicInput>
           </div>
+          <!-- Hero -->
+          <div v-else-if="content?.type === 'hero'" v-show="content.expanded" class="mt-4 flex flex-col gap-4">
+            <NFormItem label="Pavadinimas" :show-feedback="false">
+              <NInput v-model:value="content.json_content.title" type="text" />
+            </NFormItem>
+            <NFormItem label="Subtitle" :show-feedback="false">
+              <NInput v-model:value="content.json_content.subtitle" type="text" />
+            </NFormItem>
+            <NFormItem label="Background Nuotrauka" :show-feedback="false">
+              <TiptapImageButton v-if="!content.json_content.backgroundMedia" size="medium" @submit="content.json_content.backgroundMedia = $event">
+                Pasirinkti paveikslėlį
+              </TiptapImageButton>
+              <img v-else :src="content.json_content.backgroundMedia" class="aspect-video h-24 rounded-lg object-cover">
+            </NFormItem>
+            <NFormItem label="Right side logo or photo" :show-feedback="false">
+              <TiptapImageButton v-if="!content.json_content.rightMedia" size="medium" @submit="content.options.rightMedia = $event">
+                Pasirinkti paveikslėlį
+              </TiptapImageButton>
+              <img v-else :src="content.json_content.rightMedia" class="aspect-video h-24 rounded-lg object-cover">
+            </NFormItem>
+            <!-j Button text -->
+            <NFormItem label="Button text" :show-feedback="false">
+              <NInput v-model:value="content.json_content.buttonText" type="text" />
+            </NFormItem>
+            <!-- Button link -->
+            <NFormItem label="Button link" :show-feedback="false">
+              <NInput v-model:value="content.json_content.buttonLink" type="text" />
+            </NFormItem>
+            <!-- Layout style -->
+            <NFormItem label="Layout style" :show-feedback="false">
+              <NSelect v-model:value="content.options.layoutStyle" default-value="default" :options="[
+                { 'label': 'Default', 'value': 'default' }, { 'label': 'Centered', 'value': 'centered' }]
+                " />
+            </NFormItem>
+          </div>
+          <!-- News -->
+          <div v-else-if="content?.type === 'news'" v-show="content.expanded" class="mt-4 flex flex-col gap-4">
+            <NFormItem label="Pavadinimas" :show-feedback="false">
+              <NInput v-model:value="content.json_content.title" type="text" />
+            </NFormItem>
+          </div>
+          <!-- Calendar -->
+          <div v-else-if="content?.type === 'calendar'" v-show="content.expanded" class="mt-4 flex flex-col gap-4">
+            <NFormItem label="Pavadinimas" :show-feedback="false">
+              <NInput v-model:value="content.json_content.title" type="text" />
+            </NFormItem>
+          </div>
         </RichContentEditorListElement>
       </div>
     </TransitionGroup>
@@ -238,6 +285,21 @@ const contentTypes = [
   {
     value: "image-grid",
     label: "Nuotraukų tinklelis",
+    icon: ImageMultiple24Regular,
+  },
+  {
+    value: "hero",
+    label: "Hero",
+    icon: ImageMultiple24Regular,
+  },
+  {
+    value: "news",
+    label: "Naujienos",
+    icon: ImageMultiple24Regular,
+  },
+  {
+    value: "calendar",
+    label: "Kalendorius",
     icon: ImageMultiple24Regular,
   },
 ];

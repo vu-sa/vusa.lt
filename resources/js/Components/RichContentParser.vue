@@ -5,11 +5,14 @@
       <RichContentTiptapHTML v-if="!html" :json_content="element.json_content" />
       <div v-else v-html="element.html" />
     </template>
+    <!-- Card -->
     <RichContentCard v-else-if="element.type === 'shadcn-card'" class="not-typography mb-4" :element="element">
       <RichContentTiptapHTML v-if="!html" :json_content="element.json_content" />
       <div v-else v-html="element.html" />
     </RichContentCard>
+    <!-- Accordion -->
     <RichContentAccordion v-else-if="element.type === 'shadcn-accordion'" :element :html />
+    <!-- Image Grid -->
     <div v-else-if="element.type === 'image-grid'" class="space-y-4">
       <NImageGroup :show-toolbar="false">
         <div class="grid grid-flow-row-dense grid-cols-6 gap-4">
@@ -19,16 +22,22 @@
         </div>
       </NImageGroup>
     </div>
-    <Suspense v-else-if="element.type = 'news'" class="mx-auto mt-8">
-      <NewsElement />
+    <!-- Hero -->
+    <RCHeroSection v-else-if="element.type === 'hero'" :element="element" />
+    <!-- News -->
+    <Suspense v-else-if="element.type === 'news'" class="mx-auto mt-8">
+      <NewsElement :element />
     </Suspense>
 
-    <!-- <EventCalendar :show-photos="true" :calendar :upcoming-events />-->
+    <Suspense v-else-if="element.type === 'calendar'" class="mx-auto mt-8">
+      <EventCalendar :element />
+    </Suspense>
   </template>
 </template>
 
 <script setup lang="ts">
 import { defineAsyncComponent } from 'vue';
+import RCHeroSection from './RichContent/RCHeroSection.vue';
 
 const RichContentCard = defineAsyncComponent(() => import('@/Components/RichContentCard.vue'));
 

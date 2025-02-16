@@ -1,7 +1,7 @@
 <template>
-  <AdminContentPage>
+  <AdminContentPage title="Redaguoti pagrindinį puslapį">
     <UpsertModelLayout>
-      <AdminForm :model="form" label-placement="top" @submit:form="$emit('submit:form', form)">
+      <AdminForm :model="form" label-placement="top" @submit:form="handleFormSubmit">
         <RichContentFormElement v-model="form.parts" />
       </AdminForm>
     </UpsertModelLayout>
@@ -20,5 +20,12 @@ const props = defineProps<{
   tenant: App.Entities.Tenant;
 }>();
 
-const form = useForm(props.tenant.content);
+const form = useForm<App.Entities.Content>(props.tenant.content);
+
+function handleFormSubmit() {
+  form.post(route('tenants.updateMainPage', form.id), {
+    preserveScroll: true,
+    forceFormData: true,
+  });
+}
 </script>

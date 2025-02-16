@@ -9,6 +9,7 @@ use App\Models\Document;
 use App\Models\Form;
 use App\Models\Navigation;
 use App\Models\Page;
+use App\Models\Tenant;
 use App\Services\ResourceServices\InstitutionService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
@@ -24,11 +25,21 @@ class PublicPageController extends PublicController
         if (app()->getLocale() === 'en') {
             return Cache::remember('calendar_en', 60 * 30, function () {
                 return Calendar::query()->with('category')->where('is_international', true)->where('is_draft', false)
-                    ->orderBy('date', 'desc')->take(100)->get();
+                    ->orderBy('date', 'desc')->take(100)->get()->map(function ($event) {
+                        return [
+                            ...$event->toArray(),
+                            'googleLink' => $event->googleLink(),
+                        ];
+                    });
             });
         } else {
             return Cache::remember('calendar_lt', 60 * 30, function () {
-                return Calendar::query()->with('category')->where('is_draft', false)->orderBy('date', 'desc')->take(100)->get();
+                return Calendar::query()->with('category')->where('is_draft', false)->orderBy('date', 'desc')->take(100)->get()->map(function ($event) {
+                    return [
+                        ...$event->toArray(),
+                        'googleLink' => $event->googleLink(),
+                    ];
+                });
             });
         }
     }
@@ -38,29 +49,10 @@ class PublicPageController extends PublicController
         $this->getBanners();
         $this->getTenantLinks();
 
-        $calendar = $this->getEventsForCalendar();
-
-        // get 4 upcoming events by end_date if it exists, otherwise by date
-        $upcomingEvents = $calendar->filter(function ($event) {
-            return $event->end_date ? $event->end_date > date('Y-m-d H:i:s') : $event->date > date('Y-m-d H:i:s');
-        })->sortBy(function ($event) {
-            return $event->date;
-        }, SORT_DESC)->take(8)->values();
-
         $seo = $this->shareAndReturnSEOObject(title: __('Pagrindinis puslapis').' - '.$this->tenant->shortname);
 
         return Inertia::render('Public/HomePage', [
-            'content' => $this->tenant->content,
-            'calendar' => $calendar->map(function (Calendar $calendar) {
-                return [
-                    'id' => $calendar->id,
-                    'date' => $calendar->date,
-                    'end_date' => $calendar->end_date,
-                    'title' => $calendar->title,
-                    'category' => $calendar->category,
-                    'googleLink' => $calendar->googleLink(),
-                ];
-            }),
+            'content' => $this->tenant->content ?? Tenant::query()->where('type', 'pagrindinis')->first()->content,
         ])->withViewData([
             'SEOData' => $seo,
         ]);

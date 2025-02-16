@@ -1,11 +1,11 @@
 <template>
   <!-- <SummerCamps v-if="$page.props.app.locale === 'lt'" /> -->
-  <template v-if="$page.props.auth?.user">
+  <!-- <template v-if="$page.props.auth?.user">
     <h2 class="text-4xl font-bold tracking-tight">
       {{ $t('Labas') }}, {{ userNameAddress }}! 👋
     </h2>
     <AdminMultiHomeCards />
-  </template>
+</template>-->
 
   <RichContentParser :content="content?.parts" />
 </template>

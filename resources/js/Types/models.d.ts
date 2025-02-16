@@ -415,7 +415,7 @@ declare global {
       lang: string
       other_lang_id?: number | null
       content_id: number
-      image?: string | null
+      image?: unknown | null
       image_author?: string | null
       important: boolean
       tenant_id: number
@@ -715,18 +715,6 @@ declare global {
     }
 
     export interface QuickLink {
-      // columns
-      id: number
-      link?: string | null
-      text?: string | null
-      icon?: string | null
-      order?: number | null
-      is_active: boolean
-      is_important: boolean
-      tenant_id: number
-      lang?: string | null
-      created_at: string
-      updated_at: string
       // relations
       tenant?: Tenant
     }
@@ -909,7 +897,6 @@ declare global {
       address?: string | null
       shortname_vu?: string | null
       primary_institution_id?: string | null
-      content_id?: number | null
       // relations
       banners?: Banner[]
       calendar?: Calendar[]

@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTenantRequest;
+use App\Http\Requests\UpdateContentRequest;
 use App\Http\Requests\UpdateTenantRequest;
 use App\Models\Content;
+use App\Models\ContentPart;
 use App\Models\Institution;
 use App\Models\Tenant;
 use App\Services\ModelAuthorizer as Authorizer;
@@ -102,7 +104,7 @@ class TenantController extends Controller
         if ($tenant->content === null) {
             $content = new Content;
             $content->save();
-            $tenant->content()->associate($content);
+            $tenant->content()->associate($content)->save();
         }
 
         return Inertia::render('Admin/Content/EditHomePage', [
@@ -110,12 +112,40 @@ class TenantController extends Controller
         ]);
     }
 
-    public function updateMainPage(UpdateTenantRequest $request, Tenant $tenant)
+    public function updateMainPage(UpdateContentRequest $request, Tenant $tenant)
     {
-        $tenant->fill($request->validated());
+        $validated = $request->validated();
 
-        $tenant->save();
+        $content = Content::query()->find($validated['id']);
 
-        return redirect()->route('tenants.index')->with('success', 'Tenant updated.');
+        // Collect and remove values with no ids
+        $existingParts = collect($validated['parts'])->filter(function ($part) {
+            return isset($part['id']);
+        });
+
+        // Remove non-existing parts
+        $content->parts()->whereNotIn('id', $existingParts->pluck('id'))->delete();
+
+        foreach ($validated['parts'] as $key => $part) {
+
+            // Continue if part is null
+            if (is_null($part)) {
+                continue;
+            }
+
+            $id = $part['id'] ?? null;
+
+            $model = ContentPart::query()->findOrNew($id);
+
+            $model->content_id = $content->id;
+            $model->type = $part['type'];
+            $model->json_content = $part['json_content'];
+            $model->options = $part['options'] ?? null;
+            $model->order = $key;
+
+            $model->save();
+        }
+
+        return redirect()->back()->with('success', 'Tenant updated.');
     }
 }

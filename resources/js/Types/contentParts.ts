@@ -39,6 +39,20 @@ export type ShadcnCard = {
   };
 }
 
+export type Hero = {
+  json_content: {
+    title: string;
+    subtitle: string;
+    backgroundMedia: string;
+    rightMedia?: string;
+    buttonText?: string;
+    buttonLink?: string;
+  };
+  options: {
+    layoutStyle?: "default" | "center";
+  }
+}
+
 // Not implemented
 
 export type Calendar = {
@@ -47,6 +61,8 @@ export type Calendar = {
 };
 
 export type News = {
-  json_content: {}
+  json_content: {
+    title: string;
+  }
   options: null
 }; 

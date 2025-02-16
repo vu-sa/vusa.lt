@@ -111,7 +111,7 @@ Route::resource('institutions', InstitutionController::class);
 Route::get('tenants/{tenant}/quick-links/edit', [TenantController::class, 'editQuickLink'])->name('tenants.editQuickLink');
 Route::post('tenants/{tenant}/quick-links', [TenantController::class, 'updateQuickLink'])->name('tenants.updateQuickLink');
 Route::get('tenants/{tenant}/main-page/edit', [TenantController::class, 'editMainPage'])->name('tenants.editMainPage');
-Route::post('tenants/{tenant}/main-page', [TenantController::class, 'updateMainPage'])->name('tenants.updateMainPage');
+Route::post('tenants/main-page/{content}', [TenantController::class, 'updateMainPage'])->name('tenants.updateMainPage');
 
 Route::resource('tenants', TenantController::class);
 

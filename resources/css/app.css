@@ -161,7 +161,7 @@ html.dark {
   display: grid;
   grid-template-columns:
     1fr min(85vw, 100%) 1fr;
-  @apply max-md:mt-12 mt-28
+  @apply max-md:mt-12 mt-24
 }
 
 .wrapper>* {
