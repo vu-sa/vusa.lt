@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Calendar;
-use App\Models\Tenant;
 use Illuminate\Support\Facades\Cache;
 
 class CalendarController extends Controller
