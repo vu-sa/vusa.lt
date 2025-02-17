@@ -34,10 +34,10 @@
             </div>
           </FadeTransition>
           <div v-if="
-            $page.props.padalinys?.banners &&
-            $page.props.padalinys.banners.length > 0
+            $page.props.tenant?.banners &&
+            $page.props.tenant.banners.length > 0
           " class="mx-auto mt-8 max-w-7xl">
-            <BannerCarousel :banners="$page.props.padalinys?.banners" />
+            <BannerCarousel :banners="$page.props.tenant?.banners" />
           </div>
         </div>
         <!--<template #fallback>
