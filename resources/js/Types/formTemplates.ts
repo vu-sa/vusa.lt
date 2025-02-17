@@ -77,6 +77,26 @@ export const meetingTemplate = {
   start_time: null,
 };
 
+export const newsTemplate = {
+  title: "",
+  permalink: "",
+  lang: "lt",
+  other_lang_id: null,
+  content: {
+    parts: [
+      {
+        type: "tiptap",
+        json_content: {},
+      },
+    ]
+  },
+  short: "",
+  publish_time: new Date().toISOString().slice(0, 19).replace("T", " "),
+  draft: false,
+  image: null,
+  image_author: null,
+}
+
 export const typeTemplate: Pick<
   App.Entities.Type,
   "title" | "slug" | "description" | "model_type" | "parent_id"

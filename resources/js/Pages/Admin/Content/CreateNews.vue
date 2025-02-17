@@ -4,7 +4,7 @@
       <template #card-header>
         Puslapio informacija
       </template>
-      <NewsForm :news model-route="news.store" @submit:form="(form) => form.post(route('news.store'))" />
+      <NewsForm :news remember-key="CreateNews" @submit:form="(form) => form.post(route('news.store'))" />
     </UpsertModelLayout>
   </PageContent>
 </template>
@@ -12,25 +12,6 @@
 <script setup lang="ts">
 import NewsForm from "@/Components/AdminForms/NewsForm.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
+import { newsTemplate as news } from "@/Types/formTemplates";
 import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
-
-const news = {
-  title: "",
-  permalink: "",
-  lang: "lt",
-  other_lang_id: null,
-  content: {
-    parts: [
-      {
-        type: "tiptap",
-        json_content: {},
-      },
-    ]
-  },
-  short: "",
-  publish_time: new Date().toISOString().slice(0, 19).replace("T", " "),
-  draft: false,
-  image: null,
-  image_author: null,
-};
 </script>

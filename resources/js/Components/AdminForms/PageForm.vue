@@ -55,7 +55,7 @@ defineEmits<{
   (event: "delete"): void;
 }>();
 
-const form = useForm("page", props.page);
+const form = useForm(props.page);
 
 const otherPageOptions = computed(() => {
   if (props.modelRoute === "pages.store") {

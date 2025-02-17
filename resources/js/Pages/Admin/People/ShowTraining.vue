@@ -13,13 +13,14 @@
             <h2 class="mb-px text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
               {{ training.name }}
             </h2>
-            <div class="inline-flex text-zinc-500 items-center">
+            <div class="inline-flex text-zinc-500 items-center whitespace-pre">
               <IFluentCalendar24Regular class="mr-1" />
               <span>
                 {{ formatStaticTime(training.start_time, { month: "long", day: "numeric", }) }}
               </span>
+              <span>{{ " - " }}</span>
               <span>
-                {{ formatStaticTime(training.end_time, { day: "numeric" }) }}
+                {{ formatStaticTime(training.end_time, { month: "long", day: "numeric" }) }}
               </span>
             </div>
           </div>
@@ -48,7 +49,7 @@
             Užsiregistruota
           </NTag>
         </div>
-        <div class="typography">
+        <div class="text-zinc-900 mt-2">
           <div v-html="training.description" />
         </div>
       </CardHeader>
@@ -75,11 +76,13 @@
         </div>
       </CardFooter>
     </Card>
-    <NTabs class="my-4" type="segment" :default-value="defaultTab">
+    <NTabs class="my-4" type="segment" animated :default-value="defaultTab">
       <NTabPane name="summary" tab="Pagrindinis">
         <Card class="border shadow-xs bg-white dark:bg-zinc-800 dark:border-zinc-700">
           <CardHeader>
-            <h2>Pagrindinė informacija</h2>
+            <h2 class="mb-0">
+              Pagrindinė informacija
+            </h2>
           </CardHeader>
           <CardContent class="flex flex-col gap-2">
             <div v-if="training.address" class="flex items-center gap-2">
@@ -96,6 +99,7 @@
             </div>
             <div class="inline-flex items-center gap-2">
               <Icons.USER />
+              Organizuoja: 
               <UserPopover show-name :size="20" :user="training.organizer" />
             </div>
           </CardContent>

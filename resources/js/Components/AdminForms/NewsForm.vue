@@ -24,7 +24,7 @@
         </NFormItem>
       </div>
       <NFormItem class="items-start" label="Kitos kalbos puslapis">
-        <NSelect v-model:value="form.other_lang_id" filterable :disabled="modelRoute === 'news.store'"
+        <NSelect v-model:value="form.other_lang_id" filterable :disabled="rememberKey === 'CreateNews'"
           placeholder="Pasirinkti kitos kalbos puslapį... (tik tada, kai jau sukūrėte puslapį)"
           :options="otherLangNewsOptions" clearable />
       </NFormItem>
@@ -77,7 +77,7 @@ import {
   NSwitch,
 } from "naive-ui";
 import { computed, watch } from "vue";
-import { useForm, usePage } from "@inertiajs/vue3";
+import { useForm } from "@inertiajs/vue3";
 import latinize from "latinize";
 
 import FormElement from "./FormElement.vue";
@@ -88,20 +88,20 @@ import UploadImageWithCropper from "../Buttons/UploadImageWithCropper.vue";
 import AdminForm from "./AdminForm.vue";
 
 const props = defineProps<{
-  news: App.Entities.News;
+  news?: App.Entities.News;
   otherLangNews: App.Entities.News[];
-  modelRoute: string;
+  rememberKey?: 'CreateNews';
 }>();
+
+const form = props.rememberKey ? useForm(props.rememberKey, props.news) : useForm(props.news);
 
 defineEmits<{
   (event: "submit:form", form: unknown): void;
   (event: "delete"): void;
 }>();
 
-const form = useForm("news", props.news);
-
 const otherLangNewsOptions = computed(() => {
-  if (props.modelRoute === "news.store") {
+  if (!form.id) {
     return [];
   }
 
@@ -124,7 +124,7 @@ const languageOptions = [
   },
 ];
 
-if (props.modelRoute == "news.store") {
+if (props.rememberKey === "CreateNews") {
   watch(
     () => form.title,
     (title) => {

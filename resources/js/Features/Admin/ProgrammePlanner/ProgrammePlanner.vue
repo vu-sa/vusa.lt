@@ -66,7 +66,7 @@ defineEmits<{
 const props = defineProps<{
   programme: App.Entities.Programme
   editable?: boolean;
-  showTimes: boolean;
+  showTimes?: boolean;
   showTimeSwitch?: boolean;
   startTime: Date;
 }>();
