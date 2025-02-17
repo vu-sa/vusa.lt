@@ -2,7 +2,7 @@
   <NFormItem v-if="showTimeSwitch" label="Rodyti laikus">
     <NSwitch v-model:value="showTimes" />
   </NFormItem>
-  <div class="flex flex-col gap-4">
+  <div class="flex flex-col gap-4 bg-white dark:bg-zinc-800 rounded-lg">
     <div ref="programmeEl" class="mb-3 flex flex-col gap-2">
       <ProgrammeDay v-for="(day, index) in programmeDays" :key="day.id" v-model:day="programmeDays[index]"
         :data-id="day.id">
