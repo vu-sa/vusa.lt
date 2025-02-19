@@ -30,7 +30,7 @@ const fileExtensions = computed(() => {
     return ['mp4', 'webm', 'ogg', 'MP4', 'WEBM', 'OGG'];
   }
 
-    return ['jpg', 'jpeg', 'png', 'gif', 'JPG', 'PNG'];
+    return ['jpg', 'jpeg', 'png', 'gif', 'JPG', 'PNG', 'webp', 'GIF', 'WEBP', 'JPEG', 'svg', 'SVG'];
 });
 
 const emit = defineEmits<{
