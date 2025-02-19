@@ -1,5 +1,5 @@
 <template>
-  <template v-for="element in content" :key="element.id">
+  <template v-for="(element, index) in content" :key="element.id">
     <template v-if="element.type === 'tiptap'"
       v-html="html ? element.html : generateHTMLfromTiptap(element.json_content)">
       <RichContentTiptapHTML v-if="!html" :json_content="element.json_content" />
@@ -23,7 +23,7 @@
       </NImageGroup>
     </div>
     <!-- Hero -->
-    <RCHeroSection v-else-if="element.type === 'hero'" :element="element" />
+    <RCHeroSection v-else-if="element.type === 'hero'" :is-first-element="index === 0" :element="element" />
     <!-- News -->
     <Suspense v-else-if="element.type === 'news'" class="mx-auto mt-8">
       <NewsElement :element />

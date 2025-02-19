@@ -48,9 +48,7 @@ export type Hero = {
     buttonText?: string;
     buttonLink?: string;
   };
-  options: {
-    layoutStyle?: "default" | "center";
-  }
+  options: null
 }
 
 // Not implemented
