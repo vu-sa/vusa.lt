@@ -129,11 +129,14 @@ const props = defineProps<{
   sharepointPath?: string;
   allModelsFromModelType?: Record<string, any>[];
   roles?: App.Entities.Role[];
+  rememberKey?: "CreateType";
 }>();
 
 const locale = ref("lt");
 
-const form = useForm("type", props.type);
+const form = props.rememberKey
+  ? useForm(props.rememberKey, props.type)
+  : useForm(props.type);
 
 // map e.g. form.institutions to id only, so it's used in transfer values
 

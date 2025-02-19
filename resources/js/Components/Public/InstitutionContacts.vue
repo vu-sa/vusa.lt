@@ -1,5 +1,5 @@
 <template>
-  <div class="gap-12 md:grid md:grid-cols-[auto,_250px] xl:grid-cols-[5fr,_3fr]">
+  <div class="gap-12 md:grid md:grid-cols-[auto__250px] xl:grid-cols-[5fr__3fr]">
     <div class="h-fit md:sticky md:top-36">
       <InstitutionFigure only-vertical :institution />
     </div>

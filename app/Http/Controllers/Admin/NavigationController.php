@@ -25,7 +25,7 @@ class NavigationController extends Controller
 
         return Inertia::render('Admin/Navigation/IndexNavigation', [
             'navigation' => NavigationService::getNavigationForPublic(),
-            'typeOptions' => Inertia::lazy(fn () => MainPageController::getMainPageTypeOptions(request()->input('type'))),
+            'typeOptions' => Inertia::lazy(fn () => QuickLinkController::getQuickLinkTypeOptions(request()->input('type'))),
         ]);
     }
 
@@ -46,7 +46,7 @@ class NavigationController extends Controller
             [
                 'parent_id' => $parent_id,
                 'parentElements' => Navigation::where('parent_id', 0)->get(),
-                'typeOptions' => Inertia::lazy(fn () => MainPageController::getMainPageTypeOptions(request()->input('type'))),
+                'typeOptions' => Inertia::lazy(fn () => QuickLinkController::getQuickLinkTypeOptions(request()->input('type'))),
             ]
         );
     }
@@ -86,7 +86,7 @@ class NavigationController extends Controller
         return Inertia::render('Admin/Navigation/EditNavigation', [
             'navigationElement' => $navigation,
             'parentElements' => Navigation::where('parent_id', 0)->get(),
-            'typeOptions' => Inertia::lazy(fn () => MainPageController::getMainPageTypeOptions(request()->input('type'))),
+            'typeOptions' => Inertia::lazy(fn () => QuickLinkController::getQuickLinkTypeOptions(request()->input('type'))),
         ]);
     }
 

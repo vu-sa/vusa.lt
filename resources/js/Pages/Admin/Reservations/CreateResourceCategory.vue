@@ -4,7 +4,7 @@
   })
     " :heading-icon="Icons.RESOURCE_CATEGORY">
     <UpsertModelLayout>
-      <ResourceCategoryForm :resource-category :categories
+      <ResourceCategoryForm remember-key="CreateResourceCategory" :resource-category :categories
         @submit:form="(form) => form.post(route('resourceCategories.store'))" />
     </UpsertModelLayout>
   </PageContent>

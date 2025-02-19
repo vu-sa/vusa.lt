@@ -1,5 +1,5 @@
 <template>
-  <NCard size="small" :segmented="{ content: true, footer: 'soft' }" class="bg-red cursor-pointer shadow-sm" hoverable
+  <NCard size="small" :segmented="{ content: true, footer: 'soft' }" class="bg-red cursor-pointer shadow-xs" hoverable
     as="button" @click="router.visit(route('matters.show', matter.id))"><template #header>
       <NEllipsis>
         {{ matter.title }}

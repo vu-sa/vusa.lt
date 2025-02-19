@@ -33,8 +33,8 @@ export const genitivize = (name: string | null) => {
     .replace(/ė$/, "ės");
 };
 
-export const addressivize = (name: string | null) => {
-  if (name === null) {
+export const addressivize = (name: string | null | undefined) => {
+  if (name === null || name === undefined) {
     return "";
   }
 
@@ -178,3 +178,12 @@ export const changeDutyNameEndings = (
 
   return dutyName ?? "";
 };
+
+export function slugify(str: string) {
+  str = str.replace(/^\s+|\s+$/g, ''); // trim leading/trailing white space
+  str = str.toLowerCase(); // convert string to lowercase
+  str = str.replace(/[^a-z0-9 -]/g, '') // remove any non-alphanumeric characters
+           .replace(/\s+/g, '-') // replace spaces with hyphens
+           .replace(/-+/g, '-'); // remove consecutive hyphens
+  return str;
+}

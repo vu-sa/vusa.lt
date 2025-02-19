@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\NewsImage;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
@@ -20,7 +21,10 @@ class News extends Model implements Feedable
 
     protected $guarded = [];
 
+    public $fallback_image = '/images/icons/naujienu_foto.png';
+
     protected $casts = [
+        'image' => NewsImage::class,
         'updated_at' => 'datetime:Y-m-d H:i:s',
         'created_at' => 'datetime:Y-m-d H:i:s',
         // TODO: convert to datetime in database

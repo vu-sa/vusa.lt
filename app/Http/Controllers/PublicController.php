@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Actions\GetAliasSubdomainForPublic;
-use App\Models\MainPage;
+use App\Models\QuickLink;
 use App\Models\Tenant;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
@@ -54,9 +54,9 @@ class PublicController extends Controller
 
     protected function getTenantLinks()
     {
-        $mainPage = MainPage::query()->where([['tenant_id', $this->tenant->id], ['lang', app()->getLocale()]])->orderBy('order')->get(['id', 'link', 'text', 'icon', 'is_important']);
+        $quickLink = QuickLink::query()->where([['tenant_id', $this->tenant->id], ['lang', app()->getLocale()]])->orderBy('order')->get(['id', 'link', 'text', 'icon', 'is_important']);
 
-        Inertia::share('tenant.links', $mainPage);
+        Inertia::share('tenant.links', $quickLink);
     }
 
     // This is mostly used for default sharing, other cases likes pages and news link to other URLs

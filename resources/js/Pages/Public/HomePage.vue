@@ -1,39 +1,29 @@
 <template>
   <!-- <SummerCamps v-if="$page.props.app.locale === 'lt'" /> -->
-  <template v-if="$page.props.auth?.user">
+  <!-- <template v-if="$page.props.auth?.user">
     <h2 class="text-4xl font-bold tracking-tight">
       {{ $t('Labas') }}, {{ userNameAddress }}! 👋
     </h2>
     <AdminMultiHomeCards />
-  </template>
-  <div v-if="news.length > 0" class="mx-auto mt-8">
-    <NewsElement :news="news" />
-  </div>
+</template>-->
 
-  <EventCalendar :show-photos="true" :calendar :upcoming-events />
+  <RichContentParser :content="content?.parts" />
 </template>
 
 <script setup lang="ts">
-import AdminMultiHomeCards from "@/Components/Cards/AdminMultiHomeCards.vue";
 import { addressivize } from "@/Utils/String";
 import { usePage } from "@inertiajs/vue3";
 import { computed, defineAsyncComponent } from "vue";
 
+import RichContentParser from "@/Components/RichContentParser.vue";
+
 defineProps<{
-  news: Array<App.Entities.News>;
-  calendar: Array<App.Entities.Calendar>;
-  upcomingEvents: Array<App.Entities.Calendar>;
+  content: unknown;
 }>();
 
-const EventCalendar = defineAsyncComponent(
-   
-  () => import("@/Components/Public/FullWidth/EventCalendarElement.vue"),
+const AdminMultiHomeCards = defineAsyncComponent(
+  () => import("@/Components/Cards/AdminMultiHomeCards.vue"),
 );
-
-const NewsElement = defineAsyncComponent(
-  () => import("@/Components/Public/NewsElement.vue"),
-);
-
 
 const userNameAddress = computed(() => {
   const name = usePage().props.auth?.user.name;

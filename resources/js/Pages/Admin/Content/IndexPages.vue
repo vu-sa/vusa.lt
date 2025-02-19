@@ -1,11 +1,19 @@
 <template>
   <IndexPageLayout title="Puslapiai" model-name="pages" :can-use-routes="canUseRoutes" :columns="columns"
-    :paginated-models="pages" :icon="Icons.PAGE" />
+    :paginated-models="pages" :icon="Icons.PAGE">
+    <div class="mb-4">
+      <NDropdown :options="tenantOptions" @select="handleSelect">
+        <NButton size="small">
+          Redaguoti padalinio pagr. puslapį
+        </NButton>
+      </NDropdown>
+    </div>
+  </IndexPageLayout>
 </template>
 
 <script setup lang="tsx">
 import { computed, h, provide, ref } from "vue";
-import { usePage } from "@inertiajs/vue3";
+import { router, usePage } from "@inertiajs/vue3";
 import type { DataTableColumns, DataTableSortState } from "naive-ui";
 
 import { langColumn, tenantColumn } from "@/Composables/dataTableColumns";
@@ -117,4 +125,15 @@ const columns = computed<DataTableColumns<App.Entities.News>>(() => [
     },
   },
 ]);
+
+const tenantOptions = computed(() => {
+  return usePage().props.auth?.user.tenants.map((tenant) => ({
+    key: tenant.id,
+    label: tenant.shortname,
+  }));
+});
+
+function handleSelect(tenantId: number) {
+  router.visit(route("tenants.editMainPage", { tenant: tenantId }));
+}
 </script>

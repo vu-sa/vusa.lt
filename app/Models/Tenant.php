@@ -47,9 +47,9 @@ class Tenant extends Model
         return $this->hasMany(Page::class);
     }
 
-    public function mainPages(): HasMany
+    public function quickLinks(): HasMany
     {
-        return $this->hasMany(MainPage::class);
+        return $this->hasMany(QuickLink::class);
     }
 
     public function resources(): HasMany
@@ -75,5 +75,10 @@ class Tenant extends Model
     public function primary_institution()
     {
         return $this->belongsTo(Institution::class, 'primary_institution_id');
+    }
+
+    public function content()
+    {
+        return $this->belongsTo(Content::class);
     }
 }

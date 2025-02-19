@@ -4,7 +4,7 @@
   })
     " :heading-icon="Icons.RESERVATION">
     <UpsertModelLayout>
-      <ReservationForm model-route="reservations.store" :reservation :all-resources="resources" />
+      <ReservationForm remember-key="CreateReservation" model-route="reservations.store" :reservation :all-resources="resources" />
     </UpsertModelLayout>
   </PageContent>
 </template>

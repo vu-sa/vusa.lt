@@ -1,7 +1,7 @@
 <template>
   <PageContent title="Nauja rolė" :back-url="route('roles.index')">
     <UpsertModelLayout>
-      <RoleForm :role @submit:form="(form) => form.post(route('roles.store'))" />
+      <RoleForm remember-key="CreateRole" :role @submit:form="(form) => form.post(route('roles.store'))" />
     </UpsertModelLayout>
   </PageContent>
 </template>

@@ -4,7 +4,7 @@
   })
     " :heading-icon="Icons.RESOURCE">
     <UpsertModelLayout>
-      <ResourceForm :assignable-tenants :resource :categories
+      <ResourceForm remember-key="CreateResource" :assignable-tenants :resource :categories
         @submit:form="(form) => form.post(route('resources.store'))" />
     </UpsertModelLayout>
   </PageContent>

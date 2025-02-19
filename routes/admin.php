@@ -37,11 +37,11 @@ Route::resource('news', NewsController::class)->except(['show']);
 Route::resource('categories', CategoryController::class)->except(['show']);
 
 // change order main page
-Route::get('mainPage/tenant/{tenant}/edit-order/{lang}', [MainPageController::class, 'editOrder'])->name('mainPage.edit-order')
+Route::get('quickLinks/tenant/{tenant}/edit-order/{lang}', [QuickLinkController::class, 'editOrder'])->name('quickLinks.edit-order')
     ->whereIn('lang', ['lt', 'en']);
 
-Route::post('mainPage/update-order', [MainPageController::class, 'updateOrder'])->name('mainPage.update-order');
-Route::resource('mainPage', MainPageController::class)->except(['show']);
+Route::post('quickLinks/update-order', [QuickLinkController::class, 'updateOrder'])->name('quickLinks.update-order');
+Route::resource('quickLinks', QuickLinkController::class)->except(['show']);
 Route::resource('banners', BannerController::class)->except(['show']);
 Route::resource('navigation', NavigationController::class)->except(['show']);
 /* Route::get('navigation/editAll', [NavigationController::class, 'editAll'])->name('navigation.editAll'); */
@@ -107,6 +107,11 @@ Route::resource('duties', DutyController::class);
 Route::resource('dutiables', DutiableController::class)->except(['index', 'show']);
 Route::post('institutions/reorderDuties', [InstitutionController::class, 'reorderDuties'])->name('institutions.reorderDuties');
 Route::resource('institutions', InstitutionController::class);
+
+Route::get('tenants/{tenant}/quick-links/edit', [TenantController::class, 'editQuickLink'])->name('tenants.editQuickLink');
+Route::post('tenants/{tenant}/quick-links', [TenantController::class, 'updateQuickLink'])->name('tenants.updateQuickLink');
+Route::get('tenants/{tenant}/main-page/edit', [TenantController::class, 'editMainPage'])->name('tenants.editMainPage');
+Route::post('tenants/{tenant}/main-page', [TenantController::class, 'updateMainPage'])->name('tenants.updateMainPage');
 
 Route::resource('tenants', TenantController::class);
 

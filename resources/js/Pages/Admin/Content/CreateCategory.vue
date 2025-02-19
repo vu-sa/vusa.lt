@@ -1,7 +1,8 @@
 <template>
   <PageContent title="Nauja kategorija" :back-url="route('categories.index')">
     <UpsertModelLayout>
-      <CategoryForm :category @submit:form="(form) => form.post(route('categories.store'))" />
+      <CategoryForm remember-key="CreateCategory" :category
+        @submit:form="(form) => form.post(route('categories.store'))" />
     </UpsertModelLayout>
   </PageContent>
 </template>

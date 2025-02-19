@@ -31,9 +31,9 @@ import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";
 import OriginalTipTap from "../TipTap/OriginalTipTap.vue";
 import AdminForm from "./AdminForm.vue";
 
-const props = defineProps<{
+const { changelogItem, rememberKey } = defineProps<{
   changelogItem: App.Entities.ChangelogItem;
-  modelRoute: string;
+  rememberKey?: string;
 }>();
 
 defineEmits<{
@@ -43,5 +43,7 @@ defineEmits<{
 
 const locale = ref<"lt" | "en">("lt");
 
-const form = useForm("changelogItem", props.changelogItem);
+const form = rememberKey
+  ? useForm(rememberKey, changelogItem)
+  : useForm(changelogItem);
 </script>

@@ -135,10 +135,12 @@ defineEmits<{
   (event: "submit:form", form: unknown): void;
 }>();
 
+// TODO: cleanup the modelRoute
 const props = defineProps<{
   reservation: ReservationCreationTemplate | ReservationEditType;
   allResources: App.Entities.Resource[];
   modelRoute: string;
+  rememberKey?: "CreateReservation";
 }>();
 
 const resourceLoading = ref(false);
@@ -150,9 +152,9 @@ const routeToSubmit = computed(() => {
     : route(props.modelRoute);
 });
 
-const form = useForm('reservation',
-  props.reservation,
-);
+const form = props.rememberKey
+  ? useForm(props.rememberKey, props.reservation)
+  : useForm(props.reservation);
 
 const date = ref<[number, number]>([form.start_time, form.end_time]);
 

@@ -3,11 +3,11 @@
     :heading-icon="Icons.NAVIGATION">
     <UpsertModelLayout>
       <Suspense v-if="navigationElement.parent_id !== 0">
-        <NavigationForm :navigation="navigationElement" :parent-elements :type-options
+        <NavigationForm remember-key="CreateNavigation" :navigation="navigationElement" :parent-elements :type-options
           @submit:form="(form) => form.post(route('navigation.store'))" />
       </Suspense>
-      <NavigationParentForm v-else model-route="navigation.store"
-        :navigation="navigationElement" @submit:form="(form) => form.post(route('navigation.store'))" />
+      <NavigationParentForm v-else remember-key="CreateNavigationParent" :navigation="navigationElement"
+        @submit:form="(form) => form.post(route('navigation.store'))" />
     </UpsertModelLayout>
   </PageContent>
 </template>

@@ -1,5 +1,5 @@
 <template>
-  <NCard hoverable :size="size" as="button" class="h-fit flex-1 cursor-pointer shadow-sm">
+  <NCard hoverable :size="size" as="button" class="h-fit flex-1 cursor-pointer shadow-xs">
     <template #cover>
       <img v-if="institution.image_url" class="h-32 object-cover" :src="institution.image_url">
     </template>

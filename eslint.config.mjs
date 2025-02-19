@@ -1,5 +1,5 @@
 import noSecrets from "eslint-plugin-no-secrets";
-import tailwind from "eslint-plugin-tailwindcss";
+//import tailwind from "eslint-plugin-tailwindcss";
 import pluginVue from 'eslint-plugin-vue'
 import eslint from '@eslint/js';
 import tseslint from 'typescript-eslint';
@@ -11,7 +11,7 @@ export default [
     ...tseslint.configs.recommended,
     ...pluginVue.configs['flat/recommended'],
     ...pluginVueA11y.configs["flat/recommended"],
-    ...tailwind.configs["flat/recommended"],
+    //...tailwind.configs["flat/recommended"],
     {
         plugins: {
             "no-secrets": noSecrets

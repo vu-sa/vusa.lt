@@ -1,5 +1,5 @@
 <template>
-  <Card class="border shadow-sm transition-all duration-300  hover:shadow-md dark:border-zinc-200/20">
+  <Card class="border shadow-xs transition-all duration-300  hover:shadow-md dark:border-zinc-200/20">
     <div class="h-32 w-full">
       <img v-if="calendarEvent.images && calendarEvent.images?.length > 0"
         class="size-full rounded-t-md object-cover object-center" :src="calendarEvent.images[0].original_url">

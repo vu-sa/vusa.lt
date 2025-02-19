@@ -63,14 +63,15 @@
 
 <script setup lang="ts">
 import { Link, router, usePage } from "@inertiajs/vue3";
-import { ref } from "vue";
+import { defineAsyncComponent, ref } from "vue";
 import { useDebounceFn } from "@vueuse/core";
 
-import DocumentCard from "@/Components/Cards/DocumentCard.vue";
-import NewsCard from "@/Components/Cards/NewsCard.vue";
-import PageCard from "@/Components/Cards/PageCard.vue";
 import CardModal from "@/Components/Modals/CardModal.vue";
 import SmartLink from "../SmartLink.vue";
+
+const DocumentCard = defineAsyncComponent(() => import("@/Components/Cards/DocumentCard.vue"));
+const NewsCard = defineAsyncComponent(() => import("@/Components/Cards/NewsCard.vue"));
+const PageCard = defineAsyncComponent(() => import("@/Components/Cards/PageCard.vue"));
 
 const showSearch = ref(false);
 const searchInputLoading = ref(false);

@@ -21,7 +21,7 @@
     </FadeTransition>
     <TransitionGroup ref="el" tag="div">
       <div v-for="content, index in contents" :key="content?.id ?? content?.key"
-        class="relative grid w-full grid-cols-[24px,_1fr] gap-4 border border-zinc-300 p-3 shadow-sm first:rounded-t-lg last:rounded-b-lg dark:border-zinc-700/40 dark:bg-zinc-800/5">
+        class="relative grid w-full grid-cols-[24px__1fr] gap-4 border border-zinc-300 p-3 shadow-xs first:rounded-t-lg last:rounded-b-lg dark:border-zinc-700/40 dark:bg-zinc-800/5">
         <NButton class="handle" style="height: 100%;" quaternary size="small">
           <template #icon>
             <IFluentReOrderDotsVertical24Regular />
@@ -122,6 +122,63 @@
               </template>
             </NDynamicInput>
           </div>
+          <!-- Hero -->
+          <div v-else-if="content?.type === 'hero'" v-show="content.expanded" class="mt-4 flex flex-col gap-4">
+            <NFormItem label="Pavadinimas" :show-feedback="false">
+              <OriginalTipTap html v-model="content.json_content.title" type="text" />
+            </NFormItem>
+            <NFormItem label="Subtitle" :show-feedback="false">
+              <OriginalTipTap html v-model="content.json_content.subtitle" type="text" />
+            </NFormItem>
+            <NFormItem label="Background Nuotrauka" :show-feedback="false">
+              <TiptapImageButton v-if="!content.json_content.backgroundMedia" size="medium" @submit="content.json_content.backgroundMedia = $event">
+                Pasirinkti paveikslėlį
+              </TiptapImageButton>
+              <div v-else>
+                <img :src="content.json_content.backgroundMedia" class="aspect-video h-24 rounded-lg object-cover">
+                <NButton @click="content.json_content.backgroundMedia = null">
+                  Ištrinti paveikslėlį
+                </NButton>
+              </div>
+            </NFormItem>
+            <NFormItem label="Right side logo or photo" :show-feedback="false">
+              <TiptapImageButton v-if="!content.json_content.rightMedia" size="medium" @submit="content.json_content.rightMedia = $event">
+                Pasirinkti paveikslėlį
+              </TiptapImageButton>
+              <div v-else>
+                <img :src="content.json_content.rightMedia" class="aspect-video h-24 rounded-lg object-cover">
+                <NButton @click="content.json_content.rightMedia = null">
+                  Ištrinti paveikslėlį
+                </NButton>
+              </div>
+            </NFormItem>
+            <!-- Button text -->
+            <NFormItem label="Button text" :show-feedback="false">
+              <NInput v-model:value="content.json_content.buttonText" type="text" />
+            </NFormItem>
+            <!-- Button link -->
+            <NFormItem label="Button link" :show-feedback="false">
+              <NInput v-model:value="content.json_content.buttonLink" type="text" />
+            </NFormItem>
+            <!-- Layout style -->
+            <!-- <NFormItem label="Layout style" :show-feedback="false">
+              <NSelect v-model:value="content.options.layoutStyle" default-value="default" :options="[
+                { 'label': 'Default', 'value': 'default' }, { 'label': 'Centered', 'value': 'centered' }]
+                " />
+</NFormItem>-->
+          </div>
+          <!-- News -->
+          <div v-else-if="content?.type === 'news'" v-show="content.expanded" class="mt-4 flex flex-col gap-4">
+            <NFormItem label="Pavadinimas" :show-feedback="false">
+              <NInput v-model:value="content.json_content.title" type="text" />
+            </NFormItem>
+          </div>
+          <!-- Calendar -->
+          <div v-else-if="content?.type === 'calendar'" v-show="content.expanded" class="mt-4 flex flex-col gap-4">
+            <NFormItem label="Pavadinimas" :show-feedback="false">
+              <NInput v-model:value="content.json_content.title" type="text" />
+            </NFormItem>
+          </div>
         </RichContentEditorListElement>
       </div>
     </TransitionGroup>
@@ -203,19 +260,21 @@ function handleElementRemove(index: number) {
   nextTick(() => commit());
 }
 
-const imageGridOptions = [{
-  label: '1/1',
-  value: 'col-span-full',
-}, {
-  label: '1/3',
-  value: 'col-span-2',
-}, {
-  label: '2/3',
-  value: 'col-span-4',
-}, {
-  label: '1/2',
-  value: 'col-span-3',
-}]
+const imageGridOptions = [
+  {
+    label: '1/1',
+    value: 'col-span-full',
+  }, {
+    label: '1/3',
+    value: 'col-span-2',
+  }, {
+    label: '2/3',
+    value: 'col-span-4',
+  }, {
+    label: '1/2',
+    value: 'col-span-3',
+  }
+]
 
 const contentTypes = [
   {
@@ -236,6 +295,21 @@ const contentTypes = [
   {
     value: "image-grid",
     label: "Nuotraukų tinklelis",
+    icon: ImageMultiple24Regular,
+  },
+  {
+    value: "hero",
+    label: "Hero",
+    icon: ImageMultiple24Regular,
+  },
+  {
+    value: "news",
+    label: "Naujienos",
+    icon: ImageMultiple24Regular,
+  },
+  {
+    value: "calendar",
+    label: "Kalendorius",
     icon: ImageMultiple24Regular,
   },
 ];

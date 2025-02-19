@@ -19,7 +19,7 @@
     <div class="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
       <Link :href="route('administration')">
       <button
-        class="flex w-full flex-col gap-3 rounded-md border border-zinc-100 bg-gradient-to-br from-white to-white p-4 text-left text-base text-zinc-700 shadow-sm duration-500 hover:shadow-lg dark:border-zinc-800 dark:from-zinc-900 dark:to-neutral-800 dark:text-zinc-300 dark:hover:shadow-white/20">
+        class="flex w-full flex-col gap-3 rounded-md border border-zinc-100 bg-linear-to-br from-white to-white p-4 text-left text-base text-zinc-700 shadow-xs duration-500 hover:shadow-lg dark:border-zinc-800 dark:from-zinc-900 dark:to-neutral-800 dark:text-zinc-300 dark:hover:shadow-white/20">
         <IFluentSettings24Filled class="mb-1 mt-2" width="28" height="28" />
         <span class="text-xl font-bold">{{ $t('Administravimas') }}</span>
         <p class="text-sm leading-4 text-zinc-500">
@@ -29,7 +29,7 @@
       </Link>
       <a href="https://www.vusa.lt/docs">
         <button
-          class="flex w-full flex-col gap-3 rounded-md border border-zinc-100 bg-gradient-to-br from-white to-white p-4 text-left text-base text-zinc-700 shadow-sm duration-500 hover:shadow-lg dark:border-zinc-800 dark:from-zinc-900 dark:to-neutral-800 dark:text-zinc-300 dark:hover:shadow-white/20">
+          class="flex w-full flex-col gap-3 rounded-md border border-zinc-100 bg-linear-to-br from-white to-white p-4 text-left text-base text-zinc-700 shadow-xs duration-500 hover:shadow-lg dark:border-zinc-800 dark:from-zinc-900 dark:to-neutral-800 dark:text-zinc-300 dark:hover:shadow-white/20">
           <IFluentBookExclamationMark20Filled class="mb-1 mt-2" width="28" height="28" />
           <span class="text-xl font-bold">{{ $t('Dokumentacija') }}</span>
           <p class="text-sm leading-4 text-zinc-500">

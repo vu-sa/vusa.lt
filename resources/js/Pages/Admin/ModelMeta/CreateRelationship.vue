@@ -1,7 +1,7 @@
 <template>
   <PageContent title="Naujas ryšys" :back-url="route('relationships.index')">
     <UpsertModelLayout>
-      <RelationshipForm :relationship :content-types @submit:form="(form) => form.post(route('relationships.store'))" />
+      <RelationshipForm remember-key="CreateRelationship" :relationship :content-types @submit:form="(form) => form.post(route('relationships.store'))" />
     </UpsertModelLayout>
   </PageContent>
 </template>

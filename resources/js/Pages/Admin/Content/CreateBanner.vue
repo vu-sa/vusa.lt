@@ -1,7 +1,7 @@
 <template>
   <PageContent title="Naujas baneris" :back-url="route('banners.index')">
-    <UpsertModelLayout :errors="$page.props.errors" :model="banner">
-      <BannerForm :banner @submit:form="(form) => form.post(route('banners.store'))" />
+    <UpsertModelLayout>
+      <BannerForm remember-key="CreateBanner" :banner @submit:form="(form) => form.post(route('banners.store'))" />
     </UpsertModelLayout>
   </PageContent>
 </template>

@@ -2,7 +2,7 @@
   <NFormItem v-if="showTimeSwitch" label="Rodyti laikus">
     <NSwitch v-model:value="showTimes" />
   </NFormItem>
-  <div class="flex flex-col gap-4">
+  <div class="flex flex-col gap-4 bg-white dark:bg-zinc-800 rounded-lg">
     <div ref="programmeEl" class="mb-3 flex flex-col gap-2">
       <ProgrammeDay v-for="(day, index) in programmeDays" :key="day.id" v-model:day="programmeDays[index]"
         :data-id="day.id">
@@ -38,7 +38,7 @@
     </NButton>
   </CardModal>
   <div class="flex items-center justify-between gap-2">
-    <NButton v-if="editable" rounded @click="createDay">
+    <NButton v-if="editable" rounded-sm @click="createDay">
       <template #icon>
         <IFluentCalendarAdd24Regular />
       </template>
@@ -66,7 +66,7 @@ defineEmits<{
 const props = defineProps<{
   programme: App.Entities.Programme
   editable?: boolean;
-  showTimes: boolean;
+  showTimes?: boolean;
   showTimeSwitch?: boolean;
   startTime: Date;
 }>();

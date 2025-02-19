@@ -1,5 +1,5 @@
 <template>
-  <div class="light:bg-zinc-50/50 rounded-lg border p-4 dark:border-zinc-600">
+  <div class="light:bg-zinc-50/50 rounded-lg border p-4 dark:border-zinc-800">
     <div class="mb-4 flex flex-row items-center gap-2">
       <button
         class="day-handle inline-flex items-center gap-3 rounded-lg px-2 py-0.5 text-2xl font-black transition hover:bg-zinc-200 dark:hover:bg-zinc-700">

@@ -57,6 +57,7 @@ const props = defineProps<{
   reservationResourceFormRouteName: string;
   currentlyUsedCapacity?: number;
   allResources?: App.Entities.Resource[];
+  rememberKey?: "CreateReservationResource";
 }>();
 
 // We need this to match the original selected resource for edit
@@ -64,7 +65,9 @@ const props = defineProps<{
 const emit = defineEmits(["success"]);
 const spinning = ref(true)
 
-const reservationResourceForm = useForm(props.reservationResourceForm);
+const reservationResourceForm = props.rememberKey
+  ? useForm(props.rememberKey, props.reservationResourceForm)
+  : useForm(props.reservationResourceForm);
 
 const isReservationResourceSameForUpdate = computed(() => {
   return (

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller as Controller;
+use App\Http\Controllers\Controller;
 use App\Models\Pivots\Relationshipable;
 use App\Models\Relationship;
 use App\Services\ModelAuthorizer as Authorizer;

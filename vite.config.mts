@@ -10,6 +10,8 @@ import laravel from "laravel-vite-plugin";
 import vue from "@vitejs/plugin-vue";
 import vueDevTools from 'vite-plugin-vue-devtools'
 import vueJsx from "@vitejs/plugin-vue-jsx";
+import tailwindcss from '@tailwindcss/vite'
+import ziggy from 'vite-plugin-ziggy';
 
 // Load the CODECOV_TOKEN from the .env file
 import { loadEnv } from "vite";
@@ -39,6 +41,8 @@ export default defineConfig({
       // Also build .css, because it is used in minimal.blade.php
       "resources/css/app.css"
     ]),
+    tailwindcss(),
+    ziggy(),
     Markdown({
       markdownItOptions: {
         html: true,

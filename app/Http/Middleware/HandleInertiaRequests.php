@@ -68,7 +68,6 @@ class HandleInertiaRequests extends Middleware
                     'unreadNotifications' => $user->unreadNotifications,
                 ],
             ],
-            // 'banners' property is shared in public pages from \App\Http\Controllers\PublicController.php
             // 'flash' is used in the admin navigation to show only the allowed pages
             'flash' => [
                 'data' => fn () => $request->session()->get('data'),
@@ -82,6 +81,7 @@ class HandleInertiaRequests extends Middleware
             ],
             'search' => fn () => $request->session()->get('search'),
             // 'tenants' property is shared in public pages from \App\Http\Controllers\PublicController.php
+            // 'tenant.banners' property is shared in public pages from \App\Http\Controllers\PublicController.php
             'tenants' => fn () => $this->getTenantsForInertia(),
         ]);
     }

@@ -121,6 +121,7 @@ import AdminForm from "./AdminForm.vue";
 const props = defineProps<{
   dutiable: App.Entities.Dutiable;
   studyPrograms: App.Entities.StudyProgram[];
+  rememberKey?: string;
 }>();
 
 defineEmits<{
@@ -128,7 +129,9 @@ defineEmits<{
   (event: "delete"): void;
 }>();
 
-const form = useForm("dutiable", props.dutiable);
+const form = props.rememberKey
+  ? useForm(props.rememberKey, props.dutiable)
+  : useForm(props.dutiable);
 
 if (Array.isArray(form.description)) {
   form.description = { lt: "", en: "" };

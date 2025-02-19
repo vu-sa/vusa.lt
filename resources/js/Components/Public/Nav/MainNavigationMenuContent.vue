@@ -94,7 +94,7 @@ const linkTypes = {
   },
   'category-link': {
     textClass: 'no-underline',
-    blockClass: 'p-2.5 font-bold my-1 hover:bg-zinc-100 focus:bg-zinc-100 dark:hover:bg-zinc-800 dark:focus:bg-zinc-800 [&:not(:first-child)]:mt-2' 
+    blockClass: 'p-2.5 font-bold my-1 hover:bg-zinc-100 focus:bg-zinc-100 dark:hover:bg-zinc-800 dark:focus:bg-zinc-800 not-first:mt-2' 
   },
   'full-height-background-link': {
     blockClass: 'h-full',

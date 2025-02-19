@@ -1,7 +1,7 @@
 <template>
   <PageContent title="Nauja narystė" :heading-icon="Icons.CONTACT">
     <UpsertModelLayout>
-      <MembershipForm :membership :assignable-tenants @submit:form="(form) => form.post(route('memberships.store'))" />
+      <MembershipForm remember-key="CreateMembership" :membership :assignable-tenants @submit:form="(form) => form.post(route('memberships.store'))" />
     </UpsertModelLayout>
   </PageContent>
 </template>

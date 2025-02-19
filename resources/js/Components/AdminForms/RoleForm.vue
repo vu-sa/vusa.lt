@@ -14,11 +14,12 @@ import { useForm } from "@inertiajs/vue3";
 import FormElement from "./FormElement.vue";
 import AdminForm from "./AdminForm.vue";
 
-const { role } = defineProps<{
+const { role, rememberKey } = defineProps<{
   role: App.Entities.Role;
+  rememberKey?: "CreateRole";
 }>();
 
-const form = useForm("role", role);
+const form = rememberKey ? useForm(rememberKey, role) : useForm(role);
 
 defineEmits<{
   (event: "submit:form", form: unknown): void;

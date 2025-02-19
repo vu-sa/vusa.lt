@@ -1,7 +1,7 @@
 <template>
   <PageContent title="Naujas padalinys" :heading-icon="Icons.TENANT">
     <UpsertModelLayout>
-      <TenantForm :tenant :assignable-institutions @submit:form="(form) => form.post(route('tenants.store'))" />
+      <TenantForm remember-key="CreateTenant" :tenant :assignable-institutions @submit:form="(form) => form.post(route('tenants.store'))" />
     </UpsertModelLayout>
   </PageContent>
 </template>

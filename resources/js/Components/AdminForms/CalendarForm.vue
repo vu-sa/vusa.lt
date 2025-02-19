@@ -171,11 +171,14 @@ const props = defineProps<{
   calendar: CalendarEventForm;
   categories: App.Entities.Category[];
   assignableTenants: App.Entities.Tenant[];
+  rememberKey?: string;
 }>();
 
 const locale = ref("lt");
 
-const form = useForm("calendar", props.calendar);
+const form = props.rememberKey
+  ? useForm(props.rememberKey, props.calendar)
+  : useForm(props.calendar); 
 
 const defaultOrganizer = computed(() => {
   return (

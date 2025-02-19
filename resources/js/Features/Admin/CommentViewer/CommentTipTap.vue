@@ -77,7 +77,7 @@ const commentContainer = ref<HTMLElement | null>(null);
 const editor = useEditor({
   editorProps: {
     attributes: {
-      class: "focus:outline-none py-4",
+      class: "focus:outline-hidden py-4",
     },
   },
   extensions: [
@@ -128,7 +128,7 @@ onBeforeUnmount(() => {
 
   blockquote {
     padding-left: 1rem;
-    @apply border-l-4 border-gray-200;
+    border-left: 4px solid #e2e8f0;
   }
 
   /* For placeholder  */

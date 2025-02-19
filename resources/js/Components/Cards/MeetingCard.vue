@@ -1,6 +1,6 @@
 <template>
   <NSpin :show="spinning">
-    <NCard size="small" class="my-2 cursor-pointer overflow-hidden shadow-sm" style="border-radius: 0.5em" :segmented="{
+    <NCard size="small" class="my-2 cursor-pointer overflow-hidden shadow-xs" style="border-radius: 0.5em" :segmented="{
       content: 'soft',
     }" hoverable as="button"><template #header>
         <h4 class="mb-0 text-sm">

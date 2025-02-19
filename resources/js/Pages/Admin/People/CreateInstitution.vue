@@ -1,7 +1,7 @@
 <template>
   <PageContent :title="$page.props.seo.title" :heading-icon="Icons.INSTITUTION">
     <UpsertModelLayout>
-      <InstitutionForm :assignable-tenants :institution :institution-types
+      <InstitutionForm remember-key="CreateInstitution" :assignable-tenants :institution :institution-types
         @submit:form="(form) => form.post(route('institutions.store'))" />
     </UpsertModelLayout>
   </PageContent>

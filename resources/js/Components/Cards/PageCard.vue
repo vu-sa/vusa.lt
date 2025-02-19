@@ -1,5 +1,5 @@
 <template>
-  <Card class="h-full border shadow-sm transition-shadow hover:shadow-md dark:border-zinc-800/40">
+  <Card class="h-full border shadow-xs transition-shadow hover:shadow-md dark:border-zinc-800/40">
     <CardHeader class="my-auto h-full justify-center p-4">
       <CardTitle class="mb-0 text-xl">
         {{ page.title }}

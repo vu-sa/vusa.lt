@@ -17,6 +17,12 @@ export enum CRUDEnum {
   "UPDATE" = "update",
   "DELETE" = "delete",
 }
+export enum ContentPartEnum {
+  "IMAGE_GRID" = "image-grid",
+  "SHADCN_ACCORDION" = "shadcn-accordion",
+  "SHADCN_CARD" = "shadcn-card",
+  "TIPTAP" = "tiptap",
+}
 export enum LocaleEnum {
   "LT" = "lt",
   "EN" = "en",
@@ -37,12 +43,12 @@ export enum ModelEnum {
   "GOAL_GROUP" = "goalGroup",
   "GOAL" = "goal",
   "INSTITUTION" = "institution",
-  "MAIN_PAGE" = "mainPage",
   "MATTER" = "matter",
   "MEETING" = "meeting",
   "MEMBERSHIP" = "membership",
   "NAVIGATION" = "navigation",
   "NEWS" = "news",
+  "QUICK_LINK" = "quickLink",
   "PAGE" = "page",
   "PERMISSION" = "permission",
   "RELATIONSHIP" = "relationship",

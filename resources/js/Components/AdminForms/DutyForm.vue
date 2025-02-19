@@ -142,6 +142,7 @@ const props = defineProps<{
   assignableUsers: App.Entities.User[];
   roles: App.Entities.Role[];
   assignableInstitutions: App.Entities.Institution[];
+  rememberKey?: string;
 }>();
 
 defineEmits<{
@@ -151,7 +152,9 @@ defineEmits<{
 
 const locale = ref("lt");
 
-const form = useForm("duty", props.duty);
+const form = props.rememberKey
+  ? useForm(props.rememberKey, props.duty)
+  : useForm(props.duty);
 
 form.roles = props.duty.roles?.map((role) => role.id);
 form.types = props.duty.types?.map((type) => type.id);

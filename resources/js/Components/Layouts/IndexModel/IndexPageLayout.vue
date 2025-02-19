@@ -1,5 +1,5 @@
 <template>
-  <PageContent :title="title" :heading-icon="icon"
+  <PageContent :title :heading-icon="icon"
     :create-url="canUseRoutes.create ? route(`${modelName}.create`) : undefined">
     <template #create-button>
       <slot name="create-button" />
@@ -7,7 +7,7 @@
     <template #aside-header>
       <slot name="aside-header" />
     </template>
-    <SuggestionAlert v-if="entity" :show-alert="showAlert" @alert-closed="showAlert = false">
+    <SuggestionAlert v-if="entity" :show-alert @alert-closed="showAlert = false">
       <div class="text-sm">
         <MdSuspenseWrapper :directory="modelName" :locale="$page.props.app.locale" file="description" />
       </div>

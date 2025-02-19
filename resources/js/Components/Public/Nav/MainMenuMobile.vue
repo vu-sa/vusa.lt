@@ -18,7 +18,7 @@
       }} nuorodos
     </SmartLink>
     <div class="ml-4 mt-2 flex flex-col gap-2">
-      <MainPageLink v-for="link in $page.props.tenant.links" :key="link?.id" :main-page-link="link" />
+      <QuickLink v-for="link in $page.props.tenant.links" :key="link?.id" :quick-link="link" />
     </div>
     <div class="flex gap-4 mt-8">
       <LocaleButton :locale="$page.props.app.locale" />
@@ -38,7 +38,7 @@ import AccordionTrigger from '@/Components/ShadcnVue/ui/accordion/AccordionTrigg
 import DarkModeButton from '@/Components/Buttons/DarkModeButton.vue';
 import LocaleButton from './LocaleButton.vue';
 import MainNavigationMenuContent from './MainNavigationMenuContent.vue';
-import MainPageLink from './MainPageLink.vue';
+import QuickLink from './QuickLink.vue';
 import SmartLink from '../SmartLink.vue';
 
 const mainNavigation = computed(() => usePage().props.mainNavigation);

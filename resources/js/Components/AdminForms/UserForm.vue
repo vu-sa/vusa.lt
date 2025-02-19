@@ -193,6 +193,7 @@ const props = defineProps<{
   roles: App.Entities.Role[];
   tenantsWithDuties: App.Entities.Tenant[];
   permissableTenants: App.Entities.Tenant[];
+  rememberKey?: "CreateUser";
 }>();
 
 defineEmits<{
@@ -205,7 +206,10 @@ const handleChangeDutyShowMode = () => {
   dutyShowMode.value = dutyShowMode.value === "tree" ? "transfer" : "tree";
 };
 
-const form = useForm("user", props.user);
+const form = props.rememberKey
+  ? useForm(props.rememberKey, props.user)
+  : useForm(props.user);
+
 form.roles = props.user.roles?.map((role) => role.id);
 
 if (Array.isArray(form.pronouns)) {

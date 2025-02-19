@@ -9,7 +9,7 @@
           <template v-for="item in category.items">
             <Link v-if="item.show" :key="item.title" :href="item.href">
             <button
-              class="group relative flex w-full flex-col gap-3 rounded-md border border-zinc-100 bg-gradient-to-br from-white to-white p-4 text-left text-sm leading-4 text-zinc-700 shadow-sm duration-500 hover:shadow-lg dark:border-0 dark:from-zinc-900 dark:to-neutral-800 dark:text-zinc-300 dark:hover:shadow-white/10">
+              class="group relative flex w-full flex-col gap-3 rounded-md border border-zinc-100 bg-linear-to-br from-white to-white p-4 text-left text-sm leading-4 text-zinc-700 shadow-xs duration-500 hover:shadow-lg dark:border-0 dark:from-zinc-900 dark:to-neutral-800 dark:text-zinc-300 dark:hover:shadow-white/10">
               <component :is="item.icon" width="28" height="28" />
               {{ item.title }}
               <!-- Add favorite button -->
@@ -119,9 +119,9 @@ const menuItems: MenuItemsType = computed(() => [
       },
       {
         title: $t('Greitosios nuorodos'),
-        icon: Icons.MAIN_PAGE,
-        href: route('mainPage.index'),
-        show: auth?.can.create.mainPage,
+        icon: Icons.QUICK_LINK,
+        href: route('quickLinks.index'),
+        show: auth?.can.create.quickLink,
       },
       {
         title: $t('Baneriai'),
@@ -160,7 +160,7 @@ const menuItems: MenuItemsType = computed(() => [
         show: auth?.can.create.document
       },
     ],
-    show: auth?.can.create.page || auth?.can.create.news || auth?.can.create.mainPage || auth?.can.create.document || auth?.can.create.banner || auth?.can.create.navigation || auth?.can.create.calendar || auth?.can.create.category
+    show: auth?.can.create.page || auth?.can.create.news || auth?.can.create.quickLink || auth?.can.create.document || auth?.can.create.banner || auth?.can.create.navigation || auth?.can.create.calendar || auth?.can.create.category
   },
   {
     category: $t('Atstovavimas'),

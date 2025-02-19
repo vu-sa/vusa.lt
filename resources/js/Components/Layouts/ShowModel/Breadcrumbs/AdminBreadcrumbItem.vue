@@ -9,7 +9,7 @@
     "
   >
     <div v-if="!option.dropdownOptions" class="text-xs">
-      <NIcon class="mr-1" :size="14" :component="option.icon" />
+      <NIcon v-if="option.icon" class="mr-1" :size="14" :component="option.icon" />
       {{ option.label }}
     </div>
     <NDropdown v-else :options="option.dropdownOptions">

@@ -3,8 +3,11 @@
 namespace App\Models;
 
 use App\Models\Traits\HasTranslations;
+use Datetime;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Carbon;
 use Laravel\Scout\Searchable;
+use Spatie\CalendarLinks\Link;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
@@ -63,5 +66,26 @@ class Calendar extends Model implements HasMedia
         ];
 
         return $array;
+    }
+
+    // TODO: add all pages to dev seed
+    public function googleLink(): string
+    {
+        // check if event date is after end date, if so, return null
+        // TODO: check in frontend
+        if ($this->end_date && $this->date > $this->end_date) {
+            return null;
+        }
+
+        return Link::create(
+            $this->title,
+            DateTime::createFromFormat('Y-m-d H:i:s', $this->date),
+            $this->end_date
+                ? DateTime::createFromFormat('Y-m-d H:i:s', $this->end_date)
+                : Carbon::parse($this->date)->addHour()->toDateTime()
+        )
+            ->description(strip_tags($this->description))
+            ->address($calendarEvent->location ?? '')
+            ->google();
     }
 }

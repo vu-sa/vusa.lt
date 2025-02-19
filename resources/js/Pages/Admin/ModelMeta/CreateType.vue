@@ -1,7 +1,7 @@
 <template>
   <PageContent title="Naujas turinio tipas" :back-url="route('types.index')">
     <UpsertModelLayout>
-      <TypeForm :content-types :roles :type @submit:form="(form) => form.post(route('types.store'))" />
+      <TypeForm remember-key="CreateType" :content-types :roles :type @submit:form="(form) => form.post(route('types.store'))" />
     </UpsertModelLayout>
   </PageContent>
 </template>

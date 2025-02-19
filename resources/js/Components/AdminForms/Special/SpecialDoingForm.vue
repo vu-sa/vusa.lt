@@ -61,7 +61,7 @@ const rules: FormRules = {
     {
       required: true,
       message: "Pavadinimas yra privalomas",
-      trigger: "blur",
+      trigger: "blur-sm",
     },
   ],
   date: [
@@ -69,7 +69,7 @@ const rules: FormRules = {
       type: "number",
       required: true,
       message: "Data yra privaloma",
-      trigger: "blur",
+      trigger: "blur-sm",
     },
   ],
 };

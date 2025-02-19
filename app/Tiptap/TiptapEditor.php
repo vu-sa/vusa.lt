@@ -2,7 +2,7 @@
 
 namespace App\Tiptap;
 
-use Tiptap\Editor as Editor;
+use Tiptap\Editor;
 
 class TipTapListItem extends \Tiptap\Nodes\ListItem
 {

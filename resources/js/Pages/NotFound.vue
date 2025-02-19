@@ -1,5 +1,5 @@
 <template>
-  <div class="typography m-4 rounded-sm p-4 leading-7">
+  <div class="typography m-4 rounded-xs p-4 leading-7">
     <h1>Oops!</h1>
     <p>
       Pasiekei puslapį, kurio neturėjai pasiekti. Wow, way to go! Šią žinutę

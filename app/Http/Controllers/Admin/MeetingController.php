@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreMeetingRequest;
-use App\Models\Meeting as Meeting;
+use App\Models\Meeting;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ModelIndexer;
 use App\Services\ResourceServices\SharepointFileService;

@@ -5,6 +5,7 @@ declare namespace App.Entities {
   export type Category = models.Category;
   export type ChangelogItem = models.ChangelogItem;
   export type Comment = models.Comment;
+  export type Content = models.Content;
 
   export type Document = Omit<models.Document, "sharepoint_id" | "eTag" | "public_url_created_at" | "sharepoint_site_id" | "sharepoint_list_id" | "created_at" | "updated_at">
 
@@ -35,7 +36,6 @@ declare namespace App.Entities {
   export type GoalGroup = models.GoalGroup;
   export type GoalMatter = models.GoalMatter;
   export type Institution = models.Institution;
-  export type MainPage = models.MainPage;
   export type Matter = models.Matter;
   // export interface Media extends models.Media {
   //   original_url?: string;
@@ -58,6 +58,7 @@ declare namespace App.Entities {
     updated_at: string;
   }
 
+  export type QuickLink = models.QuickLink;
   export type Page = models.Page;
   export type Permission = models.Permission;
   export type Programme = models.Programme;

@@ -1,5 +1,5 @@
 <template>
-  <NPopover class="rounded-sm" :show-arrow="false" raw style="max-width: 200px">
+  <NPopover class="rounded-xs" :show-arrow="false" raw style="max-width: 200px">
     <template #trigger>
       <UserAvatar v-if="!showName" v-bind="$attrs" :user :size />
       <div v-else v-bind="$attrs" class="inline-flex items-center gap-2">
@@ -8,7 +8,7 @@
       </div>
     </template>
     <img v-if="photo" class="w-full rounded-t-sm" :src="photo" alt="">
-    <div class="flex flex-col gap-2 rounded-sm bg-white p-2 text-xs text-zinc-700 dark:bg-zinc-700 dark:text-zinc-200">
+    <div class="flex flex-col gap-2 rounded-xs bg-white p-2 text-xs text-zinc-700 dark:bg-zinc-700 dark:text-zinc-200">
       <span class="font-bold dark:text-zinc-100">{{ user.name }}</span>
       <div v-if="user.email" class="flex items-center gap-2">
         <IFluentMail20Regular width="12" height="12" />

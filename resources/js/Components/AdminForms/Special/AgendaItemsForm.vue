@@ -165,11 +165,11 @@ const agendaItemRules: FormRules = {
     required: true,
     type: "array",
     message: "Pasirink (arba įrašyk) bent vieną klausimą",
-    trigger: ["blur"],
+    trigger: ["blur-sm"],
   },
   agendaItemTitles: {
     required: true,
-    trigger: ["blur"],
+    trigger: ["blur-sm"],
     validator: (rule: unknown, value) => {
       if (value.some((title: string) => [null, ""].includes(title))) {
         return new Error("Klausimas negali būti tuščias");

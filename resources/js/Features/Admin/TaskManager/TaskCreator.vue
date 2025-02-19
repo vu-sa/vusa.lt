@@ -100,12 +100,12 @@ const filter = (pattern: string, option: CascaderOption) => {
 const rules = {
   name: {
     required: true,
-    trigger: "blur",
+    trigger: "blur-sm",
     message: "Pavadinimas yra privalomas",
   },
   due_date: {
     required: true,
-    trigger: "blur",
+    trigger: "blur-sm",
     type: "number",
     message: "Data yra privaloma",
   },

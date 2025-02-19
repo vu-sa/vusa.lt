@@ -1,7 +1,7 @@
 <template>
   <PageContent title="Naujas įvykis">
     <UpsertModelLayout>
-      <CalendarForm :calendar :categories :assignable-tenants
+      <CalendarForm :calendar remember-key="CreateCalendar" :categories :assignable-tenants
         @submit:form="(form) => form.post(route('calendar.store'))" />
     </UpsertModelLayout>
   </PageContent>

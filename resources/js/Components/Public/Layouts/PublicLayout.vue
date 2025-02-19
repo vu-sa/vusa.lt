@@ -34,10 +34,10 @@
             </div>
           </FadeTransition>
           <div v-if="
-            $page.props.padalinys?.banners &&
-            $page.props.padalinys.banners.length > 0
+            $page.props.tenant?.banners &&
+            $page.props.tenant.banners.length > 0
           " class="mx-auto mt-8 max-w-7xl">
-            <BannerCarousel :banners="$page.props.padalinys?.banners" />
+            <BannerCarousel :banners="$page.props.tenant?.banners" />
           </div>
         </div>
         <!--<template #fallback>
@@ -71,15 +71,16 @@
 
 <script setup lang="ts">
 import { NConfigProvider, darkTheme, useMessage } from "naive-ui";
-import { computed, onMounted, ref, toValue, watch } from "vue";
+import { computed, defineAsyncComponent, onMounted, ref, toValue, watch } from "vue";
 import { useDark, useStorage } from "@vueuse/core";
 
 import { Head, usePage } from "@inertiajs/vue3";
-import BannerCarousel from "../FullWidth/BannerCarousel.vue";
-import ConsentCard from "../ConsentCard.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
-import MainNavigation from "@/Components/Public/Layouts/MainNavigation.vue";
-import SiteFooter from "../FullWidth/SiteFooter.vue";
+
+const BannerCarousel = defineAsyncComponent(() => import("../FullWidth/BannerCarousel.vue"));
+const ConsentCard = defineAsyncComponent(() => import("../ConsentCard.vue"));
+const MainNavigation = defineAsyncComponent(() => import("@/Components/Public/Layouts/MainNavigation.vue"));
+const SiteFooter = defineAsyncComponent(() => import("../FullWidth/SiteFooter.vue"));
 
 const isDark = useDark();
 

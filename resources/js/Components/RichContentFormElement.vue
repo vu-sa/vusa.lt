@@ -1,5 +1,5 @@
 <template>
-  <NTabs class="my-2 rounded-sm" type="segment">
+  <NTabs class="my-2 rounded-xs" type="segment">
     <NTabPane name="edit" display-directive="show">
       <template #tab>
         <IFluentEdit24Filled class="mr-2" />
@@ -12,7 +12,7 @@
         <IFluentEye24Filled class="mr-2" />
         Peržiūra
       </template>
-      <div class="typography flex max-w-prose flex-col gap-2 p-4 text-base leading-7 text-zinc-800 dark:text-zinc-300">
+      <div class="typography overflow-hidden flex flex-col gap-2 p-4 text-base leading-7 text-zinc-800 dark:text-zinc-300">
         <RichContentParser :content="contentParts" />
       </div>
     </NTabPane>

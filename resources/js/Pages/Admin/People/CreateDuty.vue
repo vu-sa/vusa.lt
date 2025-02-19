@@ -1,7 +1,7 @@
 <template>
   <PageContent title="Nauja pareiga" :heading-icon="Icons.DUTY">
     <UpsertModelLayout>
-      <DutyForm :duty :duty-types :assignable-institutions :assignable-users :roles
+      <DutyForm remember-key="CreateDuty" :duty :duty-types :assignable-institutions :assignable-users :roles
         @submit:form="(form) => form.post(route('duties.store'))" />
     </UpsertModelLayout>
   </PageContent>

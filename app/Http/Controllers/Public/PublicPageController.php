@@ -8,54 +8,38 @@ use App\Models\Category;
 use App\Models\Document;
 use App\Models\Form;
 use App\Models\Navigation;
-use App\Models\News;
 use App\Models\Page;
+use App\Models\Tenant;
 use App\Services\ResourceServices\InstitutionService;
-use Datetime;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
-use Spatie\CalendarLinks\Link;
 use Tiptap\Editor;
 
 class PublicPageController extends PublicController
 {
-    // TODO: add all pages to dev seed
-    private function getCalendarGoogleLink($calendarEvent)
-    {
-        // check if event date is after end date, if so, return null
-        // TODO: check in frontend
-        if ($calendarEvent->end_date && $calendarEvent->date > $calendarEvent->end_date) {
-            return null;
-        }
-
-        $googleLink = Link::create(
-            $calendarEvent->title,
-            DateTime::createFromFormat('Y-m-d H:i:s', $calendarEvent->date),
-            $calendarEvent->end_date
-                ? DateTime::createFromFormat('Y-m-d H:i:s', $calendarEvent->end_date)
-                : Carbon::parse($calendarEvent->date)->addHour()->toDateTime()
-        )
-            ->description(strip_tags($calendarEvent->description))
-            ->address($calendarEvent->location ?? '')
-            ->google();
-
-        return $googleLink;
-    }
-
     protected function getEventsForCalendar()
     {
         if (app()->getLocale() === 'en') {
             return Cache::remember('calendar_en', 60 * 30, function () {
                 return Calendar::query()->with('category')->where('is_international', true)->where('is_draft', false)
-                    ->orderBy('date', 'desc')->take(100)->get();
+                    ->orderBy('date', 'desc')->take(100)->get()->map(function ($event) {
+                        return [
+                            ...$event->toArray(),
+                            'googleLink' => $event->googleLink(),
+                        ];
+                    });
             });
         } else {
             return Cache::remember('calendar_lt', 60 * 30, function () {
-                return Calendar::query()->with('category')->where('is_draft', false)->orderBy('date', 'desc')->take(100)->get();
+                return Calendar::query()->with('category')->where('is_draft', false)->orderBy('date', 'desc')->take(100)->get()->map(function ($event) {
+                    return [
+                        ...$event->toArray(),
+                        'googleLink' => $event->googleLink(),
+                    ];
+                });
             });
         }
     }
@@ -65,60 +49,10 @@ class PublicPageController extends PublicController
         $this->getBanners();
         $this->getTenantLinks();
 
-        // get last 4 news by publishing date
-        $news = News::with('tenant')->where([['tenant_id', '=', $this->tenant->id], ['lang', app()->getLocale()], ['draft', '=', 0]])
-            ->where('publish_time', '<=', date('Y-m-d H:i:s'))
-            ->orderBy('publish_time', 'desc')
-            ->take(4)
-            ->get();
-
-        $calendar = $this->getEventsForCalendar();
-
-        // get 4 upcoming events by end_date if it exists, otherwise by date
-        $upcomingEvents = $calendar->filter(function ($event) {
-            return $event->end_date ? $event->end_date > date('Y-m-d H:i:s') : $event->date > date('Y-m-d H:i:s');
-        })->sortBy(function ($event) {
-            return $event->date;
-        }, SORT_DESC)->take(8)->values();
-
         $seo = $this->shareAndReturnSEOObject(title: __('Pagrindinis puslapis').' - '.$this->tenant->shortname);
 
         return Inertia::render('Public/HomePage', [
-            'news' => $news->map(function ($news) {
-                return [
-                    'id' => $news->id,
-                    'title' => $news->title,
-                    'lang' => $news->lang,
-                    'alias' => $news->tenant->alias,
-                    // publish time to date format YYYY-MM-DD HH:MM
-                    'publish_time' => date('Y-m-d H:i', strtotime($news->publish_time)),
-                    'permalink' => $news->permalink,
-                    'image' => function () use ($news) {
-                        if (substr($news->image, 0, 4) == 'http') {
-                            return $news->image;
-                        } else {
-                            return Storage::get(str_replace('uploads', 'public', $news->image)) == null ? '/images/icons/naujienu_foto.png' : $news->image;
-                        }
-                    },
-                    'important' => $news->important,
-                ];
-            }),
-            'calendar' => $calendar->map(function ($calendar) {
-                return [
-                    'id' => $calendar->id,
-                    'date' => $calendar->date,
-                    'end_date' => $calendar->end_date,
-                    'title' => $calendar->title,
-                    'category' => $calendar->category,
-                    'googleLink' => $this->getCalendarGoogleLink($calendar),
-                ];
-            }),
-            'upcomingEvents' => $upcomingEvents->map(function ($calendar) {
-                return [
-                    ...$calendar->toArray(),
-                    'images' => $calendar->getMedia('images'),
-                ];
-            }),
+            'content' => $this->tenant->content ?? Tenant::query()->where('type', 'pagrindinis')->first()->content,
         ])->withViewData([
             'SEOData' => $seo,
         ]);
@@ -295,6 +229,40 @@ class PublicPageController extends PublicController
         return $this->calendarEventMain('lt', $calendar);
     }
 
+    public function calendarMain($lang, string $year, string $month, string $day, string $slug)
+    {
+
+        // Find the calendar event by date and slug
+        $calendarEvents = Calendar::query()->whereDate('date', $year.'-'.$month.'-'.$day)->get();
+
+        $returnableEvent = null;
+
+        // Sluggify each event title and compare with the slug from the URL
+        $calendarEvents->each(function ($event) use ($slug, &$returnableEvent) {
+            $sluggifiedTitle = Str::slug($event->title);
+            if ($sluggifiedTitle === $slug) {
+                $returnableEvent = $event;
+            }
+        });
+
+        if ($returnableEvent === null) {
+            abort(404);
+        }
+
+        return $this->calendarEventMain($lang, $returnableEvent);
+    }
+
+    public function calendarEventRedirect($lang, Calendar $calendar)
+    {
+        return redirect(route('calendar.event.2', [
+            'year' => $calendar->date->format('Y'),
+            'month' => $calendar->date->format('m'),
+            'day' => $calendar->date->format('d'),
+            'slug' => Str::slug($calendar->title),
+            'lang' => app()->getLocale(),
+        ]), 301);
+    }
+
     public function calendarEventMain($lang, Calendar $calendar)
     {
         $this->getBanners();
@@ -318,7 +286,7 @@ class PublicPageController extends PublicController
                 'images' => $calendar->getMedia('images'),
             ],
             'calendar' => $this->getEventsForCalendar(),
-            'googleLink' => $this->getCalendarGoogleLink($calendar, app()->getLocale()),
+            'googleLink' => $calendar->googleLink(),
         ])
             ->withViewData(
                 [
