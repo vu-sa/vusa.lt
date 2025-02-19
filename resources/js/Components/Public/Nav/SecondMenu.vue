@@ -8,10 +8,35 @@
           : "VU SA"
       }}
     </SmartLink>
-    <nav class="relative inline-flex items-center gap-5 overflow-hidden whitespace-nowrap py-2 text-xs">
-      <QuickLink v-for="link in $page.props.tenant?.links" :key="link?.id" :quick-link="link" />
-      <div
-        class="pointer-events-none absolute right-0 top-0 h-full w-16 rounded-br-md bg-linear-to-r from-transparent to-zinc-100 dark:to-zinc-900" />
+    <nav class="grid grid-cols-[1fr_auto_auto] items-center gap-5 whitespace-nowrap py-2 text-xs">
+      <div class="relative flex items-center gap-4 overflow-hidden w-full">
+        <QuickLink v-for="link in $page.props.tenant?.links" :key="link?.id" :quick-link="link" />
+        <div
+          class="absolute right-0 h-8 overflow-hidden bg-gradient-to-r from-transparent to-zinc-100 dark:from-transparent dark:to-zinc-900 w-10" />
+      </div>
+      <div class="inline-flex gap-1">
+        <NDropdown :options="dropdownOptions" @select="handleSelect">
+          <NButton text size="tiny" text-color="#767875">
+            <template #icon>
+              <IFluentLineHorizontal1Dot20Filled />
+            </template>
+          </NButton>
+        </NDropdown>
+      </div>
+      <div class="ml-auto flex pr-4 gap-4 items-center">
+        <SearchButton size="tiny">
+          {{ $t('Paieška') }}
+        </SearchButton>
+        <a href="/login">
+          <NButton text size="tiny">
+            <template #icon>
+              <IFluentPerson24Filled v-if="$page.props.auth?.user" />
+              <IFluentPerson24Regular v-else />
+            </template>
+            {{ $page.props.auth?.user ? $page.props.auth.user?.name : $t('auth.login') }}
+          </NButton>
+        </a>
+      </div>
     </nav>
   </section>
 </template>
@@ -19,4 +44,15 @@
 <script setup lang="ts">
 import QuickLink from "./QuickLink.vue";
 import SmartLink from "../SmartLink.vue";
+import SearchButton from "./SearchButton.vue";
+import { usePage } from "@inertiajs/vue3";
+
+const dropdownOptions = usePage().props.tenant?.links.map((link) => ({
+  label: link?.text,
+  key: link?.link,
+}));
+
+const handleSelect = (value: string) => {
+  window.location.href = value;
+};
 </script>
