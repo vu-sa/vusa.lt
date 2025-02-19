@@ -7,7 +7,7 @@
       <template #card-header>
         <span>Puslapio informacija</span>
       </template>
-      <PageForm :categories :page :other-lang-pages model-route="pages.update" enable-delete
+      <PageForm :categories :page :other-lang-pages enable-delete
         @submit:form="(form) => form.patch(route('pages.update', page.id), { preserveScroll: true })"
         @delete="() => router.delete(route('pages.destroy', page.id))" />
     </UpsertModelLayout>

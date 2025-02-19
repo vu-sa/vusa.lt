@@ -23,8 +23,9 @@ import { useForm } from '@inertiajs/vue3';
 import FormElement from './FormElement.vue';
 import AdminForm from './AdminForm.vue';
 
-const props = defineProps<{
+const { navigation, rememberKey } = defineProps<{
   navigation: App.Entities.Navigation;
+  rememberKey?: "CreateNavigationParent";
 }>()
 
 defineEmits<{
@@ -32,5 +33,5 @@ defineEmits<{
   (event: "delete"): void;
 }>();
 
-const form = useForm('navigation', props.navigation);
+const form = rememberKey ? useForm(rememberKey, navigation) : useForm(navigation);
 </script>

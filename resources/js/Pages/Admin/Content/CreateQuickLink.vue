@@ -1,7 +1,7 @@
 <template>
   <PageContent title="Naujas pradinio puslapio mygtukas" :back-url="route('quickLinks.index')">
     <UpsertModelLayout>
-      <QuickLinkForm :tenant-options :type-options :quick-link
+      <QuickLinkForm remember-key="CreateQuickLink" :tenant-options :type-options :quick-link
         @submit:form="(form) => form.post(route('quickLinks.store'))" />
     </UpsertModelLayout>
   </PageContent>

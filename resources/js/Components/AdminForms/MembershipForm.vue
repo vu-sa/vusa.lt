@@ -54,10 +54,11 @@ import Icons from "@/Types/Icons/regular";
 import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";
 import { ref, useTemplateRef } from "vue";
 
-const { membership } = defineProps<{
+const { membership, rememberKey } = defineProps<{
   membership: App.Entities.Membership;
   canImportMemberships?: boolean;
   assignableTenants: Array<App.Entities.Tenant>;
+  rememberKey?: "CreateMembership";
 }>();
 
 defineEmits<{
@@ -65,7 +66,10 @@ defineEmits<{
   (event: "delete"): void;
 }>();
 
-const form = useForm("membership", membership);
+const form = rememberKey
+  ? useForm(rememberKey, membership)
+  : useForm(membership);
+
 const fileListLength = ref(0);
 
 const upload = useTemplateRef("upload");

@@ -74,6 +74,7 @@ const props = defineProps<{
   resource: ResourceCreationTemplate | ResourceEditType;
   categories: App.Entities.ResourceCategory[];
   assignableTenants: App.Entities.Tenant[];
+  rememberKey?: "CreateResource";
 }>();
 
 defineEmits<{
@@ -89,7 +90,7 @@ const categoriesOptions = computed(() => {
   }));
 });
 
-const form = useForm(props.resource);
+const form = props.rememberKey ? useForm(props.rememberKey, props.resource) : useForm(props.resource);
 
 // tenant_id is set to 0 if it's not found. Shouldn't happen for authenticated users.
 const formDisabled = computed(() => {

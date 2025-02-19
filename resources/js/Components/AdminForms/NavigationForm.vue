@@ -91,6 +91,7 @@ const props = defineProps<{
   navigation: App.Entities.Navigation;
   parentElements: App.Entities.Navigation[];
   typeOptions: any
+  rememberKey?: "CreateNavigation";
 }>();
 
 defineEmits<{
@@ -98,7 +99,9 @@ defineEmits<{
   (event: "delete"): void;
 }>();
 
-const form = useForm("navigation", props.navigation);
+const form = props.rememberKey
+  ? useForm(props.rememberKey, props.navigation)
+  : useForm(props.navigation);
 
 const showModal = ref(false);
 

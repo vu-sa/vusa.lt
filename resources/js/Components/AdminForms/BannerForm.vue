@@ -31,9 +31,10 @@ defineEmits<{
   (event: "delete"): void;
 }>();
 
-const { banner } = defineProps<{
+const { banner, rememberKey } = defineProps<{
   banner: App.Entities.Banner;
+  rememberKey?: string;
 }>();
 
-const form = useForm("banner", banner);
+const form = rememberKey ? useForm(rememberKey, banner) : useForm(banner);
 </script>

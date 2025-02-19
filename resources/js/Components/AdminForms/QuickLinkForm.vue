@@ -81,6 +81,7 @@ const props = defineProps<{
   quickLink: App.Entities.QuickLink;
   tenantOptions: Record<string, any>[];
   typeOptions: Record<string, any>[];
+  rememberKey?: "CreateQuickLink";
 }>();
 
 defineEmits<{
@@ -88,7 +89,10 @@ defineEmits<{
   (event: "delete"): void;
 }>();
 
-const form = useForm("quickLinks", props.quickLink);
+const form = props.rememberKey
+  ? useForm(props.rememberKey, props.quickLink)
+  : useForm(props.quickLink);
+
 const pageSelection = ref(null);
 
 const options = props.tenantOptions.map((padalinys) => ({

@@ -32,9 +32,10 @@ import { useForm } from "@inertiajs/vue3";
 import FormElement from "./FormElement.vue";
 import AdminForm from "./AdminForm.vue";
 
-const { tenant, assignableInstitutions } = defineProps<{
+const { tenant, assignableInstitutions, rememberKey } = defineProps<{
   tenant: App.Entities.Tenant;
   assignableInstitutions: Array<App.Entities.Institution>;
+  rememberKey?: "CreateTenant";
 }>();
 
 defineEmits<{
@@ -42,7 +43,7 @@ defineEmits<{
   (event: "delete"): void;
 }>();
 
-const form = useForm("tenant", tenant);
+const form = rememberKey ? useForm(rememberKey, tenant) : useForm(tenant);
 
 const typeOptions = [
   { label: "PKP", value: "pkp" },

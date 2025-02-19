@@ -75,7 +75,7 @@ defineEmits<{
   (event: "delete"): void;
 }>();
 
-const form = useForm("TrainingCreate", training);
+const form = useForm("CreateTraining", training);
 const locale = ref("lt");
 
 // NOTE: Duplicated in InstitutionSelectorForm.vue

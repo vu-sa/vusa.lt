@@ -20,8 +20,9 @@ import { useForm } from "@inertiajs/vue3";
 import FormElement from "./FormElement.vue";
 import AdminForm from "./AdminForm.vue";
 
-const { relationship } = defineProps<{
+const { relationship, rememberKey } = defineProps<{
   relationship: App.Entities.Relationship;
+  rememberKey?: "CreateRelationship";
 }>();
 
 defineEmits<{
@@ -29,5 +30,5 @@ defineEmits<{
   (event: "delete"): void;
 }>();
 
-const form = useForm("relationship", relationship);
+const form = rememberKey ? useForm(rememberKey, relationship) : useForm(relationship);
 </script>

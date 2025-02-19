@@ -23,11 +23,12 @@ import { useForm } from "@inertiajs/vue3";
 import FormElement from "./FormElement.vue";
 import AdminForm from "./AdminForm.vue";
 
-const props = defineProps<{
+const { category, rememberKey } = defineProps<{
   category: App.Entities.Category;
+  rememberKey?: string;
 }>();
 
-const form = useForm("category", props.category);
+const form = rememberKey ? useForm(rememberKey, category) : useForm(category);
 
 defineEmits<{
   (event: "submit:form", form: unknown): void;

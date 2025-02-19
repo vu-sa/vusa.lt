@@ -1,7 +1,7 @@
 <template>
   <PageContent title="Naujas narys (-ė)" :heading-icon="Icons.USER">
     <UpsertModelLayout>
-      <UserForm :user :roles :tenants-with-duties :permissable-tenants
+      <UserForm remember-key="CreateUser" :user :roles :tenants-with-duties :permissable-tenants
         @submit:form="(form) => form.post(route('users.store'))" />
     </UpsertModelLayout>
   </PageContent>

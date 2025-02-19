@@ -34,6 +34,7 @@ import AdminForm from "./AdminForm.vue";
 
 const props = defineProps<{
   resourceCategory: any;
+  rememberKey?: "CreateResourceCategory";
 }>();
 
 defineEmits<{
@@ -47,7 +48,9 @@ defineEmits<{
 //    : route(props.modelRoute);
 //});
 
-const form = useForm(props.resourceCategory);
+const form = props.rememberKey
+  ? useForm(props.rememberKey, props.resourceCategory)
+  : useForm(props.resourceCategory);
 
 //const submit = () => {
 //  // add _method: "patch" if it's an update, to the data of the request

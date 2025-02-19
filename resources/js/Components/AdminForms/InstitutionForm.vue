@@ -178,6 +178,7 @@ const props = defineProps<{
   institution: App.Entities.Institution;
   institutionTypes: App.Entities.Type[];
   assignableTenants: Array<App.Entities.Tenant>;
+  rememberKey?: string;
 }>();
 
 defineEmits<{
@@ -188,7 +189,9 @@ defineEmits<{
 const locale = ref("lt");
 const dutiesWereReordered = ref(false);
 
-const form = useForm("institution", props.institution);
+const form = props.rememberKey
+  ? useForm(props.rememberKey, props.institution)
+  : useForm(props.institution);
 
 const options = props.assignableTenants.map((tenant) => ({
   value: tenant.id,

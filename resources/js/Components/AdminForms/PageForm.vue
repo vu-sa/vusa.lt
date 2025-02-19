@@ -23,7 +23,7 @@
           <NSelect v-model:value="form.lang" filterable :options="languageOptions" placeholder="Pasirinkti kalbą..." />
         </NFormItem>
         <NFormItem label="Kitos kalbos puslapis">
-          <NSelect v-model:value="form.other_lang_id" filterable :disabled="modelRoute === 'pages.store'"
+          <NSelect v-model:value="form.other_lang_id" filterable :disabled="rememberKey === 'CreatePage'"
             placeholder="Pasirinkti kitos kalbos puslapį... (tik tada, kai jau sukūrėte puslapį)"
             :options="otherPageOptions" clearable />
         </NFormItem>
@@ -47,7 +47,7 @@ const props = defineProps<{
   categories: App.Entities.Category[];
   page: App.Entities.Page;
   otherLangPages?: App.Entities.Page[];
-  modelRoute: string;
+  rememberKey?: "CreatePage"
 }>();
 
 defineEmits<{
@@ -55,10 +55,12 @@ defineEmits<{
   (event: "delete"): void;
 }>();
 
-const form = useForm(props.page);
+const form = props.rememberKey
+  ? useForm(props.rememberKey, props.page)
+  : useForm(props.page);
 
 const otherPageOptions = computed(() => {
-  if (props.modelRoute === "pages.store") {
+  if (props.rememberKey === "CreatePage") {
     return [];
   }
 
@@ -92,7 +94,7 @@ function updateContents() {
 
 // watch form.title and update form.permalink
 
-if (props.modelRoute == "pages.store") {
+if (props.rememberKey == "CreatePage") {
   watch(
     () => form.title,
     (title) => {
