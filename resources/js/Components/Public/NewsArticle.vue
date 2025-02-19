@@ -13,7 +13,9 @@
     <h1 class="col-span-4 mb-2 mt-0 text-center">
       <slot name="title" />
     </h1>
-    <slot name="image" />
+    <div class="col-span-4 my-4 h-auto max-w-prose text-center">
+      <slot name="image" />
+    </div>
     <slot />
   </article>
 </template>
