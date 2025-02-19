@@ -97,7 +97,7 @@ class TenantController extends Controller
 
     public function editMainPage(Tenant $tenant)
     {
-        $this->authorize('update', $tenant);
+        $this->authorize('updateMainPage', $tenant);
 
         $tenant->load('content.parts');
 

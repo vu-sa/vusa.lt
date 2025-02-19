@@ -16,14 +16,14 @@ import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
 import AdminForm from '@/Components/AdminForms/AdminForm.vue';
 import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 
-const props = defineProps<{
+const { tenant } = defineProps<{
   tenant: App.Entities.Tenant;
 }>();
 
-const form = useForm<App.Entities.Content>(props.tenant.content);
+const form = useForm<App.Entities.Content>(tenant.content);
 
 function handleFormSubmit() {
-  form.post(route('tenants.updateMainPage', form.id), {
+  form.post(route('tenants.updateMainPage', tenant.id), {
     preserveScroll: true,
     forceFormData: true,
   });

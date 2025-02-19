@@ -43,7 +43,7 @@
     "fuse.js": "^7.0.0",
     "gsap": "^3.12.5",
     "happy-dom": "^16.0.0",
-    "laravel-vue-i18n": "github:justinaskav/laravel-vue-i18n#main",
+    "laravel-vue-i18n": "github:xiCO2k/laravel-vue-i18n#main",
     "latinize": "^2.0.0",
     "lucide-vue-next": "^0.473.0",
     "posthog-js": "^1.40.1",

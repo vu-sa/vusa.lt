@@ -66,6 +66,24 @@ class TenantPolicy extends ModelPolicy
         return false;
     }
 
+    public function updateMainPage(User $user, Tenant $tenant): bool
+    {
+        $this->authorizer->forUser($user)->check('pages.update.padalinys');
+
+        if ($this->authorizer->isAllScope) {
+            return true;
+        }
+
+        $tenants = $this->authorizer->getPermissableDuties()->filter(function ($duty) {
+            return $duty->hasPermissionTo('pages.update.padalinys');
+        })->load('institution.tenant')->pluck('institution.tenant');
+
+        // Check against tenant in the request
+        return $tenants->contains($tenant);
+
+        return false;
+    }
+
     /**
      * Determine whether the user can delete the model.
      */
