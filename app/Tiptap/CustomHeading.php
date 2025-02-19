@@ -2,7 +2,7 @@
 
 namespace App\Tiptap;
 
-use Tiptap\Nodes\Heading as Heading;
+use Tiptap\Nodes\Heading;
 
 class CustomHeading extends Heading
 {

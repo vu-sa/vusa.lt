@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetTenantsForUpserts;
-use App\Http\Controllers\Controller as Controller;
+use App\Http\Controllers\Controller;
 use App\Models\Institution;
 use App\Models\Page;
 use App\Models\Resource;

@@ -5,7 +5,7 @@ namespace App\Actions;
 use App\Models\Duty;
 use App\Models\Type;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Collection as Collection;
+use Illuminate\Database\Eloquent\Collection;
 
 class GetAttachableTypesForDuty
 {

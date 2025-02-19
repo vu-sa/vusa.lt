@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller as Controller;
+use App\Http\Controllers\Controller;
 
 class UserNotificationsController extends Controller
 {
