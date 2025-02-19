@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Tenant;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateContentRequest extends FormRequest
