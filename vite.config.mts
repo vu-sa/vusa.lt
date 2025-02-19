@@ -39,7 +39,7 @@ export default defineConfig({
       //"resources/js/public.ts",
 
       // Also build .css, because it is used in minimal.blade.php
-      //"resources/css/app.css"
+      "resources/css/app.css"
     ]),
     tailwindcss(),
     ziggy(),

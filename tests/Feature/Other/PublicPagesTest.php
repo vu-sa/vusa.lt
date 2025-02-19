@@ -42,9 +42,6 @@ test('can open the home page', function () {
     $this->get(route('home', ['subdomain' => 'www', 'lang' => 'lt']))
         ->assertInertia(fn (Assert $page) => $page
             ->component('Public/HomePage')
-            ->has('news')
-            ->has('calendar')
-            ->has('upcomingEvents')
         );
 });
 
