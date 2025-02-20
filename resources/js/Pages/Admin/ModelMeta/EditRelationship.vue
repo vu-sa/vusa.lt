@@ -65,7 +65,7 @@ const relationTemplate = {
   relationship_id: props.relationship.id,
 };
 
-const relationForm = useForm("modelsRelation", relationTemplate);
+const relationForm = useForm(relationTemplate);
 
 const options = computed(() => {
   if (!props.relatedModels) {
