@@ -69,7 +69,7 @@ class Calendar extends Model implements HasMedia
     }
 
     // TODO: add all pages to dev seed
-    public function googleLink(): string
+    public function googleLink(): ?string
     {
         // check if event date is after end date, if so, return null
         // TODO: check in frontend

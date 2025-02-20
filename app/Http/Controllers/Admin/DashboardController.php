@@ -104,7 +104,7 @@ class DashboardController extends Controller
         if (! $selectedTenant) {
             $providedTenant = null;
         } else {
-            $providedTenant = Tenant::query()->where('id', $selectedTenant['id'])->with('pages', 'news', 'mainPages')->with(['calendar' => function ($query) {
+            $providedTenant = Tenant::query()->where('id', $selectedTenant['id'])->with('pages', 'news', 'quickLinks')->with(['calendar' => function ($query) {
                 // get only future and pasts event 12 months ago
                 $query->where('date', '>=', now()->subMonths(12))->orderBy('date', 'asc');
             }])->first();
