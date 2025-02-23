@@ -67,7 +67,7 @@ const props = defineProps<{
   };
 }>();
 
-const model = useForm("task", {
+const model = useForm({
   name: "",
   due_date: new Date().getTime(),
   responsible_people: [],

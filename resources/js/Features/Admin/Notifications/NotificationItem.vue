@@ -1,26 +1,24 @@
 <template>
-  <div role="button"
-    class="flex max-w-sm cursor-pointer items-center gap-2 rounded-xs p-2 text-zinc-700 transition hover:bg-zinc-200/80 dark:text-zinc-50 dark:hover:bg-zinc-800/80"
+  <button
+    class="flex cursor-pointer items-center gap-2 rounded-xs p-2 transition hover:bg-zinc-200/80 dark:hover:bg-zinc-800/80 text-left"
     @click="router.visit(notification.data.object.url)">
-    <div v-if="notificationType" class="w-full text-xs text-zinc-700 dark:text-zinc-300">
-      <component :is="getNotificationComponent(notificationType)" :notification="notification" />
+    <div v-if="notificationType" class="w-full">
+      <component :is="getNotificationComponent(notificationType)" :notification />
     </div>
     <div class="flex flex-col gap-2">
-      <NButton size="tiny" tertiary circle @click.stop="handleClick">
+      <NButton v-if="!notification.read_at" size="tiny" tertiary circle @click.stop="handleClick">
         <template #icon>
           <IFluentCheckmark24Filled />
         </template>
       </NButton>
     </div>
-  </div>
+  </button>
 </template>
 
 <script setup lang="ts">
 import { defineAsyncComponent } from "vue";
 import { router } from "@inertiajs/vue3";
 import { useAxios } from "@vueuse/integrations/useAxios";
-
-import { formatRelativeTime } from "@/Utils/IntlTime";
 
 export type NotificationData = {
   object: {

@@ -7,9 +7,9 @@
   <CardModal v-model:show="showModal" :segmented="{ content: 'soft' }" class="max-w-xl" title="Įrašo pokyčiai"
     @close="showModal = false">
     <div v-if="activities.length > 0" class="flex flex-col gap-4">
-      <div v-for="activity in activities" :key="activity.id">
+      <div v-for="activity in activities" :key="activity.id"
+        class="border-b last:border-0 pb-4 last:pb-0 border-zinc-300 dark:border-zinc-700">
         <ActivityLogItem :activity="activity" />
-        <NDivider class="last:hidden" />
       </div>
     </div>
     <div v-else>

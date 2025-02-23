@@ -6,7 +6,7 @@
     <NavigationMenuList>
       <NavigationMenuItem v-for="item in mainNavigation" :key="item.name">
         <NavigationMenuTrigger
-          class="bg-transparent hover:bg-zinc-100 dark:bg-transparent dark:hover:bg-zinc-700 max-lg:px-1 max-lg:py-0.5 max-lg:text-xs lg:px-2 lg:py-1.5">
+          class="bg-transparent cursor-pointer hover:bg-zinc-100 dark:bg-transparent dark:hover:bg-zinc-700 max-lg:px-1 max-lg:py-0.5 max-lg:text-xs lg:px-2 lg:py-1.5">
           {{ item.name }}
         </NavigationMenuTrigger>
         <MainNavigationMenuContent :item @close-menu="closeMenu" />

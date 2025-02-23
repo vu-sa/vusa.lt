@@ -97,7 +97,7 @@ const props = defineProps<{
 
 const loading = ref(false);
 
-const form = useForm("userSettings", {
+const form = useForm({
   name: props.user.name,
   phone: props.user.phone,
   facebook_url: props.user.facebook_url,

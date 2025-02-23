@@ -1,6 +1,6 @@
 <template>
   <NBadge :offset="[-2, -4]" :value="notifications?.length">
-    <NPopover trigger="click" title="Pranešimai" size="small" :show-arrow="true" scrollable>
+    <NPopover trigger="click" title="Pranešimai" :show-arrow="true" scrollable>
       <template #trigger>
         <NButton v-bind="$attrs">
           <template #icon>
@@ -9,17 +9,16 @@
         </NButton>
       </template>
       <template #header>
-        <header class="flex justify-between gap-4">
+        <header class="flex justify-between gap-4 min-w-xs items-center">
           <span class="text-lg font-bold text-zinc-900 dark:text-zinc-50">{{
             $t("Pranešimai")
             }}</span>
-          <NButton :disabled="notifications.length === 0" size="tiny" :loading="loading" text @click="handleAllRead">
+          <SmartLink :href="route('notifications.index')" class="text-xs gap-1 items-center inline-flex text-zinc-500 dark:text-zinc-400">
             {{
-              $t("Pažymėti visus")
-            }}<template #icon>
-              <IFluentCheckmarkCircle24Regular />
-            </template>
-          </NButton>
+              $t("Žiūrėti visus")
+            }}
+            <IFluentChevronRight24Regular />
+          </SmartLink>
         </header>
       </template>
       <div v-if="notifications.length > 0" class="max-h-96 max-w-xs overflow-auto pr-4 sm:max-w-lg">
@@ -36,7 +35,6 @@
 
 <script setup lang="tsx">
 import {
-  NAvatar,
   useMessage,
   useNotification,
 } from "naive-ui";
@@ -48,14 +46,13 @@ import { ref } from "vue";
 import { usePage } from "@inertiajs/vue3";
 import Icons from "@/Types/Icons/regular";
 
-import { useAxios } from "@vueuse/integrations/useAxios";
 import NotificationItem from "./NotificationItem.vue";
 import type { NotificationData } from "./NotificationItem.vue";
+import SmartLink from "@/Components/Public/SmartLink.vue";
 
 const notifications = ref(usePage().props.auth?.user?.unreadNotifications);
 
 const message = useMessage();
-const loading = ref(false);
 
 const removeNotification = (id: number) => {
   if (!notifications.value) return;
@@ -65,20 +62,6 @@ const removeNotification = (id: number) => {
   );
 
   message.success("Komentaras pažymėtas kaip perskaitytas.");
-};
-
-const handleAllRead = async () => {
-  loading.value = true;
-
-  const { isFinished } = await useAxios(route("notifications.markAllAsRead"), {
-    method: "POST",
-  });
-
-  if (isFinished.value) {
-    notifications.value = [];
-    loading.value = false;
-    message.success("Visi pranešimai pažymėti kaip perskaityti.");
-  }
 };
 
 const notification = useNotification();

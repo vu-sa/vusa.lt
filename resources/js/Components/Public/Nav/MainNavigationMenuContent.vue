@@ -12,11 +12,11 @@
             :href="link.url" :class="linkClasses(link)" @click="handleCloseMenu">
             <img class="absolute left-0 top-0 size-full rounded-md object-cover opacity-25 contrast-150"
               :src="link.image" alt="Background image">
-            <div class="z-50 p-4">
+            <div class="z-50 p-4 mt-auto">
               <div class="text-lg font-black leading-tight text-zinc-50">
                 {{ link.name }}
               </div>
-              <p v-if="link.description" class="mt-2 line-clamp-2 leading-snug text-white">
+              <p v-if="link.description" class="mt-1 line-clamp-2 leading-snug text-white">
                 {{ link.description }}
               </p>
             </div>

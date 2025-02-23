@@ -41,7 +41,7 @@ class AgendaItem extends Pivot
         return $this->belongsTo(Matter::class);
     }
 
-    public function meeting()
+    public function meeting(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Meeting::class);
     }

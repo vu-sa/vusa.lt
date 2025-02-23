@@ -26,19 +26,25 @@ export default defineConfig({
         text: 'Pagrindinės funkcijos', link: '/pagrindines-funkcijos'
       },
       {
-        text: 'Specifinės funkcijos',
+        text: 'Studentų atstovavimas (ViSAK)',
         items: [
-          { text: 'Atstovavimo vykdymas (ViSAK)', link: '/visak' },
-          { text: 'Informacijos administravimas', link: '/informacijos-administravimas' },
-          { text: 'Rezervacijų sistema', link: '/rezervaciju-sistema' }
+          { text: 'Funkcijos', link: '/visak' },
+          { text: 'Atsakomybės', link: '/atsakomybes/studentu-atstovams' },
+          { text: 'D.U.K.', link: '/duk' }
         ]
       },
       {
-        text: 'Atsakomybės',
+        text: 'Komunikacija',
         items: [
-          { text: 'Studentų atstovams (-ėms)', link: '/atsakomybes/studentu-atstovams' },
-          { text: 'Komunikacijai', link: '/atsakomybes/komunikacijai' },
-          { text: 'Administratoriams', link: '/atsakomybes/administratoriams' }
+          { text: 'Informacijos administravimas', link: '/informacijos-administravimas' },
+          { text: 'Atsakomybės', link: '/atsakomybes/informacijos-administravimas' },
+        ]
+      },
+      {
+        text: 'Administratoriams',
+        items: [
+          { text: 'Rezervacijų sistema', link: '/administratoriai' },
+          { text: 'Atsakomybės', link: '/atsakomybes/administratoriams' },
         ]
       },
       {
