@@ -117,6 +117,13 @@
               </PopoverRow>
             </div>
           </template>
+          <template #footer>
+            <div class="w-full px-4 pb-4">
+              <NewMeetingButton style="width: 100%" @click="showMeetingModal = true">
+                {{ $t('Sukurti') }}
+              </NewMeetingButton>
+            </div>
+          </template>
         </Calendar>
       </div>
     </div>

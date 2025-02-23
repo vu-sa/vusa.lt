@@ -2,6 +2,9 @@
   <NButton size="small">
     <template #icon>
       <IFluentPeopleTeamAdd24Filled />
-    </template>{{ $t("Pranešti") }}
+    </template>
+    <slot>
+      {{ $t("Pranešti") }}
+    </slot>
   </NButton>
 </template>
