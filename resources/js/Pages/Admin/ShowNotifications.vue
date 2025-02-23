@@ -20,7 +20,7 @@
         <span class="dark:text-zinc-400 text-zinc-700">{{ $t("Pranešimų nėra") }}.</span>
       </template>
       <NotificationItem v-for="notification in shownNotifications" :key="notification.id"
-        :class="cn('w-full border-b last:border-0 border-zinc-700', notification.read_at ? 'text-zinc-700' : '')"
+        :class="cn('w-full border-b last:border-0 border-zinc-300 dark:border-zinc-800', notification.read_at ? 'text-zinc-700' : '')"
         :notification>
         <div>{{ notification }}</div>
       </NotificationItem>
