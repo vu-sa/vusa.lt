@@ -128,6 +128,8 @@ class Type extends Model
             return $this->model_type::select('id', 'name', 'institution_id')->with('tenants')->orderBy('name')->get();
         } elseif (Str::contains($this->model_type, 'Doing')) {
             return $this->model_type::select('id', 'title')->with('tenants')->orderBy('title')->get();
+        } elseif (Str::contains($this->model_type, 'Meeting')) {
+            return $this->model_type::select('id', 'title')->with('tenants')->orderBy('title')->get();
         }
     }
 }
