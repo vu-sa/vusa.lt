@@ -163,7 +163,18 @@
           </template>
         </NCard>
         <NCard title="Visų susitikimų statistika">
-          <div ref="wrapper" />
+          <MeetingBarPlot :all-tenant-meetings :width="320" :height="190" />
+          <template #header-extra>
+            <NButton text size="small" secondary @click="showMeetingBarPlot = true">
+              <template #icon>
+                <IFluentFullScreenMaximize24Regular />
+              </template>
+            </NButton>
+            <CardModal v-model:show="showMeetingBarPlot" title="Visų susitikimų statistika"
+              @close="showMeetingBarPlot = false">
+              <MeetingBarPlot :all-tenant-meetings />
+            </CardModal>
+          </template>
         </NCard>
         <div class="my-calendar">
           <Calendar :is-dark :initial-page :locale="{
@@ -200,15 +211,13 @@ import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
 import NewMeetingModal from '@/Components/Modals/NewMeetingModal.vue';
 import { formatStaticTime } from '@/Utils/IntlTime';
 import { Link, router } from '@inertiajs/vue3';
-import { computed, h, onMounted, ref, watch } from 'vue';
+import { computed, h, ref } from 'vue';
 import { Calendar, PopoverRow } from "v-calendar";
-import { useDark, useStorage } from "@vueuse/core";
+import { useDark } from "@vueuse/core";
 import CardModal from "@/Components/Modals/CardModal.vue";
 import Icons from "@/Types/Icons/filled";
-import { barY, binX, groupX, plot, rectY } from "@observablehq/plot";
-import { useSortable } from "@vueuse/integrations/useSortable";
-import UserAvatar from "@/Components/Avatars/UserAvatar.vue";
 import { trans as $t } from "laravel-vue-i18n";
+import MeetingBarPlot from "@/Components/Graphs/MeetingBarPlot.vue";
 
 const props = defineProps<{
   user: App.Entities.User;
@@ -220,6 +229,7 @@ const showMeetingModal = ref(false);
 const showAllMeetingModal = ref(false);
 const showAllInstitutionModal = ref(false);
 const showAllDutyModal = ref(false);
+const showMeetingBarPlot = ref(false);
 
 const isDark = useDark();
 
@@ -376,30 +386,6 @@ const tenantCalendarAttributes = computed(() => {
   return meetings;
 })
 
-const wrapper = ref(null);
-
-const generatePlot = () => plot({
-  x: { type: "time", label: "Laikas" },
-  // don't show decimal
-  y: { grid: true, label: "Susitikimų skaičius", round: true, nice: true, ticks: 3 },
-  marks: [
-    rectY(allTenantMeetings.value, binX({ y: "count" }, {
-      x: "start_time", fill: '#aa2430ee', interval: 'month'
-    })),
-  ],
-  marginTop: 30,
-  marginBottom: 45,
-  width: 320,
-  height: 190,
-});
-
-watch(() => allTenantMeetings.value, () => {
-  if (wrapper.value) {
-    wrapper.value.innerHTML = ''
-    wrapper.value.appendChild(generatePlot())
-  }
-});
-
 // check types of each duty, and duties.current_users amount
 const dutyTypesWithUserCounts = computed(() => props.providedTenant?.institutions?.reduce((acc, institution) => {
   institution.duties?.forEach(duty => {
@@ -468,13 +454,6 @@ const allDutyColumns = [
     key: 'type',
   },
 ];
-
-onMounted(() => {
-  if (wrapper.value) {
-    wrapper.value?.appendChild(generatePlot());
-  }
-});
-
 </script>
 
 <style scoped>
