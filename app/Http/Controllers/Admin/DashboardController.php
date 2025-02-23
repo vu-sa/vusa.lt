@@ -14,7 +14,6 @@ use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\RelationshipService;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Query\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -265,7 +264,7 @@ class DashboardController extends Controller
         if (! $selectedTenant) {
             $providedTenant = null;
             $meetings = null;
-        // All tenants and all activities
+            // All tenants and all activities
         } elseif ($this->authorizer->isAllScope && request()->input('tenant_id') === '0') {
             $meetingsWithActivities = Meeting::query()
                 // NOTE: some dark magic doesn't allow to filter activities in this way. In certain cases,
@@ -276,11 +275,11 @@ class DashboardController extends Controller
                 ->with(['institutions', 'activities.causer'])->get();
 
             $agendaItemsWithActivities = AgendaItem::query()->withWhereHas('activities', function ($query) use ($date) {
-                $query->with('causer')->where('created_at', '>=', $date)->where('created_at', '<=', $date . ' 23:59:59');
+                $query->with('causer')->where('created_at', '>=', $date)->where('created_at', '<=', $date.' 23:59:59');
             })->with('meeting.institutions')->get();
 
             // Organize loaded activities by meeting
-            $meetings = new Collection();
+            $meetings = new Collection;
 
             $meetings = $meetings->merge($meetingsWithActivities);
 
@@ -296,7 +295,6 @@ class DashboardController extends Controller
                 }
             });
 
-
             $providedTenant = Tenant::query()->get();
 
             $providedTenant = [
@@ -311,7 +309,7 @@ class DashboardController extends Controller
         } else {
             $meetingsWithActivities = Meeting::query()
                 ->withWhereHas('institutions', function ($query) use ($selectedTenant) {
-                $query->where('tenant_id', $selectedTenant['id']);
+                    $query->where('tenant_id', $selectedTenant['id']);
                 })
                 // NOTE: some dark magic doesn't allow to filter activities in this way. In certain cases,
                 // where there are no activity log that day for a meeting, it will exceed compute time of 30s.
@@ -324,11 +322,11 @@ class DashboardController extends Controller
             $agendaItemsWithActivities = AgendaItem::query()->withWhereHas('meeting.institutions', function ($query) use ($selectedTenant) {
                 $query->where('tenant_id', $selectedTenant['id']);
             })->withWhereHas('activities', function ($query) use ($date) {
-                $query->with('causer')->where('created_at', '>=', $date)->where('created_at', '<=', $date . ' 23:59:59');
-                })->get();
+                $query->with('causer')->where('created_at', '>=', $date)->where('created_at', '<=', $date.' 23:59:59');
+            })->get();
 
             // Organize loaded activities by meeting
-            $meetings = new Collection();
+            $meetings = new Collection;
 
             $meetings = $meetings->merge($meetingsWithActivities);
 
@@ -356,6 +354,6 @@ class DashboardController extends Controller
                 return $tenants->prepend(['id' => 0, 'shortname' => 'Visi padaliniai']);
             }),
             'providedTenant' => $providedTenant,
-        ]); 
+        ]);
     }
 }
