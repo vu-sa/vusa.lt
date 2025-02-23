@@ -138,6 +138,16 @@
             :options="tenants.map(tenant => ({ label: tenant.shortname, value: tenant.id }))"
             @update:value="handleTenantUpdateValue" />
         </div>
+        <div>
+          <SmartLink :href="route('dashboard.atstovavimas.summary')">
+            <NButton size="small" secondary>
+              <template #icon>
+                <Icons.CALENDAR />
+              </template>
+              {{ $t('Žiūrėti pokyčius pagal dienas') }}
+            </NButton>
+          </SmartLink>
+        </div>
       </div>
       <div class="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
         <NCard>
@@ -225,6 +235,7 @@ import CardModal from "@/Components/Modals/CardModal.vue";
 import Icons from "@/Types/Icons/filled";
 import { trans as $t } from "laravel-vue-i18n";
 import MeetingBarPlot from "@/Components/Graphs/MeetingBarPlot.vue";
+import SmartLink from "@/Components/Public/SmartLink.vue";
 
 const props = defineProps<{
   user: App.Entities.User;

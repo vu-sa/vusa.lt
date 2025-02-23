@@ -10,6 +10,7 @@ Route::inertia('administration', 'Admin/ShowAdministration')->name('administrati
 Route::get('dashboard/atstovavimas', [DashboardController::class, 'atstovavimas'])->name('dashboard.atstovavimas');
 Route::get('dashboard/svetaine', [DashboardController::class, 'svetaine'])->name('dashboard.svetaine');
 Route::get('dashboard/reservations', [DashboardController::class, 'reservations'])->name('dashboard.reservations');
+Route::get('dashboard/atstovavimas/summary/{date?}', [DashboardController::class, 'atstovavimasSummary'])->where('date', '[0-9]{4}-[0-9]{2}-[0-9]{2}')->name('dashboard.atstovavimas.summary');
 
 Route::patch('profile', [DashboardController::class, 'updateUserSettings'])->name('profile.update');
 Route::get('userTasks', [DashboardController::class, 'userTasks'])->name('userTasks');

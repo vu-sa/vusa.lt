@@ -1,5 +1,5 @@
 <template>
-  <IndexPageLayout title="Institucijos" model-name="institutions" :can-use-routes="canUseRoutes" :columns="columns"
+  <IndexPageLayout title="Institucijos" model-name="institutions" :can-use-routes :columns
     :paginated-models="institutions" :icon="Icons.INSTITUTION" />
 </template>
 
