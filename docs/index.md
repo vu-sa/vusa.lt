@@ -7,7 +7,7 @@ hero:
   actions:
     - theme: brand
       text: Funkcijos
-      link: /pagrindines-funkcijos
+      link: /main-functions
     # - theme: alt
     #   text: API Examples
     #   link: /api-examples
