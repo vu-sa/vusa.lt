@@ -1,6 +1,6 @@
 <template>
   <div v-if="news.length > 0" class="my-4 rounded-lg py-4">
-    <section class="grid gap-8 sm:grid-cols-1 md:grid-cols-[2fr_1fr]">
+    <section class="grid gap-12 sm:grid-cols-1 md:grid-cols-[2fr_1fr]">
       <!-- <SmartLink v-for="item in news" :key="item.id" prefetch :href="route('news', { -->
       <!--   lang: item.lang, -->
       <!--   news: item.permalink ?? '', -->
@@ -9,7 +9,7 @@
       <!-- })"> -->
       <!--   <NewsCard :news="item" /> -->
       <!-- </SmartLink> -->
-      <div v-if="firstNews">
+      <div v-if="firstNews" class="max-h-120">
         <SmartLink :href="route('news', {
           lang: firstNews.lang,
           news: firstNews.permalink ?? '',
@@ -58,7 +58,7 @@
             newsString: 'naujiena',
             subdomain: $page.props.tenant?.subdomain ?? 'www',
           })">
-            <span class="text-zinc-800 dark:text-zinc-200 text-lg hover:text-vusa-red font-semibold leading-tight lg:text-base line-clamp-3">
+            <span class="text-zinc-800 dark:text-zinc-200 text-lg md:text-sm hover:text-vusa-red font-semibold leading-tight lg:text-base line-clamp-3">
               {{ item.title }}
             </span>
           </SmartLink>

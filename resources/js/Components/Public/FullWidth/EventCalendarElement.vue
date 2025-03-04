@@ -1,5 +1,5 @@
 <template>
-  <div class="my-8 flex flex-col-reverse gap-4 lg:flex-row text-zinc-50">
+  <div class="my-8 flex flex-col-reverse gap-4 lg:flex-row text-zinc-900 dark:text-zinc-50">
     <div
       class="typography flex w-fit max-w-prose flex-col items-center justify-center text-base lg:h-4/5 lg:w-1/2 lg:items-start 2xl:w-3/4">
       <p v-if="$page.props.app.locale === 'lt'" class="text-2xl font-bold lg:w-2/3">

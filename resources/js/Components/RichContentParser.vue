@@ -29,10 +29,20 @@
     <!-- News -->
     <Suspense v-else-if="element.type === 'news'" class="mx-auto mt-8">
       <NewsElement :element />
+      <template #fallback>
+        <div class="flex justify-center items-center h-144">
+          <NSpin />
+        </div>
+      </template>
     </Suspense>
 
     <Suspense v-else-if="element.type === 'calendar'" class="mx-auto mt-8">
       <EventCalendar :element />
+      <template #fallback>
+        <div class="flex justify-center items-center h-96">
+          <NSpin />
+        </div>
+      </template>
     </Suspense>
   </template>
 </template>

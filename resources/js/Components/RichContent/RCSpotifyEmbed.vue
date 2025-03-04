@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full">
+  <div class="w-full my-8">
     <iframe class="rounded-xl" :src="element.json_content.url" width="100%" height="352" frameborder="0" allowtransparency="true"
       allow="encrypted-media" title="Spotify Embed" />
   </div>
