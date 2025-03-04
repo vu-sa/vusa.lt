@@ -1,14 +1,12 @@
 <template>
-  <div class="my-8 flex flex-col-reverse gap-4 lg:flex-row">
+  <div class="my-8 flex flex-col-reverse gap-4 lg:flex-row text-zinc-50">
     <div
       class="typography flex w-fit max-w-prose flex-col items-center justify-center text-base lg:h-4/5 lg:w-1/2 lg:items-start 2xl:w-3/4">
       <p v-if="$page.props.app.locale === 'lt'" class="text-2xl font-bold lg:w-2/3">
-        Sek visus VU studentų renginius bei įvykius
-        <span class="text-vusa-red">čia!</span>
+        Sek visus VU studentų renginius bei įvykius!
       </p>
       <p v-else class="text-2xl font-bold lg:w-2/3">
-        Follow Vilnius University activities for students
-        <span class="text-vusa-red">here!</span>
+        Follow Vilnius University activities for students!
       </p>
 
       <p v-if="$page.props.app.locale === 'lt'" class="w-4/5">
@@ -16,7 +14,7 @@
         <span class="mx-1">
           <NButton size="tiny" round strong secondary @click="showModal = true">sinchronizuok</NButton>
         </span>
-        <strong>studentų kalendorių</strong> į „Google“ arba „Outlook“ ..? 🗓
+        <strong>studentų kalendorių</strong> į „Google“ arba „Outlook“ 🗓
       </p>
 
       <p v-else class="w-4/5">
@@ -24,7 +22,7 @@
         <span class="mx-1">
           <NButton size="tiny" round strong secondary @click="showModal = true">sync</NButton>
         </span>
-        <strong>this student calendar</strong> to „Google“ or „Outlook“ ..? 🗓
+        <strong>this student calendar</strong> to „Google“ or „Outlook“ 🗓
       </p>
     </div>
     <CalendarSyncModal v-model:show-modal="showModal" @close="showModal = false" />

@@ -19,7 +19,7 @@
           <img :src="firstNews.image" alt="News image"
             class="mb-1 max-h-80 xl:max-h-96 w-full rounded-xs object-cover shadow-md duration-200 hover:shadow-lg">
         </SmartLink>
-        <p class="text-zinc-500">
+        <p class="text-zinc-500 dark:text-zinc-400">
           {{ formatStaticTime(new Date(firstNews.publish_time), { year: "numeric", month: "long", day: "numeric" },
             $page.props.app.locale) }}
         </p>
@@ -34,12 +34,12 @@
             {{ firstNews.title }}
           </p>
         </SmartLink>
-        <div class="leading-tight mt-3 text-zinc-700">
+        <div class="leading-tight mt-3 text-zinc-700 dark:text-zinc-300">
           <div v-html="firstNews.short" />
         </div>
       </div>
       <div class="flex flex-col gap-4">
-        <p class="text-2xl font-bold">
+        <p class="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
           {{ $t("Naujausios") }}
         </p>
         <div v-for="item in otherNews" :key="item.id" class="grid grid-cols-[1fr_2fr] gap-4 items-center">
@@ -58,7 +58,7 @@
             newsString: 'naujiena',
             subdomain: $page.props.tenant?.subdomain ?? 'www',
           })">
-            <span class="text-zinc-800 text-lg hover:text-vusa-red font-semibold leading-tight lg:text-base line-clamp-3">
+            <span class="text-zinc-800 dark:text-zinc-200 text-lg hover:text-vusa-red font-semibold leading-tight lg:text-base line-clamp-3">
               {{ item.title }}
             </span>
           </SmartLink>
@@ -70,7 +70,7 @@
         })
           ">
           <div class="inline-flex items-center gap-1 font-bold">
-            <span>{{ $t("Žiūrėti visas") }}</span>
+            <span class="text-zinc-900 dark:text-zinc-100">{{ $t("Žiūrėti visas") }}</span>
             <IFluentArrowRight16Regular />
           </div>
         </SmartLink>
