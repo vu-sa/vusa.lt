@@ -14,8 +14,8 @@
         </SmartLink>
       </div>
       <img :src="element.json_content.backgroundMedia" :class="[{ 'blur-[1px]': element.options?.backgroundBlur }]"
-        class="object-cover w-full h-full absolute inset-0 flex items-center justify-center 2xl:rounded-md">
-      <div v-if="element.options?.backgroundBlur" class="w-full h-full absolute inset-0 bg-black opacity-50" />
+        class="object-cover w-full h-full absolute inset-0 flex items-center justify-center 2xl:rounded-lg">
+      <div v-if="element.options?.backgroundBlur" class="w-full h-full absolute inset-0 bg-black opacity-50 2xl:rounded-lg" />
       <div class="z-10 flex items-center justify-center overflow-hidden w-full h-full @max-5xl/grid:hidden">
         <img class="h-auto max-w-full object-contain" :src="element.json_content.rightMedia">
       </div>

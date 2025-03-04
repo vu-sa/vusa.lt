@@ -23,7 +23,7 @@
     </Head>
     <div class="@container bg-zinc-50 dark:bg-zinc-900">
       <div
-        class="flex flex-col justify-between text-zinc-800 antialiased dark:text-zinc-300 container px-0">
+        class="flex flex-col justify-between text-zinc-800 antialiased dark:text-zinc-300 container px-0 @container/main">
         <MainNavigation :is-theme-dark="isDark" />
 
         <main class="pb-8 pt-12">
