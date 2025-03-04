@@ -1,7 +1,6 @@
 <template>
   <div class="mt-4 grid grid-cols-1 items-start justify-center gap-6 md:grid-cols-[minmax(220px,25%)__1fr] lg:gap-12">
-    <Collapsible
-      v-model:open="areFiltersOpen"
+    <Collapsible v-model:open="areFiltersOpen"
       class=" rounded-lg border border-zinc-200 bg-linear-to-b from-white to-zinc-50 p-4 shadow-xs dark:border-zinc-900 dark:from-zinc-800 dark:to-zinc-900">
       <CollapsibleTrigger>
         <div class="flex items-center gap-4">
@@ -17,7 +16,7 @@
         </div>
       </CollapsibleTrigger>
       <CollapsibleContent class="mt-4">
-        <div class="mb-4 rounded-lg border p-3">
+        <div class="mb-4 rounded-lg border p-3 dark:border-zinc-600">
           <NCollapse v-model:expanded-names="expandedNames" accordion>
             <NCollapseItem title="VU SA" name="VU SA">
               <NCheckboxGroup v-model:value="form.contentTypes" @update:value="handleSearch">
@@ -94,13 +93,34 @@
       <div class="my-4">
         Iš viso rezultatų: <strong>{{ documents.total }}</strong>
       </div>
-      <NPagination v-if="documents.total > 20" :page-slot="7" class="mt-4" :item-count="documents.total"
-        :page="documents.current_page" :page-size="20" @update:page="handlePageChange" />
-      <div v-if="documents.data.length" class="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2 2xl:grid-cols-3">
-        <SmartLink class="h-fit" v-for="documentItem in documents.data" :key="documentItem.id" :href="documentItem.anonymous_url">
-          <DocumentCard :document-item />
-        </SmartLink>
+      <div class="flex items-center justify-between mt-4">
+        <NPagination v-if="documents.total > 20" :page-slot="7" :item-count="documents.total"
+          :page="documents.current_page" :page-size="20" @update:page="handlePageChange" />
+
+        <NButtonGroup class="ml-auto">
+          <NButton :type="viewMode === 'grid' ? 'primary' : 'default'" @click="viewMode = 'grid'">
+            <template #icon>
+              <IFluentGrid24Filled />
+            </template>
+          </NButton>
+          <NButton :type="viewMode === 'list' ? 'primary' : 'default'" @click="viewMode = 'list'">
+            <template #icon>
+              <IFluentAppsList20Filled />
+            </template>
+          </NButton>
+        </NButtonGroup>
       </div>
+      <template v-if="documents.data.length">
+        <div v-if="viewMode === 'grid'" class="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2 2xl:grid-cols-3">
+          <SmartLink v-for="documentItem in documents.data" :key="documentItem.id" class="h-fit"
+            :href="documentItem.anonymous_url">
+            <DocumentCard :document-item />
+          </SmartLink>
+        </div>
+        <div v-else class="mt-6">
+          <NDataTable :row-props="rowProps" :data="documents.data" :columns="columns" />
+        </div>
+      </template>
       <p v-else class="mt-8 self-start font-bold text-zinc-500">
         Dokumentų pagal užklausą nerasta.
       </p>
@@ -110,7 +130,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup lang="tsx">
 import { ref } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 
@@ -120,12 +140,15 @@ import { breakpointsTailwind, useBreakpoints, useStorage } from '@vueuse/core';
 import Collapsible from '@/Components/ShadcnVue/ui/collapsible/Collapsible.vue';
 import CollapsibleContent from '@/Components/ShadcnVue/ui/collapsible/CollapsibleContent.vue';
 import CollapsibleTrigger from '@/Components/ShadcnVue/ui/collapsible/CollapsibleTrigger.vue';
+import type { DataTableColumns } from 'naive-ui';
 
 const props = defineProps<{
   //documents: PaginatedModels<App.Entities.Document>;
   documents: PaginatedModels<App.Entities.Document>;
   allContentTypes: App.Entities.Document['content_type'][];
 }>();
+
+const viewMode = useStorage('showArchive-viewMode', 'list');
 
 const isMdOrSmaller = useBreakpoints(breakpointsTailwind).isSmallerOrEqual('md');
 
@@ -231,6 +254,52 @@ function isStartDateDisabled(date) {
 function isEndDateDisabled(date) {
   return form.value.dateFrom && date < form.value.dateFrom;
 }
+
+const columns: DataTableColumns<App.Entities.Document> = [
+  {
+    key: 'icon', title: '',
+    width: 30,
+    render: (row) => {
+      return <span class="[&_svg]:text-zinc-700 dark:[&_svg]:text-zinc-300">
+        { row.name.endsWith('.pdf') && <IAntDesignFilePdfOutlined width="20" height="20" /> }
+        { row.name.endsWith('.docx') && <IAntDesignFileWordOutlined width="20" height="20" /> }
+        { row.name.endsWith('.xlsx') && <IAntDesignFileExcelOutlined width="20" height="20" /> }
+        { row.name.endsWith('.pptx') && <IAntDesignFilePptOutlined width="20" height="20" /> }
+        { row.name.endsWith('.url') && <IFluentGlobe20Regular width="20" height="20" /> }
+        { !row.name.endsWith('.pdf') && !row.name.endsWith('.docx') && !row.name.endsWith('.xlsx') && !row.name.endsWith('.pptx') && !row.name.endsWith('.url') && <IAntDesignFileTextOutlined width="20" height="20" /> }
+      </span>
+        ;
+    }
+  },
+  {
+    key: 'title',
+    title: 'Pavadinimas',
+    maxWidth: 300,
+    className: 'font-medium tracking-tight',
+    render: (row) => {
+      return <SmartLink href={row.anonymous_url}>{row.title}</SmartLink>;
+    }
+  },
+  {
+    key: 'content_type',
+    title: 'Dokumento tipas',
+    render: (row) => {
+      return <p class="line-clamp-2 text-zinc-500 dark:text-zinc-400 text-sm leading-tight">{row.content_type}</p>;
+    }
+  },
+  {
+    key: 'document_date',
+    title: 'Dokumento data',
+    width: 115,
+  }
+];
+
+const rowProps = (row) => ({
+  class: 'cursor-pointer',
+  onClick: () => {
+    window.open(row.anonymous_url, '_blank');
+  }
+});
 
 function handleSearch() {
   searchLoading.value = true;

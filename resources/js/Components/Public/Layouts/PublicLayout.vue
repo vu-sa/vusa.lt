@@ -1,6 +1,6 @@
 <template>
   <!-- https://www.joshwcomeau.com/css/full-bleed/ -->
-  <NConfigProvider :theme="isDark ? darkTheme : undefined" :theme-overrides="themeOverrides">
+  <NConfigProvider :theme="isDark ? darkTheme : undefined" :theme-overrides="usedThemeOverrides">
     <!-- Overwrite image meta -->
 
     <Head>
@@ -72,7 +72,7 @@
 </template>
 
 <script setup lang="ts">
-import { NConfigProvider, darkTheme, useMessage } from "naive-ui";
+import { NConfigProvider, darkTheme, useMessage, type GlobalThemeOverrides } from "naive-ui";
 import { computed, defineAsyncComponent, onMounted, ref, toValue, watch } from "vue";
 import { useDark, useStorage } from "@vueuse/core";
 
@@ -115,7 +115,7 @@ const seo = computed(() => {
 const mounted = ref(false);
 const spinWarning = ref(false);
 
-const themeOverrides = {
+const themeOverrides: GlobalThemeOverrides = {
   common: {
     primaryColor: "#bd2835FF",
     primaryColorHover: "#CD3543FF",
@@ -124,14 +124,44 @@ const themeOverrides = {
     borderRadius: "6px",
     fontWeightStrong: "600",
     lineHeight: "1.5",
-    paddingMedium: '16px 24px 8px',
-    titleFontSizeMedium: '1.25rem',
-    titleFontWeight: '700',
+    // paddingMedium: '16px 24px 8px',
+    // titleFontSizeMedium: '1.25rem',
+    // titleFontWeight: '700',
     // textColor1: 'rgb(24, 8, 6)',
     // textColor2: 'rgb(32, 13, 11)',
     // textColor3: 'rgb(130, 121, 118)'
   },
+  DataTable: {
+    tdColor: "transparent",
+    borderColor: "#dddddd",
+  }
 };
+
+const darkThemeOverrides: GlobalThemeOverrides = {
+  common: {
+    primaryColor: "#bd2835FF",
+    primaryColorHover: "#CD3543FF",
+    primaryColorPressed: "#CC2130FF",
+    primaryColorSuppl: "#B93945FF",
+    borderRadius: "6px",
+    fontWeightStrong: "600",
+    lineHeight: "1.5",
+    // paddingMedium: '16px 24px 8px',
+    // titleFontSizeMedium: '1.25rem',
+    // titleFontWeight: '700',
+    // textColor1: 'rgb(24, 8, 6)',
+    // textColor2: 'rgb(32, 13, 11)',
+    // textColor3: 'rgb(130, 121, 118)'
+  },
+  DataTable: {
+    tdColor: "transparent",
+    borderColor: "#333333",
+  }
+};
+
+const usedThemeOverrides = computed(() => {
+  return isDark.value ? darkThemeOverrides : themeOverrides;
+});
 
 const cookieConsent = useStorage("cookie-consent", false);
 
