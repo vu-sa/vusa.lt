@@ -6,7 +6,6 @@
     </h2>
     <AdminMultiHomeCards />
 </template>-->
-
   <RichContentParser :content="content?.parts" />
 </template>
 

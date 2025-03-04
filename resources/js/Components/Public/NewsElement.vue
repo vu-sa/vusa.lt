@@ -1,5 +1,5 @@
 <template>
-  <div v-if="news.length > 0" class="mb-4 rounded-lg py-4 lg:mb-8">
+  <div v-if="news.length > 0" class="my-8 rounded-lg py-4">
     <header class="mb-4 flex flex-wrap items-center justify-between gap-1">
       <div>
         <h2 class="lg:mb-0 text-4xl">

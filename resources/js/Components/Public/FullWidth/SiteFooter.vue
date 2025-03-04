@@ -1,6 +1,6 @@
 <template>
   <footer
-    class="grid items-center justify-items-center gap-2 border-t border-gray-100 bg-stone-50 p-8 text-sm text-zinc-700 shadow-md dark:border-zinc-800 dark:bg-zinc-800/80 dark:text-zinc-300 md:grid-cols-2 lg:px-32">
+    class="grid items-center justify-items-center gap-2 border-t border-gray-100 bg-stone-50 p-8 text-sm text-zinc-700 shadow-md dark:border-zinc-800 dark:bg-zinc-800/80 dark:text-zinc-300 md:grid-cols-2 lg:px-32 2xl:rounded-lg 2xl:mb-4">
     <div>
       <p>{{ $t("Vilniaus universiteto Studentų atstovybė") }}</p>
       <p>{{ $t("Įmonės kodas") }}: 193077294</p>

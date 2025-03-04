@@ -12,7 +12,7 @@
       <div class="relative flex items-center gap-4 overflow-hidden w-full">
         <QuickLink v-for="link in $page.props.tenant?.links" :key="link?.id" :quick-link="link" />
         <div
-          class="absolute right-0 h-8 overflow-hidden bg-gradient-to-r from-transparent to-zinc-100 dark:from-transparent dark:to-zinc-900 w-10" />
+          class="absolute pointer-events-none right-0 h-8 overflow-hidden bg-linear-to-br from-transparent to-zinc-100 dark:from-transparent dark:to-[rgb(29,_29,_30)] w-10" />
       </div>
       <div class="inline-flex gap-1">
         <NDropdown :options="dropdownOptions" @select="handleSelect">

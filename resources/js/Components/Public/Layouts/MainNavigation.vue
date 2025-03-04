@@ -1,6 +1,6 @@
 <template>
-  <section class="fixed top-0 z-50 w-full">
-    <div class="group relative mt-4 mx-4 px-4 xl:px-8 2xl:px-12">
+  <section class="fixed top-0 z-50 w-full max-w-[88rem]">
+    <div class="group relative mt-4 mx-4">
       <nav
         class="relative z-10 flex bg-white py-0.5 pl-3 pr-6 text-zinc-800 shadow-md transition duration-500 group-hover:rounded-b-none group-hover:rounded-t-2xl group-hover:delay-500 dark:bg-zinc-800 dark:text-white max-md:rounded-xl max-md:gap-2 md:grid md:grid-cols-[auto__1fr__auto] md:gap-12 md:px-10 md:rounded-t-2xl"
         :class="{
@@ -10,7 +10,8 @@
         <div class="flex flex-row items-center space-x-4">
           <SmartLink prefetch title="Grįžti į pagrindinį puslapį" class="leading-3"
             :href="`${$page.props.app.url}/${$page.props.app.locale}`" target="_self">
-            <button class="w-24 rounded-lg px-2 py-1 transition hover:bg-zinc-400/10 cursor-pointer dark:hover:bg-zinc-100/10 md:w-28">
+            <button
+              class="w-24 rounded-lg px-2 py-1 transition hover:bg-zinc-400/10 cursor-pointer dark:hover:bg-zinc-100/10 md:w-28">
               <AppLogo :is-theme-dark />
             </button>
           </SmartLink>
@@ -71,7 +72,6 @@ import DarkModeSwitch from "@/Components/Buttons/DarkModeButton.vue";
 import LocaleButton from "../Nav/LocaleButton.vue";
 import MainMenu from "../Nav/MainMenu.vue";
 import PadalinysSelector from "../Nav/PadalinysSelector.vue";
-import SearchButton from "../Nav/SearchButton.vue";
 import SecondMenu from "../Nav/SecondMenu.vue";
 import SmartLink from "../SmartLink.vue";
 

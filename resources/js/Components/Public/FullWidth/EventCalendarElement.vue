@@ -1,5 +1,5 @@
 <template>
-  <div class="mt-8 flex flex-col-reverse gap-4 lg:flex-row">
+  <div class="my-8 flex flex-col-reverse gap-4 lg:flex-row">
     <div
       class="typography flex w-fit max-w-prose flex-col items-center justify-center text-base lg:h-4/5 lg:w-1/2 lg:items-start 2xl:w-3/4">
       <p v-if="$page.props.app.locale === 'lt'" class="text-2xl font-bold lg:w-2/3">
@@ -28,8 +28,8 @@
       </p>
     </div>
     <CalendarSyncModal v-model:show-modal="showModal" @close="showModal = false" />
-    <div class="relative mx-auto">
-      <div class="relative flex w-fit items-center justify-center lg:top-4">
+    <div class=" mx-auto">
+      <div class="flex w-fit items-center justify-center">
         <!-- <template v-if="showPhotos">
           <img alt="Vilniaus universitetas"
             class="absolute -left-32 top-8 max-w-48 rounded-lg object-cover shadow-xl blur-sm brightness-50 lg:-top-24 lg:max-w-64"
@@ -42,7 +42,7 @@
             src="/images/photos/pirmakursiu_stovykla_kaune.jpg">
 </template> -->
         <FadeTransition>
-          <EventCalendar class="relative z-5" :calendar-events="calendar" :locale="$page.props.app.locale" />
+          <EventCalendar class=" z-5" :calendar-events="calendar" :locale="$page.props.app.locale" />
         </FadeTransition>
       </div>
     </div>

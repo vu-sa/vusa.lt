@@ -21,26 +21,27 @@
           v-bind="toValue(headItem.attributes)">
       </template>
     </Head>
-    <div
-      class="flex min-h-screen flex-col justify-between bg-zinc-50 text-zinc-800 antialiased dark:bg-zinc-900 dark:text-zinc-300">
-      <MainNavigation :is-theme-dark="isDark" />
+    <div class="@container bg-zinc-50 dark:bg-zinc-900">
+      <div
+        class="flex flex-col justify-between text-zinc-800 antialiased dark:text-zinc-300 container px-0">
+        <MainNavigation :is-theme-dark="isDark" />
 
-      <main class="pb-8 pt-12">
-        <!-- <Suspense> -->
-        <div>
-          <FadeTransition appear>
-            <div :key="$page.url" class="wrapper">
-              <slot />
+        <main class="pb-8 pt-12">
+          <!-- <Suspense> -->
+          <div>
+            <FadeTransition appear>
+              <div :key="$page.url" class="wrapper">
+                <slot />
+              </div>
+            </FadeTransition>
+            <div v-if="
+              $page.props.tenant?.banners &&
+              $page.props.tenant.banners.length > 0
+            " class="mx-auto mt-8 max-w-7xl">
+              <BannerCarousel :banners="$page.props.tenant?.banners" />
             </div>
-          </FadeTransition>
-          <div v-if="
-            $page.props.tenant?.banners &&
-            $page.props.tenant.banners.length > 0
-          " class="mx-auto mt-8 max-w-7xl">
-            <BannerCarousel :banners="$page.props.tenant?.banners" />
           </div>
-        </div>
-        <!--<template #fallback>
+          <!--<template #fallback>
               <div class="flex h-screen items-center justify-center">
                 <NSpin>
                   <template #description>
@@ -57,14 +58,15 @@
 </NSpin>
 </div>
 </template> -->
-        <!-- </Suspense> -->
-      </main>
+          <!-- </Suspense> -->
+        </main>
 
-      <FadeTransition appear>
-        <ConsentCard v-if="!cookieConsent" @okay-cookie-consent="cookieConsent = true" />
-      </FadeTransition>
+        <FadeTransition appear>
+          <ConsentCard v-if="!cookieConsent" @okay-cookie-consent="cookieConsent = true" />
+        </FadeTransition>
 
-      <SiteFooter />
+        <SiteFooter />
+      </div>
     </div>
   </NConfigProvider>
 </template>

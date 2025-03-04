@@ -42,7 +42,7 @@
 </head>
 
 {{-- TODO: something injects margin-bottom of 8px --}}
-<body class="font-sans antialiased" style="margin-bottom: 0px">
+<body class="font-sans antialiased bg-zinc-50 dark:bg-zinc-900" style="margin-bottom: 0px">
     @inertia
 </body>
 
