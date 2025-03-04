@@ -82,9 +82,7 @@ class FormController extends Controller
             $form->formFields()->create($formField);
         });
 
-        $redirect_url = request()->redirect_to ?? route('forms.index');
-
-        return redirect($redirect_url)->with('success', 'Form created.');
+        return redirect(request()->redirect_to ?? route('forms.index'))->with('success', 'Form created.');
     }
 
     /**

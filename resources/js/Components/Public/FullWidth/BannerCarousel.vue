@@ -1,22 +1,28 @@
 <template>
-  <div class="mx-8 mb-4 rounded-lg p-4 lg:mx-16 lg:mb-8 lg:px-8">
-    <h2 class="mb-4">
-      {{ $t('Taip pat apsilankyk') }}!
-    </h2>
-    <NCarousel :space-between="30" :loop="true" autoplay :slides-per-view="bannerCount" draggable :interval="2000"
-      :show-dots="false">
-      <NCarouselItem v-for="banner in banners" :key="banner.id" class="my-auto">
-        <a target="_blank" :href="banner.link_url" aria-label="Banner">
-          <img :alt="banner.title" class="w-3/4 rounded-xs object-contain lg:max-h-32" :src="banner.image_url">
-        </a>
-      </NCarouselItem>
-    </NCarousel>
+  <div class="px-8 my-8">
+    <Carousel :opts="{
+      align: 'start',
+    }" :plugins="[Autoplay({
+      delay: 2000,
+    })]">
+      <CarouselContent class="-ml-1">
+        <CarouselItem v-for="banner in banners" :key="banner.id" class="basis-1/3 lg:basis-1/4 xl:basis-1/5 pl-1">
+          <a target="_blank" :href="banner.link_url" :aria-label="banner.title">
+            <img :alt="banner.title" class="w-3/4 rounded-xs mx-auto object-contain lg:max-h-32"
+              :src="banner.image_url">
+          </a>
+        </CarouselItem>
+      </CarouselContent>
+    </Carousel>
   </div>
 </template>
 
 <script setup lang="ts">
-import { NCarousel, NCarouselItem } from "naive-ui";
+import Carousel from "@/Components/ShadcnVue/ui/carousel/Carousel.vue";
+import CarouselContent from "@/Components/ShadcnVue/ui/carousel/CarouselContent.vue";
+import CarouselItem from "@/Components/ShadcnVue/ui/carousel/CarouselItem.vue";
 import { onBeforeUnmount, ref } from "vue";
+import Autoplay from 'embla-carousel-autoplay'
 
 defineProps<{
   banners: Array<App.Entities.Banner> | [];
