@@ -23,7 +23,9 @@
       </NImageGroup>
     </div>
     <!-- Hero -->
-    <RCHeroSection v-else-if="element.type === 'hero'" :is-first-element="index === 0" :element="element" />
+    <HeroElement v-else-if="element.type === 'hero'" :is-first-element="index === 0" :element="element" />
+    <!-- Spotify Embed -->
+    <RCSpotifyEmbed v-else-if="element.type === 'spotify-embed'" :element />
     <!-- News -->
     <Suspense v-else-if="element.type === 'news'" class="mx-auto mt-8">
       <NewsElement :element />
@@ -37,7 +39,10 @@
 
 <script setup lang="ts">
 import { defineAsyncComponent } from 'vue';
-import RCHeroSection from './RichContent/RCHeroSection.vue';
+
+const RCSpotifyEmbed = defineAsyncComponent(() => import('@/Components/RichContent/RCSpotifyEmbed.vue'));
+
+const HeroElement = defineAsyncComponent(() => import('@/Components/RichContent/RCHeroSection/HeroElement.vue'));
 
 const RichContentCard = defineAsyncComponent(() => import('@/Components/RichContentCard.vue'));
 

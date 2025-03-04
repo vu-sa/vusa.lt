@@ -123,49 +123,13 @@
             </NDynamicInput>
           </div>
           <!-- Hero -->
-          <div v-else-if="content?.type === 'hero'" v-show="content.expanded" class="mt-4 flex flex-col gap-4">
-            <NFormItem label="Pavadinimas" :show-feedback="false">
-              <OriginalTipTap html v-model="content.json_content.title" type="text" />
+          <HeroForm v-else-if="content?.type === 'hero'" v-show="content.expanded" v-model:options="content.options"
+            v-model:json_content="content.json_content" class="mt-4 flex flex-col gap-4" />
+          <!-- Spotify Embed -->
+          <div v-else-if="content?.type === 'spotify-embed'" v-show="content.expanded" class="mt-4 flex flex-col gap-4">
+            <NFormItem label="Spotify URL" :show-feedback="false">
+              <NInput v-model:value="content.json_content.url" type="text" />
             </NFormItem>
-            <NFormItem label="Subtitle" :show-feedback="false">
-              <OriginalTipTap html v-model="content.json_content.subtitle" type="text" />
-            </NFormItem>
-            <NFormItem label="Background Nuotrauka" :show-feedback="false">
-              <TiptapImageButton v-if="!content.json_content.backgroundMedia" size="medium" @submit="content.json_content.backgroundMedia = $event">
-                Pasirinkti paveikslėlį
-              </TiptapImageButton>
-              <div v-else>
-                <img :src="content.json_content.backgroundMedia" class="aspect-video h-24 rounded-lg object-cover">
-                <NButton @click="content.json_content.backgroundMedia = null">
-                  Ištrinti paveikslėlį
-                </NButton>
-              </div>
-            </NFormItem>
-            <NFormItem label="Right side logo or photo" :show-feedback="false">
-              <TiptapImageButton v-if="!content.json_content.rightMedia" size="medium" @submit="content.json_content.rightMedia = $event">
-                Pasirinkti paveikslėlį
-              </TiptapImageButton>
-              <div v-else>
-                <img :src="content.json_content.rightMedia" class="aspect-video h-24 rounded-lg object-cover">
-                <NButton @click="content.json_content.rightMedia = null">
-                  Ištrinti paveikslėlį
-                </NButton>
-              </div>
-            </NFormItem>
-            <!-- Button text -->
-            <NFormItem label="Button text" :show-feedback="false">
-              <NInput v-model:value="content.json_content.buttonText" type="text" />
-            </NFormItem>
-            <!-- Button link -->
-            <NFormItem label="Button link" :show-feedback="false">
-              <NInput v-model:value="content.json_content.buttonLink" type="text" />
-            </NFormItem>
-            <!-- Layout style -->
-            <!-- <NFormItem label="Layout style" :show-feedback="false">
-              <NSelect v-model:value="content.options.layoutStyle" default-value="default" :options="[
-                { 'label': 'Default', 'value': 'default' }, { 'label': 'Centered', 'value': 'centered' }]
-                " />
-</NFormItem>-->
           </div>
           <!-- News -->
           <div v-else-if="content?.type === 'news'" v-show="content.expanded" class="mt-4 flex flex-col gap-4">
@@ -202,7 +166,7 @@
 
 <script setup lang="ts">
 import { moveArrayElement, useSortable } from "@vueuse/integrations/useSortable";
-import { nextTick, ref } from 'vue';
+import { nextTick, reactive, ref } from 'vue';
 import { useManualRefHistory } from '@vueuse/core';
 
 import AppsListDetail24Regular from '~icons/fluent/apps-list-detail24-regular';
@@ -216,6 +180,7 @@ import InfoPopover from './Buttons/InfoPopover.vue';
 import OriginalTipTap from './TipTap/OriginalTipTap.vue';
 import RichContentEditorListElement from './RichContentEditorListElement.vue';
 import TiptapImageButton from './TipTap/TiptapImageButton.vue';
+import HeroForm from "./RichContent/RCHeroSection/HeroForm.vue";
 
 const contents = defineModel('contents');
 
@@ -244,7 +209,7 @@ function handleElementCreate(selectedContent) {
 
   const jsonContentTemplate = selectedContent === "shadcn-accordion" ? [] : {};
 
-  contents.value?.push({ json_content: jsonContentTemplate, type: selectedContent, options: {}, key: Math.random().toString(36).substring(7), expanded: true })
+  contents.value?.push({ json_content: jsonContentTemplate, type: selectedContent, options: { 'is_active': true }, key: Math.random().toString(36).substring(7), expanded: true })
   showHistory.value = true;
 
   nextTick(() => commit());
@@ -312,6 +277,11 @@ const contentTypes = [
     label: "Kalendorius",
     icon: ImageMultiple24Regular,
   },
+  {
+    value: "spotify-embed",
+    label: "Spotify",
+    icon: ImageMultiple24Regular,
+  }
 ];
 
 useSortable(el, contents, {
