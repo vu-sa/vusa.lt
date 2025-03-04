@@ -1,13 +1,5 @@
 <template>
   <div v-if="news.length > 0" class="my-4 rounded-lg py-4">
-    <!-- <header class="mb-4 flex flex-wrap items-center justify-between gap-1"> -->
-    <!--   <div> -->
-    <!--     <h2 class="lg:mb-0 text-4xl"> -->
-    <!--       {{ $t(element.json_content?.title) }} -->
-    <!--     </h2> -->
-    <!--   </div> -->
-    <!-- </header> -->
-
     <section class="grid gap-8 sm:grid-cols-1 md:grid-cols-[2fr_1fr]">
       <!-- <SmartLink v-for="item in news" :key="item.id" prefetch :href="route('news', { -->
       <!--   lang: item.lang, -->
@@ -25,7 +17,7 @@
           subdomain: $page.props.tenant?.subdomain ?? 'www',
         })">
           <img :src="firstNews.image" alt="News image"
-            class="mb-1 max-h-84 w-full rounded-xs object-cover shadow-md duration-200 hover:shadow-lg">
+            class="mb-1 max-h-80 xl:max-h-96 w-full rounded-xs object-cover shadow-md duration-200 hover:shadow-lg">
         </SmartLink>
         <p class="text-zinc-500">
           {{ formatStaticTime(new Date(firstNews.publish_time), { year: "numeric", month: "long", day: "numeric" },
@@ -66,7 +58,7 @@
             newsString: 'naujiena',
             subdomain: $page.props.tenant?.subdomain ?? 'www',
           })">
-            <span class="text-zinc-800 hover:text-vusa-red font-semibold leading-tight lg:text-base line-clamp-3">
+            <span class="text-zinc-800 text-lg hover:text-vusa-red font-semibold leading-tight lg:text-base line-clamp-3">
               {{ item.title }}
             </span>
           </SmartLink>
@@ -92,7 +84,6 @@ import { trans as $t } from "laravel-vue-i18n";
 import { usePage } from "@inertiajs/vue3";
 
 import SmartLink from "./SmartLink.vue";
-import NewsCard from "../Cards/NewsCard.vue";
 import type { News } from '@/Types/contentParts';
 import { computed } from "vue";
 import { formatStaticTime } from "@/Utils/IntlTime";
@@ -106,7 +97,7 @@ const news = await fetch(
     lang: usePage().props.app.locale,
     tenant: usePage().props.tenant?.alias,
   })
-).then((response) => response.json()) as App.Entities.News[];
+).then((response) => response.json()) as App.Entities.News[] | [];
 
 const firstNews = computed(() => news[0]);
 

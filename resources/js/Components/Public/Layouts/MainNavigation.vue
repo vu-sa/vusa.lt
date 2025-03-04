@@ -1,6 +1,6 @@
 <template>
   <section class="fixed top-0 z-50 w-full max-w-[88rem]">
-    <div class="group relative mt-4 mx-4">
+    <div class="group relative mt-4 mx-4 2xl:mx-0">
       <nav
         class="relative z-10 flex bg-white py-0.5 pl-3 pr-6 text-zinc-800 shadow-md transition duration-500 group-hover:rounded-b-none group-hover:rounded-t-2xl group-hover:delay-500 dark:bg-zinc-800 dark:text-white max-md:rounded-xl max-md:gap-2 md:grid md:grid-cols-[auto__1fr__auto] md:gap-12 md:px-10 md:rounded-t-2xl"
         :class="{
