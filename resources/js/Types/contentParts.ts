@@ -48,6 +48,15 @@ export type Hero = {
     buttonText?: string;
     buttonLink?: string;
   };
+  options: {
+    backgroundBlur?: boolean;
+  }
+}
+
+export type SpotifyEmbed = {
+  json_content: {
+    url: string;
+  };
   options: null
 }
 

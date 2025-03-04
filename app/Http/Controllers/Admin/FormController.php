@@ -13,6 +13,7 @@ use App\Models\Tenant;
 use App\Models\Training;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ModelIndexer;
+use App\Settings\FormSettings;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Maatwebsite\Excel\Facades\Excel;
@@ -81,9 +82,7 @@ class FormController extends Controller
             $form->formFields()->create($formField);
         });
 
-        $redirect_url = request()->redirect_to ?? route('forms.index');
-
-        return redirect($redirect_url)->with('success', 'Form created.');
+        return redirect(request()->redirect_to ?? route('forms.index'))->with('success', 'Form created.');
     }
 
     /**
@@ -95,8 +94,36 @@ class FormController extends Controller
 
         $form->load('formFields', 'registrations.fieldResponses.formField');
 
+        $registrations = $form->registrations;
+
+        // If form is member registration form
+        if (app(FormSettings::class)->member_registration_form_id === $form->id) {
+            // Check which tenants should be shown
+            $tenants = GetTenantsForUpserts::execute('forms.read.padalinys', $this->authorizer);
+
+            if ($tenants->isEmpty()) {
+                abort(403, 'No tenants to show.');
+            }
+
+            // Filter form registrations
+            // 1. Find which fieldResponse has use_model_options and options_model Tenant
+            $tenantField = $form->formFields->first(function ($field) {
+                return $field->use_model_options && $field->options_model === Tenant::class;
+            });
+
+            // 2. Filter registrations that don't have a tenant field as in tenants
+            $registrations = $form->registrations->filter(function ($registration) use ($tenantField, $tenants, &$arr) {
+                $tenantResponse = $registration->fieldResponses->first(function ($fieldResponse) use ($tenantField) {
+                    return $fieldResponse->formField->id === $tenantField->id;
+                });
+
+                return $tenants->contains('id', $tenantResponse->response['value']);
+            });
+        }
+
         return Inertia::render('Admin/Forms/ShowForm', [
             'form' => $form,
+            'registrations' => $registrations->values(),
         ]);
     }
 

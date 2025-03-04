@@ -3,11 +3,11 @@
     <template #more-options>
       <MoreOptionsButton edit @edit-click="router.visit(route('forms.edit', form.id))" />
     </template>
-    <a target="_blank" :href="route('forms.export', form.id)" class="mb-4 w-fit block">
-      <NButton type="primary" size="small">
-        Atsisiųsti Excel
-      </NButton>
-    </a>
+    <!-- <a target="_blank" :href="route('forms.export', form.id)" class="mb-4 w-fit block"> -->
+    <!--   <NButton type="primary" size="small"> -->
+    <!--     Atsisiųsti Excel -->
+    <!--   </NButton> -->
+    <!-- </a> -->
     <NDataTable scroll-x="800" :data :columns="registrationColumns" />
     <CardModal v-model:show="showModal" title="Registracijos informacija" @close="showModal = false">
       <!-- show data for the selected registration not in a row, but in a grid -->
@@ -35,12 +35,13 @@ import Eye16Regular from "~icons/fluent/eye16-regular";
 
 const props = defineProps<{
   form: App.Entities.Form;
+  registrations: App.Entities.Registration[];
 }>();
 
 const showModal = ref(false);
 const selectedRegistration = ref(null);
 
-const data = props.form.registrations.map((registration) => {
+const data = props.registrations.map((registration) => {
   const row = registration
   registration.field_responses.forEach((fieldResponse) => {
     row[fieldResponse.form_field.id] = fieldResponse.response.value;

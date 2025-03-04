@@ -9,7 +9,8 @@
         $page.props.app.locale) }}
     </template>
     <template #image>
-      <img :src="news.image" class="mb-1 h-40 w-full rounded-xs object-cover shadow-md duration-200 hover:shadow-lg">
+      <img :src="news.image"
+        class="mb-1 min-h-40 max-h-64 w-full rounded-xs object-cover shadow-md duration-200 hover:shadow-lg">
     </template>
     <span class="hover:text-vusa-red duration-200">{{ news.title }}</span>
   </HomeCard>
