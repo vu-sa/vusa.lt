@@ -268,14 +268,8 @@ html.dark {
   width: 12px
 }
 
-.basic-flow.dark .vue-flow__controls .vue-flow__controls-button {
-  background: #333;
-  fill: #fffffb;
-  border: none
-}
-
-.basic-flow.dark .vue-flow__controls .vue-flow__controls-button:hover {
-  background: #4d4d4d
+.basic-flow .vue-flow__controls .vue-flow__controls-button {
+  @apply border border-zinc-200 dark:border-zinc-500/30 bg-zinc-200/60 dark:bg-zinc-600 dark:fill-zinc-50 transition-shadow
 }
 
 .basic-flow .vue-flow__edge-text {

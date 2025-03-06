@@ -4,6 +4,7 @@
 
 <script setup lang="ts">
 import StructureGraphWrapper from "@/Features/StructureGraph/StructureGraphWrapper.vue";
+import { usePage } from "@inertiajs/vue3";
 import { MarkerType } from "@vue-flow/core"
 import { trans as $t } from "laravel-vue-i18n";
 
@@ -34,7 +35,7 @@ const nodes = [
     type: 'multiple-handle',
     data: { label: $t('Revizijos komisija'), nodeClass: 'bg-zinc-400', textClass: ['uppercase text-white font-extrabold'], handles: ['left'] },
     style: { lineHeight: '1.25', width: '120px' },
-    position: { x: 420, y: 0 },
+    position: { x: 420, y: usePage().props.app.locale === 'lt' ? 0 : -9 },
   },
   {
     id: 'node-taryba',
@@ -48,7 +49,7 @@ const nodes = [
     type: 'multiple-handle',
     data: { label: $t('Parlamentas'), nodeClass: 'bg-vusa-yellow', textClass: ['uppercase text-white font-extrabold'], handles: ['top', 'left', 'right'] },
     style: { lineHeight: '1.25' },
-    position: { x: 205, y: 170 },
+    position: { x: usePage().props.app.locale === 'lt' ? 205 : 255, y: 170 },
   },
   {
     id: 'node-park',
