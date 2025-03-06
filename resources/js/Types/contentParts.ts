@@ -50,12 +50,22 @@ export type Hero = {
   };
   options: {
     backgroundBlur?: boolean;
+    is_active?: boolean;
   }
 }
 
 export type SpotifyEmbed = {
   json_content: {
     url: string;
+  };
+  options: null
+}
+
+export type FlowGraph = {
+  json_content: {
+    nodes: Record<string, any>[];
+    edges: Record<string, any>[];
+    preset: string;
   };
   options: null
 }

@@ -131,6 +131,14 @@
               <NInput v-model:value="content.json_content.url" type="text" />
             </NFormItem>
           </div>
+          <!-- Flow Graph -->
+          <div v-else-if="content?.type === 'flow-graph'" v-show="content.expanded" class="mt-4 flex flex-col gap-4">
+            <NFormItem label="Flow Graph" :show-feedback="false">
+              <NSelect v-model:value="content.json_content.preset" :options="[
+                { 'label': 'VusaStructure', 'value': 'VusaStructure' }
+              ]" />
+            </NFormItem>
+          </div>
           <!-- News -->
           <div v-else-if="content?.type === 'news'" v-show="content.expanded" class="mt-4 flex flex-col gap-4">
             <NFormItem label="Pavadinimas" :show-feedback="false">
@@ -166,7 +174,7 @@
 
 <script setup lang="ts">
 import { moveArrayElement, useSortable } from "@vueuse/integrations/useSortable";
-import { nextTick, reactive, ref } from 'vue';
+import { nextTick, ref } from 'vue';
 import { useManualRefHistory } from '@vueuse/core';
 
 import AppsListDetail24Regular from '~icons/fluent/apps-list-detail24-regular';
@@ -281,7 +289,12 @@ const contentTypes = [
     value: "spotify-embed",
     label: "Spotify",
     icon: ImageMultiple24Regular,
-  }
+  },
+  {
+    value: "flow-graph",
+    label: "Flow Graph",
+    icon: ImageMultiple24Regular,
+  },
 ];
 
 useSortable(el, contents, {
