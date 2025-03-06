@@ -44,6 +44,8 @@
         </div>
       </template>
     </Suspense>
+    <!-- Flow Graph -->
+    <RCFlowGraph v-else-if="element.type === 'flow-graph'" :element />
   </template>
 </template>
 
@@ -51,6 +53,8 @@
 import { defineAsyncComponent } from 'vue';
 
 const RCSpotifyEmbed = defineAsyncComponent(() => import('@/Components/RichContent/RCSpotifyEmbed.vue'));
+
+const RCFlowGraph = defineAsyncComponent(() => import('@/Components/RichContent/RCFlowGraph.vue'));
 
 const HeroElement = defineAsyncComponent(() => import('@/Components/RichContent/RCHeroSection/HeroElement.vue'));
 

@@ -1,5 +1,11 @@
 @import 'tailwindcss';
 
+/* these are necessary styles for vue flow */
+@import '@vue-flow/core/dist/style.css';
+
+/* this contains the default theme, these are optional styles */
+@import '@vue-flow/core/dist/theme-default.css';
+
 @plugin 'tailwindcss-animate';
 
 @source '../views';
@@ -224,4 +230,62 @@ html.dark {
 .dark .archive-document-link:hover {
   background-color: rgb(40 40 40);
   color: #bd2835;
+}
+
+.basic-flow.dark {
+  background: #2d3748;
+  color: #fffffb
+}
+
+.basic-flow.dark .vue-flow__node {
+  background: #4a5568;
+  color: #fffffb
+}
+
+.basic-flow.dark .vue-flow__node.selected {
+  background: #333;
+  box-shadow: 0 0 0 2px #2563eb
+}
+
+.basic-flow .vue-flow__controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+}
+
+.basic-flow.dark .vue-flow__controls {
+  border: 1px solid #EEEEEE
+}
+
+.basic-flow .vue-flow__controls .vue-flow__controls-button {
+  border: none;
+  @apply bg-zinc-200/60 rounded-md px-3 cursor-pointer;
+}
+
+.basic-flow .vue-flow__controls .vue-flow__controls-button svg {
+  height: 12px;
+  width: 12px
+}
+
+.basic-flow .vue-flow__controls .vue-flow__controls-button {
+  @apply border border-zinc-200 dark:border-zinc-500/30 bg-zinc-200/60 dark:bg-zinc-600 dark:fill-zinc-50 transition-shadow
+}
+
+.basic-flow .vue-flow__edge-text {
+  @apply fill-zinc-900 dark:fill-zinc-50
+}
+
+.basic-flow .vue-flow__node-multiple-handle {
+  @apply border border-zinc-300 dark:border-zinc-600;
+}
+
+.basic-flow .vue-flow__edge-textbg {
+  @apply fill-zinc-50 dark:fill-zinc-900
+}
+
+/*Overwrite padding for node div, so button would use it*/
+
+.vue-flow__node-default, .vue-flow__node-input, .vue-flow__node-output {
+  padding: 0;
 }

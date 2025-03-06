@@ -15,6 +15,7 @@
 // import { computed, defineAsyncComponent } from "vue";
 
 import RichContentParser from "@/Components/RichContentParser.vue";
+import VusaStructure from "@/Features/StructureGraph/presets/VusaStructure.vue";
 
 defineProps<{
   content: unknown;
