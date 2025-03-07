@@ -1,4 +1,4 @@
-# Dokumentų Nuasmeninimas
+# Dokumentų nuasmeninimas
 
 ## Esminiai terminai
 - **Darinys** – KAP AEK, KAP GNK, KAP PAK ir kitos institucijos, įskaitant ir laikinų darbo grupių, kurių nariai yra pasirašę VU rektoriaus ar jo įgalioto asmens nustatytos formos konfidencialumo pasižadėjimą ir nešališkumo deklaraciją. 
