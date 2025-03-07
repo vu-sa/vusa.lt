@@ -26,7 +26,7 @@ const nodes = [
   {
     id: 'node-cb',
     type: 'multiple-handle',
-    data: { label: $t('Central Office'), nodeClass: 'bg-zinc-400', textClass: ['uppercase text-white font-extrabold'], handles: ['left'] },
+    data: { label: $t('Centrinis biuras'), nodeClass: 'bg-zinc-400', textClass: ['uppercase text-white font-extrabold'], handles: ['left'] },
     style: { lineHeight: '1.25', width: '120px' },
     position: { x: 370, y: 73 },
   },
