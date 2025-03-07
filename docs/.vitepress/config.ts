@@ -23,7 +23,8 @@ export default defineConfig({
             items: [
               { text: 'Funkcijos', link: '/visak' },
               { text: 'Atsakomybės', link: '/atsakomybes/studentu-atstovams' },
-              { text: 'D.U.K.', link: '/faq' }
+              { text: 'D.U.K.', link: '/faq' },
+              { text: 'Dokumentų nuasmeninimas', link: '/dng'}
             ]
           },
           {
