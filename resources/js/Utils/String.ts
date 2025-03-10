@@ -82,6 +82,10 @@ export const getFacultyName = ({ fullname }: { fullname: string }) => {
     "Vilniaus universiteto Studentų atstovybė"
   )[1];
 
+  if (facultyName === undefined) {
+    return "";
+  }
+
   // change faculty name only at the string ending from "ete" to "etas"
   if (facultyName.endsWith("ete")) {
     facultyName = facultyName.replace("ete", "etas");
@@ -99,6 +103,10 @@ export const getFacultyName = ({ fullname }: { fullname: string }) => {
   // change "ute" to "utas"
   if (facultyName.endsWith("ute")) {
     facultyName = facultyName.replace("ute", "utas");
+  }
+
+  if (facultyName.endsWith("joje")) {
+    facultyName = facultyName.replace("joje", "ja");
   }
 
   return facultyName;

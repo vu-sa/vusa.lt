@@ -30,7 +30,7 @@
   <section class="grid mt-2 grid-cols-2 lg:grid-cols-4 gap-8">
     <a v-for="tenant in mergedTenants" :key="tenant.id" class="group" target="_blank" :href="tenant.form">
       <img :src="tenant.primary_institution?.image_url"
-        class="h-40 rounded-xl object-cover shadow-md transition group-hover:shadow-xl">
+        class="h-40 rounded-xl object-cover shadow-md w-full transition group-hover:shadow-xl">
       <p class="mt-2 text-center text-lg font-extrabold leading-tight ">
         {{ $page.props.app.locale === 'lt' ? "VU" + getFacultyName(tenant) : "VU " + tenant.englishName }}
       </p>
