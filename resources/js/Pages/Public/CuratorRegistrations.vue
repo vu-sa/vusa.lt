@@ -2,7 +2,7 @@
   <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
     <section>
       <h1 class="font-extrabold text-4xl">
-        {{ $page.props.app.locale === 'lt' ? 'Registracija į mentorių programą' : 'Registration for the Mentor program' }}
+        {{ $page.props.app.locale === 'lt' ? 'Registracija į kuratorių programą' : 'Registration for the Mentor program' }}
       </h1>
       <div class="typography max-w-prose">
         <p v-if="$page.props.app.locale === 'lt'">
@@ -22,7 +22,7 @@
         </p>
       </div>
     </section>
-    <img :src="$page.props.app.locale === 'lt' ? '/logos/kuratorius.png' : '/logos/mentor.svg'" alt="Kuratorius" class="w-full h-full -order-1 md:order-1 object-contain dark:invert">
+    <img :src="$page.props.app.locale === 'lt' ? '/logos/kuratorius.png' : '/logos/mentor.svg'" alt="Kuratorius" class="w-full aspect-video h-full -order-1 md:order-1 object-contain dark:invert">
   </div>
   <h2 class="my-4 underline">
     {{ $page.props.app.locale === 'lt' ? '2025 m. registracijos formos' : '2025 registration forms' }}
