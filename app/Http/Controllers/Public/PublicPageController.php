@@ -224,6 +224,71 @@ class PublicPageController extends PublicController
         ]);
     }
 
+    public function curatorRegistrations()
+    {
+        $this->getBanners();
+        $this->getTenantLinks();
+
+        $seo = $this->shareAndReturnSEOObject(
+            title: app()->getLocale() === 'lt' ? 'Registracija į kuratorių programą' : 'Registration to mentor program',
+            description: 'Kuratoriai - tai studentai, kurie savo laisvalaikiu padeda naujiems studentams prisitaikyti prie universiteto aplinkos, dalinasi patirtimi ir patarimais, skatina aktyvų studentų gyvenimą.'
+        );
+
+        $forms = [
+            'chgf' => 'https://forms.office.com/e/m5efiVLTnb',
+            'evaf' => 'https://forms.office.com/e/iAhN6ScQ3H',
+            'ff' => 'https://forms.office.com/e/kNFgdk7ZDF',
+            'filf' => 'https://forms.office.com/e/LyYYN3btqN',
+            'fsf' => 'https://forms.office.com/e/xKMfZrgAVh',
+            'gmc' => 'https://forms.office.com/e/04PN2ajihu',
+            'if' => 'https://forms.office.com/e/0pn0SZ02b0',
+            'kf' => 'https://forms.office.com/e/UdnpVRLdPk',
+            'knf' => 'https://forms.office.com/e/PAKadETKhQ',
+            'mf' => 'https://forms.office.com/e/CjxQ590Nsh',
+            'mif' => 'https://forms.office.com/e/dh0UbRhjEn',
+            'sa' => 'https://forms.office.com/e/pz1S1KkFfF',
+            'tspmi' => 'https://forms.office.com/e/BNHUFeS27g',
+            'vm' => 'https://forms.office.com/e/Uf428VaLyv',
+        ];
+
+        $english_tenant_names = [
+            'chgf' => 'Faculty of Chemistry and Geosciences',
+            'evaf' => 'Faculty of Economics and Business Administration',
+            'ff' => 'Faculty of Physics',
+            'filf' => 'Faculty of Philology',
+            'fsf' => 'Faculty of Philosophy',
+            'gmc' => 'Life Sciences Center',
+            'if' => 'Faculty of History',
+            'kf' => 'Faculty of Communication',
+            'knf' => 'Kaunas Faculty',
+            'mf' => 'Faculty of Medicine',
+            'mif' => 'Faculty of Mathematics and Informatics',
+            'sa' => 'Šiauliai Academy',
+            'tf' => 'Faculty of Law',
+            'tspmi' => 'Institute of International Relations and Political Science',
+            'vm' => 'Business School',
+        ];
+
+        $tenants = Tenant::query()->where('type', 'padalinys')->with('primary_institution')->orderBy('fullname')
+            ->get(['id', 'primary_institution_id', 'alias', 'fullname']);
+
+        Inertia::share('otherLangURL',
+            route('curatorRegistrations',
+                [
+                    'lang' => $this->getOtherLang(),
+                    'registrationString' => app()->getLocale() === 'lt' ? 'registration-to-mentor-program' : 'registracija-i-kuratoriu-programa',
+                ])
+        );
+
+        return Inertia::render('Public/CuratorRegistrations', [
+            'forms' => $forms,
+            'tenants' => $tenants,
+            'englishTenantNames' => $english_tenant_names,
+        ])->withViewData([
+            'SEOData' => $seo,
+        ]);
+    }
+
     public function calendarEvent(Calendar $calendar)
     {
         return $this->calendarEventMain('lt', $calendar);
