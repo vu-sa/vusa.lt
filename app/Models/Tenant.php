@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Laravel\Scout\Searchable;
@@ -72,7 +73,7 @@ class Tenant extends Model
         return $this;
     }
 
-    public function primary_institution()
+    public function primary_institution(): BelongsTo
     {
         return $this->belongsTo(Institution::class, 'primary_institution_id');
     }
