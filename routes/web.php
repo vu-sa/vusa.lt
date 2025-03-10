@@ -47,6 +47,8 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
 
         Route::get('kategorija/{category:alias}', [Public\PublicPageController::class, 'category'])->name('category');
 
+        Route::get('{registrationString}', [Public\PublicPageController::class, 'curatorRegistrations'])->name('curatorRegistrations')->whereIn('registrationString', ['registracija-i-kuratoriu-programa', 'registration-to-mentor-program']);
+
         Route::get('kalendorius/ics', [Public\MainController::class, 'publicAllEventCalendar'])->name('calendar.ics');
         Route::post('search', [Public\MainController::class, 'search'])->name('search');
 
