@@ -22,7 +22,7 @@
         </p>
       </div>
     </section>
-    <img :src="$page.props.app.locale === 'lt' ? '/logos/kuratorius.png' : '/logos/mentor.svg'" alt="Kuratorius" class="w-full aspect-video h-full -order-1 md:order-1 object-contain dark:invert">
+    <img :src="$page.props.app.locale === 'lt' ? '/logos/kuratorius.png' : '/logos/mentor.svg'" alt="Kuratorius" class="w-full aspect-video -order-1 md:order-1 object-contain dark:invert">
   </div>
   <h2 class="my-4 underline">
     {{ $page.props.app.locale === 'lt' ? '2025 m. registracijos formos' : '2025 registration forms' }}
