@@ -112,6 +112,7 @@ class ContactController extends PublicController
                 ->with('duties.current_users:id,name,email,phone,facebook_url,profile_photo_path')
                 ->with('tenant:id,alias')
                 ->where('tenant_id', '=', $this->tenant->id)
+                ->where('is_active', true)
                 ->orderBy('name')
                 ->get(['id', 'name', 'alias', 'description']);
         }]);
