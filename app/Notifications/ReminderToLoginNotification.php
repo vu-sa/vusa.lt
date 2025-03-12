@@ -33,7 +33,7 @@ class ReminderToLoginNotification extends Notification
         $institutions = $notifiable->current_duties->map(function ($duty) {
             return $duty->institution;
         });
-        
+
         return (new MailMessage)->markdown('mail.reminder-to-login-notification', [
             'addressivizedName' => $notifiable->addressivizedName(),
             'institutionLtNames' => $institutions->map(function ($institution) {
