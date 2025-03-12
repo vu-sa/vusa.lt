@@ -23,8 +23,8 @@
   </PageContent>
 </template>
 
-<script setup lang="tsx">
-import { ref } from "vue";
+<script setup lang="ts">
+import { shallowRef, useTemplateRef } from "vue";
 import { router } from "@inertiajs/vue3";
 import { useSortable } from "@vueuse/integrations/useSortable";
 
@@ -37,9 +37,9 @@ const props = defineProps<{
   tenant: App.Entities.Tenant;
 }>();
 
-const el = ref<HTMLElement | null>(null);
+const el = useTemplateRef<HTMLElement | null>('el');
 
-const quickLinkList = ref(
+const quickLinkList = shallowRef(
   props.quickLinks.map((quickLink) => ({
     id: quickLink.id,
     text: quickLink.text,

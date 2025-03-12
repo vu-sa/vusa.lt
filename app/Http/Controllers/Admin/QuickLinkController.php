@@ -97,9 +97,9 @@ class QuickLinkController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function edit(QuickLink $quickLinks)
+    public function edit(QuickLink $quickLink)
     {
-        $this->authorize('update', $quickLinks);
+        $this->authorize('update', $quickLink);
 
         // $routes = Route::getRoutes();
 
@@ -122,8 +122,8 @@ class QuickLinkController extends Controller
         // dd($routesWithoutParams);
 
         return Inertia::render('Admin/Content/EditQuickLink', [
-            'quickLinks' => $quickLinks,
-            'tenantOptions' => GetTenantsForUpserts::execute('quickLinkss.update.padalinys', $this->authorizer),
+            'quickLink' => $quickLink,
+            'tenantOptions' => GetTenantsForUpserts::execute('quickLinks.update.padalinys', $this->authorizer),
             'typeOptions' => Inertia::lazy(fn () => $this->getQuickLinkTypeOptions(request()->input('type'))),
         ]);
     }
@@ -165,12 +165,12 @@ class QuickLinkController extends Controller
 
     public function editOrder(Tenant $tenant, string $lang)
     {
-        $quickLinkss = QuickLink::query()->where('tenant_id', $tenant->id)->where('lang', $lang)->orderBy('order')->get();
+        $quickLinks = QuickLink::query()->where('tenant_id', $tenant->id)->where('lang', $lang)->orderBy('order')->get();
 
-        $this->authorize('update', $quickLinkss->first());
+        $this->authorize('update', $quickLinks->first());
 
         return Inertia::render('Admin/Content/EditQuickLinkOrder', [
-            'quickLinkss' => $quickLinkss,
+            'quickLinks' => $quickLinks,
             'tenant' => $tenant,
         ]);
     }
