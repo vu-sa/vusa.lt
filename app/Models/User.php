@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Helpers\AddressivizeHelper;
 use App\Models\Pivots\Dutiable;
 use App\Models\Pivots\MembershipUser;
 use App\Models\Pivots\Trainable;
@@ -218,5 +219,10 @@ class User extends Authenticatable
         })->flatten();
 
         return $avThDuty->merge($avThUser)->merge($avThInstitution)->merge($avThMembership)->unique('id');
+    }
+
+    public function addressivizedName(): string
+    {
+        return AddressivizeHelper::addressivizeEveryWord($this->name);
     }
 }
