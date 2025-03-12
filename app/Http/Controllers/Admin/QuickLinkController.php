@@ -54,7 +54,7 @@ class QuickLinkController extends Controller
 
         return Inertia::render('Admin/Content/CreateQuickLink', [
             'typeOptions' => Inertia::lazy(fn () => $this->getQuickLinkTypeOptions(request()->input('type'))),
-            'tenantOptions' => GetTenantsForUpserts::execute('quickLinkss.create.padalinys', $this->authorizer),
+            'tenantOptions' => GetTenantsForUpserts::execute('quickLinks.create.padalinys', $this->authorizer),
         ]);
     }
 
@@ -79,14 +79,14 @@ class QuickLinkController extends Controller
         }
 
         DB::transaction(function () use ($request, $tenant_id) {
-            $quickLinks = new QuickLink;
-            $quickLinks->text = $request->text;
-            $quickLinks->link = $request->link;
-            $quickLinks->lang = $request->lang;
-            $quickLinks->icon = $request->icon;
-            $quickLinks->is_important = $request->is_important;
-            $quickLinks->tenant()->associate($tenant_id);
-            $quickLinks->save();
+            $quickLink = new QuickLink;
+            $quickLink->text = $request->text;
+            $quickLink->link = $request->link;
+            $quickLink->lang = $request->lang;
+            $quickLink->icon = $request->icon;
+            $quickLink->is_important = $request->is_important;
+            $quickLink->tenant()->associate($tenant_id);
+            $quickLink->save();
         });
 
         return redirect()->route('quickLinks.index')->with('success', 'Sėkmingai sukurta greitoji nuoroda!');
@@ -133,17 +133,17 @@ class QuickLinkController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, QuickLink $quickLinks)
+    public function update(Request $request, QuickLink $quickLink)
     {
-        $this->authorize('update', $quickLinks);
+        $this->authorize('update', $quickLink);
 
         $request->validate([
             'text' => 'required',
             'link' => 'required',
         ]);
 
-        DB::transaction(function () use ($request, $quickLinks) {
-            $quickLinks->update($request->only('text', 'link', 'lang', 'icon', 'is_important'));
+        DB::transaction(function () use ($request, $quickLink) {
+            $quickLink->update($request->only('text', 'link', 'lang', 'icon', 'is_important'));
         });
 
         return back()->with('success', 'Sėkmingai atnaujinta greitoji nuoroda!');
@@ -154,11 +154,11 @@ class QuickLinkController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function destroy(QuickLink $quickLinks)
+    public function destroy(QuickLink $quickLink)
     {
-        $this->authorize('delete', $quickLinks);
+        $this->authorize('delete', $quickLink);
 
-        $quickLinks->delete();
+        $quickLink->delete();
 
         return redirect()->route('quickLinks.index')->with('info', 'Sėkmingai ištrinta greitoji nuoroda!');
     }
@@ -187,9 +187,9 @@ class QuickLinkController extends Controller
 
         DB::transaction(function () use ($request) {
             foreach ($request->orderList as $idAndOrder) {
-                $quickLinks = QuickLink::find($idAndOrder['id']);
-                $quickLinks->order = $idAndOrder['order'];
-                $quickLinks->save();
+                $quickLink = QuickLink::find($idAndOrder['id']);
+                $quickLink->order = $idAndOrder['order'];
+                $quickLink->save();
             }
         });
 
