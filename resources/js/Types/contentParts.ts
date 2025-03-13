@@ -51,6 +51,7 @@ export type Hero = {
   options: {
     backgroundBlur?: boolean;
     is_active?: boolean;
+    buttonColor: "red" | "yellow" | "zinc" | "white";
   }
 }
 

@@ -40,6 +40,11 @@
     <NFormItem label="Button link" :show-feedback="false">
       <NInput v-model:value="json_content.buttonLink" type="text" />
     </NFormItem>
+    <NFormItem label="Button color" :show-feedback="false">
+      <NSelect v-model:value="options.buttonColor" :options="[
+        { 'label': 'Raudonas', 'value': 'red' }, { 'label': 'Geltonas', 'value': 'yellow' }, { 'label': 'Juodas', 'value': 'zinc' }, { 'label': 'Baltas', 'value': 'white' }]
+        " />
+    </NFormItem>
     <!-- Layout style -->
     <!-- <NFormItem label="Layout style" :show-feedback="false">
               <NSelect v-model:value="content.options.layoutStyle" default-value="default" :options="[
@@ -53,6 +58,7 @@
 import OriginalTipTap from '@/Components/TipTap/OriginalTipTap.vue';
 import TiptapImageButton from '@/Components/TipTap/TiptapImageButton.vue';
 import type { Hero } from '@/Types/contentParts';
+import { NFormItem } from 'naive-ui';
 
 const options = defineModel<Hero['options']>('options', { default: {} });
 const json_content = defineModel<Hero['json_content']>('json_content', { default: {} });
