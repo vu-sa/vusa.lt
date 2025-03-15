@@ -28,12 +28,13 @@
   </AdminContentPage>
 </template>
 
-<script setup lang="tsx">
-import { useAxios } from "@vueuse/integrations/useAxios.mjs";
-import { useMessage } from "naive-ui";
+<script setup lang="ts">
 import { computed, ref } from "vue";
-
 import { cn } from "@/Utils/shadcn";
+import { useMessage } from "naive-ui";
+import { useFetch } from "@vueuse/core";
+import { router, usePage } from "@inertiajs/vue3";
+
 import AdminContentPage from "@/Components/Layouts/AdminContentPage.vue";
 import type { NotificationData } from "@/Features/Admin/Notifications/NotificationItem.vue";
 import NotificationItem from "@/Features/Admin/Notifications/NotificationItem.vue";
@@ -56,13 +57,15 @@ const message = useMessage();
 const handleAllRead = async () => {
   loading.value = true;
 
-  const { isFinished } = await useAxios(route("notifications.markAllAsRead"), {
-    method: "POST",
-  });
+  const { isFinished } = await useFetch(
+    route("notifications.mark-as-read.all"),
+    { headers: { "X-CSRF-TOKEN": usePage().props.csrf_token } },
+  ).post().json();
 
   if (isFinished.value) {
     loading.value = false;
     message.success("Visi pranešimai pažymėti kaip perskaityti.");
+    router.reload();
   }
 };
 </script>

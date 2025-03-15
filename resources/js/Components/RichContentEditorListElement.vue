@@ -45,5 +45,5 @@ defineProps<{
   isExpanded?: boolean;
 }>()
 
-defineEmits(['expand', 'remove'])
+defineEmits(['expand', 'remove', 'up', 'down'])
 </script>

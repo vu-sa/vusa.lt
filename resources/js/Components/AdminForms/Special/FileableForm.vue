@@ -43,8 +43,9 @@ import {
   type FormRules,
   type TreeSelectOption,
 } from "naive-ui";
-import { onMounted, ref } from "vue";
-import { useAxios } from "@vueuse/integrations/useAxios";
+import { onMounted, ref, useTemplateRef } from "vue";
+import { useFetch } from "@vueuse/core";
+
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import Icons from "@/Types/Icons/filled";
 import ModelChip from "@/Components/Chips/ModelChip.vue";
@@ -59,7 +60,7 @@ defineProps<{
   showAlert: boolean;
 }>();
 
-const formRef = ref<FormInst | null>(null);
+const formRef = useTemplateRef<FormInst | null>('formRef');
 const spin = ref(true);
 
 const selectedFileable = ref<string | undefined>(undefined);
@@ -69,9 +70,9 @@ const handleSelect = (value: string) => {
 };
 
 const getFileables = async () => {
-  const { data, isFinished } = await useAxios(
+  const { data, isFinished } = await useFetch(
     route("sharepoint.getPotentialFileables")
-  );
+  ).json();
 
   return { data, isFinished };
 };

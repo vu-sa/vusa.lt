@@ -61,8 +61,7 @@
 
 <script setup lang="tsx">
 import { computed, provide, ref, watch } from "vue";
-import { useAxios } from "@vueuse/integrations/useAxios";
-import { useStorage } from "@vueuse/core";
+import { useFetch, useStorage } from "@vueuse/core";
 
 import FileDrawer from "./FileDrawer.vue";
 import FileUploader from "../Uploader/FileUploader.vue";
@@ -122,9 +121,9 @@ const getFiles = async (path: string | null) => {
     return;
   }
 
-  const { data, isFinished } = await useAxios(
+  const { data, isFinished } = await useFetch(
     route("sharepoint.getDriveItems", { path: path })
-  );
+  ).json();
   files.value = data.value;
   rawFiles.value = mapRawFiles(data.value);
   loading.value = !isFinished;

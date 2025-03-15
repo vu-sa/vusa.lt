@@ -1,6 +1,6 @@
 <template>
   <NUpload accept="image/jpg,image/jpeg,image/png" :action="route('files.uploadImage')" :data="{ path: props.folder }"
-    :file-list="fileList" :headers="csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {}" list-type="image-card" :max="1"
+    :file-list="fileList" :headers="{ 'X-CSRF-TOKEN': $page.props.csrf_token }" list-type="image-card" :max="1"
     @before-upload="beforeUpload" @change="fileList = $event.fileList" @preview="handlePreview" @finish="handleFinish"
     @remove="handleRemove" />
   <CardModal v-if="url" class="max-w-5xl" :show="showModal" title="Redaguoti paveikslėlį" @close="showModal = false">
@@ -51,10 +51,6 @@ if (url.value) {
     url: url.value,
   });
 }
-
-const csrfToken = document.querySelector<HTMLMetaElement>(
-  'meta[name="csrf-token"]',
-)?.content;
 
 const beforeUpload = async (data: {
   file: UploadFileInfo;

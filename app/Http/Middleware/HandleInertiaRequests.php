@@ -68,6 +68,7 @@ class HandleInertiaRequests extends Middleware
                     'unreadNotifications' => $user->unreadNotifications,
                 ],
             ],
+            'csrf_token' => fn () => csrf_token(),
             // 'flash' is used in the admin navigation to show only the allowed pages
             'flash' => [
                 'data' => fn () => $request->session()->get('data'),

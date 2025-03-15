@@ -1,5 +1,6 @@
 import { NTag } from "naive-ui";
 import { mount } from "@vue/test-utils";
+import { describe, it, expect } from "vitest";
 import ModelChip from "./ModelChip.vue";
 
 describe("ModelChip", () => {

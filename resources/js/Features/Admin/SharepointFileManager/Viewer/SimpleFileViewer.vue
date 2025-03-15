@@ -18,9 +18,9 @@
 
 <script setup lang="tsx">
 import { provide, ref } from "vue";
-import { useAxios } from "@vueuse/integrations/useAxios";
 import FileButtonSkeletonWrapper from "./FileButtonSkeletonWrapper.vue";
 import FileDrawer from "./FileDrawer.vue";
+import { useFetch } from "@vueuse/core";
 
 const props = defineProps<{
   fileable: {
@@ -31,12 +31,12 @@ const props = defineProps<{
 
 const selectedFile = ref(null);
 
-const { data } = await useAxios(
+const { data } = await useFetch(
   route("sharepoint.getTypesDriveItems", {
     type: props.fileable.type,
     id: props.fileable.id,
   })
-);
+).json();
 
 const handleFileSelect = (file: MyDriveItem) => {
   if (!file.file) {
