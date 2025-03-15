@@ -13,11 +13,11 @@
         {{ $t('Būtent') }}
         <ModelChip>
           <template #icon>
-            <NIcon :component="Icons.MEETING" />
+            <Icons.MEETING />
           </template>{{ $t('posėdžiai') }}
         </ModelChip>
         <template v-if="$page.props.app.locale === 'lt'">
-"
+          "
           ir jų informacija yra labai svarbi – kad galėtume atstovauti studentams geriausiai, kaip tik tai įmanoma!
         </template>
         <template v-else>

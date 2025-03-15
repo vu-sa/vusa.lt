@@ -29,7 +29,7 @@
               <span>Each meeting has</span>
               <ModelChip>
                 <template #icon>
-                  <NIcon :component="IconsRegular.AGENDA_ITEM" />
+                  <IconsRegular.AGENDA_ITEM />
                 </template>
                 agenda items
               </ModelChip>
