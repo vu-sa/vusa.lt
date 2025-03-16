@@ -7,7 +7,7 @@
   >
 </template>
 
-<script setup lang="tsx">
+<script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
 import { NTag } from "naive-ui";
 

@@ -10,7 +10,7 @@
   </NAlert>
 </template>
 
-<script setup lang="tsx">
+<script setup lang="ts">
 defineEmits(["alertClosed"]);
 
 defineProps<{

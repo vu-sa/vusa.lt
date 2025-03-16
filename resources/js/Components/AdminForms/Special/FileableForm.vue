@@ -48,7 +48,7 @@ import { useFetch } from "@vueuse/core";
 
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import Icons from "@/Types/Icons/filled";
-import ModelChip from "@/Components/Chips/ModelChip.vue";
+import ModelChip from "@/Components/Tag/ModelChip.vue";
 import SuggestionAlert from "@/Components/Alerts/SuggestionAlert.vue";
 
 const emit = defineEmits<{

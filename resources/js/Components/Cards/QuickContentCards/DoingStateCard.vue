@@ -47,7 +47,7 @@ import CardModal from "@/Components/Modals/CardModal.vue";
 import CommentTipTap from "@/Features/Admin/CommentViewer/CommentTipTap.vue";
 import Icons from "@/Types/Icons/filled";
 import InfoText from "@/Components/SmallElements/InfoText.vue";
-import ModelChip from "@/Components/Chips/ModelChip.vue";
+import ModelChip from "@/Components/Tag/ModelChip.vue";
 import QuickContentCard from "./QuickContentCard.vue";
 
 const props = defineProps<{

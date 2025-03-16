@@ -9,7 +9,7 @@
   </NTag>
 </template>
 
-<script setup lang="tsx">
+<script setup lang="ts">
 import { NTag } from "naive-ui";
 
 import { capitalize } from "@/Utils/String";

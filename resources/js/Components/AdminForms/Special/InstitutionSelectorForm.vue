@@ -51,7 +51,7 @@ import { computed, ref } from "vue";
 import { usePage } from "@inertiajs/vue3";
 
 import Icons from "@/Types/Icons/filled";
-import ModelChip from "@/Components/Chips/ModelChip.vue";
+import ModelChip from "@/Components/Tag/ModelChip.vue";
 import SuggestionAlert from "@/Components/Alerts/SuggestionAlert.vue";
 
 defineEmits<{

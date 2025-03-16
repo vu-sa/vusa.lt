@@ -18,7 +18,7 @@ import { formatStaticTime } from "@/Utils/IntlTime";
 import { tenantColumn } from "@/Composables/dataTableColumns";
 import Icons from "@/Types/Icons/regular";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
-import ModelChip from "@/Components/Chips/ModelChip.vue";
+import ModelChip from "@/Components/Tag/ModelChip.vue";
 import PreviewModelButton from "@/Components/Buttons/PreviewModelButton.vue";
 
 const props = defineProps<{
