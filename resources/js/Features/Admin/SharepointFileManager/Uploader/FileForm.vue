@@ -1,7 +1,7 @@
 <template>
   <NForm ref="formRef" :model="model" :rules="rules">
-    <NFormItem :label="$t('forms.fields.type')" path="typeValue">
-      <NSelect v-model:value="model.typeValue" :disabled="!!model.uploadValue" placeholder="Pasirink failo tipą..."
+    <NFormItem :label="$tChoice('forms.fields.type', 0)" path="typeValue">
+      <NSelect @update:value="handleTypeUpdate" v-model:value="model.typeValue" placeholder="Pasirink failo tipą..."
         :options="sharepointFileTypeOptions" />
     </NFormItem>
     <!-- <NFormItem label="Raktažodžiai" path="keywordsValue"
@@ -19,7 +19,7 @@
       <NInput v-model:value="model.description0Value" type="textarea" placeholder="Šis dokumentas yra skirtas..." />
     </NFormItem>
     <NFormItem v-if="model.typeValue" label="Įkelti failą" path="uploadValue">
-      <NUpload :max="1" :default-upload="false" @before-upload="beforeUpload" @change="handleUploadChange">
+      <NUpload ref="uploadRef" :max="1" :default-upload="false" @before-upload="beforeUpload" @change="handleUploadChange">
         <NUploadDragger class="flex flex-col items-center gap-2">
           <IFluentArchive24Regular width="48" height="48" class="opacity-90" />
           <p class="font-bold">
@@ -56,7 +56,7 @@ import { useForm } from "@inertiajs/vue3";
 import {
   useMessage,
 } from "naive-ui";
-import type { FormInst, FormRules, UploadFileInfo } from "naive-ui";
+import type { FormInst, FormRules, NUpload, UploadFileInfo } from "naive-ui";
 
 const emit = defineEmits<{
   (e: "submit", form: any): void;
@@ -76,6 +76,8 @@ const originalFileName = ref("");
 const fileExtension = ref<string | undefined>("");
 
 const formRef = ref<FormInst | null>(null);
+const uploadRef = ref<typeof NUpload | null>(null);
+
 const model = ref<{
   datetimeValue: number | null;
   description0Value: string;
@@ -222,5 +224,14 @@ const handleValidateClick = (e: MouseEvent) => {
       emit("submit", model.value);
     }
   });
+};
+
+const handleTypeUpdate = (value: string) => {
+  // Reset form
+  model.value.uploadValue = null;
+  uploadRef.value?.clear()
+
+  model.value.tempNameValue = "";
+  model.value.typeValue = value;
 };
 </script>
