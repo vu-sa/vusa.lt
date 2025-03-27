@@ -139,6 +139,40 @@
               ]" />
             </NFormItem>
           </div>
+          <!-- NumberStatSection -->
+          <div v-else-if="content?.type === 'number-stat-section'" v-show="content.expanded"
+            class="mt-4 flex flex-col gap-4">
+            <NFormItem label="Pavadinimas" :show-feedback="false">
+              <NInput v-model:value="content.options.title" type="text" />
+              <NSelect v-model:value="content.options.color" :options="[{
+                'label': 'Pilka',
+                'value': 'zinc'
+              }, {
+                'label': 'Raudona',
+                'value': 'red'
+              }, {
+                'label': 'Geltona',
+                'value': 'yellow'
+              }
+              ]
+                " />
+              <NDynamicInput v-model:value="content.json_content" @create="onCreateNumberStat">
+                <template #create-button-default>
+                  Sukurti
+                </template>
+                <template #default="{ value }">
+                  <div class="flex w-full gap-4">
+                    <NFormItem class="w-48" label="Prierašas" :show-feedback="false">
+                      <NInput v-model:value="value.label" type="text" />
+                    </NFormItem>
+                    <NFormItem class="grow" label="Numeris" :show-feedback="false">
+                      <NInputNumber v-model:value="value.endNumber" />
+                    </NFormItem>
+                  </div>
+                </template>
+              </NDynamicInput>
+            </NFormItem>
+          </div>
           <!-- News -->
           <div v-else-if="content?.type === 'news'" v-show="content.expanded" class="mt-4 flex flex-col gap-4">
             <NFormItem label="Pavadinimas" :show-feedback="false">
@@ -189,6 +223,7 @@ import OriginalTipTap from './TipTap/OriginalTipTap.vue';
 import RichContentEditorListElement from './RichContentEditorListElement.vue';
 import TiptapImageButton from './TipTap/TiptapImageButton.vue';
 import HeroForm from "./RichContent/RCHeroSection/HeroForm.vue";
+import { NInputNumber } from "naive-ui";
 
 const contents = defineModel('contents');
 
@@ -210,6 +245,13 @@ function onCreateGridImage() {
     colspan: "col-span-2",
     image: "",
   };
+}
+
+function onCreateNumberStat() {
+  return {
+    endNumber: 0,
+    label: ""
+  }
 }
 
 function handleElementCreate(selectedContent) {
@@ -293,6 +335,11 @@ const contentTypes = [
   {
     value: "flow-graph",
     label: "Flow Graph",
+    icon: ImageMultiple24Regular,
+  },
+  {
+    value: "number-stat-section",
+    label: "Number Statistics Section",
     icon: ImageMultiple24Regular,
   },
 ];

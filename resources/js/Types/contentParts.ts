@@ -64,11 +64,22 @@ export type SpotifyEmbed = {
 
 export type FlowGraph = {
   json_content: {
-    nodes: Record<string, any>[];
-    edges: Record<string, any>[];
-    preset: string;
+    nodes?: Record<string, any>[];
+    edges?: Record<string, any>[];
+    preset?: 'VusaStructure';
   };
   options: null
+}
+
+export type NumberStatSection = {
+  json_content: {
+    endNumber: number;
+    label: string;
+  }[];
+  options: {
+    color?: "zinc" | "red" | "yellow";
+    title: string;
+  }
 }
 
 // Not implemented

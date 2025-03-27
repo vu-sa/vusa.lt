@@ -26,6 +26,8 @@
     <HeroElement v-else-if="element.type === 'hero'" :is-first-element="index === 0" :element="element" />
     <!-- Spotify Embed -->
     <RCSpotifyEmbed v-else-if="element.type === 'spotify-embed'" :element />
+    <!-- Number Stat Section -->
+    <RCNumberSection v-else-if="element.type === 'number-stat-section'" :element />
     <!-- News -->
     <Suspense v-else-if="element.type === 'news'" class="mx-auto mt-8">
       <NewsElement :element />
@@ -51,6 +53,7 @@
 
 <script setup lang="ts">
 import { defineAsyncComponent } from 'vue';
+const RCNumberSection = defineAsyncComponent(() => import('@/Components/RichContent/RCNumberStatSection/RCNumberSection.vue'));
 
 const RCSpotifyEmbed = defineAsyncComponent(() => import('@/Components/RichContent/RCSpotifyEmbed.vue'));
 
@@ -60,7 +63,7 @@ const HeroElement = defineAsyncComponent(() => import('@/Components/RichContent/
 
 const RichContentCard = defineAsyncComponent(() => import('@/Components/RichContentCard.vue'));
 
-const RichContentAccordion = defineAsyncComponent(() => import('@/Components/RichContentAccordion.vue'));
+const RichContentAccordion = defineAsyncComponent(() => import('@/Components/RichContent/RCAccordion.vue'));
 
 const RichContentTiptapHTML = defineAsyncComponent(() => import('@/Components/RichContentTiptapHTML.vue'));
 
@@ -82,15 +85,3 @@ const getClassesForImage = (colspan: string) => {
 };
 
 </script>
-
-<style>
-.not-typography {
-  p {
-    margin-top: 0.5rem;
-
-    &:last-child {
-      margin-bottom: 0;
-    }
-  }
-}
-</style>

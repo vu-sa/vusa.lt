@@ -1,5 +1,5 @@
 import type { Preview } from '@storybook/vue3'
-
+import { setup } from "@storybook/vue3";
 import '../resources/css/app.css'
 
 const preview: Preview = {

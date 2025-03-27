@@ -171,6 +171,16 @@ html.dark {
   }
 }
 
+.not-typography {
+  p {
+    margin-top: 0.5rem;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
 .wrapper {
   display: grid;
   grid-template-columns:

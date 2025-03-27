@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/vue3';
 
-import ModelChip from "@/Components/Chips/ModelChip.vue";
+import ModelChip from "./ModelChip.vue";
 import DeviceMeetingRoomRemote24Regular from "~icons/fluent/device-meeting-room-remote24-regular";
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
