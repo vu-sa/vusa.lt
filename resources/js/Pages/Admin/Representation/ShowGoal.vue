@@ -74,7 +74,7 @@ import FilterPopselect from "@/Components/Buttons/FilterPopselect.vue";
 import GoalForm from "@/Components/AdminForms/GoalForm.vue";
 import Icons from "@/Types/Icons/filled";
 import MatterCard from "@/Components/Cards/MatterCard.vue";
-import ModelChip from "@/Components/Chips/ModelChip.vue";
+import ModelChip from "@/Components/Tag/ModelChip.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import ShowPageLayout from "@/Components/Layouts/ShowModel/ShowPageLayout.vue";
 import TaskManager from "@/Features/Admin/TaskManager/TaskManager.vue";
