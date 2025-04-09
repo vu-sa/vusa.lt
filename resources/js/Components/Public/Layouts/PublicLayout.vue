@@ -90,6 +90,10 @@ const seo = computed(() => {
 
   // Computed Seo is an object
   let computedSeo = usePage().props.seo.tags;
+  
+  if (!computedSeo) {
+    return [];
+  }
 
   if (computedSeo['RalphJSmit\\Laravel\\SEO\\Support\\MetaTag']['attributes']['name'] === 'image') computedSeo['RalphJSmit\\Laravel\\SEO\\Support\\MetaTag']['attributes']['content'] = usePage().props.seo.image
 

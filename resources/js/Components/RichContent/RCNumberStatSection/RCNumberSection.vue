@@ -4,7 +4,7 @@
       <p class="mx-auto w-fit text-4xl font-bold">
         {{ element.options.title }}
       </p>
-      <div class="flex flex-col md:flex-row my-12 mx-auto justify-center gap-8">
+      <div class="flex flex-col md:flex-row my-12 mx-auto font-bold text-xl leading-tight justify-center gap-8">
         <NumberStatistic v-for="numberStat in element.json_content" :key="numberStat.label" :color-class
           :end-number="numberStat.endNumber">
           {{ numberStat.label }}
@@ -16,6 +16,7 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
+import NumberStatistic from "./RCNumberStatistic.vue";
 
 import { type NumberStatSection } from "@/Types/contentParts"
 

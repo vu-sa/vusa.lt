@@ -11,7 +11,7 @@ const meta: Meta<typeof Button> = {
   tags: ['autodocs'],
   argTypes: {
     variant: { control: 'select', options: ['default', 'destructive', 'outline', 'secondary', 'ghost', 'link'] },
-    size: { control: 'select', options: ['default', 'xs', 'sm', 'lg', 'icon'] },
+    size: { control: 'select', options: ['default', 'xs', 'sm', 'lg', 'xl', '2xl', 'icon'] },
   },
   args: {
     variant: 'default',
@@ -52,6 +52,19 @@ export const Secondary: Story = {
   }),
 };
 
+export const Small: Story = {
+  args: {
+    size: 'sm',
+  },
+  render: (args) => ({
+    components: { Button },
+    setup() {
+      return { args };
+    },
+    template: '<Button v-bind="args">Button</Button>',
+  }),
+};
+
 export const Large: Story = {
   args: {
     size: 'lg',
@@ -65,9 +78,22 @@ export const Large: Story = {
   }),
 };
 
-export const Small: Story = {
+export const Destructive: Story = {
   args: {
-    size: 'sm',
+    variant: 'destructive',
+  },
+  render: (args) => ({
+    components: { Button },
+    setup() {
+      return { args };
+    },
+    template: '<Button v-bind="args">Button</Button>',
+  }),
+};
+
+export const VeryLarge: Story = {
+  args: {
+    size: '2xl',
   },
   render: (args) => ({
     components: { Button },

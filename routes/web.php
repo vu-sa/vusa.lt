@@ -39,6 +39,8 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
 
         Route::get('kalendorius/renginys/{calendar}', [Public\PublicPageController::class, 'calendarEventRedirect'])->name('calendar.event');
 
+        Route::inertia('tapk-vu-sa-nariu', 'Public/MembershipPage')->name('joinUs');
+
         Route::get('kalendorius/{year}/{month}/{day}/{slug}', [Public\PublicPageController::class, 'calendarMain'])->name('calendar.event.2')->whereNumber('year')->whereNumber('month')->whereNumber('day');
 
         Route::get('pirmakursiu-stovyklos/{year?}', [Public\PublicPageController::class, 'summerCamps'])->name('pirmakursiuStovyklos')->whereNumber('year');

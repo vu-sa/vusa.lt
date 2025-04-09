@@ -57,6 +57,7 @@
         "pestphp/pest": "^3.0",
         "pestphp/pest-plugin-laravel": "^3.0",
         "phpmd/phpmd": "^2.15",
+        "ryoluo/sail-ssl": "^1.4",
         "spatie/laravel-ignition": "^2.0",
         "spatie/laravel-typescript-transformer": "^2.1"
     },
