@@ -59,7 +59,8 @@
     //"forceConsistentCasingInFileNames": true,
     ///
     // Enforce using `import type` instead of `import` for types
-    "importsNotUsedAsValues": "error"
+    "importsNotUsedAsValues": "error",
+    "allowImportingTsExtensions": true
   },
   "exclude": [
     "./node_modules/**/*",
