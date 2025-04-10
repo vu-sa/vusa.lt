@@ -23,8 +23,8 @@ jobs:
       run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
     - name: NPM Install
       run: npm ci
-    - name: NPM Build
-      run: npm run build
+    - name: Install Playwright Browsers
+      run: npx playwright install --with-deps
     - name: Execute tests via Vitest with coverage
       run: LARAVEL_BYPASS_ENV_CHECK=1 npm run coverage
     - name: Upload coverage to Codecov

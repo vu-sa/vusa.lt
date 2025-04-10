@@ -157,7 +157,7 @@
     "Tipai": "Types",
     "Ryšiai": "Relationships",
     "Rolės": "Roles",
-    "Leidimai": "Permissions",
+    "Leidimai": "Permissions",    
     "Narių registracija": "Members registration",
     "Pradinis": "Home",
     "Greitieji veiksmai": "Quick actions",
@@ -323,5 +323,14 @@
     "Renka": "Elects",
     "Deleguoja 10 narių į": "Delegates 10 members to",
     "Deleguoja 2 narius į": "Delegates 2 members to",
-    "čia": "here"
+    "čia": "here",
+    "Būsimi renginiai": "Upcoming events",
+    "Praėję renginiai": "Past events",
+    "Rasta :count renginių": "Found :count events",
+    "Visų renginių sąrašas": "List of all events",
+    "Vilniaus universiteto Studentų atstovybės ir studentų (-čių) bendruomenės renginių sąrašas": "List of Vilnius University Students' Representation and students' community events",
+    "Sinchronizuoti": "Synchronize",
+    "Filtruoti pagal": "Filter by",
+    "Kategorija": "Category",
+    "Padalinys": "Unit"
 }

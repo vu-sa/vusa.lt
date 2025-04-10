@@ -13,11 +13,11 @@
         {{ $t('Būtent') }}
         <ModelChip>
           <template #icon>
-            <NIcon :component="Icons.MEETING" />
+            <Icons.MEETING />
           </template>{{ $t('posėdžiai') }}
         </ModelChip>
         <template v-if="$page.props.app.locale === 'lt'">
-"
+          "
           ir jų informacija yra labai svarbi – kad galėtume atstovauti studentams geriausiai, kaip tik tai įmanoma!
         </template>
         <template v-else>
@@ -51,7 +51,7 @@ import { computed, ref } from "vue";
 import { usePage } from "@inertiajs/vue3";
 
 import Icons from "@/Types/Icons/filled";
-import ModelChip from "@/Components/Chips/ModelChip.vue";
+import ModelChip from "@/Components/Tag/ModelChip.vue";
 import SuggestionAlert from "@/Components/Alerts/SuggestionAlert.vue";
 
 defineEmits<{

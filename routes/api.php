@@ -14,6 +14,10 @@ use Illuminate\Support\Facades\Route;
 | routes are loaded by the RouteServiceProvider within a group which
 | is assigned the "api" middleware group. Enjoy building your API!
 |
+| IMPORTANT: All API endpoints should be defined here, not in web.php
+| This ensures proper organization and middleware application.
+| API routes are automatically prefixed with '/api'
+|
 */
 
 /*
@@ -28,7 +32,6 @@ Route::prefix('v1')->group(function () {
     // });
     Route::apiResource('types', 'TypeController')->only(['index']);
     Route::apiResource('documents', 'DocumentController')->only(['index']);
-    /* Route::get('calendar', CalendarController::class); */
     Route::group(['prefix' => '{lang}', 'where' => ['lang' => 'lt|en']], function () {
         Route::get('news/{tenant:alias}', [NewsController::class, 'getTenantNews'])->name('news.tenant.index');
         Route::get('calendar/{tenant:alias}', [CalendarController::class, 'getTenantCalendar'])->name('calendar.tenant.index');

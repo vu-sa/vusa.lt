@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Content;
-use App\Models\ContentPart;
 use App\Models\Page;
 use App\Models\Tenant;
 use App\Services\ModelAuthorizer as Authorizer;
@@ -137,33 +136,8 @@ class PageController extends Controller
 
         $content = Content::query()->find($page->content->id);
 
-        // Collect and remove values with no ids
-        $existingParts = collect($request->content['parts'])->filter(function ($part) {
-            return isset($part['id']);
-        });
-
-        // Remove non-existing parts
-        $content->parts()->whereNotIn('id', $existingParts->pluck('id'))->delete();
-
-        foreach ($request->content['parts'] as $key => $part) {
-
-            // Continue if part is null
-            if (is_null($part)) {
-                continue;
-            }
-
-            $id = $part['id'] ?? null;
-
-            $model = ContentPart::query()->findOrNew($id);
-
-            $model->content_id = $content->id;
-            $model->type = $part['type'];
-            $model->json_content = $part['json_content'];
-            $model->options = $part['options'] ?? null;
-            $model->order = $key;
-
-            $model->save();
-        }
+        // Use ContentService to efficiently update content parts
+        app(\App\Services\ContentService::class)->updateContentParts($content, $request->content['parts']);
 
         // update other lang id page
         if ($request->other_lang_id) {

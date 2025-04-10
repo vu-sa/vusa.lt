@@ -1,24 +1,34 @@
 <template>
-  <IndexPageLayout title="Institucijos" model-name="institutions" :can-use-routes :columns
-    :paginated-models="institutions" :icon="Icons.INSTITUTION" />
+  <AdminIndexPage
+    model-name="institutions"
+    entity-name="institution" 
+    :paginated-models="institutions"
+    :column-builder="buildColumns"
+    :initial-sorters="{ name: false }"
+    :initial-filters="{ 'types.id': [] }"
+    :icon="Icons.INSTITUTION"
+    :can-use-routes="{
+      create: true,
+      show: true,
+      edit: true,
+      destroy: true,
+      duplicate: false
+    }"
+  />
 </template>
 
 <script setup lang="tsx">
 import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
-import {
-  type DataTableColumns,
-  type DataTableSortState,
-  NIcon,
-  NTag,
-} from "naive-ui";
-import { computed, provide, ref } from "vue";
+import { type DataTableColumns, NIcon, NTag } from "naive-ui";
+import { type Ref } from "vue";
 import { usePage } from "@inertiajs/vue3";
 
 import { formatStaticTime } from "@/Utils/IntlTime";
 import { tenantColumn } from "@/Composables/dataTableColumns";
+import { TableFilters } from "@/Composables/useTableState";
+import AdminIndexPage from "@/Components/Layouts/IndexModel/AdminIndexPage.vue";
 import Icons from "@/Types/Icons/regular";
-import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
-import ModelChip from "@/Components/Chips/ModelChip.vue";
+import ModelChip from "@/Components/Tag/ModelChip.vue";
 import PreviewModelButton from "@/Components/Buttons/PreviewModelButton.vue";
 
 const props = defineProps<{
@@ -26,28 +36,8 @@ const props = defineProps<{
   types: App.Entities.Type[];
 }>();
 
-const canUseRoutes = {
-  create: true,
-  show: true,
-  edit: true,
-  destroy: true,
-};
-
-const sorters = ref<Record<string, DataTableSortState["order"]>>({
-  name: false,
-});
-
-provide("sorters", sorters);
-
-const filters = ref<Record<string, any>>({
-  "tenant.id": [],
-  "types.id": [],
-});
-
-provide("filters", filters);
-
-// ! Don't forget that columns must be computed for the filters to update
-const columns = computed<DataTableColumns<App.Entities.Institution>>(() => {
+// Columns builder function that will be passed to AdminIndexPage
+const buildColumns = (sorters: Ref<Record<string, any>>, filters: Ref<TableFilters>): DataTableColumns<App.Entities.Institution> => {
   return [
     {
       title() {
@@ -85,7 +75,7 @@ const columns = computed<DataTableColumns<App.Entities.Institution>>(() => {
     },
     {
       type: "expand",
-      expandable: (rowData) => rowData.meetings.length > 0,
+      expandable: (rowData) => rowData.meetings?.length > 0,
       renderExpand: (rowData) => {
         return (
           <div class="flex flex-wrap items-center gap-2">
@@ -120,7 +110,7 @@ const columns = computed<DataTableColumns<App.Entities.Institution>>(() => {
         };
       }),
       render(row) {
-        return row.types.map((type) => {
+        return row.types?.map((type) => {
           return (
             <NTag size="small" class="mr-2">
               {{
@@ -132,5 +122,5 @@ const columns = computed<DataTableColumns<App.Entities.Institution>>(() => {
       },
     },
   ];
-});
+};
 </script>

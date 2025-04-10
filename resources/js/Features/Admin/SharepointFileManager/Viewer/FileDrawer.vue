@@ -7,7 +7,7 @@
           <NIcon class="mr-2" size="96" :component="fileIcon" />
           <span class="text-center text-xl tracking-wide">{{
             file?.name
-            }}</span>
+          }}</span>
           <div class="flex gap-2">
             <NSpin content-class="flex gap-2 items-center" size="small" :stroke-width="12"
               :show="loadingPublicPermission">
@@ -88,8 +88,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import { router } from "@inertiajs/vue3";
-import { useAxios } from "@vueuse/integrations/useAxios";
-import { useStorage } from "@vueuse/core";
+import { useFetch, useStorage } from "@vueuse/core";
 
 import File from "~icons/mdi/file";
 import FilePdf from "~icons/mdi/file-pdf";
@@ -129,10 +128,10 @@ watch(
     if (val) {
       loadingPublicPermission.value = true;
 
-      let { data, isFinished } = await useAxios(
+      let { data, isFinished } = await useFetch(
         // eslint-disable-next-line no-secrets/no-secrets
         route("sharepoint.getDriveItemPublicLink", props.file?.id)
-      );
+      ).json();
 
       loadingPublicPermission.value = !isFinished;
 
@@ -149,12 +148,10 @@ watch(
 const createPublicPermission = async () => {
   loadingPublicPermission.value = true;
 
-  let { data, isFinished } = await useAxios(
+  let { data, isFinished } = await useFetch(
     route("sharepoint.createPublicPermission", props.file?.id),
-    {
-      method: "POST",
-    }
-  );
+  ).post().json();
+
   loadingPublicPermission.value = !isFinished;
   publicWebUrl.value = data.value;
 };

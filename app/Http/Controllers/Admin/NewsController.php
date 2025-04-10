@@ -6,7 +6,6 @@ use App\Actions\DuplicateNewsAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UpdateNewsRequest;
 use App\Models\Content;
-use App\Models\ContentPart;
 use App\Models\News;
 use App\Models\Tenant;
 use App\Services\ModelAuthorizer as Authorizer;
@@ -168,22 +167,7 @@ class NewsController extends Controller
 
         $content = Content::query()->find($news->content->id);
 
-        foreach ($request->content['parts'] as $key => $part) {
-            $id = $part['id'] ?? null;
-
-            $model = ContentPart::query()->findOrNew($id);
-
-            $model->content_id = $content->id;
-            $model->type = $part['type'];
-            $model->json_content = $part['json_content'];
-            $model->options = $part['options'] ?? null;
-            $model->order = $key;
-
-            $model->save();
-        }
-
-        // Remove non-existing parts
-        $content->parts()->whereNotIn('id', collect($request->content['parts'])->pluck('id'))->delete();
+        app(\App\Services\ContentService::class)->updateContentParts($content, $request->content['parts']);
 
         // update other lang id page
         if ($request->other_lang_id) {

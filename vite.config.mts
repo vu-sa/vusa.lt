@@ -33,7 +33,7 @@ export default defineConfig({
     }),
     vueDocsPlugin,
     laravel([
-      "resources/js/app.ts", 
+      "resources/js/app.ts",
       // Compiles the same way as app.ts
       //"resources/js/admin.ts",
       //"resources/js/public.ts",
@@ -87,8 +87,26 @@ export default defineConfig({
   ],
   test: {
     globals: true,
-    environment: "happy-dom",
-    setupFiles: ["vitest.setup.ts"],
+    environment: 'node',
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html', 'lcov'],
+      include: [
+        "resources/js/**/*.ts",
+        "resources/js/**/*.vue",
+      ],
+      exclude: [
+        "**/*.d.ts",
+        "**/node_modules/**",
+        "resources/js/Types/**",
+      ]
+    },
+    setupFiles: [
+      'tests/setup.ts'
+    ],
+    deps: {
+      inline: ['vue']
+    },
   },
   resolve: {
     alias: {

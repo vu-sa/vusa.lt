@@ -17,8 +17,8 @@
 
 <script setup lang="ts">
 import { defineAsyncComponent } from "vue";
-import { router } from "@inertiajs/vue3";
-import { useAxios } from "@vueuse/integrations/useAxios";
+import { router, usePage } from "@inertiajs/vue3";
+import { useFetch } from "@vueuse/core";
 
 export type NotificationData = {
   object: {
@@ -46,11 +46,15 @@ const emit = defineEmits<{
 const notificationType = props.notification.type.split("\\").pop();
 
 const handleClick = async () => {
-  let { execute } = useAxios(
+  let { execute } = useFetch(
     route("notifications.markAsRead", props.notification.id),
-    { method: "post" },
+    {
+      headers: {
+        "X-CSRF-TOKEN": usePage().props.csrf_token,
+      },
+    },
     { immediate: false }
-  );
+  ).post().json();
 
   await execute();
 

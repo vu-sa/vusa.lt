@@ -4,6 +4,9 @@ return [
     'duty' => [
         'model' => '{1} duty|[2,*] duties',
     ],
+    'institution' => [
+        'model' => '{1} institution|[2,*] institutions',
+    ],
     'meeting' => [
         'model' => '{1} meeting|[2,*] meetings',
     ],

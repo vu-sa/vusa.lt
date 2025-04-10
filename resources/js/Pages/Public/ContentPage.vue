@@ -16,7 +16,6 @@
       <h1 class="col-span-full col-start-1 inline-flex gap-4">
         <span class="text-gray-900 dark:text-white">{{ page.title }}</span>
       </h1>
-      <!-- eslint-disable-next-line vue/no-v-html -->
       <div class="typography flex max-w-prose flex-col gap-4 py-4 text-base leading-7">
         <RichContentParser :content="page.content?.parts" />
       </div>

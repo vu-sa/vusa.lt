@@ -29,7 +29,7 @@
               <span>Each meeting has</span>
               <ModelChip>
                 <template #icon>
-                  <NIcon :component="IconsRegular.AGENDA_ITEM" />
+                  <IconsRegular.AGENDA_ITEM />
                 </template>
                 agenda items
               </ModelChip>
@@ -128,7 +128,7 @@ import { useStorage } from "@vueuse/core";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import IconsFilled from "@/Types/Icons/filled";
 import IconsRegular from "@/Types/Icons/regular";
-import ModelChip from "@/Components/Chips/ModelChip.vue";
+import ModelChip from "@/Components/Tag/ModelChip.vue";
 import SuggestionAlert from "@/Components/Alerts/SuggestionAlert.vue";
 
 const emit = defineEmits<{

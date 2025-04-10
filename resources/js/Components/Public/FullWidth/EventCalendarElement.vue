@@ -1,5 +1,5 @@
 <template>
-  <div class="my-8 flex flex-col-reverse gap-4 lg:flex-row text-zinc-900 dark:text-zinc-50">
+  <div class="mb-16 mt-24 flex flex-col gap-6 lg:flex-row text-zinc-900 dark:text-zinc-50 items-center">
     <div
       class="typography flex w-fit max-w-prose flex-col items-center justify-center text-base lg:h-4/5 lg:w-1/2 lg:items-start 2xl:w-3/4">
       <p v-if="$page.props.app.locale === 'lt'" class="text-2xl font-bold lg:w-2/3">
@@ -9,22 +9,25 @@
         Follow Vilnius University activities for students!
       </p>
 
-      <p v-if="$page.props.app.locale === 'lt'" class="w-4/5">
-        Arba nesuk galvos ir
-        <span class="mx-1">
-          <NButton size="tiny" round strong secondary @click="showModal = true">sinchronizuok</NButton>
-        </span>
-        <strong>studentų kalendorių</strong> į „Google“ arba „Outlook“ 🗓
-      </p>
+      <div class="flex gap-4">
+        <Link :href="route('calendar.list', { lang: $page.props.app.locale })">
+        <NButton type="primary">
+          <template #icon>
+            <IFluentCalendarLtr20Regular />
+          </template>
+          {{ $t("Visi renginiai") }}
+        </NButton>
+        </Link>
 
-      <p v-else class="w-4/5">
-        Or you can
-        <span class="mx-1">
-          <NButton size="tiny" round strong secondary @click="showModal = true">sync</NButton>
-        </span>
-        <strong>this student calendar</strong> to „Google“ or „Outlook“ 🗓
-      </p>
+        <NButton secondary @click="showModal = true">
+          <template #icon>
+            <IFluentArrowSync20Regular />
+          </template>
+          {{ $t("Sinchronizuoti kalendorių") }}
+        </NButton>
+      </div>
     </div>
+
     <CalendarSyncModal v-model:show-modal="showModal" @close="showModal = false" />
     <div class=" mx-auto">
       <div class="flex w-fit items-center justify-center">
@@ -40,7 +43,17 @@
             src="/images/photos/pirmakursiu_stovykla_kaune.jpg">
 </template> -->
         <FadeTransition>
-          <EventCalendar class=" z-5" :calendar-events="calendar" :locale="$page.props.app.locale" />
+          <div v-if="loading" class="w-full h-96 flex items-center justify-center">
+            <div class="animate-pulse flex flex-col gap-3 items-center">
+              <div class="h-12 w-12 rounded-full bg-zinc-200 dark:bg-zinc-700" />
+              <div class="h-5 w-64 rounded bg-zinc-200 dark:bg-zinc-700" />
+              <div class="h-32 w-96 rounded bg-zinc-200 dark:bg-zinc-700" />
+            </div>
+          </div>
+          <div v-else-if="error" class="text-red-500 p-4 rounded-lg border border-red-300">
+            {{ $t("Nepavyko užkrauti kalendoriaus įvykių") }}
+          </div>
+          <EventCalendar v-else class="z-5" :calendar-events="calendar" :locale="$page.props.app.locale" />
         </FadeTransition>
       </div>
     </div>
@@ -48,7 +61,6 @@
 </template>
 
 <script setup lang="ts">
-import { usePage } from "@inertiajs/vue3";
 import { NButton } from "naive-ui";
 import { ref } from "vue";
 
@@ -58,10 +70,12 @@ import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 
 const showModal = ref(false);
 
-const calendar = await fetch(
-  route("api.calendar.tenant.index", {
-    lang: usePage().props.app.locale,
-    tenant: usePage().props.tenant?.alias,
-  })
-).then((response) => response.json());
+import { useCalendarFetch } from "@/Services/ContentService";
+import { Link } from "@inertiajs/vue3";
+
+// Use the ContentService to fetch calendar data
+const { calendar, loading, error } = useCalendarFetch();
+
+// Removed debug console.log for production code
+
 </script>

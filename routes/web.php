@@ -39,7 +39,11 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
 
         Route::get('kalendorius/renginys/{calendar}', [Public\PublicPageController::class, 'calendarEventRedirect'])->name('calendar.event');
 
+        Route::inertia('tapk-vu-sa-nariu', 'Public/MembershipPage')->name('joinUs');
+
         Route::get('kalendorius/{year}/{month}/{day}/{slug}', [Public\PublicPageController::class, 'calendarMain'])->name('calendar.event.2')->whereNumber('year')->whereNumber('month')->whereNumber('day');
+
+        Route::get('kalendorius/renginiu-sarasas', [Public\PublicPageController::class, 'calendarEventList'])->name('calendar.list');
 
         Route::get('pirmakursiu-stovyklos/{year?}', [Public\PublicPageController::class, 'summerCamps'])->name('pirmakursiuStovyklos')->whereNumber('year');
 
@@ -51,6 +55,8 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
 
         Route::get('kalendorius/ics', [Public\MainController::class, 'publicAllEventCalendar'])->name('calendar.ics');
         Route::post('search', [Public\MainController::class, 'search'])->name('search');
+
+        // Note: API routes should be defined in api.php, not here
 
         Route::get('dokumentai', [Public\PublicPageController::class, 'documents'])->name('documents');
 

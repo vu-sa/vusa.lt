@@ -22,6 +22,12 @@ export enum ContentPartEnum {
   "SHADCN_ACCORDION" = "shadcn-accordion",
   "SHADCN_CARD" = "shadcn-card",
   "TIPTAP" = "tiptap",
+  "HERO" = "hero",
+  "SPOTIFY_EMBED" = "spotify-embed",
+  "FLOW_GRAPH" = "flow-graph",
+  "NUMBER_STAT_SECTION" = "number-stat-section",
+  "NEWS" = "news",
+  "CALENDAR" = "calendar",
 }
 export enum LocaleEnum {
   "LT" = "lt",

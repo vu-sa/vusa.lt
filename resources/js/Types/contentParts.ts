@@ -1,4 +1,5 @@
-// Check enums.ts -> ContentParts for types that need to be declared
+// Type definitions for content parts used in the rich content editor
+// These types correspond to the ContentPartEnum in enums.ts
 
 // Implemented
 
@@ -64,17 +65,30 @@ export type SpotifyEmbed = {
 
 export type FlowGraph = {
   json_content: {
-    nodes: Record<string, any>[];
-    edges: Record<string, any>[];
-    preset: string;
+    nodes?: Record<string, any>[];
+    edges?: Record<string, any>[];
+    preset?: 'VusaStructure';
   };
   options: null
 }
 
-// Not implemented
+export type NumberStatSection = {
+  json_content: {
+    endNumber: number;
+    label: string;
+  }[];
+  options: {
+    color?: "zinc" | "red" | "yellow";
+    title: string;
+  }
+}
+
+// Now implemented
 
 export type Calendar = {
-  json_content: {}
+  json_content: {
+    title: string;
+  }
   options: null
 };
 

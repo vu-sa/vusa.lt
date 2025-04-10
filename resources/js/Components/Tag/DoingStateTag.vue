@@ -3,8 +3,9 @@
     :bordered="false"
     size="small"
     :type="stateTypeMap[props.doing.state].tagType"
-    >{{ stateTypeMap[props.doing.state].text }}</NTag
   >
+    {{ stateTypeMap[props.doing.state].text }}
+  </NTag>
 </template>
 
 <script setup lang="tsx">

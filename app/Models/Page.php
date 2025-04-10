@@ -48,6 +48,7 @@ class Page extends Model
         // return only title
         $array = [
             'title' => $this->title,
+            'permalink' => $this->permalink,
         ];
 
         return $array;

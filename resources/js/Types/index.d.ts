@@ -26,6 +26,7 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
     }>;
     user: User;
   } | null;
+  csrf_token: string;
   flash: {
     data: any;
     info: string | null;

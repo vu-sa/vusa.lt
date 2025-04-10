@@ -34,7 +34,7 @@
       </template>
 
       <NUpload ref="upload" :action="route('membershipUsers.import', membership.id)" :default-upload="false"
-        :headers="csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {}" @change="handleChange">
+        :headers="{ 'X-CSRF-TOKEN': $page.props.csrf_token }" @change="handleChange">
         <NButton>Įkelti failą</NButton>
       </NUpload>
       <NButton type="primary" :disabled="fileListLength === 0" style="margin-top: 12px" @click="handleClick">
@@ -73,10 +73,6 @@ const form = rememberKey
 const fileListLength = ref(0);
 
 const upload = useTemplateRef("upload");
-
-const csrfToken = document.querySelector<HTMLMetaElement>(
-  'meta[name="csrf-token"]',
-)?.content;
 
 const handleChange = (data: { fileList: UploadFileInfo[] }) => {
   fileListLength.value = data.fileList.length;

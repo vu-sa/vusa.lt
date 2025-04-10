@@ -53,8 +53,9 @@
 <script setup lang="ts">
 import "cropperjs";
 import { computed, useTemplateRef } from "vue";
-import { useAxios } from "@vueuse/integrations/useAxios";
 import type { CropperCanvas, CropperImage, CropperSelection } from "cropperjs";
+import { useFetch } from "@vueuse/core";
+import { usePage } from "@inertiajs/vue3";
 
 const props = defineProps<{
   path: string;
@@ -102,14 +103,18 @@ const rotateImage90 = () => {
 const handleImageCrop = async () => {
   let dataUrl = await cropImage();
 
-  const { data } = await useAxios(route("files.uploadImage"), {
-    method: "post",
-    data: {
+  const { data } = await useFetch(
+    route("files.uploadImage"), {
+    body: JSON.stringify({
       image: dataUrl,
       path: props.path,
       name: fileName.value,
-    },
-  });
+    }),
+    headers: {
+      "X-CSRF-TOKEN": usePage().props.csrf_token,
+      "Content-Type": "application/json",
+    }
+  }).post().json();
 
   src.value = data.value.url;
 

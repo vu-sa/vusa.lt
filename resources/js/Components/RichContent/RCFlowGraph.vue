@@ -8,7 +8,7 @@
 import type { FlowGraph } from "@/Types/contentParts";
 import VusaStructure from '@/Features/StructureGraph/presets/VusaStructure.vue';
 
-const props = defineProps<{
+defineProps<{
   element: FlowGraph;
 }>()
 </script>

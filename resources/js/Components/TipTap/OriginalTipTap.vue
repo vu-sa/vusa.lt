@@ -7,8 +7,8 @@
       <TiptapFormattingButtons v-model:editor="editor" />
       <NButtonGroup size="small">
         <TiptapLinkButton :editor="editor"
-          @submit="(url) => editor?.chain().focus().extendMarkRange('link').setLink({ href: url, class: '' }).run()" @document:submit="(url) => editor?.chain().focus().extendMarkRange('link').setLink({ href: url, class: 'archive-document-link plain' }).run()"
-        />
+          @submit="(url) => editor?.chain().focus().extendMarkRange('link').setLink({ href: url, class: '' }).run()"
+          @document:submit="(url) => editor?.chain().focus().extendMarkRange('link').setLink({ href: url, class: 'archive-document-link plain' }).run()" />
         <NButton :disabled="!editor.isActive('link')" @click="editor?.chain().focus().unsetLink().run()">
           <template #icon>
             <IFluentLinkDismiss20Filled />
@@ -196,6 +196,7 @@ import TiptapLinkButton from "./TiptapLinkButton.vue";
 import TiptapVideoButton from "./TiptapVideoButton.vue";
 import TiptapYoutubeButton from "./TiptapYoutubeButton.vue";
 import latinize from "latinize";
+import { trans as $t } from "laravel-vue-i18n";
 
 const props = defineProps<{
   disableTables?: boolean;
@@ -229,7 +230,7 @@ const editor = useEditor({
     }),
     BubbleMenu,
     Placeholder.configure({
-      placeholder: "Tekstas...",
+      placeholder: $t ? $t('rich-content.text_placeholder') : "Tekstas...",
     }),
     Image.configure({
       HTMLAttributes: {
@@ -285,6 +286,7 @@ function handleUpdate() {
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)/g, '')
+      .substring(0, 100) // Limit ID length for better compatibility
   }
 
   editor.value?.state.doc.descendants((node, pos) => {
