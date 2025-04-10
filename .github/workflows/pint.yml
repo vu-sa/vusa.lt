@@ -20,6 +20,17 @@ jobs:
         with:
           php-version: 8.3
           extensions: dom, curl, libxml, mbstring, zip, fileinfo
+      # Cache Composer dependencies
+      - name: Get Composer Cache Directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+      - uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: composer-
+      - name: Install Composer Dependencies
+        run: composer install --no-progress --no-scripts --prefer-dist
       - name: "Laravel Pint"
         uses: aglipanci/laravel-pint-action@2.4
         with:
