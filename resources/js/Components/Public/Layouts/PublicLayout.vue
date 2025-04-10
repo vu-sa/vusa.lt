@@ -29,11 +29,14 @@
         <main class="pb-8 pt-12">
           <!-- <Suspense> -->
           <div>
-            <FadeTransition appear>
+            <FadeTransition v-if="!$page.props.disablePageTransition" appear>
               <div :key="$page.url" class="wrapper">
                 <slot />
               </div>
             </FadeTransition>
+            <div v-else class="wrapper">
+              <slot />
+            </div>
             <div v-if="
               $page.props.tenant?.banners &&
               $page.props.tenant.banners.length > 0

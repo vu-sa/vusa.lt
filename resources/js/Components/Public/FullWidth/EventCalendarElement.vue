@@ -1,5 +1,5 @@
 <template>
-  <div class="my-8 flex flex-col-reverse gap-4 lg:flex-row text-zinc-900 dark:text-zinc-50">
+  <div class="mb-16 mt-24 flex flex-col gap-6 lg:flex-row text-zinc-900 dark:text-zinc-50 items-center">
     <div
       class="typography flex w-fit max-w-prose flex-col items-center justify-center text-base lg:h-4/5 lg:w-1/2 lg:items-start 2xl:w-3/4">
       <p v-if="$page.props.app.locale === 'lt'" class="text-2xl font-bold lg:w-2/3">
@@ -9,22 +9,25 @@
         Follow Vilnius University activities for students!
       </p>
 
-      <p v-if="$page.props.app.locale === 'lt'" class="w-4/5">
-        Arba nesuk galvos ir
-        <span class="mx-1">
-          <NButton size="tiny" round strong secondary @click="showModal = true">sinchronizuok</NButton>
-        </span>
-        <strong>studentų kalendorių</strong> į „Google“ arba „Outlook“ 🗓
-      </p>
+      <div class="flex gap-4">
+        <Link :href="route('calendar.list', { lang: $page.props.app.locale })">
+        <NButton type="primary">
+          <template #icon>
+            <IFluentCalendarLtr20Regular />
+          </template>
+          {{ $t("Visi renginiai") }}
+        </NButton>
+        </Link>
 
-      <p v-else class="w-4/5">
-        Or you can
-        <span class="mx-1">
-          <NButton size="tiny" round strong secondary @click="showModal = true">sync</NButton>
-        </span>
-        <strong>this student calendar</strong> to „Google“ or „Outlook“ 🗓
-      </p>
+        <NButton secondary @click="showModal = true">
+          <template #icon>
+            <IFluentArrowSync20Regular />
+          </template>
+          {{ $t("Sinchronizuoti kalendorių") }}
+        </NButton>
+      </div>
     </div>
+
     <CalendarSyncModal v-model:show-modal="showModal" @close="showModal = false" />
     <div class=" mx-auto">
       <div class="flex w-fit items-center justify-center">
@@ -64,19 +67,15 @@ import { ref } from "vue";
 import CalendarSyncModal from "@/Components/Modals/CalendarSyncModal.vue";
 import EventCalendar from "@/Components/Calendar/EventCalendar.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
-import { useCalendarFetch } from "@/Services/ContentService";
 
 const showModal = ref(false);
 
-// Use our simplified fetch function from ContentService
+import { useCalendarFetch } from "@/Services/ContentService";
+import { Link } from "@inertiajs/vue3";
+
+// Use the ContentService to fetch calendar data
 const { calendar, loading, error } = useCalendarFetch();
 
-// For debugging
-console.log('Calendar data state:', { 
-  loading: loading.value, 
-  hasError: error.value !== null, 
-  dataEmpty: !calendar.value || calendar.value.length === 0,
-  dataLength: calendar.value ? calendar.value.length : 0
-});
+// Removed debug console.log for production code
 
 </script>

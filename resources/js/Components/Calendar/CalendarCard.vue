@@ -1,124 +1,113 @@
 <template>
-  <Card class="border shadow-xs transition-all duration-300  hover:shadow-md dark:border-zinc-200/20">
-    <div class="h-32 w-full">
+  <Card class="calendar-card border shadow-sm transition-all duration-300 hover:shadow-md dark:border-zinc-600/30">
+    <div class="relative h-40 w-full overflow-hidden">
       <img v-if="calendarEvent.images && calendarEvent.images?.length > 0"
-        class="size-full rounded-t-md object-cover object-center" :src="calendarEvent.images[0].original_url">
+        class="h-full w-full rounded-t-md object-cover object-center transition-transform duration-500 hover:scale-105"
+        :src="calendarEvent.images[0].original_url" :alt="calendarEvent.title">
+      <div v-else
+        class="flex h-full w-full items-center justify-center rounded-t-md bg-gradient-to-br from-red-50 to-red-100 dark:from-zinc-800 dark:to-zinc-700">
+        <IFluentCalendarLtr24Regular class="text-4xl text-red-500 dark:text-red-400" />
+      </div>
+
+      <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3 text-white">
+        <div class="inline-flex items-center rounded-full bg-red-500/90 px-2 py-0.5 text-xs text-white">
+          {{ formatDate(calendarEvent.date) }}
+        </div>
+      </div>
     </div>
-    <CardHeader class="mt-2">
-      <div class="align-center flex flex-row items-center p-2">
-        <p class="line-clamp-2 w-full text-center text-xl font-bold leading-5">
-          {{
-            calendarEvent.title
-          }}
+
+    <CardHeader>
+      <div class="p-1">
+        <p class="line-clamp-2 h-12 w-full text-xl font-bold leading-tight">
+          {{ calendarEvent.title }}
         </p>
       </div>
     </CardHeader>
+
     <CardContent class="mb-2 flex flex-col gap-2 text-sm">
       <div class="inline-flex items-center gap-2">
-        <IFluentCalendarLtr24Regular />
+        <IFluentCalendarLtr20Regular class="text-red-500 dark:text-red-400" />
         <strong>
-          {{
-            formatStaticTime(
-              new Date(calendarEvent.date),
-              {
-                year: "numeric",
-                month: "numeric",
-                day: "numeric",
-                hour: "numeric",
-                minute: "numeric",
-              },
-              $page.props.app.locale
-            )
-          }}
-        </strong>
-      </div>
-      <div v-if="calendarEvent.end_date" class="inline-flex items-center gap-2">
-        <IFluentTimer16Regular />
-        <span>
           {{ formatStaticTime(
-            new Date(calendarEvent.end_date),
+            new Date(calendarEvent.date),
             {
               year: "numeric",
-              month: "numeric",
+              month: "short",
               day: "numeric",
               hour: "numeric",
               minute: "numeric",
             },
-            $page.props.app.locale) }}
-          <!-- {{ calculateEventDuration(calendarEvent) }} -->
-        </span>
+            $page.props.app.locale
+          ) }}
+          <template v-if="calendarEvent.end_date">
+            <span class="mx-1">-</span>
+            {{ formatStaticTime(
+              new Date(calendarEvent.end_date),
+              isSameDay(new Date(calendarEvent.date), new Date(calendarEvent.end_date))
+                ? { hour: "numeric", minute: "numeric" }
+                : { year: "numeric", month: "short", day: "numeric", hour: "numeric", minute: "numeric" },
+              $page.props.app.locale
+            ) }}
+          </template>
+        </strong>
       </div>
+
       <div v-if="calendarEvent.location" class="inline-flex items-center gap-2">
-        <IFluentLocation24Regular />
-        <a class="underline" target="_blank"
-          :href="`https://www.google.com/maps/search/?api=1&query=${calendarEvent.location}`">{{
-            calendarEvent.location
-          }}</a>
+        <IFluentLocation20Regular class="text-red-500 dark:text-red-400" />
+        <a class="line-clamp-1 hover:text-red-500 hover:underline dark:hover:text-red-400" target="_blank"
+          :href="`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(calendarEvent.location)}`">
+          {{ calendarEvent.location }}
+        </a>
       </div>
+
       <div class="inline-flex items-center gap-2">
-        <IFluentPeopleTeam24Regular />
-        <span>
+        <IFluentPeopleTeam20Regular class="text-red-500 dark:text-red-400" />
+        <span class="line-clamp-1">
           {{ $t("Organizuoja") }}:
           <strong>{{ eventOrganizer }}</strong>
         </span>
       </div>
     </CardContent>
 
-    <CardFooter v-if="!hideFooter">
-      <div v-if="googleLink ||
-        calendarEvent.cto_url ||
-        calendarEvent.facebook_url
-      " class="flex flex-col justify-center">
-        <!-- <div class="flex flex-col justify-center text-xs leading-4"> -->
-        <!--   {{ formatRelativeTime(new Date(calendarEvent.date)) }} -->
-        <!-- </div> -->
+    <CardFooter v-if="!hideFooter" class="flex justify-between">
+      <div v-if="googleLink || calendarEvent.facebook_url" class="flex gap-2">
+        <NPopover v-if="googleLink" trigger="hover">
+          {{ $t("Įsidėk į Google kalendorių") }}
+          <template #trigger>
+            <NButton secondary circle size="small" tag="a" target="_blank" :href="googleLink" @click.stop>
+              <template #icon>
+                <IMdiGoogle />
+              </template>
+            </NButton>
+          </template>
+        </NPopover>
 
-        <NButton v-if="calendarEvent.tenant?.alias === 'mif' &&
-          calendarEvent.category === 'freshmen-camps'
-        " strong tag="a" round type="primary" @click="showModal = true">
+        <NPopover v-if="calendarEvent.facebook_url" trigger="hover">
+          {{ $t("Facebook renginys") }}
+          <template #trigger>
+            <NButton title="Facebook" secondary tag="a" target="_blank" :href="calendarEvent.facebook_url" circle
+              size="small">
+              <IMdiFacebook />
+            </NButton>
+          </template>
+        </NPopover>
+      </div>
+
+      <div class="ml-auto">
+        <NButton
+          v-if="calendarEvent.url || (calendarEvent.tenant?.alias === 'mif' && calendarEvent.category?.alias === 'freshmen-camps')"
+          strong tag="a" round type="primary" :href="calendarEvent.url" target="_blank"
+          @click="calendarEvent.tenant?.alias === 'mif' && calendarEvent.category === 'freshmen-camps' ? showModal = true : null">
           <template #icon>
             <IFluentHatGraduation20Filled />
           </template>
           {{ $t("Dalyvauk") }}!
         </NButton>
-        <NButton v-if="calendarEvent.url" strong tag="a" round type="primary" target="_blank" :href="calendarEvent.url">
-          <template #icon>
-            <IFluentHatGraduation20Filled />
-          </template>
-          {{ $t("Dalyvauk") }}!
+
+        <NButton v-else secondary round tag="a"
+          :href="route('calendar.event', { calendar: calendarEvent.id, lang: $page.props.app.locale })">
+          {{ $t("Daugiau") }}
         </NButton>
-        <!-- <NModal
-          v-if="
-            calendarEvent.tenant?.alias === 'mif' &&
-            calendarEvent.category === 'freshmen-camps'
-          "
-          v-model:show="showModal"
-          class="max-w-xl"
-          display-directive="show"
-          preset="card"
-          title="VU MIF pirmakursių stovyklos registracija"
-          :bordered="false"
-        >
-          <NScrollbar style="max-height: 600px"
-            ><NMessageProvider><MIFCampRegistration /></NMessageProvider
-          ></NScrollbar>
-        </NModal> -->
-        <div v-if="calendarEvent.facebook_url || googleLink" class="mt-2 flex justify-center gap-2">
-          <NButton v-if="calendarEvent.facebook_url" title="Facebook" secondary tag="a" target="_blank"
-            :href="calendarEvent.facebook_url" circle size="small">
-            <IMdiFacebook />
-          </NButton>
-          <NPopover v-if="googleLink">
-            {{ $t("Įsidėk į Google kalendorių") }}
-            <template #trigger>
-              <NButton secondary circle size="small" tag="a" target="_blank" :href="googleLink" @click.stop>
-                <template #icon>
-                  <IMdiGoogle />
-                </template>
-              </NButton>
-            </template>
-          </NPopover>
-        </div>
       </div>
     </CardFooter>
   </Card>
@@ -126,7 +115,15 @@
 
 <script setup lang="tsx">
 import { trans as $t } from "laravel-vue-i18n";
+import { NButton, NPopover } from "naive-ui";
 import { computed, ref } from "vue";
+
+// Helper function to check if two dates are on the same day
+const isSameDay = (date1: Date, date2: Date): boolean => {
+  return date1.getFullYear() === date2.getFullYear() &&
+    date1.getMonth() === date2.getMonth() &&
+    date1.getDate() === date2.getDate();
+};
 
 import Card from "../ShadcnVue/ui/card/Card.vue";
 import CardContent from '../ShadcnVue/ui/card/CardContent.vue';
@@ -134,6 +131,7 @@ import CardFooter from '../ShadcnVue/ui/card/CardFooter.vue';
 import CardHeader from '../ShadcnVue/ui/card/CardHeader.vue';
 
 import { formatStaticTime } from "@/Utils/IntlTime";
+import { usePage } from "@inertiajs/vue3";
 
 const props = defineProps<{
   calendarEvent: App.Entities.Calendar;
@@ -150,43 +148,25 @@ const eventOrganizer = computed(() => {
 
 const showModal = ref(false);
 
-//const timeTillEvent = computed(() => {
-//  const date = new Date(props.calendarEvent.date);
-//  const now = new Date();
-//  // get full days till event
-//  const daysTillEvent = Math.floor(
-//    (date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
-//  );
-//  // get ms till event minus full days
-//  const msTillEvent =
-//    date.getTime() - now.getTime() - daysTillEvent * 1000 * 60 * 60 * 24;
-//  return {
-//    days: daysTillEvent,
-//    ms: msTillEvent,
-//  };
-//});
-
-//const calculateEventDuration = (event: App.Entities.Calendar) => {
-//  if (!event.end_date) return undefined;
-//
-//  const startDate = new Date(event.date);
-//  const endDate = new Date(event.end_date.replace(/-/g, "/"));
-//  const duration = endDate.getTime() - startDate.getTime();
-//
-//  // if event is longer than 1 day, return days
-//  if (duration > 1000 * 60 * 60 * 24) {
-//    const days = Math.floor(duration / (1000 * 60 * 60 * 24));
-//    return `${days} ${$t("dienos")}`;
-//  }
-//  // if event is longer than 1 hour, return hours
-//  if (duration > 1000 * 60 * 60) {
-//    const hours = Math.floor(duration / (1000 * 60 * 60));
-//    return `${hours} ${$t("valandos")}`;
-//  }
-//  // if event is longer than 1 minute, return minutes
-//  if (duration > 1000 * 60) {
-//    const minutes = Math.floor(duration / (1000 * 60));
-//    return `${minutes} ${$t("minutės")}`;
-//  }
-//};
+// Format date for the tag
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return new Intl.DateTimeFormat(usePage().props.app.locale, {
+    month: "short",
+    day: "numeric",
+  }).format(date);
+};
 </script>
+
+<style scoped>
+.calendar-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.calendar-card :deep(.vc-container) {
+  border: none;
+  font-family: 'Inter', sans-serif;
+}
+</style>
