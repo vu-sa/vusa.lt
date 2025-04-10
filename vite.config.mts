@@ -89,7 +89,7 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     coverage: {
-      provider: 'v8',
+      provider: 'istanbul',
       reporter: ['text', 'json', 'html', 'lcov'],
       include: [
         "resources/js/**/*.ts",

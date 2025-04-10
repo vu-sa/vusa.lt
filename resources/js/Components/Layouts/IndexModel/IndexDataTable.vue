@@ -180,7 +180,7 @@ const sweepSearch = () => {
 // Append the column array with an actions columns
 const columnsWithActions = computed(() => {
   return [
-    ...props.columns.value,
+    ...(Array.isArray(props.columns) ? props.columns : props.columns.value),
     {
       title:
         props.showRoute || props.editRoute || props.destroyRoute || props.duplicateRoute
