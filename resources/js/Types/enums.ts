@@ -26,10 +26,9 @@ export enum ContentPartEnum {
   "SPOTIFY_EMBED" = "spotify-embed",
   "FLOW_GRAPH" = "flow-graph",
   "NUMBER_STAT_SECTION" = "number-stat-section",
-  "NEWS" = "news", 
-  "CALENDAR" = "calendar"
+  "NEWS" = "news",
+  "CALENDAR" = "calendar",
 }
-
 export enum LocaleEnum {
   "LT" = "lt",
   "EN" = "en",
