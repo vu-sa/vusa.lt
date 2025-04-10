@@ -1,4 +1,5 @@
-// Check enums.ts -> ContentParts for types that need to be declared
+// Type definitions for content parts used in the rich content editor
+// These types correspond to the ContentPartEnum in enums.ts
 
 // Implemented
 
@@ -82,10 +83,12 @@ export type NumberStatSection = {
   }
 }
 
-// Not implemented
+// Now implemented
 
 export type Calendar = {
-  json_content: {}
+  json_content: {
+    title: string;
+  }
   options: null
 };
 

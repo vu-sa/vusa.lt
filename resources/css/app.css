@@ -181,20 +181,45 @@ html.dark {
   }
 }
 
+/* 
+  Only keeping essential global classes that represent layout patterns
+  that would be cumbersome as inline utilities
+  
+  NOTE: Do not use tailwindcss-typography plugin here as it conflicts with our custom styling
+*/
 .wrapper {
   display: grid;
-  grid-template-columns:
-    1fr min(85vw, 100%) 1fr;
-  @apply max-md:mt-12 mt-24
+  grid-template-columns: 
+    minmax(2rem, 1fr) 
+    min(calc(100% - 4rem), 1200px) 
+    minmax(2rem, 1fr);
+  @apply max-md:mt-8 mt-16
 }
 
-.wrapper>* {
+.rich-content-wrapper > *:first-child {
+  margin-top: 0 !important;
+}
+
+.rich-content-wrapper > *:last-child {
+  margin-bottom: 0 !important;
+}
+
+.wrapper > * {
   grid-column: 2;
+  /* Default horizontal padding for non-full-bleed elements */
+  padding-left: 1rem;
+  padding-right: 1rem;
+  @media (width >= 768px) {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
 }
 
 .full-bleed {
   width: 100%;
   grid-column: 1 / 4;
+  padding-left: 0;
+  padding-right: 0;
 }
 
 /*This aligns form items to start, when MultiLocaleInput is present in the form.*/

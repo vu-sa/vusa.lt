@@ -167,23 +167,8 @@ class NewsController extends Controller
         $news->save();
 
         $content = Content::query()->find($news->content->id);
-
-        foreach ($request->content['parts'] as $key => $part) {
-            $id = $part['id'] ?? null;
-
-            $model = ContentPart::query()->findOrNew($id);
-
-            $model->content_id = $content->id;
-            $model->type = $part['type'];
-            $model->json_content = $part['json_content'];
-            $model->options = $part['options'] ?? null;
-            $model->order = $key;
-
-            $model->save();
-        }
-
-        // Remove non-existing parts
-        $content->parts()->whereNotIn('id', collect($request->content['parts'])->pluck('id'))->delete();
+        
+        app(\App\Services\ContentService::class)->updateContentParts($content, $request->content['parts']);
 
         // update other lang id page
         if ($request->other_lang_id) {

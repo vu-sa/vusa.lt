@@ -7,7 +7,6 @@ use App\Http\Requests\StoreTenantRequest;
 use App\Http\Requests\UpdateContentRequest;
 use App\Http\Requests\UpdateTenantRequest;
 use App\Models\Content;
-use App\Models\ContentPart;
 use App\Models\Institution;
 use App\Models\Tenant;
 use App\Services\ModelAuthorizer as Authorizer;
@@ -118,33 +117,8 @@ class TenantController extends Controller
 
         $content = Content::query()->find($validated['id']);
 
-        // Collect and remove values with no ids
-        $existingParts = collect($validated['parts'])->filter(function ($part) {
-            return isset($part['id']);
-        });
-
-        // Remove non-existing parts
-        $content->parts()->whereNotIn('id', $existingParts->pluck('id'))->delete();
-
-        foreach ($validated['parts'] as $key => $part) {
-
-            // Continue if part is null
-            if (is_null($part)) {
-                continue;
-            }
-
-            $id = $part['id'] ?? null;
-
-            $model = ContentPart::query()->findOrNew($id);
-
-            $model->content_id = $content->id;
-            $model->type = $part['type'];
-            $model->json_content = $part['json_content'];
-            $model->options = $part['options'] ?? null;
-            $model->order = $key;
-
-            $model->save();
-        }
+        // Use ContentService to efficiently update content parts
+        app(\App\Services\ContentService::class)->updateContentParts($content, $validated['parts']);
 
         return redirect()->back()->with('success', 'Tenant updated.');
     }

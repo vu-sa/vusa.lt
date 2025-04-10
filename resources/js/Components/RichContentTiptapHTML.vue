@@ -20,9 +20,12 @@ import { Video } from './TipTap/Video';
 defineProps<{
   json_content: any;
 }>();
+</script>
 
-const generateHTMLfromTiptap = (json_content: any) => {
-  if (Object.keys(json_content).length === 0) {
+<script lang="ts">
+// Export this function so it can be used in other components
+export const generateHTMLfromTiptap = (json_content: any) => {
+  if (!json_content || Object.keys(json_content).length === 0) {
     return '';
   }
 

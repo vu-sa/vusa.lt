@@ -1,5 +1,18 @@
 <template>
-  <div v-if="news.length > 0" class="my-4 rounded-lg py-4">
+  <div v-if="loading" class="my-4 rounded-lg py-4">
+    <div class="w-full flex flex-col gap-4">
+      <div class="animate-pulse flex flex-col gap-3">
+        <div class="h-64 w-full rounded bg-zinc-200 dark:bg-zinc-700"></div>
+        <div class="h-5 w-32 rounded bg-zinc-200 dark:bg-zinc-700"></div>
+        <div class="h-8 w-3/4 rounded bg-zinc-200 dark:bg-zinc-700"></div>
+        <div class="h-24 w-full rounded bg-zinc-200 dark:bg-zinc-700"></div>
+      </div>
+    </div>
+  </div>
+  <div v-else-if="error" class="my-4 rounded-lg py-4 text-red-500">
+    {{ $t("Nepavyko užkrauti naujienų") }}
+  </div>
+  <div v-else-if="news && news.length > 0" class="my-4 rounded-lg py-4">
     <section class="grid gap-12 sm:grid-cols-1 md:grid-cols-[2fr_1fr]">
       <!-- <SmartLink v-for="item in news" :key="item.id" prefetch :href="route('news', { -->
       <!--   lang: item.lang, -->
@@ -77,29 +90,23 @@
       </div>
     </section>
   </div>
+  <div v-else class="my-4 rounded-lg py-4 text-center text-zinc-500 dark:text-zinc-400">
+    {{ $t("Nėra naujienų") }}
+  </div>
 </template>
 
 <script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
-import { usePage } from "@inertiajs/vue3";
 
 import SmartLink from "./SmartLink.vue";
 import type { News } from '@/Types/contentParts';
-import { computed } from "vue";
 import { formatStaticTime } from "@/Utils/IntlTime";
+import { useNewsFetch } from "@/Services/ContentService";
 
 defineProps<{
   element: News;
 }>();
 
-const news = await fetch(
-  route("api.news.tenant.index", {
-    lang: usePage().props.app.locale,
-    tenant: usePage().props.tenant?.alias,
-  })
-).then((response) => response.json()) as App.Entities.News[] | [];
-
-const firstNews = computed(() => news[0]);
-
-const otherNews = computed(() => news.slice(1));
+// Use our simplified fetch function from ContentService
+const { news, loading, error, firstNews, otherNews } = useNewsFetch();
 </script>

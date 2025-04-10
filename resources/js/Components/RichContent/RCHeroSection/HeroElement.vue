@@ -8,7 +8,7 @@
         <div class="text-5xl text-center @5xl/grid:text-left font-bold text-white mb-4"
           v-html="element.json_content.title" />
         <div class="text-lg text-zinc-200 mb-4" v-html="element.json_content.subtitle" />
-        <SmartLink v-if="element.json_content.buttonLink" :href="element.json_content.buttonLink" class="mt-4">
+        <SmartLink v-if="element.json_content.buttonLink" :href="element.json_content.buttonLink" class="mt-4 w-fit">
           <NButton round :color="buttonColor" size="large" strong>
             <span class="text-black">{{ element.json_content.buttonText }}</span>
           </NButton>

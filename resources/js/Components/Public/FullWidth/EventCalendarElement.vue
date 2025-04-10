@@ -40,7 +40,17 @@
             src="/images/photos/pirmakursiu_stovykla_kaune.jpg">
 </template> -->
         <FadeTransition>
-          <EventCalendar class=" z-5" :calendar-events="calendar" :locale="$page.props.app.locale" />
+          <div v-if="loading" class="w-full h-96 flex items-center justify-center">
+            <div class="animate-pulse flex flex-col gap-3 items-center">
+              <div class="h-12 w-12 rounded-full bg-zinc-200 dark:bg-zinc-700" />
+              <div class="h-5 w-64 rounded bg-zinc-200 dark:bg-zinc-700" />
+              <div class="h-32 w-96 rounded bg-zinc-200 dark:bg-zinc-700" />
+            </div>
+          </div>
+          <div v-else-if="error" class="text-red-500 p-4 rounded-lg border border-red-300">
+            {{ $t("Nepavyko užkrauti kalendoriaus įvykių") }}
+          </div>
+          <EventCalendar v-else class="z-5" :calendar-events="calendar" :locale="$page.props.app.locale" />
         </FadeTransition>
       </div>
     </div>
@@ -48,20 +58,25 @@
 </template>
 
 <script setup lang="ts">
-import { usePage } from "@inertiajs/vue3";
 import { NButton } from "naive-ui";
 import { ref } from "vue";
 
 import CalendarSyncModal from "@/Components/Modals/CalendarSyncModal.vue";
 import EventCalendar from "@/Components/Calendar/EventCalendar.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
+import { useCalendarFetch } from "@/Services/ContentService";
 
 const showModal = ref(false);
 
-const calendar = await fetch(
-  route("api.calendar.tenant.index", {
-    lang: usePage().props.app.locale,
-    tenant: usePage().props.tenant?.alias,
-  })
-).then((response) => response.json());
+// Use our simplified fetch function from ContentService
+const { calendar, loading, error } = useCalendarFetch();
+
+// For debugging
+console.log('Calendar data state:', { 
+  loading: loading.value, 
+  hasError: error.value !== null, 
+  dataEmpty: !calendar.value || calendar.value.length === 0,
+  dataLength: calendar.value ? calendar.value.length : 0
+});
+
 </script>

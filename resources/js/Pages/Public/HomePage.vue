@@ -6,7 +6,7 @@
     </h2>
     <AdminMultiHomeCards />
 </template>-->
-  <RichContentParser :content="content?.parts" />
+    <RichContentParser class="max-w-full" :content="content?.parts" />
 </template>
 
 <script setup lang="ts">
@@ -15,7 +15,6 @@
 // import { computed, defineAsyncComponent } from "vue";
 
 import RichContentParser from "@/Components/RichContentParser.vue";
-import VusaStructure from "@/Features/StructureGraph/presets/VusaStructure.vue";
 
 defineProps<{
   content: unknown;
