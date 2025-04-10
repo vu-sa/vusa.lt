@@ -17,8 +17,8 @@ class UpdateNewsRequest extends FormRequest
     protected function prepareForValidation()
     {
         $this->merge([
-            'publish_time' => is_string($this->input('publish_time')) 
-                ? strtotime($this->input('publish_time')) 
+            'publish_time' => is_string($this->input('publish_time'))
+                ? strtotime($this->input('publish_time'))
                 : $this->input('publish_time') / 1000,
         ]);
     }
@@ -52,8 +52,6 @@ class UpdateNewsRequest extends FormRequest
 
     /**
      * Get custom error messages for validator errors.
-     *
-     * @return array
      */
     public function messages(): array
     {

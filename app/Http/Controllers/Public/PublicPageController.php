@@ -13,7 +13,6 @@ use App\Models\Tenant;
 use App\Services\ResourceServices\InstitutionService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Tiptap\Editor;
@@ -314,46 +313,46 @@ class PublicPageController extends PublicController
 
         return $this->calendarEventMain($lang, $returnableEvent);
     }
-    
+
     public function calendarEventList()
     {
         $this->getBanners();
         $this->getTenantLinks();
         $this->shareOtherLangURL('calendar.list');
-        
+
         // Disable page transition on filter changes
-        if (request()->has(['search']) || request()->has(['category']) || 
+        if (request()->has(['search']) || request()->has(['category']) ||
             request()->has(['tenant']) || request()->has(['tab']) || request()->has(['page'])) {
             Inertia::share('disablePageTransition', true);
         }
-        
+
         $now = Carbon::now();
         $perPage = 20; // Number of events per page
         $tab = request()->get('tab', 'upcoming'); // Default tab is upcoming
-        
+
         // Create base query with common filters
         $query = Calendar::query()
             ->with(['category', 'tenant:id,alias,shortname,fullname'])
             ->where('is_draft', false);
-        
+
         // Filter by locale
         if (app()->getLocale() === 'en') {
             $query->where('is_international', true);
         }
-        
+
         // Apply common filters from request parameters
         $this->applyCalendarFilters($query);
-        
+
         // Apply tab-specific filters and ordering
         if ($tab === 'past') {
             $query->where('date', '<', $now->format('Y-m-d'))
-                  ->orderBy('date', 'desc');
+                ->orderBy('date', 'desc');
         } else {
             // Default to upcoming
             $query->where('date', '>=', $now->format('Y-m-d'))
-                  ->orderBy('date', 'asc');
+                ->orderBy('date', 'asc');
         }
-        
+
         // Execute pagination
         $events = $query->paginate($perPage)
             ->through(function ($event) {
@@ -363,10 +362,10 @@ class PublicPageController extends PublicController
                     'images' => $event->getMedia('images'),
                 ];
             });
-            
+
         // Get all available filter options based on tab
         $filterOptions = $this->getCalendarFilterOptions($tab);
-        
+
         $seo = $this->shareAndReturnSEOObject(
             title: __('Visų renginių sąrašas').' - '.$this->tenant->shortname,
             description: __('Vilniaus universiteto Studentų atstovybės ir bendruomenės renginių sąrašas.'),
@@ -376,34 +375,31 @@ class PublicPageController extends PublicController
             'events' => $events,
             'activeTab' => $tab,
             'allCategories' => $filterOptions['categories'],
-            'allTenants' => $filterOptions['tenants']
+            'allTenants' => $filterOptions['tenants'],
         ])->withViewData([
             'SEOData' => $seo,
         ]);
     }
-    
+
     /**
      * Get filter options for calendar events based on tab
-     * 
+     *
      * For 'upcoming' tab: Only show categories and tenants that have upcoming events
      * For 'past' tab: Show all categories and tenants
-     *
-     * @param string $tab
-     * @return array
      */
     private function getCalendarFilterOptions(string $tab): array
     {
         $now = Carbon::now();
         $categories = [];
         $tenants = [];
-        
+
         if ($tab === 'past') {
             // For past events, get ALL categories and tenants regardless of current filter
             $categories = \App\Models\Category::query()
                 ->whereHas('calendars', function ($query) {
                     // Only get categories that have calendar events
                     $query->where('is_draft', false);
-                    
+
                     // Apply language filter
                     if (app()->getLocale() === 'en') {
                         $query->where('is_international', true);
@@ -413,12 +409,12 @@ class PublicPageController extends PublicController
                 ->orderBy('name')
                 ->get()
                 ->toArray();
-                
+
             $tenants = \App\Models\Tenant::query()
                 ->whereHas('calendar', function ($query) {
                     // Only get tenants that have calendar events
                     $query->where('is_draft', false);
-                    
+
                     // Apply language filter
                     if (app()->getLocale() === 'en') {
                         $query->where('is_international', true);
@@ -433,8 +429,8 @@ class PublicPageController extends PublicController
             $categories = \App\Models\Category::query()
                 ->whereHas('calendars', function ($query) use ($now) {
                     $query->where('is_draft', false)
-                          ->where('date', '>=', $now->format('Y-m-d'));
-                    
+                        ->where('date', '>=', $now->format('Y-m-d'));
+
                     // Apply language filter
                     if (app()->getLocale() === 'en') {
                         $query->where('is_international', true);
@@ -444,12 +440,12 @@ class PublicPageController extends PublicController
                 ->orderBy('name')
                 ->get()
                 ->toArray();
-                
+
             $tenants = \App\Models\Tenant::query()
                 ->whereHas('calendar', function ($query) use ($now) {
                     $query->where('is_draft', false)
-                          ->where('date', '>=', $now->format('Y-m-d'));
-                    
+                        ->where('date', '>=', $now->format('Y-m-d'));
+
                     // Apply language filter
                     if (app()->getLocale() === 'en') {
                         $query->where('is_international', true);
@@ -460,13 +456,13 @@ class PublicPageController extends PublicController
                 ->get()
                 ->toArray();
         }
-        
+
         return [
             'categories' => $categories,
-            'tenants' => $tenants
+            'tenants' => $tenants,
         ];
     }
-    
+
     /**
      * Apply filters to calendar query
      */
@@ -476,22 +472,22 @@ class PublicPageController extends PublicController
         if (request()->has('category') && request()->category) {
             $query->where('category_id', request()->category);
         }
-        
+
         // Filter by tenant if provided
         if (request()->has('tenant') && request()->tenant) {
             $query->where('tenant_id', request()->tenant);
         }
-        
+
         // Filter by search term if provided
         if (request()->has('search') && request()->search) {
             $search = request()->search;
             $query->where(function ($q) use ($search) {
-                $q->where('title', 'like', '%' . $search . '%')
-                  ->orWhere('description', 'like', '%' . $search . '%')
-                  ->orWhere('location', 'like', '%' . $search . '%');
+                $q->where('title', 'like', '%'.$search.'%')
+                    ->orWhere('description', 'like', '%'.$search.'%')
+                    ->orWhere('location', 'like', '%'.$search.'%');
             });
         }
-        
+
         return $query;
     }
 

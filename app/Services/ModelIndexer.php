@@ -32,14 +32,14 @@ class ModelIndexer
     /**
      * Create a new ModelIndexer instance
      *
-     * @param mixed $indexable The model class to index
+     * @param  mixed  $indexable  The model class to index
      */
     public function __construct($indexable)
     {
         $request = request();
         $this->indexable = $indexable;
         $this->search = $request->input('text');
-        
+
         // Process sorters - accept either JSON or base64 encoded JSON for backward compatibility
         $sortersInput = $request->input('sorters');
         if ($sortersInput) {
@@ -53,7 +53,7 @@ class ModelIndexer
         } else {
             $this->sorters = null;
         }
-        
+
         // Process filters - accept either JSON or base64 encoded JSON for backward compatibility
         $filtersInput = $request->input('filters');
         if ($filtersInput) {
@@ -64,11 +64,11 @@ class ModelIndexer
                 // Base64 encoded (legacy format)
                 $this->filters = json_decode(base64_decode($filtersInput), true);
             }
-            
+
             // Validate filter values are arrays
             if ($this->filters) {
                 foreach ($this->filters as $key => $value) {
-                    if (!is_array($value)) {
+                    if (! is_array($value)) {
                         $this->filters[$key] = [$value];
                     }
                 }
@@ -107,8 +107,8 @@ class ModelIndexer
     /**
      * Set up the Eloquent query closure for the search
      *
-     * @param array $callbacks Additional callbacks to apply to the query
-     * @param bool $authorize Whether to apply authorization constraints
+     * @param  array  $callbacks  Additional callbacks to apply to the query
+     * @param  bool  $authorize  Whether to apply authorization constraints
      * @return $this
      */
     public function setEloquentQuery($callbacks = [], $authorize = true)
@@ -142,7 +142,7 @@ class ModelIndexer
     public function takeCareOfRelationFilters()
     {
         // Check if filters keys have dots, extract them and remove from filters
-        if (!$this->filters) {
+        if (! $this->filters) {
             $this->filters = [];
         }
 
@@ -154,12 +154,12 @@ class ModelIndexer
             $relationFilterKeyArray = explode('.', $relationFilterKey);
 
             $relationFilterCallback = function (EloquentBuilder $query) use ($relationFilterKeyArray, $relationFilterValue, $relationFilterKey) {
-                $query->when(!in_array($relationFilterValue, [[], null]),
+                $query->when(! in_array($relationFilterValue, [[], null]),
                     fn (EloquentBuilder $query) => $query->whereHas(
-                        $relationFilterKeyArray[0], 
+                        $relationFilterKeyArray[0],
                         fn (EloquentBuilder $query) => $query->whereIn(
                             // Sometimes some variables may be described as ambiguous, so we need to specify which id we want to use
-                            $relationFilterKey !== 'tenants.id' ? $relationFilterKeyArray[1] : $relationFilterKey, 
+                            $relationFilterKey !== 'tenants.id' ? $relationFilterKeyArray[1] : $relationFilterKey,
                             $relationFilterValue
                         )
                     )
@@ -182,12 +182,12 @@ class ModelIndexer
         $user = User::query()->find((Auth::id()));
 
         return fn (EloquentBuilder $query) => $query->when(
-            !$this->authorizer->isAllScope && !$user->hasRole(config('permission.super_admin_role_name')),
+            ! $this->authorizer->isAllScope && ! $user->hasRole(config('permission.super_admin_role_name')),
             fn (EloquentBuilder $query) => $query->whereHas(
-                $this->tenantRelationString, 
+                $this->tenantRelationString,
                 fn (EloquentBuilder $query) => $query->whereIn(
                     // Optional, because this is how relationship is queried in query builder
-                    optional($this->tenantRelationString === 'tenants', fn () => 'tenants.id'), 
+                    optional($this->tenantRelationString === 'tenants', fn () => 'tenants.id'),
                     $this->authorizer->getTenants()->pluck('id')->toArray()
                 )
             )
@@ -201,15 +201,15 @@ class ModelIndexer
      */
     public function filterAllColumns()
     {
-        if (!$this->filters) {
+        if (! $this->filters) {
             return $this;
         }
 
         foreach ($this->filters as $name => $value) {
-            if (!is_array($value)) {
+            if (! is_array($value)) {
                 $value = [$value];
             }
-            
+
             $this->builder->when(
                 // When not empty, filter
                 $value !== [],
@@ -225,7 +225,7 @@ class ModelIndexer
     /**
      * Handle soft-deleted records filter
      *
-     * @param \Illuminate\Http\Request $request
+     * @param  \Illuminate\Http\Request  $request
      * @return $this
      */
     protected function onlyTrashed($request)
@@ -240,16 +240,16 @@ class ModelIndexer
     /**
      * Apply sorting based on the sorters parameter
      *
-     * @param array|null $default Default sort order if none specified
+     * @param  array|null  $default  Default sort order if none specified
      * @return $this
      */
     public function sortAllColumns(?array $default = null)
     {
-        if ($default && !$this->sorters) {
+        if ($default && ! $this->sorters) {
             $this->sorters = $default;
         }
 
-        if (!$this->sorters) {
+        if (! $this->sorters) {
             return $this;
         }
 

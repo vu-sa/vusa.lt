@@ -30,14 +30,13 @@ class ContentPart extends Model
 
     /**
      * Validate that the content type is valid
-     *
-     * @return bool
      */
     public function isValidType(): bool
     {
         try {
             // Attempt to create an enum from the type string
             ContentPartEnum::from($this->type);
+
             return true;
         } catch (\Throwable $e) {
             return false;
@@ -46,8 +45,6 @@ class ContentPart extends Model
 
     /**
      * Parse Tiptap elements to HTML
-     *
-     * @return ContentPart
      */
     public function parseTiptapElements(): ContentPart
     {
@@ -76,8 +73,6 @@ class ContentPart extends Model
 
     /**
      * Get searchable content
-     * 
-     * @return string
      */
     public function getSearchableContent(): string
     {
@@ -92,19 +87,19 @@ class ContentPart extends Model
             case 'shadcn-card':
                 // Cards have title in options and content in json_content
                 $content = $this->options['title'] ?? '';
-                $content .= ' ' . $this->extractTextFromTiptap($this->json_content);
+                $content .= ' '.$this->extractTextFromTiptap($this->json_content);
                 break;
             case 'shadcn-accordion':
                 // Process each accordion item
                 foreach ($this->json_content as $item) {
-                    $content .= ($item['label'] ?? '') . ' ';
+                    $content .= ($item['label'] ?? '').' ';
                     $content .= $this->extractTextFromTiptap($item['content'] ?? []);
                 }
                 break;
             case 'hero':
                 // Extract text from hero section
-                $content = ($this->json_content['title'] ?? '') . ' ' . 
-                           ($this->json_content['subtitle'] ?? '') . ' ' .
+                $content = ($this->json_content['title'] ?? '').' '.
+                           ($this->json_content['subtitle'] ?? '').' '.
                            ($this->json_content['buttonText'] ?? '');
                 break;
             case 'news':
@@ -118,13 +113,12 @@ class ContentPart extends Model
 
     /**
      * Extract plain text from Tiptap JSON structure
-     * 
-     * @param array $json
-     * @return string
+     *
+     * @param  array  $json
      */
     protected function extractTextFromTiptap($json): string
     {
-        if (empty($json) || !is_array($json)) {
+        if (empty($json) || ! is_array($json)) {
             return '';
         }
 
@@ -132,13 +126,13 @@ class ContentPart extends Model
 
         // Handle direct text nodes
         if (isset($json['text'])) {
-            $text .= $json['text'] . ' ';
+            $text .= $json['text'].' ';
         }
 
         // Recursively process content arrays
         if (isset($json['content']) && is_array($json['content'])) {
             foreach ($json['content'] as $item) {
-                $text .= $this->extractTextFromTiptap($item) . ' ';
+                $text .= $this->extractTextFromTiptap($item).' ';
             }
         }
 

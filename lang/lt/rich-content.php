@@ -17,4 +17,3 @@ return [
     'text_placeholder' => 'Įrašykite čia...',
     'restore_content_block_order' => 'Atkurti turinio blokų tvarką',
 ];
-

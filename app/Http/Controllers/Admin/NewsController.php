@@ -6,7 +6,6 @@ use App\Actions\DuplicateNewsAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UpdateNewsRequest;
 use App\Models\Content;
-use App\Models\ContentPart;
 use App\Models\News;
 use App\Models\Tenant;
 use App\Services\ModelAuthorizer as Authorizer;
@@ -167,7 +166,7 @@ class NewsController extends Controller
         $news->save();
 
         $content = Content::query()->find($news->content->id);
-        
+
         app(\App\Services\ContentService::class)->updateContentParts($content, $request->content['parts']);
 
         // update other lang id page

@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Content;
-use App\Models\ContentPart;
 use App\Models\Page;
 use App\Models\Tenant;
 use App\Services\ModelAuthorizer as Authorizer;
@@ -136,7 +135,7 @@ class PageController extends Controller
         $page->update($request->only('title', 'lang', 'other_lang_id', 'category_id'));
 
         $content = Content::query()->find($page->content->id);
-        
+
         // Use ContentService to efficiently update content parts
         app(\App\Services\ContentService::class)->updateContentParts($content, $request->content['parts']);
 

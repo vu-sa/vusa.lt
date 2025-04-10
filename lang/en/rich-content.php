@@ -17,4 +17,3 @@ return [
     'text_placeholder' => 'Type here...',
     'restore_content_block_order' => 'Restore Content Block Order',
 ];
-

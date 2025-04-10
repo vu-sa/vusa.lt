@@ -55,7 +55,7 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
 
         Route::get('kalendorius/ics', [Public\MainController::class, 'publicAllEventCalendar'])->name('calendar.ics');
         Route::post('search', [Public\MainController::class, 'search'])->name('search');
-        
+
         // Note: API routes should be defined in api.php, not here
 
         Route::get('dokumentai', [Public\PublicPageController::class, 'documents'])->name('documents');

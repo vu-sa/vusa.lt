@@ -8,7 +8,9 @@ use Symfony\Component\Console\Input\InputArgument;
 class MakeIndexPage extends GeneratorCommand
 {
     protected $name = 'make:index-page';
+
     protected $description = 'Create a new index page for an entity';
+
     protected $type = 'Vue Component';
 
     protected function getStub()
@@ -18,7 +20,7 @@ class MakeIndexPage extends GeneratorCommand
 
     protected function getDefaultNamespace($rootNamespace)
     {
-        return $rootNamespace . '\\resources\\js\\Pages\\Admin';
+        return $rootNamespace.'\\resources\\js\\Pages\\Admin';
     }
 
     protected function buildClass($name)
