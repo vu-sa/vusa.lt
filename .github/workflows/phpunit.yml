@@ -2,14 +2,36 @@ name: Pest Tests and Upload Coverage
 
 on:
   push:
-    branches: ['main']
+    branches:
+      - main
   pull_request:
     branches-ignore:
       - 'dependabot/npm_and_yarn/*'
       - 'dependabot/composer/*'
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      php: ${{ steps.filter.outputs.php }}
+      js: ${{ steps.filter.outputs.js }}
+    steps:
+    - uses: actions/checkout@v4
+    - uses: dorny/paths-filter@v2
+      id: filter
+      with:
+        filters: |
+          php:
+            - '**/*.php'
+          js:
+            - '**/*.vue'
+            - '**/*.js'
+            - '**/*.ts'
+            - '**/*.tsx'
+
   setup:
+    needs: changes
+    if: ${{ needs.changes.outputs.php == 'true' || needs.changes.outputs.js == 'true' }}
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -39,9 +61,11 @@ jobs:
       env:
         DB_CONNECTION: sqlite
         DB_DATABASE: database/database.sqlite
+      if: ${{ needs.changes.outputs.php == 'true' }}
       run: php artisan test --coverage --coverage-clover ./phpunit-coverage.xml
     ## With coverage
     - name: Upload coverage to Codecov
+      if: ${{ needs.changes.outputs.php == 'true' }}
       uses: codecov/codecov-action@v5
       with:
         verbose: true
