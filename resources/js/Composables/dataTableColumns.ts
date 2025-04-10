@@ -40,3 +40,32 @@ export const langColumn = (filters) => {
     ],
   };
 };
+
+export const createTimestampColumn = (key, title, sorters) => {
+  return {
+    title,
+    key,
+    sorter: true,
+    sortOrder: sorters.value[key],
+    render(row) {
+      return new Date(row[key]).toLocaleString("lt-LT");
+    },
+  };
+};
+
+export const createTextColumn = (key, title, sorters) => {
+  return {
+    title,
+    key,
+    sorter: !!sorters,
+    sortOrder: sorters?.value[key],
+  };
+};
+
+export const createRelationshipColumn = (key, title, renderFn) => {
+  return {
+    title,
+    key,
+    render: renderFn,
+  };
+};

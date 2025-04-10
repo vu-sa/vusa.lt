@@ -37,6 +37,8 @@ const props = defineProps<{
   destroyRoute?: string;
 }>();
 
+console.log(props.columns)
+
 const loading = ref(false);
 const otherParams = ref<Record<string, boolean | undefined>>({});
 
@@ -92,17 +94,17 @@ const handleCheckedRowKeysChange = (rowKeys: DataTableRowKey[]) => {
 };
 
 const handleChange = (page: number) => {
-  // base64 encode the filters
-
   let encodedFilters = undefined;
   let encodedSorters = undefined;
 
   if (filters && filters.value) {
-    encodedFilters = btoa(JSON.stringify(filters.value));
+    // Use JSON directly instead of base64
+    encodedFilters = JSON.stringify(filters.value);
   }
 
   if (sorters && sorters.value) {
-    encodedSorters = btoa(JSON.stringify(sorters.value));
+    // Use JSON directly instead of base64
+    encodedSorters = JSON.stringify(sorters.value);
   }
 
   loading.value = true;
@@ -155,11 +157,13 @@ const sweepSearch = () => {
     otherParams.value[key] = undefined;
   });
 
+  // Use the same format as handleChange for consistency
   router.reload({
     data: {
       page: 1,
-      filters: undefined,
-      sorters: undefined,
+      // Pass empty objects with JSON.stringify instead of undefined
+      filters: filters ? JSON.stringify({}) : undefined,
+      sorters: sorters ? JSON.stringify({}) : undefined,
       text: undefined,
       ...otherParams.value,
     },
@@ -176,7 +180,7 @@ const sweepSearch = () => {
 // Append the column array with an actions columns
 const columnsWithActions = computed(() => {
   return [
-    ...props.columns,
+    ...props.columns.value,
     {
       title:
         props.showRoute || props.editRoute || props.destroyRoute || props.duplicateRoute

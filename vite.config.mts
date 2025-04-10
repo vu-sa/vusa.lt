@@ -86,12 +86,27 @@ export default defineConfig({
     }),
   ],
   test: {
+    globals: true,
+    environment: 'node',
     coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html', 'lcov'],
       include: [
         "resources/js/**/*.ts",
         "resources/js/**/*.vue",
       ],
-    }
+      exclude: [
+        "**/*.d.ts",
+        "**/node_modules/**",
+        "resources/js/Types/**",
+      ]
+    },
+    setupFiles: [
+      'tests/setup.ts'
+    ],
+    deps: {
+      inline: ['vue']
+    },
   },
   resolve: {
     alias: {

@@ -20,6 +20,15 @@ return [
     'duty' => [
         'model' => '{1} pareiga|[2,9] pareigos|[10,*] pareigų',
     ],
+    'institution' => [
+        'model' => '{1} institucija|[2,9] institucijos|[10,*] institucijų',
+        'name' => 'pavadinimas',
+        'description' => 'aprašymas',
+        'is_active' => 'aktyvi?',
+        'is_default' => 'numatytoji?',
+        'is_public' => 'vieša?',
+        'is_visible' => 'matoma?',
+    ],
     'meeting' => [
         'model' => '{1} susitikimas|[2,9] susitikimai|[10,*] susitikimų',
     ],

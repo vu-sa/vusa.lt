@@ -1,21 +1,45 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-
 import { defineWorkspace } from 'vitest/config';
-
 import { storybookTest } from '@storybook/experimental-addon-test/vitest-plugin';
 
-const dirname =
-  typeof __dirname !== 'undefined' ? __dirname : path.dirname(fileURLToPath(import.meta.url));
+const dirname = typeof __dirname !== 'undefined' 
+  ? __dirname 
+  : path.dirname(fileURLToPath(import.meta.url));
 
-// More info at: https://storybook.js.org/docs/writing-tests/test-addon
+// Define and export the workspace configuration
 export default defineWorkspace([
-  'vite.config.mts',
+  // Regular unit tests configuration
   {
-    extends: 'vite.config.mts',
+    extends: './vite.config.mts',
+    test: {
+      name: 'unit',
+      environment: 'node',
+      include: ['tests/Unit/**/*.spec.ts'],
+      exclude: ['tests/Unit/**/*.browser.spec.ts'],
+    },
+  },
+
+  // DOM-based tests that need browser environment
+  {
+    extends: './vite.config.mts',
+    test: {
+      name: 'dom',
+      environment: 'jsdom',
+      include: ['tests/Unit/**/*.browser.spec.ts'],
+      browser: {
+        enabled: true,
+        headless: true,
+        provider: 'playwright',
+        name: 'chromium',
+      },
+    },
+  },
+
+  // Storybook tests configuration
+  {
+    extends: './vite.config.mts',
     plugins: [
-      // The plugin will run tests for the stories defined in your Storybook config
-      // See options at: https://storybook.js.org/docs/writing-tests/test-addon#storybooktest
       storybookTest({ configDir: path.join(dirname, '.storybook') }),
     ],
     test: {
@@ -27,12 +51,6 @@ export default defineWorkspace([
         instances: [{ browser: 'chromium' }]
       },
       setupFiles: ['.storybook/vitest.setup.ts'],
-    },
-    optimizeDeps: {
-      // Otherwise, sometimes optimizes before testing and it reloads
-      include: [
-        'vue',
-      ],
     },
   },
 ]);

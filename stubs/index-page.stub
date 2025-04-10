@@ -1,0 +1,34 @@
+<template>
+  <AdminIndexPage
+    model-name="{{ modelName }}"
+    entity-name="{{ entityName }}"
+    :paginated-models="{{ modelNamePlural }}"
+    :column-builder="buildColumns"
+    :icon="Icons.{{ icon }}"
+    :can-use-routes="{
+      create: true,
+      show: true,
+      edit: true,
+      destroy: true
+    }"
+  />
+</template>
+
+<script setup lang="tsx">
+import { type DataTableColumns } from "naive-ui";
+import { type Ref } from "vue";
+
+import { TableFilters } from "@/Composables/useTableState";
+import AdminIndexPage from "@/Components/Layouts/IndexModel/AdminIndexPage.vue";
+import Icons from "@/Types/Icons/regular";
+
+defineProps<{
+  {{ modelNamePlural }}: PaginatedModels<App.Entities.{{ entityName }}[]>;
+}>();
+
+const buildColumns = (sorters: Ref<Record<string, any>>, filters: Ref<TableFilters>): DataTableColumns<App.Entities.{{ entityName }}> => {
+  return [
+    // Add your column definitions here
+  ];
+};
+</script>
