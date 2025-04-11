@@ -3,123 +3,82 @@
 namespace App\Policies;
 
 use App\Enums\CRUDEnum;
-use App\Enums\PermissionScopeEnum;
 use App\Models\User;
-use App\Services\ModelAuthorizer as Authorizer;
-use App\Services\RelationshipService;
-use Illuminate\Database\Eloquent\Collection;
+use App\Policies\Traits\HasCommonChecks;
+use App\Services\ModelAuthorizer;
+use Illuminate\Auth\Access\Response;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * Base policy class for most models in the application.
+ * 
+ * This class provides common authorization checks for tenant-based models,
+ * supporting the hierarchical permission structure of the application.
+ */
 class ModelPolicy
 {
+    use HasCommonChecks;
+
+    /**
+     * The plural name of the model, used for permission string generation
+     */
     protected $pluralModelName;
 
-    public function __construct(public Authorizer $authorizer) {}
+    /**
+     * Constructor injects the ModelAuthorizer service
+     */
+    public function __construct(public ModelAuthorizer $authorizer) {}
 
     /**
-     * Determine whether the user can view any models.
+     * Standard view method that most models will use.
+     * Override in child classes when needed.
      *
-     * @return \Illuminate\Auth\Access\Response|bool
+     * @param User $user The user performing the action
+     * @param Model $model The model being accessed
+     * @return bool Whether access is permitted
      */
-    public function viewAny(User $user): bool
+    public function view(User $user, Model $model): bool
     {
-        return $this->authorizer->forUser($user)->check($this->pluralModelName.'.read.padalinys');
+        return $this->commonChecker($user, $model, CRUDEnum::READ()->label, $this->pluralModelName);
     }
 
     /**
-     * Determine whether the user can create models.
+     * Standard update method that most models will use.
+     * Override in child classes when needed.
      *
-     * @return \Illuminate\Auth\Access\Response|bool
+     * @param User $user The user performing the action
+     * @param Model $model The model being updated
+     * @return bool Whether update is permitted
      */
-    public function create(User $user)
+    public function update(User $user, Model $model): bool
     {
-        return $this->authorizer->forUser($user)->check($this->pluralModelName.'.create.padalinys');
-    }
-
-    public function restore(User $user, Model $model)
-    {
-        if ($this->commonChecker($user, $model, CRUDEnum::DELETE()->label, $this->pluralModelName)) {
-            return true;
-        }
-
-        return false;
+        return $this->commonChecker($user, $model, CRUDEnum::UPDATE()->label, $this->pluralModelName);
     }
 
     /**
-     * commonChecker
-     * This function checks resource models by a common pattern. First, it checks for wildcard,
-     * then if the user has permission to view own models, and finally if the user has permission
-     * to view models of the same tenant.
+     * Standard delete method that most models will use.
+     * Override in child classes when needed.
      *
-     * The implementation may be finicky.
+     * @param User $user The user performing the action
+     * @param Model $model The model being deleted
+     * @return bool Whether deletion is permitted
      */
-    protected function commonChecker(User $user, Model $model, string $ability, string $relationFromDuties, $hasManyTenants = true): bool
+    public function delete(User $user, Model $model): Response | bool
     {
+        return $this->commonChecker($user, $model, CRUDEnum::DELETE()->label, $this->pluralModelName);
+    }
 
-        // Check for wildcard (.*), if true, return true
-        if ($this->authorizer->forUser($user)->check($this->pluralModelName.'.'.$ability.'.'.PermissionScopeEnum::ALL()->label)) {
-            return true;
-        }
-
-        // Check for own
-        if ($this->authorizer->forUser($user)->check($this->pluralModelName.'.'.$ability.'.'.PermissionScopeEnum::OWN()->label)) {
-
-            // Since a user can have multiple duties, we need to get all of them.
-            // ModelAuthorizer has already taken care of getting the permissable duties.
-
-            $permissableDuties = $this->authorizer->getPermissableDuties();
-
-            if ($relationFromDuties === 'duties') {
-                $permissableModels = $permissableDuties;
-            } else {
-                $permissableModels = $permissableDuties->load($relationFromDuties)->pluck($relationFromDuties)->flatten();
-            }
-
-            if ($permissableModels->contains('id', $model->id)) {
-                return true;
-            }
-
-            // only works for institutions for now
-            // check model relations if institution
-            // TODO
-            if ($this->pluralModelName === 'institutions') {
-                $institutions = new Collection(RelationshipService::getRelatedInstitutions($model));
-
-                // check if any element exists in relations array, then return true
-                // relations array consists of 4 collections of models, so we need to flatten it
-                if ($institutions->intersect((new Collection($permissableModels)))->isNotEmpty()) {
-                    return true;
-                }
-            }
-        }
-
-        $tenantRelation = $hasManyTenants ? 'tenants' : 'tenant';
-
-        // If the user has permission to view tenant and user belongs to same tenant as the institution
-        if ($this->authorizer->forUser($user)->check($this->pluralModelName.'.'.$ability.'.'.PermissionScopeEnum::PADALINYS()->label)) {
-            $permissableTenants = $user->tenants()
-                ->whereIn('duties.id', $this->authorizer->getPermissableDuties()
-                    ->pluck('id'))
-                ->get();
-
-            $modelTenants = $model->load($tenantRelation)->$tenantRelation;
-
-            $modelCollection = new Collection;
-
-            if ($modelTenants instanceof Model) {
-                $modelCollection->push($modelTenants);
-            }
-
-            if ($modelTenants instanceof Collection) {
-                $modelCollection = $modelTenants;
-            }
-
-            // final intersection check
-            if ($modelCollection->intersect($permissableTenants)->isNotEmpty()) {
-                return true;
-            }
-        }
-
+    /**
+     * Standard forceDelete method for soft-deletable models.
+     * This is restricted by default for most models.
+     * Override in child classes when needed.
+     *
+     * @param User $user The user performing the action
+     * @param Model $model The model being force-deleted
+     * @return bool Whether force deletion is permitted
+     */
+    public function forceDelete(User $user, Model $model): bool
+    {
         return false;
     }
 }

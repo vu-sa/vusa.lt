@@ -6,70 +6,21 @@ use App\Enums\CRUDEnum;
 use App\Enums\ModelEnum;
 use App\Models\Calendar;
 use App\Models\User;
-use App\Services\ModelAuthorizer as Authorizer;
-use Illuminate\Auth\Access\HandlesAuthorization;
+use App\Services\ModelAuthorizer;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
+/**
+ * Policy for Calendar model authorization
+ */
 class CalendarPolicy extends ModelPolicy
 {
-    use HandlesAuthorization;
-
-    public function __construct(public Authorizer $authorizer)
+    /**
+     * Initialize policy with model name
+     */
+    public function __construct(ModelAuthorizer $authorizer)
     {
         parent::__construct($authorizer);
-
         $this->pluralModelName = Str::plural(ModelEnum::CALENDAR()->label);
-    }
-
-    /**
-     * Determine whether the user can view the model.
-     *
-     * @return \Illuminate\Auth\Access\Response|bool
-     */
-    public function view(User $user, Calendar $calendar)
-    {
-        if ($this->commonChecker($user, $calendar, CRUDEnum::READ()->label, $this->pluralModelName, false)) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * Determine whether the user can update the model.
-     *
-     * @return \Illuminate\Auth\Access\Response|bool
-     */
-    public function update(User $user, Calendar $calendar)
-    {
-        if ($this->commonChecker($user, $calendar, CRUDEnum::UPDATE()->label, $this->pluralModelName, false)) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * Determine whether the user can delete the model.
-     *
-     * @return \Illuminate\Auth\Access\Response|bool
-     */
-    public function delete(User $user, Calendar $calendar)
-    {
-        if ($this->commonChecker($user, $calendar, CRUDEnum::DELETE()->label, $this->pluralModelName, false)) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     *
-     * @return \Illuminate\Auth\Access\Response|bool
-     */
-    public function forceDelete(User $user, Calendar $calendar)
-    {
-        return false;
     }
 }
