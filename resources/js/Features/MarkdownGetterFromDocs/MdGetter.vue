@@ -55,4 +55,16 @@ watch(() => props.locale, async (locale) => {
   color: #718096;
   font-style: italic;
 }
+
+:deep ul {
+  list-style-type: disc;
+  margin: 1rem 0;
+  padding-left: 1.5rem;
+}
+
+:deep ol {
+  list-style-type: decimal;
+  margin: 1rem 0;
+  padding-left: 1.5rem;
+}
 </style>

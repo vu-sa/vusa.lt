@@ -36,8 +36,17 @@
           </div>
         </div>
         <div v-if="meeting.changedAgendaItems?.length > 0" class="p-4 border dark:border-zinc-700 my-2 rounded-lg">
-          <NCollapse accordion default-expanded-names="changedAgendaItems">
-            <NCollapseItem title="Pakeisti darbotvarkės punktai" name="changedAgendaItems">
+          <Collapsible v-model:open="openItems[meeting.id]" class="w-full">
+              <div class="flex items-center justify-between gap-2">
+                <h4 class="text-base font-medium">Pakeisti darbotvarkės punktai</h4>
+            <CollapsibleTrigger class="flex w-full items-center justify-between py-2">
+              <Button variant="outline" size="sm">
+              <IFluentChevronDown24Regular v-if="!openItems[meeting.id]" />
+              <IFluentChevronUp24Regular v-else />
+              </Button>
+            </CollapsibleTrigger>
+              </div>
+            <CollapsibleContent>
               <div v-for="agendaItem in meeting.changedAgendaItems" :key="agendaItem.id"
                 class="mb-4 border-b pb-4 last:border-0 dark:border-zinc-700 last:pb-0">
                 <div class="flex items-center gap-1 mb-3">
@@ -53,8 +62,8 @@
                   </div>
                 </div>
               </div>
-            </NCollapseItem>
-          </NCollapse>
+            </CollapsibleContent>
+          </Collapsible>
         </div>
       </div>
     </section>
@@ -78,7 +87,11 @@ import SmartLink from '@/Components/Public/SmartLink.vue';
 import ActivityLogItem from '@/Features/Admin/ActivityLogViewer/ActivityLogItem.vue';
 import Icons from '@/Types/Icons/filled';
 import { router, useForm } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
+import Collapsible from '@/Components/ShadcnVue/ui/collapsible/Collapsible.vue';
+import CollapsibleContent from '@/Components/ShadcnVue/ui/collapsible/CollapsibleContent.vue';
+import CollapsibleTrigger from '@/Components/ShadcnVue/ui/collapsible/CollapsibleTrigger.vue';
+import { Button } from '@/Components/ShadcnVue/ui/button';
 
 const props = defineProps<{
   meetings: Array<App.Entities.Meeting & { changedAgendaItems: App.Entities.AgendaItem[] }>;
@@ -91,6 +104,9 @@ const form = useForm({
   date: props.date,
   tenant_id: props.providedTenant.id,
 });
+
+// Track the open state for each meeting's collapsible
+const openItems = ref({});
 
 // Filter meetings by if they have an activity on this date
 const filteredMeetings = computed(() => {

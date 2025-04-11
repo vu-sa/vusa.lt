@@ -157,19 +157,19 @@ html.dark {
   a {
     @apply underline
   }
-}
 
-ul,
-ol {
-  @apply ml-4 [&>li]:mt-2;
-}
+  ul,
+  ol {
+    @apply ml-4 [&>li]:mt-2;
+  }
 
-ul {
-  @apply list-disc;
-}
+  ul {
+    @apply list-disc;
+  }
 
-ol {
-  @apply list-decimal;
+  ol {
+    @apply list-decimal;
+  }
 }
 
 .not-typography {
