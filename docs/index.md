@@ -18,5 +18,5 @@ features:
   - title: Komunikacija
     link: /informacijos-administravimas
   - title: Administravimas
-    link: /administratoriai
+    link: /reservation-system
 ---

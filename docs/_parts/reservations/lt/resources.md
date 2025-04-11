@@ -1,0 +1,1 @@
+Pakeitus rezervacijos laiką, pasirinkti ištekliai bus išvalyti.  Rodomas išteklių kiekis **automatiškai apskaičiuojamas nurodytam rezervacijos laikotarpiui**.

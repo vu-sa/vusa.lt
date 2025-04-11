@@ -1,2 +1,1 @@
-Resources are objects that can be reserved. Resources are associated with a
-tenant that owns them.
+It is recommended that each resource have photos. They can be seen by people creating a reservation.

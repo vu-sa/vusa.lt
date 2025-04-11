@@ -154,21 +154,22 @@ html.dark {
     @apply not-first:mt-6 mt-4 mb-5
   }
 
-  ul, ol {
-    @apply my-6 ml-6 [&>li]:mt-2
-  }
-
-  ul {
-    @apply list-disc
-  }
-
-  ol {
-    @apply list-decimal
-  }
-
   a {
     @apply underline
   }
+}
+
+ul,
+ol {
+  @apply ml-4 [&>li]:mt-2;
+}
+
+ul {
+  @apply list-disc;
+}
+
+ol {
+  @apply list-decimal;
 }
 
 .not-typography {

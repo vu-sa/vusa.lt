@@ -37,7 +37,7 @@ export default defineConfig({
           {
             text: 'Administratoriams',
             items: [
-              { text: 'Rezervacijų sistema', link: '/administratoriai' },
+              { text: 'Rezervacijų sistema', link: '/reservation-system' },
               { text: 'Atsakomybės', link: '/atsakomybes/administratoriams' },
             ]
           },
