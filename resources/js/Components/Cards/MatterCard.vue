@@ -35,7 +35,6 @@
     <template #footer>
       <div class="flex items-end justify-between gap-2">
         <span class="my-auto text-xs text-zinc-500">#{{ matter.id }}</span>
-        <DoingsStatusDonut v-if="false" :meetings="matter.meetings" :width="30" :height="30" />
       </div>
     </template>
   </NCard>
@@ -45,7 +44,6 @@
 import { router } from "@inertiajs/vue3";
 
 import { formatStaticTime } from "@/Utils/IntlTime";
-import DoingsStatusDonut from "@/Components/Graphs/DoingsStatusDonut.vue";
 
 defineProps<{
   matter: App.Entities.Matter;
