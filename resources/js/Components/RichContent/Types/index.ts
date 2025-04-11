@@ -9,6 +9,7 @@ import CalendarIcon from '~icons/fluent/calendar-ltr24-regular';
 import FlowIcon from '~icons/fluent/flow24-regular';
 import NumberIcon from '~icons/fluent/number-symbol24-regular';
 import HeroIcon from '~icons/fluent/slide-play24-regular';
+import GridIcon from '~icons/fluent/table-simple24-regular';
 
 export interface ContentType {
   value: string;
@@ -98,6 +99,37 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     description: "Skaičių statistikos sekcija",
     defaultContent: () => ([]),
     defaultOptions: () => ({ title: "", color: "zinc" }),
+  },
+  "content-grid": {
+    value: "content-grid",
+    label: "Tinklelis",
+    icon: GridIcon,
+    description: "Lankstus turinys stulpeliais ir eilutėmis",
+    defaultContent: () => ([
+      {
+        columns: [
+          {
+            width: "col-span-6",
+            content: {
+              type: "tiptap",
+              value: {}
+            }
+          },
+          {
+            width: "col-span-6",
+            content: {
+              type: "tiptap",
+              value: {}
+            }
+          }
+        ]
+      }
+    ]),
+    defaultOptions: () => ({ 
+      gap: "gap-4",
+      mobileStacking: true,
+      equalHeight: false
+    }),
   },
 };
 

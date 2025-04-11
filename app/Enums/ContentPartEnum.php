@@ -17,6 +17,7 @@ use Spatie\Enum\Laravel\Enum;
  * @method static self NUMBER_STAT_SECTION()
  * @method static self NEWS()
  * @method static self CALENDAR()
+ * @method static self CONTENT_GRID()
  */
 final class ContentPartEnum extends Enum
 {
@@ -33,6 +34,7 @@ final class ContentPartEnum extends Enum
             'NUMBER_STAT_SECTION' => 'number-stat-section',
             'NEWS' => 'news',
             'CALENDAR' => 'calendar',
+            'CONTENT_GRID' => 'content-grid',
         ];
     }
 }

@@ -3,6 +3,24 @@
 
 // Implemented
 
+// Content Grid type - updated with the simplified structure
+export type ContentGrid = {
+  json_content: {
+    columns: {
+      width: string; // e.g. "col-span-4", "col-span-6", etc.
+      content: {
+        type: string; // Can be "tiptap", "image", etc.
+        value: any;  // Content depends on the type
+      }
+    }[];
+  }[];
+  options: {
+    gap?: "gap-2" | "gap-4" | "gap-6" | "gap-8";
+    mobileStacking?: boolean;
+    equalHeight?: boolean;
+  }
+}
+
 export type ImageGrid = {
   json_content: {
     colspan: "col-span-2" | "col-span-3" | "col-span-4" | "col-span-full";
@@ -97,4 +115,4 @@ export type News = {
     title: string;
   }
   options: null
-}; 
+};
