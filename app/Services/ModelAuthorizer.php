@@ -151,12 +151,20 @@ class ModelAuthorizer
      */
     public function getTenants(?string $permission = null): Collection
     {
+        // Ensure user is set before proceeding
+        if (!isset($this->user)) {
+            $this->forUser(auth()->user());
+        }
+
         // Use the provided permission or fall back to the last checked one
         $effectivePermission = $permission ?? $this->lastCheckedPermission;
 
         // Generate a specific cache key based on the effective permission
         $permissionSuffix = $effectivePermission ? ":{$effectivePermission}" : '';
-        $cacheKey = "auth:tenants:{$this->user->id}{$permissionSuffix}";
+
+        // TODO: does not work for reservation.create, getting this error:
+        // ERROR: Typed property App\Services\ModelAuthorizer::$user must not be accessed before initialization
+        // $cacheKey = "auth:tenants:{$this->user->id}{$permissionSuffix}";
 
         // TODO: reenable cache in the future, but needs to be fixed, because the values sometimes are not returned properly
         // return Cache::remember($cacheKey, static::CACHE_TTL, function () use ($effectivePermission) {

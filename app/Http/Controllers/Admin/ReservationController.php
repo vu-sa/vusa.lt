@@ -34,8 +34,6 @@ class ReservationController extends Controller
 
         $this->authorize('viewAny', Reservation::class);
 
-        /* dd('success', $this->authorizer); */
-
         $indexer = new ModelIndexer(new Reservation);
 
         $reservations = $indexer
