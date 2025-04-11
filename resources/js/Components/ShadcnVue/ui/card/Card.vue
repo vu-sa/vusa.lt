@@ -1,23 +1,19 @@
 <script setup lang="ts">
 import type { HTMLAttributes } from 'vue'
-import { cn } from '@/Utils/shadcn'
+import { cn } from '@/Utils/Shadcn/utils'
 
 const props = defineProps<{
   class?: HTMLAttributes['class']
-  variant?: 'soft' | 'outline',
 }>()
 </script>
 
 <template>
   <div
+    data-slot="card"
     :class="
       cn(
-        'rounded-md',
+        'bg-white text-zinc-950 flex flex-col gap-6 rounded-xl border border-zinc-200 py-6 shadow-sm dark:bg-zinc-950 dark:text-zinc-50 dark:border-zinc-800',
         props.class,
-        {
-          'border-[1.2px] border-zinc-800/80 dark:border-zinc-500/70': props.variant === 'outline',
-          'border-0 bg-white text-zinc-950 shadow-xs dark:bg-zinc-950 dark:text-zinc-50': props.variant === 'soft',
-        },
       )
     "
   >

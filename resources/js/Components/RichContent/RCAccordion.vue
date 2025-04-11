@@ -1,11 +1,12 @@
 <template>
-  <Accordion class="not-typography mb-3 mt-1" type="single" collapsible>
-    <AccordionItem v-for="item, index in element.json_content" :key="index" :value="`${index}`">
-      <AccordionTrigger>{{ item.label }}</AccordionTrigger>
-      <AccordionContent>
-        <RichContentTiptapHTML v-if="!html" :json_content="item.content" />
-        <div v-else v-html="item.html" />
-      </AccordionContent>
+  <Accordion class="my-1" type="single" collapsible>
+    <AccordionItem class="dark:border-zinc-600" v-for="item, index in element.json_content" :key="index"
+      :value="`${index}`">
+      <AccordionTrigger class="text-lg cursor-pointer">{{ item.label }}</AccordionTrigger>
+        <AccordionContent>
+          <RichContentTiptapHTML v-if="!html" :json_content="item.content" />
+          <div v-else v-html="item.html" />
+        </AccordionContent>
     </AccordionItem>
   </Accordion>
 </template>
@@ -21,3 +22,9 @@ defineProps<{
   html?: boolean;
 }>();
 </script>
+
+<style scoped>
+h3 {
+  margin-bottom: 0;
+}
+</style>

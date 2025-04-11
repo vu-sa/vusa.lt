@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { HTMLAttributes } from 'vue'
-import { cn } from '@/Utils/shadcn'
+import { cn } from '@/Utils/Shadcn/utils'
 import { useVModel } from '@vueuse/core'
 
 const props = defineProps<{
@@ -20,5 +20,14 @@ const modelValue = useVModel(props, 'modelValue', emits, {
 </script>
 
 <template>
-  <input v-model="modelValue" :class="cn('flex h-10 w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-zinc-500 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-0 dark:border-zinc-600 dark:bg-zinc-800 dark:ring-offset-zinc-950 dark:placeholder:text-zinc-400 dark:focus-visible:ring-zinc-300', props.class)">
+  <input
+    v-model="modelValue"
+    data-slot="input"
+    :class="cn(
+      'file:text-zinc-950 placeholder:text-zinc-500 selection:bg-zinc-900 selection:text-zinc-50 dark:bg-zinc-200/30 border-zinc-200 flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm dark:file:text-zinc-50 dark:placeholder:text-zinc-400 dark:selection:bg-zinc-50 dark:selection:text-zinc-900 dark:dark:bg-zinc-800/30 dark:border-zinc-800',
+      'focus-visible:border-zinc-950 focus-visible:ring-zinc-950/50 focus-visible:ring-[3px] dark:focus-visible:border-zinc-300 dark:focus-visible:ring-zinc-300/50',
+      'aria-invalid:ring-red-500/20 dark:aria-invalid:ring-red-500/40 aria-invalid:border-red-500 dark:aria-invalid:ring-red-900/20 dark:dark:aria-invalid:ring-red-900/40 dark:aria-invalid:border-red-900',
+      props.class,
+    )"
+  >
 </template>

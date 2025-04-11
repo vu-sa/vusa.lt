@@ -19,7 +19,7 @@
         <div class="mb-4 rounded-lg border p-3 dark:border-zinc-600">
           <div class="flex flex-col gap-2">
             <Collapsible v-model:open="expandedNames['VU SA']">
-              <CollapsibleTrigger class="flex w-full items-center justify-between p-2 border-b dark:border-zinc-700">
+              <CollapsibleTrigger class="flex w-full items-center justify-between p-2 border-b dark:border-zinc-700 cursor-pointer" role="button">
                 <span class="font-medium">VU SA</span>
                 <IFluentChevronDown24Regular v-if="!expandedNames['VU SA']" />
                 <IFluentChevronUp24Regular v-else />
@@ -37,7 +37,7 @@
             </Collapsible>
 
             <Collapsible v-model:open="expandedNames['VU SA P']">
-              <CollapsibleTrigger class="flex w-full items-center justify-between p-2 border-b dark:border-zinc-700">
+              <CollapsibleTrigger class="flex w-full items-center justify-between p-2 border-b dark:border-zinc-700 cursor-pointer" role="button">
                 <span class="font-medium">VU SA P</span>
                 <IFluentChevronDown24Regular v-if="!expandedNames['VU SA P']" />
                 <IFluentChevronUp24Regular v-else />
@@ -54,7 +54,7 @@
             </Collapsible>
 
             <Collapsible v-model:open="expandedNames['Kita']">
-              <CollapsibleTrigger class="flex w-full items-center justify-between p-2 border-b dark:border-zinc-700">
+              <CollapsibleTrigger class="flex w-full items-center justify-between p-2 cursor-pointer" role="button">
                 <span class="font-medium">Kiti VU SA dokumentai</span>
                 <IFluentChevronDown24Regular v-if="!expandedNames['Kita']" />
                 <IFluentChevronUp24Regular v-else />

@@ -1,8 +1,8 @@
 <script lang="ts" setup>
-import type { LabelProps } from 'radix-vue'
+import type { LabelProps } from 'reka-ui'
 import type { HTMLAttributes } from 'vue'
+import { cn } from '@/Utils/Shadcn/utils'
 import { Label } from '@/Components/ShadcnVue/ui/label'
-import { cn } from '@/Utils/shadcn'
 import { useFormField } from './useFormField'
 
 const props = defineProps<LabelProps & { class?: HTMLAttributes['class'] }>()
@@ -12,8 +12,10 @@ const { error, formItemId } = useFormField()
 
 <template>
   <Label
+    data-slot="form-label"
+    :data-error="!!error"
     :class="cn(
-      error && 'text-red-500 dark:text-red-900',
+      'data-[error=true]:text-red-600 dark:data-[error=true]:text-red-800',
       props.class,
     )"
     :for="formItemId"

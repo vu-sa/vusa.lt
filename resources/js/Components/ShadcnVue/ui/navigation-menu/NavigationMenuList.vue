@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { type HTMLAttributes, computed } from 'vue'
-import { NavigationMenuList, type NavigationMenuListProps, useForwardProps } from 'radix-vue'
-import { cn } from '@/Utils/shadcn'
+import { cn } from '@/Utils/Shadcn/utils'
+import { NavigationMenuList, type NavigationMenuListProps, useForwardProps } from 'reka-ui'
+import { computed, type HTMLAttributes } from 'vue'
 
 const props = defineProps<NavigationMenuListProps & { class?: HTMLAttributes['class'] }>()
 
@@ -16,10 +16,11 @@ const forwardedProps = useForwardProps(delegatedProps)
 
 <template>
   <NavigationMenuList
+    data-slot="navigation-menu-list"
     v-bind="forwardedProps"
     :class="
       cn(
-        'group flex flex-1 list-none items-center justify-center max-md:gap-x-0.5 md:gap-x-1',
+        'group flex flex-1 list-none items-center justify-center gap-1',
         props.class,
       )
     "

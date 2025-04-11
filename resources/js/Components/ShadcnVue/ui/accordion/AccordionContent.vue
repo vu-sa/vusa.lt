@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { type HTMLAttributes, computed } from 'vue'
-import { AccordionContent, type AccordionContentProps } from 'radix-vue'
-import { cn } from '@/Utils/shadcn'
+import { cn } from '@/Utils/Shadcn/utils'
+import { AccordionContent, type AccordionContentProps } from 'reka-ui'
+import { computed, type HTMLAttributes } from 'vue'
 
 const props = defineProps<AccordionContentProps & { class?: HTMLAttributes['class'] }>()
 
@@ -14,10 +14,11 @@ const delegatedProps = computed(() => {
 
 <template>
   <AccordionContent
+    data-slot="accordion-content"
     v-bind="delegatedProps"
-    class="overflow-hidden transition-all data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down"
+    class="data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down overflow-hidden text-sm"
   >
-    <div :class="cn('pb-4 pt-0', props.class)">
+    <div :class="cn('pt-0 pb-4', props.class)">
       <slot />
     </div>
   </AccordionContent>

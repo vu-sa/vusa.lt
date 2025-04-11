@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import type { FieldProps } from './interface'
+import { cn } from '@/Utils/Shadcn/utils'
 import { Button } from '@/Components/ShadcnVue/ui/button'
 import { Calendar } from '@/Components/ShadcnVue/ui/calendar'
 import { FormControl, FormDescription, FormField, FormItem, FormMessage } from '@/Components/ShadcnVue/ui/form'
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ShadcnVue/ui/popover'
-import { cn } from '@/Utils/shadcn'
 
 import { DateFormatter, getLocalTimeZone } from '@internationalized/date'
 import { CalendarIcon } from 'lucide-vue-next'
 import AutoFormLabel from './AutoFormLabel.vue'
-import { beautifyObjectName } from './utils'
+import { beautifyObjectName, maybeBooleanishToBoolean } from './utils'
 
 defineProps<FieldProps>()
 
@@ -28,7 +28,7 @@ const df = new DateFormatter('en-US', {
         <slot v-bind="slotProps">
           <div>
             <Popover>
-              <PopoverTrigger as-child :disabled="disabled">
+              <PopoverTrigger as-child :disabled="maybeBooleanishToBoolean(config?.inputProps?.disabled) ?? disabled">
                 <Button
                   variant="outline"
                   :class="cn(
@@ -36,7 +36,7 @@ const df = new DateFormatter('en-US', {
                     !slotProps.componentField.modelValue && 'text-zinc-500 dark:text-zinc-400',
                   )"
                 >
-                  <CalendarIcon class="mr-2 h-4 w-4" :size="16" />
+                  <CalendarIcon class="mr-2 h-4 w-4" />
                   {{ slotProps.componentField.modelValue ? df.format(slotProps.componentField.modelValue.toDate(getLocalTimeZone())) : "Pick a date" }}
                 </Button>
               </PopoverTrigger>

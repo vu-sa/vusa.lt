@@ -1,12 +1,12 @@
 <script setup lang="ts">
+import { cn } from '@/Utils/Shadcn/utils'
+import { ChevronDown } from 'lucide-vue-next'
 import {
   AccordionHeader,
   AccordionTrigger,
   type AccordionTriggerProps,
-} from 'radix-vue'
-import { type HTMLAttributes, computed } from 'vue'
-import { Icon } from '@iconify/vue';
-import { cn } from '@/Utils/shadcn'
+} from 'reka-ui'
+import { computed, type HTMLAttributes } from 'vue'
 
 const props = defineProps<AccordionTriggerProps & { class?: HTMLAttributes['class'] }>()
 
@@ -19,33 +19,22 @@ const delegatedProps = computed(() => {
 
 <template>
   <AccordionHeader class="flex">
-    <AccordionTrigger v-bind="delegatedProps" :class="cn(
-      'flex flex-1 gap-6 items-center justify-between py-4 font-medium transition-all hover:underline [&[data-state=open]>svg]:rotate-180 text-left',
-      props.class,
-    )
-      ">
+    <AccordionTrigger
+      data-slot="accordion-trigger"
+      v-bind="delegatedProps"
+      :class="
+        cn(
+          'focus-visible:border-zinc-950 focus-visible:ring-zinc-950/50 flex flex-1 items-start justify-between gap-4 rounded-md py-4 text-left text-sm font-medium transition-all outline-none hover:underline focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 [&[data-state=open]>svg]:rotate-180 dark:focus-visible:border-zinc-300 dark:focus-visible:ring-zinc-300/50',
+          props.class,
+        )
+      "
+    >
       <slot />
       <slot name="icon">
-        <Icon icon="lucide:chevron-down" class="size-4 shrink-0 transition-transform duration-200" />
+        <ChevronDown
+          class="text-zinc-500 pointer-events-none size-4 shrink-0 translate-y-0.5 transition-transform duration-200 dark:text-zinc-400"
+        />
       </slot>
     </AccordionTrigger>
   </AccordionHeader>
 </template>
-
-<style scoped>
-h3 {
-  font-size: 18px;
-  font-weight: 500;
-  margin: 1.2rem 0;
-  line-height: 1.2rem;
-}
-
-button {
-  background: none;
-  border: none;
-  padding: 0;
-  font: inherit;
-  cursor: pointer;
-  outline: inherit;
-}
-</style>

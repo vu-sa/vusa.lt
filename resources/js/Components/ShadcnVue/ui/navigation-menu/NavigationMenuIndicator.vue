@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { type HTMLAttributes, computed } from 'vue'
-import { NavigationMenuIndicator, type NavigationMenuIndicatorProps, useForwardProps } from 'radix-vue'
-import { cn } from '@/Utils/shadcn'
+import { cn } from '@/Utils/Shadcn/utils'
+import { NavigationMenuIndicator, type NavigationMenuIndicatorProps, useForwardProps } from 'reka-ui'
+import { computed, type HTMLAttributes } from 'vue'
 
 const props = defineProps<NavigationMenuIndicatorProps & { class?: HTMLAttributes['class'] }>()
 
@@ -16,9 +16,10 @@ const forwardedProps = useForwardProps(delegatedProps)
 
 <template>
   <NavigationMenuIndicator
+    data-slot="navigation-menu-indicator"
     v-bind="forwardedProps"
-    :class="cn('top-full z-1 flex h-1.5 items-end justify-center overflow-hidden data-[state=visible]:animate-in data-[state=hidden]:animate-out data-[state=hidden]:fade-out data-[state=visible]:fade-in', props.class)"
+    :class="cn('data-[state=visible]:animate-in data-[state=hidden]:animate-out data-[state=hidden]:fade-out data-[state=visible]:fade-in top-full z-[1] flex h-1.5 items-end justify-center overflow-hidden', props.class)"
   >
-    <div class="relative top-[60%] h-2 w-2 rotate-45 rounded-tl-sm bg-zinc-200 shadow-md dark:bg-zinc-800" />
+    <div class="bg-zinc-200 relative top-[60%] h-2 w-2 rotate-45 rounded-tl-sm shadow-md dark:bg-zinc-800" />
   </NavigationMenuIndicator>
 </template>

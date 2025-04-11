@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { CarouselEmits, CarouselProps, WithClassAsProps } from './interface'
-import { cn } from '@/Utils/shadcn'
+import { cn } from '@/Utils/Shadcn/utils'
 import { useProvideCarousel } from './useCarousel'
 
 const props = withDefaults(defineProps<CarouselProps & WithClassAsProps>(), {
@@ -41,6 +41,7 @@ function onKeyDown(event: KeyboardEvent) {
 
 <template>
   <div
+    data-slot="carousel"
     :class="cn('relative', props.class)"
     role="region"
     aria-roledescription="carousel"

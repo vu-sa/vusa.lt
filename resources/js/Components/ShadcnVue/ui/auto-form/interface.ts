@@ -18,6 +18,20 @@ export interface Shape {
   schema?: ZodAny
 }
 
+export interface InputComponents {
+  date: Component
+  select: Component
+  radio: Component
+  checkbox: Component
+  switch: Component
+  textarea: Component
+  number: Component
+  string: Component
+  file: Component
+  array: Component
+  object: Component
+}
+
 export interface ConfigItem {
   /** Value for the `FormLabel` */
   label?: string

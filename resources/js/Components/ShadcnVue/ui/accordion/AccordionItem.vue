@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { type HTMLAttributes, computed } from 'vue'
-import { AccordionItem, type AccordionItemProps, useForwardProps } from 'radix-vue'
-import { cn } from '@/Utils/shadcn'
+import { cn } from '@/Utils/Shadcn/utils'
+import { AccordionItem, type AccordionItemProps, useForwardProps } from 'reka-ui'
+import { computed, type HTMLAttributes } from 'vue'
 
 const props = defineProps<AccordionItemProps & { class?: HTMLAttributes['class'] }>()
 
@@ -16,8 +16,9 @@ const forwardedProps = useForwardProps(delegatedProps)
 
 <template>
   <AccordionItem
+    data-slot="accordion-item"
     v-bind="forwardedProps"
-    :class="cn('border-b border-zinc-200 dark:border-zinc-700', props.class)"
+    :class="cn('border-b last:border-b-0', props.class)"
   >
     <slot />
   </AccordionItem>

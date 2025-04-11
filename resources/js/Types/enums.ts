@@ -28,6 +28,7 @@ export enum ContentPartEnum {
   "NUMBER_STAT_SECTION" = "number-stat-section",
   "NEWS" = "news",
   "CALENDAR" = "calendar",
+  "CONTENT_GRID" = "content-grid",
 }
 export enum LocaleEnum {
   "LT" = "lt",

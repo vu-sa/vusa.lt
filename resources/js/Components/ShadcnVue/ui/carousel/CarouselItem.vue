@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { WithClassAsProps } from './interface'
-import { cn } from '@/Utils/shadcn'
+import { cn } from '@/Utils/Shadcn/utils'
 import { useCarousel } from './useCarousel'
 
 const props = defineProps<WithClassAsProps>()
@@ -10,6 +10,7 @@ const { orientation } = useCarousel()
 
 <template>
   <div
+    data-slot="carousel-item"
     role="group"
     aria-roledescription="slide"
     :class="cn(

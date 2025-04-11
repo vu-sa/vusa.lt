@@ -1,13 +1,15 @@
 <script setup lang="ts">
-import { cn } from '@/Utils/shadcn'
-import { Circle } from 'lucide-vue-next'
+import type { RadioGroupItemProps } from 'reka-ui'
+import type { HTMLAttributes } from 'vue'
+import { cn } from '@/Utils/Shadcn/utils'
+import { CircleIcon } from 'lucide-vue-next'
 import {
   RadioGroupIndicator,
   RadioGroupItem,
-  type RadioGroupItemProps,
+
   useForwardProps,
-} from 'radix-vue'
-import { computed, type HTMLAttributes } from 'vue'
+} from 'reka-ui'
+import { computed } from 'vue'
 
 const props = defineProps<RadioGroupItemProps & { class?: HTMLAttributes['class'] }>()
 
@@ -22,18 +24,20 @@ const forwardedProps = useForwardProps(delegatedProps)
 
 <template>
   <RadioGroupItem
+    data-slot="radio-group-item"
     v-bind="forwardedProps"
     :class="
       cn(
-        'aspect-square h-4 w-4 rounded-full border border-zinc-200 border-zinc-900 text-zinc-900 ring-offset-white focus:outline-hidden focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-800 dark:border-zinc-50 dark:text-zinc-50 dark:ring-offset-zinc-950 dark:focus-visible:ring-zinc-300',
+        'border-zinc-200 text-zinc-900 focus-visible:border-zinc-950 focus-visible:ring-zinc-950/50 aria-invalid:ring-red-500/20 dark:aria-invalid:ring-red-500/40 aria-invalid:border-red-500 dark:bg-zinc-200/30 aspect-square size-4 shrink-0 rounded-full border shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-800 dark:text-zinc-50 dark:focus-visible:border-zinc-300 dark:focus-visible:ring-zinc-300/50 dark:aria-invalid:ring-red-900/20 dark:dark:aria-invalid:ring-red-900/40 dark:aria-invalid:border-red-900 dark:dark:bg-zinc-800/30',
         props.class,
       )
     "
   >
     <RadioGroupIndicator
-      class="flex items-center justify-center"
+      data-slot="radio-group-indicator"
+      class="relative flex items-center justify-center"
     >
-      <Circle class="h-2.5 w-2.5 fill-current text-current" />
+      <CircleIcon class="fill-primary absolute top-1/2 left-1/2 size-2 -translate-x-1/2 -translate-y-1/2" />
     </RadioGroupIndicator>
   </RadioGroupItem>
 </template>

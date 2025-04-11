@@ -5,7 +5,7 @@ import { FormControl, FormDescription, FormField, FormItem, FormMessage } from '
 import { Switch } from '@/Components/ShadcnVue/ui/switch'
 import { computed } from 'vue'
 import AutoFormLabel from './AutoFormLabel.vue'
-import { beautifyObjectName } from './utils'
+import { beautifyObjectName, maybeBooleanishToBoolean } from './utils'
 
 const props = defineProps<FieldProps>()
 
@@ -20,10 +20,10 @@ const booleanComponent = computed(() => props.config?.component === 'switch' ? S
           <slot v-bind="slotProps">
             <component
               :is="booleanComponent"
-              v-bind="{ ...slotProps.componentField }"
-              :disabled="disabled"
-              :checked="slotProps.componentField.modelValue"
-              @update:checked="slotProps.componentField['onUpdate:modelValue']"
+              :disabled="maybeBooleanishToBoolean(config?.inputProps?.disabled) ?? disabled"
+              :name="slotProps.componentField.name"
+              :model-value="slotProps.componentField.modelValue"
+              @update:model-value="slotProps.componentField['onUpdate:modelValue']"
             />
           </slot>
         </FormControl>
