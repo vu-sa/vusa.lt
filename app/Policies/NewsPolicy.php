@@ -4,72 +4,49 @@ namespace App\Policies;
 
 use App\Enums\CRUDEnum;
 use App\Enums\ModelEnum;
-use App\Models\News;
 use App\Models\User;
-use App\Services\ModelAuthorizer as Authorizer;
-use Illuminate\Auth\Access\HandlesAuthorization;
+use App\Services\ModelAuthorizer;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
+/**
+ * Policy for News model authorization
+ */
 class NewsPolicy extends ModelPolicy
 {
-    use HandlesAuthorization;
-
-    public function __construct(public Authorizer $authorizer)
+    /**
+     * Initialize policy with model name
+     */
+    public function __construct(ModelAuthorizer $authorizer)
     {
         parent::__construct($authorizer);
-
         $this->pluralModelName = Str::plural(ModelEnum::NEWS()->label);
     }
 
     /**
      * Determine whether the user can view the model.
      *
-     * @return \Illuminate\Auth\Access\Response|bool
+     * Override with specific parameter - setting hasManyTenants to false
      */
-    public function view(User $user, News $news)
+    public function view(User $user, Model $news): bool
     {
-        if ($this->commonChecker($user, $news, CRUDEnum::READ()->label, $this->pluralModelName, false)) {
-            return true;
-        }
-
-        return false;
+        // News belongs to a single tenant, so we use hasManyTenants=false
+        return $this->commonChecker($user, $news, CRUDEnum::READ()->label, $this->pluralModelName, false);
     }
 
     /**
-     * Determine whether the user can update the model.
-     *
-     * @return \Illuminate\Auth\Access\Response|bool
+     * Override update method to ensure proper type hinting
      */
-    public function update(User $user, News $news)
+    public function update(User $user, Model $news): bool
     {
-        if ($this->commonChecker($user, $news, CRUDEnum::UPDATE()->label, $this->pluralModelName, false)) {
-            return true;
-        }
-
-        return false;
+        return $this->commonChecker($user, $news, CRUDEnum::UPDATE()->label, $this->pluralModelName, false);
     }
 
     /**
-     * Determine whether the user can delete the model.
-     *
-     * @return \Illuminate\Auth\Access\Response|bool
+     * Override delete method to ensure proper type hinting
      */
-    public function delete(User $user, News $news)
+    public function delete(User $user, Model $news): bool
     {
-        if ($this->commonChecker($user, $news, CRUDEnum::DELETE()->label, $this->pluralModelName, false)) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     *
-     * @return \Illuminate\Auth\Access\Response|bool
-     */
-    public function forceDelete(User $user, News $news)
-    {
-        return false;
+        return $this->commonChecker($user, $news, CRUDEnum::DELETE()->label, $this->pluralModelName, false);
     }
 }

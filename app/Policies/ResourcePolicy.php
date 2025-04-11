@@ -6,21 +6,24 @@ use App\Enums\CRUDEnum;
 use App\Enums\ModelEnum;
 use App\Models\Resource;
 use App\Models\User;
-use App\Services\ModelAuthorizer as Authorizer;
-use Illuminate\Auth\Access\HandlesAuthorization;
+use App\Services\ModelAuthorizer;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 class ResourcePolicy extends ModelPolicy
 {
-    use HandlesAuthorization;
-
-    public function __construct(public Authorizer $authorizer)
+    /**
+     * Initialize policy with model name
+     */
+    public function __construct(ModelAuthorizer $authorizer)
     {
         parent::__construct($authorizer);
-
         $this->pluralModelName = Str::plural(ModelEnum::RESOURCE()->label);
     }
 
+    /**
+     * Anyone can view the resource listing
+     */
     public function viewAny(User $user): bool
     {
         return true;
@@ -28,45 +31,31 @@ class ResourcePolicy extends ModelPolicy
 
     /**
      * Determine whether the user can view the model.
+     *
+     * Resources belong to a single tenant, so we use hasManyTenants=false
      */
-    public function view(User $user, Resource $resource): bool
+    public function view(User $user, Model $resource): bool
     {
-        if ($this->commonChecker($user, $resource, CRUDEnum::READ()->label, $this->pluralModelName, false)) {
-            return true;
-        }
-
-        return false;
+        return $this->commonChecker($user, $resource, CRUDEnum::READ()->label, null, false);
     }
 
     /**
      * Determine whether the user can update the model.
+     *
+     * Resources belong to a single tenant, so we use hasManyTenants=false
      */
-    public function update(User $user, Resource $resource): bool
+    public function update(User $user, Model $resource): bool
     {
-        if ($this->commonChecker($user, $resource, CRUDEnum::UPDATE()->label, $this->pluralModelName, false)) {
-            return true;
-        }
-
-        return false;
+        return $this->commonChecker($user, $resource, CRUDEnum::UPDATE()->label, null, false);
     }
 
     /**
      * Determine whether the user can delete the model.
+     *
+     * Resources belong to a single tenant, so we use hasManyTenants=false
      */
-    public function delete(User $user, Resource $resource): bool
+    public function delete(User $user, Model $resource): bool
     {
-        if ($this->commonChecker($user, $resource, CRUDEnum::DELETE()->label, $this->pluralModelName, false)) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Resource $resource): bool
-    {
-        return false;
+        return $this->commonChecker($user, $resource, CRUDEnum::DELETE()->label, null, false);
     }
 }

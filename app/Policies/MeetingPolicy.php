@@ -6,70 +6,60 @@ use App\Enums\CRUDEnum;
 use App\Enums\ModelEnum;
 use App\Models\Meeting;
 use App\Models\User;
-use App\Services\ModelAuthorizer as Authorizer;
-use Illuminate\Auth\Access\HandlesAuthorization;
+use App\Services\ModelAuthorizer;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
+/**
+ * Policy for Meeting model authorization
+ */
 class MeetingPolicy extends ModelPolicy
 {
-    use HandlesAuthorization;
-
-    public function __construct(public Authorizer $authorizer)
+    /**
+     * Initialize policy with model name
+     */
+    public function __construct(ModelAuthorizer $authorizer)
     {
         parent::__construct($authorizer);
-
         $this->pluralModelName = Str::plural(ModelEnum::MEETING()->label);
     }
 
     /**
      * Determine whether the user can view the model.
-     *
-     * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function view(User $user, Meeting $meeting)
+    public function view(User $user, Model $meeting): bool
     {
-        if ($this->commonChecker($user, $meeting, CRUDEnum::READ()->label, $this->pluralModelName)) {
+        // Check if user is a participant in the meeting
+        if ($meeting->participants->contains('id', $user->id)) {
             return true;
         }
 
-        return false;
+        return $this->commonChecker($user, $meeting, CRUDEnum::READ()->label);
     }
 
     /**
      * Determine whether the user can update the model.
-     *
-     * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function update(User $user, Meeting $meeting)
+    public function update(User $user, Model $meeting): bool
     {
-        if ($this->commonChecker($user, $meeting, CRUDEnum::UPDATE()->label, $this->pluralModelName)) {
+        // Allow meeting organizers to update
+        if ($meeting->organizer_id === $user->id) {
             return true;
         }
 
-        return false;
+        return $this->commonChecker($user, $meeting, CRUDEnum::UPDATE()->label);
     }
 
     /**
-     * Determine whether the user can delete the model.
-     *
-     * @return \Illuminate\Auth\Access\Response|bool
+     * Determine whether the user can add participants to the meeting.
      */
-    public function delete(User $user, Meeting $meeting)
+    public function addParticipants(User $user, Meeting $meeting): bool
     {
-        if ($this->commonChecker($user, $meeting, CRUDEnum::DELETE()->label, $this->pluralModelName)) {
+        // Allow meeting organizers to add participants
+        if ($meeting->organizer_id === $user->id) {
             return true;
         }
 
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     *
-     * @return \Illuminate\Auth\Access\Response|bool
-     */
-    public function forceDelete(User $user, Meeting $meeting)
-    {
-        return false;
+        return $this->commonChecker($user, $meeting, CRUDEnum::UPDATE()->label);
     }
 }

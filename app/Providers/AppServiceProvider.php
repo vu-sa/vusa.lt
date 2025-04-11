@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Http\Middleware\TrimStrings;
 use App\Models\User;
 use App\Services\ModelAuthorizer;
+use App\Services\PermissionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
@@ -27,6 +28,11 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->singleton(ModelAuthorizer::class, function ($app) {
             return new ModelAuthorizer;
+        });
+
+        // Register our new permission service
+        $this->app->singleton('permission.service', function ($app) {
+            return new PermissionService($app->make(ModelAuthorizer::class));
         });
     }
 

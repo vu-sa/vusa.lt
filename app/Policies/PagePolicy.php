@@ -4,72 +4,40 @@ namespace App\Policies;
 
 use App\Enums\CRUDEnum;
 use App\Enums\ModelEnum;
-use App\Models\Page;
 use App\Models\User;
-use App\Services\ModelAuthorizer as Authorizer;
-use Illuminate\Auth\Access\HandlesAuthorization;
+use App\Services\ModelAuthorizer;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 class PagePolicy extends ModelPolicy
 {
-    use HandlesAuthorization;
-
-    public function __construct(public Authorizer $authorizer)
+    public function __construct(ModelAuthorizer $authorizer)
     {
         parent::__construct($authorizer);
-
         $this->pluralModelName = Str::plural(ModelEnum::PAGE()->label);
     }
 
     /**
      * Determine whether the user can view the model.
-     *
-     * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function view(User $user, Page $page)
+    public function view(User $user, Model $page): bool
     {
-        if ($this->commonChecker($user, $page, CRUDEnum::READ()->label, $this->pluralModelName, false)) {
-            return true;
-        }
-
-        return false;
+        return $this->commonChecker($user, $page, CRUDEnum::READ()->label, $this->pluralModelName, false);
     }
 
     /**
      * Determine whether the user can update the model.
-     *
-     * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function update(User $user, Page $page)
+    public function update(User $user, Model $page): bool
     {
-        if ($this->commonChecker($user, $page, CRUDEnum::UPDATE()->label, $this->pluralModelName, false)) {
-            return true;
-        }
-
-        return false;
+        return $this->commonChecker($user, $page, CRUDEnum::UPDATE()->label, $this->pluralModelName, false);
     }
 
     /**
      * Determine whether the user can delete the model.
-     *
-     * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function delete(User $user, Page $page)
+    public function delete(User $user, Model $page): bool
     {
-        if ($this->commonChecker($user, $page, CRUDEnum::DELETE()->label, $this->pluralModelName, false)) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     *
-     * @return \Illuminate\Auth\Access\Response|bool
-     */
-    public function forceDelete(User $user, Page $page)
-    {
-        return false;
+        return $this->commonChecker($user, $page, CRUDEnum::DELETE()->label, $this->pluralModelName, false);
     }
 }

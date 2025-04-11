@@ -10,15 +10,53 @@ on:
       - main
     types:
       - completed
+  push:
+    branches:
+      - main
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      code_changed: ${{ steps.filter.outputs.code_changed }}
+      docs_changed: ${{ steps.filter.outputs.docs_changed }}
+    steps:
+    - uses: actions/checkout@v4
+    - uses: dorny/paths-filter@v2
+      id: filter
+      with:
+        filters: |
+          code_changed:
+            - '**/*.php'
+            - '**/*.vue'
+            - '**/*.js'
+            - '**/*.ts'
+            - '**/*.tsx'
+            - '**/*.css'
+            - '**/*.scss'
+          docs_changed:
+            - 'docs/**'
+            - '**/*.md'
+
   deploy:
+    needs: changes
+    if: ${{ needs.changes.outputs.code_changed == 'true' || needs.changes.outputs.docs_changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_run' }}
     # Use 2024 Ubuntu, because of newer node version
     runs-on: ubuntu-24.04
     environment: Production
     steps:
       - name: checkout
         uses: actions/checkout@v4
+        
+      # Try to download artifacts from previous workflow runs
+      - name: Download build artifacts
+        id: download-build
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: build-assets
+          path: ./
+          
       - name: install ssh keys
         # Check this thread to understand why it's needed:
         # https://stackoverflow.com/a/70447517
@@ -26,16 +64,50 @@ jobs:
           install -m 600 -D /dev/null ~/.ssh/id_rsa
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.SSH_HOST }} > ~/.ssh/known_hosts
+          
+      # Set up PHP only if we need to rebuild
       - name: setup php
+        if: ${{ steps.download-build.outcome != 'success' && (needs.changes.outputs.code_changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_run') }}
         uses: shivammathur/setup-php@v2
         with:
           php-version: 8.3
           extensions: dom, curl, libxml, mbstring, zip, fileinfo
+          
+      # Cache composer dependencies
+      - name: Get Composer cache directory
+        if: ${{ steps.download-build.outcome != 'success' && (needs.changes.outputs.code_changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_run') }}
+        id: composer-cache-dir
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+        
+      - name: Cache Composer dependencies
+        if: ${{ steps.download-build.outcome != 'success' && (needs.changes.outputs.code_changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_run') }}
+        id: cache-composer
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache-dir.outputs.dir }}
+          key: ${{ runner.os }}-composer-prod-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-prod-
+          
+      # Install composer deps if no artifacts downloaded
       - name: install composer deps
+        if: ${{ steps.download-build.outcome != 'success' && (needs.changes.outputs.code_changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_run') }}
         run: |
           composer install -q --no-ansi --no-interaction --no-scripts --no-dev
           tar -czf vendor.tar.gz vendor
+          
+      # Cache NPM dependencies
+      - name: Cache NPM dependencies
+        if: ${{ steps.download-build.outcome != 'success' && (needs.changes.outputs.code_changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_run') }}
+        id: cache-npm
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-npm-
+          
+      # Build frontend only if no artifacts downloaded
       - name: install and build npm deps
+        if: ${{ steps.download-build.outcome != 'success' && (needs.changes.outputs.code_changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_run') }}
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         run: |
@@ -43,19 +115,55 @@ jobs:
           # TODO: Possible to maybe use this: https://import-meta-env.org/guide/getting-started/introduction.html#guide
           VITE_POSTHOG_API_KEY=${{ secrets.POSTHOG_API_KEY }} VITE_ARCHYVAS_PASSWORD=${{ secrets.ARCHYVAS_PASSWORD }} VITE_ATSTOVAI_PASSWORD=${{ secrets.ATSTOVAI_PASSWORD }} VITE_SHAREPOINT_CLIENT_ID=${{ secrets.SHAREPOINT_CLIENT_ID }} VITE_SHAREPOINT_TENANT_ID=${{ secrets.SHAREPOINT_TENANT_ID }} npm run build 
           tar -czf build.tar.gz public/build
+          
+      # Package build artifacts if they were downloaded but not already packaged
+      - name: Package downloaded build artifacts
+        if: ${{ steps.download-build.outcome == 'success' && (needs.changes.outputs.code_changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_run') }}
+        run: |
+          if [ -d "public/build" ]; then
+            tar -czf build.tar.gz public/build
+          fi
+          if [ -d "vendor" ]; then
+            tar -czf vendor.tar.gz vendor
+          fi
+          
       - name: build docs
+        if: ${{ needs.changes.outputs.docs_changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_run' }}
         run: |
           npm run docs:build
           tar -czf docs.tar.gz -C docs/.vitepress/dist .
+          
       - name: upload and run on server
         # Unpack
         run: |
           # Test connection
-          scp build.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ vars.SITE_DIR }}/build.tar.gz
-          scp vendor.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ vars.SITE_DIR }}/vendor.tar.gz
-          scp docs.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ vars.SITE_DIR }}/docs.tar.gz
-          ssh -T ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ vars.SITE_DIR }} && git pull && rm -rf public/build && rm -rf vendor && rm -rf public/docs/* && tar -xzf build.tar.gz && tar -xzf vendor.tar.gz && tar -xzf docs.tar.gz -C public/docs && rm build.tar.gz && rm vendor.tar.gz && rm docs.tar.gz"       
+          if [ "${{ needs.changes.outputs.code_changed }}" = "true" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ "${{ github.event_name }}" = "workflow_run" ]; then
+            scp build.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ vars.SITE_DIR }}/build.tar.gz
+            scp vendor.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ vars.SITE_DIR }}/vendor.tar.gz
+          fi
+          
+          if [ "${{ needs.changes.outputs.docs_changed }}" = "true" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ "${{ github.event_name }}" = "workflow_run" ]; then
+            scp docs.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ vars.SITE_DIR }}/docs.tar.gz
+          fi
+          
+          ssh -T ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ vars.SITE_DIR }} && git pull && \
+          if [ -f build.tar.gz ]; then rm -rf public/build && tar -xzf build.tar.gz && rm build.tar.gz; fi && \
+          if [ -f vendor.tar.gz ]; then rm -rf vendor && tar -xzf vendor.tar.gz && rm vendor.tar.gz; fi && \
+          if [ -f docs.tar.gz ]; then rm -rf public/docs/* && tar -xzf docs.tar.gz -C public/docs && rm docs.tar.gz; fi"
+          
       - name: after upload
+        if: ${{ needs.changes.outputs.code_changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_run' }}
         run: |
           ssh -T ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ vars.SITE_DIR }} && /opt/php83/bin/php /usr/local/bin/composer dump-autoload && /opt/php83/bin/php artisan optimize"
           rm -rf ~/.ssh
+      
+      # Save artifacts for future workflow runs if they were built here
+      - name: Archive production artifacts
+        if: ${{ steps.download-build.outcome != 'success' && (needs.changes.outputs.code_changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_run') }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-assets
+          path: |
+            public/build
+            vendor
+          retention-days: 1

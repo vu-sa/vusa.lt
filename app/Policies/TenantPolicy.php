@@ -5,17 +5,16 @@ namespace App\Policies;
 use App\Enums\ModelEnum;
 use App\Models\Tenant;
 use App\Models\User;
-use App\Services\ModelAuthorizer as Authorizer;
-use Illuminate\Auth\Access\HandlesAuthorization;
+use App\Services\ModelAuthorizer;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 class TenantPolicy extends ModelPolicy
 {
-    use HandlesAuthorization;
-
-    public function __construct(public Authorizer $authorizer)
+    public function __construct(ModelAuthorizer $authorizer)
     {
-        $this->pluralModelName = Str::plural(ModelEnum::INSTITUTION()->label);
+        parent::__construct($authorizer);
+        $this->pluralModelName = Str::plural(ModelEnum::TENANT()->label);
     }
 
     /**
@@ -23,11 +22,7 @@ class TenantPolicy extends ModelPolicy
      */
     public function create(User $user): bool
     {
-        if ($user->hasRole(config('permission.super_admin_role_name'))) {
-            return true;
-        }
-
-        return false;
+        return $user->isSuperAdmin();
     }
 
     /**
@@ -35,35 +30,23 @@ class TenantPolicy extends ModelPolicy
      */
     public function viewAny(User $user): bool
     {
-        if ($user->hasRole(config('permission.super_admin_role_name'))) {
-            return true;
-        }
-
-        return false;
+        return $user->isSuperAdmin();
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Tenant $tenant): bool
+    public function view(User $user, Model $tenant): bool
     {
-        if ($user->hasRole(config('permission.super_admin_role_name'))) {
-            return true;
-        }
-
-        return false;
+        return $user->isSuperAdmin();
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Tenant $tenant): bool
+    public function update(User $user, Model $tenant): bool
     {
-        if ($user->hasRole(config('permission.super_admin_role_name'))) {
-            return true;
-        }
-
-        return false;
+        return $user->isSuperAdmin();
     }
 
     public function updateMainPage(User $user, Tenant $tenant): bool
@@ -80,16 +63,14 @@ class TenantPolicy extends ModelPolicy
 
         // Check against tenant in the request
         return $tenants->contains($tenant);
-
-        return false;
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Tenant $tenant): bool
+    public function delete(User $user, Model $tenant): bool
     {
-        if ($user->hasRole(config('permission.super_admin_role_name'))) {
+        if ($user->isSuperAdmin()) {
             // Only allow deletion of pkp tenants
             if ($tenant->type == 'pkp') {
                 return true;

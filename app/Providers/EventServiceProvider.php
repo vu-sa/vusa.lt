@@ -3,12 +3,17 @@
 namespace App\Providers;
 
 use App\Models\Calendar;
+use App\Models\Duty;
+use App\Models\Role;
 use App\Models\RoleType;
 use App\Models\Typeable;
+use App\Models\User;
 use App\Observers\CalendarObserver;
 use App\Observers\RoleTypeObserver;
 use App\Observers\TypeableObserver;
+use App\Observers\UserPermissionObserver;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
+use Spatie\Permission\Models\Permission;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -56,5 +61,9 @@ class EventServiceProvider extends ServiceProvider
         Calendar::observe(CalendarObserver::class);
         RoleType::observe(RoleTypeObserver::class);
         Typeable::observe(TypeableObserver::class);
+        User::observe(UserPermissionObserver::class);
+        Role::observe(UserPermissionObserver::class);
+        Duty::observe(UserPermissionObserver::class);
+        Permission::observe(UserPermissionObserver::class);
     }
 }

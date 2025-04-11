@@ -161,7 +161,15 @@ class NewsController extends Controller
     {
         $other_lang_page = News::find($news->other_lang_id);
 
-        $news->update($request->validated());
+        $news->update($request->only(
+            'title',
+            'lang',
+            'other_lang_id',
+            'draft',
+            'short',
+            'image',
+            'image_author',
+        ));
 
         $news->save();
 

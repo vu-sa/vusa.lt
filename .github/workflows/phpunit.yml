@@ -2,15 +2,40 @@ name: Pest Tests and Upload Coverage
 
 on:
   push:
-    branches: ['main']
+    branches:
+      - main
   pull_request:
     branches-ignore:
       - 'dependabot/npm_and_yarn/*'
       - 'dependabot/composer/*'
 
 jobs:
-  setup:
+  changes:
     runs-on: ubuntu-latest
+    outputs:
+      php: ${{ steps.filter.outputs.php }}
+      js: ${{ steps.filter.outputs.js }}
+    steps:
+    - uses: actions/checkout@v4
+    - uses: dorny/paths-filter@v2
+      id: filter
+      with:
+        filters: |
+          php:
+            - '**/*.php'
+          js:
+            - '**/*.vue'
+            - '**/*.js'
+            - '**/*.ts'
+            - '**/*.tsx'
+
+  setup:
+    needs: changes
+    if: ${{ needs.changes.outputs.php == 'true' || needs.changes.outputs.js == 'true' }}
+    runs-on: ubuntu-latest
+    outputs:
+      cache-hit-composer: ${{ steps.cache-composer.outputs.cache-hit }}
+      cache-hit-npm: ${{ steps.cache-npm.outputs.cache-hit }}
     steps:
     - uses: actions/checkout@v4
     - name: setup php
@@ -19,6 +44,19 @@ jobs:
         php-version: 8.3
         extensions: dom, curl, libxml, mbstring, zip, fileinfo
         coverage: xdebug
+        
+    # Cache Composer dependencies
+    - name: Get Composer cache directory
+      id: composer-cache-dir
+      run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+    - name: Cache Composer dependencies
+      id: cache-composer
+      uses: actions/cache@v4
+      with:
+        path: ${{ steps.composer-cache-dir.outputs.dir }}
+        key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+        restore-keys: ${{ runner.os }}-composer-
+        
     - name: Copy .env
       run: php -r "file_exists('.env') || copy('.env.example', '.env');"
     - name: Install Dependencies
@@ -29,19 +67,43 @@ jobs:
       run: chmod -R 777 storage bootstrap/cache
     - name: Create SQLite database
       run: touch database/database.sqlite
+      
+    # Cache NPM dependencies
+    - name: Cache NPM dependencies
+      id: cache-npm
+      uses: actions/cache@v4
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: ${{ runner.os }}-npm-
+        
     - name: NPM Install
       run: npm ci
     - name: NPM Build
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       run: npm run build
+      
+    # Save build artifacts
+    - name: Archive build artifacts
+      if: ${{ needs.changes.outputs.js == 'true' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-assets
+        path: |
+          public/build
+          vendor
+        retention-days: 1
+        
     - name: Execute tests (Unit and Feature tests) via Pest
       env:
         DB_CONNECTION: sqlite
         DB_DATABASE: database/database.sqlite
+      if: ${{ needs.changes.outputs.php == 'true' }}
       run: php artisan test --coverage --coverage-clover ./phpunit-coverage.xml
     ## With coverage
     - name: Upload coverage to Codecov
+      if: ${{ needs.changes.outputs.php == 'true' }}
       uses: codecov/codecov-action@v5
       with:
         verbose: true

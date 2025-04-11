@@ -50,6 +50,8 @@ const editorComponent = computed(() => {
       return defineAsyncComponent(() => import('./Types/NewsEditor.vue'));
     case 'calendar':
       return defineAsyncComponent(() => import('./Types/CalendarEditor.vue'));
+    case 'content-grid':
+      return defineAsyncComponent(() => import('./Types/ContentGridEditor.vue'));
     default:
       return defineAsyncComponent(() => import('./Types/TiptapEditor.vue'));
   }

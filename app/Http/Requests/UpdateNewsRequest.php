@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\ContentPartEnum;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateNewsRequest extends FormRequest
 {
@@ -43,7 +45,7 @@ class UpdateNewsRequest extends FormRequest
             'content' => 'required|array',
             'content.parts' => 'required|array',
             'content.parts.*.id' => 'nullable|integer',
-            'content.parts.*.type' => 'required|string|exists:App\Enums\ContentPartEnum,value',
+            'content.parts.*.type' => ['required', 'string', Rule::in(ContentPartEnum::toArray())],
             'content.parts.*.json_content' => 'required',
             'content.parts.*.options' => 'nullable',
             'content.parts.*.order' => 'nullable|integer',

@@ -20,7 +20,7 @@ const token = loadEnv('production', './', 'CODECOV').CODECOV_TOKEN;
 // This makes so that the <docs> block in Vue SFCs is removed
 const vueDocsPlugin = {
   name: 'vue-docs',
-  transform(code, id) {
+  transform(code: string, id: string) {
     if (!/vue&type=docs/.test(id)) return
     return `export default ''`
   }
@@ -87,7 +87,6 @@ export default defineConfig({
   ],
   test: {
     globals: true,
-    environment: 'node',
     coverage: {
       provider: 'istanbul',
       reporter: ['text', 'json', 'html', 'lcov'],
@@ -105,7 +104,11 @@ export default defineConfig({
       'tests/setup.ts'
     ],
     deps: {
-      inline: ['vue']
+      optimizer: {
+        web: {
+          include: ['vue', '@inertiajs/vue3']
+        },
+      }
     },
   },
   resolve: {

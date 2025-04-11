@@ -181,14 +181,18 @@ class ModelIndexer
     {
         $user = User::query()->find((Auth::id()));
 
+        // Derive the appropriate permission based on model being indexed
+        $modelName = Str::plural(Str::camel(class_basename($this->indexable)));
+        $permission = "{$modelName}.read.padalinys";
+
         return fn (EloquentBuilder $query) => $query->when(
-            ! $this->authorizer->isAllScope && ! $user->hasRole(config('permission.super_admin_role_name')),
+            ! $this->authorizer->isAllScope && ! $user->isSuperAdmin(),
             fn (EloquentBuilder $query) => $query->whereHas(
                 $this->tenantRelationString,
                 fn (EloquentBuilder $query) => $query->whereIn(
                     // Optional, because this is how relationship is queried in query builder
                     optional($this->tenantRelationString === 'tenants', fn () => 'tenants.id'),
-                    $this->authorizer->getTenants()->pluck('id')->toArray()
+                    $this->authorizer->getTenants($permission)->pluck('id')->toArray()
                 )
             )
         );

@@ -11,6 +11,8 @@ class Content extends Model
 
     protected $with = ['parts'];
 
+    protected $guarded = [];
+
     public function parts()
     {
         return $this->hasMany(ContentPart::class)->orderBy('order');

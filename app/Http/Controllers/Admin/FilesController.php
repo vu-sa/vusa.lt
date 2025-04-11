@@ -72,7 +72,7 @@ class FilesController extends Controller
         }
 
         // Check if can view directory
-        if (! $request->user()->can('viewAny', [File::class, $path])) {
+        if (! $request->user()->can('viewDirectory', [File::class, $path])) {
 
             // If not, redirect to padaliniai/{padalinys}
             if ($this->authorizer->getTenants()->count() > 0) {
@@ -200,7 +200,7 @@ class FilesController extends Controller
             ], 403);
         }
 
-        if (! $request->user()->can('delete', $path)) {
+        if (! $request->user()->can('deleteDirectory', $path)) {
 
             // If not, redirect to padaliniai/{padalinys}
             if ($this->authorizer->getTenants()->count() > 0) {

@@ -48,6 +48,7 @@ const contentComponents = shallowRef({
   'news': markRaw(defineAsyncComponent(() => import("@/Components/Public/NewsElement.vue"))),
   'calendar': markRaw(defineAsyncComponent(() => import("@/Components/Public/FullWidth/EventCalendarElement.vue"))),
   'flow-graph': markRaw(defineAsyncComponent(() => import('@/Components/RichContent/RCFlowGraph.vue'))),
+  'content-grid': markRaw(defineAsyncComponent(() => import('./RichContent/Types/ContentGridDisplay.vue'))),
 });
 
 const props = defineProps<{
@@ -78,6 +79,7 @@ function getSpacingClass(type: string, index: number): string {
     'news': 'mb-12', // 3rem bottom
     'calendar': 'mb-12', // 3rem bottom
     'flow-graph': 'mb-10', // 2.5rem bottom
+    'content-grid': 'mb-10', // 2.5rem bottom
   };
 
   // Default spacing if type not defined

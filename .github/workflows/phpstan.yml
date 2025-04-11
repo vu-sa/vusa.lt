@@ -2,41 +2,89 @@ name: PHP Static Analysis
 on:
   workflow_dispatch:
   push:
-    branches: ['main']
+    branches:
+      - main
   pull_request:
     branches-ignore:
     - 'dependabot/npm_and_yarn/*'
     - 'dependabot/composer/*'
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      php: ${{ steps.filter.outputs.php }}
+    steps:
+    - uses: actions/checkout@v4
+    - uses: dorny/paths-filter@v2
+      id: filter
+      with:
+        filters: |
+          php:
+            - '**/*.php'
+
   phpstan:
+    needs: changes
+    if: ${{ needs.changes.outputs.php == 'true' || github.event_name == 'workflow_dispatch' }}
     runs-on: "ubuntu-latest"
     name: PHP Static Analysis
     steps:
       - uses: actions/checkout@v4
+      
+      # Try to download artifacts from previous workflow runs
+      - name: Download build artifacts
+        id: download-artifacts
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: build-assets
+          path: ./
+      
+      # Only set up PHP and install dependencies if we don't have artifacts
       - name: Get Composer Cache Directory
+        if: steps.download-artifacts.outcome != 'success'
         id: composer-cache
         run: |
           echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+      
       - uses: actions/cache@v4
+        if: steps.download-artifacts.outcome != 'success'
         with:
           path: |
             ${{ steps.composer-cache.outputs.dir }}
             ./vendor
           key: composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: composer-
+      
       - name: setup php
         uses: shivammathur/setup-php@v2
         with:
           php-version: 8.3
           extensions: dom, curl, libxml, mbstring, zip, fileinfo
+      
       - name: Copy .env
+        if: steps.download-artifacts.outcome != 'success'
         run: php -r "file_exists('.env') || copy('.env.example', '.env');"
+      
       - name: Install Dependencies
+        if: steps.download-artifacts.outcome != 'success'
         run: |
           composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+      
       - name: Generate key
+        if: steps.download-artifacts.outcome != 'success'
         run: php artisan key:generate
+      
       - name: "Running Static Analysis"
         run: |
           vendor/phpstan/phpstan/phpstan --no-progress --memory-limit=384M analyze
+      
+      # Save analysis results as artifact
+      - name: Archive analysis report
+        uses: actions/upload-artifact@v4
+        with:
+          name: phpstan-report
+          path: |
+            ./phpstan-result.json
+          retention-days: 1
+          if-no-files-found: ignore
