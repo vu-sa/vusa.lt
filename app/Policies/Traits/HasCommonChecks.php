@@ -15,19 +15,18 @@ trait HasCommonChecks
 {
     /**
      * Common checker logic for tenant-based authorization.
-     * 
-     * @param User $user The user to check permissions for
-     * @param Model $model The model to check against
-     * @param string $ability The CRUD action being checked (e.g., read, update)
-     * @param string|null $resourceName Override the resource name if different from plural model name
-     * @param bool $hasManyTenants Whether the model can belong to multiple tenants
-     * @return bool
+     *
+     * @param  User  $user  The user to check permissions for
+     * @param  Model  $model  The model to check against
+     * @param  string  $ability  The CRUD action being checked (e.g., read, update)
+     * @param  string|null  $resourceName  Override the resource name if different from plural model name
+     * @param  bool  $hasManyTenants  Whether the model can belong to multiple tenants
      */
     protected function commonChecker(
-        User $user, 
-        Model $model, 
-        string $ability, 
-        ?string $resourceName = null, 
+        User $user,
+        Model $model,
+        string $ability,
+        ?string $resourceName = null,
         bool $hasManyTenants = true
     ): bool {
         $authorizer = app(ModelAuthorizer::class);
@@ -37,12 +36,13 @@ trait HasCommonChecks
 
         if (empty($resource)) {
             Log::error('Resource name is not set in the policy. Please provide a resource name.');
+
             return false;
         }
-        
+
         // Build the permission string using model name and action
         $permissionBase = $resource.'.'.$ability.'.';
-        
+
         // Check for wildcard (.*) - all-access permission
         if ($authorizer->forUser($user)->check($permissionBase.PermissionScopeEnum::ALL()->label)) {
             return true;
@@ -52,7 +52,7 @@ trait HasCommonChecks
         if ($authorizer->forUser($user)->check($permissionBase.PermissionScopeEnum::OWN()->label)) {
             $permissableDuties = $authorizer->getPermissableDuties();
             $relationFromDuties = $resource;
-            
+
             if ($resource === 'duties') {
                 $permissableModels = $permissableDuties;
             } else {

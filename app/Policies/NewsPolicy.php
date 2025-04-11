@@ -25,7 +25,7 @@ class NewsPolicy extends ModelPolicy
 
     /**
      * Determine whether the user can view the model.
-     * 
+     *
      * Override with specific parameter - setting hasManyTenants to false
      */
     public function view(User $user, Model $news): bool

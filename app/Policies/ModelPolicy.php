@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * Base policy class for most models in the application.
- * 
+ *
  * This class provides common authorization checks for tenant-based models,
  * supporting the hierarchical permission structure of the application.
  */
@@ -33,8 +33,8 @@ class ModelPolicy
      * Standard view method that most models will use.
      * Override in child classes when needed.
      *
-     * @param User $user The user performing the action
-     * @param Model $model The model being accessed
+     * @param  User  $user  The user performing the action
+     * @param  Model  $model  The model being accessed
      * @return bool Whether access is permitted
      */
     public function view(User $user, Model $model): bool
@@ -46,8 +46,8 @@ class ModelPolicy
      * Standard update method that most models will use.
      * Override in child classes when needed.
      *
-     * @param User $user The user performing the action
-     * @param Model $model The model being updated
+     * @param  User  $user  The user performing the action
+     * @param  Model  $model  The model being updated
      * @return bool Whether update is permitted
      */
     public function update(User $user, Model $model): bool
@@ -59,11 +59,11 @@ class ModelPolicy
      * Standard delete method that most models will use.
      * Override in child classes when needed.
      *
-     * @param User $user The user performing the action
-     * @param Model $model The model being deleted
+     * @param  User  $user  The user performing the action
+     * @param  Model  $model  The model being deleted
      * @return bool Whether deletion is permitted
      */
-    public function delete(User $user, Model $model): Response | bool
+    public function delete(User $user, Model $model): Response|bool
     {
         return $this->commonChecker($user, $model, CRUDEnum::DELETE()->label, $this->pluralModelName);
     }
@@ -73,8 +73,8 @@ class ModelPolicy
      * This is restricted by default for most models.
      * Override in child classes when needed.
      *
-     * @param User $user The user performing the action
-     * @param Model $model The model being force-deleted
+     * @param  User  $user  The user performing the action
+     * @param  Model  $model  The model being force-deleted
      * @return bool Whether force deletion is permitted
      */
     public function forceDelete(User $user, Model $model): bool

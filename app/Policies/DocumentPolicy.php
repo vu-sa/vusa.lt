@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Enums\ModelEnum;
 use App\Models\Document;
-use App\Models\User;
 use App\Services\ModelAuthorizer;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;

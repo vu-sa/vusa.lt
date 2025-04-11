@@ -33,7 +33,7 @@ class MeetingPolicy extends ModelPolicy
         if ($meeting->participants->contains('id', $user->id)) {
             return true;
         }
-        
+
         return $this->commonChecker($user, $meeting, CRUDEnum::READ()->label);
     }
 
@@ -46,7 +46,7 @@ class MeetingPolicy extends ModelPolicy
         if ($meeting->organizer_id === $user->id) {
             return true;
         }
-        
+
         return $this->commonChecker($user, $meeting, CRUDEnum::UPDATE()->label);
     }
 
@@ -59,7 +59,7 @@ class MeetingPolicy extends ModelPolicy
         if ($meeting->organizer_id === $user->id) {
             return true;
         }
-        
+
         return $this->commonChecker($user, $meeting, CRUDEnum::UPDATE()->label);
     }
 }

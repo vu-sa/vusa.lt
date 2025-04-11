@@ -6,7 +6,6 @@ use App\Enums\ModelEnum;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\ModelAuthorizer;
-use Illuminate\Auth\Access\HandlesAuthorization;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 

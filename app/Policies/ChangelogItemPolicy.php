@@ -3,10 +3,8 @@
 namespace App\Policies;
 
 use App\Enums\ModelEnum;
-use App\Models\ChangelogItem;
 use App\Models\User;
 use App\Services\ModelAuthorizer;
-use Illuminate\Auth\Access\HandlesAuthorization;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 

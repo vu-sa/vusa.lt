@@ -5,8 +5,8 @@ namespace App\Policies;
 use App\Enums\ModelEnum;
 use App\Models\User;
 use App\Services\ModelAuthorizer;
-use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class FilePolicy extends ModelPolicy
 {
@@ -22,7 +22,7 @@ class FilePolicy extends ModelPolicy
     public function viewDirectory(User $user, Model $directory): bool
     {
         $directoryPath = $directory->getAttribute('path'); // Assuming 'path' is an attribute of the Model
-        $check = $this->authorizer->forUser($user)->check($this->pluralModelName . '.read.padalinys');
+        $check = $this->authorizer->forUser($user)->check($this->pluralModelName.'.read.padalinys');
 
         $padalinysDirectory = $this->getDirectoryPadalinysAlias($directoryPath);
 
@@ -45,7 +45,7 @@ class FilePolicy extends ModelPolicy
     public function deleteDirectory(User $user, Model $path): bool
     {
         $filePath = $path->getAttribute('path'); // Assuming 'path' is an attribute of the Model
-        $check = $this->authorizer->forUser($user)->check($this->pluralModelName . '.read.padalinys');
+        $check = $this->authorizer->forUser($user)->check($this->pluralModelName.'.read.padalinys');
 
         $padalinysDirectory = $this->getDirectoryPadalinysAlias($filePath);
 

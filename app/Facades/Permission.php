@@ -2,8 +2,6 @@
 
 namespace App\Facades;
 
-use App\Models\User;
-use App\Services\ModelAuthorizer;
 use Illuminate\Support\Facades\Facade;
 
 /**
@@ -12,7 +10,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static bool isSuperAdmin(\App\Models\User $user = null)
  * @method static \Illuminate\Database\Eloquent\Collection getTenants(\App\Models\User $user = null)
  * @method static void resetCache(\App\Models\User|int|string $user)
- * 
+ *
  * @see \App\Services\PermissionService
  */
 class Permission extends Facade

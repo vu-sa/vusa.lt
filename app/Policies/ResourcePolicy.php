@@ -31,7 +31,7 @@ class ResourcePolicy extends ModelPolicy
 
     /**
      * Determine whether the user can view the model.
-     * 
+     *
      * Resources belong to a single tenant, so we use hasManyTenants=false
      */
     public function view(User $user, Model $resource): bool
@@ -41,7 +41,7 @@ class ResourcePolicy extends ModelPolicy
 
     /**
      * Determine whether the user can update the model.
-     * 
+     *
      * Resources belong to a single tenant, so we use hasManyTenants=false
      */
     public function update(User $user, Model $resource): bool
@@ -51,7 +51,7 @@ class ResourcePolicy extends ModelPolicy
 
     /**
      * Determine whether the user can delete the model.
-     * 
+     *
      * Resources belong to a single tenant, so we use hasManyTenants=false
      */
     public function delete(User $user, Model $resource): bool

@@ -3,10 +3,10 @@
 namespace App\Providers;
 
 use App\Models\Calendar;
-use App\Models\RoleType;
-use App\Models\Typeable;
 use App\Models\Duty;
 use App\Models\Role;
+use App\Models\RoleType;
+use App\Models\Typeable;
 use App\Models\User;
 use App\Observers\CalendarObserver;
 use App\Observers\RoleTypeObserver;

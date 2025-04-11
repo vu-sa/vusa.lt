@@ -2,9 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\ContentPartEnum;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
-use App\Enums\ContentPartEnum;
 
 class UpdateNewsRequest extends FormRequest
 {

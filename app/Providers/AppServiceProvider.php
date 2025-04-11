@@ -29,7 +29,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(ModelAuthorizer::class, function ($app) {
             return new ModelAuthorizer;
         });
-        
+
         // Register our new permission service
         $this->app->singleton('permission.service', function ($app) {
             return new PermissionService($app->make(ModelAuthorizer::class));

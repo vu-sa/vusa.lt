@@ -180,7 +180,7 @@ class ModelIndexer
     private function authorizerClosure()
     {
         $user = User::query()->find((Auth::id()));
-        
+
         // Derive the appropriate permission based on model being indexed
         $modelName = Str::plural(Str::camel(class_basename($this->indexable)));
         $permission = "{$modelName}.read.padalinys";

@@ -6,7 +6,6 @@ use App\Facades\Permission;
 use App\Models\Duty;
 use App\Models\Role;
 use App\Models\User;
-use Spatie\Permission\Models\Permission as SpatiePermission;
 
 /**
  * Observer to handle permission cache invalidation when relevant models change.
@@ -18,13 +17,13 @@ class UserPermissionObserver
      */
     public function invalidateUserCache($userId)
     {
-        if (!$userId) {
+        if (! $userId) {
             return;
         }
-        
+
         Permission::resetCache($userId);
     }
-    
+
     /**
      * Handle the User "updated" event.
      */
@@ -32,7 +31,7 @@ class UserPermissionObserver
     {
         $this->invalidateUserCache($user->id);
     }
-    
+
     /**
      * Handle the User "deleted" event.
      */
@@ -40,7 +39,7 @@ class UserPermissionObserver
     {
         $this->invalidateUserCache($user->id);
     }
-    
+
     /**
      * Handle role assignment to user
      */
@@ -48,7 +47,7 @@ class UserPermissionObserver
     {
         $this->invalidateUserCache($user->id);
     }
-    
+
     /**
      * Handle role removal from user
      */
@@ -56,7 +55,7 @@ class UserPermissionObserver
     {
         $this->invalidateUserCache($user->id);
     }
-    
+
     /**
      * Handle duty assignment to user
      */
@@ -64,7 +63,7 @@ class UserPermissionObserver
     {
         $this->invalidateUserCache($user->id);
     }
-    
+
     /**
      * Handle duty removal from user
      */
@@ -72,7 +71,7 @@ class UserPermissionObserver
     {
         $this->invalidateUserCache($user->id);
     }
-    
+
     /**
      * Handle duty update
      */
@@ -83,7 +82,7 @@ class UserPermissionObserver
             $this->invalidateUserCache($user->id);
         });
     }
-    
+
     /**
      * Handle permission change in a role
      */
@@ -93,11 +92,11 @@ class UserPermissionObserver
         $role->users->each(function ($user) {
             $this->invalidateUserCache($user->id);
         });
-        
+
         // Also clear cache for users with duties that have this role
         $dutyIds = $role->duties()->pluck('duties.id')->toArray();
-        
-        if (!empty($dutyIds)) {
+
+        if (! empty($dutyIds)) {
             Duty::whereIn('id', $dutyIds)->get()->each(function ($duty) {
                 $duty->users->each(function ($user) {
                     $this->invalidateUserCache($user->id);
