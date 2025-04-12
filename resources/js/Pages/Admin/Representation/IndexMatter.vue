@@ -50,7 +50,7 @@ const columns = [
             <NButton round size="tiny" tertiary>
               {{
                 default: (
-                    {institution.short_name ?? institution.name}
+                    institution.short_name ?? institution.name
                 ),
                 icon: <NIcon component={Icons.INSTITUTION}></NIcon>,
               }}
