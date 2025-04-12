@@ -2,25 +2,25 @@
 
   <Head title="Log in" />
 
+  <Carousel class="bg-black-800 h-full fixed -z-50 blur-1 brightness-15 saturate-50 contrast-100" :plugins="[Autoplay({
+    delay: 5000,
+  }), Fade()]">
+    <CarouselContent class="h-full">
+      <CarouselItem>
+        <img src="/images/photos/VU SA 2023.jpg" class="size-full object-cover" alt="VU SA members group photo 2023">
+      </CarouselItem>
+      <CarouselItem>
+        <img src="/images/photos/stovykla.jpg" class="size-full object-cover" alt="Students at a summer camp">
+      </CarouselItem>
+      <CarouselItem>
+        <img src="/images/photos/observatorijos_kiemelis.jpg" class="size-full object-cover"
+          alt="Vilnius University Observatory Courtyard">
+      </CarouselItem>
+    </CarouselContent>
+  </Carousel>
+
   <NConfigProvider :theme-overrides="themeOverrides">
     <div>
-      <div class="absolute -z-50 size-full blur-1 brightness-15 saturate-50 contrast-100">
-        <Carousel class="bg-black-800 size-full" :plugins="[Autoplay({
-          delay: 5000,
-        }), Fade()]">
-          <CarouselContent>
-            <CarouselItem>
-              <img src="/images/photos/VU SA 2023.jpg" class="size-full object-cover">
-            </CarouselItem>
-            <CarouselItem>
-              <img src="/images/photos/stovykla.jpg" class="size-full object-cover">
-            </CarouselItem>
-            <CarouselItem>
-              <img src="/images/photos/observatorijos_kiemelis.jpg" class="size-full object-cover">
-            </CarouselItem>
-          </CarouselContent>
-        </Carousel>
-      </div>
       <FadeTransition appear>
         <div class="grid min-h-screen justify-center p-4 sm:grid-cols-2 sm:grid-rows-none">
           <div class="flex h-fit justify-center sm:h-auto">
@@ -44,9 +44,11 @@
               <div v-if="!useSimpleRegistration" class="mt-4 flex flex-col gap-4">
                 <MicrosoftButton />
                 <NDivider>{{ $t("Arba") }}</NDivider>
-                <NButton size="tiny" text quaternary @click="useSimpleRegistration = true"><template #icon>
+                <NButton size="tiny" text quaternary @click="useSimpleRegistration = true">
+                  <template #icon>
                     <IFluentKey24Filled />
-                  </template>{{ $t("auth.use_other_login") }}</NButton>
+                  </template>{{ $t("auth.use_other_login") }}
+                </NButton>
               </div>
               <div v-else class="flex flex-col gap-4 sm:w-96 sm:justify-center sm:pt-0">
                 <div class="px-6 py-4">
@@ -70,23 +72,29 @@
                     <NFormItem path="email">
                       <NInput id="email" v-model:value="form.email" round placeholder="vusa@vusa.lt"
                         :input-props="{ type: 'email' }" required autofocus />
-                      <template #label><strong>{{
-                        $t("forms.fields.email")
-                          }}</strong></template>
+                      <template #label>
+                        <strong>{{
+                          $t("forms.fields.email")
+                        }}</strong>
+                      </template>
                     </NFormItem>
 
                     <NFormItem class="mt-4" path="password">
                       <NInput id="password" v-model:value="form.password" round type="password" placeholder="*********"
                         required autocomplete="current-password" />
-                      <template #label><strong>{{
-                        $t("forms.fields.password")
-                          }}</strong></template>
+                      <template #label>
+                        <strong>{{
+                          $t("forms.fields.password")
+                        }}</strong>
+                      </template>
                     </NFormItem>
 
                     <div class="mt-4 flex items-center justify-between gap-4">
-                      <NButton size="small" secondary @click="useSimpleRegistration = false"><template #icon>
+                      <NButton size="small" secondary @click="useSimpleRegistration = false">
+                        <template #icon>
                           <IFluentArrowHookUpLeft24Regular />
-                        </template>{{ $t("Grįžti") }}</NButton>
+                        </template>{{ $t("Grįžti") }}
+                      </NButton>
                       <NButton size="small" attr-type="submit" :disabled="form.processing" :loading="form.processing">
                         {{ $t("auth.login") }}
                       </NButton>
@@ -171,3 +179,13 @@ const submit = () => {
   });
 };
 </script>
+
+<style scoped>
+/* 
+The carousel content is not that easily accessed,
+but i'll keep it that way. 
+*/
+div[data-slot="carousel-content"] {
+  height: 100vh;
+}
+</style>
