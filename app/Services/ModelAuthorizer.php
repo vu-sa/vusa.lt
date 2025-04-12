@@ -152,7 +152,7 @@ class ModelAuthorizer
     public function getTenants(?string $permission = null): Collection
     {
         // Ensure user is set before proceeding
-        if (!isset($this->user)) {
+        if (! isset($this->user)) {
             $this->forUser(auth()->user());
         }
 
