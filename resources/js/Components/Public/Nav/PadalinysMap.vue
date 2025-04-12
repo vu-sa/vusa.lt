@@ -17,7 +17,7 @@
   </div>
 </template>
 
-<script setup lang="tsx">
+<script setup lang="ts">
 import { trans as $t, trans } from "laravel-vue-i18n";
 import { computed, ref, watch, onMounted, onBeforeUnmount, nextTick, h, render } from "vue";
 import { usePage } from "@inertiajs/vue3";
@@ -108,36 +108,37 @@ const setHoveredLocation = (option: DropdownOption | null) => {
   emit('update:hoveredLocation', option);
 };
 
-// Render Avatar component as HTML string for Leaflet marker
+// Update renderAvatarToHTML to create proper HTML directly
 const renderAvatarToHTML = (option: DropdownOption, isActive: boolean): string => {
   // Get avatar URL from primary institution
   const avatarUrl = option.primary_institution?.image_url;
   const key = option.key;
   const isMainOffice = option.isMainOffice;
+  const avatarClasses = `map-avatar ${isActive ? 'active' : ''} ${isMainOffice ? 'main-office' : ''}`;
   
-  // Create a div to render our component
-  const container = document.createElement('div');
+  // Create direct HTML structure that matches Shadcn Avatar component structure
+  let html = '';
   
-  // Render the Avatar component
-  const vnode = h(Avatar, 
-    { 
-      class: `map-avatar ${isActive ? 'active' : ''} ${isMainOffice ? 'main-office' : ''}` 
-    }, 
-    {
-      default: () => [
-        avatarUrl 
-          ? h(AvatarImage, { src: avatarUrl, alt: option.label })
-          : null,
-        h(AvatarFallback, {}, () => key.substring(0, 2).toUpperCase())
-      ]
-    }
-  );
+  if (avatarUrl) {
+    // If we have an avatar URL, create an avatar with an image
+    html = `
+      <div class="${avatarClasses}" data-slot="avatar">
+        <img src="${avatarUrl}" alt="${option.label}" class="h-full w-full object-cover" />
+      </div>
+    `;
+  } else {
+    // Otherwise create an avatar with fallback text
+    const fallbackText = key.substring(0, 2).toUpperCase();
+    html = `
+      <div class="${avatarClasses}" data-slot="avatar">
+        <div class="flex h-full w-full items-center justify-center bg-muted text-muted-foreground">
+          ${fallbackText}
+        </div>
+      </div>
+    `;
+  }
   
-  // Convert Vue component to HTML string
-    render(vnode, container);
-  
-  // Return the HTML content
-  return container.innerHTML;
+  return html;
 };
 
 // Initialize map when component is mounted
@@ -284,7 +285,7 @@ const updateMapMarkers = () => {
     let marker;
     const isActive = isActivePadalinys(option.key);
     const avatarUrl = option.primary_institution?.image_url;
-    
+
     if (avatarUrl) {
       const customIcon = L.divIcon({
         className: 'custom-map-marker',
