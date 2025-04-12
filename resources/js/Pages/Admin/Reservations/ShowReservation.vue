@@ -93,7 +93,6 @@ import ReservationResourceTable from "@/Components/Tables/ReservationResourceTab
 import ShowPageLayout from "@/Components/Layouts/ShowModel/ShowPageLayout.vue";
 import UserAvatar from "@/Components/Avatars/UserAvatar.vue";
 import UsersAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
-import type { BreadcrumbOption } from "@/Components/Layouts/ShowModel/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import MdSuspenseWrapper from "@/Features/MarkdownGetterFromDocs/MdSuspenseWrapper.vue";
 

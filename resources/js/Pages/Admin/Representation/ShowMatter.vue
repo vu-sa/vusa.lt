@@ -28,7 +28,7 @@ import Icons from "@/Types/Icons/filled";
 import MatterForm from "@/Components/AdminForms/MatterForm.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import ShowPageLayout from "@/Components/Layouts/ShowModel/ShowPageLayout.vue";
-import type { BreadcrumbOption } from "@/Components/Layouts/ShowModel/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
+import { useBreadcrumbs, type BreadcrumbItem } from "@/Composables/useBreadcrumbs";
 
 const props = defineProps<{
   matter: App.Entities.Matter;
@@ -61,27 +61,10 @@ const firstInstitution = computed(() => {
 
 const handleMatterSubmit = (form: Record<string, any>) => { };
 
-const breadcrumbOptions: BreadcrumbOption[] = [
-  {
-    label: firstInstitution.value?.name ?? "Nenurodyta",
-    icon: PeopleTeam24Filled,
-    routeOptions: {
-      name: "institutions.show",
-      params: {
-        institution: firstInstitution.value?.id,
-      },
-    },
-  },
-  {
-    label: props.matter.title,
-    icon: BookQuestionMark24Filled,
-    routeOptions: {
-      name: "institutions.matters.show",
-      params: {
-        institution: firstInstitution.value?.id,
-        matter: props.matter.id,
-      },
-    },
-  },
-];
+const { createRouteBreadcrumb, createBreadcrumbItem } = useBreadcrumbs();
+
+const breadcrumbOptions = computed((): BreadcrumbItem[] => [
+  createRouteBreadcrumb(firstInstitution.value?.name ?? "Nenurodyta", "institutions.show", { institution: firstInstitution.value?.id }, PeopleTeam24Filled),
+  createBreadcrumbItem(props.matter.title, undefined, BookQuestionMark24Filled),
+]);
 </script>

@@ -84,7 +84,7 @@ import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import ShowPageLayout from "@/Components/Layouts/ShowModel/ShowPageLayout.vue";
 import SimpleFileViewer from "@/Features/Admin/SharepointFileManager/Viewer/SimpleFileViewer.vue";
 import UserPopover from "@/Components/Avatars/UserPopover.vue";
-import type { BreadcrumbOption } from "@/Components/Layouts/ShowModel/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
+import { useBreadcrumbs, type BreadcrumbItem } from "@/Composables/useBreadcrumbs";
 
 const props = defineProps<{
   duty: App.Entities.Duty;
@@ -126,20 +126,10 @@ const filteredUsers = computed(() => {
   );
 });
 
-const breadcrumbOptions: BreadcrumbOption[] = [
-  {
-    label: props.duty.institution?.name,
-    icon: Icons.INSTITUTION,
-    routeOptions: {
-      name: "institutions.show",
-      params: {
-        institution: props.duty?.institution?.id,
-      },
-    },
-  },
-  {
-    label: props.duty.name,
-    icon: Icons.DUTY,
-  },
-];
+const { createRouteBreadcrumb, createBreadcrumbItem } = useBreadcrumbs();
+
+const breadcrumbOptions = computed((): BreadcrumbItem[] => [
+  createRouteBreadcrumb(props.duty.institution?.name, "institutions.show", { institution: props.duty?.institution?.id }, Icons.INSTITUTION),
+  createBreadcrumbItem(props.duty.name, undefined, Icons.DUTY),
+]);
 </script>
