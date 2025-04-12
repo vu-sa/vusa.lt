@@ -15,32 +15,32 @@
         <span>Nauja užduotis</span>
       </h4>
       <NForm ref="formRef" :disabled="disabled" size="small" class="m-2" :model="model" :rules="rules">
-        <NGrid cols="1">
-          <NFormItemGi :label="$t('forms.fields.title')" required path="name">
+        <div class="grid grid-cols-1">
+          <NFormItem :label="$t('forms.fields.title')" required path="name">
             <NInput v-model:value="model.name" :placeholder="getRandomTaskNamePlaceholder()" />
-          </NFormItemGi>
-          <!-- <NFormItemGi label="Subjektas">
+          </NFormItem>
+          <!-- <NFormItem label="Subjektas">
             <NInput></NInput>
-          </NFormItemGi> -->
-          <NFormItemGi label="Terminas" path="due_date">
+          </NFormItem> -->
+          <NFormItem label="Terminas" path="due_date">
             <NDatePicker v-model:value="model.due_date" />
-          </NFormItemGi>
-          <NFormItemGi label="Atsakingi žmonės">
+          </NFormItem>
+          <NFormItem label="Atsakingi žmonės">
             <NCascader v-model:value="model.responsible_people" placeholder="Pasirink arba ieškok iš sąrašo..." multiple
               :check-strategy="'child'" :options="institutions" expand-trigger="hover" :filter="filter" filterable
               :max-tag-count="8" clearable virtual-scroll :show-path="false" />
-          </NFormItemGi>
-          <NFormItemGi :show-label="false">
+          </NFormItem>
+          <NFormItem :show-label="false">
             <NCheckbox v-model:checked="model.separate_tasks">
               Ar individualios užduotys?
             </NCheckbox>
-          </NFormItemGi>
-          <NFormItemGi :show-label="false" :show-feedback="false">
+          </NFormItem>
+          <NFormItem :show-label="false" :show-feedback="false">
             <NButton type="primary" @click="submit">
               Sukurti
             </NButton>
-          </NFormItemGi>
-        </NGrid>
+          </NFormItem>
+        </div>
       </NForm>
       <template #description>
         Tuojaus...

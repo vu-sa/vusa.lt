@@ -10,19 +10,18 @@
     </NButton>
     <CardModal v-model:show="showModal" :title="`Sukurti naują ryšį`" @close="showModal = false">
       <NForm label-placement="top">
-        <NGrid cols="1 s:4 l:6" responsive="screen" :x-gap="24">
-          <NFormItemGi :span="6" label="Modelio tipas">
+        <div class="grid grid-cols-1 sm:grid-cols-4 lg:grid-cols-6 gap-6">
+          <NFormItem label="Modelio tipas" class="col-span-6">
             <NSelect v-model:value="relationForm.model_type" remote :options="modelTypeOptions"
               placeholder="Pasirinkite modelio tipą" @update:value="handleUpdateModelType" />
-          </NFormItemGi>
-          <NFormItemGi :span="6" label="Ryšio suteikėjas">
+          </NFormItem>
+          <NFormItem label="Ryšio suteikėjas" class="col-span-6">
             <NSelect v-model:value="relationForm.model_id" filterable clearable :options="options" />
-          </NFormItemGi>
-          <NFormItemGi :span="6" label="Ryšio gavėjas">
+          </NFormItem>
+          <NFormItem label="Ryšio gavėjas" class="col-span-6">
             <NSelect v-model:value="relationForm.related_model_id" filterable clearable :options="options" />
-          </NFormItemGi>
-          <!-- TODO: paaiškinti, kas yra ryšio suteikėjas ir ryšio gavėjas. -->
-        </NGrid>
+          </NFormItem>
+        </div>
         <NButton type="primary" @click="submitRelationForm">
           Sukurti
         </NButton>
@@ -37,7 +36,7 @@ import {
   NButton,
   NDataTable,
   NForm,
-  NFormItemGi,
+  NFormItem,
   NGrid,
   NSelect,
 } from "naive-ui";

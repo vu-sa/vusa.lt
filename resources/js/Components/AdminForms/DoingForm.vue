@@ -1,7 +1,7 @@
 <template>
   <NForm ref="formRef" :rules="rules" :model="doingForm">
-    <NGrid cols="2">
-      <NFormItemGi label="Veiklos pavadinimas" path="title" required :span="2">
+    <div class="grid grid-cols-2 gap-4">
+      <NFormItem label="Veiklos pavadinimas" path="title" required class="col-span-2">
         <NSelect
           v-model:value="doingForm.title"
           placeholder="Susitikimas su studentais"
@@ -15,8 +15,8 @@
             >
           </template></NSelect
         >
-      </NFormItemGi>
-      <NFormItemGi label="Data" :span="2" path="date" required>
+      </NFormItem>
+      <NFormItem label="Data" class="col-span-2" path="date" required>
         <NDatePicker
           v-model:formatted-value="doingForm.date"
           value-format="yyyy-MM-dd HH:mm:ss"
@@ -27,17 +27,15 @@
           clearable
           :actions="['confirm']"
         />
-      </NFormItemGi>
-      <NFormItemGi label="Atsakingas (-a)" :span="2">
+      </NFormItem>
+      <NFormItem label="Atsakingas (-a)" class="col-span-2">
         <UserPopover :user="$page.props.auth?.user" show-name />
-      </NFormItemGi>
+      </NFormItem>
 
-      <NFormItemGi :span="2" :show-label="false"
-        ><NButton type="primary" @click="handleSubmit"
-          >Sukurti</NButton
-        ></NFormItemGi
-      >
-    </NGrid>
+      <NFormItem class="col-span-2" :show-label="false">
+        <NButton type="primary" @click="handleSubmit">Sukurti</NButton>
+      </NFormItem>
+    </div>
   </NForm>
 </template>
 
@@ -46,8 +44,7 @@ import {
   NButton,
   NDatePicker,
   NForm,
-  NFormItemGi,
-  NGrid,
+  NFormItem,
   NSelect,
 } from "naive-ui";
 import { ref } from "vue";
