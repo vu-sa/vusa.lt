@@ -5,7 +5,7 @@
         variant="outline" 
         :class="[
           'flex items-center gap-2 w-auto justify-between', 
-          size === 'tiny' ? 'h-8 px-2 text-xs' : size === 'small' ? 'h-9 px-3 py-2' : 'h-10 px-4 py-2',
+          size === 'tiny' ? 'h-8 px-2 text-xs' : size === 'small' ? 'h-9 px-3 py-2' : 'h-9 px-4 py-2',
         ]" 
         :disabled="isDisabled"
       >
