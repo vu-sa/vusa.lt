@@ -1,58 +1,24 @@
 <template>
-
   <Head :title="title" />
 
-  <NDrawer v-model:show="isDrawerActive" :width="325" placement="left">
-    <NDrawerContent closable>
-      <div class="grid grid-rows-2">
-        <AdminMenu />
-      </div>
-    </NDrawerContent>
-  </NDrawer>
-  <div
-    class="relative grid min-h-screen bg-zinc-50 dark:bg-zinc-900 max-md:grid-rows-[7.3rem__auto] md:grid-cols-[18rem__auto] md:gap-4">
-    <div
-      class="sticky top-4 z-50 my-4 ml-4 flex flex-col overflow-y-auto rounded-md border border-zinc-200/90 bg-linear-to-b from-white to-zinc-100 shadow-inner dark:border-zinc-700 dark:from-zinc-900 dark:to-[#141416] max-md:mr-4 max-md:w-[calc(100vw-3rem)] md:h-[calc(100svh-2rem)] md:w-64">
-      <div class="flex items-center gap-2">
-        <Link class="size-fit" :href="route('dashboard')">
-        <AppLogo class="mr-auto w-32 p-3 md:w-36" />
-        </Link>
-        <TaskIndicatorButton size="small" />
-        <NNotificationProvider placement="bottom-right">
-          <NotificationBell size="small" />
-        </NNotificationProvider>
-        <div v-if="!mdAndGreater" class="ml-auto mr-4 w-fit">
-          <NButton class="ml-auto" size="small" @click="isDrawerActive = !isDrawerActive">
-            <template #icon>
-              <LineHorizontal320Filled />
-            </template>
-          </NButton>
+  <SidebarProvider>
+    <AppSidebar />
+    <SidebarInset>
+      <header class="flex h-16 shrink-0 items-center gap-2">
+        <div class="flex items-center gap-2 px-4">
+          <SidebarTrigger class="-ml-1" />
+          <Separator orientation="vertical" class="mr-2 h-4" />
+          <!-- NOTE: for some reason, we need to unwrap it in the template -->
+          <AdminBreadcrumbs :items="breadcrumbState.breadcrumbs.value" />
         </div>
-      </div>
-      <AdminMenu v-if="mdAndGreater" />
-    </div>
-    <div class="md:pr-4">
+        <div class="ml-auto flex items-center gap-2 px-4">
+          <TasksIndicator />
+          <NotificationsIndicator />
+        </div>
+      </header>
       <slot />
-    </div>
-  </div>
-  <CardModal :title="`⭐️ ${$t('vusa.lt atsinaujino')}!`" :show="showChanges" @close="approveChanges">
-    <div class="mb-8">
-      <template v-for="change in $page.props.auth?.changes" :key="change.id">
-        <h4 class="mb-0 tracking-tight">
-          {{ formatStaticTime(new Date(change.date)) }}
-        </h4>
-        <small class="text-zinc-400">{{ change.title }}</small>
-        <div class="mt-4" v-html="change.description" />
-        <NDivider class="last:hidden" />
-      </template>
-    </div>
-    <NButton type="primary" @click="approveChanges">
-      <template #icon>
-        <IFluentThumbLike16Regular />
-      </template>
-      Liuks
-    </NButton>
-  </CardModal>
+    </SidebarInset>
+  </SidebarProvider>
 </template>
 
 <script setup lang="tsx">
@@ -62,22 +28,69 @@ import {
   useMessage,
 } from "naive-ui";
 import { breakpointsTailwind, useBreakpoints, useOnline, useTimeoutFn } from "@vueuse/core";
-import { computed, onMounted, watch } from "vue";
+import { computed, onMounted, watch, onBeforeMount } from "vue";
 import { ref } from "vue";
 
-import { formatStaticTime } from "@/Utils/IntlTime";
-import AdminMenu from "@/Components/Menus/AdminMenu.vue";
-import AppLogo from "@/Components/AppLogo.vue";
-import CardModal from "../Modals/CardModal.vue";
-import NotificationBell from "@/Features/Admin/Notifications/NotificationBell.vue";
-import TaskIndicatorButton from "../../Features/Admin/TaskManager/TaskIndicatorButton.vue";
-import LineHorizontal320Filled from "~icons/fluent/line-horizontal-3-20-filled";
+import AppSidebar from '@/Components/AppSidebar.vue'
+import TasksIndicator from '@/Components/TasksIndicator.vue'
+import NotificationsIndicator from '@/Components/NotificationsIndicator.vue'
+import { Separator } from '@/Components/ui/separator'
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from '@/Components/ui/sidebar'
+import AdminBreadcrumbs from '@/Components/Admin/AdminBreadcrumbs.vue';
+import { createBreadcrumbState } from '@/Composables/useBreadcrumbs';
+import type { BreadcrumbItem } from '@/Composables/useBreadcrumbs';
 
-defineProps<{
+const props = defineProps<{
   title?: string;
   createUrl?: string | null;
   backUrl?: string | null;
+  breadcrumbs?: BreadcrumbItem[];
 }>();
+
+const pageTitle = computed(() => props.title || usePage().component.split('/').pop() || 'Dashboard');
+
+// Initialize breadcrumb state for the entire admin application
+const breadcrumbState = createBreadcrumbState();
+
+// Set initial breadcrumbs from props if available
+const updateBreadcrumbs = () => {
+  if (props.breadcrumbs && props.breadcrumbs.length > 0) {
+    breadcrumbState.setBreadcrumbs(props.breadcrumbs);
+  } else if (!breadcrumbState.hasBreadcrumbs.value) {
+    // Only set default breadcrumbs if no explicit breadcrumbs were set
+    breadcrumbState.resetToHome();
+    if (pageTitle.value && pageTitle.value !== 'ShowAdminHome') {
+      breadcrumbState.addBreadcrumb({
+        label: pageTitle.value,
+        href: undefined
+      });
+    }
+  }
+};
+
+// Watch for prop changes to update breadcrumbs immediately
+watch(() => props.breadcrumbs, () => {
+  updateBreadcrumbs();
+}, { immediate: true });
+
+// Also update breadcrumbs on page component change (for Inertia navigation)
+watch(() => usePage().component, () => {
+  updateBreadcrumbs();
+}, { immediate: true });
+
+// Listen for Inertia navigation events to update breadcrumbs
+onBeforeMount(() => {
+  router.on('finish', (event) => {
+    // Using nextTick to ensure component props have been updated
+    setTimeout(() => updateBreadcrumbs(), 0);
+  });
+});
+
+const appName = computed(() => usePage().props.app.name || 'VUSA');
 
 const mounted = ref(false);
 const showChanges = ref(false);

@@ -2,6 +2,19 @@
 
 This document provides context and guidelines for GitHub Copilot when working with the VU Students' Representation (VU SA) website project.
 
+## Application Purpose
+
+vusa.lt serves as a dual-purpose platform:
+1. **Public Website**: The public-facing website for VU SA, providing information about the organization, student events, news, and services.
+2. **Internal System**: A comprehensive student representation management platform (vusa.lt/mano) that enables:
+   - Managing and reporting on meetings with university administration
+   - Tracking student representation activities across university committees
+   - Creating and managing institutional goals and related tasks
+   - Monitoring student opinion collection and representation outcomes
+   - Maintaining institutional memory for future student representatives
+
+The core focus is facilitating effective student representation while providing tools for the organization's day-to-day operations.
+
 ## Project Overview
 
 vusa.lt is a student representation website for Vilnius University Students' Representation. The project serves many organizational needs while maintaining high code quality standards.
@@ -11,10 +24,12 @@ vusa.lt is a student representation website for Vilnius University Students' Rep
 - **Backend**: Laravel 12+ (PHP 8.3+)
 - **Frontend**: Vue 3 with Inertia.js
 - **Styling**: Tailwind CSS 4
+- **UI Components**: Shadcn Vue (transitioning from Naive UI)
 - **Database**: MySQL
 - **Testing**: Pest/PHPUnit for PHP, Vitest for JavaScript
 - **Internationalization**: Laravel-vue-i18n with multi-language support (lt/en)
 - **Documentation**: VitePress (stored in the docs directory)
+- **Rich Content**: Tiptap editor with custom extensions
 
 ### Project Structure
 
@@ -48,6 +63,24 @@ vusa.lt is a student representation website for Vilnius University Students' Rep
 3. Work within the Inertia.js pattern for page components.
 4. Follow accessibility (a11y) best practices.
 5. Maintain consistent component structure and naming patterns.
+6. Use Shadcn Vue components for consistent UI elements, following their implementation patterns.
+7. Transition existing Naive UI components to Shadcn Vue where feasible.
+8. Use defineAsyncComponent for code splitting where appropriate, especially for larger components.
+
+## UI Component Guidelines
+
+1. **Shadcn Vue**: The primary UI component library for the project.
+   - Use the existing utility functions from `@/Utils/Shadcn/utils`
+   - Maintain the established design system with consistent styling
+   - Follow the component structure in `@/Components/ui`
+   - Transition existing components from Naive UI to Shadcn Vue incrementally.
+
+## Rich Content System
+
+1. Follow the established content type pattern when creating new rich content types.
+2. Use the RichContentParser and existing type registration pattern for new content components.
+3. Ensure each content type has both editor and display components.
+4. Maintain internationalization support in all rich content types.
 
 ## Internationalization Guidelines
 
@@ -69,7 +102,9 @@ vusa.lt is a student representation website for Vilnius University Students' Rep
 1. Optimize database queries to avoid N+1 problems.
 2. Use eager loading for relationships appropriately.
 3. Implement caching for frequently accessed data.
-4. Minimize JavaScript bundle size through code splitting.
+4. Minimize JavaScript bundle size through code splitting with defineAsyncComponent.
+5. Lazy load components and assets, especially for the public-facing pages.
+6. Use image optimization and appropriate loading strategies (lazy loading).
 
 ## Accessibility and SEO
 
@@ -77,6 +112,22 @@ vusa.lt is a student representation website for Vilnius University Students' Rep
 2. Include appropriate alt text for images.
 3. Implement proper meta tags for SEO.
 4. Ensure keyboard navigability for all interactive elements.
+5. Follow WCAG 2.1 AA standards for all user interfaces.
+
+## Sustainability Practices
+
+1. **Component Reusability**: Create and use shared components rather than duplicating code.
+2. **Progressive Enhancement**: Design features to work with minimal JavaScript when possible.
+3. **Efficient State Management**: Use Vue's Composition API reactivity system effectively.
+4. **Modular Architecture**: Follow established patterns for new features to maintain consistency.
+5. **Documentation**: Document complex components or business logic for future maintainers.
+
+## Growth Considerations
+
+1. The platform continuously evolves to support new representation needs and organizational workflows.
+2. Design features with flexibility to accommodate changing university structures and representation processes.
+3. Consider data export/import capabilities for interoperability with other university systems.
+4. Plan for scalability as the number of representatives and institutional memory grows over time.
 
 ## Remember
 

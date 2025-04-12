@@ -1,5 +1,5 @@
 <template>
-  <ShowPageLayout :current-tab :title="institution.name" :breadcrumb-options :model="institution" :related-models
+  <ShowPageLayout :current-tab :title="institution.name" :breadcrumbs="breadcrumbs" :model="institution" :related-models
     @change:tab="currentTab = $event">
     <template #title>
       <span class="text-3xl">{{ institution.name }}</span>
@@ -51,7 +51,7 @@ import LastMeetingCard from "@/Components/Cards/QuickContentCards/LastMeetingCar
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import ShowPageLayout from "@/Components/Layouts/ShowModel/ShowPageLayout.vue";
 import SimpleFileViewer from "@/Features/Admin/SharepointFileManager/Viewer/SimpleFileViewer.vue";
-import type { BreadcrumbOption } from "@/Components/Layouts/ShowModel/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
+import { useBreadcrumbs, type BreadcrumbItem } from "@/Composables/useBreadcrumbs";
 
 const props = defineProps<{
   doingTypes: any;
@@ -76,12 +76,14 @@ const RelatedInstitutions = defineAsyncComponent(
   () => import("@/Components/Carousels/RelatedInstitutions.vue")
 );
 
-const breadcrumbOptions: BreadcrumbOption[] = [
-  {
-    label: props.institution.name,
-    icon: Icons.INSTITUTION,
-  },
-];
+// Use the breadcrumbs composable
+const { createRouteBreadcrumb, createBreadcrumbItem } = useBreadcrumbs();
+
+// Define breadcrumbs using the composable's helpers
+const breadcrumbs = computed((): BreadcrumbItem[] => [
+  createRouteBreadcrumb("Institucijos", "institutions.index", {}, Icons.INSTITUTION),
+  createBreadcrumbItem(props.institution.name, undefined, Icons.INSTITUTION),
+]);
 
 const relatedInstitutionCount = computed(() => {
   // reduce props.institution.relatedInstitutions object by checking all arrays lengths

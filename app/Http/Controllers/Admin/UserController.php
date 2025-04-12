@@ -396,7 +396,8 @@ class UserController extends Controller
 
         $request->session()->regenerateToken();
 
-        return redirect()->route('home', ['subdomain' => 'www', 'lang' => app()->getLocale()]);
+        // Cleanly return the user to homepage, without inertia
+        return back()->with('success', 'Sėkmingai atsijungta!');
     }
 
     public function restore(User $user, Request $request)
