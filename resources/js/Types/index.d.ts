@@ -38,7 +38,7 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
   seo: Record<string, any>;
   tenants: Pick<
     App.Entities.Tenant,
-    "id" | "alias" | "shortname" | "fullname" | "type"
+    "id" | "alias" | "shortname" | "fullname" | "type" | "primary_institution_id" | "primary_institution"
   >[];
   tenant:
   | (Pick<App.Entities.Tenant, "id" | "alias" | "shortname" | "type"> & {

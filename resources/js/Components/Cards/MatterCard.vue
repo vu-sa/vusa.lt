@@ -1,9 +1,7 @@
 <template>
   <NCard size="small" :segmented="{ content: true, footer: 'soft' }" class="bg-red cursor-pointer shadow-xs" hoverable
     as="button" @click="router.visit(route('matters.show', matter.id))"><template #header>
-      <NEllipsis>
         {{ matter.title }}
-      </NEllipsis>
       <div class="flex items-center gap-1 text-xs text-zinc-400">
         <IFluentCalendarClock24Filled />
         <time>{{
