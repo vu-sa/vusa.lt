@@ -25,7 +25,7 @@
           <NIcon size="16" :component="Icons.AGENDA_ITEM" />
         </template>
       </NButton>
-      <NDivider vertical style="background-color: lightgray;" />
+      <Separator vertical style="background-color: lightgray;" />
       <div class="flex items-center gap-2">
         <NSwitch v-model:value="showVoteOptions" size="small" />
         <label class="text-zinc-500 dark:text-zinc-400">{{ $t("Rodyti balsavimo parinktis") }}</label>
@@ -74,6 +74,7 @@ import IMdiThumbsDownOutline from "~icons/mdi/thumbs-down-outline";
 import IMdiThumbsUpDownOutline from "~icons/mdi/thumbs-up-down-outline";
 import AgendaItemsForm from "@/Components/AdminForms/Special/AgendaItemsForm.vue";
 import { useBreadcrumbs, type BreadcrumbItem } from "@/Composables/useBreadcrumbs";
+import { Separator } from "@/Components/ui/separator";
 
 const props = defineProps<{
   meeting: App.Entities.Meeting;

@@ -121,4 +121,12 @@ export default defineConfig({
   build: {
     // sourcemap: true,
   },
+  // NOTE: if not included, causes the error: "Cannot read properties of null (reading 'ce')"
+  optimizeDeps: {
+    include: [
+      '@inertiajs/vue3',
+      'laravel-vue-i18n',
+      'vue'
+    ]
+  },
 });

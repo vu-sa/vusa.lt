@@ -87,7 +87,7 @@
             </NCheckbox>
           </NCheckboxGroup>
         </NFormItem>
-        <NDivider />
+        <Separator />
         <NFormItem label="Nuo...">
           <NDatePicker v-model:value="form.dateFrom" clearable placeholder="2023-05-01"
             :is-date-disabled="isStartDateDisabled" @update:value="handleSearch" />
@@ -164,6 +164,7 @@ import Collapsible from '@/Components/ui/collapsible/Collapsible.vue';
 import CollapsibleContent from '@/Components/ui/collapsible/CollapsibleContent.vue';
 import CollapsibleTrigger from '@/Components/ui/collapsible/CollapsibleTrigger.vue';
 import type { DataTableColumns } from 'naive-ui';
+import { Separator } from '@/Components/ui/separator';
 
 const props = defineProps<{
   //documents: PaginatedModels<App.Entities.Document>;

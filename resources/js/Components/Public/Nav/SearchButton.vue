@@ -8,7 +8,7 @@
   <CardModal v-model:show="showSearch" title="Paieška" @close="showSearch = false">
     <NInput :loading="searchInputLoading" round type="text" size="large" :placeholder="$t('Ieškoti...')" class="mb-2"
       @input="handleSearchInput" />
-    <NDivider v-if="$page.props.search" />
+    <Separator v-if="$page.props.search" />
     <div class="flex flex-col gap-4">
       <template v-if="$page.props.search">
         <div v-if="$page.props.search.documents.length !== 0">
@@ -68,6 +68,7 @@ import { useDebounceFn } from "@vueuse/core";
 
 import CardModal from "@/Components/Modals/CardModal.vue";
 import SmartLink from "../SmartLink.vue";
+import { Separator } from "@/Components/ui/separator";
 
 const DocumentCard = defineAsyncComponent(() => import("@/Components/Cards/DocumentCard.vue"));
 const NewsCard = defineAsyncComponent(() => import("@/Components/Cards/NewsCard.vue"));

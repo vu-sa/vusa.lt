@@ -6,7 +6,7 @@
         <PadalinysSelector size="medium" :prepend-options="prependPadalinysOptions()" />
       </NFormItem>
 
-      <NDivider vertical />
+      <Separator vertical />
 
       <NFormItem :label="$t('forms.fields.title')" class="min-w-64">
         <NInput v-model:value="search" placeholder="Ieškoti..." class="w-full" />
@@ -17,7 +17,7 @@
       <template v-for="institution in institutionType.institutions" :key="institution.id">
         <InstitutionContacts :institution :contacts="getContacts(institution)" />
         <!-- Add divider except for last element -->
-        <NDivider v-if="
+        <Separator v-if="
           institutionType.institutions[
             institutionType.institutions.length - 1
           ].id !== institution.id
@@ -32,6 +32,7 @@ import { computed, ref } from "vue";
 
 import InstitutionContacts from "@/Components/Public/InstitutionContacts.vue";
 import PadalinysSelector from "@/Components/Public/Nav/PadalinysSelector.vue";
+import { Separator } from "@/Components/ui/separator";
 
 const props = defineProps<{
   types: App.Entities.Type[];

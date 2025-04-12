@@ -7,7 +7,7 @@
     <template #after-heading>
       <InstitutionAvatarGroup :max="5" :users="institution.current_users" />
       <template v-if="institution.managers.length > 0">
-        <NDivider v-if="institution.managers.length > 0" vertical />
+        <Separator v-if="institution.managers.length > 0" vertical />
         <span class="text-xs text-zinc-500">Admin:</span>
         <InstitutionAvatarGroup :users="institution.managers" />
       </template>
@@ -39,7 +39,6 @@
 </template>
 
 <script setup lang="tsx">
-import { NDivider } from "naive-ui";
 import { computed, defineAsyncComponent } from "vue";
 import { router } from "@inertiajs/vue3";
 import { useStorage } from "@vueuse/core";
@@ -52,6 +51,7 @@ import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import ShowPageLayout from "@/Components/Layouts/ShowModel/ShowPageLayout.vue";
 import SimpleFileViewer from "@/Features/Admin/SharepointFileManager/Viewer/SimpleFileViewer.vue";
 import { useBreadcrumbs, type BreadcrumbItem } from "@/Composables/useBreadcrumbs";
+import { Separator } from "@/Components/ui/separator";
 
 const props = defineProps<{
   doingTypes: any;

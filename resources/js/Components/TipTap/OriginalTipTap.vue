@@ -20,7 +20,7 @@
           <IFluentClearFormatting20Filled />
         </template>
       </NButton>
-      <NDivider vertical />
+      <Separator orientation="vertical" />
       <NButtonGroup size="small">
         <NButton :type="editor.isActive('paragraph') ? 'primary' : 'default'"
           @click="editor?.chain().focus().setParagraph().run()">
@@ -197,6 +197,7 @@ import TiptapVideoButton from "./TiptapVideoButton.vue";
 import TiptapYoutubeButton from "./TiptapYoutubeButton.vue";
 import latinize from "latinize";
 import { trans as $t } from "laravel-vue-i18n";
+import { Separator } from "../ui/separator";
 
 const props = defineProps<{
   disableTables?: boolean;

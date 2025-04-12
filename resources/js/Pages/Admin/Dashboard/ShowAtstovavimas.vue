@@ -127,7 +127,7 @@
         </Calendar>
       </div>
     </div>
-    <NDivider v-if="tenants.length > 0" />
+    <Separator v-if="tenants.length > 0" />
     <section v-if="tenants.length > 0" class="mt-8">
       <div class="mb-8 inline-flex items-center gap-6">
         <h3 class="mb-0">
@@ -236,6 +236,7 @@ import Icons from "@/Types/Icons/filled";
 import { trans as $t } from "laravel-vue-i18n";
 import MeetingBarPlot from "@/Components/Graphs/MeetingBarPlot.vue";
 import SmartLink from "@/Components/Public/SmartLink.vue";
+import { Separator } from "@/Components/ui/separator";
 
 const props = defineProps<{
   user: App.Entities.User;

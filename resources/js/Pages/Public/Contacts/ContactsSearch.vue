@@ -17,23 +17,17 @@
     </NFormItem>
     <template v-for="institution in institutions" :key="institution.id">
       <InstitutionFigure :institution="institution" />
-      <NDivider v-if="institution.id !== institutions[institutions.length - 1].id" />
+      <Separator v-if="institution.id !== institutions[institutions.length - 1].id" />
     </template>
   </div>
 </template>
 
 <script setup lang="tsx">
-import {
-  NDivider,
-  NFormItem,
-  NInputGroup,
-  NSelect,
-  type SelectOption,
-} from "naive-ui";
 import { computed } from "vue";
 import { router, usePage } from "@inertiajs/vue3";
 import InstitutionFigure from "@/Components/Public/InstitutionFigure.vue";
 import type { RouteParamsWithQueryOverload } from "ziggy-js";
+import { Separator } from "@/Components/ui/separator";
 
 const props = defineProps<{
   institutions: App.Entities.Institution[];

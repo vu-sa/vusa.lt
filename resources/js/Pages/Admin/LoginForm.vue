@@ -43,7 +43,7 @@
             <FadeTransition mode="out-in">
               <div v-if="!useSimpleRegistration" class="mt-4 flex flex-col gap-4">
                 <MicrosoftButton />
-                <NDivider>{{ $t("Arba") }}</NDivider>
+                <Separator :label="$t('Arba')" />
                 <NButton size="tiny" text quaternary @click="useSimpleRegistration = true">
                   <template #icon>
                     <IFluentKey24Filled />
@@ -121,6 +121,7 @@ import MicrosoftButton from "@/Components/Buttons/MicrosoftLoginButton.vue";
 import { Carousel, CarouselContent, CarouselItem } from "@/Components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
 import Fade from "embla-carousel-fade";
+import { Separator } from "@/Components/ui/separator";
 
 defineProps<{
   status?: string;

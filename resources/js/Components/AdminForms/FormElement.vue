@@ -27,18 +27,17 @@
       </div>
     </CollapsibleContent>
     <div class="lg:col-span-6">
-      <NDivider v-if="!noDivider" />
+      <Separator v-if="!noDivider" />
     </div>
   </Collapsible>
 </template>
 
 <script setup lang="tsx">
-import { NButton, NDivider, NIcon } from "naive-ui";
+import { NButton, NIcon } from "naive-ui";
 import { ref } from "vue";
-import Collapsible from "../ui/collapsible/Collapsible.vue";
-import CollapsibleContent from "../ui/collapsible/CollapsibleContent.vue";
-import CollapsibleTrigger from "../ui/collapsible/CollapsibleTrigger.vue";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../ui/collapsible";
 import type { Component } from "vue";
+import { Separator } from "../ui/separator";
 
 const props = defineProps<{
   noDivider?: boolean;

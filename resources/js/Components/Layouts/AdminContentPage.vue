@@ -47,7 +47,7 @@
       </aside>
     </header>
     <slot name="below-header" />
-    <NDivider v-if="title && headerDivider" style="margin-top: 0px" class="mt-0" />
+    <Separator v-if="title && headerDivider" class="mt-0" />
 
     <div class="ml-4 max-w-6xl" :class="{ 'col-span-2': !aside }">
       <FadeTransition appear>
@@ -68,6 +68,7 @@ import { Head, Link } from "@inertiajs/vue3";
 import { computed } from "vue";
 
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
+import { Separator } from "../ui/separator";
 
 defineProps<{
   aside?: boolean;
