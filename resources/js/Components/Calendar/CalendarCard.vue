@@ -125,10 +125,10 @@ const isSameDay = (date1: Date, date2: Date): boolean => {
     date1.getDate() === date2.getDate();
 };
 
-import Card from "../ShadcnVue/ui/card/Card.vue";
-import CardContent from '../ShadcnVue/ui/card/CardContent.vue';
-import CardFooter from '../ShadcnVue/ui/card/CardFooter.vue';
-import CardHeader from '../ShadcnVue/ui/card/CardHeader.vue';
+import Card from "../ui/card/Card.vue";
+import CardContent from '../ui/card/CardContent.vue';
+import CardFooter from '../ui/card/CardFooter.vue';
+import CardHeader from '../ui/card/CardHeader.vue';
 
 import { formatStaticTime } from "@/Utils/IntlTime";
 import { usePage } from "@inertiajs/vue3";

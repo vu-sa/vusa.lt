@@ -99,13 +99,13 @@
   </div>
 </template>
 
-<script setup lang="tsx">
+<script setup lang="ts">
 import { breakpointsTailwind, useBreakpoints } from "@vueuse/core";
 import { ref } from "vue";
 
-import Collapsible from "../ShadcnVue/ui/collapsible/Collapsible.vue";
-import CollapsibleContent from "../ShadcnVue/ui/collapsible/CollapsibleContent.vue";
-import CollapsibleTrigger from "../ShadcnVue/ui/collapsible/CollapsibleTrigger.vue";
+import Collapsible from "../ui/collapsible/Collapsible.vue";
+import CollapsibleContent from "../ui/collapsible/CollapsibleContent.vue";
+import CollapsibleTrigger from "../ui/collapsible/CollapsibleTrigger.vue";
 import InfoPopover from "../Buttons/InfoPopover.vue";
 
 defineProps<{

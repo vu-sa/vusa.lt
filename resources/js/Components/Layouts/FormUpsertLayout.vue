@@ -30,11 +30,11 @@ This layout also handles form errors. If there are any errors, it will display t
 
 <script setup lang="ts">
 import { NDialogProvider } from 'naive-ui';
-import { Alert, AlertDescription, AlertTitle } from '../ShadcnVue/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { ref, watch } from 'vue';
 import { XIcon } from 'lucide-vue-next';
 import { usePage } from '@inertiajs/vue3';
-import { CardContent, Card } from '../ShadcnVue/ui/card';
+import { CardContent, Card } from '../ui/card';
 
 const open = ref(true);
 

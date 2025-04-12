@@ -35,9 +35,9 @@
 <script setup lang="tsx">
 import { NButton, NDivider, NIcon } from "naive-ui";
 import { ref } from "vue";
-import Collapsible from "../ShadcnVue/ui/collapsible/Collapsible.vue";
-import CollapsibleContent from "../ShadcnVue/ui/collapsible/CollapsibleContent.vue";
-import CollapsibleTrigger from "../ShadcnVue/ui/collapsible/CollapsibleTrigger.vue";
+import Collapsible from "../ui/collapsible/Collapsible.vue";
+import CollapsibleContent from "../ui/collapsible/CollapsibleContent.vue";
+import CollapsibleTrigger from "../ui/collapsible/CollapsibleTrigger.vue";
 import type { Component } from "vue";
 
 const props = defineProps<{
