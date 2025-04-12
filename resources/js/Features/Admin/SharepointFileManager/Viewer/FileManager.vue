@@ -4,10 +4,10 @@
       <div class="flex flex-wrap gap-4">
         <div class="flex w-fit flex-wrap items-center gap-2">
           <div class="w-96">
-            <NSkeleton v-if="loading" size="medium" round />
+            <Skeleton v-if="loading" class="h-10 w-full rounded-full" />
             <FuzzySearcher v-else :data="files" @search:results="updateResults" />
           </div>
-          <NSkeleton v-if="loading" size="medium" circle />
+          <Skeleton v-if="loading" class="h-10 w-10 rounded-full" />
           <NButton v-else round @click="showFileUploader = true">
             <template #icon>
               <IFluentDocumentAdd24Regular />
@@ -60,6 +60,7 @@
 </template>
 
 <script setup lang="tsx">
+import { Skeleton } from '@/Components/ui/skeleton';
 import { computed, provide, ref, watch } from "vue";
 import { useFetch, useStorage } from "@vueuse/core";
 

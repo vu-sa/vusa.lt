@@ -1,12 +1,11 @@
 <template>
   <div class="mt-4 inline-flex w-48 max-w-4xl flex-wrap gap-4">
     <div v-if="loading" class="flex flex-col items-center gap-2">
-      <NSkeleton :sharp="false" :height="small ? 96 : 148" :width="small ? 96 : 192" />
-      <NSkeleton :sharp="false" :repeat="2" :height="8" :width="148" />
+      <Skeleton :class="small ? 'h-24 w-24' : 'h-36 w-48'" />
+      <Skeleton v-for="i in 2" :key="i" class="h-2 w-36" />
     </div>
     <FileButton v-else :icon-string :name="file.name" :small :show-thumbnail
       :thumbnail="file.thumbnails?.[0]?.large.url" @click="handleFileSelect(file)" @dblclick="handleFileDblClick(file)">
-      >
       <template #below-button>
         {{ file.listItem?.fields?.properties?.Type }}
       </template>
@@ -15,7 +14,7 @@
 </template>
 
 <script setup lang="ts">
-import { NSkeleton } from "naive-ui";
+import { Skeleton } from '@/Components/ui/skeleton';
 import { computed, inject } from "vue";
 
 import FileButton from "@/Features/Admin/SharepointFileManager/Viewer/FileButton.vue";
@@ -33,7 +32,6 @@ const iconString = computed(() => {
     return "folder";
   }
 
-  // if word file
   if (props.file.file === undefined) {
     return "file";
   }
