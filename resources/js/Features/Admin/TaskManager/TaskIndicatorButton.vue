@@ -1,16 +1,20 @@
 <template>
-  <NBadge type="info" :offset="[0, -4]" :value="$page.props.auth?.user.tasks_count">
+  <div class="relative">
+    <Badge v-if="$page.props.auth?.user.tasks_count > 0" class="absolute -top-3 -right-3 z-10">
+      <span> {{ $page.props.auth?.user.tasks_count }}</span>
+    </Badge>
     <NButton v-bind="$attrs" :loading @click="handleClick">
       <template #icon>
-          <IFluentTaskListSquare24Regular />
+        <IFluentTaskListSquare24Regular />
       </template>
     </NButton>
-  </NBadge>
+  </div>
 </template>
 
 <script setup lang="tsx">
 import { ref } from "vue";
 import { router } from "@inertiajs/vue3";
+import { Badge } from '@/Components/ui/badge';
 
 const loading = ref(false);
 

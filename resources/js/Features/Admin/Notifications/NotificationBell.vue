@@ -1,5 +1,8 @@
 <template>
-  <NBadge :offset="[-2, -4]" :value="notifications?.length">
+  <div class="relative">
+    <Badge v-if="notifications?.length > 0" variant="destructive" class="absolute -top-3 -right-3 z-10">
+      <span>{{ notifications?.length }}</span>
+    </Badge>
     <NPopover trigger="click" title="Pranešimai" :show-arrow="true" scrollable>
       <template #trigger>
         <NButton v-bind="$attrs">
@@ -30,7 +33,7 @@
         <span class="text-xs">{{ $t("Naujų pranešimų nėra") }}.</span>
       </div>
     </NPopover>
-  </NBadge>
+  </div>
 </template>
 
 <script setup lang="tsx">
@@ -49,6 +52,7 @@ import Icons from "@/Types/Icons/regular";
 import NotificationItem from "./NotificationItem.vue";
 import type { NotificationData } from "./NotificationItem.vue";
 import SmartLink from "@/Components/Public/SmartLink.vue";
+import { Badge } from '@/Components/ui/badge';
 
 const notifications = ref(usePage().props.auth?.user?.unreadNotifications);
 

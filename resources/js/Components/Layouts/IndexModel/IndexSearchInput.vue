@@ -1,5 +1,9 @@
 <template>
-  <div class="flex gap-2">
+  <div class="relative flex gap-2">
+    <Badge v-if="hasSoftDeletes" class="absolute -top-3 -right-3">
+      <span> {{ other.length }}</span>
+
+    </Badge>
     <NPopover>
       Išvalyti paiešką...
       <template #trigger>
@@ -21,28 +25,13 @@
         </template>
       </NButton>
     </NInputGroup>
-    <NBadge v-if="hasSoftDeletes" :value="other.length">
-      <NPopover trigger="click">
-        <template #trigger>
-          <NButton circle>
-            <template #icon>
-              <IFluentMoreVertical24Filled />
-            </template>
-          </NButton>
-        </template>
-        <NCheckboxGroup v-model:value="other" @update:value="$emit('update:other', $event)">
-          <NCheckbox value="showSoftDeleted" label="Rodyti ištrintus">
-            Rodyti ištrintus
-          </NCheckbox>
-        </NCheckboxGroup>
-      </NPopover>
-    </NBadge>
   </div>
 </template>
 
-<script setup lang="tsx">
+<script setup lang="ts">
 import { ref } from "vue";
 import { router } from "@inertiajs/vue3";
+import { Badge } from '@/Components/ui/badge';
 
 // TODO: fix this event
 const emit = defineEmits<{
