@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { cn } from '@/Utils/Shadcn/utils'
-import { buttonVariants } from '@/Components/ShadcnVue/ui/button'
+import { buttonVariants } from '@/Components/ui/button'
 import { CalendarCellTrigger, type CalendarCellTriggerProps, useForwardProps } from 'reka-ui'
 import { computed, type HTMLAttributes } from 'vue'
 

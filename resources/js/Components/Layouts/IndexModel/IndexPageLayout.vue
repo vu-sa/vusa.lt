@@ -36,7 +36,7 @@ import type { Component } from "vue";
 
 import IndexDataTable from "@/Components/Layouts/IndexModel/IndexDataTable.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ShadcnVue/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import entities from "@/entities";
 import MdSuspenseWrapper from "@/Features/MarkdownGetterFromDocs/MdSuspenseWrapper.vue";
 import SuggestionAlert from "@/Components/Alerts/SuggestionAlert.vue";

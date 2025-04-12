@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { WithClassAsProps } from './interface'
 import { cn } from '@/Utils/Shadcn/utils'
-import { Button, type ButtonVariants } from '@/Components/ShadcnVue/ui/button'
-import { ArrowLeft } from 'lucide-vue-next'
+import { Button, type ButtonVariants } from '@/Components/ui/button'
+import { ArrowRight } from 'lucide-vue-next'
 import { useCarousel } from './useCarousel'
 
 const props = withDefaults(defineProps<{
@@ -14,27 +14,27 @@ const props = withDefaults(defineProps<{
   size: 'icon',
 })
 
-const { orientation, canScrollPrev, scrollPrev } = useCarousel()
+const { orientation, canScrollNext, scrollNext } = useCarousel()
 </script>
 
 <template>
   <Button
-    data-slot="carousel-previous"
-    :disabled="!canScrollPrev"
+    data-slot="carousel-next"
+    :disabled="!canScrollNext"
     :class="cn(
       'absolute size-8 rounded-full',
       orientation === 'horizontal'
-        ? 'top-1/2 -left-12 -translate-y-1/2'
-        : '-top-12 left-1/2 -translate-x-1/2 rotate-90',
+        ? 'top-1/2 -right-12 -translate-y-1/2'
+        : '-bottom-12 left-1/2 -translate-x-1/2 rotate-90',
       props.class,
     )"
     :variant="variant"
     :size="size"
-    @click="scrollPrev"
+    @click="scrollNext"
   >
     <slot>
-      <ArrowLeft />
-      <span class="sr-only">Previous Slide</span>
+      <ArrowRight />
+      <span class="sr-only">Next Slide</span>
     </slot>
   </Button>
 </template>

@@ -160,9 +160,9 @@ import { router, usePage } from '@inertiajs/vue3';
 import SmartLink from '@/Components/Public/SmartLink.vue';
 import DocumentCard from '@/Components/Cards/DocumentCard.vue';
 import { breakpointsTailwind, useBreakpoints, useStorage } from '@vueuse/core';
-import Collapsible from '@/Components/ShadcnVue/ui/collapsible/Collapsible.vue';
-import CollapsibleContent from '@/Components/ShadcnVue/ui/collapsible/CollapsibleContent.vue';
-import CollapsibleTrigger from '@/Components/ShadcnVue/ui/collapsible/CollapsibleTrigger.vue';
+import Collapsible from '@/Components/ui/collapsible/Collapsible.vue';
+import CollapsibleContent from '@/Components/ui/collapsible/CollapsibleContent.vue';
+import CollapsibleTrigger from '@/Components/ui/collapsible/CollapsibleTrigger.vue';
 import type { DataTableColumns } from 'naive-ui';
 
 const props = defineProps<{

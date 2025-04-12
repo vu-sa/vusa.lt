@@ -67,7 +67,7 @@
 </template>
 
 <script setup lang="ts">
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/Components/ShadcnVue/ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/Components/ui/card';
 import Icons from "@/Types/Icons/regular";
 
 defineProps<{

@@ -19,7 +19,7 @@
 </template>
 
 <script setup lang="ts">
-import { Card, CardContent, CardHeader, CardTitle } from './ShadcnVue/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { type CardProps } from 'naive-ui';
 import { computed } from 'vue';
 import { useDark } from '@vueuse/core';

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { FieldProps } from './interface'
-import { Button } from '@/Components/ShadcnVue/ui/button'
-import { FormControl, FormDescription, FormField, FormItem, FormMessage } from '@/Components/ShadcnVue/ui/form'
-import { Input } from '@/Components/ShadcnVue/ui/input'
+import { Button } from '@/Components/ui/button'
+import { FormControl, FormDescription, FormField, FormItem, FormMessage } from '@/Components/ui/form'
+import { Input } from '@/Components/ui/input'
 import { Trash } from 'lucide-vue-next'
 import { ref } from 'vue'
 import AutoFormLabel from './AutoFormLabel.vue'

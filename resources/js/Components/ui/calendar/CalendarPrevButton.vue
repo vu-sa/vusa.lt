@@ -1,11 +1,11 @@
 <script lang="ts" setup>
 import { cn } from '@/Utils/Shadcn/utils'
-import { buttonVariants } from '@/Components/ShadcnVue/ui/button'
-import { ChevronRight } from 'lucide-vue-next'
-import { CalendarNext, type CalendarNextProps, useForwardProps } from 'reka-ui'
+import { buttonVariants } from '@/Components/ui/button'
+import { ChevronLeft } from 'lucide-vue-next'
+import { CalendarPrev, type CalendarPrevProps, useForwardProps } from 'reka-ui'
 import { computed, type HTMLAttributes } from 'vue'
 
-const props = defineProps<CalendarNextProps & { class?: HTMLAttributes['class'] }>()
+const props = defineProps<CalendarPrevProps & { class?: HTMLAttributes['class'] }>()
 
 const delegatedProps = computed(() => {
   const { class: _, ...delegated } = props
@@ -17,18 +17,18 @@ const forwardedProps = useForwardProps(delegatedProps)
 </script>
 
 <template>
-  <CalendarNext
-    data-slot="calendar-next-button"
+  <CalendarPrev
+    data-slot="calendar-prev-button"
     :class="cn(
       buttonVariants({ variant: 'outline' }),
-      'absolute right-1',
+      'absolute left-1',
       'size-7 bg-transparent p-0 opacity-50 hover:opacity-100',
       props.class,
     )"
     v-bind="forwardedProps"
   >
     <slot>
-      <ChevronRight class="size-4" />
+      <ChevronLeft class="size-4" />
     </slot>
-  </CalendarNext>
+  </CalendarPrev>
 </template>

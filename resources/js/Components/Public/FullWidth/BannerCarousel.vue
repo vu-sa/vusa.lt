@@ -18,9 +18,9 @@
 </template>
 
 <script setup lang="ts">
-import Carousel from "@/Components/ShadcnVue/ui/carousel/Carousel.vue";
-import CarouselContent from "@/Components/ShadcnVue/ui/carousel/CarouselContent.vue";
-import CarouselItem from "@/Components/ShadcnVue/ui/carousel/CarouselItem.vue";
+import Carousel from "@/Components/ui/carousel/Carousel.vue";
+import CarouselContent from "@/Components/ui/carousel/CarouselContent.vue";
+import CarouselItem from "@/Components/ui/carousel/CarouselItem.vue";
 import { onBeforeUnmount, ref } from "vue";
 import Autoplay from 'embla-carousel-autoplay'
 

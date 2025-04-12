@@ -117,9 +117,9 @@ import UserPopover from "@/Components/Avatars/UserPopover.vue";
 import AdminContentPage from "@/Components/Layouts/AdminContentPage.vue";
 import type { BreadcrumbOption } from "@/Components/Layouts/ShowModel/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
 import AdminBreadcrumbDisplayer from "@/Components/Layouts/ShowModel/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
-import Card from "@/Components/ShadcnVue/ui/card/Card.vue";
-import CardContent from "@/Components/ShadcnVue/ui/card/CardContent.vue";
-import CardHeader from "@/Components/ShadcnVue/ui/card/CardHeader.vue";
+import Card from "@/Components/ui/card/Card.vue";
+import CardContent from "@/Components/ui/card/CardContent.vue";
+import CardHeader from "@/Components/ui/card/CardHeader.vue";
 import ProgrammePlanner from "@/Features/Admin/ProgrammePlanner/ProgrammePlanner.vue";
 import { formatStaticTime } from "@/Utils/IntlTime";
 import { Link } from "@inertiajs/vue3";
@@ -127,7 +127,7 @@ import { computed } from "vue";
 import Icons from "@/Types/Icons/filled";
 
 import Sparkle20Filled from "~icons/fluent/sparkle20-filled";
-import CardFooter from "@/Components/ShadcnVue/ui/card/CardFooter.vue";
+import CardFooter from "@/Components/ui/card/CardFooter.vue";
 
 const props = defineProps<{
   training: App.Entities.Training;

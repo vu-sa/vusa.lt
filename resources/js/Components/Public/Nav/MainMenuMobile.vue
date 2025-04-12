@@ -31,10 +31,10 @@
 import { computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 
-import Accordion from '@/Components/ShadcnVue/ui/accordion/Accordion.vue';
-import AccordionContent from '@/Components/ShadcnVue/ui/accordion/AccordionContent.vue';
-import AccordionItem from '@/Components/ShadcnVue/ui/accordion/AccordionItem.vue';
-import AccordionTrigger from '@/Components/ShadcnVue/ui/accordion/AccordionTrigger.vue';
+import Accordion from '@/Components/ui/accordion/Accordion.vue';
+import AccordionContent from '@/Components/ui/accordion/AccordionContent.vue';
+import AccordionItem from '@/Components/ui/accordion/AccordionItem.vue';
+import AccordionTrigger from '@/Components/ui/accordion/AccordionTrigger.vue';
 import DarkModeButton from '@/Components/Buttons/DarkModeButton.vue';
 import LocaleButton from './LocaleButton.vue';
 import MainNavigationMenuContent from './MainNavigationMenuContent.vue';

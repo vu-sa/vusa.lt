@@ -118,7 +118,7 @@ import { ref } from "vue";
 import AppLogo from "@/Components/AppLogo.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import MicrosoftButton from "@/Components/Buttons/MicrosoftLoginButton.vue";
-import { Carousel, CarouselContent, CarouselItem } from "@/Components/ShadcnVue/ui/carousel";
+import { Carousel, CarouselContent, CarouselItem } from "@/Components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
 import Fade from "embla-carousel-fade";
 

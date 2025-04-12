@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import type { FieldProps } from './interface'
 import { cn } from '@/Utils/Shadcn/utils'
-import { Button } from '@/Components/ShadcnVue/ui/button'
-import { Calendar } from '@/Components/ShadcnVue/ui/calendar'
-import { FormControl, FormDescription, FormField, FormItem, FormMessage } from '@/Components/ShadcnVue/ui/form'
-import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ShadcnVue/ui/popover'
+import { Button } from '@/Components/ui/button'
+import { Calendar } from '@/Components/ui/calendar'
+import { FormControl, FormDescription, FormField, FormItem, FormMessage } from '@/Components/ui/form'
+import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover'
 
 import { DateFormatter, getLocalTimeZone } from '@internationalized/date'
 import { CalendarIcon } from 'lucide-vue-next'

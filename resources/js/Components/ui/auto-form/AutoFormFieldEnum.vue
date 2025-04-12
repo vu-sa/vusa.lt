@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import type { FieldProps } from './interface'
-import { FormControl, FormDescription, FormField, FormItem, FormMessage } from '@/Components/ShadcnVue/ui/form'
-import { Label } from '@/Components/ShadcnVue/ui/label'
-import { RadioGroup, RadioGroupItem } from '@/Components/ShadcnVue/ui/radio-group'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ShadcnVue/ui/select'
+import { FormControl, FormDescription, FormField, FormItem, FormMessage } from '@/Components/ui/form'
+import { Label } from '@/Components/ui/label'
+import { RadioGroup, RadioGroupItem } from '@/Components/ui/radio-group'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select'
 import AutoFormLabel from './AutoFormLabel.vue'
 import { beautifyObjectName, maybeBooleanishToBoolean } from './utils'
 

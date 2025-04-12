@@ -25,7 +25,7 @@
 </template>
 
 <script setup lang="tsx">
-import { Alert, AlertDescription, AlertTitle } from '@/Components/ShadcnVue/ui/alert'
+import { Alert, AlertDescription, AlertTitle } from '@/Components/ui/alert'
 import { NDivider } from "naive-ui";
 
 import MdSuspenseWrapper from "@/Features/MarkdownGetterFromDocs/MdSuspenseWrapper.vue";

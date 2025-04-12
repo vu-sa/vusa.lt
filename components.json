@@ -10,10 +10,10 @@
     "prefix": ""
   },
   "aliases": {
-    "components": "@/Components/ShadcnVue",
+    "components": "@/Components",
     "composables": "@/Composables",
     "utils": "@/Utils/Shadcn/utils",
-    "ui": "@/Components/ShadcnVue/ui",
+    "ui": "@/Components/ui",
     "lib": "@/Utils/Shadcn"
   },
   "iconLibrary": "lucide"

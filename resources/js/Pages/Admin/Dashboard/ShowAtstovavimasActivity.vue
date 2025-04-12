@@ -88,10 +88,10 @@ import ActivityLogItem from '@/Features/Admin/ActivityLogViewer/ActivityLogItem.
 import Icons from '@/Types/Icons/filled';
 import { router, useForm } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
-import Collapsible from '@/Components/ShadcnVue/ui/collapsible/Collapsible.vue';
-import CollapsibleContent from '@/Components/ShadcnVue/ui/collapsible/CollapsibleContent.vue';
-import CollapsibleTrigger from '@/Components/ShadcnVue/ui/collapsible/CollapsibleTrigger.vue';
-import { Button } from '@/Components/ShadcnVue/ui/button';
+import Collapsible from '@/Components/ui/collapsible/Collapsible.vue';
+import CollapsibleContent from '@/Components/ui/collapsible/CollapsibleContent.vue';
+import CollapsibleTrigger from '@/Components/ui/collapsible/CollapsibleTrigger.vue';
+import { Button } from '@/Components/ui/button';
 
 const props = defineProps<{
   meetings: Array<App.Entities.Meeting & { changedAgendaItems: App.Entities.AgendaItem[] }>;

@@ -21,7 +21,7 @@ import {
   NavigationMenuItem,
   NavigationMenuList,
   NavigationMenuTrigger,
-} from '@/Components/ShadcnVue/ui/navigation-menu'
+} from '@/Components/ui/navigation-menu'
 import { computed, ref } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 
