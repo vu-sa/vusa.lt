@@ -10,7 +10,6 @@
     "resolveJsonModule": true,
     "moduleDetection": "force",
     "isolatedModules": true, // specified in vue.js docs
-    "verbatimModuleSyntax": true,
 
     // Strictness
     "strict": true,
@@ -52,14 +51,13 @@
     "baseUrl": ".",
     // For `<script setup>`
     // See <https://devblogs.microsoft.com/typescript/announcing-typescript-4-5-beta/#preserve-value-imports>
-    "preserveValueImports": true,
+    "verbatimModuleSyntax": true,
     // ???
     //"noEmit": true,
     //"skipLibCheck": true,
     //"forceConsistentCasingInFileNames": true,
     ///
     // Enforce using `import type` instead of `import` for types
-    "importsNotUsedAsValues": "error",
     "allowImportingTsExtensions": true
   },
   "exclude": [

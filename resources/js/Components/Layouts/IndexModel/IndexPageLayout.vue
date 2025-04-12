@@ -1,24 +1,30 @@
 <template>
-  <PageContent :title :heading-icon="icon"
-    :create-url="canUseRoutes.create ? route(`${modelName}.create`) : undefined">
+  <PageContent :title :heading-icon="icon" :create-url="canUseRoutes.create ? route(`${modelName}.create`) : undefined">
     <template #create-button>
       <slot name="create-button" />
     </template>
     <template #aside-header>
       <slot name="aside-header" />
     </template>
-    <SuggestionAlert v-if="entity" :show-alert @alert-closed="showAlert = false">
+    <SuggestionAlert v-model:show="showAlert" class="mb-2">
       <div class="text-sm">
         <MdSuspenseWrapper :directory="modelName" :locale="$page.props.app.locale" file="description" />
       </div>
     </SuggestionAlert>
     <slot />
-    <NCard class="w-full min-w-[768px]">
-      <IndexDataTable v-bind="$attrs" :paginated-models :columns :model-name
-        :show-route="canUseRoutes.show ? `${modelName}.show` : undefined"
-        :edit-route="canUseRoutes.edit ? `${modelName}.edit` : undefined" :destroy-route="canUseRoutes.destroy ? `${modelName}.destroy` : undefined
-          " :duplicate-route="canUseRoutes.duplicate ? `${modelName}.duplicate` : undefined" />
-    </NCard>
+    <Card class="w-full min-w-[768px]">
+      <!-- <CardHeader> -->
+      <!--   <CardTitle> -->
+      <!--     {{ title }} -->
+      <!--   </CardTitle> -->
+      <!-- </CardHeader> -->
+      <CardContent>
+        <IndexDataTable v-bind="$attrs" :paginated-models :columns :model-name
+          :show-route="canUseRoutes.show ? `${modelName}.show` : undefined"
+          :edit-route="canUseRoutes.edit ? `${modelName}.edit` : undefined" :destroy-route="canUseRoutes.destroy ? `${modelName}.destroy` : undefined
+            " :duplicate-route="canUseRoutes.duplicate ? `${modelName}.duplicate` : undefined" />
+      </CardContent>
+    </Card>
     <slot name="after-table" />
   </PageContent>
 </template>
@@ -29,10 +35,11 @@ import { useStorage } from "@vueuse/core";
 import type { Component } from "vue";
 
 import IndexDataTable from "@/Components/Layouts/IndexModel/IndexDataTable.vue";
-import MdSuspenseWrapper from "@/Features/MarkdownGetterFromDocs/MdSuspenseWrapper.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import SuggestionAlert from "@/Components/Alerts/SuggestionAlert.vue";
+import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ShadcnVue/ui/card";
 import entities from "@/entities";
+import MdSuspenseWrapper from "@/Features/MarkdownGetterFromDocs/MdSuspenseWrapper.vue";
+import SuggestionAlert from "@/Components/Alerts/SuggestionAlert.vue";
 
 const props = defineProps<{
   paginatedModels: PaginatedModels<Record<string, any>>;

@@ -4,20 +4,53 @@ This layout also handles form errors. If there are any errors, it will display t
 
 <template>
   <NDialogProvider>
-    <NCard class="min-w-[450px]">
-      <NAlert v-if="$page.props.errors && Object.keys($page.props.errors).length > 0" class="mb-4"
-        title="Pataisykite klaidas" type="error">
-        <ul class="list-inside">
+    <Alert v-if="$page.props.errors && Object.keys($page.props.errors).length > 0 && open" variant="destructive"
+      class="mb-4" type="error">
+      <IFluentInfo24Regular />
+      <AlertTitle class="font-bold dark:text-red-700">
+        {{ $t('Pataisykite klaidas') }}
+      </AlertTitle>
+      <AlertDescription>
+        <ul class="list-disc pl-5 dark:text-red-700">
           <li v-for="(error, index) in $page.props.errors" :key="index">
             {{ error }}
           </li>
         </ul>
-      </NAlert>
-      <slot />
-    </NCard>
+      </AlertDescription>
+      <XIcon class="absolute top-2 right-2 cursor-pointer dark:text-red-700" @click="toggleDialog" />
+    </Alert>
+
+    <Card>
+      <CardContent>
+        <slot />
+      </CardContent>
+    </Card>
   </NDialogProvider>
 </template>
 
 <script setup lang="ts">
 import { NDialogProvider } from 'naive-ui';
+import { Alert, AlertDescription, AlertTitle } from '../ShadcnVue/ui/alert';
+import { ref, watch } from 'vue';
+import { XIcon } from 'lucide-vue-next';
+import { usePage } from '@inertiajs/vue3';
+import { CardContent, Card } from '../ShadcnVue/ui/card';
+
+const open = ref(true);
+
+function toggleDialog() {
+  open.value = !open.value;
+}
+
+watch(
+  () => usePage().props.errors,
+  (newErrors) => {
+    if (newErrors && Object.keys(newErrors).length > 0) {
+      open.value = true;
+    } else {
+      open.value = false;
+    }
+  },
+  { immediate: true }
+);
 </script>
