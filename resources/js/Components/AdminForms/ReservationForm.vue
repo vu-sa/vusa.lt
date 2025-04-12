@@ -19,7 +19,7 @@
             <strong class="underline">Reservation guide</strong>
           </a>
         </template>
-        <component :is="RESERVATION_DESCRIPTIONS.main_info[$page.props.app.locale]" />
+        <MdSuspenseWrapper directory="reservations" :locale="$page.props.app.locale" file="description" />
       </template>
       <NFormItem :label="$t('forms.fields.title')" required>
         <NInput v-model:value="form.name" :placeholder="RESERVATION_PLACEHOLDERS.name[$page.props.app.locale]" />
@@ -36,7 +36,7 @@
         }}
       </template>
       <template #description>
-        <component :is="RESERVATION_DESCRIPTIONS.resources[$page.props.app.locale]" />
+        <MdSuspenseWrapper directory="reservations" :locale="$page.props.app.locale" file="resources" />
         <a class="w-fit" target="_blank" :href="route('resources.index')">
           <div class="inline-flex items-center gap-2">
             <NIcon :component="Icons.RESOURCE" class="align-center" />
@@ -117,7 +117,6 @@ import {
 } from "naive-ui";
 import { computed, ref, watch } from "vue";
 
-import { RESERVATION_DESCRIPTIONS } from "@/Constants/I18n/Descriptions";
 import { RESERVATION_PLACEHOLDERS } from "@/Constants/I18n/Placeholders";
 import { capitalize } from "@/Utils/String";
 import {
@@ -129,6 +128,7 @@ import Icons from "@/Types/Icons/regular";
 import type { ReservationCreationTemplate } from "@/Pages/Admin/Reservations/CreateReservation.vue";
 import type { ReservationEditType } from "@/Pages/Admin/Reservations/EditReservation.vue";
 import AdminForm from "./AdminForm.vue";
+import MdSuspenseWrapper from "@/Features/MarkdownGetterFromDocs/MdSuspenseWrapper.vue";
 
 defineEmits<{
   (event: "update:value", value: number | null): void;

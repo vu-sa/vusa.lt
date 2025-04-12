@@ -1,6 +1,5 @@
 <template>
   <PageContent>
-
     <Head :title="$t('Pradinis')" />
 
     <p class="mt-16 text-4xl font-bold tracking-tight">
@@ -38,43 +37,22 @@
         </button>
       </a>
     </div>
-    <!--<section class="mb-8">
-      <h2 class="mb-4 flex items-center gap-2">
-        <IFluentLightbulbFilament24Filled class="text-vusa-yellow" />
-        <span>{{ $t("Greitieji veiksmai")
-          }}</span>
-      </h2>
-      <div class="flex flex-wrap items-center gap-4">
-        <QActCreateMeeting />
-        <QActSurveyButton />
-        <QActFocusGroupButton />
-        <Link :href="route('reservations.create')">
-        <QuickActionButton>
-          {{
-            $t("Kurti rezervaciją")
-          }}
-          <template #icon>
-            <Icons.RESERVATION />
-          </template>
-</QuickActionButton>
-</Link>
-</div>
-</section> -->
   </PageContent>
 </template>
 
 <script setup lang="tsx">
 import { Head, Link, usePage } from "@inertiajs/vue3";
+import { useBreadcrumbs } from '@/Composables/useBreadcrumbs';
+import { trans as $t } from "laravel-vue-i18n";
 
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import { computed } from "vue";
 import { addressivize } from "@/Utils/String";
 import AdminMultiHomeCards from "../../Components/Cards/AdminMultiHomeCards.vue";
-//import Icons from "@/Types/Icons/filled";
-//import QActCreateMeeting from "@/Components/Buttons/QActCreateMeeting.vue";
-//import QActFocusGroupButton from "@/Components/Buttons/QActFocusGroupButton.vue";
-//import QActSurveyButton from "@/Components/Buttons/QActSurveyButton.vue";
-//import QuickActionButton from "@/Components/Buttons/QuickActionButton.vue";
+
+const { setBreadcrumbs } = useBreadcrumbs();
+
+setBreadcrumbs([]);
 
 const userNameAddress = computed(() => {
   const name = usePage().props.auth?.user.name;
@@ -90,10 +68,6 @@ const userNameAddress = computed(() => {
 
   return usePage().props.app.locale === 'lt' ? addressivize(firstName) : firstName;
 });
-
-//const atstovaiPassword = import.meta.env.VITE_ATSTOVAI_PASSWORD ?? "";
-//const archyvasPassword = import.meta.env.VITE_ARCHYVAS_PASSWORD ?? "";
-
 </script>
 
 <style scoped>

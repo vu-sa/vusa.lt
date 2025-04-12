@@ -144,7 +144,6 @@
 
 <script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
-import { NDivider, NImage, NImageGroup, NSpace, NButton } from "naive-ui";
 import { computed } from "vue";
 
 import CalendarCard from "@/Components/Calendar/CalendarCard.vue";

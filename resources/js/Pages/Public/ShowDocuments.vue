@@ -17,38 +17,61 @@
       </CollapsibleTrigger>
       <CollapsibleContent class="mt-4">
         <div class="mb-4 rounded-lg border p-3 dark:border-zinc-600">
-          <NCollapse v-model:expanded-names="expandedNames" accordion>
-            <NCollapseItem title="VU SA" name="VU SA">
-              <NCheckboxGroup v-model:value="form.contentTypes" @update:value="handleSearch">
-                <template v-for="contentType in contentTypeOptions" :key="contentType.value">
-                  <NCheckbox v-if="contentType.value?.startsWith('VU SA ') && !contentType.value.startsWith('VU SA P ')"
-                    :value="contentType.value">
-                    {{ contentType.label }}
-                  </NCheckbox>
-                </template>
-              </NCheckboxGroup>
-            </NCollapseItem>
-            <NCollapseItem title="VU SA P" name="VU SA P">
-              <NCheckboxGroup v-model:value="form.contentTypes" @update:value="handleSearch">
-                <template v-for="contentType in contentTypeOptions" :key="contentType.value">
-                  <NCheckbox v-if="contentType.value?.startsWith('VU SA P ') === true" :value="contentType.value">
-                    {{ contentType.label }}
-                  </NCheckbox>
-                </template>
-              </NCheckboxGroup>
-            </NCollapseItem>
-            <NCollapseItem title="Kiti VU SA dokumentai" name="Kita">
-              <NCheckboxGroup v-model:value="form.contentTypes" @update:value="handleSearch">
-                <template v-for="contentType in contentTypeOptions" :key="contentType.value">
-                  <NCheckbox
-                    v-if="(contentType.value?.startsWith('VU SA ') === false) && (contentType.value?.startsWith('VU SA P ') === false)"
-                    :value="contentType.value">
-                    {{ contentType.label }}
-                  </NCheckbox>
-                </template>
-              </NCheckboxGroup>
-            </NCollapseItem>
-          </NCollapse>
+          <div class="flex flex-col gap-2">
+            <Collapsible v-model:open="expandedNames['VU SA']">
+              <CollapsibleTrigger class="flex w-full items-center justify-between p-2 border-b dark:border-zinc-700 cursor-pointer" role="button">
+                <span class="font-medium">VU SA</span>
+                <IFluentChevronDown24Regular v-if="!expandedNames['VU SA']" />
+                <IFluentChevronUp24Regular v-else />
+              </CollapsibleTrigger>
+              <CollapsibleContent class="p-2">
+                <NCheckboxGroup v-model:value="form.contentTypes" @update:value="handleSearch">
+                  <template v-for="contentType in contentTypeOptions" :key="contentType.value">
+                    <NCheckbox v-if="contentType.value?.startsWith('VU SA ') && !contentType.value.startsWith('VU SA P ')"
+                      :value="contentType.value">
+                      {{ contentType.label }}
+                    </NCheckbox>
+                  </template>
+                </NCheckboxGroup>
+              </CollapsibleContent>
+            </Collapsible>
+
+            <Collapsible v-model:open="expandedNames['VU SA P']">
+              <CollapsibleTrigger class="flex w-full items-center justify-between p-2 border-b dark:border-zinc-700 cursor-pointer" role="button">
+                <span class="font-medium">VU SA P</span>
+                <IFluentChevronDown24Regular v-if="!expandedNames['VU SA P']" />
+                <IFluentChevronUp24Regular v-else />
+              </CollapsibleTrigger>
+              <CollapsibleContent class="p-2">
+                <NCheckboxGroup v-model:value="form.contentTypes" @update:value="handleSearch">
+                  <template v-for="contentType in contentTypeOptions" :key="contentType.value">
+                    <NCheckbox v-if="contentType.value?.startsWith('VU SA P ') === true" :value="contentType.value">
+                      {{ contentType.label }}
+                    </NCheckbox>
+                  </template>
+                </NCheckboxGroup>
+              </CollapsibleContent>
+            </Collapsible>
+
+            <Collapsible v-model:open="expandedNames['Kita']">
+              <CollapsibleTrigger class="flex w-full items-center justify-between p-2 cursor-pointer" role="button">
+                <span class="font-medium">Kiti VU SA dokumentai</span>
+                <IFluentChevronDown24Regular v-if="!expandedNames['Kita']" />
+                <IFluentChevronUp24Regular v-else />
+              </CollapsibleTrigger>
+              <CollapsibleContent class="p-2">
+                <NCheckboxGroup v-model:value="form.contentTypes" @update:value="handleSearch">
+                  <template v-for="contentType in contentTypeOptions" :key="contentType.value">
+                    <NCheckbox
+                      v-if="(contentType.value?.startsWith('VU SA ') === false) && (contentType.value?.startsWith('VU SA P ') === false)"
+                      :value="contentType.value">
+                      {{ contentType.label }}
+                    </NCheckbox>
+                  </template>
+                </NCheckboxGroup>
+              </CollapsibleContent>
+            </Collapsible>
+          </div>
         </div>
         <NFormItem label="Padalinys">
           <NSelect v-model:value="form.tenants" :consistent-menu-width="false" clearable multiple
@@ -64,7 +87,7 @@
             </NCheckbox>
           </NCheckboxGroup>
         </NFormItem>
-        <NDivider />
+        <Separator />
         <NFormItem label="Nuo...">
           <NDatePicker v-model:value="form.dateFrom" clearable placeholder="2023-05-01"
             :is-date-disabled="isStartDateDisabled" @update:value="handleSearch" />
@@ -131,16 +154,17 @@
 </template>
 
 <script setup lang="tsx">
-import { ref } from 'vue';
+import { ref, reactive } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 
 import SmartLink from '@/Components/Public/SmartLink.vue';
 import DocumentCard from '@/Components/Cards/DocumentCard.vue';
 import { breakpointsTailwind, useBreakpoints, useStorage } from '@vueuse/core';
-import Collapsible from '@/Components/ShadcnVue/ui/collapsible/Collapsible.vue';
-import CollapsibleContent from '@/Components/ShadcnVue/ui/collapsible/CollapsibleContent.vue';
-import CollapsibleTrigger from '@/Components/ShadcnVue/ui/collapsible/CollapsibleTrigger.vue';
+import Collapsible from '@/Components/ui/collapsible/Collapsible.vue';
+import CollapsibleContent from '@/Components/ui/collapsible/CollapsibleContent.vue';
+import CollapsibleTrigger from '@/Components/ui/collapsible/CollapsibleTrigger.vue';
 import type { DataTableColumns } from 'naive-ui';
+import { Separator } from '@/Components/ui/separator';
 
 const props = defineProps<{
   //documents: PaginatedModels<App.Entities.Document>;
@@ -152,7 +176,12 @@ const viewMode = useStorage('showArchive-viewMode', 'list');
 
 const isMdOrSmaller = useBreakpoints(breakpointsTailwind).isSmallerOrEqual('md');
 
-const expandedNames = useStorage('showDocuments-expandedNames', 'VU SA');
+const expandedNames = reactive({
+  'VU SA': true,
+  'VU SA P': false,
+  'Kita': false
+});
+
 const areFiltersOpen = ref(!isMdOrSmaller);
 
 const params = new URLSearchParams(window.location.search);

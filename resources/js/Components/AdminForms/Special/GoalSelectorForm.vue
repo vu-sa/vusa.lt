@@ -1,14 +1,13 @@
 <template>
   <NSpin :show="loading">
     <NForm ref="formRef" :rules="rules" :model="model">
-      <NGrid cols="1"
-        ><NFormItemGi label="Tikslo pavadinimas" required path="title">
-          <!-- TODO: Dabar neveikia sukūrimas tikslo iš šios vietos -->
-          <template #label
-            ><span class="inline-flex items-center gap-1"
-              ><NIcon :component="Icons.TITLE" />Tikslo pavadinimas</span
-            ></template
-          >
+      <div class="grid grid-cols-1 gap-4">
+        <NFormItem label="Tikslo pavadinimas" required path="title">
+          <template #label>
+            <span class="inline-flex items-center gap-1">
+              <NIcon :component="Icons.TITLE" />Tikslo pavadinimas
+            </span>
+          </template>
           <NSelect
             v-model:value="model.id"
             :options="goals"
@@ -17,25 +16,26 @@
             label-field="title"
             value-field="id"
             placeholder="60 laisvų kreditų implementavimas Gyvybės mokslų centre"
-            ><template #action>
-              <span
-                class="typography text-xs text-zinc-400"
-                >Gali sukurti ir savo tikslą! Įrašyk +
-                <NTag size="tiny">Enter</NTag></span
-              >
-            </template></NSelect
           >
-        </NFormItemGi>
-        <NFormItemGi :show-label="false">
+            <template #action>
+              <span class="typography text-xs text-zinc-400">
+                Gali sukurti ir savo tikslą! Įrašyk +
+                <NTag size="tiny">Enter</NTag>
+              </span>
+            </template>
+          </NSelect>
+        </NFormItem>
+        <NFormItem :show-label="false">
           <NButton
             :loading="loading"
             :disabled="!model.id"
             type="primary"
             @click.prevent="$emit('submit', model)"
-            >Pridėti</NButton
           >
-        </NFormItemGi>
-      </NGrid>
+            Pridėti
+          </NButton>
+        </NFormItem>
+      </div>
     </NForm>
     <template #description> Krauname tikslus. 😊 </template>
   </NSpin>
@@ -45,8 +45,7 @@
 import {
   NButton,
   NForm,
-  NFormItemGi,
-  NGrid,
+  NFormItem,
   NIcon,
   NSelect,
   NSpin,

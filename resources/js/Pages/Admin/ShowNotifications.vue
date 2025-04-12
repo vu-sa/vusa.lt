@@ -30,7 +30,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { cn } from "@/Utils/shadcn";
+import { cn } from "@/Utils/Shadcn/utils";
 import { useMessage } from "naive-ui";
 import { useFetch } from "@vueuse/core";
 import { router, usePage } from "@inertiajs/vue3";

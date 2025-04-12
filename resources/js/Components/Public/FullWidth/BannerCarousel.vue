@@ -3,7 +3,7 @@
     <Carousel :opts="{
       align: 'start',
     }" :plugins="[Autoplay({
-      delay: 2000,
+      delay: 3000,
     })]">
       <CarouselContent class="-ml-1">
         <CarouselItem v-for="banner in banners" :key="banner.id" class="basis-1/3 lg:basis-1/4 xl:basis-1/5 pl-1">
@@ -18,9 +18,9 @@
 </template>
 
 <script setup lang="ts">
-import Carousel from "@/Components/ShadcnVue/ui/carousel/Carousel.vue";
-import CarouselContent from "@/Components/ShadcnVue/ui/carousel/CarouselContent.vue";
-import CarouselItem from "@/Components/ShadcnVue/ui/carousel/CarouselItem.vue";
+import Carousel from "@/Components/ui/carousel/Carousel.vue";
+import CarouselContent from "@/Components/ui/carousel/CarouselContent.vue";
+import CarouselItem from "@/Components/ui/carousel/CarouselItem.vue";
 import { onBeforeUnmount, ref } from "vue";
 import Autoplay from 'embla-carousel-autoplay'
 

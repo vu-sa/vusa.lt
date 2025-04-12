@@ -35,7 +35,7 @@
         </div>
       </template>
     </div>
-    <NDivider />
+    <Separator />
     <NTabs animated>
       <NTabPane name="Google">
         <ol v-if="$page.props.app.locale === 'lt'">
@@ -110,9 +110,9 @@
 
 <script setup lang="tsx">
 import { trans as $t } from "laravel-vue-i18n";
-import { NDivider, NTabPane, NTabs } from "naive-ui";
 import CardModal from "@/Components/Modals/CardModal.vue";
 import CopyToClipboardButton from "../Buttons/CopyToClipboardButton.vue";
+import { Separator } from "../ui/separator";
 
 defineEmits(["close"]);
 

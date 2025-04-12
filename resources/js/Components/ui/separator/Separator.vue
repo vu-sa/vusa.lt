@@ -1,0 +1,35 @@
+<docs>
+# Changes
+
+- Updated the background color from `bg-border` to `bg-zinc-100` for better visual consistency.
+- Added margins.
+</docs>
+
+<script setup lang="ts">
+import type { HTMLAttributes } from 'vue'
+import { cn } from '@/Utils/Shadcn/utils'
+import { reactiveOmit } from '@vueuse/core'
+import { Separator, type SeparatorProps } from 'reka-ui'
+
+const props = withDefaults(defineProps<
+  SeparatorProps & { class?: HTMLAttributes['class'] }
+>(), {
+  orientation: 'horizontal',
+  decorative: true,
+})
+
+const delegatedProps = reactiveOmit(props, 'class')
+</script>
+
+<template>
+  <Separator
+    data-slot="separator-root"
+    v-bind="delegatedProps"
+    :class="
+      cn(
+        `bg-zinc-100 dark:bg-zinc-900 data-[orientation=horizontal]:my-4 data-[orientation=vertical]:mx-2 shrink-0 data-[orientation=horizontal]:h-px data-[orientation=horizontal]:w-full data-[orientation=vertical]:h-full data-[orientation=vertical]:w-px`,
+        props.class,
+      )
+    "
+  />
+</template>

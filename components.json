@@ -3,14 +3,18 @@
   "style": "default",
   "typescript": true,
   "tailwind": {
-    "config": "tailwind.config.js",
+    "config": "",
     "css": "resources/css/app.css",
     "baseColor": "zinc",
-    "cssVariables": false
+    "cssVariables": false,
+    "prefix": ""
   },
-  "framework": "vite",
   "aliases": {
-    "components": "@/Components/ShadcnVue",
-    "utils": "@/Utils/shadcn"
-  }
+    "components": "@/Components",
+    "composables": "@/Composables",
+    "utils": "@/Utils/Shadcn/utils",
+    "ui": "@/Components/ui",
+    "lib": "@/Utils/Shadcn"
+  },
+  "iconLibrary": "lucide"
 }

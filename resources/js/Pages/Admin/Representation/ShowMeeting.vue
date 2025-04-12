@@ -25,7 +25,7 @@
           <NIcon size="16" :component="Icons.AGENDA_ITEM" />
         </template>
       </NButton>
-      <NDivider vertical style="background-color: lightgray;" />
+      <Separator vertical style="background-color: lightgray;" />
       <div class="flex items-center gap-2">
         <NSwitch v-model:value="showVoteOptions" size="small" />
         <label class="text-zinc-500 dark:text-zinc-400">{{ $t("Rodyti balsavimo parinktis") }}</label>
@@ -65,7 +65,6 @@ import MeetingForm from "@/Components/AdminForms/MeetingForm.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import ShowPageLayout from "@/Components/Layouts/ShowModel/ShowPageLayout.vue";
 import TaskManager from "@/Features/Admin/TaskManager/TaskManager.vue";
-import type { BreadcrumbOption } from "@/Components/Layouts/ShowModel/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
 import { DataTableProps, NButton, NTooltip } from "naive-ui";
 import TriStateButton from "@/Components/Buttons/TriStateButton.vue";
 import { trans as $t } from "laravel-vue-i18n";
@@ -74,6 +73,8 @@ import IMdiThumbsUpOutline from "~icons/mdi/thumbs-up-outline";
 import IMdiThumbsDownOutline from "~icons/mdi/thumbs-down-outline";
 import IMdiThumbsUpDownOutline from "~icons/mdi/thumbs-up-down-outline";
 import AgendaItemsForm from "@/Components/AdminForms/Special/AgendaItemsForm.vue";
+import { useBreadcrumbs, type BreadcrumbItem } from "@/Composables/useBreadcrumbs";
+import { Separator } from "@/Components/ui/separator";
 
 const props = defineProps<{
   meeting: App.Entities.Meeting;
@@ -133,22 +134,12 @@ const handleAgendaItemDelete = (agendaItem: App.Entities.AgendaItem) => {
   router.delete(route("agendaItems.destroy", agendaItem.id));
 };
 
-const breadcrumbOptions: BreadcrumbOption[] = [
-  {
-    label: mainInstitution.name,
-    icon: Icons.INSTITUTION,
-    routeOptions: {
-      name: "institutions.show",
-      params: {
-        institution: mainInstitution.id,
-      },
-    },
-  },
-  {
-    label: meetingTitle,
-    icon: Icons.MEETING,
-  },
-];
+const { createRouteBreadcrumb, createBreadcrumbItem } = useBreadcrumbs();
+
+const breadcrumbOptions = computed((): BreadcrumbItem[] => [
+  createRouteBreadcrumb(mainInstitution.name, "institutions.show", { institution: mainInstitution.id }, Icons.INSTITUTION),
+  createBreadcrumbItem(meetingTitle, undefined, Icons.MEETING),
+]);
 
 const columns = [
   {

@@ -19,7 +19,7 @@
       <StartFM size="small">
         Įsijunk StartFM
       </StartFM>
-      <NDivider :style="{ margin: '8px 0' }" />
+      <Separator />
       <div class="mb-2 flex flex-row items-center gap-2 duration-200 hover:text-gray-700" />
 
       <div style="grid-template-columns: min-content auto" class="grid grid-cols-2 items-center gap-2">
@@ -41,4 +41,5 @@ import { trans as $t } from "laravel-vue-i18n";
 import FacebookButton from "../Nav/FacebookButton.vue";
 import InstagramButton from "../Nav/InstagramButton.vue";
 import StartFM from "../Nav/StartFM.vue";
+import { Separator } from "@/Components/ui/separator";
 </script>

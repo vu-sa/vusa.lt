@@ -21,16 +21,15 @@
           </div>
         </template>
       </InstitutionFigure>
-      <NDivider v-if="institution.id !== institutions[institutions.length - 1].id" />
+      <Separator v-if="institution.id !== institutions[institutions.length - 1].id" />
     </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { NButton, NDivider } from "naive-ui";
-
 import InstitutionFigure from "@/Components/Public/InstitutionFigure.vue";
 import SmartLink from "@/Components/Public/SmartLink.vue";
+import { Separator } from "@/Components/ui/separator";
 
 defineProps<{
   institutions: App.Entities.Institution[];

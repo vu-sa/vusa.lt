@@ -26,20 +26,29 @@
           </template>
         </NDynamicInput>
       </NFormItem>
-      <NCollapse class="mb-6">
-        <NCollapseItem title="Advanced" name="1">
-          <NFormItem label="Naudoti iš duombazės?" path="use_model_options" required>
-            <NSwitch v-model:value="model.use_model_options" />
-          </NFormItem>
-          <NFormItem label="Modelio pavadinimas" path="model_name">
-            <NSelect v-model:value="model.options_model" :disabled="!model.use_model_options" :options="fieldModels" />
-          </NFormItem>
-          <NFormItem label="Modelio laukas" path="model_field">
-            <NSelect v-model:value="model.options_model_field" :disabled="!model.use_model_options"
-              :options="fieldModelAttributes" />
-          </NFormItem>
-        </NCollapseItem>
-      </NCollapse>
+      <Collapsible v-model:open="advancedOpen" class="mb-6">
+        <CollapsibleTrigger>
+          <div class="flex items-center gap-2 border p-2 rounded-md cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800">
+            <span>Advanced</span>
+            <IFluentChevronDown24Regular v-if="!advancedOpen" />
+            <IFluentChevronUp24Regular v-else />
+          </div>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <div class="p-3 pt-4">
+            <NFormItem label="Naudoti iš duombazės?" path="use_model_options" required>
+              <NSwitch v-model:value="model.use_model_options" />
+            </NFormItem>
+            <NFormItem label="Modelio pavadinimas" path="model_name">
+              <NSelect v-model:value="model.options_model" :disabled="!model.use_model_options" :options="fieldModels" />
+            </NFormItem>
+            <NFormItem label="Modelio laukas" path="model_field">
+              <NSelect v-model:value="model.options_model_field" :disabled="!model.use_model_options"
+                :options="fieldModelAttributes" />
+            </NFormItem>
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
     </template>
     <NFormItem label="Ar būtinas?" path="is_required" required>
       <NSwitch v-model:value="model.is_required" />
@@ -69,6 +78,9 @@ import { useForm } from "@inertiajs/vue3";
 
 import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";
 import MultiLocaleTiptapFormItem from "../FormItems/MultiLocaleTiptapFormItem.vue";
+import Collapsible from "@/Components/ui/collapsible/Collapsible.vue";
+import CollapsibleContent from "@/Components/ui/collapsible/CollapsibleContent.vue";
+import CollapsibleTrigger from "@/Components/ui/collapsible/CollapsibleTrigger.vue";
 
 // import { modelDefaults } from "@/Types/formOptions";
 
@@ -85,6 +97,7 @@ const props = defineProps<{
 
 const form = ref<FormInst | null>(null);
 const model = useForm(props.formField);
+const advancedOpen = ref(false);
 
 const options = [
   {

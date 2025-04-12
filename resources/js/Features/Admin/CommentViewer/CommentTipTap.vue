@@ -6,7 +6,6 @@
         <UserAvatar :size="23" class="sticky top-4" :user="$page.props.auth?.user" />
       </div>
       <EditorContent :editor="editor" class="leading-normal" />
-      <!-- <NBackTop v-if="commentContainer" :to="commentContainer" /> -->
     </div>
     <div v-if="editor" class="border-top-0 flex items-center justify-between gap-2 border-zinc-400 p-4">
       <div class="flex flex-wrap items-center gap-2">

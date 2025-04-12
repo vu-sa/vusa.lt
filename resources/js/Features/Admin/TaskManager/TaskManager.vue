@@ -1,17 +1,14 @@
 <template>
   <div>
     <div class="mb-4 flex gap-2">
-      <FilterPopselect
-        :disabled="disabled"
-        :options="buttonNames"
-        @select:value="handleClick"
-      ></FilterPopselect
-      ><TaskCreator :taskable="taskable" />
+      <FilterPopselect :disabled="disabled" :options="buttonNames" @select:value="handleClick" />
     </div>
     <NCard>
       <NSpin :show="false">
         <TaskTable :tasks="shownTasks" />
-        <template #description>Tuojaus... </template>
+        <template #description>
+          Tuojaus...
+        </template>
       </NSpin>
     </NCard>
   </div>
@@ -23,7 +20,6 @@ import { NCard, NSpin } from "naive-ui";
 import { computed, ref } from "vue";
 
 import FilterPopselect from "@/Components/Buttons/FilterPopselect.vue";
-import TaskCreator from "./TaskCreator.vue";
 import TaskTable from "./TaskTable.vue";
 
 const props = defineProps<{

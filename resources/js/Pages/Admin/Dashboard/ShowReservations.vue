@@ -80,7 +80,7 @@
         </template>
       </NCard>
     </div>
-    <NDivider v-if="tenants.length > 0" />
+    <Separator v-if="tenants.length > 0" />
     <section v-if="tenants.length > 0" class="mt-8">
       <div class="mb-8 inline-flex items-center gap-6">
         <h3 class="mb-0">
@@ -150,6 +150,7 @@
 import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
 import CardModal from '@/Components/Modals/CardModal.vue';
 import ReservationsWithUnitResources from '@/Components/Tables/ReservationsWithUnitResources.vue';
+import { Separator } from '@/Components/ui/separator';
 import Icons from "@/Types/Icons/filled";
 import { formatStaticTime } from '@/Utils/IntlTime';
 import { Link, router } from '@inertiajs/vue3';

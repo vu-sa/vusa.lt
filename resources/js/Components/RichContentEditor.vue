@@ -74,7 +74,7 @@ import FadeTransition from "./Transitions/FadeTransition.vue";
 import RichContentEditorListElement from './RichContentEditorListElement.vue';
 import ContentEditorFactory from './RichContent/ContentEditorFactory.vue';
 import { getAllContentTypes, createContentItem, getContentType } from './RichContent/Types';
-import { Button } from '@/Components/ShadcnVue/ui/button';
+import { Button } from '@/Components/ui/button';
 
 const props = defineProps<{
   maxContentBlocks?: number;

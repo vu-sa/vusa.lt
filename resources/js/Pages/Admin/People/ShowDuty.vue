@@ -38,7 +38,7 @@
           <span class="rounded-xs text-xs text-zinc-500">Neužimta vieta</span>
         </div>
       </div>
-      <NDivider />
+      <Separator />
       <NTable v-if="filteredUsers.oldUsers.length > 0" size="small">
         <thead>
           <tr>
@@ -57,7 +57,7 @@
       </NTable>
       <p v-else>Nėra duomenų apie anksčiau ėjusius (-as) šias pareigas.</p>
       <div v-if="duty.types && duty.types.length > 0">
-        <NDivider />
+        <Separator />
         <Suspense>
           <SimpleFileViewer
             :fileable="{ id: duty.id, type: 'Duty' }"
@@ -75,7 +75,6 @@
 </template>
 
 <script setup lang="tsx">
-import { NDivider, NTable } from "naive-ui";
 import { computed } from "vue";
 import { router } from "@inertiajs/vue3";
 
@@ -84,7 +83,8 @@ import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import ShowPageLayout from "@/Components/Layouts/ShowModel/ShowPageLayout.vue";
 import SimpleFileViewer from "@/Features/Admin/SharepointFileManager/Viewer/SimpleFileViewer.vue";
 import UserPopover from "@/Components/Avatars/UserPopover.vue";
-import type { BreadcrumbOption } from "@/Components/Layouts/ShowModel/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
+import { useBreadcrumbs, type BreadcrumbItem } from "@/Composables/useBreadcrumbs";
+import { Separator } from "@/Components/ui/separator";
 
 const props = defineProps<{
   duty: App.Entities.Duty;
@@ -126,20 +126,10 @@ const filteredUsers = computed(() => {
   );
 });
 
-const breadcrumbOptions: BreadcrumbOption[] = [
-  {
-    label: props.duty.institution?.name,
-    icon: Icons.INSTITUTION,
-    routeOptions: {
-      name: "institutions.show",
-      params: {
-        institution: props.duty?.institution?.id,
-      },
-    },
-  },
-  {
-    label: props.duty.name,
-    icon: Icons.DUTY,
-  },
-];
+const { createRouteBreadcrumb, createBreadcrumbItem } = useBreadcrumbs();
+
+const breadcrumbOptions = computed((): BreadcrumbItem[] => [
+  createRouteBreadcrumb(props.duty.institution?.name, "institutions.show", { institution: props.duty?.institution?.id }, Icons.INSTITUTION),
+  createBreadcrumbItem(props.duty.name, undefined, Icons.DUTY),
+]);
 </script>

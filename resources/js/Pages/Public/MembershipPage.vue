@@ -199,8 +199,8 @@
 <script setup lang="ts">
 import HeroElement from '@/Components/RichContent/RCHeroSection/HeroElement.vue';
 import RCNumberSection from '@/Components/RichContent/RCNumberStatSection/RCNumberSection.vue';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/Components/ShadcnVue/ui/accordion';
-import Button from '@/Components/ShadcnVue/ui/button/Button.vue';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/Components/ui/accordion';
+import Button from '@/Components/ui/button/Button.vue';
 import type { Hero, NumberStatSection } from '@/Types/contentParts';
 import { Link } from '@inertiajs/vue3';
 

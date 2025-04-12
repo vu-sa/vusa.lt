@@ -1,8 +1,5 @@
 <template>
   <AdminContentPage>
-    <template #above-header>
-      <AdminBreadcrumbDisplayer :options="breadcrumbOptions" class="mb-4 w-full" />
-    </template>
     <Card class="border shadow-xs bg-white dark:bg-zinc-800 dark:border-zinc-700">
       <div class="h-48">
         <img :src="training.image" class="size-full rounded-t-lg object-cover">
@@ -115,11 +112,9 @@
 <script setup lang="ts">
 import UserPopover from "@/Components/Avatars/UserPopover.vue";
 import AdminContentPage from "@/Components/Layouts/AdminContentPage.vue";
-import type { BreadcrumbOption } from "@/Components/Layouts/ShowModel/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
-import AdminBreadcrumbDisplayer from "@/Components/Layouts/ShowModel/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
-import Card from "@/Components/ShadcnVue/ui/card/Card.vue";
-import CardContent from "@/Components/ShadcnVue/ui/card/CardContent.vue";
-import CardHeader from "@/Components/ShadcnVue/ui/card/CardHeader.vue";
+import Card from "@/Components/ui/card/Card.vue";
+import CardContent from "@/Components/ui/card/CardContent.vue";
+import CardHeader from "@/Components/ui/card/CardHeader.vue";
 import ProgrammePlanner from "@/Features/Admin/ProgrammePlanner/ProgrammePlanner.vue";
 import { formatStaticTime } from "@/Utils/IntlTime";
 import { Link } from "@inertiajs/vue3";
@@ -127,7 +122,8 @@ import { computed } from "vue";
 import Icons from "@/Types/Icons/filled";
 
 import Sparkle20Filled from "~icons/fluent/sparkle20-filled";
-import CardFooter from "@/Components/ShadcnVue/ui/card/CardFooter.vue";
+import CardFooter from "@/Components/ui/card/CardFooter.vue";
+import { useBreadcrumbs, type BreadcrumbItem } from "@/Composables/useBreadcrumbs";
 
 const props = defineProps<{
   training: App.Entities.Training;
@@ -144,16 +140,10 @@ const defaultTab = computed(() => {
   return "summary";
 });
 
-const breadcrumbOptions: BreadcrumbOption[] = [
-  {
-    label: "Mokymai",
-    routeOptions: {
-      name: "trainings.index",
-    },
-  },
-  {
-    label: props.training.name,
-    icon: Sparkle20Filled,
-  },
-];
+const { createRouteBreadcrumb, createBreadcrumbItem } = useBreadcrumbs();
+
+const breadcrumbOptions = computed((): BreadcrumbItem[] => [
+  createRouteBreadcrumb("Mokymai", "trainings.index"),
+  createBreadcrumbItem(props.training.name, undefined, Sparkle20Filled),
+]);
 </script>

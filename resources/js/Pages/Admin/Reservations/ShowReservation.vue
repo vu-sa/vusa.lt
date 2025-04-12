@@ -22,13 +22,7 @@
       model: $tChoice('entities.reservation.model', 2),
     })
       " :show="showReservationHelpModal" @close="showReservationHelpModal = false">
-      <NTimeline class="mb-4" horizontal>
-        <NTimelineItem type="info" :title="capitalize($t('state.status.created'))" />
-        <NTimelineItem type="success" :title="capitalize($t('state.status.reserved'))" />
-        <NTimelineItem type="warning" :title="capitalize($t('state.status.lent'))" />
-        <NTimelineItem type="success" :title="capitalize($t('state.status.returned'))" />
-      </NTimeline>
-      <component :is="RESERVATION_DESCRIPTIONS.help[$page.props.app.locale]" />
+      <MdSuspenseWrapper directory="reservations" :locale="$page.props.app.locale" file="help" />
     </CardModal>
     <CardModal :show="showReservationResourceCreateModal" :title="RESERVATION_CARD_MODAL_TITLES.create_reservation_resource[
       $page.props.app.locale
@@ -88,9 +82,7 @@ import { router, useForm } from "@inertiajs/vue3";
 import { useStorage } from "@vueuse/core";
 
 import { RESERVATION_CARD_MODAL_TITLES } from "@/Constants/I18n/CardModalTitles";
-import { RESERVATION_DESCRIPTIONS } from "@/Constants/I18n/Descriptions";
 import { RESERVATION_HELP_TEXTS } from "@/Constants/I18n/HelpTexts";
-import { capitalize } from "@/Utils/String";
 
 import CardModal from "@/Components/Modals/CardModal.vue";
 import CommentViewer from "@/Features/Admin/CommentViewer/CommentViewer.vue";
@@ -101,8 +93,8 @@ import ReservationResourceTable from "@/Components/Tables/ReservationResourceTab
 import ShowPageLayout from "@/Components/Layouts/ShowModel/ShowPageLayout.vue";
 import UserAvatar from "@/Components/Avatars/UserAvatar.vue";
 import UsersAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
-import type { BreadcrumbOption } from "@/Components/Layouts/ShowModel/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
+import MdSuspenseWrapper from "@/Features/MarkdownGetterFromDocs/MdSuspenseWrapper.vue";
 
 const props = defineProps<{
   reservation: App.Entities.Reservation;

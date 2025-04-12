@@ -24,7 +24,7 @@
         {{ $t("forms.fields.media") }}
       </template>
       <template #description>
-        <component :is="RESOURCE_DESCRIPTIONS.media[$page.props.app.locale]" />
+      <MdSuspenseWrapper directory="resources" :locale="$page.props.app.locale" file="description" />
       </template>
       <NUpload ref="upload" :file-list="form.media" accept="image/jpg, image/jpeg, image/png" list-type="image-card"
         multiple @change="handleChange">
@@ -64,10 +64,11 @@ import FormElement from "./FormElement.vue";
 import Icons from "@/Types/Icons/regular";
 import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";
 
-import { RESOURCE_DESCRIPTIONS } from "@/Constants/I18n/Descriptions";
 import { RESOURCE_PLACEHOLDERS } from "@/Constants/I18n/Placeholders";
 import type { ResourceCreationTemplate } from "@/Pages/Admin/Reservations/CreateResource.vue";
 import type { ResourceEditType } from "@/Pages/Admin/Reservations/EditResource.vue";
+
+import MdSuspenseWrapper from '@/Features/MarkdownGetterFromDocs/MdSuspenseWrapper.vue';
 import AdminForm from './AdminForm.vue';
 
 const props = defineProps<{

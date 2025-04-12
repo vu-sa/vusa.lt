@@ -100,8 +100,10 @@ class HandleInertiaRequests extends Middleware
     {
         // TODO: maybe should return all tenants, even pagrindinis
         $tenants = Cache::rememberForever('all-tenants-for-inertia',
-            fn () => Tenant::orderBy('shortname_vu')->get(['id', 'alias', 'shortname', 'fullname', 'type'])
+            fn () => Tenant::orderBy('shortname_vu')->get(['id', 'alias', 'shortname', 'fullname', 'type', 'primary_institution_id'])
         );
+
+        $tenants->load('primary_institution:id,short_name,image_url');
 
         return $tenants;
     }

@@ -1,39 +1,39 @@
 <template>
   <NForm :model="matterForm">
-    <NGrid cols="1">
-      <NFormItemGi label="Klausimo pavadinimas" path="title" required>
+    <div class="grid grid-cols-1 gap-4">
+      <NFormItem label="Klausimo pavadinimas" path="title" required>
         <NSelect
           v-model:value="matterForm.title"
           placeholder="Studijų tinklelio peržiūra"
           filterable
           tag
           :options="defaultOptions"
-          ><template #action>
-            <span
-              class="text-xs text-zinc-400"
-              >Gali įrašyti ir savo klausimą...</span
-            >
-          </template></NSelect
         >
-      </NFormItemGi>
-      <NFormItemGi label="Aprašymas" path="description">
+          <template #action>
+            <span class="text-xs text-zinc-400">
+              Gali įrašyti ir savo klausimą...
+            </span>
+          </template>
+        </NSelect>
+      </NFormItem>
+      <NFormItem label="Aprašymas" path="description">
         <NInput
           v-model:value="matterForm.description"
           type="textarea"
           placeholder="Aprašykite klausimo kontekstą, jeigu to reikia..."
         ></NInput>
-      </NFormItemGi>
-      <NFormItemGi :show-label="false"
-        ><NButton :loading="loading" type="primary" @click="handleSubmit"
-          >Sukurti</NButton
-        ></NFormItemGi
-      >
-    </NGrid>
+      </NFormItem>
+      <NFormItem :show-label="false">
+        <NButton :loading="loading" type="primary" @click="handleSubmit">
+          Sukurti
+        </NButton>
+      </NFormItem>
+    </div>
   </NForm>
 </template>
 
 <script setup lang="tsx">
-import { NButton, NForm, NFormItemGi, NGrid, NInput, NSelect } from "naive-ui";
+import { NButton, NForm, NFormItem, NInput, NSelect } from "naive-ui";
 import { ref } from "vue";
 import { useForm } from "@inertiajs/vue3";
 

@@ -13,7 +13,7 @@
         <span v-else> Išjungti apkirpimą </span>
       </NButton>
     </div>
-    <NDivider />
+    <Separator />
     <img v-if="!showCropper" :src="url">
     <VCropper v-else v-model:src="url" :style="{
       height: '800px',
@@ -30,6 +30,7 @@ import { ref } from "vue";
 
 import CardModal from "../Modals/CardModal.vue";
 import VCropper from "../VCropper.vue";
+import { Separator } from "../ui/separator";
 
 const props = defineProps<{
   folder: string;

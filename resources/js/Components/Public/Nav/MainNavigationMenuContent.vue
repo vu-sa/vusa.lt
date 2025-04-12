@@ -56,7 +56,7 @@ import { Icon } from "@iconify/vue";
 import {
   NavigationMenuContent,
   NavigationMenuLink,
-} from '@/Components/ShadcnVue/ui/navigation-menu';
+} from '@/Components/ui/navigation-menu';
 import SmartLink from '../SmartLink.vue';
 
 interface Link {

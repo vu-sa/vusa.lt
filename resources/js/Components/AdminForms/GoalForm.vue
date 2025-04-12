@@ -1,25 +1,25 @@
 <template>
   <NForm ref="formRef" :model="model" :rules="rules">
-    <NGrid cols="1">
-      <NFormItemGi required path="title">
+    <div class="grid grid-cols-1 gap-4">
+      <NFormItem required path="title">
         <template #label>
-          <span class="inline-flex items-center gap-1"
-            ><NIcon :component="Icons.TITLE" />Pavadinimas</span
-          >
+          <span class="inline-flex items-center gap-1">
+            <NIcon :component="Icons.TITLE" />Pavadinimas
+          </span>
         </template>
         <NInput v-model:value="model.title"></NInput>
-      </NFormItemGi>
-      <NFormItemGi :show-label="false"
-        ><NButton type="primary" @click="handleClick"
-          >Atnaujinti</NButton
-        ></NFormItemGi
-      >
-    </NGrid>
+      </NFormItem>
+      <NFormItem :show-label="false">
+        <NButton type="primary" @click="handleClick">
+          Atnaujinti
+        </NButton>
+      </NFormItem>
+    </div>
   </NForm>
 </template>
 
 <script setup lang="tsx">
-import { NButton, NForm, NFormItemGi, NGrid, NIcon, NInput } from "naive-ui";
+import { NButton, NForm, NFormItem, NIcon, NInput } from "naive-ui";
 import { ref } from "vue";
 import { useForm } from "@inertiajs/vue3";
 import Icons from "@/Types/Icons/filled";

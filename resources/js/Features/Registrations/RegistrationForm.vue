@@ -19,8 +19,8 @@ import { toTypedSchema } from "@vee-validate/zod";
 import { ref, watch } from "vue";
 import { router, usePage } from "@inertiajs/vue3";
 
-import AutoForm from "@/Components/ShadcnVue/ui/auto-form/AutoForm.vue";
-import AutoFormField from "@/Components/ShadcnVue/ui/auto-form/AutoFormField.vue";
+import AutoForm from "@/Components/ui/auto-form/AutoForm.vue";
+import AutoFormField from "@/Components/ui/auto-form/AutoFormField.vue";
 
 const { form } = defineProps<{
   form: Record<string, any>;

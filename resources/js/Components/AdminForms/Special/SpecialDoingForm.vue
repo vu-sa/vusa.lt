@@ -8,11 +8,11 @@
         <slot name="suggestion-content"></slot>
       </SuggestionAlert>
     </FadeTransition>
-    <NGrid :cols="1">
-      <NFormItemGi :label="$t('forms.fields.title')" required path="name">
+    <div class="grid grid-cols-1 gap-4">
+      <NFormItem label="$t('forms.fields.title')" required path="name">
         <NInput v-model:value="model.title" />
-      </NFormItemGi>
-      <NFormItemGi label="Preliminari data" required path="date">
+      </NFormItem>
+      <NFormItem label="Preliminari data" required path="date">
         <NDatePicker
           v-model:value="model.date"
           :first-day-of-week="0"
@@ -20,8 +20,8 @@
           type="date"
           clearable
         />
-      </NFormItemGi>
-    </NGrid>
+      </NFormItem>
+    </div>
     <NButton type="primary" @click="handleValidateForm"> Pradėti! </NButton>
   </NForm>
 </template>
@@ -33,8 +33,7 @@ import {
   NButton,
   NDatePicker,
   NForm,
-  NFormItemGi,
-  NGrid,
+  NFormItem,
   NInput,
 } from "naive-ui";
 import { ref } from "vue";

@@ -2,22 +2,23 @@
   <div class="mt-4 flex flex-col gap-4">
     <h1>{{ $t("Studentų atstovai") }}</h1>
     <div class="flex flex-row items-center gap-4">
-      <NFormItem label="Padalinys">
-        <PadalinysSelector size="medium" :prepend-options="prependPadalinysOptions()" />
-      </NFormItem>
+      <div>
+        <Label for="padalinys" class="mb-2">Padalinys</Label>
+        <PadalinysSelector id="padalinys" size="medium" />
+      </div>
 
-      <NDivider vertical />
+      <Separator orientation="vertical" />
 
-      <NFormItem :label="$t('forms.fields.title')" class="min-w-64">
-        <NInput v-model:value="search" placeholder="Ieškoti..." class="w-full" />
-      </NFormItem>
+      <div class="min-w-64">
+        <Label for="search" class="mb-2">{{ $t('forms.fields.title') }}</Label>
+        <Input id="search" v-model="search" placeholder="Ieškoti..." class="w-full" />
+      </div>
     </div>
 
     <section v-for="institutionType in filteredTypesAndInstitutions" :key="institutionType.id">
       <template v-for="institution in institutionType.institutions" :key="institution.id">
-        <InstitutionContacts :institution :contacts="getContacts(institution)" />
-        <!-- Add divider except for last element -->
-        <NDivider v-if="
+        <InstitutionContacts :institution="institution" :contacts="getContacts(institution)" />
+        <Separator v-if="
           institutionType.institutions[
             institutionType.institutions.length - 1
           ].id !== institution.id
@@ -32,6 +33,9 @@ import { computed, ref } from "vue";
 
 import InstitutionContacts from "@/Components/Public/InstitutionContacts.vue";
 import PadalinysSelector from "@/Components/Public/Nav/PadalinysSelector.vue";
+import { Separator } from "@/Components/ui/separator";
+import { Label } from "@/Components/ui/label";
+import { Input } from "@/Components/ui/input";
 
 const props = defineProps<{
   types: App.Entities.Type[];
@@ -39,21 +43,8 @@ const props = defineProps<{
 
 const search = ref<string | null>(null);
 
-const prependPadalinysOptions = () => {
-  return [
-    {
-      label: "Centriniai atstovai",
-      key: 'www',
-    },
-    {
-      type: 'divider',
-    },
-  ];
-};
-
 // TODO: if institution has multiple types, show only once
 const filteredTypesAndInstitutions = computed(() => {
-
   // filter institutions by search
   const filteredInstitutions = props.types.map((type) => {
     return {

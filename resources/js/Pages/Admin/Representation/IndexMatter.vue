@@ -50,9 +50,7 @@ const columns = [
             <NButton round size="tiny" tertiary>
               {{
                 default: (
-                  <NEllipsis style="max-width: 150px">
-                    {institution.short_name ?? institution.name}
-                  </NEllipsis>
+                    institution.short_name ?? institution.name
                 ),
                 icon: <NIcon component={Icons.INSTITUTION}></NIcon>,
               }}

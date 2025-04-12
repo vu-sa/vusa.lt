@@ -19,18 +19,18 @@
       </Alert>
       <PermissionTable :model-type="entity.key" :icon="entity.icon" :permissions="filterPermissionsFor(entity.key)"
         :role="role" />
-      <NDivider />
+      <Separator />
     </section>
   </div>
 </template>
 
 <script setup lang="tsx">
-import { Alert, AlertDescription, AlertTitle } from '@/Components/ShadcnVue/ui/alert'
-import { NDivider } from "naive-ui";
+import { Alert, AlertDescription, AlertTitle } from '@/Components/ui/alert'
 
 import MdSuspenseWrapper from "@/Features/MarkdownGetterFromDocs/MdSuspenseWrapper.vue";
 import PermissionTable from "@/Features/Admin/PermissionTable/PermissionTable.vue";
 import entities from "@/entities";
+import { Separator } from '../ui/separator';
 
 const props = defineProps<{
   role: App.Entities.Role;

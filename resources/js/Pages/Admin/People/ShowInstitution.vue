@@ -1,5 +1,5 @@
 <template>
-  <ShowPageLayout :current-tab :title="institution.name" :breadcrumb-options :model="institution" :related-models
+  <ShowPageLayout :current-tab :title="institution.name" :breadcrumbs="breadcrumbs" :model="institution" :related-models
     @change:tab="currentTab = $event">
     <template #title>
       <span class="text-3xl">{{ institution.name }}</span>
@@ -7,7 +7,7 @@
     <template #after-heading>
       <InstitutionAvatarGroup :max="5" :users="institution.current_users" />
       <template v-if="institution.managers.length > 0">
-        <NDivider v-if="institution.managers.length > 0" vertical />
+        <Separator v-if="institution.managers.length > 0" vertical />
         <span class="text-xs text-zinc-500">Admin:</span>
         <InstitutionAvatarGroup :users="institution.managers" />
       </template>
@@ -39,7 +39,6 @@
 </template>
 
 <script setup lang="tsx">
-import { NDivider } from "naive-ui";
 import { computed, defineAsyncComponent } from "vue";
 import { router } from "@inertiajs/vue3";
 import { useStorage } from "@vueuse/core";
@@ -51,7 +50,8 @@ import LastMeetingCard from "@/Components/Cards/QuickContentCards/LastMeetingCar
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import ShowPageLayout from "@/Components/Layouts/ShowModel/ShowPageLayout.vue";
 import SimpleFileViewer from "@/Features/Admin/SharepointFileManager/Viewer/SimpleFileViewer.vue";
-import type { BreadcrumbOption } from "@/Components/Layouts/ShowModel/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
+import { useBreadcrumbs, type BreadcrumbItem } from "@/Composables/useBreadcrumbs";
+import { Separator } from "@/Components/ui/separator";
 
 const props = defineProps<{
   doingTypes: any;
@@ -76,12 +76,14 @@ const RelatedInstitutions = defineAsyncComponent(
   () => import("@/Components/Carousels/RelatedInstitutions.vue")
 );
 
-const breadcrumbOptions: BreadcrumbOption[] = [
-  {
-    label: props.institution.name,
-    icon: Icons.INSTITUTION,
-  },
-];
+// Use the breadcrumbs composable
+const { createRouteBreadcrumb, createBreadcrumbItem } = useBreadcrumbs();
+
+// Define breadcrumbs using the composable's helpers
+const breadcrumbs = computed((): BreadcrumbItem[] => [
+  createRouteBreadcrumb("Institucijos", "institutions.index", {}, Icons.INSTITUTION),
+  createBreadcrumbItem(props.institution.name, undefined, Icons.INSTITUTION),
+]);
 
 const relatedInstitutionCount = computed(() => {
   // reduce props.institution.relatedInstitutions object by checking all arrays lengths

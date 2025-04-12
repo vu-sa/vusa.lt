@@ -12,8 +12,8 @@
 </template>
 
 <script setup lang="ts">
-import { Card, CardHeader, CardTitle } from '@/Components/ShadcnVue/ui/card';
-import CardContent from '../ShadcnVue/ui/card/CardContent.vue';
+import { Card, CardHeader, CardTitle } from '@/Components/ui/card';
+import CardContent from '../ui/card/CardContent.vue';
 
 defineProps<{
   page: App.Entities.Page;

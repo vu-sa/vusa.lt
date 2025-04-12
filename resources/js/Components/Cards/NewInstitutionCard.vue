@@ -59,11 +59,11 @@
 </template>
 
 <script setup lang="ts">
-import Card from '../ShadcnVue/ui/card/Card.vue';
-import CardContent from '../ShadcnVue/ui/card/CardContent.vue';
-import CardFooter from '../ShadcnVue/ui/card/CardFooter.vue';
-import CardHeader from '../ShadcnVue/ui/card/CardHeader.vue';
-import CardTitle from '../ShadcnVue/ui/card/CardTitle.vue';
+import Card from '../ui/card/Card.vue';
+import CardContent from '../ui/card/CardContent.vue';
+import CardFooter from '../ui/card/CardFooter.vue';
+import CardHeader from '../ui/card/CardHeader.vue';
+import CardTitle from '../ui/card/CardTitle.vue';
 import SmartLink from '../Public/SmartLink.vue';
 
 defineProps<{

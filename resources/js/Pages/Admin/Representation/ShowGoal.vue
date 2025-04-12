@@ -78,7 +78,7 @@ import ModelChip from "@/Components/Tag/ModelChip.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import ShowPageLayout from "@/Components/Layouts/ShowModel/ShowPageLayout.vue";
 import TaskManager from "@/Features/Admin/TaskManager/TaskManager.vue";
-import type { BreadcrumbOption } from "@/Components/Layouts/ShowModel/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
+import { useBreadcrumbs, type BreadcrumbItem } from "@/Composables/useBreadcrumbs";
 
 const props = defineProps<{
   goal: App.Entities.Goal;
@@ -91,16 +91,12 @@ const buttonNames = props.institutions.map((institution) => institution.name);
 // add null to the beginning of the array
 buttonNames.unshift("Visi");
 
-const breadcrumbItems: BreadcrumbOption[] = [
-  {
-    label: "Klausimų grupės",
-    icon: Icons.GOAL_GROUP,
-  },
-  {
-    label: props.goal.title,
-    icon: Icons.GOAL,
-  },
-];
+const { createRouteBreadcrumb, createBreadcrumbItem } = useBreadcrumbs();
+
+const breadcrumbItems = computed((): BreadcrumbItem[] => [
+  createRouteBreadcrumb("Klausimų grupės", undefined, {}, Icons.GOAL_GROUP),
+  createBreadcrumbItem(props.goal.title, undefined, Icons.GOAL),
+]);
 
 const currentTab = useStorage("show-goal-tab", "Svarstomi klausimai");
 
