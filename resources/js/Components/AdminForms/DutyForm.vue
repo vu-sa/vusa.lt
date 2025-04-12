@@ -24,7 +24,7 @@
       </NFormItem>
 
       <NFormItem :label="$t('forms.fields.email')">
-        <NAutoComplete v-model:value="form.email" :options="emailOptions" placeholder="vusa@vusa.lt" />
+        <NInput v-model:value="form.email" placeholder="vusa@vusa.lt" />
       </NFormItem>
 
       <div class="grid gap-4 lg:grid-cols-2">
@@ -165,16 +165,6 @@ const userOptions = props.assignableUsers.map((user) => ({
   value: user.id,
   user: user,
 }));
-
-const emailOptions = computed(() => {
-  return usePage().props.auth?.user.tenants.map((tenant) => {
-    const prefix = form.email?.split("@")[0];
-    return {
-      label: `${prefix}@${tenant.alias}.vusa.lt`,
-      value: `${prefix}@${tenant.alias}.vusa.lt`,
-    };
-  });
-});
 
 const rolesOptions = props.roles.map((role) => ({
   label: role.name,

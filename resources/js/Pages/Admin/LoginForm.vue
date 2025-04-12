@@ -4,13 +4,22 @@
 
   <NConfigProvider :theme-overrides="themeOverrides">
     <div>
-      <div class="absolute -z-50 size-full blur-[2px] brightness-[35%] saturate-50">
-        <NCarousel autoplay :interval="3000" :show-dots="false" :transition-style="{ transitionDuration: '1500ms' }"
-          effect="fade" class="bg-black-800 size-full">
-          <img src="/images/photos/VU SA 2023.jpg" class="size-full object-cover">
-          <img src="/images/photos/stovykla.jpg" class="size-full object-cover">
-          <img src="/images/photos/observatorijos_kiemelis.jpg" class="size-full object-cover">
-        </NCarousel>
+      <div class="absolute -z-50 size-full blur-1 brightness-15 saturate-50 contrast-100">
+        <Carousel class="bg-black-800 size-full" :plugins="[Autoplay({
+          delay: 5000,
+        }), Fade()]">
+          <CarouselContent>
+            <CarouselItem>
+              <img src="/images/photos/VU SA 2023.jpg" class="size-full object-cover">
+            </CarouselItem>
+            <CarouselItem>
+              <img src="/images/photos/stovykla.jpg" class="size-full object-cover">
+            </CarouselItem>
+            <CarouselItem>
+              <img src="/images/photos/observatorijos_kiemelis.jpg" class="size-full object-cover">
+            </CarouselItem>
+          </CarouselContent>
+        </Carousel>
       </div>
       <FadeTransition appear>
         <div class="grid min-h-screen justify-center p-4 sm:grid-cols-2 sm:grid-rows-none">
@@ -101,6 +110,9 @@ import { ref } from "vue";
 import AppLogo from "@/Components/AppLogo.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import MicrosoftButton from "@/Components/Buttons/MicrosoftLoginButton.vue";
+import { Carousel, CarouselContent, CarouselItem } from "@/Components/ShadcnVue/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
+import Fade from "embla-carousel-fade";
 
 defineProps<{
   status?: string;

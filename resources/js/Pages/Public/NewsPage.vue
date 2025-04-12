@@ -38,7 +38,6 @@
       </div>
     </NewsArticle>
     <FeedbackPopover />
-    <NBackTop :right="100" :bottom="28" />
   </div>
 </template>
 

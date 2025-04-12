@@ -36,7 +36,7 @@
             </InfoPopover>
           </div>
         </template>
-        <NAutoComplete v-model:value="form.email" :options="emailOptions"
+        <NInput v-model:value="form.email"
           placeholder="vardas.pavarde@padalinys.stud.vu.lt" />
       </NFormItem>
 
@@ -391,16 +391,6 @@ const rolesOptions = props.roles.map((role) => ({
   label: role.name,
   value: role.id,
 }));
-
-const emailOptions = computed(() => {
-  return usePage().props.auth?.user.tenants.map((tenant) => {
-    const prefix = form.email?.split("@")[0];
-    return {
-      label: `${prefix}@${tenant.alias}.stud.vu.lt`,
-      value: `${prefix}@${tenant.alias}.stud.vu.lt`,
-    };
-  });
-});
 
 form.current_duties = props.user.current_duties?.map((duty) => duty.id);
 

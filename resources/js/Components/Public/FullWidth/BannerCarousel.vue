@@ -3,7 +3,7 @@
     <Carousel :opts="{
       align: 'start',
     }" :plugins="[Autoplay({
-      delay: 2000,
+      delay: 3000,
     })]">
       <CarouselContent class="-ml-1">
         <CarouselItem v-for="banner in banners" :key="banner.id" class="basis-1/3 lg:basis-1/4 xl:basis-1/5 pl-1">
