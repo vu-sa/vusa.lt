@@ -25,7 +25,7 @@
           <NIcon size="16" :component="Icons.AGENDA_ITEM" />
         </template>
       </NButton>
-      <Separator vertical style="background-color: lightgray;" />
+      <Separator orientation="vertical" style="background-color: lightgray;" />
       <div class="flex items-center gap-2">
         <NSwitch v-model:value="showVoteOptions" size="small" />
         <label class="text-zinc-500 dark:text-zinc-400">{{ $t("Rodyti balsavimo parinktis") }}</label>
