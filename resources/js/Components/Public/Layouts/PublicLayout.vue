@@ -44,24 +44,6 @@
               <BannerCarousel :banners="$page.props.tenant?.banners" />
             </div>
           </div>
-          <!--<template #fallback>
-              <div class="flex h-screen items-center justify-center">
-                <NSpin>
-                  <template #description>
-                    <div class="mt-2 h-8 text-vusa-red">
-                      <FadeTransition>
-                        <span v-if="spinWarning">
-                          Pabandykite perkrauti puslapį arba grįžkite į
-                          <a class="underline" :href="$page.props.app.url">vusa.lt</a>
-                        </span>
-                        <span v-else />
-                      </FadeTransition>
-                    </div>
-                  </template>
-</NSpin>
-</div>
-</template> -->
-          <!-- </Suspense> -->
         </main>
 
         <FadeTransition appear>
@@ -81,6 +63,7 @@ import { useDark, useStorage } from "@vueuse/core";
 
 import { Head, usePage } from "@inertiajs/vue3";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
+import { Spinner } from "@/Components/ui/spinner";
 
 const BannerCarousel = defineAsyncComponent(() => import("../FullWidth/BannerCarousel.vue"));
 const ConsentCard = defineAsyncComponent(() => import("../ConsentCard.vue"));

@@ -1,16 +1,16 @@
 <template>
-  <NSpin class="w-full" :show="loading">
+  <Spinner class="w-full" :show="loading">
     <FileManager small class="w-full" :files :directories :path @update="handleUpdate" @back="handleBack"
       @change-directory="handleChangeDirectory" @file-selected="(path) => $emit('submit', path)" />
-  </NSpin>
+  </Spinner>
 </template>
 
 <script setup lang="ts">
-import { NSpin } from 'naive-ui';
 import { ref } from 'vue';
 import { useFetch } from '@vueuse/core';
 
 import FileManager from './FileManager.vue';
+import { Spinner } from '@/Components/ui/spinner';
 
 defineEmits<{
   (e: 'submit', path: string): void

@@ -3,24 +3,27 @@
     <div class="mb-4 flex gap-2">
       <FilterPopselect :disabled="disabled" :options="buttonNames" @select:value="handleClick" />
     </div>
-    <NCard>
-      <NSpin :show="false">
-        <TaskTable :tasks="shownTasks" />
-        <template #description>
-          Tuojaus...
-        </template>
-      </NSpin>
-    </NCard>
+    <Card>
+      <CardContent>
+        <Spinner :show="false">
+          <TaskTable :tasks="shownTasks" />
+          <template #description>
+            Tuojaus...
+          </template>
+        </Spinner>
+      </CardContent>
+    </Card>
   </div>
 </template>
 
 <script setup lang="tsx">
 import { trans as $t } from "laravel-vue-i18n";
-import { NCard, NSpin } from "naive-ui";
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 
 import FilterPopselect from "@/Components/Buttons/FilterPopselect.vue";
 import TaskTable from "./TaskTable.vue";
+import { Card, CardContent } from "@/Components/ui/card";
+import { Spinner } from "@/Components/ui/spinner";
 
 const props = defineProps<{
   disabled?: boolean;
@@ -67,4 +70,9 @@ const handleClick = (name: string | null) => {
       break;
   }
 };
+
+// Watch for changes in showCompletedTasks to ensure reactivity
+watch(showCompletedTasks, () => {
+  // Trigger any additional logic if needed when the filter changes
+});
 </script>

@@ -1,5 +1,5 @@
 <template>
-  <NSpin :show="formDisabled">
+  <Spinner :show="formDisabled">
     <template #description>
       <p>Netikėta klaida. Praneškite administratoriui.</p>
     </template>
@@ -19,19 +19,20 @@
       </tbody>
     </table>
     <div class="mt-4 flex justify-end">
-      <NButton :disabled="formDisabled || !permissionForm.isDirty" :loading="loading" type="primary"
-        @click="updatePermissionsForRole">Atnaujinti</NButton>
+      <Button :disabled="formDisabled || !permissionForm.isDirty" :class="{ 'opacity-50 cursor-not-allowed': formDisabled || !permissionForm.isDirty }"
+        variant="default" :data-loading="loading" @click="updatePermissionsForRole">Atnaujinti</Button>
     </div>
-  </NSpin>
+  </Spinner>
 </template>
 
 <script setup lang="tsx">
 import { type Component, ref } from "vue";
-import { NButton, NSpin } from "naive-ui";
 import { useForm } from "@inertiajs/vue3";
 
 import { CRUDEnum } from "@/Types/enums";
 import PermissionTableRow from "@/Features/Admin/PermissionTable/PermissionTableRow.vue";
+import { Spinner } from "@/Components/ui/spinner";
+import { Button } from "@/Components/ui/button";
 
 const props = defineProps<{
   permissions: string[];
@@ -125,5 +126,25 @@ tr>td.permission-description {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+}
+
+/* Add loading spinner to button */
+[data-loading="true"]::before {
+  content: "";
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  margin-right: 0.5rem;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  animation: spin 0.6s linear infinite;
+  vertical-align: text-bottom;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

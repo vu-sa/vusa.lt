@@ -1,5 +1,5 @@
 <template>
-  <NSpin :show="loading">
+  <Spinner :show="loading">
     <NForm ref="formRef" :rules="rules" :model="model">
       <div class="grid grid-cols-1 gap-4">
         <NFormItem label="Tikslo pavadinimas" required path="title">
@@ -38,7 +38,7 @@
       </div>
     </NForm>
     <template #description> Krauname tikslus. 😊 </template>
-  </NSpin>
+  </Spinner>
 </template>
 
 <script setup lang="tsx">
@@ -48,12 +48,12 @@ import {
   NFormItem,
   NIcon,
   NSelect,
-  NSpin,
   NTag,
 } from "naive-ui";
 import { ref } from "vue";
 import { router, useForm } from "@inertiajs/vue3";
 import Icons from "@/Types/Icons/filled";
+import { Spinner } from "@/Components/ui/spinner";
 
 defineEmits<{
   (e: "submit", form: any): void;
