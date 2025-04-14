@@ -91,6 +91,12 @@ class Duty extends Model implements AuthorizableContract
         return $this->belongsTo(Institution::class);
     }
 
+    // HACK: this is a workaround for the fact that we cannot use the same relation name in the parent and child models
+    public function institutions(): BelongsTo
+    {
+        return $this->institution();
+    }
+
     public function doings()
     {
         return $this->hasManyDeepFromRelations($this->users(), (new User)->doings());
