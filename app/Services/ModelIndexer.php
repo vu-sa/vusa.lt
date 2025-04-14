@@ -19,7 +19,7 @@ class ModelIndexer
 
     private ?string $search;
 
-    private ?array $sorters;
+    private ?array $sorting;
 
     public ?array $filters;
 
@@ -40,18 +40,18 @@ class ModelIndexer
         $this->indexable = $indexable;
         $this->search = $request->input('text');
 
-        // Process sorters - accept either JSON or base64 encoded JSON for backward compatibility
-        $sortersInput = $request->input('sorters');
-        if ($sortersInput) {
-            if (Str::startsWith($sortersInput, '{')) {
+        // Process sorting - accept either JSON or base64 encoded JSON for backward compatibility
+        $sortingInput = $request->input('sorting');
+        if ($sortingInput) {
+            if (Str::startsWith($sortingInput, '{')) {
                 // JSON format
-                $this->sorters = json_decode($sortersInput, true);
+                $this->sorting = json_decode($sortingInput, true);
             } else {
                 // Base64 encoded (legacy format)
-                $this->sorters = json_decode(base64_decode($sortersInput), true);
+                $this->sorting = json_decode(base64_decode($sortingInput), true);
             }
         } else {
-            $this->sorters = null;
+            $this->sorting = null; // Corrected from $this->sorters to $this->sorting
         }
 
         // Process filters - accept either JSON or base64 encoded JSON for backward compatibility
@@ -242,22 +242,22 @@ class ModelIndexer
     }
 
     /**
-     * Apply sorting based on the sorters parameter
+     * Apply sorting based on the sorting parameter
      *
      * @param  array|null  $default  Default sort order if none specified
      * @return $this
      */
     public function sortAllColumns(?array $default = null)
     {
-        if ($default && ! $this->sorters) {
-            $this->sorters = $default;
+        if ($default && ! $this->sorting) {
+            $this->sorting = $default;
         }
 
-        if (! $this->sorters) {
+        if (! $this->sorting) {
             return $this;
         }
 
-        foreach ($this->sorters as $name => $value) {
+        foreach ($this->sorting as $name => $value) {
             if ($value) {
                 $this->builder->orderBy($name, $value === 'descend' ? 'desc' : 'asc');
             }

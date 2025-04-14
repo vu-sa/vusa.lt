@@ -6,43 +6,74 @@ use App\Actions\GetTenantsForUpserts;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreInstitutionRequest;
 use App\Http\Requests\UpdateInstitutionRequest;
+use App\Http\Requests\IndexInstitutionRequest; // Create this request class
+use App\Http\Traits\HasTanstackTables;
 use App\Models\Doing;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Type;
 use App\Services\ModelAuthorizer as Authorizer;
-use App\Services\ModelIndexer;
-use Illuminate\Database\Eloquent\Builder;
+use App\Services\TanstackTableService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class InstitutionController extends Controller
 {
-    public function __construct(public Authorizer $authorizer) {}
+    use HasTanstackTables;
+    
+    public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService) {}
 
     /**
      * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(IndexInstitutionRequest $request)
     {
         $this->authorize('viewAny', Institution::class);
 
-        $indexer = new ModelIndexer(new Institution);
+        // Build base query with eager loading
+        $query = Institution::query()->with(['meetings' => fn ($query) => $query->orderBy('start_time'), 'tenant', 'types']);
 
-        $institutions = $indexer
-            ->setEloquentQuery([
-                fn (Builder $query) => $query->with(['meetings' => fn ($query) => $query->orderBy('start_time'),
-                ])])
-            ->filterAllColumns()
-            ->sortAllColumns()
-            ->builder->paginate(15);
+        // Define searchable columns
+        $searchableColumns = ['name', 'alias', 'email', 'tenant.name'];
 
-        // also check if empty array
+        // Apply Tanstack Table filters
+        $query = $this->applyTanstackFilters(
+            $query,
+            $request,
+            $this->tableService,
+            $searchableColumns,
+            [
+                'tenantRelation' => 'tenant',
+                'permission' => 'institutions.read.padalinys',
+                'applySortBeforePagination' => true, // Ensure sorting is applied before pagination
+            ]
+        );
+
+        // Paginate results
+        $institutions = $query->paginate($request->input('per_page', 15))
+                              ->withQueryString();
+
+        // Get institution types for filtering
+        $types = Type::where('model_type', Institution::class)->get();
+        
+        // Get the sorting state using the custom method to ensure consistent parsing
+        $sorting = $request->getSorting();
+        
+        // Return response with all necessary data
         return Inertia::render('Admin/People/IndexInstitution', [
-            'institutions' => $institutions,
-            'types' => Type::where('model_type', Institution::class)->get(),
+            'data' => $institutions->items(),
+            'meta' => [
+                'total' => $institutions->total(),
+                'per_page' => $institutions->perPage(),
+                'current_page' => $institutions->currentPage(),
+                'last_page' => $institutions->lastPage(),
+                'from' => $institutions->firstItem(),
+                'to' => $institutions->lastItem(),
+            ],
+            'types' => $types,
+            'filters' => $request->getFilters(),
+            'sorting' => $sorting, // Pass properly parsed sorting state to frontend
+            'initialSorting' => $sorting, // Add initial sorting to persist state on first load
         ]);
     }
 

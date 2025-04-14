@@ -22,7 +22,6 @@ import {
 import { type Ref, computed, h, inject, ref } from "vue";
 import { router } from "@inertiajs/vue3";
 
-import { updateSorters } from "@/Utils/DataTable";
 import ActionColumns from "./ActionColumns.vue";
 import IndexSearchInput from "./IndexSearchInput.vue";
 import type { SortOrder } from "naive-ui/es/data-table/src/interface";
@@ -36,6 +35,28 @@ const props = defineProps<{
   editRoute?: string;
   destroyRoute?: string;
 }>();
+
+const updateSorters = (
+  sortersRef: Ref<Record<string, boolean | "ascend" | "descend">>,
+  sortState: DataTableSortState | undefined,
+) => {
+  if (sortState === undefined) {
+    // reset values to empty array
+    Object.keys(sortersRef.value).forEach((key) => {
+      sortersRef.value[key] = false;
+    });
+    return sortersRef.value;
+  }
+
+  // update sorters object key if columnKey is equal to key in sorters object
+  Object.keys(sortersRef.value).forEach((key) => {
+    if (sortState.columnKey === key) {
+      sortersRef.value[key] = sortState.order;
+    }
+  });
+
+  return sortersRef.value;
+};
 
 console.log(props.columns)
 
@@ -112,7 +133,7 @@ const handleChange = (page: number) => {
     data: {
       page: page,
       filters: encodedFilters,
-      sorters: encodedSorters,
+      sorting: encodedSorters,
       ...otherParams.value,
     },
     only: [props.modelName],
@@ -163,7 +184,7 @@ const sweepSearch = () => {
       page: 1,
       // Pass empty objects with JSON.stringify instead of undefined
       filters: filters ? JSON.stringify({}) : undefined,
-      sorters: sorters ? JSON.stringify({}) : undefined,
+      sorting: sorters ? JSON.stringify({}) : undefined,
       text: undefined,
       ...otherParams.value,
     },

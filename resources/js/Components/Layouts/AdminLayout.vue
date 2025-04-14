@@ -19,6 +19,8 @@
       <slot />
     </SidebarInset>
   </SidebarProvider>
+  <!-- Sonner Toast component -->
+  <Toaster />
 </template>
 
 <script setup lang="tsx">
@@ -43,6 +45,7 @@ import {
 import AdminBreadcrumbs from '@/Components/Admin/AdminBreadcrumbs.vue';
 import { createBreadcrumbState } from '@/Composables/useBreadcrumbs';
 import type { BreadcrumbItem } from '@/Composables/useBreadcrumbs';
+import { Toaster } from "../ui/sonner";
 
 const props = defineProps<{
   title?: string;

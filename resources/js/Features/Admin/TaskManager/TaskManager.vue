@@ -1,78 +1,94 @@
 <template>
   <div>
-    <div class="mb-4 flex gap-2">
-      <FilterPopselect :disabled="disabled" :options="buttonNames" @select:value="handleClick" />
+    <div class="mb-4 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <TaskFilter
+          v-model="currentFilter"
+          :disabled="isLoading || disabled"
+          :options="filterOptions" 
+        />
+        <Badge v-if="filteredTasks.length > 0" variant="secondary" class="ml-2">
+          {{ filteredTasks.length }}
+        </Badge>
+      </div>
+      <div v-if="taskable">
+        <Button 
+          variant="outline" 
+          size="sm"
+          :disabled="isLoading"
+          @click="showCreateTaskDialog = true"
+        >
+          <PlusIcon class="mr-1 h-4 w-4" />
+          {{ $t("tasks.create_new") }}
+        </Button>
+      </div>
     </div>
-    <Card>
-      <CardContent>
-        <Spinner :show="false">
-          <TaskTable :tasks="shownTasks" />
-          <template #description>
-            Tuojaus...
-          </template>
-        </Spinner>
-      </CardContent>
-    </Card>
+    
+    <Spinner :show="isLoading">
+      <TaskTable :tasks="filteredTasks" :key="taskFilterKey" />
+      <template #description>
+        {{ $t("loading_tasks") }}
+      </template>
+    </Spinner>
+
+    <CreateTaskDialog 
+      :open="showCreateTaskDialog" 
+      :taskable="taskable" 
+      @close="showCreateTaskDialog = false"
+      @task-created="handleTaskCreated"
+    />
   </div>
 </template>
 
-<script setup lang="tsx">
+<script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
-import { computed, ref, watch } from "vue";
-
-import FilterPopselect from "@/Components/Buttons/FilterPopselect.vue";
+import { computed, ref, watch, defineAsyncComponent } from "vue";
+import TaskFilter from "@/Components/Tasks/TaskFilter.vue";
 import TaskTable from "./TaskTable.vue";
-import { Card, CardContent } from "@/Components/ui/card";
 import { Spinner } from "@/Components/ui/spinner";
+import { Button } from "@/Components/ui/button";
+import { Badge } from "@/Components/ui/badge";
+import { PlusIcon } from "lucide-vue-next";
+import { useTaskFilter } from "./composables/useTaskFilter";
+
+// Use async component for the dialog to improve initial load performance
+const CreateTaskDialog = defineAsyncComponent(() => 
+  import('./CreateTaskDialog.vue')
+);
+
+// Task filtering states
+enum FilterType {
+  ALL = "all",
+  COMPLETED = "completed",
+  INCOMPLETE = "incomplete"
+}
 
 const props = defineProps<{
   disabled?: boolean;
   tasks?: App.Entities.Task[];
   taskable?: {
-    id: number;
+    id: string | number;
     type: string;
   };
 }>();
 
-const buttonNames = computed(() => {
-  return [$t("Visos"), $t("Atliktos"), $t("Neatliktos")];
+// Component state
+const isLoading = ref(false);
+const showCreateTaskDialog = ref(false);
+const taskFilterKey = ref(0);
+
+// Task filtering setup using composable
+const { currentFilter, filteredTasks, filterOptions } = useTaskFilter(props.tasks || []);
+
+// Force re-render of TaskTable when filter changes to ensure checkboxes align properly
+watch(currentFilter, () => {
+  taskFilterKey.value++;
 });
 
-const showCompletedTasks = ref<boolean | null>(null);
-
-const shownTasks = computed(() => {
-  if (props.tasks === undefined) {
-    return [];
-  }
-
-  if (showCompletedTasks.value === null) {
-    return props.tasks;
-  }
-
-  return props.tasks.filter((task) => {
-    if (showCompletedTasks.value) {
-      return !!task.completed_at;
-    }
-    return !task.completed_at;
-  });
-});
-
-const handleClick = (name: string | null) => {
-  switch (name) {
-    case $t("Visos"):
-      showCompletedTasks.value = null;
-      break;
-    case $t("Atliktos"):
-      showCompletedTasks.value = true;
-      break;
-    case $t("Neatliktos"):
-      showCompletedTasks.value = false;
-      break;
-  }
+/**
+ * Handle successful task creation
+ */
+const handleTaskCreated = () => {
+  // Any additional logic after task creation can be added here
 };
-
-// Watch for changes in showCompletedTasks to ensure reactivity
-watch(showCompletedTasks, () => {
-  // Trigger any additional logic if needed when the filter changes
-});
 </script>

@@ -11,7 +11,7 @@ vusa.lt serves as:
    - Opinion collection and representation outcomes
    - Organization physical and human resource management
 
-Key technologies: Laravel 12+, Vue 3, Inertia.js, Tailwind CSS, Shadcn Vue, MySQL
+Key technologies: Laravel 12+, Vue 3, Inertia.js, Tailwind CSS, Shadcn Vue (based on Reka UI), MySQL
 
 ## Core Development Patterns
 
