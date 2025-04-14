@@ -33,12 +33,10 @@ abstract class BaseIndexRequest extends FormRequest
 
     /**
      * Get the sorting state from the request.
-     * 
-     * @return array
      */
     public function getSorting(): array
     {
-        if (!$this->has('sorting')) {
+        if (! $this->has('sorting')) {
             return [];
         }
 
@@ -51,12 +49,10 @@ abstract class BaseIndexRequest extends FormRequest
 
     /**
      * Get the filters from the request.
-     * 
-     * @return array
      */
     public function getFilters(): array
     {
-        if (!$this->has('filters')) {
+        if (! $this->has('filters')) {
             return [];
         }
 

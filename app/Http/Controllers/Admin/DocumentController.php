@@ -48,11 +48,11 @@ class DocumentController extends Controller
 
         // Paginate results
         $documents = $query->paginate($request->input('per_page', 20))
-                           ->withQueryString();
+            ->withQueryString();
 
         // Get the sorting state using the custom method to ensure consistent parsing
         $sorting = $request->getSorting();
-        
+
         return Inertia::render('Admin/Files/IndexDocument', [
             'data' => $documents->items(),
             'meta' => [
