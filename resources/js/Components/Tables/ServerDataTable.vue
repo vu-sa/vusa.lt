@@ -2,6 +2,7 @@
   <div>
     <!-- Actual data table -->
     <DataTableProvider 
+      ref="dataTableProviderRef"
       :columns="columns" 
       :data="data" 
       :is-server-side="true" 
@@ -15,9 +16,15 @@
       :enable-filtering="enableFiltering"
       :enable-column-visibility="enableColumnVisibility" 
       :global-filter="searchText"
+      :enable-row-selection="enableRowSelection"
+      :enable-multi-row-selection="enableMultiRowSelection"
+      :enable-row-selection-column="enableRowSelectionColumn"
+      :row-selection-state="rowSelection"
+      :get-row-id="getRowId"
       @page-change="handlePageChange" 
       @update:sorting="handleSortChange" 
-      @update:global-filter="updateSearchText"
+      @update:global-filter="updateSearchText" 
+      @update:rowSelection="handleRowSelectionChange"
     >
       <template #filters>
         <Input 
@@ -47,7 +54,7 @@
 <script setup lang="ts" generic="TData">
 import { ref, watch, computed, onMounted } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import type { ColumnDef, SortingState } from '@tanstack/vue-table';
+import type { ColumnDef, SortingState, RowSelectionState } from '@tanstack/vue-table';
 import { router } from '@inertiajs/vue3';
 import { debounce } from 'lodash';
 
@@ -78,10 +85,17 @@ const props = defineProps<{
 
   // Initial state
   initialSorting?: SortingState,
-  initialFilters?: Record<string, unknown>
+  initialFilters?: Record<string, unknown>,
+  
+  // Row selection
+  enableRowSelection?: boolean,
+  enableMultiRowSelection?: boolean,
+  enableRowSelectionColumn?: boolean,
+  initialRowSelection?: RowSelectionState,
+  getRowId?: (originalRow: TData, index: number, parent?: any) => string,
 }>();
 
-const emit = defineEmits(['dataLoaded']);
+const emit = defineEmits(['dataLoaded', 'update:rowSelection']);
 
 // Component state
 const searchText = ref('');
@@ -95,11 +109,17 @@ const pageSize = computed(() => props.pageSize || 10);
 const loading = ref(false);
 const isInternalFilterUpdate = ref(false);
 
+// Row selection state - maintain it outside of table state so it persists
+const rowSelection = ref<RowSelectionState>(props.initialRowSelection || {});
+
 // Server pagination for UI
 const serverPagination = computed(() => ({
   pageIndex: pageIndex.value,
   pageSize: pageSize.value
 }));
+
+// Reference to the DataTableProvider
+const dataTableProviderRef = ref<InstanceType<typeof DataTableProvider>>();
 
 // Debounce function for search
 const debouncedReload = debounce((resetPage = false) => {
@@ -135,6 +155,11 @@ const updateFilter = (key: string, value: any) => {
   filters.value[key] = value;
   pageIndex.value = 0; // Reset to first page when filter changes
   reloadData();
+};
+
+const handleRowSelectionChange = (selection: RowSelectionState) => {
+  rowSelection.value = selection;
+  emit('update:rowSelection', selection);
 };
 
 // Encode table state for server requests
@@ -184,7 +209,8 @@ const reloadData = (page?: number) => {
         page: pageIndex.value,
         sorting: sorting.value,
         filters: filters.value,
-        data: responseData
+        data: responseData,
+        rowSelection: rowSelection.value
       });
     },
     onError: (errors) => {
@@ -262,12 +288,27 @@ watch(() => props.initialSorting, (newValue) => {
   }
 }, { deep: true });
 
+// Row selection helper methods
+const getSelectedRows = () => {
+  return dataTableProviderRef.value?.getSelectedRows() || [];
+};
+
+const clearRowSelection = () => {
+  if (dataTableProviderRef.value) {
+    dataTableProviderRef.value.clearRowSelection();
+    rowSelection.value = {};
+  }
+};
+
 // Expose public methods and computed properties
 defineExpose({
   reloadData,
   currentPage: computed(() => pageIndex.value),
   sorting: computed(() => sorting.value),
   filters: computed(() => filters.value),
-  updateFilter
+  rowSelection: computed(() => rowSelection.value),
+  updateFilter,
+  getSelectedRows,
+  clearRowSelection,
 });
 </script>

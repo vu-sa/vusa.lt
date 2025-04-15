@@ -4,7 +4,7 @@
       <div class="flex items-center gap-2">
         <TaskFilter
           v-model="currentFilter"
-          :disabled="isLoading || disabled"
+          :disabled="disabled"
           :options="filterOptions" 
         />
         <Badge v-if="filteredTasks.length > 0" variant="secondary" class="ml-2">
@@ -15,7 +15,6 @@
         <Button 
           variant="outline" 
           size="sm"
-          :disabled="isLoading"
           @click="showCreateTaskDialog = true"
         >
           <PlusIcon class="mr-1 h-4 w-4" />
@@ -24,12 +23,7 @@
       </div>
     </div>
     
-    <Spinner :show="isLoading">
-      <TaskTable :tasks="filteredTasks" :key="taskFilterKey" />
-      <template #description>
-        {{ $t("loading_tasks") }}
-      </template>
-    </Spinner>
+    <TaskTable :tasks="filteredTasks" :key="taskFilterKey" />
 
     <CreateTaskDialog 
       :open="showCreateTaskDialog" 
@@ -42,14 +36,13 @@
 
 <script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
-import { computed, ref, watch, defineAsyncComponent } from "vue";
+import { computed, ref, watch, defineAsyncComponent, onMounted } from "vue";
 import TaskFilter from "@/Components/Tasks/TaskFilter.vue";
 import TaskTable from "./TaskTable.vue";
 import { Spinner } from "@/Components/ui/spinner";
 import { Button } from "@/Components/ui/button";
 import { Badge } from "@/Components/ui/badge";
 import { PlusIcon } from "lucide-vue-next";
-import { useTaskFilter } from "./composables/useTaskFilter";
 
 // Use async component for the dialog to improve initial load performance
 const CreateTaskDialog = defineAsyncComponent(() => 
@@ -73,12 +66,32 @@ const props = defineProps<{
 }>();
 
 // Component state
-const isLoading = ref(false);
 const showCreateTaskDialog = ref(false);
 const taskFilterKey = ref(0);
 
-// Task filtering setup using composable
-const { currentFilter, filteredTasks, filterOptions } = useTaskFilter(props.tasks || []);
+// Make sure i18n is initialized before using filter options
+const filterOptions = [
+  { label: $t('tasks.filters.all'), value: FilterType.ALL },
+  { label: $t('tasks.filters.completed'), value: FilterType.COMPLETED },
+  { label: $t('tasks.filters.incomplete'), value: FilterType.INCOMPLETE }
+];
+
+// Task filtering setup with custom handling for initialization
+const currentFilter = ref(FilterType.ALL);
+const filteredTasks = computed(() => {
+  if (!props.tasks?.length) {
+    return [];
+  }
+
+  switch (currentFilter.value) {
+    case FilterType.COMPLETED:
+      return props.tasks.filter(task => task.completed_at !== null);
+    case FilterType.INCOMPLETE:
+      return props.tasks.filter(task => task.completed_at === null);
+    default:
+      return props.tasks;
+  }
+});
 
 // Force re-render of TaskTable when filter changes to ensure checkboxes align properly
 watch(currentFilter, () => {

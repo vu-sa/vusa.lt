@@ -6,9 +6,21 @@
 
 <script setup lang="tsx">
 import AdminContentPage from "@/Components/Layouts/AdminContentPage.vue";
+import { useBreadcrumbs, type BreadcrumbItem } from "@/Composables/useBreadcrumbs";
 import TaskManager from "@/Features/Admin/TaskManager/TaskManager.vue";
+import { computed } from "vue";
+import { trans as $t } from "laravel-vue-i18n";
+import Icons from "@/Types/Icons/regular";
 
 defineProps<{
   tasks: App.Entities.Task[];
 }>();
+
+// const { createBreadcrumbItem } = useBreadcrumbs();
+
+// const title = computed(() => $t("Užduotys"));
+
+// const breadcrumb = computed((): BreadcrumbItem[] => [
+//   createBreadcrumbItem(title.value, undefined, Icons.MEETING),
+// ]);
 </script>

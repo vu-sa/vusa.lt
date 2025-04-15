@@ -148,3 +148,5 @@ When adding dependencies, consider:
 - Long-term maintenance status
 - Performance impact
 - Learning curve for future contributors
+- Feel free to suggest Copilot instruction updates, if the prompts mention anything
+different from these guidelines

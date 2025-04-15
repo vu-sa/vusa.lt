@@ -8,4 +8,5 @@ return [
         'label' => 'Žymė',
         'select_filter' => 'Pasirinkite filtrą',
     ],
+    'create_new' => 'Sukurti naują'
 ];

@@ -13,9 +13,10 @@
     <!-- Client-side table -->
     <DataTable
       v-if="!isServerSide"
+      ref="dataTableRef"
       :columns="columns"
       :data="data"
-      :row-className="rowClassName"
+      :row-class-name="rowClassName"
       :page-size="pageSize"
       :pagination="enablePagination"
       :empty-message="emptyMessage"
@@ -24,8 +25,15 @@
       :initial-sort="clientSorting"
       :global-filter="globalFilter"
       :manual-sorting="false"
+      :enable-row-selection="enableRowSelection"
+      :enable-multi-row-selection="enableMultiRowSelection"
+      :row-selection-state="rowSelectionState"
+      :initial-row-selection="initialRowSelection"
+      :get-row-id="getRowId"
+      :enable-row-selection-column="enableRowSelectionColumn"
       @update:sorting="handleSortingChange"
       @update:global-filter="handleGlobalFilterChange"
+      @update:rowSelection="handleRowSelectionChange"
     >
       <template #empty>
         <slot name="empty">
@@ -39,9 +47,10 @@
     <!-- Server side table with custom pagination -->
     <DataTable
       v-else
+      ref="dataTableRef"
       :columns="columns"
       :data="data"
-      :row-className="rowClassName"
+      :row-class-name="rowClassName"
       :enable-filtering="enableFiltering"
       :enable-column-visibility="enableColumnVisibility"
       :manual-sorting="true"
@@ -54,9 +63,16 @@
       :pagination="true"
       :empty-message="emptyMessage"
       :global-filter="globalFilter"
+      :enable-row-selection="enableRowSelection"
+      :enable-multi-row-selection="enableMultiRowSelection"
+      :row-selection-state="rowSelectionState"
+      :initial-row-selection="initialRowSelection"
+      :get-row-id="getRowId"
+      :enable-row-selection-column="enableRowSelectionColumn"
       @update:sorting="handleSortingChange"
       @update:global-filter="handleGlobalFilterChange"
       @update:pagination="handlePaginationChange"
+      @update:rowSelection="handleRowSelectionChange"
     >
       <template #pagination>
         <!-- Server-side pagination -->
@@ -107,9 +123,9 @@
 </template>
 
 <script setup lang="ts" generic="TData">
-import { computed, ref, watch } from 'vue';
+import { computed, ref, watch, onMounted } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import type { ColumnDef, SortingState } from '@tanstack/vue-table';
+import type { ColumnDef, SortingState, PaginationState, RowSelectionState } from '@tanstack/vue-table';
 
 import DataTable from './DataTable.vue';
 import { Button } from '@/Components/ui/button';
@@ -139,13 +155,22 @@ const props = defineProps<{
     pageSize: number
   },
   serverSorting?: SortingState,
-  globalFilter?: string
+  globalFilter?: string,
+  
+  // Row selection props
+  enableRowSelection?: boolean,
+  enableMultiRowSelection?: boolean,
+  enableRowSelectionColumn?: boolean,
+  rowSelectionState?: RowSelectionState,
+  initialRowSelection?: RowSelectionState,
+  getRowId?: (originalRow: TData, index: number, parent?: any) => string
 }>();
 
 const emit = defineEmits<{
   'update:sorting': [sorting: SortingState],
   'update:global-filter': [filter: string],
-  'page-change': [pageIndex: number]
+  'page-change': [pageIndex: number],
+  'update:rowSelection': [selection: RowSelectionState]
 }>();
 
 // Default values
@@ -198,4 +223,30 @@ const handleGlobalFilterChange = (filter: string) => {
 const handlePaginationChange = (pagination: { pageIndex: number, pageSize: number }) => {
   emit('page-change', pagination.pageIndex);
 };
+
+// Create a ref to the DataTable component for forwarding methods
+const dataTableRef = ref<InstanceType<typeof DataTable>>();
+
+onMounted(() => {
+  // Initial handling if needed
+});
+
+// Watch for changes to row selection state and emit events
+watch(() => dataTableRef.value?.rowSelection, (newVal) => {
+  if (newVal && !props.isServerSide) {
+    emit('update:rowSelection', newVal);
+  }
+}, { deep: true });
+
+// Handle row selection changes
+const handleRowSelectionChange = (selection: RowSelectionState) => {
+  emit('update:rowSelection', selection);
+};
+
+// Expose methods from the DataTable to parent components
+defineExpose({
+  getSelectedRows: () => dataTableRef.value?.getSelectedRows(),
+  clearRowSelection: () => dataTableRef.value?.clearRowSelection(),
+  rowSelection: () => dataTableRef.value?.rowSelection,
+});
 </script>

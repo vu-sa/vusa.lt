@@ -1,172 +1,238 @@
 <template>
-  <div>
-    <!-- <PageTitle :icon="icon" :showBack="showBackButton">
-      <template #title>{{ pageTitle }}</template>
-      <template #description v-if="pageDescription || $slots.description">
-        <slot name="description">{{ pageDescription }}</slot>
-      </template>
-      <template #actions>
-        <slot name="pageActions"></slot>
-      </template>
-    </PageTitle> -->
+  <div class="space-y-6">
+    <!-- Page Header -->
+    <div v-if="headerTitle" class="flex flex-col space-y-2 md:flex-row md:items-center md:justify-between">
+      <div class="flex items-center space-x-4">
+        <div v-if="icon" class="hidden rounded-md bg-primary/10 p-2 text-primary md:block">
+          <component :is="icon" class="h-5 w-5" />
+        </div>
+        <div>
+          <h2 class="text-2xl font-bold tracking-tight">{{ headerTitle }}</h2>
+          <p v-if="headerDescription" class="text-sm text-muted-foreground">
+            {{ headerDescription }}
+          </p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <slot name="headerActions"></slot>
+        <Button 
+          v-if="canCreate && createRoute" 
+          :href="createRoute"
+          variant="default" 
+          class="ml-auto gap-1.5"
+        >
+          <PlusCircleIcon class="h-4 w-4" />
+          <span>{{ $t('forms.add') }}</span>
+        </Button>
+      </div>
+    </div>
 
-    <div class="space-y-6">
-      <slot name="above-table"></slot>
+    <!-- Main table -->
+    <div class="relative min-h-[400px]">
+      <!-- Loading Skeleton -->
+      <div v-if="isLoading" class="absolute inset-0 z-10 flex items-center justify-center rounded-md bg-background/80 backdrop-blur-sm">
+        <div class="flex flex-col items-center space-y-4">
+          <div class="h-8 w-8 animate-spin rounded-full border-b-2 border-primary"></div>
+          <p class="text-sm text-muted-foreground">{{ $t('Loading data') }}...</p>
+        </div>
+      </div>
 
       <AdminDataTable
-        ref="adminTableRef"
+        ref="dataTableRef"
         :model-name="modelName"
-        :entity-name="entityName"
+        :entity-name="entityName || modelName"
         :data="data"
         :columns="columns"
         :total-count="totalCount"
         :initial-page="initialPage"
         :page-size="pageSize"
-        :row-class-name="rowClassName"
-        :empty-message="emptyMessage || emptyText"
-        :enable-filtering="enableFiltering"
-        :enable-column-visibility="enableColumnVisibility"
-        :allow-toggle-deleted="allowToggleDeleted"
         :can-create="canCreate"
         :create-route="createRoute"
+        :enable-filtering="enableFiltering"
+        :enable-column-visibility="enableColumnVisibility"
         :initial-sorting="initialSorting"
         :initial-filters="initialFilters"
+        :allow-toggle-deleted="allowToggleDeleted"
+        :empty-message="emptyMessage"
+        :empty-icon="emptyIcon || PlusCircleIcon"
+        :enable-row-selection="enableRowSelection"
+        :enable-multi-row-selection="enableMultiRowSelection"
+        :enable-row-selection-column="enableRowSelectionColumn"
+        :initial-row-selection="initialRowSelection"
+        :get-row-id="getRowId"
         @data-loaded="handleDataLoaded"
+        @update:rowSelection="handleRowSelectionChange"
         @sorting-changed="handleSortingChanged"
-        @filter-changed="handleFilterChanged"
         @page-changed="handlePageChanged"
+        @filter-changed="handleFilterChanged"
       >
-        <!-- Pass through slots -->
-        <template #filters>
-          <slot name="filters"></slot>
-        </template>
-
+        <!-- Pass through the slots -->
         <template #tableActions>
           <slot name="tableActions"></slot>
         </template>
 
+        <template #filters>
+          <slot name="filters"></slot>
+        </template>
         <template #actions>
           <slot name="actions"></slot>
         </template>
 
         <template #empty>
-          <slot name="empty"></slot>
+          <div class="flex min-h-[200px] flex-col items-center justify-center space-y-3 p-8 text-center">
+            <div class="rounded-full bg-muted/50 p-3">
+              <component :is="emptyIcon || PlusCircleIcon" class="h-6 w-6 text-muted-foreground" />
+            </div>
+            <div class="max-w-md space-y-1">
+              <h3 class="text-lg font-medium">{{ emptyMessage || $t('No data available') }}</h3>
+              <p class="text-sm text-muted-foreground">
+                <slot name="emptyDescription">
+                  {{ emptyDescription || ($t('You can add new items with the button above')) }}
+                </slot>
+              </p>
+            </div>
+            <slot name="emptyActions">
+              <Button v-if="canCreate && createRoute" :href="createRoute" variant="outline" class="gap-1.5">
+                <PlusCircleIcon class="h-4 w-4" />
+                <span>{{ $t('forms.add') }}</span>
+              </Button>
+            </slot>
+          </div>
         </template>
       </AdminDataTable>
-
-      <slot name="below-table"></slot>
     </div>
+
+    <!-- Pagination -->
+    <slot name="pagination"></slot>
+
+    <!-- Additional content -->
+    <slot></slot>
   </div>
 </template>
 
 <script setup lang="ts" generic="TData">
-import { ref, computed } from 'vue';
-import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import type { ColumnDef, SortingState } from '@tanstack/vue-table';
+import { ref, onMounted, computed, watch } from 'vue';
+import { type ColumnDef, type SortingState, type RowSelectionState } from '@tanstack/vue-table';
+import { PlusCircleIcon } from 'lucide-vue-next';
+import { trans as $t } from "laravel-vue-i18n";
 
 import AdminDataTable from '@/Components/Tables/AdminDataTable.vue';
-// import PageTitle from '@/Components/Admin/PageTitle.vue';
+import { Button } from '@/Components/ui/button';
 
-// Define props
 const props = defineProps<{
-  // Model information
+  headerTitle?: string;
+  headerDescription?: string;
+  icon?: any;
   modelName: string;
   entityName?: string;
-  
-  // UI elements
-  icon?: string;
-  showBackButton?: boolean;
-  pageTitle?: string;
-  pageDescription?: string;
-  
-  // Data
   data: TData[];
   columns: ColumnDef<TData, any>[];
-  
-  // Pagination
   totalCount: number;
   initialPage?: number;
   pageSize?: number;
-  
-  // Styling
-  rowClassName?: (row: TData) => string;
-  emptyMessage?: string;
-  
-  // Features
-  enableFiltering?: boolean;
-  enableColumnVisibility?: boolean;
-  allowToggleDeleted?: boolean;
-  canCreate?: boolean;
   createRoute?: string;
-  
-  // Initial state
+  backRoute?: string;
+  canCreate?: boolean;
   initialSorting?: SortingState;
   initialFilters?: Record<string, unknown>;
+  allowToggleDeleted?: boolean;
+  emptyMessage?: string;
+  emptyDescription?: string;
+  emptyIcon?: any;
+  enableFiltering?: boolean;
+  enableColumnVisibility?: boolean;
+  // Row selection props
+  enableRowSelection?: boolean;
+  enableMultiRowSelection?: boolean;
+  enableRowSelectionColumn?: boolean;
+  initialRowSelection?: RowSelectionState;
+  getRowId?: (originalRow: TData, index: number, parent?: any) => string;
 }>();
 
 const emit = defineEmits([
   'data-loaded', 
-  'create', 
   'sorting-changed', 
-  'filter-changed', 
-  'page-changed'
+  'page-changed', 
+  'filter-changed',
+  'update:rowSelection'
 ]);
 
-// Set up references
-const adminTableRef = ref<InstanceType<typeof AdminDataTable> | null>(null);
+// Component refs
+const dataTableRef = ref<InstanceType<typeof AdminDataTable>>();
+
+// UI state
+const isLoading = ref(false);
+
+// Row selection state
+const rowSelection = ref<RowSelectionState>(props.initialRowSelection || {});
 
 // Computed properties
-const pageTitle = computed(() => {
-  if (props.pageTitle) return props.pageTitle;
-  const baseTitle = props.entityName 
-    ? $tChoice(`entities.${props.entityName}.model`, 2) 
-    : props.modelName;
-  return baseTitle.charAt(0).toUpperCase() + baseTitle.slice(1);
-});
+const isBackSupportNeeded = computed(() => props.backRoute !== undefined);
 
-const emptyText = computed(() => {
-  const baseText = props.entityName 
-    ? $tChoice(`entities.${props.entityName}.model`, 2)
-    : props.modelName;
-  return $t(`No ${baseText} found.`);
-});
-
-// Methods
-const reloadData = (page?: number) => {
-  if (adminTableRef.value) {
-    adminTableRef.value.reloadData(page);
-  }
-};
-
-const updateFilter = (key: string, value: unknown) => {
-  if (adminTableRef.value) {
-    adminTableRef.value.updateFilter(key, value);
-  }
-};
-
-// Event handlers
-const handleDataLoaded = (data: any) => {
+// Component event handlers
+const handleDataLoaded = (data) => {
+  isLoading.value = false;
   emit('data-loaded', data);
 };
 
-const handleSortingChanged = (sorting: SortingState) => {
+const handleSortingChanged = (sorting) => {
+  isLoading.value = true;
   emit('sorting-changed', sorting);
 };
 
-const handleFilterChanged = (key: string, value: unknown) => {
-  emit('filter-changed', key, value);
-};
-
-const handlePageChanged = (page: number) => {
+const handlePageChanged = (page) => {
+  isLoading.value = true;
   emit('page-changed', page);
 };
 
-// Expose methods to parent
+const handleFilterChanged = (key, value) => {
+  isLoading.value = true;
+  emit('filter-changed', key, value);
+};
+
+const handleRowSelectionChange = (selection: RowSelectionState) => {
+  rowSelection.value = selection;
+  emit('update:rowSelection', selection);
+};
+
+// Watch for data changes to control loading state
+watch(() => props.data, (newData) => {
+  if (newData && isLoading.value) {
+    // Short delay to prevent flashing of loading state for quick data loads
+    setTimeout(() => {
+      isLoading.value = false;
+    }, 300);
+  }
+}, { deep: true });
+
+// Exposed methods
+const reloadData = (page?: number) => {
+  isLoading.value = true;
+  dataTableRef.value?.reloadData(page);
+};
+
+const updateFilter = (key: string, value: unknown) => {
+  isLoading.value = true;
+  dataTableRef.value?.updateFilter(key, value);
+};
+
+const getSelectedRows = () => {
+  return dataTableRef.value?.getSelectedRows() || [];
+};
+
+const clearRowSelection = () => {
+  if (dataTableRef.value) {
+    dataTableRef.value.clearRowSelection();
+    rowSelection.value = {};
+    emit('update:rowSelection', {});
+  }
+};
+
 defineExpose({
   reloadData,
   updateFilter,
-  currentPage: computed(() => adminTableRef.value?.currentPage || 0),
-  currentSorting: computed(() => adminTableRef.value?.currentSorting || []),
-  currentFilters: computed(() => adminTableRef.value?.currentFilters || {})
+  getSelectedRows,
+  clearRowSelection,
+  rowSelection
 });
 </script>

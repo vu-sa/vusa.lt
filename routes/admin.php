@@ -133,6 +133,7 @@ Route::put('roles/{role}/sync/attachableTypes', [RoleController::class, 'syncAtt
 Route::resource('permissions', PermissionController::class)->only(['index']);
 Route::resource('tasks', TaskController::class)->except(['index', 'create', 'show', 'edit']);
 Route::post('tasks/{task}/updateCompletionStatus', [TaskController::class, 'updateCompletionStatus'])->name('tasks.updateCompletionStatus');
+Route::get('tasks/indicator', [TaskController::class, 'userTasksForIndicator'])->name('tasks.indicator');
 
 Route::resource('changelogItems', ChangelogItemController::class);
 Route::post('changelogItems/approveForUser', [ChangelogItemController::class, 'approveForUser'])->name('changelogItems.approve');

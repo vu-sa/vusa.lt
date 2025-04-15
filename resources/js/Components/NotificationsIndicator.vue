@@ -1,88 +1,258 @@
+<template>
+  <Popover>
+    <PopoverTrigger as-child>
+      <Button variant="outline" size="icon" class="rounded-full relative">
+        <BellIcon class="h-4 w-4" />
+        <span v-if="unreadNotificationsCount > 0" class="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground">
+          {{ unreadNotificationsCount > 9 ? '9+' : unreadNotificationsCount }}
+        </span>
+        <span class="sr-only">{{ $t('Notifications') }}</span>
+      </Button>
+    </PopoverTrigger>
+    <PopoverContent class="w-80 p-0">
+      <div class="p-4 border-b">
+        <div class="flex items-center justify-between">
+          <h4 class="font-medium">{{ $t('Notifications') }}</h4>
+          <Button v-if="unreadNotificationsCount > 0" 
+            variant="ghost" 
+            size="sm" 
+            class="h-7 text-xs"
+            @click="markAllAsRead"
+          >
+            {{ $t('Mark all as read') }}
+          </Button>
+        </div>
+      </div>
+      <ScrollArea class="h-[300px]">
+        <div v-if="notifications.length > 0" class="divide-y">
+          <div 
+            v-for="notification in notifications" 
+            :key="notification.id" 
+            class="flex items-start gap-2 p-4 cursor-pointer"
+            :class="{ 'bg-muted/30': !notification.read_at }"
+            @click="navigateToNotification(notification)"
+          >
+            <div :class="[
+              'mt-0.5 rounded-full p-1',
+              getNotificationIconClass(getNotificationType(notification))
+            ]">
+              <component :is="getNotificationIcon(getNotificationType(notification))" class="h-3 w-3" />
+            </div>
+            <div class="flex-1">
+              <p class="text-sm font-medium" :class="{ 'font-bold': !notification.read_at }">
+                {{ getNotificationTitle(notification) }}
+              </p>
+              <div class="text-xs text-muted-foreground">
+                {{  }}
+                <div v-html="getNotificationMessage(notification)" />
+              </div>
+              <p class="mt-1 text-[11px] text-muted-foreground">
+                {{ formatRelativeTime(new Date(notification.created_at)) }}
+              </p>
+            </div>
+            <Button 
+              v-if="!notification.read_at" 
+              variant="ghost" 
+              size="icon" 
+              class="h-6 w-6"
+              @click.stop="markAsRead(notification.id)"
+            >
+              <CircleIcon class="h-3 w-3" />
+              <span class="sr-only">{{ $t('Mark as read') }}</span>
+            </Button>
+          </div>
+        </div>
+        <div v-else class="flex h-full items-center justify-center p-8 text-center">
+          <div>
+            <BellIcon class="mx-auto h-6 w-6 text-muted-foreground" />
+            <h3 class="mt-2 text-sm font-medium">{{ $t('No notifications') }}</h3>
+            <p class="mt-1 text-xs text-muted-foreground">
+              {{ $t('You have no unread notifications') }}
+            </p>
+          </div>
+        </div>
+      </ScrollArea>
+      <div class="border-t p-2">
+        <Link :href="route('notifications.index')" class="block w-full rounded-sm p-2 text-center text-xs hover:bg-muted">
+          {{ $t('View All Notifications') }}
+        </Link>
+      </div>
+    </PopoverContent>
+  </Popover>
+</template>
+
 <script setup lang="ts">
-import { ref } from 'vue'
-import { router, usePage } from '@inertiajs/vue3'
-import { Button } from '@/Components/ui/button'
-import { Badge } from '@/Components/ui/badge'
-import { BellIcon } from 'lucide-vue-next'
+import { ref, computed } from 'vue'
+import { Link, router, usePage } from '@inertiajs/vue3'
+import { trans as $t } from "laravel-vue-i18n"
 import { 
-  Popover,
-  PopoverContent,
-  PopoverTrigger
+  BellIcon, 
+  CircleIcon, 
+  MessageSquareIcon, 
+  CalendarIcon, 
+  UserPlusIcon, 
+  AlertCircleIcon,
+  CheckIcon
+} from 'lucide-vue-next'
+
+import { 
+  Popover, 
+  PopoverContent, 
+  PopoverTrigger 
 } from '@/Components/ui/popover'
-import { Separator } from '@/Components/ui/separator'
-import { trans as $t } from 'laravel-vue-i18n'
+import { Button } from '@/Components/ui/button'
+import { ScrollArea } from '@/Components/ui/scroll-area'
 
-// References to unreadNotifications from auth user data
-const notifications = ref(usePage().props.auth?.user?.unreadNotifications || [])
+interface BaseNotification {
+  id: string;
+  type: string;
+  created_at: string;
+  read_at: string | null;
+  data: Record<string, any>;
+}
 
-// Function to mark notification as read
-const markAsRead = (id) => {
-  router.post(route('notifications.markAsRead', { id }), {}, {
+// Get unread notifications from auth.user
+const page = usePage()
+const authUser = computed(() => page.props.auth?.user)
+
+// Cast the notification data from the backend to our interface
+const notifications = computed(() => {
+  return (authUser.value?.unreadNotifications || []) as BaseNotification[]
+})
+
+const unreadNotificationsCount = computed(() => {
+  return notifications.value.filter(notification => !notification.read_at).length
+})
+
+// Extract notification type (class name without namespace)
+const getNotificationType = (notification: BaseNotification): string => {
+  const typeParts = notification.type.split('\\')
+  return typeParts[typeParts.length - 1] || 'Unknown'
+}
+
+// Get notification title based on type and data
+const getNotificationTitle = (notification: BaseNotification): string => {
+  const type = getNotificationType(notification)
+  const data = notification.data
+  
+  switch (type) {
+    case 'ModelCommented':
+      return $t('New Comment')
+    case 'MemberRegistered':
+      return $t('New Member Registration')
+    case 'UserAttachedToModel':
+      return $t('Assignment Notification')
+    case 'StateChangeNotification':
+      return $t('Status Update')
+    default:
+      return data.subject?.name || $t('Notification')
+  }
+}
+
+// Get notification message based on type and data
+const getNotificationMessage = (notification: BaseNotification): string => {
+  const data = notification.data
+  
+  if (data.text) {
+    return data.text
+  }
+  
+  if (data.object?.name) {
+    return `${data.subject?.name || ''} ${$t('on')} ${data.object.name}`
+  }
+  
+  return data.message || $t('You have a new notification')
+}
+
+// Icon mapping based on notification type
+const getNotificationIcon = (type: string) => {
+  switch (type) {
+    case 'ModelCommented':
+      return MessageSquareIcon
+    case 'MemberRegistered':
+      return UserPlusIcon
+    case 'UserAttachedToModel':
+      return UserPlusIcon
+    case 'StateChangeNotification':
+      return CheckIcon
+    default:
+      return BellIcon
+  }
+}
+
+// Icon styling based on notification type
+const getNotificationIconClass = (type: string) => {
+  switch (type) {
+    case 'ModelCommented':
+      return 'bg-blue-500/20 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400'
+    case 'MemberRegistered':
+      return 'bg-green-500/20 text-green-600 dark:bg-green-500/10 dark:text-green-400'
+    case 'UserAttachedToModel':
+      return 'bg-purple-500/20 text-purple-600 dark:bg-purple-500/10 dark:text-purple-400'
+    case 'StateChangeNotification':
+      return 'bg-amber-500/20 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400'
+    default:
+      return 'bg-gray-500/20 text-gray-600 dark:bg-gray-500/10 dark:text-gray-400'
+  }
+}
+
+// Navigate to notification target URL
+const navigateToNotification = (notification: BaseNotification) => {
+  const url = notification.data.object?.url
+  if (url) {
+    markAsRead(notification.id)
+    router.visit(url)
+  }
+}
+
+// Format relative time (e.g., "2 hours ago")
+const formatRelativeTime = (date: Date) => {
+  const now = new Date()
+  const diffMs = now.getTime() - date.getTime()
+  const diffSec = Math.round(diffMs / 1000)
+  const diffMin = Math.round(diffSec / 60)
+  const diffHour = Math.round(diffMin / 60)
+  const diffDay = Math.round(diffHour / 24)
+
+  if (diffSec < 60) {
+    return $t('Just now')
+  } else if (diffMin < 60) {
+    return diffMin + ' ' + $t('minutes ago')
+  } else if (diffHour < 24) {
+    return diffHour + ' ' + $t('hours ago')
+  } else if (diffDay === 1) {
+    return $t('Yesterday')
+  } else {
+    return diffDay + ' ' + $t('days ago')
+  }
+}
+
+// Mark notification as read
+const markAsRead = async (id: string) => {
+  await router.post(route('notifications.markAsRead', id), {}, {
     preserveState: true,
+    preserveScroll: true,
     onSuccess: () => {
-      // Update local state
-      notifications.value = notifications.value.filter(notification => notification.id !== id)
+      // Update the notification in the list
+      const notification = notifications.value.find(n => n.id === id)
+      if (notification) {
+        notification.read_at = new Date().toISOString()
+      }
     }
   })
 }
 
-// View all notifications
-const viewAllNotifications = () => {
-  router.visit(route('notifications.index'))
+// Mark all notifications as read
+const markAllAsRead = () => {
+  router.post(route('notifications.mark-as-read.all'), {}, {
+    preserveState: true,
+    preserveScroll: true,
+    onSuccess: () => {
+      // Mark all as read locally
+      notifications.value.forEach(notification => {
+        notification.read_at = new Date().toISOString()
+      })
+    }
+  })
 }
 </script>
-
-<template>
-  <div class="relative">
-    <Badge 
-      v-if="notifications.length > 0" 
-      class="absolute -right-1 -top-1 z-10"
-      variant="destructive"
-    >
-      {{ notifications.length }}
-    </Badge>
-    
-    <Popover>
-      <PopoverTrigger>
-        <Button variant="ghost" size="icon">
-          <BellIcon class="size-5" />
-          <span class="sr-only">{{ $t('Pranešimai') }}</span>
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent class="w-80">
-        <div class="flex justify-between items-center mb-2">
-          <h4 class="font-medium text-sm">{{ $t('Pranešimai') }}</h4>
-          <Button @click="viewAllNotifications" variant="link" size="sm" class="p-0 h-auto text-xs">
-            {{ $t('Žiūrėti visus') }}
-          </Button>
-        </div>
-        <Separator class="mb-2" />
-        
-        <div class="max-h-[300px] overflow-y-auto">
-          <div v-if="notifications.length === 0" class="py-2 px-1 text-xs text-muted-foreground">
-            {{ $t('Naujų pranešimų nėra') }}
-          </div>
-          <div v-else class="space-y-2">
-            <div v-for="notification in notifications" :key="notification.id" class="p-2 rounded-md hover:bg-muted text-sm">
-              <div class="flex justify-between">
-                <div v-html="notification.text"></div>
-                <Button 
-                  @click="markAsRead(notification.id)" 
-                  variant="ghost" 
-                  size="sm" 
-                  class="h-5 w-5 p-0 opacity-50 hover:opacity-100"
-                >
-                  <span class="sr-only">{{ $t('Pažymėti kaip perskaitytą') }}</span>
-                  <span class="text-xs">×</span>
-                </Button>
-              </div>
-              <div v-if="notification.subject" class="text-xs text-muted-foreground mt-1">
-                {{ notification.subject.title || notification.subject.name }}
-              </div>
-            </div>
-          </div>
-        </div>
-      </PopoverContent>
-    </Popover>
-  </div>
-</template>

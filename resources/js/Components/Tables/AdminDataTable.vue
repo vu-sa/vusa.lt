@@ -1,28 +1,5 @@
 <template>
   <div>
-    <div class="mb-4 flex justify-between items-center">
-      <!-- Left side actions -->
-      <div class="flex items-center gap-2">
-        <slot name="tableActions"></slot>
-      </div>
-
-      <!-- Right side actions -->
-      <div class="flex items-center gap-2">
-        <!-- Show deleted toggle -->
-        <div v-if="allowToggleDeleted" class="flex items-center gap-2">
-          <Checkbox id="showDeleted" v-model:checked="showDeleted" />
-          <Label for="showDeleted">{{ $t("Show deleted") }}</Label>
-        </div>
-
-        <!-- Create button -->
-        <Button v-if="canCreate && createRoute" :href="createRoute" asChild>
-          <Link :href="createRoute" class="flex items-center">
-            <PlusCircleIcon class="mr-2 h-4 w-4" />
-            {{ $t('Create') }}
-          </Link>
-        </Button>
-      </div>
-    </div>
 
     <!-- Server data table -->
     <ServerDataTable
@@ -40,7 +17,13 @@
       :show-deleted="showDeleted"
       :initial-sorting="initialSorting"
       :initial-filters="initialFilters"
-      @data-loaded="emit('dataLoaded', $event)"
+      :enable-row-selection="enableRowSelection"
+      :enable-multi-row-selection="enableMultiRowSelection"
+      :enable-row-selection-column="enableRowSelectionColumn"
+      :initial-row-selection="initialRowSelection"
+      :get-row-id="getRowId"
+      @data-loaded="handleDataLoaded"
+      @update:rowSelection="handleSelectionChange"
     >
       <!-- Pass through slots -->
       <template #filters>
@@ -73,7 +56,7 @@
 <script setup lang="ts" generic="TData">
 import { ref, computed, watch } from 'vue';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import { type ColumnDef, type SortingState } from '@tanstack/vue-table';
+import { type ColumnDef, type SortingState, type RowSelectionState } from '@tanstack/vue-table';
 import { PlusCircleIcon } from 'lucide-vue-next';
 import { Link } from '@inertiajs/vue3';
 
@@ -117,27 +100,35 @@ const props = defineProps<{
   // Initial state
   initialSorting?: SortingState;
   initialFilters?: Record<string, unknown>;
+  
+  // Row selection
+  enableRowSelection?: boolean;
+  enableMultiRowSelection?: boolean;
+  enableRowSelectionColumn?: boolean;
+  initialRowSelection?: RowSelectionState;
+  getRowId?: (originalRow: TData, index: number, parent?: any) => string;
 }>();
 
-const emit = defineEmits(['dataLoaded', 'create']);
+const emit = defineEmits(['dataLoaded', 'create', 'update:rowSelection', 'sorting-changed', 'page-changed', 'filter-changed']);
 
 // Set up references
 const serverTableRef = ref<InstanceType<typeof ServerDataTable> | null>(null);
 
 // State
 const showDeleted = ref(false);
+const rowSelection = ref<RowSelectionState>(props.initialRowSelection || {});
 
 // Computed properties
 const EmptyIcon = props.emptyIcon || PlusCircleIcon;
 
 const pluralModelName = computed(() => {
   if (props.pluralModelName) return props.pluralModelName;
-  return $tChoice(`entities.${props.entityName}.model`, 2);
+  return $tChoice(`entities.${props.entityName || props.modelName}.model`, 2);
 });
 
 const singularModelName = computed(() => {
   if (props.singularModelName) return props.singularModelName;
-  return $tChoice(`entities.${props.entityName}.model`, 1);
+  return $tChoice(`entities.${props.entityName || props.modelName}.model`, 1);
 });
 
 // Methods exposed to parent components
@@ -150,6 +141,7 @@ const reloadData = (page?: number) => {
 const updateFilter = (key: string, value: unknown) => {
   if (serverTableRef.value) {
     serverTableRef.value.updateFilter(key, value);
+    emit('filter-changed', key, value);
   }
 };
 
@@ -160,9 +152,47 @@ watch(() => showDeleted.value, () => {
   }
 });
 
+// Row selection handlers
+const handleSelectionChange = (selection: RowSelectionState) => {
+  rowSelection.value = selection;
+  emit('update:rowSelection', selection);
+};
+
+// Get selected rows for external usage
+const getSelectedRows = () => {
+  return serverTableRef.value?.getSelectedRows() || [];
+};
+
+// Clear row selection
+const clearRowSelection = () => {
+  if (serverTableRef.value) {
+    serverTableRef.value.clearRowSelection();
+    rowSelection.value = {};
+    emit('update:rowSelection', {});
+  }
+};
+
+// Handle data load
+const handleDataLoaded = (data) => {
+  emit('dataLoaded', data);
+};
+
+// Handle sorting change
+const handleSortingChange = (sorting) => {
+  emit('sorting-changed', sorting);
+};
+
+// Handle page change
+const handlePageChange = (page) => {
+  emit('page-changed', page);
+};
+
 // Expose methods to parent
 defineExpose({
   reloadData,
-  updateFilter
+  updateFilter,
+  getSelectedRows,
+  clearRowSelection,
+  rowSelection
 });
 </script>

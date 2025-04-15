@@ -1,4 +1,4 @@
-import { ref, readonly, provide, inject } from 'vue'
+import { ref, readonly, provide, inject, computed } from 'vue'
 import { router, usePage } from '@inertiajs/vue3'
 import type { Component, InjectionKey, Ref } from 'vue'
 import Home24Filled from '~icons/fluent/home24-filled'
@@ -27,7 +27,7 @@ const breadcrumbsSymbol: InjectionKey<{
   resetToHome: () => void
   createBreadcrumbItem: (label: string, href?: string, icon?: Component) => BreadcrumbItem
   createRouteBreadcrumb: (label: string, routeName: string, params?: any, icon?: Component) => BreadcrumbItem
-  homeItem: BreadcrumbItem
+  homeItem: () => BreadcrumbItem
   hasBreadcrumbs: Ref<boolean>
 }> = Symbol('breadcrumbs')
 
@@ -63,12 +63,14 @@ function createRouteBreadcrumb(
 }
 
 /**
- * Home breadcrumb item
+ * Home breadcrumb item - returns a fresh instance with translated label when called
  */
-const homeItem: BreadcrumbItem = {
-  label: $t('Pradinis'),
-  href: route('dashboard'),
-  icon: Home24Filled
+function homeItem(): BreadcrumbItem {
+  return {
+    label: $t('Pradinis'),
+    href: route('dashboard'),
+    icon: Home24Filled
+  }
 }
 
 /**

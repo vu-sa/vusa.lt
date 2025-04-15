@@ -230,9 +230,6 @@ const columns = [
       const Icon = getTaskableIcon(task.taskable_type);
       
       return (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
               <Link href={route(`${modelRoute}.show`, task.taskable_id)}>
                 <Badge variant="outline" class="flex items-center gap-1">
                   <Icon class="h-3 w-3" />
@@ -241,12 +238,6 @@ const columns = [
                   </span>
                 </Badge>
               </Link>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>{task.taskable?.title || task.taskable?.name || task.taskable?.start_time}</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
       );
     },
     size: 150,
