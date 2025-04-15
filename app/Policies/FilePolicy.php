@@ -21,7 +21,7 @@ class FilePolicy extends ModelPolicy
      */
     public function viewDirectory(User $user, $directory): bool
     {
-        $directoryPath = $directory->getAttribute('path'); // Assuming 'path' is an attribute of the Model
+        $directoryPath = $directory; // Assuming 'path' is an attribute of the Model
         $check = $this->authorizer->forUser($user)->check($this->pluralModelName.'.read.padalinys');
 
         $padalinysDirectory = $this->getDirectoryPadalinysAlias($directoryPath);
