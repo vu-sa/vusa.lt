@@ -27,7 +27,7 @@ class TypeController extends Controller
     public function index(IndexTypeRequest $request)
     {
         $this->authorize('viewAny', Type::class);
-        
+
         // Build base query with eager loading
         $query = Type::query();
 
@@ -47,11 +47,11 @@ class TypeController extends Controller
 
         // Paginate results
         $types = $query->paginate($request->input('per_page', 20))
-                       ->withQueryString();
+            ->withQueryString();
 
         // Get the sorting state using the custom method to ensure consistent parsing
         $sorting = $request->getSorting();
-                
+
         return Inertia::render('Admin/ModelMeta/IndexTypes', [
             'data' => $types->items(),
             'meta' => [

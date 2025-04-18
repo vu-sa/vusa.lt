@@ -4,9 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetTenantsForUpserts;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\IndexInstitutionRequest;
 use App\Http\Requests\StoreInstitutionRequest;
-use App\Http\Requests\UpdateInstitutionRequest;
-use App\Http\Requests\IndexInstitutionRequest; // Create this request class
+use App\Http\Requests\UpdateInstitutionRequest; // Create this request class
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Doing;
 use App\Models\Duty;
@@ -20,7 +20,7 @@ use Inertia\Inertia;
 class InstitutionController extends Controller
 {
     use HasTanstackTables;
-    
+
     public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService) {}
 
     /**
@@ -51,14 +51,14 @@ class InstitutionController extends Controller
 
         // Paginate results
         $institutions = $query->paginate($request->input('per_page', 15))
-                              ->withQueryString();
+            ->withQueryString();
 
         // Get institution types for filtering
         $types = Type::where('model_type', Institution::class)->get();
-        
+
         // Get the sorting state using the custom method to ensure consistent parsing
         $sorting = $request->getSorting();
-        
+
         // Return response with all necessary data
         return Inertia::render('Admin/People/IndexInstitution', [
             'data' => $institutions->items(),
