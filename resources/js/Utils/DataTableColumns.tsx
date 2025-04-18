@@ -62,6 +62,7 @@ export function createTimestampColumn<T>(accessorKey: string, options: {
   format?: string; 
   width?: number;
   enableSorting?: boolean;
+  sortDescFirst?: boolean;
   cell?: ColumnDef<T, any>['cell'];
 } = {}): ColumnDef<T, any> {
   return {
@@ -81,6 +82,7 @@ export function createTimestampColumn<T>(accessorKey: string, options: {
     }),
     size: options.width || 160,
     enableSorting: options.enableSorting !== false,
+    sortDescFirst: options.sortDescFirst,
   };
 }
 

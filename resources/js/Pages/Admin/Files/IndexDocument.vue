@@ -20,7 +20,8 @@
     </template> -->
     
     <template #filters>
-      <DataTableFilter
+      <!-- TODO: needs to get all of the types from db, like the ShowDocuments.vue-->
+      <!-- <DataTableFilter
         v-if="contentTypeOptions.length > 0"
         v-model:value="selectedContentType"
         :options="contentTypeOptions"
@@ -45,7 +46,7 @@
         @update:value="handleInstitutionFilterChange"
       >
         {{ $t("institution") }}
-      </DataTableFilter>
+      </DataTableFilter> -->
     </template>
   </IndexTablePage>
 </template>
@@ -76,7 +77,8 @@ import {
 } from "@/Types/TableConfigTypes";
 import { 
   createTimestampColumn, 
-  createTextColumn 
+  createTextColumn,
+  createTitleColumn
 } from '@/Utils/DataTableColumns';
 
 const props = defineProps<{
@@ -160,30 +162,31 @@ const institutionOptions = computed(() => {
 
 // Column definitions using Tanstack Table format and standardized column helpers
 const columns = computed<ColumnDef<App.Entities.Document, any>[]>(() => [
-  {
+  createTitleColumn<App.Entities.Document>({
     accessorKey: "title",
     header: () => $t("forms.fields.title"),
-    cell: ({ row }) => (
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <SmartLink 
-              href={row.original.anonymous_url} 
-              class="inline-flex flex-wrap items-center gap-1 font-medium hover:underline max-w-[300px]"
-              title={row.getValue("title")}
-            >
-              {row.getValue("title")}
-            </SmartLink>
-          </TooltipTrigger>
-          <TooltipContent side="top" align="start">
-            <p>{row.getValue("title")}</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    ),
-    size: 350,
-    enableSorting: true,
-  },
+    routeName: "documents.show",
+    width: 350,
+    cell: ({ row }) => {
+      const title = row.getValue("title");
+      return (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div class="max-w-[340px] truncate">
+                <a href={row.original.anonymous_url} target="_blank" rel="noopener noreferrer" class="font-medium hover:underline">
+                  {title}
+                </a>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent side="top" align="start">
+              <p>{title}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      );
+    }
+  }),
   {
     id: "actions",
     header: () => $t("actions"),
@@ -203,7 +206,8 @@ const columns = computed<ColumnDef<App.Entities.Document, any>[]>(() => [
   },
   createTimestampColumn("document_date", {
     title: $t("date"),
-    width: 120
+    width: 130,
+    enableSorting: true,
   }),
   createTextColumn("content_type", {
     cell: ({ row }) => (
