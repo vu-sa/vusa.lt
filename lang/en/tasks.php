@@ -8,5 +8,5 @@ return [
         'label' => 'Label',
         'select_filter' => 'Select filter',
     ],
-    'create_new' => 'Create New'
+    'create_new' => 'Create New',
 ];

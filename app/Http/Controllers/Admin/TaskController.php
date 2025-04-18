@@ -17,7 +17,7 @@ class TaskController extends Controller
 
     /**
      * Display a listing of tasks.
-     * 
+     *
      * @return \Inertia\Response
      */
     public function index()
@@ -32,21 +32,20 @@ class TaskController extends Controller
             ->get();
 
         return Inertia::render('Admin/ShowTasks', [
-            'tasks' => $tasks
+            'tasks' => $tasks,
         ]);
     }
 
     /**
      * Return tasks for the current user in JSON format.
      * Used by the TasksIndicator component.
-     * 
-     * @param  \Illuminate\Http\Request  $request
+     *
      * @return \Illuminate\Http\JsonResponse
      */
     public function userTasksForIndicator(Request $request)
     {
         $limit = $request->input('limit', 5);
-        
+
         $tasks = Task::with('taskable')
             ->whereHas('users', function ($query) {
                 $query->where('users.id', Auth::id());
@@ -56,7 +55,7 @@ class TaskController extends Controller
             ->orderBy('created_at', 'desc')
             ->limit($limit)
             ->get();
-            
+
         return response()->json($tasks);
     }
 

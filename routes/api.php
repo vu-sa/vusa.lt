@@ -1,9 +1,7 @@
 <?php
 
-use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\Api\CalendarController;
 use App\Http\Controllers\Api\NewsController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*

@@ -8,7 +8,6 @@ use App\Models\Comment;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Page;
-use Illuminate\Support\Str;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Resource;
 use App\Models\Tenant;
@@ -19,6 +18,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Spatie\Activitylog\Models\Activity;
 
@@ -39,23 +39,23 @@ class DashboardController extends Controller
         $this->authorizer = $this->authorizer->forUser($user);
 
         // Check if we should show tenant activities (with proper permission check)
-        $showTenantActivities = $request->input('view_type') === 'tenant' && 
-                               $userTenantId && 
+        $showTenantActivities = $request->input('view_type') === 'tenant' &&
+                               $userTenantId &&
                                $this->authorizer->check('activity_log.view.padalinys');
-        
+
         // Get recent activities based on view type
         // $recentActivities = $this->getRecentActivities($showTenantActivities ? $userTenantId : null);
-        
+
         // Get task statistics for the dashboard
         $taskStats = [
             'completed' => $user->tasks()->where('completed_at', '!=', null)->count(),
             'pending' => $user->tasks()->where('completed_at', null)->where('due_date', '>=', now())->count(),
             'overdue' => $user->tasks()->where('completed_at', null)->where('due_date', '<', now())->count(),
         ];
-        
+
         // Get notification count
         $unreadNotificationsCount = $user->unreadNotifications()->count();
-        
+
         return Inertia::render('Admin/ShowAdminHome', [
             // 'recentActivities' => $recentActivities,
             'taskStats' => $taskStats,
@@ -63,26 +63,25 @@ class DashboardController extends Controller
             'hasNotifications' => $unreadNotificationsCount > 0,
             'user' => $user,
             'showTenantActivities' => $showTenantActivities,
-            'canViewTenantActivities' => $this->authorizer->checkAllRoleables('activity_log.view.padalinys')
+            'canViewTenantActivities' => $this->authorizer->checkAllRoleables('activity_log.view.padalinys'),
         ]);
     }
-    
+
     /**
      * Get recent activities for the current user or tenant
-     * 
-     * @param int|null $tenantId If provided, get tenant activities; otherwise get user activities
-     * @param int $limit
+     *
+     * @param  int|null  $tenantId  If provided, get tenant activities; otherwise get user activities
      * @return array
      */
     private function getRecentActivities(?int $tenantId = null, int $limit = 10)
     {
         $userId = Auth::id();
         $query = Activity::query()->with(['causer', 'subject']);
-        
+
         if ($tenantId) {
             // Get tenant activities: activities where subject belongs to the tenant
             // We use whereHasMorph to handle polymorphic relationships across different models
-            $query->where(function($q) use ($tenantId) {
+            $query->where(function ($q) use ($tenantId) {
                 // Handle regular models with tenant_id
                 $q->whereHasMorph('subject', '*', function ($subjectQuery) use ($tenantId) {
                     // Only include subjects that belong to the tenant if they have tenant_id
@@ -95,7 +94,7 @@ class DashboardController extends Controller
                         });
                     }
                 });
-                
+
                 // Special handling for Comment model which doesn't have direct tenant relationship
                 $q->orWhereHasMorph('subject', [Comment::class], function ($commentQuery) use ($tenantId) {
                     $commentQuery->whereHas('commentable', function ($commentableQuery) use ($tenantId) {
@@ -112,8 +111,8 @@ class DashboardController extends Controller
                             });
                         } elseif (method_exists($model, 'users') && method_exists($model, 'tenants')) {
                             // For models like Doing that have users which have tenants
-                            $commentableQuery->whereHas('users', function($userQuery) use ($tenantId) {
-                                $userQuery->whereHas('tenants', function($tenantQuery) use ($tenantId) {
+                            $commentableQuery->whereHas('users', function ($userQuery) use ($tenantId) {
+                                $userQuery->whereHas('tenants', function ($tenantQuery) use ($tenantId) {
                                     $tenantQuery->where('tenants.id', $tenantId);
                                 });
                             });
@@ -147,21 +146,21 @@ class DashboardController extends Controller
             // Get only the current user's activities
             $query->where('causer_id', $userId);
         }
-        
+
         $query->orderBy('created_at', 'desc');
-        
+
         // Add a whereNotNull check and try-catch to make the query more robust
         try {
             $activities = $query->limit($limit)->get();
         } catch (\Exception $e) {
-            \Log::error("Error fetching activities: " . $e->getMessage());
+            \Log::error('Error fetching activities: '.$e->getMessage());
             $activities = collect([]);
         }
-        
+
         // Transform activity data for frontend
         return $activities->map(function ($activity) {
             $actionText = $this->getActionText($activity);
-            
+
             return [
                 'id' => $activity->id,
                 'description' => $activity->description,
@@ -181,11 +180,11 @@ class DashboardController extends Controller
             ];
         })->toArray();
     }
-    
+
     /**
      * Generate a readable action text based on activity
-     * 
-     * @param Activity $activity
+     *
+     * @param  Activity  $activity
      * @return string
      */
     private function getActionText($activity)
@@ -207,19 +206,19 @@ class DashboardController extends Controller
 
     /**
      * Generate a link to the subject if applicable
-     * 
-     * @param Activity $activity
+     *
+     * @param  Activity  $activity
      * @return string|null
      */
     private function generateLink($activity)
     {
-        if (!$activity->subject) {
+        if (! $activity->subject) {
             return null;
         }
 
         $subjectType = $activity->subject_type;
         $subjectId = $activity->subject_id;
-        
+
         // Map model types to routes - extend this based on your application's needs
         $routeMap = [
             'App\\Models\\Meeting' => "meetings/{$subjectId}/edit",
@@ -235,12 +234,12 @@ class DashboardController extends Controller
 
         $baseType = class_basename($subjectType);
         $pluralType = Str::plural(strtolower($baseType));
-        
+
         // First try to use the predefined map
         if (isset($routeMap[$subjectType])) {
-            return "/mano/" . $routeMap[$subjectType];
+            return '/mano/'.$routeMap[$subjectType];
         }
-        
+
         // Generate a standard pattern as fallback
         return "/mano/{$pluralType}/{$subjectId}";
     }
