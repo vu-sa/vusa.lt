@@ -1,158 +1,148 @@
 <template>
-  <div class="space-y-6">
-    <!-- Page Header -->
-    <div v-if="headerTitle" class="flex flex-col space-y-2 md:flex-row md:items-center md:justify-between">
-      <div class="flex items-center space-x-4">
-        <div v-if="icon" class="hidden rounded-md bg-primary/10 p-2 text-primary md:block">
-          <component :is="icon" class="h-5 w-5" />
-        </div>
-        <div>
-          <h2 class="text-2xl font-bold tracking-tight">{{ headerTitle }}</h2>
-          <p v-if="headerDescription" class="text-sm text-muted-foreground">
-            {{ headerDescription }}
-          </p>
-        </div>
-      </div>
-      <div class="flex items-center gap-2">
-        <slot name="headerActions"></slot>
-        <Button 
-          v-if="canCreate && createRoute" 
-          :href="createRoute"
-          variant="default" 
-          class="ml-auto gap-1.5"
-        >
-          <PlusCircleIcon class="h-4 w-4" />
-          <span>{{ $t('forms.add') }}</span>
-        </Button>
-      </div>
-    </div>
-
-    <!-- Main table -->
-    <div class="relative min-h-[400px]">
-      <!-- Loading Skeleton -->
-      <div v-if="isLoading" class="absolute inset-0 z-10 flex items-center justify-center rounded-md bg-background/80 backdrop-blur-sm">
-        <div class="flex flex-col items-center space-y-4">
-          <div class="h-8 w-8 animate-spin rounded-full border-b-2 border-primary"></div>
-          <p class="text-sm text-muted-foreground">{{ $t('Loading data') }}...</p>
-        </div>
-      </div>
-
-      <AdminDataTable
-        ref="dataTableRef"
-        :model-name="modelName"
-        :entity-name="entityName || modelName"
-        :data="data"
-        :columns="columns"
-        :total-count="totalCount"
-        :initial-page="initialPage"
-        :page-size="pageSize"
-        :can-create="canCreate"
-        :create-route="createRoute"
-        :enable-filtering="enableFiltering"
-        :enable-column-visibility="enableColumnVisibility"
-        :initial-sorting="initialSorting"
-        :initial-filters="initialFilters"
-        :allow-toggle-deleted="allowToggleDeleted"
-        :empty-message="emptyMessage"
-        :empty-icon="emptyIcon || PlusCircleIcon"
-        :enable-row-selection="enableRowSelection"
-        :enable-multi-row-selection="enableMultiRowSelection"
-        :enable-row-selection-column="enableRowSelectionColumn"
-        :initial-row-selection="initialRowSelection"
-        :get-row-id="getRowId"
-        @data-loaded="handleDataLoaded"
-        @update:rowSelection="handleRowSelectionChange"
-        @sorting-changed="handleSortingChanged"
-        @page-changed="handlePageChanged"
-        @filter-changed="handleFilterChanged"
-      >
-        <!-- Pass through the slots -->
-        <template #tableActions>
-          <slot name="tableActions"></slot>
-        </template>
-
-        <template #filters>
-          <slot name="filters"></slot>
-        </template>
-        <template #actions>
-          <slot name="actions"></slot>
-        </template>
-
-        <template #empty>
-          <div class="flex min-h-[200px] flex-col items-center justify-center space-y-3 p-8 text-center">
-            <div class="rounded-full bg-muted/50 p-3">
-              <component :is="emptyIcon || PlusCircleIcon" class="h-6 w-6 text-muted-foreground" />
-            </div>
-            <div class="max-w-md space-y-1">
-              <h3 class="text-lg font-medium">{{ emptyMessage || $t('No data available') }}</h3>
-              <p class="text-sm text-muted-foreground">
-                <slot name="emptyDescription">
-                  {{ emptyDescription || ($t('You can add new items with the button above')) }}
-                </slot>
-              </p>
-            </div>
-            <slot name="emptyActions">
-              <Button v-if="canCreate && createRoute" :href="createRoute" variant="outline" class="gap-1.5">
-                <PlusCircleIcon class="h-4 w-4" />
-                <span>{{ $t('forms.add') }}</span>
-              </Button>
-            </slot>
+  <AdminContentPage :breadcrumbs="breadcrumbs">
+    <div class="space-y-6">
+      <!-- Page Header -->
+      <div v-if="headerTitle" class="flex flex-col space-y-2 md:flex-row md:items-center md:justify-between">
+        <div class="flex items-center space-x-4">
+          <div v-if="icon" class="hidden rounded-md bg-primary/10 p-2 text-primary md:block">
+            <component :is="icon" class="h-5 w-5" />
           </div>
-        </template>
-      </AdminDataTable>
+          <div>
+            <h2 class="text-2xl font-bold tracking-tight">
+              {{ headerTitle }}
+            </h2>
+            <p v-if="headerDescription" class="text-sm text-muted-foreground">
+              {{ headerDescription }}
+            </p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <slot name="headerActions" />
+          <Button as-child v-if="canCreate && createRoute" variant="default" class="ml-auto gap-1.5">
+            <Link :href="createRoute">
+            <PlusCircleIcon class="h-4 w-4" />
+            <span>{{ $t('forms.add') }}</span>
+            </Link>
+          </Button>
+        </div>
+      </div>
+
+      <!-- Main table -->
+      <div class="relative min-h-[400px]">
+        <!-- Loading Skeleton -->
+        <div v-if="isLoading"
+          class="absolute inset-0 z-10 flex items-center justify-center rounded-md bg-background/80 backdrop-blur-sm">
+          <div class="flex flex-col items-center space-y-4">
+            <div class="h-8 w-8 animate-spin rounded-full border-b-2 border-primary" />
+            <p class="text-sm text-muted-foreground">
+              {{ $t('Loading data') }}...
+            </p>
+          </div>
+        </div>
+
+        <AdminDataTable 
+          ref="dataTableRef" 
+          :model-name="modelName" 
+          :entity-name="entityName || modelName" 
+          :data="data"
+          :columns="columns" 
+          :total-count="totalCount" 
+          :initial-page="initialPage" 
+          :page-size="pageSize"
+          :can-create="canCreate" 
+          :create-route="createRoute" 
+          :enable-filtering="enableFiltering"
+          :enable-column-visibility="enableColumnVisibility" 
+          :initial-sorting="initialSorting"
+          :initial-filters="initialFilters" 
+          :allow-toggle-deleted="allowToggleDeleted" 
+          :empty-message="emptyMessage"
+          :empty-icon="emptyIcon || PlusCircleIcon" 
+          :enable-row-selection="enableRowSelection"
+          :enable-multi-row-selection="enableMultiRowSelection" 
+          :enable-row-selection-column="enableRowSelectionColumn"
+          :initial-row-selection="initialRowSelection" 
+          :get-row-id="getRowId" 
+          @data-loaded="handleDataLoaded"
+          @update:row-selection="handleRowSelectionChange" 
+          @sorting-changed="handleSortingChanged"
+          @page-changed="handlePageChanged" 
+          @filter-changed="handleFilterChanged"
+        >
+          <!-- Pass through the slots -->
+          <template #tableActions>
+            <slot name="tableActions" />
+          </template>
+
+          <template #filters>
+            <slot name="filters" />
+          </template>
+          <template #actions>
+            <slot name="actions" />
+          </template>
+
+          <template #empty>
+            <div class="flex min-h-[200px] flex-col items-center justify-center space-y-3 p-8 text-center">
+              <div class="rounded-full bg-muted/50 p-3">
+                <component :is="emptyIcon || PlusCircleIcon" class="h-6 w-6 text-muted-foreground" />
+              </div>
+              <div class="max-w-md space-y-1">
+                <h3 class="text-lg font-medium">
+                  {{ emptyMessage || $t('No data available') }}
+                </h3>
+                <p class="text-sm text-muted-foreground">
+                  <slot name="emptyDescription">
+                    {{ emptyDescription || ($t('You can add new items with the button above')) }}
+                  </slot>
+                </p>
+              </div>
+              <slot name="emptyActions">
+                <Button v-if="canCreate && createRoute" :href="createRoute" variant="outline" class="gap-1.5">
+                  <PlusCircleIcon class="h-4 w-4" />
+                  <span>{{ $t('forms.add') }}</span>
+                </Button>
+              </slot>
+            </div>
+          </template>
+        </AdminDataTable>
+      </div>
+
+      <!-- Pagination -->
+      <slot name="pagination" />
+
+      <!-- Additional content -->
+      <slot />
     </div>
-
-    <!-- Pagination -->
-    <slot name="pagination"></slot>
-
-    <!-- Additional content -->
-    <slot></slot>
-  </div>
+  </AdminContentPage>
 </template>
 
 <script setup lang="ts" generic="TData">
-import { ref, onMounted, computed, watch } from 'vue';
-import { type ColumnDef, type SortingState, type RowSelectionState } from '@tanstack/vue-table';
+import { ref, computed, watch } from 'vue';
 import { PlusCircleIcon } from 'lucide-vue-next';
 import { trans as $t } from "laravel-vue-i18n";
+import { type RowSelectionState } from '@tanstack/vue-table';
 
 import AdminDataTable from '@/Components/Tables/AdminDataTable.vue';
 import { Button } from '@/Components/ui/button';
+import AdminContentPage from './AdminContentPage.vue';
+import { useComponentBreadcrumbs } from "@/Composables/useBreadcrumbs";
+import { Link } from '@inertiajs/vue3';
+import { 
+  type TableConfig, 
+  type PaginationConfig, 
+  type UIConfig,
+  type FilteringConfig,
+  type RowSelectionConfig,
+  type IndexTablePageProps
+} from '@/Types/TableConfigTypes';
 
-const props = defineProps<{
-  headerTitle?: string;
-  headerDescription?: string;
-  icon?: any;
-  modelName: string;
-  entityName?: string;
-  data: TData[];
-  columns: ColumnDef<TData, any>[];
-  totalCount: number;
-  initialPage?: number;
-  pageSize?: number;
-  createRoute?: string;
-  backRoute?: string;
-  canCreate?: boolean;
-  initialSorting?: SortingState;
-  initialFilters?: Record<string, unknown>;
-  allowToggleDeleted?: boolean;
-  emptyMessage?: string;
-  emptyDescription?: string;
-  emptyIcon?: any;
-  enableFiltering?: boolean;
-  enableColumnVisibility?: boolean;
-  // Row selection props
-  enableRowSelection?: boolean;
-  enableMultiRowSelection?: boolean;
-  enableRowSelectionColumn?: boolean;
-  initialRowSelection?: RowSelectionState;
-  getRowId?: (originalRow: TData, index: number, parent?: any) => string;
-}>();
+// Props use the combined interface for better organization
+const props = defineProps<IndexTablePageProps<TData>>();
 
 const emit = defineEmits([
-  'data-loaded', 
-  'sorting-changed', 
-  'page-changed', 
+  'data-loaded',
+  'sorting-changed',
+  'page-changed',
   'filter-changed',
   'update:rowSelection'
 ]);
@@ -235,4 +225,7 @@ defineExpose({
   clearRowSelection,
   rowSelection
 });
+
+// Use the improved breadcrumbs composable
+useComponentBreadcrumbs(() => props.breadcrumbs);
 </script>

@@ -35,6 +35,13 @@ import { ref, watch } from 'vue';
 import { XIcon } from 'lucide-vue-next';
 import { usePage } from '@inertiajs/vue3';
 import { CardContent, Card } from '../ui/card';
+import { useComponentBreadcrumbs } from '@/Composables/useBreadcrumbs';
+import type { BreadcrumbItem } from '@/Composables/useBreadcrumbs';
+
+// Define props for the component
+const props = defineProps<{
+  breadcrumbs?: BreadcrumbItem[];
+}>();
 
 const open = ref(true);
 
@@ -53,4 +60,8 @@ watch(
   },
   { immediate: true }
 );
+
+// Use the improved breadcrumbs composable
+// This handles all breadcrumb lifecycle automatically
+useComponentBreadcrumbs(() => props.breadcrumbs);
 </script>

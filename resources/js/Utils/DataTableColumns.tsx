@@ -1,7 +1,7 @@
 import { type ColumnDef } from '@tanstack/vue-table';
 import { format, isValid } from 'date-fns';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import { NTag } from 'naive-ui';
+import { Badge } from '@/Components/ui/badge';
 import { capitalize } from './String';
 
 /**
@@ -10,10 +10,12 @@ import { capitalize } from './String';
 export function createIdColumn<T>(options: { 
   width?: number;
   enableSorting?: boolean;
+  cell?: ColumnDef<T, any>['cell'];
 } = {}): ColumnDef<T, any> {
   return {
     accessorKey: 'id',
     header: () => 'ID',
+    cell: options.cell,
     size: options.width || 60,
     enableSorting: options.enableSorting !== false,
   };
@@ -27,6 +29,7 @@ export function createTitleColumn<T extends { id: string | number }>(options: {
   routeName?: string;
   width?: number;
   enableSorting?: boolean;
+  cell?: ColumnDef<T, any>['cell'];
 } = {}): ColumnDef<T, any> {
   const accessorKey = options.accessorKey || 'name';
   const routeName = options.routeName || 'edit';
@@ -34,7 +37,7 @@ export function createTitleColumn<T extends { id: string | number }>(options: {
   return {
     accessorKey,
     header: () => $t(accessorKey === 'name' ? 'forms.fields.name' : 'forms.fields.title'),
-    cell: ({ row }) => {
+    cell: options.cell || (({ row }) => {
       const value = row.getValue(accessorKey);
       const id = row.original.id;
       const modelName = (row.original as any)?.type || '';
@@ -45,7 +48,7 @@ export function createTitleColumn<T extends { id: string | number }>(options: {
           {value}
         </a>
       );
-    },
+    }),
     size: options.width || 250,
     enableSorting: options.enableSorting !== false,
   };
@@ -59,11 +62,12 @@ export function createTimestampColumn<T>(accessorKey: string, options: {
   format?: string; 
   width?: number;
   enableSorting?: boolean;
+  cell?: ColumnDef<T, any>['cell'];
 } = {}): ColumnDef<T, any> {
   return {
     accessorKey,
     header: () => options.title || $t(accessorKey),
-    cell: ({ row }) => {
+    cell: options.cell || (({ row }) => {
       const value = row.getValue(accessorKey);
       if (!value) return null;
       
@@ -74,7 +78,7 @@ export function createTimestampColumn<T>(accessorKey: string, options: {
       } catch (e) {
         return value;
       }
-    },
+    }),
     size: options.width || 160,
     enableSorting: options.enableSorting !== false,
   };
@@ -86,15 +90,16 @@ export function createTimestampColumn<T>(accessorKey: string, options: {
 export function createTenantColumn<T>(options: { 
   width?: number;
   enableSorting?: boolean;
+  cell?: ColumnDef<T, any>['cell'];
 } = {}): ColumnDef<T, any> {
   return {
     accessorKey: 'tenant',
     header: () => capitalize($tChoice('entities.tenant.model', 1)),
-    cell: ({ row }) => {
+    cell: options.cell || (({ row }) => {
       const tenant = row.original.tenant;
       if (!tenant) return '';
       return $t(tenant.shortname);
-    },
+    }),
     size: options.width || 150,
     enableSorting: options.enableSorting !== false,
   };
@@ -106,11 +111,12 @@ export function createTenantColumn<T>(options: {
 export function createLanguageColumn<T>(options: { 
   width?: number;
   enableSorting?: boolean;
+  cell?: ColumnDef<T, any>['cell'];
 } = {}): ColumnDef<T, any> {
   return {
     accessorKey: 'language',
     header: () => $t('Kalba'),
-    cell: ({ row }) => row.getValue('language') as string,
+    cell: options.cell || (({ row }) => row.getValue('language') as string),
     size: options.width || 100,
     enableSorting: options.enableSorting !== false,
   };
@@ -125,22 +131,23 @@ export function createBooleanColumn<T>(accessorKey: string, options: {
   falseLabel?: string;
   width?: number;
   enableSorting?: boolean;
+  cell?: ColumnDef<T, any>['cell'];
 } = {}): ColumnDef<T, any> {
   return {
     accessorKey,
     header: () => options.title || $t(accessorKey),
-    cell: ({ row }) => {
+    cell: options.cell || (({ row }) => {
       const value = row.getValue(accessorKey);
       const label = value 
         ? (options.trueLabel || $t('Yes')) 
         : (options.falseLabel || $t('No'));
         
       return (
-        <NTag type={value ? 'success' : 'default'} size="small">
+        <Badge variant={value ? 'default' : 'secondary'} class="text-xs">
           {label}
-        </NTag>
+        </Badge>
       );
-    },
+    }),
     size: options.width || 100,
     enableSorting: options.enableSorting !== false,
   };
@@ -154,11 +161,12 @@ export function createTagsColumn<T>(accessorKey: string, options: {
   labelKey?: string;
   width?: number;
   enableSorting?: boolean;
+  cell?: ColumnDef<T, any>['cell'];
 } = {}): ColumnDef<T, any> {
   return {
     accessorKey,
     header: () => options.title || $t(accessorKey),
-    cell: ({ row }) => {
+    cell: options.cell || (({ row }) => {
       const items = row.getValue(accessorKey) as any[] || [];
       const labelKey = options.labelKey || 'title';
       
@@ -167,13 +175,13 @@ export function createTagsColumn<T>(accessorKey: string, options: {
       return (
         <div class="flex flex-wrap gap-1">
           {items.map((item) => (
-            <NTag size="small" key={item.id}>
+            <Badge variant="secondary" key={item.id} class="text-xs">
               {$t(item[labelKey])}
-            </NTag>
+            </Badge>
           ))}
         </div>
       );
-    },
+    }),
     size: options.width || 200,
     enableSorting: options.enableSorting !== false,
   };
@@ -186,11 +194,12 @@ export function createTextColumn<T>(accessorKey: string, options: {
   title?: string;
   width?: number;
   enableSorting?: boolean;
+  cell?: ColumnDef<T, any>['cell'];
 } = {}): ColumnDef<T, any> {
   return {
     accessorKey,
     header: () => options.title || $t(accessorKey),
-    cell: ({ row }) => row.getValue(accessorKey) as string,
+    cell: options.cell || (({ row }) => row.getValue(accessorKey) as string),
     size: options.width || 150,
     enableSorting: options.enableSorting !== false,
   };

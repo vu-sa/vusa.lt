@@ -1,22 +1,7 @@
 <template>
   <IndexTablePage
     ref="indexTablePageRef"
-    model-name="types"
-    entity-name="type"
-    title="Turinio tipai"
-    :icon="Icons.TYPE"
-    :data="props.data"
-    :columns="columns"
-    :total-count="props.meta.total"
-    :initial-page="props.meta.current_page"
-    :page-size="props.meta.per_page"
-    :create-route="route('types.create')"
-    :initial-filters="props.filters"
-    :initial-sorting="props.sorting"
-    can-create
-    enable-filtering
-    enable-column-visibility
-    allow-toggle-deleted
+    v-bind="tableConfig"
     @data-loaded="onDataLoaded"
     @sorting-changed="handleSortingChange"
     @page-changed="handlePageChange"
@@ -47,9 +32,17 @@ import { Badge } from "@/Components/ui/badge";
 import { 
   createIdColumn, 
   createTimestampColumn,
-  createTextColumn
+  createTextColumn,
+  createTitleColumn
 } from '@/Utils/DataTableColumns';
 import { createStandardActionsColumn } from "@/Composables/useTableActions";
+import { 
+  type IndexTablePageProps,
+  type TableConfig,
+  type PaginationConfig,
+  type UIConfig,
+  type FilteringConfig
+} from "@/Types/TableConfigTypes";
 
 const props = defineProps<{
   data: App.Entities.Type[];
@@ -66,6 +59,10 @@ const props = defineProps<{
 }>();
 
 const indexTablePageRef = ref<InstanceType<typeof IndexTablePage> | null>(null);
+
+// Component constants
+const modelName = 'types';
+const entityName = 'type';
 
 // Extract unique model types for filtering
 const modelTypes = computed(() => {
@@ -92,21 +89,11 @@ const modelTypeOptions = computed(() => {
 // Table columns
 const columns = computed<ColumnDef<App.Entities.Type, any>[]>(() => [
   createIdColumn(),
-  {
+  createTitleColumn<App.Entities.Type>({
     accessorKey: "title",
-    header: () => $t("forms.fields.title"),
-    cell: ({ row }) => {
-      const title = row.getValue("title");
-      return (
-        <a href={route("types.edit", { id: row.original.id })} 
-           class="font-medium hover:underline">
-          {title}
-        </a>
-      );
-    },
-    size: 200,
-    enableSorting: true,
-  },
+    routeName: "types.edit",
+    width: 200
+  }),
   createTextColumn("slug", { 
     title: $t("forms.fields.slug"),
     cell: ({ row }) => (
@@ -127,6 +114,49 @@ const columns = computed<ColumnDef<App.Entities.Type, any>[]>(() => [
     canRestore: true
   })
 ]);
+
+// Consolidated table configuration using the new interfaces
+const tableConfig = computed<IndexTablePageProps<App.Entities.Type>>(() => {
+  // Core table configuration
+  const tableConfig: TableConfig<App.Entities.Type> = {
+    modelName,
+    entityName,
+    data: props.data,
+    columns: columns.value
+  };
+  
+  // Pagination configuration
+  const paginationConfig: PaginationConfig = {
+    totalCount: props.meta.total,
+    initialPage: props.meta.current_page,
+    pageSize: props.meta.per_page
+  };
+  
+  // UI configuration
+  const uiConfig: UIConfig = {
+    headerTitle: $t("Turinio tipai"),
+    icon: Icons.TYPE,
+    createRoute: route('types.create'),
+    canCreate: true
+  };
+  
+  // Filtering configuration
+  const filteringConfig: FilteringConfig = {
+    initialFilters: props.filters,
+    initialSorting: props.sorting,
+    enableFiltering: true,
+    enableColumnVisibility: true,
+    allowToggleDeleted: true
+  };
+  
+  // Return the combined configuration
+  return {
+    ...tableConfig,
+    ...paginationConfig,
+    ...uiConfig,
+    ...filteringConfig
+  };
+});
 
 // Event handlers
 const handleModelTypeFilterChange = (modelType: string | null) => {

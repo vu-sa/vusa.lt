@@ -1,19 +1,7 @@
 <template>
   <IndexTablePage
     ref="indexTablePageRef"
-    model-name="documents"
-    entity-name="document"
-    :icon="Icons.DOCUMENT"
-    :data="data"
-    :columns="columns"
-    :total-count="meta.total"
-    :initial-page="meta.current_page"
-    :page-size="meta.per_page"
-    :initial-filters="filters"
-    :initial-sorting="sorting"
-    :enable-filtering="true"
-    :enable-column-visibility="true"
-    :can-create="false"
+    v-bind="tableConfig"
     @data-loaded="onDataLoaded"
     @sorting-changed="handleSortingChange"
     @page-changed="handlePageChange"
@@ -63,10 +51,11 @@
 </template>
 
 <script setup lang="tsx">
-import { trans as $t } from "laravel-vue-i18n";
+import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
 import { ref, computed, watch } from "vue";
 import { router, usePage } from "@inertiajs/vue3";
 import { type ColumnDef } from '@tanstack/vue-table';
+import { capitalize } from "vue";
 
 import { Item } from "@/Features/Admin/SharepointFilePicker/picker";
 import FilePicker from "@/Features/Admin/SharepointFilePicker/FilePicker.vue";
@@ -77,6 +66,18 @@ import { Button } from "@/Components/ui/button";
 import { ExternalLinkIcon, RefreshCwIcon } from "lucide-vue-next";
 import DataTableFilter from "@/Components/ui/data-table/DataTableFilter.vue";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
+import { useBreadcrumbs, type BreadcrumbItem } from "@/Composables/useBreadcrumbs";
+import { 
+  type IndexTablePageProps,
+  type TableConfig,
+  type PaginationConfig,
+  type UIConfig,
+  type FilteringConfig
+} from "@/Types/TableConfigTypes";
+import { 
+  createTimestampColumn, 
+  createTextColumn 
+} from '@/Utils/DataTableColumns';
 
 const props = defineProps<{
   data: App.Entities.Document[];
@@ -91,6 +92,19 @@ const props = defineProps<{
   filters?: Record<string, any>;
   sorting?: { id: string; desc: boolean }[];
 }>();
+
+// Component constants
+const modelName = 'documents';
+const entityName = 'document';
+
+// Breadcrumbs setup
+const { createBreadcrumbItem, homeItem } = useBreadcrumbs();
+
+const breadcrumbs = computed((): BreadcrumbItem[] => [
+  homeItem(),
+  createBreadcrumbItem($t("administration.title"), route("administration")),
+  createBreadcrumbItem($t("Documents"), undefined, Icons.DOCUMENT)
+]);
 
 const loading = ref(false);
 const indexTablePageRef = ref<InstanceType<typeof IndexTablePage> | null>(null);
@@ -144,7 +158,7 @@ const institutionOptions = computed(() => {
   }));
 });
 
-// Column definitions using Tanstack Table format
+// Column definitions using Tanstack Table format and standardized column helpers
 const columns = computed<ColumnDef<App.Entities.Document, any>[]>(() => [
   {
     accessorKey: "title",
@@ -187,16 +201,11 @@ const columns = computed<ColumnDef<App.Entities.Document, any>[]>(() => [
     ),
     size: 80,
   },
-  {
-    accessorKey: "document_date",
-    header: () => $t("date"),
-    cell: ({ row }) => row.getValue("document_date"),
-    size: 120,
-    enableSorting: true,
-  },
-  {
-    accessorKey: "content_type",
-    header: () => $t("content_type"),
+  createTimestampColumn("document_date", {
+    title: $t("date"),
+    width: 120
+  }),
+  createTextColumn("content_type", {
     cell: ({ row }) => (
       <TooltipProvider>
         <Tooltip>
@@ -211,14 +220,11 @@ const columns = computed<ColumnDef<App.Entities.Document, any>[]>(() => [
         </Tooltip>
       </TooltipProvider>
     ),
-    size: 150,
-  },
-  {
-    accessorKey: "language",
-    header: () => $t("language"),
-    cell: ({ row }) => row.getValue("language"),
-    size: 100,
-  },
+    width: 150
+  }),
+  createTextColumn("language", {
+    width: 100
+  }),
   {
     accessorKey: "institution.short_name",
     header: () => $t("institution"),
@@ -228,12 +234,12 @@ const columns = computed<ColumnDef<App.Entities.Document, any>[]>(() => [
     },
     size: 150,
   },
-  {
-    accessorKey: "checked_at",
-    header: () => $t("checked_at"),
+  createTimestampColumn("checked_at", {
     cell: ({ row }) => (
       <div class="flex items-center gap-2">
-        <span>{row.getValue("checked_at")}</span>
+        <span>{row.getValue("checked_at") ? 
+          new Date(row.getValue("checked_at") as string).toLocaleString() : 
+          ''}</span>
         <Button 
           size="icon" 
           variant="ghost"
@@ -243,10 +249,51 @@ const columns = computed<ColumnDef<App.Entities.Document, any>[]>(() => [
         </Button>
       </div>
     ),
-    size: 220,
-    enableSorting: true,
-  }
+    width: 220
+  })
 ]);
+
+// Consolidated table configuration using the new interfaces
+const tableConfig = computed<IndexTablePageProps<App.Entities.Document>>(() => {
+  // Core table configuration
+  const tableConfig: TableConfig<App.Entities.Document> = {
+    modelName,
+    entityName,
+    data: props.data,
+    columns: columns.value
+  };
+  
+  // Pagination configuration
+  const paginationConfig: PaginationConfig = {
+    totalCount: props.meta.total,
+    initialPage: props.meta.current_page,
+    pageSize: props.meta.per_page
+  };
+  
+  // UI configuration
+  const uiConfig: UIConfig = {
+    headerTitle: $t("Documents"),
+    icon: Icons.DOCUMENT,
+    canCreate: false,
+    breadcrumbs: breadcrumbs.value
+  };
+  
+  // Filtering configuration
+  const filteringConfig: FilteringConfig = {
+    initialFilters: props.filters,
+    initialSorting: props.sorting,
+    enableFiltering: true,
+    enableColumnVisibility: true
+  };
+  
+  // Return the combined configuration
+  return {
+    ...tableConfig,
+    ...paginationConfig,
+    ...uiConfig,
+    ...filteringConfig
+  };
+});
 
 // Filter handlers
 const handleContentTypeFilterChange = (contentType: string | null) => {

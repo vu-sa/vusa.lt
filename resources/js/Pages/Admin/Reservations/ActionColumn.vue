@@ -53,7 +53,6 @@
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
 import { router } from '@inertiajs/vue3';
-import { route } from '@/Utils/Routes';
 import { Button } from '@/Components/ui/button';
 import { 
   CheckCircleIcon,

@@ -21,19 +21,27 @@
       :enable-row-selection-column="enableRowSelectionColumn"
       :row-selection-state="rowSelection"
       :get-row-id="getRowId"
+      :loading="loading"
       @page-change="handlePageChange" 
       @update:sorting="handleSortChange" 
       @update:global-filter="updateSearchText" 
       @update:rowSelection="handleRowSelectionChange"
     >
       <template #filters>
-        <Input 
-          v-model="searchText" 
-          :placeholder="$t('Search...')" 
-          class="max-w-sm" 
-          @keydown.enter="handleSearch" 
-        />
+        <div class="flex gap-2 w-full">
+          <Input 
+            v-model="searchText" 
+            :placeholder="`${$t('Paieška')}...`" 
+            class="max-w-sm" 
+            @keydown.enter="handleSearch" 
+          />
+          <Button @click="handleSearch">
+            {{ $t('Paieška') }}
+          </Button>
+        </div>
+        <div class="flex gap-2">
         <slot name="filters" />
+        </div>
       </template>
 
       <template #actions>
@@ -60,6 +68,7 @@ import { debounce } from 'lodash';
 
 import DataTableProvider from '../ui/data-table/DataTableProvider.vue';
 import { Input } from '@/Components/ui/input';
+import { Button } from '@/Components/ui/button';
 
 // Define the props with TypeScript generics support
 const props = defineProps<{
@@ -130,15 +139,16 @@ const debouncedReload = debounce((resetPage = false) => {
 }, 300);
 
 // Event handlers
-const handleSearch = () => {
-  pageIndex.value = 0; // Go back to first page on search
-  reloadData();
-};
-
 const updateSearchText = (text: string) => {
   searchText.value = text;
   pageIndex.value = 0; // Go back to first page on search change
   debouncedReload(true);
+};
+
+const handleSearch = () => {
+  pageIndex.value = 0; // Go back to first page on search
+  // Explicitly pass the current search text to ensure it's included in the request
+  reloadData();
 };
 
 const handleSortChange = (newSorting: SortingState) => {
@@ -181,6 +191,7 @@ const encodeTableState = () => {
   
   // Add search text if present
   if (searchText.value) {
+    // Using 'search' key to match what the backend expects
     state.search = searchText.value;
   }
   

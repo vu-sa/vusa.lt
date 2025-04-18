@@ -1,5 +1,5 @@
 <template>
-  <PageContent :title="`${$page.props.auth?.user?.name}`">
+  <PageContent :title="`${$page.props.auth?.user?.name}`" :breadcrumbs="breadcrumbs">
     <NCard>
       <!-- <p>{{ salutation }}</p> -->
       <div class="mb-4">
@@ -82,7 +82,7 @@
 
 <script setup lang="tsx">
 import { trans as $t } from "laravel-vue-i18n";
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { useForm } from "@inertiajs/vue3";
 
 import FormElement from "@/Components/AdminForms/FormElement.vue";
@@ -90,6 +90,10 @@ import MultiLocaleInput from "@/Components/FormItems/MultiLocaleInput.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import UploadImageWithCropper from "@/Components/Buttons/UploadImageWithCropper.vue";
 import InfoText from "@/Components/SmallElements/InfoText.vue";
+import { useBreadcrumbs, type BreadcrumbItem } from "@/Composables/useBreadcrumbs";
+import IMdiContentSave from '~icons/mdi/content-save';
+import IMdiGithub from '~icons/mdi/github';
+import Icons from "@/Types/Icons/regular";
 
 const props = defineProps<{
   user: App.Entities.User;
@@ -106,6 +110,13 @@ const form = useForm({
   pronouns: props.user.pronouns,
   show_pronouns: props.user.show_pronouns,
 });
+
+// Setup breadcrumbs for the Settings page
+const { createBreadcrumbItem } = useBreadcrumbs();
+
+const breadcrumbs = computed((): BreadcrumbItem[] => [
+  createBreadcrumbItem($t('Nustatymai'), undefined, Icons.SETTINGS)
+]);
 
 const handleSubmit = () => {
   loading.value = true;

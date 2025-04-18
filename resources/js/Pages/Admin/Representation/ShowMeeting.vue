@@ -1,5 +1,5 @@
 <template>
-  <ShowPageLayout :model="meeting" :breadcrumbs="breadcrumbOptions"
+  <ShowPageLayout :model="meeting" :breadcrumbs="breadcrumbs"
     :title="`${mainInstitution?.name} (${meetingTitle})`" :related-models="relatedModels" :current-tab="currentTab" @change:tab="currentTab = $event">
     <template #title>
       {{ `${mainInstitution?.name} (${meetingTitle})` }}
@@ -136,7 +136,7 @@ const handleAgendaItemDelete = (agendaItem: App.Entities.AgendaItem) => {
 
 const { createRouteBreadcrumb, createBreadcrumbItem } = useBreadcrumbs();
 
-const breadcrumbOptions = [
+const breadcrumbs = [
   createRouteBreadcrumb(mainInstitution.name, "institutions.show", { institution: mainInstitution.id }, Icons.INSTITUTION),
   createBreadcrumbItem(meetingTitle, undefined, Icons.MEETING),
 ];

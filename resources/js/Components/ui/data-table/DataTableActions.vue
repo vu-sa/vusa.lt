@@ -47,7 +47,7 @@
           <slot name="custom-actions" :model="model" :handle-action="handleCustomAction"></slot>
           
           <!-- Danger zone with separator -->
-          <Separator v-if="(canDelete && !model.deleted_at) || (canRestore && model.deleted_at)" />
+          <Separator class="data-[orientation=horizontal]:my-0.5" v-if="(canDelete && !model.deleted_at) || (canRestore && model.deleted_at)" />
           
           <Button 
             v-if="canDelete && !model.deleted_at" 

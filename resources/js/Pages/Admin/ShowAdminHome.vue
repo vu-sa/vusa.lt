@@ -1,81 +1,404 @@
 <template>
   <PageContent>
-    <Head :title="$t('Pradinis')" />
+    <Head :title="$t('Mano VU SA')" />
 
-    <p class="mt-16 text-4xl font-bold tracking-tight">
-      {{ $t('Labas') }}, {{ userNameAddress }}!  👋
-    </p>
+    <div class="space-y-8">
+      <!-- Hero section with greeting -->
+      <section class="relative overflow-hidden rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 p-6 shadow-sm dark:from-primary/20 dark:to-background lg:p-8">
+        <div class="flex flex-col items-start gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 class="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl text-primary dark:text-primary-foreground/90">
+              {{ $t('Labas') }}, {{ userNameAddress }}! <span class="inline-block animate-wave origin-bottom-right">👋</span>
+            </h1>
+            <p class="mt-2 max-w-xl text-muted-foreground">
+              {{ greeting }}
+            </p>
+          </div>
+          <div v-if="hasNotifications" class="rounded-lg bg-muted/50 p-3 dark:bg-muted/30">
+            <div class="flex items-center gap-2 font-medium text-foreground">
+              <BellIcon class="h-5 w-5 text-primary" />
+              <span>{{ $t('Turi') }} {{ unreadNotificationsCount }} {{ $t('neperskaitytų pranešimų') }}</span>
+            </div>
+            <Button variant="link" class="mt-1 p-0" @click="navigateToNotifications">
+              {{ $t('Peržiūrėti pranešimus') }} →
+            </Button>
+          </div>
+        </div>
+      </section>
 
-    <p class="mb-2 mt-8 font-medium text-zinc-600">
-      {{ $t('Pasirink vieną iš veiksmų') }}:
-    </p>
+      <!-- Quick actions section -->
+      <section>
+        <div class="mb-6 flex items-center justify-between">
+          <h2 class="text-xl font-semibold tracking-tight">{{ $t('Greiti veiksmai') }}</h2>
+          <Link :href="route('administration')">
+            <Button variant="outline" size="sm" class="gap-1">
+              <LayoutGridIcon class="h-4 w-4" /> 
+              {{ $t('Visi įrankiai') }}
+            </Button>
+          </Link>
+        </div>
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <Card v-for="action in quickActions" :key="action.title" 
+                class="transition-all duration-300 hover:shadow-md hover:ring-1 hover:ring-primary/10 dark:hover:shadow-primary/5">
+            <Link :href="action.href">
+              <CardHeader class="pb-2">
+                <div class="rounded-full bg-primary/10 p-2 w-fit">
+                  <component :is="action.icon" class="h-5 w-5 text-primary" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <CardTitle class="text-lg">{{ action.title }}</CardTitle>
+                <CardDescription class="text-sm">{{ action.description }}</CardDescription>
+              </CardContent>
+            </Link>
+          </Card>
+        </div>
+      </section>
 
-    <AdminMultiHomeCards />
+      <!-- Recent activity and stats -->
+      <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+        <!-- Recent activity - temporarily disabled -->
+        <Card class="lg:col-span-4 opacity-75 relative">
+          <div class="absolute inset-0 bg-background/50 backdrop-blur-[1px] flex items-center justify-center z-10">
+            <div class="bg-background/90 px-4 py-2 rounded-md shadow-sm border border-border/40">
+              <p class="text-sm font-medium text-muted-foreground">{{ $t('Veiksmų istorija laikinai nepasiekiama') }}</p>
+            </div>
+          </div>
+          <CardHeader>
+            <div class="flex items-center justify-between">
+              <div>
+                <CardTitle class="flex items-center gap-2">
+                  <ActivityIcon class="h-5 w-5 text-primary" /> 
+                  {{ showTenantActivities ? $t('Padalinio veiksmai') : $t('Jūsų naujausi veiksmai') }}
+                </CardTitle>
+                <CardDescription>
+                  {{ showTenantActivities ? $t('Veiksmų istorija jūsų padalinyje') : $t('Jūsų veiksmų sistemoje istorija') }}
+                </CardDescription>
+              </div>
+              
+              <!-- Activity view type toggle - disabled -->
+              <div v-if="canViewTenantActivities" class="flex items-center gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  disabled
+                  class="text-xs"
+                >
+                  {{ showTenantActivities ? $t('Rodyti mano veiksmus') : $t('Rodyti padalinio veiksmus') }}
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <ActivityTimeline 
+              :activities="[]" 
+              :loading="false"
+            />
+          </CardContent>
+        </Card>
 
-    <p class="mt-24 font-medium text-zinc-600">
-      {{ $t('Kiti įrankiai') }}
-    </p>
-    <div class="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-      <Link :href="route('administration')">
-      <button
-        class="flex w-full flex-col gap-3 rounded-md border border-zinc-100 bg-linear-to-br from-white to-white p-4 text-left text-base text-zinc-700 shadow-xs duration-500 hover:shadow-lg dark:border-zinc-800 dark:from-zinc-900 dark:to-neutral-800 dark:text-zinc-300 dark:hover:shadow-white/20">
-        <IFluentSettings24Filled class="mb-1 mt-2" width="28" height="28" />
-        <span class="text-xl font-bold">{{ $t('Administravimas') }}</span>
-        <p class="text-sm leading-4 text-zinc-500">
-          {{ $t('Visos informacijos administravimo įrankiai ir lentelės') }}
-        </p>
-      </button>
-      </Link>
-      <a href="https://www.vusa.lt/docs">
-        <button
-          class="flex w-full flex-col gap-3 rounded-md border border-zinc-100 bg-linear-to-br from-white to-white p-4 text-left text-base text-zinc-700 shadow-xs duration-500 hover:shadow-lg dark:border-zinc-800 dark:from-zinc-900 dark:to-neutral-800 dark:text-zinc-300 dark:hover:shadow-white/20">
-          <IFluentBookExclamationMark20Filled class="mb-1 mt-2" width="28" height="28" />
-          <span class="text-xl font-bold">{{ $t('Dokumentacija') }}</span>
-          <p class="text-sm leading-4 text-zinc-500">
-            {{ $t('Instrukcijos apie vusa.lt/mano platformą ir naudotojų atsakomybes') }}
-          </p>
-        </button>
-      </a>
+        <!-- Resources & stats -->
+        <Card class="lg:col-span-3">
+          <CardHeader>
+            <CardTitle class="flex items-center gap-2">
+              <LayoutDashboardIcon class="h-5 w-5 text-primary" /> 
+              {{ $t('Statistika') }}
+            </CardTitle>
+          </CardHeader>
+          <CardContent class="space-y-8">
+            <!-- Tasks stats -->
+            <div>
+              <div class="mb-2 flex items-center justify-between">
+                <h4 class="font-medium">{{ $t('Užduotys') }}</h4>
+                <Link :href="route('userTasks')">
+                  <Button variant="ghost" size="sm">{{ $t('Visos') }} →</Button>
+                </Link>
+              </div>
+              <div class="flex items-center gap-6">
+                <div class="flex flex-col items-center gap-1">
+                  <div class="flex h-12 w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900">
+                    <CheckCircle2Icon class="h-5 w-5 text-green-500 dark:text-green-400" />
+                  </div>
+                  <p class="text-xs text-muted-foreground">{{ $t('Atliktos') }}</p>
+                  <p class="text-2xl font-bold">{{ taskStats.completed }}</p>
+                </div>
+                <div class="flex flex-col items-center gap-1">
+                  <div class="flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900">
+                    <ClockIcon class="h-5 w-5 text-amber-500 dark:text-amber-400" />
+                  </div>
+                  <p class="text-xs text-muted-foreground">{{ $t('Vykdomos') }}</p>
+                  <p class="text-2xl font-bold">{{ taskStats.pending }}</p>
+                </div>
+                <div class="flex flex-col items-center gap-1">
+                  <div class="flex h-12 w-12 items-center justify-center rounded-full bg-red-100 dark:bg-red-900">
+                    <AlertTriangleIcon class="h-5 w-5 text-red-500 dark:text-red-400" />
+                  </div>
+                  <p class="text-xs text-muted-foreground">{{ $t('Vėluoja') }}</p>
+                  <p class="text-2xl font-bold">{{ taskStats.overdue }}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick links -->
+            <div>
+              <h4 class="mb-2 font-medium">{{ $t('Trumposios nuorodos') }}</h4>
+              <div class="space-y-2">
+                <Link v-for="link in quickLinks" :key="link.title" :href="link.href">
+                  <div class="group flex items-center justify-between rounded-md p-2 hover:bg-muted">
+                    <div class="flex items-center gap-2">
+                      <component :is="link.icon" class="h-4 w-4 text-primary" />
+                      <span>{{ link.title }}</span>
+                    </div>
+                    <ChevronRightIcon class="h-4 w-4 opacity-0 transition-opacity group-hover:opacity-100" />
+                  </div>
+                </Link>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <!-- Resources and tools -->
+      <section>
+        <div class="mb-6">
+          <h2 class="text-xl font-semibold tracking-tight">{{ $t('Ištekliai ir įrankiai') }}</h2>
+        </div>
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <Link :href="route('administration')">
+            <Card class="transition-all duration-200 hover:bg-muted/50 hover:shadow-md">
+              <CardContent class="flex gap-6 p-6 items-center">
+                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                  <SettingsIcon class="h-6 w-6 text-primary" />
+                </div>
+                <div class="space-y-1">
+                  <CardTitle class="mb-1 text-xl">{{ $t('Administravimas') }}</CardTitle>
+                  <CardDescription>
+                    {{ $t('Visos informacijos administravimo įrankiai ir lentelės') }}
+                  </CardDescription>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+          <a href="https://www.vusa.lt/docs">
+            <Card class="transition-all duration-200 hover:bg-muted/50 hover:shadow-md">
+              <CardContent class="flex gap-6 p-6 items-center">
+                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                  <BookOpenIcon class="h-6 w-6 text-primary" />
+                </div>
+                <div class="space-y-1">
+                  <CardTitle class="mb-1 text-xl">{{ $t('Dokumentacija') }}</CardTitle>
+                  <CardDescription>
+                    {{ $t('Instrukcijos apie vusa.lt/mano platformą ir naudotojų atsakomybes') }}
+                  </CardDescription>
+                </div>
+              </CardContent>
+            </Card>
+          </a>
+          <Link :href="route('dashboard.atstovavimas')">
+            <Card class="transition-all duration-200 hover:bg-muted/50 hover:shadow-md">
+              <CardContent class="flex gap-6 p-6 items-center">
+                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                  <UsersIcon class="h-6 w-6 text-primary" />
+                </div>
+                <div class="space-y-1">
+                  <CardTitle class="mb-1 text-xl">{{ $t('Atstovavimas') }}</CardTitle>
+                  <CardDescription>
+                    {{ $t('Susitikimų, tikslų ir atstovavimo veiklų stebėjimas') }}
+                  </CardDescription>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+        </div>
+      </section>
     </div>
   </PageContent>
 </template>
 
-<script setup lang="tsx">
-import { Head, Link, usePage } from "@inertiajs/vue3";
-import { useBreadcrumbs } from '@/Composables/useBreadcrumbs';
+<script setup lang="ts">
+import { Head, Link, router, usePage } from "@inertiajs/vue3";
+import { useComponentBreadcrumbs, homeItem } from '@/Composables/useBreadcrumbs';
 import { trans as $t } from "laravel-vue-i18n";
+import { computed, ref } from "vue";
 
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import { computed } from "vue";
 import { addressivize } from "@/Utils/String";
-import AdminMultiHomeCards from "../../Components/Cards/AdminMultiHomeCards.vue";
+import ActivityTimeline from "@/Components/Dashboard/ActivityTimeline.vue";
 
-const { setBreadcrumbs } = useBreadcrumbs();
+// UI components
+import { 
+  Card, 
+  CardHeader,
+  CardTitle, 
+  CardDescription, 
+  CardContent 
+} from "@/Components/ui/card";
+import { Button } from "@/Components/ui/button";
+import { Separator } from "@/Components/ui/separator";
 
-setBreadcrumbs([]);
+// Icons
+import { 
+  LayoutGridIcon,
+  SettingsIcon,
+  BookOpenIcon, 
+  BellIcon,
+  UsersIcon,
+  CalendarIcon,
+  ClipboardIcon,
+  BuildingIcon,
+  FileTextIcon,
+  Activity as ActivityIcon,
+  ChevronRight as ChevronRightIcon,
+  LayoutDashboard as LayoutDashboardIcon,
+  Clock as ClockIcon,
+  CheckCircle2 as CheckCircle2Icon,
+  AlertTriangle as AlertTriangleIcon,
+  GraduationCap as GraduationCapIcon,
+  Globe as GlobeIcon,
+  Bookmark as BookmarkIcon,
+} from "lucide-vue-next";
 
+// Breadcrumbs setup - use useComponentBreadcrumbs for proper lifecycle management
+useComponentBreadcrumbs([
+]);
+
+// Get data from props
+const props = defineProps<{
+  recentActivities: any[];
+  taskStats: {
+    completed: number;
+    pending: number;
+    overdue: number;
+  };
+  unreadNotificationsCount: number;
+  hasNotifications: boolean;
+  canViewTenantActivities: boolean;
+}>();
+
+// User name with addressivization for Lithuanian
 const userNameAddress = computed(() => {
   const name = usePage().props.auth?.user.name;
-
-  // Split
   const split = name?.split(" ");
 
-  if (!split) {
-    return "";
-  }
-
+  if (!split) return "";
+  
   const firstName = split[0];
-
   return usePage().props.app.locale === 'lt' ? addressivize(firstName) : firstName;
 });
+
+// Personalized greeting based on time of day
+const greeting = computed(() => {
+  const hour = new Date().getHours();
+  if (hour < 5) return $t('Sveiki sugrįžę į mano.vusa.lt! Vėlyvas vakaras dirbti.');
+  if (hour < 12) return $t('Labas rytas! Sveiki sugrįžę į mano.vusa.lt.');
+  if (hour < 18) return $t('Sveiki sugrįžę į mano.vusa.lt. Linkime produktyvios dienos!');
+  return $t('Sveiki sugrįžę į mano.vusa.lt. Linkime produktyvaus vakaro!');
+});
+
+// Quick action cards
+const quickActions = computed(() => {
+  const actions = [];
+
+  if (usePage().props.auth?.can.create.meeting) {
+    actions.push({
+      title: $t('Naujas susitikimas'),
+      description: $t('Sukurti naują susitikimą su darbotvarke'),
+      href: route('meetings.index'),
+      icon: CalendarIcon,
+    });
+  }
+
+  if (usePage().props.auth?.can.create.news) {
+    actions.push({
+      title: $t('Nauja naujiena'),
+      description: $t('Sukurti naują žinutę ar pranešimą'),
+      href: route('news.index'),
+      icon: FileTextIcon,
+    });
+  }
+
+  if (usePage().props.auth?.can.create.reservation) {
+    actions.push({
+      title: $t('Rezervacija'),
+      description: $t('Rezervuoti išteklius ar patalpas'),
+      href: route('reservations.index'),
+      icon: BuildingIcon,
+    });
+  }
+
+  if (usePage().props.auth?.can.create.goal) {
+    actions.push({
+      title: $t('Naujas tikslas'),
+      description: $t('Sukurti naują tikslą ar uždavinį'),
+      href: route('goals.index'),
+      icon: ClipboardIcon,
+    });
+  }
+
+  // Always include personal tasks
+  actions.push({
+    title: $t('Mano užduotys'),
+    description: $t('Peržiūrėti ir tvarkyti užduotis'),
+    href: route('userTasks'),
+    icon: ClipboardIcon,
+  });
+
+  return actions.slice(0, 3); // Limit to 3 items
+});
+
+// Quick links
+const quickLinks = computed(() => [
+  {
+    title: $t('Mano profilis'),
+    href: route('profile'),
+    icon: UsersIcon,
+  },
+  {
+    title: $t('Mano užduotys'),
+    href: route('userTasks'),
+    icon: ClipboardIcon,
+  },
+  // {
+  //   title: $t('Dokumentai'),
+  //   href: route('documents.index'),
+  //   icon: FileTextIcon,
+  // }
+]);
+
+// Navigation helper
+const navigateToNotifications = () => {
+  router.visit(route('notifications.index'));
+};
+
+// Activity view type toggle
+const showTenantActivities = computed(() => usePage().props.showTenantActivities ?? false);
+const toggleActivityViewType = () => {
+  router.visit(route('dashboard'), {
+    data: {
+      view_type: showTenantActivities.value ? 'personal' : 'tenant'
+    },
+    preserveState: true,
+    only: ['recentActivities', 'showTenantActivities']
+  });
+};
 </script>
 
 <style scoped>
+@keyframes wave {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(15deg); }
+  50% { transform: rotate(0deg); }
+  75% { transform: rotate(15deg); }
+}
+
+.animate-wave {
+  animation: wave 1.5s ease-in-out;
+}
+
 h2 {
-  font-weight: 900;
+  font-weight: 700;
   font-size: 1.25rem;
   line-height: 1.75rem;
-  font-kerning: auto;
   /* more compact */
   letter-spacing: -0.02em;
 }

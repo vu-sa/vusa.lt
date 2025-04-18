@@ -142,7 +142,7 @@ const defaultTab = computed(() => {
 
 const { createRouteBreadcrumb, createBreadcrumbItem } = useBreadcrumbs();
 
-const breadcrumbOptions = computed((): BreadcrumbItem[] => [
+const breadcrumbs = computed((): BreadcrumbItem[] => [
   createRouteBreadcrumb("Mokymai", "trainings.index"),
   createBreadcrumbItem(props.training.name, undefined, Sparkle20Filled),
 ]);

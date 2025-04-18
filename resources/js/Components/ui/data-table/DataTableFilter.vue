@@ -3,12 +3,19 @@
     <DropdownMenuTrigger asChild>
       <Button variant="outline" size="sm" :class="{'border-primary': isActive}" data-filter-button>
         <slot />
+        <!-- Add filter count badge -->
+        <div 
+          v-if="isActive" 
+          class="ml-1.5 flex items-center justify-center h-5 min-w-5 rounded-full bg-primary text-primary-foreground text-xs font-medium"
+        >
+          {{ filterCount }}
+        </div>
         <ChevronDownIcon class="ml-2 h-4 w-4" />
       </Button>
     </DropdownMenuTrigger>
     <DropdownMenuContent align="start" class="w-[200px] p-2 max-h-[350px]">
       <!-- Multi-select mode -->
-      <div v-if="multiple" class="space-y-2 max-h-[300px] overflow-auto"> <!-- Add padding-bottom to prevent overlap -->
+      <div v-if="multiple" class="space-y-2 max-h-[300px] overflow-auto pb-12"> <!-- Add padding-bottom to prevent overlap -->
         <CheckboxGroupRoot
           v-model="selectedValues"
           class="flex flex-col gap-2.5"
@@ -136,6 +143,14 @@ const isActive = computed(() => {
     return Array.isArray(props.value) && props.value.length > 0;
   }
   return props.value !== null && props.value !== undefined;
+});
+
+// Compute the count of active filters
+const filterCount = computed(() => {
+  if (props.multiple) {
+    return selectedValues.value.length;
+  }
+  return props.value !== null && props.value !== undefined ? 1 : 0;
 });
 
 // Handle single-select option click

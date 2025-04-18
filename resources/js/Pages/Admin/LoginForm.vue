@@ -29,12 +29,12 @@
           <div
             class="m-auto mt-0 flex h-auto flex-col items-center gap-4 rounded-lg bg-zinc-50 p-4 text-zinc-700 shadow-xl transition-shadow duration-500 ease-in-out hover:shadow-zinc-900/90 dark:bg-zinc-900 sm:mt-auto sm:justify-center sm:p-12">
             <h1 class="font-bold text-zinc-700">
-              {{ $t("Labas") }}! 👋
+              {{ $t("Labas") }}! 👋 
             </h1>
             <AppLogo class="w-24 sm:hidden" />
 
             <p class="max-w-xs text-center text-xs text-zinc-600 sm:text-center">
-              <strong>vusa.lt/mano</strong> {{ $t("auth.usage_status") }}.
+              <strong>{{ $page.props.app.locale === 'en' ? 'My VU SR' : 'Mano VU SA' }}</strong> {{ $t("auth.usage_status") }}.
               <!-- <Link class="text-zinc-400 underline" :href="route('home')"
                 >Kaip tapti?</Link
               > -->

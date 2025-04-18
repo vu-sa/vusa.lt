@@ -1,5 +1,5 @@
 <template>
-  <AdminContentPage :title="$t('Užduotys')">
+  <AdminContentPage :title="$t('Užduotys')" :breadcrumbs="breadcrumbs">
     <TaskManager :tasks="tasks" />
   </AdminContentPage>
 </template>
@@ -16,11 +16,9 @@ defineProps<{
   tasks: App.Entities.Task[];
 }>();
 
-// const { createBreadcrumbItem } = useBreadcrumbs();
+const { createBreadcrumbItem } = useBreadcrumbs();
 
-// const title = computed(() => $t("Užduotys"));
-
-// const breadcrumb = computed((): BreadcrumbItem[] => [
-//   createBreadcrumbItem(title.value, undefined, Icons.MEETING),
-// ]);
+const breadcrumbs = computed((): BreadcrumbItem[] => [
+  createBreadcrumbItem($t('Užduotys'), undefined, Icons.TASK),
+]);
 </script>

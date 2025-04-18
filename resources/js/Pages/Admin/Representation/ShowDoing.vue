@@ -1,5 +1,5 @@
 <template>
-  <ShowPageLayout :title="doing.title" :breadcrumb-options="breadcrumbOptions" :model="doing"
+  <ShowPageLayout :title="doing.title" :breadcrumb-options="breadcrumbs" :model="doing"
     :related-models="relatedModels" :current-tab="currentTab" @change:tab="currentTab = $event">
     <template #more-options>
       <MoreOptionsButton edit delete @edit-click="showEditModal = true" @delete-click="handleDelete" />
@@ -65,7 +65,7 @@ const handleSubmit = (form: any) => {
   showEditModal.value = false;
 };
 
-const breadcrumbOptions: BreadcrumbOption[] = [
+const breadcrumbs: BreadcrumbOption[] = [
   {
     label: props.doing.users?.[0]?.name,
     icon: Person24Filled,

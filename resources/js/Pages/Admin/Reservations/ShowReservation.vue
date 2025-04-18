@@ -1,5 +1,5 @@
 <template>
-  <ShowPageLayout :title="reservation.name" :breadcrumb-options="breadcrumbOptions" :model="reservation"
+  <ShowPageLayout :title="reservation.name" :breadcrumb-options="breadcrumbs" :model="reservation"
     :related-models="relatedModels" :current-tab="currentTab" @change:tab="currentTab = $event">
     <template #after-heading>
       <UsersAvatarGroup v-if="reservation.users && reservation.users.length > 0" class="mr-2"
@@ -69,20 +69,26 @@
 </template>
 
 <script setup lang="tsx">
-import { trans as $t } from "laravel-vue-i18n";
+import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
 import {
   NIcon,
   NTag,
+  NButton,
+  NForm,
+  NFormItem,
+  NSelect,
   type MenuOption,
   type SelectRenderLabel,
   type SelectRenderTag,
 } from "naive-ui";
-import { ref, toRaw } from "vue";
+import { ref, toRaw, computed } from "vue";
 import { router, useForm } from "@inertiajs/vue3";
 import { useStorage } from "@vueuse/core";
+import { capitalize } from "vue";
 
 import { RESERVATION_CARD_MODAL_TITLES } from "@/Constants/I18n/CardModalTitles";
 import { RESERVATION_HELP_TEXTS } from "@/Constants/I18n/HelpTexts";
+import { useBreadcrumbs, type BreadcrumbItem } from "@/Composables/useBreadcrumbs";
 
 import CardModal from "@/Components/Modals/CardModal.vue";
 import CommentViewer from "@/Features/Admin/CommentViewer/CommentViewer.vue";
@@ -102,6 +108,21 @@ const props = defineProps<{
   allResources?: App.Entities.Resource[];
   allUsers?: App.Entities.User[];
 }>();
+
+// Breadcrumbs setup
+const { createBreadcrumbItem, homeItem, createRouteBreadcrumb } = useBreadcrumbs();
+
+const breadcrumbs = computed((): BreadcrumbItem[] => [
+  homeItem(),
+  createBreadcrumbItem($t("administration.title"), route("administration")),
+  createRouteBreadcrumb(
+    capitalize($tChoice("entities.reservation.model", 2)), 
+    "reservations.index", 
+    {}, 
+    Icons.RESERVATION
+  ),
+  createBreadcrumbItem(props.reservation.name)
+]);
 
 const currentTab = useStorage("show-reservation-tab", "Komentarai");
 const selectedReservationResource =
@@ -127,13 +148,6 @@ const currentlyUsedCapacity = ref(0);
 const reservationUserForm = useForm({
   users: null,
 });
-
-const breadcrumbOptions: BreadcrumbOption[] = [
-  {
-    label: props.reservation.name,
-    icon: Icons.RESERVATION,
-  },
-];
 
 const moreOptions: MenuOption[] = [
   {

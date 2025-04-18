@@ -1,5 +1,5 @@
 <template>
-  <AdminContentPage title="Svetainė">
+  <AdminContentPage :title="$t('Svetainė')" :breadcrumbs="breadcrumbs">
     <section v-if="tenants.length > 0" class="mt-8">
       <div class="mb-8 inline-flex items-center gap-6">
         <h3 class="mb-0">
@@ -138,6 +138,8 @@ import { binX, plot, rectY } from '@observablehq/plot';
 import { onMounted, ref, watch } from 'vue';
 import { computed } from 'vue';
 import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
+import { useBreadcrumbs, type BreadcrumbItem } from "@/Composables/useBreadcrumbs";
+import { trans as $t } from "laravel-vue-i18n";
 
 const { tenants, providedTenant } = defineProps<{
   tenants: App.Entities.Tenant[];
@@ -169,6 +171,13 @@ const generatePlot = () => plot({
   width: 350,
   height: 170,
 });
+
+// Setup breadcrumbs for the Svetaine page
+const { createBreadcrumbItem } = useBreadcrumbs();
+
+const breadcrumbs = computed((): BreadcrumbItem[] => [
+  createBreadcrumbItem($t('Svetainė'), undefined, Icons.PAGE)
+]);
 
 watch(() => providedTenant, () => {
   if (wrapper.value) {

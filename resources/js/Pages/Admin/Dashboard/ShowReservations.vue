@@ -1,5 +1,5 @@
 <template>
-  <AdminContentPage title="Rezervacijos">
+  <AdminContentPage title="Rezervacijos" :breadcrumbs="breadcrumbs">
     <div class="grid grid-cols-1 gap-4 lg:grid-cols-2 2xl:grid-cols-3">
       <NCard :segmented="{
         footer: 'soft',
@@ -154,7 +154,11 @@ import { Separator } from '@/Components/ui/separator';
 import Icons from "@/Types/Icons/filled";
 import { formatStaticTime } from '@/Utils/IntlTime';
 import { Link, router } from '@inertiajs/vue3';
-import { h, ref } from 'vue';
+import { h, ref, computed } from 'vue';
+import { useBreadcrumbs, type BreadcrumbItem } from "@/Composables/useBreadcrumbs";
+import { trans as $t } from "laravel-vue-i18n";
+import IFluentBookmarkAdd24Filled from '~icons/fluent/bookmark-add-24-filled';
+import IFluentCube24Filled from '~icons/fluent/cube-24-filled';
 
 const { reservations, tenants, providedTenant } = defineProps<{
   reservations: App.Entities.Reservation[];
@@ -198,4 +202,11 @@ const reservationColumns = [
     render: (row: App.Entities.Reservation) => row.isCompleted ? 'Taip' : 'Ne',
   },
 ];
+
+// Setup breadcrumbs for the Reservations page
+const { createBreadcrumbItem } = useBreadcrumbs();
+
+const breadcrumbs = computed((): BreadcrumbItem[] => [
+  createBreadcrumbItem($t('Rezervacijos'), undefined, Icons.RESERVATION)
+]);
 </script>

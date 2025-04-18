@@ -1,4 +1,4 @@
-import { ref, readonly, provide, inject, computed } from 'vue'
+import { ref, readonly, provide, inject, computed, onMounted, onUnmounted, watch } from 'vue'
 import { router, usePage } from '@inertiajs/vue3'
 import type { Component, InjectionKey, Ref } from 'vue'
 import Home24Filled from '~icons/fluent/home24-filled'
@@ -16,20 +16,13 @@ export interface BreadcrumbItem {
 // Create a global state to persist across Inertia page transitions
 const globalBreadcrumbs = ref<BreadcrumbItem[]>([])
 
-// Track if a component has explicitly set breadcrumbs to prevent default behavior
-const breadcrumbsExplicitlySet = ref(false)
+// We'll track the source of current breadcrumbs to manage priority properly
+const breadcrumbSource = ref<'component' | 'default' | 'none'>('none')
 
-const breadcrumbsSymbol: InjectionKey<{
-  breadcrumbs: Ref<BreadcrumbItem[]>
-  setBreadcrumbs: (breadcrumbs: BreadcrumbItem[]) => void
-  addBreadcrumb: (breadcrumb: BreadcrumbItem) => void
-  clearBreadcrumbs: () => void
-  resetToHome: () => void
-  createBreadcrumbItem: (label: string, href?: string, icon?: Component) => BreadcrumbItem
-  createRouteBreadcrumb: (label: string, routeName: string, params?: any, icon?: Component) => BreadcrumbItem
-  homeItem: () => BreadcrumbItem
-  hasBreadcrumbs: Ref<boolean>
-}> = Symbol('breadcrumbs')
+/**
+ * Injection key for the breadcrumbs context
+ */
+const breadcrumbsSymbol: InjectionKey<ReturnType<typeof createBreadcrumbState>> = Symbol('breadcrumbs')
 
 /**
  * Create a breadcrumb item
@@ -51,13 +44,13 @@ function createBreadcrumbItem(
  */
 function createRouteBreadcrumb(
   label: string,
-  routeName: string,
+  routeName?: string,
   params?: any,
   icon?: Component
 ): BreadcrumbItem {
   return {
     label,
-    href: route(routeName, params),
+    href: routeName ? route(routeName, params) : undefined,
     icon
   }
 }
@@ -65,7 +58,7 @@ function createRouteBreadcrumb(
 /**
  * Home breadcrumb item - returns a fresh instance with translated label when called
  */
-function homeItem(): BreadcrumbItem {
+export function homeItem(): BreadcrumbItem {
   return {
     label: $t('Pradinis'),
     href: route('dashboard'),
@@ -77,35 +70,48 @@ function homeItem(): BreadcrumbItem {
  * Create global breadcrumb state for the application
  */
 export function createBreadcrumbState() {  
-  function setBreadcrumbs(items: BreadcrumbItem[]) {
-    globalBreadcrumbs.value = items
-    breadcrumbsExplicitlySet.value = items.length > 0
+  /**
+   * Set breadcrumbs with a specified source
+   */
+  function setBreadcrumbs(items: BreadcrumbItem[], source: 'component' | 'default' = 'component') {
+    // Only update if the source has higher or equal priority
+    if (source === 'component' || breadcrumbSource.value === 'none' || breadcrumbSource.value === 'default') {
+      globalBreadcrumbs.value = items
+      breadcrumbSource.value = source
+    }
   }
   
+  /**
+   * Add a single breadcrumb item
+   */
   function addBreadcrumb(item: BreadcrumbItem) {
     globalBreadcrumbs.value.push(item)
-    breadcrumbsExplicitlySet.value = true
+    breadcrumbSource.value = 'component'
   }
   
+  /**
+   * Clear all breadcrumbs
+   */
   function clearBreadcrumbs() {
     globalBreadcrumbs.value = []
-    breadcrumbsExplicitlySet.value = false
+    breadcrumbSource.value = 'none'
   }
   
+  /**
+   * Reset breadcrumbs to just the home item
+   */
   function resetToHome() {
-    globalBreadcrumbs.value = []
-    breadcrumbsExplicitlySet.value = false
+    globalBreadcrumbs.value = [homeItem()]
+    breadcrumbSource.value = 'default'
   }
   
-  // Setup Inertia navigation event listeners to maintain breadcrumb state
-  router.on('start', (event) => {
-    // Mark breadcrumbs as not explicitly set on navigation start
-    // This will allow components to set their own breadcrumbs
-    breadcrumbsExplicitlySet.value = false
-  })
+  // Calculate if explicit breadcrumbs have been set by components
+  const hasBreadcrumbs = computed(() => 
+    breadcrumbSource.value === 'component' && globalBreadcrumbs.value.length > 0
+  )
   
-  provide(breadcrumbsSymbol, {
-    breadcrumbs: globalBreadcrumbs,
+  const state = {
+    breadcrumbs: readonly(globalBreadcrumbs),
     setBreadcrumbs,
     addBreadcrumb,
     clearBreadcrumbs,
@@ -113,20 +119,13 @@ export function createBreadcrumbState() {
     createBreadcrumbItem,
     createRouteBreadcrumb,
     homeItem,
-    hasBreadcrumbs: breadcrumbsExplicitlySet
-  })
-  
-  return {
-    breadcrumbs: globalBreadcrumbs,
-    setBreadcrumbs,
-    addBreadcrumb,
-    clearBreadcrumbs,
-    resetToHome,
-    createBreadcrumbItem,
-    createRouteBreadcrumb,
-    homeItem,
-    hasBreadcrumbs: breadcrumbsExplicitlySet
+    hasBreadcrumbs,
+    breadcrumbSource: readonly(breadcrumbSource)
   }
+  
+  provide(breadcrumbsSymbol, state)
+  
+  return state
 }
 
 /**
@@ -140,4 +139,45 @@ export function useBreadcrumbs() {
   }
   
   return breadcrumbs
+}
+
+/**
+ * Use and manage breadcrumbs with automatic setup and cleanup
+ * This composable automatically handles the lifecycle of breadcrumbs
+ * and reduces code duplication across components
+ */
+export function useComponentBreadcrumbs(breadcrumbsOrGetter: BreadcrumbItem[] | (() => BreadcrumbItem[]) | Ref<BreadcrumbItem[] | undefined>) {
+  const { setBreadcrumbs } = useBreadcrumbs()
+  
+  // Update breadcrumbs with current value
+  function updateBreadcrumbs() {
+    let items: BreadcrumbItem[] | undefined
+    
+    if (typeof breadcrumbsOrGetter === 'function') {
+      items = breadcrumbsOrGetter()
+    } else if ('value' in breadcrumbsOrGetter) {
+      items = breadcrumbsOrGetter.value
+    } else {
+      items = breadcrumbsOrGetter
+    }
+    
+    if (items && items.length > 0) {
+      // Set explicitly as component breadcrumbs to ensure priority
+      setBreadcrumbs(items, 'component')
+    }
+  }
+  
+  // Set breadcrumbs when the component mounts and whenever breadcrumbs change
+  if ('value' in breadcrumbsOrGetter) {
+    watch(() => breadcrumbsOrGetter.value, () => {
+      updateBreadcrumbs()
+    }, { immediate: true })
+  }
+  
+  // Set breadcrumbs on mount
+  onMounted(updateBreadcrumbs)
+  
+  return {
+    updateBreadcrumbs
+  }
 }

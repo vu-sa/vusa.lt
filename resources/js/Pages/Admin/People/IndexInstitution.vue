@@ -1,25 +1,7 @@
 <template>
   <IndexTablePage
     ref="indexTablePageRef"
-    headerTitle="Institutions"
-    :headerDescription="$t('Manage institution records and their types')"
-    :icon="BuildingIcon"
-    :model-name="modelName"
-    :entity-name="entityName"
-    :data="props.data"
-    :columns="columns"
-    :total-count="props.meta.total"
-    :initial-page="props.meta.current_page"
-    :page-size="props.meta.per_page"
-    :create-route="canCreate ? route('institutions.create') : undefined"
-    :initial-filters="props.filters"
-    :initial-sorting="props.sorting"
-    :can-create="canCreate"
-    enable-filtering
-    enable-column-visibility
-    :enable-row-selection="canExport"
-    :enable-row-selection-column="canExport"
-    :get-row-id="getRowId"
+    v-bind="tableConfig"
     @data-loaded="onDataLoaded"
     @sorting-changed="handleSortingChange"
     @page-changed="handlePageChange"
@@ -151,6 +133,11 @@ import IndexTablePage from "@/Components/Layouts/IndexTablePage.vue";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
 import { createStandardActionsColumn } from "@/Composables/useTableActions";
 import { 
+  createTitleColumn,
+  createTenantColumn,
+  createTagsColumn
+} from '@/Utils/DataTableColumns';
+import { 
   Dialog, 
   DialogContent, 
   DialogHeader, 
@@ -158,20 +145,17 @@ import {
   DialogDescription, 
   DialogFooter 
 } from "@/Components/ui/dialog";
-// Doesn't exist
-// import {
-//   AlertDialog,
-//   AlertDialogAction,
-//   AlertDialogCancel,
-//   AlertDialogContent,
-//   AlertDialogDescription,
-//   AlertDialogFooter,
-//   AlertDialogHeader,
-//   AlertDialogTitle,
-// } from '@/Components/ui/alert-dialog';
 import { Label } from "@/Components/ui/label";
 import { Input } from "@/Components/ui/input";
 import { Checkbox } from "@/Components/ui/checkbox";
+import { 
+  type IndexTablePageProps,
+  type TableConfig,
+  type PaginationConfig,
+  type UIConfig,
+  type FilteringConfig,
+  type RowSelectionConfig
+} from "@/Types/TableConfigTypes";
 
 const props = defineProps<{
   data: App.Entities.Institution[];
@@ -243,19 +227,22 @@ const getRowId = (row: App.Entities.Institution) => {
 
 // Table columns
 const columns = computed<ColumnDef<App.Entities.Institution, any>[]>(() => [
-  {
+  createTitleColumn<App.Entities.Institution>({
     accessorKey: "name",
-    header: () => $t("forms.fields.title"),
+    routeName: "institutions.edit",
+    width: 300,
     cell: ({ row }) => {
       const name = row.getValue("name");
       return (
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <a href={route("institutions.edit", { id: row.original.id })} 
-                 class="font-medium hover:underline max-w-[280px] truncate block">
-                {name}
-              </a>
+              <div class="max-w-[290px] truncate">
+                <a href={route("institutions.edit", { id: row.original.id })} 
+                   class="font-medium hover:underline">
+                  {name}
+                </a>
+              </div>
             </TooltipTrigger>
             <TooltipContent side="top" align="start">
               <p>{name}</p>
@@ -263,10 +250,8 @@ const columns = computed<ColumnDef<App.Entities.Institution, any>[]>(() => [
           </Tooltip>
         </TooltipProvider>
       );
-    },
-    size: 300,
-    enableSorting: true,
-  },
+    }
+  }),
   {
     accessorKey: "alias",
     header: () => '',
@@ -288,9 +273,7 @@ const columns = computed<ColumnDef<App.Entities.Institution, any>[]>(() => [
     size: 60,
     enableSorting: false,
   },
-  {
-    accessorKey: "tenant.shortname",
-    header: () => capitalize($tChoice("entities.tenant.model", 1)),
+  createTenantColumn({
     cell: ({ row }) => {
       const tenant = row.original.tenant;
       return tenant ? (
@@ -300,12 +283,10 @@ const columns = computed<ColumnDef<App.Entities.Institution, any>[]>(() => [
         </span>
       ) : "";
     },
-    size: 150,
-    enableSorting: false,
-  },
-  {
-    accessorKey: "types",
-    header: () => $tChoice("forms.fields.type", 2),
+  }),
+  createTagsColumn("types", {
+    title: $tChoice("forms.fields.type", 2),
+    labelKey: "title",
     cell: ({ row }) => {
       const types = row.original.types || [];
       return (
@@ -318,9 +299,8 @@ const columns = computed<ColumnDef<App.Entities.Institution, any>[]>(() => [
         </div>
       );
     },
-    size: 200,
-    enableSorting: true,
-  },
+    width: 200
+  }),
   {
     id: "meetings",
     header: () => $t("Meetings"),
@@ -353,6 +333,57 @@ const columns = computed<ColumnDef<App.Entities.Institution, any>[]>(() => [
     canRestore: true
   })
 ]);
+
+// Consolidated table configuration using the new interfaces
+const tableConfig = computed<IndexTablePageProps<App.Entities.Institution>>(() => {
+  // Core table configuration
+  const tableConfig: TableConfig<App.Entities.Institution> = {
+    modelName,
+    entityName,
+    data: props.data,
+    columns: columns.value,
+    getRowId
+  };
+  
+  // Pagination configuration
+  const paginationConfig: PaginationConfig = {
+    totalCount: props.meta.total,
+    initialPage: props.meta.current_page,
+    pageSize: props.meta.per_page
+  };
+  
+  // UI configuration
+  const uiConfig: UIConfig = {
+    headerTitle: "Institutions",
+    headerDescription: $t('Manage institution records and their types'),
+    icon: BuildingIcon,
+    createRoute: canCreate.value ? route('institutions.create') : undefined,
+    canCreate: canCreate.value
+  };
+  
+  // Filtering configuration
+  const filteringConfig: FilteringConfig = {
+    initialFilters: props.filters,
+    initialSorting: props.sorting,
+    enableFiltering: true,
+    enableColumnVisibility: true
+  };
+  
+  // Row selection configuration
+  const rowSelectionConfig: RowSelectionConfig = {
+    enableRowSelection: canExport.value,
+    enableRowSelectionColumn: canExport.value
+  };
+  
+  // Return the combined configuration
+  return {
+    ...tableConfig,
+    ...paginationConfig,
+    ...uiConfig,
+    ...filteringConfig,
+    ...rowSelectionConfig
+  };
+});
 
 // Event handlers
 const handleTypeFilterChange = (typeIds: number[]) => {

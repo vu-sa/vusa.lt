@@ -35,13 +35,12 @@
 
 <script setup lang="tsx">
 import type { Component } from "vue";
-import { onMounted, onUnmounted, watch } from "vue";
 
 import ActivityLogButton from "@/Features/Admin/ActivityLogViewer/ActivityLogButton.vue";
 import AdminContentPage from "../AdminContentPage.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import RelatedModelButton from "@/Components/Buttons/RelatedModelButton.vue";
-import { useBreadcrumbs } from "@/Composables/useBreadcrumbs";
+import { useComponentBreadcrumbs } from "@/Composables/useBreadcrumbs";
 import type { BreadcrumbItem } from "@/Composables/useBreadcrumbs";
 
 const emit = defineEmits<{
@@ -61,30 +60,7 @@ const props = defineProps<{
   title?: string;
 }>();
 
-// Get breadcrumbs from the composable
-const { setBreadcrumbs, clearBreadcrumbs } = useBreadcrumbs();
-
-// Update breadcrumbs whenever the component props change
-// This is key for Inertia navigation to update breadcrumbs properly
-function updateBreadcrumbs() {
-  if (props.breadcrumbs && props.breadcrumbs.length > 0) {
-    // Explicitly set breadcrumbs to prevent default behavior in AdminLayout
-    setBreadcrumbs(props.breadcrumbs);
-  }
-}
-
-// Set breadcrumbs when the component mounts and whenever breadcrumbs prop changes
-watch(() => props.breadcrumbs, () => {
-  updateBreadcrumbs();
-}, { immediate: true });
-
-// This ensures breadcrumbs are set even on Inertia page transitions
-onMounted(() => {
-  updateBreadcrumbs();
-});
-
-// Clean up breadcrumbs when component is unmounted
-onUnmounted(() => {
-  clearBreadcrumbs();
-});
+// Use the improved breadcrumbs composable
+// This handles all breadcrumb lifecycle automatically
+useComponentBreadcrumbs(() => props.breadcrumbs);
 </script>

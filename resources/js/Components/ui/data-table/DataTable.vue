@@ -307,6 +307,7 @@ defineExpose({
               :key="column.id"
               :modelValue="column.getIsVisible()"
               @click="column.toggleVisibility()"
+              @select.prevent
             >
               {{ column.id }}
             </DropdownMenuCheckboxItem>

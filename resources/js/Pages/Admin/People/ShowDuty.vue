@@ -2,7 +2,7 @@
   <ShowPageLayout
     :title="duty.name"
     :model="duty"
-    :breadcrumb-options="breadcrumbOptions"
+    :breadcrumbs="breadcrumbs"
   >
     <template #more-options>
       <MoreOptionsButton
@@ -128,7 +128,7 @@ const filteredUsers = computed(() => {
 
 const { createRouteBreadcrumb, createBreadcrumbItem } = useBreadcrumbs();
 
-const breadcrumbOptions = computed((): BreadcrumbItem[] => [
+const breadcrumbs = computed((): BreadcrumbItem[] => [
   createRouteBreadcrumb(props.duty.institution?.name, "institutions.show", { institution: props.duty?.institution?.id }, Icons.INSTITUTION),
   createBreadcrumbItem(props.duty.name, undefined, Icons.DUTY),
 ]);
