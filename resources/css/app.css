@@ -132,19 +132,19 @@
 @layer base {
 
   h1 {
-    @apply text-2xl md:text-4xl font-black mt-4 mb-6 text-gray-900 dark:text-zinc-100;
+    @apply text-2xl md:text-4xl font-black mb-6 text-gray-900 dark:text-zinc-100 leading-tight;
   }
 
   h2 {
-    @apply text-xl md:text-2xl font-bold mb-2 text-gray-900 dark:text-zinc-100;
+    @apply text-xl md:text-2xl font-bold mb-3 mt-6 text-gray-900 dark:text-zinc-100 leading-snug;
   }
 
   h3 {
-    @apply text-lg md:text-xl font-bold mb-2 text-gray-900 dark:text-zinc-100;
+    @apply text-lg md:text-xl font-bold mb-2 mt-5 text-gray-900 dark:text-zinc-100;
   }
 
   h4 {
-    @apply text-base md:text-lg font-bold mb-2 text-gray-900 dark:text-zinc-100;
+    @apply text-base md:text-lg font-bold mb-2 mt-4 text-gray-900 dark:text-zinc-100;
   }
 
   a:not(.plain) {
@@ -153,6 +153,11 @@
 
   p>a {
     @apply underline;
+  }
+  
+  /* Reset heading margins in cards for more compact layout */
+  .card h1, .card h2, .card h3, .card h4, .card h5, .card h6 {
+    @apply mt-0;
   }
 }
 
@@ -226,7 +231,6 @@ html.dark {
     minmax(2rem, 1fr) 
     min(calc(100% - 4rem), 1200px) 
     minmax(2rem, 1fr);
-  @apply max-md:mt-8 mt-16
 }
 
 .rich-content-wrapper > *:first-child {

@@ -23,8 +23,25 @@ import { Input } from '@/Components/ui/input';
 import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from '@/Components/ui/dropdown-menu';
-import { ChevronDownIcon, SlidersIcon } from 'lucide-vue-next';
+import { 
+  ChevronDownIcon, 
+  SlidersIcon, 
+  ChevronLeftIcon, 
+  ChevronRightIcon,
+  ChevronsRightIcon,
+  ChevronsLeftIcon 
+} from 'lucide-vue-next';
 import { trans as $t } from 'laravel-vue-i18n';
+import { 
+  Pagination, 
+  PaginationContent, 
+  PaginationItem, 
+  PaginationNext, 
+  PaginationPrevious,
+  PaginationFirst,
+  PaginationLast,
+  PaginationEllipsis
+} from '@/Components/ui/pagination';
 
 const props = defineProps<{
   columns: ColumnDef<TData, TValue>[]
@@ -380,39 +397,48 @@ defineExpose({
       <!-- Use custom pagination slot if available (for server-side mode) -->
       <slot name="pagination">
         <div v-if="pagination && table.getPageCount() > 0" class="flex flex-wrap items-center justify-between gap-2 p-4 border-t">
-          <div class="flex-1 text-sm text-muted-foreground whitespace-nowrap">
-            {{ $t('Showing') }} 
-            <strong>{{ table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1 }}</strong>
-            {{ $t('to') }} 
-            <strong>{{ Math.min((table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize, 
-              manualPagination && rowCount ? rowCount : props.data.length) }}</strong>
-            {{ $t('of') }} 
-            <strong>{{ manualPagination && rowCount ? rowCount : props.data.length }}</strong>
-            {{ $t('results') }}
-          </div>
-          <div class="flex items-center space-x-2 flex-wrap">
-            <Button
-              variant="outline"
-              size="sm"
-              class="h-8"
-              :disabled="!table.getCanPreviousPage()"
-              @click="table.previousPage()"
-            >
-              {{ $t('Previous') }}
-            </Button>
-            <div class="flex items-center justify-center text-sm font-medium">
-              {{ $t('Page') }} {{ table.getState().pagination.pageIndex + 1 }} {{ $t('of') }} {{ table.getPageCount() }}
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              class="h-8"
-              :disabled="!table.getCanNextPage()"
-              @click="table.nextPage()"
-            >
-              {{ $t('Next') }}
-            </Button>
-          </div>
+          <Pagination 
+            :items-per-page="table.getState().pagination.pageSize"
+            :total="table.getPrePaginationRowModel().rows.length"
+          >
+            <PaginationContent>
+              <PaginationItem :value="1">
+                <PaginationFirst :disabled="!table.getCanPreviousPage()" @click="table.setPageIndex(0)">
+                  <ChevronsLeftIcon class="h-4 w-4" />
+                  <span class="sr-only">{{ $t('First page') }}</span>
+                </PaginationFirst>
+              </PaginationItem>
+              <PaginationItem :value="table.getState().pagination.pageIndex">
+                <PaginationPrevious :disabled="!table.getCanPreviousPage()" @click="table.previousPage()">
+                  <ChevronLeftIcon class="h-4 w-4" />
+                  <span class="sr-only">{{ $t('Previous page') }}</span>
+                </PaginationPrevious>
+              </PaginationItem>
+              
+              <PaginationItem 
+                v-for="page in table.getPageCount()"
+                :key="page"
+                :value="page"
+                :is-active="table.getState().pagination.pageIndex === page - 1"
+                @click="table.setPageIndex(page - 1)"
+              >
+                {{ page }}
+              </PaginationItem>
+              
+              <PaginationItem :value="table.getState().pagination.pageIndex + 2">
+                <PaginationNext :disabled="!table.getCanNextPage()" @click="table.nextPage()">
+                  <span class="sr-only">{{ $t('Next page') }}</span>
+                  <ChevronRightIcon class="h-4 w-4" />
+                </PaginationNext>
+              </PaginationItem>
+              <PaginationItem :value="table.getPageCount()">
+                <PaginationLast :disabled="!table.getCanNextPage()" @click="table.setPageIndex(table.getPageCount() - 1)">
+                  <span class="sr-only">{{ $t('Last page') }}</span>
+                  <ChevronsRightIcon class="h-4 w-4" />
+                </PaginationLast>
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
         </div>
       </slot>
     </div>
