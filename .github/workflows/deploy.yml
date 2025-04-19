@@ -18,7 +18,7 @@ jobs:
       has_changes: ${{ steps.filter.outputs.code_changed == 'true' || steps.filter.outputs.docs_changed == 'true' }}
     steps:
     - uses: actions/checkout@v4
-    - uses: dorny/paths-filter@v2
+    - uses: dorny/paths-filter@v3
       id: filter
       with:
         filters: |
