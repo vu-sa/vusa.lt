@@ -127,6 +127,8 @@
 <script setup lang="ts">
 import { router } from "@inertiajs/vue3";
 import { trans as $t } from "laravel-vue-i18n";
+import { onMounted } from "vue";
+import { usePublicBreadcrumbs } from "@/Composables/usePublicBreadcrumbs";
 
 import NewsCard from "@/Components/Public/News/NewsCard.vue";
 import SmartLink from "@/Components/Public/SmartLink.vue";
@@ -140,7 +142,6 @@ import {
   PaginationFirst,
   PaginationLast
 } from "@/Components/ui/pagination";
-import IFluentNews24Regular from "~icons/fluent/news-24-regular";
 
 const props = defineProps<{
   news: PaginatedModels<App.Entities.News>;
@@ -173,4 +174,10 @@ const handlePageChange = (page: number) => {
     }
   });
 };
+
+const { setPageBreadcrumbs } = usePublicBreadcrumbs();
+
+onMounted(() => {
+  setPageBreadcrumbs([]);
+});
 </script>

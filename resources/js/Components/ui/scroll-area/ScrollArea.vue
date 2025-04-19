@@ -9,12 +9,28 @@ import {
 import { computed, type HTMLAttributes } from 'vue'
 import ScrollBar from './ScrollBar.vue'
 
-const props = defineProps<ScrollAreaRootProps & { class?: HTMLAttributes['class'] }>()
+// Extend props to include orientation control for horizontal scrolling
+const props = withDefaults(defineProps<
+  ScrollAreaRootProps & { 
+    class?: HTMLAttributes['class'],
+    orientation?: 'vertical' | 'horizontal' | 'both'
+  }
+>(), {
+  orientation: 'vertical'
+})
 
 const delegatedProps = computed(() => {
-  const { class: _, ...delegated } = props
+  const { class: _, orientation: __, ...delegated } = props
 
   return delegated
+})
+
+const showHorizontalScrollbar = computed(() => {
+  return props.orientation === 'horizontal' || props.orientation === 'both'
+})
+
+const showVerticalScrollbar = computed(() => {
+  return props.orientation === 'vertical' || props.orientation === 'both'
 })
 </script>
 
@@ -30,7 +46,13 @@ const delegatedProps = computed(() => {
     >
       <slot />
     </ScrollAreaViewport>
-    <ScrollBar />
-    <ScrollAreaCorner />
+    <!-- Vertical scrollbar (default) -->
+    <ScrollBar v-if="showVerticalScrollbar" orientation="vertical" />
+    
+    <!-- Horizontal scrollbar -->
+    <ScrollBar v-if="showHorizontalScrollbar" orientation="horizontal" />
+    
+    <!-- Only show corner when both scrollbars are visible -->
+    <ScrollAreaCorner v-if="showHorizontalScrollbar && showVerticalScrollbar" />
   </ScrollAreaRoot>
 </template>
