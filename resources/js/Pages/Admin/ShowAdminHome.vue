@@ -40,7 +40,7 @@
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <Card v-for="action in quickActions" :key="action.title" 
                 class="transition-all duration-300 hover:shadow-md hover:ring-1 hover:ring-primary/10 dark:hover:shadow-primary/5">
-            <Link :href="action.href">
+            <Link v-if="action.href" :href="action.href">
               <CardHeader class="pb-2">
                 <div class="rounded-full bg-primary/10 p-2 w-fit">
                   <component :is="action.icon" class="h-5 w-5 text-primary" />
@@ -51,6 +51,17 @@
                 <CardDescription class="text-sm">{{ action.description }}</CardDescription>
               </CardContent>
             </Link>
+            <div v-else @click="action.onClick">
+              <CardHeader class="pb-2">
+                <div class="rounded-full bg-primary/10 p-2 w-fit">
+                  <component :is="action.icon" class="h-5 w-5 text-primary" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <CardTitle class="text-lg">{{ action.title }}</CardTitle>
+                <CardDescription class="text-sm">{{ action.description }}</CardDescription>
+              </CardContent>
+            </div>
           </Card>
         </div>
       </section>
@@ -212,6 +223,8 @@
         </div>
       </section>
     </div>
+
+    <NewMeetingModal :show-modal="showMeetingModal" @close="showMeetingModal = false" />
   </PageContent>
 </template>
 
@@ -224,6 +237,7 @@ import { computed, ref } from "vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import { addressivize } from "@/Utils/String";
 import ActivityTimeline from "@/Components/Dashboard/ActivityTimeline.vue";
+import NewMeetingModal from "@/Components/Modals/NewMeetingModal.vue";
 
 // UI components
 import { 
@@ -275,6 +289,9 @@ const props = defineProps<{
   canViewTenantActivities: boolean;
 }>();
 
+// Modal state
+const showMeetingModal = ref(false);
+
 // User name with addressivization for Lithuanian
 const userNameAddress = computed(() => {
   const name = usePage().props.auth?.user.name;
@@ -303,7 +320,7 @@ const quickActions = computed(() => {
     actions.push({
       title: $t('Naujas susitikimas'),
       description: $t('Sukurti naują susitikimą su darbotvarke'),
-      href: route('meetings.index'),
+      onClick: () => showMeetingModal.value = true,
       icon: CalendarIcon,
     });
   }
@@ -319,9 +336,9 @@ const quickActions = computed(() => {
 
   if (usePage().props.auth?.can.create.reservation) {
     actions.push({
-      title: $t('Rezervacija'),
-      description: $t('Rezervuoti išteklius ar patalpas'),
-      href: route('reservations.index'),
+      title: $t('Nauja rezervacija'),
+      description: $t('Rezervuoti išteklius'),
+      href: route('reservations.create'),
       icon: BuildingIcon,
     });
   }

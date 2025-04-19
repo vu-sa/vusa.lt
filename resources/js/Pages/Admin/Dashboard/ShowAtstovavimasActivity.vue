@@ -7,7 +7,6 @@
           <Label>{{ $t('Date') }}</Label>
           <DatePicker
             v-model="form.date"
-            :locale="locale"
             class="w-full"
             @update:model-value="handleDateUpdate"
           />
@@ -81,7 +80,7 @@
             </div>
             
             <!-- Meeting Activities -->
-            <div v-if="meeting.activities?.length > 0" class="space-y-3">
+            <div v-if="meeting.activities && meeting.activities.length > 0" class="space-y-3">
               <div 
                 v-for="activity in meeting.activities" 
                 :key="activity.id"
@@ -129,7 +128,7 @@
                         <h5 class="font-medium">{{ agendaItem.title }}</h5>
                       </div>
                       
-                      <div v-if="agendaItem.activities?.length > 0" class="space-y-3">
+                      <div v-if="agendaItem.activities && agendaItem.activities.length > 0" class="space-y-3">
                         <div 
                           v-for="activity in agendaItem.activities" 
                           :key="activity.id"
@@ -154,7 +153,6 @@
 import { ref, computed, onMounted } from 'vue';
 import { router, useForm } from '@inertiajs/vue3';
 import { format } from "date-fns";
-import { lt, enUS } from 'date-fns/locale';
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
@@ -208,14 +206,20 @@ const props = defineProps<{
   providedTenant: App.Entities.Tenant;
 }>();
 
+// Convert string date to Date object for DatePicker compatibility
+const parseDate = (dateString: string): Date | undefined => {
+  if (!dateString) return undefined;
+  const parsedDate = new Date(dateString);
+  return isNaN(parsedDate.getTime()) ? undefined : parsedDate;
+};
+
 const form = useForm({
-  date: props.date,
+  date: parseDate(props.date),
   tenant_id: props.providedTenant.id,
 });
 
 // Get current locale for date picker
 const currentLocale = usePage().props.app.locale;
-const locale = ref(currentLocale === 'lt' ? lt : enUS);
 
 // Track the open state for each meeting's collapsible
 const openItems = ref<Record<string, boolean>>({});
@@ -249,7 +253,11 @@ const breadcrumbs = computed((): BreadcrumbItem[] => [
 
 // Handle date change
 const handleDateUpdate = () => {
-  const formattedDate = form.date ? format(form.date, 'yyyy-MM-dd') : '';
+  // Extract the date from the form
+  const selectedDate = form.date;
+  // Format it properly for the URL
+  const formattedDate = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '';
+  
   router.visit(route('dashboard.atstovavimas.summary', { 
     date: formattedDate, 
     tenant_id: props.providedTenant.id 
@@ -257,8 +265,11 @@ const handleDateUpdate = () => {
 };
 
 // Handle tenant change
-const handleTenantUpdate = (value: string | number) => {
-  router.reload({ data: { tenant_id: value } });
+const handleTenantUpdate = (value: any) => {
+  // Ensure the value is a valid tenant ID before using it
+  if (value !== null && value !== undefined) {
+    router.reload({ data: { tenant_id: value } });
+  }
 };
 
 // Initialize collapsible states

@@ -29,6 +29,8 @@ return [
         'pronouns' => 'Pronouns',
         'show_pronouns' => 'Show pronouns',
         'slug' => 'Slug',
+        'hour' => 'Hour',
+        'minute' => 'Minute',
     ],
     'context' => [
         'main_info' => 'Main information',

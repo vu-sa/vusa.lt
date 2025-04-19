@@ -24,6 +24,7 @@
             v-model="taskForm.due_date" 
             :placeholder="$t('tasks.date_placeholder')" 
             :class="{ 'border-destructive': errors.due_date }"
+            @change="handleDateChange"
           />
           <p v-if="errors.due_date" class="text-sm text-destructive">{{ errors.due_date }}</p>
         </div>
@@ -31,7 +32,7 @@
         <div class="grid gap-2">
           <Label :for="'task-users'">{{ $t("forms.fields.responsible_people") }}</Label>
           <MultiSelectUsers 
-            v-model:value="taskForm.user_ids" 
+            v-model="taskForm.user_ids" 
             :class="{ 'border-destructive': errors.users }"
           />
           <p v-if="errors.users" class="text-sm text-destructive">{{ errors.users }}</p>
@@ -86,7 +87,7 @@ const emit = defineEmits<{
 const isSubmitting = ref(false);
 const taskForm = reactive({
   name: "",
-  due_date: null as Date | null,
+  due_date: undefined as Date | undefined, // Changed from null to undefined for DatePicker compatibility
   user_ids: [] as string[],
   separate_tasks: false
 });
@@ -191,7 +192,7 @@ const createTask = () => {
  */
 const resetForm = () => {
   taskForm.name = "";
-  taskForm.due_date = null;
+  taskForm.due_date = undefined; // Changed from null to undefined for DatePicker compatibility
   taskForm.user_ids = [];
   taskForm.separate_tasks = false;
   
@@ -199,5 +200,15 @@ const resetForm = () => {
   errors.name = '';
   errors.due_date = '';
   errors.users = '';
+};
+
+/**
+ * Handle date change from DatePicker
+ * Clears any validation errors related to the date field
+ */
+const handleDateChange = (date: Date) => {
+  if (date) {
+    errors.due_date = '';
+  }
 };
 </script>

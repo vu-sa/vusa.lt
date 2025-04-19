@@ -177,8 +177,21 @@ describe('PublicBreadcrumb.vue', () => {
     
     const wrapper = createWrapper({ items });
     
-    // Snapshot should match the rendered HTML
-    expect(wrapper.html()).toMatchSnapshot();
+    // Use toMatchInlineSnapshot instead of toMatchSnapshot
+    expect(wrapper.html()).toMatchInlineSnapshot(`
+      "<div data-v-c2982e5a="" class="breadcrumb mb-4 ml-1" data-testid="breadcrumb">
+        <ul data-v-c2982e5a="" class="breadcrumb-list">
+          <li data-v-c2982e5a="" class="breadcrumb-item"><a data-v-c2982e5a="" href="/www/home" class="inline-flex items-center"><svg data-v-c2982e5a="" viewBox="0 0 16 16" width="1.2em" height="1.2em" class="mr-1 size-3.5">
+                <path fill="currentColor" d="M7.313 1.262a1 1 0 0 1 1.374 0l4.844 4.579c.3.283.469.678.469 1.09v5.57a1.5 1.5 0 0 1-1.5 1.5h-2A1.5 1.5 0 0 1 9 12.5V10a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v2.5A1.5 1.5 0 0 1 5.5 14h-2A1.5 1.5 0 0 1 2 12.5V6.93c0-.412.17-.807.47-1.09zM8 1.988l-4.844 4.58A.5.5 0 0 0 3 6.93v5.57a.5.5 0 0 0 .5.5h2a.5.5 0 0 0 .5-.5V10a1.5 1.5 0 0 1 1.5-1.5h1A1.5 1.5 0 0 1 10 10v2.5a.5.5 0 0 0 .5.5h2a.5.5 0 0 0 .5-.5V6.93a.5.5 0 0 0-.156-.363z"></path>
+              </svg><span data-v-c2982e5a="">Pradinis</span></a></li>
+          <li data-v-c2982e5a="" class="breadcrumb-separator">/</li>
+          <li data-v-c2982e5a="" class="breadcrumb-item"><a data-v-c2982e5a="" href="/documents" class="inline-flex items-center"><svg data-v-c2982e5a="" class="mr-1 size-3.5"></svg><span data-v-c2982e5a="">Documents</span></a></li>
+          <li data-v-c2982e5a="" class="breadcrumb-separator">/</li>
+          <li data-v-c2982e5a="" class="breadcrumb-item"><span data-v-c2982e5a="" class="inline-flex items-center"><svg data-v-c2982e5a="" class="mr-1 size-3.5"></svg><span data-v-c2982e5a="">Guidelines</span></span></li>
+          <!--v-if-->
+        </ul>
+      </div>"
+    `);
   });
   
   it('meets accessibility standards', async () => {

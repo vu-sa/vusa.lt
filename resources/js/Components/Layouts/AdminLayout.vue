@@ -5,7 +5,7 @@
     <AppSidebar />
     <SidebarInset class="flex flex-col bg-background">
       <!-- Header with breadcrumbs and actions -->
-      <header class="sticky top-0 z-40 flex h-16 shrink-0 items-center border-b bg-background px-4">
+      <header class="sticky top-0 z-40 flex h-16 shrink-0 items-center border-b bg-background px-4 rounded-t-xl">
         <div class="flex flex-1 items-center gap-2">
           <SidebarTrigger class="-ml-1" />
           <Separator orientation="vertical" class="mr-2 h-4" />

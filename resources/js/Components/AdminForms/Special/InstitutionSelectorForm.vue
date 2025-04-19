@@ -1,5 +1,5 @@
 <template>
-  <NForm>
+  <Form class="flex flex-col gap-4" @submit="onSubmit" :validation-schema="schema" v-slot="{ errors }">
     <SuggestionAlert :show-alert="showAlert" @alert-closed="showAlert = false">
       <p v-if="$page.props.app.locale === 'lt'">
         Viena svarbiausių veiklų atstovavime yra
@@ -28,39 +28,89 @@
         <strong>{{ $t('Pradėkim') }}! 💪</strong>
       </p>
     </SuggestionAlert>
-    <NFormItem>
-      <template #label>
-        <span class="flex items-center gap-1">
-          <NIcon :component="Icons.INSTITUTION" />
+    
+    <div class="space-y-4">
+      <FormField name="institution_id" v-slot="{ componentField }">
+        <FormItem>
+        <FormLabel class="flex items-center gap-1">
+          <component :is="Icons.INSTITUTION" class="h-4 w-4" />
           {{ $t("Institucija") }}
-        </span>
-      </template>
+        </FormLabel>
+        <Select v-bind="componentField"
+        >
+          <FormControl>
 
-      <NSelect v-model:value="institution_id" filterable class="min-w-[260px]" :options="institutions"
-        :placeholder="'VU studijų programos komitetas...'" />
-    </NFormItem>
-    <NButton :disabled="!institution_id" @click="$emit('submit', institution_id)">
-      {{ $t("Toliau") }}...
-    </NButton>
-  </NForm>
+          <SelectTrigger class="min-w-[280px]">
+            <SelectValue :placeholder="$t('Pasirink instituciją')" />
+          </SelectTrigger>
+          </FormControl>
+
+          <SelectContent>
+            <SelectItem v-for="institution in institutions" :key="institution.value" :value="institution.value">
+              {{ institution.label }}
+            </SelectItem>
+          </SelectContent>
+        </Select>
+        <FormMessage />
+</FormItem>
+      </FormField>
+
+      <Button type="submit">
+        {{ $t("Toliau") }}...
+      </Button>
+    </div>
+  </Form>
 </template>
 
 <script setup lang="ts">
-import { NButton, NForm, NFormItem, NIcon, NSelect } from "naive-ui";
-import { computed, ref } from "vue";
+import { computed, ref, inject } from "vue";
 import { usePage } from "@inertiajs/vue3";
+import { trans as $t } from "laravel-vue-i18n";
+import { useForm, Form } from "vee-validate";
+import { toTypedSchema } from '@vee-validate/zod';
+import * as z from 'zod';
 
 import Icons from "@/Types/Icons/filled";
 import ModelChip from "@/Components/Tag/ModelChip.vue";
 import SuggestionAlert from "@/Components/Alerts/SuggestionAlert.vue";
 
-defineEmits<{
+// Import Shadcn components
+import { Button } from "@/Components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/Components/ui/select";
+import {
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/Components/ui/form";
+import FormControl from "@/Components/ui/form/FormControl.vue";
+
+const emit = defineEmits<{
   (e: "submit", data: string): void;
 }>();
 
-const institution_id = ref<"string" | null>(null);
-
 const showAlert = ref(true);
+
+// Access shared form state from parent component
+const formState = inject('meetingFormState');
+
+// Define the validation schema using zod
+const schema = toTypedSchema(z.object({
+  institution_id: z.string({
+    required_error: $t("Institucija yra privaloma"),
+  }),
+}));
+
+// Set initial value from state if available
+const initialValues = {
+  institution_id: formState?.institution_id || ''
+};
 
 const institutions = computed(() => {
   return usePage()
@@ -80,4 +130,14 @@ const institutions = computed(() => {
         self.findIndex((t) => t?.value === value?.value) === index
     );
 });
+
+const onSubmit = ({ institution_id }: { institution_id: string }) => {
+  if (institution_id) {
+    // Update state
+    if (formState) {
+      formState.institution_id = institution_id;
+    }
+    emit("submit", institution_id);
+  }
+};
 </script>

@@ -63,5 +63,5 @@ watch(
 
 // Use the improved breadcrumbs composable
 // This handles all breadcrumb lifecycle automatically
-useComponentBreadcrumbs(() => props.breadcrumbs);
+// useComponentBreadcrumbs(() => props.breadcrumbs);
 </script>

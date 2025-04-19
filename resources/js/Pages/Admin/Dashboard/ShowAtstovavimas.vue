@@ -41,7 +41,10 @@
           </p>
         </CardContent>
         <CardFooter class="flex gap-2 border-t bg-muted/50 p-4">
-          <NewMeetingButton @click="showMeetingModal = true" />
+          <Button variant="default" size="sm" @click="showMeetingModal = true">
+            <component :is="Icons.MEETING" class="mr-2 h-4 w-4" />
+            {{ $t("Pranešti") }}
+          </Button>
           <NewMeetingModal :show-modal="showMeetingModal" @close="showMeetingModal = false" />
           <Button size="sm" variant="outline" @click="showAllMeetingModal = true">
             <component :is="Icons.MEETING" class="mr-2 h-4 w-4" />
@@ -125,9 +128,10 @@
           </template>
           <template #footer>
             <div class="w-full px-5 py-4">
-              <NewMeetingButton style="width: 100%" @click="showMeetingModal = true">
+              <Button variant="default" size="default" style="width: 100%" @click="showMeetingModal = true">
+                <component :is="Icons.MEETING" class="mr-2 h-4 w-4" />
                 {{ $t('Sukurti') }}
-              </NewMeetingButton>
+              </Button>
             </div>
           </template>
         </Calendar>
@@ -239,7 +243,6 @@ import { trans as $t } from "laravel-vue-i18n";
 
 // UI components
 import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
-import NewMeetingButton from '@/Components/Buttons/NewMeetingButton.vue';
 import NewMeetingModal from '@/Components/Modals/NewMeetingModal.vue';
 import CardModal from "@/Components/Modals/CardModal.vue";
 import { Calendar, PopoverRow } from "v-calendar";

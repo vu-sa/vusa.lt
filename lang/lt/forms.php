@@ -29,6 +29,8 @@ return [
         'pronouns' => 'Įvardžiai',
         'show_pronouns' => 'Rodyti įvardžius',
         'slug' => 'Trumpinys',
+        'hour' => 'Valanda',
+        'minute' => 'Minutė',
     ],
     'context' => [
         'main_info' => 'Pagrindinė informacija',
