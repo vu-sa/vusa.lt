@@ -83,7 +83,7 @@ jobs:
       - name: Generate key
         run: |
           php artisan key:generate --force
-          APP_KEY=$(grep APP_KEY .env | cut -d '=' -f2)
+          APP_KEY=$(grep "^APP_KEY=" .env | cut -d '=' -f2)
           echo "APP_KEY=$APP_KEY" >> $GITHUB_ENV
         
       - name: Directory Permissions
