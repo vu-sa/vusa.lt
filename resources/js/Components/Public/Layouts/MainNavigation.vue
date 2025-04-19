@@ -34,12 +34,17 @@
               <DarkModeSwitch />
             </div>
             <div class="ml-auto lg:hidden">
-              <NButton text @click="isDrawerActive = true">
-                Menu
-                <template #icon>
-                  <LineHorizontal320Filled />
-                </template>
-              </NButton>
+              <Drawer direction="left">
+                <DrawerTrigger>
+                  <Button variant="outline">
+                    <LineHorizontal320Filled />
+                    Menu
+                  </Button>
+                </DrawerTrigger>
+                <DrawerContent class="p-6">
+                  <MainMenuMobile class="pb-4" />
+                </DrawerContent>
+              </Drawer>
             </div>
           </div>
         </nav>
@@ -52,14 +57,6 @@
             'opacity-100': !hasScrolledDown,
           }" />
       </div>
-      <NDrawer v-model:show="isDrawerActive" placement="left" :width="400">
-        <NDrawerContent closable>
-          <template #header>
-            Navigacija
-          </template>
-          <MainMenuMobile class="pb-4" />
-        </NDrawerContent>
-      </NDrawer>
     </section>
   </div>
 </template>
@@ -78,6 +75,8 @@ import SecondMenu from "../Nav/SecondMenu.vue";
 import SmartLink from "../SmartLink.vue";
 
 import LineHorizontal320Filled from "~icons/fluent/line-horizontal-3-20-filled";
+import { Drawer, DrawerContent, DrawerTrigger } from "@/Components/ui/drawer";
+import { Button } from "@/Components/ui/button";
 
 const MainMenuMobile = defineAsyncComponent(() => import("../Nav/MainMenuMobile.vue"));
 

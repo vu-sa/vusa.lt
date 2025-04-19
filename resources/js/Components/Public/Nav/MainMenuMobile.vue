@@ -2,7 +2,9 @@
   <div>
     <Accordion class="not-typography mb-6 mt-1" type="single" collapsible>
       <AccordionItem v-for="(item, index) in mainNavigation" :key="item.name" :value="`${index}`">
-        <AccordionTrigger>{{ item.name }}</AccordionTrigger>
+        <AccordionTrigger>
+          {{ item.name }}
+        </AccordionTrigger>
         <AccordionContent>
           <MainNavigationMenuContent is-used-without-root :item />
         </AccordionContent>
