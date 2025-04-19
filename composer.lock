@@ -4985,16 +4985,16 @@
         },
         {
             "name": "microsoft/microsoft-graph",
-            "version": "v2.31.0",
+            "version": "v2.32.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/microsoftgraph/msgraph-sdk-php.git",
-                "reference": "851b38a15444c30dd98f8342c6ccc826a9ab459c"
+                "reference": "6c9e550ddb7adec344e554c64efdf4699b3bb731"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/microsoftgraph/msgraph-sdk-php/zipball/851b38a15444c30dd98f8342c6ccc826a9ab459c",
-                "reference": "851b38a15444c30dd98f8342c6ccc826a9ab459c",
+                "url": "https://api.github.com/repos/microsoftgraph/msgraph-sdk-php/zipball/6c9e550ddb7adec344e554c64efdf4699b3bb731",
+                "reference": "6c9e550ddb7adec344e554c64efdf4699b3bb731",
                 "shasum": ""
             },
             "require": {
@@ -5026,9 +5026,9 @@
             "homepage": "https://developer.microsoft.com/en-us/graph",
             "support": {
                 "issues": "https://github.com/microsoftgraph/msgraph-sdk-php/issues",
-                "source": "https://github.com/microsoftgraph/msgraph-sdk-php/tree/v2.31.0"
+                "source": "https://github.com/microsoftgraph/msgraph-sdk-php/tree/v2.32.0"
             },
-            "time": "2025-03-25T19:09:17+00:00"
+            "time": "2025-04-15T12:13:09+00:00"
         },
         {
             "name": "microsoft/microsoft-graph-core",
@@ -5929,16 +5929,16 @@
         },
         {
             "name": "open-telemetry/sdk",
-            "version": "1.2.3",
+            "version": "1.2.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/opentelemetry-php/sdk.git",
-                "reference": "0e7804c176c4b09d95b7985400aa38ce544cb7fc"
+                "reference": "47fcb66ae5328c5a799195247b1dce551d85873e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/opentelemetry-php/sdk/zipball/0e7804c176c4b09d95b7985400aa38ce544cb7fc",
-                "reference": "0e7804c176c4b09d95b7985400aa38ce544cb7fc",
+                "url": "https://api.github.com/repos/opentelemetry-php/sdk/zipball/47fcb66ae5328c5a799195247b1dce551d85873e",
+                "reference": "47fcb66ae5328c5a799195247b1dce551d85873e",
                 "shasum": ""
             },
             "require": {
@@ -6015,7 +6015,7 @@
                 "issues": "https://github.com/open-telemetry/opentelemetry-php/issues",
                 "source": "https://github.com/open-telemetry/opentelemetry-php"
             },
-            "time": "2025-04-08T09:55:41+00:00"
+            "time": "2025-04-15T07:02:07+00:00"
         },
         {
             "name": "open-telemetry/sem-conv",
@@ -17014,5 +17014,5 @@
         "php": "^8.3"
     },
     "platform-dev": [],
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.3.0"
 }
