@@ -28,7 +28,7 @@
         "ralphjsmit/laravel-seo": "^1.6",
         "socialiteproviders/microsoft": "^4.1",
         "spatie/calendar-links": "^1.8",
-        "spatie/icalendar-generator": "^2.3",
+        "spatie/icalendar-generator": "^3.0",
         "spatie/laravel-activitylog": "^4.6",
         "spatie/laravel-collection-macros": "^8.0.0",
         "spatie/laravel-enum": "^3.0",
