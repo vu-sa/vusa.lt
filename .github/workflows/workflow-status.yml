@@ -1,0 +1,60 @@
+name: Workflow Status
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 1' # Run weekly on Mondays
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  workflow-status:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Get workflow status
+        id: status
+        uses: eriksu/workflow-status-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Generate status report
+        run: |
+          echo "# vusa.lt CI/CD Status Report" > status-report.md
+          echo "Generated on $(date)" >> status-report.md
+          echo "" >> status-report.md
+          echo "## Workflow Status Summary" >> status-report.md
+          echo "" >> status-report.md
+          echo "| Workflow | Status | Last Run | Duration |" >> status-report.md
+          echo "|----------|--------|----------|----------|" >> status-report.md
+          
+          # Parse JSON output from previous step
+          echo '${{ steps.status.outputs.json }}' | jq -r '.workflows[] | "| \(.name) | \(.status) | \(.updated_at) | \(.timing.run_duration_ms / 1000) seconds |"' >> status-report.md
+          
+          echo "" >> status-report.md
+          echo "## Test Coverage" >> status-report.md
+          echo "" >> status-report.md
+          echo "- Backend (PHP): $(curl -s https://codecov.io/gh/VU-SA/vusa.lt/branch/main | grep -o 'Backend: [0-9.]*%' || echo 'Not available')" >> status-report.md
+          echo "- Frontend (JS/TS): $(curl -s https://codecov.io/gh/VU-SA/vusa.lt/branch/main | grep -o 'Frontend: [0-9.]*%' || echo 'Not available')" >> status-report.md
+          
+      - name: Create or update status issue
+        uses: peter-evans/create-issue-from-file@v5
+        with:
+          title: CI/CD Status Report
+          content-filepath: ./status-report.md
+          labels: |
+            automation
+            ci-cd
+          issue-number: ${{ steps.find-issue.outputs.number }}
+          
+      - name: Find existing status issue
+        id: find-issue
+        run: |
+          ISSUE_NUMBER=$(gh issue list --label "ci-cd" --json number --jq '.[0].number')
+          echo "number=$ISSUE_NUMBER" >> $GITHUB_OUTPUT
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -3,7 +3,7 @@
   <!-- Also can be left or center aligned -->
   <div class="@container/grid full-bleed">
     <section class="relative grid @max-5xl/grid:grid-rows-[420px_300px] @5xl/grid:grid-cols-2 h-180 @5xl/grid:h-144"
-      :class="{ '-mt-36 2xl:-mt-34': isFirstElement }">
+      :class="{ '-mt-48': isFirstElement }">
       <div class="z-10 flex @max-5xl/grid:px-16 @5xl/grid:pl-32 flex-col @max-5xl/grid:items-center mt-auto mb-16">
         <div class="text-5xl text-center @5xl/grid:text-left font-bold text-white mb-4"
           v-html="element.json_content.title" />

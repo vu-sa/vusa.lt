@@ -1,4 +1,5 @@
 name: PHP Static Analysis
+
 on:
   workflow_dispatch:
   push:
@@ -8,6 +9,10 @@ on:
     branches-ignore:
     - 'dependabot/npm_and_yarn/*'
     - 'dependabot/composer/*'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   changes:
@@ -23,57 +28,25 @@ jobs:
           php:
             - '**/*.php'
 
-  phpstan:
+  setup:
     needs: changes
     if: ${{ needs.changes.outputs.php == 'true' || github.event_name == 'workflow_dispatch' }}
-    runs-on: "ubuntu-latest"
+    uses: ./.github/workflows/setup.yml
+      
+  phpstan:
+    needs: [changes, setup]
+    if: ${{ needs.changes.outputs.php == 'true' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
     name: PHP Static Analysis
     steps:
       - uses: actions/checkout@v4
       
-      # Try to download artifacts from previous workflow runs
+      # Download build artifacts from setup
       - name: Download build artifacts
-        id: download-artifacts
         uses: actions/download-artifact@v4
-        continue-on-error: true
         with:
           name: build-assets
           path: ./
-      
-      # Only set up PHP and install dependencies if we don't have artifacts
-      - name: Get Composer Cache Directory
-        if: steps.download-artifacts.outcome != 'success'
-        id: composer-cache
-        run: |
-          echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
-      
-      - uses: actions/cache@v4
-        if: steps.download-artifacts.outcome != 'success'
-        with:
-          path: |
-            ${{ steps.composer-cache.outputs.dir }}
-            ./vendor
-          key: composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: composer-
-      
-      - name: setup php
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: 8.3
-          extensions: dom, curl, libxml, mbstring, zip, fileinfo
-      
-      - name: Copy .env
-        if: steps.download-artifacts.outcome != 'success'
-        run: php -r "file_exists('.env') || copy('.env.example', '.env');"
-      
-      - name: Install Dependencies
-        if: steps.download-artifacts.outcome != 'success'
-        run: |
-          composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
-      
-      - name: Generate key
-        if: steps.download-artifacts.outcome != 'success'
-        run: php artisan key:generate
       
       - name: "Running Static Analysis"
         run: |

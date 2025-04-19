@@ -1,16 +1,39 @@
 name: Laravel Linting with Pint
+
 on:
   workflow_dispatch:
   push:
     branches-ignore:
       - 'dependabot/npm_and_yarn/*'
       - 'dependabot/composer/*'
+  pull_request:
+    branches-ignore:
+      - 'dependabot/npm_and_yarn/*'
+      - 'dependabot/composer/*'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      php: ${{ steps.filter.outputs.php }}
+    steps:
+    - uses: actions/checkout@v4
+    - uses: dorny/paths-filter@v2
+      id: filter
+      with:
+        filters: |
+          php:
+            - '**/*.php'
+
   phplint:
-    runs-on: "ubuntu-latest"
+    needs: changes
+    if: ${{ needs.changes.outputs.php == 'true' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
     name: Laravel Pint
-  # You may pin to the exact commit or the version.
     steps:
       - uses: actions/checkout@v4
         with:
@@ -36,8 +59,19 @@ jobs:
         with:
           preset: laravel
           verboseMode: true
+          
+      # Only auto-commit when pushing to branches, not on PRs
       - name: Git Auto Commit
+        if: ${{ github.event_name != 'pull_request' }}
         uses: stefanzweifel/git-auto-commit-action@v5.0.0
         with:
           commit_message: PHP Linting (Pint)
           skip_fetch: true
+          
+      # On PRs, create a review with suggestions instead
+      - name: Suggest changes on PR
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: reviewdog/action-suggester@v1
+        with:
+          tool_name: Laravel Pint
+          fail_on_error: false
