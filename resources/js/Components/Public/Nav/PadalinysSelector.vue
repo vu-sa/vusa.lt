@@ -31,7 +31,7 @@
           <Input 
             v-if="viewMode === 'map'"
             class="h-8 w-32"
-            :placeholder="$t('Ieškoti...')"
+            :placeholder="`${$t('Ieškoti')}...`"
             v-model="searchQuery"
           />
         </div>
@@ -39,40 +39,40 @@
       
       <!-- List View -->
       <div v-if="viewMode === 'list'" class="padalinys-list">
-        <div class="p-0">
-          <div class="space-y-1 p-1">
-            <template v-for="option in options_padaliniai" :key="option.key">
-              <Button
-                variant="ghost"
-                :class="[
-                  'flex w-full cursor-pointer items-center justify-start gap-2 rounded-md px-2 py-1.5 text-sm', 
-                  isActivePadalinys(option.key) && 'bg-accent text-accent-foreground',
-                  option.isMainOffice && 'font-bold'
-                ]"
-                @click="handleSelectPadalinys(option.key)"
-              >
-                <Avatar class="h-6 w-6">
-                  <AvatarImage v-if="option.primary_institution?.image_url" :src="option.primary_institution.image_url" />
-                  <AvatarFallback>{{ option.key.substring(0, 2).toUpperCase() }}</AvatarFallback>
-                </Avatar>
-                
-                <div class="flex flex-col items-start truncate w-full">
-                  <span class="font-medium">{{ option.label }}</span>
-                  <span class="text-xs text-muted-foreground">{{ $t(option.primary_institution?.short_name ?? '') }}</span>
-                </div>
-                
-                <Check 
-                  class="ml-auto h-4 w-4 opacity-0 transition-opacity"
-                  :class="{ 'opacity-100': isActivePadalinys(option.key) }"
-                />
-              </Button>
-            </template>
-          </div>
-        </div>
+        <ScrollArea class="h-[350px]">
+            <div class="space-y-1 p-1 overflow-hidden">
+              <template v-for="option in options_padaliniai" :key="option.key">
+                <Button
+                  variant="ghost"
+                  :class="[
+                    'flex w-full cursor-pointer items-center justify-start gap-2 rounded-md px-2 py-1.5 text-sm', 
+                    isActivePadalinys(option.key) && 'bg-accent text-accent-foreground',
+                    option.isMainOffice && 'font-bold'
+                  ]"
+                  @click="handleSelectPadalinys(option.key)"
+                >
+                  <Avatar class="h-6 w-6">
+                    <AvatarImage v-if="option.primary_institution?.image_url" :src="option.primary_institution.image_url" />
+                    <AvatarFallback>{{ option.key.substring(0, 2).toUpperCase() }}</AvatarFallback>
+                  </Avatar>
+                  
+                  <div class="flex flex-col items-start truncate w-full">
+                    <span class="font-medium">{{ option.label }}</span>
+                    <span class="text-xs text-muted-foreground">{{ $t(option.primary_institution?.short_name ?? '') }}</span>
+                  </div>
+                  
+                  <Check 
+                    class="ml-auto h-4 w-4 opacity-0 transition-opacity"
+                    :class="{ 'opacity-100': isActivePadalinys(option.key) }"
+                  />
+                </Button>
+              </template>
+            </div>
+        </ScrollArea>
       </div>
       
       <!-- Map View -->
-      <div v-else-if="viewMode === 'map'" class="padalinys-map">
+      <div v-else-if="viewMode === 'map'" class="padalinys-map relative">
           <Suspense>
             <PadalinysMap 
               ref="mapComponentRef"
@@ -80,6 +80,7 @@
               :search-query="searchQuery"
               :on-faculty-select="handleSelectPadalinys"
               :faculty-locations="facultyLocations"
+              class="max-h-[350px] overflow-hidden"
               @update:hovered-location="hoveredLocation = $event"
             />
             <template #fallback>
@@ -88,55 +89,6 @@
               </div>
             </template>
           </Suspense>
-
-        <!-- Special Locations Section (Kaunas & Šiauliai). Disabled for now, as marker collections are used -->
-        <div class="border-t pt-2 pb-2 px-2 border-zinc-200 dark:border-zinc-800 md:hidden">
-          <p class="text-xs font-medium text-muted-foreground mb-2">{{ $t('Other Cities') }}</p>
-          <div class="flex flex-wrap gap-2">
-            <Button
-              v-for="option in otherCitiesFaculties" 
-              :key="option.key"
-              size="sm"
-              variant="outline"
-              :class="[
-                'flex items-center gap-1.5', 
-                isActivePadalinys(option.key) && 'bg-muted'
-              ]"
-              @click="handleSelectPadalinys(option.key)"
-            >
-              <Avatar class="h-5 w-5">
-                <AvatarImage v-if="option.primary_institution?.image_url" :src="option.primary_institution.image_url" />
-                <AvatarFallback>{{ option.key.substring(0, 2).toUpperCase() }}</AvatarFallback>
-              </Avatar>
-              <div class="flex flex-col items-start truncate">
-                <span class="text-xs font-medium">{{ option.label }}</span>
-                <span class="text-[10px] text-muted-foreground">{{ getCityName(option) }} • {{ option.primary_institution?.short_name || getFormattedAlias(option.key) }}</span>
-              </div>
-            </Button>
-          </div>
-        </div>
-
-        <!-- Mobile Friendly List for Vilnius Faculties -->
-        <div v-if="vilniusFaculties.length > 0" class="mt-3 md:hidden max-h-24 overflow-y-auto">
-          <ScrollArea>
-            <div class="flex p-1 gap-2">
-              <Button
-                v-for="option in vilniusFaculties" 
-                :key="option.key"
-                size="sm"
-                variant="outline"
-                :class="{ 'bg-muted': isActivePadalinys(option.key) }"
-                @click="handleSelectPadalinys(option.key)"
-              >
-                <Avatar class="h-4 w-4 mr-2">
-                  <AvatarImage v-if="option.primary_institution?.image_url" :src="option.primary_institution.image_url" />
-                  <AvatarFallback class="text-[10px]">{{ option.key.substring(0, 2).toUpperCase() }}</AvatarFallback>
-                </Avatar>
-                {{ option.label }}
-              </Button>
-            </div>
-          </ScrollArea>
-        </div>
       </div>
     </PopoverContent>
   </Popover>
@@ -264,10 +216,7 @@ const options_padaliniai = computed<DropdownOption[]>(() => {
       (tenant) => (tenant.type === "padalinys" || tenant.type === "pagrindinis") && tenant.id <= 17
     )
     .map((tenant) => ({
-      label:
-        props.size.toLowerCase() === "tiny"
-          ? $t(tenant.shortname.split(" ")[2] || '')
-          : $t(tenant.fullname.split("atstovybė ")[1] || ''),
+      label: $t(tenant.fullname.split("atstovybė ")[1] || ''),
       key: tenant.alias,
       primary_institution: tenant.primary_institution,
       isMainOffice: tenant.type === "pagrindinis"
