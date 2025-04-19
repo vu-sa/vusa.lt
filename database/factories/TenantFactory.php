@@ -17,13 +17,13 @@ class TenantFactory extends Factory
     public function definition(): array
     {
         // Generate a unique shortname by combining a word and a random number
-        $shortname = $this->faker->unique()->word() . '-' . $this->faker->randomNumber(3);
-        
+        $shortname = $this->faker->unique()->word().'-'.$this->faker->randomNumber(3);
+
         return [
             'fullname' => $this->faker->company(),
             'shortname' => $shortname,
-            'alias' => $this->faker->word() . '-' . $this->faker->randomNumber(2),
-            'shortname_vu' => $this->faker->word() . $this->faker->randomNumber(2),
+            'alias' => $this->faker->word().'-'.$this->faker->randomNumber(2),
+            'shortname_vu' => $this->faker->word().$this->faker->randomNumber(2),
             'type' => 'padalinys',
         ];
     }
