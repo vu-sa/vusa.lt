@@ -16,6 +16,7 @@
           variant="outline" 
           size="sm"
           @click="showCreateTaskDialog = true"
+          disabled
         >
           <PlusIcon class="mr-1 h-4 w-4" />
           {{ $t("tasks.create_new") }}
@@ -26,7 +27,7 @@
     <TaskTable :tasks="filteredTasks" :key="taskFilterKey" />
 
     <CreateTaskDialog 
-      :open="showCreateTaskDialog" 
+      :open="false" 
       :taskable="taskable" 
       @close="showCreateTaskDialog = false"
       @task-created="handleTaskCreated"

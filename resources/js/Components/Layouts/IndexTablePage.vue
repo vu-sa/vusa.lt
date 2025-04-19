@@ -97,10 +97,13 @@
                 </p>
               </div>
               <slot name="emptyActions">
-                <Button v-if="canCreate && createRoute" :href="createRoute" variant="outline" class="gap-1.5">
-                  <PlusCircleIcon class="h-4 w-4" />
-                  <span>{{ $t('forms.add') }}</span>
-                </Button>
+                <Link v-if="canCreate && createRoute" :href="createRoute">
+                  <Button variant="outline" class="gap-1.5">
+                    <PlusCircleIcon class="h-4 w-4" />
+                    <span>{{ $t('forms.add') }}</span>
+                  </Button>
+
+                </Link>
               </slot>
             </div>
           </template>

@@ -37,16 +37,18 @@
       <template #empty>
         <slot name="empty">
           <!-- Default empty state -->
-          <!-- <EmptyState
+          <EmptyState
             :title="$t(`No ${modelName} found`)"
             :description="$t(`There are no ${modelName} matching your criteria.`)"
             :icon="EmptyIcon"
-          > -->
+          >
             <!-- Create button in empty state -->
-            <!-- <Button v-if="canCreate && createRoute" :href="createRoute">
-              {{ $t('Create') }} {{ singularModelName }}
-            </Button>
-          </EmptyState> -->
+            <Link v-if="canCreate && createRoute" :href="createRoute">
+              <Button>
+                {{ $t('Create') }} {{ singularModelName }}
+              </Button>
+            </Link>
+          </EmptyState>
         </slot>
       </template>
     </ServerDataTable>
@@ -63,7 +65,7 @@ import { Link } from '@inertiajs/vue3';
 import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { Label } from '@/Components/ui/label';
-// import EmptyState from '@/Components/ui/EmptyState.vue';
+import EmptyState from '@/Components/Empty/EmptyState.vue';
 
 // Import your ServerDataTable component
 import ServerDataTable from '@/Components/Tables/ServerDataTable.vue';

@@ -6,18 +6,18 @@
     <template #aside-header>
       <slot name="aside-header" />
     </template>
-    <SuggestionAlert v-model:show="showAlert" class="mb-2">
+    <SuggestionAlert v-model:show="showAlert" v-if="hasMarkdownContent" class="mb-2">
       <div class="text-sm">
-        <MdSuspenseWrapper :directory="modelName" :locale="$page.props.app.locale" file="description" />
+        <MdSuspenseWrapper :directory="modelName" :locale="$page.props.app.locale" file="description" @content-loaded="onContentLoaded" />
       </div>
     </SuggestionAlert>
     <slot />
     <Card class="w-full min-w-[768px]">
-      <!-- <CardHeader> -->
-      <!--   <CardTitle> -->
-      <!--     {{ title }} -->
-      <!--   </CardTitle> -->
-      <!-- </CardHeader> -->
+      <CardHeader>
+        <CardTitle class="mt-0">
+          {{ title }}
+        </CardTitle>
+      </CardHeader>
       <CardContent>
         <IndexDataTable v-bind="$attrs" :paginated-models :columns :model-name
           :show-route="canUseRoutes.show ? `${modelName}.show` : undefined"
@@ -33,6 +33,7 @@
 import { type DataTableColumns } from "naive-ui";
 import { useStorage } from "@vueuse/core";
 import type { Component } from "vue";
+import { ref } from "vue";
 
 import IndexDataTable from "@/Components/Layouts/IndexModel/IndexDataTable.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
@@ -62,4 +63,14 @@ const entity = entities.find((entity) => entity.key === props.modelName);
 const showAlert = entity
   ? useStorage(`show-index-alert-${entity?.key}`, true)
   : false;
+
+// Whether to display markdown content section
+const hasMarkdownContent = ref(true);
+
+/**
+ * Handle content loaded event from MdSuspenseWrapper
+ */
+const onContentLoaded = (loaded: boolean) => {
+  hasMarkdownContent.value = loaded;
+};
 </script>

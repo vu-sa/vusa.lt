@@ -37,9 +37,9 @@
       </main>
       
       <!-- Footer -->
-      <footer v-if="showFooter" class="border-t px-4 py-3 text-center text-xs text-muted-foreground">
+      <!-- <footer v-if="showFooter" class="border-t px-4 py-3 text-center text-xs text-muted-foreground">
         <div>© {{ currentYear }} {{ appName }} - {{ $t('Version') }} {{ appVersion }}</div>
-      </footer>
+      </footer> -->
       
       <!-- Bottom action bar for mobile screens -->
       <div v-if="showMobileActionBar" 

@@ -1,5 +1,5 @@
 <template>
-  <div v-if="error" class="error-message">
+  <div v-if="error" class="subtle-error">
     {{ error }}
   </div>
   <component v-else-if="refComponent" :is="refComponent" />
@@ -15,6 +15,10 @@ const props = defineProps<{
   file: string;
 }>();
 
+const emit = defineEmits<{
+  'content-loaded': [boolean];
+}>();
+
 const refComponent = shallowRef(null);
 const error = ref<string | null>(null);
 
@@ -26,9 +30,11 @@ async function loadComponent(directory: string, locale: string, file: string) {
   try {
     const { default: VueComponent } = await import(`../../../../docs/_parts/${directory}/${locale}/${file}.md`);
     refComponent.value = VueComponent;
+    emit('content-loaded', true);
   } catch (e) {
     console.error(`Failed to load markdown file: ${directory}/${locale}/${file}.md`, e);
     error.value = `Failed to load content. Please try again later.`;
+    emit('content-loaded', false);
   }
 }
 
@@ -42,12 +48,12 @@ watch(() => props.locale, async (locale) => {
 </script>
 
 <style scoped>
-.error-message {
-  color: #e53e3e;
-  padding: 1rem;
-  border-left: 4px solid #e53e3e;
-  background-color: #fff5f5;
-  margin: 1rem 0;
+.subtle-error {
+  color: #718096;
+  padding: 0.5rem;
+  font-size: 0.875rem;
+  font-style: italic;
+  opacity: 0.7;
 }
 
 .loading {

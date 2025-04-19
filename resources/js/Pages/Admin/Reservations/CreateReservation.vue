@@ -45,15 +45,11 @@ const props = defineProps<{
 const { createBreadcrumbItem, homeItem, createRouteBreadcrumb } = useBreadcrumbs();
 
 const breadcrumbs = computed((): BreadcrumbItem[] => [
-  homeItem(),
-  createBreadcrumbItem($t("administration.title"), route("administration")),
-  createRouteBreadcrumb(
+  createBreadcrumbItem(
     capitalize($tChoice("entities.reservation.model", 2)), 
-    "reservations.index", 
-    {}, 
+    undefined,
     Icons.RESERVATION
   ),
-  createBreadcrumbItem($t("forms.create"))
 ]);
 
 const reservation: ReservationCreationTemplate = {

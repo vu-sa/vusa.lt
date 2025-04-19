@@ -55,9 +55,9 @@
       </div>
     </template>
     
-    <template #emptyDescription>
+    <!-- <template #emptyDescription>
       {{ $t('No institutions found. You can add a new institution using the button above.') }}
-    </template>
+    </template> -->
   </IndexTablePage>
   
   <!-- Import Dialog -->
