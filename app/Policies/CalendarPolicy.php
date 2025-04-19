@@ -47,6 +47,4 @@ class CalendarPolicy extends ModelPolicy
     {
         return $this->commonChecker($user, $calendar, CRUDEnum::DELETE()->label, $this->pluralModelName, false);
     }
-
-
 }
