@@ -19,9 +19,9 @@ class FilePolicy extends ModelPolicy
     /**
      * Determine whether the user can view a directory.
      */
-    public function viewDirectory(User $user, Model $directory): bool
+    public function viewDirectory(User $user, $directory): bool
     {
-        $directoryPath = $directory->getAttribute('path'); // Assuming 'path' is an attribute of the Model
+        $directoryPath = $directory; // Assuming 'path' is an attribute of the Model
         $check = $this->authorizer->forUser($user)->check($this->pluralModelName.'.read.padalinys');
 
         $padalinysDirectory = $this->getDirectoryPadalinysAlias($directoryPath);
@@ -42,7 +42,7 @@ class FilePolicy extends ModelPolicy
     /**
      * Determine whether the user can delete the model.
      */
-    public function deleteDirectory(User $user, Model $path): bool
+    public function deleteDirectory(User $user, $path): bool
     {
         $filePath = $path->getAttribute('path'); // Assuming 'path' is an attribute of the Model
         $check = $this->authorizer->forUser($user)->check($this->pluralModelName.'.read.padalinys');

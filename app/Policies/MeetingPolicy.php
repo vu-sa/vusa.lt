@@ -30,7 +30,7 @@ class MeetingPolicy extends ModelPolicy
     public function view(User $user, Model $meeting): bool
     {
         // Check if user is a participant in the meeting
-        if ($meeting->participants->contains('id', $user->id)) {
+        if ($meeting->users->contains('id', $user->id)) {
             return true;
         }
 
