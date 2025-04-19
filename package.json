@@ -17,7 +17,7 @@
     "build-storybook": "storybook build"
   },
   "dependencies": {
-    "@azure/msal-browser": "^4.7.0",
+    "@azure/msal-browser": "^4.11.0",
     "@inertiajs/vue3": "^2.0.3",
     "@observablehq/plot": "^0.6.16",
     "@pnp/graph": "^4.3.0",
