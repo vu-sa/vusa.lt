@@ -277,10 +277,19 @@ const columns = computed<ColumnDef<App.Entities.Institution, any>[]>(() => [
     cell: ({ row }) => {
       const tenant = row.original.tenant;
       return tenant ? (
-        <span class="flex items-center gap-1">
-          {tenant.logo_url && <img src={tenant.logo_url} alt={tenant.shortname} class="h-4 w-4 rounded-full" />}
-          <span>{$t(tenant.shortname)}</span>
-        </span>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span class="flex items-center gap-1">
+                {tenant.logo_url && <img src={tenant.logo_url} alt={tenant.shortname} class="h-4 w-4 rounded-full" />}
+                <span class="max-w-[150px] truncate">{$t(tenant.shortname)}</span>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent side="top" align="start">
+              <p>{$t(tenant.shortname)}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       ) : "";
     },
   }),
