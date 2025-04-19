@@ -53,13 +53,6 @@ jobs:
       with:
         name: build-assets
         path: ./
-        
-    # Download app key separately
-    - name: Download APP_KEY
-      uses: actions/download-artifact@v4
-      with:
-        name: app-key
-        path: ./
     
     - name: Setup PHP with Xdebug
       uses: shivammathur/setup-php@v2
@@ -71,9 +64,8 @@ jobs:
     - name: Create SQLite database
       run: |
         touch database/database.sqlite
-        # Ensure APP_KEY is set in the environment for testing
-        APP_KEY=$(grep APP_KEY .env | cut -d '=' -f2)
-        echo "APP_KEY=$APP_KEY" >> $GITHUB_ENV
+        cp .env.example .env
+        php artisan key:generate --force
       
     - name: Execute tests via Pest
       env:
@@ -103,23 +95,19 @@ jobs:
       with:
         name: build-assets
         path: ./
-        
-    # Download app key separately
-    - name: Download APP_KEY
-      uses: actions/download-artifact@v4
-      with:
-        name: app-key
-        path: ./
     
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
     
+    - name: Set up environment
+      run: |
+        cp .env.example .env
+        php artisan key:generate --force
+    
     - name: Execute tests via Vitest with coverage
       run: |
-        # Set APP_KEY from .env file
-        APP_KEY=$(grep APP_KEY .env | cut -d '=' -f2)
         # Use npx to ensure vitest is found from node_modules
-        LARAVEL_BYPASS_ENV_CHECK=1 APP_KEY=$APP_KEY npx vitest run --coverage
+        LARAVEL_BYPASS_ENV_CHECK=1 npx vitest run --coverage
     
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v5

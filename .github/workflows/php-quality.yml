@@ -50,22 +50,15 @@ jobs:
           name: build-assets
           path: ./
           
-      # Download app key separately
-      - name: Download APP_KEY
-        uses: actions/download-artifact@v4
-        with:
-          name: app-key
-          path: ./
-          
       # Fix permissions on the vendor directory
       - name: Fix permissions
         run: chmod -R +x vendor/bin
       
-      # Set APP_KEY in environment
-      - name: Set APP_KEY
+      # Set up environment
+      - name: Set up environment
         run: |
-          APP_KEY=$(grep APP_KEY .env | cut -d '=' -f2)
-          echo "APP_KEY=$APP_KEY" >> $GITHUB_ENV
+          cp .env.example .env
+          php artisan key:generate --force
       
       - name: "Laravel Pint"
         uses: aglipanci/laravel-pint-action@2.4
@@ -104,24 +97,17 @@ jobs:
           name: build-assets
           path: ./
           
-      # Download app key separately
-      - name: Download APP_KEY
-        uses: actions/download-artifact@v4
-        with:
-          name: app-key
-          path: ./
-      
       # Fix permissions on the vendor directory
       - name: Fix permissions
         run: |
           chmod -R +x vendor/bin
           chmod -R +x vendor/phpstan/phpstan
           
-      # Set APP_KEY in environment
-      - name: Set APP_KEY
+      # Set up environment
+      - name: Set up environment
         run: |
-          APP_KEY=$(grep APP_KEY .env | cut -d '=' -f2)
-          echo "APP_KEY=$APP_KEY" >> $GITHUB_ENV
+          cp .env.example .env
+          php artisan key:generate --force
       
       - name: "Running Static Analysis"
         run: |

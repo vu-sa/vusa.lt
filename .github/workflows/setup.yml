@@ -79,12 +79,8 @@ jobs:
         if: steps.cache-build.outputs.cache-hit != 'true'
         run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
         
-      # Generate app key properly and ensure it's in the environment
       - name: Generate key
-        run: |
-          php artisan key:generate --force
-          APP_KEY=$(grep "^APP_KEY=" .env | cut -d '=' -f2)
-          echo "APP_KEY=$APP_KEY" >> $GITHUB_ENV
+        run: php artisan key:generate --force
         
       - name: Directory Permissions
         run: chmod -R 777 storage bootstrap/cache
@@ -116,12 +112,4 @@ jobs:
           path: |
             public/build
             vendor
-          retention-days: 1
-          
-      # Store APP_KEY separately for tests to use
-      - name: Save APP_KEY for tests
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-key
-          path: .env
           retention-days: 1
