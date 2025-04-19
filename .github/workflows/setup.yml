@@ -18,6 +18,9 @@ on:
       cache-hit-npm:
         description: "Whether npm cache was hit"
         value: ${{ jobs.setup.outputs.cache-hit-npm }}
+      cache-hit-build:
+        description: "Whether build artifact cache was hit"
+        value: ${{ jobs.setup.outputs.cache-hit-build }}
 
 jobs:
   setup:
@@ -25,23 +28,43 @@ jobs:
     outputs:
       cache-hit-composer: ${{ steps.cache-composer.outputs.cache-hit }}
       cache-hit-npm: ${{ steps.cache-npm.outputs.cache-hit }}
+      cache-hit-build: ${{ steps.cache-build.outputs.cache-hit }}
     steps:
       - uses: actions/checkout@v4
       
-      # PHP setup
+      # Try to restore build artifact cache first
+      - name: Cache build artifacts
+        id: cache-build
+        uses: actions/cache@v4
+        with:
+          path: |
+            public/build
+            vendor
+          key: ${{ runner.os }}-build-${{ hashFiles('**/composer.lock', '**/package-lock.json') }}
+          
+      # Skip PHP/Node setup if build cache was hit
+      - name: Skip full setup
+        id: skip-setup
+        if: steps.cache-build.outputs.cache-hit == 'true'
+        run: echo "Skipping full setup - using cached artifacts"
+          
+      # PHP setup - only if build cache missed
       - name: Setup PHP
+        if: steps.cache-build.outputs.cache-hit != 'true'
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ inputs.php-version }}
           extensions: dom, curl, libxml, mbstring, zip, fileinfo
           coverage: ${{ inputs.include-coverage && 'xdebug' || 'none' }}
           
-      # Cache Composer dependencies
+      # Cache Composer dependencies - only if build cache missed
       - name: Get Composer cache directory
+        if: steps.cache-build.outputs.cache-hit != 'true'
         id: composer-cache-dir
         run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
         
       - name: Cache Composer dependencies
+        if: steps.cache-build.outputs.cache-hit != 'true'
         id: cache-composer
         uses: actions/cache@v4
         with:
@@ -53,16 +76,22 @@ jobs:
         run: php -r "file_exists('.env') || copy('.env.example', '.env');"
         
       - name: Install Composer Dependencies
+        if: steps.cache-build.outputs.cache-hit != 'true'
         run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
         
+      # Generate app key properly and ensure it's in the environment
       - name: Generate key
-        run: php artisan key:generate
+        run: |
+          php artisan key:generate --force
+          APP_KEY=$(grep APP_KEY .env | cut -d '=' -f2)
+          echo "APP_KEY=$APP_KEY" >> $GITHUB_ENV
         
       - name: Directory Permissions
         run: chmod -R 777 storage bootstrap/cache
         
-      # Cache NPM dependencies
+      # Cache NPM dependencies - only if build cache missed
       - name: Cache NPM dependencies
+        if: steps.cache-build.outputs.cache-hit != 'true'
         id: cache-npm
         uses: actions/cache@v4
         with:
@@ -71,12 +100,15 @@ jobs:
           restore-keys: ${{ runner.os }}-npm-
           
       - name: NPM Install
+        if: steps.cache-build.outputs.cache-hit != 'true'
         run: npm ci
         
-      # Build and save artifacts
+      # Build only if not cached
       - name: NPM Build
+        if: steps.cache-build.outputs.cache-hit != 'true'
         run: npm run build
         
+      # Upload build artifacts
       - name: Archive build artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -84,4 +116,12 @@ jobs:
           path: |
             public/build
             vendor
+          retention-days: 1
+          
+      # Store APP_KEY separately for tests to use
+      - name: Save APP_KEY for tests
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-key
+          path: .env
           retention-days: 1

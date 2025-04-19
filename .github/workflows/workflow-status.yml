@@ -22,6 +22,14 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           
+      - name: Find existing status issue
+        id: find-issue
+        run: |
+          ISSUE_NUMBER=$(gh issue list --label "ci-cd" --json number --jq '.[0].number')
+          echo "::set-output name=number::$ISSUE_NUMBER"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
       - name: Generate status report
         run: |
           echo "# vusa.lt CI/CD Status Report" > status-report.md
@@ -50,11 +58,3 @@ jobs:
             automation
             ci-cd
           issue-number: ${{ steps.find-issue.outputs.number }}
-          
-      - name: Find existing status issue
-        id: find-issue
-        run: |
-          ISSUE_NUMBER=$(gh issue list --label "ci-cd" --json number --jq '.[0].number')
-          echo "number=$ISSUE_NUMBER" >> $GITHUB_OUTPUT
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

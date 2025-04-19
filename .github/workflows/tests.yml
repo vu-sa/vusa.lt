@@ -1,4 +1,4 @@
-name: Pest Tests and Upload Coverage
+name: Run All Tests
 
 on:
   push:
@@ -40,7 +40,7 @@ jobs:
     with:
       include-coverage: true
       
-  test:
+  php-tests:
     needs: [changes, setup]
     if: ${{ needs.changes.outputs.php == 'true' }}
     runs-on: ubuntu-latest
@@ -53,6 +53,13 @@ jobs:
       with:
         name: build-assets
         path: ./
+        
+    # Download app key separately
+    - name: Download APP_KEY
+      uses: actions/download-artifact@v4
+      with:
+        name: app-key
+        path: ./
     
     - name: Setup PHP with Xdebug
       uses: shivammathur/setup-php@v2
@@ -62,7 +69,11 @@ jobs:
         coverage: xdebug
     
     - name: Create SQLite database
-      run: touch database/database.sqlite
+      run: |
+        touch database/database.sqlite
+        # Ensure APP_KEY is set in the environment for testing
+        APP_KEY=$(grep APP_KEY .env | cut -d '=' -f2)
+        echo "APP_KEY=$APP_KEY" >> $GITHUB_ENV
       
     - name: Execute tests via Pest
       env:
@@ -78,3 +89,51 @@ jobs:
         flags: backend
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        
+  js-tests:
+    needs: [changes, setup]
+    if: ${{ needs.changes.outputs.js == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    # Download build artifacts
+    - name: Download build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: build-assets
+        path: ./
+        
+    # Download app key separately
+    - name: Download APP_KEY
+      uses: actions/download-artifact@v4
+      with:
+        name: app-key
+        path: ./
+    
+    - name: Install Playwright Browsers
+      run: npx playwright install --with-deps
+    
+    - name: Execute tests via Vitest with coverage
+      run: |
+        # Set APP_KEY from .env file
+        APP_KEY=$(grep APP_KEY .env | cut -d '=' -f2)
+        # Use npx to ensure vitest is found from node_modules
+        LARAVEL_BYPASS_ENV_CHECK=1 APP_KEY=$APP_KEY npx vitest run --coverage
+    
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v5
+      with:
+        verbose: true
+        files: ./coverage/clover.xml
+        flags: frontend
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+    
+    # Save test coverage as artifact
+    - name: Archive coverage reports
+      uses: actions/upload-artifact@v4
+      with:
+        name: vitest-coverage
+        path: ./coverage
+        retention-days: 1
