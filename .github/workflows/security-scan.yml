@@ -35,9 +35,6 @@ jobs:
       fail-fast: false
       matrix:
         language: ['javascript']
-        include:
-          - language: 'php'
-            queries: 'security-extended,security-and-quality'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -46,34 +43,19 @@ jobs:
         uses: github/codeql-action/init@v3
         with:
           languages: ${{ matrix.language }}
-          queries: ${{ matrix.queries || 'security-extended' }}
+          queries: security-extended
           
       # Autobuild attempts to build any compiled languages
       - name: Autobuild
         uses: github/codeql-action/autobuild@v3
-        if: matrix.language != 'php'
           
-      # For PHP analysis, compile/prepare the codebase (if needed)
-      - name: Setup PHP for CodeQL
-        if: matrix.language == 'php'
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.3'
-          tools: composer:v2
-          
-      - name: Install PHP dependencies for CodeQL
-        if: matrix.language == 'php'
-        run: composer install --no-dev --no-interaction --no-progress
-        
       # For JavaScript analysis, build if needed
       - name: Setup Node for CodeQL
-        if: matrix.language == 'javascript'
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           
       - name: Install JS dependencies for CodeQL
-        if: matrix.language == 'javascript'
         run: npm ci
 
       - name: Perform CodeQL Analysis

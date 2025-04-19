@@ -96,6 +96,15 @@ jobs:
         name: build-assets
         path: ./
     
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+    
+    - name: Install npm dependencies
+      run: npm ci
+    
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
     
@@ -104,10 +113,9 @@ jobs:
         cp .env.example .env
         php artisan key:generate --force
     
-    - name: Execute tests via Vitest with coverage
+    - name: Execute tests via npm script
       run: |
-        # Use npx to ensure vitest is found from node_modules
-        LARAVEL_BYPASS_ENV_CHECK=1 npx vitest run --coverage
+        npm run test
     
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v5
