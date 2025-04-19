@@ -115,7 +115,7 @@ jobs:
     
     - name: Execute tests via npm script
       run: |
-        npm run test
+        LARAVEL_BYPASS_ENV_CHECK=1 npm run coverage
     
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v5
