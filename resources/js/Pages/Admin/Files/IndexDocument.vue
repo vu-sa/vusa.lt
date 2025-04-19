@@ -1,136 +1,355 @@
 <template>
-  <AdminIndexPage
-    model-name="documents"
-    entity-name="document"
-    :paginated-models="documents"
-    :column-builder="buildColumns"
-    :initial-sorters="{ title: false }"
-    :initial-filters="{ 'padalinys.id': [], 'category.id': [] }"
-    :icon="Icons.DOCUMENT"
-    :can-use-routes="{
-      create: false,
-      show: false,
-      edit: false,
-      duplicate: false,
-      destroy: true
-    }"
-    :scroll-x="1600"
+  <IndexTablePage
+    ref="indexTablePageRef"
+    v-bind="tableConfig"
+    @data-loaded="onDataLoaded"
+    @sorting-changed="handleSortingChange"
+    @page-changed="handlePageChange"
+    @filter-changed="handleFilterChange"
   >
-    <template #create-button>
-      <FilePicker v-if="$page.props.app.url.startsWith('https')" :loading="loading" round size="tiny"
-        :theme-overrides="{ border: '1.2px solid' }" @pick="handleDocumentPick">
-        <template #default>
-          {{ $t("forms.add") }}
-        </template>
+    <!-- <template #pageActions>
+      <FilePicker 
+        v-if="$page.props.app.url.startsWith('https')" 
+        :loading="loading" 
+        round 
+        size="sm"
+        @pick="handleDocumentPick"
+      >
+        {{ $t("forms.add") }}
       </FilePicker>
+    </template> -->
+    
+    <template #filters>
+      <!-- TODO: needs to get all of the types from db, like the ShowDocuments.vue-->
+      <!-- <DataTableFilter
+        v-if="contentTypeOptions.length > 0"
+        v-model:value="selectedContentType"
+        :options="contentTypeOptions"
+        @update:value="handleContentTypeFilterChange"
+      >
+        {{ $t("content_type") }}
+      </DataTableFilter>
+
+      <DataTableFilter
+        v-if="languageOptions.length > 0"
+        v-model:value="selectedLanguage"
+        :options="languageOptions"
+        @update:value="handleLanguageFilterChange"
+      >
+        {{ $t("language") }}
+      </DataTableFilter>
+
+      <DataTableFilter
+        v-if="institutionOptions.length > 0"
+        v-model:value="selectedInstitutionId"
+        :options="institutionOptions"
+        @update:value="handleInstitutionFilterChange"
+      >
+        {{ $t("institution") }}
+      </DataTableFilter> -->
     </template>
-  </AdminIndexPage>
+  </IndexTablePage>
 </template>
 
 <script setup lang="tsx">
 import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
-import { type DataTableColumns, NButton, NIcon } from "naive-ui";
-import { type Ref, ref } from "vue";
-import { router } from "@inertiajs/vue3";
+import { ref, computed, watch } from "vue";
+import { router, usePage } from "@inertiajs/vue3";
+import { type ColumnDef } from '@tanstack/vue-table';
+import { capitalize } from "vue";
 
 import { Item } from "@/Features/Admin/SharepointFilePicker/picker";
-import { TableFilters } from "@/Composables/useTableState";
-import ArrowCounterclockwise28Regular from "~icons/fluent/arrow-counterclockwise28-regular";
 import FilePicker from "@/Features/Admin/SharepointFilePicker/FilePicker.vue";
-import IFluentOpen24Filled from "~icons/fluent/open16-filled";
 import Icons from "@/Types/Icons/regular";
-import AdminIndexPage from "@/Components/Layouts/IndexModel/AdminIndexPage.vue";
+import IndexTablePage from "@/Components/Layouts/IndexTablePage.vue";
 import SmartLink from "@/Components/Public/SmartLink.vue";
+import { Button } from "@/Components/ui/button";
+import { ExternalLinkIcon, RefreshCwIcon } from "lucide-vue-next";
+import DataTableFilter from "@/Components/ui/data-table/DataTableFilter.vue";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
+import { useBreadcrumbs, type BreadcrumbItem } from "@/Composables/useBreadcrumbs";
+import { 
+  type IndexTablePageProps,
+  type TableConfig,
+  type PaginationConfig,
+  type UIConfig,
+  type FilteringConfig
+} from "@/Types/TableConfigTypes";
+import { 
+  createTimestampColumn, 
+  createTextColumn,
+  createTitleColumn
+} from '@/Utils/DataTableColumns';
 
-defineProps<{
-  documents: PaginatedModels<App.Entities.Document>;
+const props = defineProps<{
+  data: App.Entities.Document[];
+  meta: {
+    total: number;
+    current_page: number;
+    per_page: number;
+    last_page: number;
+    from: number;
+    to: number;
+  };
+  filters?: Record<string, any>;
+  sorting?: { id: string; desc: boolean }[];
 }>();
 
-const loading = ref(false);
+// Component constants
+const modelName = 'documents';
+const entityName = 'document';
 
-// Columns builder function that will be passed to AdminIndexPage
-const buildColumns = (sorters: Ref<Record<string, any>>, filters: Ref<TableFilters>): DataTableColumns<App.Entities.Document> => {
-  return [
-    {
-      title() {
-        return $t("forms.fields.title");
-      },
-      key: "title",
-      sorter: true,
-      fixed: "left",
-      sortOrder: sorters.value.title,
-      width: 400,
-      ellipsis: {
-        tooltip: true,
-      },
-      render(row) {
-        return (
-          <SmartLink href={row.anonymous_url}>
-            <div class="inline-flex items-center gap-1">{row.title} <IFluentOpen24Filled /></div>
-          </SmartLink>
-        );
-      },
-    },
-    {
-      title: "Veiksmai",
-      key: "sharepoint-actions",
-      width: 100,
-      align: "center",
-      render(row) {
-        return (
-          <div class="flex justify-center">
-            <NButton size="small" secondary onClick={() => handleDocumentRefresh(row)}>
-              {{
-                icon: () => (
-                  <NIcon component={ArrowCounterclockwise28Regular} />
-                )
-              }}
-            </NButton>
-          </div>
-        )
-      }
-    },
-    {
-      title: "Data",
-      key: "document_date",
-    },
-    {
-      title: "Content Type",
-      key: "content_type",
-    },
-    {
-      title: "Language",
-      key: "language",
-    },
-    {
-      title: "Institution",
-      key: "institution.short_name",
-    },
-    {
-      title: "Atnaujinimo data",
-      key: "checked_at",
-      render(row) {
-        return (
-          <div class="flex justify-center">
-            <NButton size="tiny" secondary onClick={() => handleDocumentRefresh(row)}>
-              {{
-                icon: () => (
-                  <NIcon component={ArrowCounterclockwise28Regular} />
-                ),
-                default: () => (
-                  row.checked_at
-                )
-              }}
-            </NButton>
-          </div>
-        )
-      }
+// Breadcrumbs setup
+const { createBreadcrumbItem, homeItem } = useBreadcrumbs();
+
+const breadcrumbs = computed((): BreadcrumbItem[] => [
+  homeItem(),
+  createBreadcrumbItem($t("administration.title"), route("administration")),
+  createBreadcrumbItem($t("Documents"), undefined, Icons.DOCUMENT)
+]);
+
+const loading = ref(false);
+const indexTablePageRef = ref<InstanceType<typeof IndexTablePage> | null>(null);
+
+// Initialize filter states
+const selectedContentType = ref<string | null>(props.filters?.['content_type'] || null);
+const selectedLanguage = ref<string | null>(props.filters?.['language'] || null);
+const selectedInstitutionId = ref<number | null>(props.filters?.['institution.id'] || null);
+
+// Extract unique content types and languages for filtering
+const uniqueContentTypes = computed(() => {
+  const types = new Set<string>();
+  props.data.forEach(doc => {
+    if (doc.content_type) {
+      types.add(doc.content_type);
     }
-  ];
+  });
+  return Array.from(types);
+});
+
+const uniqueLanguages = computed(() => {
+  const languages = new Set<string>();
+  props.data.forEach(doc => {
+    if (doc.language) {
+      languages.add(doc.language);
+    }
+  });
+  return Array.from(languages);
+});
+
+// Filter options
+const contentTypeOptions = computed(() => {
+  return uniqueContentTypes.value.map(type => ({
+    label: type,
+    value: type,
+  }));
+});
+
+const languageOptions = computed(() => {
+  return uniqueLanguages.value.map(lang => ({
+    label: lang,
+    value: lang,
+  }));
+});
+
+const institutionOptions = computed(() => {
+  const institutions = usePage().props.institutions || [];
+  return institutions.map(institution => ({
+    label: institution.short_name || institution.name,
+    value: institution.id,
+  }));
+});
+
+// Column definitions using Tanstack Table format and standardized column helpers
+const columns = computed<ColumnDef<App.Entities.Document, any>[]>(() => [
+  createTitleColumn<App.Entities.Document>({
+    accessorKey: "title",
+    header: () => $t("forms.fields.title"),
+    routeName: "documents.show",
+    width: 350,
+    cell: ({ row }) => {
+      const title = row.getValue("title");
+      return (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div class="max-w-[340px] truncate">
+                <a href={row.original.anonymous_url} target="_blank" rel="noopener noreferrer" class="font-medium hover:underline">
+                  {title}
+                </a>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent side="top" align="start">
+              <p>{title}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      );
+    }
+  }),
+  {
+    id: "actions",
+    header: () => $t("actions"),
+    cell: ({ row }) => (
+      <div class="flex justify-center">
+        <Button 
+          size="icon" 
+          variant="ghost"
+          onClick={() => handleDocumentRefresh(row.original)}
+          title={$t("refresh")}
+        >
+          <RefreshCwIcon class="h-4 w-4" />
+        </Button>
+      </div>
+    ),
+    size: 80,
+  },
+  createTimestampColumn("document_date", {
+    title: $t("date"),
+    width: 130,
+    enableSorting: true,
+  }),
+  createTextColumn("content_type", {
+    cell: ({ row }) => (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div class="truncate max-w-[140px]">
+              {row.getValue("content_type")}
+            </div>
+          </TooltipTrigger>
+          <TooltipContent side="top">
+            <p>{row.getValue("content_type")}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    ),
+    width: 150
+  }),
+  createTextColumn("language", {
+    width: 100
+  }),
+  {
+    accessorKey: "institution.short_name",
+    header: () => $t("institution"),
+    cell: ({ row }) => {
+      const institution = row.original.institution;
+      return institution ? institution.short_name : '';
+    },
+    size: 150,
+  },
+  createTimestampColumn("checked_at", {
+    cell: ({ row }) => (
+      <div class="flex items-center gap-2">
+        <span>{row.getValue("checked_at") ? 
+          new Date(row.getValue("checked_at") as string).toLocaleString() : 
+          ''}</span>
+        <Button 
+          size="icon" 
+          variant="ghost"
+          onClick={() => handleDocumentRefresh(row.original)}
+        >
+          <RefreshCwIcon class="h-4 w-4" />
+        </Button>
+      </div>
+    ),
+    width: 220
+  })
+]);
+
+// Consolidated table configuration using the new interfaces
+const tableConfig = computed<IndexTablePageProps<App.Entities.Document>>(() => {
+  // Core table configuration
+  const tableConfig: TableConfig<App.Entities.Document> = {
+    modelName,
+    entityName,
+    data: props.data,
+    columns: columns.value
+  };
+  
+  // Pagination configuration
+  const paginationConfig: PaginationConfig = {
+    totalCount: props.meta.total,
+    initialPage: props.meta.current_page,
+    pageSize: props.meta.per_page
+  };
+  
+  // UI configuration
+  const uiConfig: UIConfig = {
+    headerTitle: $t("Documents"),
+    icon: Icons.DOCUMENT,
+    canCreate: false,
+    breadcrumbs: breadcrumbs.value
+  };
+  
+  // Filtering configuration
+  const filteringConfig: FilteringConfig = {
+    initialFilters: props.filters,
+    initialSorting: props.sorting,
+    enableFiltering: true,
+    enableColumnVisibility: true
+  };
+  
+  // Return the combined configuration
+  return {
+    ...tableConfig,
+    ...paginationConfig,
+    ...uiConfig,
+    ...filteringConfig
+  };
+});
+
+// Filter handlers
+const handleContentTypeFilterChange = (contentType: string | null) => {
+  selectedContentType.value = contentType;
+  if (indexTablePageRef.value) {
+    indexTablePageRef.value.updateFilter('content_type', contentType);
+  }
+};
+
+const handleLanguageFilterChange = (language: string | null) => {
+  selectedLanguage.value = language;
+  if (indexTablePageRef.value) {
+    indexTablePageRef.value.updateFilter('language', language);
+  }
+};
+
+const handleInstitutionFilterChange = (institutionId: number | null) => {
+  selectedInstitutionId.value = institutionId;
+  if (indexTablePageRef.value) {
+    indexTablePageRef.value.updateFilter('institution.id', institutionId);
+  }
+};
+
+// Event handlers
+const onDataLoaded = (data) => {
+  // Handle any additional logic after data is loaded
+  console.log('Documents data loaded:', data);
+};
+
+const handleSortingChange = (sorting) => {
+  // Additional handling for sorting changes if needed
+  console.log('Sorting changed:', sorting);
+};
+
+const handlePageChange = (page) => {
+  // Additional handling for page changes if needed
+  console.log('Page changed:', page);
+};
+
+const handleFilterChange = (filterKey, value) => {
+  // Update local filter references if needed
+  if (filterKey === 'content_type') {
+    selectedContentType.value = value;
+  } else if (filterKey === 'language') {
+    selectedLanguage.value = value;
+  } else if (filterKey === 'institution.id') {
+    selectedInstitutionId.value = value;
+  }
 };
 
 const handleDocumentPick = (items: Item[]) => {
-  loading.value = true
+  loading.value = true;
 
   const documents = items.map((item) => ({
     name: item.name,
@@ -141,24 +360,47 @@ const handleDocumentPick = (items: Item[]) => {
 
   router.post(route("documents.store"), { documents }, {
     onSuccess: () => {
-      loading.value = false
+      loading.value = false;
+      // Reload the current page to show new documents
+      if (indexTablePageRef.value) {
+        indexTablePageRef.value.reloadData();
+      }
     },
     onError() {
-      loading.value = false
+      loading.value = false;
     },
   });
 };
 
 const handleDocumentRefresh = (document: App.Entities.Document) => {
-  loading.value = true
+  loading.value = true;
 
   router.post(route("documents.refresh", document.id), {}, {
     onSuccess: () => {
-      loading.value = false
+      loading.value = false;
+      // Reload the current page after refreshing document
+      if (indexTablePageRef.value) {
+        indexTablePageRef.value.reloadData();
+      }
     },
     onError() {
-      loading.value = false
+      loading.value = false;
     },
   });
-}
+};
+
+// Sync filter values when changed externally
+watch(() => props.filters, (newFilters) => {
+  if (newFilters) {
+    if (newFilters['content_type'] !== undefined) {
+      selectedContentType.value = newFilters['content_type'];
+    }
+    if (newFilters['language'] !== undefined) {
+      selectedLanguage.value = newFilters['language'];
+    }
+    if (newFilters['institution.id'] !== undefined) {
+      selectedInstitutionId.value = newFilters['institution.id'];
+    }
+  }
+}, { deep: true });
 </script>

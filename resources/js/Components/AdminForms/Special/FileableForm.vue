@@ -1,5 +1,5 @@
 <template>
-  <NSpin :show="spin">
+  <Spinner :show="spin">
     <NForm ref="formRef">
       <FadeTransition>
         <SuggestionAlert class="mt-4" :show-alert="showAlert" @alert-closed="$emit('close:alert')">
@@ -34,7 +34,7 @@
     <template #description>
       Tuojaus...
     </template>
-  </NSpin>
+  </Spinner>
 </template>
 
 <script setup lang="ts">
@@ -42,6 +42,10 @@ import {
   type FormInst,
   type FormRules,
   type TreeSelectOption,
+  NForm,
+  NFormItem,
+  NTreeSelect,
+  NButton,
 } from "naive-ui";
 import { onMounted, ref, useTemplateRef } from "vue";
 import { useFetch } from "@vueuse/core";
@@ -50,6 +54,7 @@ import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import Icons from "@/Types/Icons/filled";
 import ModelChip from "@/Components/Tag/ModelChip.vue";
 import SuggestionAlert from "@/Components/Alerts/SuggestionAlert.vue";
+import { Spinner } from "@/Components/ui/spinner";
 
 const emit = defineEmits<{
   (e: "close:alert"): void;

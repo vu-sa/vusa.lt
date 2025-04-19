@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\Api\CalendarController;
 use App\Http\Controllers\Api\NewsController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -18,12 +17,6 @@ use Illuminate\Support\Facades\Route;
 | This ensures proper organization and middleware application.
 | API routes are automatically prefixed with '/api'
 |
-*/
-
-/*
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
 */
 
 Route::prefix('v1')->group(function () {

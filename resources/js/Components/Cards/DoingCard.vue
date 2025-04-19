@@ -1,38 +1,37 @@
 <template>
-  <NSpin :show="spinning">
-    <NCard size="small" class="my-2 cursor-pointer overflow-hidden shadow-xs" style="border-radius: 0.5em" hoverable
-      as="button"><template #header>
+  <Spinner :show="spinning">
+    <Card class="my-2 cursor-pointer overflow-hidden shadow-xs" style="border-radius: 0.5em" hoverable as="button">
+      <CardHeader class="pb-0">
         {{ doing.title }}
-      </template>
-      <template #header-extra>
-        <MoreOptionsButton small delete @delete-click="handleDelete" />
-      </template>
-
-      <DoingStateTag class="mb-4" :doing="doing" />
-
-      <div class="text-xs text-zinc-700 dark:text-zinc-500">
-        <div class="flex items-center gap-1">
-          <IFluentCalendarClock24Filled />
-          <time class="">{{ formatStaticTime(new Date(doing.date)) }}</time>
+        <div class="absolute right-4 top-3">
+          <MoreOptionsButton small delete @delete-click="handleDelete" />
         </div>
-        <div class="flex gap-2">
-          <div class="inline-flex items-center gap-1">
-            <NIcon :depth="3" size="10" :component="Icons.COMMENT" />
-            <span>{{ doing.comments.length }}</span>
+      </CardHeader>
+      <CardContent>
+        <DoingStateTag class="mb-4" :doing="doing" />
+
+        <div class="text-xs text-zinc-700 dark:text-zinc-500">
+          <div class="flex items-center gap-1">
+            <IFluentCalendarClock24Filled />
+            <time class="">{{ formatStaticTime(new Date(doing.date)) }}</time>
           </div>
-          <div class="inline-flex items-center gap-1">
-            <NIcon :depth="3" size="10" :component="Icons.TASK" />
-            <span>{{ completedTasks }} / {{ doing.tasks.length }}</span>
+          <div class="flex gap-2">
+            <div class="inline-flex items-center gap-1">
+              <IFluentComment24Regular class="h-4 w-4 text-zinc-500" />
+              <span>{{ doing.comments.length }}</span>
+            </div>
+            <div class="inline-flex items-center gap-1">
+              <IFluentTaskList24Regular class="h-4 w-4 text-zinc-500" />
+              <span>{{ completedTasks }} / {{ doing.tasks.length }}</span>
+            </div>
           </div>
         </div>
-      </div>
-      <div class="absolute -bottom-8 right-0 opacity-10">
-        <NIcon size="80" :depth="4">
-          <component :is="icon" />
-        </NIcon>
-      </div>
-    </NCard>
-  </NSpin>
+        <div class="absolute -bottom-8 right-0 opacity-10">
+          <component :is="icon" class="h-20 w-20 text-zinc-400" />
+        </div>
+      </CardContent>
+    </Card>
+  </Spinner>
 </template>
 
 <script setup lang="tsx">
@@ -46,8 +45,9 @@ import { router } from "@inertiajs/vue3";
 
 import { formatStaticTime } from "@/Utils/IntlTime";
 import DoingStateTag from "../Tag/DoingStateTag.vue";
-import Icons from "@/Types/Icons/filled";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
+import { Spinner } from "@/Components/ui/spinner";
+import { Card, CardHeader, CardContent } from "@/Components/ui/card";
 
 const props = defineProps<{
   doing: App.Entities.Doing;

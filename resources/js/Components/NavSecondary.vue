@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { LucideIcon } from 'lucide-vue-next'
 import { usePage } from '@inertiajs/vue3'
+import { trans as $t } from "laravel-vue-i18n"
 
 import {
   SidebarGroup,
@@ -23,7 +24,7 @@ const emit = defineEmits<{
   (e: 'itemClick', url: string): void
 }>()
 
-const sectionTitle = usePage().props.app.locale === 'en' ? 'Support' : 'Pagalba'
+const sectionTitle = $t('Pagalba')
 
 const handleItemClick = (url: string) => {
   emit('itemClick', url)

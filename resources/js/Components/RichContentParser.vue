@@ -85,9 +85,12 @@ function getSpacingClass(type: string, index: number): string {
   // Default spacing if type not defined
   const defaultSpacing = 'mb-8'; // 2rem bottom
 
-  // Apply top margin for all non-first elements
-  // Using a more modest top margin to create better visual rhythm
-  const topSpacing = isFirst ? '' : 'mt-6'; // 1.5rem top spacing if not first
+  // Apply top margin for all non-first elements including hero elements
+  let topSpacing = '';
+  if (!isFirst) {
+    // Special handling for hero elements - they need proper spacing when not first
+    topSpacing = type === 'hero' ? 'mt-8' : 'mt-6'; // More spacing for hero (2rem) vs regular elements (1.5rem)
+  }
 
   return `${topSpacing} ${typeSpacing[type as keyof typeof typeSpacing] || defaultSpacing}`;
 }

@@ -13,6 +13,7 @@ use App\Services\RelationshipService;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Laravel\Scout\Searchable;
 use Spatie\Activitylog\LogOptions;
@@ -40,7 +41,7 @@ class Institution extends Model
         return $this->hasMany(Duty::class);
     }
 
-    public function types()
+    public function types(): MorphToMany
     {
         return $this->morphToMany(Type::class, 'typeable');
     }

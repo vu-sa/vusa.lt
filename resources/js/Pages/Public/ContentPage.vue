@@ -1,17 +1,5 @@
 <template>
   <section class="pt-8 last:pb-2">
-    <!-- <header>
-        <NBreadcrumb v-if="navigationItemId != null" class="mb-4 flex w-full">
-          <NBreadcrumbItem v-for="breadcrumb in breadcrumbTree" :key="breadcrumb?.parent_id" :clickable="false">
-            {{ breadcrumb?.name }}
-            <template #separator>
-              <NIcon>
-                <HatGraduation20Filled />
-              </NIcon>
-            </template>
-</NBreadcrumbItem>
-</NBreadcrumb>
-</header> -->
     <article class="grid grid-cols-1 gap-x-12" :class="{ 'lg:grid-cols-[1fr_250px]': anchorLinks }">
       <h1 class="col-span-full col-start-1 inline-flex gap-4">
         <span class="text-gray-900 dark:text-white">{{ page.title }}</span>
@@ -37,28 +25,33 @@
 <script setup lang="ts">
 import FeedbackPopover from "@/Components/Public/FeedbackPopover.vue";
 import RichContentParser from "@/Components/RichContentParser.vue";
+import { computed, onMounted } from "vue";
+import { usePublicBreadcrumbs } from "@/Composables/usePublicBreadcrumbs";
 
 const props = defineProps<{
   navigationItemId: number;
   page: Record<string, any>;
 }>();
 
-//const mainNavigation = usePage().props.mainNavigation;
+const { buildNavigationPath, createPublicBreadcrumbItem, setPageBreadcrumbs } = usePublicBreadcrumbs();
 
-//const getBreadcrumbTree = (navigationItemId: number) => {
-//  const breadcrumbTree = [];
-//  while (navigationItemId) {
-//    // find array MainNavigation item by navigationItemId and add it to breadcrumbTree
-//    const navigationItem = mainNavigation.find(
-//      (item) => item.id === navigationItemId,
-//    );
-//    breadcrumbTree.unshift(navigationItem);
-//    navigationItemId = navigationItem?.parent_id;
-//  }
-//  return breadcrumbTree;
-//};
-//
-//const breadcrumbTree = getBreadcrumbTree(props.navigationItemId);
+// Build breadcrumb items for the content page
+const breadcrumbItems = computed(() => {
+  const navigationPath = buildNavigationPath(props.navigationItemId);
+  
+  // If we have navigation path, use it for breadcrumbs
+  if (navigationPath.length > 0) {
+    return navigationPath;
+  }
+  
+  // Otherwise just show the current page title
+  return [createPublicBreadcrumbItem(props.page.title)];
+});
+
+// Set the breadcrumbs in the centralized state on component mount
+onMounted(() => {
+  setPageBreadcrumbs(breadcrumbItems.value);
+});
 
 const anchorLinks = props.page.content?.parts?.reduce((acc: any, part: any) => {
   if (part.type === "tiptap") {
@@ -75,7 +68,6 @@ const anchorLinks = props.page.content?.parts?.reduce((acc: any, part: any) => {
           children: [],
         });
       } else if (node.attrs.level === 3) {
-
         // Sometimes the h3 may come before h2, we need to check for that
         if (acc[acc.length - 1]?.children) {
           acc[acc.length - 1]?.children.push({
@@ -98,7 +90,6 @@ const anchorLinks = props.page.content?.parts?.reduce((acc: any, part: any) => {
 
   return acc;
 }, []);
-
 </script>
 
 <style>
@@ -106,9 +97,4 @@ const anchorLinks = props.page.content?.parts?.reduce((acc: any, part: any) => {
   display: flex;
   flex-wrap: wrap;
 }
-
-/* offset scroll of content on anchor link click which uses h2 and h3 elements */
-/* *:target { */
-/*   scroll-margin-top: 160px; */
-/* } */
 </style>

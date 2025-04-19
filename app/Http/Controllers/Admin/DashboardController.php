@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetTenantsForUpserts;
 use App\Http\Controllers\Controller;
+use App\Models\Comment;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Page;
@@ -17,6 +18,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Spatie\Activitylog\Models\Activity;
 
@@ -27,6 +29,220 @@ use Spatie\Activitylog\Models\Activity;
 class DashboardController extends Controller
 {
     public function __construct(public Authorizer $authorizer) {}
+
+    public function index(Request $request)
+    {
+        $user = User::query()->find(Auth::id()) ?? abort(404);
+        $userTenantId = $user->current_duties?->first()?->institution?->tenant_id ?? null;
+
+        // TODO: for some reasoning, the chaining doesn't work
+        $this->authorizer = $this->authorizer->forUser($user);
+
+        // Check if we should show tenant activities (with proper permission check)
+        $showTenantActivities = $request->input('view_type') === 'tenant' &&
+                               $userTenantId &&
+                               $this->authorizer->check('activity_log.view.padalinys');
+
+        // Get recent activities based on view type
+        // $recentActivities = $this->getRecentActivities($showTenantActivities ? $userTenantId : null);
+
+        // Get task statistics for the dashboard
+        $taskStats = [
+            'completed' => $user->tasks()->where('completed_at', '!=', null)->count(),
+            'pending' => $user->tasks()->where('completed_at', null)->where('due_date', '>=', now())->count(),
+            'overdue' => $user->tasks()->where('completed_at', null)->where('due_date', '<', now())->count(),
+        ];
+
+        // Get notification count
+        $unreadNotificationsCount = $user->unreadNotifications()->count();
+
+        return Inertia::render('Admin/ShowAdminHome', [
+            // 'recentActivities' => $recentActivities,
+            'taskStats' => $taskStats,
+            'unreadNotificationsCount' => $unreadNotificationsCount,
+            'hasNotifications' => $unreadNotificationsCount > 0,
+            'user' => $user,
+            'showTenantActivities' => $showTenantActivities,
+            'canViewTenantActivities' => $this->authorizer->checkAllRoleables('activity_log.view.padalinys'),
+        ]);
+    }
+
+    /**
+     * Get recent activities for the current user or tenant
+     *
+     * @param  int|null  $tenantId  If provided, get tenant activities; otherwise get user activities
+     * @return array
+     */
+    private function getRecentActivities(?int $tenantId = null, int $limit = 10)
+    {
+        $userId = Auth::id();
+        $query = Activity::query()->with(['causer', 'subject']);
+
+        if ($tenantId) {
+            // Get tenant activities: activities where subject belongs to the tenant
+            // We use whereHasMorph to handle polymorphic relationships across different models
+            $query->where(function ($q) use ($tenantId) {
+                // Handle regular models with tenant_id
+                $q->whereHasMorph('subject', '*', function ($subjectQuery) use ($tenantId) {
+                    // Only include subjects that belong to the tenant if they have tenant_id
+                    if (method_exists($subjectQuery->getModel(), 'tenant')) {
+                        $subjectQuery->where('tenant_id', $tenantId);
+                    } elseif (method_exists($subjectQuery->getModel(), 'tenants')) {
+                        // For models with a many-to-many relationship with tenants
+                        $subjectQuery->whereHas('tenants', function ($query) use ($tenantId) {
+                            $query->where('tenants.id', $tenantId);
+                        });
+                    }
+                });
+
+                // Special handling for Comment model which doesn't have direct tenant relationship
+                $q->orWhereHasMorph('subject', [Comment::class], function ($commentQuery) use ($tenantId) {
+                    $commentQuery->whereHas('commentable', function ($commentableQuery) use ($tenantId) {
+                        // Get the actual model class of the commentable
+                        $model = $commentableQuery->getModel();
+                        $modelClass = get_class($model);
+
+                        // Check various ways a model might relate to tenants
+                        if (method_exists($model, 'tenant')) {
+                            $commentableQuery->where('tenant_id', $tenantId);
+                        } elseif (method_exists($model, 'tenants')) {
+                            $commentableQuery->whereHas('tenants', function ($query) use ($tenantId) {
+                                $query->where('tenants.id', $tenantId);
+                            });
+                        } elseif (method_exists($model, 'users') && method_exists($model, 'tenants')) {
+                            // For models like Doing that have users which have tenants
+                            $commentableQuery->whereHas('users', function ($userQuery) use ($tenantId) {
+                                $userQuery->whereHas('tenants', function ($tenantQuery) use ($tenantId) {
+                                    $tenantQuery->where('tenants.id', $tenantId);
+                                });
+                            });
+                        } elseif (method_exists($model, 'institutions')) {
+                            // For models that are related to institutions which relate to tenants
+                            $commentableQuery->whereHas('institutions', function ($institutionQuery) use ($tenantId) {
+                                $institutionQuery->where('tenant_id', $tenantId);
+                            });
+                        } elseif (method_exists($model, 'commentable')) {
+                            // Handle nested comments (comments on comments)
+                            $commentableQuery->whereHas('commentable', function ($nestedQuery) use ($tenantId) {
+                                if (method_exists($nestedQuery->getModel(), 'tenant')) {
+                                    $nestedQuery->where('tenant_id', $tenantId);
+                                } elseif (method_exists($nestedQuery->getModel(), 'tenants')) {
+                                    $nestedQuery->whereHas('tenants', function ($query) use ($tenantId) {
+                                        $query->where('tenants.id', $tenantId);
+                                    });
+                                }
+                            });
+                        } elseif ($modelClass === 'App\\Models\\Pivots\\ReservationResource') {
+                            // Special handling for ReservationResource pivot
+                            // Use a safer approach without relying on commentable_type column
+                            $commentableQuery->whereHas('resource', function ($resourceQuery) use ($tenantId) {
+                                $resourceQuery->where('tenant_id', $tenantId);
+                            });
+                        }
+                    });
+                });
+            });
+        } else {
+            // Get only the current user's activities
+            $query->where('causer_id', $userId);
+        }
+
+        $query->orderBy('created_at', 'desc');
+
+        // Add a whereNotNull check and try-catch to make the query more robust
+        try {
+            $activities = $query->limit($limit)->get();
+        } catch (\Exception $e) {
+            \Log::error('Error fetching activities: '.$e->getMessage());
+            $activities = collect([]);
+        }
+
+        // Transform activity data for frontend
+        return $activities->map(function ($activity) {
+            $actionText = $this->getActionText($activity);
+
+            return [
+                'id' => $activity->id,
+                'description' => $activity->description,
+                'causer_id' => $activity->causer_id,
+                'subject_type' => $activity->subject_type,
+                'subject_id' => $activity->subject_id,
+                'created_at' => $activity->created_at,
+                'updated_at' => $activity->updated_at,
+                'properties' => $activity->properties,
+                'user' => $activity->causer ? [
+                    'id' => $activity->causer->id,
+                    'name' => $activity->causer->name,
+                    'avatar' => $activity->causer->profile_photo_path,
+                ] : null,
+                'actionText' => $actionText,
+                'link' => $this->generateLink($activity),
+            ];
+        })->toArray();
+    }
+
+    /**
+     * Generate a readable action text based on activity
+     *
+     * @param  Activity  $activity
+     * @return string
+     */
+    private function getActionText($activity)
+    {
+        $action = $activity->description;
+
+        // Normalize common actions
+        switch ($action) {
+            case 'created':
+                return __('sukūrė');
+            case 'updated':
+                return __('atnaujino');
+            case 'deleted':
+                return __('ištrynė');
+            default:
+                return $action;
+        }
+    }
+
+    /**
+     * Generate a link to the subject if applicable
+     *
+     * @param  Activity  $activity
+     * @return string|null
+     */
+    private function generateLink($activity)
+    {
+        if (! $activity->subject) {
+            return null;
+        }
+
+        $subjectType = $activity->subject_type;
+        $subjectId = $activity->subject_id;
+
+        // Map model types to routes - extend this based on your application's needs
+        $routeMap = [
+            'App\\Models\\Meeting' => "meetings/{$subjectId}/edit",
+            'App\\Models\\Goal' => "goals/{$subjectId}/edit",
+            'App\\Models\\News' => "news/{$subjectId}/edit",
+            'App\\Models\\User' => "users/{$subjectId}",
+            'App\\Models\\Institution' => "institutions/{$subjectId}/edit",
+            'App\\Models\\Form' => "forms/{$subjectId}/edit",
+            'App\\Models\\Page' => "pages/{$subjectId}/edit",
+            'App\\Models\\Document' => "documents/{$subjectId}",
+            'App\\Models\\Calendar' => "calendar/{$subjectId}/edit",
+        ];
+
+        $baseType = class_basename($subjectType);
+        $pluralType = Str::plural(strtolower($baseType));
+
+        // First try to use the predefined map
+        if (isset($routeMap[$subjectType])) {
+            return '/mano/'.$routeMap[$subjectType];
+        }
+
+        // Generate a standard pattern as fallback
+        return "/mano/{$pluralType}/{$subjectId}";
+    }
 
     public function atstovavimas()
     {
@@ -203,7 +419,7 @@ class DashboardController extends Controller
 
     public function userTasks()
     {
-        $user = User::find(auth()->user()->id);
+        $user = User::find(Auth::id());
 
         $tasks = $user->tasks->load('taskable', 'users');
 
@@ -232,7 +448,7 @@ class DashboardController extends Controller
         ]);
 
         // just send simple email to it@vusa.lt with feedback, conditional user name and with in a queue
-        Mail::to('it@vusa.lt')->queue(new \App\Mail\FeedbackMail($request->input('feedback'), $request->input('anonymous') ? null : auth()->user()));
+        Mail::to('it@vusa.lt')->queue(new \App\Mail\FeedbackMail($request->input('feedback'), $request->input('anonymous') ? null : Auth::user()));
 
         return redirect()->back()->with('success', 'Ačiū už atsiliepimą!');
     }

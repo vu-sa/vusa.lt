@@ -1,5 +1,6 @@
 <template>
-  <NSpin :spinning description="Kraunami visi resursai...">
+  <Spinner :show="spinning">
+    <template #description>Kraunami visi resursai...</template>
     <NForm :model="reservationResourceForm">
       <NFormItem required :label="capitalize($t('entities.reservation.period'))">
         <!-- For now, don't allow to change the date when updating, because of recalculation of possible amount difficulties -->
@@ -24,7 +25,7 @@
         </NButton>
       </NFormItem>
     </NForm>
-  </NSpin>
+  </Spinner>
 </template>
 
 <script setup lang="tsx">
@@ -44,6 +45,7 @@ import {
   renderResourceLabel,
   renderResourceTag,
 } from "@/Features/Admin/Reservations/Helpers";
+import { Spinner } from "@/Components/ui/spinner";
 
 const props = defineProps<{
   reservationResourceForm: InertiaForm<{

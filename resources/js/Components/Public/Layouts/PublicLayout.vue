@@ -27,6 +27,11 @@
         <MainNavigation :is-theme-dark="isDark" />
 
         <main class="pb-8 pt-12">
+          <!-- Centralized breadcrumb display -->
+          <div v-if="publicBreadcrumbState.hasBreadcrumbs" class="wrapper pt-4 md:pt-6 lg:pt-8 mt-16">
+            <PublicBreadcrumb :items="publicBreadcrumbState.breadcrumbs.value" class="mb-4 md:mb-6" />
+          </div>
+          
           <!-- <Suspense> -->
           <div>
             <FadeTransition v-if="!$page.props.disablePageTransition" appear>
@@ -44,24 +49,6 @@
               <BannerCarousel :banners="$page.props.tenant?.banners" />
             </div>
           </div>
-          <!--<template #fallback>
-              <div class="flex h-screen items-center justify-center">
-                <NSpin>
-                  <template #description>
-                    <div class="mt-2 h-8 text-vusa-red">
-                      <FadeTransition>
-                        <span v-if="spinWarning">
-                          Pabandykite perkrauti puslapį arba grįžkite į
-                          <a class="underline" :href="$page.props.app.url">vusa.lt</a>
-                        </span>
-                        <span v-else />
-                      </FadeTransition>
-                    </div>
-                  </template>
-</NSpin>
-</div>
-</template> -->
-          <!-- </Suspense> -->
         </main>
 
         <FadeTransition appear>
@@ -76,11 +63,14 @@
 
 <script setup lang="ts">
 import { NConfigProvider, darkTheme, useMessage, type GlobalThemeOverrides } from "naive-ui";
-import { computed, defineAsyncComponent, onMounted, ref, toValue, watch } from "vue";
+import { computed, defineAsyncComponent, onMounted, ref, toValue, watch, nextTick } from "vue";
 import { useDark, useStorage } from "@vueuse/core";
 
-import { Head, usePage } from "@inertiajs/vue3";
+import { Head, usePage, router } from "@inertiajs/vue3";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
+import { Spinner } from "@/Components/ui/spinner";
+import PublicBreadcrumb from "@/Components/Public/Breadcrumb/PublicBreadcrumb.vue";
+import { publicBreadcrumbState } from "@/Composables/usePublicBreadcrumbs";
 
 const BannerCarousel = defineAsyncComponent(() => import("../FullWidth/BannerCarousel.vue"));
 const ConsentCard = defineAsyncComponent(() => import("../ConsentCard.vue"));
@@ -90,7 +80,6 @@ const SiteFooter = defineAsyncComponent(() => import("../FullWidth/SiteFooter.vu
 const isDark = useDark();
 
 const seo = computed(() => {
-
   // Computed Seo is an object
   let computedSeo = usePage().props.seo.tags;
   
@@ -131,12 +120,6 @@ const themeOverrides: GlobalThemeOverrides = {
     borderRadius: "6px",
     fontWeightStrong: "600",
     lineHeight: "1.5",
-    // paddingMedium: '16px 24px 8px',
-    // titleFontSizeMedium: '1.25rem',
-    // titleFontWeight: '700',
-    // textColor1: 'rgb(24, 8, 6)',
-    // textColor2: 'rgb(32, 13, 11)',
-    // textColor3: 'rgb(130, 121, 118)'
   },
   DataTable: {
     tdColor: "transparent",
@@ -153,12 +136,6 @@ const darkThemeOverrides: GlobalThemeOverrides = {
     borderRadius: "6px",
     fontWeightStrong: "600",
     lineHeight: "1.5",
-    // paddingMedium: '16px 24px 8px',
-    // titleFontSizeMedium: '1.25rem',
-    // titleFontWeight: '700',
-    // textColor1: 'rgb(24, 8, 6)',
-    // textColor2: 'rgb(32, 13, 11)',
-    // textColor3: 'rgb(130, 121, 118)'
   },
   DataTable: {
     tdColor: "transparent",
@@ -204,8 +181,22 @@ watch(errorMessage, (errorMessage) => {
   }
 });
 
+// Listen for navigation events to handle breadcrumb persistence
 onMounted(() => {
   mounted.value = true;
+
+  // Setup router navigation events for breadcrumbs
+  router.on('start', () => {
+    // Don't clear breadcrumbs during navigation - helps with transition
+  });
+
+  router.on('finish', () => {
+    // Components should set their own breadcrumbs by this point
+    nextTick(() => {
+      // We don't need default breadcrumbs for public pages
+      // as each page should set its own or none at all
+    });
+  });
 
   // UserWay
   (function (d) {

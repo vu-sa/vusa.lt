@@ -7,7 +7,7 @@
     <template #after-heading>
       <InstitutionAvatarGroup :max="5" :users="institution.current_users" />
       <template v-if="institution.managers.length > 0">
-        <Separator v-if="institution.managers.length > 0" vertical />
+        <Separator v-if="institution.managers.length > 0" orientation="vertical" />
         <span class="text-xs text-zinc-500">Admin:</span>
         <InstitutionAvatarGroup :users="institution.managers" />
       </template>

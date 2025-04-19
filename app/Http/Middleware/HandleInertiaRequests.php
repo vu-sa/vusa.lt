@@ -89,9 +89,12 @@ class HandleInertiaRequests extends Middleware
 
     private function getLoggedInUserForInertia(): ?User
     {
-        $user = User::query()->withCount(['tasks' => function ($query) {
-            $query->whereNull('completed_at');
-        }])->with('roles', 'current_duties:id,name,institution_id', 'current_duties.roles', 'current_duties.institution:id,name')->find(Auth::id());
+        $user = User::query()
+            ->withCount(['tasks' => function ($query) {
+                $query->whereNull('completed_at');
+            }])
+            ->with('roles', 'current_duties:id,name,institution_id', 'current_duties.roles', 'current_duties.institution:id,name')
+            ->find(Auth::id());
 
         return $user;
     }

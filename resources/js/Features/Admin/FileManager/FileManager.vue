@@ -1,23 +1,18 @@
 <template>
   <div>
     <div class="grid grid-cols-[auto__1fr] items-center gap-x-6 gap-y-4 max-sm:grid-cols-2">
-      <NButtonGroup>
+      <div class="flex gap-2">
         <!-- Add file or folder   -->
-        <NButton size="small" @click="showFileUploadModal = true">
-          <template #icon>
-            <IFluentDocumentAdd24Regular />
-          </template>
+        <Button variant="outline" size="sm" @click="showFileUploadModal = true">
+          <IFluentDocumentAdd24Regular class="mr-2 h-4 w-4" />
           Pridėti failą
-        </NButton>
-        <NButton size="small" @click="showFolderUploadModal = true">
-          <template #icon>
-            <IFluentFolderAdd24Regular />
-          </template>
+        </Button>
+        <Button variant="outline" size="sm" @click="showFolderUploadModal = true">
+          <IFluentFolderAdd24Regular class="mr-2 h-4 w-4" />
           Pridėti aplanką
-        </NButton>
-      </NButtonGroup>
-      <NInput v-model:value="search" style="width: 300px; margin-left: auto;" :size="small ? 'small' : 'medium'" round
-        placeholder="Filtruoti..." />
+        </Button>
+      </div>
+      <Input v-model="search" class="w-[300px] ml-auto" :size="small ? 'sm' : 'default'" placeholder="Filtruoti..." />
 
       <div class="col-span-2 text-zinc-500">
         {{ shownPath }}
@@ -35,16 +30,15 @@
           :show-thumbnail="file?.name?.endsWith('.jpg') || file?.name?.endsWith('.png') || file?.name?.endsWith('.jpeg')"
           :thumbnail="`/uploads/${file.path?.substring(file.path.indexOf('/') + 1)}`"
           @dblclick="$emit('fileSelected', file.path)" />
-        <NButton class="-right-2 -top-2 opacity-0 group-hover:opacity-100" style="position: absolute" size="small"
-          type="error" circle @click="deleteFile(file.path)">
-          <template #icon>
-            <IFluentDelete24Filled />
-          </template>
-        </NButton>
+        <Button class="-right-2 -top-2 opacity-0 group-hover:opacity-100" 
+          style="position: absolute" size="sm" variant="destructive" 
+          @click="deleteFile(file.path)">
+          <IFluentDelete24Filled class="h-4 w-4" />
+        </Button>
       </div>
     </div>
     <CardModal :show="showFileUploadModal" title="Pridėti failą" @close="showFileUploadModal = false">
-      <NSpin :show="loading">
+      <Spinner :show="loading">
         <NUpload ref="upload" v-model:file-list="fileList" multiple class="rounded-xl">
           <NUploadDragger style="height: 100%">
             <div style="margin-bottom: 12px">
@@ -55,19 +49,20 @@
             </p>
           </NUploadDragger>
         </NUpload>
-        <NButton type="primary" style="margin-top: 1rem" @click="uploadFiles">
+        <Button type="primary" class="mt-4" @click="uploadFiles">
           Įkelti
-        </NButton>
-      </NSpin>
+        </Button>
+      </Spinner>
     </CardModal>
     <CardModal :show="showFolderUploadModal" title="Pridėti aplanką" @close="showFolderUploadModal = false">
       <div>
-        <NFormItem label="Naujo aplanko pavadinimas">
-          <NInput v-model:value="newFolderName" placeholder="Pavadinimas..." />
-        </NFormItem>
-        <NButton :loading="loading" type="primary" @click="createDirectory">
+        <div class="grid w-full max-w-sm items-center gap-1.5 mb-4">
+          <Label for="folderName">Naujo aplanko pavadinimas</Label>
+          <Input id="folderName" v-model="newFolderName" placeholder="Pavadinimas..." />
+        </div>
+        <Button :disabled="loading" :data-loading="loading" @click="createDirectory">
           Sukurti
-        </NButton>
+        </Button>
       </div>
     </CardModal>
     <CardModal :show="showDeleteModal" title="Ištrinti failą" @close="showDeleteModal = false">
@@ -81,14 +76,14 @@
         <p class="mb-4 text-zinc-500">
           {{ selectedFileForDeletion }}
         </p>
-        <NButtonGroup>
-          <NButton :loading="loading" type="error" @click="deleteFileConfirmed">
+        <div class="flex gap-2">
+          <Button :disabled="loading" :data-loading="loading" variant="destructive" @click="deleteFileConfirmed">
             Taip
-          </NButton>
-          <NButton @click="showDeleteModal = false">
+          </Button>
+          <Button variant="outline" @click="showDeleteModal = false">
             Ne
-          </NButton>
-        </NButtonGroup>
+          </Button>
+        </div>
       </div>
     </CardModal>
   </div>
@@ -101,6 +96,10 @@ import { useMessage } from 'naive-ui';
 
 import CardModal from '@/Components/Modals/CardModal.vue';
 import FileButton from '../SharepointFileManager/Viewer/FileButton.vue';
+import { Spinner } from '@/Components/ui/spinner';
+import { Button } from '@/Components/ui/button';
+import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
 
 const props = defineProps<{
   directories: any;
@@ -256,3 +255,25 @@ function getIconString(file: string, isFolder: boolean | undefined) {
   return "file";
 }
 </script>
+
+<style scoped>
+/* Add loading spinner to button */
+[data-loading="true"]::before {
+  content: "";
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  margin-right: 0.5rem;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  animation: spin 0.6s linear infinite;
+  vertical-align: text-bottom;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+</style>

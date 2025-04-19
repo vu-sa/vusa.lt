@@ -2,7 +2,7 @@
 # Changes
 
 - Updated the background color from `bg-border` to `bg-zinc-100` for better visual consistency.
-- Added margins.
+- Increased margins for better spacing between content sections (from my-1/mx-2 to my-6/mx-4).
 </docs>
 
 <script setup lang="ts">
@@ -27,7 +27,7 @@ const delegatedProps = reactiveOmit(props, 'class')
     v-bind="delegatedProps"
     :class="
       cn(
-        `bg-zinc-100 dark:bg-zinc-900 data-[orientation=horizontal]:my-4 data-[orientation=vertical]:mx-2 shrink-0 data-[orientation=horizontal]:h-px data-[orientation=horizontal]:w-full data-[orientation=vertical]:h-full data-[orientation=vertical]:w-px`,
+        `bg-zinc-300 dark:bg-zinc-500 data-[orientation=horizontal]:my-6 data-[orientation=vertical]:mx-4 shrink-0 data-[orientation=horizontal]:h-px data-[orientation=horizontal]:w-full data-[orientation=vertical]:h-full data-[orientation=vertical]:w-px`,
         props.class,
       )
     "

@@ -1,5 +1,5 @@
 <template>
-  <AdminContentPage :title="$t('Pranešimai')">
+  <AdminContentPage :title="$t('Pranešimai')" :breadcrumbs="breadcrumbs">
     <div class="flex items-center justify-between mb-4">
       <div class="flex items-center gap-2">
         <NSwitch v-model:value="showReadNotifications" size="small" />
@@ -39,6 +39,11 @@ import AdminContentPage from "@/Components/Layouts/AdminContentPage.vue";
 import type { NotificationData } from "@/Features/Admin/Notifications/NotificationItem.vue";
 import NotificationItem from "@/Features/Admin/Notifications/NotificationItem.vue";
 
+import { useBreadcrumbs, type BreadcrumbItem } from "@/Composables/useBreadcrumbs";
+import { trans as $t } from "laravel-vue-i18n";
+import Icons from "@/Types/Icons/regular";
+import IFluentCheckmarkCircle24Regular from '~icons/fluent/checkmark-circle-24-regular';
+
 const { notifications } = defineProps<{
   notifications: App.Entities.Notification<NotificationData>[];
 }>();
@@ -50,6 +55,13 @@ const shownNotifications = computed(() => {
     ? notifications
     : notifications.filter((notification) => !notification.read_at);
 });
+
+// Setup breadcrumbs for the Notifications page
+const { createBreadcrumbItem } = useBreadcrumbs();
+
+const breadcrumbs = computed((): BreadcrumbItem[] => [
+  createBreadcrumbItem($t('Pranešimai'), undefined, Icons.NOTIFICATION)
+]);
 
 const loading = ref(false);
 const message = useMessage();

@@ -18,6 +18,7 @@ import {
 } from '@/Components/ui/sidebar'
 import { ChevronRight, type LucideIcon } from 'lucide-vue-next'
 import { usePage, Link } from '@inertiajs/vue3'
+import { trans as $t } from "laravel-vue-i18n"
 
 defineProps<{
   items: {
@@ -33,7 +34,7 @@ defineProps<{
 }>()
 
 // Compute section title based on the current locale
-const sectionTitle = usePage().props.app.locale === 'en' ? 'Functions' : 'Funkcijos'
+const sectionTitle = $t('Funkcijos')
 </script>
 
 <template>

@@ -4,6 +4,7 @@ return [
     'fields' => [
         'name_and_surname' => 'Vardas ir pavardė',
         'title' => 'Pavadinimas',
+        'name' => 'Pavadinimas',
         'short_name' => 'Trumpas pavadinimas',
         'date' => 'Data',
         'due_date' => 'Atlikti iki',
@@ -27,6 +28,9 @@ return [
         'type' => '{0} Tipas|{1} Tipai',
         'pronouns' => 'Įvardžiai',
         'show_pronouns' => 'Rodyti įvardžius',
+        'slug' => 'Trumpinys',
+        'hour' => 'Valanda',
+        'minute' => 'Minutė',
     ],
     'context' => [
         'main_info' => 'Pagrindinė informacija',

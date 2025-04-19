@@ -4,6 +4,7 @@ return [
     'fields' => [
         'name_and_surname' => 'Name and surname',
         'title' => 'Title',
+        'name' => 'Name',
         'short_name' => 'Short name',
         'date' => 'Date',
         'due_date' => 'Due date',
@@ -27,6 +28,9 @@ return [
         'type' => '{0} Type|{1} Types',
         'pronouns' => 'Pronouns',
         'show_pronouns' => 'Show pronouns',
+        'slug' => 'Slug',
+        'hour' => 'Hour',
+        'minute' => 'Minute',
     ],
     'context' => [
         'main_info' => 'Main information',

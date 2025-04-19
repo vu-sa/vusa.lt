@@ -18,7 +18,7 @@
           <template v-if="item.href">
             <BreadcrumbLink :href="item.href">
               <div class="flex items-center gap-1.5">
-                <component v-if="item.icon" :is="item.icon" class="h-3.5 w-3.5" />
+                <component :is="item.icon" v-if="item.icon" class="h-3.5 w-3.5" />
                 <span>{{ item.label }}</span>
               </div>
             </BreadcrumbLink>
@@ -26,13 +26,13 @@
           <template v-else>
             <BreadcrumbPage>
               <div class="flex items-center gap-1.5">
-                <component v-if="item.icon" :is="item.icon" class="h-3.5 w-3.5" />
+                <component :is="item.icon" v-if="item.icon" class="h-3.5 w-3.5" />
                 <span>{{ item.label }}</span>
               </div>
             </BreadcrumbPage>
           </template>
         </BreadcrumbItem>
-        
+
         <BreadcrumbSeparator v-if="index < items.length - 1" />
       </template>
     </BreadcrumbList>

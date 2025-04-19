@@ -1,5 +1,10 @@
 import { vi } from 'vitest';
 
+// Mock icons for tests
+vi.mock('~icons/fluent/home24-filled', () => ({
+  default: {},
+}));
+
 // Mock route function from Ziggy
 vi.mock('ziggy-js', () => ({
   default: (name: string, params: any) => {
@@ -54,9 +59,33 @@ vi.mock('@inertiajs/vue3', () => ({
   })),
 }));
 
+// Helper function for translations - used by both imports and template globals
+const translateFn = (key: string, params?: any) => key;
+
 // Mock i18n functions
 vi.mock('laravel-vue-i18n', () => ({
-  trans: vi.fn((key: string) => key),
-  transChoice: vi.fn((key: string, count: number) => key),
+  trans: translateFn,
+  transChoice: vi.fn((key: string, count: number, params?: any) => key),
   createI18nInstance: vi.fn(),
+  loadLanguageAsync: vi.fn(),
 }));
+
+// Add global properties to Vue component instances for testing
+import { config } from '@vue/test-utils';
+
+config.global.mocks = {
+  // Mock $t template global property
+  $t: translateFn,
+  // Mock $tChoice template global property
+  $tChoice: (key: string, count: number, params?: any) => key,
+  // Add route helper as a global property if used in templates
+  route: (name: string, params: any) => `/mocked-route/${name}`,
+  // Add $page if needed in more components
+  $page: {
+    props: {
+      app: {
+        locale: 'lt',
+      }
+    }
+  }
+};

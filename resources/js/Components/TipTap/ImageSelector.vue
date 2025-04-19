@@ -5,7 +5,7 @@
       <div v-else class="h-32" />
       <template #fallback>
         <div class="flex h-32 items-center justify-center">
-          <NSpin />
+          <Spinner size="sm" />
         </div>
       </template>
     </Suspense>
@@ -14,7 +14,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
-import { NSpin } from 'naive-ui';
+import { Spinner } from '@/Components/ui/spinner';
 import CardModal from '../Modals/CardModal.vue';
 import FileSelector from '@/Features/Admin/FileManager/FileSelector.vue';
 

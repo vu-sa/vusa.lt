@@ -63,7 +63,7 @@ const handleMatterSubmit = (form: Record<string, any>) => { };
 
 const { createRouteBreadcrumb, createBreadcrumbItem } = useBreadcrumbs();
 
-const breadcrumbOptions = computed((): BreadcrumbItem[] => [
+const breadcrumbs = computed((): BreadcrumbItem[] => [
   createRouteBreadcrumb(firstInstitution.value?.name ?? "Nenurodyta", "institutions.show", { institution: firstInstitution.value?.id }, PeopleTeam24Filled),
   createBreadcrumbItem(props.matter.title, undefined, BookQuestionMark24Filled),
 ]);

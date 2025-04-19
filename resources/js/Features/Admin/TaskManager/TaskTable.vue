@@ -1,188 +1,289 @@
 <template>
-  <NDataTable :data="tasks" :scroll-x="800" :bordered="false" :columns :row-class-name="rowClassName">
+  <DataTableProvider 
+    :columns="columns" 
+    :data="tasks" 
+    :rowClassName="rowClassName"
+    :enable-pagination="true"
+    :page-size="10"
+    :empty-message="$t('No tasks found.')"
+    @update:sorting="handleSortChange"
+  >
     <template #empty>
       <div class="flex flex-col items-center justify-center gap-2 text-zinc-400">
-        <NIcon :size="24" :component="IconsRegular.TASK" />
-        <span>Užduočių nėra.</span>
+        <div class="flex h-10 w-10 items-center justify-center rounded-full border border-dashed">
+          <CheckIcon class="h-5 w-5" />
+        </div>
+        <span>{{ $t('No tasks found.') }}</span>
       </div>
     </template>
-  </NDataTable>
+  </DataTableProvider>
 </template>
 
 <script setup lang="tsx">
-import {
-  type DataTableColumns,
-  NButton,
-  NCheckbox,
-  NDataTable,
-  NEllipsis,
-  NIcon,
-} from "naive-ui";
 import { Link, router, usePage } from "@inertiajs/vue3";
-import { computed, ref } from "vue";
-
 import { trans as $t } from "laravel-vue-i18n";
+import { computed, ref } from "vue";
+import { CheckIcon, CalendarIcon, MoreHorizontalIcon, TrashIcon } from "lucide-vue-next";
+import { Badge } from "@/Components/ui/badge";
+import { Button } from "@/Components/ui/button";
+import { Checkbox } from "@/Components/ui/checkbox";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
+import { toast } from "vue-sonner";
+import { format } from "date-fns";
 import IconsFilled from "@/Types/Icons/filled";
-import IconsRegular from "@/Types/Icons/regular";
-import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
+import DataTableProvider from "@/Components/ui/data-table/DataTableProvider.vue";
 import UsersAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
 
+// Define Task interface
+interface Task extends App.Entities.Task {
+  id: string;
+  name: string;
+  completed_at: string | null;
+  due_date: string | null;
+  taskable_type: string;
+  taskable_id: string;
+  taskable: any;
+  users?: {
+    id: string;
+    name: string;
+  }[];
+}
+
 const props = defineProps<{
-  tasks: App.Entities.Task[];
+  tasks: Task[];
 }>();
 
-const tasks = ref(props.tasks);
+// Track loading state
+const isLoading = ref(false);
 
-const loading = ref(false);
-
-const rowClassName = (row: App.Entities.Task) => {
-  if (row.completed_at !== null) {
-    return "bg-zinc-100/50 opacity-30 dark:bg-zinc-900/50 dark:opacity-30";
-  }
-  return "";
+/**
+ * Handle row styling based on task completion status
+ */
+const rowClassName = (row: Task) => {
+  return row.completed_at !== null 
+    ? "bg-zinc-100/50 opacity-50 dark:bg-zinc-900/50 dark:opacity-50" 
+    : "";
 };
 
-const columns = computed<DataTableColumns<App.Entities.Task>>(() => [
-  {
-    align: "center",
-    key: "checkbox",
-    render(row) {
-      return (
-        <NCheckbox
-          themeOverrides={{ border: "1px solid" }}
-          size="large"
-          onUpdate:checked={() => updateTaskCompletion(row)}
-          disabled={
-            !row.users?.find(
-              (user) => user.id === usePage().props.auth?.user?.id,
-            )
-          }
-          checked={row.completed_at !== null}
-        />
-      );
-    },
-    width: 40,
-    fixed: "left",
-  },
-  {
-    title() {
-      return $t("forms.fields.title");
-    },
-    key: "name",
-    width: 180,
-    ellipsis: {
-      tooltip: true,
-    },
-    resizable: true,
-  },
-  {
-    title() {
-      return $t("forms.fields.subject");
-    },
-    key: "subject",
-    render(row) {
-      let modelType = row.taskable_type.split("\\").pop() + "s";
-
-      return (
-        <Link href={route(`${modelType.toLowerCase()}.show`, row.taskable_id)}>
-          <NButton secondary round size="tiny">
-            {{
-              default: () => [
-                <NEllipsis class="w-28">
-                  {row.taskable?.title ??
-                    row.taskable?.name ??
-                    row.taskable?.start_time}
-                </NEllipsis>,
-              ],
-              icon: () => <NIcon component={iconComponent(row)}></NIcon>,
-            }}
-          </NButton>
-        </Link>
-      );
-    },
-  },
-  {
-    title() {
-      return $t("forms.fields.responsible_people");
-    },
-    key: "users",
-    minWidth: 150,
-    render(row) {
-      return <UsersAvatarGroup size={32} users={row.users}></UsersAvatarGroup>;
-    },
-  },
-  {
-    title() {
-      return $t("forms.fields.due_date");
-    },
-    key: "due_date",
-    minWidth: 150,
-    sorter: "default",
-  },
-  {
-    key: "moreOptions",
-    fixed: "right",
-    width: 60,
-    render(row) {
-      return row.completed_at === null ? (
-        <MoreOptionsButton
-          delete
-          small
-          onDeleteClick={() => {
-            handleDelete(row);
-          }}
-        ></MoreOptionsButton>
-      ) : null;
-    },
-  },
-]);
-
-const iconComponent = (row: App.Entities.Task) => {
-  switch (row.taskable_type) {
-    case "App\\Models\\Meeting":
-      return IconsFilled.MEETING;
-    case "App\\Models\\User":
-      return IconsFilled.USER;
-    case "App\\Models\\Reservation":
-      return IconsFilled.RESERVATION;
-    default:
-      return IconsFilled.HOME;
-  }
+/**
+ * Handle sort changes
+ */
+const handleSortChange = (sorting) => {
+  // Additional sorting logic could be added here if needed
 };
 
-const updateTaskCompletion = (task: App.Entities.Task) => {
-  loading.value = true;
+/**
+ * Format date
+ */
+const formatDate = (dateString: string) => {
+  if (!dateString) return '';
+  return format(new Date(dateString), 'yyyy-MM-dd');
+};
 
-  const updateValue = task.completed_at === null 
-
-  // find task from taskRef
-  const taskRef = tasks.value.find((t) => t.id === task.id);
-
-  // update task
-  taskRef.completed_at = task.completed_at === null ? new Date() : null;
+/**
+ * Update task completion status
+ */
+const updateTaskCompletion = (task: Task) => {
+  if (isLoading.value) return;
+  isLoading.value = true;
+  
+  // Toggle completion status
+  const newCompletionState = task.completed_at === null;
+  
+  // Store current state for reverting if needed
+  const previousState = task.completed_at;
+  
+  // Optimistic update for better UX
+  task.completed_at = newCompletionState ? new Date().toISOString() : null;
 
   router.post(
     route("tasks.updateCompletionStatus", task.id),
+    { completed: newCompletionState },
     {
-      completed: updateValue,
-    },
-    {
-      onSuccess: () => {
-        loading.value = false;
-      },
       preserveScroll: true,
+      preserveState: true,
+      onSuccess: () => {
+        isLoading.value = false;
+        
+        // Show appropriate toast message
+        if (newCompletionState) {
+          toast.success($t("Task marked as completed"), {
+            description: task.name,
+            icon: <CheckIcon class="h-4 w-4" />
+          });
+        } else {
+          toast.info($t("Task marked as incomplete"), {
+            description: task.name
+          });
+        }
+      },
+      onError: () => {
+        // Revert optimistic update if server request fails
+        isLoading.value = false;
+        task.completed_at = previousState;
+        
+        toast.error($t("Failed to update task status"), {
+          description: $t("Please try again")
+        });
+      },
     },
   );
 };
 
-const handleDelete = async (task: App.Entities.Task) => {
-  loading.value = true;
+/**
+ * Delete a task
+ */
+const handleDelete = (task: Task) => {
+  if (isLoading.value) return;
+  isLoading.value = true;
 
   router.delete(route("tasks.destroy", task.id), {
-    onSuccess: () => {
-      loading.value = false;
-    },
     preserveScroll: true,
+    preserveState: true,
+    onSuccess: () => {
+      isLoading.value = false;
+      toast.success($t("Task deleted successfully"), {
+        description: task.name
+      });
+    },
+    onError: (errors) => {
+      isLoading.value = false;
+      toast.error($t("Failed to delete task"), {
+        description: errors.message || $t("Please try again")
+      });
+    },
   });
 };
+
+/**
+ * Get taskable icon based on type
+ */
+const getTaskableIcon = (taskableType: string) => {
+  switch (taskableType) {
+    case "App\\Models\\Meeting": return IconsFilled.MEETING;
+    case "App\\Models\\User": return IconsFilled.USER;
+    case "App\\Models\\Reservation": return IconsFilled.RESERVATION;
+    default: return IconsFilled.HOME;
+  }
+};
+
+/**
+ * Get model route based on taskable type
+ */
+const getModelRoute = (taskableType: string) => {
+  const modelType = taskableType.split("\\").pop() + "s";
+  return modelType.toLowerCase();
+};
+
+/**
+ * Table column definitions using Tanstack Table format
+ */
+const columns = [
+  {
+    id: "completion",
+    header: "",
+    cell: ({ row }) => {
+      const task = row.original;
+      const canComplete = task.users?.find(
+        (user) => user.id === usePage().props.auth?.user?.id
+      );
+      
+      return (
+        <div class="flex justify-center">
+          <Checkbox
+            checked={task.completed_at !== null}
+            disabled={!canComplete || isLoading.value}
+            onUpdate:modelValue={() => updateTaskCompletion(task)}
+            class="transition-all duration-200 hover:scale-110"
+          />
+        </div>
+      );
+    },
+    size: 40,
+  },
+  {
+    accessorKey: "name",
+    header: () => $t("forms.fields.title"),
+    cell: ({ row }) => (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div class="max-w-[200px] truncate font-medium">
+              {row.original.name}
+            </div>
+          </TooltipTrigger>
+          <TooltipContent side="top" align="start">
+            <p>{row.original.name}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    ),
+    size: 200,
+  },
+  {
+    accessorKey: "subject",
+    header: () => $t("forms.fields.subject"),
+    cell: ({ row }) => {
+      const task = row.original;
+      const modelRoute = getModelRoute(task.taskable_type);
+      const Icon = getTaskableIcon(task.taskable_type);
+      
+      return (
+              <Link href={route(`${modelRoute}.show`, task.taskable_id)}>
+                <Badge variant="outline" class="flex items-center gap-1">
+                  <Icon class="h-3 w-3" />
+                  <span class="max-w-[120px] truncate">
+                    {task.taskable?.title || task.taskable?.name || task.taskable?.start_time}
+                  </span>
+                </Badge>
+              </Link>
+      );
+    },
+    size: 150,
+  },
+  {
+    accessorKey: "users",
+    header: () => $t("forms.fields.responsible_people"),
+    cell: ({ row }) => (
+      <UsersAvatarGroup size={32} users={row.original.users || []} />
+    ),
+    size: 150,
+  },
+  {
+    accessorKey: "due_date",
+    header: () => $t("forms.fields.due_date"),
+    cell: ({ row }) => (
+      <div class="flex items-center gap-2">
+        <CalendarIcon class="h-4 w-4 text-zinc-500" />
+        <span>{formatDate(row.original.due_date || '')}</span>
+      </div>
+    ),
+    size: 150,
+  },
+  {
+    id: "actions",
+    cell: ({ row }) => {
+      const task = row.original;
+      if (task.completed_at !== null) return null;
+      
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" class="h-8 w-8 p-0">
+              <MoreHorizontalIcon class="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => handleDelete(task)} class="text-destructive focus:text-destructive">
+              <TrashIcon class="mr-2 h-4 w-4" />
+              <span>{$t("Delete")}</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      );
+    },
+    size: 60,
+  },
+];
 </script>

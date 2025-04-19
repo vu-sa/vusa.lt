@@ -3,37 +3,69 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\IndexDocumentRequest;
 use App\Http\Requests\StoreDocumentRequest;
 use App\Http\Requests\UpdateDocumentRequest;
+use App\Http\Traits\HasTanstackTables;
 use App\Models\Document;
 use App\Services\ModelAuthorizer as Authorizer;
-use App\Services\ModelIndexer;
 use App\Services\SharepointGraphService;
-use Illuminate\Database\Eloquent\Builder;
+use App\Services\TanstackTableService;
 use Illuminate\Database\Eloquent\Collection;
 use Inertia\Inertia;
 
 class DocumentController extends Controller
 {
-    public function __construct(public Authorizer $authorizer) {}
+    use HasTanstackTables;
+
+    public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService) {}
 
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(IndexDocumentRequest $request)
     {
         $this->authorize('viewAny', Document::class);
 
-        $indexer = new ModelIndexer(new Document);
+        // Build base query with eager loading
+        $query = Document::query()->with(['institution']);
 
-        $documents = $indexer
-            ->setEloquentQuery([fn (Builder $query) => $query->with(['institution'])])
-            ->filterAllColumns()
-            ->sortAllColumns()
-            ->builder->paginate(20);
+        // Define searchable columns
+        $searchableColumns = ['name', 'title', 'institution.name', 'sharepoint_id'];
+
+        // Apply Tanstack Table filters
+        $query = $this->applyTanstackFilters(
+            $query,
+            $request,
+            $this->tableService,
+            $searchableColumns,
+            [
+                'tenantRelation' => 'institution.tenant',
+                'permission' => 'documents.read.padalinys',
+                'applySortBeforePagination' => true,
+            ]
+        );
+
+        // Paginate results
+        $documents = $query->paginate($request->input('per_page', 20))
+            ->withQueryString();
+
+        // Get the sorting state using the custom method to ensure consistent parsing
+        $sorting = $request->getSorting();
 
         return Inertia::render('Admin/Files/IndexDocument', [
-            'documents' => $documents,
+            'data' => $documents->items(),
+            'meta' => [
+                'total' => $documents->total(),
+                'per_page' => $documents->perPage(),
+                'current_page' => $documents->currentPage(),
+                'last_page' => $documents->lastPage(),
+                'from' => $documents->firstItem(),
+                'to' => $documents->lastItem(),
+            ],
+            'filters' => $request->getFilters(),
+            'sorting' => $sorting,
+            'initialSorting' => $sorting,
         ]);
     }
 

@@ -1,0 +1,135 @@
+name: Run All Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches-ignore:
+      - 'dependabot/npm_and_yarn/*'
+      - 'dependabot/composer/*'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      php: ${{ steps.filter.outputs.php }}
+      js: ${{ steps.filter.outputs.js }}
+    steps:
+    - uses: actions/checkout@v4
+    - uses: dorny/paths-filter@v2
+      id: filter
+      with:
+        filters: |
+          php:
+            - '**/*.php'
+          js:
+            - '**/*.vue'
+            - '**/*.js'
+            - '**/*.ts'
+            - '**/*.tsx'
+
+  setup:
+    needs: changes
+    if: ${{ needs.changes.outputs.php == 'true' || needs.changes.outputs.js == 'true' }}
+    uses: ./.github/workflows/setup.yml
+    with:
+      include-coverage: true
+      
+  php-tests:
+    needs: [changes, setup]
+    if: ${{ needs.changes.outputs.php == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    # Download build artifacts
+    - name: Download build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: build-assets
+        path: ./
+    
+    - name: Setup PHP with Xdebug
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: 8.3
+        extensions: dom, curl, libxml, mbstring, zip, fileinfo
+        coverage: xdebug
+    
+    - name: Create SQLite database
+      run: |
+        touch database/database.sqlite
+        cp .env.example .env
+        php artisan key:generate --force
+      
+    - name: Execute tests via Pest
+      env:
+        DB_CONNECTION: sqlite
+        DB_DATABASE: database/database.sqlite
+      run: php artisan test --coverage --coverage-clover ./phpunit-coverage.xml
+      
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v5
+      with:
+        verbose: true
+        files: ./phpunit-coverage.xml
+        flags: backend
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        
+  js-tests:
+    needs: [changes, setup]
+    if: ${{ needs.changes.outputs.js == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    # Download build artifacts
+    - name: Download build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: build-assets
+        path: ./
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+    
+    - name: Install npm dependencies
+      run: npm ci
+    
+    - name: Install Playwright Browsers
+      run: npx playwright install --with-deps
+    
+    - name: Set up environment
+      run: |
+        cp .env.example .env
+        php artisan key:generate --force
+    
+    - name: Execute tests via npm script
+      run: |
+        LARAVEL_BYPASS_ENV_CHECK=1 npm run coverage
+    
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v5
+      with:
+        verbose: true
+        files: ./coverage/clover.xml
+        flags: frontend
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+    
+    # Save test coverage as artifact
+    - name: Archive coverage reports
+      uses: actions/upload-artifact@v4
+      with:
+        name: vitest-coverage
+        path: ./coverage
+        retention-days: 1

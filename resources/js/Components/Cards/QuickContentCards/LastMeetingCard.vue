@@ -34,7 +34,10 @@
       </template>
     </p>
     <template #action-button>
-      <NewMeetingButton @click="showModal = true" />
+      <Button variant="default" size="sm" @click="showModal = true">
+        <component :is="IconsRegular.MEETING" class="mr-2 h-4 w-4" />
+        {{ $t("Pranešti") }}
+      </Button>
       <NewMeetingModal :institution="institution" :show-modal="showModal" @close="showModal = false" />
     </template>
   </QuickContentCard>
@@ -45,9 +48,10 @@ import { Link } from "@inertiajs/vue3";
 import { computed, ref } from "vue";
 
 import { formatStaticTime, getDaysDifference } from "@/Utils/IntlTime";
-import NewMeetingButton from "@/Components/Buttons/NewMeetingButton.vue";
 import NewMeetingModal from "@/Components/Modals/NewMeetingModal.vue";
 import QuickContentCard from "@/Components/Cards/QuickContentCards/QuickContentCard.vue";
+import { Button } from "@/Components/ui/button";
+import IconsRegular from "@/Types/Icons/regular";
 
 const props = defineProps<{
   doingTypes: any;

@@ -61,6 +61,7 @@ import {
   LogOut,
   UserIcon,
   Send,
+  Clock,
   type LucideIcon
 } from 'lucide-vue-next'
 
@@ -103,7 +104,7 @@ const navMainItems = computed(() => {
   // Representation (Atstovavimas)
   if (usePage().props.auth?.can.create.meeting) {
     items.push({
-      title: usePage().props.app.locale === 'en' ? 'Representation' : 'Atstovavimas',
+      title: $t("Atstovavimas"),
       url: route('dashboard.atstovavimas'),
       icon: GraduationCap,
       isActive: route().current('dashboard.atstovavimas*'),
@@ -113,7 +114,7 @@ const navMainItems = computed(() => {
   // Website (Svetainė)
   if (usePage().props.auth?.can.create.page) {
     items.push({
-      title: usePage().props.app.locale === 'en' ? 'Website' : 'Svetainė',
+      title: $t("Svetainė"),
       url: route('dashboard.svetaine'),
       icon: Globe,
       isActive: route().current('dashboard.svetaine*'),
@@ -122,8 +123,7 @@ const navMainItems = computed(() => {
 
   // Reservations
   items.push({
-    title: capitalize(usePage().props.app.locale === 'en' ? 'reservations' : 
-      usePage().props.$translations?.entities?.reservation?.model_many ?? 'Reservations'),
+    title: $t('Rezervacijos'),
     url: route('dashboard.reservations'),
     icon: Bookmark,
     isActive: route().current('dashboard.reservations*'),
@@ -131,7 +131,7 @@ const navMainItems = computed(() => {
 
   // Settings/Admin (Administravimas)
   items.push({
-    title: usePage().props.app.locale === 'en' ? 'Administration' : 'Administravimas',
+    title: $t('Administravimas'),
     url: route('administration'),
     icon: Settings,
     isActive: route().current('administration*'),
@@ -144,12 +144,12 @@ const navMainItems = computed(() => {
 const navSecondaryItems = computed(() => {
   return [
     {
-      title: usePage().props.app.locale === 'en' ? 'Documentation' : 'Dokumentacija',
+      title: $t('Dokumentacija'),
       url: 'https://www.vusa.lt/docs',
       icon: BookOpen,
     },
     {
-      title: usePage().props.app.locale === 'en' ? 'Feedback' : 'Atsiliepimai',
+      title: $t('Palik atsiliepimą'),
       url: '#feedback',
       icon: MessageSquare,
     },
@@ -219,19 +219,28 @@ const handleLogout = () => {
     <SidebarHeader>
       <SidebarMenu>
         <SidebarMenuItem>
-            <Link :href="route('dashboard')">
-          <SidebarMenuButton size="lg" as-child>
-              <div class="flex items-center gap-2">
-                <AppLogo class="w-24" />
-              </div>
+          <Link :href="route('dashboard')">
+          <SidebarMenuButton size="lg"
+            class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
+            <div
+              class="flex aspect-square size-12 items-center justify-center rounded-lg text-sidebar-primary-foreground">
+              <AppLogo />
+            </div>
+            <div class="grid flex-1 text-left text-sm leading-tight">
+              <span class="truncate font-semibold">
+                {{ $t("Mano VU SA") }}
+              </span>
+              <span class="truncate text-xs" />
+            </div>
+            <!-- <ChevronsUpDown class="ml-auto" /> -->
           </SidebarMenuButton>
-            </Link>
+          </Link>
         </SidebarMenuItem>
       </SidebarMenu>
     </SidebarHeader>
     <SidebarContent>
       <NavMain :items="navMainItems" />
-      
+
       <!-- Secondary navigation -->
       <div class="group-data-[collapsible=icon]:hidden mt-auto">
         <NavSecondary :items="navSecondaryItems" @item-click="handleSecondaryNavClick" />
@@ -243,9 +252,11 @@ const handleLogout = () => {
         <SidebarMenuItem>
           <DropdownMenu>
             <DropdownMenuTrigger as-child>
-              <SidebarMenuButton size="lg" class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
+              <SidebarMenuButton size="lg"
+                class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
                 <Avatar class="h-8 w-8 rounded-lg">
-                  <AvatarImage v-if="currentUser.profile_photo_path" :src="currentUser.profile_photo_path" :alt="currentUser.name" />
+                  <AvatarImage v-if="currentUser.profile_photo_path" :src="currentUser.profile_photo_path"
+                    :alt="currentUser.name" />
                   <AvatarFallback class="rounded-lg">
                     {{ currentUser.name ? currentUser.name.substring(0, 2).toUpperCase() : 'VU' }}
                   </AvatarFallback>
@@ -258,11 +269,13 @@ const handleLogout = () => {
               </SidebarMenuButton>
             </DropdownMenuTrigger>
             <!-- User dropdown menu -->
-            <DropdownMenuContent class="w-[--reka-dropdown-menu-trigger-width] min-w-56 rounded-lg" align="end" :side-offset="4">
+            <DropdownMenuContent class="w-[--reka-dropdown-menu-trigger-width] min-w-56 rounded-lg" align="end"
+              :side-offset="4">
               <DropdownMenuLabel class="p-0 font-normal">
                 <div class="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                   <Avatar class="h-8 w-8 rounded-lg">
-                    <AvatarImage v-if="currentUser.profile_photo_path" :src="currentUser.profile_photo_path" :alt="currentUser.name" />
+                    <AvatarImage v-if="currentUser.profile_photo_path" :src="currentUser.profile_photo_path"
+                      :alt="currentUser.name" />
                     <AvatarFallback class="rounded-lg">
                       {{ currentUser.name ? currentUser.name.substring(0, 2).toUpperCase() : 'VU' }}
                     </AvatarFallback>
@@ -285,7 +298,7 @@ const handleLogout = () => {
                 <div class="flex items-center justify-between">
                   <!-- Dark mode toggle -->
                   <div class="flex items-center">
-                    <Button @click="toggleDarkMode" variant="ghost" size="icon" class="h-8 w-8">
+                    <Button variant="ghost" size="icon" class="h-8 w-8" @click="toggleDarkMode">
                       <Sun v-if="isDark" class="size-4" />
                       <Moon v-else class="size-4" />
                       <span class="sr-only">{{ $t('Tamsus režimas') }}</span>
@@ -293,7 +306,7 @@ const handleLogout = () => {
                     <span class="ml-2 text-sm">{{ $t(isDark ? 'Šviesus' : 'Tamsus') }}</span>
                   </div>
                   <!-- Language toggle -->
-                  <Button @click="changeLocale" variant="ghost" size="icon" class="h-8 w-8">
+                  <Button variant="ghost" size="icon" class="h-8 w-8" @click="changeLocale">
                     <span class="flex items-center justify-center text-xs font-medium">
                       {{ usePage().props.app.locale === 'en' ? 'LT' : 'EN' }}
                     </span>
@@ -344,11 +357,8 @@ const handleLogout = () => {
       </DialogHeader>
       <div class="grid gap-4 py-4">
         <div class="grid gap-2">
-          <Textarea 
-            v-model="feedbackForm.feedback" 
-            :placeholder="$t('Parašyk pastebėjimų, pasiūlymų') + '...'"
-            rows="4"
-          />
+          <Textarea v-model="feedbackForm.feedback" :placeholder="$t('Parašyk pastebėjimų, pasiūlymų') + '...'"
+            rows="4" />
         </div>
         <div class="flex items-center space-x-2">
           <Checkbox id="anonymous" v-model:checked="feedbackForm.anonymous" />
@@ -356,13 +366,9 @@ const handleLogout = () => {
         </div>
       </div>
       <DialogFooter>
-        <Button 
-          type="submit" 
-          :disabled="!feedbackForm.feedback || feedbackLoading" 
-          @click="handleSendFeedback"
-          class="gap-1"
-        >
-          <Send class="h-4 w-4" v-if="!feedbackLoading" />
+        <Button type="submit" :disabled="!feedbackForm.feedback || feedbackLoading" class="gap-1"
+          @click="handleSendFeedback">
+          <Send v-if="!feedbackLoading" class="h-4 w-4" />
           <span>{{ $t("forms.submit") }}</span>
         </Button>
       </DialogFooter>

@@ -22,7 +22,7 @@
           <div v-else class="h-32" />
           <template #fallback>
             <div class="flex h-32 items-center justify-center">
-              <NSpin />
+              <Spinner size="sm" />
             </div>
           </template>
         </Suspense>
@@ -42,6 +42,7 @@ import { ref } from "vue";
 import CardModal from "../Modals/CardModal.vue";
 import FileSelector from "@/Features/Admin/FileManager/FileSelector.vue";
 import ArchiveDocumentSelector from "@/Features/Admin/ArchiveDocumentSelector.vue";
+import { Spinner } from "@/Components/ui/spinner";
 
 const props = defineProps<{
   editor?: any;

@@ -1,6 +1,6 @@
 <template>
-  <ShowPageLayout :model="meeting" :breadcrumb-options :related-models
-    :title="`${mainInstitution?.name} (${meetingTitle})`" :current-tab="currentTab" @change:tab="currentTab = $event">
+  <ShowPageLayout :model="meeting" :breadcrumbs="breadcrumbs"
+    :title="`${mainInstitution?.name} (${meetingTitle})`" :related-models="relatedModels" :current-tab="currentTab" @change:tab="currentTab = $event">
     <template #title>
       {{ `${mainInstitution?.name} (${meetingTitle})` }}
     </template>
@@ -65,7 +65,7 @@ import MeetingForm from "@/Components/AdminForms/MeetingForm.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import ShowPageLayout from "@/Components/Layouts/ShowModel/ShowPageLayout.vue";
 import TaskManager from "@/Features/Admin/TaskManager/TaskManager.vue";
-import { DataTableProps, NButton, NTooltip } from "naive-ui";
+import { NButton, NTooltip } from "naive-ui";
 import TriStateButton from "@/Components/Buttons/TriStateButton.vue";
 import { trans as $t } from "laravel-vue-i18n";
 
@@ -136,10 +136,10 @@ const handleAgendaItemDelete = (agendaItem: App.Entities.AgendaItem) => {
 
 const { createRouteBreadcrumb, createBreadcrumbItem } = useBreadcrumbs();
 
-const breadcrumbOptions = computed((): BreadcrumbItem[] => [
+const breadcrumbs = [
   createRouteBreadcrumb(mainInstitution.name, "institutions.show", { institution: mainInstitution.id }, Icons.INSTITUTION),
   createBreadcrumbItem(meetingTitle, undefined, Icons.MEETING),
-]);
+];
 
 const columns = [
   {

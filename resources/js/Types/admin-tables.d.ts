@@ -1,6 +1,5 @@
-import type { DataTableColumns, DataTableSortState } from 'naive-ui';
+import type { ColumnDef, SortingState, VisibilityState, PaginationState } from '@tanstack/vue-table';
 import type { Ref, Component } from 'vue';
-import type { TableFilters } from '@/Composables/useTableState';
 
 /**
  * Common route capabilities for model index pages
@@ -40,17 +39,17 @@ export interface AdminIndexPageProps<T = Record<string, any>> {
   /**
    * Initial sorter state
    */
-  initialSorters?: Record<string, DataTableSortState['order']>;
+  initialSorting?: SortingState;
   
   /**
    * Initial filter state
    */
-  initialFilters?: Record<string, any[]>;
+  initialFilters?: TableFilters;
   
   /**
    * Function that builds the columns definition
    */
-  columnBuilder: (sorters: Ref<Record<string, DataTableSortState['order']>>, filters: Ref<TableFilters>) => DataTableColumns<T>;
+  columnBuilder: (sorting: Ref<SortingState>, filters: Ref<TableFilters>) => ColumnDef<T, any>[];
   
   /**
    * Which routes are enabled for this index page
@@ -69,20 +68,25 @@ export interface AdminIndexPageProps<T = Record<string, any>> {
 }
 
 /**
- * State returned by useAdminTable
+ * State returned by useServerTable for admin tables
  */
 export interface AdminTableState<T = Record<string, any>> {
+  data: Ref<T[]>;
+  columns: Ref<ColumnDef<T, any>[]>;
+  sorting: Ref<SortingState>;
+  // filters: Ref<TableFilters>;
+  columnVisibility: Ref<VisibilityState>;
+  pagination: Ref<PaginationState>;
+  globalFilter: Ref<string>;
   loading: Ref<boolean>;
-  columns: Ref<DataTableColumns<T>>;
-  sorters: Ref<Record<string, DataTableSortState['order']>>;
-  filters: Ref<TableFilters>;
-  searchText: Ref<string>;
-  showSoftDeleted: Ref<boolean>;
-  updateSorter: (key: string, order: DataTableSortState['order']) => void;
+  totalItems: Ref<number>;
+  updateSort: (sorting: SortingState) => void;
   updateFilter: (key: string, value: any) => void;
-  updateSearch: (text: string) => void;
-  toggleSoftDeleted: () => void;
+  updateGlobalFilter: (value: string) => void;
+  updateColumnVisibility: (visibility: VisibilityState) => void;
+  updatePage: (pageIndex: number) => void;
+  clearFilters: () => void;
+  resetTable: () => void;
   reloadData: (page?: number) => void;
-  resetTableState: () => void;
   encodeTableState: () => Record<string, any>;
 }

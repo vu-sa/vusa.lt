@@ -9,8 +9,7 @@
             file?.name
           }}</span>
           <div class="flex gap-2">
-            <NSpin content-class="flex gap-2 items-center" size="small" :stroke-width="12"
-              :show="loadingPublicPermission">
+            <Spinner class="flex gap-2 items-center" size="sm" :show="loadingPublicPermission">
               <div v-if="publicWebUrl" class="flex gap-2">
                 <NButtonGroup size="small">
                   <NButton type="primary" tag="a" target="_blank" :href="publicWebUrl">
@@ -37,7 +36,7 @@
                   <IFluentDelete24Filled />
                 </template>
               </NButton>
-            </NSpin>
+            </Spinner>
           </div>
           <NTable>
             <tbody class="text-xs">
@@ -97,6 +96,7 @@ import FileWord from "~icons/mdi/file-word";
 import { formatStaticTime } from "@/Utils/IntlTime";
 import CopyToClipboardButton from "@/Components/Buttons/CopyToClipboardButton.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
+import { Spinner } from "@/Components/ui/spinner";
 
 // define emit for close
 const props = defineProps<{

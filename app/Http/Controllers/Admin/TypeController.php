@@ -3,28 +3,68 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\IndexTypeRequest;
+use App\Http\Traits\HasTanstackTables;
 use App\Models\Role;
 use App\Models\Type;
 use App\Services\ModelAuthorizer as Authorizer;
+use App\Services\TanstackTableService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class TypeController extends Controller
 {
-    public function __construct(public Authorizer $authorizer) {}
+    use HasTanstackTables;
+
+    public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService) {}
 
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(IndexTypeRequest $request)
     {
         $this->authorize('viewAny', Type::class);
 
+        // Build base query with eager loading
+        $query = Type::query();
+
+        // Define searchable columns
+        $searchableColumns = ['title', 'model_type', 'slug'];
+
+        // Apply Tanstack Table filters
+        $query = $this->applyTanstackFilters(
+            $query,
+            $request,
+            $this->tableService,
+            $searchableColumns,
+            [
+                'applySortBeforePagination' => true,
+            ]
+        );
+
+        // Paginate results
+        $types = $query->paginate($request->input('per_page', 20))
+            ->withQueryString();
+
+        // Get the sorting state using the custom method to ensure consistent parsing
+        $sorting = $request->getSorting();
+
         return Inertia::render('Admin/ModelMeta/IndexTypes', [
-            'types' => Type::paginate(20),
+            'data' => $types->items(),
+            'meta' => [
+                'total' => $types->total(),
+                'per_page' => $types->perPage(),
+                'current_page' => $types->currentPage(),
+                'last_page' => $types->lastPage(),
+                'from' => $types->firstItem(),
+                'to' => $types->lastItem(),
+            ],
+            'filters' => $request->getFilters(),
+            'sorting' => $sorting,
+            'initialSorting' => $sorting,
         ]);
     }
 

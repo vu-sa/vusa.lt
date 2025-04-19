@@ -2,6 +2,10 @@ import storybookTest from '@storybook/experimental-addon-test/vitest-plugin';
 import path from 'node:path';
 import { defineWorkspace } from 'vitest/config';
 import { fileURLToPath } from 'node:url';
+import Icons from 'unplugin-icons/vite';
+import IconsResolver from 'unplugin-icons/resolver';
+import Components from 'unplugin-vue-components/vite';
+import vuePlugin from '@vitejs/plugin-vue';
 const dirname =
   typeof __dirname !== 'undefined' ? __dirname : path.dirname(fileURLToPath(import.meta.url));
 
@@ -16,12 +20,21 @@ export default defineWorkspace([
       globals: true,
       setupFiles: ['tests/setup.ts'],
     },
+    plugins: [
+      Icons(),
+      Components({
+        resolvers: [IconsResolver()],
+      }),
+    vuePlugin({
+      script: {
+        propsDestructure: true,
+      },
+    })],
     resolve: {
       alias: {
         '@': '/resources/js',
-        'vue': 'vue/dist/vue.esm-bundler.js', // For runtime template compilation
       }
-    }
+    },
   },
   {
     // Browser-specific tests
@@ -32,6 +45,12 @@ export default defineWorkspace([
       globals: true,
       setupFiles: ['tests/setup.ts'],
     },
+    plugins: [
+      Icons(),
+      Components({
+        resolvers: [IconsResolver()],
+      }),
+    ],
     resolve: {
       alias: {
         '@': '/resources/js',
@@ -49,6 +68,10 @@ export default defineWorkspace([
         // This should match your package.json script to run Storybook
         // The --ci flag will skip prompts and not open a browser
         storybookScript: 'yarn storybook --ci',
+      }),
+      Icons(),
+      Components({
+        resolvers: [IconsResolver()],
       }),
     ],
     test: {
