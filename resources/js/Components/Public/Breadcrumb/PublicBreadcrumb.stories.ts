@@ -6,34 +6,35 @@ import IFluentFolder16Regular from '~icons/fluent/folder-16-regular';
 import IFluentBookSearch16Regular from '~icons/fluent/book-16-regular';
 import IFluentArrowSort16Regular from '~icons/fluent/arrow-sort-16-regular';
 
-// Mock required global objects and functions
-import { vi } from 'vitest';
+// Import Storybook testing utilities instead of Vitest
+import { fn } from '@storybook/test';
 
-// Mock the Laravel Vue i18n function
-vi.mock('laravel-vue-i18n', () => ({
-  trans: vi.fn((key) => key)
-}));
+// Create mock files for the modules we need to mock
+// Create laravel-vue-i18n.mock.ts in a separate file and import it here
+import { trans } from '../../../../../.storybook/mocks/laravel-vue-i18n.mock';
 
-// Mock Inertia route function
-vi.mock('@inertiajs/vue3', () => ({
-  usePage: vi.fn(() => ({
-    props: {
-      app: {
-        subdomain: 'www',
-        locale: 'lt'
-      }
-    }
-  }))
-}));
+// Create inertia.mock.ts in a separate file and import it here
+import { usePage, router } from '../../../../../.storybook/mocks/inertia.mock';
 
-// Replace global with window for browser compatibility
-window.route = (name: string, params?: Record<string, any>) => {
+// Mock the route function
+window.route = fn((name: string, params?: Record<string, any>) => {
   return params?.subdomain ? `/${params.subdomain}/${name}` : `/${name}`;
-};
+});
+
+// Add a decorator to provide necessary context
+const withBreadcrumbContext = (story: any) => ({
+  components: { story },
+  setup() {
+    // No need to add complex breadcrumb context as we're directly passing items to component
+    return {};
+  },
+  template: '<story />'
+});
 
 const meta = {
   title: 'Public/Navigation/Breadcrumb',
   component: PublicBreadcrumb,
+  decorators: [withBreadcrumbContext],
   parameters: {
     layout: 'padded',
     docs: {
