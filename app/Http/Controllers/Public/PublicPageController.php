@@ -204,8 +204,8 @@ class PublicPageController extends PublicController
         $institutions = (new InstitutionService)->getInstitutionsByTypeSlug('pkp')->where('is_active', true);
 
         $seo = $this->shareAndReturnSEOObject(
-            title: __('Programos, klubai ir projektai').' - VU SA',
-            description: 'VU SA buria daugiau nei 20 iniciatyvų: programų, klubų ir projektų, skatinančių studentų saviraišką'
+            title: __('Studentiškos iniciatyvos').' - VU SA',
+            description: 'VU SA studentiškos iniciatyvos – plati erdvė Vilniaus universiteto studentų(-čių) idėjoms, kūrybiškumui ir savirealizacijai.'
         );
 
         return Inertia::render('Public/PKP', [

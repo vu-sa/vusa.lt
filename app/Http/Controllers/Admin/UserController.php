@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\SendWelcomeEmail;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\GenerateUserPasswordRequest;
 use App\Http\Requests\MergeUsersRequest;
 use App\Http\Requests\StoreUserRequest;
 use App\Models\Duty;
@@ -19,6 +20,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Collection as SupportCollection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Laravel\Socialite\Facades\Socialite;
 
@@ -138,7 +140,7 @@ class UserController extends Controller
         $permissableTenants = User::find(Auth::id())->hasRole(config('permission.super_admin_role_name')) ? Tenant::all() : $this->authorizer->getTenants();
 
         return Inertia::render('Admin/People/EditUser', [
-            'user' => $user->makeVisible(['last_action'])->toFullArray(),
+            'user' => $user->makeVisible(['last_action'])->append('has_password')->toFullArray(),
             // get all roles
             'roles' => fn () => Role::all(),
             'tenantsWithDuties' => fn () => $this->getDutiesForForm($this->authorizer),
@@ -419,5 +421,34 @@ class UserController extends Controller
         $user->forceDelete();
 
         return redirect()->route('users.index')->with('success', 'Kontaktas sėkmingai ištrintas!');
+    }
+
+    /**
+     * Generate a random password for the user (super admin only)
+     */
+    public function generatePassword(User $user, GenerateUserPasswordRequest $request)
+    {
+        // Generate a random password with 10 characters
+        $password = Str::random(10);
+        
+        // Update the user's password
+        $user->password = bcrypt($password);
+        $user->save();
+
+        // Return the one-time visible password
+        return back()->with('data', $password)
+                     ->with('success', 'Slaptažodis sėkmingai sukurtas!');
+    }
+
+    /**
+     * Delete a user's password (super admin only)
+     */
+    public function deletePassword(User $user, GenerateUserPasswordRequest $request)
+    {
+        // Set password to null
+        $user->password = null;
+        $user->save();
+
+        return back()->with('success', 'Slaptažodis sėkmingai ištrintas!');
     }
 }
