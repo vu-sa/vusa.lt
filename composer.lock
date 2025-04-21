@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "26db543163d25c16a7baf292614241d5",
+    "content-hash": "5f23d444171339c87d60a3ba0ce3af03",
     "packages": [
         {
             "name": "ajcastro/eager-load-pivot-relations",
@@ -8237,28 +8237,28 @@
         },
         {
             "name": "spatie/icalendar-generator",
-            "version": "2.9.2",
+            "version": "3.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/spatie/icalendar-generator.git",
-                "reference": "6fa4d5b20490afeebe711f6cad1733853c667aa2"
+                "reference": "32797f6e5afa3142d073f38d5f22ab377f4d8f90"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spatie/icalendar-generator/zipball/6fa4d5b20490afeebe711f6cad1733853c667aa2",
-                "reference": "6fa4d5b20490afeebe711f6cad1733853c667aa2",
+                "url": "https://api.github.com/repos/spatie/icalendar-generator/zipball/32797f6e5afa3142d073f38d5f22ab377f4d8f90",
+                "reference": "32797f6e5afa3142d073f38d5f22ab377f4d8f90",
                 "shasum": ""
             },
             "require": {
                 "ext-mbstring": "*",
-                "php": "^8.1",
-                "spatie/enum": "^3.11"
+                "php": "^8.1"
             },
             "require-dev": {
                 "ext-json": "*",
                 "larapack/dd": "^1.1",
                 "nesbot/carbon": "^3.5",
                 "pestphp/pest": "^2.34",
+                "phpstan/phpstan": "^2.0",
                 "spatie/pest-plugin-snapshots": "^2.1"
             },
             "type": "library",
@@ -8290,9 +8290,9 @@
             ],
             "support": {
                 "issues": "https://github.com/spatie/icalendar-generator/issues",
-                "source": "https://github.com/spatie/icalendar-generator/tree/2.9.2"
+                "source": "https://github.com/spatie/icalendar-generator/tree/3.0.0"
             },
-            "time": "2025-03-21T09:01:17+00:00"
+            "time": "2025-04-17T14:50:03+00:00"
         },
         {
             "name": "spatie/image",
@@ -17014,5 +17014,5 @@
         "php": "^8.3"
     },
     "platform-dev": [],
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.3.0"
 }
