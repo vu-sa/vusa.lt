@@ -35,15 +35,15 @@ jobs:
 
   setup:
     needs: changes
-    # Always run setup in pull requests or when there are code changes
-    if: ${{ github.event_name == 'pull_request' || needs.changes.outputs.php == 'true' || needs.changes.outputs.js == 'true' }}
+    # Always run setup in pull requests or when pushing to main or when there are code changes
+    if: ${{ github.event_name == 'pull_request' || github.event_name == 'push' && github.ref == 'refs/heads/main' || needs.changes.outputs.php == 'true' || needs.changes.outputs.js == 'true' }}
     uses: ./.github/workflows/setup.yml
     with:
       include-coverage: true
       
   php-tests:
     needs: [changes, setup]
-    if: ${{ needs.changes.outputs.php == 'true' }}
+    if: ${{ needs.changes.outputs.php == 'true' || (github.event_name == 'push' && github.ref == 'refs/heads/main') }}
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -85,7 +85,7 @@ jobs:
         
   js-tests:
     needs: [changes, setup]
-    if: ${{ needs.changes.outputs.js == 'true' }}
+    if: ${{ needs.changes.outputs.js == 'true' || (github.event_name == 'push' && github.ref == 'refs/heads/main') }}
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
