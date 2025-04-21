@@ -61,9 +61,10 @@ class EventServiceProvider extends ServiceProvider
         Calendar::observe(CalendarObserver::class);
         RoleType::observe(RoleTypeObserver::class);
         Typeable::observe(TypeableObserver::class);
-        User::observe(UserPermissionObserver::class);
-        Role::observe(UserPermissionObserver::class);
-        Duty::observe(UserPermissionObserver::class);
+        // TODO: properly implement this and the PermissionService
+        // User::observe(UserPermissionObserver::class);
+        // Role::observe(UserPermissionObserver::class);
+        // Duty::observe(UserPermissionObserver::class);
         Permission::observe(UserPermissionObserver::class);
     }
 }
