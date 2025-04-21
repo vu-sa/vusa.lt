@@ -5,7 +5,7 @@ concurrency: production
 on:
   workflow_dispatch:
   workflow_run:
-    workflows: [Pest Tests and Upload Coverage]
+    workflows: [Run All Tests]
     branches:
       - main
     types:
@@ -36,7 +36,7 @@ jobs:
 
   deploy:
     needs: changes
-    if: ${{ needs.changes.outputs.has_changes == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_run' }}
+    if: ${{ (needs.changes.outputs.has_changes == 'true' || github.event_name == 'workflow_dispatch') && (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success') }}
     runs-on: ubuntu-24.04
     environment: Production
     steps:

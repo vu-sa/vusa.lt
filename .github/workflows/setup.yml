@@ -24,13 +24,17 @@ on:
 
 jobs:
   setup:
+    name: Setup Environment
     runs-on: ubuntu-latest
     outputs:
       cache-hit-composer: ${{ steps.cache-composer.outputs.cache-hit }}
       cache-hit-npm: ${{ steps.cache-npm.outputs.cache-hit }}
       cache-hit-build: ${{ steps.cache-build.outputs.cache-hit }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
       
       # Try to restore build artifact cache first
       - name: Cache build artifacts
@@ -41,6 +45,8 @@ jobs:
             public/build
             vendor
           key: ${{ runner.os }}-build-${{ hashFiles('**/composer.lock', '**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-
           
       # Skip PHP/Node setup if build cache was hit
       - name: Skip full setup
@@ -103,6 +109,10 @@ jobs:
       - name: NPM Build
         if: steps.cache-build.outputs.cache-hit != 'true'
         run: npm run build
+        
+      # Status check to ensure workflow completes successfully
+      - name: Setup Completed
+        run: echo "Setup completed successfully"
         
       # Upload build artifacts
       - name: Archive build artifacts
