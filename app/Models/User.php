@@ -102,6 +102,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Check if user has a password set
+     */
+    public function getHasPasswordAttribute()
+    {
+        return !empty($this->getAttributeValue('password'));
+    }
+
+    /**
      * If the user has a duty, always send to current_duties if duty email ends with vusa.lt
      * More on this: https://laravel.com/docs/10.x/notifications#customizing-the-recipient
      * TODO: it is not really optimal as sometimes notifications should be sent directly to user

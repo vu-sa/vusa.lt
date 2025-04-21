@@ -141,6 +141,70 @@
           Paskutinį kartą prisijungė {{ formatStaticTime(user.last_action) }}.
         </p>
       </template>
+      <!-- Password Management Section - Only for Super Admins -->
+      <template v-if="$page.props.auth?.user?.isSuperAdmin">
+        <div class="border-t border-gray-200 pt-4 mt-4">
+          <h4 class="font-semibold text-lg mb-2">{{ $t("Slaptažodžio valdymas") }}</h4>
+          <div class="flex items-center gap-4">
+            <div>
+              <span class="inline-flex items-center gap-2">
+                <span>{{ $t("Slaptažodžio būsena") }}:</span>
+                <NTag :type="user.has_password ? 'success' : 'warning'" size="small">
+                  {{ user.has_password ? $t("Nustatytas") : $t("Nenustatytas") }}
+                </NTag>
+              </span>
+            </div>
+            <div class="flex gap-2">
+              <NPopconfirm @positive-click="generatePassword">
+                <template #trigger>
+                  <NButton size="small" type="primary">
+                    {{ $t("Generuoti naują slaptažodį") }}
+                  </NButton>
+                </template>
+                <span>{{ $t("Ar tikrai norite sugeneruoti naują slaptažodį šiam naudotojui?") }}</span>
+                <template v-if="user.has_password">
+                  <p class="text-orange-500 mt-1">{{ $t("Dėmesio: Tai pakeis esamą naudotojo slaptažodį!") }}</p>
+                </template>
+              </NPopconfirm>
+              
+              <NPopconfirm v-if="user.has_password" @positive-click="deletePassword">
+                <template #trigger>
+                  <NButton size="small" type="error">
+                    {{ $t("Ištrinti slaptažodį") }}
+                  </NButton>
+                </template>
+                <span>{{ $t("Ar tikrai norite ištrinti šio naudotojo slaptažodį?") }}</span>
+                <p class="text-orange-500 mt-1">{{ $t("Dėmesio: Naudotojas nebegalės prisijungti su slaptažodžiu!") }}</p>
+              </NPopconfirm>
+            </div>
+          </div>
+          
+          <!-- Display generated password if available -->
+          <div v-if="$page.props.flash.data" class="mt-4 p-4 bg-green-50 border border-green-200 rounded-md">
+            <h5 class="font-semibold mb-2">{{ $t("Sugeneruotas slaptažodis:") }}</h5>
+            <div class="relative mb-2">
+              <NInput 
+                readonly 
+                :value="$page.props.flash.data" 
+                class="font-mono"
+              />
+              <NButton 
+                size="small" 
+                class="absolute right-2 top-1/2 transform -translate-y-1/2"
+                @click="copyPasswordToClipboard"
+              >
+                <template #icon>
+                  <IFluentCopy16Regular />
+                </template>
+                {{ hasCopied ? $t("Nukopijuota!") : $t("Kopijuoti") }}
+              </NButton>
+            </div>
+            <p class="text-sm text-orange-600">
+              {{ $t("Šis slaptažodis bus rodomas tik vieną kartą! Įsitikinkite, kad jį išsaugojote saugiai.") }}
+            </p>
+          </div>
+        </div>
+      </template>
       <!-- <template v-else-if="modelRoute === 'users.update'">
           <p class="mb-2">
             Šis asmuo dar niekada neprisijungė prie sistemos.
@@ -180,6 +244,7 @@ import { router, useForm, usePage } from "@inertiajs/vue3";
 import Delete24Regular from "~icons/fluent/delete24-regular";
 import Eye16Regular from "~icons/fluent/eye16-regular";
 import PersonEdit24Regular from "~icons/fluent/person-edit24-regular";
+import IFluentCopy16Regular from "~icons/fluent/copy16-regular";
 
 import { formatStaticTime } from "@/Utils/IntlTime";
 import FormElement from "./FormElement.vue";
@@ -422,5 +487,38 @@ const sendWelcomeEmail = () => {
       preserveScroll: true,
     },
   );
+};
+
+const hasPassword = computed(() => !!props.user.password);
+const hasCopied = ref(false);
+
+const generatePassword = () => {
+  router.post(
+    route("users.generatePassword", props.user.id as number),
+    {},
+    {
+      preserveState: true,
+      preserveScroll: true,
+    },
+  );
+};
+
+const deletePassword = () => {
+  router.delete(
+    route("users.deletePassword", props.user.id as number),
+    {
+      preserveState: true,
+      preserveScroll: true,
+    },
+  );
+};
+
+const copyPasswordToClipboard = () => {
+  navigator.clipboard.writeText($page.props.flash.generated_password).then(() => {
+    hasCopied.value = true;
+    setTimeout(() => {
+      hasCopied.value = false;
+    }, 2000);
+  });
 };
 </script>
