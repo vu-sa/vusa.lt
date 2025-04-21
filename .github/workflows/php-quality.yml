@@ -5,38 +5,34 @@ on:
   push:
     branches-ignore:
       - main
+    paths:
+      - '**/*.php'
+      - 'composer.json'
+      - 'composer.lock'
+      - 'phpstan.neon'
   pull_request:
     branches-ignore:
       - 'dependabot/npm_and_yarn/*'
       - 'dependabot/composer/*'
+    paths:
+      - '**/*.php'
+      - 'composer.json'
+      - 'composer.lock'
+      - 'phpstan.neon'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  changes:
-    runs-on: ubuntu-latest
-    outputs:
-      php: ${{ steps.filter.outputs.php }}
-    steps:
-    - uses: actions/checkout@v4
-    - uses: dorny/paths-filter@v2
-      id: filter
-      with:
-        filters: |
-          php:
-            - '**/*.php'
-
   setup:
-    needs: changes
-    # Always run setup in pull requests or when there are PHP changes
-    if: ${{ github.event_name == 'pull_request' || needs.changes.outputs.php == 'true' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
     uses: ./.github/workflows/setup.yml
+    with:
+      php-version: '8.3'
       
   lint:
-    needs: [changes, setup]
-    if: ${{ needs.changes.outputs.php == 'true' || github.event_name == 'workflow_dispatch' }}
+    needs: setup
     runs-on: ubuntu-latest
     name: PHP Linting (Pint)
     steps:
@@ -76,8 +72,7 @@ jobs:
           skip_fetch: true
           
   static-analysis:
-    needs: [changes, setup]
-    if: ${{ needs.changes.outputs.php == 'true' || github.event_name == 'workflow_dispatch' }}
+    needs: setup
     runs-on: ubuntu-latest
     name: PHP Static Analysis
     steps:

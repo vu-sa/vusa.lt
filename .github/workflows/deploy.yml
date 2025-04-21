@@ -12,31 +12,9 @@ on:
       - completed
 
 jobs:
-  changes:
-    runs-on: ubuntu-latest
-    outputs:
-      has_changes: ${{ steps.filter.outputs.code_changed == 'true' || steps.filter.outputs.docs_changed == 'true' }}
-    steps:
-    - uses: actions/checkout@v4
-    - uses: dorny/paths-filter@v2
-      id: filter
-      with:
-        filters: |
-          code_changed:
-            - '**/*.php'
-            - '**/*.vue'
-            - '**/*.js'
-            - '**/*.ts'
-            - '**/*.tsx'
-            - '**/*.css'
-            - '**/*.scss'
-          docs_changed:
-            - 'docs/**'
-            - '**/*.md'
-
   deploy:
-    needs: changes
-    if: ${{ (needs.changes.outputs.has_changes == 'true' || github.event_name == 'workflow_dispatch') && (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success') }}
+    # Only deploy if tests were successful or this is a manual trigger
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-24.04
     environment: Production
     steps:
@@ -143,3 +121,9 @@ jobs:
             public/build
             vendor
           retention-days: 1
+      
+      # Notify about deployment completion
+      - name: Deployment notification
+        if: success()
+        run: |
+          echo "::notice::Deployment to production completed successfully at $(date)"

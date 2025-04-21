@@ -31,10 +31,12 @@ jobs:
           
   codeql-scan:
     runs-on: ubuntu-latest
+    # Skip on PRs from dependabot as they're already scanned
+    if: ${{ !(github.event_name == 'pull_request' && startsWith(github.head_ref, 'dependabot/')) }}
     strategy:
       fail-fast: false
       matrix:
-        language: ['javascript']
+        language: ['javascript', 'php']
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -48,15 +50,6 @@ jobs:
       # Autobuild attempts to build any compiled languages
       - name: Autobuild
         uses: github/codeql-action/autobuild@v3
-          
-      # For JavaScript analysis, build if needed
-      - name: Setup Node for CodeQL
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          
-      - name: Install JS dependencies for CodeQL
-        run: npm ci
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
@@ -65,6 +58,7 @@ jobs:
         
   dependency-scan:
     runs-on: ubuntu-latest
+    # Skip scheduled runs in PRs
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
     steps:
       - name: Checkout code
@@ -90,10 +84,10 @@ jobs:
           if [ "$(echo $OUTPUT | jq 'length')" -gt "0" ]; then
             echo "PHP security issues found!"
             echo "$OUTPUT" > php-security-issues.json
-            echo "::set-output name=has_issues::true"
+            echo "has_issues=true" >> $GITHUB_OUTPUT
           else
             echo "No PHP security issues found."
-            echo "::set-output name=has_issues::false"
+            echo "has_issues=false" >> $GITHUB_OUTPUT
           fi
           
       - name: Run npm audit
@@ -103,10 +97,10 @@ jobs:
           npm audit --json > npm-audit.json || true
           if [ -s npm-audit.json ]; then
             echo "NPM security issues found!"
-            echo "::set-output name=has_issues::true"
+            echo "has_issues=true" >> $GITHUB_OUTPUT
           else
             echo "No NPM security issues found."
-            echo "::set-output name=has_issues::false"
+            echo "has_issues=false" >> $GITHUB_OUTPUT
           fi
           
       - name: Create security report

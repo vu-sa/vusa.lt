@@ -11,6 +11,10 @@ on:
         required: false
         type: boolean
         default: false
+      node-version:
+        required: false
+        type: string
+        default: '20'
     outputs:
       cache-hit-composer:
         description: "Whether composer cache was hit"
