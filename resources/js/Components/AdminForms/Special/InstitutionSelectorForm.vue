@@ -1,5 +1,5 @@
 <template>
-  <Form class="flex flex-col gap-4" @submit="onSubmit" :validation-schema="schema" v-slot="{ errors }">
+  <Form class="flex flex-col gap-4" @submit="onSubmit" :validation-schema="schema" v-slot="{ errors }" :initial-values="initialValues">
     <SuggestionAlert :show-alert="showAlert" @alert-closed="showAlert = false">
       <p v-if="$page.props.app.locale === 'lt'">
         Viena svarbiausių veiklų atstovavime yra

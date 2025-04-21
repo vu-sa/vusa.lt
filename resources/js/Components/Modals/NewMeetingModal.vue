@@ -60,7 +60,7 @@
         <div class="flex-1">
           <Suspense>
             <FadeTransition mode="out-in">
-              <InstitutionSelectorForm v-if="current === 1" class="flex w-full flex-col items-start justify-center"
+              <InstitutionSelectorForm v-if="current === 1" class="flex w-full flex-col items-start justify-center" :institution="formState.institution_id"
                 @submit="handleInstitutionSelect" />
               <MeetingForm v-else-if="current === 2" class="flex w-full flex-col items-start justify-center"
                 :meeting="meetingTemplate" @submit="handleMeetingFormSubmit" />
@@ -125,7 +125,6 @@ const formState = reactive({
   institution_id: props.institution?.id || '',
   meetingData: {},
   agendaItemsData: {
-    moreAgendaItemsUndefined: false,
     agendaItemTitles: [],
   }
 });
@@ -168,7 +167,6 @@ onBeforeUnmount(() => {
     formState.institution_id = props.institution?.id || '';
     formState.meetingData = {};
     formState.agendaItemsData = {
-      moreAgendaItemsUndefined: false,
       agendaItemTitles: [],
     };
   }
@@ -191,45 +189,58 @@ const handleAgendaItemsFormSubmit = (agendaItems: Record<string, any>) => {
   loading.value = true;
   // Save to in-memory state
   formState.agendaItemsData = agendaItems;
-  // Update form data
-  meetingAgendaForm.agendaItems = agendaItems;
 
-  // Prepare complete form data for submission
-  const formData = {
-    // Meeting data
-    ...formState.meetingData,
-    // Add institution_id
-    institution_id: formState.institution_id,
-    // Agenda items data as a nested property
-    agenda_items: {
-      moreAgendaItemsUndefined: formState.agendaItemsData.moreAgendaItemsUndefined,
-      titles: formState.agendaItemsData.agendaItemTitles
-    }
-  };
-
-  // Submit everything in a single request
+  // submit meeting
   meetingAgendaForm
-    .transform(() => formData)
+    .transform((data) => ({
+      ...formState.meetingData,
+      // add institution_id
+      institution_id: formState.institution_id,
+    }))
     .post(route("meetings.store"), {
+      // after success, submit agenda items
       onSuccess: (page) => {
-        const id = page.props?.flash?.data.id;
-        if (id) {
-          // Mark as submitted so state gets cleared on unmount
-          formSubmitted.value = true;
-          // Close modal
-          emit("close");
-          // Reset current step for next use
-          current.value = 1;
-          // Reset form
-          meetingAgendaForm.reset();
-          // Navigate to the new meeting
-          router.visit(route("meetings.show", id));
+        let id = page.props?.flash?.data.id;
+
+        if (id === undefined) {
+          loading.value = false;
+          return;
         }
+
+        if (formState.agendaItemsData.agendaItemTitles.length === 0) {
+          emit("close");
+          current.value = 1;
+          formSubmitted.value = true;
+          meetingAgendaForm.reset();
+          router.visit(route("meetings.show", id));
+          return;
+        }
+
+        meetingAgendaForm
+          .transform((data) => ({
+            meeting_id: id,
+            agendaItemTitles: formState.agendaItemsData.agendaItemTitles,
+          }))
+          .post(route("agendaItems.store"), {
+            onSuccess: () => {
+              emit("close");
+              current.value = 1;
+              formSubmitted.value = true;
+              meetingAgendaForm.reset();
+            },
+            onError: (errors) => {
+              // Handle validation errors
+              console.error("Agenda item validation failed:", errors);
+            },
+            onFinish: () => {
+              loading.value = false;
+              router.visit(route("meetings.show", id));
+            },
+          });
       },
       onError: (errors) => {
-        console.error("Error submitting meeting form:", errors);
-      },
-      onFinish: () => {
+        // Handle validation errors
+        console.error("Meeting validation failed:", errors);
         loading.value = false;
       },
       preserveScroll: true,

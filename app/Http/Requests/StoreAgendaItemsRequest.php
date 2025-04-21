@@ -25,9 +25,22 @@ class StoreAgendaItemsRequest extends FormRequest
     public function rules()
     {
         return [
-            'moreAgendaItemsUndefined' => 'nullable|boolean',
-            'agendaItemTitles' => 'nullable|array',
+            'agendaItemTitles' => 'required|array',
+            'agendaItemTitles.*' => 'required|string|max:255',
             'meeting_id' => 'required|ulid|exists:meetings,id',
+        ];
+    }
+
+    /**
+     * Get custom messages for validator errors.
+     *
+     * @return array<string, string>
+     */
+    public function messages()
+    {
+        return [
+            'agendaItemTitles.required' => 'Bent vienas darbotvarkės klausimas turi būti pridėtas.',
+            'agendaItemTitles.*.required' => 'Darbotvarkės klausimas negali būti tuščias.',
         ];
     }
 }

@@ -12,7 +12,6 @@ const config: StorybookConfig = {
   ],
   "addons": [
     "@storybook/addon-essentials",
-    "@storybook/addon-onboarding",
     "@chromatic-com/storybook",
     "@storybook/experimental-addon-test",
     "@storybook/addon-coverage",
@@ -28,7 +27,7 @@ const config: StorybookConfig = {
     if (config.resolve) {
       config.resolve.alias = {
         ...config.resolve.alias,
-        '#lib': path.resolve(__dirname, './mocks'),
+        '#mocks': path.resolve(__dirname, './mocks'),
       };
     }
     return config;

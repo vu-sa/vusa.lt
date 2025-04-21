@@ -155,7 +155,7 @@ const onSubmit = (values) => {
   dt.setHours(values.time.hour, values.time.minute);
   
   const formData = {
-    date: dt.toISOString(),
+    start_time: dt.toISOString(),
     type_id: values.type_id,
   };
   

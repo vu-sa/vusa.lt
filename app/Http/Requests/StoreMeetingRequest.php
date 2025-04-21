@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\Meeting;
+use Carbon\Carbon;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreMeetingRequest extends FormRequest
@@ -17,13 +18,6 @@ class StoreMeetingRequest extends FormRequest
         return $this->user()->can('create', Meeting::class);
     }
 
-    protected function prepareForValidation()
-    {
-        $this->merge([
-            'start_time' => date('Y-m-d H:i', $this->input('start_time') / 1000),
-        ]);
-    }
-
     /**
      * Get the validation rules that apply to the request.
      *
@@ -32,7 +26,7 @@ class StoreMeetingRequest extends FormRequest
     public function rules()
     {
         return [
-            'start_time' => 'required|date:Y-m-d H:i',
+            'start_time' => 'required|date',
             'institution_id' => 'required|ulid',
             'type_id' => 'nullable|integer',
         ];
