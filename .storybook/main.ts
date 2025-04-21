@@ -1,7 +1,7 @@
 import type { StorybookConfig } from '@storybook/vue3-vite';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { dirname } from 'node:path';
 
 // Get the directory name using ESM compatible approach
 const __filename = fileURLToPath(import.meta.url);
@@ -29,6 +29,7 @@ const config: StorybookConfig = {
     if (config.resolve) {
       config.resolve.alias = {
         ...config.resolve.alias,
+        '@': path.resolve(__dirname, '../resources/js'),
         '#mocks': path.resolve(__dirname, './mocks'),
       };
     }
