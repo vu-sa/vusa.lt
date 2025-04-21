@@ -223,8 +223,8 @@ const handleLogout = () => {
           <SidebarMenuButton size="lg"
             class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
             <div
-              class="flex aspect-square size-12 items-center justify-center rounded-lg text-sidebar-primary-foreground">
-              <AppLogo />
+              class="flex aspect-square w-12 h-12 items-center justify-center rounded-lg text-sidebar-primary-foreground">
+              <AppLogo width="36" height="36" />
             </div>
             <div class="grid flex-1 text-left text-sm leading-tight">
               <span class="truncate font-semibold">

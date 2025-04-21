@@ -5,43 +5,41 @@ on:
   push:
     branches-ignore:
       - main
+    paths:
+      - '**/*.php'
+      - 'composer.json'
+      - 'composer.lock'
+      - 'phpstan.neon'
   pull_request:
     branches-ignore:
       - 'dependabot/npm_and_yarn/*'
       - 'dependabot/composer/*'
+    paths:
+      - '**/*.php'
+      - 'composer.json'
+      - 'composer.lock'
+      - 'phpstan.neon'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  changes:
-    runs-on: ubuntu-latest
-    outputs:
-      php: ${{ steps.filter.outputs.php }}
-    steps:
-    - uses: actions/checkout@v4
-    - uses: dorny/paths-filter@v2
-      id: filter
-      with:
-        filters: |
-          php:
-            - '**/*.php'
-
   setup:
-    needs: changes
-    if: ${{ needs.changes.outputs.php == 'true' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
     uses: ./.github/workflows/setup.yml
+    with:
+      php-version: '8.3'
       
   lint:
-    needs: [changes, setup]
-    if: ${{ needs.changes.outputs.php == 'true' || github.event_name == 'workflow_dispatch' }}
+    needs: setup
     runs-on: ubuntu-latest
-    name: PHP Linting
+    name: PHP Linting (Pint)
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 2
+          ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
           
       # Download build artifacts
       - name: Download build artifacts
@@ -66,25 +64,15 @@ jobs:
           preset: laravel
           verboseMode: true
           
-      # Only auto-commit when pushing to feature branches, but not on PRs or main branch
+      # Auto-commit changes for both direct pushes and PRs
       - name: Git Auto Commit
-        if: ${{ github.event_name != 'pull_request' && github.ref != 'refs/heads/main' }}
         uses: stefanzweifel/git-auto-commit-action@v5.0.0
         with:
           commit_message: PHP Linting (Pint)
           skip_fetch: true
           
-      # On PRs, create a review with suggestions instead
-      - name: Suggest changes on PR
-        if: ${{ github.event_name == 'pull_request' }}
-        uses: reviewdog/action-suggester@v1
-        with:
-          tool_name: Laravel Pint
-          fail_on_error: false
-          
   static-analysis:
-    needs: [changes, setup]
-    if: ${{ needs.changes.outputs.php == 'true' || github.event_name == 'workflow_dispatch' }}
+    needs: setup
     runs-on: ubuntu-latest
     name: PHP Static Analysis
     steps:

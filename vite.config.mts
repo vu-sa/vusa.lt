@@ -12,6 +12,11 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 import vueJsx from "@vitejs/plugin-vue-jsx";
 import tailwindcss from '@tailwindcss/vite'
 import ziggy from 'vite-plugin-ziggy';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Get the directory name using ESM compatible approach
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Load the CODECOV_TOKEN from the .env file
 import { loadEnv } from "vite";

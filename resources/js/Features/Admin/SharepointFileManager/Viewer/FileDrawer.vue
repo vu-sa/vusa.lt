@@ -1,13 +1,12 @@
 <template>
-  <NDrawer v-model:width="width" :show="active" :auto-focus="false" :show-mask="false" :mask-closable="false"
-    :trap-focus="false" placement="right" resizable @update:show="$emit('hide:drawer')">
-    <NDrawerContent closable>
+  <Drawer :open="active" direction="right" @update:open="(o) => { if (!o) { $emit('hide:drawer') } }">
+    <DrawerContent class="p-6">
       <FadeTransition>
         <div class="mt-4 flex flex-col items-center justify-center gap-4 transition">
           <NIcon class="mr-2" size="96" :component="fileIcon" />
           <span class="text-center text-xl tracking-wide">{{
             file?.name
-          }}</span>
+            }}</span>
           <div class="flex gap-2">
             <Spinner class="flex gap-2 items-center" size="sm" :show="loadingPublicPermission">
               <div v-if="publicWebUrl" class="flex gap-2">
@@ -80,8 +79,8 @@
           </NTable>
         </div>
       </FadeTransition>
-    </NDrawerContent>
-  </NDrawer>
+    </DrawerContent>
+  </Drawer>
 </template>
 
 <script setup lang="ts">
@@ -97,6 +96,7 @@ import { formatStaticTime } from "@/Utils/IntlTime";
 import CopyToClipboardButton from "@/Components/Buttons/CopyToClipboardButton.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import { Spinner } from "@/Components/ui/spinner";
+import { Drawer, DrawerContent } from "@/Components/ui/drawer";
 
 // define emit for close
 const props = defineProps<{

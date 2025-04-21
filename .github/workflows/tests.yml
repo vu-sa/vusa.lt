@@ -21,28 +21,42 @@ jobs:
       js: ${{ steps.filter.outputs.js }}
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: ${{ github.event_name == 'pull_request' && 0 || 1 }}
     - uses: dorny/paths-filter@v2
       id: filter
       with:
         filters: |
           php:
             - '**/*.php'
+            - 'composer.json'
+            - 'composer.lock'
+            - 'phpunit.xml'
           js:
             - '**/*.vue'
             - '**/*.js'
             - '**/*.ts'
             - '**/*.tsx'
+            - 'package.json'
+            - 'package-lock.json'
+            - 'vite.config.mts'
+            - 'tsconfig.json'
+        # For PRs, compare only latest commits
+        # For push events, check only the pushed commits
+        base: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+        ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.event.after }}
 
   setup:
     needs: changes
-    if: ${{ needs.changes.outputs.php == 'true' || needs.changes.outputs.js == 'true' }}
+    # Run setup if we're going to run any tests
+    if: ${{ github.event_name == 'pull_request' || github.event_name == 'push' && github.ref == 'refs/heads/main' || needs.changes.outputs.php == 'true' || needs.changes.outputs.js == 'true' }}
     uses: ./.github/workflows/setup.yml
     with:
       include-coverage: true
       
   php-tests:
     needs: [changes, setup]
-    if: ${{ needs.changes.outputs.php == 'true' }}
+    if: ${{ needs.changes.outputs.php == 'true' || (github.event_name == 'push' && github.ref == 'refs/heads/main') }}
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -84,7 +98,7 @@ jobs:
         
   js-tests:
     needs: [changes, setup]
-    if: ${{ needs.changes.outputs.js == 'true' }}
+    if: ${{ needs.changes.outputs.js == 'true' || (github.event_name == 'push' && github.ref == 'refs/heads/main') }}
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -133,3 +147,21 @@ jobs:
         name: vitest-coverage
         path: ./coverage
         retention-days: 1
+        
+  # New job to always report status to the PR
+  status-check:
+    name: Tests completed
+    needs: [changes, php-tests, js-tests]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set status
+        run: |
+          if [[ "${{ needs.php-tests.result }}" == "success" || "${{ needs.php-tests.result }}" == "skipped" ]] && \
+             [[ "${{ needs.js-tests.result }}" == "success" || "${{ needs.js-tests.result }}" == "skipped" ]]; then
+            echo "All tests passed or were skipped"
+            exit 0
+          else
+            echo "Some tests failed"
+            exit 1
+          fi

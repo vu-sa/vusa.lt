@@ -184,6 +184,7 @@ declare global {
       previous_users?: User[]
       types?: Type[]
       institution?: Institution
+      institutions?: Institution
       available_trainings?: Training[]
       roles?: Role[]
       permissions?: Permission[]

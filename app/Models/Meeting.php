@@ -83,4 +83,14 @@ class Meeting extends Model
             }
         });
     }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        // When a meeting is deleted, also delete its agenda items
+        static::deleting(function ($meeting) {
+            $meeting->agendaItems()->delete();
+        });
+    }
 }

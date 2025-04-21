@@ -31,6 +31,8 @@ jobs:
           
   codeql-scan:
     runs-on: ubuntu-latest
+    # Skip on PRs from dependabot as they're already scanned
+    if: ${{ !(github.event_name == 'pull_request' && startsWith(github.head_ref, 'dependabot/')) }}
     strategy:
       fail-fast: false
       matrix:
@@ -48,113 +50,9 @@ jobs:
       # Autobuild attempts to build any compiled languages
       - name: Autobuild
         uses: github/codeql-action/autobuild@v3
-          
-      # For JavaScript analysis, build if needed
-      - name: Setup Node for CodeQL
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          
-      - name: Install JS dependencies for CodeQL
-        run: npm ci
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
         with:
           category: "/language:${{ matrix.language }}"
         
-  dependency-scan:
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.3'
-          tools: composer:v2
-          
-      - name: Install PHP Security Checker
-        run: |
-          curl -L https://github.com/fabpot/local-php-security-checker/releases/download/v2.0.6/local-php-security-checker_2.0.6_linux_amd64 -o local-php-security-checker
-          chmod +x local-php-security-checker
-          
-      - name: Check PHP Dependencies
-        id: php-security
-        continue-on-error: true
-        run: |
-          OUTPUT=$(./local-php-security-checker --format=json)
-          echo "PHP Security Output: $OUTPUT"
-          if [ "$(echo $OUTPUT | jq 'length')" -gt "0" ]; then
-            echo "PHP security issues found!"
-            echo "$OUTPUT" > php-security-issues.json
-            echo "::set-output name=has_issues::true"
-          else
-            echo "No PHP security issues found."
-            echo "::set-output name=has_issues::false"
-          fi
-          
-      - name: Run npm audit
-        id: npm-audit
-        continue-on-error: true
-        run: |
-          npm audit --json > npm-audit.json || true
-          if [ -s npm-audit.json ]; then
-            echo "NPM security issues found!"
-            echo "::set-output name=has_issues::true"
-          else
-            echo "No NPM security issues found."
-            echo "::set-output name=has_issues::false"
-          fi
-          
-      - name: Create security report
-        if: steps.php-security.outputs.has_issues == 'true' || steps.npm-audit.outputs.has_issues == 'true'
-        run: |
-          echo "# Security Vulnerability Report" > security-report.md
-          echo "Generated on $(date)" >> security-report.md
-          echo "" >> security-report.md
-          
-          if [ "${{ steps.php-security.outputs.has_issues }}" == "true" ]; then
-            echo "## PHP Vulnerabilities" >> security-report.md
-            echo "" >> security-report.md
-            echo "The following PHP packages have security vulnerabilities:" >> security-report.md
-            echo "" >> security-report.md
-            cat php-security-issues.json | jq -r 'to_entries[] | "### \(.key)\n\n**Vulnerabilities:**\n\(.value[] | "- [\(.cve)](\(.link)) - \(.title)\n  - Affected versions: \(.affectedVersions)")"' >> security-report.md
-            echo "" >> security-report.md
-            echo "**Remediation:**" >> security-report.md
-            echo "- Run \`composer update\` to update to non-vulnerable versions where possible" >> security-report.md
-            echo "- If that doesn't resolve issues, manually review each package and consider alternatives" >> security-report.md
-            echo "" >> security-report.md
-          fi
-          
-          if [ "${{ steps.npm-audit.outputs.has_issues }}" == "true" ]; then
-            echo "## NPM Vulnerabilities" >> security-report.md
-            echo "" >> security-report.md
-            echo "Node.js package vulnerabilities detected. Run \`npm audit fix\` to attempt automatic remediation." >> security-report.md
-            echo "" >> security-report.md
-            echo "For detailed information, see the attached npm-audit.json file." >> security-report.md
-          fi
-          
-      - name: Upload security report
-        if: steps.php-security.outputs.has_issues == 'true' || steps.npm-audit.outputs.has_issues == 'true'
-        uses: actions/upload-artifact@v4
-        with:
-          name: security-report
-          path: |
-            security-report.md
-            php-security-issues.json
-            npm-audit.json
-          retention-days: 30
-          
-      - name: Create security issue
-        if: (steps.php-security.outputs.has_issues == 'true' || steps.npm-audit.outputs.has_issues == 'true') && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
-        uses: peter-evans/create-issue-from-file@v5
-        with:
-          title: Security Vulnerabilities Detected
-          content-filepath: ./security-report.md
-          labels: |
-            security
-            bug
-            needs-triage

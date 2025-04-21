@@ -31,6 +31,7 @@ return [
         'slug' => 'Slug',
         'hour' => 'Hour',
         'minute' => 'Minute',
+        'time' => 'Time',
     ],
     'context' => [
         'main_info' => 'Main information',

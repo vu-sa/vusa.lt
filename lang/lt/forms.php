@@ -31,6 +31,7 @@ return [
         'slug' => 'Trumpinys',
         'hour' => 'Valanda',
         'minute' => 'Minutė',
+        'time' => 'Laikas',
     ],
     'context' => [
         'main_info' => 'Pagrindinė informacija',

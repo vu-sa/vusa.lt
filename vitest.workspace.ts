@@ -25,14 +25,16 @@ export default defineWorkspace([
       Components({
         resolvers: [IconsResolver()],
       }),
-    vuePlugin({
-      script: {
-        propsDestructure: true,
-      },
-    })],
+      vuePlugin({
+        script: {
+          propsDestructure: true,
+        },
+      }),
+    ],
     resolve: {
       alias: {
         '@': '/resources/js',
+        '#mocks': path.resolve(dirname, '.storybook/mocks'),
       }
     },
   },
@@ -67,7 +69,7 @@ export default defineWorkspace([
         configDir: path.join(dirname, '.storybook'),
         // This should match your package.json script to run Storybook
         // The --ci flag will skip prompts and not open a browser
-        storybookScript: 'yarn storybook --ci',
+        storybookScript: 'npx storybook dev --ci',
       }),
       Icons(),
       Components({
@@ -85,6 +87,29 @@ export default defineWorkspace([
         headless: true,
       },
       setupFiles: ['./.storybook/vitest.setup.ts'],
+      // Add specific environment variables and mock modules for Storybook
+      environmentOptions: {
+        jsdom: {
+          // Mock globals needed by Storybook
+          globals: {
+            STORYBOOK_HOOKS_CONTEXT: {}, // Mocked context for Storybook hooks
+          }
+        }
+      },
+      deps: {
+        // Inline the Storybook Vue package to avoid bundling issues
+        inline: [/@storybook\/vue3/]
+      }
     },
+    resolve: {
+      alias: {
+        '@': '/resources/js',
+        '#mocks': path.resolve(dirname, '.storybook/mocks'),
+        // Add proper aliases for Storybook modules
+        '@storybook/vue3': path.resolve(dirname, 'node_modules/@storybook/vue3'),
+        // Also map the old imports to the new import format used in Storybook 8
+        '@storybook/addon-essentials': path.resolve(dirname, 'node_modules/@storybook/addon-essentials')
+      }
+    }
   },
 ]);

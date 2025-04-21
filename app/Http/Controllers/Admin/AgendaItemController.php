@@ -4,11 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreAgendaItemsRequest;
-use App\Models\Meeting;
+use App\Http\Requests\UpdateAgendaItemRequest;
 use App\Models\Pivots\AgendaItem;
 use App\Services\ModelAuthorizer as Authorizer;
-use App\Services\TaskService;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class AgendaItemController extends Controller
@@ -31,18 +29,8 @@ class AgendaItemController extends Controller
                 ]);
             }
 
-            if (isset($request->safe()->moreAgendaItemsUndefined)) {
-                $meeting = Meeting::find($request->safe()->meeting_id);
-
-                $institution = $meeting->institutions->first();
-
-                $institutionUsers = $institution->load('duties.current_users')->duties->pluck('current_users')->flatten()->unique()->values();
-
-                TaskService::storeTask('Sutvarkyti darbotvarkės klausimus', $meeting, $institutionUsers);
-            }
+            // We no longer create tasks for placeholder agenda items
         }
-
-        // pass event where there are agenda items that are not defined
 
         return back()->with(['success' => 'Darbotvarkės punktai sukurti sėkmingai!']);
     }
@@ -68,21 +56,12 @@ class AgendaItemController extends Controller
      * @param  \App\Models\AgendaItem  $agendaItem
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, AgendaItem $agendaItem)
+    public function update(UpdateAgendaItemRequest $request, AgendaItem $agendaItem)
     {
-        $this->authorize('update', $agendaItem);
+        $agendaItem->fill($request->validated());
+        $agendaItem->save();
 
-        $validated = $request->validate([
-            'title' => 'required|string',
-            'description' => 'nullable|string',
-            'decision' => 'nullable|string',
-            'student_vote' => 'nullable|string',
-            'student_benefit' => 'nullable|string',
-        ]);
-
-        $agendaItem->fill($validated)->save();
-
-        return back()->with(['success' => __('Darbotvarkės punktas atnaujintas sėkmingai!')]);
+        return back()->with('success', 'Darbotvarkės punktas atnaujintas sėkmingai!');
     }
 
     /**

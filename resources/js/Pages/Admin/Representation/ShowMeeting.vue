@@ -11,11 +11,16 @@
     </template>
     <template #more-options>
       <MoreOptionsButton edit delete @edit-click="showMeetingModal = true" @delete-click="handleMeetingDelete" />
-      <CardModal v-model:show="showMeetingModal" title="Redaguoti posėdžio datą" @close="showMeetingModal = false">
-        <Suspense>
-          <MeetingForm class="mt-2" :meeting="meeting" @submit="handleMeetingFormSubmit" />
-        </Suspense>
-      </CardModal>
+      <Dialog v-model:open="showMeetingModal">
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{{ $t("Redaguoti posėdžio datą") }}</DialogTitle>
+          </DialogHeader>
+          <Suspense>
+            <MeetingForm class="mt-2" :meeting="meeting" @submit="handleMeetingFormSubmit" />
+          </Suspense>
+        </DialogContent>
+      </Dialog>
     </template>
     <div />
     <div class="my-4 flex items-center gap-4">
@@ -32,14 +37,22 @@
       </div>
     </div>
     <NDataTable scroll-x="800" size="small" class="mt-4" :data="meeting.agenda_items" :columns />
-    <CardModal v-model:show="showAgendaItemStoreModal" title="Pridėti darbotvarkės punktus"
-      :segmented="{ content: 'soft' }" @close="showAgendaItemStoreModal = false">
-      <AgendaItemsForm class="w-full" :loading @submit="handleAgendaItemsFormSubmit" />
-    </CardModal>
-    <CardModal v-model:show="showAgendaItemUpdateModal" title="Redaguoti darbotvarkės punktą"
-      :segmented="{ content: 'soft' }" @close="showAgendaItemUpdateModal = false">
-      <AgendaItemForm v-if="selectedAgendaItem" :agenda-item="selectedAgendaItem" @submit="handleAgendaItemUpdate" />
-    </CardModal>
+    <Dialog v-model:open="showAgendaItemStoreModal">
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{{ $t("Pridėti darbotvarkės punktus") }}</DialogTitle>
+        </DialogHeader>
+        <AgendaItemsForm class="w-full" :loading @submit="handleAgendaItemsFormSubmit" />
+      </DialogContent>
+    </Dialog>
+    <Dialog v-model:open="showAgendaItemUpdateModal">
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{{ $t("Redaguoti darbotvarkės punktą") }}</DialogTitle>
+        </DialogHeader>
+        <AgendaItemForm v-if="selectedAgendaItem" :agenda-item="selectedAgendaItem" @submit="handleAgendaItemUpdate" />
+      </DialogContent>
+    </Dialog>
     <template #below>
       <FileManager v-if="currentTab === 'Failai'" :starting-path="meeting.sharepointPath"
         :fileable="{ ...meeting, type: 'Meeting' }" />
@@ -58,20 +71,22 @@ import { formatStaticTime } from "@/Utils/IntlTime";
 import { genitivizeEveryWord } from "@/Utils/String";
 import { modelTypes } from "@/Types/formOptions";
 import AgendaItemForm from "@/Components/AdminForms/AgendaItemForm.vue";
-import CardModal from "@/Components/Modals/CardModal.vue";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
 import FileManager from "@/Features/Admin/SharepointFileManager/Viewer/FileManager.vue";
 import Icons from "@/Types/Icons/filled";
 import MeetingForm from "@/Components/AdminForms/MeetingForm.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import ShowPageLayout from "@/Components/Layouts/ShowModel/ShowPageLayout.vue";
 import TaskManager from "@/Features/Admin/TaskManager/TaskManager.vue";
-import { NButton, NTooltip } from "naive-ui";
+import { NButton, NDataTable, NIcon, NSwitch, NTag, NTooltip } from "naive-ui";
 import TriStateButton from "@/Components/Buttons/TriStateButton.vue";
 import { trans as $t } from "laravel-vue-i18n";
 
 import IMdiThumbsUpOutline from "~icons/mdi/thumbs-up-outline";
 import IMdiThumbsDownOutline from "~icons/mdi/thumbs-down-outline";
 import IMdiThumbsUpDownOutline from "~icons/mdi/thumbs-up-down-outline";
+import IMdiFileDocument from "~icons/mdi/file-document";
+import IMdiFileDocumentPlus from "~icons/mdi/file-document-plus";
 import AgendaItemsForm from "@/Components/AdminForms/Special/AgendaItemsForm.vue";
 import { useBreadcrumbs, type BreadcrumbItem } from "@/Composables/useBreadcrumbs";
 import { Separator } from "@/Components/ui/separator";
@@ -99,7 +114,7 @@ provide<boolean>("keepFileable", true);
 const selectedAgendaItem = ref<App.Entities.AgendaItem | null>(null);
 
 const handleMeetingFormSubmit = (meeting: App.Entities.Meeting) => {
-  router.patch(route("meetings.update", meeting.id), meeting, {
+  router.patch(route("meetings.update", props.meeting.id), meeting, {
     onSuccess: () => {
       showMeetingModal.value = false;
     },

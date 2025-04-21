@@ -1,4 +1,10 @@
 import type { StorybookConfig } from '@storybook/vue3-vite';
+// import { fileURLToPath } from 'node:url';
+// import { dirname } from 'node:path';
+
+// Get the directory name using ESM compatible approach
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = dirname(__filename);
 
 const config: StorybookConfig = {
   "stories": [
@@ -7,7 +13,6 @@ const config: StorybookConfig = {
   ],
   "addons": [
     "@storybook/addon-essentials",
-    "@storybook/addon-onboarding",
     "@chromatic-com/storybook",
     "@storybook/experimental-addon-test",
     "@storybook/addon-coverage",
@@ -16,6 +21,18 @@ const config: StorybookConfig = {
   "framework": {
     "name": "@storybook/vue3-vite",
     "options": {}
+  },
+  // Add Vite configuration for mocking modules, mostly for preview.ts
+  async viteFinal(config) {
+    if (config.resolve) {
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        '@': '/resources/js',
+        '#mocks': '/.storybook/mocks'
+      };
+    }
+    return config;
   }
 };
+
 export default config;
