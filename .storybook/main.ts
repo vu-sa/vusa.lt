@@ -1,9 +1,11 @@
 import type { StorybookConfig } from '@storybook/vue3-vite';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 
 // Get the directory name using ESM compatible approach
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const config: StorybookConfig = {
   "stories": [
@@ -33,4 +35,5 @@ const config: StorybookConfig = {
     return config;
   }
 };
+
 export default config;

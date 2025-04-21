@@ -35,7 +35,8 @@ jobs:
 
   setup:
     needs: changes
-    if: ${{ needs.changes.outputs.php == 'true' || needs.changes.outputs.js == 'true' }}
+    # Always run setup in pull requests or when there are code changes
+    if: ${{ github.event_name == 'pull_request' || needs.changes.outputs.php == 'true' || needs.changes.outputs.js == 'true' }}
     uses: ./.github/workflows/setup.yml
     with:
       include-coverage: true

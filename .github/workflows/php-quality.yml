@@ -30,7 +30,8 @@ jobs:
 
   setup:
     needs: changes
-    if: ${{ needs.changes.outputs.php == 'true' || github.event_name == 'workflow_dispatch' }}
+    # Always run setup in pull requests or when there are PHP changes
+    if: ${{ github.event_name == 'pull_request' || needs.changes.outputs.php == 'true' || github.event_name == 'workflow_dispatch' }}
     uses: ./.github/workflows/setup.yml
       
   lint:
