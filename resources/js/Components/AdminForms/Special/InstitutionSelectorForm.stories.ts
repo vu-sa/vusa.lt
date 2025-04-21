@@ -1,4 +1,3 @@
-// filepath: /Users/justinas/Repositories/vusa.lt/resources/js/Components/AdminForms/Special/InstitutionSelectorForm.stories.ts
 import type { Meta, StoryObj } from "@storybook/vue3";
 import { userEvent, within } from "@storybook/test";
 import InstitutionSelectorForm from "./InstitutionSelectorForm.vue";

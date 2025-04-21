@@ -1,4 +1,3 @@
-// filepath: /Users/justinas/Repositories/vusa.lt/resources/js/Components/AdminForms/MeetingForm.stories.ts
 import type { Meta, StoryObj } from "@storybook/vue3";
 import { userEvent, within, fn } from "@storybook/test";
 import MeetingForm from "./MeetingForm.vue";
