@@ -5,11 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreAgendaItemsRequest;
 use App\Http\Requests\UpdateAgendaItemRequest;
-use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Services\ModelAuthorizer as Authorizer;
-use App\Services\TaskService;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class AgendaItemController extends Controller
@@ -31,7 +28,7 @@ class AgendaItemController extends Controller
                     'title' => $agendaItemTitle,
                 ]);
             }
-            
+
             // We no longer create tasks for placeholder agenda items
         }
 
@@ -56,7 +53,6 @@ class AgendaItemController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \App\Http\Requests\UpdateAgendaItemRequest  $request
      * @param  \App\Models\AgendaItem  $agendaItem
      * @return \Illuminate\Http\Response
      */

@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Pivots\AgendaItem;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateAgendaItemRequest extends FormRequest
