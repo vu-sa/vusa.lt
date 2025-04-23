@@ -1,7 +1,7 @@
 <template>
-  <NButton @click="openPicker">
+  <Button @click="openPicker">
     <slot />
-  </NButton>
+  </Button>
 </template>
 
 <script setup lang="ts">
@@ -10,6 +10,7 @@ import { combine } from "@pnp/core";
 import { usePage } from "@inertiajs/vue3";
 
 import type { FilePickerOptions, Item } from "./picker.ts";
+import { Button } from "@/Components/ui/button";
 
 const emit = defineEmits<{
   pick: [items: Item[]]

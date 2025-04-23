@@ -7,7 +7,7 @@
     @page-changed="handlePageChange"
     @filter-changed="handleFilterChange"
   >
-    <!-- <template #pageActions>
+    <template #headerActions>
       <FilePicker 
         v-if="$page.props.app.url.startsWith('https')" 
         :loading="loading" 
@@ -17,7 +17,7 @@
       >
         {{ $t("forms.add") }}
       </FilePicker>
-    </template> -->
+    </template>
     
     <template #filters>
       <!-- TODO: needs to get all of the types from db, like the ShowDocuments.vue-->
@@ -58,7 +58,7 @@ import { router, usePage } from "@inertiajs/vue3";
 import { type ColumnDef } from '@tanstack/vue-table';
 import { capitalize } from "vue";
 
-import { Item } from "@/Features/Admin/SharepointFilePicker/picker";
+import { type Item } from "@/Features/Admin/SharepointFilePicker/picker";
 import FilePicker from "@/Features/Admin/SharepointFilePicker/FilePicker.vue";
 import Icons from "@/Types/Icons/regular";
 import IndexTablePage from "@/Components/Layouts/IndexTablePage.vue";
