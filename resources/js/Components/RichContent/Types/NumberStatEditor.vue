@@ -37,7 +37,7 @@
 import { defineModel } from 'vue';
 import { NInputNumber } from "naive-ui";
 
-const content = defineModel('json_content');
+const content = defineModel();
 const options = defineModel('options');
 
 function onCreateNumberStat() {
