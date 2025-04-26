@@ -49,6 +49,6 @@ import { defineModel } from 'vue';
 import OriginalTipTap from '@/Components/TipTap/OriginalTipTap.vue';
 import InfoPopover from '@/Components/Buttons/InfoPopover.vue';
 
-const content = defineModel('json_content');
+const content = defineModel();
 const options = defineModel('options');
 </script>

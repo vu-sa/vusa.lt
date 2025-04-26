@@ -44,8 +44,6 @@ const props = defineProps<{
   };
 }>();
 
-console.log(props.element)
-
 // Parse the JSON content if it's a string (which often happens when coming from the backend)
 const displayElement = computed(() => {
   // Create a copy of the element to avoid mutating props
