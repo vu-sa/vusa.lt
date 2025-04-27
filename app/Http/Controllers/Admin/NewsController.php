@@ -166,6 +166,7 @@ class NewsController extends Controller
             'lang',
             'other_lang_id',
             'draft',
+            'publish_time',
             'short',
             'image',
             'image_author',
