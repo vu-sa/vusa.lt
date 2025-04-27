@@ -80,6 +80,7 @@ import {
   createTextColumn,
   createTitleColumn
 } from '@/Utils/DataTableColumns';
+import { createStandardActionsColumn } from "@/Composables/useTableActions";
 
 const props = defineProps<{
   data: App.Entities.Document[];
@@ -226,9 +227,9 @@ const columns = computed<ColumnDef<App.Entities.Document, any>[]>(() => [
     ),
     width: 150
   }),
-  createTextColumn("language", {
-    width: 100
-  }),
+  // createTextColumn("language", {
+  //   width: 100
+  // }),
   {
     accessorKey: "institution.short_name",
     header: () => $t("institution"),
@@ -254,6 +255,12 @@ const columns = computed<ColumnDef<App.Entities.Document, any>[]>(() => [
       </div>
     ),
     width: 220
+  }),
+  createStandardActionsColumn<App.Entities.Document>("documents", {
+    // canView: true,
+    // canEdit: true,
+    canDelete: true,
+    // canRestore: true
   })
 ]);
 
@@ -285,7 +292,8 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Document>>(() => {
   // Filtering configuration
   const filteringConfig: FilteringConfig = {
     initialFilters: props.filters,
-    initialSorting: props.sorting,
+    // Automatically sort checked_at
+    initialSorting: [{ id: "checked_at", desc: true }],
     enableFiltering: true,
     enableColumnVisibility: true
   };

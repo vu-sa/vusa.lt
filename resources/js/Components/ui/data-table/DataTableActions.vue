@@ -206,6 +206,8 @@ const performDelete = () => {
   if (props.deleteRoute) {
     router.delete(props.deleteRoute, {
       onFinish: () => isConfirmDeleteDialogOpen.value = false, // Close dialog on finish
+      preserveState: true, // Preserve state to avoid unnecessary reloads
+      preserveScroll: true, // Preserve scroll position
     });
   }
   emit('delete', props.model);
