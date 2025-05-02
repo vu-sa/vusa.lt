@@ -80,7 +80,7 @@
     "@iconify-json/ant-design": "^1.1.16",
     "@iconify-json/fluent": "^1.1.57",
     "@iconify-json/mdi": "^1.1.67",
-    "@iconify/vue": "^4.1.2",
+    "@iconify/vue": "^5.0.0",
     "@microsoft/microsoft-graph-types": "^2.25.0",
     "@storybook/addon-a11y": "^8.6.6",
     "@storybook/addon-coverage": "^1.0.5",
