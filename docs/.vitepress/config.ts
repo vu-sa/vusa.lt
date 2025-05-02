@@ -1,101 +1,81 @@
 import { defineConfig } from 'vitepress'
+import lt from './lt'
+import en from './en'
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
+  // Language localization
   locales: {
-    root: {
-      title: "vusa.lt gidas",
-      label: 'Lietuvių',
-      lang: 'lt',
-      themeConfig: {
-        // https://vitepress.dev/reference/default-theme-config
-        nav: [
-          { text: 'Pradinis', link: '/' },
-          { text: 'D.U.K.', link: '/faq' }
-        ],
-
-        sidebar: [
-          {
-            text: 'Pagrindinės funkcijos', link: '/pagrindines-funkcijos'
+    root: lt,
+    en: en
+  },
+  
+  // Base URL path
+  base: '/docs/',
+  
+  // Enable last updated timestamp based on git
+  lastUpdated: true,
+  
+  // GitHub integration settings
+  outDir: '../public/docs',
+  cleanUrls: true,
+  
+  // Global search configuration
+  themeConfig: {
+    search: {
+      provider: 'local',
+      options: {
+        locales: {
+          root: {
+            translations: {
+              button: {
+                buttonText: 'Paieška',
+                buttonAriaLabel: 'Paieška'
+              },
+              modal: {
+                noResultsText: 'Nėra rezultatų pagal užklausą',
+                resetButtonTitle: 'Išvalyti paiešką',
+                footer: {
+                  selectText: 'pasirinkti',
+                  navigateText: 'naršyti',
+                  closeText: 'uždaryti',
+                }
+              }
+            }
           },
-          {
-            text: 'Studentų atstovavimas (ViSAK)',
-            items: [
-              { text: 'Funkcijos', link: '/visak' },
-              { text: 'Atsakomybės', link: '/atsakomybes/studentu-atstovams' },
-              { text: 'D.U.K.', link: '/faq' },
-              { text: 'Dokumentų nuasmeninimas', link: '/dng'}
-            ]
-          },
-          {
-            text: 'Komunikacija',
-            items: [
-              { text: 'Informacijos administravimas', link: '/informacijos-administravimas' },
-              { text: 'Atsakomybės', link: '/atsakomybes/informacijos-administravimas' },
-            ]
-          },
-          {
-            text: 'Administratoriams',
-            items: [
-              { text: 'Rezervacijų sistema', link: '/reservation-system' },
-              { text: 'Atsakomybės', link: '/atsakomybes/administratoriams' },
-            ]
-          },
-          {
-            text: 'Kitos platformos',
-            items: [
-              { text: 'Miro', link: '/kitos-platformos/miro' },
-              { text: 'Moodle (Narystės testas)', link: '/kitos-platformos/narystes-testas' }
-            ]
-          },
-          {
-            text: 'D.U.K.', link: '/faq'
+          en: {
+            translations: {
+              button: {
+                buttonText: 'Search',
+                buttonAriaLabel: 'Search'
+              },
+              modal: {
+                noResultsText: 'No results for given search',
+                resetButtonTitle: 'Clear search',
+                footer: {
+                  selectText: 'select',
+                  navigateText: 'navigate',
+                  closeText: 'close',
+                }
+              }
+            }
           }
-        ],
-
-        socialLinks: [
-          { icon: 'github', link: 'https://github.com/vu-sa/vusa.lt' }
-        ],
-      }
-    },
-    en: {
-      label: 'English',
-      lang: 'en',
-      link: '/en/',
-      title: "vusa.lt guide",
-      themeConfig: {
-        // https://vitepress.dev/reference/default-theme-config
-        nav: [
-          { text: 'Home', link: '/' },
-          { text: 'FAQ', link: '/faq' }
-        ],
-
-        sidebar: [
-          {
-            text: 'Main functions', link: '/main-functions'
-          },
-          {
-            text: 'Student representation (ViSAK)',
-            items: [
-              { text: 'FAQ', link: '/faq' }
-            ]
-          },
-          {
-            text: 'For administrators',
-            items: [
-              { text: 'Reservation system', link: '/reservation-system' },
-            ]
-          },
-          {
-            text: 'FAQ', link: '/faq'
-          }
-        ],
-
-        socialLinks: [
-          { icon: 'github', link: 'https://github.com/vu-sa/vusa.lt' }
-        ],
+        }
       }
     }
   },
-  base: '/docs/',
+  
+  // Markdown configuration
+  markdown: {
+    lineNumbers: true,
+    // Enable header anchors for deeper section linking
+    headers: {
+      level: [0, 3]
+    }
+  },
+  
+  // Build optimization
+  buildEnd: (siteConfig) => {
+    // You can add custom build steps here if needed
+  }
 })

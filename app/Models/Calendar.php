@@ -85,7 +85,7 @@ class Calendar extends Model implements HasMedia
                 : Carbon::parse($this->date)->addHour()->toDateTime()
         )
             ->description(strip_tags($this->description))
-            ->address($calendarEvent->location ?? '')
+            ->address($this->location ?? '')
             ->google();
     }
 }

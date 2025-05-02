@@ -13,8 +13,8 @@ hero:
     #   link: /api-examples
 
 features:
-  - title: Student representation (ViSAK)
-    link: /en/faq
+  - title: Student representation
+    link: /en/roles/student-representatives/faq
   - title: Reservation system
-    link: /en/reservation-system
+    link: /en/roles/administrators/faq
 ---

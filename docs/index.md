@@ -13,10 +13,10 @@ hero:
     #   link: /api-examples
 
 features:
-  - title: Studentų atstovavimas (ViSAK)
-    link: /visak
-  - title: Komunikacija
-    link: /informacijos-administravimas
+  - title: Studentų atstovavimas
+    link: /roles/student-representatives/faq
+  # - title: Komunikacija
+  #   link: /roles/student-representatives/faq
   - title: Administravimas
-    link: /reservation-system
+    link: /roles/administrators/faq
 ---

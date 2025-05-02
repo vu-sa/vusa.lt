@@ -1027,6 +1027,7 @@ declare global {
       deleted_at?: string | null
       name_was_changed?: boolean
       // mutators
+      has_password: unknown
       translations: unknown
       // relations
       doings?: Doing[]

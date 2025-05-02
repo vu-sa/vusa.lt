@@ -8,6 +8,7 @@ use App\Models\Traits\HasTasks;
 use App\States\ReservationResource\Returned;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Laravel\Scout\Searchable;
 use Spatie\Activitylog\LogOptions;
@@ -38,7 +39,7 @@ class Reservation extends Model
         ];
     }
 
-    public function resources()
+    public function resources(): BelongsToMany
     {
         return $this->belongsToMany(Resource::class)->using(ReservationResource::class)
             ->withPivot(['id', 'start_time', 'end_time', 'quantity', 'state', 'returned_at'])

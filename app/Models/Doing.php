@@ -7,6 +7,7 @@ use App\Models\Traits\HasComments;
 use App\Models\Traits\HasSharepointFiles;
 use App\Models\Traits\HasTasks;
 use App\Models\Traits\MakesDecisions;
+use App\Services\ModelAuthorizer;
 use App\States\Doing\DoingState;
 use App\States\Doing\PendingFinalApproval;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -29,6 +30,26 @@ class Doing extends Model implements Decidable
     protected $casts = [
         'state' => DoingState::class,
     ];
+
+    /**
+     * Authorize an action against the model
+     *
+     * @param string $ability The ability to check
+     * @param array $arguments Additional arguments
+     * @return bool
+     */
+    protected function authorize(string $ability, array $arguments = []): bool
+    {
+        // If authorizer is explicitly passed, use it
+        $authorizer = $arguments[2] ?? app(ModelAuthorizer::class);
+        
+        // Check authorization for this model and ability
+        if (!$authorizer->forUser(auth()->user())->check($this->modelName.'.'.$ability.'.own')) {
+            abort(403, 'Neturite teisių atlikti šį veiksmą.');
+        }
+        
+        return true;
+    }
 
     public function getActivitylogOptions(): LogOptions
     {
