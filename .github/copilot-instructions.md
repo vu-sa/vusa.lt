@@ -147,5 +147,21 @@ const props = defineProps<SomeComponentProps & { class?: HTMLAttributes['class']
 - `lang/` - Localization files
 - `tests/` - Test files
 
+## Documentation Structure
+- `/docs/` - User documentation (VitePress)
+  - User guides
+  - Feature documentation
+  - FAQ
+  - System usage instructions
+  - Only in LT/EN languages
+
+- `/dev/` - Developer documentation
+  - Technical architecture
+  - Development setup
+  - Code patterns
+  - API documentation
+  - Testing guidelines
+  - Contribution guides
+
 ## Remember
 This is a **student-run project**. Prioritize maintainability and approachability over complex solutions.

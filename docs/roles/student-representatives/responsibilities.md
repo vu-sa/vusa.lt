@@ -1,4 +1,4 @@
-# Studentų atstovams
+# Studentų atstovų atsakomybės
 
 1. Informuoti apie vykstančius posėdžius, iškart kai jų data yra žinoma.
   - Kai darbotvarkė yra žinoma, informuoti apie jos turinį.

@@ -115,7 +115,7 @@
 
 ## v0.4 (2023-02-03)
 
-* [VISAK](https://github.com/vu-sa/vusa.lt/pull/122)
+* [My VU SR/Mano VU SA](https://github.com/vu-sa/vusa.lt/pull/122)
 
 ## v0.3.9 (2022-09-25)
 
