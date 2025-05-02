@@ -75,7 +75,8 @@ class DocumentController extends Controller
     public function store(StoreDocumentRequest $request)
     {
         $documentCollection = new Collection;
-
+        $model = null; // Initialize model variable
+        
         foreach ($request->documents as $document) {
             $model = new Document;
 
@@ -88,6 +89,11 @@ class DocumentController extends Controller
             $documentCollection->push($model);
 
             /* $model->save(); */
+        }
+
+        // Check if model is defined (documents array is not empty)
+        if ($model === null || $documentCollection->isEmpty()) {
+            return redirect()->route('documents.index')->with('info', 'No documents to process.');
         }
 
         $graph = new SharepointGraphService(siteId: $model->sharepoint_site_id);

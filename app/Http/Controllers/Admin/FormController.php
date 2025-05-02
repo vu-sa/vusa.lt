@@ -112,7 +112,7 @@ class FormController extends Controller
             });
 
             // 2. Filter registrations that don't have a tenant field as in tenants
-            $registrations = $form->registrations->filter(function ($registration) use ($tenantField, $tenants, &$arr) {
+            $registrations = $form->registrations->filter(function ($registration) use ($tenantField, $tenants) {
                 $tenantResponse = $registration->fieldResponses->first(function ($fieldResponse) use ($tenantField) {
                     return $fieldResponse->formField->id === $tenantField->id;
                 });

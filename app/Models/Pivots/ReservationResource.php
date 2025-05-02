@@ -9,6 +9,7 @@ use App\Models\Traits\HasComments;
 use App\Models\Traits\MakesDecisions;
 use App\Services\ModelAuthorizer;
 use App\States\ReservationResource\ReservationResourceState;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
 class ReservationResource extends Pivot implements Decidable
@@ -31,12 +32,12 @@ class ReservationResource extends Pivot implements Decidable
         'end_time' => 'datetime',
     ];
 
-    public function reservation()
+    public function reservation(): BelongsTo
     {
         return $this->belongsTo(Reservation::class);
     }
 
-    public function resource()
+    public function resource(): BelongsTo
     {
         return $this->belongsTo(Resource::class);
     }

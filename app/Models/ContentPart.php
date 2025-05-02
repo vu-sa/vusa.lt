@@ -23,9 +23,27 @@ class ContentPart extends Model
         'order',
     ];
 
+    // Add property for HTML content
+    protected $appends = ['html'];
+    
+    // Add a default value for html attribute
+    protected $html = '';
+
     public function content()
     {
         return $this->belongsTo(Content::class);
+    }
+    
+    // Add getter for html attribute
+    public function getHtmlAttribute()
+    {
+        return $this->html ?? '';
+    }
+    
+    // Add setter for html attribute
+    public function setHtmlAttribute($value)
+    {
+        $this->html = $value;
     }
 
     /**

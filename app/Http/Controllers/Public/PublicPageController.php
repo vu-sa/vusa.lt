@@ -150,7 +150,7 @@ class PublicPageController extends PublicController
         // TODO: add alias in global settings instead
         $events = Calendar::query()->whereHas('category', function (Builder $query) {
             $query->where('alias', '=', 'freshmen-camps');
-        })->with('tenant:id,alias,fullname')->whereYear('date', $year ?? date('Y'))
+        })->with('tenant:id,alias,fullname')->whereYear('date', $year)
             ->with(['media'])->get()->sortBy('tenant.alias')->values();
 
         if ($events->isEmpty() && $year != intval(date('Y'))) {

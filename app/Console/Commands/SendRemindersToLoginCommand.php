@@ -53,7 +53,7 @@ class SendRemindersToLoginCommand extends Command
 
         // Send a reminder to each student rep
         foreach ($studentReps as $studentRep) {
-            $studentRep->notify(new ReminderToLoginNotification($studentRep));
+            $studentRep->notify(new ReminderToLoginNotification());
         }
     }
 }
