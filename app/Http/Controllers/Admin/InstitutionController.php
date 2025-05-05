@@ -30,28 +30,49 @@ class InstitutionController extends Controller
     {
         $this->authorize('viewAny', Institution::class);
 
-        // Build base query with eager loading
-        $query = Institution::query()->with(['meetings' => fn ($query) => $query->orderBy('start_time'), 'tenant', 'types']);
+        // Check if we should use search or regular query
+        if ($request->has('search') && !empty($request->input('search'))) {
+            // Use Typesense search with Scout
+            $institutions = $this->searchWithTanstack(
+                Institution::class,
+                $request,
+                $this->tableService,
+                [
+                    'tenantField' => 'tenant_id',
+                    'authorizer' => $this->authorizer,
+                    'permission' => 'institutions.read.padalinys'
+                ]
+            );
+            
+            // Load relationships on the search results
+            $items = Institution::with(['meetings' => fn ($query) => $query->orderBy('start_time'), 'tenant', 'types'])
+                ->findMany($institutions->pluck('id'));
+        } else {
+            // Build base query with eager loading
+            $query = Institution::query()->with(['meetings' => fn ($query) => $query->orderBy('start_time'), 'tenant', 'types']);
 
-        // Define searchable columns
-        $searchableColumns = ['name', 'alias', 'email', 'tenant.name'];
+            // Define searchable columns
+            $searchableColumns = ['name', 'alias', 'email', 'tenant.name'];
 
-        // Apply Tanstack Table filters
-        $query = $this->applyTanstackFilters(
-            $query,
-            $request,
-            $this->tableService,
-            $searchableColumns,
-            [
-                'tenantRelation' => 'tenant',
-                'permission' => 'institutions.read.padalinys',
-                'applySortBeforePagination' => true, // Ensure sorting is applied before pagination
-            ]
-        );
+            // Apply Tanstack Table filters
+            $query = $this->applyTanstackFilters(
+                $query,
+                $request,
+                $this->tableService,
+                $searchableColumns,
+                [
+                    'tenantRelation' => 'tenant',
+                    'permission' => 'institutions.read.padalinys',
+                    'applySortBeforePagination' => true, // Ensure sorting is applied before pagination
+                ]
+            );
 
-        // Paginate results
-        $institutions = $query->paginate($request->input('per_page', 15))
-            ->withQueryString();
+            // Paginate results
+            $institutions = $query->paginate($request->input('per_page', 15))
+                ->withQueryString();
+                
+            $items = $institutions->items();
+        }
 
         // Get institution types for filtering
         $types = Type::where('model_type', Institution::class)->get();
@@ -61,7 +82,7 @@ class InstitutionController extends Controller
 
         // Return response with all necessary data
         return Inertia::render('Admin/People/IndexInstitution', [
-            'data' => $institutions->items(),
+            'data' => $items,
             'meta' => [
                 'total' => $institutions->total(),
                 'per_page' => $institutions->perPage(),

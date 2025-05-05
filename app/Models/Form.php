@@ -29,8 +29,15 @@ class Form extends Model
     public function toSearchableArray()
     {
         return [
-            'name->'.app()->getLocale() => $this->getTranslation('name', app()->getLocale()),
-            'path->'.app()->getLocale() => $this->getTranslation('path', app()->getLocale()),
+            'id' => (string) $this->id,
+            // 'name->'.app()->getLocale() => $this->getTranslation('name', app()->getLocale()),
+            // 'path->'.app()->getLocale() => $this->getTranslation('path', app()->getLocale()),
+            'name->lt' => $this->getTranslation('name', 'lt'),
+            'path->lt' => $this->getTranslation('path', 'lt'),
+            'name->en' => $this->getTranslation('name', 'en'),
+            'path->en' => $this->getTranslation('path', 'en'),
+            'created_at' => $this->created_at->timestamp,
+            'updated_at' => $this->updated_at->timestamp,
         ];
     }
 

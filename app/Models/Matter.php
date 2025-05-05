@@ -16,16 +16,16 @@ class Matter extends Model
 {
     use HasFactory, HasRelationships, HasUlids, LogsActivity, Searchable, SoftDeletes;
 
-    protected $casts = [
-        'created_at' => 'timestamp',
-    ];
-
     protected $guarded = [];
 
     public function toSearchableArray()
     {
         return [
+            'id' => (string) $this->id,
             'title' => $this->title,
+            'description' => $this->description ?? '',
+            'created_at' => $this->created_at->timestamp,
+            'updated_at' => $this->updated_at->timestamp,
         ];
     }
 

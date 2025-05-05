@@ -37,6 +37,8 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
 
         Route::get('{registrationString}/{registrationForm}', [Public\PublicPageController::class, 'registrationPage'])->name('registrationPage')->whereIn('registrationString', ['registracija', 'registration']);
 
+        Route::get('search', [Public\TypesenseSearchController::class, 'index'])->name('typesense.search');
+
         Route::get('kalendorius/renginys/{calendar}', [Public\PublicPageController::class, 'calendarEventRedirect'])->name('calendar.event');
 
         Route::inertia('tapk-vu-sa-nariu', 'Public/MembershipPage')->name('joinUs');

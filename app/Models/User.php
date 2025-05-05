@@ -70,9 +70,12 @@ class User extends Authenticatable
     public function toSearchableArray()
     {
         return [
+            'id' => (string) $this->id,
             'name' => $this->name,
             'email' => $this->email,
             'phone' => $this->phone ?? '',
+            'created_at' => $this->created_at->timestamp,
+            'updated_at' => $this->updated_at->timestamp,
         ];
     }
 

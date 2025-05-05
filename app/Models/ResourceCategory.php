@@ -28,8 +28,13 @@ class ResourceCategory extends Model
     public function toSearchableArray()
     {
         return [
-            'name->'.app()->getLocale() => $this->getTranslation('name', app()->getLocale()),
-            'description->'.app()->getLocale() => $this->getTranslation('description', app()->getLocale()),
+            'id' => (string) $this->id,
+            'name->lt' => $this->getTranslation('name', 'lt'),
+            'name->en' => $this->getTranslation('name', 'en'),
+            'description->lt' => $this->getTranslation('description', 'lt'),
+            'description->en' => $this->getTranslation('description', 'en'),
+            'created_at' => $this->created_at->timestamp,
+            'updated_at' => $this->updated_at->timestamp,
         ];
     }
 }

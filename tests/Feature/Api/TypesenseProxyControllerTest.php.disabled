@@ -1,0 +1,154 @@
+<?php
+
+namespace Tests\Feature\Api;
+
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Config;
+use Mockery;
+use Tests\TestCase;
+use Typesense\Client;
+use Typesense\MultiSearch;
+use PHPUnit\Framework\Attributes\Test;
+
+class TypesenseProxyControllerTest extends TestCase
+{
+    use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        
+        // Mock the Typesense client to prevent actual API calls during testing
+        $this->mockTypesenseClient();
+    }
+
+    /**
+     * Mock the Typesense client for testing
+     */
+    protected function mockTypesenseClient()
+    {
+        // Create a mock for MultiSearch class
+        $multiSearchMock = Mockery::mock(MultiSearch::class);
+        $multiSearchMock->shouldReceive('perform')
+            ->withAnyArgs()
+            ->andReturn([
+                'results' => [
+                    [
+                        'found' => 2,
+                        'hits' => [
+                            ['document' => ['id' => '1', 'title' => 'Test Document 1']],
+                            ['document' => ['id' => '2', 'title' => 'Test Document 2']]
+                        ]
+                    ]
+                ]
+            ]);
+
+        // Create a mock Client with multiSearch property
+        $clientMock = $this->getMockBuilder(Client::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+            
+        // Set the multiSearch property on the mock
+        $clientMock->multiSearch = $multiSearchMock;
+        
+        // Bind the mocked client to the container
+        $this->app->instance(Client::class, $clientMock);
+        
+        // Mock the TypesenseProxyController's client property directly
+        $this->app->bind(\App\Http\Controllers\Api\TypesenseProxyController::class, function ($app) use ($clientMock) {
+            $controller = new \App\Http\Controllers\Api\TypesenseProxyController();
+            // Use reflection to set the protected client property
+            $reflection = new \ReflectionClass($controller);
+            $property = $reflection->getProperty('client');
+            $property->setAccessible(true);
+            $property->setValue($controller, $clientMock);
+            
+            return $controller;
+        });
+    }
+
+    #[Test]
+    public function it_requires_proper_json_payload()
+    {
+        $response = $this->postJson('/api/v1/typesense/multi_search', 'invalid-json');
+        
+        $response->assertStatus(400)
+            ->assertJson(['error' => 'Invalid request format']);
+    }
+
+    #[Test]
+    public function it_validates_searches_parameter()
+    {
+        $response = $this->postJson('/api/v1/typesense/multi_search', [
+            'not_searches' => []
+        ]);
+        
+        $response->assertStatus(400)
+            ->assertJson(['error' => 'Invalid request format']);
+    }
+
+    #[Test]
+    public function it_validates_collection_parameter()
+    {
+        $response = $this->postJson('/api/v1/typesense/multi_search', [
+            'searches' => [
+                [
+                    'collection' => 'invalid_collection',
+                    'q' => 'test query'
+                ]
+            ]
+        ]);
+        
+        $response->assertStatus(400)
+            ->assertJson(['error' => 'Invalid request format']);
+    }
+
+    #[Test]
+    public function it_blocks_unauthorized_parameters()
+    {
+        $response = $this->postJson('/api/v1/typesense/multi_search', [
+            'searches' => [
+                [
+                    'collection' => 'documents',
+                    'q' => 'test',
+                    'unauthorized_param' => 'potential_injection'
+                ]
+            ]
+        ]);
+        
+        $response->assertStatus(400)
+            ->assertJson(['error' => 'Invalid request format']);
+    }
+
+    #[Test]
+    public function it_passes_valid_search_requests()
+    {
+        $response = $this->postJson('/api/v1/typesense/multi_search', [
+            'searches' => [
+                [
+                    'collection' => 'documents',
+                    'q' => 'test',
+                    'query_by' => 'title,content',
+                    'page' => 1
+                ]
+            ]
+        ]);
+        
+        $response->assertStatus(200)
+            ->assertJsonStructure(['results']);
+    }
+
+    #[Test]
+    public function it_is_rate_limited()
+    {
+        // Configure a very strict rate limit for this test
+        Config::set('app.env', 'testing');
+        
+        // Make one more than the allowed requests (default limit is 60 per minute)
+        // For testing we'll just check that our route has the throttle middleware
+        $route = app('router')->getRoutes()->getByName('typesense.multi-search');
+        $middlewares = $route->gatherMiddleware();
+        
+        $this->assertContains('throttle:60,1', $middlewares, 'Typesense proxy endpoint should be rate limited');
+    }
+}

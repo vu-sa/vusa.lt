@@ -19,7 +19,18 @@ class Document extends Model
     public function toSearchableArray()
     {
         return [
+            'id' => (string) $this->id,
             'title' => $this->title,
+            'name' => $this->name,
+            'summary' => $this->summary,
+            'content_type' => $this->content_type,
+            'language' => $this->language,
+            'institution_name_lt' => $this->institution ? $this->institution->getTranslation('name', 'lt') : null,
+            'institution_name_en' => $this->institution ? $this->institution->getTranslation('name', 'en') : null,
+            'document_date' => $this->document_date ? strtotime($this->document_date) : null,
+            'effective_date' => $this->effective_date ? strtotime($this->effective_date) : null, 
+            'expiration_date' => $this->expiration_date ? strtotime($this->expiration_date) : null,
+            'created_at' => $this->created_at->timestamp
         ];
     }
 

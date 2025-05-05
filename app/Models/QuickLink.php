@@ -14,8 +14,13 @@ class QuickLink extends Model
     public function toSearchableArray()
     {
         return [
+            'id' => (string) $this->id,
             'text' => $this->text,
             'link' => $this->link,
+            'tenant_id' => $this->tenant_id,
+            'lang' => $this->lang,
+            'created_at' => $this->created_at->timestamp,
+            'updated_at' => $this->updated_at->timestamp,
         ];
     }
 

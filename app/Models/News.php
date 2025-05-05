@@ -104,14 +104,18 @@ class News extends Model implements Feedable
 
     public function toSearchableArray()
     {
-        $array = $this->toArray();
-
-        // Customize array...
-        // return only title
-        $array = [
+        return [
+            'id' => (string) $this->id,
             'title' => $this->title,
+            'short' => $this->short,
+            'permalink' => $this->permalink,
+            'image' => $this->image,
+            'publish_time' => $this->publish_time ? $this->publish_time->timestamp : null,
+            'lang' => $this->lang,
+            'tenant.id' => $this->tenant_id,
+            'tenant.name' => $this->tenant ? $this->tenant->name : null,
+            'created_at' => $this->created_at->timestamp,
+            'updated_at' => $this->updated_at->timestamp,
         ];
-
-        return $array;
     }
 }

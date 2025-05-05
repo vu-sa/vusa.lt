@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\CalendarController;
 use App\Http\Controllers\Api\NewsController;
+use App\Http\Controllers\Api\TypesenseProxyController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -29,4 +30,11 @@ Route::prefix('v1')->group(function () {
         Route::get('news/{tenant:alias}', [NewsController::class, 'getTenantNews'])->name('news.tenant.index');
         Route::get('calendar/{tenant:alias}', [CalendarController::class, 'getTenantCalendar'])->name('calendar.tenant.index');
     });
+
+    /*
+     * Typesense proxy routes
+     */
+    Route::post('/typesense/multi_search', [TypesenseProxyController::class, 'multiSearch'])
+        ->middleware(['throttle:60,1'])  // Rate limit to 60 requests per minute
+        ->name('typesense.multi-search');
 });

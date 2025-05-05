@@ -42,15 +42,18 @@ class Page extends Model
 
     public function toSearchableArray()
     {
-        $array = $this->toArray();
-
-        // Customize array...
-        // return only title
-        $array = [
+        return [
+            'id' => (string) $this->id,
             'title' => $this->title,
             'permalink' => $this->permalink,
+            // 'content' => $this->content,
+            'lang' => $this->lang,
+            'tenant_id' => $this->tenant_id,
+            'tenant_name' => $this->tenant ? $this->tenant->name : null,
+            'category_id' => $this->category_id,
+            'category_name' => $this->category ? $this->category->name : null,
+            'created_at' => $this->created_at->timestamp,
+            'updated_at' => $this->updated_at->timestamp,
         ];
-
-        return $array;
     }
 }

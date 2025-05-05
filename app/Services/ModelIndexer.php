@@ -99,7 +99,9 @@ class ModelIndexer
      */
     public function search()
     {
-        $this->builder = $this->indexable::search($this->search);
+        // Ensure search parameter is never null for Typesense which requires 'q' parameter
+        $searchQuery = $this->search ?? '*';
+        $this->builder = $this->indexable::search($searchQuery);
 
         return $this;
     }

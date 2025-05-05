@@ -29,7 +29,13 @@ class Meeting extends Model
     public function toSearchableArray()
     {
         return [
+            'id' => (string) $this->id,
             'title' => $this->title,
+            'description' => $this->description ?? '',
+            'location' => $this->location ?? '',
+            'start_time' => $this->start_time ? $this->start_time->timestamp : null,
+            'created_at' => $this->created_at->timestamp,
+            'updated_at' => $this->updated_at->timestamp,
         ];
     }
 

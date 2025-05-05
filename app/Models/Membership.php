@@ -26,7 +26,12 @@ class Membership extends Model
     public function toSearchableArray()
     {
         return [
-            'name->'.app()->getLocale() => $this->getTranslation('name', app()->getLocale()),
+            'id' => (string) $this->id,
+            'name->lt' => $this->getTranslation('name', 'lt'),
+            'name->en' => $this->getTranslation('name', 'en'),
+            'tenant_id' => $this->tenant_id,
+            'created_at' => $this->created_at->timestamp,
+            'updated_at' => $this->updated_at->timestamp,
         ];
     }
 

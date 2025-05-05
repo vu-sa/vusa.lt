@@ -57,15 +57,20 @@ class Calendar extends Model implements HasMedia
 
     public function toSearchableArray()
     {
-        $array = $this->toArray();
-
-        // Customize array...
-        // return only title
-        $array = [
-            'title' => $this->title,
+        return [
+            'id' => (string) $this->id,
+            'title->lt' => $this->getTranslation('title', 'lt'),
+            'title->en' => $this->getTranslation('title', 'en'),
+            'location' => $this->location,
+            'organizer' => $this->organizer,
+            'date' => $this->date ? $this->date->timestamp : null,
+            'end_date' => $this->end_date ? $this->end_date->timestamp : null,
+            'lang' => $this->lang ?? app()->getLocale(),
+            'tenant_id' => $this->tenant_id,
+            'is_draft' => $this->is_draft,
+            'created_at' => $this->created_at->timestamp,
+            'updated_at' => $this->updated_at->timestamp,
         ];
-
-        return $array;
     }
 
     // TODO: add all pages to dev seed

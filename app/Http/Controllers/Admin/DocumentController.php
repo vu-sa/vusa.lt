@@ -27,34 +27,54 @@ class DocumentController extends Controller
     {
         $this->authorize('viewAny', Document::class);
 
-        // Build base query with eager loading
-        $query = Document::query()->with(['institution']);
+        // Check if we should use search or regular query
+        if ($request->has('search') && !empty($request->input('search'))) {
+            // Use Typesense search
+            $documents = $this->searchWithTanstack(
+                Document::class,
+                $request,
+                $this->tableService,
+                [
+                    'tenantField' => 'institution_id',
+                    'authorizer' => $this->authorizer,
+                    'permission' => 'documents.read.padalinys'
+                ]
+            );
 
-        // Define searchable columns
-        $searchableColumns = ['name', 'title', 'institution.name', 'sharepoint_id'];
+            // Get the data with relationships loaded
+            $items = Document::with(['institution'])->findMany($documents->pluck('id'));
+        } else {
+            // Build base query with eager loading
+            $query = Document::query()->with(['institution']);
 
-        // Apply Tanstack Table filters
-        $query = $this->applyTanstackFilters(
-            $query,
-            $request,
-            $this->tableService,
-            $searchableColumns,
-            [
-                'tenantRelation' => 'institution.tenant',
-                'permission' => 'documents.read.padalinys',
-                'applySortBeforePagination' => true,
-            ]
-        );
+            // Define searchable columns
+            $searchableColumns = ['name', 'title', 'institution.name', 'sharepoint_id'];
 
-        // Paginate results
-        $documents = $query->paginate($request->input('per_page', 20))
-            ->withQueryString();
+            // Apply Tanstack Table filters
+            $query = $this->applyTanstackFilters(
+                $query,
+                $request,
+                $this->tableService,
+                $searchableColumns,
+                [
+                    'tenantRelation' => 'institution.tenant',
+                    'permission' => 'documents.read.padalinys',
+                    'applySortBeforePagination' => true,
+                ]
+            );
+
+            // Paginate results
+            $documents = $query->paginate($request->input('per_page', 20))
+                ->withQueryString();
+                
+            $items = $documents->items();
+        }
 
         // Get the sorting state using the custom method to ensure consistent parsing
         $sorting = $request->getSorting();
 
         return Inertia::render('Admin/Files/IndexDocument', [
-            'data' => $documents->items(),
+            'data' => $items,
             'meta' => [
                 'total' => $documents->total(),
                 'per_page' => $documents->perPage(),

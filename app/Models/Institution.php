@@ -103,8 +103,18 @@ class Institution extends Model
     public function toSearchableArray()
     {
         return [
-            'name->'.app()->getLocale() => $this->getTranslation('name', app()->getLocale()),
-            'short_name->'.app()->getLocale() => $this->getTranslation('short_name', app()->getLocale()),
+            'id' => (string) $this->id,
+            'name->lt' => $this->getTranslation('name', 'lt'),
+            'name->en' => $this->getTranslation('name', 'en'),
+            'short_name->lt' => $this->getTranslation('short_name', 'lt'),
+            'short_name->en' => $this->getTranslation('short_name', 'en'),
+            // 'description->lt' => $this->getTranslation('description', 'lt'),
+            // 'description->en' => $this->getTranslation('description', 'en'),
+            'tenant_id' => $this->tenant_id,
+            'is_active' => (bool) $this->is_active,
+            'created_at' => $this->created_at->timestamp,
+            'updated_at' => $this->updated_at->timestamp,
+            'deleted_at' => $this->deleted_at ? $this->deleted_at->timestamp : null,
         ];
     }
 

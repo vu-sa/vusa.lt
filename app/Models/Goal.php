@@ -27,7 +27,12 @@ class Goal extends Model
     public function toSearchableArray()
     {
         return [
+            'id' => (string) $this->id,
             'title' => $this->title,
+            'description' => $this->description,
+            'tenant_id' => $this->tenant_id,
+            'created_at' => $this->created_at->timestamp,
+            'updated_at' => $this->updated_at->timestamp,
         ];
     }
 

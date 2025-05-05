@@ -7,6 +7,7 @@ use App\Services\ModelAuthorizer;
 use App\Services\TanstackTableService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Laravel\Scout\Builder as ScoutBuilder;
 
 trait HasTanstackTables
 {
@@ -70,6 +71,96 @@ trait HasTanstackTables
         }
 
         return $query;
+    }
+
+    /**
+     * Use Laravel Scout to perform a search and apply Tanstack filtering
+     *
+     * @param  string  $modelClass  The fully qualified model class name
+     * @param  Request  $request  The request object containing search, filters and sorting
+     * @param  TanstackTableService|DataTableService  $tableService  The service to apply filters with
+     * @param  array  $options  Additional options including permission settings
+     */
+    protected function searchWithTanstack(
+        string $modelClass,
+        Request $request,
+        $tableService,
+        array $options = []
+    ) {
+        // Get the search term - default to * if empty for Typesense which requires a query
+        $searchTerm = $request->input('search') ?: '*';
+        
+        // Get sorting parameters
+        $sorting = method_exists($request, 'getSorting')
+            ? $request->getSorting()
+            : $this->decodeSorting($request->input('sorting'));
+
+        // Get filters
+        $filters = method_exists($request, 'getFilters')
+            ? $request->getFilters()
+            : $this->decodeFilters($request->input('filters'));
+            
+        // Start a Scout search query
+        $searchQuery = $modelClass::search($searchTerm);
+
+        // Apply direct column filters
+        if (!empty($filters)) {
+            // Add filtering using whereIn for array values or where for single values
+            foreach ($filters as $key => $value) {
+                if ($value === null || (is_array($value) && empty($value))) {
+                    continue;
+                }
+                
+                if (is_array($value)) {
+                    // For array values, use whereIn
+                    $searchQuery->whereIn($key, $value);
+                } else {
+                    // For single values, use where
+                    $searchQuery->where($key, $value);
+                }
+            }
+        }
+        
+        // Apply sorting
+        if (!empty($sorting)) {
+            $sortParams = [];
+            foreach ($sorting as $sort) {
+                if (isset($sort['id']) && isset($sort['desc'])) {
+                    $direction = $sort['desc'] ? 'desc' : 'asc';
+                    $searchQuery->orderBy($sort['id'], $direction);
+                }
+            }
+        }
+
+        // Apply tenant-based filtering if required
+        if (isset($options['tenantField']) && isset($options['authorizer']) && isset($options['permission'])) {
+            $authorizer = $options['authorizer'];
+            
+            if (!$authorizer->isAllScope && !auth()->user()->isSuperAdmin()) {
+                $tenants = $authorizer->getTenants($options['permission'])->pluck('id')->toArray();
+                
+                if (!empty($tenants)) {
+                    // For tenant filtering, use whereIn with the tenant field
+                    $searchQuery->whereIn($options['tenantField'], $tenants);
+                }
+            }
+        }
+
+        // Handle the soft delete filter for Typesense
+        // Check if the model uses SoftDeletes trait
+        if (in_array('Illuminate\Database\Eloquent\SoftDeletes', class_uses($modelClass))) {
+            // Check if showDeleted is set and true
+            $showDeleted = $request->boolean('showDeleted', false);
+            
+            if (!$showDeleted) {
+                // Only show non-deleted records
+                $searchQuery->where('deleted_at', null);
+            }
+            // If showDeleted is true, we show all records (both deleted and non-deleted)
+        }
+
+        // Paginate the results
+        return $searchQuery->paginate($request->input('per_page', 15));
     }
 
     /**

@@ -82,4 +82,15 @@ class Tenant extends Model
     {
         return $this->belongsTo(Content::class);
     }
+
+    public function toSearchableArray()
+    {
+        return [
+            'id' => (string) $this->id,
+            'fullname' => $this->fullname,
+            'shortname' => $this->shortname,
+            'alias' => $this->alias,
+            'type' => $this->type
+        ];
+    }
 }
