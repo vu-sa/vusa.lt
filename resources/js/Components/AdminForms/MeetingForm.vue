@@ -154,8 +154,15 @@ const onSubmit = (values) => {
   // Time is required so should always be present at this point
   dt.setHours(values.time.hour, values.time.minute);
   
+  // Format date in local timezone without conversion to UTC
+  // This formats as YYYY-MM-DDTHH:mm:ss.sss in local timezone
+  const localISOString = new Date(dt.getTime() - (dt.getTimezoneOffset() * 60000))
+    .toISOString()
+    .slice(0, 19)
+    .replace('T', ' ');
+  
   const formData = {
-    start_time: dt.toISOString(),
+    start_time: localISOString,
     type_id: values.type_id,
   };
   
