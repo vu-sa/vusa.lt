@@ -77,7 +77,7 @@ jobs:
       - name: Build docs
         run: |
           npm run docs:build
-          tar -czf docs.tar.gz -C docs/.vitepress/dist .
+          tar -czf docs.tar.gz -C public/docs .
           
       # Deploy to server
       - name: Upload and run on server
