@@ -25,7 +25,7 @@ const options: FilePickerOptions = {
     "sharePoint": {
       "byPath": {
         "web": "https://vustudentuatstovybe.sharepoint.com/sites/vieningai",
-        //"list": "Documents",
+        "list": "Bendrai naudojami dokumentai",
         "folder": "Archyvas"
       }
     }
