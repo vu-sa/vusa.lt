@@ -109,6 +109,8 @@ declare global {
       order: number
       created_at: string
       updated_at: string
+      // mutators
+      html: unknown
       // relations
       content?: Content
     }
@@ -289,6 +291,7 @@ declare global {
       deleted_at?: string | null
       // relations
       goals?: Goal[]
+      matters?: Matter[]
       activities?: Activity[]
     }
 
@@ -343,6 +346,7 @@ declare global {
       deleted_at?: string | null
       // relations
       institutions?: Institution[]
+      institution?: Institution[]
       meetings?: Meeting[]
       doings?: Doing[]
       goals?: Goal[]

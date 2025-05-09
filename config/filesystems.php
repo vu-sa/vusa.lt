@@ -85,6 +85,8 @@ return [
         'redirect' => env('SHAREPOINT_REDIRECT_URI'),
         'site_id' => env('SHAREPOINT_SITE_ID'),
         'tenant_id' => env('SHAREPOINT_TENANT_ID'),
+        'archive_drive_id' => env('SHAREPOINT_ARCHIVE_DRIVE_ID'),
+        'vusa_drive_id' => env('SHAREPOINT_VUSA_DRIVE_ID'),
     ],
 
 ];

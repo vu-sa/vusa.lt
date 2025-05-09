@@ -96,7 +96,7 @@ class DocumentController extends Controller
             return redirect()->route('documents.index')->with('info', 'No documents to process.');
         }
 
-        $graph = new SharepointGraphService(siteId: $model->sharepoint_site_id);
+        $graph = new SharepointGraphService(siteId: $model->sharepoint_site_id, driveId: config('filesystems.sharepoint.archive_drive_id'));
 
         $documentCollection = $graph->batchProcessDocuments($documentCollection);
 

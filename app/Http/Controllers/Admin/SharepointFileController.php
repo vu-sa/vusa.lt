@@ -26,7 +26,7 @@ class SharepointFileController extends Controller
     {
         $this->authorize('viewAny', SharepointFile::class);
 
-        $graph = new SharepointGraphService;
+        $graph = new SharepointGraphService(driveId: config('filesystems.sharepoint.vusa_drive_id'));
 
         $path = $request->get('path');
 
@@ -96,7 +96,7 @@ class SharepointFileController extends Controller
     {
         $this->authorize('delete', $sharepointFile);
 
-        $sharepointFileService = new SharepointGraphService;
+        $sharepointFileService = new SharepointGraphService(driveId: config('filesystems.sharepoint.vusa_drive_id'));
 
         $sharepointFileService->deleteDriveItem($sharepointFile->sharepoint_id);
 
@@ -116,7 +116,7 @@ class SharepointFileController extends Controller
     {
         // $this->authorize('viewAll', [SharepointFile::class, $this->authorizer]);
 
-        $sharepointService = new SharepointGraphService;
+        $sharepointService = new SharepointGraphService(driveId: config('filesystems.sharepoint.vusa_drive_id'));
 
         $path = $request->get('path');
 
@@ -157,7 +157,7 @@ class SharepointFileController extends Controller
         // TODO: maybe use 'pluck' instead of 'map'?
         $types_string = $types->pluck('id')->implode(',');
 
-        $sharepointService = new SharepointGraphService;
+        $sharepointService = new SharepointGraphService(driveId: config('filesystems.sharepoint.vusa_drive_id'));
 
         // get all types paths into one array
         $paths = $types->map(function ($type) {
@@ -175,7 +175,7 @@ class SharepointFileController extends Controller
 
     public function getDriveItemPublicLink(Request $request, string $driveItemId)
     {
-        $sharepointService = new SharepointGraphService;
+        $sharepointService = new SharepointGraphService(driveId: config('filesystems.sharepoint.vusa_drive_id'));
 
         $permission = $sharepointService->getDriveItemPublicLink($driveItemId);
 
@@ -190,7 +190,7 @@ class SharepointFileController extends Controller
 
     public function createPublicPermission(Request $request, string $driveItemId)
     {
-        $sharepointService = new SharepointGraphService;
+        $sharepointService = new SharepointGraphService(driveId: config('filesystems.sharepoint.vusa_drive_id'));
 
         $permission = $sharepointService->createPublicPermission(
             siteId: $sharepointService->siteId, driveItemId: $driveItemId);

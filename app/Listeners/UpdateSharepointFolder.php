@@ -52,7 +52,7 @@ class UpdateSharepointFolder implements ShouldQueue
             return;
         }
 
-        $sharepointGraph = new \App\Services\SharepointGraphService;
+        $sharepointGraph = new \App\Services\SharepointGraphService(driveId: config('filesystems.sharepoint.vusa_drive_id'));
 
         // TODO: right now is failing
         try {

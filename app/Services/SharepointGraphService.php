@@ -76,6 +76,7 @@ class SharepointGraphService
 
     private function getDrive(): Models\Drive
     {
+        // This doesn't work for sharepoint archive folder
         $drive = $this->graph->sites()->bySiteId($this->siteId)->drive()->get()->wait();
 
         return $drive;
@@ -326,14 +327,20 @@ class SharepointGraphService
     /**
      * [TODO:description]
      *
-     * @param Collection<Document> documentColection
+     * @param Collection<Document> documentCollection
      */
-    public function batchProcessDocuments(EloquentCollection $documentColection)
+    public function batchProcessDocuments(EloquentCollection $documentCollection)
     {
+
         // filter by documents that don't exist
-        $documentColection = $documentColection->filter(function (Document $document) {
+        $documentColection = $documentCollection->filter(function (Document $document) {
             return Document::query()->where('sharepoint_id', $document->sharepoint_id)->doesntExist();
         });
+
+        // If no documents to process, return
+        if ($documentColection->isEmpty()) {
+            return $documentColection;
+        }
 
         // First, get the drive item and associated data
         $batch = new BatchRequestContent(

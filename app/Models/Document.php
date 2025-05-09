@@ -58,7 +58,7 @@ class Document extends Model
         $contentField = 'Turinys'; // Content Type
         $institutionField = 'Padalinys'; // Entity
 
-        $graph = new SharepointGraphService(siteId: $this->sharepoint_site_id, driveId: null, listId: $this->sharepoint_list_id);
+        $graph = new SharepointGraphService(siteId: $this->sharepoint_site_id, driveId: config('filesystems.sharepoint.archive_drive_id'), listId: $this->sharepoint_list_id);
 
         $additionalData = $graph->getListItem($this->sharepoint_site_id, $this->sharepoint_list_id, $this->sharepoint_id)->getAdditionalData();
 
