@@ -85,7 +85,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
-import { router } from "@inertiajs/vue3";
+import { router, usePage } from "@inertiajs/vue3";
 import { useFetch, useStorage } from "@vueuse/core";
 
 import File from "~icons/mdi/file";
@@ -150,6 +150,12 @@ const createPublicPermission = async () => {
 
   let { data, isFinished } = await useFetch(
     route("sharepoint.createPublicPermission", props.file?.id),
+    {
+    headers: {
+      "X-CSRF-TOKEN": usePage().props.csrf_token,
+      "Content-Type": "application/json",
+    }
+    }
   ).post().json();
 
   loadingPublicPermission.value = !isFinished;
