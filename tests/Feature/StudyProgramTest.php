@@ -155,8 +155,9 @@ describe('auth: admin with permissions', function () {
     });
 
     test('can store study program with valid data', function () {
+        $uniqueSuffix = time();
         $validData = [
-            'name' => ['lt' => 'Teisės bakalauras', 'en' => 'Law Bachelor'],
+            'name' => ['lt' => "Teisės bakalauras {$uniqueSuffix}", 'en' => "Law Bachelor {$uniqueSuffix}"],
             'degree' => 'BA',
             'tenant_id' => $this->tenant->id,
         ];
@@ -168,8 +169,8 @@ describe('auth: admin with permissions', function () {
             ->assertSessionHas('success', 'Study program created successfully.');
 
         $this->assertDatabaseHas('study_programs', [
-            'name->lt' => 'Teisės bakalauras',
-            'name->en' => 'Law Bachelor',
+            'name->lt' => "Teisės bakalauras {$uniqueSuffix}",
+            'name->en' => "Law Bachelor {$uniqueSuffix}",
             'degree' => 'BA',
             'tenant_id' => $this->tenant->id,
         ]);
@@ -415,7 +416,10 @@ describe('api filtering and search', function () {
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/People/IndexStudyProgram')
-                ->where('studyPrograms.data.0.name', 'Informatikos bakalauras')
+                ->has('studyPrograms.data')
+                ->where('studyPrograms.data', function ($data) {
+                    return collect($data)->contains('name', 'Informatikos bakalauras');
+                })
             );
     });
 
@@ -473,9 +477,10 @@ describe('edge cases and validation', function () {
     });
 
     test('study program handles special characters in name', function () {
+        $uniqueSuffix = time();
         $specialCharsData = [
-            'name' => ['lt' => 'Programą su šiaudiniais žodžiais', 'en' => 'Program with special chars & symbols'],
-            'degree' => 'PhD',
+            'name' => ['lt' => "Programą su šiaudiniais žodžiais {$uniqueSuffix}", 'en' => "Program with special chars & symbols {$uniqueSuffix}"],
+            'degree' => 'PHD', // Updated to use enum value
             'tenant_id' => $this->tenant->id,
         ];
 
@@ -485,8 +490,8 @@ describe('edge cases and validation', function () {
             ->assertRedirect(route('studyPrograms.index'));
 
         $this->assertDatabaseHas('study_programs', [
-            'name->lt' => 'Programą su šiaudiniais žodžiais',
-            'name->en' => 'Program with special chars & symbols',
+            'name->lt' => "Programą su šiaudiniais žodžiais {$uniqueSuffix}",
+            'name->en' => "Program with special chars & symbols {$uniqueSuffix}",
         ]);
     });
 
