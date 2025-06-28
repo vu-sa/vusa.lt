@@ -1,5 +1,5 @@
 import { beforeAll, vi } from 'vitest';
-import { setProjectAnnotations } from '@storybook/vue3';
+import { setProjectAnnotations } from '@storybook/vue3-vite';
 import * as a11yAddonAnnotations from "@storybook/addon-a11y/preview";
 import * as projectAnnotations from './preview';
 
@@ -16,8 +16,8 @@ if (typeof window !== 'undefined') {
 }
 
 // Add global mock for stories
-vi.mock('@storybook/test', async () => {
-  const actual = await vi.importActual('@storybook/test');
+vi.mock('storybook/test', async () => {
+  const actual = await vi.importActual('storybook/test');
   return {
     ...actual,
     userEvent: {

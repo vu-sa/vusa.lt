@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/vue3';
+import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import SuggestionAlert from './SuggestionAlert.vue';
 
 // Import the mock for laravel-vue-i18n
