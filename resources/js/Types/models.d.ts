@@ -873,6 +873,9 @@ declare global {
       updated_at: string
       // mutators
       translations: unknown
+      // relations
+      tenant?: Tenant
+      dutiables?: Dutiable[]
     }
 
     export interface Tag {
