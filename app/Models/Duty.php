@@ -56,7 +56,7 @@ class Duty extends Model implements AuthorizableContract
     {
         return $this->morphedByMany(User::class, 'dutiable')
             ->using(Dutiable::class)
-            ->withPivot(['start_date', 'end_date', 'additional_photo', 'additional_email', 'use_original_duty_name', 'description']);
+            ->withPivot(['id', 'start_date', 'end_date', 'additional_photo', 'additional_email', 'use_original_duty_name', 'description', 'study_program_id']);
     }
 
     // TODO: use current_duties as an example for current_users

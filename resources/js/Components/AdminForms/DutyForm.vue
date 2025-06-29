@@ -80,7 +80,8 @@
       <NFormItem>
         <template #label>
           <div class="inline-flex items-center gap-2">
-            <strong>{{ $t("Nariai") }}</strong><a target="_blank" :href="route('users.create')">
+            <strong>{{ $t("Nariai") }}</strong>
+            <a target="_blank" :href="route('users.create')">
               <NButton text size="tiny">
                 <template #icon>
                   <IFluentAdd24Filled />
@@ -92,6 +93,37 @@
         <NTransfer ref="transfer" v-model:value="form.current_users" virtual-scroll :options="userOptions"
           :render-source-label="renderSourceLabel" :render-target-label="renderTargetLabel" source-filterable />
       </NFormItem>
+      
+      <!-- Current users with study programs display -->
+      <div v-if="duty.current_users && duty.current_users.length > 0" class="mt-4">
+        <div class="mb-3 text-sm font-medium text-gray-700 dark:text-gray-300">
+          Dabartiniai nariai:
+        </div>
+        <div class="space-y-2">
+          <div v-for="user in duty.current_users" :key="user.id"
+            class="flex items-center justify-between rounded-lg border border-gray-200 p-3 dark:border-gray-700">
+            <div class="flex items-center gap-3">
+              <UserAvatar :user="user" :size="32" />
+              <div>
+                <div class="font-medium">{{ user.name }}</div>
+                <div v-if="getUserStudyProgram(user)" class="text-sm text-gray-600 dark:text-gray-400">
+                  <NTag size="small" type="info">
+                    {{ getUserStudyProgram(user)?.name }} ({{ getUserStudyProgram(user)?.degree }})
+                  </NTag>
+                </div>
+              </div>
+            </div>
+            <a v-if="getUserDutiableId(user)" :href="route('dutiables.edit', { dutiable: getUserDutiableId(user) })" target="_blank">
+              <NButton size="tiny" text>
+                <template #icon>
+                  <IconEdit />
+                </template>
+                Redaguoti pareigybės laikotarpį
+              </NButton>
+            </a>
+          </div>
+        </div>
+      </div>
     </FormElement>
     <FormElement>
       <template #title>
@@ -161,8 +193,8 @@ defineEmits<{
 const locale = ref("lt");
 
 const form = props.rememberKey
-  ? useForm(props.rememberKey, props.duty)
-  : useForm(props.duty);
+  ? useForm(props.rememberKey, props.duty as any)
+  : useForm(props.duty as any);
 
 form.roles = props.duty.roles?.map((role) => role.id);
 form.types = props.duty.types?.map((type) => type.id);
@@ -184,6 +216,21 @@ const institutionsFromDatabase = props.assignableInstitutions.map((institution) 
   value: institution.id,
 }));
 
+// Helper functions for displaying study program information
+const getUserStudyProgram = (user: any) => {
+  // The dutiable data is in user.pivot based on the structure you provided
+  const dutiable = user.pivot;
+  return dutiable?.study_program;
+};
+
+const getUserDutiableId = (user: any) => {
+  // The dutiable data is in user.pivot, and now should include the 'id' field
+  const dutiable = user.pivot;
+  
+  // Now we should have the actual dutiable record ID
+  return dutiable?.id || null;
+};
+
 const renderSourceLabel: TransferRenderSourceLabel = ({ option }) => {
   return (
     <div class="flex items-center gap-2">
@@ -200,7 +247,7 @@ const renderSourceLabel: TransferRenderSourceLabel = ({ option }) => {
 const renderTargetLabel: TransferRenderTargetLabel = ({ option }) => {
   return (
     <div class="flex items-center gap-2">
-      <UserAvatar size={24} user={option.user}></UserAvatar>
+      <UserAvatar size={24} user={(option as any).user}></UserAvatar>
       <span class="inline-flex gap-2">
         {option.label}
 
