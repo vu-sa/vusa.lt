@@ -349,15 +349,15 @@ test('can leave feedback', function () {
 test('duty type contacts page with grouping shows grouped sections', function () {
     // Find or create the central institution that's used by duty type contacts
     $institution = Institution::where('alias', 'centrinis-biuras')->first();
-    if (!$institution) {
+    if (! $institution) {
         $institution = Institution::factory()->create(['alias' => 'centrinis-biuras']);
     }
-    
+
     $tenant = \App\Models\Tenant::factory()->create();
-    
+
     // Create or find a type for the duty (e.g., koordinatoriai)
     $type = \App\Models\Type::where('slug', 'koordinatoriai')->first();
-    if (!$type) {
+    if (! $type) {
         $type = \App\Models\Type::factory()->create([
             'slug' => 'koordinatoriai',
             'title' => ['lt' => 'Koordinatoriai', 'en' => 'Coordinators'],
@@ -372,7 +372,7 @@ test('duty type contacts page with grouping shows grouped sections', function ()
     ]);
 
     $studyProgram2 = \App\Models\StudyProgram::factory()->create([
-        'name' => 'Mathematics', 
+        'name' => 'Mathematics',
         'tenant_id' => $tenant->id,
     ]);
 
@@ -382,7 +382,7 @@ test('duty type contacts page with grouping shows grouped sections', function ()
         'contacts_grouping' => 'study_program',
         'name' => ['lt' => 'Fakulteto koordinatoriai', 'en' => 'Faculty Coordinators'],
     ]);
-    
+
     // Attach the type to the duty
     $duty->types()->attach($type);
 
@@ -400,7 +400,7 @@ test('duty type contacts page with grouping shows grouped sections', function ()
         ->assertInertia(fn (Assert $page) => $page
             ->component('Public/Contacts/ContactInstitutionOrType')
             ->has('institution')
-            ->missing('contacts') // No flat contacts 
+            ->missing('contacts') // No flat contacts
             ->has('contactSections') // Has contact sections
             ->where('hasMixedGrouping', true)
         );
@@ -409,13 +409,13 @@ test('duty type contacts page with grouping shows grouped sections', function ()
 test('duty type contacts page handles both grouped and flat duties correctly', function () {
     // Find or create the central institution that's used by duty type contacts
     $institution = Institution::where('alias', 'centrinis-biuras')->first();
-    if (!$institution) {
+    if (! $institution) {
         $institution = Institution::factory()->create(['alias' => 'centrinis-biuras']);
     }
-    
+
     // Create or find a type for the duty (e.g., koordinatoriai)
     $type = \App\Models\Type::where('slug', 'koordinatoriai')->first();
-    if (!$type) {
+    if (! $type) {
         $type = \App\Models\Type::factory()->create([
             'slug' => 'koordinatoriai',
             'title' => ['lt' => 'Koordinatoriai', 'en' => 'Coordinators'],
@@ -430,7 +430,7 @@ test('duty type contacts page handles both grouped and flat duties correctly', f
         'name' => ['lt' => 'Bendri koordinatoriai', 'en' => 'General Coordinators'],
     ]);
     $flatDuty->types()->attach($type);
-    
+
     // Create user for flat duty
     $flatUser = \App\Models\User::factory()->create();
     $flatDuty->users()->attach($flatUser, ['start_date' => now()]);

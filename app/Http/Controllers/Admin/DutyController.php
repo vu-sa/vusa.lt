@@ -103,7 +103,7 @@ class DutyController extends Controller
         $this->authorize('update', $duty);
 
         $duty->load('institution', 'types', 'roles', 'current_users');
-        
+
         // Manually load study_program for each user's pivot
         foreach ($duty->current_users as $user) {
             if ($user->pivot && $user->pivot->study_program_id) {

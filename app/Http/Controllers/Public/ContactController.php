@@ -453,14 +453,14 @@ class ContactController extends PublicController
             if ($section['type'] === 'grouped_duty') {
                 // Check if this duty has any of the selected types
                 $dutyHasMatchingTypes = $section['duty']->types->intersect($types)->count() > 0;
-                
+
                 if ($dutyHasMatchingTypes) {
                     $filteredSections[] = $section;
                 }
             } else {
                 // For flat duties, check the same way
                 $dutyHasMatchingTypes = $section['duty']->types->intersect($types)->count() > 0;
-                
+
                 if ($dutyHasMatchingTypes) {
                     $filteredSections[] = $section;
                 }
