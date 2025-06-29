@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\Pivots\Dutiable;
 use App\Models\Traits\HasTranslations;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

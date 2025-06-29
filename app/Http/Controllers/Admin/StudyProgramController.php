@@ -6,15 +6,13 @@ use App\Actions\GetTenantsForUpserts;
 use App\Enums\DegreeEnum;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\IndexStudyProgramRequest;
+use App\Http\Requests\MergeStudyProgramsRequest;
 use App\Http\Requests\StoreStudyProgramRequest;
 use App\Http\Requests\UpdateStudyProgramRequest;
-use App\Http\Requests\MergeStudyProgramsRequest;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\StudyProgram;
-use App\Models\Tenant;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\TanstackTableService;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
@@ -35,7 +33,7 @@ class StudyProgramController extends Controller
         $query = StudyProgram::query()->with('tenant');
 
         // Apply simple filters
-        if ($request->has('degree') && !empty($request->degree)) {
+        if ($request->has('degree') && ! empty($request->degree)) {
             $query->where('degree', $request->degree);
         }
 
@@ -141,7 +139,7 @@ class StudyProgramController extends Controller
 
         // Check if the study program is being used by any dutiables
         $dutiablesCount = \App\Models\Pivots\Dutiable::where('study_program_id', $studyProgram->id)->count();
-        
+
         if ($dutiablesCount > 0) {
             return back()->with('error', "Cannot delete study program. It is currently assigned to {$dutiablesCount} duty assignment(s).");
         }

@@ -25,7 +25,7 @@ class ContentPart extends Model
 
     // Add property for HTML content
     protected $appends = ['html'];
-    
+
     // Add a default value for html attribute
     protected $html = '';
 
@@ -33,13 +33,13 @@ class ContentPart extends Model
     {
         return $this->belongsTo(Content::class);
     }
-    
+
     // Add getter for html attribute
     public function getHtmlAttribute()
     {
         return $this->html ?? '';
     }
-    
+
     // Add setter for html attribute
     public function setHtmlAttribute($value)
     {

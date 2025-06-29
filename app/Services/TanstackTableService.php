@@ -125,7 +125,7 @@ class TanstackTableService
     protected function applyColumnSearch(Builder $query, string $column, string $searchText, string $boolean = 'and'): void
     {
         $model = $query->getModel();
-        
+
         // Check if this is a translatable field
         if (method_exists($model, 'isTranslatableAttribute') && $model->isTranslatableAttribute($column)) {
             // Handle translatable (JSON) columns - search both lt and en
@@ -146,7 +146,7 @@ class TanstackTableService
     {
         $connection = $query->getConnection();
         $driver = $connection->getDriverName();
-        
+
         if ($driver === 'sqlite') {
             // SQLite uses json_extract without JSON_UNQUOTE
             $query->whereRaw("LOWER(json_extract({$column}, '$.{$locale}')) LIKE LOWER(?)", ["%{$searchText}%"], $boolean);

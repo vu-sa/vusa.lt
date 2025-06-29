@@ -58,7 +58,7 @@ class ContactController extends PublicController
         // Process duties in order and group/flatten as needed
         $allContacts = collect();
         $hasGroupedDuties = false;
-        
+
         foreach ($duties as $duty) {
             // Check if this duty should be grouped
             if ($duty->contacts_grouping && $duty->contacts_grouping !== 'none') {
@@ -66,9 +66,10 @@ class ContactController extends PublicController
                 break;
             }
         }
-        
+
         if ($hasGroupedDuties) {
             $processedContacts = $this->processDutiesWithGrouping($duties);
+
             return $this->showInstitutionWithMixedContacts($institution, $processedContacts, $institution->name.' | Kontaktai');
         }
 
@@ -230,13 +231,13 @@ class ContactController extends PublicController
     private function processDutiesWithGrouping($duties): array
     {
         $result = [];
-        
+
         foreach ($duties as $duty) {
             if ($duty->contacts_grouping && $duty->contacts_grouping !== 'none') {
                 // This duty needs grouping - collect all groups for this duty
                 $groups = $this->groupContactsByDuty($duty, $duty->contacts_grouping);
-                
-                if (!empty($groups)) {
+
+                if (! empty($groups)) {
                     $transformedGroups = [];
                     foreach ($groups as $groupName => $contacts) {
                         $transformedGroups[] = [
@@ -244,7 +245,7 @@ class ContactController extends PublicController
                             'contacts' => $contacts,
                         ];
                     }
-                    
+
                     $result[] = [
                         'type' => 'grouped_duty',
                         'dutyName' => $duty->name,
@@ -260,8 +261,8 @@ class ContactController extends PublicController
                         'duty' => $duty,
                     ];
                 })->toArray();
-                
-                if (!empty($contacts)) {
+
+                if (! empty($contacts)) {
                     $result[] = [
                         'type' => 'flat_duty',
                         'dutyName' => $duty->name,
@@ -271,54 +272,61 @@ class ContactController extends PublicController
                 }
             }
         }
-        
+
         return $result;
     }
-    
+
     /**
      * Group contacts for a single duty by study program or tenant
      */
     private function groupContactsByDuty($duty, string $groupingType): array
     {
         $groups = [];
-        
+
         // Load current users with their dutiables and study programs
         $users = $duty->current_users->load([
             'dutiables' => function ($query) use ($duty) {
                 $query->where('duty_id', $duty->id)
-                      ->with(['study_program.tenant']);
-            }
+                    ->with(['study_program.tenant']);
+            },
         ]);
-        
+
         foreach ($users as $user) {
             // Find the dutiable for this specific duty
             $dutiable = $user->dutiables->where('duty_id', $duty->id)->first();
-            
-            if (!$dutiable) continue;
-            
+
+            if (! $dutiable) {
+                continue;
+            }
+
             $groupKey = $this->getGroupKey($dutiable, $groupingType);
-            
-            if (!isset($groups[$groupKey])) {
+
+            if (! isset($groups[$groupKey])) {
                 $groups[$groupKey] = [];
             }
-            
+
             $groups[$groupKey][] = [
                 'user' => $user,
                 'duty' => $duty,
                 'dutiable' => $dutiable,
             ];
         }
-        
+
         // Sort groups: named groups first (alphabetically), then "Other"
         uksort($groups, function ($a, $b) {
-            if ($a === 'Other') return 1;
-            if ($b === 'Other') return -1;
+            if ($a === 'Other') {
+                return 1;
+            }
+            if ($b === 'Other') {
+                return -1;
+            }
+
             return strcmp($a, $b);
         });
-        
+
         return $groups;
     }
-    
+
     /**
      * Get the group key based on grouping type
      */
@@ -327,17 +335,17 @@ class ContactController extends PublicController
         switch ($groupingType) {
             case 'study_program':
                 return $dutiable->study_program ? $dutiable->study_program->name : 'Other';
-                
+
             case 'tenant':
-                return $dutiable->study_program && $dutiable->study_program->tenant 
-                    ? $dutiable->study_program->tenant->shortname 
+                return $dutiable->study_program && $dutiable->study_program->tenant
+                    ? $dutiable->study_program->tenant->shortname
                     : 'Other';
-                    
+
             default:
                 return 'Other';
         }
     }
-    
+
     /**
      * Show institution with mixed grouped and flat contacts
      */
@@ -348,7 +356,7 @@ class ContactController extends PublicController
             description: Str::limit(strip_tags($institution->description), 160),
             image: $institution->image_url,
         );
-        
+
         // Transform processed contacts for frontend
         $transformedSections = [];
         foreach ($processedContacts as $section) {
@@ -373,7 +381,7 @@ class ContactController extends PublicController
                         })->values()->toArray(),
                     ];
                 }
-                
+
                 $transformedSections[] = [
                     'type' => 'grouped_duty',
                     'dutyName' => $section['duty']->name, // Use the duty model directly for translation

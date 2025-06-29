@@ -25,11 +25,11 @@ class DutiableFactory extends Factory
         // 60% chance to get a study program
         $shouldHaveStudyProgram = $this->faker->boolean(60);
         $studyProgramId = null;
-        
+
         if ($shouldHaveStudyProgram) {
             $studyProgramId = StudyProgram::inRandomOrder()->value('id');
             // If no study programs exist, create one
-            if (!$studyProgramId) {
+            if (! $studyProgramId) {
                 $studyProgramId = StudyProgram::factory()->create()->id;
             }
         }
@@ -80,7 +80,7 @@ class DutiableFactory extends Factory
     /**
      * Create a dutiable with a specific study program.
      */
-    public function withStudyProgram(StudyProgram $studyProgram = null)
+    public function withStudyProgram(?StudyProgram $studyProgram = null)
     {
         return $this->state(function (array $attributes) use ($studyProgram) {
             return [
@@ -124,6 +124,7 @@ class DutiableFactory extends Factory
     {
         return $this->state(function (array $attributes) {
             $startDate = $this->faker->dateTimeBetween('-2 years', '-6 months');
+
             return [
                 'start_date' => $startDate,
                 'end_date' => $this->faker->dateTimeBetween($startDate, 'now'),
