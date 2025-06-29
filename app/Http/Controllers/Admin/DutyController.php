@@ -128,12 +128,13 @@ class DutyController extends Controller
             'current_users' => 'nullable|array',
             'institution_id' => 'required',
             'places_to_occupy' => 'required|numeric',
+            'contacts_grouping' => 'required|in:none,study_program,tenant',
             // array of integers
             'types' => 'nullable|array',
         ]);
 
         DB::transaction(function () use ($request, $duty) {
-            $duty->update($request->only('name', 'description', 'email', 'places_to_occupy'));
+            $duty->update($request->only('name', 'description', 'email', 'places_to_occupy', 'contacts_grouping'));
 
             $this->handleUsersUpdate(new Collection($duty->current_users->pluck('id')), new Collection($request->current_users), $duty);
 

@@ -174,6 +174,7 @@ declare global {
       order: number
       email?: string | null
       places_to_occupy?: number | null
+      contacts_grouping: string
       created_at: string
       updated_at: string
       deleted_at?: string | null
@@ -312,6 +313,7 @@ declare global {
       instagram_url?: string | null
       tenant_id?: number | null
       is_active: boolean
+      contacts_layout: string
       created_at: string
       updated_at: string
       deleted_at?: string | null

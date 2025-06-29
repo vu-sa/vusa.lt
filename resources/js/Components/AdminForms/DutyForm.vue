@@ -37,6 +37,14 @@
           <NInputNumber v-model:value="form.places_to_occupy" />
         </NFormItem>
       </div>
+      
+      <NFormItem label="Kontaktų grupavimas">
+        <NSelect v-model:value="form.contacts_grouping" :options="[
+          { value: 'none', label: 'Be grupavimo' },
+          { value: 'study_program', label: 'Pagal studijų programą' },
+          { value: 'tenant', label: 'Pagal padalinį' },
+        ]" placeholder="Pasirinkite grupavimo būdą" />
+      </NFormItem>
     </FormElement>
     <FormElement>
       <template #title>

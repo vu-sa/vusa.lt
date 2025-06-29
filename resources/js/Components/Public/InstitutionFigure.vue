@@ -22,7 +22,7 @@
           <div>
             <div class="flex items-center gap-6">
               <h2
-                class="mb-1 w-fit text-2xl font-bold leading-6 text-zinc-800 transition-colors hover:text-vusa-red dark:text-zinc-100 xl:text-3xl xl:leading-7">
+                class="mb-1 mt-0 w-fit text-2xl font-bold leading-6 text-zinc-800 transition-colors hover:text-vusa-red dark:text-zinc-100 xl:text-3xl xl:leading-7">
                 {{ institution.name }}
               </h2>
               <div class="flex gap-2">
@@ -78,7 +78,7 @@
         <Collapsible v-if="isMobile" v-model:open="isDescriptionOpen">
           <CollapsibleTrigger>
             <div class="flex items-center gap-4">
-              <h2 class="mb-0 underline">
+              <h2 class="mb-0 mt-0 underline">
                 {{ $t('forms.fields.description') }}
               </h2>
               <NButton size="tiny" circle tertiary>

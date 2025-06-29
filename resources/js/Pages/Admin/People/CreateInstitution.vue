@@ -27,8 +27,9 @@ const institution = {
   alias: "",
   image_url: null,
   logo_url: null,
-  is_active: 1,
+  is_active: true,
+  contacts_layout: "aside",
   tenant_id: null,
   types: null,
-};
+} as any;
 </script>
