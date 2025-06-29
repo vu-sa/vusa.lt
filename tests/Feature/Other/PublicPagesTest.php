@@ -96,24 +96,24 @@ test('can open representation padaliniai category', function () {
 // Contact grouping tests
 test('institution page with no grouping shows flat contacts', function () {
     $institution = Institution::factory()->create();
-    
+
     // Create duties with no grouping (default)
     $duty1 = \App\Models\Duty::factory()->create([
         'institution_id' => $institution->id,
         'contacts_grouping' => 'none',
         'name' => ['lt' => 'Pirmininkas', 'en' => 'President'],
     ]);
-    
+
     $duty2 = \App\Models\Duty::factory()->create([
-        'institution_id' => $institution->id, 
+        'institution_id' => $institution->id,
         'contacts_grouping' => 'none',
         'name' => ['lt' => 'Vicepirmininkas', 'en' => 'Vice President'],
     ]);
-    
+
     // Create users for duties
     $user1 = \App\Models\User::factory()->create();
     $user2 = \App\Models\User::factory()->create();
-    
+
     $duty1->users()->attach($user1, ['start_date' => now()]);
     $duty2->users()->attach($user2, ['start_date' => now()]);
 
@@ -130,30 +130,30 @@ test('institution page with no grouping shows flat contacts', function () {
 test('institution page with study program grouping shows grouped sections', function () {
     $institution = Institution::factory()->create();
     $tenant = \App\Models\Tenant::factory()->create();
-    
+
     // Create study programs
     $studyProgram1 = \App\Models\StudyProgram::factory()->create([
         'name' => 'Computer Science',
         'tenant_id' => $tenant->id,
     ]);
-    
+
     $studyProgram2 = \App\Models\StudyProgram::factory()->create([
-        'name' => 'Mathematics', 
+        'name' => 'Mathematics',
         'tenant_id' => $tenant->id,
     ]);
-    
+
     // Create duty with study program grouping
     $duty = \App\Models\Duty::factory()->create([
         'institution_id' => $institution->id,
         'contacts_grouping' => 'study_program',
         'name' => ['lt' => 'Studentų atstovai', 'en' => 'Student Representatives'],
     ]);
-    
+
     // Create users
     $user1 = \App\Models\User::factory()->create();
-    $user2 = \App\Models\User::factory()->create(); 
+    $user2 = \App\Models\User::factory()->create();
     $user3 = \App\Models\User::factory()->create();
-    
+
     // Attach users to duty with study programs
     $duty->users()->attach($user1, ['study_program_id' => $studyProgram1->id, 'start_date' => now()]);
     $duty->users()->attach($user2, ['study_program_id' => $studyProgram1->id, 'start_date' => now()]);
@@ -178,33 +178,33 @@ test('institution page with study program grouping shows grouped sections', func
 
 test('institution page with tenant grouping shows grouped sections', function () {
     $institution = Institution::factory()->create();
-    
+
     // Create tenants
     $tenant1 = \App\Models\Tenant::factory()->create(['shortname' => 'VU CHGF']);
     $tenant2 = \App\Models\Tenant::factory()->create(['shortname' => 'VU MIF']);
-    
+
     // Create study programs under different tenants
     $studyProgram1 = \App\Models\StudyProgram::factory()->create([
         'name' => 'History',
         'tenant_id' => $tenant1->id,
     ]);
-    
+
     $studyProgram2 = \App\Models\StudyProgram::factory()->create([
         'name' => 'Computer Science',
         'tenant_id' => $tenant2->id,
     ]);
-    
+
     // Create duty with tenant grouping
     $duty = \App\Models\Duty::factory()->create([
         'institution_id' => $institution->id,
         'contacts_grouping' => 'tenant',
         'name' => ['lt' => 'Dekano atstovai', 'en' => 'Dean Representatives'],
     ]);
-    
+
     // Create users
     $user1 = \App\Models\User::factory()->create();
     $user2 = \App\Models\User::factory()->create();
-    
+
     // Attach users to duty with study programs from different tenants
     $duty->users()->attach($user1, ['study_program_id' => $studyProgram1->id, 'start_date' => now()]);
     $duty->users()->attach($user2, ['study_program_id' => $studyProgram2->id, 'start_date' => now()]);
@@ -229,11 +229,11 @@ test('institution page with tenant grouping shows grouped sections', function ()
 test('institution page with mixed grouping shows both flat and grouped duties', function () {
     $institution = Institution::factory()->create();
     $tenant = \App\Models\Tenant::factory()->create();
-    
+
     $studyProgram = \App\Models\StudyProgram::factory()->create([
         'tenant_id' => $tenant->id,
     ]);
-    
+
     // Create flat duty (no grouping)
     $flatDuty = \App\Models\Duty::factory()->create([
         'institution_id' => $institution->id,
@@ -241,20 +241,20 @@ test('institution page with mixed grouping shows both flat and grouped duties', 
         'name' => ['lt' => 'Pirmininkas', 'en' => 'President'],
         'order' => 1,
     ]);
-    
-    // Create grouped duty 
+
+    // Create grouped duty
     $groupedDuty = \App\Models\Duty::factory()->create([
         'institution_id' => $institution->id,
         'contacts_grouping' => 'study_program',
         'name' => ['lt' => 'Studentų atstovai', 'en' => 'Student Representatives'],
         'order' => 2,
     ]);
-    
+
     // Create users
     $user1 = \App\Models\User::factory()->create();
     $user2 = \App\Models\User::factory()->create();
     $user3 = \App\Models\User::factory()->create();
-    
+
     // Attach users
     $flatDuty->users()->attach($user1, ['start_date' => now()]);
     $groupedDuty->users()->attach($user2, ['study_program_id' => $studyProgram->id, 'start_date' => now()]);
@@ -274,7 +274,7 @@ test('institution page with mixed grouping shows both flat and grouped duties', 
                 ->missing('groups')
             )
             ->has('contactSections.1', fn (Assert $page) => $page
-                ->where('type', 'grouped_duty') 
+                ->where('type', 'grouped_duty')
                 ->where('dutyName', 'Studentų atstovai')
                 ->has('groups', 1) // One study program group
                 ->has('groups.0.contacts', 2)
@@ -286,33 +286,33 @@ test('institution page with mixed grouping shows both flat and grouped duties', 
 test('duty grouping respects duty order within institution', function () {
     $institution = Institution::factory()->create();
     $tenant = \App\Models\Tenant::factory()->create();
-    
+
     $studyProgram = \App\Models\StudyProgram::factory()->create([
         'tenant_id' => $tenant->id,
     ]);
-    
+
     // Create duties with specific order - mix of grouped and flat to trigger contactSections
     $duty3 = \App\Models\Duty::factory()->create([
         'institution_id' => $institution->id,
-        'contacts_grouping' => 'none', 
+        'contacts_grouping' => 'none',
         'name' => ['lt' => 'Trečias', 'en' => 'Third'],
         'order' => 3,
     ]);
-    
+
     $duty1 = \App\Models\Duty::factory()->create([
         'institution_id' => $institution->id,
         'contacts_grouping' => 'study_program', // Make this one grouped
-        'name' => ['lt' => 'Pirmas', 'en' => 'First'], 
+        'name' => ['lt' => 'Pirmas', 'en' => 'First'],
         'order' => 1,
     ]);
-    
+
     $duty2 = \App\Models\Duty::factory()->create([
         'institution_id' => $institution->id,
         'contacts_grouping' => 'none',
         'name' => ['lt' => 'Antras', 'en' => 'Second'],
         'order' => 2,
     ]);
-    
+
     // Create users for duties
     $duty1->users()->attach(\App\Models\User::factory()->create(), ['study_program_id' => $studyProgram->id, 'start_date' => now()]);
     $duty2->users()->attach(\App\Models\User::factory()->create(), ['start_date' => now()]);
@@ -324,7 +324,7 @@ test('duty grouping respects duty order within institution', function () {
             ->has('contactSections', 3)
             ->where('hasMixedGrouping', true)
             ->where('contactSections.0.dutyName', 'Pirmas') // First by order
-            ->where('contactSections.1.dutyName', 'Antras') // Second by order  
+            ->where('contactSections.1.dutyName', 'Antras') // Second by order
             ->where('contactSections.2.dutyName', 'Trečias') // Third by order
         );
 });

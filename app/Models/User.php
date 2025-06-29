@@ -106,7 +106,7 @@ class User extends Authenticatable
      */
     public function getHasPasswordAttribute()
     {
-        return !empty($this->getAttributeValue('password'));
+        return ! empty($this->getAttributeValue('password'));
     }
 
     /**

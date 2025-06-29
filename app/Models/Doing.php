@@ -34,20 +34,19 @@ class Doing extends Model implements Decidable
     /**
      * Authorize an action against the model
      *
-     * @param string $ability The ability to check
-     * @param array $arguments Additional arguments
-     * @return bool
+     * @param  string  $ability  The ability to check
+     * @param  array  $arguments  Additional arguments
      */
     protected function authorize(string $ability, array $arguments = []): bool
     {
         // If authorizer is explicitly passed, use it
         $authorizer = $arguments[2] ?? app(ModelAuthorizer::class);
-        
+
         // Check authorization for this model and ability
-        if (!$authorizer->forUser(auth()->user())->check($this->modelName.'.'.$ability.'.own')) {
+        if (! $authorizer->forUser(auth()->user())->check($this->modelName.'.'.$ability.'.own')) {
             abort(403, 'Neturite teisių atlikti šį veiksmą.');
         }
-        
+
         return true;
     }
 

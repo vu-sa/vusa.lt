@@ -3,7 +3,6 @@
 namespace App\Http\Requests;
 
 use App\Enums\DegreeEnum;
-use App\Models\StudyProgram;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateStudyProgramRequest extends FormRequest
@@ -24,9 +23,9 @@ class UpdateStudyProgramRequest extends FormRequest
     public function rules(): array
     {
         $studyProgramId = $this->route('studyProgram')->id;
-        
+
         return [
-            'name.lt' => 'required|string|max:255|unique:study_programs,name->lt,' . $studyProgramId,
+            'name.lt' => 'required|string|max:255|unique:study_programs,name->lt,'.$studyProgramId,
             'name.en' => 'nullable|string|max:255',
             'degree' => ['required', 'string', DegreeEnum::getValidationRule()],
             'tenant_id' => 'required|exists:tenants,id',

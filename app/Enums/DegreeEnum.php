@@ -48,6 +48,6 @@ final class DegreeEnum extends Enum
      */
     public static function getValidationRule(): string
     {
-        return 'in:' . implode(',', self::toValues());
+        return 'in:'.implode(',', self::toValues());
     }
 }

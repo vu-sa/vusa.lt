@@ -38,7 +38,7 @@ class Matter extends Model
     {
         return $this->belongsToMany(Institution::class, 'institutions_matters', 'matter_id', 'institution_id');
     }
-    
+
     /**
      * Get the primary institution associated with this matter
      * This is a convenience method that returns the first related institution

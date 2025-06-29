@@ -3,7 +3,6 @@
 namespace Database\Factories;
 
 use App\Enums\DegreeEnum;
-use App\Models\StudyProgram;
 use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -34,7 +33,7 @@ class StudyProgramFactory extends Factory
 
         // Use DegreeEnum for consistent degree values
         $degree = $this->faker->randomElement(DegreeEnum::toValues());
-        
+
         $degreeTranslations = [
             DegreeEnum::BA()->value => 'bakalauras',
             DegreeEnum::MA()->value => 'magistras',
@@ -50,7 +49,7 @@ class StudyProgramFactory extends Factory
         return [
             'name' => [
                 'lt' => "{$programName} {$degreeTranslation}",
-                'en' => $this->faker->words(2, true) . ' ' . $degree,
+                'en' => $this->faker->words(2, true).' '.$degree,
             ],
             'degree' => $degree,
             'tenant_id' => Tenant::factory(),
@@ -73,16 +72,16 @@ class StudyProgramFactory extends Factory
 
         return $this->state(function (array $attributes) use ($degree, $degreeTranslations) {
             $programName = $this->faker->randomElement([
-                'Informatikos', 'Matematikos', 'Fizikos', 'Teisės'
+                'Informatikos', 'Matematikos', 'Fizikos', 'Teisės',
             ]);
-            
+
             $degreeTranslation = $degreeTranslations[$degree] ?? $degree;
-            
+
             return [
                 'degree' => $degree,
                 'name' => [
                     'lt' => "{$programName} {$degreeTranslation}",
-                    'en' => $this->faker->words(2, true) . ' ' . $degree,
+                    'en' => $this->faker->words(2, true).' '.$degree,
                 ],
             ];
         });

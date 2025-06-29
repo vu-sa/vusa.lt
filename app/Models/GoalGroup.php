@@ -25,7 +25,7 @@ class GoalGroup extends Model
     {
         return $this->hasMany(Goal::class);
     }
-    
+
     /**
      * Get the matters associated with the goal group through goals
      */

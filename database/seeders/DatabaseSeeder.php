@@ -57,7 +57,7 @@ class DatabaseSeeder extends Seeder
             ->withType()
             ->recycle(Tenant::where('alias', 'vusa')->get())
             ->has(Duty::factory(10)->withType()->hasAttached(
-                User::factory()->recycle($studyPrograms), 
+                User::factory()->recycle($studyPrograms),
                 ['start_date' => now()->subDay()]
             ))
             ->create();

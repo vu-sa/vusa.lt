@@ -1,9 +1,9 @@
 <?php
 
+use App\Models\Pivots\Dutiable;
 use App\Models\StudyProgram;
 use App\Models\Tenant;
 use App\Models\User;
-use App\Models\Pivots\Dutiable;
 use Inertia\Testing\AssertableInertia as Assert;
 
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
@@ -11,10 +11,10 @@ uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 beforeEach(function () {
     $this->tenant = Tenant::query()->inRandomOrder()->first();
     $this->otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->first();
-    
+
     $this->user = makeUser($this->tenant);
     $this->admin = makeStudyProgramAdmin($this->tenant);
-    
+
     $this->studyProgram = StudyProgram::factory()->create([
         'tenant_id' => $this->tenant->id,
         'name' => ['lt' => 'Informatikos bakalauras', 'en' => 'Computer Science Bachelor'],
@@ -26,6 +26,7 @@ function makeStudyProgramAdmin($tenant): User
 {
     $user = makeUser($tenant);
     $user->duties()->first()->assignRole('Communication Coordinator');
+
     return $user;
 }
 
@@ -369,9 +370,9 @@ describe('model relationships and factories', function () {
 
     test('study program can have dutiables', function () {
         $dutiable = Dutiable::factory()->create(['study_program_id' => $this->studyProgram->id]);
-        
+
         $this->studyProgram->refresh();
-        
+
         expect($this->studyProgram->dutiables)->toHaveCount(1);
         expect($this->studyProgram->dutiables->first()->id)->toBe($dutiable->id);
     });
@@ -386,7 +387,7 @@ describe('model relationships and factories', function () {
 
     test('study program factory creates valid data', function () {
         $studyProgram = StudyProgram::factory()->create();
-        
+
         expect($studyProgram->getTranslations('name'))->toBeArray();
         expect($studyProgram->degree)->toBeString();
         expect($studyProgram->tenant_id)->toBeInt();
