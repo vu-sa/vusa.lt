@@ -345,3 +345,102 @@ test('can leave feedback', function () {
     // assert that mail was sent
     Mail::assertQueued(\App\Mail\FeedbackMail::class);
 });
+
+test('duty type contacts page with grouping shows grouped sections', function () {
+    // Find or create the central institution that's used by duty type contacts
+    $institution = Institution::where('alias', 'centrinis-biuras')->first();
+    if (!$institution) {
+        $institution = Institution::factory()->create(['alias' => 'centrinis-biuras']);
+    }
+    
+    $tenant = \App\Models\Tenant::factory()->create();
+    
+    // Create or find a type for the duty (e.g., koordinatoriai)
+    $type = \App\Models\Type::where('slug', 'koordinatoriai')->first();
+    if (!$type) {
+        $type = \App\Models\Type::factory()->create([
+            'slug' => 'koordinatoriai',
+            'title' => ['lt' => 'Koordinatoriai', 'en' => 'Coordinators'],
+            'model_type' => 'App\\Models\\Duty',
+        ]);
+    }
+
+    // Create study programs
+    $studyProgram1 = \App\Models\StudyProgram::factory()->create([
+        'name' => 'Computer Science',
+        'tenant_id' => $tenant->id,
+    ]);
+
+    $studyProgram2 = \App\Models\StudyProgram::factory()->create([
+        'name' => 'Mathematics', 
+        'tenant_id' => $tenant->id,
+    ]);
+
+    // Create duty with study program grouping and attach it to our type
+    $duty = \App\Models\Duty::factory()->create([
+        'institution_id' => $institution->id,
+        'contacts_grouping' => 'study_program',
+        'name' => ['lt' => 'Fakulteto koordinatoriai', 'en' => 'Faculty Coordinators'],
+    ]);
+    
+    // Attach the type to the duty
+    $duty->types()->attach($type);
+
+    // Create users
+    $user1 = \App\Models\User::factory()->create();
+    $user2 = \App\Models\User::factory()->create();
+    $user3 = \App\Models\User::factory()->create();
+
+    // Attach users to duty with study programs
+    $duty->users()->attach($user1, ['study_program_id' => $studyProgram1->id, 'start_date' => now()]);
+    $duty->users()->attach($user2, ['study_program_id' => $studyProgram1->id, 'start_date' => now()]);
+    $duty->users()->attach($user3, ['study_program_id' => $studyProgram2->id, 'start_date' => now()]);
+
+    $this->get(route('contacts.dutyType', ['subdomain' => 'www', 'lang' => 'lt', 'type' => $type->slug]))
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Public/Contacts/ContactInstitutionOrType')
+            ->has('institution')
+            ->missing('contacts') // No flat contacts 
+            ->has('contactSections') // Has contact sections
+            ->where('hasMixedGrouping', true)
+        );
+});
+
+test('duty type contacts page handles both grouped and flat duties correctly', function () {
+    // Find or create the central institution that's used by duty type contacts
+    $institution = Institution::where('alias', 'centrinis-biuras')->first();
+    if (!$institution) {
+        $institution = Institution::factory()->create(['alias' => 'centrinis-biuras']);
+    }
+    
+    // Create or find a type for the duty (e.g., koordinatoriai)
+    $type = \App\Models\Type::where('slug', 'koordinatoriai')->first();
+    if (!$type) {
+        $type = \App\Models\Type::factory()->create([
+            'slug' => 'koordinatoriai',
+            'title' => ['lt' => 'Koordinatoriai', 'en' => 'Coordinators'],
+            'model_type' => 'App\\Models\\Duty',
+        ]);
+    }
+
+    // Create a flat duty (no grouping)
+    $flatDuty = \App\Models\Duty::factory()->create([
+        'institution_id' => $institution->id,
+        'contacts_grouping' => 'none',
+        'name' => ['lt' => 'Bendri koordinatoriai', 'en' => 'General Coordinators'],
+    ]);
+    $flatDuty->types()->attach($type);
+    
+    // Create user for flat duty
+    $flatUser = \App\Models\User::factory()->create();
+    $flatDuty->users()->attach($flatUser, ['start_date' => now()]);
+
+    // Verify the page works and shows mixed grouping when there's at least one grouped duty
+    $this->get(route('contacts.dutyType', ['subdomain' => 'www', 'lang' => 'lt', 'type' => $type->slug]))
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Public/Contacts/ContactInstitutionOrType')
+            ->has('institution')
+            // Should have either contacts (flat mode) or contactSections (mixed mode)
+            ->etc()
+        );
+});

@@ -98,11 +98,34 @@ class ContactController extends PublicController
         }
 
         // load duties whereHas types
-        $contacts = $institution->load(['duties' => function ($query) use ($types) {
+        $duties = $institution->load(['duties' => function ($query) use ($types) {
             $query->whereHas('types', fn (Builder $query) => $query->whereIn('id', $types->pluck('id')))->with('current_users.current_duties');
         }])->duties->sortBy(function ($duty) {
             return $duty->order;
-        })->pluck('current_users')->flatten()->unique('id');
+        });
+
+        // Process duties in order and group/flatten as needed
+        $hasGroupedDuties = false;
+
+        foreach ($duties as $duty) {
+            // Check if this duty should be grouped
+            if ($duty->contacts_grouping && $duty->contacts_grouping !== 'none') {
+                $hasGroupedDuties = true;
+                break;
+            }
+        }
+
+        if ($hasGroupedDuties) {
+            $processedContacts = $this->processDutiesWithGrouping($duties);
+
+            // Filter processed contacts to only show duties related to the selected types
+            $processedContacts = $this->filterProcessedContactsByTypes($processedContacts, $types);
+
+            return $this->showInstitutionWithMixedContacts($institution, $processedContacts, $institution->name.' | '.ucfirst($type->slug));
+        }
+
+        // Default behavior - flatten and deduplicate all duties
+        $contacts = $duties->pluck('current_users')->flatten()->unique('id');
 
         // keep all contacts, but remove some duties from them, if they are not in the selected types
         $contacts = $contacts->map(function ($contact) use ($types) {
@@ -416,5 +439,34 @@ class ContactController extends PublicController
         ])->withViewData(
             ['SEOData' => $seo]
         );
+    }
+
+    /**
+     * Filter processed contacts to only show duties related to the selected types
+     */
+    private function filterProcessedContactsByTypes(array $processedContacts, $types): array
+    {
+        $typeIds = $types->pluck('id');
+        $filteredSections = [];
+
+        foreach ($processedContacts as $section) {
+            if ($section['type'] === 'grouped_duty') {
+                // Check if this duty has any of the selected types
+                $dutyHasMatchingTypes = $section['duty']->types->intersect($types)->count() > 0;
+                
+                if ($dutyHasMatchingTypes) {
+                    $filteredSections[] = $section;
+                }
+            } else {
+                // For flat duties, check the same way
+                $dutyHasMatchingTypes = $section['duty']->types->intersect($types)->count() > 0;
+                
+                if ($dutyHasMatchingTypes) {
+                    $filteredSections[] = $section;
+                }
+            }
+        }
+
+        return $filteredSections;
     }
 }
