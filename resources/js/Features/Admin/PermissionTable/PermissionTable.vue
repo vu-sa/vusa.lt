@@ -7,27 +7,26 @@
       <thead>
         <tr>
           <th />
-          <!-- TODO: Paaiškinti detaliau, kas tas "padalinyje" -->
-          <th>Padalinyje</th>
-          <th>{{ modelType }}</th>
+          <th>{{ padalinysHeaderText }}</th>
+          <th>{{ allHeaderText }}</th>
         </tr>
       </thead>
       <tbody class="border-t-8 border-transparent">
         <PermissionTableRow v-for="ability in abilities" :key="ability" :disabled="formDisabled"
-          :default-value="formTemplate[ability]" :permissions="permissions" :icon="icon" :ability="ability"
-          @update="permissionForm[ability] = $event" />
+          :default-value="permissionData[ability]" :permissions="permissions" :icon="icon" :ability="ability"
+          :available-permissions="availablePermissions" @update="(value) => handlePermissionUpdate(ability, value)" />
       </tbody>
     </table>
     <div class="mt-4 flex justify-end">
-      <Button :disabled="formDisabled || !permissionForm.isDirty" :class="{ 'opacity-50 cursor-not-allowed': formDisabled || !permissionForm.isDirty }"
+      <Button :disabled="formDisabled || !isDirty" :class="{ 'opacity-50 cursor-not-allowed': formDisabled || !isDirty }"
         variant="default" :data-loading="loading" @click="updatePermissionsForRole">Atnaujinti</Button>
     </div>
   </Spinner>
 </template>
 
 <script setup lang="tsx">
-import { type Component, ref } from "vue";
-import { useForm } from "@inertiajs/vue3";
+import { type Component, ref, computed, reactive } from "vue";
+import { router } from "@inertiajs/vue3";
 
 import { CRUDEnum } from "@/Types/enums";
 import PermissionTableRow from "@/Features/Admin/PermissionTable/PermissionTableRow.vue";
@@ -39,11 +38,51 @@ const props = defineProps<{
   role: App.Entities.Role;
   modelType: string;
   icon: Component;
+  availablePermissions: string[];
 }>();
 
 const abilities = Object.values(CRUDEnum);
 const formDisabled = ref(false);
 const loading = ref(false);
+
+// Determine available scopes for this model type
+const availableScopes = computed(() => {
+  const scopes = new Set<string>();
+  
+  // Extract scopes from available permissions
+  props.availablePermissions.forEach(permission => {
+    const parts = permission.split('.');
+    if (parts.length === 3 && parts[2]) {
+      scopes.add(parts[2]);
+    }
+  });
+  
+  return {
+    hasOwn: scopes.has('own'),
+    hasPadalinys: scopes.has('padalinys'),
+    hasAll: scopes.has('*')
+  };
+});
+
+// Determine the appropriate header text for the second column
+const padalinysHeaderText = computed(() => {
+  if (availableScopes.value.hasOwn && availableScopes.value.hasPadalinys) {
+    return "Savo / Padalinyje";
+  } else if (availableScopes.value.hasPadalinys) {
+    return "Padalinyje";
+  } else {
+    return "Netaikoma";
+  }
+});
+
+// Determine the appropriate header text for the third column
+const allHeaderText = computed(() => {
+  if (availableScopes.value.hasAll) {
+    return availableScopes.value.hasOwn || availableScopes.value.hasPadalinys ? "Visur" : props.modelType;
+  } else {
+    return "Netaikoma";
+  }
+});
 
 const getAbilityScopeFromModelPermissions = (
   permissions: string[] | [],
@@ -58,9 +97,9 @@ const getAbilityScopeFromModelPermissions = (
   }
 
   // delimit permission string to get ability and scope
-  let permissionDelimited = filteredPermissions[0].split(".");
+  const permissionDelimited = filteredPermissions[0]?.split(".");
 
-  if (permissionDelimited.length !== 3) {
+  if (!permissionDelimited || permissionDelimited.length !== 3) {
     formDisabled.value = true;
     return undefined;
   }
@@ -83,21 +122,44 @@ const formTemplate = {
   delete: getPermissionScope(props.permissions, "delete"),
 };
 
-const permissionForm =
-  useForm<Record<string, string | undefined>>(formTemplate);
+// Use reactive object instead of useForm for simpler state management
+const permissionData = reactive({ ...formTemplate });
+const originalData = { ...formTemplate };
+
+// Check if form has changes
+const isDirty = computed(() => {
+  return Object.keys(permissionData).some(key => 
+    permissionData[key as keyof typeof permissionData] !== originalData[key as keyof typeof originalData]
+  );
+});
+
+const handlePermissionUpdate = (ability: string, value: string | undefined) => {
+  (permissionData as any)[ability] = value;
+};
 
 const updatePermissionsForRole = () => {
   if (formDisabled.value) return;
   loading.value = true;
 
-  permissionForm.patch(
+  // Only send abilities that have valid scopes
+  const filteredData = Object.fromEntries(
+    Object.entries(permissionData).filter(([, value]) => value !== undefined)
+  );
+
+  router.patch(
     route("roles.syncPermissionGroup", {
       role: props.role.id,
       model: props.modelType,
     }),
+    filteredData,
     {
       preserveScroll: true,
       onSuccess: () => {
+        loading.value = false;
+        // Update original data to reflect new state
+        Object.assign(originalData, permissionData);
+      },
+      onError: () => {
         loading.value = false;
       },
     }

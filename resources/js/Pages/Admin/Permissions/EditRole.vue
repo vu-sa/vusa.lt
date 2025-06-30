@@ -30,7 +30,7 @@
     <h2 class="mt-4">
       Rolės teisės
     </h2>
-    <RolePermissionForms :role="role" model-route="roles.update" />
+    <RolePermissionForms :role="role" :allAvailablePermissions="allAvailablePermissions" model-route="roles.update" />
   </AdminContentPage>
 </template>
 
@@ -55,6 +55,7 @@ const props = defineProps<{
   tenantsWithDuties: App.Entities.Tenant[];
   role: App.Entities.Role;
   allTypes: App.Entities.Type[];
+  allAvailablePermissions: Record<string, string[]>;
 }>();
 
 const dutyOptions: TreeOption[] = props.tenantsWithDuties.map(

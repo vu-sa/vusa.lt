@@ -19,6 +19,7 @@ class ModelPermissionSeeder extends Seeder
     public function run()
     {
         $permissionsToCreate = [];
+        $permissionsToDelete = [];
 
         foreach (ModelEnum::toLabels() as $model) {
             $pluralizedModel = Str::plural($model);
@@ -28,11 +29,28 @@ class ModelPermissionSeeder extends Seeder
                 continue;
             }
 
+            // Get allowed scopes for this model
+            $allowedScopes = ModelEnum::getAllowedScopes($pluralizedModel);
+
             foreach (CRUDEnum::toLabels() as $crud) {
-                foreach (PermissionScopeEnum::toLabels() as $scope) {
+                // Create permissions for allowed scopes
+                foreach ($allowedScopes as $scope) {
                     $permissionsToCreate[] = $pluralizedModel.'.'.$crud.'.'.$scope;
                 }
+
+                // Identify permissions to delete (scopes not in allowed list)
+                $allPossibleScopes = ['own', 'padalinys', '*'];
+                $disallowedScopes = array_diff($allPossibleScopes, $allowedScopes);
+                
+                foreach ($disallowedScopes as $scope) {
+                    $permissionsToDelete[] = $pluralizedModel.'.'.$crud.'.'.$scope;
+                }
             }
+        }
+
+        // Delete permissions that are no longer allowed
+        if (!empty($permissionsToDelete)) {
+            Permission::whereIn('name', $permissionsToDelete)->delete();
         }
 
         $permissionsToCreate = array_map(function ($permission) {
