@@ -311,8 +311,14 @@ const menuItems = computed(() => [
         href: route('categories.index'),
         show: auth?.can.create.category
       },
+      {
+        title: $t('Žymos'),
+        icon: Icons.TAG,
+        href: route('tags.index'),
+        show: auth?.can.create.tag
+      },
     ],
-    show: auth?.can.create.page || auth?.can.create.news || auth?.can.create.quickLink || auth?.can.create.banner || auth?.can.create.navigation || auth?.can.create.calendar || auth?.can.create.category,
+    show: auth?.can.create.page || auth?.can.create.news || auth?.can.create.quickLink || auth?.can.create.banner || auth?.can.create.navigation || auth?.can.create.calendar || auth?.can.create.category || auth?.can.create.tag,
     visibleItems: [] as MenuItemType[]
   },
   {
