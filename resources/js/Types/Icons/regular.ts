@@ -1,6 +1,7 @@
 /* eslint-disable no-secrets/no-secrets */
 import Alert24Regular from "~icons/fluent/alert24-regular";
 import BookQuestionMark24Regular from "~icons/fluent/book-question-mark24-regular";
+import BookOpenGlobe24Regular from "~icons/fluent/book-open-globe24-regular";
 import Bookmark24Regular from "~icons/fluent/bookmark24-regular";
 import CalendarLtr24Regular from "~icons/fluent/calendar-ltr24-regular";
 import Comment24Regular from "~icons/fluent/comment24-regular";
@@ -68,6 +69,7 @@ const modelIcons: Record<keyof typeof ModelEnum, Component> = {
   ROLE: PersonBoard24Regular,
   SHAREPOINT_FILE: DocumentMultiple24Regular,
   SHAREPOINT_FILEABLE: DocumentMultiple24Regular,
+  STUDY_PROGRAM: BookOpenGlobe24Regular,
   TAG: Tag24Regular,
   TASK: TaskListSquareLtr24Regular,
   TENANT: PeopleSearch24Regular,

@@ -50,8 +50,9 @@
           </span>
         </template>
         <NSelect v-model:value="form.study_program_id" filterable :render-label="renderStudyProgramLabel"
-          :options="studyPrograms" value-field="id" placeholder="Studijų programa" />
+          :options="studyPrograms" value-field="id" placeholder="Studijų programa" clearable />
       </NFormItem>
+      
       <NFormItem>
         <template #label>
           <div class="inline-flex items-center gap-2">
@@ -130,8 +131,8 @@ defineEmits<{
 }>();
 
 const form = props.rememberKey
-  ? useForm(props.rememberKey, props.dutiable)
-  : useForm(props.dutiable);
+  ? useForm(props.rememberKey, props.dutiable as any)
+  : useForm(props.dutiable as any);
 
 if (Array.isArray(form.description)) {
   form.description = { lt: "", en: "" };
@@ -143,16 +144,21 @@ const locale = ref("lt");
 const renderStudyProgramLabel = (option: SelectOption) => {
   return h("div", { class: "flex items-center gap-2" },
     [
-      option.name,
-      option?.degree ? h(NTag, { size: "tiny" }, `${option?.degree}`) : null,
-    ]);
+      option.name as string,
+      option?.degree ? h(NTag, { size: "tiny" }, { default: () => option.degree as string }) : null,
+    ].filter(Boolean));
 };
 
 const shownDutyName = computed(() => {
-  return changeDutyNameEndings(props.dutiable.dutiable,
+  if (!props.dutiable.duty?.name || !props.dutiable.dutiable) return '';
+  
+  return changeDutyNameEndings(
+    props.dutiable.dutiable as any,
     props.dutiable.duty.name,
-    usePage().props.app.locale, props.dutiable.dutiable.pronouns, form.use_original_duty_name)
-}
-);
+    usePage().props.app.locale, 
+    (props.dutiable.dutiable as any)?.pronouns, 
+    form.use_original_duty_name as boolean
+  );
+});
 
 </script>

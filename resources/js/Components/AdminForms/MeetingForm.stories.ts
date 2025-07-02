@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from "@storybook/vue3";
-import { userEvent, within, fn } from "@storybook/test";
+import type { Meta, StoryObj } from "@storybook/vue3-vite";
+import { userEvent, within, fn } from "storybook/test";
 import MeetingForm from "./MeetingForm.vue";
 import { usePage, router } from "#mocks/inertia.mock";
 

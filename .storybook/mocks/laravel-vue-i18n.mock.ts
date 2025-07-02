@@ -1,4 +1,4 @@
-import { fn } from '@storybook/test';
+import { fn } from 'storybook/test';
 
 // Mock the trans function from laravel-vue-i18n
 export const trans = fn((key: string) => key);

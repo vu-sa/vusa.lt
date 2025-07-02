@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/vue3';
+import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { Alert, AlertTitle, AlertDescription } from './';
 
 const meta: Meta<typeof Alert> = {

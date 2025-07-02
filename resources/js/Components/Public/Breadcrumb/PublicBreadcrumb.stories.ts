@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/vue3';
+import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { markRaw } from 'vue';
 import PublicBreadcrumb from './PublicBreadcrumb.vue';
 import IFluentDocument16Regular from '~icons/fluent/document-16-regular';
@@ -7,7 +7,7 @@ import IFluentBookSearch16Regular from '~icons/fluent/book-16-regular';
 import IFluentArrowSort16Regular from '~icons/fluent/arrow-sort-16-regular';
 
 // Import Storybook testing utilities instead of Vitest
-import { fn } from '@storybook/test';
+import { fn } from 'storybook/test';
 
 // Create mock files for the modules we need to mock
 // Create laravel-vue-i18n.mock.ts in a separate file and import it here

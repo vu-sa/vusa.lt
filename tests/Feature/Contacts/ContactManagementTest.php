@@ -263,17 +263,16 @@ test('contact manager can add type to duty', function () {
         ->has('dutyTypes')
     );
 
-    $types = [];
-
-    foreach (GetAttachableTypesForDuty::execute() as $type) {
-        array_push($types, $type->id);
-    }
+    $availableTypes = GetAttachableTypesForDuty::execute();
+    $types = $availableTypes->pluck('id')->toArray();
+    $firstTypeId = $availableTypes->first()->id;
 
     $response = $admin->patch(route('duties.update', $userDuty->id), [
         'name' => $userDuty->name,
-        'users' => [$this->user->id],
+        'current_users' => [$this->user->id],
         'institution_id' => $userDuty->institution_id,
         'places_to_occupy' => $userDuty->places_to_occupy,
+        'contacts_grouping' => $userDuty->contacts_grouping ?? 'none',
         'types' => $types,
     ]);
 
@@ -288,7 +287,7 @@ test('contact manager can add type to duty', function () {
     $this->assertDatabaseHas('typeables', [
         'typeable_id' => $userDuty->id,
         'typeable_type' => get_class($userDuty),
-        'type_id' => GetAttachableTypesForDuty::execute()->first()->id,
+        'type_id' => $firstTypeId,
     ]);
 
     $this->assertDatabaseHas('model_has_roles', [
@@ -299,9 +298,10 @@ test('contact manager can add type to duty', function () {
 
     $response = $admin->patch(route('duties.update', $userDuty->id), [
         'name' => $userDuty->name,
-        'users' => [$this->user->id],
+        'current_users' => [$this->user->id],
         'institution_id' => $userDuty->institution_id,
         'places_to_occupy' => $userDuty->places_to_occupy,
+        'contacts_grouping' => $userDuty->contacts_grouping ?? 'none',
         'types' => [],
     ]);
 
@@ -316,7 +316,7 @@ test('contact manager can add type to duty', function () {
     $this->assertDatabaseMissing('typeables', [
         'typeable_id' => $userDuty->id,
         'typeable_type' => get_class($userDuty),
-        'type_id' => GetAttachableTypesForDuty::execute()->first()->id,
+        'type_id' => $firstTypeId,
     ]);
 
     $this->assertDatabaseMissing('model_has_roles', [

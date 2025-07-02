@@ -8,6 +8,7 @@ use App\Models\Traits\HasTranslations;
 use App\Models\Traits\HasUnitRelation;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\MorphPivot;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
@@ -15,7 +16,7 @@ class Dutiable extends MorphPivot
 {
     // NOTE: for some reason, if Searchable trait is used on this model, it will cause an error
     // in the update route. But only if the queue driver is set to sync.
-    use HasRelationships, HasTranslations, HasUlids, HasUnitRelation;
+    use HasFactory, HasRelationships, HasTranslations, HasUlids, HasUnitRelation;
 
     protected $table = 'dutiables';
 

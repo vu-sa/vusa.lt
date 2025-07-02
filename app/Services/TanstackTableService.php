@@ -109,14 +109,51 @@ class TanstackTableService
                     $relatedColumn = $parts[1];
 
                     $q->orWhereHas($relation, function (Builder $subQ) use ($relatedColumn, $searchText) {
-                        $subQ->where($relatedColumn, 'like', "%{$searchText}%");
+                        $this->applyColumnSearch($subQ, $relatedColumn, $searchText);
                     });
                 } else {
                     // Handle direct columns
-                    $q->orWhere($column, 'like', "%{$searchText}%");
+                    $this->applyColumnSearch($q, $column, $searchText, 'or');
                 }
             }
         });
+    }
+
+    /**
+     * Apply search to a specific column, handling JSON columns for translatable fields
+     */
+    protected function applyColumnSearch(Builder $query, string $column, string $searchText, string $boolean = 'and'): void
+    {
+        $model = $query->getModel();
+
+        // Check if this is a translatable field
+        if (method_exists($model, 'isTranslatableAttribute') && $model->isTranslatableAttribute($column)) {
+            // Handle translatable (JSON) columns - search both lt and en
+            $query->where(function (Builder $q) use ($column, $searchText) {
+                $this->applyJsonSearch($q, $column, $searchText, 'lt');
+                $this->applyJsonSearch($q, $column, $searchText, 'en', 'or');
+            }, null, null, $boolean);
+        } else {
+            // Handle regular columns - case-insensitive search
+            $query->whereRaw("LOWER({$column}) LIKE LOWER(?)", ["%{$searchText}%"], $boolean);
+        }
+    }
+
+    /**
+     * Apply JSON search with database-specific syntax
+     */
+    protected function applyJsonSearch(Builder $query, string $column, string $searchText, string $locale, string $boolean = 'and'): void
+    {
+        $connection = $query->getConnection();
+        $driver = $connection->getDriverName();
+
+        if ($driver === 'sqlite') {
+            // SQLite uses json_extract without JSON_UNQUOTE
+            $query->whereRaw("LOWER(json_extract({$column}, '$.{$locale}')) LIKE LOWER(?)", ["%{$searchText}%"], $boolean);
+        } else {
+            // MySQL/MariaDB use JSON_UNQUOTE and JSON_EXTRACT
+            $query->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT({$column}, '$.{$locale}'))) LIKE LOWER(?)", ["%{$searchText}%"], $boolean);
+        }
     }
 
     /**
@@ -210,6 +247,9 @@ class TanstackTableService
                 $query->whereHas($relation, function (Builder $q) use ($column, $value) {
                     if (is_array($value)) {
                         $q->whereIn($column, $value);
+                    } elseif (is_string($value)) {
+                        // Handle string values (text search) - case-insensitive
+                        $q->whereRaw("LOWER({$column}) LIKE LOWER(?)", ["%{$value}%"]);
                     } else {
                         $q->where($column, $value);
                     }
@@ -225,8 +265,8 @@ class TanstackTableService
                 // Handle array values (multi-select)
                 $query->whereIn($key, $value);
             } elseif (is_string($value)) {
-                // Handle string values (text search)
-                $query->where($key, 'like', "%{$value}%");
+                // Handle string values (text search) - case-insensitive
+                $query->whereRaw("LOWER({$key}) LIKE LOWER(?)", ["%{$value}%"]);
             } elseif ($value instanceof \DateTimeInterface) {
                 // Handle date values
                 $query->whereDate($key, $value);

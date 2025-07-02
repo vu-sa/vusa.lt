@@ -15,12 +15,10 @@ class RoleCommunicationCoordinatorSeeder extends Seeder
      */
     public function run()
     {
-        $role = new Role;
-
-        $role->name = 'Communication Coordinator';
-        $role->guard_name = 'web';
-
-        $role->save();
+        $role = Role::firstOrCreate([
+            'name' => 'Communication Coordinator',
+            'guard_name' => 'web',
+        ]);
 
         $role->syncPermissions([
             'news.create.padalinys',
@@ -57,6 +55,10 @@ class RoleCommunicationCoordinatorSeeder extends Seeder
             'duties.read.padalinys',
             'duties.update.padalinys',
             'duties.delete.padalinys',
+            'studyPrograms.create.padalinys',
+            'studyPrograms.read.padalinys',
+            'studyPrograms.update.padalinys',
+            'studyPrograms.delete.padalinys',
         ]);
 
         $role->attachable_types()->attach(Type::query()->where('slug', 'pirmininkas')->firstOrFail());

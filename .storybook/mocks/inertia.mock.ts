@@ -1,4 +1,4 @@
-import { fn } from '@storybook/test';
+import { fn } from 'storybook/test';
 
 // Mock usePage() function returning commonly used page props
 export const usePage = fn(() => ({

@@ -30,6 +30,14 @@ export enum ContentPartEnum {
   "CALENDAR" = "calendar",
   "CONTENT_GRID" = "content-grid",
 }
+export enum DegreeEnum {
+  "BA" = "BA",
+  "MA" = "MA",
+  "PHD" = "PhD",
+  "INTEGRATED_STUDIES" = "Integrated Studies",
+  "PROFESSIONAL_PEDAGOGY" = "Professional Pedagogy",
+  "OTHER" = "Other",
+}
 export enum LocaleEnum {
   "LT" = "lt",
   "EN" = "en",
@@ -66,6 +74,7 @@ export enum ModelEnum {
   "ROLE" = "role",
   "SHAREPOINT_FILE" = "sharepointFile",
   "SHAREPOINT_FILEABLE" = "sharepointFileable",
+  "STUDY_PROGRAM" = "studyProgram",
   "TAG" = "tag",
   "TASK" = "task",
   "TENANT" = "tenant",
