@@ -99,7 +99,7 @@ class News extends Model implements Feedable
 
     public static function getFeedItems()
     {
-        return News::orderByDesc('publish_time')->take(15)->get();
+        return News::query()->where('draft', false)->orderByDesc('publish_time')->take(15)->get();
     }
 
     public function toSearchableArray()
