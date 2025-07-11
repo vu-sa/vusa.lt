@@ -15,11 +15,11 @@
       </NFormItem>
 
       <NFormItem :label="$t('forms.fields.description')">
-        <MultiLocaleTiptapFormItem v-model:input="form.description" />
+        <MultiLocaleTiptapFormItem v-model:input="form.description" label="Aprašymas" />
       </NFormItem>
 
-      <NFormItem label="Alias" help="Papildomas pavadinimas žymai (neprivalomas)">
-        <NInput v-model:value="form.alias" placeholder="Įveskite alias" />
+      <NFormItem label="Alias" help="Papildomas pavadinimas žymai (neprivalomas). Jei neįvestas, bus sugeneruotas automatiškai iš pavadinimo.">
+        <NInput v-model:value="form.alias" placeholder="Pvz: stipendijos" />
       </NFormItem>
     </FormElement>
   </AdminForm>
@@ -33,8 +33,8 @@ import AdminForm from "./AdminForm.vue";
 import MultiLocaleInput from "@/Components/FormItems/MultiLocaleInput.vue";
 import MultiLocaleTiptapFormItem from "@/Components/FormItems/MultiLocaleTiptapFormItem.vue";
 
-const { tag, rememberKey } = defineProps<{
-  tag: App.Entities.Tag;
+const { postTag, rememberKey } = defineProps<{
+  postTag: App.Entities.Tag;
   rememberKey?: "CreateTag";
 }>();
 
@@ -43,5 +43,5 @@ defineEmits<{
   (event: "delete"): void;
 }>();
 
-const form = rememberKey ? useForm(rememberKey, tag) : useForm(tag);
+const form = rememberKey ? useForm(rememberKey, postTag as any) : useForm(postTag as any);
 </script>

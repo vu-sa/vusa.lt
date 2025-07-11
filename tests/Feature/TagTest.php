@@ -131,9 +131,9 @@ describe('auth: admin user with permissions', function () {
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Content/EditTag')
-                ->has('tag.name.lt')
-                ->has('tag.name.en')
-                ->where('tag.id', $this->tag->id)
+                ->has('postTag.name.lt')
+                ->has('postTag.name.en')
+                ->where('postTag.id', $this->tag->id)
             );
     });
 

@@ -23,7 +23,7 @@ class RoleStudentRepresentativeSeeder extends Seeder
         $role->save();
 
         $role->syncPermissions([
-            'institutions.read.own',
+            'institutions.read.padalinys',
             'meetings.create.padalinys',
             'meetings.read.own',
             'meetings.update.own',

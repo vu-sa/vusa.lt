@@ -110,8 +110,25 @@ class TagController extends Controller
     {
         $this->authorize('update', $tag);
 
+        // Get news that use this tag
+        $news = $tag->news()
+            ->select('news.id', 'title', 'permalink', 'publish_time', 'lang', 'tenant_id')
+            ->with('tenant:id,shortname')
+            ->orderBy('publish_time', 'desc')
+            ->get();
+
         return Inertia::render('Admin/Content/EditTag', [
-            'tag' => $tag->toFullArray(),
+            'postTag' => $tag->toFullArray(),
+            'news' => $news->map(function ($newsItem) {
+                return [
+                    'id' => $newsItem->id,
+                    'title' => $newsItem->title,
+                    'permalink' => $newsItem->permalink,
+                    'publish_time' => $newsItem->publish_time,
+                    'lang' => $newsItem->lang,
+                    'tenant' => $newsItem->tenant?->shortname,
+                ];
+            }),
         ]);
     }
 

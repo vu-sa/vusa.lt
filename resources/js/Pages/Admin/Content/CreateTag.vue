@@ -7,19 +7,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
-
 import Icons from "@/Types/Icons/regular";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import TagForm from "@/Components/AdminForms/TagForm.vue";
 import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
+import { tagTemplate } from "@/Types/formTemplates";
 
-const tag = ref({
-  id: "",
-  name: { lt: "", en: "" },
-  description: { lt: "", en: "" },
-  alias: "",
-  created_at: "",
-  updated_at: "",
-} as unknown as App.Entities.Tag);
+const tag = tagTemplate as unknown as App.Entities.Tag;
 </script>

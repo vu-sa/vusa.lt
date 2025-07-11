@@ -58,6 +58,7 @@ class NewsController extends PublicController
                     return [
                         'id' => $tag->id,
                         'name' => $tag->name,
+                        'alias' => $tag->alias,
                     ];
                 }),
                 'content' => $news->content,
@@ -85,20 +86,54 @@ class NewsController extends PublicController
 
         Inertia::share('otherLangURL', route('newsArchive', ['lang' => $this->getOtherLang(), 'subdomain' => $this->subdomain, 'newsString' => app()->getLocale() === 'lt' ? 'news' : 'naujienos']));
 
-        $news = News::where('tenant_id', $this->tenant->id)
+        $query = News::where('tenant_id', $this->tenant->id)
             ->where('lang', app()->getLocale())
-            ->where('draft', false)
-            ->select('id', 'title', 'short', 'image', 'permalink', 'publish_time', 'lang')
+            ->where('draft', false);
+
+        // Filter by tag if provided
+        if (request('tag')) {
+            $query->whereHas('tags', function ($q) {
+                $tagParam = request('tag');
+                // Try to find by alias first, fallback to ID if it's numeric
+                $q->where('alias', $tagParam)
+                  ->orWhere(function ($query) use ($tagParam) {
+                      if (is_numeric($tagParam)) {
+                          $query->where('id', $tagParam);
+                      }
+                  });
+            });
+        }
+
+        $news = $query->select('id', 'title', 'short', 'image', 'permalink', 'publish_time', 'lang')
             ->orderBy('publish_time', 'desc')
             ->paginate(15);
 
+        // Get the current tag for display purposes
+        $currentTag = null;
+        if (request('tag')) {
+            $tagParam = request('tag');
+            // Try to find by alias first, fallback to ID if it's numeric
+            $currentTag = \App\Models\Tag::where('alias', $tagParam)
+                ->orWhere(function ($query) use ($tagParam) {
+                    if (is_numeric($tagParam)) {
+                        $query->where('id', $tagParam);
+                    }
+                })
+                ->first();
+        }
+
         $seo = $this->shareAndReturnSEOObject(
-            title: "{$this->tenant->shortname} naujienų archyvas",
-            description: "Naršyk per visas {$this->tenant->shortname} naujienas"
+            title: $currentTag 
+                ? "{$this->tenant->shortname} naujienos - {$currentTag->name}"
+                : "{$this->tenant->shortname} naujienų archyvas",
+            description: $currentTag 
+                ? "Naršyk per {$this->tenant->shortname} naujienas pagal žymą '{$currentTag->name}'"
+                : "Naršyk per visas {$this->tenant->shortname} naujienas"
         );
 
         return Inertia::render('Public/NewsArchive', [
             'news' => $news,
+            'currentTag' => $currentTag,
         ])->withViewData(
             [
                 'SEOData' => $seo,
