@@ -32,6 +32,8 @@ return [
         'hour' => 'Hour',
         'minute' => 'Minute',
         'time' => 'Time',
+        'tenant' => 'Tenant',
+        'language' => 'Language',
     ],
     'context' => [
         'main_info' => 'Main information',

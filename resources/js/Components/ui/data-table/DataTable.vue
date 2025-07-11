@@ -79,6 +79,7 @@ const emit = defineEmits([
 
 // Use external sorting if provided, otherwise use initialSort or empty array
 const sorting = ref<SortingState>(props.externalSorting || props.initialSort || [])
+// TODO: doesn't work for client-side tables
 const globalFilter = ref(props.globalFilter || '')
 const columnVisibility = ref<VisibilityState>({})
 const rowSelection = ref<RowSelectionState>(props.rowSelectionState || props.initialRowSelection || {})

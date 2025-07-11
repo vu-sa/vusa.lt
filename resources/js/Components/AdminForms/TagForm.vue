@@ -14,9 +14,7 @@
         <MultiLocaleInput v-model:input="form.name" />
       </NFormItem>
 
-      <NFormItem :label="$t('forms.fields.description')">
-        <MultiLocaleTiptapFormItem v-model:input="form.description" label="Aprašymas" />
-      </NFormItem>
+      <MultiLocaleTiptapFormItem v-model:input="form.description" label="Aprašymas" />
 
       <NFormItem label="Alias" help="Papildomas pavadinimas žymai (neprivalomas). Jei neįvestas, bus sugeneruotas automatiškai iš pavadinimo.">
         <NInput v-model:value="form.alias" placeholder="Pvz: stipendijos" />

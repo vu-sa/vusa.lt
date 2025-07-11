@@ -115,11 +115,8 @@ class TagController extends Controller
             ->select('news.id', 'title', 'permalink', 'publish_time', 'lang', 'tenant_id')
             ->with('tenant:id,shortname')
             ->orderBy('publish_time', 'desc')
-            ->get();
-
-        return Inertia::render('Admin/Content/EditTag', [
-            'postTag' => $tag->toFullArray(),
-            'news' => $news->map(function ($newsItem) {
+            ->get()
+            ->map(function ($newsItem) {
                 return [
                     'id' => $newsItem->id,
                     'title' => $newsItem->title,
@@ -128,7 +125,11 @@ class TagController extends Controller
                     'lang' => $newsItem->lang,
                     'tenant' => $newsItem->tenant?->shortname,
                 ];
-            }),
+            });
+
+        return Inertia::render('Admin/Content/EditTag', [
+            'postTag' => $tag->toFullArray(),
+            'news' => $news,
         ]);
     }
 

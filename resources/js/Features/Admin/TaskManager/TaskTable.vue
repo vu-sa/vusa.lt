@@ -192,7 +192,7 @@ const columns = [
       return (
         <div class="flex justify-center">
           <Checkbox
-            checked={task.completed_at !== null}
+            modelValue={task.completed_at !== null}
             disabled={!canComplete || isLoading.value}
             onUpdate:modelValue={() => updateTaskCompletion(task)}
             class="transition-all duration-200 hover:scale-110"
