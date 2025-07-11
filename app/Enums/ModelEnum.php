@@ -66,17 +66,17 @@ final class ModelEnum extends Enum
             'permissions' => ['*'],
             'roles' => ['*'],
             'navigations' => ['*'],
-            
+
             // Models that belong to padaliniai but not to individual users
             'institutions' => ['padalinys', '*'],
-            'studyPrograms' => ['padalinys', '*'], 
+            'studyPrograms' => ['padalinys', '*'],
             'quickLinks' => ['padalinys', '*'],
-            
+
             // Models that can be owned by users and also managed at padalinys level
             // (these will have all scopes: own, padalinys, *)
             // 'news' => ['own', 'padalinys', '*'],
             // 'banners' => ['own', 'padalinys', '*'],
-            
+
             // Add more restrictions as needed
         ];
 

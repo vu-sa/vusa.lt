@@ -25,7 +25,7 @@ return new class extends Migration
                 'lt' => $tag->name,
                 'en' => $tag->name, // Default to same value for both languages
             ];
-            
+
             $descriptionTranslations = $tag->description ? [
                 'lt' => $tag->description,
                 'en' => $tag->description,

@@ -16,7 +16,7 @@ class Tag extends Model
 
     protected $fillable = [
         'name',
-        'description', 
+        'description',
         'alias',
     ];
 
@@ -56,27 +56,27 @@ class Tag extends Model
     protected function generateAlias(): string
     {
         // Get the Lithuanian name first, fallback to English, then to any available translation
-        $name = $this->getTranslation('name', 'lt') 
-            ?? $this->getTranslation('name', 'en') 
+        $name = $this->getTranslation('name', 'lt')
+            ?? $this->getTranslation('name', 'en')
             ?? (is_array($this->name) ? collect($this->name)->first() : $this->name);
 
         if (empty($name)) {
             // Fallback to ID-based alias if no name is available
-            return 'tag-' . ($this->id ?? uniqid());
+            return 'tag-'.($this->id ?? uniqid());
         }
 
         // Create a URL-friendly slug
         $baseAlias = Str::slug($name);
-        
+
         // Ensure uniqueness by checking for existing aliases
         $alias = $baseAlias;
         $counter = 1;
-        
+
         while (static::where('alias', $alias)->where('id', '!=', $this->id ?? 0)->exists()) {
-            $alias = $baseAlias . '-' . $counter;
+            $alias = $baseAlias.'-'.$counter;
             $counter++;
         }
-        
+
         return $alias;
     }
 }

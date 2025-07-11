@@ -2,7 +2,6 @@
 
 namespace App\Policies;
 
-use App\Enums\CRUDEnum;
 use App\Enums\ModelEnum;
 use App\Models\User;
 use App\Services\ModelAuthorizer;
@@ -23,26 +22,26 @@ class TagPolicy extends ModelPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $this->authorizer->forUser($user)->checkAllRoleables("tags.read.*");
+        return $this->authorizer->forUser($user)->checkAllRoleables('tags.read.*');
     }
 
     public function create(User $user): bool
     {
-        return $this->authorizer->forUser($user)->checkAllRoleables("tags.create.*");
+        return $this->authorizer->forUser($user)->checkAllRoleables('tags.create.*');
     }
 
     public function view(User $user, Model $tag): bool
     {
-        return $this->authorizer->forUser($user)->checkAllRoleables("tags.read.*");
+        return $this->authorizer->forUser($user)->checkAllRoleables('tags.read.*');
     }
 
     public function update(User $user, Model $tag): bool
     {
-        return $this->authorizer->forUser($user)->checkAllRoleables("tags.update.*");
+        return $this->authorizer->forUser($user)->checkAllRoleables('tags.update.*');
     }
 
     public function delete(User $user, Model $tag): bool
     {
-        return $this->authorizer->forUser($user)->checkAllRoleables("tags.delete.*");
+        return $this->authorizer->forUser($user)->checkAllRoleables('tags.delete.*');
     }
 }

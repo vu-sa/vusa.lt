@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Enums\CRUDEnum;
 use App\Enums\ModelEnum;
-use App\Enums\PermissionScopeEnum;
 use App\Models\Permission;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
@@ -41,7 +40,7 @@ class ModelPermissionSeeder extends Seeder
                 // Identify permissions to delete (scopes not in allowed list)
                 $allPossibleScopes = ['own', 'padalinys', '*'];
                 $disallowedScopes = array_diff($allPossibleScopes, $allowedScopes);
-                
+
                 foreach ($disallowedScopes as $scope) {
                     $permissionsToDelete[] = $pluralizedModel.'.'.$crud.'.'.$scope;
                 }
@@ -49,7 +48,7 @@ class ModelPermissionSeeder extends Seeder
         }
 
         // Delete permissions that are no longer allowed
-        if (!empty($permissionsToDelete)) {
+        if (! empty($permissionsToDelete)) {
             Permission::whereIn('name', $permissionsToDelete)->delete();
         }
 

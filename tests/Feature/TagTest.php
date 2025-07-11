@@ -283,7 +283,7 @@ describe('tag merging', function () {
         // Create news and attach source tags
         $news1 = \App\Models\News::factory()->create();
         $news2 = \App\Models\News::factory()->create();
-        
+
         $sourceTag1->news()->attach($news1->id);
         $sourceTag2->news()->attach($news2->id);
 

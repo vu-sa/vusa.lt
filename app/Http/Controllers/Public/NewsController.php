@@ -96,11 +96,11 @@ class NewsController extends PublicController
                 $tagParam = request('tag');
                 // Try to find by alias first, fallback to ID if it's numeric
                 $q->where('alias', $tagParam)
-                  ->orWhere(function ($query) use ($tagParam) {
-                      if (is_numeric($tagParam)) {
-                          $query->where('id', $tagParam);
-                      }
-                  });
+                    ->orWhere(function ($query) use ($tagParam) {
+                        if (is_numeric($tagParam)) {
+                            $query->where('id', $tagParam);
+                        }
+                    });
             });
         }
 
@@ -123,10 +123,10 @@ class NewsController extends PublicController
         }
 
         $seo = $this->shareAndReturnSEOObject(
-            title: $currentTag 
+            title: $currentTag
                 ? "{$this->tenant->shortname} naujienos - {$currentTag->name}"
                 : "{$this->tenant->shortname} naujienų archyvas",
-            description: $currentTag 
+            description: $currentTag
                 ? "Naršyk per {$this->tenant->shortname} naujienas pagal žymą '{$currentTag->name}'"
                 : "Naršyk per visas {$this->tenant->shortname} naujienas"
         );

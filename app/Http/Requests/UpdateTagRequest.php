@@ -28,7 +28,7 @@ class UpdateTagRequest extends FormRequest
             'name.en' => 'required|string|max:255',
             'description.lt' => 'nullable|string',
             'description.en' => 'nullable|string',
-            'alias' => 'nullable|string|max:255|unique:tags,alias,' . $tagId,
+            'alias' => 'nullable|string|max:255|unique:tags,alias,'.$tagId,
         ];
     }
 }

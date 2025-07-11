@@ -103,6 +103,7 @@ class RoleController extends Controller
         // Get all available permissions grouped by model type
         $allAvailablePermissions = Permission::all()->groupBy(function ($permission) {
             $parts = explode('.', $permission->name);
+
             return $parts[0] ?? ''; // Model type (e.g., 'tags', 'news')
         });
 

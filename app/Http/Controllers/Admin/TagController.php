@@ -181,7 +181,7 @@ class TagController extends Controller
             // Move news relationships
             $sourceTag->news()->each(function ($news) use ($targetTag) {
                 // Only attach if not already attached to avoid duplicates
-                if (!$targetTag->news()->where('news.id', $news->id)->exists()) {
+                if (! $targetTag->news()->where('news.id', $news->id)->exists()) {
                     $targetTag->news()->attach($news->id);
                 }
             });
