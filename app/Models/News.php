@@ -46,7 +46,7 @@ class News extends Model implements Feedable
         return $this->hasOne(News::class, 'id', 'other_lang_id');
     }
 
-    public function tags()
+    public function tags(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(Tag::class, 'posts_tags', 'news_id', 'tag_id');
     }
