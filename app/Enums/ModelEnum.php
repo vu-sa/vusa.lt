@@ -68,14 +68,12 @@ final class ModelEnum extends Enum
             'navigations' => ['*'],
 
             // Models that belong to padaliniai but not to individual users
-            'institutions' => ['padalinys', '*'],
             'studyPrograms' => ['padalinys', '*'],
             'quickLinks' => ['padalinys', '*'],
 
-            // Models that can be owned by users and also managed at padalinys level
-            // (these will have all scopes: own, padalinys, *)
-            // 'news' => ['own', 'padalinys', '*'],
-            // 'banners' => ['own', 'padalinys', '*'],
+            // Special case: institutions allow "own" scope only for read operations
+            // This is handled in the InstitutionPolicy and a special case in the seeder
+            'institutions' => ['own', 'padalinys', '*'],
 
             // Add more restrictions as needed
         ];

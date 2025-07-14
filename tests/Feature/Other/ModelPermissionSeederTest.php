@@ -61,43 +61,70 @@ test('permission seeder properly manages permissions based on model scope restri
     expect(Permission::where('name', 'news.create.*')->first())->toBeInstanceOf(Permission::class);
 });
 
-test('permission seeder handles institutions model with restricted scopes', function () {
-    // Test with 'institutions' model which only allows 'padalinys' and '*' scopes
-
-    // Create a disallowed permission that should be deleted
+test('permission seeder handles institutions model with read-only own scope', function () {
+    // Test with 'institutions' model which only allows 'own' scope for read operations
+    
+    // Create permissions that should be deleted (own scope for non-read operations)
     Permission::create([
         'name' => 'institutions.create.own',
         'guard_name' => 'web',
     ]);
-
+    
+    Permission::create([
+        'name' => 'institutions.update.own',
+        'guard_name' => 'web',
+    ]);
+    
+    Permission::create([
+        'name' => 'institutions.delete.own',
+        'guard_name' => 'web',
+    ]);
+    
+    // Get existing allowed permission before seeder runs (if it exists)
+    $existingReadOwnPermission = Permission::where('name', 'institutions.read.own')->first();
+    $existingReadOwnPermissionId = $existingReadOwnPermission?->id;
+    
     // Get existing allowed permission before seeder runs
     $existingAllowedPermission = Permission::where('name', 'institutions.update.padalinys')->first();
     $existingAllowedPermissionId = $existingAllowedPermission?->id;
-
+    
     // Run the seeder
     $seeder = new ModelPermissionSeeder;
     $seeder->run();
-
-    // Assert disallowed permission is deleted
+    
+    // Assert disallowed "own" permissions for non-read operations are deleted
     expect(Permission::where('name', 'institutions.create.own')->first())->toBeNull();
-
+    expect(Permission::where('name', 'institutions.update.own')->first())->toBeNull();
+    expect(Permission::where('name', 'institutions.delete.own')->first())->toBeNull();
+    
+    // Assert allowed "read.own" permission exists and is preserved if it existed before
+    expect(Permission::where('name', 'institutions.read.own')->first())
+        ->toBeInstanceOf(Permission::class);
+    
+    if ($existingReadOwnPermissionId) {
+        expect(Permission::where('name', 'institutions.read.own')->first()->id)
+            ->toEqual($existingReadOwnPermissionId);
+    }
+    
     // Assert allowed permission is preserved (if it existed) or created
     expect(Permission::where('name', 'institutions.update.padalinys')->first())
         ->toBeInstanceOf(Permission::class);
-
+    
     if ($existingAllowedPermissionId) {
         expect(Permission::where('name', 'institutions.update.padalinys')->first()->id)
             ->toEqual($existingAllowedPermissionId);
     }
-
-    // Assert only allowed scopes are created for institutions
+    
+    // Assert all padalinys and * scopes are created for all operations
     expect(Permission::where('name', 'institutions.create.padalinys')->first())->toBeInstanceOf(Permission::class);
     expect(Permission::where('name', 'institutions.create.*')->first())->toBeInstanceOf(Permission::class);
-
-    // Assert disallowed scope permissions don't exist
-    expect(Permission::where('name', 'institutions.read.own')->first())->toBeNull();
-    expect(Permission::where('name', 'institutions.update.own')->first())->toBeNull();
-    expect(Permission::where('name', 'institutions.delete.own')->first())->toBeNull();
+    expect(Permission::where('name', 'institutions.update.padalinys')->first())->toBeInstanceOf(Permission::class);
+    expect(Permission::where('name', 'institutions.update.*')->first())->toBeInstanceOf(Permission::class);
+    expect(Permission::where('name', 'institutions.delete.padalinys')->first())->toBeInstanceOf(Permission::class);
+    expect(Permission::where('name', 'institutions.delete.*')->first())->toBeInstanceOf(Permission::class);
+    
+    // Assert read.own exists but other .own permissions don't
+    expect(Permission::where('name', 'institutions.read.own')->first())->toBeInstanceOf(Permission::class);
 });
 
 test('permission seeder preserves existing allowed permissions without changing IDs', function () {

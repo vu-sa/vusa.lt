@@ -32,14 +32,20 @@ class ModelPermissionSeeder extends Seeder
             $allowedScopes = ModelEnum::getAllowedScopes($pluralizedModel);
 
             foreach (CRUDEnum::toLabels() as $crud) {
+                // Special case: institutions only allow "own" scope for read operations
+                $operationAllowedScopes = $allowedScopes;
+                if ($pluralizedModel === 'institutions' && $crud !== 'read') {
+                    $operationAllowedScopes = array_diff($allowedScopes, ['own']);
+                }
+
                 // Create permissions for allowed scopes
-                foreach ($allowedScopes as $scope) {
+                foreach ($operationAllowedScopes as $scope) {
                     $permissionsToCreate[] = $pluralizedModel.'.'.$crud.'.'.$scope;
                 }
 
-                // Identify permissions to delete (scopes not in allowed list)
+                // Identify permissions to delete (scopes not in allowed list for this operation)
                 $allPossibleScopes = ['own', 'padalinys', '*'];
-                $disallowedScopes = array_diff($allPossibleScopes, $allowedScopes);
+                $disallowedScopes = array_diff($allPossibleScopes, $operationAllowedScopes);
 
                 foreach ($disallowedScopes as $scope) {
                     $permissionsToDelete[] = $pluralizedModel.'.'.$crud.'.'.$scope;
