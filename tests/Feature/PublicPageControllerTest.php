@@ -18,7 +18,7 @@ beforeEach(function () {
             'shortname' => 'VU SA',
             'shortname_vu' => 'VU',
             'fullname' => 'Vilniaus universiteto Studentų atstovybė',
-            'type' => 'pagrindinis'
+            'type' => 'pagrindinis',
         ]
     );
 });
