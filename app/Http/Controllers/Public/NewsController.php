@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Public;
 
+use App\Helpers\ContentHelper;
 use App\Http\Controllers\PublicController;
 use App\Models\News;
 use Illuminate\Support\Str;
@@ -29,22 +30,10 @@ class NewsController extends PublicController
             ]
         ) : null);
 
-        // check if page->content->parts has type 'tiptap', if yes, use tiptap parser to get first part content (maybe enough for description)
-
-        $firstTiptapElement = $news->content->parts->filter(function ($part) {
-            return $part->type === 'tiptap';
-        })->first();
-
-        // Check if empty array
-        // This comes up, when in news creation, user doesn't add any content to tiptap editor
-        // It is initialised as an empty array, and when the ->setContent() method is called, it was throwing an error
-        if ($firstTiptapElement->json_content === []) {
-            $firstTiptapElement = null;
-        }
-
+        // Get description for SEO, prioritizing 'short' field over tiptap content
         $seo = $this->shareAndReturnSEOObject(
             title: $news->title.' - '.$this->tenant->shortname,
-            description: $firstTiptapElement ? Str::limit((new Editor)->setContent($firstTiptapElement->json_content)->getText(), 160) : null,
+            description: ContentHelper::getDescriptionForSeo($news),
             author: $news->tenant->shortname,
             image: $news->image,
             published_time: $news->publish_time,

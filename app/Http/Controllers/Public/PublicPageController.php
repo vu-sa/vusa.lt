@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Public;
 
+use App\Helpers\ContentHelper;
 use App\Http\Controllers\PublicController;
 use App\Models\Calendar;
 use App\Models\Category;
@@ -87,14 +88,10 @@ class PublicPageController extends PublicController
             ]
         ) : null);
 
-        // check if page->content->parts has type 'tiptap', if yes, use tiptap parser to get first part content (maybe enough for description)
-        $firstTiptapElement = $page->content->parts->filter(function ($part) {
-            return $part->type === 'tiptap';
-        })->first();
-
+        // Get description for SEO from first tiptap element
         $seo = $this->shareAndReturnSEOObject(
             title: $page->title.' - '.$this->tenant->shortname,
-            description: $firstTiptapElement ? (new Editor)->setContent($firstTiptapElement->json_content)->getText() : null,
+            description: ContentHelper::getDescriptionForSeo($page),
         );
 
         return Inertia::render('Public/ContentPage', [
