@@ -10,6 +10,7 @@ use App\Models\Tenant;
 use App\Notifications\MemberRegistered;
 use App\Settings\FormSettings;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
 
@@ -66,8 +67,31 @@ class SendMemberRegistrationNotification implements ShouldQueue
             $query->where('id', app(FormSettings::class)->member_registration_notification_recipient_role_id);
         })->get();
 
+        $dutyContact = $mailableDuties->first();
+
+        if ($dutyContact === null) {
+            // Log warning that will appear in Telescope
+            Log::warning('No duty found with configured role for member registration notification', [
+                'event' => 'member_registration_notification_failed',
+                'institution_id' => $institution->id,
+                'institution_name' => $institution->name,
+                'configured_role_id' => app(FormSettings::class)->member_registration_notification_recipient_role_id,
+                'registration_id' => $event->registration->id,
+                'registration_email' => $emailResponse->response['value'],
+                'registration_name' => $nameResponse->response['value'],
+                'available_duties_count' => $institution->duties()->count(),
+                'total_roles_in_institution' => $institution->duties()->with('roles')->get()->pluck('roles')->flatten()->unique('id')->count(),
+            ]);
+
+            // Skip sending the email completely when no appropriate duty is found
+            return;
+        }
+
         Mail::to($emailResponse->response['value'])->send(new ConfirmMemberRegistration(
-            AddressivizeHelper::addressivizeEveryWord($nameResponse->response['value']), $institution, $mailableDuties->first()));
+            AddressivizeHelper::addressivizeEveryWord($nameResponse->response['value']), 
+            $institution, 
+            $dutyContact
+        ));
 
         foreach ($mailableDuties as $mailableDuty) {
             Notification::send($mailableDuty->current_users()->first(), new MemberRegistered($event->registration->id, $nameResponse->response['value'], $institution, $mailableDuty->email));
