@@ -5,12 +5,12 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 beforeEach(function () {
-    $this->middleware = new SetLocale();
+    $this->middleware = new SetLocale;
 });
 
 test('sets locale from valid lang parameter', function () {
     $request = Request::create('/test?lang=en');
-    
+
     $this->middleware->handle($request, function ($req) {
         return new Response('test');
     });
@@ -22,7 +22,7 @@ test('sets locale from valid lang parameter', function () {
 test('ignores invalid locale from lang parameter', function () {
     $originalLocale = app()->getLocale();
     $request = Request::create('/test?lang=invalid');
-    
+
     $this->middleware->handle($request, function ($req) {
         return new Response('test');
     });
@@ -34,8 +34,8 @@ test('ignores invalid locale from lang parameter', function () {
 test('sanitizes malicious lang parameter', function () {
     $originalLocale = app()->getLocale();
     $maliciousInput = "'nvOpzp; AND 1=1 OR (<'\">iKO)),";
-    $request = Request::create("/test?lang=" . urlencode($maliciousInput));
-    
+    $request = Request::create('/test?lang='.urlencode($maliciousInput));
+
     $this->middleware->handle($request, function ($req) {
         return new Response('test');
     });
@@ -51,12 +51,12 @@ test('handles sql injection attempts', function () {
         "1' OR '1'='1",
         "admin'--",
         "' OR 1=1#",
-        "' UNION SELECT * FROM users--"
+        "' UNION SELECT * FROM users--",
     ];
 
     foreach ($sqlInjections as $injection) {
-        $request = Request::create("/test?lang=" . urlencode($injection));
-        
+        $request = Request::create('/test?lang='.urlencode($injection));
+
         $this->middleware->handle($request, function ($req) {
             return new Response('test');
         });
@@ -72,12 +72,12 @@ test('handles xss attempts', function () {
         "<script>alert('xss')</script>",
         "javascript:alert('xss')",
         "<img src=x onerror=alert('xss')>",
-        "';alert('xss');//"
+        "';alert('xss');//",
     ];
 
     foreach ($xssAttempts as $xss) {
-        $request = Request::create("/test?lang=" . urlencode($xss));
-        
+        $request = Request::create('/test?lang='.urlencode($xss));
+
         $this->middleware->handle($request, function ($req) {
             return new Response('test');
         });
@@ -91,7 +91,7 @@ test('handles non string lang parameter', function () {
     $originalLocale = app()->getLocale();
     $request = Request::create('/test');
     $request->merge(['lang' => ['array' => 'value']]);
-    
+
     $this->middleware->handle($request, function ($req) {
         return new Response('test');
     });
@@ -103,8 +103,8 @@ test('handles non string lang parameter', function () {
 test('handles extremely long lang parameter', function () {
     $originalLocale = app()->getLocale();
     $longString = str_repeat('a', 1000);
-    $request = Request::create("/test?lang=" . $longString);
-    
+    $request = Request::create('/test?lang='.$longString);
+
     $this->middleware->handle($request, function ($req) {
         return new Response('test');
     });
@@ -116,7 +116,7 @@ test('handles extremely long lang parameter', function () {
 test('uses locale from session when no parameter', function () {
     session()->put('lang', 'en');
     $request = Request::create('/test');
-    
+
     $this->middleware->handle($request, function ($req) {
         return new Response('test');
     });
@@ -128,7 +128,7 @@ test('ignores invalid locale from session', function () {
     $originalLocale = app()->getLocale();
     session()->put('lang', 'invalid');
     $request = Request::create('/test');
-    
+
     $this->middleware->handle($request, function ($req) {
         return new Response('test');
     });
@@ -138,7 +138,7 @@ test('ignores invalid locale from session', function () {
 
 test('uses default locale when no valid locale available', function () {
     $request = Request::create('/test');
-    
+
     $this->middleware->handle($request, function ($req) {
         return new Response('test');
     });
@@ -148,7 +148,7 @@ test('uses default locale when no valid locale available', function () {
 
 test('bypasses locale processing for admin routes', function () {
     $request = Request::create('/mano/dashboard');
-    
+
     $response = $this->middleware->handle($request, function ($req) {
         return new Response('test');
     });
@@ -162,7 +162,7 @@ test('bypasses locale processing for auth routes', function () {
 
     foreach ($bypassRoutes as $route) {
         $request = Request::create("/{$route}/test");
-        
+
         $response = $this->middleware->handle($request, function ($req) {
             return new Response('test');
         });
@@ -175,7 +175,7 @@ test('bypasses locale processing for auth routes', function () {
 test('redirects to locale when no locale segment', function () {
     app()->setLocale('lt');
     $request = Request::create('/news/test');
-    
+
     $response = $this->middleware->handle($request, function ($req) {
         return new Response('test');
     });
@@ -186,7 +186,7 @@ test('redirects to locale when no locale segment', function () {
 
 test('allows valid locale segments', function () {
     $request = Request::create('/en/news/test');
-    
+
     $response = $this->middleware->handle($request, function ($req) {
         return new Response('test');
     });
@@ -198,7 +198,7 @@ test('allows valid locale segments', function () {
 test('redirects invalid locale segments', function () {
     app()->setLocale('lt');
     $request = Request::create('/invalid/news/test');
-    
+
     $response = $this->middleware->handle($request, function ($req) {
         return new Response('test');
     });
@@ -213,16 +213,16 @@ test('sanitize locale removes special characters', function () {
     $method->setAccessible(true);
 
     $testCases = [
-        "en123!@#" => "en",
-        "lt-LT" => "ltLT",
-        "en_US" => "enUS",
-        "fr.FR" => "frFR",
+        'en123!@#' => 'en',
+        'lt-LT' => 'ltLT',
+        'en_US' => 'enUS',
+        'fr.FR' => 'frFR',
         "'nvOpzp; AND 1=1 OR (<'\">iKO))," => null, // Should be null due to length limit
-        "" => "",
-        "a" => "a",
+        '' => '',
+        'a' => 'a',
         str_repeat('a', 15) => null, // Too long
-        "en" => "en",
-        "lt" => "lt",
+        'en' => 'en',
+        'lt' => 'lt',
     ];
 
     foreach ($testCases as $input => $expected) {
@@ -236,11 +236,11 @@ test('sanitize locale handles non string input', function () {
     $method = $reflection->getMethod('sanitizeLocale');
     $method->setAccessible(true);
 
-    $nonStringInputs = [null, 123, [], (object)[], true, false];
+    $nonStringInputs = [null, 123, [], (object) [], true, false];
 
     foreach ($nonStringInputs as $input) {
         $result = $method->invoke($this->middleware, $input);
-        expect($result)->toBeNull("Failed for input type: " . gettype($input));
+        expect($result)->toBeNull('Failed for input type: '.gettype($input));
     }
 });
 

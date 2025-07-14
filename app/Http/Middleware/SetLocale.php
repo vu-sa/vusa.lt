@@ -38,13 +38,13 @@ class SetLocale
 
     protected function sanitizeLocale($locale)
     {
-        if (!is_string($locale)) {
+        if (! is_string($locale)) {
             return null;
         }
 
         // Remove any non-alphanumeric characters and limit length
         $sanitized = preg_replace('/[^a-zA-Z]/', '', $locale);
-        
+
         return strlen($sanitized) <= 10 ? $sanitized : null;
     }
 
@@ -62,7 +62,7 @@ class SetLocale
 
     protected function isLocaleSegment($segment)
     {
-        if (!is_string($segment)) {
+        if (! is_string($segment)) {
             return false;
         }
 

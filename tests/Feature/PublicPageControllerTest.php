@@ -1,11 +1,11 @@
 <?php
 
+use App\Models\Category;
 use App\Models\Content;
 use App\Models\ContentPart;
+use App\Models\Navigation;
 use App\Models\Page;
 use App\Models\Tenant;
-use App\Models\Navigation;
-use App\Models\Category;
 use Inertia\Testing\AssertableInertia as Assert;
 
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
@@ -13,7 +13,7 @@ uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 beforeEach(function () {
     $this->tenant = Tenant::factory()->create([
         'alias' => 'test',
-        'shortname' => 'Test Tenant'
+        'shortname' => 'Test Tenant',
     ]);
 });
 
@@ -32,7 +32,7 @@ test('page renders successfully with content', function () {
         'content_id' => $content->id,
     ]);
 
-    $response = $this->withoutMiddleware()->get("http://test.localhost/lt/test-page");
+    $response = $this->withoutMiddleware()->get('http://test.localhost/lt/test-page');
 
     $response->assertStatus(200);
     $response->assertInertia(
@@ -112,7 +112,7 @@ test('page renders successfully with content but no tiptap parts', function () {
 
 test('page with multiple content parts including tiptap renders successfully', function () {
     $content = Content::factory()->create();
-    
+
     // Create a hero part
     ContentPart::factory()->create([
         'content_id' => $content->id,
@@ -120,7 +120,7 @@ test('page with multiple content parts including tiptap renders successfully', f
         'json_content' => ['title' => 'Hero section'],
         'order' => 1,
     ]);
-    
+
     // Create a tiptap part
     ContentPart::factory()->create([
         'content_id' => $content->id,

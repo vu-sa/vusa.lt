@@ -88,8 +88,8 @@ class SendMemberRegistrationNotification implements ShouldQueue
         }
 
         Mail::to($emailResponse->response['value'])->send(new ConfirmMemberRegistration(
-            AddressivizeHelper::addressivizeEveryWord($nameResponse->response['value']), 
-            $institution, 
+            AddressivizeHelper::addressivizeEveryWord($nameResponse->response['value']),
+            $institution,
             $dutyContact
         ));
 

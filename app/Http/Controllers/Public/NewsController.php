@@ -5,9 +5,7 @@ namespace App\Http\Controllers\Public;
 use App\Helpers\ContentHelper;
 use App\Http\Controllers\PublicController;
 use App\Models\News;
-use Illuminate\Support\Str;
 use Inertia\Inertia;
-use Tiptap\Editor;
 
 class NewsController extends PublicController
 {

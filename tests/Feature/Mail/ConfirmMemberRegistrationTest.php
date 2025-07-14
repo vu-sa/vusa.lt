@@ -18,7 +18,7 @@ beforeEach(function () {
         ->for($this->institution)
         ->hasAttached($this->user, ['start_date' => now()->subDay(), 'end_date' => now()->addDay()])
         ->create([
-            'email' => 'duty@example.com'
+            'email' => 'duty@example.com',
         ]);
 });
 
@@ -80,7 +80,7 @@ describe('ConfirmMemberRegistration Mail', function () {
         // This test documents the current behavior that causes the error
         // In PHP 8+, passing null to a typed parameter throws TypeError
         $this->expectException(TypeError::class);
-        
+
         // We need to suppress the static analysis error since we're intentionally testing invalid input
         /** @phpstan-ignore-next-line */
         new ConfirmMemberRegistration(

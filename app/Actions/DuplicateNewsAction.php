@@ -36,7 +36,7 @@ class DuplicateNewsAction
             ];
         })->toArray() ?? [];
 
-        if (!empty($contentParts)) {
+        if (! empty($contentParts)) {
             $newNews->content->parts()->createMany($contentParts);
         }
 
