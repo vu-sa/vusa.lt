@@ -161,7 +161,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Tag>>(() => {
   // UI configuration
   const uiConfig: UIConfig = {
     headerTitle: "Žymos",
-    headerDescription: $t('Tvarkykite turinio žymas ir kategorijas'),
+    headerDescription: $t('Tvarkykite turinio žymas'),
     icon: Icons.TAG,
     createRoute: canCreate.value ? route('tags.create') : undefined,
     canCreate: canCreate.value

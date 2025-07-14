@@ -5,9 +5,7 @@
         {{ $t("forms.context.main_info") }}
       </template>
       <template #description>
-        <p class="mb-4">
-          Žyma – tai etiketė, kuri padeda kategorizuoti ir organizuoti turinį (naujienas, puslapius).
-        </p>
+        <MdSuspenseWrapper directory="tags" :locale="$page.props.app.locale" file="description" />
       </template>
       
       <NFormItem :label="$t('forms.fields.title')" :required="true">
@@ -30,6 +28,7 @@ import FormElement from "./FormElement.vue";
 import AdminForm from "./AdminForm.vue";
 import MultiLocaleInput from "@/Components/FormItems/MultiLocaleInput.vue";
 import MultiLocaleTiptapFormItem from "@/Components/FormItems/MultiLocaleTiptapFormItem.vue";
+import MdSuspenseWrapper from "@/Features/MarkdownGetterFromDocs/MdSuspenseWrapper.vue";
 
 const { postTag, rememberKey } = defineProps<{
   postTag: App.Entities.Tag;
