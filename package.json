@@ -34,7 +34,7 @@
     "@tiptap/extension-table-header": "^2.0.1",
     "@tiptap/extension-table-row": "^2.0.1",
     "@tiptap/extension-underline": "^2.0.1",
-    "@tiptap/extension-youtube": "^2.0.1",
+    "@tiptap/extension-youtube": "^3.0.3",
     "@tiptap/starter-kit": "^2.0.1",
     "@tiptap/vue-3": "^2.0.1",
     "@types/leaflet": "^1.9.17",
