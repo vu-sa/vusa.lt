@@ -109,7 +109,7 @@
     "vite": "^7.0.4",
     "vite-plugin-vue-devtools": "^7.3.7",
     "vite-plugin-ziggy": "^0.3.0",
-    "vitepress": "^1.2.3",
+    "vitepress": "^2.0.0-alpha.8",
     "vitest": "^3.0.0",
     "vitest-axe": "^0.1.0",
     "vue": "^3.3.4",
