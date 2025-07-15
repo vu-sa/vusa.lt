@@ -21,7 +21,7 @@
     "@inertiajs/vue3": "^2.0.3",
     "@observablehq/plot": "^0.6.16",
     "@pnp/graph": "^4.3.0",
-    "@pnp/sp": "^4.3.0",
+    "@pnp/sp": "^4.15.0",
     "@tailwindcss/vite": "^4.0.8",
     "@tanstack/vue-table": "^8.21.2",
     "@tiptap/extension-bubble-menu": "^2.0.1",
