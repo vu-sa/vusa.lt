@@ -1,6 +1,5 @@
 import { defineConfig } from "vitest/config";
 import { NaiveUiResolver, VueUseComponentsResolver } from 'unplugin-vue-components/resolvers'
-import { codecovVitePlugin } from "@codecov/vite-plugin";
 import Components from 'unplugin-vue-components/vite'
 import Icons from 'unplugin-icons/vite'
 import IconsResolver from 'unplugin-icons/resolver'
@@ -12,15 +11,11 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 import vueJsx from "@vitejs/plugin-vue-jsx";
 import tailwindcss from '@tailwindcss/vite'
 import ziggy from 'vite-plugin-ziggy';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-// Get the directory name using ESM compatible approach
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Load the CODECOV_TOKEN from the .env file
-import { loadEnv } from "vite";
-const token = loadEnv('production', './', 'CODECOV').CODECOV_TOKEN;
+// import { codecovVitePlugin } from "@codecov/vite-plugin";
+// import { loadEnv } from "vite";
+// const token = loadEnv('production', './', 'CODECOV').CODECOV_TOKEN;
 
 // This makes so that the <docs> block in Vue SFCs is removed
 const vueDocsPlugin = {
@@ -84,11 +79,11 @@ export default defineConfig({
     vueJsx({
       // options are passed on to @vue/babel-plugin-jsx
     }),
-    codecovVitePlugin({
-      enableBundleAnalysis: token !== undefined,
-      bundleName: "Application",
-      uploadToken: token,
-    }),
+    // codecovVitePlugin({
+    //   enableBundleAnalysis: token !== undefined,
+    //   bundleName: "Application",
+    //   uploadToken: token,
+    // }),
   ],
   test: {
     globals: true,
