@@ -7,8 +7,8 @@
       <template #card-header>
         Puslapio informacija
       </template>
-      <NewsForm :news :other-lang-news enable-delete
-        @submit:form="(form) => form.patch(route('news.update', news.id), { preserveScroll: true })"
+      <NewsForm :news :other-lang-news="otherLangNews" :available-tags="availableTags" enable-delete
+        @submit:form="(form: any) => form.patch(route('news.update', news.id), { preserveScroll: true })"
         @delete="() => router.delete(route('news.destroy', news.id))" />
     </UpsertModelLayout>
   </PageContent>
@@ -24,6 +24,7 @@ import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 
 defineProps<{
   news: App.Entities.News;
-  otherLangNews: App.Entities.News[] | null;
+  otherLangNews?: App.Entities.News[];
+  availableTags?: App.Entities.Tag[];
 }>();
 </script>

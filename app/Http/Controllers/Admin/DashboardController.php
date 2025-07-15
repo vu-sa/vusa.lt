@@ -365,7 +365,7 @@ class DashboardController extends Controller
 
         if (! $selectedTenant) {
             $providedTenant = null;
-            $tenantResourceReservations = new Collection();
+            $tenantResourceReservations = new Collection;
         } else {
             $providedTenant = Tenant::query()->where('id', $selectedTenant['id'])->with('reservations.resources', 'resources')->first();
 

@@ -30,6 +30,7 @@ class StoreDutyRequest extends FormRequest
             'email' => 'nullable|email',
             'institution_id' => 'required',
             'places_to_occupy' => 'nullable|integer',
+            'contacts_grouping' => 'required|in:none,study_program,tenant',
             'types' => 'nullable|array',
             'roles' => 'nullable|array',
             'current_users' => 'nullable|array',

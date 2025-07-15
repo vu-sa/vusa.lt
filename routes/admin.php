@@ -36,6 +36,9 @@ Route::patch('types/{type}/restore', [TypeController::class, 'restore'])->name('
 Route::resource('pages', PageController::class)->except(['show']);
 Route::resource('news', NewsController::class)->except(['show']);
 Route::resource('categories', CategoryController::class)->except(['show']);
+Route::resource('tags', TagController::class)->except(['show']);
+Route::get('tags/merge', [TagController::class, 'mergeTags'])->name('tags.merge');
+Route::post('tags/merge', [TagController::class, 'processMergeTags'])->name('tags.processMerge');
 
 // change order main page
 Route::get('quickLinks/tenant/{tenant}/edit-order/{lang}', [QuickLinkController::class, 'editOrder'])->name('quickLinks.edit-order')
@@ -110,6 +113,9 @@ Route::post('documents/{document}/refresh', [DocumentController::class, 'refresh
 
 Route::resource('duties', DutyController::class);
 Route::resource('dutiables', DutiableController::class)->except(['index', 'show']);
+Route::get('studyPrograms/merge', [StudyProgramController::class, 'merge'])->name('studyPrograms.merge');
+Route::post('studyPrograms/merge', [StudyProgramController::class, 'mergeStudyPrograms'])->name('studyPrograms.mergeStudyPrograms');
+Route::resource('studyPrograms', StudyProgramController::class)->except(['show']);
 Route::post('institutions/reorderDuties', [InstitutionController::class, 'reorderDuties'])->name('institutions.reorderDuties');
 Route::resource('institutions', InstitutionController::class);
 

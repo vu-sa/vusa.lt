@@ -18,7 +18,7 @@
         </div>
         <div class="flex items-center gap-2">
           <slot name="headerActions" />
-          <Button as-child v-if="canCreate && createRoute" variant="default" class="ml-auto gap-1.5">
+          <Button v-if="canCreate && createRoute" as-child variant="default" class="ml-auto gap-1.5">
             <Link :href="createRoute">
             <PlusCircleIcon class="h-4 w-4" />
             <span>{{ $t('forms.add') }}</span>
@@ -40,35 +40,16 @@
           </div>
         </div>
 
-        <AdminDataTable 
-          ref="dataTableRef" 
-          :model-name="modelName" 
-          :entity-name="entityName || modelName" 
-          :data="data"
-          :columns="columns" 
-          :total-count="totalCount" 
-          :initial-page="initialPage" 
-          :page-size="pageSize"
-          :can-create="canCreate" 
-          :create-route="createRoute" 
-          :enable-filtering="enableFiltering"
-          :enable-column-visibility="enableColumnVisibility" 
-          :initial-sorting="initialSorting"
-          :initial-filters="initialFilters" 
-          :allow-toggle-deleted="allowToggleDeleted" 
-          :empty-message="emptyMessage"
-          :empty-icon="emptyIcon || PlusCircleIcon" 
-          :enable-row-selection="enableRowSelection"
-          :enable-multi-row-selection="enableMultiRowSelection" 
-          :enable-row-selection-column="enableRowSelectionColumn"
-          :initial-row-selection="initialRowSelection" 
-          :get-row-id="getRowId" 
-          @data-loaded="handleDataLoaded"
-          @update:row-selection="handleRowSelectionChange" 
-          @sorting-changed="handleSortingChanged"
-          @page-changed="handlePageChanged" 
-          @filter-changed="handleFilterChanged"
-        >
+        <AdminDataTable ref="dataTableRef" :model-name="modelName" :entity-name="entityName || modelName" :data="data"
+          :columns="columns" :total-count="totalCount" :initial-page="initialPage" :page-size="pageSize"
+          :can-create="canCreate" :create-route="createRoute" :enable-filtering="enableFiltering"
+          :enable-column-visibility="enableColumnVisibility" :initial-sorting="initialSorting"
+          :initial-filters="initialFilters" :allow-toggle-deleted="allowToggleDeleted" :empty-message="emptyMessage"
+          :empty-icon="emptyIcon || PlusCircleIcon" :enable-row-selection="enableRowSelection"
+          :enable-multi-row-selection="enableMultiRowSelection" :enable-row-selection-column="enableRowSelectionColumn"
+          :initial-row-selection="initialRowSelection" :get-row-id="getRowId" @data-loaded="handleDataLoaded"
+          @update:row-selection="handleRowSelectionChange" @sorting-changed="handleSortingChanged"
+          @page-changed="handlePageChanged" @filter-changed="handleFilterChanged">
           <!-- Pass through the slots -->
           <template #tableActions>
             <slot name="tableActions" />
@@ -98,11 +79,10 @@
               </div>
               <slot name="emptyActions">
                 <Link v-if="canCreate && createRoute" :href="createRoute">
-                  <Button variant="outline" class="gap-1.5">
-                    <PlusCircleIcon class="h-4 w-4" />
-                    <span>{{ $t('forms.add') }}</span>
-                  </Button>
-
+                <Button variant="outline" class="gap-1.5">
+                  <PlusCircleIcon class="h-4 w-4" />
+                  <span>{{ $t('forms.add') }}</span>
+                </Button>
                 </Link>
               </slot>
             </div>
@@ -130,9 +110,9 @@ import { Button } from '@/Components/ui/button';
 import AdminContentPage from './AdminContentPage.vue';
 import { useComponentBreadcrumbs } from "@/Composables/useBreadcrumbs";
 import { Link } from '@inertiajs/vue3';
-import { 
-  type TableConfig, 
-  type PaginationConfig, 
+import {
+  type TableConfig,
+  type PaginationConfig,
   type UIConfig,
   type FilteringConfig,
   type RowSelectionConfig,

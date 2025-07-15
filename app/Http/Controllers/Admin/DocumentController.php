@@ -76,7 +76,7 @@ class DocumentController extends Controller
     {
         $documentCollection = new Collection;
         $model = null; // Initialize model variable
-        
+
         foreach ($request->documents as $document) {
             $model = new Document;
 

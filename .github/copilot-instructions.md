@@ -15,77 +15,29 @@
 | Support both lt/en languages                | Hardcode language strings                   |
 | Use Shadcn Vue for UI components            | Mix UI library styles                       |
 | Reuse components                            | Create one-off specialized components       |
+| Use `sail` for Laravel commands             | Run commands directly without sail          |
 
-## Model & Policy Patterns
+## Development Commands
 
-```php
-// Model pattern
-class ExampleModel extends Model
-{
-    use HasFactory, SoftDeletes, HasTranslations;
-    
-    protected $translatable = ['name', 'description'];
-    
-    public function institution(): BelongsTo
-    {
-        return $this->belongsTo(Institution::class);
-    }
-}
+All Laravel and testing commands should be run using **Laravel Sail**:
 
-// Policy pattern
-class ExamplePolicy extends ModelPolicy
-{
-    public function __construct(ModelAuthorizer $authorizer)
-    {
-        parent::__construct($authorizer);
-        $this->pluralModelName = Str::plural(ModelEnum::EXAMPLE()->label);
-    }
-}
+```bash
+# Examples:
+./vendor/bin/sail artisan migrate
+./vendor/bin/sail artisan test
+./vendor/bin/sail composer install
+./vendor/bin/sail npm run dev
 ```
 
-## UI Components Architecture
+## Routing Structure
 
-The project uses **Reka UI** as the base component library wrapped with **Shadcn Vue** styling patterns:
-
-1. **Base Component Pattern**:
-```vue
-<script setup lang="ts">
-import { SomeRekaComponent, type SomeComponentProps } from 'reka-ui'
-import { cn } from '@/Utils/Shadcn/utils'
-
-const props = defineProps<SomeComponentProps & { class?: HTMLAttributes['class'] }>()
-</script>
-
-<template>
-  <SomeRekaComponent
-    data-slot="component-name"
-    v-bind="props"
-    :class="cn('tailwind-styling-classes', props.class)"
-  >
-    <slot />
-  </SomeRekaComponent>
-</template>
-```
-
-2. **Component Directories**:
-   - `/resources/js/Components/ui/` - Base UI components (button, dialog, select, etc.)
-   - `/resources/js/Components/Layouts/` - Page layout templates
-   - `/resources/js/Components/FormItems/` - Form inputs with multilingual support
-   - `/resources/js/Components/AdminForms/` - Model-specific admin forms
-   - `/resources/js/Components/Public/` - Public-facing website components
-   - `/resources/js/Components/RichContent/` - Rich content editing components
-   - `/resources/js/Components/Tables/` - Data table implementations
-   - `/resources/js/Components/Buttons/` - Specialized button components
-
-## Vue Component Pattern
-```vue
-<template>
-  <div>
-    <h1>{{ $t("Page Title") }}</h1>
-    <MultiLocaleInput v-model:input="form.name" />
-  </div>
-</template>
-```
+- **Admin routes**: Prefixed with `/mano` (not `/admin`)
+  - Defined in `routes/admin.php` 
+  - **No "admin." prefix in route names** (confirmed in RouteServiceProvider)
+  - Example: `route('studyPrograms.index')` → `/mano/studyPrograms`
+  - Admin routes are configured in RouteServiceProvider with middleware `['web', 'auth']` and namespace `App\\Http\\Controllers\\Admin`
+- **Public routes**: Defined in `routes/web.php`
+- **API routes**: Prefixed with `/api` and defined in `routes/api.php`
 
 ## Key Architecture
 
@@ -116,6 +68,8 @@ const props = defineProps<SomeComponentProps & { class?: HTMLAttributes['class']
 - Test component interactions and state changes
 - Create separate test classes for complex features
 - Focus on critical user workflows
+- Run tests using Sail: `./vendor/bin/sail artisan test`
+- Admin routes use no "admin." prefix (e.g., `route('studyPrograms.index')`)
 
 ## Accessibility
 - Use semantic HTML elements (nav, main, section, article)
@@ -162,6 +116,46 @@ const props = defineProps<SomeComponentProps & { class?: HTMLAttributes['class']
   - API documentation
   - Testing guidelines
   - Contribution guides
+
+## Key Implementation Patterns
+
+### Translatable Models
+- **Admin interfaces**: Use `toFullArray()` to return full translation objects
+- **Public interfaces**: Use `toArray()` to return localized strings
+- **Testing translations**: Use `getTranslations('field')` and `getTranslation('field', 'locale')`
+- **Factory data**: Always include translation arrays: `'name' => ['lt' => '...', 'en' => '...']`
+
+### Factory Organization
+- **Standard models**: `database/factories/ModelFactory.php`
+- **Pivot models**: `database/factories/Pivots/ModelFactory.php`
+- **Namespace**: Must match directory structure (`Database\Factories\Pivots\ModelFactory`)
+
+### Common Action Patterns
+```php
+// GetTenantsForUpserts - always include both parameters
+GetTenantsForUpserts::execute('models.create.padalinys', $this->authorizer)
+
+// Admin data formatting for translatable models
+'data' => $models->getCollection()->map->toFullArray() // NOT ->items()
+```
+
+### Testing Permissions
+```php
+// For domain-appropriate testing, use relevant roles
+$user->duties()->first()->assignRole('Communication Coordinator'); // For content/duties management
+$user->duties()->first()->assignRole('Resource Manager'); // For resource management
+
+// For comprehensive testing when all permissions needed
+$user->assignRole(config('permission.super_admin_role_name'));
+```
+
+### Manual Filtering Pattern
+```php
+// Add before TanStack filters for simple field filtering
+if ($request->has('field') && !empty($request->field)) {
+    $query->where('field', $request->field);
+}
+```
 
 ## Remember
 This is a **student-run project**. Prioritize maintainability and approachability over complex solutions.

@@ -27,7 +27,7 @@ class DoingController extends Controller
     {
         $this->authorize('viewAny', Doing::class);
 
-        $indexer = new ModelIndexer(new Doing());
+        $indexer = new ModelIndexer(new Doing);
 
         $doings = $indexer
             ->setEloquentQuery()

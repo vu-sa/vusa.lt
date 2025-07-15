@@ -12,7 +12,7 @@
             <SearchIcon class="h-4 w-4 text-muted-foreground" />
           </template>
           <template #suffix v-if="searchQuery">
-            <Button variant="ghost" size="icon-sm" @click="searchQuery = ''">
+            <Button variant="ghost" size="icon" @click="searchQuery = ''">
               <XIcon class="h-4 w-4" />
             </Button>
           </template>
@@ -163,14 +163,14 @@ type MenuItemType = {
   title: string;
   icon: Component;
   href: string;
-  show: boolean;
+  show: boolean | undefined;
 };
 
 type MenuItemsType = {
   category: string;
   items: MenuItemType[];
   visibleItems: MenuItemType[];
-  show: boolean;
+  show: boolean | undefined;
 };
 
 // Search and filter states
@@ -203,7 +203,7 @@ const matchesSearch = (item: MenuItemType): boolean => {
 };
 
 // Menu items definition - Reorganized to avoid duplications
-const menuItems: MenuItemsType[] = computed(() => [
+const menuItems = computed(() => [
   {
     category: $t('Žmonės'),
     items: [
@@ -231,9 +231,15 @@ const menuItems: MenuItemsType[] = computed(() => [
         href: route('trainings.index'),
         show: auth?.can.create.training
       },
+      {
+        title: $t('Studijų programos'),
+        icon: Icons.STUDY_PROGRAM,
+        href: route('studyPrograms.index'),
+        show: auth?.can.create.studyProgram
+      },
     ],
-    show: auth?.can.create.user || auth?.can.create.duty || auth?.can.create.membership || auth?.can.create.training,
-    visibleItems: []
+    show: auth?.can.create.user || auth?.can.create.duty || auth?.can.create.membership || auth?.can.create.training || auth?.can.create.studyProgram,
+    visibleItems: [] as MenuItemType[]
   },
   {
     category: $t('Organizacijos'),
@@ -258,7 +264,7 @@ const menuItems: MenuItemsType[] = computed(() => [
       },
     ],
     show: auth?.can.create.institution || auth?.can.create.tenant,
-    visibleItems: []
+    visibleItems: [] as MenuItemType[]
   },
   {
     category: $t('Svetainė'),
@@ -305,9 +311,15 @@ const menuItems: MenuItemsType[] = computed(() => [
         href: route('categories.index'),
         show: auth?.can.create.category
       },
+      {
+        title: $t('Žymos'),
+        icon: Icons.TAG,
+        href: route('tags.index'),
+        show: auth?.can.create.tag
+      },
     ],
-    show: auth?.can.create.page || auth?.can.create.news || auth?.can.create.quickLink || auth?.can.create.banner || auth?.can.create.navigation || auth?.can.create.calendar || auth?.can.create.category,
-    visibleItems: []
+    show: auth?.can.create.page || auth?.can.create.news || auth?.can.create.quickLink || auth?.can.create.banner || auth?.can.create.navigation || auth?.can.create.calendar || auth?.can.create.category || auth?.can.create.tag,
+    visibleItems: [] as MenuItemType[]
   },
   {
     category: $t('Failai ir dokumentai'),
@@ -332,7 +344,7 @@ const menuItems: MenuItemsType[] = computed(() => [
       },
     ],
     show: auth?.can.create.news || auth?.can.create.page || auth?.can.create.document || auth?.can.create.sharepointFile,
-    visibleItems: []
+    visibleItems: [] as MenuItemType[]
   },
   {
     category: $t('Atstovavimas'),
@@ -369,7 +381,7 @@ const menuItems: MenuItemsType[] = computed(() => [
       },
     ],
     show: auth?.can.create.meeting || auth?.can.create.doing || auth?.can.create.goal || auth?.can.create.goalGroup || auth?.can.create.matter,
-    visibleItems: []
+    visibleItems: [] as MenuItemType[]
   },
   {
     category: $t('Rezervacijos'),
@@ -394,7 +406,7 @@ const menuItems: MenuItemsType[] = computed(() => [
       },
     ],
     show: auth?.can.create.reservation || auth?.can.create.resource,
-    visibleItems: []
+    visibleItems: [] as MenuItemType[]
   },
   {
     category: $t('Formos'),
@@ -407,7 +419,7 @@ const menuItems: MenuItemsType[] = computed(() => [
       },
     ],
     show: auth?.can.create.form,
-    visibleItems: []
+    visibleItems: [] as MenuItemType[]
   },
   {
     category: $t('Sistema'),
@@ -444,14 +456,14 @@ const menuItems: MenuItemsType[] = computed(() => [
       },
     ],
     show: auth?.can.create.role || auth?.can.create.permission || auth?.can.create.type || auth?.can.create.relationship || auth?.can.create.changelogItem,
-    visibleItems: []
+    visibleItems: [] as MenuItemType[]
   }
 ]);
 
 // Get unique categories for filter dropdown
 const uniqueCategories = computed(() => {
   return menuItems.value
-    .filter(category => category.show)
+    .filter(category => category.show === true)
     .map(category => category.category);
 });
 
@@ -469,7 +481,7 @@ const filteredMenuItems = computed(() => {
     const filteredCategory = { ...category };
     
     // Filter items based on search and visibility
-    let filteredItems = category.items.filter(item => item.show && matchesSearch(item));
+    let filteredItems = category.items.filter(item => item.show === true && matchesSearch(item));
     
     // Apply favorites filter if needed
     if (showOnlyFavorites.value) {
@@ -479,11 +491,10 @@ const filteredMenuItems = computed(() => {
     // Store filtered items for display
     filteredCategory.visibleItems = filteredItems;
     
-    return filteredCategory;
-  }).filter(category => {
+    return filteredCategory;  }).filter(category => {
     // Keep category if it's enabled in filters and has visible items
-    return category.show && 
-           category.visibleItems.length > 0 && 
+    return category.show === true &&
+           category.visibleItems.length > 0 &&
            selectedCategories.value[category.category];
   });
 });
@@ -494,9 +505,9 @@ const favoriteMenuItems = computed(() => {
   const allItems = menuItems.value.flatMap(category => category.items);
   
   // Filter for favorites that are visible and match search
-  return allItems.filter(item => 
-    item.show && 
-    isFavorite(item) && 
+  return allItems.filter(item =>
+    item.show === true &&
+    isFavorite(item) &&
     matchesSearch(item)
   );
 });

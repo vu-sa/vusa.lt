@@ -1,4 +1,4 @@
-import storybookTest from '@storybook/experimental-addon-test/vitest-plugin';
+import storybookTest from '@storybook/addon-vitest/vitest-plugin';
 import path from 'node:path';
 import { defineWorkspace } from 'vitest/config';
 import { fileURLToPath } from 'node:url';
@@ -6,6 +6,7 @@ import Icons from 'unplugin-icons/vite';
 import IconsResolver from 'unplugin-icons/resolver';
 import Components from 'unplugin-vue-components/vite';
 import vuePlugin from '@vitejs/plugin-vue';
+
 const dirname =
   typeof __dirname !== 'undefined' ? __dirname : path.dirname(fileURLToPath(import.meta.url));
 
@@ -98,7 +99,8 @@ export default defineWorkspace([
       },
       deps: {
         // Inline the Storybook Vue package to avoid bundling issues
-        inline: [/@storybook\/vue3/]
+        // WARNING: Vitest  "deps.inline" is deprecated. If you rely on vite-node directly, use "server.deps.inline" instead. Otherwise, consider using "deps.optimizer.ssr.include"
+        // inline: [/@storybook\/vue3/]
       }
     },
     resolve: {

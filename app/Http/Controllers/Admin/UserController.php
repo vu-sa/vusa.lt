@@ -430,14 +430,14 @@ class UserController extends Controller
     {
         // Generate a random password with 10 characters
         $password = Str::random(10);
-        
+
         // Update the user's password
         $user->password = bcrypt($password);
         $user->save();
 
         // Return the one-time visible password
         return back()->with('data', $password)
-                     ->with('success', 'Slaptažodis sėkmingai sukurtas!');
+            ->with('success', 'Slaptažodis sėkmingai sukurtas!');
     }
 
     /**

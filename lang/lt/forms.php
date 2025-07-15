@@ -32,6 +32,8 @@ return [
         'hour' => 'Valanda',
         'minute' => 'Minutė',
         'time' => 'Laikas',
+        'tenant' => 'Padalinys',
+        'language' => 'Kalba',
     ],
     'context' => [
         'main_info' => 'Pagrindinė informacija',

@@ -3,30 +3,31 @@
     <ul :class="ulClasses">
       <li v-for="links in item.links" :key="item.id">
         <template v-for="(link, index) in links" :key="link.name">
-          <div v-if="link.type === 'divider'" class="my-3 border-t border-zinc-200">
+          <div v-if="link.type === 'divider'" class="my-4 border-t border-zinc-200 dark:border-zinc-700">
             <slot v-if="showEditIcons" :index :link :links name="editIconsDivider" />
           </div>
 
           <NavigationMenuLink v-else-if="link.image" :as="linkComponent" prefetch
-            class="relative mb-2 flex rounded-md bg-zinc-900 transition-colors last:mb-0 hover:bg-zinc-800"
+            class="relative mb-4 flex rounded-md bg-zinc-900 transition-all duration-300 last:mb-0 hover:bg-zinc-800 hover:shadow-lg focus:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-500 dark:focus:ring-zinc-400"
             :href="link.url" :class="linkClasses(link)" @click="handleCloseMenu">
-            <img class="absolute left-0 top-0 size-full rounded-md object-cover opacity-25 contrast-150"
+            <img class="absolute left-0 top-0 size-full rounded-md object-cover opacity-60 contrast-110"
               :src="link.image" alt="Background image">
-            <div class="z-50 p-4 mt-auto">
-              <div class="text-lg font-black leading-tight text-zinc-50">
+            <div class="absolute left-0 top-0 size-full rounded-md bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+            <div class="relative z-10 p-4 mt-auto">
+              <div class="text-lg font-black leading-tight text-white">
                 {{ link.name }}
               </div>
-              <p v-if="link.description" class="mt-1 line-clamp-2 leading-snug text-white">
+              <p v-if="link.description" class="mt-1 line-clamp-2 leading-snug text-white/90">
                 {{ link.description }}
               </p>
             </div>
-            <div v-if="showEditIcons" class="z-40 my-auto inline-flex h-fit rounded-lg bg-white/80 p-2">
+            <div v-if="showEditIcons" class="relative z-20 my-auto inline-flex h-fit rounded-lg bg-white/90 p-2">
               <slot :index="index" :link="link" :links="links" name="editIconsBg" />
             </div>
           </NavigationMenuLink>
 
           <NavigationMenuLink v-else :as="linkComponent" prefetch
-            class="my-1 flex h-fit items-center rounded-md text-left leading-none transition-colors" :href="link.url"
+            class="mb-2 flex h-fit items-center rounded-md text-left leading-none transition-colors focus:outline-none focus:ring-2 focus:ring-zinc-500 dark:focus:ring-zinc-400" :href="link.url"
             :class="linkClasses(link)" @click="handleCloseMenu">
             <div class="flex w-full items-center justify-between gap-2">
               <div class="h-fit">
@@ -37,7 +38,7 @@
                     {{ link.small_text }}
                   </NTag>
                 </div>
-                <p v-if="link.description" class="mt-1 line-clamp-2 text-sm leading-snug text-zinc-500/90">
+                <p v-if="link.description" class="mt-1 line-clamp-2 text-sm leading-snug text-zinc-500 dark:text-zinc-400">
                   {{ link.description }}
                 </p>
               </div>
@@ -65,8 +66,11 @@ interface Link {
   icon?: string;
   image?: string;
   description?: string;
-  type?: string;
+  type?: 'link' | 'block-link' | 'category-link' | 'full-height-background-link' | 'divider';
+  small_text?: string;
 }
+
+type LinkType = Exclude<Link['type'], 'divider' | undefined>;
 
 interface Item {
   id: string;
@@ -85,19 +89,20 @@ const emit = defineEmits(['closeMenu', 'moveUp', 'moveDown']);
 
 const linkTypes = {
   link: {
-    textClass: 'hover:underline focus:underline',
-    blockClass: 'py-1 px-2.5 my-0.5 hover:bg-transparent focus:bg-transparent hover:underline',
+    textClass: 'hover:underline focus:underline transition-all',
+    blockClass: 'py-1 px-2.5 hover:bg-zinc-50 focus:bg-zinc-50 dark:hover:bg-zinc-800/50 dark:focus:bg-zinc-800/50',
   },
   'block-link': {
     textClass: 'no-underline',
-    blockClass: 'p-2 hover:bg-zinc-100 my-0.5 focus:bg-zinc-100 dark:hover:bg-zinc-800 dark:focus:bg-zinc-800',
+    blockClass: 'p-2 hover:bg-zinc-100 focus:bg-zinc-100 dark:hover:bg-zinc-800 dark:focus:bg-zinc-800',
   },
   'category-link': {
     textClass: 'no-underline',
-    blockClass: 'p-2.5 font-bold my-1 hover:bg-zinc-100 focus:bg-zinc-100 dark:hover:bg-zinc-800 dark:focus:bg-zinc-800 not-first:mt-2' 
+    blockClass: 'p-2.5 font-bold hover:bg-zinc-100 focus:bg-zinc-100 dark:hover:bg-zinc-800 dark:focus:bg-zinc-800' 
   },
   'full-height-background-link': {
-    blockClass: 'h-full',
+    textClass: 'no-underline',
+    blockClass: 'h-full hover:bg-zinc-100 focus:bg-zinc-100 dark:hover:bg-zinc-800 dark:focus:bg-zinc-800',
   },
 };
 
@@ -107,9 +112,15 @@ const ulClasses = computed(() => `grid max-lg:max-h-[calc(100dvh-20rem)] lg:max-
 
 const linkComponent = computed(() => areLinksDisabled ? 'div' : SmartLink);
 
-const linkClasses = (link: Link) => linkTypes[link?.type ?? 'block-link']?.blockClass;
+const linkClasses = (link: Link) => {
+  const linkType = (link?.type && link.type !== 'divider' ? link.type : 'block-link') as LinkType;
+  return linkTypes[linkType]?.blockClass;
+};
 
-const textClasses = (link: Link) => linkTypes[link?.type ?? 'block-link']?.textClass;
+const textClasses = (link: Link) => {
+  const linkType = (link?.type && link.type !== 'divider' ? link.type : 'block-link') as LinkType;
+  return linkTypes[linkType]?.textClass;
+};
 
 const handleCloseMenu = () => {
   emit('closeMenu');

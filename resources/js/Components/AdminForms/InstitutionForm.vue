@@ -26,6 +26,12 @@
       <NFormItem label="Ar aktyvi institucija?">
         <NSwitch v-model:value="form.is_active" :checked-value="1" :unchecked-value="0" />
       </NFormItem>
+      <NFormItem label="Kontaktų išdėstymas">
+        <NSelect v-model:value="form.contacts_layout" :options="[
+          { value: 'aside', label: 'Šone' },
+          { value: 'below', label: 'Po aprašymu' },
+        ]" placeholder="Pasirinkite išdėstymą" />
+      </NFormItem>
     </FormElement>
     <FormElement>
       <template #title>

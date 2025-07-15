@@ -50,6 +50,7 @@ class StoreInstitutionRequest extends FormRequest
             'facebook_url' => 'nullable|string',
             'instagram_url' => 'nullable|string',
             'is_active' => 'boolean',
+            'contacts_layout' => 'required|in:aside,below',
             'types' => 'nullable|array',
         ];
     }

@@ -100,6 +100,13 @@ class RoleController extends Controller
                 $query->whereIn('id', User::find(Auth::id())->tenants->pluck('id'));
             })->get();
 
+        // Get all available permissions grouped by model type
+        $allAvailablePermissions = Permission::all()->groupBy(function ($permission) {
+            $parts = explode('.', $permission->name);
+
+            return $parts[0] ?? ''; // Model type (e.g., 'tags', 'news')
+        });
+
         // edit role
         return Inertia::render('Admin/Permissions/EditRole', [
             'role' => [
@@ -108,6 +115,9 @@ class RoleController extends Controller
             ],
             'tenantsWithDuties' => $tenantsWithDuties,
             'allTypes' => Type::all(),
+            'allAvailablePermissions' => $allAvailablePermissions->map(function ($permissions) {
+                return $permissions->pluck('name');
+            }),
         ]);
     }
 

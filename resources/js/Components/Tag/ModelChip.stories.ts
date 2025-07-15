@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/vue3';
+import type { Meta, StoryObj } from '@storybook/vue3-vite';
 
 import ModelChip from "./ModelChip.vue";
 import DeviceMeetingRoomRemote24Regular from "~icons/fluent/device-meeting-room-remote24-regular";

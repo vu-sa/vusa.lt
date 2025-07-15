@@ -30,6 +30,9 @@ class InstitutionPolicy extends ModelPolicy
      */
     public function update(User $user, Model $institution): bool
     {
+        // For institutions, "own" scope only applies to read operations
+        // Since institutions.update.own permission doesn't exist, commonChecker will only
+        // check padalinys and * scopes automatically
         return $this->commonChecker($user, $institution, CRUDEnum::UPDATE()->label, $this->pluralModelName, false);
     }
 
@@ -38,6 +41,9 @@ class InstitutionPolicy extends ModelPolicy
      */
     public function delete(User $user, Model $institution): bool
     {
+        // For institutions, "own" scope only applies to read operations
+        // Since institutions.delete.own permission doesn't exist, commonChecker will only
+        // check padalinys and * scopes automatically
         return $this->commonChecker($user, $institution, CRUDEnum::DELETE()->label, $this->pluralModelName, false);
     }
 }

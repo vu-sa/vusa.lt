@@ -49,6 +49,8 @@ class UpdateNewsRequest extends FormRequest
             'content.parts.*.json_content' => 'required',
             'content.parts.*.options' => 'nullable',
             'content.parts.*.order' => 'nullable|integer',
+            'tags' => 'nullable|array',
+            'tags.*' => 'integer|exists:tags,id',
         ];
     }
 
