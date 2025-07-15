@@ -43,7 +43,7 @@
           { value: 'none', label: 'Be grupavimo' },
           { value: 'study_program', label: 'Pagal studijų programą' },
           { value: 'tenant', label: 'Pagal padalinį' },
-        ]" placeholder="Pasirinkite grupavimo būdą" />
+        ]" placeholder="Pasirinkite grupavimo būdą" default-value="none" />
       </NFormItem>
     </FormElement>
     <FormElement>
@@ -105,7 +105,9 @@
             <div class="flex items-center gap-3">
               <UserAvatar :user="user" :size="32" />
               <div>
-                <div class="font-medium">{{ user.name }}</div>
+                <div class="font-medium">
+                  {{ user.name }}
+                </div>
                 <div v-if="getUserStudyProgram(user)" class="text-sm text-gray-600 dark:text-gray-400">
                   <NTag size="small" type="info">
                     {{ getUserStudyProgram(user)?.name }} ({{ getUserStudyProgram(user)?.degree }})

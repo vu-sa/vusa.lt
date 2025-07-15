@@ -26,6 +26,7 @@ const duty = {
   email: null,
   institution_id: null,
   places_to_occupy: null,
+  contacts_grouping: 'none',
   types: [],
   roles: [],
   current_users: [],
