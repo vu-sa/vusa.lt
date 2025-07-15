@@ -5,6 +5,7 @@
       <p>{{ $t("Vilniaus universiteto Studentų atstovybė") }}</p>
       <p>{{ $t("Įmonės kodas") }}: 193077294</p>
       <p>{{ $t("PVM mokėtojo kodas") }}: LT100015645710</p>
+      <p>{{$t("Finansiniais klausimais kreipkitės el. paštu")}}: <a href="mailto:saskaitos@vusa.lt">saskaitos@vusa.lt</a></p>
     </div>
     <div>
       <div class="flex gap-2 text-gray-500">
