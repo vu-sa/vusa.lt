@@ -884,10 +884,12 @@ declare global {
       // columns
       id: number
       alias?: string | null
-      name: string
-      description?: string | null
+      name: Record<string, string>
+      description?: Record<string, string> | null
       created_at: string
       updated_at: string
+      // relationships
+      news?: News[]
     }
 
     export interface Task {

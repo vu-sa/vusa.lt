@@ -18,7 +18,7 @@
         </AlertDescription>
       </Alert>
       <PermissionTable :model-type="entity.key" :icon="entity.icon" :permissions="filterPermissionsFor(entity.key)"
-        :role="role" />
+        :available-permissions="(allAvailablePermissions && allAvailablePermissions[entity.key]) || []" :role="role" />
       <Separator />
     </section>
   </div>
@@ -34,6 +34,7 @@ import { Separator } from '../ui/separator';
 
 const props = defineProps<{
   role: App.Entities.Role;
+  allAvailablePermissions?: Record<string, string[]>;
 }>();
 
 const filterPermissionsFor = (modelType: string) => {

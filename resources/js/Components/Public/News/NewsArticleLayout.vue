@@ -38,9 +38,16 @@
         
         <!-- Tags/Categories -->
         <div v-if="article.tags?.length > 0" class="mt-2 flex flex-wrap gap-1.5">
-          <NButton v-for="tag in article.tags" :key="tag.id" size="tiny" round>
-            {{ tag.name }}
-          </NButton>
+          <button 
+            v-for="tag in article.tags" 
+            :key="tag.id" 
+            @click="tag.alias && navigateToTaggedNews(tag.alias)"
+            class="cursor-pointer"
+          >
+            <NButton size="tiny" round class="hover:bg-red-50 dark:hover:bg-red-950 transition-colors">
+              {{ typeof tag.name === 'object' ? (tag.name[locale] || tag.name.lt || tag.name.en) : tag.name }}
+            </NButton>
+          </button>
         </div>
       </div>
 
@@ -70,8 +77,16 @@
 <script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
 import { computed } from "vue";
+import { usePage, router } from "@inertiajs/vue3";
 import { formatStaticTime } from "@/Utils/IntlTime";
 import SmartLink from "@/Components/Public/SmartLink.vue";
+
+// Import icons
+import IFluentOrganization16Regular from "~icons/fluent/organization-16-regular";
+import IFluentCalendarLtr16Regular from "~icons/fluent/calendar-ltr-16-regular";
+
+// Import NButton for tag buttons
+import { NButton } from "naive-ui";
 
 const props = defineProps<{
   article: App.Entities.News;
@@ -88,6 +103,16 @@ const locale = computed(() => props.locale || 'lt');
 // Formatter for ISO date
 function formatISODate(date: string | number) {
   return new Date(date).toISOString();
+}
+
+// Navigate to tagged news archive
+function navigateToTaggedNews(tagAlias: string) {
+  router.visit(route('newsArchive', {
+    lang: locale.value,
+    newsString: locale.value === 'lt' ? 'naujienos' : 'news',
+    subdomain: usePage().props.tenant?.subdomain || 'www',
+    tag: tagAlias // This will be added as a query parameter
+  }));
 }
 
 // Predefined styles for different layouts

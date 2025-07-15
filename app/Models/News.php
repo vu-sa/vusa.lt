@@ -46,7 +46,7 @@ class News extends Model implements Feedable
         return $this->hasOne(News::class, 'id', 'other_lang_id');
     }
 
-    public function tags()
+    public function tags(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(Tag::class, 'posts_tags', 'news_id', 'tag_id');
     }
@@ -99,7 +99,7 @@ class News extends Model implements Feedable
 
     public static function getFeedItems()
     {
-        return News::orderByDesc('publish_time')->take(15)->get();
+        return News::query()->where('draft', false)->orderByDesc('publish_time')->take(15)->get();
     }
 
     public function toSearchableArray()

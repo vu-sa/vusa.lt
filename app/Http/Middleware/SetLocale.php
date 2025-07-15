@@ -23,17 +23,34 @@ class SetLocale
 
     protected function setLocale($request)
     {
-        $localeFromParam = $request->lang;
-        $localeFromSession = session()->get('lang');
+        $localeFromParam = $this->sanitizeLocale($request->lang);
+        $localeFromSession = $this->sanitizeLocale(session()->get('lang'));
 
-        if ($localeFromParam) {
+        if ($localeFromParam && $this->isValidLocale($localeFromParam)) {
             app()->setLocale($localeFromParam);
             session()->put('lang', $localeFromParam);
-        } elseif (session()->has('lang')) {
+        } elseif ($localeFromSession && $this->isValidLocale($localeFromSession)) {
             app()->setLocale($localeFromSession);
         } else {
             app()->setLocale(config('app.locale'));
         }
+    }
+
+    protected function sanitizeLocale($locale)
+    {
+        if (! is_string($locale)) {
+            return null;
+        }
+
+        // Remove any non-alphanumeric characters and limit length
+        $sanitized = preg_replace('/[^a-zA-Z]/', '', $locale);
+
+        return strlen($sanitized) <= 10 ? $sanitized : null;
+    }
+
+    protected function isValidLocale($locale)
+    {
+        return in_array($locale, config('app.locales', []));
     }
 
     protected function shouldBypassLocale($segment)
@@ -45,7 +62,11 @@ class SetLocale
 
     protected function isLocaleSegment($segment)
     {
-        return in_array($segment, config('app.locales'));
+        if (! is_string($segment)) {
+            return false;
+        }
+
+        return $this->isValidLocale($segment);
     }
 
     protected function redirectToLocale($request)

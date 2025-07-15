@@ -95,6 +95,7 @@ export const newsTemplate = {
   draft: false,
   image: null,
   image_author: null,
+  tags: [],
 }
 
 export const typeTemplate: Pick<
@@ -107,4 +108,13 @@ export const typeTemplate: Pick<
   model_type: "",
   parent_id: null,
   roles: [],
+};
+
+export const tagTemplate: Pick<
+  App.Entities.Tag,
+  "name" | "description" | "alias"
+> = {
+  name: { lt: '', en: '' },
+  description: { lt: '', en: '' },
+  alias: "",
 };

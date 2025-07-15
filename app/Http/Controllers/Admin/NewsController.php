@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\UpdateNewsRequest;
 use App\Models\Content;
 use App\Models\News;
+use App\Models\Tag;
 use App\Models\Tenant;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ModelIndexer;
@@ -48,7 +49,11 @@ class NewsController extends Controller
     {
         $this->authorize('create', News::class);
 
-        return Inertia::render('Admin/Content/CreateNews');
+        $tags = Tag::orderBy('alias')->get();
+
+        return Inertia::render('Admin/Content/CreateNews', [
+            'availableTags' => $tags->map->toFullArray(),
+        ]);
     }
 
     public function duplicate(News $news)
@@ -77,6 +82,8 @@ class NewsController extends Controller
             'image' => 'required',
             'publish_time' => 'required',
             'short' => 'required',
+            'tags' => 'nullable|array',
+            'tags.*' => 'integer|exists:tags,id',
         ]);
 
         $tenant_id = null;
@@ -115,6 +122,11 @@ class NewsController extends Controller
 
         $news->save();
 
+        // Sync tags if provided
+        if ($request->has('tags') && is_array($request->tags)) {
+            $news->tags()->sync($request->tags);
+        }
+
         return redirect()->route('news.index')->with('success', 'Naujiena sėkmingai sukurta!');
     }
 
@@ -131,6 +143,8 @@ class NewsController extends Controller
             $query->where('tenant_id', $news->tenant_id);
         })->where('lang', '!=', $news->lang)->select('id', 'title', 'tenant_id')->get();
 
+        $tags = Tag::orderBy('alias')->get();
+
         return Inertia::render('Admin/Content/EditNews', [
             'news' => [
                 'id' => $news->id,
@@ -144,11 +158,12 @@ class NewsController extends Controller
                 'draft' => $news->draft,
                 'short' => $news->short,
                 'image' => $news->image,
-                'tags' => $news->tags,
+                'tags' => $news->tags->pluck('id')->toArray(),
                 'image_author' => $news->image_author,
                 'publish_time' => $news->publish_time,
             ],
             'otherLangNews' => $other_lang_pages,
+            'availableTags' => $tags->map->toFullArray(),
         ]);
     }
 
@@ -177,6 +192,11 @@ class NewsController extends Controller
         $content = Content::query()->find($news->content->id);
 
         app(\App\Services\ContentService::class)->updateContentParts($content, $request->content['parts']);
+
+        // Sync tags if provided
+        if ($request->has('tags') && is_array($request->tags)) {
+            $news->tags()->sync($request->tags);
+        }
 
         // update other lang id page
         if ($request->other_lang_id) {

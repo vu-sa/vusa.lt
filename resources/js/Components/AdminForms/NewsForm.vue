@@ -23,6 +23,10 @@
           <NSwitch v-model:value="form.draft" :checked-value="1" :unchecked-value="0" />
         </NFormItem>
       </div>
+      <NFormItem label="Žymos">
+        <NSelect v-model:value="form.tags" multiple filterable :options="tagOptions" :render-label="renderTagLabel"
+          placeholder="Pasirinkite žymas..." clearable />
+      </NFormItem>
       <NFormItem class="items-start" label="Kitos kalbos puslapis">
         <NSelect v-model:value="form.other_lang_id" filterable :disabled="rememberKey === 'CreateNews'"
           placeholder="Pasirinkti kitos kalbos puslapį... (tik tada, kai jau sukūrėte puslapį)"
@@ -75,8 +79,10 @@ import {
   NInput,
   NSelect,
   NSwitch,
+  NTag,
+  type SelectRenderLabel,
 } from "naive-ui";
-import { computed, watch } from "vue";
+import { computed, watch, h } from "vue";
 import { useForm } from "@inertiajs/vue3";
 import latinize from "latinize";
 
@@ -86,14 +92,18 @@ import RichContentFormElement from "../RichContentFormElement.vue";
 import TipTap from "@/Components/TipTap/OriginalTipTap.vue";
 import UploadImageWithCropper from "../Buttons/UploadImageWithCropper.vue";
 import AdminForm from "./AdminForm.vue";
+import { newsTemplate } from "@/Types/formTemplates";
 
 const props = defineProps<{
   news?: App.Entities.News;
-  otherLangNews: App.Entities.News[];
+  otherLangNews?: App.Entities.News[];
+  availableTags?: App.Entities.Tag[];
   rememberKey?: 'CreateNews';
 }>();
 
-const form = props.rememberKey ? useForm(props.rememberKey, props.news) : useForm(props.news);
+const form = props.rememberKey
+  ? useForm(props.rememberKey, props.news as any || newsTemplate)
+  : useForm(props.news as any || newsTemplate);
 
 defineEmits<{
   (event: "submit:form", form: unknown): void;
@@ -105,13 +115,28 @@ const otherLangNewsOptions = computed(() => {
     return [];
   }
 
-  return props.otherLangNews
+  return (props.otherLangNews || [])
     .map((news) => ({
       value: news.id,
       label: `${news.title} (${news.tenant?.shortname})`,
     }))
     .reverse();
 });
+
+const tagOptions = computed(() => {
+  return (props.availableTags || []).map(tag => ({
+    label: typeof tag.name === 'object' ? (tag.name.lt || tag.name.en || 'Unknown') : tag.name,
+    value: tag.id,
+    alias: tag.alias,
+  }));
+});
+
+const renderTagLabel: SelectRenderLabel = (option: any) => {
+  return h("div", { class: "flex items-center gap-2" }, [
+    h("span", option.label),
+    option?.alias ? h(NTag, { size: "tiny" }, option.alias) : null,
+  ]);
+};
 
 const languageOptions = [
   {
@@ -128,7 +153,7 @@ if (props.rememberKey === "CreateNews") {
   watch(
     () => form.title,
     (title) => {
-      let latinizedTitle = latinize(title);
+      let latinizedTitle = latinize(String(title || ''));
       form.permalink = latinizedTitle
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")

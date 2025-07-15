@@ -4,7 +4,7 @@
       <template #card-header>
         Puslapio informacija
       </template>
-      <NewsForm :news remember-key="CreateNews" @submit:form="(form) => form.post(route('news.store'))" />
+      <NewsForm :news :available-tags remember-key="CreateNews" @submit:form="(form) => form.post(route('news.store'))" />
     </UpsertModelLayout>
   </PageContent>
 </template>
@@ -14,4 +14,8 @@ import NewsForm from "@/Components/AdminForms/NewsForm.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import { newsTemplate as news } from "@/Types/formTemplates";
 import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
+
+defineProps<{
+  availableTags?: App.Entities.Tag[];
+}>();
 </script>

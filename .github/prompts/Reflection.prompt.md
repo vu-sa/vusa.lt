@@ -1,1 +1,0 @@
-What lessons after this session were learned that could make the copilot-instructions.md better, for future prompts?

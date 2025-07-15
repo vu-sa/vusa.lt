@@ -3,16 +3,45 @@
     <!-- Page header with breadcrumb -->
     <header class="mb-8 pt-6 md:pt-10">
       <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <h1 class="text-3xl md:text-4xl font-bold text-zinc-900 dark:text-zinc-50 m-0">
-          {{ $t('Naujienų archyvas') }}
-        </h1>
+        <div>
+          <h1 class="text-3xl md:text-4xl font-bold text-zinc-900 dark:text-zinc-50 m-0">
+            {{ $t('Naujienų archyvas') }}
+          </h1>
+          
+          <!-- Current tag filter display -->
+          <div v-if="props.currentTag" class="mt-3 flex items-center gap-2">
+            <span class="text-sm text-zinc-500 dark:text-zinc-400">{{ $t('Filtruojama pagal žymą:') }}</span>
+            <NButton 
+              size="small" 
+              type="primary" 
+              round
+              class="relative"
+            >
+              {{ typeof props.currentTag.name === 'object' ? (props.currentTag.name[$page.props.app.locale] || props.currentTag.name.lt || props.currentTag.name.en) : props.currentTag.name }}
+            </NButton>
+            <SmartLink 
+              :href="route('newsArchive', {
+                lang: $page.props.app.locale,
+                newsString: $page.props.app.locale === 'lt' ? 'naujienos' : 'news',
+                subdomain: $page.props.tenant?.subdomain || 'www'
+              })"
+              class="plain"
+            >
+              <NButton size="small" quaternary circle>
+                <template #icon>
+                  <XIcon class="h-4 w-4" />
+                </template>
+              </NButton>
+            </SmartLink>
+          </div>
+        </div>
         
         <!-- Pagination statistics -->
         <div class="text-sm text-zinc-500 dark:text-zinc-400">
           {{ $t('Rodoma :from - :to iš :total', {
-            from: news.from,
-            to: news.to,
-            total: news.total
+            from: news.from?.toString() || '0',
+            to: news.to?.toString() || '0',
+            total: news.total?.toString() || '0'
           }) }}
         </div>
       </div>
@@ -64,25 +93,31 @@
           </PaginationItem>
           
           <!-- First page -->
-          <PaginationItem :value="1" :is-active="news.current_page === 1" @click.prevent="handlePageChange(1)">
+          <PaginationItem 
+            v-if="news.current_page > 3" 
+            :value="1" 
+            :is-active="news.current_page === 1" 
+            @click.prevent="handlePageChange(1)"
+          >
             1
           </PaginationItem>
           
-          <!-- Show ellipsis if current page is more than 3 -->
-          <PaginationEllipsis v-if="news.current_page > 3" />
+          <!-- Show ellipsis if current page is more than 4 from start -->
+          <PaginationEllipsis v-if="news.current_page > 4" />
           
-          <!-- Previous page if not first or second page -->
+          <!-- Show 2-3 pages before current page -->
           <PaginationItem 
-            v-if="news.current_page > 2" 
-            :value="news.current_page - 1"
-            @click.prevent="handlePageChange(news.current_page - 1)"
+            v-for="page in getPagesBefore()" 
+            :key="`before-${page}`"
+            :value="page"
+            :is-active="news.current_page === page"
+            @click.prevent="handlePageChange(page)"
           >
-            {{ news.current_page - 1 }}
+            {{ page }}
           </PaginationItem>
           
-          <!-- Current page if not first page -->
+          <!-- Current page -->
           <PaginationItem 
-            v-if="news.current_page !== 1" 
             :value="news.current_page"
             :is-active="true"
             @click.prevent="handlePageChange(news.current_page)"
@@ -90,21 +125,23 @@
             {{ news.current_page }}
           </PaginationItem>
           
-          <!-- Next page if not last page -->
+          <!-- Show 2-3 pages after current page -->
           <PaginationItem 
-            v-if="news.current_page < news.last_page - 1"
-            :value="news.current_page + 1"
-            @click.prevent="handlePageChange(news.current_page + 1)"
+            v-for="page in getPagesAfter()" 
+            :key="`after-${page}`"
+            :value="page"
+            :is-active="news.current_page === page"
+            @click.prevent="handlePageChange(page)"
           >
-            {{ news.current_page + 1 }}
+            {{ page }}
           </PaginationItem>
           
-          <!-- Show ellipsis if needed -->
-          <PaginationEllipsis v-if="news.current_page < news.last_page - 2" />
+          <!-- Show ellipsis if current page is more than 4 from end -->
+          <PaginationEllipsis v-if="news.current_page < news.last_page - 3" />
           
-          <!-- Last page if not current -->
+          <!-- Last page -->
           <PaginationItem 
-            v-if="news.last_page !== 1 && news.current_page !== news.last_page" 
+            v-if="news.current_page < news.last_page - 2" 
             :value="news.last_page"
             :is-active="news.current_page === news.last_page"
             @click.prevent="handlePageChange(news.last_page)"
@@ -118,6 +155,10 @@
               <ChevronRightIcon class="h-4 w-4" />
             </PaginationNext>
           </PaginationItem>
+          
+          <PaginationItem v-if="news.current_page < news.last_page" :value="news.last_page">
+            <PaginationLast @click.prevent="handlePageChange(news.last_page)" />
+          </PaginationItem>
         </PaginationContent>
       </Pagination>
     </div>
@@ -129,6 +170,8 @@ import { router } from "@inertiajs/vue3";
 import { trans as $t } from "laravel-vue-i18n";
 import { onMounted } from "vue";
 import { usePublicBreadcrumbs } from "@/Composables/usePublicBreadcrumbs";
+import { XIcon, ChevronLeftIcon, ChevronRightIcon } from "lucide-vue-next";
+import { NButton } from "naive-ui";
 
 import NewsCard from "@/Components/Public/News/NewsCard.vue";
 import SmartLink from "@/Components/Public/SmartLink.vue";
@@ -145,6 +188,7 @@ import {
 
 const props = defineProps<{
   news: PaginatedModels<App.Entities.News>;
+  currentTag?: App.Entities.Tag | null;
 }>();
 
 // Handle pagination with improved UX
@@ -173,6 +217,33 @@ const handlePageChange = (page: number) => {
       document.body.removeChild(loadingOverlay);
     }
   });
+};
+
+// Get 2-3 pages before current page (if available)
+const getPagesBefore = () => {
+  const pages: number[] = [];
+  const current = props.news.current_page;
+  
+  // Show up to 3 pages before current page
+  for (let i = Math.max(1, current - 3); i < current; i++) {
+    pages.push(i);
+  }
+  
+  return pages;
+};
+
+// Get 2-3 pages after current page (if available)
+const getPagesAfter = () => {
+  const pages: number[] = [];
+  const current = props.news.current_page;
+  const lastPage = props.news.last_page;
+  
+  // Show up to 3 pages after current page
+  for (let i = current + 1; i <= Math.min(lastPage, current + 3); i++) {
+    pages.push(i);
+  }
+  
+  return pages;
 };
 
 const { setPageBreadcrumbs } = usePublicBreadcrumbs();

@@ -36,6 +36,9 @@ Route::patch('types/{type}/restore', [TypeController::class, 'restore'])->name('
 Route::resource('pages', PageController::class)->except(['show']);
 Route::resource('news', NewsController::class)->except(['show']);
 Route::resource('categories', CategoryController::class)->except(['show']);
+Route::resource('tags', TagController::class)->except(['show']);
+Route::get('tags/merge', [TagController::class, 'mergeTags'])->name('tags.merge');
+Route::post('tags/merge', [TagController::class, 'processMergeTags'])->name('tags.processMerge');
 
 // change order main page
 Route::get('quickLinks/tenant/{tenant}/edit-order/{lang}', [QuickLinkController::class, 'editOrder'])->name('quickLinks.edit-order')

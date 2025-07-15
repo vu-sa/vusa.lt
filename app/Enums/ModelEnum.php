@@ -51,4 +51,41 @@ use Spatie\Enum\Laravel\Enum;
 final class ModelEnum extends Enum
 {
     use hasCamelCaseLabels;
+
+    /**
+     * Get the allowed permission scopes for a specific model.
+     * Models not listed here will have all scopes (own, padalinys, *).
+     */
+    public static function getAllowedScopes(string $model): array
+    {
+        $scopeRestrictions = [
+            // Global/system-wide models that don't belong to users or padaliniai
+            'tags' => ['*'],
+            'types' => ['*'],
+            'categories' => ['*'],
+            'permissions' => ['*'],
+            'roles' => ['*'],
+            'navigations' => ['*'],
+
+            // Models that belong to padaliniai but not to individual users
+            'studyPrograms' => ['padalinys', '*'],
+            'quickLinks' => ['padalinys', '*'],
+
+            // Special case: institutions allow "own" scope only for read operations
+            // This is handled in the InstitutionPolicy and a special case in the seeder
+            'institutions' => ['own', 'padalinys', '*'],
+
+            // Add more restrictions as needed
+        ];
+
+        return $scopeRestrictions[$model] ?? ['own', 'padalinys', '*'];
+    }
+
+    /**
+     * Check if a model has a specific scope.
+     */
+    public static function hasScope(string $model, string $scope): bool
+    {
+        return in_array($scope, self::getAllowedScopes($model));
+    }
 }
