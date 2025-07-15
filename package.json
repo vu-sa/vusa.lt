@@ -58,7 +58,7 @@
     "sortablejs": "^1.15.0",
     "tailwind-merge": "^3.2.0",
     "tw-animate-css": "^1.2.5",
-    "unplugin-vue-markdown": "^28.0.0",
+    "unplugin-vue-markdown": "^29.0.0",
     "v-calendar": "^3.0.2",
     "vaul-vue": "^0.4.1",
     "vee-validate": "^4.15.0",
@@ -68,7 +68,6 @@
   "devDependencies": {
     "@axe-core/playwright": "^4.10.1",
     "@chromatic-com/storybook": "^4.0.1",
-    "@codecov/vite-plugin": "^1.7.0",
     "@eslint/js": "^9.10.0",
     "@iconify-json/ant-design": "^1.1.16",
     "@iconify-json/fluent": "^1.1.57",
@@ -83,8 +82,8 @@
     "@types/d3": "^7.4.0",
     "@types/latinize": "^0.2.18",
     "@types/node": "^22.10.2",
-    "@vitejs/plugin-vue": "^5.0.0",
-    "@vitejs/plugin-vue-jsx": "^4.0.0",
+    "@vitejs/plugin-vue": "^6.0.0",
+    "@vitejs/plugin-vue-jsx": "^5.0.0",
     "@vitest/browser": "^3.0.8",
     "@vitest/coverage-istanbul": "^3.1.1",
     "@vue/test-utils": "^2.3.2",
@@ -97,7 +96,7 @@
     "globals": "^16.0.0",
     "jsdom": "^26.0.0",
     "laravel-echo": "^2.1.6",
-    "laravel-vite-plugin": "^1.0.0",
+    "laravel-vite-plugin": "^2.0.0",
     "naive-ui": "^2.32.2",
     "playwright": "^1.51.0",
     "pusher-js": "^8.0.0",
@@ -107,7 +106,7 @@
     "typescript-eslint": "^8.4.0",
     "unplugin-icons": "^22.0.0",
     "unplugin-vue-components": "^28.0.0",
-    "vite": "^6.0.9",
+    "vite": "npm:rolldown-vite@latest",
     "vite-plugin-vue-devtools": "^7.3.7",
     "vite-plugin-ziggy": "^0.3.0",
     "vitepress": "^1.2.3",
@@ -120,5 +119,8 @@
     "extends": [
       "plugin:storybook/recommended"
     ]
+  },
+  "overrides": {
+    "vite": "npm:rolldown-vite@latest"
   }
 }
