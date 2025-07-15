@@ -78,7 +78,7 @@
     "@storybook/addon-a11y": "^9.0.14",
     "@storybook/addon-coverage": "^2.0.0",
     "@storybook/addon-docs": "^9.0.14",
-    "@storybook/addon-vitest": "9.0.14",
+    "@storybook/addon-vitest": "^9.0.14",
     "@storybook/vue3-vite": "^9.0.14",
     "@types/d3": "^7.4.0",
     "@types/latinize": "^0.2.18",

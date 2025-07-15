@@ -16,6 +16,9 @@ declare global {
       updated_at: string
       // relations
       tenant?: Tenant
+      // counts
+      // exists
+      tenant_exists: boolean
     }
 
     export interface Calendar {
@@ -44,6 +47,12 @@ declare global {
       tenant?: Tenant
       category?: Category
       media?: Medium[]
+      // counts
+      media_count: number
+      // exists
+      tenant_exists: boolean
+      category_exists: boolean
+      media_exists: boolean
     }
 
     export interface Category {
@@ -58,6 +67,14 @@ declare global {
       pages?: Page[]
       news?: News[]
       calendars?: Calendar[]
+      // counts
+      pages_count: number
+      news_count: number
+      calendars_count: number
+      // exists
+      pages_exists: boolean
+      news_exists: boolean
+      calendars_exists: boolean
     }
 
     export interface ChangelogItem {
@@ -88,6 +105,13 @@ declare global {
       comments?: Comment[]
       user?: User
       activities?: Activity[]
+      // counts
+      comments_count: number
+      activities_count: number
+      // exists
+      comments_exists: boolean
+      user_exists: boolean
+      activities_exists: boolean
     }
 
     export interface Content {
@@ -97,6 +121,10 @@ declare global {
       updated_at: string
       // relations
       parts?: ContentPart[]
+      // counts
+      parts_count: number
+      // exists
+      parts_exists: boolean
     }
 
     export interface ContentPart {
@@ -113,6 +141,9 @@ declare global {
       html: unknown
       // relations
       content?: Content
+      // counts
+      // exists
+      content_exists: boolean
     }
 
     export interface Document {
@@ -140,6 +171,9 @@ declare global {
       is_in_effect: unknown
       // relations
       institution?: Institution
+      // counts
+      // exists
+      institution_exists: boolean
     }
 
     export interface Doing {
@@ -163,6 +197,24 @@ declare global {
       files?: SharepointFile[]
       tasks?: Task[]
       activities?: Activity[]
+      // counts
+      goals_count: number
+      matters_count: number
+      types_count: number
+      users_count: number
+      comments_count: number
+      files_count: number
+      tasks_count: number
+      activities_count: number
+      // exists
+      goals_exists: boolean
+      matters_exists: boolean
+      types_exists: boolean
+      users_exists: boolean
+      comments_exists: boolean
+      files_exists: boolean
+      tasks_exists: boolean
+      activities_exists: boolean
     }
 
     export interface Duty {
@@ -173,8 +225,8 @@ declare global {
       institution_id: string
       order: number
       email?: string | null
-      places_to_occupy?: number | null
       contacts_grouping: string
+      places_to_occupy?: number | null
       created_at: string
       updated_at: string
       deleted_at?: string | null
@@ -193,6 +245,30 @@ declare global {
       permissions?: Permission[]
       activities?: Activity[]
       notifications?: DatabaseNotification[]
+      // counts
+      dutiables_count: number
+      users_count: number
+      current_users_count: number
+      previous_users_count: number
+      types_count: number
+      available_trainings_count: number
+      roles_count: number
+      permissions_count: number
+      activities_count: number
+      notifications_count: number
+      // exists
+      dutiables_exists: boolean
+      users_exists: boolean
+      current_users_exists: boolean
+      previous_users_exists: boolean
+      types_exists: boolean
+      institution_exists: boolean
+      institutions_exists: boolean
+      available_trainings_exists: boolean
+      roles_exists: boolean
+      permissions_exists: boolean
+      activities_exists: boolean
+      notifications_exists: boolean
     }
 
     export interface FieldResponse {
@@ -206,6 +282,10 @@ declare global {
       // relations
       registration?: Registration
       form_field?: FormField
+      // counts
+      // exists
+      registration_exists: boolean
+      form_field_exists: boolean
     }
 
     export interface File {
@@ -231,6 +311,15 @@ declare global {
       user?: User
       tenant?: Tenant
       training?: Training
+      // counts
+      form_fields_count: number
+      registrations_count: number
+      // exists
+      form_fields_exists: boolean
+      registrations_exists: boolean
+      user_exists: boolean
+      tenant_exists: boolean
+      training_exists: boolean
     }
 
     export interface FormField {
@@ -256,6 +345,11 @@ declare global {
       // relations
       form?: Form
       field_responses?: FieldResponse[]
+      // counts
+      field_responses_count: number
+      // exists
+      form_exists: boolean
+      field_responses_exists: boolean
     }
 
     export interface Goal {
@@ -280,6 +374,22 @@ declare global {
       files?: SharepointFile[]
       tasks?: Task[]
       activities?: Activity[]
+      // counts
+      matters_count: number
+      doings_count: number
+      comments_count: number
+      files_count: number
+      tasks_count: number
+      activities_count: number
+      // exists
+      matters_exists: boolean
+      doings_exists: boolean
+      group_exists: boolean
+      tenant_exists: boolean
+      comments_exists: boolean
+      files_exists: boolean
+      tasks_exists: boolean
+      activities_exists: boolean
     }
 
     export interface GoalGroup {
@@ -294,6 +404,14 @@ declare global {
       goals?: Goal[]
       matters?: Matter[]
       activities?: Activity[]
+      // counts
+      goals_count: number
+      matters_count: number
+      activities_count: number
+      // exists
+      goals_exists: boolean
+      matters_exists: boolean
+      activities_exists: boolean
     }
 
     export interface Institution {
@@ -336,6 +454,31 @@ declare global {
       incoming_relationships?: Relationship[]
       files?: SharepointFile[]
       activities?: Activity[]
+      // counts
+      duties_count: number
+      types_count: number
+      documents_count: number
+      matters_count: number
+      meetings_count: number
+      available_trainings_count: number
+      comments_count: number
+      outgoing_relationships_count: number
+      incoming_relationships_count: number
+      files_count: number
+      activities_count: number
+      // exists
+      duties_exists: boolean
+      types_exists: boolean
+      tenant_exists: boolean
+      documents_exists: boolean
+      matters_exists: boolean
+      meetings_exists: boolean
+      available_trainings_exists: boolean
+      comments_exists: boolean
+      outgoing_relationships_exists: boolean
+      incoming_relationships_exists: boolean
+      files_exists: boolean
+      activities_exists: boolean
     }
 
     export interface Matter {
@@ -353,6 +496,20 @@ declare global {
       doings?: Doing[]
       goals?: Goal[]
       activities?: Activity[]
+      // counts
+      institutions_count: number
+      institution_count: number
+      meetings_count: number
+      doings_count: number
+      goals_count: number
+      activities_count: number
+      // exists
+      institutions_exists: boolean
+      institution_exists: boolean
+      meetings_exists: boolean
+      doings_exists: boolean
+      goals_exists: boolean
+      activities_exists: boolean
     }
 
     export interface Meeting {
@@ -375,6 +532,24 @@ declare global {
       files?: SharepointFile[]
       tasks?: Task[]
       activities?: Activity[]
+      // counts
+      matters_count: number
+      agenda_items_count: number
+      institutions_count: number
+      comments_count: number
+      types_count: number
+      files_count: number
+      tasks_count: number
+      activities_count: number
+      // exists
+      matters_exists: boolean
+      agenda_items_exists: boolean
+      institutions_exists: boolean
+      comments_exists: boolean
+      types_exists: boolean
+      files_exists: boolean
+      tasks_exists: boolean
+      activities_exists: boolean
     }
 
     export interface Membership {
@@ -390,6 +565,13 @@ declare global {
       tenant?: Tenant
       users?: User[]
       available_trainings?: Training[]
+      // counts
+      users_count: number
+      available_trainings_count: number
+      // exists
+      tenant_exists: boolean
+      users_exists: boolean
+      available_trainings_exists: boolean
     }
 
     export interface Model {
@@ -410,6 +592,9 @@ declare global {
       updated_at?: string
       // relations
       user?: User
+      // counts
+      // exists
+      user_exists: boolean
     }
 
     export interface News {
@@ -439,6 +624,14 @@ declare global {
       other_language_news?: News
       tags?: Tag[]
       content?: Content
+      // counts
+      tags_count: number
+      // exists
+      user_exists: boolean
+      tenant_exists: boolean
+      other_language_news_exists: boolean
+      tags_exists: boolean
+      content_exists: boolean
     }
 
     export interface Page {
@@ -459,6 +652,11 @@ declare global {
       tenant?: Tenant
       category?: Category
       content?: Content
+      // counts
+      // exists
+      tenant_exists: boolean
+      category_exists: boolean
+      content_exists: boolean
     }
 
     export interface Permission {
@@ -472,6 +670,14 @@ declare global {
       roles?: Role[]
       users?: User[]
       permissions?: Permission[]
+      // counts
+      roles_count: number
+      users_count: number
+      permissions_count: number
+      // exists
+      roles_exists: boolean
+      users_exists: boolean
+      permissions_exists: boolean
     }
 
     export interface AgendaItem {
@@ -491,6 +697,12 @@ declare global {
       matter?: Matter
       meeting?: Meeting
       activities?: Activity[]
+      // counts
+      activities_count: number
+      // exists
+      matter_exists: boolean
+      meeting_exists: boolean
+      activities_exists: boolean
     }
 
     export interface Doable {
@@ -503,6 +715,10 @@ declare global {
       // relations
       doing?: Doing
       user?: User
+      // counts
+      // exists
+      doing_exists: boolean
+      user_exists: boolean
     }
 
     export interface Dutiable {
@@ -527,6 +743,11 @@ declare global {
       duty?: Duty
       study_program?: StudyProgram
       user?: User
+      // counts
+      // exists
+      duty_exists: boolean
+      study_program_exists: boolean
+      user_exists: boolean
     }
 
     export interface GoalMatter {
@@ -538,6 +759,10 @@ declare global {
       // relations
       goal?: Goal
       matter?: Matter
+      // counts
+      // exists
+      goal_exists: boolean
+      matter_exists: boolean
     }
 
     export interface MembershipUser {
@@ -553,6 +778,10 @@ declare global {
       // relations
       membership?: Membership
       user?: User
+      // counts
+      // exists
+      membership_exists: boolean
+      user_exists: boolean
     }
 
     export interface ProgrammeElement {
@@ -568,6 +797,11 @@ declare global {
       elementable?: ProgrammeElement
       day?: ProgrammeDay
       blocks?: ProgrammeBlock[]
+      // counts
+      blocks_count: number
+      // exists
+      day_exists: boolean
+      blocks_exists: boolean
     }
 
     export interface Relationshipable {
@@ -583,6 +817,9 @@ declare global {
       relationshipable?: Relationshipable
       related_model?: Relationshipable
       relationship?: Relationship
+      // counts
+      // exists
+      relationship_exists: boolean
     }
 
     export interface ReservationResource {
@@ -606,6 +843,12 @@ declare global {
       resource?: Resource
       commentable?: ReservationResource
       comments?: Comment[]
+      // counts
+      comments_count: number
+      // exists
+      reservation_exists: boolean
+      resource_exists: boolean
+      comments_exists: boolean
     }
 
     export interface SharepointFileable {
@@ -620,6 +863,11 @@ declare global {
       meeting?: Meeting
       institution?: Institution
       type?: Type
+      // counts
+      // exists
+      meeting_exists: boolean
+      institution_exists: boolean
+      type_exists: boolean
     }
 
     export interface Trainable {
@@ -639,6 +887,13 @@ declare global {
       institution?: Institution
       membership?: Membership
       tenant?: Tenant
+      // counts
+      // exists
+      user_exists: boolean
+      duty_exists: boolean
+      institution_exists: boolean
+      membership_exists: boolean
+      tenant_exists: boolean
     }
 
     export interface Programme {
@@ -654,6 +909,10 @@ declare global {
       // relations
       days?: ProgrammeDay[]
       programmable?: Programme
+      // counts
+      days_count: number
+      // exists
+      days_exists: boolean
     }
 
     export interface ProgrammeBlock {
@@ -668,6 +927,10 @@ declare global {
       translations: unknown
       // relations
       parts?: ProgrammePart[]
+      // counts
+      parts_count: number
+      // exists
+      parts_exists: boolean
     }
 
     export interface ProgrammeDay {
@@ -687,6 +950,15 @@ declare global {
       elements?: ProgrammeElement[]
       sections?: ProgrammeSection[]
       parts?: ProgrammePart[]
+      // counts
+      elements_count: number
+      sections_count: number
+      parts_count: number
+      // exists
+      programme_exists: boolean
+      elements_exists: boolean
+      sections_exists: boolean
+      parts_exists: boolean
     }
 
     export interface ProgrammePart {
@@ -704,6 +976,12 @@ declare global {
       // relations
       programme_days?: ProgrammeDay[]
       programme_blocks?: ProgrammeBlock[]
+      // counts
+      programme_days_count: number
+      programme_blocks_count: number
+      // exists
+      programme_days_exists: boolean
+      programme_blocks_exists: boolean
     }
 
     export interface ProgrammeSection {
@@ -719,6 +997,12 @@ declare global {
       // relations
       programme_days?: ProgrammeDay[]
       blocks?: ProgrammeBlock[]
+      // counts
+      programme_days_count: number
+      blocks_count: number
+      // exists
+      programme_days_exists: boolean
+      blocks_exists: boolean
     }
 
     export interface QuickLink {
@@ -736,6 +1020,9 @@ declare global {
       updated_at: string
       // relations
       tenant?: Tenant
+      // counts
+      // exists
+      tenant_exists: boolean
     }
 
     export interface Registration {
@@ -748,6 +1035,11 @@ declare global {
       // relations
       form?: Form
       field_responses?: FieldResponse[]
+      // counts
+      field_responses_count: number
+      // exists
+      form_exists: boolean
+      field_responses_exists: boolean
     }
 
     export interface Relationship {
@@ -763,6 +1055,14 @@ declare global {
       institutions?: Institution[]
       relationshipables?: Relationshipable[]
       types?: Type[]
+      // counts
+      institutions_count: number
+      relationshipables_count: number
+      types_count: number
+      // exists
+      institutions_exists: boolean
+      relationshipables_exists: boolean
+      types_exists: boolean
     }
 
     export interface Reservation {
@@ -785,6 +1085,18 @@ declare global {
       comments?: Comment[]
       tasks?: Task[]
       activities?: Activity[]
+      // counts
+      resources_count: number
+      users_count: number
+      comments_count: number
+      tasks_count: number
+      activities_count: number
+      // exists
+      resources_exists: boolean
+      users_exists: boolean
+      comments_exists: boolean
+      tasks_exists: boolean
+      activities_exists: boolean
     }
 
     export interface Resource {
@@ -809,6 +1121,16 @@ declare global {
       tenant?: Tenant
       category?: ResourceCategory
       media?: Medium[]
+      // counts
+      reservations_count: number
+      active_reservations_count: number
+      media_count: number
+      // exists
+      reservations_exists: boolean
+      active_reservations_exists: boolean
+      tenant_exists: boolean
+      category_exists: boolean
+      media_exists: boolean
     }
 
     export interface ResourceCategory {
@@ -823,6 +1145,10 @@ declare global {
       translations: unknown
       // relations
       resources?: Resource[]
+      // counts
+      resources_count: number
+      // exists
+      resources_exists: boolean
     }
 
     export interface Role {
@@ -838,6 +1164,18 @@ declare global {
       types?: Type[]
       permissions?: Permission[]
       users?: User[]
+      // counts
+      duties_count: number
+      attachable_types_count: number
+      types_count: number
+      permissions_count: number
+      users_count: number
+      // exists
+      duties_exists: boolean
+      attachable_types_exists: boolean
+      types_exists: boolean
+      permissions_exists: boolean
+      users_exists: boolean
     }
 
     export interface RoleType {
@@ -850,6 +1188,10 @@ declare global {
       // relations
       role?: Role
       type?: Type
+      // counts
+      // exists
+      role_exists: boolean
+      type_exists: boolean
     }
 
     export interface SharepointFile {
@@ -863,6 +1205,18 @@ declare global {
       meetings?: Meeting[]
       commentable?: SharepointFile
       comments?: Comment[]
+      // counts
+      fileables_count: number
+      types_count: number
+      institutions_count: number
+      meetings_count: number
+      comments_count: number
+      // exists
+      fileables_exists: boolean
+      types_exists: boolean
+      institutions_exists: boolean
+      meetings_exists: boolean
+      comments_exists: boolean
     }
 
     export interface StudyProgram {
@@ -878,18 +1232,29 @@ declare global {
       // relations
       tenant?: Tenant
       dutiables?: Dutiable[]
+      // counts
+      dutiables_count: number
+      // exists
+      tenant_exists: boolean
+      dutiables_exists: boolean
     }
 
     export interface Tag {
       // columns
       id: number
       alias?: string | null
-      name: Record<string, string>
-      description?: Record<string, string> | null
       created_at: string
       updated_at: string
-      // relationships
+      name?: string[] | null
+      description?: string[] | null
+      // mutators
+      translations: unknown
+      // relations
       news?: News[]
+      // counts
+      news_count: number
+      // exists
+      news_exists: boolean
     }
 
     export interface Task {
@@ -907,6 +1272,10 @@ declare global {
       // relations
       taskable?: Task
       users?: User[]
+      // counts
+      users_count: number
+      // exists
+      users_exists: boolean
     }
 
     export interface Tenant {
@@ -935,6 +1304,26 @@ declare global {
       reservations?: Reservation
       primary_institution?: Institution
       content?: Content
+      // counts
+      banners_count: number
+      calendar_count: number
+      duties_count: number
+      institutions_count: number
+      news_count: number
+      pages_count: number
+      quick_links_count: number
+      resources_count: number
+      // exists
+      banners_exists: boolean
+      calendar_exists: boolean
+      duties_exists: boolean
+      institutions_exists: boolean
+      news_exists: boolean
+      pages_exists: boolean
+      quick_links_exists: boolean
+      resources_exists: boolean
+      primary_institution_exists: boolean
+      content_exists: boolean
     }
 
     export interface Training {
@@ -965,6 +1354,21 @@ declare global {
       tasks?: TrainingTask[]
       programmes?: Programme[]
       activities?: Activity[]
+      // counts
+      trainables_count: number
+      users_count: number
+      tasks_count: number
+      programmes_count: number
+      activities_count: number
+      // exists
+      trainables_exists: boolean
+      organizer_exists: boolean
+      users_exists: boolean
+      institution_exists: boolean
+      form_exists: boolean
+      tasks_exists: boolean
+      programmes_exists: boolean
+      activities_exists: boolean
     }
 
     export interface TrainingTask {
@@ -980,6 +1384,9 @@ declare global {
       translations: unknown
       // relations
       training?: Training
+      // counts
+      // exists
+      training_exists: boolean
     }
 
     export interface Type {
@@ -1008,12 +1415,39 @@ declare global {
       incoming_relationships?: Relationship[]
       files?: SharepointFile[]
       activities?: Activity[]
+      // counts
+      institutions_count: number
+      duties_count: number
+      doings_count: number
+      meetings_count: number
+      roles_count: number
+      descendants_count: number
+      outgoing_relationships_count: number
+      incoming_relationships_count: number
+      files_count: number
+      activities_count: number
+      // exists
+      institutions_exists: boolean
+      duties_exists: boolean
+      doings_exists: boolean
+      meetings_exists: boolean
+      roles_exists: boolean
+      descendants_exists: boolean
+      parent_exists: boolean
+      recursive_parent_exists: boolean
+      outgoing_relationships_exists: boolean
+      incoming_relationships_exists: boolean
+      files_exists: boolean
+      activities_exists: boolean
     }
 
     export interface Typeable {
       // relations
       type?: Type
       typeable?: Typeable
+      // counts
+      // exists
+      type_exists: boolean
     }
 
     export interface User {
@@ -1055,6 +1489,36 @@ declare global {
       permissions?: Permission[]
       activities?: Activity[]
       notifications?: DatabaseNotification[]
+      // counts
+      doings_count: number
+      duties_count: number
+      previous_duties_count: number
+      current_duties_count: number
+      dutiables_count: number
+      tasks_count: number
+      reservations_count: number
+      memberships_count: number
+      trainings_count: number
+      available_trainings_through_user_count: number
+      roles_count: number
+      permissions_count: number
+      activities_count: number
+      notifications_count: number
+      // exists
+      doings_exists: boolean
+      duties_exists: boolean
+      previous_duties_exists: boolean
+      current_duties_exists: boolean
+      dutiables_exists: boolean
+      tasks_exists: boolean
+      reservations_exists: boolean
+      memberships_exists: boolean
+      trainings_exists: boolean
+      available_trainings_through_user_exists: boolean
+      roles_exists: boolean
+      permissions_exists: boolean
+      activities_exists: boolean
+      notifications_exists: boolean
     }
 
   }
