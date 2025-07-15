@@ -1,6 +1,6 @@
 <template>
   <div class="gap flex w-full flex-col">
-    <BubbleMenu v-if="editor" class="bg-white dark:bg-zinc-900" :editor="editor" :tippy-options="{ duration: 50 }">
+    <BubbleMenu v-if="editor" class="bg-white dark:bg-zinc-900" :editor>
       <TiptapFormattingButtons v-model:editor="editor" secondary />
     </BubbleMenu>
     <div v-if="showToolbar && editor" class="mt-1 flex min-h-8 flex-wrap items-center gap-2">
@@ -170,19 +170,15 @@
 </template>
 
 <script setup lang="ts">
-import { BubbleMenu, EditorContent, useEditor } from "@tiptap/vue-3";
+import { EditorContent, useEditor } from "@tiptap/vue-3";
+import { BubbleMenu } from "@tiptap/vue-3/menus";
+import { CharacterCount, Placeholder } from "@tiptap/extensions";
 import { nextTick, onBeforeUnmount, ref } from "vue";
-import CharacterCount from "@tiptap/extension-character-count";
-import Image from "@tiptap/extension-image";
-import Placeholder from '@tiptap/extension-placeholder'
-import StarterKit from "@tiptap/starter-kit";
-import Table from "@tiptap/extension-table";
-import TableCell from "@tiptap/extension-table-cell";
-import TableHeader from "@tiptap/extension-table-header";
-import TableRow from "@tiptap/extension-table-row";
-import TipTapLink from "@tiptap/extension-link";
-import UnderlineExtension from "@tiptap/extension-underline";
-import YoutubeExtension from "@tiptap/extension-youtube";
+import { Image } from "@tiptap/extension-image";
+import { StarterKit } from "@tiptap/starter-kit";
+
+import { TableKit } from '@tiptap/extension-table'
+import { Youtube } from "@tiptap/extension-youtube";
 
 import LineHorizontal120Regular from "~icons/fluent/line-horizontal-1-20-regular"
 import TextHeader220Filled from "~icons/fluent/text-header-2-20-filled"
@@ -221,7 +217,13 @@ const editor = useEditor({
   extensions: [
     StarterKit.configure({
       heading: false,
-      codeBlock: false
+      codeBlock: false,
+      link: {
+        openOnClick: false,
+        HTMLAttributes: {
+          class: "text-blue-500 underline",
+        },
+      },
     }),
     CharacterCount.configure({
       limit: props.maxCharacters ?? null,
@@ -238,18 +240,11 @@ const editor = useEditor({
         class: "w-96",
       },
     }),
-    Table.configure({
-      resizable: true,
+    TableKit.configure({
+      table: { resizable: true },
     }),
-    TableCell,
-    TableHeader,
-    TableRow,
-    TipTapLink.configure({
-      openOnClick: false,
-    }),
-    UnderlineExtension,
     Video,
-    YoutubeExtension.configure({
+    Youtube.configure({
       HTMLAttributes: {
         class: "aspect-video h-36 w-auto my-2",
       },

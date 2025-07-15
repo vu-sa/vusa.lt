@@ -1,10 +1,12 @@
 <template>
   <div class="gap flex w-full flex-col">
     <!-- Bubble menu with essential formatting options -->
-    <BubbleMenu v-if="editor" class="bg-white dark:bg-zinc-900 shadow-md rounded-md border border-zinc-200 dark:border-zinc-700" :editor="editor" :tippy-options="{ duration: 50 }">
+    <BubbleMenu v-if="editor"
+      class="bg-white dark:bg-zinc-900 shadow-md rounded-md border border-zinc-200 dark:border-zinc-700"
+      :editor="editor" :tippy-options="{ duration: 50 }">
       <div class="flex items-center p-1">
         <TiptapFormattingButtons v-model:editor="editor" secondary />
-        
+
         <!-- Link controls -->
         <NButtonGroup size="small">
           <TiptapLinkButton :editor="editor"
@@ -16,7 +18,7 @@
             </template>
           </NButton>
         </NButtonGroup>
-        
+
         <!-- Text styles -->
         <NButtonGroup size="small" class="ml-1">
           <NButton :type="editor.isActive('paragraph') ? 'primary' : 'default'"
@@ -62,7 +64,7 @@
                 <IFluentTextQuote24Filled />
               </NButton>
             </NButtonGroup>
-            
+
             <!-- Media buttons -->
             <NButtonGroup size="small">
               <Suspense>
@@ -70,7 +72,7 @@
               </Suspense>
               <TiptapYoutubeButton @submit="(youtubeUrl) => editor?.commands.setYoutubeVideo({ src: youtubeUrl })" />
             </NButtonGroup>
-            
+
             <!-- Undo/Redo -->
             <NButtonGroup size="small">
               <NButton @click="editor?.chain().focus().undo().run()">
@@ -90,7 +92,7 @@
     </BubbleMenu>
 
     <!-- Toggle for showing/hiding the toolbar -->
-    <div class="flex justify-end mb-1" v-if="showToolbarToggle">
+    <div v-if="showToolbarToggle" class="flex justify-end mb-1">
       <NButton size="tiny" quaternary @click="showToolbar = !showToolbar">
         <template #icon>
           <IFluentSettings16Filled v-if="!showToolbar" />
@@ -101,7 +103,8 @@
     </div>
 
     <!-- Optional toolbar - hidden by default -->
-    <div v-if="showToolbar && editor" class="mb-2 flex min-h-8 flex-wrap items-center gap-2 border-b border-zinc-200 dark:border-zinc-700 pb-2">
+    <div v-if="showToolbar && editor"
+      class="mb-2 flex min-h-8 flex-wrap items-center gap-2 border-b border-zinc-200 dark:border-zinc-700 pb-2">
       <TiptapFormattingButtons v-model:editor="editor" />
       <NButtonGroup size="small">
         <TiptapLinkButton :editor="editor"
@@ -155,14 +158,13 @@
 </template>
 
 <script setup lang="ts">
-import { BubbleMenu, EditorContent, useEditor } from "@tiptap/vue-3";
+import { EditorContent, useEditor } from "@tiptap/vue-3";
 import { nextTick, onBeforeUnmount, ref } from "vue";
-import StarterKit from "@tiptap/starter-kit";
-import Image from "@tiptap/extension-image";
-import Placeholder from '@tiptap/extension-placeholder'
-import TipTapLink from "@tiptap/extension-link";
-import UnderlineExtension from "@tiptap/extension-underline";
-import YoutubeExtension from "@tiptap/extension-youtube";
+import { BubbleMenu } from "@tiptap/vue-3/menus";
+import { StarterKit } from "@tiptap/starter-kit";
+import { Image } from "@tiptap/extension-image";
+import { CharacterCount, Placeholder } from "@tiptap/extensions";
+import { Youtube } from "@tiptap/extension-youtube";
 
 import TextHeader220Filled from "~icons/fluent/text-header-2-20-filled";
 
@@ -190,7 +192,10 @@ const editor = useEditor({
   extensions: [
     StarterKit.configure({
       heading: false,
-      codeBlock: false
+      codeBlock: false,
+      link: {
+        openOnClick: false,
+      },
     }),
     CustomHeading.configure({
       levels: [2],
@@ -204,11 +209,7 @@ const editor = useEditor({
         class: "w-full",
       },
     }),
-    TipTapLink.configure({
-      openOnClick: false,
-    }),
-    UnderlineExtension,
-    YoutubeExtension.configure({
+    Youtube.configure({
       HTMLAttributes: {
         class: "aspect-video w-auto my-2",
       },
@@ -230,6 +231,7 @@ onBeforeUnmount(() => {
 <style>
 /* Keep the base styles from OriginalTipTap.vue */
 .tiptap {
+
   p,
   ul,
   ol,
