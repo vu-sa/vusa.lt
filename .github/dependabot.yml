@@ -21,7 +21,7 @@ updates:
       interval: "weekly"
     ignore:
       - dependency-name: "*"
-        update-types: ["version-update:semver-patch"]
+        update-types: ["version-update:semver-patch", "version-update:semver-minor"]
     groups:
       dev-dependencies:
         patterns:
@@ -36,7 +36,7 @@ updates:
       interval: "weekly"
     ignore:
       - dependency-name: "*"
-        update-types: ["version-update:semver-patch"]
+        update-types: ["version-update:semver-patch", "version-update:semver-minor"]
     groups:
       laravel-ecosystem:
         patterns:
