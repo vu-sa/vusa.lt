@@ -2,7 +2,7 @@
   <div class="flex flex-col" style="max-height: 280px">
     <div :class="{ 'rounded-t-md': roundedTop }"
       class="grid grid-cols-[60px_1fr] overflow-y-scroll rounded-b-md border dark:border-zinc-600">
-      <div ref="commentContainer" class="flex justify-center">
+      <div ref="commentContainer" class="flex justify-center items-center">
         <UserAvatar :size="23" class="sticky top-4" :user="$page.props.auth?.user" />
       </div>
       <EditorContent :editor="editor" class="leading-normal" />
@@ -51,11 +51,9 @@
 import { EditorContent, useEditor } from "@tiptap/vue-3";
 import { capitalize, onBeforeUnmount, ref } from "vue";
 
-import StarterKit from "@tiptap/starter-kit";
+import { StarterKit } from "@tiptap/starter-kit";
 import TipTapButton from "./TipTap/TipTapButton.vue";
-import TipTapLink from "@tiptap/extension-link";
 import TiptapFormattingButtons from "@/Components/TipTap/TiptapFormattingButtons.vue";
-import Underline from "@tiptap/extension-underline";
 import UserAvatar from "@/Components/Avatars/UserAvatar.vue";
 
 const props = defineProps<{
@@ -80,11 +78,11 @@ const editor = useEditor({
     },
   },
   extensions: [
-    StarterKit,
-    TipTapLink.configure({
-      openOnClick: false,
+    StarterKit.configure({
+      link: {
+        openOnClick: false
+      }
     }),
-    Underline,
   ],
   content: props.text,
   onUpdate: () => {
@@ -100,6 +98,7 @@ onBeforeUnmount(() => {
 
 <style>
 .tiptap {
+
   p,
   ul,
   ol,
@@ -115,7 +114,8 @@ onBeforeUnmount(() => {
     list-style-type: decimal;
   }
 
-  ul, ol {
+  ul,
+  ol {
     padding-left: 1.5rem;
   }
 
