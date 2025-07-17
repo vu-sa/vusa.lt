@@ -17,7 +17,15 @@ class ResourceCategoryFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'name' => [
+                'lt' => $this->faker->words(2, true),
+                'en' => $this->faker->words(2, true),
+            ],
+            'description' => [
+                'lt' => $this->faker->sentence(),
+                'en' => $this->faker->sentence(),
+            ],
+            'icon' => $this->faker->randomElement(['building', 'car', 'computer', 'room', 'tool']),
         ];
     }
 }

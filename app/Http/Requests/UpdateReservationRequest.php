@@ -11,6 +11,8 @@ class UpdateReservationRequest extends FormRequest
      */
     public function authorize(): bool
     {
+        // TODO: Currently reservations are not updated directly - everything goes through reservation resources
+        // In the future, we might want to allow updating reservation name/description directly
         return false;
     }
 
@@ -22,7 +24,11 @@ class UpdateReservationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            // TODO: Add validation rules when direct reservation updates are implemented
+            'name' => 'sometimes|string|max:255',
+            'description' => 'sometimes|string',
+            'start_time' => 'sometimes|date',
+            'end_time' => 'sometimes|date|after:start_time',
         ];
     }
 }

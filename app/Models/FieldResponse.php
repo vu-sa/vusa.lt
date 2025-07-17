@@ -15,7 +15,8 @@ class FieldResponse extends Model
     ];
 
     protected $casts = [
-        'response' => 'array',
+        // Note: Removed 'response' => 'array' cast as text/email fields should store strings
+        // For field types that need arrays (checkboxes, multi-select), handle in controller
     ];
 
     public function registration()

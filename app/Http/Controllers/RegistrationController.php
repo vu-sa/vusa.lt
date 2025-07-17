@@ -23,6 +23,8 @@ class RegistrationController extends Controller
 
         if ($request->has('user_id')) {
             $registration->user_id = $request->validated()['user_id'];
+        } elseif ($request->user()) {
+            $registration->user_id = $request->user()->id;
         }
 
         $formData = $request->validated()['data'];

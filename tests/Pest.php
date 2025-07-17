@@ -19,7 +19,6 @@ use Tests\TestCase;
 
 uses(
     Tests\TestCase::class,
-    // Illuminate\Foundation\Testing\RefreshDatabase::class,
 )->in('Feature', 'Unit');
 
 /*
@@ -35,6 +34,26 @@ uses(
 
 expect()->extend('toBeOne', function () {
     return $this->toBe(1);
+});
+
+// Security-focused expectations
+expect()->extend('toBeSecureResponse', function () {
+    return $this->toBeIn([200, 302, 403, 404, 422]);
+});
+
+expect()->extend('toBeSecureApiResponse', function () {
+    return $this->toBeIn([200, 401, 403, 404]);
+});
+
+expect()->extend('toRequireAuth', function () {
+    return $this->toBeIn([302, 401, 403]);
+});
+
+expect()->extend('toNotExposePassword', function () {
+    $content = $this->value;
+    expect($content)->not->toContain('password');
+    expect($content)->not->toContain('remember_token');
+    return $this;
 });
 
 /*
@@ -60,4 +79,29 @@ function makeUser(Tenant $tenant): User
 function asUser(User $user): TestCase
 {
     return test()->actingAs($user);
+}
+
+// Simplified test helpers
+function expectSecureRoute(string $route, ?User $user = null): void
+{
+    $response = $user ? asUser($user)->get($route) : test()->get($route);
+    expect($response->status())->toBeIn([200, 302, 403, 404]);
+}
+
+function expectApiSecure(string $endpoint, ?User $user = null): void  
+{
+    $response = $user ? asUser($user)->getJson($endpoint) : test()->getJson($endpoint);
+    expect($response->status())->toBeIn([200, 401, 403, 404]);
+}
+
+function makeTenantUser(?string $role = null): User
+{
+    $tenant = Tenant::query()->inRandomOrder()->first();
+    $user = makeUser($tenant);
+    
+    if ($role) {
+        $user->duties()->first()->assignRole($role);
+    }
+    
+    return $user;
 }

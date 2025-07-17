@@ -18,9 +18,15 @@ class ResourceFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->word,
-            'description' => $this->faker->paragraph,
-            'location' => $this->faker->word,
+            'name' => [
+                'lt' => $this->faker->words(2, true),
+                'en' => $this->faker->words(2, true),
+            ],
+            'description' => [
+                'lt' => $this->faker->paragraph(),
+                'en' => $this->faker->paragraph(),
+            ],
+            'location' => $this->faker->address,
             'capacity' => $this->faker->numberBetween(1, 10),
             'is_reservable' => $this->faker->boolean,
             'tenant_id' => Tenant::factory(),

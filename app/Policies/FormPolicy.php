@@ -35,4 +35,20 @@ class FormPolicy extends ModelPolicy
 
         return false;
     }
+
+    /**
+     * Determine whether the user can update the model.
+     */
+    public function update(User $user, Model $form): bool
+    {
+        return $this->commonChecker($user, $form, CRUDEnum::UPDATE()->label, $this->pluralModelName, false);
+    }
+
+    /**
+     * Determine whether the user can delete the model.
+     */
+    public function delete(User $user, Model $form): bool
+    {
+        return $this->commonChecker($user, $form, CRUDEnum::DELETE()->label, $this->pluralModelName, false);
+    }
 }

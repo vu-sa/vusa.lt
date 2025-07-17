@@ -59,6 +59,10 @@ class RoleCommunicationCoordinatorSeeder extends Seeder
             'studyPrograms.read.padalinys',
             'studyPrograms.update.padalinys',
             'studyPrograms.delete.padalinys',
+            'forms.create.padalinys',
+            'forms.read.padalinys',
+            'forms.update.padalinys',
+            'forms.delete.padalinys',
         ]);
 
         $role->attachable_types()->attach(Type::query()->where('slug', 'pirmininkas')->firstOrFail());
