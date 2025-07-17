@@ -27,7 +27,7 @@ describe('SystemStatus: Authentication & Authorization', function () {
     test('system status page returns Inertia response', function () {
         // Set a consistent Inertia version to avoid 409 conflicts in tests
         config(['inertia.testing.ensure_pages_exist' => false]);
-        
+
         $response = asUser($this->user)->get('/mano/system-status', [
             'X-Inertia' => 'true',
             'X-Inertia-Version' => 'test-version',
@@ -35,7 +35,7 @@ describe('SystemStatus: Authentication & Authorization', function () {
 
         // Accept either 200 (success) or 409 (version mismatch) as valid Inertia behavior
         expect($response->status())->toBeIn([200, 409]);
-        
+
         if ($response->status() === 200) {
             expect($response->headers->get('X-Inertia'))->toBe('true');
         } elseif ($response->status() === 409) {
