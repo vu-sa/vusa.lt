@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Support\Facades\Cache;
 use Laravel\Scout\Searchable;
 use Staudenmeir\EloquentHasManyDeep\HasManyDeep;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
@@ -17,6 +18,14 @@ class Tenant extends Model
     protected $guarded = [];
 
     public $timestamps = false;
+
+    protected static function booted()
+    {
+        static::saved(function ($tenant) {
+            // Clear homepage cache when tenant content changes
+            Cache::tags(['homepage', "tenant_{$tenant->id}"])->flush();
+        });
+    }
 
     public function banners(): HasMany
     {

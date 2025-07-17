@@ -454,6 +454,12 @@ const menuItems = computed(() => [
         href: route('changelogItems.index'),
         show: auth?.can.create.changelogItem
       },
+      {
+        title: $t('Sistemos būsena'),
+        icon: Icons.NOTIFICATION,
+        href: route('systemStatus'),
+        show: auth?.can.create.role || auth?.can.create.permission
+      },
     ],
     show: auth?.can.create.role || auth?.can.create.permission || auth?.can.create.type || auth?.can.create.relationship || auth?.can.create.changelogItem,
     visibleItems: [] as MenuItemType[]

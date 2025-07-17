@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Actions\GetAliasSubdomainForPublic;
+use App\Models\Navigation;
 use App\Models\QuickLink;
 use App\Models\Tenant;
 use Illuminate\Support\Facades\Cache;
@@ -38,25 +39,63 @@ class PublicController extends Controller
 
     protected function getBanners()
     {
-        $banners = Cache::remember('banners-'.$this->tenant->id, 60 * 30, function () {
+        $cacheKey = "banners_{$this->tenant->id}";
+        $banners = Cache::tags(['banners', "tenant_{$this->tenant->id}"])
+            ->remember($cacheKey, 3600, function () {
+                $banners = Tenant::where('alias', 'vusa')->first()
+                    ->banners()
+                    ->inRandomOrder()
+                    ->where('is_active', 1)
+                    ->get();
 
-            $banners = Tenant::where('alias', 'vusa')->first()->banners()->inRandomOrder()->where('is_active', 1)->get();
+                if ($this->tenant->type !== 'pagrindinis') {
+                    $tenantBanners = $this->tenant
+                        ->banners()
+                        ->inRandomOrder()
+                        ->where('is_active', 1)
+                        ->get();
+                    $banners = $tenantBanners->merge($banners);
+                }
 
-            if ($this->tenant->type !== 'pagrindinis') {
-                $banners = $this->tenant->banners()->inRandomOrder()->where('is_active', 1)->get()->merge($banners);
-            }
-
-            return $banners;
-        });
+                return $banners;
+            });
 
         Inertia::share('tenant.banners', $banners);
     }
 
     protected function getTenantLinks()
     {
-        $quickLink = QuickLink::query()->where([['tenant_id', $this->tenant->id], ['lang', app()->getLocale()]])->orderBy('order')->get(['id', 'link', 'text', 'icon', 'is_important']);
+        $locale = app()->getLocale();
+        $cacheKey = "tenant_links_{$this->tenant->id}_{$locale}";
+        
+        $quickLinks = Cache::tags(['quick_links', "tenant_{$this->tenant->id}", "locale_{$locale}"])
+            ->remember($cacheKey, 3600, function () use ($locale) {
+                return QuickLink::query()
+                    ->where([
+                        ['tenant_id', $this->tenant->id], 
+                        ['lang', $locale]
+                    ])
+                    ->orderBy('order')
+                    ->get(['id', 'link', 'text', 'icon', 'is_important']);
+            });
 
-        Inertia::share('tenant.links', $quickLink);
+        Inertia::share('tenant.links', $quickLinks);
+    }
+
+    protected function getNavigation()
+    {
+        $locale = app()->getLocale();
+        $cacheKey = "navigation_{$locale}";
+        
+        $navigation = Cache::tags(['navigation', "locale_{$locale}"])
+            ->remember($cacheKey, 7200, function () use ($locale) {
+                return Navigation::query()
+                    ->where('lang', $locale)
+                    ->orderBy('order')
+                    ->get();
+            });
+
+        Inertia::share('navigation', $navigation);
     }
 
     // This is mostly used for default sharing, other cases likes pages and news link to other URLs

@@ -14,6 +14,7 @@ use App\Models\Tenant;
 use App\Services\ResourceServices\InstitutionService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 
@@ -42,13 +43,25 @@ class PublicPageController extends PublicController
 
     public function home()
     {
+        // Get shared data (these are cached internally)
         $this->getBanners();
         $this->getTenantLinks();
+        $this->getNavigation();
+
+        // Cache the homepage-specific content
+        $locale = app()->getLocale();
+        $cacheKey = "homepage_content_{$this->tenant->id}_{$locale}";
+        
+        $content = Cache::tags(['homepage', "tenant_{$this->tenant->id}", "locale_{$locale}"])
+            ->remember($cacheKey, 3600, function () {
+                return $this->tenant->content ?? 
+                    Tenant::query()->where('type', 'pagrindinis')->first()->content;
+            });
 
         $seo = $this->shareAndReturnSEOObject(title: __('Pagrindinis puslapis').' - '.$this->tenant->shortname);
 
         return Inertia::render('Public/HomePage', [
-            'content' => $this->tenant->content ?? Tenant::query()->where('type', 'pagrindinis')->first()->content,
+            'content' => $content,
         ])->withViewData([
             'SEOData' => $seo,
         ]);

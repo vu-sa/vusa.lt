@@ -16,6 +16,9 @@ Route::patch('profile', [DashboardController::class, 'updateUserSettings'])->nam
 Route::get('userTasks', [DashboardController::class, 'userTasks'])->name('userTasks');
 Route::get('institutionGraph', [DashboardController::class, 'institutionGraph'])->name('institutionGraph');
 
+// System Status
+Route::get('system-status', [SystemStatusController::class, 'index'])->name('systemStatus');
+
 // Restore routes
 Route::patch('users/{user}/restore', [UserController::class, 'restore'])->name('users.restore')->withTrashed();
 Route::patch('pages/{page}/restore', [PageController::class, 'restore'])->name('pages.restore')->withTrashed();

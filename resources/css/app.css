@@ -205,21 +205,21 @@
 }
 
 @layer base {
-
+  /* Only essential typography - no margins, let components control spacing */
   h1 {
-    @apply text-2xl md:text-4xl font-black mb-6 text-gray-900 dark:text-zinc-100 leading-tight;
+    @apply text-2xl md:text-4xl font-black text-gray-900 dark:text-zinc-100 leading-tight;
   }
 
   h2 {
-    @apply text-xl md:text-2xl font-bold mb-3 mt-6 text-gray-900 dark:text-zinc-100 leading-snug;
+    @apply text-xl md:text-2xl font-bold text-gray-900 dark:text-zinc-100 leading-snug;
   }
 
   h3 {
-    @apply text-lg md:text-xl font-bold mb-2 mt-5 text-gray-900 dark:text-zinc-100;
+    @apply text-lg md:text-xl font-bold text-gray-900 dark:text-zinc-100;
   }
 
   h4 {
-    @apply text-base md:text-lg font-bold mb-2 mt-4 text-gray-900 dark:text-zinc-100;
+    @apply text-base md:text-lg font-bold text-gray-900 dark:text-zinc-100;
   }
 
   a:not(.plain) {
@@ -229,16 +229,6 @@
   p>a {
     @apply underline;
   }
-
-  /* Reset heading margins in cards for more compact layout */
-  .card h1,
-  .card h2,
-  .card h3,
-  .card h4,
-  .card h5,
-  .card h6 {
-    @apply mt-0;
-  }
 }
 
 html.dark {
@@ -246,17 +236,29 @@ html.dark {
 }
 
 .typography {
-
+  /* Rich content typography with proper spacing and enhanced styling */
   h1 {
-    @apply scroll-mt-32 text-4xl font-bold tracking-tight lg:text-5xl
+    @apply scroll-mt-32 text-4xl font-bold tracking-tight lg:text-5xl mb-6 mt-0 first:mt-0;
   }
 
   h2 {
-    @apply scroll-mt-32 border-b border-zinc-200 dark:border-zinc-600 pb-2 text-3xl font-semibold transition-colors first:mt-2
+    @apply scroll-mt-32 border-b border-zinc-200 dark:border-zinc-600 pb-2 text-3xl font-semibold transition-colors mb-4 mt-8 first:mt-0;
   }
 
   h3 {
-    @apply scroll-mt-32 text-2xl font-semibold tracking-tight
+    @apply scroll-mt-32 text-2xl font-semibold tracking-tight mb-3 mt-6 first:mt-0;
+  }
+
+  h4 {
+    @apply scroll-mt-32 text-xl font-semibold mb-2 mt-5 first:mt-0;
+  }
+
+  h5 {
+    @apply scroll-mt-32 text-lg font-semibold mb-2 mt-4 first:mt-0;
+  }
+
+  h6 {
+    @apply scroll-mt-32 text-base font-semibold mb-2 mt-3 first:mt-0;
   }
 
   table p {
