@@ -169,6 +169,55 @@ $user->assignRole(config('permission.super_admin_role_name'));
 **State Management**: Inertia.js with server-side state
 **Styling**: Tailwind CSS with Shadcn Vue components
 
+### CSS Architecture Best Practices
+
+**Layer Structure**: Follow Tailwind CSS v4 layer-based architecture for proper style separation
+
+```css
+@layer base {
+  /* Only essential typography - no margins, let components control spacing */
+  h1, h2, h3, h4 {
+    @apply font-bold text-gray-900 dark:text-zinc-100;
+    /* NO margin classes here - components handle their own spacing */
+  }
+}
+
+.typography {
+  /* Rich content typography with proper spacing for parsed HTML */
+  h1 { @apply scroll-mt-32 text-4xl font-bold mb-6 mt-0 first:mt-0; }
+  h2 { @apply scroll-mt-32 text-3xl font-semibold mb-4 mt-8 first:mt-0; }
+  /* Full spacing control for content areas */
+}
+```
+
+**Component Variants**: Use Class Variance Authority (CVA) for scalable component variants
+
+```vue
+<!-- CardHeader.vue with CVA variants -->
+<script setup>
+const cardHeaderVariants = cva('flex flex-col space-y-1.5', {
+  variants: {
+    size: {
+      default: 'p-6',
+      compact: 'p-4 pb-3',
+      sm: 'p-3',
+    },
+  },
+  defaultVariants: { size: 'default' },
+})
+</script>
+
+<!-- Usage -->
+<CardHeader size="compact">
+```
+
+**CSS Architecture Rules**:
+- **Base layer**: Essential typography only, no margins/spacing
+- **Typography class**: Rich content with full spacing control (`.typography`)  
+- **Component variants**: Use CVA instead of manual class overrides
+- **Global interference**: Avoid global styles that affect component layouts
+- **Scope properly**: Keep layout-affecting styles in components, not global
+
 ## Key Services
 
 - `ModelAuthorizer` - Permission checking service
@@ -176,6 +225,59 @@ $user->assignRole(config('permission.super_admin_role_name'));
 - `SharepointGraphService` - Microsoft Graph integration
 - `TaskService` - Task management
 - `NavigationService` - Dynamic navigation
+
+## Caching & Performance
+
+**Redis Implementation**: Used for caching and session storage to improve public page performance
+**Cache Strategy**: Tagged caching with automatic invalidation via model hooks
+
+### Redis Configuration
+```bash
+# Required in .env for production performance
+CACHE_DRIVER=redis
+SESSION_DRIVER=redis
+REDIS_HOST=redis
+REDIS_PORT=6379
+```
+
+### Cache Patterns
+```php
+// Tagged caching for granular invalidation
+Cache::tags(['banners', "tenant_{$tenant->id}"])
+    ->remember($cacheKey, 3600, function () {
+        return Banner::where('tenant_id', $tenant->id)->get();
+    });
+
+// Model hook for cache invalidation
+protected static function booted()
+{
+    static::saved(function ($model) {
+        Cache::tags(['banners', "tenant_{$model->tenant_id}"])->flush();
+    });
+}
+```
+
+### Performance Targets
+- **Public pages**: Reduce from 800ms to 200-400ms load times
+- **Database queries**: Reduce from 8+ queries to 1-2 per public page
+- **Cache hit ratio**: Target >80% for production traffic
+
+### Cache Management Commands
+```bash
+# Cache warming for public routes
+./vendor/bin/sail artisan cache:warm
+
+# Redis statistics and monitoring
+./vendor/bin/sail artisan cache:stats
+
+# Clear application cache
+./vendor/bin/sail artisan cache:clear
+```
+
+### System Status Monitoring
+- **Admin interface**: `/mano/system-status` for Redis, database, integrations monitoring
+- **Status refresh**: Real-time system health checks with cache invalidation
+- **Performance metrics**: Hit ratios, memory usage, connection health
 
 ## Development Setup
 

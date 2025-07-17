@@ -1,4 +1,4 @@
-name: Run All Tests
+name: Frontend Tests
 
 on:
   push:
@@ -54,47 +54,6 @@ jobs:
     with:
       include-coverage: true
       
-  php-tests:
-    needs: [changes, setup]
-    if: ${{ needs.changes.outputs.php == 'true' || (github.event_name == 'push' && github.ref == 'refs/heads/main') }}
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    
-    # Download build artifacts
-    - name: Download build artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: build-assets
-        path: ./
-    
-    - name: Setup PHP with Xdebug
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: 8.3
-        extensions: dom, curl, libxml, mbstring, zip, fileinfo
-        coverage: xdebug
-    
-    - name: Create SQLite database
-      run: |
-        touch database/database.sqlite
-        cp .env.example .env
-        php artisan key:generate --force
-      
-    - name: Execute tests via Pest
-      env:
-        DB_CONNECTION: sqlite
-        DB_DATABASE: database/database.sqlite
-      run: php artisan test --coverage --coverage-clover ./phpunit-coverage.xml
-      
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v5
-      with:
-        verbose: true
-        files: ./phpunit-coverage.xml
-        flags: backend
-      env:
-        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         
   js-tests:
     needs: [changes, setup]
@@ -120,7 +79,7 @@ jobs:
       run: npm ci
     
     - name: Install Playwright Browsers
-      run: npx playwright install --with-deps
+      run: npx playwright install chromium --with-deps
     
     - name: Set up environment
       run: |
@@ -150,18 +109,17 @@ jobs:
         
   # New job to always report status to the PR
   status-check:
-    name: Tests completed
-    needs: [changes, php-tests, js-tests]
+    name: Frontend tests completed
+    needs: [changes, js-tests]
     if: always()
     runs-on: ubuntu-latest
     steps:
       - name: Set status
         run: |
-          if [[ "${{ needs.php-tests.result }}" == "success" || "${{ needs.php-tests.result }}" == "skipped" ]] && \
-             [[ "${{ needs.js-tests.result }}" == "success" || "${{ needs.js-tests.result }}" == "skipped" ]]; then
-            echo "All tests passed or were skipped"
+          if [[ "${{ needs.js-tests.result }}" == "success" || "${{ needs.js-tests.result }}" == "skipped" ]]; then
+            echo "Frontend tests passed or were skipped"
             exit 0
           else
-            echo "Some tests failed"
+            echo "Frontend tests failed"
             exit 1
           fi

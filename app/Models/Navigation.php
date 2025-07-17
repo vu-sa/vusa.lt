@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 
 class Navigation extends Model
 {
@@ -18,6 +19,17 @@ class Navigation extends Model
     protected $casts = [
         'extra_attributes' => 'array',
     ];
+
+    protected static function booted()
+    {
+        static::saved(function ($navigation) {
+            Cache::tags(['navigation', "locale_{$navigation->lang}"])->flush();
+        });
+
+        static::deleted(function ($navigation) {
+            Cache::tags(['navigation', "locale_{$navigation->lang}"])->flush();
+        });
+    }
 
     public function user()
     {

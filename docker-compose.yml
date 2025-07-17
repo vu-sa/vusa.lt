@@ -68,6 +68,19 @@ services:
             - '${FORWARD_MAILPIT_DASHBOARD_PORT:-8025}:8025'
         networks:
             - sail
+    redis:
+        image: 'redis:alpine'
+        ports:
+            - '${FORWARD_REDIS_PORT:-6379}:6379'
+        volumes:
+            - 'sailredis:/data'
+        networks:
+            - sail
+        command: redis-server --appendonly yes --maxmemory 1gb --maxmemory-policy allkeys-lru
+        healthcheck:
+            test: ["CMD", "redis-cli", "ping"]
+            retries: 3
+            timeout: 5s
     phpmyadmin:
         image: phpmyadmin/phpmyadmin:latest
         ports:
@@ -89,4 +102,6 @@ volumes:
     sail-nginx:
         driver: local
     sailmariadb:
+        driver: local
+    sailredis:
         driver: local
