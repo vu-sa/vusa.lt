@@ -225,7 +225,6 @@ declare global {
       institution_id: string
       order: number
       email?: string | null
-      contacts_grouping: string
       places_to_occupy?: number | null
       created_at: string
       updated_at: string
@@ -276,7 +275,7 @@ declare global {
       id: number
       registration_id: number
       form_field_id: number
-      response: string[]
+      response: string
       created_at: string
       updated_at: string
       // relations
@@ -431,7 +430,6 @@ declare global {
       instagram_url?: string | null
       tenant_id?: number | null
       is_active: boolean
-      contacts_layout: string
       created_at: string
       updated_at: string
       deleted_at?: string | null
@@ -1243,10 +1241,10 @@ declare global {
       // columns
       id: number
       alias?: string | null
+      name: string[]
+      description?: string[] | null
       created_at: string
       updated_at: string
-      name?: string[] | null
-      description?: string[] | null
       // mutators
       translations: unknown
       // relations
