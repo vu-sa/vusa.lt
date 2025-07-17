@@ -9,8 +9,7 @@ uses(RefreshDatabase::class);
 beforeEach(function () {
     $this->tenant = Tenant::query()->inRandomOrder()->first();
     $this->user = makeUser($this->tenant);
-    $this->adminUser = makeUser($this->tenant);
-    $this->adminUser->assignRole(config('permission.super_admin_role_name'));
+    $this->user->assignRole(config('permission.super_admin_role_name'));
 });
 
 describe('SystemStatus: Authentication & Authorization', function () {
