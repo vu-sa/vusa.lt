@@ -133,7 +133,7 @@ describe('Session Security', function () {
 describe('Input Validation Security', function () {
     test('validates file upload endpoint exists', function () {
         $response = asUser($this->admin)->get(route('files.index'));
-        
+
         expect($response->status())->toBeIn([200, 302, 403]);
     });
 
@@ -171,7 +171,7 @@ describe('Rate Limiting Security', function () {
 
         // Test password reset request - may not exist or be configured
         $response = $this->post('/forgot-password', ['email' => $user->email]);
-        
+
         expect($response->status())->toBeIn([200, 302, 404, 405, 429]);
     });
 });
