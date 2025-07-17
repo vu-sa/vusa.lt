@@ -6,9 +6,10 @@ use App\Models\Doing;
 use App\Models\Duty;
 use App\Models\User;
 use App\Notifications\ModelCommented;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+uses(RefreshDatabase::class);
 
 test('asserts that a comment notification is sent when an user comments on a doing', function () {
     $doing = Doing::factory()->has(User::factory()->count(1))->create();

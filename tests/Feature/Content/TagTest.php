@@ -3,9 +3,10 @@
 use App\Models\Tag;
 use App\Models\Tenant;
 use App\Models\User;
-use Inertia\Testing\AssertableInertia as Assert;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+uses(RefreshDatabase::class);
+use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
     $this->tenant = Tenant::query()->inRandomOrder()->first();

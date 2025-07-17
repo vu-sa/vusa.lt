@@ -18,6 +18,7 @@ class Form extends Model
         'name',
         'description',
         'path',
+        'publish_time',
     ];
 
     public $translatable = [

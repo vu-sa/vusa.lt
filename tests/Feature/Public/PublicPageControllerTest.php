@@ -6,9 +6,10 @@ use App\Models\ContentPart;
 use App\Models\Navigation;
 use App\Models\Page;
 use App\Models\Tenant;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+uses(RefreshDatabase::class);
 
 beforeEach(function () {
     // Create or find the main tenant that the controller expects

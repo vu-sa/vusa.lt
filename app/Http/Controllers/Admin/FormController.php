@@ -76,8 +76,7 @@ class FormController extends Controller
         }
 
         // Then, update or create the remaining form fields
-        collect($request->only('form_fields')['form_fields'])->each(function ($formField) use ($form) {
-
+        collect($request->only('form_fields')['form_fields'] ?? [])->each(function ($formField) use ($form) {
             unset($formField['id']);
             $form->formFields()->create($formField);
         });

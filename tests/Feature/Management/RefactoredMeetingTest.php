@@ -8,8 +8,9 @@ use App\Models\Tenant;
 use App\Models\Type;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->tenant = Tenant::query()->inRandomOrder()->first();

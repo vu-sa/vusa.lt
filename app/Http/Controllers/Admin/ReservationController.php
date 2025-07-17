@@ -212,7 +212,9 @@ class ReservationController extends Controller
      */
     public function update(UpdateReservationRequest $request, Reservation $reservation)
     {
-        //
+        // TODO: Direct reservation updates are not currently implemented
+        // Updates should go through reservation resources instead
+        abort(501, 'Direct reservation updates are not implemented');
     }
 
     /**

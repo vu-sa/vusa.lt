@@ -8,11 +8,12 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\States\ReservationResource\Cancelled;
 use App\States\ReservationResource\Created;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+
+uses(RefreshDatabase::class);
 use App\States\ReservationResource\Lent;
 use App\States\ReservationResource\Reserved;
 use Inertia\Testing\AssertableInertia as Assert;
-
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
 beforeEach(function () {
     $this->tenant = Tenant::query()->inRandomOrder()->first();

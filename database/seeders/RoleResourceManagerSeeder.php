@@ -30,6 +30,10 @@ class RoleResourceManagerSeeder extends Seeder
             'reservations.read.*',
             'reservations.update.padalinys',
             'reservations.delete.padalinys',
+            'documents.create.padalinys',
+            'documents.read.padalinys',
+            'documents.update.padalinys',
+            'documents.delete.padalinys',
         ]);
     }
 }

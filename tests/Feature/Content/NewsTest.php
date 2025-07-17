@@ -5,8 +5,9 @@ use App\Models\Institution;
 use App\Models\News;
 use App\Models\Tenant;
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->tenant = Tenant::query()->inRandomOrder()->first();

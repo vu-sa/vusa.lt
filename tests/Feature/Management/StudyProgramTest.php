@@ -4,9 +4,10 @@ use App\Models\Pivots\Dutiable;
 use App\Models\StudyProgram;
 use App\Models\Tenant;
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->tenant = Tenant::query()->inRandomOrder()->first();

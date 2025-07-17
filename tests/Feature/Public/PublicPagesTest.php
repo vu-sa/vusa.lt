@@ -1,10 +1,11 @@
 <?php
 
 use App\Models\Institution;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Inertia\Testing\AssertableInertia as Assert;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+uses(RefreshDatabase::class);
 
 test('home page gets default public props', function () {
     $this->get(route('home', ['subdomain' => 'www', 'lang' => 'lt']))

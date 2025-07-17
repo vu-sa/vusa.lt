@@ -2,8 +2,9 @@
 
 use App\Models\Permission;
 use Database\Seeders\ModelPermissionSeeder;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+uses(RefreshDatabase::class);
 
 test('permission seeder properly manages permissions based on model scope restrictions', function () {
     // Test with 'tags' model which only allows '*' scope

@@ -74,4 +74,16 @@ class ReservationPolicy extends ModelPolicy
 
         return false;
     }
+
+    /**
+     * Determine whether the user can update the model.
+     */
+    public function update(User $user, Model $reservation): bool
+    {
+        if ($reservation->users->contains($user)) {
+            return true;
+        }
+
+        return $this->commonChecker($user, $reservation, CRUDEnum::UPDATE()->label, $this->pluralModelName);
+    }
 }
