@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Role;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
@@ -12,6 +13,8 @@ class SystemStatusController extends Controller
 {
     public function index()
     {
+        $this->authorize('viewAny', Role::class);
+
         $status = [
             'redis' => $this->getRedisStatus(),
             'database' => $this->getDatabaseStatus(),
