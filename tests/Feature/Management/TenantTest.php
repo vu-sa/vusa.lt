@@ -5,7 +5,6 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
-
 beforeEach(function () {
     $this->tenant = Tenant::query()->inRandomOrder()->first();
 

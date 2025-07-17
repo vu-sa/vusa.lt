@@ -3,7 +3,6 @@
 use App\Models\Document;
 use App\Models\Institution;
 use App\Models\Tenant;
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 
@@ -12,10 +11,10 @@ uses(RefreshDatabase::class);
 beforeEach(function () {
     $this->tenant = Tenant::query()->inRandomOrder()->first();
     $this->user = makeUser($this->tenant);
-    
+
     $this->documentManager = makeUser($this->tenant);
     $this->documentManager->duties()->first()->assignRole('Resource Manager');
-    
+
     $this->institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
 });
 
@@ -41,7 +40,7 @@ describe('SharePoint API integration', function () {
             'login.microsoftonline.com/*' => Http::response([
                 'access_token' => 'fake-access-token',
             ], 200),
-            
+
             '*.sharepoint.com/*' => Http::response([
                 'value' => [
                     [
@@ -58,7 +57,7 @@ describe('SharePoint API integration', function () {
                         'webUrl' => 'https://example.sharepoint.com/another.docx',
                         'lastModifiedDateTime' => now()->subDay()->toISOString(),
                     ],
-                ]
+                ],
             ], 200),
         ]);
 
@@ -70,8 +69,8 @@ describe('SharePoint API integration', function () {
                     'list_item_unique_id' => 'test-document-id',
                     'site_id' => 'site-id-123',
                     'list_id' => 'list-id-123',
-                ]
-            ]
+                ],
+            ],
         ]);
 
         $response->assertRedirect();
@@ -98,8 +97,8 @@ describe('SharePoint API integration', function () {
                     'list_item_unique_id' => 'test-id-123',
                     'site_id' => 'site-id-123',
                     'list_id' => 'list-id-123',
-                ]
-            ]
+                ],
+            ],
         ]);
 
         // Should handle error gracefully
@@ -117,7 +116,7 @@ describe('SharePoint API integration', function () {
             'login.microsoftonline.com/*' => Http::response([
                 'access_token' => 'fake-access-token',
             ], 200),
-            
+
             '*.sharepoint.com/*' => Http::response([
                 'id' => 'existing-doc-id',
                 'name' => 'Updated Document Name.pdf',
@@ -143,9 +142,9 @@ describe('SharePoint API integration', function () {
                 'error' => [
                     'code' => 'TooManyRequests',
                     'message' => 'Rate limit exceeded',
-                ]
+                ],
             ], 429, [
-                'Retry-After' => '60'
+                'Retry-After' => '60',
             ]),
         ]);
 
@@ -156,8 +155,8 @@ describe('SharePoint API integration', function () {
                     'list_item_unique_id' => 'test-id-123',
                     'site_id' => 'site-id-123',
                     'list_id' => 'list-id-123',
-                ]
-            ]
+                ],
+            ],
         ]);
 
         // Should handle rate limiting appropriately

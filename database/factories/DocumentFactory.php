@@ -18,7 +18,7 @@ class DocumentFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->words(3, true) . '.pdf',
+            'name' => $this->faker->words(3, true).'.pdf',
             'title' => $this->faker->sentence(4),
             'sharepoint_id' => $this->faker->uuid,
             'eTag' => $this->faker->sha256,

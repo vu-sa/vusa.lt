@@ -12,7 +12,6 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
-
 function createContent(): string
 {
     $content = \App\Models\Content::create();
@@ -42,7 +41,7 @@ beforeEach(function () {
     // Create permissions if they don't exist
     $permissions = [
         'news.read.padalinys',
-        'news.create.padalinys', 
+        'news.create.padalinys',
         'news.update.padalinys',
         'news.delete.padalinys',
         'news.update.own',
@@ -52,9 +51,9 @@ beforeEach(function () {
         'news.delete.all',
         'unknown.permission.scope',
     ];
-    
+
     foreach ($permissions as $permission) {
-        if (!\App\Models\Permission::where('name', $permission)->exists()) {
+        if (! \App\Models\Permission::where('name', $permission)->exists()) {
             \App\Models\Permission::create(['name' => $permission, 'guard_name' => 'web']);
         }
     }
@@ -126,31 +125,31 @@ test('permission cache is cleared when roles change', function () {
     // Start with checking the user has no special permissions initially
     $initialHasPermission = Permission::check('news.create.padalinys', $this->normalUser);
     expect($initialHasPermission)->toBeFalse();
-    
+
     // Assign role to user's duty
     $duty = $this->normalUser->duties()->first();
     expect($duty)->not()->toBeNull();
-    
+
     $duty->assignRole($this->communicationCoordinatorRole);
     $this->normalUser->refresh();
-    
+
     // Clear permission cache since observers are not set up
     Permission::resetCache($this->normalUser);
-    
+
     // Debug: Check if the role has the permission
     expect($this->communicationCoordinatorRole->hasPermissionTo('news.create.padalinys'))->toBeTrue('Communication Coordinator role should have news.create.padalinys permission');
-    
+
     // Debug: Refresh duty and check if it's getting roles properly
     $duty->refresh();
-    
+
     // Check if the duty actually received the role
     $dutyRoles = $duty->roles()->get();
     expect($dutyRoles)->toHaveCount(1);
     expect($dutyRoles->first()->name)->toBe('Communication Coordinator');
-    
+
     // Debug: Check if the duty has the role and permission with explicit guard
     expect($duty->hasRole($this->communicationCoordinatorRole))->toBeTrue('Duty should have Communication Coordinator role');
-    
+
     // For now, just test that the permission check works at a basic level
     // TODO: Fix permission inheritance from duties to users
     $this->markTestIncomplete('Permission inheritance from duties needs debugging - role assignment works but permission check fails');
@@ -164,7 +163,7 @@ test('permission cache is cleared when duties change', function () {
 test('policy checks work correctly', function () {
     // Skip this test as the policy system needs architectural fixes for News model
     $this->markTestSkipped('Policy system needs fixes for models without direct duty relationships');
-    
+
     expect($this->superAdmin->can('view', $this->news))->toBeTrue();
     expect($this->superAdmin->can('update', $this->news))->toBeTrue();
     expect($this->superAdmin->can('delete', $this->news))->toBeTrue();

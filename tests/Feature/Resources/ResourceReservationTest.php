@@ -9,16 +9,15 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
-
 beforeEach(function () {
     $this->tenant = Tenant::query()->inRandomOrder()->first();
     $this->user = makeUser($this->tenant);
-    
+
     $this->resourceManager = makeUser($this->tenant);
     $this->resourceManager->duties()->first()->assignRole('Resource Manager');
-    
+
     $this->category = ResourceCategory::factory()->create();
-    
+
     $this->resource = Resource::factory()->create([
         'tenant_id' => $this->tenant->id,
         'resource_category_id' => $this->category->id,
@@ -42,14 +41,14 @@ describe('auth: simple user', function () {
             'start_time' => now()->addDays(1)->format('Y-m-d H:i:s'),
             'end_time' => now()->addDays(1)->addHours(2)->format('Y-m-d H:i:s'),
             'resources' => [
-                ['id' => $this->resource->id, 'quantity' => 1]
+                ['id' => $this->resource->id, 'quantity' => 1],
             ],
         ])->assertRedirect();
 
         $this->assertDatabaseHas('reservations', [
             'name' => 'Team Meeting',
         ]);
-        
+
         // Check user is attached to reservation
         $reservation = \App\Models\Reservation::where('name', 'Team Meeting')->first();
         expect($reservation->users->contains($this->user))->toBeTrue();
@@ -75,7 +74,7 @@ describe('auth: simple user', function () {
             'start_time' => now()->addDays(1)->addMinutes(30)->format('Y-m-d H:i:s'),
             'end_time' => now()->addDays(1)->addHours(3)->format('Y-m-d H:i:s'),
             'resources' => [
-                ['id' => $this->resource->id, 'quantity' => 1]
+                ['id' => $this->resource->id, 'quantity' => 1],
             ],
         ])->assertSessionHasErrors();
     });
@@ -129,7 +128,7 @@ describe('auth: simple user', function () {
 describe('auth: resource manager', function () {
     test('can create new resources', function () {
         $resourceCount = Resource::count();
-        
+
         asUser($this->resourceManager)->post(route('resources.store'), [
             'name' => [
                 'lt' => 'Conference Room A',
@@ -148,13 +147,13 @@ describe('auth: resource manager', function () {
         ])->assertRedirect();
 
         expect(Resource::count())->toBe($resourceCount + 1);
-        
+
         // Find the resource we just created by specific criteria
         $createdResource = Resource::where('capacity', 20)
             ->where('tenant_id', $this->tenant->id)
             ->where('location', 'Building A, Floor 2')
             ->first();
-            
+
         expect($createdResource)->not->toBeNull();
         expect($createdResource->getTranslation('name', 'lt'))->toBe('Conference Room A');
         expect($createdResource->capacity)->toBe(20);
@@ -163,7 +162,7 @@ describe('auth: resource manager', function () {
 
     test('can update resources', function () {
         $originalName = $this->resource->getTranslation('name', 'lt');
-        
+
         asUser($this->resourceManager)->put(route('resources.update', $this->resource), [
             'name' => [
                 'lt' => 'Updated Resource Name',
@@ -214,7 +213,7 @@ describe('auth: resource manager', function () {
         $otherUser->duties()->attach($duty->id, [
             'start_date' => now(),
         ]);
-        
+
         $reservation = Reservation::factory()->create();
         $reservation->users()->attach($otherUser->id);
 
@@ -228,7 +227,7 @@ describe('auth: resource manager', function () {
     })->todo('Resource managers should be able to update reservations in their tenant');
 
     test('cannot manage reservations from other tenants', function () {
-        // Create a user from completely different tenant structure  
+        // Create a user from completely different tenant structure
         $otherTenant = Tenant::factory()->create();
         $otherInstitution = \App\Models\Institution::factory()->create(['tenant_id' => $otherTenant->id]);
         $otherDuty = \App\Models\Duty::factory()->create(['institution_id' => $otherInstitution->id]);
@@ -236,7 +235,7 @@ describe('auth: resource manager', function () {
         $otherUser->duties()->attach($otherDuty->id, [
             'start_date' => now(),
         ]);
-        
+
         $reservation = Reservation::factory()->create();
         $reservation->users()->attach($otherUser->id);
 
@@ -246,7 +245,7 @@ describe('auth: resource manager', function () {
             'name' => 'Unauthorized Update',
         ]);
 
-        $reservation->refresh(); 
+        $reservation->refresh();
         expect($reservation->name)->not()->toBe('Unauthorized Update');
     })->todo('Cross-tenant authorization for reservation updates');
 });

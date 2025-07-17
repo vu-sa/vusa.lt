@@ -1,25 +1,21 @@
 <?php
 
+use App\Models\FieldResponse;
 use App\Models\Form;
 use App\Models\FormField;
 use App\Models\Registration;
-use App\Models\FieldResponse;
 use App\Models\Tenant;
-use App\Models\User;
-use Spatie\Permission\Models\Role;
-use Spatie\Permission\Models\Permission;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
-
 beforeEach(function () {
     $this->tenant = Tenant::query()->inRandomOrder()->first();
     $this->user = makeUser($this->tenant);
-    
+
     $this->formManager = makeUser($this->tenant);
     $this->formManager->duties()->first()->assignRole('Communication Coordinator');
-    
+
     $this->form = Form::factory()->create(['tenant_id' => $this->tenant->id]);
 });
 
@@ -62,7 +58,7 @@ describe('auth: simple user', function () {
         ]);
 
         $registration = Registration::where('form_id', $form->id)->first();
-        
+
         $this->assertDatabaseHas('field_responses', [
             'registration_id' => $registration->id,
             'form_field_id' => $textField->id,
@@ -74,7 +70,7 @@ describe('auth: simple user', function () {
 describe('auth: form manager', function () {
     test('can access forms index', function () {
         Form::factory()->count(3)->create(['tenant_id' => $this->tenant->id]);
-        
+
         asUser($this->formManager)->get(route('forms.index'))
             ->assertStatus(200);
     });
@@ -108,23 +104,23 @@ describe('auth: form manager', function () {
                 ],
             ],
         ]);
-        
+
         $response->assertRedirect();
 
         // Get the form that was just created for this tenant
         $form = Form::with('formFields')->where('tenant_id', $this->tenant->id)->latest()->first();
         expect($form)->not()->toBeNull();
         expect($form->tenant_id)->toBe($this->tenant->id);
-        
+
         // Debug: check if any form fields exist at all
         $allFormFields = \App\Models\FormField::where('form_id', $form->id)->get();
         if ($allFormFields->count() === 0) {
             // Skip test if form fields creation is not working properly
             $this->markTestSkipped('Form fields are not being created properly - needs controller debugging');
         }
-        
+
         expect($form->formFields)->toHaveCount(3);
-        
+
         $textField = $form->formFields->where('type', 'text')->first();
         expect($textField->is_required)->toBeTrue();
         expect($textField->getTranslation('label', 'lt'))->toBe('Pilnas vardas');
@@ -133,10 +129,10 @@ describe('auth: form manager', function () {
     test('can update form and its fields', function () {
         // Skip this test as it requires the form creation to work properly first
         $this->markTestSkipped('Form update test skipped - needs form creation to work first');
-        
+
         // Set a known initial name for the form
         $this->form->update(['name' => ['lt' => 'Originali forma', 'en' => 'Original Form']]);
-        
+
         $field = FormField::factory()->create([
             'form_id' => $this->form->id,
             'type' => 'text',
@@ -166,7 +162,7 @@ describe('auth: form manager', function () {
 
         $this->form->refresh();
         $field->refresh();
-        
+
         expect($this->form->getTranslation('name', 'lt'))->toBe('Atnaujinta forma');
         expect($field->getTranslation('label', 'lt'))->toBe('Atnaujintas laukas');
     });
@@ -204,12 +200,12 @@ describe('auth: form manager', function () {
     test('cannot manage forms from other tenants', function () {
         $otherTenant = Tenant::factory()->create();
         $otherForm = Form::factory()->create(['tenant_id' => $otherTenant->id]);
-        
+
         // The system might redirect instead of returning 403 for unauthorized access
         $response = asUser($this->formManager)->put(route('forms.update', $otherForm), [
             'name' => ['lt' => 'Unauthorized', 'en' => 'Unauthorized'],
         ]);
-        
+
         // Accept either 403 or redirect as both indicate unauthorized access
         expect(in_array($response->status(), [302, 403, 404]))->toBeTrue();
     });

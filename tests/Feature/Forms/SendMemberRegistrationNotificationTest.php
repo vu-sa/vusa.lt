@@ -12,7 +12,6 @@ use Illuminate\Support\Facades\Mail;
 
 uses(RefreshDatabase::class);
 
-
 describe('SendMemberRegistrationNotification Listener', function () {
 
     it('demonstrates the null duty error scenario is now fixed', function () {

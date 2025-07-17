@@ -53,6 +53,7 @@ expect()->extend('toNotExposePassword', function () {
     $content = $this->value;
     expect($content)->not->toContain('password');
     expect($content)->not->toContain('remember_token');
+
     return $this;
 });
 
@@ -88,7 +89,7 @@ function expectSecureRoute(string $route, ?User $user = null): void
     expect($response->status())->toBeIn([200, 302, 403, 404]);
 }
 
-function expectApiSecure(string $endpoint, ?User $user = null): void  
+function expectApiSecure(string $endpoint, ?User $user = null): void
 {
     $response = $user ? asUser($user)->getJson($endpoint) : test()->getJson($endpoint);
     expect($response->status())->toBeIn([200, 401, 403, 404]);
@@ -98,10 +99,10 @@ function makeTenantUser(?string $role = null): User
 {
     $tenant = Tenant::query()->inRandomOrder()->first();
     $user = makeUser($tenant);
-    
+
     if ($role) {
         $user->duties()->first()->assignRole($role);
     }
-    
+
     return $user;
 }

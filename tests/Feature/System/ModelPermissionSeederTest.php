@@ -6,7 +6,6 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
-
 test('permission seeder properly manages permissions based on model scope restrictions', function () {
     // Test with 'tags' model which only allows '*' scope
     // First, manually create some disallowed permissions that should be deleted

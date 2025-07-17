@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\Notification;
 
 uses(RefreshDatabase::class);
 
-
 test('asserts that a comment notification is sent when an user comments on a doing', function () {
     $doing = Doing::factory()->has(User::factory()->count(1))->create();
 

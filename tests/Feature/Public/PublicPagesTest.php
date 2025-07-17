@@ -7,7 +7,6 @@ use Inertia\Testing\AssertableInertia as Assert;
 
 uses(RefreshDatabase::class);
 
-
 test('home page gets default public props', function () {
     $this->get(route('home', ['subdomain' => 'www', 'lang' => 'lt']))
         ->assertInertia(fn (Assert $page) => $page

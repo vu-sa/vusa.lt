@@ -11,7 +11,6 @@ use Inertia\Testing\AssertableInertia as Assert;
 
 uses(RefreshDatabase::class);
 
-
 beforeEach(function () {
     // Create or find the main tenant that the controller expects
     $this->tenant = \App\Models\Tenant::firstOrCreate(

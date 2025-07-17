@@ -9,11 +9,10 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
-
 beforeEach(function () {
     $this->tenant = Tenant::query()->inRandomOrder()->first();
     $this->user = makeUser($this->tenant);
-    
+
     // Create role if it doesn't exist and give it permissions
     $role = Role::firstOrCreate(['name' => 'Communication Coordinator', 'guard_name' => 'web']);
     $role->givePermissionTo([
@@ -23,7 +22,7 @@ beforeEach(function () {
         'duties.delete.padalinys',
         'news.create.padalinys', // Add news permission for the inheritance test
     ]);
-    
+
     $this->admin = makeUser($this->tenant);
     $this->adminDuty = $this->admin->duties()->first();
     $this->adminDuty->assignRole('Communication Coordinator');
@@ -63,7 +62,7 @@ describe('auth: duty manager', function () {
 
     test('can create new duty', function () {
         $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
-        
+
         asUser($this->admin)->post(route('duties.store'), [
             'name' => ['lt' => 'Nauja pareiga', 'en' => 'New Duty'],
             'description' => ['lt' => 'Aprašymas', 'en' => 'Description'],
@@ -99,7 +98,7 @@ describe('auth: duty manager', function () {
 
     test('can assign users to duties', function () {
         $newUser = makeUser($this->tenant);
-        
+
         // Update duty with current users array to assign the new user
         asUser($this->admin)->put(route('duties.update', $this->adminDuty), [
             'name' => $this->adminDuty->getTranslations('name'),
@@ -122,7 +121,7 @@ describe('auth: duty manager', function () {
         $otherInstitution = Institution::factory()->create(['tenant_id' => $otherTenant->id]);
         $otherDuty = Duty::factory()->create(['institution_id' => $otherInstitution->id]);
         $newUser = makeUser($this->tenant);
-        
+
         // Try to update a duty from a different tenant - should be forbidden
         asUser($this->admin)->put(route('duties.update', $otherDuty), [
             'name' => $otherDuty->getTranslations('name'),
@@ -140,29 +139,29 @@ describe('duty role management', function () {
     test('can assign roles to duties', function () {
         // Role assignment is done programmatically, not through a web route
         $this->adminDuty->assignRole('Communication Coordinator');
-        
+
         expect($this->adminDuty->hasRole('Communication Coordinator'))->toBeTrue();
     });
 
     test('duty permissions are inherited by assigned users', function () {
         $this->adminDuty->assignRole('Communication Coordinator');
-        
+
         // Refresh user permissions cache
         $this->admin->refresh();
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
-        
+
         // TODO: Permission inheritance mechanism may need investigation
         expect($this->admin->can('news.create.padalinys'))->toBeTrue();
     })->todo('Permission inheritance through duties needs investigation');
 
     test('duty permissions are tenant-scoped', function () {
         $this->adminDuty->assignRole('Communication Coordinator');
-        
+
         $otherTenant = Tenant::factory()->create();
         $otherNews = \App\Models\News::factory()->create([
-            'tenant_id' => $otherTenant->id
+            'tenant_id' => $otherTenant->id,
         ]);
-        
+
         expect($this->admin->can('update', $otherNews))->toBeFalse();
     });
 });

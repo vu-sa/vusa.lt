@@ -7,7 +7,6 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
-
 beforeEach(function () {
     $this->tenant = Tenant::query()->inRandomOrder()->first();
 
@@ -76,22 +75,22 @@ describe('auth: simple user', function () {
 describe('auth: calendar manager', function () {
     test('saves images to calendar', function () {
         $calendarManager = makeTenantUser('Resource Manager');
-        
+
         // Create a test image file
         $image = \Illuminate\Http\UploadedFile::fake()->image('calendar-image.jpg', 800, 600);
-        
+
         $calendarData = [
             'date' => now()->addDays(1)->format('Y-m-d'),
             'title' => ['lt' => 'Renginys su nuotrauka', 'en' => 'Event with Image'],
             'description' => ['lt' => 'Aprašymas', 'en' => 'Description'],
             'image' => $image,
         ];
-        
+
         $response = asUser($calendarManager)->post(route('calendar.store'), $calendarData);
-        
+
         // Should either succeed or fail gracefully
         expect($response->status())->toBeIn([200, 302, 422]);
-        
+
         // If image upload is implemented, verify it was stored
         if ($response->status() === 302) {
             // Redirect suggests success

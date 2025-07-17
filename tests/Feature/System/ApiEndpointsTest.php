@@ -9,7 +9,7 @@ uses(RefreshDatabase::class);
 beforeEach(function () {
     $this->tenant = Tenant::factory()->create([
         'type' => 'padalinys',
-        'alias' => 'test-tenant'
+        'alias' => 'test-tenant',
     ]);
     $this->apiUser = makeUser($this->tenant);
 });
@@ -23,7 +23,7 @@ describe('unauthenticated API access', function () {
 
         $response = $this->getJson("/api/v1/lt/news/{$this->tenant->alias}");
         $response->assertStatus(200);
-        
+
         // Check that response contains some data (flexible structure)
         $responseData = $response->json();
         expect($responseData)->toBeArray();
@@ -41,7 +41,7 @@ describe('authenticated API access', function () {
             ->assertStatus(200);
     });
 
-    test('cannot access resources from other tenants', function () {        
+    test('cannot access resources from other tenants', function () {
         $otherTenant = Tenant::factory()->create();
         $otherNews = News::factory()->create([
             'tenant_id' => $otherTenant->id,
@@ -54,38 +54,38 @@ describe('authenticated API access', function () {
 
 describe('API validation and error handling', function () {
     test('handles not found resources gracefully', function () {
-        asUser($this->apiUser)->getJson("/api/v1/lt/news/nonexistent-tenant")
+        asUser($this->apiUser)->getJson('/api/v1/lt/news/nonexistent-tenant')
             ->assertStatus(404);
     });
 });
 
 describe('API pagination and filtering', function () {
-    test('API responses are properly paginated', function () {        
+    test('API responses are properly paginated', function () {
         News::factory()->count(25)->create([
             'tenant_id' => $this->tenant->id,
         ]);
 
         $response = asUser($this->apiUser)->getJson("/api/v1/lt/news/{$this->tenant->alias}");
         $response->assertStatus(200);
-        
+
         // Check that response contains some data (flexible structure)
         $responseData = $response->json();
         expect($responseData)->toBeArray();
     });
 
-    test('API supports filtering by parameters', function () {        
+    test('API supports filtering by parameters', function () {
         $publishedNews = News::factory()->create([
             'tenant_id' => $this->tenant->id,
             'draft' => false,
         ]);
-        
+
         $draftNews = News::factory()->create([
             'tenant_id' => $this->tenant->id,
             'draft' => true,
         ]);
 
         $response = asUser($this->apiUser)->getJson("/api/v1/lt/news/{$this->tenant->alias}?published=true");
-        
+
         if ($response->status() === 200) {
             $responseData = $response->json();
             expect($responseData)->toBeArray();
@@ -95,19 +95,19 @@ describe('API pagination and filtering', function () {
         }
     });
 
-    test('API supports search functionality', function () {        
+    test('API supports search functionality', function () {
         $searchableNews = News::factory()->create([
             'tenant_id' => $this->tenant->id,
             'title' => 'Unique search term',
         ]);
-        
+
         $otherNews = News::factory()->create([
             'tenant_id' => $this->tenant->id,
             'title' => 'Different content',
         ]);
 
         $response = asUser($this->apiUser)->getJson("/api/v1/lt/news/{$this->tenant->alias}?search=Unique");
-        
+
         if ($response->status() === 200) {
             $responseData = $response->json();
             expect($responseData)->toBeArray();
