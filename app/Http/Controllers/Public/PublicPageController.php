@@ -51,10 +51,10 @@ class PublicPageController extends PublicController
         // Cache the homepage-specific content
         $locale = app()->getLocale();
         $cacheKey = "homepage_content_{$this->tenant->id}_{$locale}";
-        
+
         $content = Cache::tags(['homepage', "tenant_{$this->tenant->id}", "locale_{$locale}"])
             ->remember($cacheKey, 3600, function () {
-                return $this->tenant->content ?? 
+                return $this->tenant->content ??
                     Tenant::query()->where('type', 'pagrindinis')->first()->content;
             });
 

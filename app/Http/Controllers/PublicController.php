@@ -67,13 +67,13 @@ class PublicController extends Controller
     {
         $locale = app()->getLocale();
         $cacheKey = "tenant_links_{$this->tenant->id}_{$locale}";
-        
+
         $quickLinks = Cache::tags(['quick_links', "tenant_{$this->tenant->id}", "locale_{$locale}"])
             ->remember($cacheKey, 3600, function () use ($locale) {
                 return QuickLink::query()
                     ->where([
-                        ['tenant_id', $this->tenant->id], 
-                        ['lang', $locale]
+                        ['tenant_id', $this->tenant->id],
+                        ['lang', $locale],
                     ])
                     ->orderBy('order')
                     ->get(['id', 'link', 'text', 'icon', 'is_important']);
@@ -86,7 +86,7 @@ class PublicController extends Controller
     {
         $locale = app()->getLocale();
         $cacheKey = "navigation_{$locale}";
-        
+
         $navigation = Cache::tags(['navigation', "locale_{$locale}"])
             ->remember($cacheKey, 7200, function () use ($locale) {
                 return Navigation::query()
