@@ -5,7 +5,7 @@ concurrency: production
 on:
   workflow_dispatch:
   workflow_run:
-    workflows: [Run All Tests]
+    workflows: ["PHP Code Quality", "Frontend Tests"]
     branches:
       - main
     types:

@@ -66,16 +66,20 @@ jobs:
       # Auto-commit changes for both direct pushes and PRs
       - name: Git Auto Commit
         uses: stefanzweifel/git-auto-commit-action@v6.0.1
+        id: auto-commit
         with:
           commit_message: PHP Linting (Pint)
           skip_fetch: true
           
   static-analysis:
-    needs: setup
+    needs: lint
     runs-on: ubuntu-latest
     name: PHP Static Analysis
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Fetch latest commit which may include lint changes
+          ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
       
       # Download build artifacts
       - name: Download build artifacts
@@ -109,3 +113,49 @@ jobs:
             ./phpstan-result.json
           retention-days: 1
           if-no-files-found: ignore
+
+  # Run tests on linted code
+  tests:
+    needs: lint
+    runs-on: ubuntu-latest
+    name: PHP Tests
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Fetch latest commit which may include lint changes
+          ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
+      
+      # Download build artifacts
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-assets
+          path: ./
+      
+      - name: Setup PHP with Xdebug
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.3
+          extensions: dom, curl, libxml, mbstring, zip, fileinfo
+          coverage: xdebug
+      
+      - name: Create SQLite database
+        run: |
+          touch database/database.sqlite
+          cp .env.example .env
+          php artisan key:generate --force
+        
+      - name: Execute tests via Pest
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: database/database.sqlite
+        run: php artisan test --coverage --coverage-clover ./phpunit-coverage.xml
+        
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          verbose: true
+          files: ./phpunit-coverage.xml
+          flags: backend
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
