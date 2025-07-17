@@ -21,7 +21,7 @@ describe('auth: simple user', function () {
     test('cannot access documents index', function () {
         asUser($this->user)->get(route('documents.index'))
             ->assertStatus(302)
-            ->assertRedirect('https://www.vusa.test');
+            ->assertRedirect('http://www.vusa.test');
     });
 
     test('cannot store sharepoint documents', function () {

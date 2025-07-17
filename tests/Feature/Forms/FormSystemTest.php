@@ -23,7 +23,7 @@ describe('auth: simple user', function () {
     test('cannot access forms management', function () {
         asUser($this->user)->get(route('forms.index'))
             ->assertStatus(302)
-            ->assertRedirect('https://www.vusa.test');
+            ->assertRedirect('http://www.vusa.test');
     });
 
     test('can submit registration to published form', function () {
