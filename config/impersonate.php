@@ -18,7 +18,7 @@ return [
     |
     */
     'except' => [
-        'telescope*', 'horizon*', 'api/*',
+        'telescope*', 'horizon*', 'api/*', 'sitemap*.xml',
     ],
 
     /*
