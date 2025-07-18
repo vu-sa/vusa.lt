@@ -3,12 +3,10 @@
 namespace App\Providers;
 
 use App\Http\Middleware\TrimStrings;
-use App\Models\User;
 use App\Services\ModelAuthorizer;
 use App\Services\PermissionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use RalphJSmit\Laravel\SEO\Facades\SEOManager;
