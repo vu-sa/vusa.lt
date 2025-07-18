@@ -72,19 +72,19 @@ class Page extends Model implements Sitemapable
 
     public function toSitemapTag(): Url
     {
-        $sitemapUrl = Url::create('/' . $this->permalink)
+        $sitemapUrl = Url::create('/'.$this->permalink)
             ->setLastModificationDate($this->updated_at)
             ->setPriority(0.7)
             ->setChangeFrequency(Url::CHANGE_FREQUENCY_MONTHLY);
-        
+
         // Add alternate language links if available
         if ($this->other_lang_id) {
             $otherLangPage = $this->getOtherLanguage();
             if ($otherLangPage) {
-                $sitemapUrl->addAlternate(url('/' . $otherLangPage->permalink), $otherLangPage->lang);
+                $sitemapUrl->addAlternate(url('/'.$otherLangPage->permalink), $otherLangPage->lang);
             }
         }
-        
+
         return $sitemapUrl;
     }
 }
