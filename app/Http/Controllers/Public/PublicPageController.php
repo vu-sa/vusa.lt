@@ -22,23 +22,29 @@ class PublicPageController extends PublicController
 {
     protected function getEventsForCalendar()
     {
-        if (app()->getLocale() === 'en') {
-            return Calendar::query()->with('category')->where('is_international', true)->where('is_draft', false)
-                ->orderBy('date', 'desc')->take(100)->get()->map(function ($event) {
-                    return [
-                        ...$event->toArray(),
-                        'googleLink' => $event->googleLink(),
-                    ];
-                });
-        } else {
-            return Calendar::query()->with('category')->where('is_draft', false)
-                ->orderBy('date', 'desc')->take(100)->get()->map(function ($event) {
-                    return [
-                        ...$event->toArray(),
-                        'googleLink' => $event->googleLink(),
-                    ];
-                });
-        }
+        $locale = app()->getLocale();
+        $cacheKey = "calendar_events_{$locale}";
+
+        return Cache::tags(['calendar', "locale_{$locale}"])
+            ->remember($cacheKey, 1800, function () use ($locale) { // 30 minutes TTL
+                if ($locale === 'en') {
+                    return Calendar::query()->with('category')->where('is_international', true)->where('is_draft', false)
+                        ->orderBy('date', 'desc')->take(100)->get()->map(function ($event) {
+                            return [
+                                ...$event->toArray(),
+                                'googleLink' => $event->googleLink(),
+                            ];
+                        });
+                } else {
+                    return Calendar::query()->with('category')->where('is_draft', false)
+                        ->orderBy('date', 'desc')->take(100)->get()->map(function ($event) {
+                            return [
+                                ...$event->toArray(),
+                                'googleLink' => $event->googleLink(),
+                            ];
+                        });
+                }
+            });
     }
 
     public function home()
@@ -82,14 +88,35 @@ class PublicPageController extends PublicController
         $this->getBanners();
         $this->getTenantLinks();
 
-        $page = Page::query()->where([['permalink', '=', request()->permalink], ['tenant_id', '=', $this->tenant->id]])->first();
+        // Cache the page data
+        $locale = app()->getLocale();
+        $cacheKey = "page_content_{$this->tenant->id}_{$locale}_".md5(request()->permalink);
 
-        if ($page === null) {
+        $pageData = Cache::tags(['pages', "tenant_{$this->tenant->id}", "locale_{$locale}"])
+            ->remember($cacheKey, 3600, function () {
+                $page = Page::query()->where([['permalink', '=', request()->permalink], ['tenant_id', '=', $this->tenant->id]])->first();
+
+                if ($page === null) {
+                    return null;
+                }
+
+                $navigation_item = Navigation::query()->where('name', $page->title)->first();
+                $other_lang_page = $page->getOtherLanguage();
+
+                return [
+                    'page' => $page,
+                    'navigation_item' => $navigation_item,
+                    'other_lang_page' => $other_lang_page,
+                ];
+            });
+
+        if ($pageData === null) {
             abort(404);
         }
 
-        $navigation_item = Navigation::query()->where('name', $page->title)->first();
-        $other_lang_page = $page->getOtherLanguage();
+        $page = $pageData['page'];
+        $navigation_item = $pageData['navigation_item'];
+        $other_lang_page = $pageData['other_lang_page'];
 
         Inertia::share('otherLangURL', $other_lang_page ? route(
             'page',
@@ -601,40 +628,49 @@ class PublicPageController extends PublicController
             description: 'VU SA dokumentai'
         );
 
-        if (request()->all() === []) {
-            $documents = Document::query()->with('institution')
-                ->orderBy('document_date', 'desc');
-        } else {
+        // Create cache key based on request parameters
+        $requestParams = request()->all();
+        $cacheKey = 'documents_'.md5(serialize($requestParams));
 
-            $documents = Document::search(request()->q)->query(function (Builder $query) {
-                $query->with('institution.tenant')->when(request()->has('tenants'), function (Builder $query) {
-                    $query->whereHas('institution.tenant', fn ($query) => $query->whereIn('tenants.shortname', request()->tenants));
-                })->when(request()->has('contentTypes'), function (Builder $query) {
-                    $query->whereIn('content_type', request()->contentTypes);
-                })->when(request()->has('language'), function (Builder $query) {
-                    $query->where('language', request()->language);
-                    // if has at least one of the dates: dateFrom or dateTo
-                })->when(request()->has('dateFrom') || request()->has('dateTo'), function (Builder $query) {
-                    $dateFrom = request()->dateFrom ? Carbon::parse(request()->dateFrom / 1000) : null;
-                    $dateTo = request()->dateTo ? Carbon::parse(request()->dateTo / 1000) : null;
+        $documentsData = Cache::tags(['documents'])
+            ->remember($cacheKey, 7200, function () use ($requestParams) { // 2 hours TTL
+                if ($requestParams === []) {
+                    $documents = Document::query()->with('institution')
+                        ->orderBy('document_date', 'desc');
+                } else {
+                    $documents = Document::search(request()->q)->query(function (Builder $query) {
+                        $query->with('institution.tenant')->when(request()->has('tenants'), function (Builder $query) {
+                            $query->whereHas('institution.tenant', fn ($query) => $query->whereIn('tenants.shortname', request()->tenants));
+                        })->when(request()->has('contentTypes'), function (Builder $query) {
+                            $query->whereIn('content_type', request()->contentTypes);
+                        })->when(request()->has('language'), function (Builder $query) {
+                            $query->where('language', request()->language);
+                            // if has at least one of the dates: dateFrom or dateTo
+                        })->when(request()->has('dateFrom') || request()->has('dateTo'), function (Builder $query) {
+                            $dateFrom = request()->dateFrom ? Carbon::parse(request()->dateFrom / 1000) : null;
+                            $dateTo = request()->dateTo ? Carbon::parse(request()->dateTo / 1000) : null;
 
-                    $query->when($dateFrom, function (Builder $query) use ($dateFrom) {
-                        $query->where('document_date', '>=', $dateFrom);
-                    })->when($dateTo, function (Builder $query) use ($dateTo) {
-                        $query->where('document_date', '<=', $dateTo);
+                            $query->when($dateFrom, function (Builder $query) use ($dateFrom) {
+                                $query->where('document_date', '>=', $dateFrom);
+                            })->when($dateTo, function (Builder $query) use ($dateTo) {
+                                $query->where('document_date', '<=', $dateTo);
+                            });
+                        });
                     });
-                });
+                }
+
+                $paginated = $documents->where('is_active', true)->orderBy('document_date', 'desc')->paginate(20);
+                $collection = $paginated->getCollection()->append('is_in_effect');
+
+                return [
+                    'documents' => $paginated->setCollection($collection),
+                    'contentTypes' => Document::query()->select('content_type')->whereNotNull('content_type')->distinct()->pluck('content_type')->sort()->values(),
+                ];
             });
-        }
-
-        $paginated = $documents->where('is_active', true)->orderBy('document_date', 'desc')->paginate(20);
-
-        $collection = $paginated->getCollection()->append('is_in_effect');
 
         return Inertia::render('Public/ShowDocuments', [
-            'documents' => $paginated->setCollection($collection),
-            // Filter null values from content_type
-            'allContentTypes' => Document::query()->select('content_type')->whereNotNull('content_type')->distinct()->pluck('content_type')->sort()->values(),
+            'documents' => $documentsData['documents'],
+            'allContentTypes' => $documentsData['contentTypes'],
         ])->withViewData([
             'SEOData' => $seo,
         ]);

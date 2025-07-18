@@ -6,6 +6,7 @@ use App\Models\Traits\HasTranslations;
 use Datetime;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Laravel\Scout\Searchable;
 use Spatie\CalendarLinks\Link;
 use Spatie\MediaLibrary\HasMedia;
@@ -35,6 +36,19 @@ class Calendar extends Model implements HasMedia
         'organizer',
         'cto_url',
     ];
+
+    protected static function booted()
+    {
+        static::saved(function ($calendar) {
+            // Flush calendar cache for all locales since calendar events can be international
+            Cache::tags(['calendar', 'locale_lt', 'locale_en'])->flush();
+        });
+
+        static::deleted(function ($calendar) {
+            // Flush calendar cache for all locales since calendar events can be international
+            Cache::tags(['calendar', 'locale_lt', 'locale_en'])->flush();
+        });
+    }
 
     public function tenant(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {

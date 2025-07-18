@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Cache;
 use Laravel\Scout\Searchable;
 
 class Page extends Model
@@ -17,6 +18,17 @@ class Page extends Model
         'updated_at' => 'datetime:Y-m-d H:i:s',
         'created_at' => 'datetime:Y-m-d H:i:s',
     ];
+
+    protected static function booted()
+    {
+        static::saved(function ($page) {
+            Cache::tags(['pages', "tenant_{$page->tenant_id}", "locale_{$page->lang}"])->flush();
+        });
+
+        static::deleted(function ($page) {
+            Cache::tags(['pages', "tenant_{$page->tenant_id}", "locale_{$page->lang}"])->flush();
+        });
+    }
 
     public function tenant(): BelongsTo
     {

@@ -9,6 +9,21 @@
 
     {!! isset($SEOData) ? seo($SEOData) : null !!}
     
+    {{-- Hreflang tags for bilingual content --}}
+    @if (isset($page['props']['seo']['hreflang']))
+        @foreach ($page['props']['seo']['hreflang'] as $hreflangTag)
+            {!! $hreflangTag !!}
+        @endforeach
+    @endif
+    
+    {{-- Site-wide structured data schemas --}}
+    @if (isset($page['props']['schemas']))
+        @foreach ($page['props']['schemas'] as $schema)
+            {!! $schema->toScript() !!}
+        @endforeach
+    @endif
+    
+    {{-- Page-specific structured data schemas --}}
     @if (isset($JSONLD_Schemas) && is_array($JSONLD_Schemas))
         @foreach($JSONLD_Schemas as $schema)
             {!! $schema->toScript() !!}

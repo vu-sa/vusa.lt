@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use RalphJSmit\Laravel\SEO\Support\SEOData;
+use Spatie\SchemaOrg\Organization;
+use Spatie\SchemaOrg\WebSite;
 
 class PublicController extends Controller
 {
@@ -127,6 +129,45 @@ class PublicController extends Controller
             return [get_class($tag) => $tag];
         });
 
+        // Add hreflang tags for bilingual content
+        $currentLocale = app()->getLocale();
+        $otherLocale = $currentLocale === 'lt' ? 'en' : 'lt';
+        $currentUrl = request()->url();
+
+        // Generate hreflang URLs for current page
+        $hreflangTags = [];
+
+        // Current language URL
+        $hreflangTags[] = sprintf(
+            '<link rel="alternate" hreflang="%s" href="%s" />',
+            $currentLocale,
+            $currentUrl
+        );
+
+        // Other language URL (if available via shared otherLangURL)
+        $otherLangURL = Inertia::getShared('otherLangURL');
+        if ($otherLangURL) {
+            $hreflangTags[] = sprintf(
+                '<link rel="alternate" hreflang="%s" href="%s" />',
+                $otherLocale,
+                $otherLangURL
+            );
+        }
+
+        // x-default to Lithuanian (primary language)
+        $defaultUrl = $currentLocale === 'lt' ? $currentUrl : ($otherLangURL ?? $currentUrl);
+        $hreflangTags[] = sprintf(
+            '<link rel="alternate" hreflang="x-default" href="%s" />',
+            $defaultUrl
+        );
+
+        // Share hreflang tags
+        Inertia::share('seo.hreflang', $hreflangTags);
+
+        // Add structured data schemas
+        $schemas = $this->getStructuredDataSchemas();
+        Inertia::share('schemas', $schemas);
+
         // NOTE: seo() modifies the object in place, so we need to clone it
         Inertia::share('seo.tags', $associatedArray);
 
@@ -150,5 +191,56 @@ class PublicController extends Controller
         Inertia::share('seo.image', $image);
 
         return $seoData;
+    }
+
+    protected function getStructuredDataSchemas()
+    {
+        $locale = app()->getLocale();
+        $cacheKey = "structured_schemas_{$locale}";
+
+        return Cache::tags(['schemas', "locale_{$locale}"])
+            ->remember($cacheKey, 86400, function () use ($locale) { // 24 hours TTL
+                $baseUrl = config('app.url');
+
+                // Organization schema for VU SA
+                $organizationSchema = (new Organization)
+                    ->name($locale === 'lt' ? 'Vilniaus universiteto Studentų atstovybė' : 'Vilnius University Students\' Representation')
+                    ->alternateName('VU SA')
+                    ->url($baseUrl)
+                    ->logo($baseUrl.'/images/photos/vusa.jpg')
+                    ->description($locale === 'lt'
+                        ? 'VU SA - visuomeninė, ne pelno siekianti, nepolitinė, ekspertinė švietimo organizacija, atstovaujanti Vilniaus universiteto studentų interesams.'
+                        : 'VU SA - a public, non-profit, non-political, expert educational organization representing the interests of Vilnius University students.'
+                    )
+                    ->sameAs([
+                        'https://www.facebook.com/VUSA.LT',
+                        'https://www.instagram.com/vusa.lt',
+                        'https://www.linkedin.com/company/vusa-lt',
+                    ]);
+
+                // WebSite schema with search functionality
+                $websiteSchema = (new WebSite)
+                    ->name($locale === 'lt' ? 'VU SA svetainė' : 'VU SA website')
+                    ->url($baseUrl)
+                    ->description($locale === 'lt'
+                        ? 'Oficiali Vilniaus universiteto Studentų atstovybės svetainė'
+                        : 'Official website of Vilnius University Students\' Representation'
+                    )
+                    ->potentialAction([
+                        'SearchAction' => [
+                            '@type' => 'SearchAction',
+                            'target' => [
+                                '@type' => 'EntryPoint',
+                                'urlTemplate' => $baseUrl.'/search?q={search_term_string}',
+                            ],
+                            'query-input' => 'required name=search_term_string',
+                        ],
+                    ]);
+
+                return [
+                    $organizationSchema,
+                    $websiteSchema,
+                ];
+            });
     }
 }

@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Services\SharepointGraphService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Laravel\Scout\Searchable;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
@@ -15,6 +16,17 @@ class Document extends Model
     protected $guarded = [];
 
     protected $hidden = ['sharepoint_id', 'eTag', 'public_url_created_at', 'sharepoint_site_id', 'sharepoint_list_id', 'created_at', 'updated_at'];
+
+    protected static function booted()
+    {
+        static::saved(function ($document) {
+            Cache::tags(['documents'])->flush();
+        });
+
+        static::deleted(function ($document) {
+            Cache::tags(['documents'])->flush();
+        });
+    }
 
     public function toSearchableArray()
     {
