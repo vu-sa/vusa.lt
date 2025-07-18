@@ -187,7 +187,7 @@ class SitemapController extends Controller
         }
 
         // Default to www if not set
-        $subdomain = $subdomain ?? 'www';
+        $subdomain = $subdomain ?: 'www';
 
         // Handle main domain
         if ($subdomain === 'www') {

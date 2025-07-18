@@ -57,7 +57,7 @@ class News extends Model implements Feedable, Sitemapable
         return $this->belongsTo(Tenant::class);
     }
 
-    public function other_language_news()
+    public function other_language_news(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
         return $this->hasOne(News::class, 'id', 'other_lang_id');
     }
