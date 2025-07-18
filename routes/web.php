@@ -32,6 +32,14 @@ Route::post('feedback', [Public\MainController::class, 'sendFeedback'])->name('f
 
 Route::post('registration/{form}', [RegistrationController::class, 'store'])->name('registrations.store');
 
+// Sitemap routes (outside language group)
+Route::domain('{subdomain}.'.explode('.', config('app.url'), 2)[1])->group(function () {
+    Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap.index');
+    Route::get('/sitemap-pages.xml', [SitemapController::class, 'pages'])->name('sitemap.pages');
+    Route::get('/sitemap-news.xml', [SitemapController::class, 'news'])->name('sitemap.news');
+    Route::get('/sitemap-news-google.xml', [SitemapController::class, 'googleNews'])->name('sitemap.news.google');
+});
+
 Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware' => ['main']], function () {
     Route::domain('www.'.explode('.', config('app.url'), 2)[1])->group(function () {
 

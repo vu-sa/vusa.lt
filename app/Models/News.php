@@ -6,14 +6,17 @@ use App\Casts\NewsImage;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Scout\Searchable;
 use Spatie\Feed\Feedable;
 use Spatie\Feed\FeedItem;
 use Spatie\SchemaOrg\NewsArticle;
 use Spatie\SchemaOrg\Organization;
+use Spatie\Sitemap\Contracts\Sitemapable;
+use Spatie\Sitemap\Tags\Url;
 
-class News extends Model implements Feedable
+class News extends Model implements Feedable, Sitemapable
 {
     use HasFactory, Searchable, SoftDeletes;
 
@@ -30,6 +33,19 @@ class News extends Model implements Feedable
         // TODO: convert to datetime in database
         'publish_time' => 'datetime',
     ];
+
+    protected static function booted()
+    {
+        static::saved(function ($news) {
+            // Clear sitemap cache when news is updated
+            Cache::tags(['sitemap', 'news', "tenant_{$news->tenant_id}"])->flush();
+        });
+
+        static::deleted(function ($news) {
+            // Clear sitemap cache when news is deleted
+            Cache::tags(['sitemap', 'news', "tenant_{$news->tenant_id}"])->flush();
+        });
+    }
 
     public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
@@ -84,15 +100,37 @@ class News extends Model implements Feedable
     {
         $schema = new NewsArticle;
 
-        $schema = $schema->image(! substr($this->image, 0, 4) === 'http' ? url($this->getImageUrl()) : $this->getImageUrl());
+        // Fix image URL construction
+        $imageUrl = substr($this->image, 0, 4) === 'http' ? $this->image : url($this->getImageUrl());
+        $schema = $schema->image($imageUrl);
 
         $schema = $schema->datePublished($this->publish_time);
-
         $schema = $schema->dateModified($this->updated_at);
-
         $schema = $schema->headline($this->title);
+        
+        // Add description from short field
+        if ($this->short) {
+            $schema = $schema->description(strip_tags($this->short));
+        }
 
-        $schema->author((new Organization)->name($this->tenant->shortname));
+        // Create proper organization with website URL
+        $organization = (new Organization)
+            ->name($this->tenant->shortname)
+            ->url(url('/'));
+
+        // Add full organization name if available
+        if ($this->tenant->fullname) {
+            $organization = $organization->alternateName($this->tenant->fullname);
+        }
+
+        $schema = $schema->author($organization);
+        $schema = $schema->publisher($organization);
+
+        // Add main entity of page (canonical URL)
+        $schema = $schema->mainEntityOfPage(url('/naujiena/' . $this->permalink));
+
+        // Add article URL
+        $schema = $schema->url(url('/naujiena/' . $this->permalink));
 
         return $schema;
     }
@@ -113,5 +151,32 @@ class News extends Model implements Feedable
         ];
 
         return $array;
+    }
+
+    public function toSitemapTag(): Url
+    {
+        $url = $this->lang === 'lt' ? '/naujiena/' : '/news/';
+        $url .= $this->permalink;
+        
+        $sitemapUrl = Url::create($url)
+            ->setLastModificationDate($this->updated_at)
+            ->setPriority(0.6)
+            ->setChangeFrequency(Url::CHANGE_FREQUENCY_NEVER);
+        
+        // Add image if available
+        if ($this->image) {
+            $imageUrl = substr($this->image, 0, 4) === 'http' ? $this->image : url($this->getImageUrl());
+            $sitemapUrl->addImage($imageUrl, $this->title);
+        }
+        
+        // Add alternate language links if available
+        if ($this->other_language_news) {
+            $otherLangUrl = $this->other_language_news->lang === 'lt' ? '/naujiena/' : '/news/';
+            $otherLangUrl .= $this->other_language_news->permalink;
+            
+            $sitemapUrl->addAlternate(url($otherLangUrl), $this->other_language_news->lang);
+        }
+        
+        return $sitemapUrl;
     }
 }

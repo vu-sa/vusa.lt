@@ -57,6 +57,11 @@ class SetLocale
     {
         $bypassSegments = ['mano', 'auth', 'feedback', 'login', 'telescope', '_impersonate', 'feed', 'pulse', 'livewire', 'registration'];
 
+        // Bypass sitemap routes
+        if (is_string($segment) && (str_starts_with($segment, 'sitemap') || str_ends_with($segment, '.xml'))) {
+            return true;
+        }
+
         return in_array($segment, $bypassSegments);
     }
 
