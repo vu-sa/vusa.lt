@@ -133,8 +133,8 @@ class DatabaseSeeder extends Seeder
     private function createMainPageContent()
     {
         $pagrindinisTenant = Tenant::where('type', 'pagrindinis')->first();
-        
-        if (!$pagrindinisTenant) {
+
+        if (! $pagrindinisTenant) {
             return;
         }
 
@@ -145,6 +145,7 @@ class DatabaseSeeder extends Seeder
         ContentPart::create([
             'content_id' => $content->id,
             'type' => 'news',
+            'json_content' => [],
             'options' => null,
             'order' => 0,
         ]);
@@ -152,6 +153,7 @@ class DatabaseSeeder extends Seeder
         ContentPart::create([
             'content_id' => $content->id,
             'type' => 'calendar',
+            'json_content' => [],
             'options' => null,
             'order' => 1,
         ]);
