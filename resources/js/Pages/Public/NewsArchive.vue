@@ -168,7 +168,7 @@
 <script setup lang="ts">
 import { router } from "@inertiajs/vue3";
 import { trans as $t } from "laravel-vue-i18n";
-import { onMounted } from "vue";
+import { onMounted, onUnmounted } from "vue";
 import { usePublicBreadcrumbs } from "@/Composables/usePublicBreadcrumbs";
 import { XIcon, ChevronLeftIcon, ChevronRightIcon } from "lucide-vue-next";
 import { NButton } from "naive-ui";
@@ -246,9 +246,14 @@ const getPagesAfter = () => {
   return pages;
 };
 
-const { setPageBreadcrumbs } = usePublicBreadcrumbs();
+const { setPageBreadcrumbs, clearBreadcrumbs } = usePublicBreadcrumbs();
 
 onMounted(() => {
   setPageBreadcrumbs([]);
+});
+
+// Clear breadcrumbs when component is unmounted  
+onUnmounted(() => {
+  clearBreadcrumbs();
 });
 </script>

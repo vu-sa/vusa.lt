@@ -138,6 +138,7 @@ export function usePublicBreadcrumbs() {
     createPublicBreadcrumbItem,
     createPublicRouteBreadcrumb,
     setPageBreadcrumbs,
+    clearBreadcrumbs: publicBreadcrumbState.clearBreadcrumbs,
     breadcrumbs: publicBreadcrumbState.breadcrumbs,
     hasBreadcrumbs: publicBreadcrumbState.hasBreadcrumbs
   }

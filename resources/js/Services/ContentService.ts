@@ -1,6 +1,6 @@
 import { usePage } from "@inertiajs/vue3";
 import { useFetch } from "@vueuse/core";
-import { computed } from "vue";
+import { computed, ref } from "vue";
 
 /**
  * Fetch news for current tenant
@@ -46,3 +46,4 @@ export function useCalendarFetch() {
     error
   };
 }
+

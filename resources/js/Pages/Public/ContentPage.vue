@@ -25,7 +25,7 @@
 <script setup lang="ts">
 import FeedbackPopover from "@/Components/Public/FeedbackPopover.vue";
 import RichContentParser from "@/Components/RichContentParser.vue";
-import { computed, onMounted } from "vue";
+import { computed, onMounted, onUnmounted } from "vue";
 import { usePublicBreadcrumbs } from "@/Composables/usePublicBreadcrumbs";
 
 const props = defineProps<{
@@ -33,7 +33,7 @@ const props = defineProps<{
   page: Record<string, any>;
 }>();
 
-const { buildNavigationPath, createPublicBreadcrumbItem, setPageBreadcrumbs } = usePublicBreadcrumbs();
+const { buildNavigationPath, createPublicBreadcrumbItem, setPageBreadcrumbs, clearBreadcrumbs } = usePublicBreadcrumbs();
 
 // Build breadcrumb items for the content page
 const breadcrumbItems = computed(() => {
@@ -51,6 +51,11 @@ const breadcrumbItems = computed(() => {
 // Set the breadcrumbs in the centralized state on component mount
 onMounted(() => {
   setPageBreadcrumbs(breadcrumbItems.value);
+});
+
+// Clear breadcrumbs when component is unmounted
+onUnmounted(() => {
+  clearBreadcrumbs();
 });
 
 const anchorLinks = props.page.content?.parts?.reduce((acc: any, part: any) => {

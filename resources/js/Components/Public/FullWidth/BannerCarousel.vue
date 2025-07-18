@@ -21,32 +21,27 @@
 import Carousel from "@/Components/ui/carousel/Carousel.vue";
 import CarouselContent from "@/Components/ui/carousel/CarouselContent.vue";
 import CarouselItem from "@/Components/ui/carousel/CarouselItem.vue";
-import { onBeforeUnmount, ref } from "vue";
+import { useWindowSize } from '@vueuse/core';
+import { computed } from "vue";
 import Autoplay from 'embla-carousel-autoplay'
 
 defineProps<{
   banners: Array<App.Entities.Banner> | [];
 }>();
 
-const calculateBannerCount = (width) => {
-  if (width < 768) {
+// Use VueUse composable for efficient window size tracking with automatic cleanup
+const { width } = useWindowSize();
+
+// Computed property for reactive banner count based on window width
+const bannerCount = computed(() => {
+  if (width.value < 768) {
     return 1;
-  } else if (width < 992) {
+  } else if (width.value < 992) {
     return 2;
-  } else if (width < 1200) {
+  } else if (width.value < 1200) {
     return 3;
   } else {
     return 5;
   }
-};
-
-const bannerCount = ref(calculateBannerCount(window.innerWidth));
-
-window.addEventListener("resize", () => {
-  bannerCount.value = calculateBannerCount(window.innerWidth);
-});
-
-onBeforeUnmount(() => {
-  window.removeEventListener("resize", () => { });
 });
 </script>

@@ -16,7 +16,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from "vue";
+import { computed, onMounted, onUnmounted } from "vue";
 import { usePage } from "@inertiajs/vue3";
 import { trans as $t } from "laravel-vue-i18n";
 
@@ -30,7 +30,7 @@ const props = defineProps<{
   article: App.Entities.News;
 }>();
 
-const { createPublicRouteBreadcrumb, createPublicBreadcrumbItem, setPageBreadcrumbs } = usePublicBreadcrumbs();
+const { createPublicRouteBreadcrumb, createPublicBreadcrumbItem, setPageBreadcrumbs, clearBreadcrumbs } = usePublicBreadcrumbs();
 const page = usePage();
 
 // Build breadcrumb items for the news article
@@ -62,5 +62,10 @@ const breadcrumbItems = computed(() => {
 // Set the breadcrumbs in the centralized state on component mount
 onMounted(() => {
   setPageBreadcrumbs(breadcrumbItems.value);
+});
+
+// Clear breadcrumbs when component is unmounted
+onUnmounted(() => {
+  clearBreadcrumbs();
 });
 </script>

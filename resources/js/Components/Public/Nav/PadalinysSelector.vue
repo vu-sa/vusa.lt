@@ -71,24 +71,31 @@
         </ScrollArea>
       </div>
       
-      <!-- Map View -->
+      <!-- Map View with LoadWhenVisible for better performance -->
       <div v-else-if="viewMode === 'map'" class="padalinys-map relative">
-          <Suspense>
-            <PadalinysMap 
-              ref="mapComponentRef"
-              :faculties="options_padaliniai" 
-              :search-query="searchQuery"
-              :on-faculty-select="handleSelectPadalinys"
-              :faculty-locations="facultyLocations"
-              class="max-h-[350px] overflow-hidden"
-              @update:hovered-location="hoveredLocation = $event"
-            />
-            <template #fallback>
-              <div class="h-[350px] w-full bg-muted rounded-md flex items-center justify-center">
-                <Loader2 class="h-8 w-8 animate-spin text-muted-foreground" />
+        <Suspense>
+          <PadalinysMap 
+            ref="mapComponentRef"
+            :faculties="options_padaliniai" 
+            :search-query="searchQuery"
+            :on-faculty-select="handleSelectPadalinys"
+            :faculty-locations="facultyLocations"
+            class="max-h-[350px] overflow-hidden"
+            @update:hovered-location="hoveredLocation = $event"
+          />
+          <template #fallback>
+            <div class="h-[350px] w-full bg-muted rounded-md flex items-center justify-center">
+              <div class="flex flex-col items-center gap-4">
+                <Skeleton class="h-10 w-10 rounded-full" />
+                <div class="space-y-2">
+                  <Skeleton class="h-3 w-28" />
+                  <Skeleton class="h-2 w-20" />
+                </div>
+                <div class="text-sm text-muted-foreground mt-2">{{ $t('Loading map...') }}</div>
               </div>
-            </template>
-          </Suspense>
+            </div>
+          </template>
+        </Suspense>
       </div>
     </PopoverContent>
   </Popover>
@@ -105,6 +112,7 @@ import { ScrollArea } from "@/Components/ui/scroll-area";
 import { Popover, PopoverTrigger, PopoverContent } from "@/Components/ui/popover";
 import { Avatar, AvatarFallback, AvatarImage } from "@/Components/ui/avatar";
 import { useStorage } from '@vueuse/core';
+import { Skeleton } from '@/Components/ui/skeleton';
 
 // Import PadalinysMap component
 import PadalinysMap from "./PadalinysMap.vue";

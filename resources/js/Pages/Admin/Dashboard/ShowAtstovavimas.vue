@@ -198,7 +198,20 @@
             </Button>
           </CardHeader>
           <CardContent>
-            <MeetingBarPlot :all-tenant-meetings :width="320" :height="190" />
+            <Suspense>
+              <MeetingBarPlot :all-tenant-meetings :width="320" :height="190" />
+              <template #fallback>
+                <div class="h-[190px] w-full flex items-center justify-center">
+                  <div class="flex flex-col items-center gap-4">
+                    <div class="h-8 w-8 rounded bg-zinc-300 dark:bg-zinc-600 animate-pulse"></div>
+                    <div class="space-y-2">
+                      <div class="h-3 w-36 rounded bg-zinc-300 dark:bg-zinc-600 animate-pulse"></div>
+                      <div class="h-2 w-24 rounded bg-zinc-300 dark:bg-zinc-600 animate-pulse mx-auto"></div>
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </Suspense>
           </CardContent>
           <CardModal v-model:show="showMeetingBarPlot" :title="$t('Visų susitikimų statistika')"
             @close="showMeetingBarPlot = false">
