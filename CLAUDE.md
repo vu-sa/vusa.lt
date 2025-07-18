@@ -161,6 +161,7 @@ $user->assignRole(config('permission.super_admin_role_name'));
 - `Public/` - Public-facing components
 - `ui/` - Shadcn Vue UI components
 - `Features/` - Complex feature components
+- `Tables/` - Data table components (see @resources/js/Components/Tables/CLAUDE.md)
 
 **Pages**: Located in `resources/js/Pages/`
 - `Admin/` - Admin interface pages
@@ -168,6 +169,15 @@ $user->assignRole(config('permission.super_admin_role_name'));
 
 **State Management**: Inertia.js with server-side state
 **Styling**: Tailwind CSS with Shadcn Vue components
+
+### Data Tables
+
+The project uses TanStack Table for data management. See comprehensive documentation at @resources/js/Components/Tables/CLAUDE.md.
+
+**Quick Reference**:
+- **Full admin pages**: Use `IndexTablePage.vue`
+- **Server-side tables**: Use `ServerDataTable.vue`
+- **Client-side tables**: Use `SimpleDataTable.vue`
 
 ### CSS Architecture Best Practices
 
