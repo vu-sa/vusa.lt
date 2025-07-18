@@ -27,7 +27,7 @@ abstract class BaseIndexRequest extends FormRequest
             'search' => 'nullable|string',
             'sorting' => 'nullable|string',
             'filters' => 'nullable|string',
-            'showDeleted' => 'nullable|boolean',
+            'showDeleted' => 'nullable|string|in:true,false',
         ];
     }
 

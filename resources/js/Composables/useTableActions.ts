@@ -21,6 +21,11 @@ export interface ActionColumnOptions {
   canDelete?: boolean;
   canRestore?: boolean;
   
+  // Confirmation settings
+  confirmDelete?: boolean;
+  deleteConfirmMessage?: string;
+  deleteConfirmTitle?: string;
+  
   // Column display options
   header?: string;
   id?: string;
@@ -55,7 +60,10 @@ export function createActionsColumn<TData extends { id: string | number, deleted
         canEdit: options.canEdit,
         canDuplicate: options.canDuplicate,
         canDelete: options.canDelete,
-        canRestore: options.canRestore
+        canRestore: options.canRestore,
+        confirmDelete: options.confirmDelete,
+        deleteConfirmMessage: options.deleteConfirmMessage,
+        deleteConfirmTitle: options.deleteConfirmTitle
       });
     }
   };
@@ -76,6 +84,9 @@ export function createStandardActionsColumn<TData extends { id: string | number,
     canDuplicate?: boolean; 
     canDelete?: boolean;
     canRestore?: boolean;
+    confirmDelete?: boolean;
+    deleteConfirmMessage?: string;
+    deleteConfirmTitle?: string;
   } = {}
 ): ColumnDef<TData, any> {
   return createActionsColumn({
@@ -86,6 +97,10 @@ export function createStandardActionsColumn<TData extends { id: string | number,
     duplicateRoute: permissions.canDuplicate ? `${modelName}.duplicate` : undefined,
     deleteRoute: permissions.canDelete ? `${modelName}.destroy` : undefined,
     restoreRoute: permissions.canRestore ? `${modelName}.restore` : undefined,
+    // Enable confirmation by default if not explicitly disabled
+    confirmDelete: permissions.confirmDelete !== false,
+    deleteConfirmMessage: permissions.deleteConfirmMessage,
+    deleteConfirmTitle: permissions.deleteConfirmTitle,
     // Forward permissions
     ...permissions
   });

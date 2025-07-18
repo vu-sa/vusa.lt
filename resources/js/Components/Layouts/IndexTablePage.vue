@@ -1,5 +1,5 @@
 <template>
-  <AdminContentPage :breadcrumbs="breadcrumbs">
+  <AdminContentPage :breadcrumbs>
     <div class="space-y-6">
       <!-- Page Header -->
       <div v-if="headerTitle" class="flex flex-col space-y-2 md:flex-row md:items-center md:justify-between">
@@ -40,14 +40,11 @@
           </div>
         </div>
 
-        <AdminDataTable ref="dataTableRef" :model-name="modelName" :entity-name="entityName || modelName" :data="data"
-          :columns="columns" :total-count="totalCount" :initial-page="initialPage" :page-size="pageSize"
-          :can-create="canCreate" :create-route="createRoute" :enable-filtering="enableFiltering"
-          :enable-column-visibility="enableColumnVisibility" :initial-sorting="initialSorting"
-          :initial-filters="initialFilters" :allow-toggle-deleted="allowToggleDeleted" :empty-message="emptyMessage"
-          :empty-icon="emptyIcon || PlusCircleIcon" :enable-row-selection="enableRowSelection"
-          :enable-multi-row-selection="enableMultiRowSelection" :enable-row-selection-column="enableRowSelectionColumn"
-          :initial-row-selection="initialRowSelection" :get-row-id="getRowId" @data-loaded="handleDataLoaded"
+        <ServerDataTable ref="dataTableRef" :model-name :entity-name="entityName || modelName" :data :columns
+          :total-count :initial-page :page-size :can-create :create-route :enable-filtering :enable-column-visibility
+          :initial-sorting :initial-filters :allow-toggle-deleted :show-deleted :empty-message
+          :empty-icon="emptyIcon || PlusCircleIcon" :enable-row-selection :enable-multi-row-selection
+          :enable-row-selection-column :initial-row-selection :get-row-id @data-loaded="handleDataLoaded"
           @update:row-selection="handleRowSelectionChange" @sorting-changed="handleSortingChanged"
           @page-changed="handlePageChanged" @filter-changed="handleFilterChanged">
           <!-- Pass through the slots -->
@@ -87,7 +84,7 @@
               </slot>
             </div>
           </template>
-        </AdminDataTable>
+        </ServerDataTable>
       </div>
 
       <!-- Pagination -->
@@ -105,17 +102,12 @@ import { PlusCircleIcon } from 'lucide-vue-next';
 import { trans as $t } from "laravel-vue-i18n";
 import { type RowSelectionState } from '@tanstack/vue-table';
 
-import AdminDataTable from '@/Components/Tables/AdminDataTable.vue';
+import ServerDataTable from '@/Components/Tables/ServerDataTable.vue';
 import { Button } from '@/Components/ui/button';
 import AdminContentPage from './AdminContentPage.vue';
 import { useComponentBreadcrumbs } from "@/Composables/useBreadcrumbs";
 import { Link } from '@inertiajs/vue3';
 import {
-  type TableConfig,
-  type PaginationConfig,
-  type UIConfig,
-  type FilteringConfig,
-  type RowSelectionConfig,
   type IndexTablePageProps
 } from '@/Types/TableConfigTypes';
 
@@ -131,7 +123,7 @@ const emit = defineEmits([
 ]);
 
 // Component refs
-const dataTableRef = ref<InstanceType<typeof AdminDataTable>>();
+const dataTableRef = ref<InstanceType<typeof ServerDataTable>>();
 
 // UI state
 const isLoading = ref(false);

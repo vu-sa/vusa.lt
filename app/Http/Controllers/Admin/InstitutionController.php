@@ -74,6 +74,7 @@ class InstitutionController extends Controller
             'filters' => $request->getFilters(),
             'sorting' => $sorting, // Pass properly parsed sorting state to frontend
             'initialSorting' => $sorting, // Add initial sorting to persist state on first load
+            'showDeleted' => $request->boolean('showDeleted', false), // Add showDeleted state
         ]);
     }
 

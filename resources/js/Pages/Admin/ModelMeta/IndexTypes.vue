@@ -1,19 +1,9 @@
 <template>
-  <IndexTablePage
-    ref="indexTablePageRef"
-    v-bind="tableConfig"
-    @data-loaded="onDataLoaded"
-    @sorting-changed="handleSortingChange"
-    @page-changed="handlePageChange"
-    @filter-changed="handleFilterChange"
-  >
+  <IndexTablePage ref="indexTablePageRef" v-bind="tableConfig" @data-loaded="onDataLoaded"
+    @sorting-changed="handleSortingChange" @page-changed="handlePageChange" @filter-changed="handleFilterChange">
     <template #filters>
-      <DataTableFilter
-        v-if="modelTypeOptions.length > 0"
-        v-model:value="selectedModelType"
-        :options="modelTypeOptions"
-        @update:value="handleModelTypeFilterChange"
-      >
+      <DataTableFilter v-if="modelTypeOptions.length > 0" v-model:value="selectedModelType" :options="modelTypeOptions"
+        @update:value="handleModelTypeFilterChange">
         {{ $t("Model Type") }}
       </DataTableFilter>
     </template>
@@ -29,19 +19,15 @@ import Icons from "@/Types/Icons/regular";
 import IndexTablePage from "@/Components/Layouts/IndexTablePage.vue";
 import DataTableFilter from "@/Components/ui/data-table/DataTableFilter.vue";
 import { Badge } from "@/Components/ui/badge";
-import { 
-  createIdColumn, 
+import {
+  createIdColumn,
   createTimestampColumn,
   createTextColumn,
   createTitleColumn
 } from '@/Utils/DataTableColumns';
 import { createStandardActionsColumn } from "@/Composables/useTableActions";
-import { 
-  type IndexTablePageProps,
-  type TableConfig,
-  type PaginationConfig,
-  type UIConfig,
-  type FilteringConfig
+import {
+  type IndexTablePageProps
 } from "@/Types/TableConfigTypes";
 
 const props = defineProps<{
@@ -94,7 +80,7 @@ const columns = computed<ColumnDef<App.Entities.Type, any>[]>(() => [
     routeName: "types.edit",
     width: 200
   }),
-  createTextColumn("slug", { 
+  createTextColumn("slug", {
     title: $t("forms.fields.slug"),
     cell: ({ row }) => (
       <Badge variant="outline">{row.getValue("slug")}</Badge>
@@ -115,46 +101,30 @@ const columns = computed<ColumnDef<App.Entities.Type, any>[]>(() => [
   })
 ]);
 
-// Consolidated table configuration using the new interfaces
+// Simplified table configuration using the new interfaces
 const tableConfig = computed<IndexTablePageProps<App.Entities.Type>>(() => {
-  // Core table configuration
-  const tableConfig: TableConfig<App.Entities.Type> = {
+  return {
+    // Essential table configuration
     modelName,
     entityName,
     data: props.data,
-    columns: columns.value
-  };
-  
-  // Pagination configuration
-  const paginationConfig: PaginationConfig = {
+    columns: columns.value,
     totalCount: props.meta.total,
     initialPage: props.meta.current_page,
-    pageSize: props.meta.per_page
-  };
-  
-  // UI configuration
-  const uiConfig: UIConfig = {
-    headerTitle: $t("Turinio tipai"),
-    icon: Icons.TYPE,
-    createRoute: route('types.create'),
-    canCreate: true
-  };
-  
-  // Filtering configuration
-  const filteringConfig: FilteringConfig = {
+    pageSize: props.meta.per_page,
+
+    // Advanced features
     initialFilters: props.filters,
     initialSorting: props.sorting,
     enableFiltering: true,
     enableColumnVisibility: true,
-    allowToggleDeleted: true
-  };
-  
-  // Return the combined configuration
-  return {
-    ...tableConfig,
-    ...paginationConfig,
-    ...uiConfig,
-    ...filteringConfig
+    allowToggleDeleted: true,
+
+    // Page layout
+    headerTitle: $t("Turinio tipai"),
+    icon: Icons.TYPE,
+    createRoute: route('types.create'),
+    canCreate: true
   };
 });
 

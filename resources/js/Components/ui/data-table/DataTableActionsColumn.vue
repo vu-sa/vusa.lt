@@ -13,6 +13,9 @@
       :can-duplicate="canDuplicate"
       :can-delete="canDelete"
       :can-restore="canRestore"
+      :confirm-delete="confirmDelete"
+      :delete-confirm-message="deleteConfirmMessage"
+      :delete-confirm-title="deleteConfirmTitle"
       @action="handleAction"
       @custom-action="handleCustomAction"
     >
@@ -43,6 +46,11 @@ const props = defineProps<{
   canDuplicate?: boolean;
   canDelete?: boolean;
   canRestore?: boolean;
+  
+  // Confirmation settings
+  confirmDelete?: boolean;
+  deleteConfirmMessage?: string;
+  deleteConfirmTitle?: string;
 }>();
 
 const emit = defineEmits<{

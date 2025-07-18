@@ -1,30 +1,15 @@
 <template>
-  <IndexTablePage
-    ref="indexTablePageRef"
-    v-bind="tableConfig"
-    @data-loaded="onDataLoaded"
-    @sorting-changed="handleSortingChange"
-    @page-changed="handlePageChange"
-    @filter-changed="handleFilterChange"
-    @update:rowSelection="handleRowSelectionChange"
-  >
+  <IndexTablePage ref="indexTablePageRef" v-bind="tableConfig" @data-loaded="onDataLoaded"
+    @sorting-changed="handleSortingChange" @page-changed="handlePageChange" @filter-changed="handleFilterChange"
+    @update:row-selection="handleRowSelectionChange">
     <template #filters>
-      <DataTableFilter
-        v-model:value="selectedDegrees"
-        :options="degreeOptions"
-        @update:value="handleDegreeFilterChange"
-        multiple
-      >
+      <DataTableFilter v-model:value="selectedDegrees" :options="degreeOptions" multiple
+        @update:value="handleDegreeFilterChange">
         {{ $t('Degree') }}
       </DataTableFilter>
-      
-      <DataTableFilter
-        v-if="tenantOptions.length > 0"
-        v-model:value="selectedTenantIds"
-        :options="tenantOptions"
-        @update:value="handleTenantFilterChange"
-        multiple
-      >
+
+      <DataTableFilter v-if="tenantOptions.length > 0" v-model:value="selectedTenantIds" :options="tenantOptions"
+        multiple @update:value="handleTenantFilterChange">
         {{ capitalize($tChoice('entities.tenant.model', 1)) }}
       </DataTableFilter>
     </template>
@@ -32,8 +17,8 @@
     <template #headerActions>
       <Button variant="outline" as-child class="gap-1.5">
         <Link :href="route('studyPrograms.merge')">
-          <MergeIcon class="h-4 w-4" />
-          {{ $t('Sujungti programas') }}
+        <MergeIcon class="h-4 w-4" />
+        {{ $t('Sujungti programas') }}
         </Link>
       </Button>
     </template>
@@ -45,31 +30,26 @@ import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
 import { type ColumnDef } from '@tanstack/vue-table';
 import { ref, computed, watch, capitalize } from "vue";
 import { router, usePage } from "@inertiajs/vue3";
-import { 
-  MergeIcon, 
-  PlusIcon 
+import {
+  MergeIcon,
+  PlusIcon
 } from 'lucide-vue-next';
 import { toast } from "vue-sonner";
 
 import Icons from "@/Types/Icons/regular";
 import DataTableFilter from "@/Components/ui/data-table/DataTableFilter.vue";
-import { Button } from "@/Components/ui/button"; 
+import { Button } from "@/Components/ui/button";
 import { Badge } from "@/Components/ui/badge";
 import { Link } from "@inertiajs/vue3";
 import IndexTablePage from "@/Components/Layouts/IndexTablePage.vue";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
 import { createStandardActionsColumn } from "@/Composables/useTableActions";
-import { 
+import {
   createTitleColumn,
   createTenantColumn
 } from '@/Utils/DataTableColumns';
-import { 
-  type IndexTablePageProps,
-  type TableConfig,
-  type PaginationConfig,
-  type UIConfig,
-  type FilteringConfig,
-  type RowSelectionConfig
+import {
+  type IndexTablePageProps
 } from "@/Types/TableConfigTypes";
 
 const props = defineProps<{
@@ -98,7 +78,6 @@ const indexTablePageRef = ref<any>(null);
 
 // Permission checks
 const canCreate = computed(() => usePage().props.auth?.can?.create?.studyProgram || false);
-const canExport = computed(() => false); // Export functionality disabled for study programs
 
 // Filter states
 const selectedDegrees = ref<string[]>(props.filters?.['degree'] || []);
@@ -136,8 +115,8 @@ const columns = computed<ColumnDef<App.Entities.StudyProgram, any>[]>(() => [
           <Tooltip>
             <TooltipTrigger asChild>
               <div class="max-w-[290px] truncate">
-                <a href={route("studyPrograms.edit", { id: row.original.id })} 
-                   class="font-medium hover:underline">
+                <a href={route("studyPrograms.edit", { id: row.original.id })}
+                  class="font-medium hover:underline">
                   {name}
                 </a>
               </div>
@@ -164,6 +143,7 @@ const columns = computed<ColumnDef<App.Entities.StudyProgram, any>[]>(() => [
     size: 150,
   },
   createTenantColumn({
+    enableSorting: false,
     cell: ({ row }) => {
       const tenant = row.original.tenant;
       return tenant ? (
@@ -190,54 +170,33 @@ const columns = computed<ColumnDef<App.Entities.StudyProgram, any>[]>(() => [
   })
 ]);
 
-// Consolidated table configuration using the new interfaces
+// Simplified table configuration using the new interfaces
 const tableConfig = computed<IndexTablePageProps<App.Entities.StudyProgram>>(() => {
-  // Core table configuration
-  const tableConfig: TableConfig<App.Entities.StudyProgram> = {
+  return {
+    // Essential table configuration
     modelName,
     entityName,
     data: props.studyPrograms.data,
     columns: columns.value,
-    getRowId
-  };
-  
-  // Pagination configuration
-  const paginationConfig: PaginationConfig = {
+    getRowId,
     totalCount: props.studyPrograms.meta.total,
     initialPage: props.studyPrograms.meta.current_page,
-    pageSize: props.studyPrograms.meta.per_page
-  };
-  
-  // UI configuration
-  const uiConfig: UIConfig = {
+    pageSize: props.studyPrograms.meta.per_page,
+
+    // Advanced features
+    initialFilters: props.filters,
+    initialSorting: props.sorting,
+    enableFiltering: true,
+    enableColumnVisibility: true,
+    enableRowSelection: false,
+    enableRowSelectionColumn: false,
+
+    // Page layout
     headerTitle: "Studijų programos",
     headerDescription: $t('Manage study programs and their degrees'),
     icon: Icons.STUDY_PROGRAM,
     createRoute: canCreate.value ? route('studyPrograms.create') : undefined,
     canCreate: canCreate.value
-  };
-  
-  // Filtering configuration
-  const filteringConfig: FilteringConfig = {
-    initialFilters: props.filters,
-    initialSorting: props.sorting,
-    enableFiltering: true,
-    enableColumnVisibility: true
-  };
-  
-  // Row selection configuration
-  const rowSelectionConfig: RowSelectionConfig = {
-    enableRowSelection: false,
-    enableRowSelectionColumn: false
-  };
-  
-  // Return the combined configuration
-  return {
-    ...tableConfig,
-    ...paginationConfig,
-    ...uiConfig,
-    ...filteringConfig,
-    ...rowSelectionConfig
   };
 });
 
@@ -262,11 +221,6 @@ const handleRowSelectionChange = (selection: any) => {
   selectedRows.value = indexTablePageRef.value?.getSelectedRows() || [];
 };
 
-// Export selected rows (placeholder for future implementation)
-const exportSelectedRows = (format: 'xlsx' | 'csv') => {
-  // This feature is not currently implemented for study programs
-  toast.info($t('Export functionality is not available for study programs'));
-};
 
 // Event handler for data loaded
 const onDataLoaded = (data: any) => {
