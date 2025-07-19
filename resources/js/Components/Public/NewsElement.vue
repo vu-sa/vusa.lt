@@ -2,10 +2,10 @@
   <div v-if="loading" class="my-4 rounded-lg py-4">
     <div class="w-full flex flex-col gap-4">
       <div class="animate-pulse flex flex-col gap-3">
-        <div class="h-64 w-full rounded bg-zinc-200 dark:bg-zinc-700" />
-        <div class="h-5 w-32 rounded bg-zinc-200 dark:bg-zinc-700" />
-        <div class="h-8 w-3/4 rounded bg-zinc-200 dark:bg-zinc-700" />
-        <div class="h-24 w-full rounded bg-zinc-200 dark:bg-zinc-700" />
+        <Skeleton class="h-64 w-full" />
+        <Skeleton class="h-5 w-32" />
+        <Skeleton class="h-8 w-3/4" />
+        <Skeleton class="h-24 w-full" />
       </div>
     </div>
   </div>
@@ -138,6 +138,7 @@ import {
   type CarouselApi
 } from "@/Components/ui/carousel";
 import { ScrollArea } from "@/Components/ui/scroll-area";
+import { Skeleton } from "@/Components/ui/skeleton";
 
 // Prop definition with proper typing
 defineProps<{

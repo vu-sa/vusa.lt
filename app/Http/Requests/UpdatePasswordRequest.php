@@ -25,7 +25,15 @@ class UpdatePasswordRequest extends FormRequest
     {
         return [
             'current_password' => ['required', 'string', function ($attribute, $value, $fail) {
-                if (! Hash::check($value, $this->user()->password)) {
+                $userPassword = $this->user()->password;
+
+                if (is_null($userPassword)) {
+                    $fail('Negalite pakeisti slaptažodžio, nes dabartinis slaptažodis nenustatytas.');
+
+                    return;
+                }
+
+                if (! Hash::check($value, $userPassword)) {
                     $fail('Dabartinis slaptažodis neteisingas.');
                 }
             }],
@@ -43,6 +51,7 @@ class UpdatePasswordRequest extends FormRequest
     {
         return [
             'current_password.required' => 'Dabartinis slaptažodis yra privalomas.',
+            'current_password.string' => 'Dabartinis slaptažodis turi būti tekstas.',
             'password.required' => 'Naujas slaptažodis yra privalomas.',
             'password.confirmed' => 'Slaptažodžio patvirtinimas nesutampa.',
             'password_confirmation.required' => 'Slaptažodžio patvirtinimas yra privalomas.',

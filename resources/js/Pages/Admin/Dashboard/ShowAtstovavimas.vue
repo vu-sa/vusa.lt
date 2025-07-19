@@ -203,10 +203,10 @@
               <template #fallback>
                 <div class="h-[190px] w-full flex items-center justify-center">
                   <div class="flex flex-col items-center gap-4">
-                    <div class="h-8 w-8 rounded bg-zinc-300 dark:bg-zinc-600 animate-pulse"></div>
+                    <Skeleton class="h-8 w-8 rounded-full" />
                     <div class="space-y-2">
-                      <div class="h-3 w-36 rounded bg-zinc-300 dark:bg-zinc-600 animate-pulse"></div>
-                      <div class="h-2 w-24 rounded bg-zinc-300 dark:bg-zinc-600 animate-pulse mx-auto"></div>
+                      <Skeleton class="h-3 w-36" />
+                      <Skeleton class="h-2 w-24 mx-auto" />
                     </div>
                   </div>
                 </div>
@@ -266,6 +266,7 @@ import SmartLink from "@/Components/Public/SmartLink.vue";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/Components/ui/card";
 import { Button } from "@/Components/ui/button";
 import { Separator } from "@/Components/ui/separator";
+import { Skeleton } from "@/Components/ui/skeleton";
 
 // Icons
 import Icons from "@/Types/Icons/filled";
