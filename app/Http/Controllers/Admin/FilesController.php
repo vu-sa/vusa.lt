@@ -23,37 +23,37 @@ class FilesController extends Controller
     {
         // Remove any path traversal attempts
         $path = str_replace(['../', '..\\', '../', '..\\'], '', $path);
-        
+
         // Ensure path starts with public/files
-        if (!str_starts_with($path, 'public/files')) {
+        if (! str_starts_with($path, 'public/files')) {
             $path = 'public/files';
         }
-        
+
         // Normalize path separators and remove duplicate slashes
         $path = preg_replace('#/+#', '/', $path);
         $path = rtrim($path, '/');
-        
+
         // Additional security: allow common filename characters including Lithuanian characters
         // Allow letters (including Unicode), numbers, underscores, hyphens, dots, spaces, and forward slashes
-        if (!preg_match('/^[\p{L}\p{N}\/_. -]+$/u', $path)) {
+        if (! preg_match('/^[\p{L}\p{N}\/_. -]+$/u', $path)) {
             throw new \InvalidArgumentException('Invalid path format');
         }
-        
+
         return $path;
     }
 
     protected function getFilesFromStorage($path)
     {
         $path = $this->validateAndNormalizePath($path);
-        
+
         $directories = collect(Storage::directories($path))->map(function ($dir) {
             return [
                 'path' => $dir,
                 'name' => basename($dir),
-                'type' => 'directory'
+                'type' => 'directory',
             ];
         })->toArray();
-        
+
         $files = collect(Storage::files($path))->map(function ($file) {
             return [
                 'path' => $file,
@@ -61,7 +61,7 @@ class FilesController extends Controller
                 'type' => 'file',
                 'size' => Storage::size($file),
                 'modified' => Storage::lastModified($file),
-                'mimeType' => Storage::mimeType($file)
+                'mimeType' => Storage::mimeType($file),
             ];
         })->toArray();
 
@@ -89,15 +89,15 @@ class FilesController extends Controller
         if (! $request->user()->can('viewDirectory', [File::class, $path])) {
             // Try to redirect to user's allowed directory
             if ($this->authorizer->getTenants()->count() > 0) {
-                $allowedPath = 'public/files/padaliniai/vusa' . $this->authorizer->getTenants()->first()->alias;
-                
+                $allowedPath = 'public/files/padaliniai/vusa'.$this->authorizer->getTenants()->first()->alias;
+
                 // Check if user can access their tenant directory
                 if ($request->user()->can('viewDirectory', [File::class, $allowedPath])) {
                     return redirect()->route('files.index', ['path' => $allowedPath])
                         ->with('info', 'Nukreiptas į jūsų padalinio failų aplanką.');
                 }
             }
-            
+
             // If no access to tenant directory, redirect to dashboard
             return redirect()->route('dashboard')->with('error', 'Neturite teisių peržiūrėti failų systemos. Kreipkitės į administratorių dėl prieigos teisių.');
         }
@@ -123,7 +123,7 @@ class FilesController extends Controller
         if (! $request->user()->can('viewDirectory', [File::class, $path])) {
             return response()->json([
                 'error' => 'Neturite teisių peržiūrėti šio aplanko.',
-                'code' => 'INSUFFICIENT_PERMISSIONS'
+                'code' => 'INSUFFICIENT_PERMISSIONS',
             ], 403);
         }
 
@@ -134,18 +134,18 @@ class FilesController extends Controller
                 'files' => $files,
                 'directories' => $directories,
                 'path' => $currentDirectory,
-                'success' => true
+                'success' => true,
             ]);
         } catch (\Exception $e) {
             Log::error('Error fetching files', [
                 'path' => $path,
                 'user_id' => $request->user()->id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
-            
+
             return response()->json([
                 'error' => 'Nepavyko gauti failų sąrašo. Bandykite dar kartą.',
-                'code' => 'FETCH_ERROR'
+                'code' => 'FETCH_ERROR',
             ], 500);
         }
     }
@@ -160,7 +160,7 @@ class FilesController extends Controller
         $validated = $request->validated();
 
         $files = $validated['files'];
-        
+
         try {
             $path = $this->validateAndNormalizePath($validated['path']);
         } catch (\InvalidArgumentException $e) {
@@ -186,11 +186,11 @@ class FilesController extends Controller
                     $timestamp = time();
                     $extension = $file->getClientOriginalExtension();
                     $nameWithoutExtension = pathinfo($originalName, PATHINFO_FILENAME);
-                    $newName = $nameWithoutExtension . '_' . $timestamp . '.' . $extension;
-                    
+                    $newName = $nameWithoutExtension.'_'.$timestamp.'.'.$extension;
+
                     $file->storeAs($path, $newName);
                     $renamedCount++;
-                    
+
                     Log::info('File uploaded with new name', [
                         'original_name' => $originalName,
                         'new_name' => $newName,
@@ -200,7 +200,7 @@ class FilesController extends Controller
                 } else {
                     $file->storeAs($path, $originalName);
                     $uploadedCount++;
-                    
+
                     Log::info('File uploaded', [
                         'file_name' => $originalName,
                         'path' => $path,
@@ -221,24 +221,26 @@ class FilesController extends Controller
         // Create success message
         $messages = [];
         if ($uploadedCount > 0) {
-            $messages[] = "Įkelta {$uploadedCount} " . 
+            $messages[] = "Įkelta {$uploadedCount} ".
                 ($uploadedCount === 1 ? 'failas' : ($uploadedCount < 10 ? 'failai' : 'failų'));
         }
         if ($renamedCount > 0) {
-            $messages[] = "{$renamedCount} " . 
-                ($renamedCount === 1 ? 'failas pervardytas' : ($renamedCount < 10 ? 'failai pervardyti' : 'failų pervardyta')) . 
-                " (egzistavo tokie pat pavadinimai)";
+            $messages[] = "{$renamedCount} ".
+                ($renamedCount === 1 ? 'failas pervardytas' : ($renamedCount < 10 ? 'failai pervardyti' : 'failų pervardyta')).
+                ' (egzistavo tokie pat pavadinimai)';
         }
 
-        if (!empty($messages)) {
-            $successMessage = implode(', ', $messages) . '.';
-            if (!empty($errors)) {
-                $successMessage .= " Nepavyko įkelti: " . implode(', ', array_slice($errors, 0, 3));
+        if (! empty($messages)) {
+            $successMessage = implode(', ', $messages).'.';
+            if (! empty($errors)) {
+                $successMessage .= ' Nepavyko įkelti: '.implode(', ', array_slice($errors, 0, 3));
                 if (count($errors) > 3) {
-                    $successMessage .= " ir dar " . (count($errors) - 3) . "...";
+                    $successMessage .= ' ir dar '.(count($errors) - 3).'...';
                 }
+
                 return back()->with('warning', $successMessage);
             }
+
             return back()->with('success', $successMessage);
         } else {
             return back()->withErrors(['error' => 'Nepavyko įkelti nei vieno failo.']);
@@ -249,7 +251,7 @@ class FilesController extends Controller
     {
         $request->validate([
             'path' => 'required|string',
-            'name' => 'required|string|max:255|regex:/^[\p{L}\p{N}_\- ]+$/u'
+            'name' => 'required|string|max:255|regex:/^[\p{L}\p{N}_\- ]+$/u',
         ], [
             'name.regex' => 'Aplanko pavadinimas gali turėti tik raides, skaičius, pabraukimus, brūkšnelius ir tarpus.',
             'name.required' => 'Aplanko pavadinimas yra privalomas.',
@@ -269,7 +271,7 @@ class FilesController extends Controller
             return back()->withErrors(['permission' => 'Neturite teisių kurti aplankų šioje vietoje.']);
         }
 
-        $newDirectoryPath = $path . '/' . $name;
+        $newDirectoryPath = $path.'/'.$name;
 
         // Check if directory already exists
         if (Storage::exists($newDirectoryPath)) {
@@ -279,18 +281,18 @@ class FilesController extends Controller
         try {
             // Remove 'public/' from the start for Storage::disk('public')
             $publicPath = str_replace('public/', '', $newDirectoryPath);
-            
-            if (!Storage::disk('public')->makeDirectory($publicPath)) {
+
+            if (! Storage::disk('public')->makeDirectory($publicPath)) {
                 throw new \Exception('Failed to create directory');
             }
-            
+
             Log::info('Directory created', [
                 'path' => $newDirectoryPath,
                 'user_id' => $request->user()->id,
                 'name' => $name,
             ]);
-            
-            return back()->with('success', 'Aplankas "' . $name . '" sėkmingai sukurtas.');
+
+            return back()->with('success', 'Aplankas "'.$name.'" sėkmingai sukurtas.');
         } catch (\Exception $e) {
             Log::error('Error creating directory', [
                 'path' => $newDirectoryPath,
@@ -298,7 +300,7 @@ class FilesController extends Controller
                 'error' => $e->getMessage(),
                 'name' => $name,
             ]);
-            
+
             return back()->withErrors(['error' => 'Nepavyko sukurti aplanko. Bandykite dar kartą.']);
         }
     }
@@ -317,15 +319,15 @@ class FilesController extends Controller
         try {
             // Images can be uploaded as 1. files or as 2. data urls
             $data = $request->file()['file'] ?? $request->image;
-            $originalName = isset($request->file()['file']) 
-                ? $request->file()['file']->getClientOriginalName() 
+            $originalName = isset($request->file()['file'])
+                ? $request->file()['file']->getClientOriginalName()
                 : $request->name;
 
-            if (!$data) {
+            if (! $data) {
                 return response()->json(['error' => 'Nepateiktas paveikslėlis.'], 400);
             }
 
-            if (!$originalName) {
+            if (! $originalName) {
                 return response()->json(['error' => 'Nepateiktas failo pavadinimas.'], 400);
             }
 
@@ -333,30 +335,30 @@ class FilesController extends Controller
             $image = $startingImage->scaleDown(width: 1600)->toWebp();
 
             $path = (string) $request->input('path');
-            
+
             try {
-                $validatedPath = $this->validateAndNormalizePath('public/' . $path);
+                $validatedPath = $this->validateAndNormalizePath('public/'.$path);
             } catch (\InvalidArgumentException $e) {
                 return response()->json(['error' => 'Neteisingas katalogo kelias.'], 400);
             }
 
             // Get file name without extension and add .webp
-            $originalName = pathinfo($originalName, PATHINFO_FILENAME) . '.webp';
+            $originalName = pathinfo($originalName, PATHINFO_FILENAME).'.webp';
 
             // Check if path exists, create if it doesn't
-            if (!Storage::exists($validatedPath)) {
+            if (! Storage::exists($validatedPath)) {
                 $publicPath = str_replace('public/', '', $validatedPath);
                 Storage::disk('public')->makeDirectory($publicPath);
             }
 
             // Check if image exists and rename if needed
-            if (Storage::exists($validatedPath . '/' . $originalName)) {
-                $originalName = time() . '_' . $originalName;
+            if (Storage::exists($validatedPath.'/'.$originalName)) {
+                $originalName = time().'_'.$originalName;
             }
 
-            $fullPath = storage_path('app/' . $validatedPath . '/' . $originalName);
-            
-            if (!$image->save($fullPath, 85)) {
+            $fullPath = storage_path('app/'.$validatedPath.'/'.$originalName);
+
+            if (! $image->save($fullPath, 85)) {
                 throw new \Exception('Failed to save image');
             }
 
@@ -369,7 +371,7 @@ class FilesController extends Controller
 
             // Return response with correct URL format
             return response()->json([
-                'url' => '/uploads/' . $path . '/' . $originalName,
+                'url' => '/uploads/'.$path.'/'.$originalName,
                 'name' => $originalName,
                 'message' => 'Paveikslėlis sėkmingai įkeltas ir optimizuotas.',
             ]);
@@ -391,7 +393,7 @@ class FilesController extends Controller
     public function delete(Request $request)
     {
         $request->validate([
-            'path' => 'required|string'
+            'path' => 'required|string',
         ]);
 
         try {
@@ -407,7 +409,7 @@ class FilesController extends Controller
         }
 
         // Additional safety check: ensure file exists and is within allowed directory
-        if (!Storage::exists($path)) {
+        if (! Storage::exists($path)) {
             return back()->withErrors(['file' => 'Failas nerastas.']);
         }
 
@@ -420,17 +422,17 @@ class FilesController extends Controller
         $fileName = basename($path);
 
         try {
-            if (!Storage::delete($path)) {
+            if (! Storage::delete($path)) {
                 throw new \Exception('Failed to delete file');
             }
-            
+
             Log::info('File deleted', [
                 'path' => $path,
                 'user_id' => $request->user()->id,
                 'file_name' => $fileName,
             ]);
-            
-            return back()->with('success', 'Failas "' . $fileName . '" sėkmingai ištrintas.');
+
+            return back()->with('success', 'Failas "'.$fileName.'" sėkmingai ištrintas.');
         } catch (\Exception $e) {
             Log::error('Error deleting file', [
                 'path' => $path,
@@ -438,7 +440,7 @@ class FilesController extends Controller
                 'error' => $e->getMessage(),
                 'file_name' => $fileName,
             ]);
-            
+
             return back()->withErrors(['error' => 'Nepavyko ištrinti failo. Bandykite dar kartą.']);
         }
     }
@@ -447,7 +449,7 @@ class FilesController extends Controller
     {
         $request->validate([
             'paths' => 'required|array|min:1|max:50', // Limit to 50 files for safety
-            'paths.*' => 'required|string'
+            'paths.*' => 'required|string',
         ], [
             'paths.required' => 'Nepasirinktas nei vienas failas trinimui.',
             'paths.max' => 'Per daug failų pasirinkta. Maksimalus kiekis: :max.',
@@ -462,34 +464,37 @@ class FilesController extends Controller
         foreach ($paths as $path) {
             try {
                 $validatedPath = $this->validateAndNormalizePath($path);
-                
+
                 // Check permissions for each file
                 $directoryPath = dirname($validatedPath);
                 if (! $request->user()->can('viewDirectory', [File::class, $directoryPath])) {
-                    $errors[] = "Nėra teisių trinti: " . basename($path);
+                    $errors[] = 'Nėra teisių trinti: '.basename($path);
                     $skippedCount++;
+
                     continue;
                 }
 
                 // Safety checks
-                if (!Storage::exists($validatedPath)) {
-                    $errors[] = "Failas nerastas: " . basename($path);
+                if (! Storage::exists($validatedPath)) {
+                    $errors[] = 'Failas nerastas: '.basename($path);
                     $skippedCount++;
+
                     continue;
                 }
 
                 if (Storage::directoryExists($validatedPath)) {
-                    $errors[] = "Negalima trinti aplanko: " . basename($path);
+                    $errors[] = 'Negalima trinti aplanko: '.basename($path);
                     $skippedCount++;
+
                     continue;
                 }
 
-                if (!Storage::delete($validatedPath)) {
+                if (! Storage::delete($validatedPath)) {
                     throw new \Exception('Failed to delete file');
                 }
-                
+
                 $deletedCount++;
-                
+
                 Log::info('Bulk file deleted', [
                     'path' => $validatedPath,
                     'user_id' => $request->user()->id,
@@ -497,41 +502,43 @@ class FilesController extends Controller
                 ]);
 
             } catch (\InvalidArgumentException $e) {
-                $errors[] = "Neteisingas kelias: " . basename($path);
+                $errors[] = 'Neteisingas kelias: '.basename($path);
                 $skippedCount++;
             } catch (\Exception $e) {
-                $errors[] = "Klaida trinant: " . basename($path);
+                $errors[] = 'Klaida trinant: '.basename($path);
                 $skippedCount++;
                 Log::error('Bulk delete error', [
                     'path' => $path,
                     'user_id' => $request->user()->id,
-                    'error' => $e->getMessage()
+                    'error' => $e->getMessage(),
                 ]);
             }
         }
 
         // Prepare response message
         if ($deletedCount > 0 && $skippedCount === 0) {
-            return back()->with('success', "Sėkmingai ištrinta {$deletedCount} " . 
-                ($deletedCount === 1 ? 'failas' : ($deletedCount < 10 ? 'failai' : 'failų')) . ".");
+            return back()->with('success', "Sėkmingai ištrinta {$deletedCount} ".
+                ($deletedCount === 1 ? 'failas' : ($deletedCount < 10 ? 'failai' : 'failų')).'.');
         } elseif ($deletedCount > 0 && $skippedCount > 0) {
-            $message = "Ištrinta {$deletedCount} " . 
+            $message = "Ištrinta {$deletedCount} ".
                 ($deletedCount === 1 ? 'failas' : ($deletedCount < 10 ? 'failai' : 'failų'));
-            if (!empty($errors)) {
-                $message .= ". Praleista {$skippedCount}: " . implode(', ', array_slice($errors, 0, 3));
+            if (! empty($errors)) {
+                $message .= ". Praleista {$skippedCount}: ".implode(', ', array_slice($errors, 0, 3));
                 if (count($errors) > 3) {
-                    $message .= " ir dar " . (count($errors) - 3) . "...";
+                    $message .= ' ir dar '.(count($errors) - 3).'...';
                 }
             }
+
             return back()->with('warning', $message);
         } else {
             $errorMessage = 'Nepavyko ištrinti nei vieno failo.';
-            if (!empty($errors)) {
-                $errorMessage .= ' Klaidos: ' . implode(', ', array_slice($errors, 0, 3));
+            if (! empty($errors)) {
+                $errorMessage .= ' Klaidos: '.implode(', ', array_slice($errors, 0, 3));
                 if (count($errors) > 3) {
-                    $errorMessage .= " ir dar " . (count($errors) - 3) . "...";
+                    $errorMessage .= ' ir dar '.(count($errors) - 3).'...';
                 }
             }
+
             return back()->withErrors(['error' => $errorMessage]);
         }
     }
@@ -543,8 +550,8 @@ class FilesController extends Controller
     {
         return response()->json([
             'extensions' => StoreFilesRequest::getAllowedExtensions(),
-            'accept' => '.' . implode(',.', StoreFilesRequest::getAllowedExtensions()),
-            'maxSizeMB' => 50
+            'accept' => '.'.implode(',.', StoreFilesRequest::getAllowedExtensions()),
+            'maxSizeMB' => 50,
         ]);
     }
 }

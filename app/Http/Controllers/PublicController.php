@@ -112,7 +112,7 @@ class PublicController extends Controller
                 'calendar' => $calendarId,
                 'subdomain' => $subdomain,
             ]));
-            
+
             Inertia::share('otherLangURL', $otherLangURL);
         } catch (\Exception $e) {
             // If route generation fails, don't share otherLangURL

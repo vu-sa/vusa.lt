@@ -27,7 +27,7 @@ class StoreFilesRequest extends FormRequest
                 'required',
                 'file',
                 'max:51200', // 50MB in KB
-                'mimes:' . $this->getAllowedMimeTypes()
+                'mimes:'.$this->getAllowedMimeTypes(),
             ],
             'path' => ['required', 'string'],
         ];
@@ -95,12 +95,12 @@ class StoreFilesRequest extends FormRequest
                     if (isset($fileContainer['file'])) {
                         $file = $fileContainer['file'];
                         $extension = strtolower($file->getClientOriginalExtension());
-                        
-                        if (!in_array($extension, self::getAllowedExtensions())) {
+
+                        if (! in_array($extension, self::getAllowedExtensions())) {
                             $validator->errors()->add(
-                                "files.{$index}.file", 
-                                "Failas \"{$file->getClientOriginalName()}\" turi neleistiną formatą. " .
-                                "Leidžiami formatai: " . implode(', ', self::getAllowedExtensions())
+                                "files.{$index}.file",
+                                "Failas \"{$file->getClientOriginalName()}\" turi neleistiną formatą. ".
+                                'Leidžiami formatai: '.implode(', ', self::getAllowedExtensions())
                             );
                         }
                     }
@@ -119,7 +119,7 @@ class StoreFilesRequest extends FormRequest
             'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx',
             'txt', 'csv', 'zip', 'rar',
             'html', 'css', 'js', 'json', 'xml',
-            'mp3', 'mp4', 'avi', 'mov', 'webm'
+            'mp3', 'mp4', 'avi', 'mov', 'webm',
         ];
     }
 }

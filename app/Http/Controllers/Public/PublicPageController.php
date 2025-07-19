@@ -693,12 +693,12 @@ class PublicPageController extends PublicController
     {
         $this->getBanners();
         $this->getTenantLinks();
-        
+
         // Share other language URL for locale switching
         $this->shareOtherLangURL('joinUs');
 
         $seo = $this->shareAndReturnSEOObject(
-            title: __('Tapk VU SA nariu') . ' - ' . $this->tenant->shortname,
+            title: __('Tapk VU SA nariu').' - '.$this->tenant->shortname,
             description: __('Prisijunk prie VU SA bendruomenės ir būk studentų teisių gynėjas!')
         );
 
