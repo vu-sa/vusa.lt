@@ -34,7 +34,7 @@
                 </p>
                 <SmartLink :href="getNewsRoute(item)">
                   <h2
-                    class="mt-2 font-extrabold text-xl sm:text-2xl leading-tight text-zinc-800 line-clamp-2 dark:text-zinc-50 hover:text-vusa-red">
+                    class="mt-2 font-bold text-lg sm:text-xl leading-tight text-zinc-800 line-clamp-2 dark:text-zinc-50 hover:text-vusa-red">
                     {{ item.title }}
                   </h2>
                 </SmartLink>
@@ -49,7 +49,7 @@
 
       <!-- Sidebar News List -->
       <div class="flex flex-col gap-3">
-        <h3 class="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+        <h3 class="text-lg sm:text-xl font-bold text-zinc-900 dark:text-zinc-100">
           {{ $t("Naujausios") }}
         </h3>
 
@@ -67,7 +67,7 @@
                     height="108">
                 </div>
                 <div class="p-3">
-                  <p class="text-zinc-800 dark:text-zinc-200 font-semibold text-sm leading-tight line-clamp-2"
+                  <p class="text-zinc-800 dark:text-zinc-200 font-semibold text-xs leading-tight line-clamp-2"
                     :class="{ 'text-vusa-red': currentSlide === index }">
                     {{ item.title }}
                   </p>
@@ -84,15 +84,17 @@
         <!-- Desktop vertical list -->
         <div class="hidden md:flex flex-col gap-1">
           <SmartLink v-for="(item, index) in news" :key="`desktop-${item.id}`" :href="getNewsRoute(item)"
-            class="flex items-center gap-2 py-1.5 pl-2 pr-3 rounded-md transition-colors cursor-pointer"
-            :class="{ 'bg-zinc-100 dark:bg-zinc-800 border-l-4 border-vusa-red': currentSlide === index }"
+            class="flex items-center gap-2 py-1.5 pr-3 transition-colors cursor-pointer relative"
+            :class="{ 'bg-zinc-100 dark:bg-zinc-800': currentSlide === index }"
             :aria-current="currentSlide === index ? 'true' : 'false'" @click.prevent="selectSlide(index)">
-            <div class="overflow-hidden rounded aspect-[4/3] flex-shrink-0" style="width: 70px;">
+            <!-- Active indicator bar -->
+            <div v-if="currentSlide === index" class="absolute left-1 top-1 bottom-1 w-0.5 bg-vusa-red" style="width: 3px;"></div>
+            <div class="ml-3 overflow-hidden rounded aspect-[4/3] flex-shrink-0" style="width: 70px;">
               <img :src="item.image" :alt="item.title" loading="lazy" class="w-full h-full object-cover" width="70"
                 height="53">
             </div>
             <div class="flex flex-col">
-              <span class="text-zinc-800 dark:text-zinc-200 font-semibold text-sm leading-tight line-clamp-2"
+              <span class="text-zinc-800 dark:text-zinc-200 font-semibold text-xs leading-tight line-clamp-2"
                 :class="{ 'text-vusa-red': currentSlide === index }">
                 {{ item.title }}
               </span>

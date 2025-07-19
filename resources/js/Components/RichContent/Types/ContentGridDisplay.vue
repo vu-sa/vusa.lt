@@ -14,7 +14,7 @@
             processedOptions.equalHeight ? 'h-full' : '',
           ]">
             <!-- Render content based on type -->
-            <div v-if="column.content.type === 'tiptap'" class="prose max-w-none dark:prose-invert">
+            <div v-if="column.content.type === 'tiptap'" class="prose max-w-none dark:prose-invert tracking-normal">
               <RichContentTiptapHTML :json_content="column.content.value" />
             </div>
             <div v-else-if="column.content.type === 'image'" class="h-full">

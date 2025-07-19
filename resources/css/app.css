@@ -26,6 +26,18 @@
   --color-vusa-yellow-quaternary: #fcc557;
   --color-vusa-yellow-dark: #a77002;
 
+  /* Navigation theme colors for light mode */
+  --color-nav-gradient-from-light: oklch(0.979 0.006 74.59);
+  --color-nav-gradient-to-light: oklch(0.97 0 0);
+  --color-nav-border-light: oklch(0.92 0.004 286.32 / 50%);
+  --color-nav-hover-bg-light: oklch(1 0 0 / 60%);
+  
+  /* Navigation theme colors for dark mode */
+  --color-nav-gradient-from-dark: oklch(0.274 0.006 286.033);
+  --color-nav-gradient-to-dark: oklch(0.2 0.006 285.885);
+  --color-nav-border-dark: oklch(0.37 0.013 285.805 / 30%);
+  --color-nav-hover-bg-dark: oklch(0.37 0.013 285.805 / 60%);
+
   --grid-template-columns-ram-fill: repeat(auto-fill, minmax(320px, 1fr));
   --grid-template-columns-ram-fit: repeat(auto-fit, minmax(320px, 1fr));
 
@@ -207,19 +219,19 @@
 @layer base {
   /* Only essential typography - no margins, let components control spacing */
   h1 {
-    @apply text-2xl md:text-4xl font-black text-gray-900 dark:text-zinc-100 leading-tight;
+    @apply text-2xl md:text-4xl font-black text-gray-900 dark:text-zinc-100 leading-tight tracking-tight;
   }
 
   h2 {
-    @apply text-xl md:text-2xl font-bold text-gray-900 dark:text-zinc-100 leading-snug;
+    @apply text-xl md:text-2xl font-bold text-gray-900 dark:text-zinc-100 leading-snug tracking-tight;
   }
 
   h3 {
-    @apply text-lg md:text-xl font-bold text-gray-900 dark:text-zinc-100;
+    @apply text-lg md:text-xl font-bold text-gray-900 dark:text-zinc-100 tracking-tight;
   }
 
   h4 {
-    @apply text-base md:text-lg font-bold text-gray-900 dark:text-zinc-100;
+    @apply text-base md:text-lg font-bold text-gray-900 dark:text-zinc-100 tracking-tight;
   }
 
   a:not(.plain) {
@@ -228,6 +240,25 @@
 
   p>a {
     @apply underline;
+  }
+}
+
+/* Letter spacing utilities for Inter font optimization */
+@layer utilities {
+  .tracking-inter-tight {
+    letter-spacing: -0.02em;
+  }
+  
+  .tracking-inter-normal {
+    letter-spacing: -0.01em;
+  }
+  
+  .tracking-inter-wide {
+    letter-spacing: 0.02em;
+  }
+
+  .tracking-inter-wider {
+    letter-spacing: 0.05em;
   }
 }
 
@@ -242,23 +273,23 @@ html.dark {
   }
 
   h2 {
-    @apply scroll-mt-32 border-b border-zinc-200 dark:border-zinc-600 pb-2 text-3xl font-semibold transition-colors mb-4 mt-8 first:mt-0;
+    @apply scroll-mt-32 border-b border-zinc-200 dark:border-zinc-600 pb-2 text-3xl font-bold tracking-tight transition-colors mb-4 mt-8 first:mt-0;
   }
 
   h3 {
-    @apply scroll-mt-32 text-2xl font-semibold tracking-tight mb-3 mt-6 first:mt-0;
+    @apply scroll-mt-32 text-2xl font-bold tracking-tight mb-3 mt-6 first:mt-0;
   }
 
   h4 {
-    @apply scroll-mt-32 text-xl font-semibold mb-2 mt-5 first:mt-0;
+    @apply scroll-mt-32 text-xl font-bold tracking-tight mb-2 mt-5 first:mt-0;
   }
 
   h5 {
-    @apply scroll-mt-32 text-lg font-semibold mb-2 mt-4 first:mt-0;
+    @apply scroll-mt-32 text-lg font-bold tracking-tight mb-2 mt-4 first:mt-0;
   }
 
   h6 {
-    @apply scroll-mt-32 text-base font-semibold mb-2 mt-3 first:mt-0;
+    @apply scroll-mt-32 text-base font-bold tracking-tight mb-2 mt-3 first:mt-0;
   }
 
   table p {
@@ -266,11 +297,11 @@ html.dark {
   }
 
   blockquote {
-    @apply mt-6 border-l-2 pl-6 italic
+    @apply mt-6 border-l-2 pl-6 italic tracking-wide
   }
 
   p {
-    @apply not-first:mt-6 mt-4 mb-5
+    @apply not-first:mt-6 mt-4 mb-5 tracking-normal
   }
 
   a {

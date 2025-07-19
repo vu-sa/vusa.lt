@@ -1,5 +1,5 @@
 <template>
-  <div v-html="generateHTMLfromTiptap(json_content)" />
+  <div v-html="generateHTMLfromTiptap(json_content)" class="tracking-normal" />
 </template>
 
 <script setup lang="ts">
@@ -30,7 +30,7 @@ export const generateHTMLfromTiptap = (json_content: any) => {
       codeBlock: false,
       link: {
         HTMLAttributes: {
-          class: 'text-blue-500 underline',
+          class: 'text-blue-500 underline tracking-normal',
         },
       },
     }),
@@ -41,17 +41,17 @@ export const generateHTMLfromTiptap = (json_content: any) => {
     TableKit.configure({
       table: {
         HTMLAttributes: {
-          class: "border-collapse table-auto w-full",
+          class: "border-collapse table-auto w-full tracking-normal",
         },
       },
       tableCell: {
         HTMLAttributes: {
-          class: "border border-zinc-400 dark:border-zinc-500 px-4 py-1 text-left [&[align=center]]:text-center [&[align=right]]:text-right",
+          class: "border border-zinc-400 dark:border-zinc-500 px-4 py-1 text-left tracking-normal [&[align=center]]:text-center [&[align=right]]:text-right",
         },
       },
       tableHeader: {
         HTMLAttributes: {
-          class: "border border-zinc-400 dark:border-zinc-500 px-4 py-1 text-left font-bold [&[align=center]]:text-center [&[align=right]]:text-right",
+          class: "border border-zinc-400 dark:border-zinc-500 px-4 py-1 text-left font-bold tracking-normal [&[align=center]]:text-center [&[align=right]]:text-right",
         },
       },
       tableRow: {

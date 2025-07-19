@@ -1,10 +1,15 @@
 <template>
-  <NButton v-bind="$attrs" :title="$t('Paieška')" text @click="changeShowSearch">
-    <template #icon>
-      <IFluentSearch20Filled />
-    </template>
+  <Button 
+    v-bind="$attrs" 
+    variant="ghost" 
+    :title="$t('Paieška')" 
+    @click="changeShowSearch"
+    class="gap-2"
+    animation="subtle"
+  >
+    <IFluentSearch20Filled class="h-4 w-4" />
     <slot />
-  </NButton>
+  </Button>
   <CardModal v-model:show="showSearch" title="Paieška" @close="showSearch = false">
     <NInput :loading="searchInputLoading" round type="text" size="large" :placeholder="$t('Ieškoti...')" class="mb-2"
       @input="handleSearchInput" />
@@ -66,9 +71,11 @@ import { Link, router, usePage } from "@inertiajs/vue3";
 import { defineAsyncComponent, ref } from "vue";
 import { useDebounceFn } from "@vueuse/core";
 
+import { SEARCH_DEBOUNCE_DELAY } from "@/Constants/navigation";
 import CardModal from "@/Components/Modals/CardModal.vue";
 import SmartLink from "../SmartLink.vue";
 import { Separator } from "@/Components/ui/separator";
+import { Button } from "@/Components/ui/button";
 
 const DocumentCard = defineAsyncComponent(() => import("@/Components/Cards/DocumentCard.vue"));
 const NewsCard = defineAsyncComponent(() => import("@/Components/Cards/NewsCard.vue"));
@@ -99,7 +106,7 @@ const handleSearchInput = useDebounceFn((input) => {
       },
     );
   }
-}, 500);
+}, SEARCH_DEBOUNCE_DELAY);
 
 const getRoute = (model: Record<string, any>, type: string) => {
   if (type === "page") {

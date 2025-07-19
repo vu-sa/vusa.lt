@@ -1,10 +1,10 @@
 <template>
   <footer class="w-full border-t border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900">
-    <div class="mx-auto max-w-7xl px-4 py-8 md:px-8">
-      <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+    <div class="mx-auto max-w-7xl px-4 py-6 md:py-8 md:px-8">
+      <div class="grid gap-4 md:gap-6 md:grid-cols-2 lg:grid-cols-3">
         <!-- Organization info -->
         <div class="space-y-3">
-          <h3 class="text-base font-semibold text-zinc-900 dark:text-zinc-100">
+          <h3 class="text-base font-bold text-zinc-900 dark:text-zinc-100">
             {{ $t("Vilniaus universiteto Studentų atstovybė") }}
           </h3>
           <div class="space-y-1 text-sm text-zinc-600 dark:text-zinc-400">
@@ -20,7 +20,7 @@
         </div>
 
         <!-- Social media and StartFM -->
-        <div class="space-y-2">
+        <div class="space-y-0">
           <div class="flex flex-wrap gap-2">
             <FacebookButton>
               {{ $t("Facebook") }}
@@ -35,8 +35,8 @@
         </div>
 
         <!-- Contact info -->
-        <div class="space-y-2">
-          <h3 class="text-base font-semibold text-zinc-900 dark:text-zinc-100">
+        <div class="space-y-3">
+          <h3 class="text-base font-bold text-zinc-900 dark:text-zinc-100">
             {{ $t("Kontaktai") }}
           </h3>
           <div class="space-y-2">

@@ -22,9 +22,9 @@
     <div class="ml-4 mt-2 flex flex-col gap-2">
       <QuickLink v-for="link in $page.props.tenant?.links" :key="link?.id" :quick-link="link" />
     </div>
-    <div class="flex gap-4 mt-8">
-      <LocaleButton :locale="$page.props.app.locale" />
-      <DarkModeButton />
+    <div class="flex gap-2 mt-8">
+      <LocaleButton :locale="$page.props.app.locale" :size="'sm'" />
+      <DarkModeButton :size="'icon'" />
     </div>
   </div>
 </template>

@@ -3,26 +3,35 @@
     <PopoverTrigger as-child>
       <Button 
         variant="outline" 
-        :class="[
-          'flex items-center gap-2 w-auto justify-between', 
-          size === 'tiny' ? 'h-8 px-2 text-xs' : size === 'small' ? 'h-9 px-3 py-2' : 'h-9 px-4 py-2',
-        ]" 
+        :size="size === 'tiny' ? 'sm' : 'default'"
+        class="flex items-center gap-2 w-auto justify-between tracking-normal"
         :disabled="isDisabled"
+        :title="$t('Pasirinkti padalinį')"
       >
         <div class="flex items-center">
           <MapPin class="mr-2 h-4 w-4" />
-          <span>{{ padalinys }}</span>
+          <span class="tracking-normal">{{ padalinys }}</span>
         </div>
-        <ChevronDown class="h-4 w-4 opacity-50" />
+        <ChevronDown class="h-4 w-4 opacity-50 transition-transform duration-200" :class="{ 'rotate-180': isPopoverOpen }" />
       </Button>
     </PopoverTrigger>
     <PopoverContent class="p-0" :class="{ 'w-[300px]': viewMode === 'list', 'w-[520px]': viewMode === 'map' }" align="start">
       <div class="flex items-center gap-2 p-2 border-b border-zinc-200 dark:border-zinc-800"> 
-        <Button variant="ghost" size="sm" :class="{ 'bg-muted': viewMode === 'list' }" @click="setViewMode('list')">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          :class="{ 'bg-muted': viewMode === 'list' }" 
+          @click="setViewMode('list')"
+        >
           <List class="h-4 w-4" />
           <span class="ml-2">{{ $t('List') }}</span>
         </Button>
-        <Button variant="ghost" size="sm" :class="{ 'bg-muted': viewMode === 'map' }" @click="setViewMode('map')">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          :class="{ 'bg-muted': viewMode === 'map' }" 
+          @click="setViewMode('map')"
+        >
           <Map class="h-4 w-4" />
           <span class="ml-2">{{ $t('Map') }}</span>
         </Button>
@@ -128,7 +137,9 @@ interface DropdownOption {
 }
 
 interface Props {
+  /** Button size variant - affects padding and height */
   size: "tiny" | "small" | "medium";
+  /** Additional options to prepend to the dropdown list */
   prependOptions?: Array<DropdownOption>;
 }
 
@@ -176,13 +187,7 @@ const hoveredLocation = ref<DropdownOption | null>(null);
 const isPopoverOpen = ref(false);
 
 const handleSelectPadalinys = (key: string | string[]) => {
-  let padalinys_alias = key;
-
-  // if padalinys is array, get first element (for mobile)
-  // because tree component returns array of selected keys
-  if (Array.isArray(padalinys_alias)) {
-    padalinys_alias = key[0];
-  }
+  let padalinys_alias: string = Array.isArray(key) ? key[0] ?? '' : key;
 
   // get last two elements of host and join them with dot
   const hostWithoutSubdomain = window.location.host
@@ -218,15 +223,20 @@ const getFormattedAlias = (key: string): string => {
   return prefix + key.toUpperCase();
 };
 
-const options_padaliniai = computed<DropdownOption[]>(() => {
+const options_padaliniai = computed(() => {
   const options = usePage()
     .props.tenants.filter(
       (tenant) => (tenant.type === "padalinys" || tenant.type === "pagrindinis") && tenant.id <= 17
     )
-    .map((tenant) => ({
+    .map((tenant): DropdownOption => ({
       label: $t(tenant.fullname.split("atstovybė ")[1] || ''),
       key: tenant.alias,
-      primary_institution: tenant.primary_institution,
+      primary_institution: tenant.primary_institution ? {
+        short_name: Array.isArray(tenant.primary_institution.short_name) 
+          ? tenant.primary_institution.short_name[0] 
+          : tenant.primary_institution.short_name || undefined,
+        image_url: tenant.primary_institution.image_url || undefined
+      } : undefined,
       isMainOffice: tenant.type === "pagrindinis"
     }));
 
@@ -256,16 +266,20 @@ const vilniusFaculties = computed(() => {
 const otherCitiesFaculties = computed(() => {
   if (!searchQuery.value) {
     return options_padaliniai.value.filter(
-      option => ['kaunas', 'siauliai'].includes(facultyLocations[option.key]?.city)
+      option => {
+        const city = facultyLocations[option.key]?.city;
+        return city && ['kaunas', 'siauliai'].includes(city);
+      }
     );
   }
   
-  return options_padaliniai.value.filter(option => 
-    ['kaunas', 'siauliai'].includes(facultyLocations[option.key]?.city) && (
+  return options_padaliniai.value.filter(option => {
+    const city = facultyLocations[option.key]?.city;
+    return city && ['kaunas', 'siauliai'].includes(city) && (
       option.label.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
       option.key.toLowerCase().includes(searchQuery.value.toLowerCase())
-    )
-  );
+    );
+  });
 });
 
 const padalinys = computed(() => {
@@ -296,6 +310,7 @@ const isDisabled = computed(() => {
 // Helper to get translated city name
 const getCityName = (option: DropdownOption): string => {
   const city = facultyLocations[option.key]?.city;
+  if (!city) return '';
   return $t(cityNames[city] || '');
 };
 
