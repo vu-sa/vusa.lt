@@ -54,6 +54,9 @@ class PublicPageController extends PublicController
         $this->getTenantLinks();
         $this->getNavigation();
 
+        // Share other language URL for locale switching
+        $this->shareOtherLangURL('home', $this->subdomain);
+
         // Cache the homepage-specific content
         $locale = app()->getLocale();
         $cacheKey = "homepage_content_{$this->tenant->id}_{$locale}";
@@ -156,6 +159,13 @@ class PublicPageController extends PublicController
     {
         $this->getBanners();
         $this->getTenantLinks();
+
+        // Share other language URL for locale switching
+        Inertia::share('otherLangURL', route('category', [
+            'category' => $category->alias,
+            'lang' => $this->getOtherLang(),
+            'subdomain' => $this->subdomain,
+        ]));
 
         $category->load('pages:id,title,permalink,lang,category_id,tenant_id')->load('pages.tenant:id,alias');
 
@@ -260,6 +270,9 @@ class PublicPageController extends PublicController
     {
         $this->getBanners();
         $this->getTenantLinks();
+
+        // Share other language URL for locale switching
+        $this->shareOtherLangURL('curatorRegistrations');
 
         $seo = $this->shareAndReturnSEOObject(
             title: app()->getLocale() === 'lt' ? 'Registracija į kuratorių programą' : 'Registration to mentor program',
@@ -672,6 +685,24 @@ class PublicPageController extends PublicController
             'documents' => $documentsData['documents'],
             'allContentTypes' => $documentsData['contentTypes'],
         ])->withViewData([
+            'SEOData' => $seo,
+        ]);
+    }
+
+    public function membership()
+    {
+        $this->getBanners();
+        $this->getTenantLinks();
+        
+        // Share other language URL for locale switching
+        $this->shareOtherLangURL('joinUs');
+
+        $seo = $this->shareAndReturnSEOObject(
+            title: __('Tapk VU SA nariu') . ' - ' . $this->tenant->shortname,
+            description: __('Prisijunk prie VU SA bendruomenės ir būk studentų teisių gynėjas!')
+        );
+
+        return Inertia::render('Public/MembershipPage')->withViewData([
             'SEOData' => $seo,
         ]);
     }

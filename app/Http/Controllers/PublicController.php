@@ -37,6 +37,9 @@ class PublicController extends Controller
         Inertia::share('tenant', $this->tenant->only(['id', 'shortname', 'alias', 'type']) +
             ['subdomain' => $subdomain]
         );
+
+        // Initialize otherLangURL as null by default - controllers can override this
+        Inertia::share('otherLangURL', null);
     }
 
     protected function getBanners()
@@ -103,14 +106,19 @@ class PublicController extends Controller
     // This is mostly used for default sharing, other cases likes pages and news link to other URLs
     protected function shareOtherLangURL($name, ?string $subdomain = null, $calendarId = null)
     {
-        Inertia::share('otherLangURL',
-            route($name,
-                [
-                    'lang' => $this->getOtherLang(),
-                    'calendar' => $calendarId,
-                    'subdomain' => $subdomain,
-                ])
-        );
+        try {
+            $otherLangURL = route($name, array_filter([
+                'lang' => $this->getOtherLang(),
+                'calendar' => $calendarId,
+                'subdomain' => $subdomain,
+            ]));
+            
+            Inertia::share('otherLangURL', $otherLangURL);
+        } catch (\Exception $e) {
+            // If route generation fails, don't share otherLangURL
+            // This allows the LocaleButton to gracefully handle missing translations
+            Inertia::share('otherLangURL', null);
+        }
     }
 
     protected function getOtherLang()

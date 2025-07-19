@@ -38,7 +38,8 @@
               <LocaleButton :locale="$page.props.app.locale" :size="'sm'" />
               <DarkModeSwitch :size="'icon'" />
             </div>
-            <div class="ml-auto lg:hidden">
+            <div class="ml-auto lg:hidden flex items-center gap-2">
+              <LocaleButton :locale="$page.props.app.locale" :size="smallerThanSm ? 'sm' : 'default'" />
               <Drawer direction="left">
                 <DrawerTrigger>
                   <Button variant="outline" :size="smallerThanSm ? 'sm' : 'default'" class="gap-2">
