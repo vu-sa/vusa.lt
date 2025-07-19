@@ -123,7 +123,7 @@ import Icons from "@/Types/Icons/filled";
 
 import Sparkle20Filled from "~icons/fluent/sparkle20-filled";
 import CardFooter from "@/Components/ui/card/CardFooter.vue";
-import { useBreadcrumbs, type BreadcrumbItem } from "@/Composables/useBreadcrumbs";
+import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 
 const props = defineProps<{
   training: App.Entities.Training;
@@ -140,10 +140,14 @@ const defaultTab = computed(() => {
   return "summary";
 });
 
-const { createRouteBreadcrumb, createBreadcrumbItem } = useBreadcrumbs();
-
-const breadcrumbs = computed((): BreadcrumbItem[] => [
-  createRouteBreadcrumb("Mokymai", "trainings.index"),
-  createBreadcrumbItem(props.training.name, undefined, Sparkle20Filled),
-]);
+usePageBreadcrumbs(() => 
+  BreadcrumbHelpers.adminShow(
+    "Mokymai",
+    "trainings.index",
+    {},
+    props.training.name,
+    Icons.TRAINING,
+    Sparkle20Filled
+  )
+);
 </script>

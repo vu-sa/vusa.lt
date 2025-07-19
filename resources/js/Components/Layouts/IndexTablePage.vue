@@ -1,5 +1,5 @@
 <template>
-  <AdminContentPage :breadcrumbs>
+  <AdminContentPage>
     <div class="space-y-6">
       <!-- Page Header -->
       <div v-if="headerTitle" class="flex flex-col space-y-2 md:flex-row md:items-center md:justify-between">
@@ -105,7 +105,6 @@ import { type RowSelectionState } from '@tanstack/vue-table';
 import ServerDataTable from '@/Components/Tables/ServerDataTable.vue';
 import { Button } from '@/Components/ui/button';
 import AdminContentPage from './AdminContentPage.vue';
-import { useComponentBreadcrumbs } from "@/Composables/useBreadcrumbs";
 import { Link } from '@inertiajs/vue3';
 import {
   type IndexTablePageProps
@@ -201,6 +200,5 @@ defineExpose({
   rowSelection
 });
 
-// Use the improved breadcrumbs composable
-useComponentBreadcrumbs(() => props.breadcrumbs);
+// Breadcrumbs are now handled automatically by pages using usePageBreadcrumbs()
 </script>

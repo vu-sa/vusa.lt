@@ -67,7 +67,7 @@ import { Button } from "@/Components/ui/button";
 import { ExternalLinkIcon, RefreshCwIcon } from "lucide-vue-next";
 import DataTableFilter from "@/Components/ui/data-table/DataTableFilter.vue";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
-import { useBreadcrumbs, type BreadcrumbItem } from "@/Composables/useBreadcrumbs";
+import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import { 
   type IndexTablePageProps
 } from "@/Types/TableConfigTypes";
@@ -97,12 +97,10 @@ const modelName = 'documents';
 const entityName = 'document';
 
 // Breadcrumbs setup
-const { createBreadcrumbItem, homeItem } = useBreadcrumbs();
-
-const breadcrumbs = computed((): BreadcrumbItem[] => [
-  homeItem(),
-  createBreadcrumbItem($t("administration.title"), route("administration")),
-  createBreadcrumbItem($t("Documents"), undefined, Icons.DOCUMENT)
+usePageBreadcrumbs(() => [
+  BreadcrumbHelpers.homeItem(),
+  BreadcrumbHelpers.createBreadcrumbItem($t("administration.title"), route("administration")),
+  BreadcrumbHelpers.createBreadcrumbItem($t("Documents"), undefined, Icons.DOCUMENT)
 ]);
 
 const loading = ref(false);
@@ -282,7 +280,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Document>>(() => {
     headerTitle: $t("Documents"),
     icon: Icons.DOCUMENT,
     canCreate: false,
-    breadcrumbs: breadcrumbs.value
+    // breadcrumbs handled via usePageBreadcrumbs
   };
 });
 

@@ -25,37 +25,32 @@
 <script setup lang="ts">
 import FeedbackPopover from "@/Components/Public/FeedbackPopover.vue";
 import RichContentParser from "@/Components/RichContentParser.vue";
-import { computed, onMounted, onUnmounted } from "vue";
-import { usePublicBreadcrumbs } from "@/Composables/usePublicBreadcrumbs";
+// No longer need computed, onMounted, onUnmounted - usePageBreadcrumbs handles lifecycle
+import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
+import { usePage } from "@inertiajs/vue3";
 
 const props = defineProps<{
   navigationItemId: number;
   page: Record<string, any>;
 }>();
 
-const { buildNavigationPath, createPublicBreadcrumbItem, setPageBreadcrumbs, clearBreadcrumbs } = usePublicBreadcrumbs();
-
-// Build breadcrumb items for the content page
-const breadcrumbItems = computed(() => {
-  const navigationPath = buildNavigationPath(props.navigationItemId);
+// Set breadcrumbs for content page
+usePageBreadcrumbs(() => {
+  const page = usePage();
+  const mainNavigation = page.props.mainNavigation || [];
+  
+  // Build breadcrumb items for the content page
+  const navigationPath = BreadcrumbHelpers.buildNavigationPath(props.navigationItemId, mainNavigation);
   
   // If we have navigation path, use it for breadcrumbs
   if (navigationPath.length > 0) {
-    return navigationPath;
+    return BreadcrumbHelpers.publicContent(navigationPath);
   }
   
   // Otherwise just show the current page title
-  return [createPublicBreadcrumbItem(props.page.title)];
-});
-
-// Set the breadcrumbs in the centralized state on component mount
-onMounted(() => {
-  setPageBreadcrumbs(breadcrumbItems.value);
-});
-
-// Clear breadcrumbs when component is unmounted
-onUnmounted(() => {
-  clearBreadcrumbs();
+  return BreadcrumbHelpers.publicContent([
+    BreadcrumbHelpers.createBreadcrumbItem(props.page.title)
+  ]);
 });
 
 const anchorLinks = props.page.content?.parts?.reduce((acc: any, part: any) => {

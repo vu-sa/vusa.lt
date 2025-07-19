@@ -1,5 +1,5 @@
 <template>
-  <PageContent :title="`${$page.props.auth?.user?.name}`" :breadcrumbs="breadcrumbs">
+  <PageContent :title="`${$page.props.auth?.user?.name}`">
     <NCard>
       <!-- <p>{{ salutation }}</p> -->
       <div class="mb-4">
@@ -129,7 +129,7 @@ import MultiLocaleInput from "@/Components/FormItems/MultiLocaleInput.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import UploadImageWithCropper from "@/Components/Buttons/UploadImageWithCropper.vue";
 import InfoText from "@/Components/SmallElements/InfoText.vue";
-import { useBreadcrumbs, type BreadcrumbItem } from "@/Composables/useBreadcrumbs";
+import { BreadcrumbHelpers, usePageBreadcrumbs } from "@/Composables/useBreadcrumbsUnified";
 import IMdiContentSave from '~icons/mdi/content-save';
 import IMdiGithub from '~icons/mdi/github';
 import IMdiLock from '~icons/mdi/lock';
@@ -158,11 +158,9 @@ const passwordForm = useForm({
   password_confirmation: '',
 });
 
-// Setup breadcrumbs for the Settings page
-const { createBreadcrumbItem } = useBreadcrumbs();
-
-const breadcrumbs = computed((): BreadcrumbItem[] => [
-  createBreadcrumbItem($t('Nustatymai'), undefined, Icons.SETTINGS)
+// Generate breadcrumbs automatically with new simplified API
+usePageBreadcrumbs([
+  { label: $t('Nustatymai'), icon: Icons.SETTINGS }
 ]);
 
 const handleSubmit = () => {

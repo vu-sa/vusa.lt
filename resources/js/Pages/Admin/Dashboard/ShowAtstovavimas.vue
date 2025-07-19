@@ -1,5 +1,5 @@
 <template>
-  <AdminContentPage :breadcrumbs="breadcrumbs">
+  <AdminContentPage>
     <Head :title="$t('Atstovavimas')" />
     
     <!-- Hero section with greeting and overview -->
@@ -274,13 +274,11 @@ import { Maximize2 as FullScreenIcon } from "lucide-vue-next";
 // Utils
 import { formatStaticTime } from '@/Utils/IntlTime';
 
-import { useBreadcrumbs, type BreadcrumbItem } from "@/Composables/useBreadcrumbs";
+import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 
 // Setup breadcrumbs for the atstovavimas page
-const { createRouteBreadcrumb, createBreadcrumbItem } = useBreadcrumbs();
-
-const breadcrumbs = computed((): BreadcrumbItem[] => [
-  createBreadcrumbItem($t('Atstovavimas'), undefined, Icons.MEETING)
+usePageBreadcrumbs(() => [
+  BreadcrumbHelpers.createBreadcrumbItem($t('Atstovavimas'), undefined, Icons.MEETING)
 ]);
 
 const props = defineProps<{

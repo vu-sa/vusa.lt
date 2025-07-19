@@ -168,8 +168,8 @@
 <script setup lang="ts">
 import { router } from "@inertiajs/vue3";
 import { trans as $t } from "laravel-vue-i18n";
-import { onMounted, onUnmounted } from "vue";
-import { usePublicBreadcrumbs } from "@/Composables/usePublicBreadcrumbs";
+// onMounted/onUnmounted no longer needed - usePageBreadcrumbs handles lifecycle
+import { usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import { XIcon, ChevronLeftIcon, ChevronRightIcon } from "lucide-vue-next";
 import { NButton } from "naive-ui";
 
@@ -246,14 +246,6 @@ const getPagesAfter = () => {
   return pages;
 };
 
-const { setPageBreadcrumbs, clearBreadcrumbs } = usePublicBreadcrumbs();
-
-onMounted(() => {
-  setPageBreadcrumbs([]);
-});
-
-// Clear breadcrumbs when component is unmounted  
-onUnmounted(() => {
-  clearBreadcrumbs();
-});
+// Clear breadcrumbs for news archive page (no specific breadcrumbs needed)
+usePageBreadcrumbs([]);
 </script>

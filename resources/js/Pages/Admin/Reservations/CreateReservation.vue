@@ -3,8 +3,7 @@
     :title="$tChoice('forms.new_model', 0, {
       model: $tChoice('entities.reservation.model', 1),
     })" 
-    :heading-icon="Icons.RESERVATION"
-    :breadcrumbs="breadcrumbs">
+    :heading-icon="Icons.RESERVATION">
     <UpsertModelLayout>
       <ReservationForm remember-key="CreateReservation" model-route="reservations.store" :reservation :all-resources="resources" />
     </UpsertModelLayout>
@@ -13,13 +12,12 @@
 
 <script setup lang="tsx">
 import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
-import { computed } from "vue";
 import { capitalize } from "vue";
 import Icons from "@/Types/Icons/regular";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import ReservationForm from "@/Components/AdminForms/ReservationForm.vue";
 import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
-import { useBreadcrumbs, type BreadcrumbItem } from "@/Composables/useBreadcrumbs";
+import { BreadcrumbHelpers, usePageBreadcrumbs } from "@/Composables/useBreadcrumbsUnified";
 
 export type ReservationCreationTemplate = Omit<
   App.Entities.Reservation,
@@ -41,15 +39,12 @@ const props = defineProps<{
   dateTimeRange: { start: number; end: number };
 }>();
 
-// Breadcrumbs setup
-const { createBreadcrumbItem, homeItem, createRouteBreadcrumb } = useBreadcrumbs();
-
-const breadcrumbs = computed((): BreadcrumbItem[] => [
-  createBreadcrumbItem(
-    capitalize($tChoice("entities.reservation.model", 2)), 
-    undefined,
-    Icons.RESERVATION
-  ),
+// Generate breadcrumbs automatically with new simplified API
+usePageBreadcrumbs([
+  { 
+    label: capitalize($tChoice("entities.reservation.model", 2)), 
+    icon: Icons.RESERVATION 
+  }
 ]);
 
 const reservation: ReservationCreationTemplate = {

@@ -26,10 +26,10 @@
         class="flex flex-col justify-between text-zinc-800 antialiased dark:text-zinc-300 container px-0 @container/main">
         <MainNavigation :is-theme-dark="isDark" />
 
-        <main class="pb-8 pt-12">
+        <main class="pb-8 pt-12 mt-16">
           <!-- Centralized breadcrumb display -->
-          <div v-if="publicBreadcrumbState.hasBreadcrumbs" class="wrapper pt-4 md:pt-6 lg:pt-8 mt-16">
-            <PublicBreadcrumb :items="publicBreadcrumbState.breadcrumbs.value" class="mb-4 md:mb-6" />
+          <div v-if="breadcrumbState.breadcrumbs.value.length > 0" class="wrapper pt-4 md:pt-6 lg:pt-8">
+            <UnifiedBreadcrumbs class="mb-4 md:mb-6" />
           </div>
           
           <!-- <Suspense> -->
@@ -70,8 +70,8 @@ import { useDark, useStorage } from "@vueuse/core";
 import { Head, usePage, router } from "@inertiajs/vue3";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import { Spinner } from "@/Components/ui/spinner";
-import PublicBreadcrumb from "@/Components/Public/Breadcrumb/PublicBreadcrumb.vue";
-import { publicBreadcrumbState } from "@/Composables/usePublicBreadcrumbs";
+import UnifiedBreadcrumbs from "@/Components/UnifiedBreadcrumbs.vue";
+import { createBreadcrumbState } from '@/Composables/useBreadcrumbsUnified';
 
 // Use existing Skeleton component for consistency
 import { Skeleton } from '@/Components/ui/skeleton';
@@ -110,6 +110,16 @@ const SiteFooter = defineAsyncComponent({
 });
 
 const isDark = useDark();
+
+// Initialize breadcrumb state for public pages
+const breadcrumbState = createBreadcrumbState('public');
+
+// Clear breadcrumbs when on home page
+watch(() => usePage().component, (component) => {
+  if (component === 'Public/HomePage') {
+    breadcrumbState.clear();
+  }
+}, { immediate: true });
 
 // Simplified SEO computed with better performance
 const seo = computed(() => {
@@ -236,16 +246,9 @@ onMounted(() => {
     // Don't clear breadcrumbs during navigation - helps with transition
   });
 
-  router.on('finish', () => {
-    // Clear breadcrumbs when navigation finishes, then let components set their own
-    nextTick(() => {
-      // If no component has set breadcrumbs after navigation, clear them
-      setTimeout(() => {
-        if (publicBreadcrumbState.source.value !== 'component') {
-          publicBreadcrumbState.clearBreadcrumbs();
-        }
-      }, 0);
-    });
+    router.on('finish', () => {
+    // Note: We no longer clear breadcrumbs on navigation to prevent flashing
+    // Individual pages will set their own breadcrumbs using usePageBreadcrumbs()
   });
 
   // Defer non-critical script loading to improve INP

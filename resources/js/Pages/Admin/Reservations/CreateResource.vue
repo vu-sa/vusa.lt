@@ -13,6 +13,7 @@
 <script setup lang="ts">
 import { usePage } from "@inertiajs/vue3";
 
+import { BreadcrumbHelpers, usePageBreadcrumbs } from "@/Composables/useBreadcrumbsUnified";
 import Icons from "@/Types/Icons/regular";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import ResourceForm from "@/Components/AdminForms/ResourceForm.vue";
@@ -33,6 +34,11 @@ defineProps<{
   assignableTenants: Array<App.Entities.Tenant>;
   categories: any
 }>();
+
+// Generate breadcrumbs automatically with new simplified API
+usePageBreadcrumbs(
+  BreadcrumbHelpers.adminForm('Ištekliai', 'resources.index', 'Naujas išteklius', Icons.RESOURCE)
+);
 
 const resource: ResourceCreationTemplate = {
   id: undefined,

@@ -1,5 +1,5 @@
 <template>
-  <PageContent :title="`Institucijų vizualizacija`" :breadcrumbs="breadcrumbs">
+  <PageContent :title="`Institucijų vizualizacija`">
     <Graph
       :institution-relationships="institutionRelationships"
       :institutions="institutions"
@@ -10,7 +10,7 @@
 <script setup lang="ts">
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import Graph from "@/Components/Graphs/InstitutionGraph.vue";
-import { useBreadcrumbs, type BreadcrumbItem } from "@/Composables/useBreadcrumbs";
+import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import { computed } from "vue";
 import { trans as $t } from "laravel-vue-i18n";
 import Icons from "@/Types/Icons/filled";
@@ -21,9 +21,7 @@ defineProps<{
 }>();
 
 // Setup breadcrumbs for the Institution Graph page
-const { createBreadcrumbItem } = useBreadcrumbs();
-
-const breadcrumbs = computed((): BreadcrumbItem[] => [
-  createBreadcrumbItem($t('Institucijų grafa'), undefined, Icons.INSTITUTION)
+usePageBreadcrumbs(() => [
+  BreadcrumbHelpers.createBreadcrumbItem($t('Institucijų grafa'), undefined, Icons.INSTITUTION)
 ]);
 </script>

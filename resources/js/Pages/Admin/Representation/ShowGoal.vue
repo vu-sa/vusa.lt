@@ -2,7 +2,6 @@
   <ShowPageLayout
     :model="goal"
     :title="goal.title"
-    :breadcrumb-options="breadcrumbItems"
     :related-models="relatedModels"
     :current-tab="currentTab"
     @change:tab="currentTab = $event"
@@ -78,7 +77,7 @@ import ModelChip from "@/Components/Tag/ModelChip.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import ShowPageLayout from "@/Components/Layouts/ShowModel/ShowPageLayout.vue";
 import TaskManager from "@/Features/Admin/TaskManager/TaskManager.vue";
-import { useBreadcrumbs, type BreadcrumbItem } from "@/Composables/useBreadcrumbs";
+import { BreadcrumbHelpers, usePageBreadcrumbs } from "@/Composables/useBreadcrumbsUnified";
 
 const props = defineProps<{
   goal: App.Entities.Goal;
@@ -91,11 +90,10 @@ const buttonNames = props.institutions.map((institution) => institution.name);
 // add null to the beginning of the array
 buttonNames.unshift("Visi");
 
-const { createRouteBreadcrumb, createBreadcrumbItem } = useBreadcrumbs();
-
-const breadcrumbItems = computed((): BreadcrumbItem[] => [
-  createRouteBreadcrumb("Klausimų grupės", undefined, {}, Icons.GOAL_GROUP),
-  createBreadcrumbItem(props.goal.title, undefined, Icons.GOAL),
+// Generate breadcrumbs automatically with new simplified API
+usePageBreadcrumbs([
+  { label: "Klausimų grupės", icon: Icons.GOAL_GROUP },
+  { label: props.goal.title, icon: Icons.GOAL }
 ]);
 
 const currentTab = useStorage("show-goal-tab", "Svarstomi klausimai");

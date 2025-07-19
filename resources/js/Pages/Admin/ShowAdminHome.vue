@@ -230,7 +230,6 @@
 
 <script setup lang="ts">
 import { Head, Link, router, usePage } from "@inertiajs/vue3";
-import { useComponentBreadcrumbs, homeItem } from '@/Composables/useBreadcrumbs';
 import { trans as $t } from "laravel-vue-i18n";
 import { computed, ref } from "vue";
 
@@ -272,9 +271,7 @@ import {
   Bookmark as BookmarkIcon,
 } from "lucide-vue-next";
 
-// Breadcrumbs setup - use useComponentBreadcrumbs for proper lifecycle management
-useComponentBreadcrumbs([
-]);
+// Home page doesn't need breadcrumbs - they're cleared by AdminLayout
 
 // Get data from props
 const props = defineProps<{

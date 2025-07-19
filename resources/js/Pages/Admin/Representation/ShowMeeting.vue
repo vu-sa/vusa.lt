@@ -1,5 +1,5 @@
 <template>
-  <ShowPageLayout :model="meeting" :breadcrumbs="breadcrumbs"
+  <ShowPageLayout :model="meeting"
     :title="`${mainInstitution?.name} (${meetingTitle})`" :related-models="relatedModels" :current-tab="currentTab" @change:tab="currentTab = $event">
     <template #title>
       {{ `${mainInstitution?.name} (${meetingTitle})` }}
@@ -88,7 +88,7 @@ import IMdiThumbsUpDownOutline from "~icons/mdi/thumbs-up-down-outline";
 import IMdiFileDocument from "~icons/mdi/file-document";
 import IMdiFileDocumentPlus from "~icons/mdi/file-document-plus";
 import AgendaItemsForm from "@/Components/AdminForms/Special/AgendaItemsForm.vue";
-import { useBreadcrumbs, type BreadcrumbItem } from "@/Composables/useBreadcrumbs";
+import { BreadcrumbHelpers, usePageBreadcrumbs } from "@/Composables/useBreadcrumbsUnified";
 import { Separator } from "@/Components/ui/separator";
 
 const props = defineProps<{
@@ -149,12 +149,24 @@ const handleAgendaItemDelete = (agendaItem: App.Entities.AgendaItem) => {
   router.delete(route("agendaItems.destroy", agendaItem.id));
 };
 
-const { createRouteBreadcrumb, createBreadcrumbItem } = useBreadcrumbs();
-
-const breadcrumbs = [
-  createRouteBreadcrumb(mainInstitution.name, "institutions.show", { institution: mainInstitution.id }, Icons.INSTITUTION),
-  createBreadcrumbItem(meetingTitle, undefined, Icons.MEETING),
-];
+// Generate breadcrumbs automatically with new simplified API
+usePageBreadcrumbs(() => {
+  if (typeof mainInstitution === 'string') {
+    return [
+      { label: mainInstitution, icon: Icons.INSTITUTION },
+      { label: meetingTitle, icon: Icons.MEETING }
+    ];
+  }
+  
+  return BreadcrumbHelpers.adminShow(
+    mainInstitution.name,
+    "institutions.show", 
+    { institution: mainInstitution.id },
+    meetingTitle,
+    Icons.INSTITUTION,
+    Icons.MEETING
+  );
+});
 
 const columns = [
   {

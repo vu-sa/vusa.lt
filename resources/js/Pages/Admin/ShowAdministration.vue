@@ -1,5 +1,5 @@
 <template>
-  <AdminContentPage :breadcrumbs :title="$t('Administravimas')">
+  <AdminContentPage :title="$t('Administravimas')">
     <!-- Search and filter bar -->
     <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div class="relative w-full max-w-md">
@@ -155,9 +155,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuCheckboxItem,
 } from '@/Components/ui/dropdown-menu';
-import { useBreadcrumbs, type BreadcrumbItem } from '@/Composables/useBreadcrumbs';
+import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 
 const { auth } = usePage().props;
+
+// Set up breadcrumbs
+usePageBreadcrumbs([
+  { label: $t('Administravimas'), icon: Icons.TYPE }
+]);
 
 type MenuItemType = {
   title: string;
@@ -528,11 +533,6 @@ const hasVisibleItems = computed(() => {
   return filteredMenuItems.value.some(category => category.visibleItems.length > 0);
 });
 
-const { createBreadcrumbItem } = useBreadcrumbs();
-
-const breadcrumbs = computed((): BreadcrumbItem[] => [
-  createBreadcrumbItem($t('Administravimas'), undefined),
-]);
 </script>
 
 <style scoped>
