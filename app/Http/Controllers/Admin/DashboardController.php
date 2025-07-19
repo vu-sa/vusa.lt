@@ -400,7 +400,7 @@ class DashboardController extends Controller
             'current_duties.institution.tenant:id,shortname')->makeVisible(['name_was_changed', 'show_pronouns']);
 
         return Inertia::render('Admin/ShowUserSettings', [
-            'user' => $user->toFullArray(),
+            'user' => $user->append('has_password')->toFullArray(),
         ]);
     }
 
@@ -416,6 +416,16 @@ class DashboardController extends Controller
         }
 
         return redirect()->back()->with('success', 'Nustatymai išsaugoti.');
+    }
+
+    public function updatePassword(\App\Http\Requests\UpdatePasswordRequest $request)
+    {
+        $user = User::find(Auth::id());
+
+        $user->password = bcrypt($request->password);
+        $user->save();
+
+        return redirect()->back()->with('success', 'Slaptažodis sėkmingai pakeistas.');
     }
 
     public function userTasks()

@@ -40,12 +40,7 @@ import {
   createTitleColumn
 } from '@/Utils/DataTableColumns';
 import { 
-  type IndexTablePageProps,
-  type TableConfig,
-  type PaginationConfig,
-  type UIConfig,
-  type FilteringConfig,
-  type RowSelectionConfig
+  type IndexTablePageProps
 } from "@/Types/TableConfigTypes";
 
 const props = defineProps<{
@@ -140,54 +135,33 @@ const columns = computed<ColumnDef<App.Entities.Tag, any>[]>(() => [
   })
 ]);
 
-// Consolidated table configuration using the new interfaces
+// Simplified table configuration using the new interfaces
 const tableConfig = computed<IndexTablePageProps<App.Entities.Tag>>(() => {
-  // Core table configuration
-  const tableConfig: TableConfig<App.Entities.Tag> = {
+  return {
+    // Essential table configuration
     modelName,
     entityName,
     data: props.tags.data,
     columns: columns.value,
-    getRowId
-  };
-  
-  // Pagination configuration
-  const paginationConfig: PaginationConfig = {
+    getRowId,
     totalCount: props.tags.meta.total,
     initialPage: props.tags.meta.current_page,
-    pageSize: props.tags.meta.per_page
-  };
-  
-  // UI configuration
-  const uiConfig: UIConfig = {
+    pageSize: props.tags.meta.per_page,
+    
+    // Advanced features
+    initialFilters: props.filters,
+    initialSorting: props.sorting,
+    enableFiltering: true,
+    enableColumnVisibility: true,
+    enableRowSelection: false,
+    enableRowSelectionColumn: false,
+    
+    // Page layout
     headerTitle: "Žymos",
     headerDescription: $t('Tvarkykite turinio žymas'),
     icon: Icons.TAG,
     createRoute: canCreate.value ? route('tags.create') : undefined,
     canCreate: canCreate.value
-  };
-  
-  // Filtering configuration
-  const filteringConfig: FilteringConfig = {
-    initialFilters: props.filters,
-    initialSorting: props.sorting,
-    enableFiltering: true,
-    enableColumnVisibility: true
-  };
-  
-  // Row selection configuration
-  const rowSelectionConfig: RowSelectionConfig = {
-    enableRowSelection: false,
-    enableRowSelectionColumn: false
-  };
-  
-  // Return the combined configuration
-  return {
-    ...tableConfig,
-    ...paginationConfig,
-    ...uiConfig,
-    ...filteringConfig,
-    ...rowSelectionConfig
   };
 });
 

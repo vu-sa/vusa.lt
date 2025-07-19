@@ -76,7 +76,7 @@
     >
       <template #pagination>
         <!-- Server-side pagination -->
-        <div v-if="enablePagination && totalItems > 0" class="flex flex-wrap items-center justify-between gap-2 p-4 border-t">
+        <div v-if="enablePagination && totalItems > 0 && data.length > 0" class="flex flex-wrap items-center justify-between gap-2 p-4 border-t">
           <div class="text-sm text-muted-foreground">
             {{ $t('Showing') }}
             <strong>{{ (serverPagination?.pageIndex || 0) * pageSize + 1 }}</strong>

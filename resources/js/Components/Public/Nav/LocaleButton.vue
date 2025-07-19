@@ -1,64 +1,83 @@
 <template>
-  <NDropdown placement="top-end" :options :delay="750">
-    <SmartLink prefetch title="Change language" :href="$page.props.otherLangURL ?? `/${otherLocale}`">
-      <div class="flex gap-1">
-        <img alt="Change language" :src="`https://hatscripts.github.io/circle-flags/flags/${locale === 'lt' ? 'lt' : 'gb'
-          }.svg`" width="16">
-        <span class="text-zinc-700 dark:text-zinc-300">
+  <DropdownMenu @update:open="isOpen = $event">
+    <DropdownMenuTrigger as-child>
+      <Button 
+        variant="ghost" 
+        :size="props.size || 'sm'" 
+        class="gap-2 tracking-normal"
+      >
+        <img 
+          alt="Change language" 
+          :src="`https://hatscripts.github.io/circle-flags/flags/${locale === 'lt' ? 'lt' : 'gb'}.svg`" 
+          width="16" 
+          class="rounded-full"
+        >
+        <span class="text-zinc-700 dark:text-zinc-300 tracking-wide font-medium">
           {{ locale === "lt" ? "LT" : "EN" }}
         </span>
-      </div>
-    </SmartLink>
-  </NDropdown>
+        <ChevronDown class="h-4 w-4 opacity-50 transition-transform duration-200" 
+          :class="{ 'rotate-180': isOpen }" />
+      </Button>
+    </DropdownMenuTrigger>
+    <DropdownMenuContent align="end" class="w-48">
+      <DropdownMenuItem 
+        as-child 
+        :disabled="!$page.props.otherLangURL"
+        class="cursor-pointer"
+      >
+        <SmartLink target="_self" :href="$page.props.otherLangURL" class="flex items-center gap-2">
+          <img 
+            :src="`https://hatscripts.github.io/circle-flags/flags/${locale === 'lt' ? 'gb' : 'lt'}.svg`" 
+            width="16" 
+            class="rounded-full"
+          />
+          {{ locale === LocaleEnum.LT ? "Change page language" : "Pakeisti puslapio kalbą" }}
+        </SmartLink>
+      </DropdownMenuItem>
+      <DropdownMenuItem as-child class="cursor-pointer">
+        <SmartLink :href="`/${otherLocale}`" class="flex items-center gap-2">
+          <img 
+            :src="`https://hatscripts.github.io/circle-flags/flags/${locale === 'lt' ? 'gb' : 'lt'}.svg`" 
+            width="16" 
+            class="rounded-full"
+          />
+          {{ locale === LocaleEnum.LT ? "Go to main page" : "Eiti į pagrindinį" }}
+        </SmartLink>
+      </DropdownMenuItem>
+    </DropdownMenuContent>
+  </DropdownMenu>
 </template>
 
 <script setup lang="tsx">
-import { NDropdown } from "naive-ui";
-import { computed, watch } from "vue";
+import { computed, ref, watch } from "vue";
 import { loadLanguageAsync } from "laravel-vue-i18n";
 import { usePage } from "@inertiajs/vue3";
+import { ChevronDown } from "lucide-vue-next";
 
 import { LocaleEnum } from "@/Types/enums";
 import SmartLink from "@/Components/Public/SmartLink.vue";
+import { Button } from "@/Components/ui/button";
+import type { ButtonVariants } from "@/Components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/Components/ui/dropdown-menu";
 
-const props = defineProps<{
+interface Props {
+  /** Current locale for the application */
   locale: LocaleEnum;
-}>();
+  /** Button size variant - affects padding and height */
+  size?: ButtonVariants['size'];
+}
+
+const props = defineProps<Props>();
+
+const isOpen = ref(false);
 
 const otherLocale = computed(() => {
   return props.locale === "lt" ? "en" : "lt";
-});
-
-const options = computed(() => {
-  return [
-    {
-      label() {
-        return (
-          <SmartLink target="_self" href={usePage().props.otherLangURL}>
-            {props.locale === LocaleEnum.LT
-              ? "Change page language"
-              : "Pakeisti puslapio kalbą"}
-          </SmartLink>
-        );
-      },
-      key: "page",
-      disabled: !usePage().props.otherLangURL,
-      icon: () => <img src={`https://hatscripts.github.io/circle-flags/flags/${props.locale === 'lt' ? 'gb' : 'lt'}.svg`} width="16" />
-    },
-    {
-      label() {
-        return (
-          <SmartLink href={`/${otherLocale.value}`}>
-            {props.locale === LocaleEnum.LT
-              ? "Go to main page"
-              : "Eiti į pagrindinį"}
-          </SmartLink>
-        );
-      },
-      key: "home",
-      icon: () => <img src={`https://hatscripts.github.io/circle-flags/flags/${props.locale === 'lt' ? 'gb' : 'lt'}.svg`} width="16" />
-    },
-  ];
 });
 
 watch(

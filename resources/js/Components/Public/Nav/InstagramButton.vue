@@ -1,10 +1,12 @@
 <template>
-  <a href="https://www.instagram.com/vustudentuatstovybe" target="_blank" rel="noopener noreferrer">
-    <NButton text title="Instagram">
-      <template #icon>
-        <IMdiInstagram width="14" />
-      </template>
+  <Button variant="ghost" size="sm" as-child>
+    <a href="https://www.instagram.com/vustudentuatstovybe" target="_blank" rel="noopener noreferrer" title="Instagram">
+      <IMdiInstagram class="w-4 h-4 mr-2" />
       <slot />
-    </NButton>
-  </a>
+    </a>
+  </Button>
 </template>
+
+<script setup lang="ts">
+import { Button } from "@/Components/ui/button";
+</script>

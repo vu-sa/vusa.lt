@@ -55,6 +55,7 @@ export default tseslint.config(
         'vue/html-indent': "off",
         'vue/html-closing-bracket-newline': "off",
         'vue/first-attribute-linebreak': "off",
+        'vue/v-bind-style': ["warn", "shorthand", { "sameNameShorthand": "always" }],
     },
 }
 );

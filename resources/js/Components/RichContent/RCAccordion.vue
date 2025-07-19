@@ -2,8 +2,8 @@
   <Accordion class="my-1" type="single" collapsible>
     <AccordionItem class="dark:border-zinc-600" v-for="item, index in element.json_content" :key="index"
       :value="`${index}`">
-      <AccordionTrigger class="text-lg cursor-pointer">{{ item.label }}</AccordionTrigger>
-        <AccordionContent>
+      <AccordionTrigger class="text-lg cursor-pointer tracking-tight">{{ item.label }}</AccordionTrigger>
+        <AccordionContent class="tracking-normal">
           <RichContentTiptapHTML v-if="!html" :json_content="item.content" />
           <div v-else v-html="item.html" />
         </AccordionContent>

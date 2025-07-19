@@ -5,6 +5,8 @@ namespace Database\Seeders;
 use App\Models\Banner;
 use App\Models\Calendar;
 use App\Models\Category;
+use App\Models\Content;
+use App\Models\ContentPart;
 use App\Models\Doing;
 use App\Models\Duty;
 use App\Models\Goal;
@@ -41,6 +43,9 @@ class DatabaseSeeder extends Seeder
 
         $tenants = Tenant::all();
         $categories = Category::all();
+
+        // Create main page content for the pagrindinis tenant
+        $this->createMainPageContent();
 
         // Create study programs for each tenant
         $studyPrograms = StudyProgram::factory(30)->recycle($tenants)->create();
@@ -120,5 +125,40 @@ class DatabaseSeeder extends Seeder
                 }
             }
         });
+    }
+
+    /**
+     * Create main page content for the pagrindinis tenant
+     */
+    private function createMainPageContent()
+    {
+        $pagrindinisTenant = Tenant::where('type', 'pagrindinis')->first();
+
+        if (! $pagrindinisTenant) {
+            return;
+        }
+
+        // Create main content
+        $content = Content::create([]);
+
+        // Create content parts similar to the current structure
+        ContentPart::create([
+            'content_id' => $content->id,
+            'type' => 'news',
+            'json_content' => [],
+            'options' => null,
+            'order' => 0,
+        ]);
+
+        ContentPart::create([
+            'content_id' => $content->id,
+            'type' => 'calendar',
+            'json_content' => [],
+            'options' => null,
+            'order' => 1,
+        ]);
+
+        // Update the tenant to reference this content
+        $pagrindinisTenant->update(['content_id' => $content->id]);
     }
 }

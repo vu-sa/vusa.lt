@@ -1,5 +1,5 @@
 <template>
-  <ShowPageLayout :breadcrumb-options="breadcrumbOptions" :model="matter" :title="matter.title"
+  <ShowPageLayout :model="matter" :title="matter.title"
     :current-tab="currentTab" :related-models="relatedModels" @change:tab="currentTab = $event">
     <template #more-options>
       <MoreOptionsButton disabled edit @edit-click="showMatterModal = true" />
@@ -28,7 +28,7 @@ import Icons from "@/Types/Icons/filled";
 import MatterForm from "@/Components/AdminForms/MatterForm.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import ShowPageLayout from "@/Components/Layouts/ShowModel/ShowPageLayout.vue";
-import { useBreadcrumbs, type BreadcrumbItem } from "@/Composables/useBreadcrumbs";
+import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 
 const props = defineProps<{
   matter: App.Entities.Matter;
@@ -61,10 +61,14 @@ const firstInstitution = computed(() => {
 
 const handleMatterSubmit = (form: Record<string, any>) => { };
 
-const { createRouteBreadcrumb, createBreadcrumbItem } = useBreadcrumbs();
-
-const breadcrumbs = computed((): BreadcrumbItem[] => [
-  createRouteBreadcrumb(firstInstitution.value?.name ?? "Nenurodyta", "institutions.show", { institution: firstInstitution.value?.id }, PeopleTeam24Filled),
-  createBreadcrumbItem(props.matter.title, undefined, BookQuestionMark24Filled),
-]);
+usePageBreadcrumbs(() => 
+  BreadcrumbHelpers.adminShow(
+    firstInstitution.value?.name ?? "Nenurodyta",
+    "institutions.show", 
+    { institution: firstInstitution.value?.id },
+    props.matter.title,
+    PeopleTeam24Filled,
+    BookQuestionMark24Filled
+  )
+);
 </script>

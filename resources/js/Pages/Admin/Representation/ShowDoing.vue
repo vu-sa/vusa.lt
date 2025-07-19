@@ -1,5 +1,5 @@
 <template>
-  <ShowPageLayout :title="doing.title" :breadcrumb-options="breadcrumbs" :model="doing"
+  <ShowPageLayout :title="doing.title" :model="doing"
     :related-models="relatedModels" :current-tab="currentTab" @change:tab="currentTab = $event">
     <template #more-options>
       <MoreOptionsButton edit delete @edit-click="showEditModal = true" @delete-click="handleDelete" />
@@ -46,6 +46,7 @@ import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import ShowPageLayout from "@/Components/Layouts/ShowModel/ShowPageLayout.vue";
 import SimpleFileViewer from "@/Features/Admin/SharepointFileManager/Viewer/SimpleFileViewer.vue";
 import TaskManager from "@/Features/Admin/TaskManager/TaskManager.vue";
+import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 
 const props = defineProps<{
   doing: App.Entities.Doing;
@@ -65,16 +66,11 @@ const handleSubmit = (form: any) => {
   showEditModal.value = false;
 };
 
-const breadcrumbs: BreadcrumbOption[] = [
-  {
-    label: props.doing.users?.[0]?.name,
-    icon: Person24Filled,
-  },
-  {
-    label: props.doing.title,
-    icon: Sparkle20Filled,
-  },
-];
+// Setup breadcrumbs for the Doing page
+usePageBreadcrumbs([
+  { label: props.doing.users?.[0]?.name || 'Unknown User', icon: Person24Filled },
+  { label: props.doing.title, icon: Sparkle20Filled }
+]);
 
 const completedTasks = computed(() => {
   return props.doing.tasks?.filter((task) => task.completed_at);

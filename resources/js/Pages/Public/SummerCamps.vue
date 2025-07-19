@@ -69,7 +69,9 @@
           pirmas (-a)!
         </p>
 
-        <a target="_blank" href="https://vu.lt/parduotuve/"><img src="/images/photos/atributika_banner2.jpg"></a>
+        <a target="_blank" href="https://vu.lt/parduotuve/" aria-label="Visit VU merchandise store">
+          <img src="/images/photos/atributika_banner2.jpg" alt="VU merchandise and accessories banner" loading="lazy">
+        </a>
       </template>
       <template v-else>
         <div class="mb-4 inline-flex items-center justify-center gap-3">
@@ -104,7 +106,9 @@
           "
         />
 
-        <a target="_blank" href="https://vu.lt/parduotuve/"><img src="/images/photos/atributika_banner2.jpg"></a>
+        <a target="_blank" href="https://vu.lt/parduotuve/" aria-label="Visit VU merchandise store">
+          <img src="/images/photos/atributika_banner2.jpg" alt="VU merchandise and accessories banner" loading="lazy">
+        </a>
       </template>
       <h3 class="mt-6">
         Stovyklos pagal metus
@@ -138,6 +142,8 @@
             <img
               class="size-full rounded-xl object-cover shadow-md transition group-hover:shadow-xl"
               :src="get5thResponsiveImage(event)"
+              :alt="`VU ${getFacultyName(event.tenant)} freshmen camp`"
+              loading="lazy"
             >
             <h3 class="p-2 text-center text-lg font-extrabold leading-tight">
               {{ "VU" + getFacultyName(event.tenant) }}

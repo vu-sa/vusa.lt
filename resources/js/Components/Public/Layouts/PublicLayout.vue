@@ -97,15 +97,20 @@
       </template>
     </Head>
     <div class="@container bg-zinc-50 dark:bg-zinc-900">
+      <!-- Skip to main content link - positioned first for keyboard navigation -->
+      <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[9999] focus:bg-white focus:text-zinc-900 focus:px-4 focus:py-2 focus:rounded-md focus:shadow-lg focus:border-2 focus:border-vusa-red dark:focus:bg-zinc-800 dark:focus:text-zinc-100">
+        {{ $t('accessibility.skip_to_main_content') }}
+      </a>
+      
       <div
         class="flex flex-col justify-between text-zinc-800 antialiased dark:text-zinc-300 container px-0 @container/main">
         <MainNavigation :is-theme-dark="isDark" />
 
-        <main class="pb-8 pt-12">
+        <main id="main-content" class="pb-8 pt-12 mt-16">
           <!-- Centralized breadcrumb display -->
-          <div v-if="publicBreadcrumbState.hasBreadcrumbs" class="wrapper pt-4 md:pt-6 lg:pt-8 mt-16">
-            <PublicBreadcrumb :items="publicBreadcrumbState.breadcrumbs.value" class="mb-4 md:mb-6" />
-          </div>
+          <nav v-if="breadcrumbState.breadcrumbs.value.length > 0" class="wrapper pt-4 md:pt-6 lg:pt-8" aria-label="Breadcrumb">
+            <UnifiedBreadcrumbs class="mb-4 md:mb-6" />
+          </nav>
           
           <!-- <Suspense> -->
           <div>
@@ -129,9 +134,10 @@
         <FadeTransition appear>
           <ConsentCard v-if="!cookieConsent" @okay-cookie-consent="cookieConsent = true" />
         </FadeTransition>
-
-        <SiteFooter />
       </div>
+      
+      <!-- Footer outside container for full-width -->
+      <SiteFooter />
     </div>
   </NConfigProvider>
 </template>
@@ -169,15 +175,56 @@ import { useDark, useStorage } from "@vueuse/core";
 import { Head, usePage, router } from "@inertiajs/vue3";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import { Spinner } from "@/Components/ui/spinner";
-import PublicBreadcrumb from "@/Components/Public/Breadcrumb/PublicBreadcrumb.vue";
-import { publicBreadcrumbState } from "@/Composables/usePublicBreadcrumbs";
+import UnifiedBreadcrumbs from "@/Components/UnifiedBreadcrumbs.vue";
+import { createBreadcrumbState } from '@/Composables/useBreadcrumbsUnified';
 
-const BannerCarousel = defineAsyncComponent(() => import("../FullWidth/BannerCarousel.vue"));
-const ConsentCard = defineAsyncComponent(() => import("../ConsentCard.vue"));
-const MainNavigation = defineAsyncComponent(() => import("@/Components/Public/Layouts/MainNavigation.vue"));
-const SiteFooter = defineAsyncComponent(() => import("../FullWidth/SiteFooter.vue"));
+// Use existing Skeleton component for consistency
+import { Skeleton } from '@/Components/ui/skeleton';
+
+// Optimize component loading - critical path components should load faster
+const BannerCarousel = defineAsyncComponent({
+  loader: () => import("../FullWidth/BannerCarousel.vue"),
+  loadingComponent: {
+    components: { Skeleton },
+    template: '<div class="mx-8 my-8"><Skeleton class="h-32 rounded" /></div>'
+  },
+  delay: 200
+});
+
+const ConsentCard = defineAsyncComponent({
+  loader: () => import("../ConsentCard.vue"),
+  delay: 0 // Load immediately when needed
+});
+
+const MainNavigation = defineAsyncComponent({
+  loader: () => import("@/Components/Public/Layouts/MainNavigation.vue"),
+  loadingComponent: {
+    components: { Skeleton },
+    template: '<Skeleton class="h-16" />'
+  },
+  delay: 0 // Critical component - load immediately
+});
+
+const SiteFooter = defineAsyncComponent({
+  loader: () => import("../FullWidth/SiteFooter.vue"),
+  loadingComponent: {
+    components: { Skeleton },
+    template: '<div class="w-full border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 py-8"><div class="mx-auto max-w-7xl px-4"><Skeleton class="h-20 w-full" /></div></div>'
+  },
+  delay: 100
+});
 
 const isDark = useDark();
+
+// Initialize breadcrumb state for public pages
+const breadcrumbState = createBreadcrumbState('public');
+
+// Clear breadcrumbs when on home page
+watch(() => usePage().component, (component) => {
+  if (component === 'Public/HomePage') {
+    breadcrumbState.clear();
+  }
+}, { immediate: true });
 
 // Safe string conversion function to prevent Inertia Head escape() errors
 const safeString = (value: any): string => {
@@ -197,9 +244,10 @@ const hasValue = (value: any): boolean => {
   return value !== null && value !== undefined && value !== '';
 };
 
+// Simplified SEO computed with better performance
 const seo = computed(() => {
-  // Computed Seo is an object
-  let computedSeo = usePage().props.seo?.tags;
+  const page = usePage();
+  const computedSeo = page.props.seo?.tags;
   
   if (!computedSeo) {
     return [];
@@ -329,38 +377,50 @@ onMounted(() => {
     // Don't clear breadcrumbs during navigation - helps with transition
   });
 
-  router.on('finish', () => {
-    // Components should set their own breadcrumbs by this point
-    nextTick(() => {
-      // We don't need default breadcrumbs for public pages
-      // as each page should set its own or none at all
-    });
+    router.on('finish', () => {
+    // Note: We no longer clear breadcrumbs on navigation to prevent flashing
+    // Individual pages will set their own breadcrumbs using usePageBreadcrumbs()
   });
 
-  // UserWay
-  (function (d) {
-    let s = d.createElement("script");
-    s.setAttribute("data-account", "5OC3pQZI6r");
-    s.setAttribute("src", "https://cdn.userway.org/widget.js");
-    (d.body || d.head).appendChild(s);
-  })(document);
+  // Defer non-critical script loading to improve INP
+  nextTick(() => {
+    // Use requestIdleCallback or setTimeout to defer script loading
+    const loadThirdPartyScripts = () => {
+      // UserWay - defer to not block main thread
+      const userWayScript = document.createElement("script");
+      userWayScript.setAttribute("data-account", "5OC3pQZI6r");
+      userWayScript.setAttribute("src", "https://cdn.userway.org/widget.js");
+      userWayScript.defer = true;
+      document.head.appendChild(userWayScript);
 
-  var lang = usePage().props.app.locale;
+      // Tawk.to - defer to not block main thread
+      const lang = usePage().props.app.locale;
+      const Tawk_SRC = lang === "lt" ? "default" : "1foc6rga3";
+      
+      const tawkScript = document.createElement("script");
+      tawkScript.async = true;
+      tawkScript.defer = true;
+      tawkScript.src = `https://embed.tawk.to/5f71b135f0e7167d00145612/${Tawk_SRC}`;
+      tawkScript.charset = "UTF-8";
+      tawkScript.setAttribute("crossorigin", "*");
+      
+      const firstScript = document.getElementsByTagName("script")[0];
+      if (firstScript && firstScript.parentNode) {
+        firstScript.parentNode.insertBefore(tawkScript, firstScript);
+      } else {
+        document.head.appendChild(tawkScript);
+      }
+    };
 
-  var Tawk_SRC = lang == "lt" ? "default" : "1foc6rga3";
-  var Tawk_API = Tawk_API || {},
-    Tawk_LoadStart = new Date();
+    // Use requestIdleCallback if available, otherwise setTimeout
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(loadThirdPartyScripts, { timeout: 2000 });
+    } else {
+      setTimeout(loadThirdPartyScripts, 100);
+    }
+  });
 
-  (function () {
-    let s1 = document.createElement("script"),
-      s0 = document.getElementsByTagName("script")[0];
-    s1.async = true;
-    s1.src = `https://embed.tawk.to/5f71b135f0e7167d00145612/${Tawk_SRC}`;
-    s1.charset = "UTF-8";
-    s1.setAttribute("crossorigin", "*");
-    s0.parentNode?.insertBefore(s1, s0);
-  })();
-  // usetimeout to delay the spin description
+  // Delay spin warning - keep this as is for UX
   setTimeout(() => {
     spinWarning.value = true;
   }, 6900);

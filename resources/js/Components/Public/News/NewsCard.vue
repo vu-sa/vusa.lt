@@ -21,7 +21,7 @@
     <!-- Content section -->
     <div class="flex flex-1 flex-col p-4">
       <!-- Title -->
-      <h3 class="mb-2 text-lg font-bold leading-tight text-zinc-900 line-clamp-2 dark:text-zinc-50 mt-0">
+      <h3 class="mb-2 text-base font-bold leading-tight text-zinc-900 line-clamp-2 dark:text-zinc-50 mt-0">
         {{ news.title }}
       </h3>
       

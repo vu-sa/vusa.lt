@@ -1,5 +1,5 @@
 <template>
-  <AdminContentPage :breadcrumbs :title="$t('Sistemos būsena')">
+  <AdminContentPage :title="$t('Sistemos būsena')">>
     <!-- Status overview cards -->
     <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 items-start">
       <Card class="h-fit hover:shadow-lg transition-shadow duration-300">
@@ -382,7 +382,7 @@ import {
   TrendingUpIcon,
 } from 'lucide-vue-next';
 
-import { useBreadcrumbs, type BreadcrumbItem } from '@/Composables/useBreadcrumbs';
+import { BreadcrumbHelpers, usePageBreadcrumbs } from "@/Composables/useBreadcrumbsUnified";
 
 // Props
 const props = defineProps<{
@@ -615,11 +615,9 @@ watch(() => props.status, () => {
   });
 }, { deep: true });
 
-// Breadcrumbs
-const { createBreadcrumbItem } = useBreadcrumbs();
-
-const breadcrumbs = computed((): BreadcrumbItem[] => [
-  createBreadcrumbItem($t('Sistemos būsena'), undefined),
+// Generate breadcrumbs automatically with new simplified API
+usePageBreadcrumbs([
+  { label: $t('Sistemos būsena') }
 ]);
 </script>
 

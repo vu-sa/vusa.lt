@@ -10,21 +10,17 @@
       </p>
 
       <div class="flex gap-4">
-        <Link :href="route('calendar.list', { lang: $page.props.app.locale })">
-        <NButton type="primary">
-          <template #icon>
-            <IFluentCalendarLtr20Regular />
-          </template>
-          {{ $t("Visi renginiai") }}
-        </NButton>
-        </Link>
+        <Button as-child>
+          <Link :href="route('calendar.list', { lang: $page.props.app.locale })">
+            <IFluentCalendarLtr20Regular class="w-4 h-4 mr-2" />
+            {{ $t("Visi renginiai") }}
+          </Link>
+        </Button>
 
-        <NButton secondary @click="showModal = true">
-          <template #icon>
-            <IFluentArrowSync20Regular />
-          </template>
+        <Button variant="outline" @click="showModal = true">
+          <IFluentArrowSync20Regular class="w-4 h-4 mr-2" />
           {{ $t("Sinchronizuoti kalendorių") }}
-        </NButton>
+        </Button>
       </div>
     </div>
 
@@ -44,11 +40,7 @@
 </template> -->
         <FadeTransition>
           <div v-if="loading" class="w-full h-96 flex items-center justify-center">
-            <div class="animate-pulse flex flex-col gap-3 items-center">
-              <div class="h-12 w-12 rounded-full bg-zinc-200 dark:bg-zinc-700" />
-              <div class="h-5 w-64 rounded bg-zinc-200 dark:bg-zinc-700" />
-              <div class="h-32 w-96 rounded bg-zinc-200 dark:bg-zinc-700" />
-            </div>
+            <Skeleton class="w-full h-96 rounded-lg" />
           </div>
           <div v-else-if="error" class="text-red-500 p-4 rounded-lg border border-red-300">
             {{ $t("Nepavyko užkrauti kalendoriaus įvykių") }}
@@ -61,17 +53,17 @@
 </template>
 
 <script setup lang="ts">
-import { NButton } from "naive-ui";
 import { ref } from "vue";
+import { Link } from "@inertiajs/vue3";
 
+import { Button } from "@/Components/ui/button";
 import CalendarSyncModal from "@/Components/Modals/CalendarSyncModal.vue";
 import EventCalendar from "@/Components/Calendar/EventCalendar.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
+import Skeleton from "@/Components/ui/skeleton/Skeleton.vue";
+import { useCalendarFetch } from "@/Services/ContentService";
 
 const showModal = ref(false);
-
-import { useCalendarFetch } from "@/Services/ContentService";
-import { Link } from "@inertiajs/vue3";
 
 // Use the ContentService to fetch calendar data
 const { calendar, loading, error } = useCalendarFetch();

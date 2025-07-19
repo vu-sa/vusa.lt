@@ -67,13 +67,9 @@ import { Button } from "@/Components/ui/button";
 import { ExternalLinkIcon, RefreshCwIcon } from "lucide-vue-next";
 import DataTableFilter from "@/Components/ui/data-table/DataTableFilter.vue";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
-import { useBreadcrumbs, type BreadcrumbItem } from "@/Composables/useBreadcrumbs";
+import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import { 
-  type IndexTablePageProps,
-  type TableConfig,
-  type PaginationConfig,
-  type UIConfig,
-  type FilteringConfig
+  type IndexTablePageProps
 } from "@/Types/TableConfigTypes";
 import { 
   createTimestampColumn, 
@@ -101,12 +97,10 @@ const modelName = 'documents';
 const entityName = 'document';
 
 // Breadcrumbs setup
-const { createBreadcrumbItem, homeItem } = useBreadcrumbs();
-
-const breadcrumbs = computed((): BreadcrumbItem[] => [
-  homeItem(),
-  createBreadcrumbItem($t("administration.title"), route("administration")),
-  createBreadcrumbItem($t("Documents"), undefined, Icons.DOCUMENT)
+usePageBreadcrumbs(() => [
+  BreadcrumbHelpers.homeItem(),
+  BreadcrumbHelpers.createBreadcrumbItem($t("administration.title"), route("administration")),
+  BreadcrumbHelpers.createBreadcrumbItem($t("Documents"), undefined, Icons.DOCUMENT)
 ]);
 
 const loading = ref(false);
@@ -264,46 +258,29 @@ const columns = computed<ColumnDef<App.Entities.Document, any>[]>(() => [
   })
 ]);
 
-// Consolidated table configuration using the new interfaces
+// Simplified table configuration using the new interfaces
 const tableConfig = computed<IndexTablePageProps<App.Entities.Document>>(() => {
-  // Core table configuration
-  const tableConfig: TableConfig<App.Entities.Document> = {
+  return {
+    // Essential table configuration
     modelName,
     entityName,
     data: props.data,
-    columns: columns.value
-  };
-  
-  // Pagination configuration
-  const paginationConfig: PaginationConfig = {
+    columns: columns.value,
     totalCount: props.meta.total,
     initialPage: props.meta.current_page,
-    pageSize: props.meta.per_page
-  };
-  
-  // UI configuration
-  const uiConfig: UIConfig = {
+    pageSize: props.meta.per_page,
+    
+    // Advanced features
+    initialFilters: props.filters,
+    initialSorting: [{ id: "checked_at", desc: true }],
+    enableFiltering: true,
+    enableColumnVisibility: true,
+    
+    // Page layout
     headerTitle: $t("Documents"),
     icon: Icons.DOCUMENT,
     canCreate: false,
-    breadcrumbs: breadcrumbs.value
-  };
-  
-  // Filtering configuration
-  const filteringConfig: FilteringConfig = {
-    initialFilters: props.filters,
-    // Automatically sort checked_at
-    initialSorting: [{ id: "checked_at", desc: true }],
-    enableFiltering: true,
-    enableColumnVisibility: true
-  };
-  
-  // Return the combined configuration
-  return {
-    ...tableConfig,
-    ...paginationConfig,
-    ...uiConfig,
-    ...filteringConfig
+    // breadcrumbs handled via usePageBreadcrumbs
   };
 });
 

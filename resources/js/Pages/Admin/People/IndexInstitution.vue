@@ -1,112 +1,45 @@
 <template>
-  <IndexTablePage
-    ref="indexTablePageRef"
-    v-bind="tableConfig"
-    @data-loaded="onDataLoaded"
-    @sorting-changed="handleSortingChange"
-    @page-changed="handlePageChange"
-    @filter-changed="handleFilterChange"
-    @update:rowSelection="handleRowSelectionChange"
-  >
+  <IndexTablePage ref="indexTablePageRef" v-bind="tableConfig" @data-loaded="onDataLoaded"
+    @sorting-changed="handleSortingChange" @page-changed="handlePageChange" @filter-changed="handleFilterChange"
+    @update:row-selection="handleRowSelectionChange">
     <template #filters>
-      <DataTableFilter
-        v-if="types.length > 0"
-        v-model:value="selectedTypeIds"
-        :options="typeOptions"
-        @update:value="handleTypeFilterChange"
-        multiple
-      >
+      <DataTableFilter v-if="types.length > 0" v-model:value="selectedTypeIds" :options="typeOptions" multiple
+        @update:value="handleTypeFilterChange">
         {{ $tChoice('forms.fields.type', 2) }}
       </DataTableFilter>
-      
-      <DataTableFilter
-        v-if="tenantOptions.length > 0"
-        v-model:value="selectedTenantIds"
-        :options="tenantOptions"
-        @update:value="handleTenantFilterChange"
-        multiple
-      >
+
+      <DataTableFilter v-if="tenantOptions.length > 0" v-model:value="selectedTenantIds" :options="tenantOptions"
+        multiple @update:value="handleTenantFilterChange">
         {{ capitalize($tChoice('entities.tenant.model', 1)) }}
       </DataTableFilter>
     </template>
 
-    <template #headerActions>
-      <Button v-if="canImport" variant="outline" size="sm" class="gap-1.5" @click="showImportDialog = true">
-        <UploadIcon class="h-4 w-4" />
-        {{ $t('Import') }}
-      </Button>
-    </template>
 
-    <template #tableActions v-if="selectedRows.length > 0">
-      <div class="flex items-center gap-2">
-        <Badge variant="secondary" class="mr-2">{{ selectedRows.length }} {{ $t('selected') }}</Badge>
-        <Button v-if="canExport" size="sm" variant="outline" @click="exportSelectedRows('xlsx')" class="gap-1.5">
-          <FileSpreadsheetIcon class="h-4 w-4" />
-          {{ $t('Export XLSX') }}
-        </Button>
-        <Button v-if="canExport" size="sm" variant="outline" @click="exportSelectedRows('csv')" class="gap-1.5">
-          <FileTextIcon class="h-4 w-4" />
-          {{ $t('Export CSV') }}
-        </Button>
-        <!-- <Button v-if="canDelete && selectedRows.length > 0" size="sm" variant="destructive" class="gap-1.5" @click="confirmBulkDelete">
-          <TrashIcon class="h-4 w-4" />
-          {{ $t('Delete') }}
-        </Button> -->
-      </div>
-    </template>
-    
+
     <!-- <template #emptyDescription>
       {{ $t('No institutions found. You can add a new institution using the button above.') }}
     </template> -->
   </IndexTablePage>
-  
-  <!-- Import Dialog -->
-  <Dialog v-model:open="showImportDialog">
-    <DialogContent class="sm:max-w-md">
+
+  <!-- Delete Confirmation Dialog -->
+  <Dialog v-model:open="showDeleteDialog">
+    <DialogContent>
       <DialogHeader>
-        <DialogTitle>{{ $t('Import Institutions') }}</DialogTitle>
+        <DialogTitle>{{ $t('Are you sure?') }}</DialogTitle>
         <DialogDescription>
-          {{ $t('Upload a CSV or XLSX file with institution data.') }}
+          {{ $t('This action cannot be undone. This will permanently delete the selected institutions.') }}
         </DialogDescription>
       </DialogHeader>
-      <div class="grid gap-4 py-4">
-        <div class="grid gap-2">
-          <Label>{{ $t('File') }}</Label>
-          <Input type="file" accept=".csv,.xlsx" @change="handleFileChange" />
-        </div>
-        <div class="flex items-center gap-2">
-          <Checkbox id="headerRow" v-model:checked="importOptions.headerRow" />
-          <Label for="headerRow">{{ $t('File contains header row') }}</Label>
-        </div>
-      </div>
       <DialogFooter>
-        <Button variant="outline" @click="showImportDialog = false">{{ $t('Cancel') }}</Button>
-        <Button 
-          :disabled="!importFile || isImporting" 
-          @click="importData"
-        >
-          <Loader2Icon v-if="isImporting" class="mr-2 h-4 w-4 animate-spin" />
-          {{ $t('Import') }}
+        <DialogClose as-child>
+          <Button variant="outline">{{ $t('Cancel') }}</Button>
+        </DialogClose>
+        <Button variant="destructive" @click="confirmDelete">
+          {{ $t('Delete') }}
         </Button>
       </DialogFooter>
     </DialogContent>
   </Dialog>
-  
-  <!-- Delete Confirmation Dialog -->
-  <!-- <AlertDialog v-model:open="showDeleteDialog">
-    <AlertDialogContent>
-      <AlertDialogHeader>
-        <AlertDialogTitle>{{ $t('Are you sure?') }}</AlertDialogTitle>
-        <AlertDialogDescription>
-          {{ $t('This action cannot be undone. This will permanently delete the selected institutions.') }}
-        </AlertDialogDescription>
-      </AlertDialogHeader>
-      <AlertDialogFooter>
-        <AlertDialogCancel>{{ $t('Cancel') }}</AlertDialogCancel>
-        <AlertDialogAction @click="confirmDelete" class="bg-destructive text-destructive-foreground hover:bg-destructive/90">{{ $t('Delete') }}</AlertDialogAction>
-      </AlertDialogFooter>
-    </AlertDialogContent>
-  </AlertDialog> -->
 </template>
 
 <script setup lang="tsx">
@@ -114,47 +47,38 @@ import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
 import { type ColumnDef } from '@tanstack/vue-table';
 import { ref, computed, watch, capitalize } from "vue";
 import { router, usePage } from "@inertiajs/vue3";
-import { 
-  FileSpreadsheetIcon, 
-  FileTextIcon,
-  BuildingIcon,
-  UploadIcon,
-  Loader2Icon,
-  TrashIcon
+import {
+  BuildingIcon
 } from 'lucide-vue-next';
 import { toast } from "vue-sonner";
 
 import { formatStaticTime } from "@/Utils/IntlTime";
 import PreviewModelButton from "@/Components/Buttons/PreviewModelButton.vue";
 import DataTableFilter from "@/Components/ui/data-table/DataTableFilter.vue";
-import { Button } from "@/Components/ui/button"; 
+import { Button } from "@/Components/ui/button";
 import { Badge } from "@/Components/ui/badge";
 import IndexTablePage from "@/Components/Layouts/IndexTablePage.vue";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
 import { createStandardActionsColumn } from "@/Composables/useTableActions";
-import { 
+import {
   createTitleColumn,
   createTenantColumn,
   createTagsColumn
 } from '@/Utils/DataTableColumns';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogDescription, 
-  DialogFooter 
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogClose,
 } from "@/Components/ui/dialog";
 import { Label } from "@/Components/ui/label";
 import { Input } from "@/Components/ui/input";
 import { Checkbox } from "@/Components/ui/checkbox";
-import { 
+import {
   type IndexTablePageProps,
-  type TableConfig,
-  type PaginationConfig,
-  type UIConfig,
-  type FilteringConfig,
-  type RowSelectionConfig
 } from "@/Types/TableConfigTypes";
 
 const props = defineProps<{
@@ -170,6 +94,7 @@ const props = defineProps<{
   types: App.Entities.Type[];
   filters?: Record<string, any>;
   sorting?: { id: string; desc: boolean }[];
+  showDeleted?: boolean;
 }>();
 
 // Component constants
@@ -181,8 +106,6 @@ const indexTablePageRef = ref<InstanceType<typeof IndexTablePage> | null>(null);
 
 // Permission checks
 const canCreate = computed(() => usePage().props.auth?.can?.create?.institution || false);
-const canExport = computed(() => usePage().props.auth?.can?.export?.institution || false);
-const canImport = computed(() => usePage().props.auth?.can?.import?.institution || false);
 const canDelete = computed(() => usePage().props.auth?.can?.delete?.institution || false);
 
 // Filter states
@@ -191,14 +114,6 @@ const selectedTenantIds = ref<number[]>(props.filters?.['tenant.id'] || []);
 
 // Row selection
 const selectedRows = ref([]);
-
-// Import dialog state
-const showImportDialog = ref(false);
-const importFile = ref<File | null>(null);
-const isImporting = ref(false);
-const importOptions = ref({
-  headerRow: true
-});
 
 // Delete dialog state
 const showDeleteDialog = ref(false);
@@ -231,6 +146,7 @@ const columns = computed<ColumnDef<App.Entities.Institution, any>[]>(() => [
     accessorKey: "name",
     routeName: "institutions.edit",
     width: 300,
+    enableSorting: true,
     cell: ({ row }) => {
       const name = row.getValue("name");
       return (
@@ -238,8 +154,8 @@ const columns = computed<ColumnDef<App.Entities.Institution, any>[]>(() => [
           <Tooltip>
             <TooltipTrigger asChild>
               <div class="max-w-[290px] truncate">
-                <a href={route("institutions.edit", { id: row.original.id })} 
-                   class="font-medium hover:underline">
+                <a href={route("institutions.edit", { id: row.original.id })}
+                  class="font-medium hover:underline">
                   {name}
                 </a>
               </div>
@@ -258,7 +174,7 @@ const columns = computed<ColumnDef<App.Entities.Institution, any>[]>(() => [
     cell: ({ row }) => {
       const alias = row.original.alias;
       if (!alias) return null;
-      
+
       return (
         <PreviewModelButton
           publicRoute="contacts.alias"
@@ -274,6 +190,7 @@ const columns = computed<ColumnDef<App.Entities.Institution, any>[]>(() => [
     enableSorting: false,
   },
   createTenantColumn({
+    enableSorting: false,
     cell: ({ row }) => {
       const tenant = row.original.tenant;
       return tenant ? (
@@ -296,6 +213,7 @@ const columns = computed<ColumnDef<App.Entities.Institution, any>[]>(() => [
   createTagsColumn("types", {
     title: $tChoice("forms.fields.type", 2),
     labelKey: "title",
+    enableSorting: false,
     cell: ({ row }) => {
       const types = row.original.types || [];
       return (
@@ -316,13 +234,13 @@ const columns = computed<ColumnDef<App.Entities.Institution, any>[]>(() => [
     cell: ({ row }) => {
       const meetings = row.original.meetings || [];
       if (meetings.length === 0) return null;
-      
+
       return (
         <div class="flex flex-wrap items-center gap-2">
           {meetings.slice(0, 3).map((meeting) => (
-            <a 
-              key={meeting.id} 
-              class="hover:underline text-xs px-2 py-1 rounded-md bg-muted" 
+            <a
+              key={meeting.id}
+              class="hover:underline text-xs px-2 py-1 rounded-md bg-muted"
               href={route("meetings.show", meeting.id)}
             >
               {formatStaticTime(meeting.start_time)}
@@ -343,54 +261,33 @@ const columns = computed<ColumnDef<App.Entities.Institution, any>[]>(() => [
   })
 ]);
 
-// Consolidated table configuration using the new interfaces
+// Simplified table configuration using the new interfaces
 const tableConfig = computed<IndexTablePageProps<App.Entities.Institution>>(() => {
-  // Core table configuration
-  const tableConfig: TableConfig<App.Entities.Institution> = {
+  return {
+    // Essential table configuration
     modelName,
     entityName,
     data: props.data,
     columns: columns.value,
-    getRowId
-  };
-  
-  // Pagination configuration
-  const paginationConfig: PaginationConfig = {
+    getRowId,
     totalCount: props.meta.total,
     initialPage: props.meta.current_page,
-    pageSize: props.meta.per_page
-  };
-  
-  // UI configuration
-  const uiConfig: UIConfig = {
+    pageSize: props.meta.per_page,
+    
+    // Advanced features
+    initialFilters: props.filters,
+    initialSorting: props.sorting,
+    enableFiltering: true,
+    enableColumnVisibility: true,
+    allowToggleDeleted: true,
+    showDeleted: props.showDeleted,
+    
+    // Page layout
     headerTitle: "Institutions",
     headerDescription: $t('Manage institution records and their types'),
     icon: BuildingIcon,
     createRoute: canCreate.value ? route('institutions.create') : undefined,
     canCreate: canCreate.value
-  };
-  
-  // Filtering configuration
-  const filteringConfig: FilteringConfig = {
-    initialFilters: props.filters,
-    initialSorting: props.sorting,
-    enableFiltering: true,
-    enableColumnVisibility: true
-  };
-  
-  // Row selection configuration
-  const rowSelectionConfig: RowSelectionConfig = {
-    enableRowSelection: canExport.value,
-    enableRowSelectionColumn: canExport.value
-  };
-  
-  // Return the combined configuration
-  return {
-    ...tableConfig,
-    ...paginationConfig,
-    ...uiConfig,
-    ...filteringConfig,
-    ...rowSelectionConfig
   };
 });
 
@@ -415,116 +312,7 @@ const handleRowSelectionChange = (selection) => {
   selectedRows.value = indexTablePageRef.value?.getSelectedRows() || [];
 };
 
-// Export selected rows
-const exportSelectedRows = (format: 'xlsx' | 'csv') => {
-  const selectedIds = selectedRows.value.map(row => row.original.id);
-  
-  if (selectedIds.length > 0) {
-    const baseUrl = route('institutions.export');
-    const queryString = `format=${format}&ids=${selectedIds.join(',')}`;
-    window.open(`${baseUrl}?${queryString}`, '_blank');
-    
-    toast.success(
-      $t('Export started'), 
-      { description: $t('Your export will be ready shortly.') }
-    );
-  } else {
-    toast.warning(
-      $t('No rows selected'), 
-      { description: $t('Please select at least one row to export.') }
-    );
-  }
-};
-
-// Import file handlers
-const handleFileChange = (event) => {
-  const files = event.target.files;
-  if (files && files.length > 0) {
-    importFile.value = files[0];
-  }
-};
-
-const importData = () => {
-  if (!importFile.value) return;
-  
-  const formData = new FormData();
-  formData.append('file', importFile.value);
-  formData.append('has_header', importOptions.value.headerRow ? '1' : '0');
-  
-  isImporting.value = true;
-  
-  router.post(route('institutions.import'), formData, {
-    onSuccess: () => {
-      toast.success(
-        $t('Import successful'), 
-        { description: $t('The institutions have been imported.') }
-      );
-      showImportDialog.value = false;
-      isImporting.value = false;
-      importFile.value = null;
-      
-      // Refresh the table data
-      indexTablePageRef.value?.reloadData();
-    },
-    onError: (errors) => {
-      toast.error(
-        $t('Import failed'), 
-        { description: Object.values(errors).flat()[0] }
-      );
-      isImporting.value = false;
-    }
-  });
-};
-
-// Bulk delete handlers
-// const confirmBulkDelete = () => {
-//   itemsToDelete.value = selectedRows.value.map(row => row.original.id);
-//   showDeleteDialog.value = true;
-// };
-
-const confirmDelete = () => {
-  if (itemsToDelete.value.length === 0) return;
-  
-  router.delete(route('institutions.bulk-delete'), {
-    data: { ids: itemsToDelete.value },
-    onSuccess: () => {
-      toast.success(
-        $t('Delete successful'), 
-        { 
-          description: $t('The selected institutions have been deleted.') 
-        }
-      );
-      showDeleteDialog.value = false;
-      selectedRows.value = [];
-      
-      // Refresh the table data
-      indexTablePageRef.value?.reloadData();
-    },
-    onError: (errors) => {
-      toast.error(
-        $t('Delete failed'), 
-        { description: Object.values(errors).flat()[0] }
-      );
-    }
-  });
-};
-
-// Event handler for data loaded
-const onDataLoaded = (data) => {
-  // Additional handling after data is loaded if needed
-};
-
-// Event handler for sorting changes from IndexTablePage
-const handleSortingChange = (sorting) => {
-  // Additional handling for sorting changes if needed
-};
-
-// Event handler for page changes from IndexTablePage
-const handlePageChange = (page) => {
-  // Additional handling for page changes if needed
-};
-
-// Event handler for filter changes from IndexTablePage
+// Event handlers for IndexTablePage
 const handleFilterChange = (filterKey, value) => {
   // Update local filter references if needed
   if (filterKey === 'types.id') {
@@ -532,6 +320,39 @@ const handleFilterChange = (filterKey, value) => {
   } else if (filterKey === 'tenant.id') {
     selectedTenantIds.value = value;
   }
+};
+
+const handleSortingChange = (sorting) => {
+  // Handle sorting changes - data will be reloaded automatically
+};
+
+const handlePageChange = (page) => {
+  // Handle page changes - data will be reloaded automatically
+};
+
+const onDataLoaded = (data) => {
+  // Handle data loaded event if needed
+};
+
+
+// Delete confirmation functions
+const confirmDelete = () => {
+  if (itemsToDelete.value.length === 0) return;
+  
+  const ids = itemsToDelete.value.map(item => item.id);
+  
+  router.delete(route('institutions.destroy', { ids }), {
+    onSuccess: () => {
+      toast.success($t('Institutions deleted successfully'));
+      showDeleteDialog.value = false;
+      itemsToDelete.value = [];
+      indexTablePageRef.value?.reloadData();
+    },
+    onError: (errors) => {
+      toast.error($t('Error deleting institutions'));
+      console.error('Delete errors:', errors);
+    }
+  });
 };
 
 // Sync filter values when changed externally

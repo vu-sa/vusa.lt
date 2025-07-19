@@ -14,24 +14,33 @@ import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 
 // Declare props
 const props = defineProps<{
-  directories: string[];
-  files: string[];
+  directories: Array<{path: string, name: string, type: string}>;
+  files: Array<{path: string, name: string, type: string, size: number, modified: number, mimeType: string}>;
   path: string;
 }>();
 
 // Compute showed directories
 const showedDirectories = computed(() => {
   return props.directories.map((directory, index) => {
-    const directoryName = directory.split("/").slice(-1)[0];
-    return { id: index, name: directoryName, path: directory };
+    return { 
+      id: index, 
+      name: directory.name, 
+      path: directory.path 
+    };
   });
 });
 
 // Compute showed files
 const showedFiles = computed(() => {
   return props.files.map((file, index) => {
-    const fileName = file.split("/").slice(-1)[0];
-    return { id: index, name: fileName, path: file };
+    return { 
+      id: index, 
+      name: file.name, 
+      path: file.path,
+      size: file.size,
+      modified: file.modified,
+      mimeType: file.mimeType
+    };
   });
 });
 

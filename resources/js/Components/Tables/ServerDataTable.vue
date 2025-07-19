@@ -1,46 +1,29 @@
 <template>
   <div>
     <!-- Actual data table -->
-    <DataTableProvider 
-      ref="dataTableProviderRef"
-      :columns="columns" 
-      :data="data" 
-      :is-server-side="true" 
-      :total-items="totalCount"
-      :server-pagination="serverPagination" 
-      :server-sorting="sorting"
-      :page-size="pageSize" 
-      :enable-pagination="true" 
-      :row-class-name="rowClassName"
-      :empty-message="emptyMessage" 
-      :enable-filtering="enableFiltering"
-      :enable-column-visibility="enableColumnVisibility" 
-      :global-filter="searchText"
-      :enable-row-selection="enableRowSelection"
-      :enable-multi-row-selection="enableMultiRowSelection"
-      :enable-row-selection-column="enableRowSelectionColumn"
-      :row-selection-state="rowSelection"
-      :get-row-id="getRowId"
-      :loading="loading"
-      @page-change="handlePageChange" 
-      @update:sorting="handleSortChange" 
-      @update:global-filter="updateSearchText" 
-      @update:rowSelection="handleRowSelectionChange"
-    >
+    <DataTableProvider ref="dataTableProviderRef" :columns :data :is-server-side="true" :total-items="totalCount"
+      :server-pagination :server-sorting="sorting" :page-size :enable-pagination="true" :row-class-name="computedRowClassName" :empty-message
+      :enable-filtering="false" :enable-column-visibility :global-filter="searchText" :enable-row-selection
+      :enable-multi-row-selection :enable-row-selection-column :row-selection-state="rowSelection" :get-row-id :loading
+      @page-change="handlePageChange" @update:sorting="handleSortChange" @update:global-filter="updateSearchText"
+      @update:row-selection="handleRowSelectionChange">
       <template #filters>
         <div class="flex gap-2 w-full">
-          <Input 
-            v-model="searchText" 
-            :placeholder="`${$t('Paieška')}...`" 
-            class="max-w-sm" 
-            @keydown.enter="handleSearch" 
-          />
+          <Input v-model="searchText" :placeholder="`${$t('Paieška')}...`" class="max-w-sm"
+            @keydown.enter="handleSearch" />
           <Button @click="handleSearch">
             {{ $t('Paieška') }}
           </Button>
         </div>
         <div class="flex gap-2">
-        <slot name="filters" />
+          <!-- Toggle deleted items -->
+          <slot name="filters" />
+          <div v-if="allowToggleDeleted" class="flex ml-2 items-center space-x-2">
+            <Checkbox id="show-deleted" :model-value="showDeleted" @update:model-value="handleShowDeletedChange" />
+            <Label for="show-deleted" class="text-sm font-medium">
+              {{ $t('Show deleted') }}
+            </Label>
+          </div>
         </div>
       </template>
 
@@ -50,9 +33,16 @@
 
       <template #empty>
         <slot name="empty">
-          <div class="flex flex-col items-center justify-center py-6 text-center">
-            <p class="text-sm text-muted-foreground">{{ emptyMessage || $t('No results found.') }}</p>
-          </div>
+          <!-- Enhanced empty state -->
+          <EmptyState :title="emptyMessage || $t(`No ${modelName} found`)"
+            :description="$t(`There are no ${modelName} matching your criteria.`)" :icon="EmptyIcon">
+            <!-- Create button in empty state -->
+            <Link v-if="canCreate && createRoute" :href="createRoute">
+            <Button>
+              {{ $t('Create') }} {{ singularModelName }}
+            </Button>
+            </Link>
+          </EmptyState>
         </slot>
       </template>
     </DataTableProvider>
@@ -61,20 +51,30 @@
 
 <script setup lang="ts" generic="TData">
 import { ref, watch, computed, onMounted } from 'vue';
-import { trans as $t } from 'laravel-vue-i18n';
+import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import type { ColumnDef, SortingState, RowSelectionState } from '@tanstack/vue-table';
 import { router } from '@inertiajs/vue3';
 import { debounce } from 'lodash';
+import { PlusCircleIcon } from 'lucide-vue-next';
+import { Link } from '@inertiajs/vue3';
 
 import DataTableProvider from '../ui/data-table/DataTableProvider.vue';
 import { Input } from '@/Components/ui/input';
 import { Button } from '@/Components/ui/button';
+import { Checkbox } from '@/Components/ui/checkbox';
+import { Label } from '@/Components/ui/label';
+import EmptyState from '@/Components/Empty/EmptyState.vue';
 
 // Define the props with TypeScript generics support
 const props = defineProps<{
   // Inertia integration
   modelName: string,
   reloadOnly?: boolean,
+
+  // Model information
+  entityName?: string,
+  pluralModelName?: string,
+  singularModelName?: string,
 
   // Data display
   columns: ColumnDef<TData, any>[],
@@ -88,14 +88,20 @@ const props = defineProps<{
   // Options
   rowClassName?: (row: TData) => string,
   emptyMessage?: string,
+  emptyIcon?: any,
   enableFiltering?: boolean,
   enableColumnVisibility?: boolean,
   showDeleted?: boolean,
 
+  // Admin features
+  allowToggleDeleted?: boolean,
+  canCreate?: boolean,
+  createRoute?: string,
+
   // Initial state
   initialSorting?: SortingState,
   initialFilters?: Record<string, unknown>,
-  
+
   // Row selection
   enableRowSelection?: boolean,
   enableMultiRowSelection?: boolean,
@@ -104,7 +110,7 @@ const props = defineProps<{
   getRowId?: (originalRow: TData, index: number, parent?: any) => string,
 }>();
 
-const emit = defineEmits(['dataLoaded', 'update:rowSelection']);
+const emit = defineEmits(['dataLoaded', 'update:rowSelection', 'create', 'sorting-changed', 'page-changed', 'filter-changed']);
 
 // Component state
 const searchText = ref('');
@@ -120,6 +126,36 @@ const isInternalFilterUpdate = ref(false);
 
 // Row selection state - maintain it outside of table state so it persists
 const rowSelection = ref<RowSelectionState>(props.initialRowSelection || {});
+
+// Admin features state
+const showDeleted = ref(props.showDeleted || false);
+
+// Computed properties for model names
+const EmptyIcon = computed(() => props.emptyIcon || PlusCircleIcon);
+
+// Computed row class name function that combines custom rowClassName with soft-deleted styling
+const computedRowClassName = computed(() => {
+  return (row: TData) => {
+    const baseClasses = props.rowClassName ? props.rowClassName(row) : '';
+    
+    // Add soft-deleted styling if showDeleted is true and row has deleted_at
+    if (showDeleted.value && row && (row as any).deleted_at) {
+      return `${baseClasses} opacity-60`.trim();
+    }
+    
+    return baseClasses;
+  };
+});
+
+const pluralModelName = computed(() => {
+  if (props.pluralModelName) return props.pluralModelName;
+  return $tChoice(`entities.${props.entityName || props.modelName}.model`, 2);
+});
+
+const singularModelName = computed(() => {
+  if (props.singularModelName) return props.singularModelName;
+  return $tChoice(`entities.${props.entityName || props.modelName}.model`, 1);
+});
 
 // Server pagination for UI
 const serverPagination = computed(() => ({
@@ -153,17 +189,20 @@ const handleSearch = () => {
 
 const handleSortChange = (newSorting: SortingState) => {
   sorting.value = newSorting;
+  emit('sorting-changed', newSorting);
   reloadData(); // Reload data with new sorting
 };
 
 const handlePageChange = (newPageIndex: number) => {
   pageIndex.value = newPageIndex;
+  emit('page-changed', newPageIndex + 1); // Convert to 1-based for external use
   reloadData(); // Reload data with new page
 };
 
 const updateFilter = (key: string, value: any) => {
   filters.value[key] = value;
   pageIndex.value = 0; // Reset to first page when filter changes
+  emit('filter-changed', key, value);
   reloadData();
 };
 
@@ -178,23 +217,30 @@ const encodeTableState = () => {
     page: pageIndex.value + 1, // Convert to 1-based indexing for backend
     per_page: pageSize.value
   };
-  
+
   // Add sorting if present
   if (sorting.value.length > 0) {
     state.sorting = JSON.stringify(sorting.value);
   }
-  
-  // Add filters if present
-  if (Object.keys(filters.value).length > 0) {
-    state.filters = JSON.stringify(filters.value);
+
+  // Create filters object without showDeleted (to avoid duplication)
+  const filtersToSend = { ...filters.value };
+  delete filtersToSend.showDeleted;
+
+  // Add filters if present (excluding showDeleted)
+  if (Object.keys(filtersToSend).length > 0) {
+    state.filters = JSON.stringify(filtersToSend);
   }
-  
+
   // Add search text if present
   if (searchText.value) {
     // Using 'search' key to match what the backend expects
     state.search = searchText.value;
   }
-  
+
+  // Add showDeleted parameter (ensure boolean) - only as direct parameter, not in filters
+  state.showDeleted = Boolean(showDeleted.value);
+
   return state;
 };
 
@@ -203,10 +249,10 @@ const reloadData = (page?: number) => {
   if (page !== undefined) {
     pageIndex.value = page;
   }
-  
+
   loading.value = true;
   const state = encodeTableState();
-  
+
   const options = {
     data: state,
     preserveScroll: true,
@@ -214,7 +260,7 @@ const reloadData = (page?: number) => {
     onSuccess: (response) => {
       const responseData = response.props[props.modelName];
       loading.value = false;
-      
+
       // Emit data loaded event with context
       emit('dataLoaded', {
         page: pageIndex.value,
@@ -229,7 +275,7 @@ const reloadData = (page?: number) => {
       loading.value = false;
     }
   };
-  
+
   if (props.reloadOnly) {
     router.reload(options);
   } else {
@@ -237,14 +283,32 @@ const reloadData = (page?: number) => {
   }
 };
 
+// Handle show deleted toggle
+const handleShowDeletedChange = (checked: boolean) => {
+  showDeleted.value = checked;
+  filters.value.showDeleted = checked;
+  pageIndex.value = 0; // Reset to first page when toggling deleted items
+  reloadData();
+};
+
 // Watch for props changes
 watch(() => props.showDeleted, (newValue) => {
-  if (newValue !== filters.value.showDeleted) {
+  if (newValue !== undefined && newValue !== showDeleted.value) {
+    showDeleted.value = !!newValue;
     filters.value.showDeleted = !!newValue;
     pageIndex.value = 0; // Reset to first page on filter change
     reloadData();
   }
 }, { immediate: true });
+
+// Watch for show deleted changes
+watch(() => showDeleted.value, (newValue) => {
+  if (newValue !== filters.value.showDeleted) {
+    filters.value.showDeleted = newValue;
+    pageIndex.value = 0;
+    reloadData();
+  }
+});
 
 watch(() => props.initialFilters, (newValue) => {
   // Skip if this is an internal update
@@ -252,35 +316,35 @@ watch(() => props.initialFilters, (newValue) => {
     isInternalFilterUpdate.value = false;
     return;
   }
-  
+
   if (newValue) {
     // Improved comparison that handles arrays properly
     const hasChanges = Object.entries(newValue).some(([key, value]) => {
       const currentValue = filters.value[key];
-      
+
       // Handle arrays specifically
       if (Array.isArray(value) && Array.isArray(currentValue)) {
         // Check if arrays have different length
         if (value.length !== currentValue.length) return true;
-        
+
         // Compare each element
         return value.some((item, i) => item !== currentValue[i]);
       }
-      
+
       // Handle objects specifically
       if (
-        value !== null && 
-        typeof value === 'object' && 
-        currentValue !== null && 
+        value !== null &&
+        typeof value === 'object' &&
+        currentValue !== null &&
         typeof currentValue === 'object'
       ) {
         return JSON.stringify(value) !== JSON.stringify(currentValue);
       }
-      
+
       // Simple comparison for primitives
       return currentValue !== value;
     });
-    
+
     if (hasChanges) {
       // Update filters keeping existing ones
       filters.value = {

@@ -342,23 +342,33 @@ defineExpose({
               <TableHead 
                 v-for="header in headerGroup.headers" 
                 :key="header.id" 
-                :class="{ 'cursor-pointer select-none': header.column.getCanSort() }" 
+                :class="{ 
+                  'cursor-pointer select-none hover:bg-muted/50 transition-colors': header.column.getCanSort(),
+                  'bg-muted/30': header.column.getIsSorted()
+                }" 
                 @click="header.column.getToggleSortingHandler()?.({})"
                 :style="{ width: header.column.columnDef.size ? `${header.column.columnDef.size}px` : 'auto' }"
               >
-                <div class="flex items-center space-x-1">
+                <div class="flex items-center justify-between">
                   <FlexRender
                     v-if="!header.isPlaceholder" :render="header.column.columnDef.header"
                     :props="header.getContext()"
                   />
-                  <!-- Improved sorting indicators with proper styling -->
-                  <span 
-                    v-if="header.column.getIsSorted()" 
-                    class="text-xs ml-1"
-                    :class="header.column.getIsSorted() === 'desc' ? 'text-muted-foreground' : ''"
-                  >
-                    {{ header.column.getIsSorted() === 'asc' ? '↑' : '↓' }}
-                  </span>
+                  <!-- Enhanced sorting indicators -->
+                  <div class="flex items-center ml-2">
+                    <span 
+                      v-if="header.column.getCanSort()" 
+                      class="text-xs font-medium transition-opacity"
+                      :class="{
+                        'opacity-100': header.column.getIsSorted(),
+                        'opacity-40 group-hover:opacity-60': !header.column.getIsSorted()
+                      }"
+                    >
+                      <span v-if="header.column.getIsSorted() === 'asc'" class="text-primary">↑</span>
+                      <span v-else-if="header.column.getIsSorted() === 'desc'" class="text-primary">↓</span>
+                      <span v-else class="text-muted-foreground">↕</span>
+                    </span>
+                  </div>
                 </div>
               </TableHead>
             </TableRow>

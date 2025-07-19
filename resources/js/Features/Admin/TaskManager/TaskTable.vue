@@ -1,13 +1,6 @@
 <template>
-  <DataTableProvider 
-    :columns="columns" 
-    :data="tasks" 
-    :rowClassName="rowClassName"
-    :enable-pagination="true"
-    :page-size="10"
-    :empty-message="$t('No tasks found.')"
-    @update:sorting="handleSortChange"
-  >
+  <SimpleDataTable :columns :data="tasks" :row-class-name="rowClassName" :enable-pagination="true" :page-size="10"
+    :empty-message="$t('No tasks found.')" :empty-icon="CheckIcon">
     <template #empty>
       <div class="flex flex-col items-center justify-center gap-2 text-zinc-400">
         <div class="flex h-10 w-10 items-center justify-center rounded-full border border-dashed">
@@ -16,7 +9,7 @@
         <span>{{ $t('No tasks found.') }}</span>
       </div>
     </template>
-  </DataTableProvider>
+  </SimpleDataTable>
 </template>
 
 <script setup lang="tsx">
@@ -32,7 +25,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Comp
 import { toast } from "vue-sonner";
 import { format } from "date-fns";
 import IconsFilled from "@/Types/Icons/filled";
-import DataTableProvider from "@/Components/ui/data-table/DataTableProvider.vue";
+import SimpleDataTable from "@/Components/Tables/SimpleDataTable.vue";
 import UsersAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
 
 // Define Task interface
@@ -61,8 +54,8 @@ const isLoading = ref(false);
  * Handle row styling based on task completion status
  */
 const rowClassName = (row: Task) => {
-  return row.completed_at !== null 
-    ? "bg-zinc-100/50 opacity-50 dark:bg-zinc-900/50 dark:opacity-50" 
+  return row.completed_at !== null
+    ? "bg-zinc-100/50 opacity-50 dark:bg-zinc-900/50 dark:opacity-50"
     : "";
 };
 
@@ -87,13 +80,13 @@ const formatDate = (dateString: string) => {
 const updateTaskCompletion = (task: Task) => {
   if (isLoading.value) return;
   isLoading.value = true;
-  
+
   // Toggle completion status
   const newCompletionState = task.completed_at === null;
-  
+
   // Store current state for reverting if needed
   const previousState = task.completed_at;
-  
+
   // Optimistic update for better UX
   task.completed_at = newCompletionState ? new Date().toISOString() : null;
 
@@ -105,7 +98,7 @@ const updateTaskCompletion = (task: Task) => {
       preserveState: true,
       onSuccess: () => {
         isLoading.value = false;
-        
+
         // Show appropriate toast message
         if (newCompletionState) {
           toast.success($t("Task marked as completed"), {
@@ -122,7 +115,7 @@ const updateTaskCompletion = (task: Task) => {
         // Revert optimistic update if server request fails
         isLoading.value = false;
         task.completed_at = previousState;
-        
+
         toast.error($t("Failed to update task status"), {
           description: $t("Please try again")
         });
@@ -188,7 +181,7 @@ const columns = [
       const canComplete = task.users?.find(
         (user) => user.id === usePage().props.auth?.user?.id
       );
-      
+
       return (
         <div class="flex justify-center">
           <Checkbox
@@ -228,16 +221,16 @@ const columns = [
       const task = row.original;
       const modelRoute = getModelRoute(task.taskable_type);
       const Icon = getTaskableIcon(task.taskable_type);
-      
+
       return (
-              <Link href={route(`${modelRoute}.show`, task.taskable_id)}>
-                <Badge variant="outline" class="flex items-center gap-1">
-                  <Icon class="h-3 w-3" />
-                  <span class="max-w-[120px] truncate">
-                    {task.taskable?.title || task.taskable?.name || task.taskable?.start_time}
-                  </span>
-                </Badge>
-              </Link>
+        <Link href={route(`${modelRoute}.show`, task.taskable_id)}>
+          <Badge variant="outline" class="flex items-center gap-1">
+            <Icon class="h-3 w-3" />
+            <span class="max-w-[120px] truncate">
+              {task.taskable?.title || task.taskable?.name || task.taskable?.start_time}
+            </span>
+          </Badge>
+        </Link>
       );
     },
     size: 150,
@@ -266,7 +259,7 @@ const columns = [
     cell: ({ row }) => {
       const task = row.original;
       if (task.completed_at !== null) return null;
-      
+
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

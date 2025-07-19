@@ -86,13 +86,10 @@ import { ArrowLeft, Plus } from "lucide-vue-next";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import { Separator } from "@/Components/ui/separator";
 import { Button } from "@/Components/ui/button";
-import { useComponentBreadcrumbs } from "@/Composables/useBreadcrumbs";
-import type { BreadcrumbItem } from "@/Composables/useBreadcrumbs";
 
 const props = defineProps<{
   aside?: boolean;
   backUrl?: string;
-  breadcrumbs?: BreadcrumbItem[];
   createUrl?: string;
   headerDivider?: boolean;
   headingIcon?: any;
@@ -104,7 +101,4 @@ const isIndex = computed(() => {
 });
 
 const back = () => window.history.back();
-
-// Use the improved breadcrumbs composable
-useComponentBreadcrumbs(() => props.breadcrumbs);
 </script>

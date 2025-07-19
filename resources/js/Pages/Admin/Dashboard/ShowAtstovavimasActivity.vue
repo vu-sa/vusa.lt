@@ -1,5 +1,5 @@
 <template>
-  <AdminContentPage :title="$t('Changes History') + ' (' + date + ' | ' + providedTenant.shortname + ')'" :breadcrumbs="breadcrumbs">
+  <AdminContentPage :title="$t('Changes History') + ' (' + date + ' | ' + providedTenant.shortname + ')'">
     <div class="space-y-6">
       <!-- Filters Section -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -197,7 +197,7 @@ import {
   CalendarX
 } from 'lucide-vue-next';
 
-import { useBreadcrumbs, type BreadcrumbItem } from "@/Composables/useBreadcrumbs";
+import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 
 const props = defineProps<{
   meetings: Array<App.Entities.Meeting & { changedAgendaItems: App.Entities.AgendaItem[] }>;
@@ -244,11 +244,9 @@ const filteredMeetings = computed(() => {
 });
 
 // Setup breadcrumbs for the Atstovavimas Activity page
-const { createBreadcrumbItem, createRouteBreadcrumb } = useBreadcrumbs();
-
-const breadcrumbs = computed((): BreadcrumbItem[] => [
-  createRouteBreadcrumb($t('Atstovavimas'), 'dashboard.atstovavimas', {}, Icons.MEETING),
-  createBreadcrumbItem($t('Veiklos'), undefined, Icons.DOING)
+usePageBreadcrumbs([
+  { label: $t('Atstovavimas'), href: route('dashboard.atstovavimas'), icon: Icons.MEETING },
+  { label: $t('Veiklos'), icon: Icons.DOING }
 ]);
 
 // Handle date change

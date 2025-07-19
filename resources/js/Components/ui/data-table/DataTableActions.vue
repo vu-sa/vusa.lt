@@ -1,6 +1,6 @@
 <template>
   <div>
-    <Popover>
+    <Popover v-if="hasAvailableActions">
       <PopoverTrigger asChild>
         <Button variant="ghost" size="icon" class="h-8 w-8 p-0">
           <MoreHorizontalIcon class="h-4 w-4" />
@@ -15,7 +15,9 @@
             variant="ghost" 
             size="sm" 
             class="w-full justify-start"
-            @click="handleAction('view')"
+            :disabled="!!model.deleted_at"
+            :class="{ 'opacity-50 cursor-not-allowed': model.deleted_at }"
+            @click="!model.deleted_at && handleAction('view')"
           >
             <EyeIcon class="mr-2 h-4 w-4" />
             {{ $t('View') }}
@@ -26,7 +28,9 @@
             variant="ghost" 
             size="sm" 
             class="w-full justify-start"
-            @click="handleAction('edit')"
+            :disabled="!!model.deleted_at"
+            :class="{ 'opacity-50 cursor-not-allowed': model.deleted_at }"
+            @click="!model.deleted_at && handleAction('edit')"
           >
             <PencilIcon class="mr-2 h-4 w-4" />
             {{ $t('Edit') }}
@@ -95,7 +99,7 @@
 </template>
 
 <script setup lang="ts" generic="TModel extends { id: string | number, deleted_at?: string | null }">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { router } from '@inertiajs/vue3';
 import { 
@@ -159,6 +163,17 @@ const emit = defineEmits<{
 
 // Dialog state
 const isConfirmDeleteDialogOpen = ref(false);
+
+// Computed property to check if there are any available actions
+const hasAvailableActions = computed(() => {
+  // If model is soft-deleted, only restore action is available
+  if (props.model.deleted_at) {
+    return !!(props.canRestore);
+  }
+  
+  // If model is not soft-deleted, check for other actions
+  return !!(props.canView || props.canEdit || props.canDuplicate || props.canDelete);
+});
 
 // Action handler for standard actions
 const handleAction = (action: string) => {

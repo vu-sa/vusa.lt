@@ -6,7 +6,7 @@
     :can-use-routes 
     :columns 
     :paginated-models="reservations"
-    :breadcrumbs="breadcrumbs">
+>
     <template #after-table>
       <NCard class="mt-4">
         <template #header>
@@ -38,7 +38,7 @@ import Icons from "@/Types/Icons/regular";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 import UsersAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
 import ReservationsWithUnitResources from "@/Components/Tables/ReservationsWithUnitResources.vue";
-import { useBreadcrumbs, type BreadcrumbItem } from "@/Composables/useBreadcrumbs";
+import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 
 defineProps<{
   reservations: PaginatedModels<App.Entities.Reservation>;
@@ -61,12 +61,10 @@ const sorters = ref<Record<string, DataTableSortState["order"]>>({
 provide("sorters", sorters);
 
 // Breadcrumbs setup
-const { createBreadcrumbItem, homeItem, createRouteBreadcrumb } = useBreadcrumbs();
-
-const breadcrumbs = computed((): BreadcrumbItem[] => [
-  homeItem(),
-  createBreadcrumbItem($t("administration.title"), route("administration")),
-  createBreadcrumbItem(capitalize($tChoice("entities.reservation.model", 2)), undefined, Icons.RESERVATION)
+usePageBreadcrumbs(() => [
+  BreadcrumbHelpers.homeItem(),
+  BreadcrumbHelpers.createBreadcrumbItem($t("administration.title"), route("administration")),
+  BreadcrumbHelpers.createBreadcrumbItem(capitalize($tChoice("entities.reservation.model", 2)), undefined, Icons.RESERVATION)
 ]);
 
 // add columns

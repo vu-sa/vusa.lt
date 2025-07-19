@@ -6,13 +6,13 @@
       <div class="flex items-center gap-2"
         :style="`color: ${props.element.options?.isTitleColored ? cardColors.title[isDark ? 'dark' : 'light'][props.element.options?.color] : ''}`">
         <NIcon v-if="element.options?.showIcon" size="20" :component="iconToUse" />
-        <CardTitle class="mb-0"
+        <CardTitle class="mb-0 tracking-tight"
           :style="`color: ${props.element.options?.isTitleColored ? cardColors.title[isDark ? 'dark' : 'light'][props.element.options?.color] : ''}`">
           {{ element.options?.title }}
         </CardTitle>
       </div>
     </CardHeader>
-    <CardContent>
+    <CardContent class="tracking-normal">
       <slot />
     </CardContent>
   </Card>

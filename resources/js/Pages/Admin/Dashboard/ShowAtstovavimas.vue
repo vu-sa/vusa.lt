@@ -1,5 +1,5 @@
 <template>
-  <AdminContentPage :breadcrumbs="breadcrumbs">
+  <AdminContentPage>
     <Head :title="$t('Atstovavimas')" />
     
     <!-- Hero section with greeting and overview -->
@@ -198,7 +198,20 @@
             </Button>
           </CardHeader>
           <CardContent>
-            <MeetingBarPlot :all-tenant-meetings :width="320" :height="190" />
+            <Suspense>
+              <MeetingBarPlot :all-tenant-meetings :width="320" :height="190" />
+              <template #fallback>
+                <div class="h-[190px] w-full flex items-center justify-center">
+                  <div class="flex flex-col items-center gap-4">
+                    <Skeleton class="h-8 w-8 rounded-full" />
+                    <div class="space-y-2">
+                      <Skeleton class="h-3 w-36" />
+                      <Skeleton class="h-2 w-24 mx-auto" />
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </Suspense>
           </CardContent>
           <CardModal v-model:show="showMeetingBarPlot" :title="$t('Visų susitikimų statistika')"
             @close="showMeetingBarPlot = false">
@@ -253,6 +266,7 @@ import SmartLink from "@/Components/Public/SmartLink.vue";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/Components/ui/card";
 import { Button } from "@/Components/ui/button";
 import { Separator } from "@/Components/ui/separator";
+import { Skeleton } from "@/Components/ui/skeleton";
 
 // Icons
 import Icons from "@/Types/Icons/filled";
@@ -261,13 +275,11 @@ import { Maximize2 as FullScreenIcon } from "lucide-vue-next";
 // Utils
 import { formatStaticTime } from '@/Utils/IntlTime';
 
-import { useBreadcrumbs, type BreadcrumbItem } from "@/Composables/useBreadcrumbs";
+import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 
 // Setup breadcrumbs for the atstovavimas page
-const { createRouteBreadcrumb, createBreadcrumbItem } = useBreadcrumbs();
-
-const breadcrumbs = computed((): BreadcrumbItem[] => [
-  createBreadcrumbItem($t('Atstovavimas'), undefined, Icons.MEETING)
+usePageBreadcrumbs(() => [
+  BreadcrumbHelpers.createBreadcrumbItem($t('Atstovavimas'), undefined, Icons.MEETING)
 ]);
 
 const props = defineProps<{

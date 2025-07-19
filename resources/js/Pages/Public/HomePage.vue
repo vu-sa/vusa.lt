@@ -10,6 +10,8 @@ defineProps<{
   content: unknown;
 }>();
 
+// Home page doesn't need breadcrumbs - they're cleared by PublicLayout
+
 //const SummerCamps = defineAsyncComponent(
 //  // eslint-disable-next-line no-secrets/no-secrets
 //  () => import("@/Components/Public/FullWidth/SummerCamps.vue"),

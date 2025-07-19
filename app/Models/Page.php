@@ -24,13 +24,11 @@ class Page extends Model implements Sitemapable
     protected static function booted()
     {
         static::saved(function ($page) {
-            // Clear sitemap cache when page is updated
-            Cache::tags(['sitemap', 'pages', "tenant_{$page->tenant_id}"])->flush();
+            Cache::tags(['sitemap', 'pages', "tenant_{$page->tenant_id}", "locale_{$page->lang}"])->flush();
         });
 
         static::deleted(function ($page) {
-            // Clear sitemap cache when page is deleted
-            Cache::tags(['sitemap', 'pages', "tenant_{$page->tenant_id}"])->flush();
+            Cache::tags(['sitemap', 'pages', "tenant_{$page->tenant_id}", "locale_{$page->lang}"])->flush();
         });
     }
 

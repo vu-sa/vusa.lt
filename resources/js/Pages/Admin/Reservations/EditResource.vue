@@ -13,10 +13,12 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from "vue";
 import { trans as $t } from "laravel-vue-i18n";
-import { router } from "@inertiajs/vue3";
+import { router, usePage } from "@inertiajs/vue3";
 import { NCard } from "naive-ui";
 
+import { BreadcrumbHelpers, usePageBreadcrumbs } from "@/Composables/useBreadcrumbsUnified";
 import Icons from "@/Types/Icons/regular";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import ResourceForm from "@/Components/AdminForms/ResourceForm.vue";
@@ -38,6 +40,11 @@ const { resource } = defineProps<{
   categories: any
   assignableTenants: Array<App.Entities.Tenant>;
 }>();
+
+// Generate breadcrumbs automatically with new simplified API
+usePageBreadcrumbs(() => 
+  BreadcrumbHelpers.adminForm('Ištekliai', 'resources.index', resource.name[usePage().props.app.locale], Icons.RESOURCE)
+);
 
 function handleResourceUpdate(form: InertiaForm<ResourceForm>) {
   form.transform((data) => ({

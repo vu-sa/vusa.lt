@@ -67,7 +67,7 @@
       </NButton>
       <NButtonGroup size="small">
         <Suspense>
-          <TiptapImageButton @submit="(url) => editor?.chain().focus().setImage({ src: url }).run()" />
+          <TiptapImageButton @submit="attachImageWithAlt" />
         </Suspense>
         <Suspense>
           <TiptapVideoButton @submit="attachVideoUrl" />
@@ -146,7 +146,7 @@
       </NButton>
     </div>
     <div class="mt-3 grid grid-cols-[auto__30px] items-center gap-2 only:mt-0">
-      <div class="max-h-96  w-full overflow-y-scroll">
+      <div class="max-h-96 w-full overflow-y-auto overflow-x-hidden">
         <EditorContent :editor="editor" class="min-h-24 rounded-md border dark:border-0 dark:bg-zinc-800" />
         <div v-if="editor && maxCharacters" class="mt-4 text-xs text-gray-500 dark:text-gray-400">
           {{ editor.storage.characterCount.characters() }}
@@ -174,7 +174,7 @@ import { EditorContent, useEditor } from "@tiptap/vue-3";
 import { BubbleMenu } from "@tiptap/vue-3/menus";
 import { CharacterCount, Placeholder } from "@tiptap/extensions";
 import { nextTick, onBeforeUnmount, ref } from "vue";
-import { Image } from "@tiptap/extension-image";
+import { AccessibleImage } from "./AccessibleImage";
 import { StarterKit } from "@tiptap/starter-kit";
 
 import { TableKit } from '@tiptap/extension-table'
@@ -231,14 +231,15 @@ const editor = useEditor({
     CustomHeading.configure({
       levels: [2, 3],
     }),
-    BubbleMenu,
     Placeholder.configure({
       placeholder: $t ? $t('rich-content.text_placeholder') : "Tekstas...",
     }),
-    Image.configure({
+    AccessibleImage.configure({
       HTMLAttributes: {
-        class: "w-96",
+        class: "max-w-full h-auto rounded-md",
+        loading: "lazy",
       },
+      allowBase64: true,
     }),
     TableKit.configure({
       table: { resizable: true },
@@ -273,8 +274,22 @@ function attachVideoUrl(url: string) {
   editor.value?.chain().focus().setVideo(url).run();
 }
 
+function attachImageWithAlt(imageData: { src: string; alt?: string; title?: string } | string) {
+  if (typeof imageData === 'string') {
+    // Backward compatibility - if just a URL is passed
+    editor.value?.chain().focus().setImage({ src: imageData }).run();
+  } else {
+    // Use the new accessible image format with alt and title
+    editor.value?.chain().focus().setImage({ 
+      src: imageData.src,
+      alt: imageData.alt || '',
+      title: imageData.title || '',
+    }).run();
+  }
+}
+
 function handleUpdate() {
-  const innerHeadings = []
+  const innerHeadings: { level: number; text: string; id: string }[] = []
   const transaction = editor.value?.state.tr
 
   function latinizeId(text: string) {
@@ -313,12 +328,16 @@ function handleUpdate() {
   transaction?.setMeta('addToHistory', false)
   transaction?.setMeta('preventUpdate', true)
 
-  editor.value?.view.dispatch(transaction)
+  if (transaction) {
+    editor.value?.view.dispatch(transaction)
+  }
 }
 </script>
 
 <style>
 .tiptap {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 
   p,
   ul,
@@ -366,6 +385,13 @@ function handleUpdate() {
   h5,
   h6 {
     margin-bottom: 1rem;
+  }
+
+  img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 0.375rem;
+    margin: 0.5rem 0;
   }
 
   table {

@@ -12,6 +12,7 @@
 import { computed } from "vue";
 
 import { usePage, router } from "@inertiajs/vue3";
+import { BreadcrumbHelpers, usePageBreadcrumbs } from "@/Composables/useBreadcrumbsUnified";
 import Icons from "@/Types/Icons/regular";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
@@ -32,4 +33,9 @@ const userName = computed(() => {
     return props.user.name;
   }
 });
+
+// Generate breadcrumbs automatically with new simplified API
+usePageBreadcrumbs(() => 
+  BreadcrumbHelpers.adminForm('Nariai', 'users.index', userName.value, Icons.USER)
+);
 </script>

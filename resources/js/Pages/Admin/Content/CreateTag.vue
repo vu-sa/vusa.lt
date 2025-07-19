@@ -1,7 +1,7 @@
 <template>
   <PageContent title="Nauja žyma" :heading-icon="Icons.TAG">
     <UpsertModelLayout>
-      <TagForm remember-key="CreateTag" :tag @submit:form="(form: any) => form.post(route('tags.store'))" />
+      <TagForm remember-key="CreateTag" :post-tag="tag" @submit:form="(form: any) => form.post(route('tags.store'))" />
     </UpsertModelLayout>
   </PageContent>
 </template>

@@ -96,6 +96,7 @@ export function createTenantColumn<T>(options: {
 } = {}): ColumnDef<T, any> {
   return {
     accessorKey: 'tenant',
+    id: 'tenant.name', // Use this for sorting relationship columns
     header: () => capitalize($tChoice('entities.tenant.model', 1)),
     cell: options.cell || (({ row }) => {
       const tenant = row.original.tenant;

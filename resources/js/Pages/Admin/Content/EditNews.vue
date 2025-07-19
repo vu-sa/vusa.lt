@@ -15,16 +15,23 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from "vue";
 import { router } from "@inertiajs/vue3";
 
+import { BreadcrumbHelpers, usePageBreadcrumbs } from "@/Composables/useBreadcrumbsUnified";
 import Icons from "@/Types/Icons/regular";
 import NewsForm from "@/Components/AdminForms/NewsForm.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 
-defineProps<{
+const props = defineProps<{
   news: App.Entities.News;
   otherLangNews?: App.Entities.News[];
   availableTags?: App.Entities.Tag[];
 }>();
+
+// Generate breadcrumbs automatically with new simplified API
+usePageBreadcrumbs(() => 
+  BreadcrumbHelpers.adminForm('Naujienos', 'news.index', props.news.title, Icons.NEWS)
+);
 </script>

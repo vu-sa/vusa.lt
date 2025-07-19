@@ -40,15 +40,12 @@ import ActivityLogButton from "@/Features/Admin/ActivityLogViewer/ActivityLogBut
 import AdminContentPage from "../AdminContentPage.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import RelatedModelButton from "@/Components/Buttons/RelatedModelButton.vue";
-import { useComponentBreadcrumbs } from "@/Composables/useBreadcrumbs";
-import type { BreadcrumbItem } from "@/Composables/useBreadcrumbs";
 
 const emit = defineEmits<{
   (e: "change:tab", name: string): void;
 }>();
 
 const props = defineProps<{
-  breadcrumbs?: BreadcrumbItem[];
   currentTab?: string;
   model: Record<string, any>;
   relatedModels?: {
@@ -59,8 +56,4 @@ const props = defineProps<{
   }[];
   title?: string;
 }>();
-
-// Use the improved breadcrumbs composable
-// This handles all breadcrumb lifecycle automatically
-useComponentBreadcrumbs(() => props.breadcrumbs);
 </script>

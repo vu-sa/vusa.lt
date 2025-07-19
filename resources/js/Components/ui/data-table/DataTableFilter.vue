@@ -145,10 +145,10 @@ const isActive = computed(() => {
   return props.value !== null && props.value !== undefined;
 });
 
-// Compute the count of active filters
+// Compute the count of active filters (based on applied values, not working values)
 const filterCount = computed(() => {
   if (props.multiple) {
-    return selectedValues.value.length;
+    return Array.isArray(props.value) ? props.value.length : 0;
   }
   return props.value !== null && props.value !== undefined ? 1 : 0;
 });

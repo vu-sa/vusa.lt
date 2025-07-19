@@ -1,23 +1,18 @@
 <template>
   <template v-for="(element, index) in content" :key="element.id">
-    <!-- Wrap async data-fetching components with Suspense -->
-    <Suspense v-if="['news', 'calendar'].includes(element.type)"
+    <!-- Async components with Suspense (most components) -->
+    <Suspense v-if="isAsyncComponent(element.type)"
       :class="[getSpacingClass(element.type, index), isFullBleedType(element.type) ? 'full-bleed' : '']">
       <template #default>
         <component :is="getComponentForType(element.type)" :element="element" :html="html"
           :is-first-element="index === 0" />
       </template>
       <template #fallback>
-        <div class="w-full py-8 flex justify-center">
-          <div class="animate-pulse flex flex-col gap-2 items-center">
-            <div class="h-10 w-10 rounded-full bg-zinc-200 dark:bg-zinc-700" />
-            <div class="h-4 w-48 rounded bg-zinc-200 dark:bg-zinc-700" />
-          </div>
-        </div>
+        <LoadingSkeleton />
       </template>
     </Suspense>
 
-    <!-- Regular component rendering for non-data fetching components -->
+    <!-- Synchronous component rendering (tiptap only) -->
     <component :is="getComponentForType(element.type)" v-else :element="element" :html="html"
       :is-first-element="index === 0"
       :class="[getSpacingClass(element.type, index), isFullBleedType(element.type) ? 'full-bleed' : '']">
@@ -33,12 +28,14 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent, markRaw, shallowRef } from 'vue';
 
+// Import commonly used components synchronously for better performance
+import TiptapDisplay from './RichContent/Types/TiptapDisplay.vue';
 
 const RichContentTiptapHTML = defineAsyncComponent(() => import('@/Components/RichContentTiptapHTML.vue'));
 
-// Create a component registry for content types
+// Optimize component registry - simplified async component loading
 const contentComponents = shallowRef({
-  'tiptap': markRaw(defineAsyncComponent(() => import('./RichContent/Types/TiptapDisplay.vue'))),
+  'tiptap': markRaw(TiptapDisplay), // Most common component - load synchronously
   'shadcn-card': markRaw(defineAsyncComponent(() => import('@/Components/RichContentCard.vue'))),
   'shadcn-accordion': markRaw(defineAsyncComponent(() => import('@/Components/RichContent/RCAccordion.vue'))),
   'image-grid': markRaw(defineAsyncComponent(() => import('./RichContent/Types/ImageGridDisplay.vue'))),
@@ -58,7 +55,7 @@ const props = defineProps<{
 
 // Get component for type with fallback
 function getComponentForType(type: string) {
-  return contentComponents.value[type] || contentComponents.value['tiptap'];
+  return contentComponents.value[type as keyof typeof contentComponents.value] || contentComponents.value['tiptap'];
 }
 
 // Determine spacing class based on element type and position
@@ -101,5 +98,30 @@ function isFullBleedType(type: string): boolean {
   const fullBleedTypes = ['hero', 'calendar', 'news', 'number-stat-section'];
   return fullBleedTypes.includes(type);
 }
+
+// Check if component is async and needs Suspense boundary
+function isAsyncComponent(type: string): boolean {
+  // Only tiptap is synchronous, all others are async
+  return type !== 'tiptap';
+}
+
+
+// Use existing Skeleton component for consistency
+import { Skeleton } from '@/Components/ui/skeleton';
+
+const LoadingSkeleton = {
+  components: { Skeleton },
+  template: `
+    <div class="w-full flex items-center justify-center py-8">
+      <div class="flex flex-col items-center gap-4">
+        <Skeleton class="h-10 w-10 rounded-full" />
+        <div class="space-y-2">
+          <Skeleton class="h-3 w-32" />
+          <Skeleton class="h-2 w-24" />
+        </div>
+      </div>
+    </div>
+  `
+};
 
 </script>

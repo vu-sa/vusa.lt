@@ -1,7 +1,16 @@
 <template>
   <Spinner class="w-full" :show="loading">
-    <FileManager small class="w-full" :files :directories :path @update="handleUpdate" @back="handleBack"
-      @change-directory="handleChangeDirectory" @file-selected="(path) => $emit('submit', path)" />
+    <FileManager 
+      small 
+      selection-mode
+      class="w-full" 
+      :files 
+      :directories 
+      :path 
+      @update="handleUpdate" 
+      @back="handleBack"
+      @change-directory="handleChangeDirectory" 
+      @file-selected="(path) => $emit('submit', path)" />
   </Spinner>
 </template>
 
@@ -46,9 +55,16 @@ async function getData(changedDirectory: string) {
     path: changedDirectory
   })).get().json();
 
+  // Backend now returns file objects instead of strings
   files.value = data.value.files?.map((file, index) => {
-    const fileName = file.split("/").slice(-1)[0];
-    return { id: index, name: fileName, path: file };
+    return { 
+      id: index, 
+      name: file.name, 
+      path: file.path,
+      size: file.size,
+      modified: file.modified,
+      mimeType: file.mimeType
+    };
   }) ?? [];
 
   if (props.fileExtensions) {
@@ -57,9 +73,13 @@ async function getData(changedDirectory: string) {
     });
   }
 
+  // Backend now returns directory objects instead of strings
   directories.value = data.value.directories?.map((directory, index) => {
-    const directoryName = directory.split("/").slice(-1)[0];
-    return { id: index, name: directoryName, path: directory };
+    return { 
+      id: index, 
+      name: directory.name, 
+      path: directory.path 
+    };
   }) ?? [];
 
   path.value = data.value?.path ?? path.value;

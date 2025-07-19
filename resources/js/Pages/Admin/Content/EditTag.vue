@@ -17,20 +17,15 @@
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <DataTableProvider 
-            :columns="columns" 
-            :data="news" 
-            :enable-pagination="true"
-            :page-size="6"
-            :empty-message="$t('No news found.')"
-          >
+          <SimpleDataTable :columns :data="news" :enable-pagination="true" :page-size="6"
+            :empty-message="$t('No news found.')" :empty-icon="IFluentNews24Regular">
             <template #empty>
               <div class="flex flex-col items-center justify-center gap-2 text-muted-foreground py-8">
                 <IFluentNews24Regular class="h-10 w-10" />
                 <span>{{ $t('Šiuo metu su šiuo tagu nėra susietos jokios naujienos') }}</span>
               </div>
             </template>
-          </DataTableProvider>
+          </SimpleDataTable>
         </CardContent>
       </Card>
     </div>
@@ -49,7 +44,7 @@ import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Button } from "@/Components/ui/button";
 import { Badge } from "@/Components/ui/badge";
-import DataTableProvider from "@/Components/ui/data-table/DataTableProvider.vue";
+import SimpleDataTable from "@/Components/Tables/SimpleDataTable.vue";
 import IFluentNews24Regular from "~icons/fluent/news-24-regular";
 import IFluentEdit20Filled from "~icons/fluent/edit-20-filled";
 

@@ -16,13 +16,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from "vue";
+// No longer need computed, onMounted, onUnmounted - usePageBreadcrumbs handles this
 import { usePage } from "@inertiajs/vue3";
 import { trans as $t } from "laravel-vue-i18n";
 
 import RichContentParser from "@/Components/RichContentParser.vue";
 import FeedbackPopover from "@/Components/Public/FeedbackPopover.vue";
-import { usePublicBreadcrumbs } from "@/Composables/usePublicBreadcrumbs";
+import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import NewsArticleLayout from "@/Components/Public/News/NewsArticleLayout.vue";
 import IFluentNews24Regular from "~icons/fluent/news-24-regular";
 
@@ -30,16 +30,15 @@ const props = defineProps<{
   article: App.Entities.News;
 }>();
 
-const { createPublicRouteBreadcrumb, createPublicBreadcrumbItem, setPageBreadcrumbs } = usePublicBreadcrumbs();
 const page = usePage();
 
-// Build breadcrumb items for the news article
-const breadcrumbItems = computed(() => {
+// Set breadcrumbs for news article page
+usePageBreadcrumbs(() => {
   const items = [];
   
   // News archive link
   items.push(
-    createPublicRouteBreadcrumb(
+    BreadcrumbHelpers.createRouteBreadcrumb(
       'Naujienos',
       'newsArchive',
       {
@@ -53,14 +52,9 @@ const breadcrumbItems = computed(() => {
   
   // Current news article
   items.push(
-    createPublicBreadcrumbItem(props.article.title)
+    BreadcrumbHelpers.createBreadcrumbItem(props.article.title)
   );
   
-  return items;
-});
-
-// Set the breadcrumbs in the centralized state on component mount
-onMounted(() => {
-  setPageBreadcrumbs(breadcrumbItems.value);
+  return BreadcrumbHelpers.publicContent(items);
 });
 </script>

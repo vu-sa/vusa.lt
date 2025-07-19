@@ -1,5 +1,5 @@
 <template>
-  <PageContent :title="`${$page.props.auth?.user?.name}`" :breadcrumbs="breadcrumbs">
+  <PageContent :title="`${$page.props.auth?.user?.name}`">
     <NCard>
       <!-- <p>{{ salutation }}</p> -->
       <div class="mb-4">
@@ -54,6 +54,45 @@
             </NButton>
           </FormElement>
 
+          <!-- Password Change Section -->
+          <FormElement v-if="user.has_password">
+            <template #title>
+              {{ $t("Slaptažodžio keitimas") }}
+            </template>
+            <template #description>
+              Jūs galite pakeisti savo slaptažodį čia. Įveskite dabartinį slaptažodį ir naują slaptažodį.
+            </template>
+            <NForm :model="passwordForm">
+              <NFormItem :label="$t('Dabartinis slaptažodis')" required>
+                <NInput 
+                  v-model:value="passwordForm.current_password" 
+                  type="password" 
+                  placeholder="Įveskite dabartinį slaptažodį" 
+                />
+              </NFormItem>
+              <NFormItem :label="$t('Naujas slaptažodis')" required>
+                <NInput 
+                  v-model:value="passwordForm.password" 
+                  type="password" 
+                  placeholder="Įveskite naują slaptažodį" 
+                />
+              </NFormItem>
+              <NFormItem :label="$t('Pakartokite naują slaptažodį')" required>
+                <NInput 
+                  v-model:value="passwordForm.password_confirmation" 
+                  type="password" 
+                  placeholder="Pakartokite naują slaptažodį" 
+                />
+              </NFormItem>
+              <NButton :loading="passwordLoading" type="primary" @click="handlePasswordUpdate">
+                {{ $t("Keisti slaptažodį") }}
+                <template #icon>
+                  <IMdiLock />
+                </template>
+              </NButton>
+            </NForm>
+          </FormElement>
+
           <h2>{{ $t("Tavo rolės") }}</h2>
           <ul class="list-inside">
             <li v-for="(role, index) in user.roles" :key="role.id">
@@ -90,9 +129,10 @@ import MultiLocaleInput from "@/Components/FormItems/MultiLocaleInput.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import UploadImageWithCropper from "@/Components/Buttons/UploadImageWithCropper.vue";
 import InfoText from "@/Components/SmallElements/InfoText.vue";
-import { useBreadcrumbs, type BreadcrumbItem } from "@/Composables/useBreadcrumbs";
+import { BreadcrumbHelpers, usePageBreadcrumbs } from "@/Composables/useBreadcrumbsUnified";
 import IMdiContentSave from '~icons/mdi/content-save';
 import IMdiGithub from '~icons/mdi/github';
+import IMdiLock from '~icons/mdi/lock';
 import Icons from "@/Types/Icons/regular";
 
 const props = defineProps<{
@@ -100,6 +140,7 @@ const props = defineProps<{
 }>();
 
 const loading = ref(false);
+const passwordLoading = ref(false);
 
 const form = useForm({
   name: props.user.name,
@@ -111,11 +152,15 @@ const form = useForm({
   show_pronouns: props.user.show_pronouns,
 });
 
-// Setup breadcrumbs for the Settings page
-const { createBreadcrumbItem } = useBreadcrumbs();
+const passwordForm = useForm({
+  current_password: '',
+  password: '',
+  password_confirmation: '',
+});
 
-const breadcrumbs = computed((): BreadcrumbItem[] => [
-  createBreadcrumbItem($t('Nustatymai'), undefined, Icons.SETTINGS)
+// Generate breadcrumbs automatically with new simplified API
+usePageBreadcrumbs([
+  { label: $t('Nustatymai'), icon: Icons.SETTINGS }
 ]);
 
 const handleSubmit = () => {
@@ -124,6 +169,20 @@ const handleSubmit = () => {
     preserveScroll: true,
     onSuccess: () => {
       loading.value = false;
+    },
+  });
+};
+
+const handlePasswordUpdate = () => {
+  passwordLoading.value = true;
+  passwordForm.patch(route("profile.updatePassword"), {
+    preserveScroll: true,
+    onSuccess: () => {
+      passwordLoading.value = false;
+      passwordForm.reset();
+    },
+    onError: () => {
+      passwordLoading.value = false;
     },
   });
 };

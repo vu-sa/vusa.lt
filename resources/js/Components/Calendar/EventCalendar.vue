@@ -38,6 +38,7 @@ import "v-calendar/style.css";
 import { Calendar, PopoverRow } from "v-calendar";
 import { darkTheme } from "naive-ui";
 import { useDark } from "@vueuse/core";
+import { computed } from "vue";
 import type { PageAddress } from "v-calendar/dist/types/src/utils/page";
 
 const props = defineProps<{
@@ -53,14 +54,12 @@ const initialPage: PageAddress = {
 
 const isDark = useDark();
 
-// check if event date and end date is on the same day
-const isSameDay = (date1: string, date2: string) => {
-  if (date2 === null) {
-    return true;
-  }
-
-  let parsedDate1 = new Date(date1);
-  let parsedDate2 = new Date(date2);
+// Optimize date comparison function
+const isSameDay = (date1: string, date2: string | null) => {
+  if (!date2) return true;
+  
+  const parsedDate1 = new Date(date1);
+  const parsedDate2 = new Date(date2);
 
   return (
     parsedDate1.getFullYear() === parsedDate2.getFullYear() &&
@@ -69,47 +68,41 @@ const isSameDay = (date1: string, date2: string) => {
   );
 };
 
-const calendarAttributes = props.calendarEvents.map((event) => {
-  let eventColor: string | { class: string };
+// Create a category color map for better performance
+const categoryColorMap = {
+  "freshmen-camps": "yellow",
+  "vu-sa-conferences": "yellow", 
+  "grey": "gray",
+} as const;
 
-  switch (event.category?.alias) {
-    case "freshmen-camps":
-    case "vu-sa-conferences":
-      eventColor = "yellow";
-      break;
+// Memoize calendar attributes calculation for performance
+const calendarAttributes = computed(() => {
+  const attributes = props.calendarEvents.map((event) => {
+    const eventColor = categoryColorMap[event.category?.alias as keyof typeof categoryColorMap] || "red";
+    
+    const startDate = new Date(event.date);
+    const endDate = event.end_date ? new Date(event.end_date) : null;
+    
+    return {
+      dates: endDate ? { start: startDate, end: endDate } : startDate,
+      [isSameDay(event.date, event.end_date) ? "dot" : "highlight"]: eventColor,
+      popover: {
+        label: event.title,
+        isInteractive: true,
+      },
+      key: event.id,
+      customData: { googleLink: event.googleLink },
+    };
+  });
 
-    case "grey":
-      eventColor = "gray";
-      break;
+  // Add today's indicator
+  attributes.push({
+    dates: new Date(),
+    highlight: { color: "red", fillMode: "outline" },
+    order: 1,
+  });
 
-    default:
-      eventColor = "red";
-      break;
-  }
-
-  let calendarAttrObject = {
-    dates: event.end_date
-      ? {
-        start: new Date(event.date),
-        end: new Date(event.end_date),
-      }
-      : new Date(event.date),
-    [isSameDay(event.date, event.end_date) ? "dot" : "highlight"]: eventColor,
-    popover: {
-      label: event.title,
-      isInteractive: true,
-    },
-    key: event.id,
-    customData: { googleLink: event.googleLink },
-  };
-  return calendarAttrObject;
-});
-
-// add today to the calendar
-calendarAttributes.push({
-  dates: new Date(),
-  highlight: { color: "red", fillMode: "outline" },
-  order: 1,
+  return attributes;
 });
 </script>
 

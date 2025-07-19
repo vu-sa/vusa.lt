@@ -2,7 +2,6 @@
   <ShowPageLayout
     :title="duty.name"
     :model="duty"
-    :breadcrumbs="breadcrumbs"
   >
     <template #more-options>
       <MoreOptionsButton
@@ -83,7 +82,7 @@ import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import ShowPageLayout from "@/Components/Layouts/ShowModel/ShowPageLayout.vue";
 import SimpleFileViewer from "@/Features/Admin/SharepointFileManager/Viewer/SimpleFileViewer.vue";
 import UserPopover from "@/Components/Avatars/UserPopover.vue";
-import { useBreadcrumbs, type BreadcrumbItem } from "@/Composables/useBreadcrumbs";
+import { BreadcrumbHelpers, usePageBreadcrumbs } from "@/Composables/useBreadcrumbsUnified";
 import { Separator } from "@/Components/ui/separator";
 
 const props = defineProps<{
@@ -126,10 +125,15 @@ const filteredUsers = computed(() => {
   );
 });
 
-const { createRouteBreadcrumb, createBreadcrumbItem } = useBreadcrumbs();
-
-const breadcrumbs = computed((): BreadcrumbItem[] => [
-  createRouteBreadcrumb(props.duty.institution?.name, "institutions.show", { institution: props.duty?.institution?.id }, Icons.INSTITUTION),
-  createBreadcrumbItem(props.duty.name, undefined, Icons.DUTY),
-]);
+// Simplified breadcrumbs with automatic lifecycle
+usePageBreadcrumbs(() => 
+  BreadcrumbHelpers.adminShow(
+    props.duty.institution?.name,
+    "institutions.show", 
+    { institution: props.duty?.institution?.id },
+    props.duty.name,
+    Icons.INSTITUTION,
+    Icons.DUTY
+  )
+);
 </script>

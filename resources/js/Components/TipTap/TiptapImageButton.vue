@@ -19,7 +19,7 @@ defineProps<{
 }>()
 
 defineEmits<{
-  (e: 'submit', url: string): void
+  (e: 'submit', imageData: { src: string; alt: string; title: string }): void
 }>()
 
 const showModal = ref(false);

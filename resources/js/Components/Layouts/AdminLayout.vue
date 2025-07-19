@@ -9,7 +9,7 @@
         <div class="flex flex-1 items-center gap-2">
           <SidebarTrigger class="-ml-1" />
           <Separator orientation="vertical" class="mr-2 h-4" />
-          <AdminBreadcrumbs :items="breadcrumbState.breadcrumbs.value" />
+          <UnifiedBreadcrumbs />
         </div>
         
         <div class="flex-shrink-0 flex items-center gap-2">
@@ -92,9 +92,9 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from '@/Components/ui/sidebar'
-import AdminBreadcrumbs from '@/Components/Admin/AdminBreadcrumbs.vue';
-import { createBreadcrumbState } from '@/Composables/useBreadcrumbs';
-import type { BreadcrumbItem } from '@/Composables/useBreadcrumbs';
+import UnifiedBreadcrumbs from '@/Components/UnifiedBreadcrumbs.vue';
+import { createBreadcrumbState } from '@/Composables/useBreadcrumbsUnified';
+import type { BreadcrumbItem } from '@/Composables/useBreadcrumbsUnified';
 import { Toaster } from "@/Components/ui/sonner";
 
 const props = withDefaults(defineProps<{
@@ -121,52 +121,26 @@ const currentYear = new Date().getFullYear();
 const systemMessage = computed(() => usePage().props.app?.systemMessage || null);
 
 // Initialize breadcrumb state for the entire admin application
-const breadcrumbState = createBreadcrumbState();
+const breadcrumbState = createBreadcrumbState('admin');
 
-// Generate current page breadcrumbs based on the active component
-const defaultBreadcrumbs = computed(() => {
-  const currentComponent = usePage().component;
-  const isHome = currentComponent === 'Admin/ShowAdminHome';
-  
-  // No breadcrumbs on home page
-  if (isHome) {
-    return [];
+// Clear breadcrumbs when on home page
+watch(() => usePage().component, (component) => {
+  if (component === 'Admin/ShowAdminHome') {
+    breadcrumbState.clear();
   }
-  
-  // Return only the current page breadcrumb by default
-  return pageTitle.value ? [{ label: pageTitle.value, href: undefined }] : [];
-});
+}, { immediate: true });
 
 // Handle breadcrumb initialization for new pages with prop-provided breadcrumbs
 watch(() => props.breadcrumbs, (newBreadcrumbs) => {
   if (newBreadcrumbs?.length) {
-    breadcrumbState.setBreadcrumbs(newBreadcrumbs, 'component');
+    breadcrumbState.set(newBreadcrumbs);
   }
 }, { immediate: true });
 
-// Initialize default breadcrumbs if no explicit ones exist yet
+// Listen for navigation events - don't clear breadcrumbs to avoid flashing
 onMounted(() => {
-  if (!breadcrumbState.hasBreadcrumbs.value && defaultBreadcrumbs.value.length > 0) {
-    breadcrumbState.setBreadcrumbs(defaultBreadcrumbs.value, 'default');
-  }
-});
-
-// Listen for navigation events
-onMounted(() => {
-  router.on('start', () => {
-    // Don't clear breadcrumbs during navigation - this helps them persist
-  });
-  
-  router.on('finish', () => {
-    // Set default breadcrumbs only if no component has set them
-    nextTick(() => {
-      // Component-specific breadcrumbs should already be set by this point
-      // Only add default breadcrumbs if nothing else has been set
-      if (!breadcrumbState.hasBreadcrumbs.value && defaultBreadcrumbs.value.length > 0) {
-        breadcrumbState.setBreadcrumbs(defaultBreadcrumbs.value, 'default');
-      }
-    });
-  });
+  // Note: We no longer clear breadcrumbs on navigation start to prevent flashing
+  // Individual pages will set their own breadcrumbs using usePageBreadcrumbs()
 });
 
 const mounted = ref(false);
