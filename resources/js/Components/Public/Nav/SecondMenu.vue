@@ -43,23 +43,17 @@
         <SearchButton class="h-6 px-2 text-xs tracking-wide hover:bg-nav-hover-bg-light dark:hover:bg-nav-hover-bg-dark">
           {{ $t('Paieška') }}
         </SearchButton>
-        <a href="/login">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            class="h-6 px-2 text-xs tracking-wide hover:bg-nav-hover-bg-light dark:hover:bg-nav-hover-bg-dark gap-1"
-            :title="$page.props.auth?.user ? $page.props.auth.user?.name : $t('auth.login')"
-            animation="subtle"
-          >
-            <IFluentPerson24Filled v-if="$page.props.auth?.user" class="h-4 w-4" />
-            <IFluentPerson24Regular v-else class="h-4 w-4" />
-            <span class="hidden sm:inline">
-              {{ $page.props.auth?.user ? $page.props.auth.user?.name : $t('auth.login') }}
-            </span>
-            <span class="sr-only sm:hidden">
-              {{ $page.props.auth?.user ? $page.props.auth.user?.name : $t('auth.login') }}
-            </span>
-          </Button>
+        <a href="/login" 
+           class="inline-flex items-center justify-center h-6 px-2 text-xs tracking-wide hover:bg-nav-hover-bg-light dark:hover:bg-nav-hover-bg-dark gap-1 rounded-md transition-colors"
+           :title="$page.props.auth?.user ? $page.props.auth.user?.name : $t('auth.login')">
+          <IFluentPerson24Filled v-if="$page.props.auth?.user" class="h-4 w-4" aria-hidden="true" />
+          <IFluentPerson24Regular v-else class="h-4 w-4" aria-hidden="true" />
+          <span class="hidden sm:inline">
+            {{ $page.props.auth?.user ? $page.props.auth.user?.name : $t('auth.login') }}
+          </span>
+          <span class="sr-only sm:hidden">
+            {{ $page.props.auth?.user ? $page.props.auth.user?.name : $t('auth.login') }}
+          </span>
         </a>
       </div>
     </nav>

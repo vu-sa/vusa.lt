@@ -1,13 +1,13 @@
 <template>
-  <footer class="w-full border-t border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900">
+  <footer class="w-full border-t border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900" role="contentinfo">
     <div class="mx-auto max-w-7xl px-4 py-6 md:py-8 md:px-8">
       <div class="grid gap-4 md:gap-6 md:grid-cols-2 lg:grid-cols-3">
         <!-- Organization info -->
-        <div class="space-y-3">
-          <h3 class="text-base font-bold text-zinc-900 dark:text-zinc-100">
+        <section class="space-y-3" aria-labelledby="organization-info">
+          <h2 id="organization-info" class="text-base font-bold text-zinc-900 dark:text-zinc-100">
             {{ $t("Vilniaus universiteto Studentų atstovybė") }}
-          </h3>
-          <div class="space-y-1 text-sm text-zinc-600 dark:text-zinc-400">
+          </h2>
+          <address class="space-y-1 text-sm text-zinc-600 dark:text-zinc-400 not-italic">
             <p>{{ $t("Įmonės kodas") }}: 193077294</p>
             <p>{{ $t("PVM mokėtojo kodas") }}: LT100015645710</p>
             <p>
@@ -16,45 +16,46 @@
                 saskaitos@vusa.lt
               </a>
             </p>
-          </div>
-        </div>
+          </address>
+        </section>
 
         <!-- Social media and StartFM -->
-        <div class="space-y-0">
-          <div class="flex flex-wrap gap-2">
+        <section class="space-y-0" aria-labelledby="social-media">
+          <h2 id="social-media" class="sr-only">{{ $t("Social media and radio") }}</h2>
+          <nav aria-label="Social media links" class="flex flex-wrap gap-2">
             <FacebookButton>
               {{ $t("Facebook") }}
             </FacebookButton>
             <InstagramButton>
               {{ $t("Instagram") }}
             </InstagramButton>
-          </div>
+          </nav>
           <StartFM size="small">
             Įsijunk StartFM
           </StartFM>
-        </div>
+        </section>
 
         <!-- Contact info -->
-        <div class="space-y-3">
-          <h3 class="text-base font-bold text-zinc-900 dark:text-zinc-100">
+        <section class="space-y-3" aria-labelledby="contact-info">
+          <h2 id="contact-info" class="text-base font-bold text-zinc-900 dark:text-zinc-100">
             {{ $t("Kontaktai") }}
-          </h3>
-          <div class="space-y-2">
+          </h2>
+          <address class="space-y-2 not-italic">
             <div class="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
-              <IFluentPhone20Regular class="flex-shrink-0 w-4 h-4 text-vusa-red" />
+              <IFluentPhone20Regular class="flex-shrink-0 w-4 h-4 text-vusa-red" aria-hidden="true" />
               <a href="tel:+37052687144" class="hover:text-vusa-red transition-colors">
                 +370 5 268 7144
               </a>
             </div>
             <div class="flex items-start gap-2 text-sm text-zinc-600 dark:text-zinc-400">
-              <IFluentBuilding20Regular class="flex-shrink-0 w-4 h-4 text-vusa-red mt-0.5" />
+              <IFluentBuilding20Regular class="flex-shrink-0 w-4 h-4 text-vusa-red mt-0.5" aria-hidden="true" />
               <div>
                 <p>{{ $t("Universiteto g. 3, Observatorijos kiemelis") }}</p>
                 <p>{{ $t("01513, Vilnius, Lietuva") }}</p>
               </div>
             </div>
-          </div>
-        </div>
+          </address>
+        </section>
       </div>
     </div>
   </footer>

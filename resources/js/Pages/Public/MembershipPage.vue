@@ -1,7 +1,7 @@
 <template>
   <HeroElement is-first-element :element="heroElement" />
   <div class="grid grid-cols-2 gap-x-12 gap-y-8 items-center w-full h-full px-4 py-12">
-    <img class="px-12" src="https://placehold.co/600x400/e2e8f0/475569?text=People+Talking">
+    <img class="px-12" src="https://placehold.co/600x400/e2e8f0/475569?text=People+Talking" alt="Students having a conversation">
     <div>
       <h2 class="text-4xl font-extrabold mb-1">
         Ar ieškai naujos aplinkos ir draugų?
@@ -22,8 +22,8 @@
         draugų.
       </p>
     </div>
-    <img class="px-12 w-4/5 mx-auto" src="https://placehold.co/600x400/e2e8f0/475569?text=Brand+Communication">
-    <img class="px-12 w-4/5 mx-auto" src="https://placehold.co/600x400/e2e8f0/475569?text=Feedback">
+    <img class="px-12 w-4/5 mx-auto" src="https://placehold.co/600x400/e2e8f0/475569?text=Brand+Communication" alt="Brand communication and outreach activities">
+    <img class="px-12 w-4/5 mx-auto" src="https://placehold.co/600x400/e2e8f0/475569?text=Feedback" alt="Students providing feedback and suggestions">
     <div>
       <h2 class="text-4xl font-extrabold mb-1">
         Ar sieki augti karjeroje ir kaip asmenybė?
@@ -79,14 +79,14 @@
   <div class="my-8">
     <!-- Set image placeholder 4x2 grid -->
     <div class="grid grid-cols-4 gap-5 items-center *:rounded-2xl">
-      <img src="/images/curatorRegistration/curator1.jpg">
-      <img src="/images/photos/VU SA 2022.jpg">
-      <img src="/images/photos/pirmakursiu_stovykla_kaune.jpg">
-      <img src="/images/photos/stovykla.jpg">
-      <img src="/images/photos/vu.jpg">
-      <img src="/images/curatorRegistration/curator1.jpg">
-      <img src="/images/icons/pictograms/image00008.jpg">
-      <img src="/images/photos/VU SA 2023.jpg">
+      <img src="/images/curatorRegistration/curator1.jpg" alt="Student curator helping freshmen" loading="lazy">
+      <img src="/images/photos/VU SA 2022.jpg" alt="VU SA students in 2022" loading="lazy">
+      <img src="/images/photos/pirmakursiu_stovykla_kaune.jpg" alt="Freshmen camp in Kaunas" loading="lazy">
+      <img src="/images/photos/stovykla.jpg" alt="Student camp activities" loading="lazy">
+      <img src="/images/photos/vu.jpg" alt="Vilnius University building" loading="lazy">
+      <img src="/images/curatorRegistration/curator1.jpg" alt="Student mentor assisting new students" loading="lazy">
+      <img src="/images/icons/pictograms/image00008.jpg" alt="VU SA activity pictogram" loading="lazy">
+      <img src="/images/photos/VU SA 2023.jpg" alt="VU SA students in 2023" loading="lazy">
     </div>
   </div>
   <div class="hidden">

@@ -12,12 +12,14 @@
   <div v-else-if="error" class="my-4 rounded-lg py-4 text-red-500" role="alert">
     {{ $t("Nepavyko užkrauti naujienų") }}
   </div>
-  <div v-else-if="news && news.length > 0" class="my-4 rounded-lg py-4">
-    <section class="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-[2fr_1fr]">
+  <section v-else-if="news && news.length > 0" class="my-4 rounded-lg py-4" aria-labelledby="news-section-heading">
+    <h2 id="news-section-heading" class="sr-only">{{ $t("News and announcements") }}</h2>
+    <div class="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-[2fr_1fr]">
       <!-- Main Carousel -->
-      <div class="relative">
+      <section class="relative" aria-labelledby="featured-news-heading">
+        <h3 id="featured-news-heading" class="sr-only">{{ $t("Featured news") }}</h3>
         <Carousel v-if="news.length" class="w-full" :opts="{ loop: true, skipSnaps: false }" :plugins="carouselPlugins"
-          @init-api="onCarouselInit">
+          @init-api="onCarouselInit" role="region" aria-label="Featured news carousel">
           <CarouselContent>
             <CarouselItem v-for="item in news" :key="item.id">
               <div class="flex flex-col">
@@ -45,11 +47,11 @@
             </CarouselItem>
           </CarouselContent>
         </Carousel>
-      </div>
+      </section>
 
       <!-- Sidebar News List -->
-      <div class="flex flex-col gap-3">
-        <h3 class="text-lg sm:text-xl font-bold text-zinc-900 dark:text-zinc-100">
+      <aside class="flex flex-col gap-3" aria-labelledby="latest-news-heading">
+        <h3 id="latest-news-heading" class="text-lg sm:text-xl font-bold text-zinc-900 dark:text-zinc-100">
           {{ $t("Naujausios") }}
         </h3>
 
@@ -114,9 +116,9 @@
           <span class="text-zinc-900 dark:text-zinc-100">{{ $t("Žiūrėti visas") }}</span>
           <IFluentArrowRight16Regular />
         </SmartLink>
-      </div>
-    </section>
-  </div>
+      </aside>
+    </div>
+  </section>
   <div v-else class="my-4 rounded-lg py-4 text-center text-zinc-500 dark:text-zinc-400">
     {{ $t("Nėra naujienų") }}
   </div>

@@ -31,7 +31,7 @@
   </div>
 
   <cropper-canvas ref="canvas" v-bind="$attrs">
-    <cropper-image ref="image" :src alt="Picture" rotatable scalable />
+    <cropper-image ref="image" :src alt="Image to be cropped" rotatable scalable />
     <cropper-shade hidden />
     <cropper-handle action="select" plain hidden />
     <cropper-selection ref="selection" initial-coverage="0.5" movable resizable>

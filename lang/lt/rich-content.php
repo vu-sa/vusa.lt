@@ -16,4 +16,11 @@ return [
     'add_content_block' => 'Pridėti turinio bloką',
     'text_placeholder' => 'Įrašykite čia...',
     'restore_content_block_order' => 'Atkurti turinio blokų tvarką',
+    'max_blocks_reached' => 'Pasiektas maksimalus blokų skaičius',
+    'select_content_block' => 'Pasirinkite turinio bloką',
+    // Accessibility
+    'image_alt_text' => 'Alt tekstas (prieinamumui)',
+    'image_alt_placeholder' => 'Aprašykite, kas pavaizduota nuotraukoje',
+    'image_title' => 'Pavadinimas (neprivalomas)',
+    'image_title_placeholder' => 'Pavadinimas, rodomas užvedus pelę',
 ];

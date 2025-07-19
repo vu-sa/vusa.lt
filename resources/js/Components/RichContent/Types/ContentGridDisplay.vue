@@ -18,9 +18,15 @@
               <RichContentTiptapHTML :json_content="column.content.value" />
             </div>
             <div v-else-if="column.content.type === 'image'" class="h-full">
-              <img :src="column.content.value" class="rounded-lg w-full object-cover" :class="[
-                processedOptions.equalHeight ? 'h-full object-cover' : 'aspect-video object-cover',
-              ]" alt="">
+              <img 
+                :src="column.content.value" 
+                class="rounded-lg w-full object-cover" 
+                :class="[
+                  processedOptions.equalHeight ? 'h-full object-cover' : 'aspect-video object-cover',
+                ]" 
+                :alt="column.content.alt || ''"
+                :title="column.content.title || column.content.alt || ''"
+              >
             </div>
           </div>
         </div>

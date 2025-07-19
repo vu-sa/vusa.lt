@@ -6,18 +6,43 @@
     @click="changeShowSearch"
     class="gap-2"
     animation="subtle"
+    :aria-expanded="showSearch"
+    aria-haspopup="dialog"
+    aria-controls="search-modal"
   >
-    <IFluentSearch20Filled class="h-4 w-4" />
+    <IFluentSearch20Filled class="h-4 w-4" aria-hidden="true" />
     <slot />
+    <span v-if="!$slots.default" class="sr-only">{{ $t('Paieška') }}</span>
   </Button>
-  <CardModal v-model:show="showSearch" title="Paieška" @close="showSearch = false">
-    <NInput :loading="searchInputLoading" round type="text" size="large" :placeholder="$t('Ieškoti...')" class="mb-2"
-      @input="handleSearchInput" />
+  <CardModal 
+    id="search-modal"
+    v-model:show="showSearch" 
+    :title="$t('Paieška')" 
+    @close="showSearch = false"
+    role="dialog"
+    aria-labelledby="search-modal-title"
+  >
+    <h2 id="search-modal-title" class="sr-only">{{ $t('Site search') }}</h2>
+    <form role="search" @submit.prevent>
+      <label for="search-input" class="sr-only">{{ $t('Enter search terms') }}</label>
+      <NInput 
+        id="search-input"
+        :loading="searchInputLoading" 
+        round 
+        type="search" 
+        size="large" 
+        :placeholder="$t('Ieškoti...')" 
+        class="mb-2"
+        @input="handleSearchInput"
+        aria-describedby="search-instructions"
+      />
+      <p id="search-instructions" class="sr-only">{{ $t('Type to search for documents, pages, and news') }}</p>
+    </form>
     <Separator v-if="$page.props.search" />
-    <div class="flex flex-col gap-4">
+    <div class="flex flex-col gap-4" role="region" aria-live="polite" aria-label="Search results">
       <template v-if="$page.props.search">
-        <div v-if="$page.props.search.documents.length !== 0">
-          <h3>Dokumentai</h3>
+        <section v-if="$page.props.search.documents.length !== 0" aria-labelledby="documents-heading">
+          <h3 id="documents-heading">{{ $t('Documents') }}</h3>
 
           <div class="col-span-2 mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2">
             <SmartLink v-for="documentItem in $page.props.search.documents" :key="documentItem.id"
@@ -25,9 +50,9 @@
               <DocumentCard :document-item />
             </SmartLink>
           </div>
-        </div>
-        <div v-if="$page.props.search.pages.length !== 0">
-          <h3>Puslapiai</h3>
+        </section>
+        <section v-if="$page.props.search.pages.length !== 0" aria-labelledby="pages-heading">
+          <h3 id="pages-heading">{{ $t('Pages') }}</h3>
 
           <div class="grid content-stretch gap-4 lg:grid-cols-2">
             <Link v-for="page in $page.props.search.pages" :key="page.id" :href="getRoute(page, 'page')"
@@ -35,10 +60,10 @@
             <PageCard :page />
             </Link>
           </div>
-        </div>
-        <div v-if="$page.props.search?.news.length !== 0">
-          <h3 v-if="$page.props.search.news">
-            Naujienos
+        </section>
+        <section v-if="$page.props.search?.news.length !== 0" aria-labelledby="news-heading">
+          <h3 id="news-heading" v-if="$page.props.search.news">
+            {{ $t('News') }}
           </h3>
 
           <div class="grid gap-8 sm:grid-cols-1 md:grid-cols-2">
@@ -46,10 +71,10 @@
             <NewsCard :news />
             </Link>
           </div>
-        </div>
-        <!-- <div v-if="$page.props.search?.calendar.length !== 0">
-          <h3 v-if="$page.props.search.calendar">
-            Kalendoriaus įrašai
+        </section>
+        <!-- <section v-if="$page.props.search?.calendar.length !== 0" aria-labelledby="calendar-heading">
+          <h3 id="calendar-heading" v-if="$page.props.search.calendar">
+            {{ $t('Calendar entries') }}
           </h3>
           <Link v-for="calendar in $page.props.search.calendar" :key="calendar.id"
             :href="getRoute(calendar, 'calendar')" @success="changeShowSearch">
@@ -60,7 +85,7 @@
             </p>
           </div>
           </Link>
-        </div> -->
+        </section> -->
       </template>
     </div>
   </CardModal>

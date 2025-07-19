@@ -1,8 +1,9 @@
 <template>
-  <div class="fixed top-0 w-[100cqw] z-50">
+  <header class="fixed top-0 w-[100cqw] z-50" role="banner">
     <section class="max-w-[84rem] mx-auto">
       <div class="group relative mt-4 mx-4 2xl:mx-0">
         <nav
+          aria-label="Main navigation"
           class="relative z-10 flex bg-white py-0.5 pl-3 pr-6 text-zinc-800 transition duration-500 group-hover:rounded-b-none group-hover:rounded-t-2xl group-hover:delay-500 dark:bg-zinc-800 dark:text-white max-md:rounded-xl max-md:gap-2 md:grid md:grid-cols-[auto__1fr__auto] md:gap-8 md:px-8 md:rounded-t-2xl"
           :class="{
             // Desktop shadow logic (md and up)
@@ -15,11 +16,9 @@
             'max-md:shadow-md max-md:ease-in': !hasScrolledDown,
           }">
           <div class="flex flex-row items-center space-x-4">
-            <SmartLink prefetch title="Grįžti į pagrindinį puslapį" class="leading-3"
+            <SmartLink prefetch title="Grįžti į pagrindinį puslapį" class="leading-3 w-32 h-12 md:w-36 md:h-14 p-1 inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
               :href="`${$page.props.app.url}/${$page.props.app.locale}`" target="_self">
-              <Button variant="ghost" class="w-32 h-12 md:w-36 md:h-14 p-1">
-                <AppLogo :is-theme-dark class="w-full h-full" />
-              </Button>
+              <AppLogo :is-theme-dark class="w-full h-full" />
             </SmartLink>
           </div>
 
@@ -67,7 +66,7 @@
           }" />
       </div>
     </section>
-  </div>
+  </header>
 </template>
 
 <script setup lang="tsx">
