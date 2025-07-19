@@ -4,13 +4,13 @@
 
 <script setup lang="ts">
 import { generateHTML } from '@tiptap/vue-3';
-import { Image } from '@tiptap/extension-image';
 import { StarterKit } from '@tiptap/starter-kit';
 import { TableKit } from '@tiptap/extension-table';
 import { Youtube } from '@tiptap/extension-youtube';
 
 import { CustomHeading } from './TipTap/CustomHeading';
 import { Video } from './TipTap/Video';
+import { AccessibleImage } from './TipTap/AccessibleImage';
 
 defineProps<{
   json_content: any;
@@ -37,7 +37,13 @@ export const generateHTMLfromTiptap = (json_content: any) => {
     CustomHeading.configure({
       headings: [2, 3],
     }),
-    Image,
+    AccessibleImage.configure({
+      HTMLAttributes: {
+        class: 'w-full rounded-md',
+        loading: 'lazy',
+      },
+      allowBase64: true,
+    }),
     TableKit.configure({
       table: {
         HTMLAttributes: {

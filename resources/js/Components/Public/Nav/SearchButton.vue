@@ -22,9 +22,9 @@
     role="dialog"
     aria-labelledby="search-modal-title"
   >
-    <h2 id="search-modal-title" class="sr-only">{{ $t('Site search') }}</h2>
+    <h2 id="search-modal-title" class="sr-only">{{ $t('accessibility.site_search') }}</h2>
     <form role="search" @submit.prevent>
-      <label for="search-input" class="sr-only">{{ $t('Enter search terms') }}</label>
+      <label for="search-input" class="sr-only">{{ $t('accessibility.enter_search_terms') }}</label>
       <NInput 
         id="search-input"
         :loading="searchInputLoading" 
@@ -36,13 +36,13 @@
         @input="handleSearchInput"
         aria-describedby="search-instructions"
       />
-      <p id="search-instructions" class="sr-only">{{ $t('Type to search for documents, pages, and news') }}</p>
+      <p id="search-instructions" class="sr-only">{{ $t('accessibility.type_to_search') }}</p>
     </form>
     <Separator v-if="$page.props.search" />
     <div class="flex flex-col gap-4" role="region" aria-live="polite" aria-label="Search results">
       <template v-if="$page.props.search">
         <section v-if="$page.props.search.documents.length !== 0" aria-labelledby="documents-heading">
-          <h3 id="documents-heading">{{ $t('Documents') }}</h3>
+          <h3 id="documents-heading">{{ $t('accessibility.documents') }}</h3>
 
           <div class="col-span-2 mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2">
             <SmartLink v-for="documentItem in $page.props.search.documents" :key="documentItem.id"
@@ -52,7 +52,7 @@
           </div>
         </section>
         <section v-if="$page.props.search.pages.length !== 0" aria-labelledby="pages-heading">
-          <h3 id="pages-heading">{{ $t('Pages') }}</h3>
+          <h3 id="pages-heading">{{ $t('accessibility.pages') }}</h3>
 
           <div class="grid content-stretch gap-4 lg:grid-cols-2">
             <Link v-for="page in $page.props.search.pages" :key="page.id" :href="getRoute(page, 'page')"
@@ -63,7 +63,7 @@
         </section>
         <section v-if="$page.props.search?.news.length !== 0" aria-labelledby="news-heading">
           <h3 id="news-heading" v-if="$page.props.search.news">
-            {{ $t('News') }}
+            {{ $t('accessibility.news') }}
           </h3>
 
           <div class="grid gap-8 sm:grid-cols-1 md:grid-cols-2">

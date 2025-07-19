@@ -21,7 +21,7 @@
 
         <!-- Social media and StartFM -->
         <section class="space-y-0" aria-labelledby="social-media">
-          <h2 id="social-media" class="sr-only">{{ $t("Social media and radio") }}</h2>
+          <h2 id="social-media" class="sr-only">{{ $t("accessibility.social_media_and_radio") }}</h2>
           <nav aria-label="Social media links" class="flex flex-wrap gap-2">
             <FacebookButton>
               {{ $t("Facebook") }}

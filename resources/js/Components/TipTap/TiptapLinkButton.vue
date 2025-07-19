@@ -4,42 +4,70 @@
       <IFluentLink20Regular />
     </template>
   </NButton>
-  <CardModal v-model:show="showModal" class="max-w-3xl" title="Įkelti nuorodą" @close="showModal = false">
-    <NTabs type="line">
-      <NTabPane name="url" tab="Paprasta nuoroda">
-        <div class="flex flex-col items-baseline gap-2">
-          <NFormItem class="w-full" label="Nuoroda" :show-feedback="false">
-            <NInput v-model:value="urlRef" placeholder="https://..." />
-          </NFormItem>
-          <NButton type="primary" @click="addLink">
-            Įkelti
-          </NButton>
-        </div>
-      </NTabPane>
-      <NTabPane name="file" tab="Failas iš vusa.lt failų">
-        <Suspense>
-          <FileSelector v-if="showModal" @submit="addFileLink" />
-          <div v-else class="h-32" />
-          <template #fallback>
-            <div class="flex h-32 items-center justify-center">
-              <Spinner size="sm" />
+  
+  <Dialog :open="showModal" @update:open="showModal = $event">
+    <DialogContent class="sm:max-w-3xl">
+      <DialogHeader>
+        <DialogTitle>Įkelti nuorodą</DialogTitle>
+        <DialogDescription>
+          Pasirinkite nuorodos tipą ir nustatykite jos paskirtį.
+        </DialogDescription>
+      </DialogHeader>
+
+      <NTabs type="line" class="mt-4">
+        <NTabPane name="url" tab="Paprasta nuoroda">
+          <div class="space-y-4 pt-4">
+            <div class="space-y-2">
+              <Label for="url-input">Nuoroda</Label>
+              <Input 
+                id="url-input"
+                v-model="urlRef" 
+                placeholder="https://..." 
+                type="url"
+              />
             </div>
-          </template>
-        </Suspense>
-      </NTabPane>
-      <NTabPane name="archiveDocument" tab="Archyvo dokumentas">
-        <Suspense>
-          <ArchiveDocumentSelector v-if="showModal" @submit="addArchiveDocumentLink" />
-        </Suspense>
-      </NTabPane>
-    </NTabs>
-  </CardModal>
+          </div>
+        </NTabPane>
+        <NTabPane name="file" tab="Failas iš vusa.lt failų">
+          <div class="pt-4">
+            <Suspense>
+              <FileSelector v-if="showModal" @submit="addFileLink" />
+              <template #fallback>
+                <div class="flex h-32 items-center justify-center">
+                  <Spinner size="sm" />
+                </div>
+              </template>
+            </Suspense>
+          </div>
+        </NTabPane>
+        <NTabPane name="archiveDocument" tab="Archyvo dokumentas">
+          <div class="pt-4">
+            <Suspense>
+              <ArchiveDocumentSelector v-if="showModal" @submit="addArchiveDocumentLink" />
+            </Suspense>
+          </div>
+        </NTabPane>
+      </NTabs>
+
+      <DialogFooter>
+        <Button variant="outline" @click="showModal = false">
+          Atšaukti
+        </Button>
+        <Button @click="addLink" :disabled="!urlRef.trim()">
+          Įkelti
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
 </template>
 
 <script setup lang="ts">
 import { ref } from "vue";
 
-import CardModal from "../Modals/CardModal.vue";
+import { Button } from '@/Components/ui/button';
+import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import FileSelector from "@/Features/Admin/FileManager/FileSelector.vue";
 import ArchiveDocumentSelector from "@/Features/Admin/ArchiveDocumentSelector.vue";
 import { Spinner } from "@/Components/ui/spinner";

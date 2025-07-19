@@ -13,11 +13,11 @@
     {{ $t("Nepavyko užkrauti naujienų") }}
   </div>
   <section v-else-if="news && news.length > 0" class="my-4 rounded-lg py-4" aria-labelledby="news-section-heading">
-    <h2 id="news-section-heading" class="sr-only">{{ $t("News and announcements") }}</h2>
+    <h2 id="news-section-heading" class="sr-only">{{ $t("accessibility.news_and_announcements") }}</h2>
     <div class="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-[2fr_1fr]">
       <!-- Main Carousel -->
       <section class="relative" aria-labelledby="featured-news-heading">
-        <h3 id="featured-news-heading" class="sr-only">{{ $t("Featured news") }}</h3>
+        <h3 id="featured-news-heading" class="sr-only">{{ $t("accessibility.featured_news") }}</h3>
         <Carousel v-if="news.length" class="w-full" :opts="{ loop: true, skipSnaps: false }" :plugins="carouselPlugins"
           @init-api="onCarouselInit" role="region" aria-label="Featured news carousel">
           <CarouselContent>

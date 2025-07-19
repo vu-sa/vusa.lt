@@ -108,8 +108,11 @@ Route::resource('reservations', ReservationController::class);
 Route::resource('reservationResources', ReservationResourceController::class)->except(['index', 'create', 'edit']);
 
 Route::get('files/getFiles', [FilesController::class, 'getFiles'])->name('files.getFiles');
+Route::get('files/allowed-types', [FilesController::class, 'getAllowedFileTypes'])->name('files.allowedTypes');
 Route::post('files/createDirectory', [FilesController::class, 'createDirectory'])->name('files.createDirectory');
+Route::post('files/upload-image', [FilesController::class, 'uploadImage'])->name('files.uploadImage');
 Route::delete('files/delete', [FilesController::class, 'delete'])->name('files.delete');
+Route::delete('files/bulk-delete', [FilesController::class, 'bulkDelete'])->name('files.bulkDelete');
 Route::resource('files', FilesController::class);
 
 Route::resource('documents', DocumentController::class)->except('create', 'edit');
@@ -149,8 +152,6 @@ Route::get('tasks/indicator', [TaskController::class, 'userTasksForIndicator'])-
 
 Route::resource('changelogItems', ChangelogItemController::class);
 Route::post('changelogItems/approveForUser', [ChangelogItemController::class, 'approveForUser'])->name('changelogItems.approve');
-
-Route::post('files/uploadImage', [FilesController::class, 'uploadImage'])->name('files.uploadImage');
 
 Route::resource('sharepointFiles', SharepointFileController::class)->except('create', 'show', 'edit', 'update');
 
