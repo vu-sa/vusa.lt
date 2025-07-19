@@ -7,8 +7,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Cache;
 use Laravel\Scout\Searchable;
+use Spatie\Sitemap\Contracts\Sitemapable;
+use Spatie\Sitemap\Tags\Url;
 
-class Page extends Model
+class Page extends Model implements Sitemapable
 {
     use HasFactory, Searchable, SoftDeletes;
 
@@ -22,11 +24,11 @@ class Page extends Model
     protected static function booted()
     {
         static::saved(function ($page) {
-            Cache::tags(['pages', "tenant_{$page->tenant_id}", "locale_{$page->lang}"])->flush();
+            Cache::tags(['sitemap', 'pages', "tenant_{$page->tenant_id}", "locale_{$page->lang}"])->flush();
         });
 
         static::deleted(function ($page) {
-            Cache::tags(['pages', "tenant_{$page->tenant_id}", "locale_{$page->lang}"])->flush();
+            Cache::tags(['sitemap', 'pages', "tenant_{$page->tenant_id}", "locale_{$page->lang}"])->flush();
         });
     }
 
@@ -64,5 +66,23 @@ class Page extends Model
         ];
 
         return $array;
+    }
+
+    public function toSitemapTag(): Url
+    {
+        $sitemapUrl = Url::create('/'.$this->permalink)
+            ->setLastModificationDate($this->updated_at)
+            ->setPriority(0.7)
+            ->setChangeFrequency(Url::CHANGE_FREQUENCY_MONTHLY);
+
+        // Add alternate language links if available
+        if ($this->other_lang_id) {
+            $otherLangPage = $this->getOtherLanguage();
+            if ($otherLangPage) {
+                $sitemapUrl->addAlternate(url('/'.$otherLangPage->permalink), $otherLangPage->lang);
+            }
+        }
+
+        return $sitemapUrl;
     }
 }

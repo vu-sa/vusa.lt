@@ -33,8 +33,8 @@ document.head.appendChild(meta);
 
 createInertiaApp({
   title: (title) => {
-    return title
-    //return title ? `${title} - VU SA` : pageTitle;
+    // Ensure title is always a string to prevent Inertia Head escape() errors
+    return title ? String(title) : '';
   },
   resolve: (name) => {
     const page = resolvePageComponent(

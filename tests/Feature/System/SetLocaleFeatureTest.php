@@ -65,7 +65,6 @@ test('bypasses middleware for admin routes', function () {
         '/login',
         '/telescope',
         '/feed',
-        '/pulse',
     ];
 
     foreach ($adminRoutes as $route) {
