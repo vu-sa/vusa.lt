@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Role;
+use App\Services\Typesense\TypesenseManager;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
 use Inertia\Inertia;
+use Typesense\Client;
 
 class SystemStatusController extends Controller
 {
@@ -19,6 +21,7 @@ class SystemStatusController extends Controller
             'redis' => $this->getRedisStatus(),
             'database' => $this->getDatabaseStatus(),
             'cache' => $this->getCacheStatus(),
+            'typesense' => $this->getTypesenseStatus(),
             'integrations' => $this->getIntegrationsStatus(),
             'system' => $this->getSystemStatus(),
         ];
@@ -27,6 +30,104 @@ class SystemStatusController extends Controller
             'status' => $status,
             'lastUpdated' => now()->toISOString(),
         ]);
+    }
+
+    private function getTypesenseStatus(): array
+    {
+        try {
+            // Check if Typesense is configured
+            $isConfigured = TypesenseManager::isConfigured();
+            // Check if any models are configured to use Typesense (regardless of global driver)
+            $configuredModels = TypesenseManager::getCollections();
+            $isEnabled = $isConfigured && !empty($configuredModels);
+            
+            if (!$isEnabled) {
+                return [
+                    'status' => $isConfigured ? 'disabled' : 'unconfigured',
+                    'configured' => $isConfigured,
+                    'enabled' => $isEnabled,
+                    'driver' => 'Individual models use searchableUsing() method',
+                    'last_check' => now()->toISOString(),
+                ];
+            }
+
+            // If not properly configured but enabled, show warning status
+            $statusLevel = $isConfigured ? 'healthy' : 'warning';
+
+            // Test Typesense connection
+            $client = app(Client::class);
+            $start = microtime(true);
+            $health = $client->health->retrieve();
+            $connectionTime = (microtime(true) - $start) * 1000;
+
+            // Get collections info
+            $collections = $client->collections->retrieve();
+            $collectionsStats = [];
+            $totalDocuments = 0;
+
+            foreach ($collections as $collection) {
+                $collectionName = $collection['name'];
+                $numDocs = $collection['num_documents'] ?? 0;
+                $totalDocuments += $numDocs;
+                
+                $collectionsStats[] = [
+                    'name' => $collectionName,
+                    'documents' => number_format($numDocs),
+                    'fields' => count($collection['fields'] ?? []),
+                    'default_sorting_field' => $collection['default_sorting_field'] ?? null,
+                ];
+            }
+
+            // Get configured models
+            $configuredModels = TypesenseManager::getCollections();
+            
+            return [
+                'status' => $health['ok'] ? $statusLevel : 'error',
+                'configured' => $isConfigured,
+                'enabled' => true,
+                'connected' => true,
+                'connection_time' => round($connectionTime, 2).'ms',
+                'health' => $health,
+                'collections' => [
+                    'count' => count($collections),
+                    'total_documents' => number_format($totalDocuments),
+                    'details' => $collectionsStats,
+                ],
+                'configuration' => [
+                    'driver' => 'Models use searchableUsing() method',
+                    'global_scout_driver' => config('scout.driver'),
+                    'host' => config('scout.typesense.client-settings.nodes.0.host'),
+                    'port' => config('scout.typesense.client-settings.nodes.0.port'),
+                    'protocol' => config('scout.typesense.client-settings.nodes.0.protocol'),
+                    'api_key_configured' => !empty(config('scout.typesense.client-settings.api_key')) && config('scout.typesense.client-settings.api_key') !== 'xyz',
+                    'search_only_key_configured' => !empty(env('TYPESENSE_SEARCH_ONLY_KEY')),
+                    'queue_enabled' => config('scout.queue'),
+                    'configured_models' => $configuredModels,
+                ],
+                'last_check' => now()->toISOString(),
+            ];
+            
+        } catch (\Exception $e) {
+            $isConfigured = TypesenseManager::isConfigured();
+            $configuredModels = TypesenseManager::getCollections();
+            
+            return [
+                'status' => 'error',
+                'configured' => $isConfigured,
+                'enabled' => $isConfigured && !empty($configuredModels),
+                'connected' => false,
+                'error' => $e->getMessage(),
+                'error_type' => get_class($e),
+                'configuration' => [
+                    'driver' => 'Models use searchableUsing() method',
+                    'global_scout_driver' => config('scout.driver'),
+                    'host' => config('scout.typesense.client-settings.nodes.0.host'),
+                    'port' => config('scout.typesense.client-settings.nodes.0.port'),
+                    'api_key_configured' => !empty(config('scout.typesense.client-settings.api_key')) && config('scout.typesense.client-settings.api_key') !== 'xyz',
+                ],
+                'last_check' => now()->toISOString(),
+            ];
+        }
     }
 
     private function getRedisStatus(): array
@@ -153,6 +254,10 @@ class SystemStatusController extends Controller
             'scout' => [
                 'driver' => config('scout.driver'),
                 'configured' => ! empty(config('scout.driver')) && config('scout.driver') !== 'null',
+                'queue_enabled' => config('scout.queue'),
+                'after_commit' => config('scout.after_commit'),
+                'chunk_size' => config('scout.chunk.searchable'),
+                'typesense_configured' => TypesenseManager::isConfigured(),
                 'status' => (! empty(config('scout.driver')) && config('scout.driver') !== 'null') ? 'configured' : 'disabled',
             ],
         ];

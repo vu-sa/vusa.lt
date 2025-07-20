@@ -31,8 +31,34 @@ class Document extends Model
     public function toSearchableArray()
     {
         return [
+            'id' => (string) $this->id,
             'title' => $this->title,
+            'summary' => $this->summary,
+            'language' => $this->language ?? 'Unknown',
+            'institution_name_lt' => $this->institution ? $this->institution->getTranslation('name', 'lt') : null,
+            'institution_name_en' => $this->institution ? $this->institution->getTranslation('name', 'en') : null,
+            'document_date' => $this->document_date ? strtotime($this->document_date) : now()->timestamp,
+            'anonymous_url' => $this->anonymous_url,
+            'created_at' => $this->created_at->timestamp
         ];
+    }
+
+    /**
+     * Determine if the model should be searchable.
+     */
+    public function shouldBeSearchable()
+    {
+        // Only index documents that have anonymous access (public)
+        return !empty($this->anonymous_url);
+    }
+
+    /**
+     * Get the engine used to index the model.
+     * Documents should use Typesense for public search.
+     */
+    public function searchableUsing()
+    {
+        return app(\Laravel\Scout\EngineManager::class)->engine('typesense');
     }
 
     public function institution(): \Illuminate\Database\Eloquent\Relations\BelongsTo

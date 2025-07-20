@@ -56,16 +56,33 @@ class Page extends Model implements Sitemapable
 
     public function toSearchableArray()
     {
-        $array = $this->toArray();
-
-        // Customize array...
-        // return only title
-        $array = [
+        return [
+            'id' => (string) $this->id,
             'title' => $this->title,
             'permalink' => $this->permalink,
+            'lang' => $this->lang,
+            'tenant_name' => $this->tenant ? $this->tenant->fullname : null,
+            'category_name' => $this->category ? $this->category->name : null,
+            'created_at' => $this->created_at->timestamp,
         ];
+    }
 
-        return $array;
+    /**
+     * Determine if the model should be searchable.
+     */
+    public function shouldBeSearchable()
+    {
+        // Only index published pages (non-draft)
+        return !($this->is_draft ?? false);
+    }
+
+    /**
+     * Get the engine used to index the model.
+     * Pages should use Typesense for public search.
+     */
+    public function searchableUsing()
+    {
+        return app(\Laravel\Scout\EngineManager::class)->engine('typesense');
     }
 
     public function toSitemapTag(): Url

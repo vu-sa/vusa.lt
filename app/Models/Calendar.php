@@ -71,15 +71,34 @@ class Calendar extends Model implements HasMedia
 
     public function toSearchableArray()
     {
-        $array = $this->toArray();
-
-        // Customize array...
-        // return only title
-        $array = [
-            'title' => $this->title,
+        return [
+            'id' => (string) $this->id,
+            'title_lt' => $this->getTranslation('title', 'lt'),
+            'title_en' => $this->getTranslation('title', 'en'),
+            'date' => $this->date ? $this->date->timestamp : now()->timestamp,
+            'end_date' => $this->end_date ? $this->end_date->timestamp : null,
+            'lang' => $this->lang ?? app()->getLocale(),
+            'tenant_name' => $this->tenant ? $this->tenant->fullname : null,
+            'created_at' => $this->created_at->timestamp,
         ];
+    }
 
-        return $array;
+    /**
+     * Determine if the model should be searchable.
+     */
+    public function shouldBeSearchable()
+    {
+        // Only index published (non-draft) calendar events
+        return !$this->is_draft;
+    }
+
+    /**
+     * Get the engine used to index the model.
+     * Calendar should use Typesense for public search.
+     */
+    public function searchableUsing()
+    {
+        return app(\Laravel\Scout\EngineManager::class)->engine('typesense');
     }
 
     // TODO: add all pages to dev seed

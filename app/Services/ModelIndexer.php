@@ -94,12 +94,25 @@ class ModelIndexer
 
     /**
      * Initialize the search with the indexable model
+     * For admin operations, use database driver to avoid circular dependencies
      *
      * @return $this
      */
     public function search()
     {
-        $this->builder = $this->indexable::search($this->search);
+        // Store the original Scout driver
+        $originalDriver = config('scout.driver');
+        
+        // Use database driver for admin searches to prevent circular dependencies
+        // during indexing operations
+        config(['scout.driver' => 'database']);
+        
+        try {
+            $this->builder = $this->indexable::search($this->search);
+        } finally {
+            // Always restore the original driver
+            config(['scout.driver' => $originalDriver]);
+        }
 
         return $this;
     }
