@@ -35,7 +35,7 @@
         <NSwitch v-model:value="form.is_draft" />
       </NFormItem>
       <NFormItem label="Kategorija">
-        <NSelect v-model:value="form.category" :options="categories" placeholder="Pasirinkti kategoriją..."
+        <NSelect v-model:value="form.category_id" :options="categories" placeholder="Pasirinkti kategoriją..."
           label-field="name" value-field="id" clearable />
       </NFormItem>
       <NFormItem label="Viešinimo auditorija">
