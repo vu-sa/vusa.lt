@@ -70,7 +70,7 @@
         </p>
 
         <a target="_blank" href="https://vu.lt/parduotuve/" aria-label="Visit VU merchandise store">
-          <img src="/images/photos/atributika_banner2.jpg" alt="VU merchandise and accessories banner" loading="lazy">
+          <img src="/images/photos/atributika_banner3.png" alt="VU merchandise and accessories banner" loading="lazy">
         </a>
       </template>
       <template v-else>
