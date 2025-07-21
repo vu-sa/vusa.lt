@@ -51,8 +51,8 @@
           </NButton>
         </div>
       </NFormItem>
-      <NFormItem label="Padalinys">
-        <NSelect v-model:value="form.tenant_id" :options="assignableTenants" label-field="shortname" value-field="id"
+      <NFormItem label="Padalinys" required>
+        <NSelect v-model:value="form.tenant_id" :options="assignableTenants" label-field="shortname" value-field="id" 
           placeholder="VU SA ..." :default-value="assignableTenants[0].id ?? ''" />
       </NFormItem>
     </FormElement>
