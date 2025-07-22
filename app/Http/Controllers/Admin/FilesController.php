@@ -316,78 +316,56 @@ class FilesController extends Controller
             'name.max' => 'Failo pavadinimas per ilgas.',
         ]);
 
-        try {
-            // Images can be uploaded as 1. files or as 2. data urls
-            $data = $request->file()['file'] ?? $request->image;
-            $originalName = isset($request->file()['file'])
-                ? $request->file()['file']->getClientOriginalName()
-                : $request->name;
+        // Images can be uploaded as 1. files or as 2. data urls
+        $data = $request->file()['file'] ?? $request->image;
+        $originalName = isset($request->file()['file'])
+            ? $request->file()['file']->getClientOriginalName()
+            : $request->name;
 
-            if (! $data) {
-                return response()->json(['error' => 'Nepateiktas paveikslėlis.'], 400);
-            }
-
-            if (! $originalName) {
-                return response()->json(['error' => 'Nepateiktas failo pavadinimas.'], 400);
-            }
-
-            $startingImage = Image::read($data);
-            $image = $startingImage->scaleDown(width: 1600)->toWebp();
-
-            $path = (string) $request->input('path');
-
-            try {
-                $validatedPath = $this->validateAndNormalizePath('public/'.$path);
-            } catch (\InvalidArgumentException $e) {
-                return response()->json(['error' => 'Neteisingas katalogo kelias.'], 400);
-            }
-
-            // Get file name without extension and add .webp
-            $originalName = pathinfo($originalName, PATHINFO_FILENAME).'.webp';
-
-            // Check if path exists, create if it doesn't
-            if (! Storage::exists($validatedPath)) {
-                $publicPath = str_replace('public/', '', $validatedPath);
-                Storage::disk('public')->makeDirectory($publicPath);
-            }
-
-            // Check if image exists and rename if needed
-            if (Storage::exists($validatedPath.'/'.$originalName)) {
-                $originalName = time().'_'.$originalName;
-            }
-
-            $fullPath = storage_path('app/'.$validatedPath.'/'.$originalName);
-
-            if (! $image->save($fullPath, 85)) {
-                throw new \Exception('Failed to save image');
-            }
-
-            Log::info('Image uploaded and processed', [
-                'original_name' => $request->name,
-                'processed_name' => $originalName,
-                'path' => $validatedPath,
-                'user_id' => $request->user()->id,
-            ]);
-
-            // Return response with correct URL format
-            return response()->json([
-                'url' => '/uploads/'.$path.'/'.$originalName,
-                'name' => $originalName,
-                'message' => 'Paveikslėlis sėkmingai įkeltas ir optimizuotas.',
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error('Image upload error', [
-                'path' => $request->input('path'),
-                'name' => $request->input('name'),
-                'user_id' => $request->user()->id,
-                'error' => $e->getMessage(),
-            ]);
-
-            return response()->json([
-                'error' => 'Nepavyko įkelti paveikslėlio. Bandykite dar kartą.',
-            ], 500);
+        if (! $data) {
+            return response()->json(['error' => 'Nepateiktas paveikslėlis.'], 400);
         }
+
+        if (! $originalName) {
+            return response()->json(['error' => 'Nepateiktas failo pavadinimas.'], 400);
+        }
+
+        $startingImage = Image::read($data);
+        $image = $startingImage->scaleDown(width: 1600)->toWebp();
+
+        $path = (string) $request->input('path');
+
+        // Get file name without extension and add .webp
+        $originalName = pathinfo($originalName, PATHINFO_FILENAME).'.webp';
+
+        // Check if path exists, create if it doesn't
+        if (! Storage::exists('public/'.$path)) {
+            Storage::makeDirectory('public/'.$path);
+        }
+
+        // Check if image exists and rename if needed
+        if (Storage::exists('public/'.$path.'/'.$originalName)) {
+            $originalName = time().'_'.$originalName;
+        }
+
+        $fullPath = storage_path('app/public/'.$path.'/'.$originalName);
+
+        // Intervention Image save() returns null on success, not false
+        $image->save($fullPath, 85);
+
+        Log::info('Image uploaded and processed', [
+            'original_name' => $request->name,
+            'processed_name' => $originalName,
+            'path' => 'public/'.$path,
+            'user_id' => $request->user()->id,
+        ]);
+
+        // Return response with correct URL format
+        return response()->json([
+            'url' => '/uploads/'.$path.'/'.$originalName,
+            'name' => $originalName,
+            'message' => 'Paveikslėlis sėkmingai įkeltas ir optimizuotas.',
+        ]);
     }
 
     public function delete(Request $request)
