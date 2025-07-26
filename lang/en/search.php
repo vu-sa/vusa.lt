@@ -102,7 +102,7 @@ return [
 
     // General actions
     'cancel' => 'Cancel',
-    
+
     // Content type indicators
     'no_content_types_selected' => 'No content types selected',
     'enable_all_types' => 'Enable All',

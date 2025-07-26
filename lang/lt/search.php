@@ -106,7 +106,7 @@ return [
 
     // General actions
     'cancel' => 'Atšaukti',
-    
+
     // Content type indicators
     'no_content_types_selected' => 'Nepasirinkti jokie turinio tipai',
     'enable_all_types' => 'Įjungti visus',
