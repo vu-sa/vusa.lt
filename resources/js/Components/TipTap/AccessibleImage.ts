@@ -5,7 +5,7 @@ import { Plugin } from '@tiptap/pm/state';
  * Enhanced Image extension with proper alt text support and accessibility features
  */
 export const AccessibleImage = Image.extend({
-  name: 'accessibleImage',
+  name: 'image',
 
   addAttributes() {
     return {

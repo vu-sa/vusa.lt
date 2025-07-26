@@ -40,7 +40,7 @@ class StoreCalendarRequest extends FormRequest
             'is_international' => 'boolean',
             'date' => 'required|date',
             'end_date' => 'nullable|date|after:date',
-            'category' => 'nullable',
+            'category_id' => 'nullable|exists:categories,id',
             'tenant_id' => 'required|integer',
         ];
     }

@@ -5,7 +5,7 @@
         <span class="text-gray-900 dark:text-white">{{ page.title }}</span>
       </h1>
       <div class="typography flex max-w-prose flex-col gap-4 py-4 text-base leading-7">
-        <RichContentParser :content="page.content?.parts" />
+        <RichContentParser :content="(page.content?.parts as unknown as models.ContentPart[]) ?? []" />
       </div>
       <aside v-if="anchorLinks" class="sticky top-48 hidden h-fit lg:block">
         <NAnchor ignore-gap :bound="160">
@@ -25,71 +25,118 @@
 <script setup lang="ts">
 import FeedbackPopover from "@/Components/Public/FeedbackPopover.vue";
 import RichContentParser from "@/Components/RichContentParser.vue";
-// No longer need computed, onMounted, onUnmounted - usePageBreadcrumbs handles lifecycle
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import { usePage } from "@inertiajs/vue3";
 
+// Type definitions for improved type safety and clarity
+interface AnchorLink {
+  title: string;
+  href: string;
+  children: Omit<AnchorLink, 'children'>[];
+}
+
+interface HeadingNode {
+  type: 'heading';
+  attrs: {
+    level: 2 | 3;
+    id: string;
+  };
+  content: { text: string }[];
+}
+
+interface TipTapNode {
+  type: string;
+  content?: TipTapNode[];
+}
+
+interface PageContentPart {
+  id?: number;
+  type: 'tiptap' | string;
+  json_content?: {
+    content?: (TipTapNode | HeadingNode)[];
+  };
+  [key: string]: any; // Allow other properties
+}
+
+interface Page {
+  title: string;
+  content?: {
+    parts: PageContentPart[];
+  };
+}
+
 const props = defineProps<{
   navigationItemId: number;
-  page: Record<string, any>;
+  page: Page;
 }>();
 
 // Set breadcrumbs for content page
 usePageBreadcrumbs(() => {
   const page = usePage();
   const mainNavigation = page.props.mainNavigation || [];
-  
+
   // Build breadcrumb items for the content page
   const navigationPath = BreadcrumbHelpers.buildNavigationPath(props.navigationItemId, mainNavigation);
-  
+
   // If we have navigation path, use it for breadcrumbs
   if (navigationPath.length > 0) {
     return BreadcrumbHelpers.publicContent(navigationPath);
   }
-  
+
   // Otherwise just show the current page title
   return BreadcrumbHelpers.publicContent([
     BreadcrumbHelpers.createBreadcrumbItem(props.page.title)
   ]);
 });
 
-const anchorLinks = props.page.content?.parts?.reduce((acc: any, part: any) => {
-  if (part.type === "tiptap") {
-    const partHeadings = part.json_content?.content?.filter(
-      (node: any) => node.type === "heading",
+const anchorLinks = props.page.content?.parts?.reduce((acc: AnchorLink[], part: PageContentPart) => {
+  if (part.type === "tiptap" && part.json_content?.content) {
+    const partHeadings = part.json_content.content.filter(
+      (node): node is HeadingNode => node.type === "heading" && 'attrs' in node && (node.attrs.level === 2 || node.attrs.level === 3)
     );
 
-    // check for h2 and h3 elements, if h3, nest it under h2
-    const headings = partHeadings?.reduce((acc: any, node: any) => {
-      if (node.attrs.level === 2) {
-        acc.push({
-          title: node.content[0].text,
-          href: `#${node.attrs.id}`,
-          children: [],
-        });
-      } else if (node.attrs.level === 3) {
-        // Sometimes the h3 may come before h2, we need to check for that
-        if (acc[acc.length - 1]?.children) {
-          acc[acc.length - 1]?.children.push({
-            title: node.content[0].text,
-            href: `#${node.attrs.id}`,
-          });
-        } else {
-          acc.push({
+    // If there are no headings, just return the accumulator
+    if (!partHeadings || partHeadings.length === 0) {
+      return acc;
+    }
+
+    const headings = partHeadings.reduce((headingsAcc: AnchorLink[], node: HeadingNode) => {
+      if (node.content && node.content[0] && node.content[0].text) {
+        if (node.attrs.level === 2) {
+          headingsAcc.push({
             title: node.content[0].text,
             href: `#${node.attrs.id}`,
             children: [],
           });
+        } else if (node.attrs.level === 3) {
+          const lastHeading = headingsAcc[headingsAcc.length - 1];
+          // Ensure that an h2 exists to nest the h3 under
+          if (lastHeading?.children) {
+            lastHeading.children.push({
+              title: node.content[0].text,
+              href: `#${node.attrs.id}`,
+            });
+          } else {
+            // If h3 appears without a preceding h2, treat it as a top-level item
+            headingsAcc.push({
+              title: node.content[0].text,
+              href: `#${node.attrs.id}`,
+              children: [],
+            });
+          }
         }
       }
-      return acc;
+      return headingsAcc;
     }, []);
 
-    acc.push(...headings);
+    // Ensure headings is not undefined before spreading
+    if (headings) {
+      acc.push(...headings);
+    }
   }
 
   return acc;
-}, []);
+}, []) ?? [];
 </script>
 
 <style>

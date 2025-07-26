@@ -8,7 +8,7 @@ export const calendarTemplate: Omit<App.Entities.Calendar, "created_at" | "updat
   cto_url: { lt: '', en: '' },
   tenant_id: null,
   images: [],
-  category: null,
+  category_id: null,
   facebook_url: "",
   youtube_url: "",
   is_draft: false,

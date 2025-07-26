@@ -67,6 +67,7 @@ class CalendarController extends Controller
         $calendar = new Calendar;
 
         $calendar = $calendar->fill($request->except('images'));
+        $calendar->category_id = $request->input('category_id');
 
         $calendar->save();
 
@@ -108,12 +109,13 @@ class CalendarController extends Controller
         return Inertia::render('Admin/Calendar/EditCalendarEvent', [
             'calendar' => [
                 ...$calendar->toFullArray(),
-                'images' => $calendar->getMedia('images')->map(fn ($image) => [
-                    'id' => $image->id,
-                    'name' => $image->name,
-                    'url' => $image->original_url,
-                    'status' => 'finished',
-                ]
+                'images' => $calendar->getMedia('images')->map(
+                    fn ($image) => [
+                        'id' => $image->id,
+                        'name' => $image->name,
+                        'url' => $image->original_url,
+                        'status' => 'finished',
+                    ]
                 ),
             ],
             'categories' => Category::all(),
@@ -130,11 +132,11 @@ class CalendarController extends Controller
     {
         DB::transaction(function () use ($request, $calendar) {
             $calendar->fill($request->validated());
+            $calendar->category_id = $request->input('category_id');
 
             $calendar->save();
 
             // if request has files
-
             $images = $request->file('images');
 
             if ($images) {
