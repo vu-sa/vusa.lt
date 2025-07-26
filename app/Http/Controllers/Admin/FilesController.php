@@ -543,6 +543,72 @@ class FilesController extends Controller
         }
     }
 
+    public function deleteDirectory(Request $request)
+    {
+        $request->validate([
+            'path' => 'required|string',
+        ]);
+
+        try {
+            $path = $this->validateAndNormalizePath($request->input('path'));
+        } catch (\InvalidArgumentException $e) {
+            return back()->withErrors(['error' => 'Neteisingas aplanko kelias.']);
+        }
+
+        // Ensure we're not trying to delete the root directory
+        if ($path === 'public/files') {
+            return back()->withErrors(['error' => 'Negalima ištrinti šakninio failų aplanko.']);
+        }
+
+        // Check if user has permission to delete directories in the parent directory
+        $parentDirectory = dirname($path);
+        if (! $request->user()->can('viewDirectory', [File::class, $parentDirectory])) {
+            return back()->withErrors(['permission' => 'Neturite teisių trinti aplankų šioje vietoje.']);
+        }
+
+        // Additional safety check: ensure directory exists
+        if (! Storage::directoryExists($path)) {
+            return back()->withErrors(['directory' => 'Aplankas nerastas.']);
+        }
+
+        // Check if directory is empty
+        $files = Storage::files($path);
+        $subdirectories = Storage::directories($path);
+
+        if (count($files) > 0 || count($subdirectories) > 0) {
+            return back()->withErrors(['directory' => 'Aplankas nėra tuščias. Pirmiausia ištrinkite visus failus ir poaplankus.']);
+        }
+
+        // Get directory name for success message
+        $directoryName = basename($path);
+
+        try {
+            // Remove 'public/' from the start for Storage::disk('public')
+            $publicPath = str_replace('public/', '', $path);
+
+            if (! Storage::disk('public')->deleteDirectory($publicPath)) {
+                throw new \Exception('Failed to delete directory');
+            }
+
+            Log::info('Directory deleted', [
+                'path' => $path,
+                'user_id' => $request->user()->id,
+                'directory_name' => $directoryName,
+            ]);
+
+            return back();
+        } catch (\Exception $e) {
+            Log::error('Error deleting directory', [
+                'path' => $path,
+                'user_id' => $request->user()->id,
+                'error' => $e->getMessage(),
+                'directory_name' => $directoryName,
+            ]);
+
+            return back()->withErrors(['error' => 'Nepavyko ištrinti aplanko. Bandykite dar kartą.']);
+        }
+    }
+
     /**
      * Get allowed file types for frontend validation
      */
