@@ -65,6 +65,59 @@ class SystemStatusController extends Controller
             $collectionsStats = [];
             $totalDocuments = 0;
 
+            // Get memory stats from Typesense
+            $memoryStats = null;
+            try {
+                $stats = $client->metrics->retrieve();
+
+                // Use Typesense-specific memory fields (not system-wide memory)
+                $typesenseMemoryFields = [
+                    'active_bytes' => $stats['typesense_memory_active_bytes'] ?? 0,
+                    'allocated_bytes' => $stats['typesense_memory_allocated_bytes'] ?? 0,
+                    'resident_bytes' => $stats['typesense_memory_resident_bytes'] ?? 0,
+                    'mapped_bytes' => $stats['typesense_memory_mapped_bytes'] ?? 0,
+                    'metadata_bytes' => $stats['typesense_memory_metadata_bytes'] ?? 0,
+                    'retained_bytes' => $stats['typesense_memory_retained_bytes'] ?? 0,
+                ];
+
+                // Only create memory stats if we have valid Typesense memory data
+                if ($typesenseMemoryFields['active_bytes'] > 0 || $typesenseMemoryFields['resident_bytes'] > 0) {
+                    $memoryStats = [
+                        // Active memory is what Typesense is actively using
+                        'active_memory_mb' => round($typesenseMemoryFields['active_bytes'] / 1024 / 1024, 2),
+                        // Resident memory is what's actually in RAM (includes fragmentation)
+                        'resident_memory_mb' => round($typesenseMemoryFields['resident_bytes'] / 1024 / 1024, 2),
+                        // Allocated memory is what Typesense has requested from the OS
+                        'allocated_memory_mb' => round($typesenseMemoryFields['allocated_bytes'] / 1024 / 1024, 2),
+                        // Memory mapped files
+                        'mapped_memory_mb' => round($typesenseMemoryFields['mapped_bytes'] / 1024 / 1024, 2),
+                        // Metadata overhead
+                        'metadata_memory_mb' => round($typesenseMemoryFields['metadata_bytes'] / 1024 / 1024, 2),
+                        // Fragmentation ratio if available
+                        'fragmentation_ratio' => $stats['typesense_memory_fragmentation_ratio'] ?? null,
+                    ];
+                } else {
+                    // Fallback: calculate estimated memory usage based on collections
+                    $estimatedMemoryMB = 0;
+                    foreach ($collections as $collection) {
+                        $numDocs = $collection['num_documents'] ?? 0;
+                        $numFields = count($collection['fields'] ?? []);
+                        // Rough estimate: assume 1KB per document for simple fields
+                        $estimatedMemoryMB += ($numDocs * $numFields * 1) / 1024; // Convert to MB
+                    }
+
+                    if ($estimatedMemoryMB > 0) {
+                        $memoryStats = [
+                            'estimated_collections_mb' => round($estimatedMemoryMB, 2),
+                            'note' => 'Typesense memory metrics not available, showing estimate',
+                        ];
+                    }
+                }
+            } catch (\Exception $e) {
+                // Stats API might not be available in older versions
+                $memoryStats = null;
+            }
+
             foreach ($collections as $collection) {
                 $collectionName = $collection['name'];
                 $numDocs = $collection['num_documents'] ?? 0;
@@ -92,6 +145,7 @@ class SystemStatusController extends Controller
                     'count' => count($collections),
                     'total_documents' => number_format($totalDocuments),
                     'details' => $collectionsStats,
+                    'memory' => $memoryStats,
                 ],
                 'configuration' => [
                     'driver' => 'Models use searchableUsing() method',

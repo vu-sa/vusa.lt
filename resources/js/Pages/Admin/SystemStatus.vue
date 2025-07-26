@@ -82,6 +82,9 @@
           </div>
           <p class="text-xs text-muted-foreground">
             {{ status.typesense?.collections?.total_documents || '0' }} {{ $t('dokumentų') }}
+            <span v-if="status.typesense?.collections?.memory?.active_memory_mb || status.typesense?.collections?.memory?.resident_memory_mb || status.typesense?.collections?.memory?.estimated_collections_mb" class="block">
+              {{ status.typesense.collections.memory.active_memory_mb || status.typesense.collections.memory.resident_memory_mb || status.typesense.collections.memory.estimated_collections_mb }} MB RAM
+            </span>
           </p>
         </CardContent>
       </Card>
@@ -274,6 +277,45 @@
             <!-- Collections Statistics -->
             <div v-if="status.typesense.collections" class="mt-6">
               <h4 class="font-semibold text-sm mb-3">{{ $t('Kolekcijos') }}</h4>
+              
+              <!-- Memory Usage Summary -->
+              <div v-if="status.typesense.collections.memory" class="mb-4 p-3 rounded-md bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+                <h5 class="font-medium text-sm mb-2">{{ $t('Atminties naudojimas') }}</h5>
+                <div class="grid grid-cols-2 gap-3 text-sm">
+                  <div v-if="status.typesense.collections.memory.active_memory_mb && status.typesense.collections.memory.active_memory_mb > 0" class="flex justify-between">
+                    <span>{{ $t('Aktyviai naudojama') }}:</span>
+                    <span class="font-mono">{{ status.typesense.collections.memory.active_memory_mb }} MB</span>
+                  </div>
+                  <div v-if="status.typesense.collections.memory.resident_memory_mb && status.typesense.collections.memory.resident_memory_mb > 0" class="flex justify-between">
+                    <span>{{ $t('RAM (resident)') }}:</span>
+                    <span class="font-mono">{{ status.typesense.collections.memory.resident_memory_mb }} MB</span>
+                  </div>
+                  <div v-if="status.typesense.collections.memory.allocated_memory_mb && status.typesense.collections.memory.allocated_memory_mb > 0" class="flex justify-between">
+                    <span>{{ $t('Išskirta atminties') }}:</span>
+                    <span class="font-mono">{{ status.typesense.collections.memory.allocated_memory_mb }} MB</span>
+                  </div>
+                  <div v-if="status.typesense.collections.memory.mapped_memory_mb && status.typesense.collections.memory.mapped_memory_mb > 0" class="flex justify-between">
+                    <span>{{ $t('Susietos bylos') }}:</span>
+                    <span class="font-mono">{{ status.typesense.collections.memory.mapped_memory_mb }} MB</span>
+                  </div>
+                  <div v-if="status.typesense.collections.memory.metadata_memory_mb && status.typesense.collections.memory.metadata_memory_mb > 0" class="flex justify-between">
+                    <span>{{ $t('Metaduomenys') }}:</span>
+                    <span class="font-mono">{{ status.typesense.collections.memory.metadata_memory_mb }} MB</span>
+                  </div>
+                  <div v-if="status.typesense.collections.memory.fragmentation_ratio !== undefined && status.typesense.collections.memory.fragmentation_ratio !== null" class="flex justify-between col-span-2 pt-2 border-t border-blue-300 dark:border-blue-700">
+                    <span>{{ $t('Fragmentacijos santykis') }}:</span>
+                    <span class="font-mono">{{ (status.typesense.collections.memory.fragmentation_ratio! * 100).toFixed(1) }}%</span>
+                  </div>
+                  <div v-if="status.typesense.collections.memory.estimated_collections_mb" class="flex justify-between col-span-2 pt-2 border-t border-blue-300 dark:border-blue-700">
+                    <span>{{ $t('Apskaičiuota kolekcijų') }}:</span>
+                    <span class="font-mono">{{ status.typesense.collections.memory.estimated_collections_mb }} MB</span>
+                  </div>
+                  <div v-if="status.typesense.collections.memory.note" class="col-span-2 pt-2 text-xs text-muted-foreground border-t border-blue-300 dark:border-blue-700">
+                    {{ status.typesense.collections.memory.note }}
+                  </div>
+                </div>
+              </div>
+
               <div class="grid grid-cols-1 gap-3">
                 <div v-for="collection in status.typesense.collections.details" :key="collection.name" 
                      class="flex items-center justify-between p-3 rounded-md border bg-muted/10">
@@ -301,6 +343,9 @@
                     <div class="font-bold">{{ status.typesense.collections.total_documents }}</div>
                     <div class="text-xs text-muted-foreground">
                       {{ status.typesense.collections.count }} {{ $t('kolekcijose') }}
+                      <span v-if="status.typesense.collections.memory?.active_memory_mb || status.typesense.collections.memory?.resident_memory_mb || status.typesense.collections.memory?.estimated_collections_mb">
+                        • {{ status.typesense.collections.memory.active_memory_mb || status.typesense.collections.memory.resident_memory_mb || status.typesense.collections.memory.estimated_collections_mb }} MB
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -572,6 +617,16 @@ const props = defineProps<{
           fields: number;
           default_sorting_field: string;
         }>;
+        memory?: {
+          active_memory_mb?: number;
+          resident_memory_mb?: number;
+          allocated_memory_mb?: number;
+          mapped_memory_mb?: number;
+          metadata_memory_mb?: number;
+          fragmentation_ratio?: number | null;
+          estimated_collections_mb?: number;
+          note?: string;
+        };
       };
       configuration?: {
         driver: string;
@@ -612,6 +667,10 @@ const props = defineProps<{
         driver?: string;
         configured: boolean;
         status: string;
+        queue_enabled?: boolean;
+        after_commit?: boolean;
+        chunk_size?: number;
+        typesense_configured?: boolean;
       };
     };
     system?: {
