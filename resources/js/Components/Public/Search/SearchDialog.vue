@@ -1,7 +1,10 @@
 <template>
   <Dialog :open="isOpen" @update:open="updateDialogState">
-    <DialogContent class="sm:max-w-6xl w-[95vw] h-[75vh] max-h-[calc(100vh-4rem)] p-0 overflow-hidden grid grid-rows-[auto_1fr] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0">
-      <DialogHeader class="px-6 pt-4 pb-0">
+    <DialogContent 
+      :show-close-button="false"
+      class="sm:max-w-6xl w-[95vw] h-[75vh] max-h-[calc(100vh-4rem)] p-0 overflow-hidden grid grid-rows-[auto_1fr] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
+    >
+      <DialogHeader class="px-6 pt-3 pb-0">
         <div class="flex items-center justify-between">
           <DialogTitle>{{ $t('search.search') }}</DialogTitle>
           <div class="flex items-center gap-2">
@@ -33,6 +36,18 @@
               <IconQuestionCircle class="w-4 h-4" />
               <span class="sr-only">{{ $t('search.show_keyboard_shortcuts') }}</span>
             </Button>
+            
+            <!-- Custom Close Button -->
+            <Button
+              variant="ghost"
+              size="icon"
+              class="h-8 w-8"
+              @click="updateDialogState(false)"
+              :title="$t('search.cancel')"
+            >
+              <IconClose class="w-4 h-4" />
+              <span class="sr-only">Close</span>
+            </Button>
           </div>
         </div>
         <DialogDescription class="sr-only">
@@ -57,6 +72,7 @@ import { Button } from '@/Components/ui/button'
 import { Badge } from '@/Components/ui/badge'
 import IconFilter from '~icons/fluent/filter16-regular'
 import IconQuestionCircle from '~icons/fluent/question-circle20-regular'
+import IconClose from '~icons/fluent/dismiss20-regular'
 
 interface SearchDialogProps {
   isOpen: boolean
@@ -85,3 +101,4 @@ const updateDialogState = (value: boolean) => {
   }
 }
 </script>
+

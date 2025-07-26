@@ -12,11 +12,16 @@ import {
 import { computed, type HTMLAttributes } from 'vue'
 import DialogOverlay from './DialogOverlay.vue'
 
-const props = defineProps<DialogContentProps & { class?: HTMLAttributes['class'] }>()
+const props = withDefaults(defineProps<DialogContentProps & { 
+  class?: HTMLAttributes['class']
+  showCloseButton?: boolean
+}>(), {
+  showCloseButton: true
+})
 const emits = defineEmits<DialogContentEmits>()
 
 const delegatedProps = computed(() => {
-  const { class: _, ...delegated } = props
+  const { class: _, showCloseButton: __, ...delegated } = props
 
   return delegated
 })
@@ -39,6 +44,7 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits)
       <slot />
 
       <DialogClose
+        v-if="showCloseButton"
         class="ring-offset-white focus:ring-zinc-950 data-[state=open]:bg-zinc-100 data-[state=open]:text-zinc-500 absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 dark:ring-offset-zinc-950 dark:focus:ring-zinc-300 dark:data-[state=open]:bg-zinc-800 dark:data-[state=open]:text-zinc-400"
       >
         <X />

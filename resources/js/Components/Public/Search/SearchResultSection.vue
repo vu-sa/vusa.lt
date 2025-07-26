@@ -1,34 +1,34 @@
 <template>
   <div v-if="typeResults && typeResults.results.length > 0">
-    <div class="space-y-2">
+    <div class="space-y-1.5">
       <!-- Section Header with total hits count -->
       <div :class="getSectionHeaderClasses()">
         {{ icon }} {{ title }} ({{ currentHits }})
       </div>
 
       <!-- Results -->
-      <div class="space-y-3">
+      <div class="space-y-2">
         <div v-for="item in typeResults.results" :key="`${item.id}-${type}`" :class="getItemClasses()"
           :title="$t('search.click_to_open')" role="button" tabindex="0" @click="handleItemClick(item, $event)"
           @keydown="handleItemKeydown(item, $event)">
-          <div class="flex items-start gap-4">
+          <div class="flex items-start gap-3">
             <div class="flex-shrink-0">
               <div :class="getIconClasses()">
                 <component :is="getIconComponent(type)" class="w-3 h-3" />
               </div>
             </div>
             <div class="flex-1 min-w-0">
-              <div class="flex items-center justify-between gap-2 mb-2">
+              <div class="flex items-center justify-between gap-2 mb-1">
                 <time class="text-xs text-muted-foreground">{{ formatDate(getItemDate(item)) }}</time>
                 <!-- Navigation indicator -->
                 <IconArrowRight class="w-3 h-3 text-muted-foreground opacity-60 group-hover:opacity-100 transition-opacity" />
               </div>
-              <h3 class="font-medium text-base leading-tight mb-2 group-hover:text-primary transition-colors">
+              <h3 class="font-medium text-sm leading-tight mb-1 group-hover:text-primary transition-colors">
                 <AisHighlight attribute="title" :hit="item" />
                 <AisHighlight v-if="!item.title && item.name" attribute="name" :hit="item" />
                 <span v-if="!item.title && !item.name">{{ item.name || item.title || $t('search.untitled') }}</span>
               </h3>
-              <div v-if="getItemContent(item)" class="text-sm text-muted-foreground leading-relaxed line-clamp-3 mb-1">
+              <div v-if="getItemContent(item)" class="text-xs text-muted-foreground leading-relaxed line-clamp-2">
                 {{ stripHtml(getItemContent(item)) }}
               </div>
             </div>
