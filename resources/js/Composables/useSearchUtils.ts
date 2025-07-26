@@ -1,6 +1,4 @@
-import { format } from 'date-fns'
 import { usePage, router } from '@inertiajs/vue3'
-import { trans as $t } from 'laravel-vue-i18n'
 
 export interface SearchItem {
   id: string | number
@@ -26,71 +24,6 @@ export interface SearchItem {
 
 export const useSearchUtils = () => {
   const page = usePage()
-
-  const formatDate = (dateValue: string | number | undefined) => {
-    if (!dateValue) return ''
-    
-    try {
-      let date: Date
-      
-      if (typeof dateValue === 'number') {
-        const timestamp = dateValue < 10000000000 ? dateValue * 1000 : dateValue
-        date = new Date(timestamp)
-      } else {
-        date = new Date(dateValue)
-      }
-      
-      if (isNaN(date.getTime())) {
-        return String(dateValue)
-      }
-      
-      return format(date, 'MMM dd, yyyy')
-    } catch {
-      return String(dateValue)
-    }
-  }
-
-  const getPreviewContent = (item: SearchItem) => {
-    let content = ''
-    if (item.type === 'news' && item.short) {
-      content = item.short
-    } else if (item.summary) {
-      content = item.summary
-    } else if (item.description) {
-      content = item.description
-    } else if (item.content) {
-      content = item.content.slice(0, 500) + (item.content.length > 500 ? '...' : '')
-    }
-    
-    return content.replace(/<script[^>]*>.*?<\/script>/gi, '')
-                  .replace(/<style[^>]*>.*?<\/style>/gi, '')
-                  .replace(/<[^>]+>/g, '')
-                  .trim()
-  }
-
-  const getTypeBadgeText = (type: string) => {
-    switch (type) {
-      case 'documents': return $t('Documents')
-      case 'pages': return $t('Pages')
-      case 'news': return $t('News')
-      case 'calendar': return $t('Events')
-      default: return type
-    }
-  }
-
-  const getBadgeClasses = (type: string) => {
-    // Use consistent VUSA red styling for all content types
-    return 'bg-vusa-red/10 text-vusa-red border-vusa-red/20 dark:bg-vusa-red/20 dark:text-vusa-red-secondary'
-  }
-
-  const getItemDate = (item: SearchItem) => {
-    switch (item.type) {
-      case 'news': return item.publish_time
-      case 'documents': return item.document_date
-      case 'calendar': return item.date
-      default: return item.created_at
-    }
-  }
 
   const getItemUrl = (item: SearchItem): string => {
     const baseParams = {
@@ -147,12 +80,6 @@ export const useSearchUtils = () => {
   }
 
   return {
-    formatDate,
-    getPreviewContent,
-    getTypeBadgeText,
-    getBadgeClasses,
-    getItemDate,
-    getItemUrl,
     trackSearchInteraction,
     navigateToItem
   }
