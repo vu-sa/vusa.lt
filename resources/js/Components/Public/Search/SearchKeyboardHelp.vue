@@ -1,5 +1,5 @@
 <template>
-  <div class="px-6 py-3 border-b border-zinc-200 dark:border-zinc-700 bg-blue-50 dark:bg-blue-950/30">
+  <div class="px-6 py-3 border-b border-zinc-200 dark:border-zinc-700 bg-red-50 dark:bg-red-950/30">
     <div class="space-y-3">
       <h4 class="text-sm font-medium text-blue-900 dark:text-blue-100">{{ $t('search.keyboard_shortcuts') }}</h4>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">

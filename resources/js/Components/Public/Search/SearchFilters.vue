@@ -30,7 +30,7 @@
           <Checkbox
             :model-value="contentType.enabled"
             @update:model-value="() => toggleContentType(contentType.id)"
-            :class="getCheckboxClasses(contentType.color)"
+            :class="getCheckboxClasses()"
           />
           <div class="flex items-center gap-2 flex-1 min-w-0">
             <span class="text-sm">{{ contentType.icon }}</span>
@@ -40,7 +40,7 @@
             <!-- Result count badge -->
             <Badge
               v-if="getContentTypeResultCount(contentType.id) !== undefined"
-              :class="getBadgeClasses(contentType.color, contentType.enabled)"
+              :class="getBadgeClasses(contentType.enabled)"
               class="text-xs ml-auto"
             >
               {{ getContentTypeResultCount(contentType.id) }}
@@ -52,6 +52,20 @@
 
     <!-- Search Options -->
     <div class="search-options space-y-3">
+      <!-- Display Options -->
+      <div>
+        <h4 class="text-sm font-medium text-muted-foreground mb-2">
+          {{ $t('search.display') }}
+        </h4>
+        <label class="flex items-center gap-2 cursor-pointer">
+          <Checkbox
+            :model-value="groupResults"
+            @update:model-value="toggleGroupResults"
+          />
+          <span class="text-sm">{{ $t('search.group_results_by_type') }}</span>
+        </label>
+      </div>
+
       <!-- Result Ordering - Only show when NOT grouping results -->
       <div v-if="!groupResults">
         <h4 class="text-sm font-medium text-muted-foreground mb-2">
@@ -69,20 +83,6 @@
             {{ $t(option.label) }}
           </Button>
         </div>
-      </div>
-
-      <!-- Display Options -->
-      <div>
-        <h4 class="text-sm font-medium text-muted-foreground mb-2">
-          {{ $t('search.display') }}
-        </h4>
-        <label class="flex items-center gap-2 cursor-pointer">
-          <Checkbox
-            :model-value="groupResults"
-            @update:model-value="toggleGroupResults"
-          />
-          <span class="text-sm">{{ $t('search.group_results_by_type') }}</span>
-        </label>
       </div>
     </div>
 
@@ -226,57 +226,24 @@ const getContentTypeClasses = (contentType: ContentType) => {
   const baseClasses = 'transition-all duration-200'
   
   if (contentType.enabled) {
-    switch (contentType.color) {
-      case 'blue':
-        return `${baseClasses} bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800`
-      case 'green':
-        return `${baseClasses} bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800`
-      case 'purple':
-        return `${baseClasses} bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-800`
-      case 'amber':
-        return `${baseClasses} bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800`
-      default:
-        return `${baseClasses} bg-zinc-50 dark:bg-zinc-950/30 border-zinc-200 dark:border-zinc-800`
-    }
+    return `${baseClasses} bg-red-50 dark:bg-red-950/30 border-vusa-red dark:border-vusa-red/50`
   } else {
     return `${baseClasses} bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700 opacity-60`
   }
 }
 
-const getCheckboxClasses = (color: string) => {
-  switch (color) {
-    case 'blue':
-      return 'data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600'
-    case 'green':
-      return 'data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600'
-    case 'purple':
-      return 'data-[state=checked]:bg-purple-600 data-[state=checked]:border-purple-600'
-    case 'amber':
-      return 'data-[state=checked]:bg-amber-600 data-[state=checked]:border-amber-600'
-    default:
-      return 'data-[state=checked]:bg-zinc-600 data-[state=checked]:border-zinc-600'
-  }
+const getCheckboxClasses = () => {
+  return 'data-[state=checked]:bg-vusa-red data-[state=checked]:border-vusa-red'
 }
 
-const getBadgeClasses = (color: string, enabled: boolean) => {
+const getBadgeClasses = (enabled: boolean) => {
   const baseClasses = 'text-xs border'
   
   if (!enabled) {
     return `${baseClasses} bg-zinc-100 text-zinc-500 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:border-zinc-700`
   }
   
-  switch (color) {
-    case 'blue':
-      return `${baseClasses} bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800`
-    case 'green':
-      return `${baseClasses} bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800`
-    case 'purple':
-      return `${baseClasses} bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-800`
-    case 'amber':
-      return `${baseClasses} bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-800`
-    default:
-      return `${baseClasses} bg-zinc-100 text-zinc-700 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700`
-  }
+  return `${baseClasses} bg-red-100 text-vusa-red border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800`
 }
 </script>
 

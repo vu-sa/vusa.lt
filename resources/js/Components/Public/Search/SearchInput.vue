@@ -16,11 +16,7 @@
             <Button v-if="currentRefinement" type="button" variant="ghost" size="icon"
               class="h-6 w-6 hover:bg-zinc-100 dark:hover:bg-zinc-800" @click="clearSearch">
               <span class="sr-only">{{ $t('search.clear_search') }}</span>
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="m18 6-12 12" />
-                <path d="m6 6 12 12" />
-              </svg>
+              <IconDismiss class="w-3.5 h-3.5" />
             </Button>
           </div>
         </div>
@@ -45,6 +41,7 @@ import { AisSearchBox } from 'vue-instantsearch/vue3/es'
 import { Button } from '@/Components/ui/button'
 import { Input } from '@/Components/ui/input'
 import { useSearchUtils } from '@/Composables/useSearchUtils'
+import IconDismiss from '~icons/fluent/dismiss20-regular'
 
 interface SearchInputProps {
   searchQuery: string
@@ -82,6 +79,12 @@ const handleUpdateValue = (value: string) => {
 
 const clearSearch = () => {
   const previousQuery = props.searchQuery
+  
+  // Clear the input field by calling refine with empty string
+  if (refineFunction.value) {
+    refineFunction.value('')
+  }
+  
   emit('update:searchQuery', '')
   emit('clear')
 

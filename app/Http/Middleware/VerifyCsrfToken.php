@@ -11,8 +11,5 @@ class VerifyCsrfToken extends Middleware
      *
      * @var array
      */
-    protected $except = [
-        'api/v1/typesense/key',
-        'api/v1/typesense/search',
-    ];
+    protected $except = [];
 }

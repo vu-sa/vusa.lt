@@ -19,7 +19,7 @@ class TypesenseManager
         $nodes = $typesenseConfig['nodes'] ?? [];
 
         return [
-            'apiKey' => env('TYPESENSE_SEARCH_ONLY_KEY', $typesenseConfig['api_key']),
+            'apiKey' => config('scout.typesense.client-settings.search_only_key', $typesenseConfig['api_key']),
             'nodes' => array_map(function ($node) {
                 // Replace Docker service name with localhost for frontend access
                 $host = $node['host'] === 'typesense' ? 'localhost' : $node['host'];
@@ -38,7 +38,7 @@ class TypesenseManager
      */
     public static function isConfigured(): bool
     {
-        $apiKey = env('TYPESENSE_API_KEY');
+        $apiKey = config('scout.typesense.client-settings.api_key');
 
         return ! empty($apiKey) && $apiKey !== 'xyz';
     }

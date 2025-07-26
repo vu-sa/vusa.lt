@@ -24,7 +24,7 @@ class GenerateTypesenseSearchKey extends Command
     {
         try {
             // Check if Typesense is configured
-            $adminKey = env('TYPESENSE_API_KEY');
+            $adminKey = config('scout.typesense.client-settings.api_key');
             if (empty($adminKey) || $adminKey === 'xyz') {
                 $this->error('❌ TYPESENSE_API_KEY is not configured in .env file');
                 $this->info('Please set a secure admin API key first.');
@@ -33,7 +33,7 @@ class GenerateTypesenseSearchKey extends Command
             }
 
             // Check if we already have a search-only key
-            $existingKey = env('TYPESENSE_SEARCH_ONLY_KEY');
+            $existingKey = config('scout.typesense.client-settings.search_only_key');
             if (! empty($existingKey) && $existingKey !== $adminKey) {
                 $this->info('✅ Search-only key already exists in .env file');
                 $this->info('🔑 Key: '.substr($existingKey, 0, 8).'...'.substr($existingKey, -4));

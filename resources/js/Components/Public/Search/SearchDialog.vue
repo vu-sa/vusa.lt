@@ -13,9 +13,7 @@
               @click="$emit('toggleFilters')"
               :class="{ 'bg-muted': showFilters }"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
-              </svg>
+              <IconFilter class="w-4 h-4" />
               <span class="sr-only">{{ $t('search.toggle_filters') }}</span>
             </Button>
             <!-- Total Results Count -->
@@ -32,11 +30,7 @@
               :class="{ 'bg-muted': showKeyboardHelp }"
               :title="$t('search.keyboard_shortcuts')"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"/>
-                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
-                <path d="M12 17h.01"/>
-              </svg>
+              <IconQuestionCircle class="w-4 h-4" />
               <span class="sr-only">{{ $t('search.show_keyboard_shortcuts') }}</span>
             </Button>
           </div>
@@ -61,6 +55,8 @@ import { trans as $t } from 'laravel-vue-i18n'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/Components/ui/dialog'
 import { Button } from '@/Components/ui/button'
 import { Badge } from '@/Components/ui/badge'
+import IconFilter from '~icons/fluent/filter16-regular'
+import IconQuestionCircle from '~icons/fluent/question-circle20-regular'
 
 interface SearchDialogProps {
   isOpen: boolean

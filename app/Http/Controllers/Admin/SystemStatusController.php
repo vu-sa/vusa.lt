@@ -154,7 +154,7 @@ class SystemStatusController extends Controller
                     'port' => config('scout.typesense.client-settings.nodes.0.port'),
                     'protocol' => config('scout.typesense.client-settings.nodes.0.protocol'),
                     'api_key_configured' => ! empty(config('scout.typesense.client-settings.api_key')) && config('scout.typesense.client-settings.api_key') !== 'xyz',
-                    'search_only_key_configured' => ! empty(env('TYPESENSE_SEARCH_ONLY_KEY')),
+                    'search_only_key_configured' => ! empty(config('scout.typesense.search_only_key')),
                     'queue_enabled' => config('scout.queue'),
                     'configured_models' => $configuredModels,
                 ],

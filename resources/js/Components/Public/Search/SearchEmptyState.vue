@@ -2,7 +2,7 @@
   <div class="flex-1 flex items-center justify-center p-8">
     <div class="text-center max-w-md space-y-4">
       <div class="mx-auto w-20 h-20 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-6">
-        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-zinc-400"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <IconSearch class="w-10 h-10 text-zinc-400" />
       </div>
       <div>
         <h3 class="font-medium text-lg mb-2">
@@ -43,19 +43,19 @@
             </Button>
           </div>
         </div>
-        <!-- Fallback suggestions -->
+        <!-- Search suggestions -->
         <div v-else>
-          <p class="text-xs text-muted-foreground">{{ $t('search.popular_searches') }}:</p>
+          <p class="text-xs text-muted-foreground">{{ $t('search.suggestions') }}:</p>
           <div class="flex flex-wrap gap-2 justify-center">
             <Button 
-              v-for="suggestion in popularSuggestions" 
+              v-for="suggestion in searchSuggestions" 
               :key="suggestion"
               variant="ghost" 
               size="sm" 
               class="text-xs"
               @click="$emit('selectSearch', suggestion)"
             >
-              {{ $t(suggestion) }}
+              {{ suggestion }}
             </Button>
           </div>
         </div>
@@ -65,9 +65,12 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
+import { usePage } from '@inertiajs/vue3'
 import { trans as $t } from 'laravel-vue-i18n'
 import { Button } from '@/Components/ui/button'
 import { Badge } from '@/Components/ui/badge'
+import IconSearch from '~icons/fluent/search32-regular'
 
 interface ContentType {
   id: string
@@ -87,5 +90,15 @@ defineEmits<{
   (e: 'selectSearch', search: string): void
 }>()
 
-const popularSuggestions = ['Student events', 'Academic calendar', 'News updates']
+const page = usePage()
+
+const searchSuggestions = computed(() => {
+  const locale = page.props.app.locale
+  
+  if (locale === 'lt') {
+    return ['Parlamentas', 'Stipendijos', 'VU SA']
+  } else {
+    return ['Parliament', 'Scholarships', 'VU SR']
+  }
+})
 </script>

@@ -70,22 +70,17 @@ export const useSearchUtils = () => {
 
   const getTypeBadgeText = (type: string) => {
     switch (type) {
-      case 'documents': return $t('Document')
-      case 'pages': return $t('Page')
+      case 'documents': return $t('Documents')
+      case 'pages': return $t('Pages')
       case 'news': return $t('News')
-      case 'calendar': return $t('Event')
+      case 'calendar': return $t('Events')
       default: return type
     }
   }
 
   const getBadgeClasses = (type: string) => {
-    switch (type) {
-      case 'news': return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 border-blue-200'
-      case 'pages': return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300 border-green-200'
-      case 'documents': return 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 border-purple-200'
-      case 'calendar': return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 border-amber-200'
-      default: return 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300'
-    }
+    // Use consistent VUSA red styling for all content types
+    return 'bg-vusa-red/10 text-vusa-red border-vusa-red/20 dark:bg-vusa-red/20 dark:text-vusa-red-secondary'
   }
 
   const getItemDate = (item: SearchItem) => {

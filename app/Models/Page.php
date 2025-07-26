@@ -10,6 +10,10 @@ use Laravel\Scout\Searchable;
 use Spatie\Sitemap\Contracts\Sitemapable;
 use Spatie\Sitemap\Tags\Url;
 
+/**
+ * @property-read \App\Models\Category|null $category
+ * @property-read \App\Models\Tenant|null $tenant
+ */
 class Page extends Model implements Sitemapable
 {
     use HasFactory, Searchable, SoftDeletes;
@@ -62,7 +66,7 @@ class Page extends Model implements Sitemapable
             'permalink' => $this->permalink,
             'lang' => $this->lang,
             'tenant_name' => $this->tenant ? $this->tenant->fullname : null,
-            'category_name' => $this->category ? $this->category->name : null,
+            'category_name' => $this->category?->name,
             'created_at' => $this->created_at->timestamp,
         ];
     }
@@ -72,8 +76,8 @@ class Page extends Model implements Sitemapable
      */
     public function shouldBeSearchable()
     {
-        // Only index published pages (non-draft)
-        return ! ($this->is_draft ?? false);
+        // Only index active pages (published pages)
+        return $this->is_active ?? false;
     }
 
     /**

@@ -31,14 +31,22 @@ return [
     // Results and stats
     'results' => 'results',
     'items_found' => 'items found',
+    'total_results' => 'Total results',
     'all_results' => 'All Results',
     'no_results_found' => 'No results found for your search',
+    'no_results_found_for_your_search' => 'No results found for your search',
     'load_more_results' => 'Load more results',
+    'loading' => 'Loading',
     'show_more_type' => 'Show more :type',
     'untitled' => 'Untitled',
+    'keep_typing_to_see_results' => 'Keep typing to see results',
+    'please_enter_at_least_3_characters' => 'Please enter at least 3 characters',
+    'search_across_your_selected_content_types' => 'Search across your selected content types',
 
     // Filters and sorting
     'search_in' => 'Search in',
+    'select_all' => 'Select All',
+    'deselect_all' => 'Deselect All',
     'sort_results_by' => 'Sort results by',
     'sort_results' => 'Sort Results',
     'sort_by' => 'Sort by...',
@@ -68,7 +76,7 @@ return [
 
     // Recent searches
     'recent_searches' => 'Recent searches',
-    'popular_searches' => 'Popular searches',
+    'suggestions' => 'Suggestions',
     'clear' => 'Clear',
 
     // Navigation
@@ -82,10 +90,15 @@ return [
     'listening' => 'Listening...',
 
     // Content type names (in case they need translation)
-    'news' => 'News',
-    'pages' => 'Pages',
-    'documents' => 'Documents',
-    'events' => 'Events',
+    'News' => 'News',
+    'Pages' => 'Pages',
+    'Documents' => 'Documents',
+    'Events' => 'Events',
+
+    // Sort options
+    'Relevance' => 'Relevance',
+    'Date' => 'Date',
+    'Type' => 'Type',
 
     // General actions
     'cancel' => 'Cancel',

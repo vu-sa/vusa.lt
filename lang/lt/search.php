@@ -31,14 +31,22 @@ return [
     // Results and stats
     'results' => 'rezultatai',
     'items_found' => 'elementai rasti',
+    'total_results' => 'Viso rezultatų',
     'all_results' => 'Visi rezultatai',
     'no_results_found' => 'Jūsų paieškai rezultatų nerasta',
+    'no_results_found_for_your_search' => 'Jūsų paieškai rezultatų nerasta',
     'load_more_results' => 'Įkelti daugiau rezultatų',
+    'loading' => 'Kraunama',
     'show_more_type' => 'Rodyti daugiau :type',
     'untitled' => 'Be pavadinimo',
+    'keep_typing_to_see_results' => 'Tęskite rašymą rezultatams matyti',
+    'please_enter_at_least_3_characters' => 'Įveskite bent 3 simbolius',
+    'search_across_your_selected_content_types' => 'Ieškokite pasirinktuose turinio tipuose',
 
     // Filters and sorting
     'search_in' => 'Ieškoti',
+    'select_all' => 'Pažymėti viską',
+    'deselect_all' => 'Atžymėti viską',
     'sort_results_by' => 'Rūšiuoti rezultatus pagal',
     'sort_results' => 'Rūšiuoti rezultatus',
     'sort_by' => 'Rūšiuoti pagal...',
@@ -68,7 +76,7 @@ return [
 
     // Recent searches
     'recent_searches' => 'Paskutinės paieškos',
-    'popular_searches' => 'Populiarios paieškos',
+    'suggestions' => 'Pasiūlymai',
     'clear' => 'Išvalyti',
 
     // Navigation
@@ -86,6 +94,15 @@ return [
     'pages' => 'Puslapiai',
     'documents' => 'Dokumentai',
     'events' => 'Renginiai',
+    'News' => 'Naujienos',
+    'Pages' => 'Puslapiai',
+    'Documents' => 'Dokumentai',
+    'Events' => 'Renginiai',
+
+    // Sort options
+    'Relevance' => 'Tinkamumas',
+    'Date' => 'Data',
+    'Type' => 'Tipas',
 
     // General actions
     'cancel' => 'Atšaukti',

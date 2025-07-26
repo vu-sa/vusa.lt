@@ -21,7 +21,6 @@
             :title="$t(contentType.name)"
             :icon="contentType.icon"
             :type="contentType.id"
-            :color="contentType.color"
             :result-order="resultOrder"
             @navigate-to-item="$emit('navigateToItem', $event)"
             @update-result-count="(count) => $emit('updateResultCount', contentType.id, count)"

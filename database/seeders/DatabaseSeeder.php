@@ -7,6 +7,7 @@ use App\Models\Calendar;
 use App\Models\Category;
 use App\Models\Content;
 use App\Models\ContentPart;
+use App\Models\Document;
 use App\Models\Doing;
 use App\Models\Duty;
 use App\Models\Goal;
@@ -83,6 +84,39 @@ class DatabaseSeeder extends Seeder
         Calendar::factory(50)->recycle($tenants)->recycle($categories)->create();
         News::factory(75)->recycle($tenants)->create();
         Page::factory(75)->recycle($tenants)->create();
+
+        // Create documents with varied types and languages
+        Document::factory(30)
+            ->recycle(Institution::all()) // Use existing institutions
+            ->create();
+
+        // Create some specific document types
+        Document::factory(10)
+            ->recycle(Institution::all())
+            ->policy()
+            ->create();
+
+        Document::factory(15)
+            ->recycle(Institution::all())
+            ->meetingMinutes()
+            ->create();
+
+        Document::factory(8)
+            ->recycle(Institution::all())
+            ->annualReport()
+            ->create();
+
+        // Create some Lithuanian-specific documents
+        Document::factory(12)
+            ->recycle(Institution::all())
+            ->lithuanian()
+            ->create();
+
+        // Create some English-specific documents
+        Document::factory(8)
+            ->recycle(Institution::all())
+            ->english()
+            ->create();
 
         Resource::factory(50)->has(Reservation::factory()->hasAttached($users->random(3)))->recycle($tenants)->create();
 

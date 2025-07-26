@@ -1,48 +1,25 @@
 <template>
-  <div 
-    data-slot="typesense-search" 
-    :class="cn('typesense-search', props.class)"
-  >
-    <SearchDialog
-      :is-open="isOpen"
-      :search-client="searchClient"
-      :total-result-count="searchController.totalResultCount.value"
-      :show-filters="showFilters"
-      :show-keyboard-help="showKeyboardHelp"
-      @update:is-open="updateDialogState"
-      @close="emit('close')"
-      @open="emit('open')"
-      @toggle-filters="showFilters = !showFilters"
-      @toggle-keyboard-help="showKeyboardHelp = !showKeyboardHelp"
-    >
-      <AisInstantSearch 
-        :search-client="searchClient"
-        index-name="documents" 
-        :future="{ preserveSharedStateOnUnmount: true }"
-        class="flex flex-col h-full overflow-hidden"
-        ref="instantSearchRef"
-      >
+  <div data-slot="typesense-search" :class="cn('typesense-search', props.class)">
+    <SearchDialog :is-open :search-client :total-result-count="searchController.totalResultCount.value" :show-filters
+      :show-keyboard-help @update:is-open="updateDialogState" @close="emit('close')" @open="emit('open')"
+      @toggle-filters="showFilters = !showFilters" @toggle-keyboard-help="showKeyboardHelp = !showKeyboardHelp">
+      <AisInstantSearch ref="instantSearchRef" :search-client index-name="documents"
+        :future="{ preserveSharedStateOnUnmount: true }" class="flex flex-col h-full overflow-hidden">
         <!-- Search Input Area -->
-        <SearchInput
-          :search-query="searchController.searchQuery.value"
-          ref="searchInputRef"
-          @update:search-query="handleSearchQueryUpdate"
-          @clear="handleClearSearch"
-        />
+        <SearchInput ref="searchInputRef" :search-query="searchController.searchQuery.value"
+          @update:search-query="handleSearchQueryUpdate" @clear="handleClearSearch" />
 
         <AisConfigure :hits-per-page.camel="20" />
 
         <!-- Hidden collectors for each content type to feed the search service -->
-        <SearchContentTypeCollectors 
-          :enabled-content-types="searchController.selectedTypes.value"
-          @update-results="handleUpdateContentTypeResults"
-        />
+        <SearchContentTypeCollectors :enabled-content-types="searchController.selectedTypes.value"
+          @update-results="handleUpdateContentTypeResults" />
 
         <!-- Filters Panel (collapsible) -->
-        <div v-if="showFilters" class="flex-shrink-0 border-b border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900/50 max-h-[40vh] overflow-y-auto">
+        <div v-if="showFilters"
+          class="flex-shrink-0 border-b border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900/50 max-h-[40vh] overflow-y-auto">
           <div class="px-6 py-4">
-            <SearchFilters
-              :content-types="searchController.contentTypes.value"
+            <SearchFilters :content-types="searchController.contentTypes.value"
               :result-order="searchController.preferences.value.resultOrder"
               :group-results="searchController.preferences.value.groupResults"
               :result-counts="searchController.resultCounts.value"
@@ -51,9 +28,7 @@
               @set-result-order="searchController.setResultOrder"
               @toggle-group-results="searchController.toggleGroupResults"
               @clear-recent-searches="searchController.clearRecentSearches"
-              @reset-to-defaults="searchController.resetToDefaults"
-              @select-recent-search="handleSelectSearch"
-            />
+              @reset-to-defaults="searchController.resetToDefaults" @select-recent-search="handleSelectSearch" />
           </div>
         </div>
 
@@ -64,26 +39,17 @@
 
         <!-- Search Results or Empty State -->
         <div class="flex-1 min-h-0">
-          <SearchResultsArea
-            v-if="hasActiveResults"
-            :group-results="searchController.preferences.value.groupResults"
-            :ordered-types="searchController.orderedTypes.value"
-            :selected-types="searchController.selectedTypes.value"
+          <SearchResultsArea v-if="hasActiveResults" :group-results="searchController.preferences.value.groupResults"
+            :ordered-types="searchController.orderedTypes.value" :selected-types="searchController.selectedTypes.value"
             :result-order="searchController.preferences.value.resultOrder"
-            :total-result-count="searchController.totalResultCount.value"
-            @navigate-to-item="handleNavigateToItem"
+            :total-result-count="searchController.totalResultCount.value" @navigate-to-item="handleNavigateToItem"
             @update-result-count="(typeId, count) => searchController.updateResultCount(typeId, count)"
             @update-total-hits="(typeId, totalHits) => searchController.updateTotalResultCount(typeId, totalHits)"
-            @toggle-view="searchController.toggleGroupResults"
-          />
+            @toggle-view="searchController.toggleGroupResults" />
 
-          <SearchEmptyState
-            v-else
-            :search-query="searchController.searchQuery.value"
+          <SearchEmptyState v-else :search-query="searchController.searchQuery.value"
             :selected-types="searchController.selectedTypes.value"
-            :recent-searches="searchController.preferences.value.recentSearches"
-            @select-search="handleSelectSearch"
-          />
+            :recent-searches="searchController.preferences.value.recentSearches" @select-search="handleSelectSearch" />
         </div>
       </AisInstantSearch>
     </SearchDialog>
@@ -91,8 +57,8 @@
     <!-- Search Trigger Button (optional) -->
     <div v-if="showTrigger">
       <Button @click="openDialog">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-        {{ $t('Search') }}
+        <IconSearch class="w-4 h-4 mr-2" />
+        {{ $t('search.search') }}
       </Button>
     </div>
   </div>
@@ -112,6 +78,7 @@ import { useSearchService } from '@/Composables/useSearchService'
 // Typesense search adapter
 import TypesenseInstantSearchAdapter from 'typesense-instantsearch-adapter'
 import { AisInstantSearch, AisConfigure } from 'vue-instantsearch/vue3/es'
+import IconSearch from '~icons/fluent/search20-regular'
 
 // UI components
 import { Button } from '@/Components/ui/button'
@@ -241,11 +208,11 @@ const handleNavigateToItem = (item: SearchItem) => {
     item_id: item.id,
     search_query: searchController.searchQuery.value
   })
-  
+
   // Navigate using the utility function
   const { navigateToItem } = useSearchUtils()
   navigateToItem(item)
-  
+
   // Close the dialog
   updateDialogState(false)
 }
@@ -285,7 +252,7 @@ const searchAdapter = computed(() => {
   if (!getTypesenseConfig.value) {
     return null
   }
-  
+
   try {
     return new TypesenseInstantSearchAdapter({
       server: {
@@ -400,7 +367,7 @@ const openDialog = async () => {
   emit('update:dialogOpen', true)
   emit('open')
   await focusSearchInput()
-  
+
   trackSearchInteraction('search_opened', {
     trigger: 'keyboard_shortcut'
   })
@@ -430,14 +397,14 @@ watch(() => searchController.searchQuery.value, (newQuery) => {
 // Lifecycle
 onMounted(() => {
   document.addEventListener('keydown', handleKeydown)
-  
+
   const urlParams = new URLSearchParams(window.location.search)
   const q = urlParams.get('q')
   if (q) {
     searchController.searchQuery.value = q
     emit('update:searchTerm', q)
   }
-  
+
   if (!localStorage.getItem('search-shortcut-seen')) {
     console.log('Use Cmd+K (Mac) or Ctrl+K (Windows/Linux) to quickly open search')
     localStorage.setItem('search-shortcut-seen', 'true')
