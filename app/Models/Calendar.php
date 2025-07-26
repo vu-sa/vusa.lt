@@ -73,6 +73,7 @@ class Calendar extends Model implements HasMedia
     {
         return [
             'id' => (string) $this->id,
+            'title' => $this->getTranslation('title', app()->getLocale()) ?: $this->getTranslation('title', 'lt') ?: $this->getTranslation('title', 'en'),
             'title_lt' => $this->getTranslation('title', 'lt'),
             'title_en' => $this->getTranslation('title', 'en'),
             'date' => $this->date ? $this->date->timestamp : now()->timestamp,

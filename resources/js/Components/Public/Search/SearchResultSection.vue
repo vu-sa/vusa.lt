@@ -1,22 +1,5 @@
 <template>
-  <AisIndex :index-name="indexName">
-    <!-- Track total hits for accurate counts -->
-    <AisStats>
-      <template #default="{ nbHits }">
-        <span style="display: none">{{ updateTotalHits(nbHits) }}</span>
-      </template>
-    </AisStats>
-    
-    <AisInfiniteHits 
-      :transform-items="transformItems"
-      :show-previous="false"
-      class="hide-default-buttons"
-    >
-      <template #default="{ items, isLastPage, refineNext }">
-        <span style="display: none">{{ updateResultsCount(items.length) }}</span>
-        
-        <!-- Only render anything if there are items -->
-        <div v-if="items.length > 0">
+  <div v-if="typeResults && typeResults.results.length > 0">
           <div class="space-y-2">
             <!-- Section Header with total hits count -->
             <div :class="getSectionHeaderClasses(color)">
@@ -24,25 +7,36 @@
             </div>
 
             <!-- Results -->
-            <div class="space-y-2">
-              <div v-for="item in items" :key="`${item.id}-${type}`" :class="getItemClasses(color, isSelected(item))"
-                @click="() => $emit('selectItem', { ...item, type })">
-                <div class="flex items-start gap-3">
+            <div class="space-y-3">
+              <div v-for="item in typeResults.results" :key="`${item.id}-${type}`" 
+                :class="getItemClasses(color)"
+                @click="handleItemClick(item, $event)"
+                :title="$t('search.click_to_open')"
+                role="button"
+                tabindex="0"
+                @keydown="handleItemKeydown(item, $event)"
+              >
+                <div class="flex items-start gap-4">
                   <div class="flex-shrink-0">
                     <div :class="getIconClasses(color)">
                       <component :is="getIconComponent(type)" class="w-3 h-3" />
                     </div>
                   </div>
                   <div class="flex-1 min-w-0">
-                    <div class="flex items-center gap-2 mb-1">
+                    <div class="flex items-center justify-between gap-2 mb-2">
                       <time class="text-xs text-muted-foreground">{{ formatDate(getItemDate(item)) }}</time>
+                      <!-- Navigation indicator -->
+                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground opacity-60 group-hover:opacity-100 transition-opacity">
+                        <path d="M7 17 17 7"/>
+                        <path d="M7 7h10v10"/>
+                      </svg>
                     </div>
-                    <h3 class="font-medium text-sm leading-tight mb-1">
+                    <h3 class="font-medium text-base leading-tight mb-2 group-hover:text-primary transition-colors">
                       <AisHighlight attribute="title" :hit="item" />
                       <AisHighlight v-if="!item.title && item.name" attribute="name" :hit="item" />
-                      <span v-if="!item.title && !item.name">{{ item.name || item.title || $t('Untitled') }}</span>
+                      <span v-if="!item.title && !item.name">{{ item.name || item.title || $t('search.untitled') }}</span>
                     </h3>
-                    <div v-if="getItemContent(item)" class="text-xs text-muted-foreground leading-relaxed line-clamp-2">
+                    <div v-if="getItemContent(item)" class="text-sm text-muted-foreground leading-relaxed line-clamp-3 mb-1">
                       {{ stripHtml(getItemContent(item)) }}
                     </div>
                   </div>
@@ -50,27 +44,25 @@
               </div>
 
               <!-- Load More Button - only show if there are items and more pages available -->
-              <div v-if="!isLastPage && items.length > 0" class="px-3 py-2">
+              <div v-if="!typeResults.isLastPage && typeResults.results.length > 0" class="px-3 py-2">
                 <Button variant="ghost" size="sm" :class="getLoadMoreClasses(color)"
-                  class="w-full justify-center text-xs" @click="refineNext">
+                  class="w-full justify-center text-xs" @click="typeResults.refineNext">
                   <ArrowRightIcon class="mr-1 w-3.5 h-3.5" />
                   {{ $t('Show more :type', { type: title.toLowerCase() }) }}
                 </Button>
               </div>
             </div>
           </div>
-        </div>
-      </template>
-    </AisInfiniteHits>
-  </AisIndex>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { computed, h, ref, watch } from 'vue'
-import { AisIndex, AisInfiniteHits, AisHighlight, AisStats } from 'vue-instantsearch/vue3/es'
+import { computed, h, ref, watch, inject } from 'vue'
+import { AisHighlight } from 'vue-instantsearch/vue3/es'
 import { Button } from '@/Components/ui/button'
 import { trans as $t } from 'laravel-vue-i18n'
 import { format } from 'date-fns'
+import { useSearchService, type SearchService } from '@/Composables/useSearchService'
 
 // Icon components (simplified)
 const NewsIcon = () => h('svg', {
@@ -149,7 +141,6 @@ interface Props {
   icon: string
   type: string
   color: string
-  selectedItem: any
   resultOrder?: 'relevance' | 'date' | 'type'
 }
 
@@ -158,67 +149,53 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  selectItem: [item: any]
+  navigateToItem: [item: any]
   updateResultCount: [count: number]
   updateTotalHits: [totalHits: number]
 }>()
 
-// Store current stats and results for tracking
-const currentHits = ref(0)
-const currentResults = ref(0)
+// Use centralized search service - inject from parent or create new
+const searchService = inject<SearchService>('searchService') || useSearchService()
 
-// Update functions that can be safely called in templates
-const updateTotalHits = (hits: number) => {
-  if (currentHits.value !== hits) {
-    currentHits.value = hits
-    emit('updateTotalHits', hits)
+// Get results for this content type from the search service
+const typeResults = computed(() => {
+  return searchService.getContentTypeResults(props.type)
+})
+
+// Current hits from the type results
+const currentHits = computed(() => {
+  return typeResults.value?.totalHits || 0
+})
+
+// Mobile detection
+const isMobile = computed(() => {
+  if (typeof window === 'undefined') return false
+  return window.innerWidth < 1024
+})
+
+// Event handlers - simplified for direct navigation
+const handleItemClick = (item: any, event: MouseEvent) => {
+  const itemWithType = { ...item, type: props.type }
+  emit('navigateToItem', itemWithType)
+}
+
+const handleItemKeydown = (item: any, event: KeyboardEvent) => {
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault()
+    emit('navigateToItem', { ...item, type: props.type })
   }
-  return ''
 }
 
-const updateResultsCount = (count: number) => {
-  if (currentResults.value !== count) {
-    currentResults.value = count
-    emit('updateResultCount', count)
+// Watch for changes in type results and emit updates
+watch(typeResults, (newTypeResults) => {
+  if (newTypeResults) {
+    emit('updateTotalHits', newTypeResults.totalHits)
+    emit('updateResultCount', newTypeResults.results.length)
+  } else {
+    emit('updateTotalHits', 0)
+    emit('updateResultCount', 0)
   }
-  return ''
-}
-
-// Remove the problematic queryKey that causes constant re-rendering
-const transformItems = (items: any[]) => {
-  const transformedItems = items.map(item => ({
-    ...item,
-    title: item.title || item.name || '',
-    type: props.type
-  }))
-
-  // Update results count when items transform
-  currentResults.value = transformedItems.length
-
-  // Apply additional sorting based on result order preference
-  if (props.resultOrder === 'date') {
-    return transformedItems.sort((a, b) => {
-      const aDate = getItemDate(a)
-      const bDate = getItemDate(b)
-      if (!aDate && !bDate) return 0
-      if (!aDate) return 1
-      if (!bDate) return -1
-      
-      // Convert to comparable timestamps
-      const aTime = typeof aDate === 'number' ? aDate : new Date(aDate).getTime()
-      const bTime = typeof bDate === 'number' ? bDate : new Date(bDate).getTime()
-      
-      return bTime - aTime // Most recent first
-    })
-  }
-  
-  // For relevance and type, use Typesense's default ranking
-  return transformedItems
-}
-
-const isSelected = (item: any) => {
-  return props.selectedItem?.id === item.id && props.selectedItem?.type === props.type
-}
+}, { immediate: true })
 
 const getIconComponent = (type: string) => {
   switch (type) {
@@ -241,44 +218,25 @@ const getSectionHeaderClasses = (color: string) => {
   }
 }
 
-const getItemClasses = (color: string, isSelected: boolean) => {
-  const baseClasses = 'mx-2 mb-2 p-3 rounded-lg border cursor-pointer hover:shadow-sm transition-all duration-200 bg-white dark:bg-zinc-900'
+const getItemClasses = (color: string) => {
+  const baseClasses = 'group mx-3 mb-4 p-5 rounded-lg border cursor-pointer hover:shadow-md transition-all duration-200 bg-white dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-primary'
 
   let colorClasses = ''
-  if (isSelected) {
-    switch (color) {
-      case 'blue':
-        colorClasses = 'border-blue-500 dark:border-blue-400 shadow-md bg-blue-50/50 dark:bg-blue-950/20'
-        break
-      case 'green':
-        colorClasses = 'border-green-500 dark:border-green-400 shadow-md bg-green-50/50 dark:bg-green-950/20'
-        break
-      case 'purple':
-        colorClasses = 'border-purple-500 dark:border-purple-400 shadow-md bg-purple-50/50 dark:bg-purple-950/20'
-        break
-      case 'amber':
-        colorClasses = 'border-amber-500 dark:border-amber-400 shadow-md bg-amber-50/50 dark:bg-amber-950/20'
-        break
-      default:
-        colorClasses = 'border-zinc-500 dark:border-zinc-400 shadow-md bg-zinc-50/50 dark:bg-zinc-950/20'
-    }
-  } else {
-    switch (color) {
-      case 'blue':
-        colorClasses = 'border-zinc-200 dark:border-zinc-700 hover:border-blue-300 dark:hover:border-blue-600'
-        break
-      case 'green':
-        colorClasses = 'border-zinc-200 dark:border-zinc-700 hover:border-green-300 dark:hover:border-green-600'
-        break
-      case 'purple':
-        colorClasses = 'border-zinc-200 dark:border-zinc-700 hover:border-purple-300 dark:hover:border-purple-600'
-        break
-      case 'amber':
-        colorClasses = 'border-zinc-200 dark:border-zinc-700 hover:border-amber-300 dark:hover:border-amber-600'
-        break
-      default:
-        colorClasses = 'border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600'
-    }
+  switch (color) {
+    case 'blue':
+      colorClasses = 'border-zinc-200 dark:border-zinc-700 hover:border-blue-300 dark:hover:border-blue-600 hover:bg-blue-50/50 dark:hover:bg-blue-950/20'
+      break
+    case 'green':
+      colorClasses = 'border-zinc-200 dark:border-zinc-700 hover:border-green-300 dark:hover:border-green-600 hover:bg-green-50/50 dark:hover:bg-green-950/20'
+      break
+    case 'purple':
+      colorClasses = 'border-zinc-200 dark:border-zinc-700 hover:border-purple-300 dark:hover:border-purple-600 hover:bg-purple-50/50 dark:hover:bg-purple-950/20'
+      break
+    case 'amber':
+      colorClasses = 'border-zinc-200 dark:border-zinc-700 hover:border-amber-300 dark:hover:border-amber-600 hover:bg-amber-50/50 dark:hover:bg-amber-950/20'
+      break
+    default:
+      colorClasses = 'border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600 hover:bg-zinc-50 dark:hover:bg-zinc-800'
   }
 
   return `${baseClasses} ${colorClasses}`
@@ -345,29 +303,39 @@ const getItemDate = (item: any) => {
 }
 
 const getItemContent = (item: any) => {
+  let content = ''
   switch (props.type) {
-    case 'news': return item.short
-    case 'documents': return item.summary
-    case 'pages': return item.content?.slice(0, 120) + '...'
-    case 'calendar': return item.description
-    default: return item.summary || item.content || item.description
+    case 'news': 
+      content = item.short || item.summary || item.content
+      break
+    case 'documents': 
+      content = item.summary || item.content
+      break
+    case 'pages': 
+      content = item.content || item.summary
+      break
+    case 'calendar': 
+      content = item.description || item.summary
+      break
+    default: 
+      content = item.summary || item.content || item.description
   }
+  
+  // Expand content length for better information display
+  if (content && content.length > 200) {
+    return content.slice(0, 200) + '...'
+  }
+  return content
 }
 </script>
 
 <style scoped>
-/* Hide the default InstantSearch load more button that appears even when slots are overridden */
-:deep(.ais-InfiniteHits-loadMore) {
-  display: none !important;
-}
-
-/* Also hide any disabled load more buttons */
-:deep(.ais-InfiniteHits-loadMore--disabled) {
-  display: none !important;
-}
-
-/* Hide any other default InstantSearch buttons that might appear */
-:deep(.hide-default-buttons .ais-InfiniteHits-loadMore) {
-  display: none !important;
+/* Line clamping for content preview */
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 </style>

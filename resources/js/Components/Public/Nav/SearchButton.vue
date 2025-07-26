@@ -3,21 +3,21 @@
     v-bind="$attrs" 
     variant="ghost" 
     :title="$t('Paieška')" 
-    @click="openSearch"
     class="gap-2"
     animation="subtle"
     :aria-expanded="showSearch"
     aria-haspopup="dialog"
     aria-controls="search-modal"
+    @click="openSearch"
   >
     <IFluentSearch20Filled class="h-4 w-4" aria-hidden="true" />
     <slot />
     <span v-if="!$slots.default" class="sr-only">{{ $t('Paieška') }}</span>
   </Button>
   <TypesenseSearch 
-    v-model:searchTerm="searchTerm" 
-    v-model:dialogOpen="showSearch"
-    :typesense-config="typesenseConfig"
+    v-model:search-term="searchTerm" 
+    v-model:dialog-open="showSearch"
+    :typesense-config
   />
 </template>
 

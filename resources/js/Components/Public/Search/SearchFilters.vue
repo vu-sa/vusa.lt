@@ -4,7 +4,7 @@
     <div class="content-type-filters">
       <div class="flex items-center justify-between mb-3">
         <h3 class="text-sm font-medium text-muted-foreground">
-          {{ $t('Search in') }}
+          {{ $t('search.search_in') }}
         </h3>
         <div class="flex items-center gap-2">
           <!-- Select All/None Toggle -->
@@ -14,7 +14,7 @@
             class="text-xs h-6 px-2"
             @click="toggleAllTypes"
           >
-            {{ allTypesSelected ? $t('Deselect all') : $t('Select all') }}
+            {{ allTypesSelected ? $t('search.deselect_all') : $t('search.select_all') }}
           </Button>
         </div>
       </div>
@@ -52,10 +52,10 @@
 
     <!-- Search Options -->
     <div class="search-options space-y-3">
-      <!-- Result Ordering -->
-      <div>
+      <!-- Result Ordering - Only show when NOT grouping results -->
+      <div v-if="!groupResults">
         <h4 class="text-sm font-medium text-muted-foreground mb-2">
-          {{ $t('Sort results by') }}
+          {{ $t('search.sort_results_by') }}
         </h4>
         <div class="flex gap-1">
           <Button
@@ -74,14 +74,14 @@
       <!-- Display Options -->
       <div>
         <h4 class="text-sm font-medium text-muted-foreground mb-2">
-          {{ $t('Display') }}
+          {{ $t('search.display') }}
         </h4>
         <label class="flex items-center gap-2 cursor-pointer">
           <Checkbox
             :model-value="groupResults"
             @update:model-value="toggleGroupResults"
           />
-          <span class="text-sm">{{ $t('Group results by content type') }}</span>
+          <span class="text-sm">{{ $t('search.group_results_by_type') }}</span>
         </label>
       </div>
     </div>
@@ -90,7 +90,7 @@
     <div v-if="recentSearches.length > 0" class="recent-searches">
       <div class="flex items-center justify-between mb-2">
         <h4 class="text-sm font-medium text-muted-foreground">
-          {{ $t('Recent searches') }}
+          {{ $t('search.recent_searches') }}
         </h4>
         <Button
           variant="ghost"
@@ -98,7 +98,7 @@
           class="text-xs h-6 px-2"
           @click="clearRecentSearches"
         >
-          {{ $t('Clear') }}
+          {{ $t('search.clear') }}
         </Button>
       </div>
       <div class="flex flex-wrap gap-1">
@@ -119,7 +119,7 @@
     <div class="quick-actions pt-2 border-t border-zinc-200 dark:border-zinc-700">
       <div class="flex items-center justify-between">
         <span class="text-xs text-muted-foreground">
-          {{ $t('Quick actions') }}
+          {{ $t('search.quick_actions') }}
         </span>
         <Button
           variant="ghost"
@@ -127,7 +127,7 @@
           class="text-xs h-6 px-2"
           @click="resetToDefaults"
         >
-          {{ $t('Reset filters') }}
+          {{ $t('search.reset_filters') }}
         </Button>
       </div>
     </div>

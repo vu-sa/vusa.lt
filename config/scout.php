@@ -203,6 +203,7 @@ return [
                 'collection-schema' => [
                     'fields' => [
                         ['name' => 'id', 'type' => 'string'],
+                        ['name' => 'title', 'type' => 'string'],
                         ['name' => 'title_lt', 'type' => 'string', 'locale' => 'lt', 'optional' => true],
                         ['name' => 'title_en', 'type' => 'string', 'locale' => 'en', 'optional' => true],
                         ['name' => 'date', 'type' => 'int64', 'sort' => true],
@@ -214,8 +215,8 @@ return [
                     'default_sorting_field' => 'date',
                 ],
                 'search-parameters' => [
-                    'query_by' => 'title_lt,title_en',
-                    'query_by_weights' => '4,4'
+                    'query_by' => 'title,title_lt,title_en',
+                    'query_by_weights' => '5,4,4'
                 ],
             ],
 
