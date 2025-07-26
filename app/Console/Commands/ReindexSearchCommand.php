@@ -22,22 +22,22 @@ class ReindexSearchCommand extends Command
      */
     public function handle()
     {
-        $models = $this->argument('model') 
+        $models = $this->argument('model')
             ? ["App\\Models\\{$this->argument('model')}"]
             : $this->getSearchableModels();
-            
+
         foreach ($models as $model) {
             $this->info("Reindexing {$model}...");
-            
+
             try {
                 Artisan::call('scout:flush', ['model' => $model]);
                 Artisan::call('scout:import', ['model' => $model]);
                 $this->info("✅ {$model} reindexed successfully");
             } catch (\Exception $e) {
-                $this->error("❌ Failed to reindex {$model}: " . $e->getMessage());
+                $this->error("❌ Failed to reindex {$model}: ".$e->getMessage());
             }
         }
-        
+
         $this->info('🎉 Reindexing completed!');
     }
 

@@ -155,7 +155,7 @@ return [
         |
         */
         'model-settings' => [
-            
+
             // News Articles - Only published, non-draft content
             \App\Models\News::class => [
                 'collection-schema' => [
@@ -177,7 +177,7 @@ return [
                     'query_by_weights' => '4,2',
                 ],
             ],
-            
+
             // Static Pages - Only published pages
             \App\Models\Page::class => [
                 'collection-schema' => [
@@ -194,7 +194,7 @@ return [
                 ],
                 'search-parameters' => [
                     'query_by' => 'title',
-                    'query_by_weights' => '4'
+                    'query_by_weights' => '4',
                 ],
             ],
 
@@ -216,7 +216,7 @@ return [
                 ],
                 'search-parameters' => [
                     'query_by' => 'title,title_lt,title_en',
-                    'query_by_weights' => '5,4,4'
+                    'query_by_weights' => '5,4,4',
                 ],
             ],
 
@@ -238,7 +238,7 @@ return [
                 ],
                 'search-parameters' => [
                     'query_by' => 'title,summary',
-                    'query_by_weights' => '3,2'
+                    'query_by_weights' => '3,2',
                 ],
             ],
         ],

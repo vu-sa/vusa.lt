@@ -73,7 +73,7 @@ class Page extends Model implements Sitemapable
     public function shouldBeSearchable()
     {
         // Only index published pages (non-draft)
-        return !($this->is_draft ?? false);
+        return ! ($this->is_draft ?? false);
     }
 
     /**

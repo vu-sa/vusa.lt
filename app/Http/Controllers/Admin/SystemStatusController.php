@@ -39,9 +39,9 @@ class SystemStatusController extends Controller
             $isConfigured = TypesenseManager::isConfigured();
             // Check if any models are configured to use Typesense (regardless of global driver)
             $configuredModels = TypesenseManager::getCollections();
-            $isEnabled = $isConfigured && !empty($configuredModels);
-            
-            if (!$isEnabled) {
+            $isEnabled = $isConfigured && ! empty($configuredModels);
+
+            if (! $isEnabled) {
                 return [
                     'status' => $isConfigured ? 'disabled' : 'unconfigured',
                     'configured' => $isConfigured,
@@ -69,7 +69,7 @@ class SystemStatusController extends Controller
                 $collectionName = $collection['name'];
                 $numDocs = $collection['num_documents'] ?? 0;
                 $totalDocuments += $numDocs;
-                
+
                 $collectionsStats[] = [
                     'name' => $collectionName,
                     'documents' => number_format($numDocs),
@@ -80,7 +80,7 @@ class SystemStatusController extends Controller
 
             // Get configured models
             $configuredModels = TypesenseManager::getCollections();
-            
+
             return [
                 'status' => $health['ok'] ? $statusLevel : 'error',
                 'configured' => $isConfigured,
@@ -99,22 +99,22 @@ class SystemStatusController extends Controller
                     'host' => config('scout.typesense.client-settings.nodes.0.host'),
                     'port' => config('scout.typesense.client-settings.nodes.0.port'),
                     'protocol' => config('scout.typesense.client-settings.nodes.0.protocol'),
-                    'api_key_configured' => !empty(config('scout.typesense.client-settings.api_key')) && config('scout.typesense.client-settings.api_key') !== 'xyz',
-                    'search_only_key_configured' => !empty(env('TYPESENSE_SEARCH_ONLY_KEY')),
+                    'api_key_configured' => ! empty(config('scout.typesense.client-settings.api_key')) && config('scout.typesense.client-settings.api_key') !== 'xyz',
+                    'search_only_key_configured' => ! empty(env('TYPESENSE_SEARCH_ONLY_KEY')),
                     'queue_enabled' => config('scout.queue'),
                     'configured_models' => $configuredModels,
                 ],
                 'last_check' => now()->toISOString(),
             ];
-            
+
         } catch (\Exception $e) {
             $isConfigured = TypesenseManager::isConfigured();
             $configuredModels = TypesenseManager::getCollections();
-            
+
             return [
                 'status' => 'error',
                 'configured' => $isConfigured,
-                'enabled' => $isConfigured && !empty($configuredModels),
+                'enabled' => $isConfigured && ! empty($configuredModels),
                 'connected' => false,
                 'error' => $e->getMessage(),
                 'error_type' => get_class($e),
@@ -123,7 +123,7 @@ class SystemStatusController extends Controller
                     'global_scout_driver' => config('scout.driver'),
                     'host' => config('scout.typesense.client-settings.nodes.0.host'),
                     'port' => config('scout.typesense.client-settings.nodes.0.port'),
-                    'api_key_configured' => !empty(config('scout.typesense.client-settings.api_key')) && config('scout.typesense.client-settings.api_key') !== 'xyz',
+                    'api_key_configured' => ! empty(config('scout.typesense.client-settings.api_key')) && config('scout.typesense.client-settings.api_key') !== 'xyz',
                 ],
                 'last_check' => now()->toISOString(),
             ];

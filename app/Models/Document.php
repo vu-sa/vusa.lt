@@ -39,7 +39,7 @@ class Document extends Model
             'institution_name_en' => $this->institution ? $this->institution->getTranslation('name', 'en') : null,
             'document_date' => $this->document_date ? strtotime($this->document_date) : now()->timestamp,
             'anonymous_url' => $this->anonymous_url,
-            'created_at' => $this->created_at->timestamp
+            'created_at' => $this->created_at->timestamp,
         ];
     }
 
@@ -49,7 +49,7 @@ class Document extends Model
     public function shouldBeSearchable()
     {
         // Only index documents that have anonymous access (public)
-        return !empty($this->anonymous_url);
+        return ! empty($this->anonymous_url);
     }
 
     /**

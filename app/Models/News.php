@@ -161,8 +161,8 @@ class News extends Model implements Feedable, Sitemapable
     public function shouldBeSearchable()
     {
         // Only index published (non-draft) news that has been published
-        return !$this->draft && 
-               $this->publish_time && 
+        return ! $this->draft &&
+               $this->publish_time &&
                $this->publish_time->isPast();
     }
 

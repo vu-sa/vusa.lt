@@ -25,12 +25,12 @@ Route::prefix('v1')->group(function () {
     // });
     Route::apiResource('types', 'TypeController')->only(['index']);
     Route::apiResource('documents', 'DocumentController')->only(['index']);
-    
+
     // Simple Typesense configuration endpoint for Phase 1
     Route::get('typesense/config', function () {
         return response()->json(\App\Services\Typesense\TypesenseManager::getFrontendConfig());
     })->name('typesense.config');
-    
+
     Route::group(['prefix' => '{lang}', 'where' => ['lang' => 'lt|en']], function () {
         Route::get('news/{tenant:alias}', [NewsController::class, 'getTenantNews'])->name('news.tenant.index');
         Route::get('calendar/{tenant:alias}', [CalendarController::class, 'getTenantCalendar'])->name('calendar.tenant.index');

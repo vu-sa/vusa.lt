@@ -90,7 +90,7 @@ class Calendar extends Model implements HasMedia
     public function shouldBeSearchable()
     {
         // Only index published (non-draft) calendar events
-        return !$this->is_draft;
+        return ! $this->is_draft;
     }
 
     /**
