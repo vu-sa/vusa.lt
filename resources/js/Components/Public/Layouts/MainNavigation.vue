@@ -1,5 +1,5 @@
 <template>
-  <header class="fixed top-0 w-[100cqw] z-50" role="banner">
+  <header class="fixed top-0 w-[100cqw] z-50">
     <section class="max-w-[84rem] mx-auto">
       <div class="group relative mt-4 mx-4 2xl:mx-0">
         <nav

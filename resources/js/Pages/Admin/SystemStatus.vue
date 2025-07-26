@@ -1,7 +1,7 @@
 <template>
-  <AdminContentPage :title="$t('Sistemos būsena')">>
+  <AdminContentPage :title="$t('Sistemos būsena')">
     <!-- Status overview cards -->
-    <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 items-start">
+    <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5 items-start">
       <Card class="h-fit hover:shadow-lg transition-shadow duration-300">
         <CardHeader size="compact">
           <div class="flex items-center justify-between">
@@ -61,6 +61,30 @@
           </div>
           <p class="text-xs text-muted-foreground">
             {{ status.cache?.driver || 'N/A' }}
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card class="h-fit hover:shadow-lg transition-shadow duration-300">
+        <CardHeader size="compact">
+          <div class="flex items-center justify-between">
+            <CardTitle class="text-sm font-medium">Typesense</CardTitle>
+            <component 
+              :is="getStatusIcon(status.typesense?.status)" 
+              :class="getStatusColor(status.typesense?.status)"
+              class="h-4 w-4"
+            />
+          </div>
+        </CardHeader>
+        <CardContent size="compact">
+          <div class="text-2xl font-bold">
+            {{ status.typesense?.connected ? 'Prijungta' : (status.typesense?.enabled ? 'Neprijungta' : 'Išjungta') }}
+          </div>
+          <p class="text-xs text-muted-foreground">
+            {{ status.typesense?.collections?.total_documents || '0' }} {{ $t('dokumentų') }}
+            <span v-if="status.typesense?.collections?.memory?.active_memory_mb || status.typesense?.collections?.memory?.resident_memory_mb || status.typesense?.collections?.memory?.estimated_collections_mb" class="block">
+              {{ status.typesense.collections.memory.active_memory_mb || status.typesense.collections.memory.resident_memory_mb || status.typesense.collections.memory.estimated_collections_mb }} MB RAM
+            </span>
           </p>
         </CardContent>
       </Card>
@@ -185,6 +209,152 @@
         </CardContent>
       </Card>
 
+      <!-- Typesense Details -->
+      <Card v-if="status.typesense" class="hover:shadow-lg transition-shadow duration-300">
+        <CardHeader size="compact">
+          <CardTitle class="flex items-center gap-2">
+            <SearchIcon class="h-5 w-5" />
+            Typesense {{ $t('detalės') }}
+          </CardTitle>
+        </CardHeader>
+        <CardContent class="space-y-4">
+          <div v-if="status.typesense.error" class="rounded-md bg-red-50 p-3 dark:bg-red-900/20">
+            <p class="text-sm text-red-700 dark:text-red-400">
+              {{ status.typesense.error }}
+            </p>
+            <p v-if="status.typesense.error_type" class="text-xs text-red-600 dark:text-red-500 mt-1">
+              {{ status.typesense.error_type }}
+            </p>
+          </div>
+          <div v-else-if="!status.typesense.enabled" class="rounded-md bg-gray-50 p-3 dark:bg-gray-900/20">
+            <p class="text-sm text-gray-700 dark:text-gray-400">
+              {{ $t('Typesense paieška išjungta') }}. {{ $t('Dabartinė tvarkyklė') }}: {{ status.typesense.configuration?.driver || 'N/A' }}
+            </p>
+          </div>
+          <div v-else-if="!status.typesense.configured" class="rounded-md bg-yellow-50 p-3 dark:bg-yellow-900/20">
+            <p class="text-sm text-yellow-700 dark:text-yellow-400">
+              {{ $t('Typesense nėra tinkamai sukonfigūruotas. Naudojamas numatytasis API raktas.') }}
+            </p>
+          </div>
+          <div v-else class="space-y-4">
+            <div class="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <span class="font-medium">{{ $t('Serveris') }}:</span>
+                <span class="ml-2">{{ status.typesense.configuration?.host }}:{{ status.typesense.configuration?.port }}</span>
+              </div>
+              <div>
+                <span class="font-medium">{{ $t('Protokolas') }}:</span>
+                <span class="ml-2">{{ status.typesense.configuration?.protocol }}</span>
+              </div>
+              <div>
+                <span class="font-medium">{{ $t('Prisijungimo laikas') }}:</span>
+                <span class="ml-2">{{ status.typesense.connection_time || 'N/A' }}</span>
+              </div>
+            </div>
+            
+            <!-- Configuration badges with better spacing -->
+            <div class="grid grid-cols-1 gap-3 text-sm">
+              <div class="flex items-center justify-between">
+                <span class="font-medium">{{ $t('API raktas') }}:</span>
+                <Badge :variant="status.typesense.configuration?.api_key_configured ? 'default' : 'destructive'">
+                  {{ status.typesense.configuration?.api_key_configured ? $t('Sukonfigūruotas') : $t('Numatytasis') }}
+                </Badge>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="font-medium">{{ $t('Paieškos raktas') }}:</span>
+                <Badge :variant="status.typesense.configuration?.search_only_key_configured ? 'default' : 'secondary'">
+                  {{ status.typesense.configuration?.search_only_key_configured ? $t('Sukonfigūruotas') : $t('Nesukonfigūruotas') }}
+                </Badge>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="font-medium">{{ $t('Eilė') }}:</span>
+                <Badge :variant="status.typesense.configuration?.queue_enabled ? 'default' : 'secondary'">
+                  {{ status.typesense.configuration?.queue_enabled ? $t('Įjungta') : $t('Išjungta') }}
+                </Badge>
+              </div>
+            </div>
+
+            <!-- Collections Statistics -->
+            <div v-if="status.typesense.collections" class="mt-6">
+              <h4 class="font-semibold text-sm mb-3">{{ $t('Kolekcijos') }}</h4>
+              
+              <!-- Memory Usage Summary -->
+              <div v-if="status.typesense.collections.memory" class="mb-4 p-3 rounded-md bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+                <h5 class="font-medium text-sm mb-2">{{ $t('Atminties naudojimas') }}</h5>
+                <div class="grid grid-cols-2 gap-3 text-sm">
+                  <div v-if="status.typesense.collections.memory.active_memory_mb && status.typesense.collections.memory.active_memory_mb > 0" class="flex justify-between">
+                    <span>{{ $t('Aktyviai naudojama') }}:</span>
+                    <span class="font-mono">{{ status.typesense.collections.memory.active_memory_mb }} MB</span>
+                  </div>
+                  <div v-if="status.typesense.collections.memory.resident_memory_mb && status.typesense.collections.memory.resident_memory_mb > 0" class="flex justify-between">
+                    <span>{{ $t('RAM (resident)') }}:</span>
+                    <span class="font-mono">{{ status.typesense.collections.memory.resident_memory_mb }} MB</span>
+                  </div>
+                  <div v-if="status.typesense.collections.memory.allocated_memory_mb && status.typesense.collections.memory.allocated_memory_mb > 0" class="flex justify-between">
+                    <span>{{ $t('Išskirta atminties') }}:</span>
+                    <span class="font-mono">{{ status.typesense.collections.memory.allocated_memory_mb }} MB</span>
+                  </div>
+                  <div v-if="status.typesense.collections.memory.mapped_memory_mb && status.typesense.collections.memory.mapped_memory_mb > 0" class="flex justify-between">
+                    <span>{{ $t('Susietos bylos') }}:</span>
+                    <span class="font-mono">{{ status.typesense.collections.memory.mapped_memory_mb }} MB</span>
+                  </div>
+                  <div v-if="status.typesense.collections.memory.metadata_memory_mb && status.typesense.collections.memory.metadata_memory_mb > 0" class="flex justify-between">
+                    <span>{{ $t('Metaduomenys') }}:</span>
+                    <span class="font-mono">{{ status.typesense.collections.memory.metadata_memory_mb }} MB</span>
+                  </div>
+                  <div v-if="status.typesense.collections.memory.fragmentation_ratio !== undefined && status.typesense.collections.memory.fragmentation_ratio !== null" class="flex justify-between col-span-2 pt-2 border-t border-blue-300 dark:border-blue-700">
+                    <span>{{ $t('Fragmentacijos santykis') }}:</span>
+                    <span class="font-mono">{{ (status.typesense.collections.memory.fragmentation_ratio! * 100).toFixed(1) }}%</span>
+                  </div>
+                  <div v-if="status.typesense.collections.memory.estimated_collections_mb" class="flex justify-between col-span-2 pt-2 border-t border-blue-300 dark:border-blue-700">
+                    <span>{{ $t('Apskaičiuota kolekcijų') }}:</span>
+                    <span class="font-mono">{{ status.typesense.collections.memory.estimated_collections_mb }} MB</span>
+                  </div>
+                  <div v-if="status.typesense.collections.memory.note" class="col-span-2 pt-2 text-xs text-muted-foreground border-t border-blue-300 dark:border-blue-700">
+                    {{ status.typesense.collections.memory.note }}
+                  </div>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 gap-3">
+                <div v-for="collection in status.typesense.collections.details" :key="collection.name" 
+                     class="flex items-center justify-between p-3 rounded-md border bg-muted/10">
+                  <div class="flex items-center gap-3">
+                    <div class="w-3 h-3 rounded-full bg-primary"></div>
+                    <div>
+                      <div class="font-medium text-sm">{{ collection.name }}</div>
+                      <div class="text-xs text-muted-foreground">
+                        {{ collection.fields }} {{ $t('laukai') }} • {{ $t('rikiuoti pagal') }} {{ collection.default_sorting_field }}
+                      </div>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <div class="font-bold text-sm">{{ collection.documents }}</div>
+                    <div class="text-xs text-muted-foreground">{{ $t('dokumentų') }}</div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Total Summary -->
+              <div class="mt-4 p-3 rounded-md bg-primary/5 border border-primary/20">
+                <div class="flex justify-between items-center">
+                  <span class="font-medium">{{ $t('Iš viso') }}:</span>
+                  <div class="text-right">
+                    <div class="font-bold">{{ status.typesense.collections.total_documents }}</div>
+                    <div class="text-xs text-muted-foreground">
+                      {{ status.typesense.collections.count }} {{ $t('kolekcijose') }}
+                      <span v-if="status.typesense.collections.memory?.active_memory_mb || status.typesense.collections.memory?.resident_memory_mb || status.typesense.collections.memory?.estimated_collections_mb">
+                        • {{ status.typesense.collections.memory.active_memory_mb || status.typesense.collections.memory.resident_memory_mb || status.typesense.collections.memory.estimated_collections_mb }} MB
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <!-- Integrations -->
       <Card v-if="status.integrations" class="hover:shadow-lg transition-shadow duration-300">
         <CardHeader>
@@ -260,14 +430,24 @@
                   :class="getStatusColor(status.integrations.scout?.status === 'configured' ? 'healthy' : 'warning')"
                   class="h-4 w-4"
                 />
-                <span class="font-medium">{{ $t('Paieška') }}</span>
+                <span class="font-medium">{{ $t('Paieška') }} (Scout)</span>
               </div>
               <Badge :variant="status.integrations.scout?.configured ? 'default' : 'secondary'">
                 {{ status.integrations.scout?.status === 'configured' ? $t('Įjungta') : $t('Išjungta') }}
               </Badge>
             </div>
-            <div v-if="status.integrations.scout?.configured" class="mt-2 text-sm text-muted-foreground">
-              {{ $t('Tvarkyklė') }}: {{ status.integrations.scout.driver }}
+            <div v-if="status.integrations.scout?.configured" class="mt-2 space-y-1 text-sm text-muted-foreground">
+              <div>{{ $t('Tvarkyklė') }}: {{ status.integrations.scout.driver }}</div>
+              <div v-if="status.integrations.scout.queue_enabled">
+                {{ $t('Eilė') }}: {{ status.integrations.scout.queue_enabled ? $t('Įjungta') : $t('Išjungta') }}
+                • {{ $t('Gabalo dydis') }}: {{ status.integrations.scout.chunk_size }}
+              </div>
+              <div v-if="status.integrations.scout.driver === 'typesense'">
+                Typesense: 
+                <Badge :variant="status.integrations.scout.typesense_configured ? 'default' : 'destructive'" size="sm">
+                  {{ status.integrations.scout.typesense_configured ? $t('Sukonfigūruotas') : $t('Nesukonfigūruotas') }}
+                </Badge>
+              </div>
             </div>
           </div>
         </CardContent>
@@ -380,6 +560,7 @@ import {
   LinkIcon,
   MonitorIcon,
   TrendingUpIcon,
+  SearchIcon,
 } from 'lucide-vue-next';
 
 import { BreadcrumbHelpers, usePageBreadcrumbs } from "@/Composables/useBreadcrumbsUnified";
@@ -418,6 +599,48 @@ const props = defineProps<{
       test_result?: string;
       error?: string;
     };
+    typesense?: {
+      status: string;
+      configured: boolean;
+      enabled: boolean;
+      connected: boolean;
+      connection_time?: string;
+      health?: {
+        ok: boolean;
+      };
+      collections?: {
+        count: number;
+        total_documents: string;
+        details: Array<{
+          name: string;
+          documents: string;
+          fields: number;
+          default_sorting_field: string;
+        }>;
+        memory?: {
+          active_memory_mb?: number;
+          resident_memory_mb?: number;
+          allocated_memory_mb?: number;
+          mapped_memory_mb?: number;
+          metadata_memory_mb?: number;
+          fragmentation_ratio?: number | null;
+          estimated_collections_mb?: number;
+          note?: string;
+        };
+      };
+      configuration?: {
+        driver: string;
+        host: string;
+        port: string;
+        protocol: string;
+        api_key_configured: boolean;
+        search_only_key_configured: boolean;
+        queue_enabled: boolean;
+        configured_models: string[];
+      };
+      error?: string;
+      error_type?: string;
+    };
     integrations?: {
       microsoft?: {
         configured: boolean;
@@ -444,6 +667,10 @@ const props = defineProps<{
         driver?: string;
         configured: boolean;
         status: string;
+        queue_enabled?: boolean;
+        after_commit?: boolean;
+        chunk_size?: number;
+        typesense_configured?: boolean;
       };
     };
     system?: {

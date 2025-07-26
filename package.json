@@ -58,10 +58,12 @@
     "sortablejs": "^1.15.0",
     "tailwind-merge": "^3.2.0",
     "tw-animate-css": "^1.2.5",
+    "typesense-instantsearch-adapter": "^2.9.0",
     "unplugin-vue-markdown": "^29.0.0",
     "v-calendar": "^3.0.2",
     "vaul-vue": "^0.4.1",
     "vee-validate": "^4.15.0",
+    "vue-instantsearch": "^4.20.7",
     "vue-sonner": "^2.0.1",
     "zod": "^3.24.2"
   },

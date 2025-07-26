@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Role;
+use App\Services\Typesense\TypesenseManager;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
 use Inertia\Inertia;
+use Typesense\Client;
 
 class SystemStatusController extends Controller
 {
@@ -19,6 +21,7 @@ class SystemStatusController extends Controller
             'redis' => $this->getRedisStatus(),
             'database' => $this->getDatabaseStatus(),
             'cache' => $this->getCacheStatus(),
+            'typesense' => $this->getTypesenseStatus(),
             'integrations' => $this->getIntegrationsStatus(),
             'system' => $this->getSystemStatus(),
         ];
@@ -27,6 +30,158 @@ class SystemStatusController extends Controller
             'status' => $status,
             'lastUpdated' => now()->toISOString(),
         ]);
+    }
+
+    private function getTypesenseStatus(): array
+    {
+        try {
+            // Check if Typesense is configured
+            $isConfigured = TypesenseManager::isConfigured();
+            // Check if any models are configured to use Typesense (regardless of global driver)
+            $configuredModels = TypesenseManager::getCollections();
+            $isEnabled = $isConfigured && ! empty($configuredModels);
+
+            if (! $isEnabled) {
+                return [
+                    'status' => $isConfigured ? 'disabled' : 'unconfigured',
+                    'configured' => $isConfigured,
+                    'enabled' => $isEnabled,
+                    'driver' => 'Individual models use searchableUsing() method',
+                    'last_check' => now()->toISOString(),
+                ];
+            }
+
+            // If not properly configured but enabled, show warning status
+            $statusLevel = $isConfigured ? 'healthy' : 'warning';
+
+            // Test Typesense connection
+            $client = app(Client::class);
+            $start = microtime(true);
+            $health = $client->health->retrieve();
+            $connectionTime = (microtime(true) - $start) * 1000;
+
+            // Get collections info
+            $collections = $client->collections->retrieve();
+            $collectionsStats = [];
+            $totalDocuments = 0;
+
+            // Get memory stats from Typesense
+            $memoryStats = null;
+            try {
+                $stats = $client->metrics->retrieve();
+
+                // Use Typesense-specific memory fields (not system-wide memory)
+                $typesenseMemoryFields = [
+                    'active_bytes' => $stats['typesense_memory_active_bytes'] ?? 0,
+                    'allocated_bytes' => $stats['typesense_memory_allocated_bytes'] ?? 0,
+                    'resident_bytes' => $stats['typesense_memory_resident_bytes'] ?? 0,
+                    'mapped_bytes' => $stats['typesense_memory_mapped_bytes'] ?? 0,
+                    'metadata_bytes' => $stats['typesense_memory_metadata_bytes'] ?? 0,
+                    'retained_bytes' => $stats['typesense_memory_retained_bytes'] ?? 0,
+                ];
+
+                // Only create memory stats if we have valid Typesense memory data
+                if ($typesenseMemoryFields['active_bytes'] > 0 || $typesenseMemoryFields['resident_bytes'] > 0) {
+                    $memoryStats = [
+                        // Active memory is what Typesense is actively using
+                        'active_memory_mb' => round($typesenseMemoryFields['active_bytes'] / 1024 / 1024, 2),
+                        // Resident memory is what's actually in RAM (includes fragmentation)
+                        'resident_memory_mb' => round($typesenseMemoryFields['resident_bytes'] / 1024 / 1024, 2),
+                        // Allocated memory is what Typesense has requested from the OS
+                        'allocated_memory_mb' => round($typesenseMemoryFields['allocated_bytes'] / 1024 / 1024, 2),
+                        // Memory mapped files
+                        'mapped_memory_mb' => round($typesenseMemoryFields['mapped_bytes'] / 1024 / 1024, 2),
+                        // Metadata overhead
+                        'metadata_memory_mb' => round($typesenseMemoryFields['metadata_bytes'] / 1024 / 1024, 2),
+                        // Fragmentation ratio if available
+                        'fragmentation_ratio' => $stats['typesense_memory_fragmentation_ratio'] ?? null,
+                    ];
+                } else {
+                    // Fallback: calculate estimated memory usage based on collections
+                    $estimatedMemoryMB = 0;
+                    foreach ($collections as $collection) {
+                        $numDocs = $collection['num_documents'] ?? 0;
+                        $numFields = count($collection['fields'] ?? []);
+                        // Rough estimate: assume 1KB per document for simple fields
+                        $estimatedMemoryMB += ($numDocs * $numFields * 1) / 1024; // Convert to MB
+                    }
+
+                    if ($estimatedMemoryMB > 0) {
+                        $memoryStats = [
+                            'estimated_collections_mb' => round($estimatedMemoryMB, 2),
+                            'note' => 'Typesense memory metrics not available, showing estimate',
+                        ];
+                    }
+                }
+            } catch (\Exception $e) {
+                // Stats API might not be available in older versions
+                $memoryStats = null;
+            }
+
+            foreach ($collections as $collection) {
+                $collectionName = $collection['name'];
+                $numDocs = $collection['num_documents'] ?? 0;
+                $totalDocuments += $numDocs;
+
+                $collectionsStats[] = [
+                    'name' => $collectionName,
+                    'documents' => number_format($numDocs),
+                    'fields' => count($collection['fields'] ?? []),
+                    'default_sorting_field' => $collection['default_sorting_field'] ?? null,
+                ];
+            }
+
+            // Get configured models
+            $configuredModels = TypesenseManager::getCollections();
+
+            return [
+                'status' => $health['ok'] ? $statusLevel : 'error',
+                'configured' => $isConfigured,
+                'enabled' => true,
+                'connected' => true,
+                'connection_time' => round($connectionTime, 2).'ms',
+                'health' => $health,
+                'collections' => [
+                    'count' => count($collections),
+                    'total_documents' => number_format($totalDocuments),
+                    'details' => $collectionsStats,
+                    'memory' => $memoryStats,
+                ],
+                'configuration' => [
+                    'driver' => 'Models use searchableUsing() method',
+                    'global_scout_driver' => config('scout.driver'),
+                    'host' => config('scout.typesense.client-settings.nodes.0.host'),
+                    'port' => config('scout.typesense.client-settings.nodes.0.port'),
+                    'protocol' => config('scout.typesense.client-settings.nodes.0.protocol'),
+                    'api_key_configured' => ! empty(config('scout.typesense.client-settings.api_key')) && config('scout.typesense.client-settings.api_key') !== 'xyz',
+                    'search_only_key_configured' => ! empty(config('scout.typesense.search_only_key')),
+                    'queue_enabled' => config('scout.queue'),
+                    'configured_models' => $configuredModels,
+                ],
+                'last_check' => now()->toISOString(),
+            ];
+
+        } catch (\Exception $e) {
+            $isConfigured = TypesenseManager::isConfigured();
+            $configuredModels = TypesenseManager::getCollections();
+
+            return [
+                'status' => 'error',
+                'configured' => $isConfigured,
+                'enabled' => $isConfigured && ! empty($configuredModels),
+                'connected' => false,
+                'error' => $e->getMessage(),
+                'error_type' => get_class($e),
+                'configuration' => [
+                    'driver' => 'Models use searchableUsing() method',
+                    'global_scout_driver' => config('scout.driver'),
+                    'host' => config('scout.typesense.client-settings.nodes.0.host'),
+                    'port' => config('scout.typesense.client-settings.nodes.0.port'),
+                    'api_key_configured' => ! empty(config('scout.typesense.client-settings.api_key')) && config('scout.typesense.client-settings.api_key') !== 'xyz',
+                ],
+                'last_check' => now()->toISOString(),
+            ];
+        }
     }
 
     private function getRedisStatus(): array
@@ -153,6 +308,10 @@ class SystemStatusController extends Controller
             'scout' => [
                 'driver' => config('scout.driver'),
                 'configured' => ! empty(config('scout.driver')) && config('scout.driver') !== 'null',
+                'queue_enabled' => config('scout.queue'),
+                'after_commit' => config('scout.after_commit'),
+                'chunk_size' => config('scout.chunk.searchable'),
+                'typesense_configured' => TypesenseManager::isConfigured(),
                 'status' => (! empty(config('scout.driver')) && config('scout.driver') !== 'null') ? 'configured' : 'disabled',
             ],
         ];

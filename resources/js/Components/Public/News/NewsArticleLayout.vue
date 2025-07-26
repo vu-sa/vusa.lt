@@ -25,7 +25,7 @@
             <span>{{ article.tenant }}</span>
           </div>
           <span class="text-zinc-300 dark:text-zinc-600">•</span>
-          <div class="flex items-center text-sm text-zinc-500 dark:text-zinc-400">
+          <div v-if="article.publish_time" class="flex items-center text-sm text-zinc-500 dark:text-zinc-400">
             <IFluentCalendarLtr16Regular class="mr-1 h-4 w-4" />
             <time :datetime="formatISODate(article.publish_time)">
               {{ formatStaticTime(new Date(article.publish_time), 
@@ -101,8 +101,8 @@ const layout = computed(() => props.layout || 'modern');
 const locale = computed(() => props.locale || 'lt');
 
 // Formatter for ISO date
-function formatISODate(date: string | number) {
-  return new Date(date).toISOString();
+function formatISODate(date: string | number | null | undefined) {
+  return date ? new Date(date).toISOString() : '';
 }
 
 // Navigate to tagged news archive

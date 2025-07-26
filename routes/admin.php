@@ -110,6 +110,7 @@ Route::resource('reservationResources', ReservationResourceController::class)->e
 Route::get('files/getFiles', [FilesController::class, 'getFiles'])->name('files.getFiles');
 Route::get('files/allowed-types', [FilesController::class, 'getAllowedFileTypes'])->name('files.allowedTypes');
 Route::post('files/createDirectory', [FilesController::class, 'createDirectory'])->name('files.createDirectory');
+Route::delete('files/deleteDirectory', [FilesController::class, 'deleteDirectory'])->name('files.deleteDirectory');
 Route::post('files/upload-image', [FilesController::class, 'uploadImage'])->name('files.uploadImage');
 Route::delete('files/delete', [FilesController::class, 'delete'])->name('files.delete');
 Route::delete('files/bulk-delete', [FilesController::class, 'bulkDelete'])->name('files.bulkDelete');

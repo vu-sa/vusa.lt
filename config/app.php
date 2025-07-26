@@ -175,6 +175,7 @@ return [
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
         App\Providers\TelescopeServiceProvider::class,
+        App\Providers\TypesenseServiceProvider::class, // Register our new Typesense service provider
         Laravel\Tinker\TinkerServiceProvider::class,
 
     ],
