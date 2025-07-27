@@ -132,6 +132,12 @@ jobs:
           name: build-assets
           path: ./
       
+      - name: Start Typesense
+        uses: jirevwe/typesense-github-action@v1.0.1
+        with:
+          typesense-version: "0.25.2"
+          typesense-api-key: xyz
+      
       - name: Setup PHP with Xdebug
         uses: shivammathur/setup-php@v2
         with:
@@ -149,6 +155,11 @@ jobs:
         env:
           DB_CONNECTION: sqlite
           DB_DATABASE: database/database.sqlite
+          SCOUT_DRIVER: database
+          TYPESENSE_HOST: localhost
+          TYPESENSE_PORT: 8108
+          TYPESENSE_API_KEY: xyz
+          TYPESENSE_PROTOCOL: http
         run: php artisan test --coverage --coverage-clover ./phpunit-coverage.xml
         
       - name: Upload coverage to Codecov

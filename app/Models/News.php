@@ -142,15 +142,37 @@ class News extends Model implements Feedable, Sitemapable
 
     public function toSearchableArray()
     {
-        $array = $this->toArray();
-
-        // Customize array...
-        // return only title
-        $array = [
+        return [
+            'id' => (string) $this->id,
             'title' => $this->title,
+            'short' => $this->short,
+            'permalink' => $this->permalink,
+            'image' => $this->image,
+            'publish_time' => $this->publish_time ? $this->publish_time->timestamp : now()->timestamp,
+            'lang' => $this->lang,
+            'tenant_name' => $this->tenant ? $this->tenant->fullname : null,
+            'created_at' => $this->created_at->timestamp,
         ];
+    }
 
-        return $array;
+    /**
+     * Determine if the model should be searchable.
+     */
+    public function shouldBeSearchable()
+    {
+        // Only index published (non-draft) news that has been published
+        return ! $this->draft &&
+               $this->publish_time &&
+               $this->publish_time->isPast();
+    }
+
+    /**
+     * Get the engine used to index the model.
+     * News should use Typesense for public search.
+     */
+    public function searchableUsing()
+    {
+        return app(\Laravel\Scout\EngineManager::class)->engine('typesense');
     }
 
     public function toSitemapTag(): Url

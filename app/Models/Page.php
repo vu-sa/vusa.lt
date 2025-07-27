@@ -10,6 +10,10 @@ use Laravel\Scout\Searchable;
 use Spatie\Sitemap\Contracts\Sitemapable;
 use Spatie\Sitemap\Tags\Url;
 
+/**
+ * @property-read \App\Models\Category|null $category
+ * @property-read \App\Models\Tenant|null $tenant
+ */
 class Page extends Model implements Sitemapable
 {
     use HasFactory, Searchable, SoftDeletes;
@@ -56,16 +60,33 @@ class Page extends Model implements Sitemapable
 
     public function toSearchableArray()
     {
-        $array = $this->toArray();
-
-        // Customize array...
-        // return only title
-        $array = [
+        return [
+            'id' => (string) $this->id,
             'title' => $this->title,
             'permalink' => $this->permalink,
+            'lang' => $this->lang,
+            'tenant_name' => $this->tenant ? $this->tenant->fullname : null,
+            'category_name' => $this->category?->name,
+            'created_at' => $this->created_at->timestamp,
         ];
+    }
 
-        return $array;
+    /**
+     * Determine if the model should be searchable.
+     */
+    public function shouldBeSearchable()
+    {
+        // Only index active pages (published pages)
+        return $this->is_active ?? false;
+    }
+
+    /**
+     * Get the engine used to index the model.
+     * Pages should use Typesense for public search.
+     */
+    public function searchableUsing()
+    {
+        return app(\Laravel\Scout\EngineManager::class)->engine('typesense');
     }
 
     public function toSitemapTag(): Url

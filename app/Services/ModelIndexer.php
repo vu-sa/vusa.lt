@@ -38,7 +38,7 @@ class ModelIndexer
     {
         $request = request();
         $this->indexable = $indexable;
-        $this->search = $request->input('text');
+        $this->search = $request->input('text') ?? '';
 
         // Process sorting - accept either JSON or base64 encoded JSON for backward compatibility
         $sortingInput = $request->input('sorting');
@@ -94,12 +94,25 @@ class ModelIndexer
 
     /**
      * Initialize the search with the indexable model
+     * For admin operations, use database driver to avoid circular dependencies
      *
      * @return $this
      */
     public function search()
     {
-        $this->builder = $this->indexable::search($this->search);
+        // Store the original Scout driver
+        $originalDriver = config('scout.driver');
+
+        // Use database driver for admin searches to prevent circular dependencies
+        // during indexing operations
+        config(['scout.driver' => 'database']);
+
+        try {
+            $this->builder = $this->indexable::search($this->search);
+        } finally {
+            // Always restore the original driver
+            config(['scout.driver' => $originalDriver]);
+        }
 
         return $this;
     }

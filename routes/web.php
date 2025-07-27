@@ -45,6 +45,9 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
 
         Route::get('{registrationString}/{registrationForm}', [Public\PublicPageController::class, 'registrationPage'])->name('registrationPage')->whereIn('registrationString', ['registracija', 'registration']);
 
+        // Search route temporarily disabled for Phase 1 implementation
+        // Route::get('search', [Public\TypesenseSearchController::class, 'index'])->name('typesense.search');
+
         Route::get('kalendorius/renginys/{calendar}', [Public\PublicPageController::class, 'calendarEventRedirect'])->name('calendar.event');
 
         Route::get('tapk-vu-sa-nariu', [Public\PublicPageController::class, 'membership'])->name('joinUs');

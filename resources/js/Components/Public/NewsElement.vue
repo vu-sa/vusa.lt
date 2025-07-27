@@ -30,7 +30,7 @@
                       height="450">
                   </div>
                 </SmartLink>
-                <p class="text-zinc-500 dark:text-zinc-400 mt-2 text-sm sm:text-base">
+                <p v-if="item.publish_time" class="text-zinc-500 dark:text-zinc-400 mt-2 text-sm sm:text-base">
                   {{ formatStaticTime(new Date(item.publish_time), { year: "numeric", month: "long", day: "numeric" },
                     $page.props.app.locale) }}
                 </p>
@@ -73,7 +73,7 @@
                     :class="{ 'text-vusa-red': currentSlide === index }">
                     {{ item.title }}
                   </p>
-                  <p class="text-zinc-500 dark:text-zinc-400 text-xs mt-1">
+                  <p v-if="item.publish_time" class="text-zinc-500 dark:text-zinc-400 text-xs mt-1">
                     {{ formatStaticTime(new Date(item.publish_time), { month: "short", day: "numeric" },
                       $page.props.app.locale) }}
                   </p>
@@ -100,7 +100,7 @@
                 :class="{ 'text-vusa-red': currentSlide === index }">
                 {{ item.title }}
               </span>
-              <span class="text-zinc-500 dark:text-zinc-400 text-xs mt-1">
+              <span v-if="item.publish_time" class="text-zinc-500 dark:text-zinc-400 text-xs mt-1">
                 {{ formatStaticTime(new Date(item.publish_time), { year: "numeric", month: "long", day: "numeric" },
                   $page.props.app.locale) }}
               </span>

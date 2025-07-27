@@ -32,7 +32,7 @@ describe('auth: simple user', function () {
     test('cannot access duties index', function () {
         asUser($this->user)->get(route('duties.index'))
             ->assertStatus(302)
-            ->assertRedirect('http://www.vusa.test');
+            ->assertRedirect(config('app.url'));
     });
 
     test('cannot create duties', function () {

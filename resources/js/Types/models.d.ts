@@ -1243,10 +1243,10 @@ declare global {
       // columns
       id: number
       alias?: string | null
-      name: string[]
-      description?: string[] | null
       created_at: string
       updated_at: string
+      name?: string[] | null
+      description?: string[] | null
       // mutators
       translations: unknown
       // relations

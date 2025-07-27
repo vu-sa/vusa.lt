@@ -5,8 +5,8 @@
       <img :src="news.image" :alt="news.title" 
         class="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105" />
         
-      <!-- Date badge -->
-      <div class="absolute bottom-3 left-3 rounded-full bg-white/90 px-3 py-1.5 text-xs font-medium shadow-sm backdrop-blur-sm dark:bg-zinc-800/90">
+      <!-- Date badge - only shown if publish_time exists -->
+      <div v-if="news.publish_time" class="absolute bottom-3 left-3 rounded-full bg-white/90 px-3 py-1.5 text-xs font-medium shadow-sm backdrop-blur-sm dark:bg-zinc-800/90">
         <div class="flex items-center">
           <IFluentCalendarLtr16Regular class="mr-1.5 h-3.5 w-3.5 text-red-500 dark:text-red-400" />
           <time :datetime="formatISODate(news.publish_time)">
@@ -53,8 +53,8 @@ const props = defineProps<{
 // Default locale if not provided
 const locale = props.locale || 'lt';
 
-// Formatter for ISO date
-function formatISODate(date: string | number) {
-  return new Date(date).toISOString();
+// Formatter for ISO date - safely handles null/undefined values
+function formatISODate(date: string | number | null | undefined) {
+  return date ? new Date(date).toISOString() : '';
 }
 </script>

@@ -11,6 +11,32 @@
 | Reuse components                            | Create one-off specialized components       |
 | Use `sail` for Laravel commands             | Run commands directly without sail          |
 
+## Search Architecture
+
+### Scout Driver Usage
+- **Public frontend search**: Uses Typesense for fast, typo-tolerant search experiences
+- **Admin operations**: Uses database driver to prevent circular dependencies during indexing
+- **Testing**: Always uses database driver for consistency and speed
+
+### ModelIndexer Pattern
+```php
+// Admin searches automatically use database driver
+$originalDriver = config('scout.driver');
+config(['scout.driver' => 'database']);
+try {
+    $this->builder = $this->indexable::search($this->search);
+} finally {
+    config(['scout.driver' => $originalDriver]);
+}
+```
+
+### Testing Search Functionality
+- Test `shouldBeSearchable()` and `toSearchableArray()` methods using `make()` instead of `create()` to avoid database operations
+- Use database driver for all tests (configured in `phpunit.xml`)
+- Test Typesense configuration without requiring actual connection using configuration mocking
+- Focus on search data structure and model searchability rules
+- Use `Scout::fake()` pattern is not available - instead use configuration changes and model factories
+
 ## Key Implementation Patterns
 
 ### Translatable Models
