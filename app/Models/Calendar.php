@@ -6,7 +6,6 @@ use App\Models\Traits\HasTranslations;
 use Datetime;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Cache;
 use Laravel\Scout\Searchable;
 use Spatie\CalendarLinks\Link;
@@ -90,12 +89,7 @@ class Calendar extends Model implements HasMedia
      */
     public function shouldBeSearchable()
     {
-        // For admin search context, show all events
-        if (Context::get('search_context') === 'admin') {
-            return true;
-        }
-
-        // For public searches, only index published events
+        // Only index published (non-draft) calendar events
         return ! $this->is_draft;
     }
 

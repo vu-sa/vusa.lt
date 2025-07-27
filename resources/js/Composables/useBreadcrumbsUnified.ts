@@ -254,7 +254,7 @@ export const BreadcrumbHelpers = {
   adminForm(sectionName: string, indexRoute: string, currentTitle: string, icon?: Component): BreadcrumbItem[] {
     return [
       getHomeBreadcrumb('admin'),
-      createBreadcrumbItem('Administracija', route('dashboard'), Icons.TYPE),
+      createBreadcrumbItem('Administravimas', route('administration'), Icons.TYPE),
       createRouteBreadcrumb(sectionName, indexRoute, undefined, icon),
       createBreadcrumbItem(currentTitle, undefined, icon),
     ]
@@ -267,7 +267,7 @@ export const BreadcrumbHelpers = {
   adminIndex(sectionName: string, icon?: Component): BreadcrumbItem[] {
     return [
       getHomeBreadcrumb('admin'),
-      createBreadcrumbItem('Administracija', route('dashboard'), Icons.TYPE),
+      createBreadcrumbItem('Administravimas', route('administration'), Icons.TYPE),
       createBreadcrumbItem(sectionName, undefined, icon),
     ]
   },
@@ -355,7 +355,7 @@ export const BreadcrumbHelpers = {
   ): BreadcrumbItem[] {
     return [
       getHomeBreadcrumb('admin'),
-      createBreadcrumbItem('Administracija', route('dashboard'), Icons.TYPE),
+      createBreadcrumbItem('Administravimas', route('administration'), Icons.TYPE),
       createRouteBreadcrumb(parentName, parentRoute, parentParams, parentIcon),
       createBreadcrumbItem(currentName, undefined, currentIcon),
     ]

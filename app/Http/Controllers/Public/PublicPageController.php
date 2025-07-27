@@ -97,7 +97,11 @@ class PublicPageController extends PublicController
 
         $pageData = Cache::tags(['pages', "tenant_{$this->tenant->id}", "locale_{$locale}"])
             ->remember($cacheKey, 3600, function () {
-                $page = Page::query()->where([['permalink', '=', request()->permalink], ['tenant_id', '=', $this->tenant->id]])->first();
+                $page = Page::query()->where([
+                    ['permalink', '=', request()->permalink],
+                    ['tenant_id', '=', $this->tenant->id],
+                    ['is_active', '=', true],
+                ])->first();
 
                 if ($page === null) {
                     return null;
@@ -167,7 +171,10 @@ class PublicPageController extends PublicController
             'subdomain' => $this->subdomain,
         ]));
 
-        $category->load('pages:id,title,permalink,lang,category_id,tenant_id')->load('pages.tenant:id,alias');
+        $category->load(['pages' => function ($query) {
+            $query->select('id,title,permalink,lang,category_id,tenant_id')
+                ->where('is_active', true);
+        }])->load('pages.tenant:id,alias');
 
         $seo = $this->shareAndReturnSEOObject(
             title: $category->name.' - '.$this->tenant->shortname,

@@ -6,14 +6,14 @@ use App\Models\Model;
 use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
-use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Str;
 use Laravel\Scout\Builder;
 
 class ModelIndexer
 {
-    public Builder $builder;
+    public Builder|CustomAdminSearchBuilder $builder;
 
     // Usually using Model::class
     private $indexable;
@@ -81,7 +81,7 @@ class ModelIndexer
         // get authorizer singleton
         $this->authorizer = app(Authorizer::class);
 
-        $this->tenantRelationString = $indexable->whichUnitRelation();
+        $this->tenantRelationString = (new $indexable)->whichUnitRelation();
 
         $this->search();
         $this->setEloquentQuery();
@@ -95,26 +95,24 @@ class ModelIndexer
 
     /**
      * Initialize the search with the indexable model
-     * For admin operations, use database driver to avoid circular dependencies
+     * For admin operations, use CustomAdminSearchBuilder to bypass shouldBeSearchable filtering
+     * For public operations, use Scout with proper filtering
      *
      * @return $this
      */
     public function search()
     {
-        // Store the original Scout driver
-        $originalDriver = config('scout.driver');
-
-        // Set admin search context and use database driver for admin searches
-        // to prevent circular dependencies during indexing operations
+        // Set admin search context for semantic clarity
         Context::add('search_context', 'admin');
-        config(['scout.driver' => 'database']);
 
         try {
-            $this->builder = $this->indexable::search($this->search);
+            // Use custom admin search builder that bypasses shouldBeSearchable filtering
+            // This ensures admin users can search ALL records regardless of publication status
+            $modelClass = is_string($this->indexable) ? $this->indexable : get_class($this->indexable);
+            $this->builder = new CustomAdminSearchBuilder($modelClass, $this->search);
         } finally {
-            // Always restore the original driver and clear context
-            config(['scout.driver' => $originalDriver]);
-            Context::forget('search_context');
+            // Keep context for use in setEloquentQuery method
+            // Context will be cleared when the request ends
         }
 
         return $this;
@@ -230,13 +228,22 @@ class ModelIndexer
                 $value = [$value];
             }
 
-            $this->builder->when(
-                // When not empty, filter
-                $value !== [],
-                function (Builder $query) use ($name, $value) {
-                    $query->whereIn($name, $value);
+            // Handle different builder types
+            if ($this->builder instanceof CustomAdminSearchBuilder) {
+                // For CustomAdminSearchBuilder, use direct whereIn method
+                if ($value !== []) {
+                    $this->builder->whereIn($name, $value);
                 }
-            );
+            } else {
+                // For Scout Builder, use the when method
+                $this->builder->when(
+                    // When not empty, filter
+                    $value !== [],
+                    function (Builder $query) use ($name, $value) {
+                        $query->whereIn($name, $value);
+                    }
+                );
+            }
         }
 
         return $this;

@@ -105,6 +105,14 @@ const columns = computed<DataTableColumns<App.Entities.News>>(() => [
     },
   },
   {
+    title: "Aktyvus",
+    key: "is_active",
+    width: 80,
+    render(row) {
+      return row.is_active ? "✅" : "❌";
+    },
+  },
+  {
     ...tenantColumn(filters, usePage().props.tenants),
     render(row) {
       return row.tenant.shortname;

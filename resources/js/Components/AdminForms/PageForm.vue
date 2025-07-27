@@ -28,13 +28,18 @@
             :options="otherPageOptions" clearable />
         </NFormItem>
       </div>
+      <div class="grid lg:grid-cols-2 lg:gap-4">
+        <NFormItem label="Aktyvus">
+          <NSwitch v-model:value="form.is_active" />
+        </NFormItem>
+      </div>
     </FormElement>
     <RichContentFormElement v-model="form.content.parts" />
   </AdminForm>
 </template>
 
 <script setup lang="ts">
-import { NFormItem, NInput, NSelect } from "naive-ui";
+import { NFormItem, NInput, NSelect, NSwitch } from "naive-ui";
 import { computed, watch } from "vue";
 import { useForm, usePage } from "@inertiajs/vue3";
 import latinize from "latinize";

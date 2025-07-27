@@ -24,6 +24,7 @@ const page = {
   permalink: "",
   lang: "lt",
   other_lang_page: null,
+  is_active: true,
   content: {
     parts: [
       {

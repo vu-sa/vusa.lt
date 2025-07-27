@@ -40,6 +40,31 @@ class PageFactory extends Factory
             'category_id' => $this->faker->numberBetween(1, 3),
             'content_id' => Content::factory()->hasParts(1),
             'tenant_id' => Tenant::factory(),
+            'is_active' => $this->faker->boolean(80), // 80% chance of being active
         ];
+    }
+
+    /**
+     * Indicate that the page is active.
+     */
+    public function active()
+    {
+        return $this->state(function (array $attributes) {
+            return [
+                'is_active' => true,
+            ];
+        });
+    }
+
+    /**
+     * Indicate that the page is inactive.
+     */
+    public function inactive()
+    {
+        return $this->state(function (array $attributes) {
+            return [
+                'is_active' => false,
+            ];
+        });
     }
 }

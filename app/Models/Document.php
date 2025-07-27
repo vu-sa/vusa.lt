@@ -5,7 +5,6 @@ namespace App\Models;
 use App\Services\SharepointGraphService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Cache;
 use Laravel\Scout\Searchable;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
@@ -49,12 +48,7 @@ class Document extends Model
      */
     public function shouldBeSearchable()
     {
-        // For admin search context, show all documents
-        if (Context::get('search_context') === 'admin') {
-            return true;
-        }
-
-        // For public searches, only index documents with public access
+        // Only index documents that have anonymous access (public)
         return ! empty($this->anonymous_url);
     }
 

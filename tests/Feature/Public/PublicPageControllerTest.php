@@ -37,6 +37,7 @@ test('page renders successfully with content', function () {
         'permalink' => 'test-page',
         'tenant_id' => $this->tenant->id,
         'content_id' => $content->id,
+        'is_active' => true, // Ensure page is active for public access
     ]);
 
     $response = $this->get(route('page', ['subdomain' => 'www', 'lang' => 'lt', 'permalink' => 'test-page']));
@@ -59,6 +60,7 @@ test('page renders successfully without content', function () {
         'permalink' => 'test-page-no-content',
         'tenant_id' => $this->tenant->id,
         'content_id' => $content->id,
+        'is_active' => true, // Ensure page is active for public access
     ]);
 
     $response = $this->get(route('page', ['subdomain' => 'www', 'lang' => 'lt', 'permalink' => 'test-page-no-content']));
@@ -81,6 +83,7 @@ test('page renders successfully with content but no parts', function () {
         'permalink' => 'test-page-empty-content',
         'tenant_id' => $this->tenant->id,
         'content_id' => $content->id,
+        'is_active' => true, // Ensure page is active for public access
     ]);
 
     $response = $this->get(route('page', ['subdomain' => 'www', 'lang' => 'lt', 'permalink' => 'test-page-empty-content']));
@@ -107,6 +110,7 @@ test('page renders successfully with content but no tiptap parts', function () {
         'permalink' => 'test-page-no-tiptap',
         'tenant_id' => $this->tenant->id,
         'content_id' => $content->id,
+        'is_active' => true, // Ensure page is active for public access
     ]);
 
     $response = $this->get(route('page', ['subdomain' => 'www', 'lang' => 'lt', 'permalink' => 'test-page-no-tiptap']));
@@ -176,6 +180,7 @@ test('page with navigation item renders successfully', function () {
         'permalink' => 'navigation-test-page',
         'tenant_id' => $this->tenant->id,
         'content_id' => $content->id,
+        'is_active' => true, // Ensure page is active for public access
     ]);
 
     // Create matching navigation item
@@ -213,6 +218,7 @@ test('page with category renders successfully', function () {
         'tenant_id' => $this->tenant->id,
         'content_id' => $content->id,
         'category_id' => $category->id,
+        'is_active' => true, // Ensure page is active for public access
     ]);
 
     $response = $this->get(route('page', ['subdomain' => 'www', 'lang' => 'lt', 'permalink' => 'category-test-page']));
@@ -239,6 +245,7 @@ test('seo description is extracted from first tiptap content', function () {
         'permalink' => 'seo-test-page',
         'tenant_id' => $this->tenant->id,
         'content_id' => $content->id,
+        'is_active' => true, // Ensure page is active for public access
     ]);
 
     $response = $this->get(route('page', ['subdomain' => 'www', 'lang' => 'lt', 'permalink' => 'seo-test-page']));
@@ -257,6 +264,7 @@ test('seo description is null when no tiptap content exists', function () {
         'permalink' => 'seo-test-page-no-content',
         'tenant_id' => $this->tenant->id,
         'content_id' => $content->id,
+        'is_active' => true, // Ensure page is active for public access
     ]);
 
     $response = $this->get(route('page', ['subdomain' => 'www', 'lang' => 'lt', 'permalink' => 'seo-test-page-no-content']));

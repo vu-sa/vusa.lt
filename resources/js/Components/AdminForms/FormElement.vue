@@ -1,7 +1,7 @@
 <template>
   <Collapsible v-model:open="isOpen">
     <div class="mb-4 flex w-full items-center justify-between gap-4">
-      <h4 class="mb-0 inline-flex items-center  gap-2 tracking-normal">
+      <h4 class="mb-0 mt-4 inline-flex items-center gap-2 tracking-normal">
         <NIcon v-if="icon" :component="icon" />
         <slot name="title" />
       </h4>

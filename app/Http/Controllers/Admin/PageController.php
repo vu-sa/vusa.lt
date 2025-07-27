@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StorePageRequest;
+use App\Http\Requests\UpdatePageRequest;
 use App\Models\Category;
 use App\Models\Content;
 use App\Models\Page;
@@ -59,16 +61,9 @@ class PageController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StorePageRequest $request)
     {
         $this->authorize('create', Page::class);
-
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'content.parts' => 'required',
-            'lang' => 'required|string',
-            'permalink' => 'required|string|max:255|unique:pages',
-        ]);
 
         $tenant_id = null;
 
@@ -92,6 +87,7 @@ class PageController extends Controller
             'permalink' => $request->permalink,
             'lang' => $request->lang,
             'other_lang_id' => $request->other_lang_id,
+            'is_active' => $request->is_active,
             'tenant_id' => $tenant_id,
         ]);
 
@@ -126,13 +122,13 @@ class PageController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Page $page)
+    public function update(UpdatePageRequest $request, Page $page)
     {
         $this->authorize('update', $page);
 
         $other_lang_page = Page::find($page->other_lang_id);
 
-        $page->update($request->only('title', 'lang', 'other_lang_id', 'category_id'));
+        $page->update($request->only('title', 'lang', 'other_lang_id', 'category_id', 'is_active'));
 
         $content = Content::query()->find($page->content->id);
 

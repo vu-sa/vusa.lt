@@ -6,7 +6,6 @@ use App\Casts\NewsImage;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Scout\Searchable;
@@ -161,12 +160,7 @@ class News extends Model implements Feedable, Sitemapable
      */
     public function shouldBeSearchable()
     {
-        // For admin search context, show all news
-        if (Context::get('search_context') === 'admin') {
-            return true;
-        }
-
-        // For public searches, only index published news
+        // Only index published (non-draft) news that has been published
         return ! $this->draft &&
                $this->publish_time &&
                $this->publish_time->isPast();
