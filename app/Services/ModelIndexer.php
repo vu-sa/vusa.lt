@@ -38,7 +38,7 @@ class ModelIndexer
     {
         $request = request();
         $this->indexable = $indexable;
-        $this->search = $request->input('text');
+        $this->search = $request->input('text') ?? '';
 
         // Process sorting - accept either JSON or base64 encoded JSON for backward compatibility
         $sortingInput = $request->input('sorting');
