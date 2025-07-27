@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Context;
+use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Cache;
 use Laravel\Scout\Searchable;
 use Spatie\Sitemap\Contracts\Sitemapable;

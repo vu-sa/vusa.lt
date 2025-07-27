@@ -5,7 +5,7 @@ namespace App\Models;
 use App\Services\SharepointGraphService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Context;
+use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Cache;
 use Laravel\Scout\Searchable;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;

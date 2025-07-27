@@ -6,7 +6,7 @@ use App\Models\Model;
 use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
-use Illuminate\Support\Context;
+use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Laravel\Scout\Builder;
