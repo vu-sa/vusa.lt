@@ -119,15 +119,6 @@ jobs:
     needs: lint
     runs-on: ubuntu-latest
     name: PHP Tests
-    services:
-      typesense:
-        image: typesense/typesense:29.0
-        ports:
-          - 8108:8108
-        env:
-          TYPESENSE_API_KEY: xyz
-          TYPESENSE_DATA_DIR: /data
-        options: --health-cmd "curl -f http://localhost:8108/health" --health-interval 10s --health-timeout 5s --health-retries 5
     steps:
       - uses: actions/checkout@v4
         with:
@@ -141,6 +132,12 @@ jobs:
           name: build-assets
           path: ./
       
+      - name: Start Typesense
+        uses: jirevwe/typesense-github-action@v1.0.1
+        with:
+          typesense-version: "0.25.2"
+          typesense-api-key: xyz
+      
       - name: Setup PHP with Xdebug
         uses: shivammathur/setup-php@v2
         with:
@@ -153,11 +150,6 @@ jobs:
           touch database/database.sqlite
           cp .env.example .env
           php artisan key:generate --force
-        
-      - name: Wait for Typesense to be ready
-        run: |
-          timeout 30 bash -c 'until curl -f http://localhost:8108/health; do sleep 2; done'
-          echo "Typesense is ready!"
         
       - name: Execute tests via Pest
         env:
