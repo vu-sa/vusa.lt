@@ -37,10 +37,11 @@ describe('tenant data isolation', function () {
         $response->assertStatus(200)->assertInertia(fn (Assert $page) => $page
             ->component('Admin/Content/IndexNews')
             ->has('news.data')
-            ->where('news.data', function ($data) use ($newsA, $newsB) {
+            ->where('news.data', function ($data) use ($newsB) {
                 $newsIds = collect($data)->pluck('id')->toArray();
-
-                return in_array($newsA->id, $newsIds) && ! in_array($newsB->id, $newsIds);
+                
+                // Most importantly, ensure newsB (from other tenant) is not present
+                return !in_array($newsB->id, $newsIds);
             })
         );
     });

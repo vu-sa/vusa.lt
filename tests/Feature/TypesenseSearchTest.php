@@ -1,109 +1,117 @@
 <?php
 
-namespace Tests\Feature;
-
 use App\Models\Calendar;
 use App\Models\Document;
 use App\Models\News;
 use App\Models\Page;
 use App\Services\Typesense\TypesenseManager;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use PHPUnit\Framework\Attributes\Test;
-use Tests\TestCase;
 
-class TypesenseSearchTest extends TestCase
-{
-    use RefreshDatabase;
+uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
-    #[Test]
-    public function typesense_configuration_is_available()
-    {
-        // Skip this test if Typesense is not configured in the test environment
-        if (! TypesenseManager::isConfigured()) {
-            $this->markTestSkipped('Typesense is not configured in test environment');
-        }
+test('typesense configuration is available', function () {
+    // Configure Typesense settings for this test
+    config([
+        'scout.typesense.client-settings.api_key' => 'test-api-key-123',
+        'scout.typesense.client-settings.search_only_key' => 'test-search-key',
+        'scout.typesense.client-settings.nodes' => [
+            [
+                'host' => 'localhost',
+                'port' => '8108',
+                'protocol' => 'http',
+                'path' => '',
+            ]
+        ],
+    ]);
 
-        $config = TypesenseManager::getFrontendConfig();
-        $this->assertNotEmpty($config);
-        $this->assertArrayHasKey('apiKey', $config);
-        $this->assertArrayHasKey('nodes', $config);
-    }
+    $config = TypesenseManager::getFrontendConfig();
+    expect($config)->not()->toBeEmpty()
+        ->and($config)->toHaveKey('apiKey')
+        ->and($config)->toHaveKey('nodes')
+        ->and($config['apiKey'])->toBe('test-search-key');
+});
 
-    #[Test]
-    public function searchable_models_have_proper_configuration()
-    {
-        // Test News model
-        $news = News::factory()->create([
-            'draft' => false,
-            'publish_time' => now()->subHour(),
-        ]);
-        $this->assertTrue($news->shouldBeSearchable());
-        $this->assertIsArray($news->toSearchableArray());
+test('typesense manager detects proper configuration', function () {
+    // With proper API key, should be configured
+    config(['scout.typesense.client-settings.api_key' => 'test-api-key-123']);
+    expect(TypesenseManager::isConfigured())->toBeTrue();
+    
+    // With default 'xyz' API key, should not be configured
+    config(['scout.typesense.client-settings.api_key' => 'xyz']);
+    expect(TypesenseManager::isConfigured())->toBeFalse();
+    
+    // With empty API key, should not be configured
+    config(['scout.typesense.client-settings.api_key' => '']);
+    expect(TypesenseManager::isConfigured())->toBeFalse();
+});
 
-        // Test Page model
-        $page = Page::factory()->create(['is_active' => true]);
-        $this->assertTrue($page->shouldBeSearchable());
-        $this->assertIsArray($page->toSearchableArray());
+test('searchable models have proper configuration', function () {
+    // Test News model searchability logic
+    $news = News::factory()->create([
+        'draft' => false,
+        'publish_time' => now()->subHour(),
+    ]);
+    expect($news->shouldBeSearchable())->toBeTrue()
+        ->and($news->toSearchableArray())->toBeArray();
 
-        // Test Document model
-        $document = Document::factory()->active()->create();
-        $this->assertTrue($document->shouldBeSearchable());
-        $this->assertIsArray($document->toSearchableArray());
+    // Test Page model searchability logic  
+    $page = Page::factory()->create(['is_active' => true]);
+    expect($page->shouldBeSearchable())->toBeTrue()
+        ->and($page->toSearchableArray())->toBeArray();
 
-        // Test Calendar model
-        $calendar = Calendar::factory()->create(['is_draft' => false]);
-        $this->assertTrue($calendar->shouldBeSearchable());
-        $this->assertIsArray($calendar->toSearchableArray());
-    }
+    // Test Document model searchability logic
+    $document = Document::factory()->active()->create();
+    expect($document->shouldBeSearchable())->toBeTrue()
+        ->and($document->toSearchableArray())->toBeArray();
 
-    #[Test]
-    public function search_arrays_contain_required_fields()
-    {
-        $news = News::factory()->create([
-            'draft' => false,
-            'publish_time' => now()->subHour(),
-        ]);
-        $searchArray = $news->toSearchableArray();
+    // Test Calendar model searchability logic
+    $calendar = Calendar::factory()->create(['is_draft' => false]);
+    expect($calendar->shouldBeSearchable())->toBeTrue()
+        ->and($calendar->toSearchableArray())->toBeArray();
+});
 
-        $this->assertArrayHasKey('id', $searchArray);
-        $this->assertArrayHasKey('title', $searchArray);
-        $this->assertArrayHasKey('lang', $searchArray);
+test('search arrays contain required fields', function () {
+    $news = News::factory()->create([
+        'draft' => false,
+        'publish_time' => now()->subHour(),
+    ]);
+    $searchArray = $news->toSearchableArray();
 
-        $document = Document::factory()->active()->create();
-        $docSearchArray = $document->toSearchableArray();
+    expect($searchArray)->toHaveKey('id')
+        ->and($searchArray)->toHaveKey('title')
+        ->and($searchArray)->toHaveKey('lang');
 
-        $this->assertArrayHasKey('id', $docSearchArray);
-        $this->assertArrayHasKey('title', $docSearchArray);
-        $this->assertArrayHasKey('language', $docSearchArray);
-    }
+    $document = Document::factory()->active()->create();
+    $docSearchArray = $document->toSearchableArray();
 
-    #[Test]
-    public function draft_models_are_not_searchable()
-    {
-        // Test that draft news is not searchable
-        $draftNews = News::factory()->create(['draft' => true]);
-        $this->assertFalse($draftNews->shouldBeSearchable());
+    expect($docSearchArray)->toHaveKey('id')
+        ->and($docSearchArray)->toHaveKey('title')
+        ->and($docSearchArray)->toHaveKey('language');
+});
 
-        // Test that future news is not searchable
-        $futureNews = News::factory()->create([
-            'draft' => false,
-            'publish_time' => now()->addDay(),
-        ]);
-        $this->assertFalse($futureNews->shouldBeSearchable());
+test('draft models are not searchable', function () {
+    // Test that draft news is not searchable
+    $draftNews = News::factory()->create(['draft' => true]);
+    expect($draftNews->shouldBeSearchable())->toBeFalse();
 
-        // Test that draft pages are not searchable
-        $draftPage = Page::factory()->create(['is_active' => false]);
-        $this->assertFalse($draftPage->shouldBeSearchable());
+    // Test that future news is not searchable
+    $futureNews = News::factory()->create([
+        'draft' => false,
+        'publish_time' => now()->addDay(),
+    ]);
+    expect($futureNews->shouldBeSearchable())->toBeFalse();
 
-        // Test that inactive documents are not searchable
-        $inactiveDocument = Document::factory()->create([
-            'is_active' => false,
-            'anonymous_url' => null, // This makes it not searchable
-        ]);
-        $this->assertFalse($inactiveDocument->shouldBeSearchable());
+    // Test that draft pages are not searchable
+    $draftPage = Page::factory()->create(['is_active' => false]);
+    expect($draftPage->shouldBeSearchable())->toBeFalse();
 
-        // Test that draft calendar events are not searchable
-        $draftCalendar = Calendar::factory()->create(['is_draft' => true]);
-        $this->assertFalse($draftCalendar->shouldBeSearchable());
-    }
-}
+    // Test that inactive documents are not searchable
+    $inactiveDocument = Document::factory()->create([
+        'is_active' => false,
+        'anonymous_url' => null, // This makes it not searchable
+    ]);
+    expect($inactiveDocument->shouldBeSearchable())->toBeFalse();
+
+    // Test that draft calendar events are not searchable
+    $draftCalendar = Calendar::factory()->create(['is_draft' => true]);
+    expect($draftCalendar->shouldBeSearchable())->toBeFalse();
+});
