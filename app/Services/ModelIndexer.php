@@ -6,6 +6,7 @@ use App\Models\Model;
 use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+use Illuminate\Support\Context;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Laravel\Scout\Builder;
@@ -103,15 +104,17 @@ class ModelIndexer
         // Store the original Scout driver
         $originalDriver = config('scout.driver');
 
-        // Use database driver for admin searches to prevent circular dependencies
-        // during indexing operations
+        // Set admin search context and use database driver for admin searches
+        // to prevent circular dependencies during indexing operations
+        Context::add('search_context', 'admin');
         config(['scout.driver' => 'database']);
 
         try {
             $this->builder = $this->indexable::search($this->search);
         } finally {
-            // Always restore the original driver
+            // Always restore the original driver and clear context
             config(['scout.driver' => $originalDriver]);
+            Context::forget('search_context');
         }
 
         return $this;

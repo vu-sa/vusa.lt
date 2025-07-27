@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Context;
 use Illuminate\Support\Facades\Cache;
 use Laravel\Scout\Searchable;
 use Spatie\Sitemap\Contracts\Sitemapable;
@@ -76,7 +77,12 @@ class Page extends Model implements Sitemapable
      */
     public function shouldBeSearchable()
     {
-        // Only index active pages (published pages)
+        // For admin search context, show all pages
+        if (Context::get('search_context') === 'admin') {
+            return true;
+        }
+
+        // For public searches, only index active pages
         return $this->is_active ?? false;
     }
 
