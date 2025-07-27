@@ -119,6 +119,19 @@ jobs:
     needs: lint
     runs-on: ubuntu-latest
     name: PHP Tests
+    services:
+      typesense:
+        image: typesense/typesense:29.0
+        ports:
+          - 8108:8108
+        env:
+          TYPESENSE_API_KEY: xyz
+          TYPESENSE_DATA_DIR: /data
+        options: >-
+          --health-cmd "curl -f http://localhost:8108/health || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v4
         with:
@@ -145,10 +158,20 @@ jobs:
           cp .env.example .env
           php artisan key:generate --force
         
+      - name: Wait for Typesense to be ready
+        run: |
+          timeout 30 bash -c 'until curl -f http://localhost:8108/health; do sleep 2; done'
+          echo "Typesense is ready!"
+        
       - name: Execute tests via Pest
         env:
           DB_CONNECTION: sqlite
           DB_DATABASE: database/database.sqlite
+          SCOUT_DRIVER: database
+          TYPESENSE_HOST: localhost
+          TYPESENSE_PORT: 8108
+          TYPESENSE_API_KEY: xyz
+          TYPESENSE_PROTOCOL: http
         run: php artisan test --coverage --coverage-clover ./phpunit-coverage.xml
         
       - name: Upload coverage to Codecov
