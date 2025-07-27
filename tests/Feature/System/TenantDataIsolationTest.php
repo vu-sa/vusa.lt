@@ -39,9 +39,9 @@ describe('tenant data isolation', function () {
             ->has('news.data')
             ->where('news.data', function ($data) use ($newsB) {
                 $newsIds = collect($data)->pluck('id')->toArray();
-                
+
                 // Most importantly, ensure newsB (from other tenant) is not present
-                return !in_array($newsB->id, $newsIds);
+                return ! in_array($newsB->id, $newsIds);
             })
         );
     });

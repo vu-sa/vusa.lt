@@ -47,7 +47,7 @@ describe('auth: simple user', function () {
 
 describe('auth: document manager', function () {
     test('can access documents index', function () {
-        // Create 3 documents for this institution  
+        // Create 3 documents for this institution
         Document::factory()->count(3)->create(['institution_id' => $this->institution->id]);
 
         asUser($this->documentManager)->get(route('documents.index'))
@@ -244,13 +244,13 @@ describe('document access control', function () {
                 ->has('data')
                 ->where('data', function ($data) use ($ourDocs, $otherDocs) {
                     $dataIds = collect($data)->pluck('id')->toArray();
-                    
+
                     // Check that all our documents are present
-                    $ourDocsPresent = $ourDocs->every(fn($doc) => in_array($doc->id, $dataIds));
-                    
+                    $ourDocsPresent = $ourDocs->every(fn ($doc) => in_array($doc->id, $dataIds));
+
                     // Check that none of the other tenant's documents are present
-                    $otherDocsAbsent = $otherDocs->every(fn($doc) => !in_array($doc->id, $dataIds));
-                    
+                    $otherDocsAbsent = $otherDocs->every(fn ($doc) => ! in_array($doc->id, $dataIds));
+
                     return $ourDocsPresent && $otherDocsAbsent;
                 })
             );
@@ -261,7 +261,7 @@ describe('document metadata and properties', function () {
     test('document factory creates valid sharepoint document', function () {
         $document = Document::factory()->create([
             'institution_id' => $this->institution->id,
-            'is_active' => true
+            'is_active' => true,
         ]);
 
         expect($document->name)->toBeString();

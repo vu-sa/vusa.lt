@@ -19,7 +19,7 @@ test('typesense configuration is available', function () {
                 'port' => '8108',
                 'protocol' => 'http',
                 'path' => '',
-            ]
+            ],
         ],
     ]);
 
@@ -34,11 +34,11 @@ test('typesense manager detects proper configuration', function () {
     // With proper API key, should be configured
     config(['scout.typesense.client-settings.api_key' => 'test-api-key-123']);
     expect(TypesenseManager::isConfigured())->toBeTrue();
-    
+
     // With default 'xyz' API key, should not be configured
     config(['scout.typesense.client-settings.api_key' => 'xyz']);
     expect(TypesenseManager::isConfigured())->toBeFalse();
-    
+
     // With empty API key, should not be configured
     config(['scout.typesense.client-settings.api_key' => '']);
     expect(TypesenseManager::isConfigured())->toBeFalse();
@@ -53,7 +53,7 @@ test('searchable models have proper configuration', function () {
     expect($news->shouldBeSearchable())->toBeTrue()
         ->and($news->toSearchableArray())->toBeArray();
 
-    // Test Page model searchability logic  
+    // Test Page model searchability logic
     $page = Page::factory()->create(['is_active' => true]);
     expect($page->shouldBeSearchable())->toBeTrue()
         ->and($page->toSearchableArray())->toBeArray();
