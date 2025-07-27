@@ -127,11 +127,7 @@ jobs:
         env:
           TYPESENSE_API_KEY: xyz
           TYPESENSE_DATA_DIR: /data
-        options: >-
-          --health-cmd "curl -f http://localhost:8108/health || exit 1"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+        options: --health-cmd "curl -f http://localhost:8108/health" --health-interval 10s --health-timeout 5s --health-retries 5
     steps:
       - uses: actions/checkout@v4
         with:
