@@ -34,13 +34,20 @@ class Document extends Model
 
     public function toSearchableArray()
     {
+        // Load the tenant relationship if not already loaded
+        if (!$this->relationLoaded('institution') || ($this->institution && !$this->institution->relationLoaded('tenant'))) {
+            $this->load('institution.tenant');
+        }
+        
         return [
             'id' => (string) $this->id,
             'title' => $this->title,
             'summary' => $this->summary,
             'language' => $this->language ?? 'Unknown',
+            'content_type' => $this->content_type,
             'institution_name_lt' => $this->institution ? $this->institution->getTranslation('name', 'lt') : null,
             'institution_name_en' => $this->institution ? $this->institution->getTranslation('name', 'en') : null,
+            'tenant_shortname' => $this->institution && $this->institution->tenant ? $this->institution->tenant->shortname : null,
             'document_date' => $this->document_date ? strtotime($this->document_date) : now()->timestamp,
             'anonymous_url' => $this->anonymous_url,
             'is_active' => $this->is_active,

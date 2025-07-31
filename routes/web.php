@@ -69,7 +69,7 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
 
         // Note: API routes should be defined in api.php, not here
 
-        Route::get('dokumentai', [Public\PublicPageController::class, 'documents'])->name('documents');
+        Route::get('dokumentai', [Public\DocumentController::class, 'index'])->name('documents');
 
         // Redirect reports to external subdomains
         Route::redirect('ataskaita-2022', 'https://ataskaita2022.vusa.lt', 301);

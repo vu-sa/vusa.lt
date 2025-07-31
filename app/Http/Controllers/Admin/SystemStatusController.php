@@ -38,6 +38,9 @@ class SystemStatusController extends Controller
         try {
             // Check if Typesense is configured
             $isConfigured = TypesenseManager::isConfigured();
+            $isUsingPlaceholder = TypesenseManager::isUsingPlaceholderConfig();
+            $configWarning = TypesenseManager::getConfigWarning();
+            
             // Check if any models are configured to use Typesense (regardless of global driver)
             $configuredModels = TypesenseManager::getCollections();
             $isEnabled = $isConfigured && ! empty($configuredModels);
@@ -47,6 +50,8 @@ class SystemStatusController extends Controller
                     'status' => $isConfigured ? 'disabled' : 'unconfigured',
                     'configured' => $isConfigured,
                     'enabled' => $isEnabled,
+                    'using_placeholder' => $isUsingPlaceholder,
+                    'config_warning' => $configWarning,
                     'driver' => 'Individual models use searchableUsing() method',
                     'last_check' => now()->toISOString(),
                 ];
@@ -54,6 +59,9 @@ class SystemStatusController extends Controller
 
             // If not properly configured but enabled, show warning status
             $statusLevel = $isConfigured ? 'healthy' : 'warning';
+            if ($isUsingPlaceholder) {
+                $statusLevel = 'warning';
+            }
 
             // Test Typesense connection
             $client = app(Client::class);
@@ -143,6 +151,8 @@ class SystemStatusController extends Controller
                 'configured' => $isConfigured,
                 'enabled' => true,
                 'connected' => true,
+                'using_placeholder' => $isUsingPlaceholder,
+                'config_warning' => $configWarning,
                 'connection_time' => round($connectionTime, 2).'ms',
                 'health' => $health,
                 'collections' => [
@@ -168,6 +178,8 @@ class SystemStatusController extends Controller
 
         } catch (\Exception $e) {
             $isConfigured = TypesenseManager::isConfigured();
+            $isUsingPlaceholder = TypesenseManager::isUsingPlaceholderConfig();
+            $configWarning = TypesenseManager::getConfigWarning();
             $configuredModels = TypesenseManager::getCollections();
 
             return [
@@ -175,6 +187,8 @@ class SystemStatusController extends Controller
                 'configured' => $isConfigured,
                 'enabled' => $isConfigured && ! empty($configuredModels),
                 'connected' => false,
+                'using_placeholder' => $isUsingPlaceholder,
+                'config_warning' => $configWarning,
                 'error' => $e->getMessage(),
                 'error_type' => get_class($e),
                 'configuration' => [

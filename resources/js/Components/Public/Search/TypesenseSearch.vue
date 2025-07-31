@@ -311,7 +311,9 @@ const handleUpdateContentTypeResults = (
 
 // Typesense configuration
 const getTypesenseConfig = computed((): TypesenseConfig | null => {
-  if (props.typesenseConfig && props.typesenseConfig.apiKey && props.typesenseConfig.apiKey !== 'xyz') {
+  if (props.typesenseConfig && 
+      props.typesenseConfig.apiKey && 
+      !['xyz', 'xyza'].includes(props.typesenseConfig.apiKey)) {
     return props.typesenseConfig
   }
   return null
