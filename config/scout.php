@@ -233,6 +233,7 @@ return [
                         ['name' => 'institution_name_en', 'type' => 'string', 'facet' => true, 'optional' => true],
                         ['name' => 'document_date', 'type' => 'int64', 'facet' => true, 'sort' => true],
                         ['name' => 'anonymous_url', 'type' => 'string'],
+                        ['name' => 'is_active', 'type' => 'bool'],
                         ['name' => 'created_at', 'type' => 'int64'],
                     ],
                     'default_sorting_field' => 'document_date',

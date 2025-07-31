@@ -172,7 +172,7 @@ class PublicPageController extends PublicController
         ]));
 
         $category->load(['pages' => function ($query) {
-            $query->select('id,title,permalink,lang,category_id,tenant_id')
+            $query->select(['id', 'title', 'permalink', 'lang', 'category_id', 'tenant_id'])
                 ->where('is_active', true);
         }])->load('pages.tenant:id,alias');
 
