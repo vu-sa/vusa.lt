@@ -148,6 +148,7 @@ test('page with multiple content parts including tiptap renders successfully', f
         'permalink' => 'test-page-multiple-parts',
         'tenant_id' => $this->tenant->id,
         'content_id' => $content->id,
+        'is_active' => true, // Ensure page is active for public access
     ]);
 
     $response = $this->get(route('page', ['subdomain' => 'www', 'lang' => 'lt', 'permalink' => 'test-page-multiple-parts']));
