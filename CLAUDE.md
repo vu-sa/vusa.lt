@@ -79,7 +79,13 @@ $user->assignRole(config('permission.super_admin_role_name'));
 **Test Environment**: `http://www.vusa.test` (requires www subdomain)
 **Test Credentials**: `test@test.com` / `password`
 
-## Performance & Caching
+## Search & Performance
+
+### Scout Search Drivers
+- **Default driver**: `database` (set in SCOUT_DRIVER env var)
+- **Model-specific drivers**: Some models (like `Document`) explicitly use Typesense via `searchableUsing()` method
+- **Admin searches**: Always use database driver to prevent circular dependencies during indexing
+- **Public searches**: Use Typesense for fast, typo-tolerant search experiences
 
 **Redis Implementation**: Used for caching and session storage
 **Cache hit ratio target**: >80% for production

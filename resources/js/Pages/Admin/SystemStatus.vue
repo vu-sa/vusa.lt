@@ -351,6 +351,39 @@
                 </div>
               </div>
             </div>
+
+            <!-- Schema Validation Issues -->
+            <div v-if="status.typesense.schema_validation?.has_issues" class="mt-6">
+              <div class="rounded-md bg-yellow-50 p-4 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800">
+                <div class="flex items-start gap-3">
+                  <AlertTriangleIcon class="h-5 w-5 text-yellow-600 dark:text-yellow-400 mt-0.5 flex-shrink-0" />
+                  <div class="flex-1">
+                    <h5 class="font-medium text-sm text-yellow-800 dark:text-yellow-200 mb-2">
+                      {{ $t('Schemos neatitikimai rasti') }}
+                    </h5>
+                    <div class="space-y-3">
+                      <div v-for="mismatch in status.typesense.schema_validation.mismatches" :key="mismatch.model" 
+                           class="text-sm">
+                        <div class="font-medium text-yellow-800 dark:text-yellow-200">
+                          {{ mismatch.model }}: {{ mismatch.message }}
+                        </div>
+                        <div v-if="mismatch.missing_in_typesense?.length" class="mt-1 text-yellow-700 dark:text-yellow-300">
+                          {{ $t('Trūkstami laukai') }}: {{ mismatch.missing_in_typesense.join(', ') }}
+                        </div>
+                        <div v-if="mismatch.extra_in_typesense?.length" class="mt-1 text-yellow-700 dark:text-yellow-300">
+                          {{ $t('Papildomi laukai') }}: {{ mismatch.extra_in_typesense.join(', ') }}
+                        </div>
+                        <div v-if="mismatch.action" class="mt-2">
+                          <code class="px-2 py-1 bg-yellow-100 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-200 rounded text-xs">
+                            {{ mismatch.action }}
+                          </code>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -637,6 +670,19 @@ const props = defineProps<{
         search_only_key_configured: boolean;
         queue_enabled: boolean;
         configured_models: string[];
+      };
+      schema_validation?: {
+        has_issues: boolean;
+        mismatches: Array<{
+          model: string;
+          collection?: string;
+          issue: string;
+          missing_in_typesense?: string[];
+          extra_in_typesense?: string[];
+          message: string;
+          action?: string;
+        }>;
+        checked_at: string;
       };
       error?: string;
       error_type?: string;

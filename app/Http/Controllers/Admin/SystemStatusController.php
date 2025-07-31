@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\SearchableModelEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Role;
 use App\Services\Typesense\TypesenseManager;
@@ -134,6 +135,9 @@ class SystemStatusController extends Controller
             // Get configured models
             $configuredModels = TypesenseManager::getCollections();
 
+            // Check for schema mismatches
+            $schemaMismatches = $this->checkTypesenseSchemas($collections);
+
             return [
                 'status' => $health['ok'] ? $statusLevel : 'error',
                 'configured' => $isConfigured,
@@ -158,6 +162,7 @@ class SystemStatusController extends Controller
                     'queue_enabled' => config('scout.queue'),
                     'configured_models' => $configuredModels,
                 ],
+                'schema_validation' => $schemaMismatches,
                 'last_check' => now()->toISOString(),
             ];
 
@@ -394,4 +399,79 @@ class SystemStatusController extends Controller
             ];
         }
     }
+
+    /**
+     * Check for schema mismatches between model definitions and actual Typesense collections
+     */
+    private function checkTypesenseSchemas(array $collections): array
+    {
+        // Get searchable models that use Typesense from the enum
+        $searchableModels = SearchableModelEnum::getTypesenseModelClasses();
+
+        $mismatches = [];
+
+        foreach ($searchableModels as $modelClass) {
+            try {
+                $model = new $modelClass();
+                
+                // Only check Typesense models
+                if (!($model->searchableUsing() instanceof \Laravel\Scout\Engines\TypesenseEngine)) {
+                    continue;
+                }
+
+                $collectionName = $model->searchableAs();
+                $modelFields = $model->toSearchableArray();
+
+                // Find the corresponding collection
+                $collection = collect($collections)->firstWhere('name', $collectionName);
+                
+                if (!$collection) {
+                    $mismatches[] = [
+                        'model' => class_basename($modelClass),
+                        'collection' => $collectionName,
+                        'issue' => 'collection_missing',
+                        'message' => 'Collection does not exist in Typesense',
+                        'action' => 'Run: php artisan scout:import "' . $modelClass . '"'
+                    ];
+                    continue;
+                }
+
+                // Get field names from Typesense schema
+                $typesenseFields = collect($collection['fields'])->pluck('name')->toArray();
+                $modelFieldNames = array_keys($modelFields);
+
+                // Check for missing fields in Typesense
+                $missingInTypesense = array_diff($modelFieldNames, $typesenseFields);
+                
+                // Check for extra fields in Typesense
+                $extraInTypesense = array_diff($typesenseFields, $modelFieldNames);
+
+                if (!empty($missingInTypesense) || !empty($extraInTypesense)) {
+                    $mismatches[] = [
+                        'model' => class_basename($modelClass),
+                        'collection' => $collectionName,
+                        'issue' => 'schema_mismatch',
+                        'missing_in_typesense' => $missingInTypesense,
+                        'extra_in_typesense' => $extraInTypesense,
+                        'message' => 'Model schema differs from Typesense collection',
+                        'action' => 'Run: php artisan search:reindex "' . class_basename($modelClass) . '"'
+                    ];
+                }
+
+            } catch (\Exception $e) {
+                $mismatches[] = [
+                    'model' => class_basename($modelClass),
+                    'issue' => 'validation_error',
+                    'message' => 'Could not validate schema: ' . $e->getMessage(),
+                ];
+            }
+        }
+
+        return [
+            'has_issues' => !empty($mismatches),
+            'mismatches' => $mismatches,
+            'checked_at' => now()->toISOString(),
+        ];
+    }
+
 }
