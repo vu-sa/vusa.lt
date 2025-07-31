@@ -141,7 +141,10 @@ class CalendarController extends Controller
 
             if ($images) {
                 foreach ($images as $image) {
-                    $calendar->addMedia($image['file'])->toMediaCollection('images');
+                    $calendar->addMedia($image['file'])
+                        ->usingName($image['file']->getClientOriginalName())
+                        ->withCustomProperties(['alt' => ''])
+                        ->toMediaCollection('images');
                 }
             }
 

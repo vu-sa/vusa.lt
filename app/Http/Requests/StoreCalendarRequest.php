@@ -42,6 +42,19 @@ class StoreCalendarRequest extends FormRequest
             'end_date' => 'nullable|date|after:date',
             'category_id' => 'nullable|exists:categories,id',
             'tenant_id' => 'required|integer',
+            'images' => 'nullable|array',
+            'images.*.file' => 'image|max:5120|mimes:jpeg,jpg,png', // Max 5MB per image
+        ];
+    }
+
+    /**
+     * Get custom messages for validator errors.
+     */
+    public function messages(): array
+    {
+        return [
+            'images.*.file.max' => 'Paveiksliukas negali būti didesnis nei 5MB. Sumažinkite failo dydį.',
+            'images.*.file.image' => 'Failas turi būti paveiksliukas (JPEG, PNG).',
         ];
     }
 }

@@ -17,6 +17,10 @@ class Document extends Model
 
     protected $hidden = ['sharepoint_id', 'eTag', 'public_url_created_at', 'sharepoint_site_id', 'sharepoint_list_id', 'created_at', 'updated_at'];
 
+    protected $casts = [
+        'is_active' => 'boolean',
+    ];
+
     protected static function booted()
     {
         static::saved(function ($document) {
@@ -39,6 +43,7 @@ class Document extends Model
             'institution_name_en' => $this->institution ? $this->institution->getTranslation('name', 'en') : null,
             'document_date' => $this->document_date ? strtotime($this->document_date) : now()->timestamp,
             'anonymous_url' => $this->anonymous_url,
+            'is_active' => $this->is_active,
             'created_at' => $this->created_at->timestamp,
         ];
     }
