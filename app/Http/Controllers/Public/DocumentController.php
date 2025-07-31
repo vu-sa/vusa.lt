@@ -72,12 +72,10 @@ class DocumentController extends PublicController
                         }
 
                         // Apply filters to search
-                        if (! empty($filters)) {
-                            $builder->options([
-                                'filter_by' => implode(' && ', $filters),
-                                'sort_by' => 'document_date:desc',
-                            ]);
-                        }
+                        $builder->options([
+                            'filter_by' => implode(' && ', $filters),
+                            'sort_by' => 'document_date:desc',
+                        ]);
 
                         $documents = $builder;
                     } else {
