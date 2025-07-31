@@ -22,9 +22,9 @@ class UserFactory extends Factory
     public function definition()
     {
         // Generate a truly unique email using uniqid and microtime to avoid faker exhaustion
-        $uniqueId = uniqid() . microtime(true);
-        $email = 'user' . str_replace('.', '', $uniqueId) . '@example.com';
-        
+        $uniqueId = uniqid().microtime(true);
+        $email = 'user'.str_replace('.', '', $uniqueId).'@example.com';
+
         return [
             'name' => fake('lt_LT')->name(),
             'email' => $email,
