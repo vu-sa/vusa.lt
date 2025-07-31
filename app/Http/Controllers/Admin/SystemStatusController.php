@@ -412,10 +412,10 @@ class SystemStatusController extends Controller
 
         foreach ($searchableModels as $modelClass) {
             try {
-                $model = new $modelClass();
-                
+                $model = new $modelClass;
+
                 // Only check Typesense models
-                if (!($model->searchableUsing() instanceof \Laravel\Scout\Engines\TypesenseEngine)) {
+                if (! ($model->searchableUsing() instanceof \Laravel\Scout\Engines\TypesenseEngine)) {
                     continue;
                 }
 
@@ -424,15 +424,16 @@ class SystemStatusController extends Controller
 
                 // Find the corresponding collection
                 $collection = collect($collections)->firstWhere('name', $collectionName);
-                
-                if (!$collection) {
+
+                if (! $collection) {
                     $mismatches[] = [
                         'model' => class_basename($modelClass),
                         'collection' => $collectionName,
                         'issue' => 'collection_missing',
                         'message' => 'Collection does not exist in Typesense',
-                        'action' => 'Run: php artisan scout:import "' . $modelClass . '"'
+                        'action' => 'Run: php artisan scout:import "'.$modelClass.'"',
                     ];
+
                     continue;
                 }
 
@@ -442,11 +443,11 @@ class SystemStatusController extends Controller
 
                 // Check for missing fields in Typesense
                 $missingInTypesense = array_diff($modelFieldNames, $typesenseFields);
-                
+
                 // Check for extra fields in Typesense
                 $extraInTypesense = array_diff($typesenseFields, $modelFieldNames);
 
-                if (!empty($missingInTypesense) || !empty($extraInTypesense)) {
+                if (! empty($missingInTypesense) || ! empty($extraInTypesense)) {
                     $mismatches[] = [
                         'model' => class_basename($modelClass),
                         'collection' => $collectionName,
@@ -454,7 +455,7 @@ class SystemStatusController extends Controller
                         'missing_in_typesense' => $missingInTypesense,
                         'extra_in_typesense' => $extraInTypesense,
                         'message' => 'Model schema differs from Typesense collection',
-                        'action' => 'Run: php artisan search:reindex "' . class_basename($modelClass) . '"'
+                        'action' => 'Run: php artisan search:reindex "'.class_basename($modelClass).'"',
                     ];
                 }
 
@@ -462,16 +463,15 @@ class SystemStatusController extends Controller
                 $mismatches[] = [
                     'model' => class_basename($modelClass),
                     'issue' => 'validation_error',
-                    'message' => 'Could not validate schema: ' . $e->getMessage(),
+                    'message' => 'Could not validate schema: '.$e->getMessage(),
                 ];
             }
         }
 
         return [
-            'has_issues' => !empty($mismatches),
+            'has_issues' => ! empty($mismatches),
             'mismatches' => $mismatches,
             'checked_at' => now()->toISOString(),
         ];
     }
-
 }
