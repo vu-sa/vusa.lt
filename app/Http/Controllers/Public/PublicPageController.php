@@ -6,7 +6,6 @@ use App\Helpers\ContentHelper;
 use App\Http\Controllers\PublicController;
 use App\Models\Calendar;
 use App\Models\Category;
-use App\Models\Document;
 use App\Models\Form;
 use App\Models\Navigation;
 use App\Models\Page;
@@ -632,65 +631,6 @@ class PublicPageController extends PublicController
                     ];
                 }),
             ],
-        ])->withViewData([
-            'SEOData' => $seo,
-        ]);
-    }
-
-    public function documents()
-    {
-        $this->getBanners();
-        $this->getTenantLinks();
-        $this->shareOtherLangURL('documents');
-
-        $seo = $this->shareAndReturnSEOObject(
-            title: __('Dokumentai').' - VU SA',
-            description: 'VU SA dokumentai'
-        );
-
-        // Create cache key based on request parameters
-        $requestParams = request()->all();
-        $cacheKey = 'documents_'.md5(serialize($requestParams));
-
-        $documentsData = Cache::tags(['documents'])
-            ->remember($cacheKey, 7200, function () use ($requestParams) { // 2 hours TTL
-                if ($requestParams === []) {
-                    $documents = Document::query()->with('institution')
-                        ->orderBy('document_date', 'desc');
-                } else {
-                    $documents = Document::search(request()->q)->query(function (Builder $query) {
-                        $query->with('institution.tenant')->when(request()->has('tenants'), function (Builder $query) {
-                            $query->whereHas('institution.tenant', fn ($query) => $query->whereIn('tenants.shortname', request()->tenants));
-                        })->when(request()->has('contentTypes'), function (Builder $query) {
-                            $query->whereIn('content_type', request()->contentTypes);
-                        })->when(request()->has('language'), function (Builder $query) {
-                            $query->where('language', request()->language);
-                            // if has at least one of the dates: dateFrom or dateTo
-                        })->when(request()->has('dateFrom') || request()->has('dateTo'), function (Builder $query) {
-                            $dateFrom = request()->dateFrom ? Carbon::parse(request()->dateFrom / 1000) : null;
-                            $dateTo = request()->dateTo ? Carbon::parse(request()->dateTo / 1000) : null;
-
-                            $query->when($dateFrom, function (Builder $query) use ($dateFrom) {
-                                $query->where('document_date', '>=', $dateFrom);
-                            })->when($dateTo, function (Builder $query) use ($dateTo) {
-                                $query->where('document_date', '<=', $dateTo);
-                            });
-                        });
-                    });
-                }
-
-                $paginated = $documents->where('is_active', true)->orderBy('document_date', 'desc')->paginate(20);
-                $collection = $paginated->getCollection()->append('is_in_effect');
-
-                return [
-                    'documents' => $paginated->setCollection($collection),
-                    'contentTypes' => Document::query()->select('content_type')->whereNotNull('content_type')->distinct()->pluck('content_type')->sort()->values(),
-                ];
-            });
-
-        return Inertia::render('Public/ShowDocuments', [
-            'documents' => $documentsData['documents'],
-            'allContentTypes' => $documentsData['contentTypes'],
         ])->withViewData([
             'SEOData' => $seo,
         ]);

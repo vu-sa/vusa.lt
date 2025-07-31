@@ -30,6 +30,8 @@ Local domain (and subdomain) setup must be configured for the site to work prope
 
 If any questions arise how to setup for development, please write to <it@vusa.lt> :smile:
 
-### Microsoft features
+**macOS Performance Tip:** For faster development with colima, use:
 
-If there's a need to test the Microsoft features, test keys may be provided. Please contact personally.
+```bash
+colima start --cpu 4 --memory 6 --disk 60 --vm-type=vz --mount-type=virtiofs
+```

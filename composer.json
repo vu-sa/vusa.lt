@@ -88,6 +88,9 @@
         ],
         "post-create-project-cmd": [
             "@php artisan key:generate --ansi"
+        ],
+        "phpstan": [
+            "./vendor/bin/phpstan analyse --no-progress --memory-limit=2G"
         ]
     },
     "extra": {

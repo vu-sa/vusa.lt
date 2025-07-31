@@ -85,7 +85,9 @@ test('search arrays contain required fields', function () {
 
     expect($docSearchArray)->toHaveKey('id')
         ->and($docSearchArray)->toHaveKey('title')
-        ->and($docSearchArray)->toHaveKey('language');
+        ->and($docSearchArray)->toHaveKey('language')
+        ->and($docSearchArray)->toHaveKey('content_type')
+        ->and($docSearchArray)->toHaveKey('tenant_shortname');
 });
 
 test('draft models are not searchable', function () {

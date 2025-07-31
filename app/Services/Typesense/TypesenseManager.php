@@ -44,6 +44,28 @@ class TypesenseManager
     }
 
     /**
+     * Check if Typesense configuration has default/placeholder values
+     */
+    public static function isUsingPlaceholderConfig(): bool
+    {
+        $apiKey = config('scout.typesense.client-settings.api_key');
+
+        return in_array($apiKey, ['xyz', 'xyza'], true);
+    }
+
+    /**
+     * Get a warning message if using placeholder configuration
+     */
+    public static function getConfigWarning(): ?string
+    {
+        if (self::isUsingPlaceholderConfig()) {
+            return 'Typesense is using placeholder API key. Search functionality will use database fallback. Configure TYPESENSE_API_KEY for full search features.';
+        }
+
+        return null;
+    }
+
+    /**
      * Get list of configured Typesense collections from model settings
      */
     public static function getCollections(): array

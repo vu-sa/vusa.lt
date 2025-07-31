@@ -26,6 +26,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Artisan;
 
 class DatabaseSeeder extends Seeder
 {
@@ -41,6 +42,9 @@ class DatabaseSeeder extends Seeder
         $this->call(TenantSeeder::class);
         $this->call(TypeSeeder::class);
         $this->call(MemberRegistrationFormSeeder::class);
+
+        // Generate Typesense search key if needed
+        $this->generateTypesenseSearchKey();
 
         $tenants = Tenant::all();
         $categories = Category::all();
@@ -194,5 +198,41 @@ class DatabaseSeeder extends Seeder
 
         // Update the tenant to reference this content
         $pagrindinisTenant->update(['content_id' => $content->id]);
+    }
+
+    /**
+     * Generate Typesense search key if not already configured
+     */
+    private function generateTypesenseSearchKey()
+    {
+        // Skip search key generation during testing
+        if (app()->environment('testing')) {
+            return;
+        }
+
+        $adminKey = config('scout.typesense.client-settings.api_key');
+        $searchKey = config('scout.typesense.client-settings.search_only_key');
+
+        // Skip if admin key is not configured properly or search key already exists
+        if (empty($adminKey) || in_array($adminKey, ['xyz', 'xyza'], true) || ! empty($searchKey)) {
+            if (in_array($adminKey, ['xyz', 'xyza'], true)) {
+                $this->command->warn('⚠️  TYPESENSE_API_KEY is using placeholder value. Set a real API key to enable search features.');
+            }
+
+            return;
+        }
+
+        try {
+            // Try to generate search key using the command
+            $exitCode = Artisan::call('typesense:generate-search-key');
+
+            if ($exitCode === 0) {
+                $this->command->info('✅ Generated Typesense search-only key');
+            } else {
+                $this->command->warn('⚠️  Could not generate Typesense search key - service may not be available');
+            }
+        } catch (\Exception $e) {
+            $this->command->warn('⚠️  Could not generate Typesense search key: '.$e->getMessage());
+        }
     }
 }

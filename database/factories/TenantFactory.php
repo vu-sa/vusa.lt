@@ -16,8 +16,9 @@ class TenantFactory extends Factory
      */
     public function definition(): array
     {
-        // Generate a unique shortname by combining a word and a random number
-        $shortname = $this->faker->unique()->word().'-'.$this->faker->randomNumber(3);
+        // Generate a unique shortname by combining a word, timestamp and a random number
+        $timestamp = microtime(true);
+        $shortname = $this->faker->word().'-'.$timestamp.'-'.$this->faker->randomNumber(3);
 
         return [
             'fullname' => $this->faker->company(),

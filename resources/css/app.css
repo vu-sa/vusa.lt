@@ -14,80 +14,6 @@
 
 @custom-variant dark (&:is(.dark *));
 
-@theme {
-  --color-vusa-red: #bd2835;
-  --color-vusa-red-secondary: #8c1d27;
-  --color-vusa-red-tertiary: #bb2734;
-  --color-vusa-red-quaternary: #d74350;
-  --color-vusa-red-dark: #5d131a;
-  --color-vusa-yellow: #fbb01b;
-  --color-vusa-yellow-secondary: #de9503;
-  --color-vusa-yellow-tertiary: #fbb120;
-  --color-vusa-yellow-quaternary: #fcc557;
-  --color-vusa-yellow-dark: #a77002;
-
-  /* Navigation theme colors for light mode */
-  --color-nav-gradient-from-light: oklch(0.979 0.006 74.59);
-  --color-nav-gradient-to-light: oklch(0.97 0 0);
-  --color-nav-border-light: oklch(0.92 0.004 286.32 / 50%);
-  --color-nav-hover-bg-light: oklch(1 0 0 / 60%);
-  
-  /* Navigation theme colors for dark mode */
-  --color-nav-gradient-from-dark: oklch(0.274 0.006 286.033);
-  --color-nav-gradient-to-dark: oklch(0.2 0.006 285.885);
-  --color-nav-border-dark: oklch(0.37 0.013 285.805 / 30%);
-  --color-nav-hover-bg-dark: oklch(0.37 0.013 285.805 / 60%);
-
-  --grid-template-columns-ram-fill: repeat(auto-fill, minmax(320px, 1fr));
-  --grid-template-columns-ram-fit: repeat(auto-fit, minmax(320px, 1fr));
-
-  --animate-accordion-down: accordion-down 0.2s ease-out;
-  --animate-accordion-up: accordion-up 0.2s ease-out;
-  --animate-collapsible-down: collapsible-down 0.2s ease-in-out;
-  --animate-collapsible-up: collapsible-up 0.2s ease-in-out;
-
-
-  @keyframes accordion-down {
-    from {
-      height: 0;
-    }
-
-    to {
-      height: var(--reka-accordion-content-height);
-    }
-  }
-
-  @keyframes accordion-up {
-    from {
-      height: var(--reka-accordion-content-height);
-    }
-
-    to {
-      height: 0;
-    }
-  }
-
-  @keyframes collapsible-down {
-    from {
-      height: 0;
-    }
-
-    to {
-      height: var(--reka-collapsible-content-height);
-    }
-  }
-
-  @keyframes collapsible-up {
-    from {
-      height: var(--reka-collapsible-content-height);
-    }
-
-    to {
-      height: 0;
-    }
-  }
-}
-
 /* Ensure the --background variable is properly defined and scoped */
 :root {
   --background: oklch(1 0 0);
@@ -162,27 +88,6 @@
   --sidebar-ring: oklch(0.442 0.017 285.786);
 }
 
-.dark {
-  --background: hsl(240, 10%, 3.9%);
-  --foreground: hsl(0, 0%, 98%);
-  --card: hsl(240, 10%, 3.9%);
-  --card-foreground: hsl(0, 0%, 98%);
-  --popover: hsl(240, 10%, 3.9%);
-  --popover-foreground: hsl(0, 0%, 98%);
-  --primary: hsl(346, 72%, 45%);
-  --primary-foreground: hsl(355.7, 100%, 97.3%);
-  --secondary: hsl(240, 3.7%, 15.9%);
-  --secondary-foreground: hsl(0, 0%, 98%);
-  --muted: hsl(240, 3.7%, 15.9%);
-  --muted-foreground: hsl(240, 5% 64.9%);
-  --accent: hsl(240, 3.7%, 15.9%);
-  --accent-foreground: hsl(0, 0%, 98%);
-  --destructive: hsl(0, 62.8%, 30.6%);
-  --destructive-foreground: hsl(0, 0%, 98%);
-  --border: hsl(240, 3.7%, 15.9%);
-  --input: hsl(240, 3.7%, 15.9%);
-  --ring: hsl(346, 72%, 45%);
-}
 
 @utility container {
   margin-inline: auto;
@@ -474,37 +379,33 @@ html.dark {
   padding: 0;
 }
 
-:root {
-  --sidebar: hsl(0 0% 98%);
-  --sidebar-foreground: hsl(240 5.3% 26.1%);
-  --sidebar-primary: hsl(240 5.9% 10%);
-  --sidebar-primary-foreground: hsl(0 0% 98%);
-  --sidebar-accent: hsl(240 4.8% 95.9%);
-  --sidebar-accent-foreground: hsl(240 5.9% 10%);
-  --sidebar-border: hsl(220 13% 91%);
-  --sidebar-ring: hsl(217.2 91.2% 59.8%);
-}
 
-.dark {
-  --sidebar: hsl(240 5.9% 10%);
-  --sidebar-foreground: hsl(240 4.8% 95.9%);
-  --sidebar-primary: hsl(224.3 76.3% 48%);
-  --sidebar-primary-foreground: hsl(0 0% 100%);
-  --sidebar-accent: hsl(240 3.7% 15.9%);
-  --sidebar-accent-foreground: hsl(240 4.8% 95.9%);
-  --sidebar-border: hsl(240 3.7% 15.9%);
-  --sidebar-ring: hsl(217.2 91.2% 59.8%);
-}
-
+/* Consolidated theme colors for Tailwind CSS v4 */
 @theme inline {
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
+  /* VU SA Brand Colors */
+  --color-vusa-red: #bd2835;
+  --color-vusa-red-secondary: #8c1d27;
+  --color-vusa-red-tertiary: #bb2734;
+  --color-vusa-red-quaternary: #d74350;
+  --color-vusa-red-dark: #5d131a;
+  --color-vusa-yellow: #fbb01b;
+  --color-vusa-yellow-secondary: #de9503;
+  --color-vusa-yellow-tertiary: #fbb120;
+  --color-vusa-yellow-quaternary: #fcc557;
+  --color-vusa-yellow-dark: #a77002;
+
+  /* Navigation Colors */
+  --color-nav-gradient-from-light: oklch(0.979 0.006 74.59);
+  --color-nav-gradient-to-light: oklch(0.97 0 0);
+  --color-nav-border-light: oklch(0.92 0.004 286.32 / 50%);
+  --color-nav-hover-bg-light: oklch(1 0 0 / 60%);
+  --color-nav-gradient-from-dark: oklch(0.274 0.006 286.033);
+  --color-nav-gradient-to-dark: oklch(0.2 0.006 285.885);
+  --color-nav-border-dark: oklch(0.37 0.013 285.805 / 30%);
+  --color-nav-hover-bg-dark: oklch(0.37 0.013 285.805 / 60%);
+
+  /* UI Theme Colors */
+  --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
@@ -523,17 +424,80 @@ html.dark {
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --radius: var(--radius);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
+
+  /* Sidebar Colors */
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Chart Colors */
   --color-chart-1: var(--chart-1);
-  --color-background: var(--background);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  /* Border Radius */
+  --radius: var(--radius);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+
+  /* Grid Templates */
+  --grid-template-columns-ram-fill: repeat(auto-fill, minmax(320px, 1fr));
+  --grid-template-columns-ram-fit: repeat(auto-fit, minmax(320px, 1fr));
+
+  /* Animations */
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+  --animate-collapsible-down: collapsible-down 0.2s ease-in-out;
+  --animate-collapsible-up: collapsible-up 0.2s ease-in-out;
+
+  @keyframes accordion-down {
+    from {
+      height: 0;
+    }
+
+    to {
+      height: var(--reka-accordion-content-height);
+    }
+  }
+
+  @keyframes accordion-up {
+    from {
+      height: var(--reka-accordion-content-height);
+    }
+
+    to {
+      height: 0;
+    }
+  }
+
+  @keyframes collapsible-down {
+    from {
+      height: 0;
+    }
+
+    to {
+      height: var(--reka-collapsible-content-height);
+    }
+  }
+
+  @keyframes collapsible-up {
+    from {
+      height: var(--reka-collapsible-content-height);
+    }
+
+    to {
+      height: 0;
+    }
+  }
 }
 
 @layer base {
