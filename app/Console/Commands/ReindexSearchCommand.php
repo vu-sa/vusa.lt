@@ -5,7 +5,6 @@ namespace App\Console\Commands;
 use App\Enums\SearchableModelEnum;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
-use Laravel\Scout\Engines\TypesenseEngine;
 use Typesense\Client;
 
 class ReindexSearchCommand extends Command
@@ -67,15 +66,14 @@ class ReindexSearchCommand extends Command
         $this->info('🎉 Reindexing completed!');
     }
 
-
     /**
      * Get the search engine type for a model
      */
     private function getModelSearchEngine(string $model): string
     {
-        $instance = new $model();
+        $instance = new $model;
         $engine = $instance->searchableUsing();
-        
+
         return class_basename(get_class($engine));
     }
 
@@ -84,8 +82,8 @@ class ReindexSearchCommand extends Command
      */
     private function reindexTypesenseModel(string $model): void
     {
-        $collectionName = (new $model())->searchableAs();
-        
+        $collectionName = (new $model)->searchableAs();
+
         try {
             // Delete the collection to force schema recreation
             $client = new Client(config('scout.typesense.client-settings'));
