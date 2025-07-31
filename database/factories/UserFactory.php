@@ -23,7 +23,7 @@ class UserFactory extends Factory
     {
         return [
             'name' => fake('lt_LT')->name(),
-            'email' => $this->faker->unique()->userName() . '@example.com',
+            'email' => $this->faker->unique()->userName().'@example.com',
             'phone' => $this->faker->phoneNumber(),
             'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
             // random has photo or not
