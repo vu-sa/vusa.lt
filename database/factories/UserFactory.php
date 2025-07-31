@@ -21,9 +21,13 @@ class UserFactory extends Factory
      */
     public function definition()
     {
+        // Generate a truly unique email using uniqid and microtime to avoid faker exhaustion
+        $uniqueId = uniqid() . microtime(true);
+        $email = 'user' . str_replace('.', '', $uniqueId) . '@example.com';
+        
         return [
             'name' => fake('lt_LT')->name(),
-            'email' => $this->faker->unique()->userName().'@example.com',
+            'email' => $email,
             'phone' => $this->faker->phoneNumber(),
             'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
             // random has photo or not
