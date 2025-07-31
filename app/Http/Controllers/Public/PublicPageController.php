@@ -6,7 +6,6 @@ use App\Helpers\ContentHelper;
 use App\Http\Controllers\PublicController;
 use App\Models\Calendar;
 use App\Models\Category;
-use App\Models\Document;
 use App\Models\Form;
 use App\Models\Navigation;
 use App\Models\Page;

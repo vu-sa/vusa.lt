@@ -214,24 +214,25 @@ class DatabaseSeeder extends Seeder
         $searchKey = config('scout.typesense.client-settings.search_only_key');
 
         // Skip if admin key is not configured properly or search key already exists
-        if (empty($adminKey) || in_array($adminKey, ['xyz', 'xyza'], true) || !empty($searchKey)) {
+        if (empty($adminKey) || in_array($adminKey, ['xyz', 'xyza'], true) || ! empty($searchKey)) {
             if (in_array($adminKey, ['xyz', 'xyza'], true)) {
                 $this->command->warn('⚠️  TYPESENSE_API_KEY is using placeholder value. Set a real API key to enable search features.');
             }
+
             return;
         }
 
         try {
             // Try to generate search key using the command
             $exitCode = Artisan::call('typesense:generate-search-key');
-            
+
             if ($exitCode === 0) {
                 $this->command->info('✅ Generated Typesense search-only key');
             } else {
                 $this->command->warn('⚠️  Could not generate Typesense search key - service may not be available');
             }
         } catch (\Exception $e) {
-            $this->command->warn('⚠️  Could not generate Typesense search key: ' . $e->getMessage());
+            $this->command->warn('⚠️  Could not generate Typesense search key: '.$e->getMessage());
         }
     }
 }

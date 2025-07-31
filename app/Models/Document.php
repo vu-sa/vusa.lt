@@ -35,10 +35,10 @@ class Document extends Model
     public function toSearchableArray()
     {
         // Load the tenant relationship if not already loaded
-        if (!$this->relationLoaded('institution') || ($this->institution && !$this->institution->relationLoaded('tenant'))) {
+        if (! $this->relationLoaded('institution') || ($this->institution && ! $this->institution->relationLoaded('tenant'))) {
             $this->load('institution.tenant');
         }
-        
+
         return [
             'id' => (string) $this->id,
             'title' => $this->title,

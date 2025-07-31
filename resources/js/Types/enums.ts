@@ -87,3 +87,9 @@ export enum PermissionScopeEnum {
   "PADALINYS" = "padalinys",
   "ALL" = "*",
 }
+export enum SearchableModelEnum {
+  "NEWS" = "news",
+  "PAGE" = "page",
+  "DOCUMENT" = "document",
+  "CALENDAR" = "calendar",
+}
