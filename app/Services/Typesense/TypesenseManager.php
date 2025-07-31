@@ -49,7 +49,7 @@ class TypesenseManager
     public static function isUsingPlaceholderConfig(): bool
     {
         $apiKey = config('scout.typesense.client-settings.api_key');
-        
+
         return in_array($apiKey, ['xyz', 'xyza'], true);
     }
 

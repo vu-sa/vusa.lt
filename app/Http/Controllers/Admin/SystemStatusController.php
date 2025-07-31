@@ -40,7 +40,7 @@ class SystemStatusController extends Controller
             $isConfigured = TypesenseManager::isConfigured();
             $isUsingPlaceholder = TypesenseManager::isUsingPlaceholderConfig();
             $configWarning = TypesenseManager::getConfigWarning();
-            
+
             // Check if any models are configured to use Typesense (regardless of global driver)
             $configuredModels = TypesenseManager::getCollections();
             $isEnabled = $isConfigured && ! empty($configuredModels);
