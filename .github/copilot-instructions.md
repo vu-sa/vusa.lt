@@ -8,6 +8,7 @@
 | Follow existing component patterns          | Introduce new UI patterns without need      |
 | Support both lt/en languages                | Hardcode language strings                   |
 | Use Shadcn Vue for UI components            | Mix UI library styles                       |
+| Use Tailwind classes directly on elements   | Use `@apply` in `<style>` blocks unnecessarily |
 | Reuse components                            | Create one-off specialized components       |
 | Use `sail` for Laravel commands             | Run commands directly without sail          |
 
@@ -125,6 +126,35 @@ if ($request->has('field') && !empty($request->field)) {
 - Use Form Request classes for complex validation
 - Return localized validation errors
 - Use Inertia flash messaging for user feedback
+
+## Styling Guidelines
+
+### Tailwind CSS Best Practices
+- **Use utility classes directly** on elements instead of custom CSS
+- **Avoid `@apply` in `<style>` blocks** except for essential utilities (line-clamp, keyframes)
+- **Leverage Tailwind modifiers** for interactions: `hover:shadow-lg`, `focus:ring-2`, `sm:grid-cols-2`
+- **Keep styles declarative** and visible in templates for better maintainability
+
+### Examples:
+```vue
+<!-- ✅ Good: Direct utility classes -->
+<div class="transition-all duration-200 hover:shadow-lg hover:scale-105 focus:ring-2">
+
+<!-- ❌ Avoid: Custom CSS with @apply -->
+<style>
+.card { @apply hover:shadow-md transition-all; }
+</style>
+
+<!-- ✅ Exception: Essential utilities only -->
+<style>
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+</style>
+```
 
 ## Remember
 

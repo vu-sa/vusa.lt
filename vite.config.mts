@@ -129,4 +129,7 @@ export default defineConfig({
       'vue'
     ]
   },
+  css: {
+    transformer: 'lightningcss',
+  }
 });

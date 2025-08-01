@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\PublicController;
 use App\Models\Document;
+use App\Services\Typesense\TypesenseManager;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
@@ -126,6 +127,7 @@ class DocumentController extends PublicController
         return Inertia::render('Public/ShowDocuments', [
             'documents' => $documentsData['documents'],
             'allContentTypes' => $documentsData['contentTypes'],
+            'typesenseConfig' => TypesenseManager::getFrontendConfig(),
         ])->withViewData([
             'SEOData' => $seo,
         ]);
