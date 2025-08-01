@@ -90,6 +90,26 @@ $user->assignRole(config('permission.super_admin_role_name'));
 **Redis Implementation**: Used for caching and session storage
 **Cache hit ratio target**: >80% for production
 
+## Styling & CSS Guidelines
+
+### Tailwind CSS Usage
+- **Use Tailwind classes directly** on HTML elements instead of custom CSS when possible
+- **Avoid `@apply` in `<style>` blocks** unless absolutely necessary (e.g., line-clamp utilities)
+- **Use Tailwind's hover/focus/responsive modifiers** instead of custom CSS media queries
+- **Prefer utility classes** like `hover:shadow-lg hover:scale-105` over custom hover effects
+- **Keep styles co-located** with components using class attributes
+
+### Examples:
+```vue
+<!-- ✅ Good: Direct Tailwind classes -->
+<div class="transition-all duration-200 hover:shadow-lg hover:scale-105">
+
+<!-- ❌ Avoid: Custom CSS with @apply -->
+<style>
+.my-card { @apply hover:shadow-md; }
+</style>
+```
+
 ## Security
 
 - Always use `authorize()` in controllers

@@ -108,18 +108,18 @@
 
         <main id="main-content" class="pb-8 pt-12 mt-16">
           <!-- Centralized breadcrumb display -->
-          <nav v-if="breadcrumbState.breadcrumbs.value.length > 0" class="wrapper pt-4 md:pt-6 lg:pt-8" aria-label="Breadcrumb">
+          <nav v-if="breadcrumbState.breadcrumbs.value.length > 0" :class="breadcrumbWrapperClass" aria-label="Breadcrumb">
             <UnifiedBreadcrumbs class="mb-4 md:mb-6" />
           </nav>
           
           <!-- <Suspense> -->
           <div>
             <FadeTransition v-if="!$page.props.disablePageTransition" appear>
-              <div :key="$page.url" class="wrapper">
+              <div :key="$page.url" :class="contentWrapperClass">
                 <slot />
               </div>
             </FadeTransition>
-            <div v-else class="wrapper">
+            <div v-else :class="contentWrapperClass">
               <slot />
             </div>
             <div v-if="
@@ -218,6 +218,46 @@ const isDark = useDark();
 
 // Initialize breadcrumb state for public pages
 const breadcrumbState = createBreadcrumbState('public');
+
+// Layout width configuration
+const layoutWidth = computed(() => {
+  const page = usePage();
+  // Check if page has specified layout width
+  return page.props.layoutWidth || 'standard';
+});
+
+// Computed classes for wrapper elements
+const contentWrapperClass = computed(() => {
+  const width = layoutWidth.value;
+  const baseClasses = 'pt-4 md:pt-6 lg:pt-8';
+  
+  switch (width) {
+    case 'wide':
+      return `wrapper-wide ${baseClasses}`;
+    case 'full':
+      return `wrapper-full ${baseClasses}`;
+    case 'content':
+      return `wrapper-content ${baseClasses}`;
+    default:
+      return `wrapper ${baseClasses}`;
+  }
+});
+
+const breadcrumbWrapperClass = computed(() => {
+  const width = layoutWidth.value;
+  const baseClasses = 'pt-4 md:pt-6 lg:pt-8';
+  
+  switch (width) {
+    case 'wide':
+      return `wrapper-wide ${baseClasses}`;
+    case 'full':
+      return `wrapper-full ${baseClasses}`;
+    case 'content':
+      return `wrapper-content ${baseClasses}`;
+    default:
+      return `wrapper ${baseClasses}`;
+  }
+});
 
 // Clear breadcrumbs when on home page
 watch(() => usePage().component, (component) => {
