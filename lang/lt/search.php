@@ -79,6 +79,21 @@ return [
     'suggestions' => 'Pasiūlymai',
     'clear' => 'Išvalyti',
 
+    // Date range filter
+    'select_date_range' => 'Pasirinkti datų intervalą',
+    'select_date' => 'Pasirinkti datą',
+    'select_year_range' => 'Pasirinkti metų intervalą',
+    'clear_range' => 'Išvalyti intervalą',
+
+    // Error messages
+    'search_error' => 'Klaida atliekant paiešką',
+    'technical_error' => 'Atsiprašome, įvyko techninė klaida. Pabandykite dar kartą.',
+    'try_again' => 'Bandyti dar kartą',
+    'report_error' => 'Pranešti apie klaidą',
+
+    // Document details
+    'effective_date' => 'Įsigalioja:',
+
     // Navigation
     'next' => 'Kitas',
     'previous' => 'Ankstesnis',
@@ -112,4 +127,89 @@ return [
     'enable_all_types' => 'Įjungti visus',
     'clear_all_types' => 'Išvalyti visus',
     'click_to_disable_type' => 'Spustelėkite išjungti :type',
+
+    // Document search specific
+    'document_search_title' => 'Dokumentai',
+    'document_search_description' => 'Ieškokite VU SA dokumentų archyve – raskite protokolus, nutarimus ir kitus dokumentus.',
+    'document_page_title' => 'Dokumentai - VU SR',
+    'document_page_description' => 'Ieškokite VU SA dokumentų archyve',
+    'offline_message' => 'Nėra interneto ryšio - paieška nepasiekiama',
+    'showing_results' => 'Rodomi',
+    'found_results' => 'Rasta',
+    'document_singular' => 'dokumentas',
+    'document_plural' => 'dokumentai',
+    'newest_first' => '(naujausi pirmiausia)',
+    'by_query' => 'pagal',
+    'no_documents_found' => 'Dokumentų nerasta',
+    'min_chars_search' => 'Įveskite bent 3 simbolius paieškai',
+    'enter_search_or_browse' => 'Įveskite paieškos žodžius arba naršykite visus dokumentus',
+    'view_mode_list' => 'Sąrašas',
+    'view_mode_compact' => 'Kompaktiškas',
+    'language_lithuanian' => 'LT',
+    'language_english' => 'EN',
+    'language_unknown' => 'Nežinoma',
+
+    // Search input specific
+    'search_documents_placeholder' => 'Ieškoti dokumentų pagal pavadinimą...',
+    'search_documents_placeholder_alt' => 'Ieškoti dokumentų...',
+    'search_button' => 'Ieškoti',
+    'clear_search_button' => 'Išvalyti paiešką',
+    'auto_search_enabled' => 'Automatinė paieška įjungta',
+    'enable_auto_search' => 'Įjungti automatinę paiešką',
+    'disable_auto_search' => 'Išjungti automatinę paiešką',
+    'recent_searches' => 'Pastarieji paieškos žodžiai',
+    'clear_all_history' => 'Išvalyti viską',
+
+    // Facet sidebar specific
+    'filters' => 'Filtrai',
+    'filter_documents' => 'Filtruoti dokumentus',
+    'clear_filters' => 'Išvalyti',
+    'clear_filters_count' => 'Išvalyti (:count)',
+    'tenants' => 'Dariniai',
+    'document_type' => 'Dokumentų tipas',
+    'language' => 'Kalba',
+    'date' => 'Data',
+    'document_creation_time' => 'Dokumento sukūrimo laikas',
+    'language_filters_after_search' => 'Kalbų filtrai bus rodomi atlikus paiešką',
+
+    // Results specific
+    'loading_more' => 'Kraunama...',
+    'show_more_results' => 'Rodyti daugiau rezultatų',
+    'no_results_criteria' => 'Pagal jūsų paieškos kriterijus dokumentų nerasta.',
+    'clear_filters_action' => 'Išvalyti filtrus',
+    'min_chars_required' => 'Reikalingi bent 3 simboliai',
+    'min_chars_description' => 'Įveskite bent 3 simbolius, kad galėtumėte ieškoti dokumentų.',
+    'or_browse_all' => 'Arba',
+    'browse_all_documents' => 'naršykite visus dokumentus',
+
+    // Filter component specific
+    'select_all' => 'Visi',
+    'clear_all' => 'Išvalyti',
+    'tenants_organizations' => 'Dariniai',
+    'units' => 'Padaliniai',
+    'other_types' => 'Kiti',
+    'date_from' => 'Nuo datos',
+    'date_to' => 'Iki datos',
+    'from_date' => 'Nuo',
+    'to_date' => 'Iki',
+    'last_90_days' => 'Paskutiniai 90 dienų',
+    'years' => 'Metai',
+    'document_type_description' => 'Protokolai, nuostatai, kiti',
+    'language_description' => 'Lietuvių, anglų kalba',
+    
+    // Date range presets
+    'date_recent' => 'Pastarieji',
+    'date_3_months' => '3 mėnesiai',
+    'date_6_months' => '6 mėnesiai',
+    'date_1_year' => 'Metai',
+    'date_year_range' => 'Metų intervalas',
+    'date_custom' => 'Pasirinkti',
+    'date_recent_desc' => '3 mėnesiai',
+    'date_3_months_desc' => 'Paskutiniai 90 dienų',
+    'date_6_months_desc' => 'Pusmetis atgal',
+    'date_1_year_desc' => 'Paskutiniai 12 mėn.',
+    'date_year_range_desc' => 'Pasirinkti metų intervalą',
+    'date_custom_desc' => 'Konkretus intervalas',
+    'date_from_format' => 'Nuo :date',
+    'date_to_format' => 'Iki :date',
 ];

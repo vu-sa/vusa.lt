@@ -1,7 +1,7 @@
 <template>
   <Head>
-    <title>Dokumentai - VU SR</title>
-    <meta name="description" content="Ieškokite VU SA dokumentų archyve" />
+    <title>{{ $t('search.document_page_title') }}</title>
+    <meta name="description" :content="$t('search.document_page_description')" />
   </Head>
   
   <DocumentSearchInterface

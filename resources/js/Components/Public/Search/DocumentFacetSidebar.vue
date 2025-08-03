@@ -6,7 +6,7 @@
         <SheetTrigger as-child>
           <Button variant="outline" class="w-full">
             <Filter class="w-4 h-4 mr-2" />
-            Filtrai
+            {{ $t('search.filters') }}
             <Badge v-if="activeFilterCount > 0" variant="secondary" class="ml-2">
               {{ activeFilterCount }}
             </Badge>
@@ -17,7 +17,7 @@
             <div class="text-left">
               <SheetTitle class="text-xl font-bold text-foreground flex items-center gap-2">
                 <Filter class="h-5 w-5 text-primary" />
-                Filtruoti dokumentus
+                {{ $t('search.filter_documents') }}
               </SheetTitle>
             </div>
           </SheetHeader>
@@ -28,16 +28,16 @@
                 <!-- Filter Header -->
                 <div class="flex items-center justify-between">
                   <h3 class="text-lg font-semibold">
-                    Filtrai
+                    {{ $t('search.filters') }}
                   </h3>
                   <Button variant="ghost" size="sm" :disabled="activeFilterCount === 0" class="text-xs"
                     @click="emit('clearFilters')">
                     <RotateCcw class="w-3 h-3 mr-1" />
                     <template v-if="activeFilterCount > 0">
-                      Išvalyti ({{ activeFilterCount }})
+                      {{ $t('search.clear_filters_count', { count: activeFilterCount }) }}
                     </template>
                     <template v-else>
-                      Išvalyti
+                      {{ $t('search.clear_filters') }}
                     </template>
                   </Button>
                 </div>
@@ -49,7 +49,7 @@
                     <AccordionTrigger class="text-sm font-medium">
                       <div class="flex items-center gap-2">
                         <Building2 class="w-4 h-4 text-muted-foreground" />
-                        <span>Dariniai</span>
+                        <span>{{ $t('search.tenants') }}</span>
                         <Badge v-if="filters.tenants.length > 0" variant="secondary" class="ml-auto mr-2">
                           {{ filters.tenants.length }}
                         </Badge>
@@ -66,7 +66,7 @@
                     <AccordionTrigger class="text-sm font-medium">
                       <div class="flex items-center gap-2">
                         <FileText class="w-4 h-4 text-muted-foreground" />
-                        <span>Dokumentų tipas</span>
+                        <span>{{ $t('search.document_type') }}</span>
                         <Badge v-if="filters.contentTypes.length > 0" variant="secondary" class="ml-auto mr-2">
                           {{ filters.contentTypes.length }}
                         </Badge>
@@ -83,7 +83,7 @@
                     <AccordionTrigger class="text-sm font-medium">
                       <div class="flex items-center gap-2">
                         <Globe class="w-4 h-4 text-muted-foreground" />
-                        <span>Kalba</span>
+                        <span>{{ $t('search.language') }}</span>
                         <Badge v-if="filters.languages.length > 0" variant="secondary" class="ml-auto mr-2">
                           {{ filters.languages.length }}
                         </Badge>
@@ -116,7 +116,7 @@
                           </label>
                         </template>
                         <div v-else class="text-sm text-muted-foreground p-2">
-                          Kalbų filtrai bus rodomi atlikus paiešką
+                          {{ $t('search.language_filters_after_search') }}
                         </div>
                       </div>
                     </AccordionContent>
@@ -126,7 +126,7 @@
                     <AccordionTrigger class="text-sm font-medium">
                       <div class="flex items-center gap-2">
                         <Calendar class="w-4 h-4 text-muted-foreground" />
-                        <span>Data</span>
+                        <span>{{ $t('search.date') }}</span>
                         <Badge
                           v-if="(filters.dateRange.preset && filters.dateRange.preset !== 'recent') || filters.dateRange.from || filters.dateRange.to"
                           variant="secondary" class="ml-auto mr-2">
@@ -154,17 +154,17 @@
         <div class="flex items-start justify-between pt-3 pb-5">
           <div>
             <h3 class="text-xl font-bold text-foreground tracking-tight">
-              Filtrai
+              {{ $t('search.filters') }}
             </h3>
           </div>
           <Button variant="ghost" size="sm" :disabled="activeFilterCount === 0"
             class="text-xs font-medium shrink-0 ml-4" @click="emit('clearFilters')">
             <RotateCcw class="w-3 h-3 mr-1.5" />
             <template v-if="activeFilterCount > 0">
-              Išvalyti ({{ activeFilterCount }})
+              {{ $t('search.clear_filters_count', { count: activeFilterCount }) }}
             </template>
             <template v-else>
-              Išvalyti
+              {{ $t('search.clear_filters') }}
             </template>
           </Button>
         </div>
@@ -180,7 +180,7 @@
                   <Building2 class="w-4 h-4" />
                 </div>
                 <div class="flex-1 text-left">
-                  <span class="font-semibold text-foreground text-base">Dariniai</span>
+                  <span class="font-semibold text-foreground text-base">{{ $t('search.tenants') }}</span>
                 </div>
                 <Badge v-if="filters.tenants.length > 0" variant="default" class="font-medium text-xs px-2 py-1">
                   {{ filters.tenants.length }}
@@ -205,9 +205,9 @@
                   <FileText class="w-4 h-4" />
                 </div>
                 <div class="flex-1 text-left">
-                  <span class="font-semibold text-foreground text-base">Dokumentų tipas</span>
+                  <span class="font-semibold text-foreground text-base">{{ $t('search.document_type') }}</span>
                   <p class="text-xs text-muted-foreground mt-0.5">
-                    Protokolai, nuostatai, kiti
+                    {{ $t('search.document_type_description') }}
                   </p>
                 </div>
                 <Badge v-if="filters.contentTypes.length > 0" variant="default" class="font-medium text-xs px-2 py-1">
@@ -234,9 +234,9 @@
                   <Globe class="w-4 h-4" />
                 </div>
                 <div class="flex-1 text-left">
-                  <span class="font-semibold text-foreground text-base">Kalba</span>
+                  <span class="font-semibold text-foreground text-base">{{ $t('search.language') }}</span>
                   <p class="text-xs text-muted-foreground mt-0.5">
-                    Lietuvių, anglų kalba
+                    {{ $t('search.language_description') }}
                   </p>
                 </div>
                 <Badge v-if="filters.languages.length > 0" variant="default" class="font-medium text-xs px-2 py-1">
@@ -277,7 +277,7 @@
                   </label>
                 </template>
                 <div v-else class="text-sm text-muted-foreground p-3 text-center italic">
-                  Kalbų filtrai bus rodomi atlikus paiešką
+                  {{ $t('search.language_filters_after_search') }}
                 </div>
               </div>
             </AccordionContent>
@@ -293,9 +293,9 @@
                   <Calendar class="w-4 h-4" />
                 </div>
                 <div class="flex-1 text-left">
-                  <span class="font-semibold text-foreground text-base">Data</span>
+                  <span class="font-semibold text-foreground text-base">{{ $t('search.date') }}</span>
                   <p class="text-xs text-muted-foreground mt-0.5">
-                    Dokumento sukūrimo laikas
+                    {{ $t('search.document_creation_time') }}
                   </p>
                 </div>
                 <Badge
@@ -509,7 +509,7 @@ const getLanguageFlag = (languageValue: string): string => {
 const getLanguageDisplay = (languageValue: string): string => {
   if (languageValue === 'Lietuvių' || languageValue === 'Lithuanian') return 'LT'
   if (languageValue === 'Anglų' || languageValue === 'English') return 'EN'
-  return 'Nežinoma' // For Unknown or other languages
+  return 'Unknown' // For Unknown or other languages
 }
 
 // Computed properties

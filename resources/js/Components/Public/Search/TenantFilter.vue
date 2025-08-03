@@ -30,7 +30,7 @@
     <div v-if="tenantHierarchy.padaliniai.length > 0" class="space-y-2">
       <h4 class="text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-2">
         <GraduationCap class="w-3 h-3" />
-        Padaliniai
+        {{ $t('search.units') }}
       </h4>
       <ScrollArea class="h-40 w-full rounded-md border border-border/50">
         <div class="space-y-1 p-2">
@@ -78,12 +78,12 @@
     <div class="flex gap-1 pt-2 border-t border-border/50">
       <Button variant="ghost" size="sm" class="h-6 px-1.5 text-xs" :disabled="allSelected" @click="selectAll">
         <CheckSquare class="w-3 h-3 mr-1" />
-        Visi
+        {{ $t('search.select_all') }}
       </Button>
       <Button variant="ghost" size="sm" class="h-6 px-1.5 text-xs" :disabled="selectedTenants.length === 0"
         @click="clearAll">
         <RotateCcw class="w-3 h-3 mr-1" />
-        Išvalyti
+        {{ $t('search.clear_all') }}
       </Button>
     </div>
   </div>

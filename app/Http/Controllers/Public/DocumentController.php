@@ -17,8 +17,8 @@ class DocumentController extends PublicController
         $this->shareOtherLangURL('documents');
 
         $seo = $this->shareAndReturnSEOObject(
-            title: __('Dokumentai').' - VU SA',
-            description: 'VU SA dokumentai'
+            title: __('search.document_page_title'),
+            description: __('search.document_page_description')
         );
 
         // Since the frontend now handles search via Typesense directly,

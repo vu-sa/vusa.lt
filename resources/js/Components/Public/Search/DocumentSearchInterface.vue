@@ -13,10 +13,10 @@
             </div>
           </div>
           <h1 class="text-4xl font-bold text-foreground mb-3">
-            Dokumentai
+            {{ $t('search.document_search_title') }}
           </h1>
           <p class="text-lg text-muted-foreground">
-            Ieškokite VU SA dokumentų archyve – raskite protokolus, nutarimus ir kitus dokumentus.
+            {{ $t('search.document_search_description') }}
           </p>
         </div>
       </div>
@@ -35,7 +35,7 @@
         class="mb-4 p-3 bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800 rounded-lg">
         <div class="flex items-center gap-2 text-orange-800 dark:text-orange-200">
           <WifiOff class="w-4 h-4" />
-          <span class="text-sm font-medium">Nėra interneto ryšio - paieška nepasiekiama</span>
+          <span class="text-sm font-medium">{{ $t('search.offline_message') }}</span>
         </div>
       </div>
 
@@ -58,32 +58,32 @@
             <div class="text-sm text-muted-foreground">
               <template v-if="searchController.totalHits.value > 0">
                 <template v-if="searchController.searchState.value.query === '*' && !hasActiveFilters">
-                  Rodomi <strong class="text-foreground">{{ searchController.totalHits.value.toLocaleString()
+                  {{ $t('search.showing_results') }} <strong class="text-foreground">{{ searchController.totalHits.value.toLocaleString()
                     }}</strong>{{ ' ' }}
-                  {{ searchController.totalHits.value === 1 ? 'dokumentas' : 'dokumentai' }}{{ ' ' }}
-                  (naujausi pirmiausia)
+                  {{ searchController.totalHits.value === 1 ? $t('search.document_singular') : $t('search.document_plural') }}{{ ' ' }}
+                  {{ $t('search.newest_first') }}
                 </template>
                 <template v-else>
-                  Rasta <strong class="text-foreground">{{ searchController.totalHits.value.toLocaleString()
+                  {{ $t('search.found_results') }} <strong class="text-foreground">{{ searchController.totalHits.value.toLocaleString()
                     }}</strong>{{ ' ' }}
-                  {{ searchController.totalHits.value === 1 ? 'dokumentas' : 'dokumentai' }}
+                  {{ searchController.totalHits.value === 1 ? $t('search.document_singular') : $t('search.document_plural') }}
                   <template
                     v-if="searchController.searchState.value.query && searchController.searchState.value.query !== '*'">
-                    {{ ' ' }}pagal <strong class="text-foreground">"{{ searchController.searchState.value.query
+                    {{ ' ' }}{{ $t('search.by_query') }} <strong class="text-foreground">"{{ searchController.searchState.value.query
                       }}"</strong>
                   </template>
                 </template>
               </template>
               <template
                 v-else-if="searchController.searchState.value.query && searchController.searchState.value.query.length >= 3 && !searchController.isSearching.value">
-                Dokumentų nerasta
+                {{ $t('search.no_documents_found') }}
               </template>
               <template
                 v-else-if="searchController.searchState.value.query && searchController.searchState.value.query.length > 0 && searchController.searchState.value.query.length < 3">
-                Įveskite bent 3 simbolius paieškai
+                {{ $t('search.min_chars_search') }}
               </template>
               <template v-else-if="!searchController.searchState.value.query && !searchController.isSearching.value">
-                Įveskite paieškos žodžius arba naršykite visus dokumentus
+                {{ $t('search.enter_search_or_browse') }}
               </template>
             </div>
 
@@ -98,7 +98,7 @@
                     : 'hover:bg-background/50 text-muted-foreground'
                 ]" @click="searchController.setViewMode('list')">
                   <List class="w-4 h-4 mr-2" />
-                  <span class="text-sm font-medium">Sąrašas</span>
+                  <span class="text-sm font-medium">{{ $t('search.view_mode_list') }}</span>
                 </Button>
                 <Button variant="ghost" size="sm" :class="[
                   'rounded-md px-3 py-2 transition-all duration-200',
@@ -107,7 +107,7 @@
                     : 'hover:bg-background/50 text-muted-foreground'
                 ]" @click="searchController.setViewMode('compact')">
                   <Minus class="w-4 h-4 mr-2" />
-                  <span class="text-sm font-medium">Kompaktiškas</span>
+                  <span class="text-sm font-medium">{{ $t('search.view_mode_compact') }}</span>
                 </Button>
               </div>
             </div>
@@ -162,7 +162,7 @@
               <!-- Clear all -->
               <Button variant="outline" size="sm" class="h-6" @click="searchController.clearFilters">
                 <X class="w-3 h-3 mr-1" />
-                Išvalyti viską
+                {{ $t('search.clear_all') }}
               </Button>
             </div>
           </div>
@@ -245,10 +245,10 @@ const filterSummary = computed(() => {
   const filters = searchController.filters.value
   const summary: string[] = []
   if (filters.tenants.length > 0) summary.push(`${filters.tenants.length} org.`)
-  if (filters.contentTypes.length > 0) summary.push(`${filters.contentTypes.length} tipas`)
-  if (filters.languages.length > 0) summary.push(`${filters.languages.length} kalba`)
+  if (filters.contentTypes.length > 0) summary.push(`${filters.contentTypes.length} type`)
+  if (filters.languages.length > 0) summary.push(`${filters.languages.length} lang`)
   if (filters.dateRange.preset !== 'recent' || filters.dateRange.from || filters.dateRange.to) {
-    summary.push('data')
+    summary.push('date')
   }
   return summary
 })
@@ -294,10 +294,17 @@ const getLanguageFlag = (languageValue: string): string => {
   return '' // For Unknown or other languages - no flag
 }
 
+// Use computed for translations that need to be reactive
+const languageTranslations = computed(() => ({
+  lithuanian: 'LT',
+  english: 'EN', 
+  unknown: 'Unknown'
+}))
+
 const getLanguageDisplay = (languageValue: string): string => {
-  if (languageValue === 'Lietuvių' || languageValue === 'Lithuanian') return 'LT'
-  if (languageValue === 'Anglų' || languageValue === 'English') return 'EN'
-  return 'Nežinoma' // For Unknown or other languages
+  if (languageValue === 'Lietuvių' || languageValue === 'Lithuanian') return languageTranslations.value.lithuanian
+  if (languageValue === 'Anglų' || languageValue === 'English') return languageTranslations.value.english
+  return languageTranslations.value.unknown // For Unknown or other languages
 }
 
 // Initialize from props and load all documents

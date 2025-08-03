@@ -29,11 +29,11 @@
           class="transition-all duration-200 hover:scale-105 focus:scale-105" @click="loadMore">
           <template v-if="isLoadingMore">
             <Loader2 class="w-4 h-4 mr-2 animate-spin" />
-            Kraunama...
+            {{ $t('search.loading_more') }}
           </template>
           <template v-else>
             <ChevronDown class="w-4 h-4 mr-2" />
-            Rodyti daugiau rezultatų
+            {{ $t('search.show_more_results') }}
           </template>
         </Button>
       </div>
@@ -45,15 +45,15 @@
       <div class="max-w-md mx-auto">
         <SearchX class="w-14 h-14 mx-auto text-muted-foreground mb-5" />
         <h3 class="text-lg font-semibold text-foreground mb-3">
-          Dokumentų nerasta
+          {{ $t('search.no_documents_found') }}
         </h3>
         <p class="text-muted-foreground mb-6 leading-relaxed">
-          Pagal jūsų paieškos kriterijus dokumentų nerasta.
+          {{ $t('search.no_results_criteria') }}
         </p>
 
         <Button variant="outline" @click="$emit('clearFilters')">
           <RotateCcw class="w-4 h-4 mr-2" />
-          Išvalyti filtrus
+          {{ $t('search.clear_filters_action') }}
         </Button>
       </div>
     </div>
@@ -63,14 +63,14 @@
       <div class="max-w-md mx-auto">
         <Search class="w-14 h-14 mx-auto text-muted-foreground mb-5" />
         <h3 class="text-lg font-semibold text-foreground mb-3">
-          Reikalingi bent 3 simboliai
+          {{ $t('search.min_chars_required') }}
         </h3>
         <p class="text-muted-foreground mb-6 leading-relaxed">
-          Įveskite bent 3 simbolius, kad galėtumėte ieškoti dokumentų.
+          {{ $t('search.min_chars_description') }}
         </p>
         <p class="text-sm text-muted-foreground">
-          Arba <button class="text-primary hover:underline font-medium" @click="$emit('clearFilters')">
-            naršykite visus dokumentus
+          {{ $t('search.or_browse_all') }} <button class="text-primary hover:underline font-medium" @click="$emit('clearFilters')">
+            {{ $t('search.browse_all_documents') }}
           </button>
         </p>
       </div>
@@ -81,20 +81,20 @@
       <div class="max-w-md mx-auto">
         <AlertTriangle class="w-16 h-16 mx-auto text-destructive mb-6" />
         <h3 class="text-xl font-semibold text-foreground mb-3">
-          Klaida atliekant paiešką
+          {{ $t('search.search_error') }}
         </h3>
         <p class="text-muted-foreground mb-6">
-          Atsiprašome, įvyko techninė klaida. Pabandykite dar kartą.
+          {{ $t('search.technical_error') }}
         </p>
 
         <div class="flex gap-2 justify-center">
           <Button variant="outline" @click="$emit('retry')">
             <RefreshCw class="w-4 h-4 mr-2" />
-            Bandyti dar kartą
+            {{ $t('search.try_again') }}
           </Button>
           <Button variant="ghost" @click="$emit('reportError')">
             <Flag class="w-4 h-4 mr-2" />
-            Pranešti apie klaidą
+            {{ $t('search.report_error') }}
           </Button>
         </div>
       </div>

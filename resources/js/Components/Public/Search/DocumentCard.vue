@@ -100,7 +100,7 @@
         <CollapsibleContent class="pt-2">
           <div class="text-xs text-muted-foreground space-y-1">
             <div v-if="document.effective_date" class="flex items-center gap-2">
-              <span class="font-medium">Įsigalioja:</span>
+              <span class="font-medium">{{ $t('search.effective_date') }}</span>
               <span>{{ formatDate(document.effective_date) }}</span>
             </div>
             <div v-if="document.expiration_date" class="flex items-center gap-2">

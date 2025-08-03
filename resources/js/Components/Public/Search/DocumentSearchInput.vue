@@ -1,6 +1,13 @@
 <template>
   <div class="flex-shrink-0 px-4 lg:px-6 py-4">
-    <!-- Enhanced Search Container -->
+    <!--         <div class="p-2">
+        <div class="flex items-center justify-between px-2 py-1 text-xs font-medium text-muted-foreground border-b border-border/50 mb-2">
+          <span>{{ $t('search.recent_searches') }}</span>
+          <Button variant="ghost" size="sm" class="h-5 px-2 text-xs hover:bg-destructive/10 hover:text-destructive"
+            @click="handleClearAllHistory">
+            {{ $t('search.clear_all_history') }}
+          </Button>
+        </div> Search Container -->
     <div class="relative w-full max-w-3xl mx-auto">
       <!-- Search Container with Enhanced Background -->
       <div
@@ -13,7 +20,7 @@
             </div>
 
             <Input ref="inputRef" role="search" :model-value="query"
-              placeholder="Ieškoti dokumentų pagal pavadinimą..."
+              :placeholder="$t('search.search_documents_placeholder')"
               class="w-full h-11 text-base pl-11 pr-36 rounded-lg border border-primary/20 bg-background/80 backdrop-blur-sm focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-primary/40 transition-all duration-200 placeholder:text-muted-foreground/60"
               @input="handleInput" @keydown.enter="handleEnter" @focus="handleFocus" @blur="handleBlur" />
 
@@ -22,9 +29,9 @@
               <Button type="button" variant="ghost" size="icon"
                 class="h-8 w-8 hover:bg-primary/10 transition-all duration-200 rounded-md"
                 :class="{ 'bg-primary/15 text-primary shadow-sm': props.typeToSearch }"
-                :title="props.typeToSearch ? 'Išjungti automatinę paiešką' : 'Įjungti automatinę paiešką'"
+                :title="props.typeToSearch ? $t('search.disable_auto_search') : $t('search.enable_auto_search')"
                 @click="toggleTypeToSearch">
-                <span class="sr-only">{{ props.typeToSearch ? 'Išjungti automatinę paiešką' : 'Įjungti automatinę paiešką' }}</span>
+                <span class="sr-only">{{ props.typeToSearch ? $t('search.disable_auto_search') : $t('search.enable_auto_search') }}</span>
                 <Zap class="w-3.5 h-3.5 transition-all duration-200"
                   :class="{ 'opacity-50': !props.typeToSearch, 'animate-pulse-zap': props.typeToSearch }" />
               </Button>
@@ -33,7 +40,7 @@
               <Button v-if="query && !isSearching" type="button" variant="ghost" size="icon"
                 class="h-8 w-8 hover:bg-destructive/10 hover:text-destructive transition-all duration-200 rounded-md"
                 @click="handleClear">
-                <span class="sr-only">Išvalyti paiešką</span>
+                <span class="sr-only">{{ $t('search.clear_search_button') }}</span>
                 <X class="w-3.5 h-3.5" />
               </Button>
 
@@ -42,7 +49,7 @@
                 class="h-8 px-3 bg-primary hover:bg-primary/90 text-primary-foreground rounded-md shadow-sm hover:shadow-md transition-all duration-200"
                 :disabled="query.length < 3" @click="handleSearch">
                 <Search class="w-3.5 h-3.5 mr-1.5" />
-                Ieškoti
+                {{ $t('search.search_button') }}
               </Button>
 
               <!-- Loading spinner with transition -->
@@ -55,7 +62,7 @@
           <!-- Only show auto-search status when enabled -->
           <div v-if="props.typeToSearch" class="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
             <Zap class="w-3 h-3 text-primary animate-pulse-zap" />
-            <span>Automatinė paieška įjungta</span>
+            <span>{{ $t('search.auto_search_enabled') }}</span>
           </div>
         </div>
       </div>
@@ -68,10 +75,10 @@
       <!-- Recent Searches -->
       <div class="p-2">
         <div class="flex items-center justify-between px-2 py-1 text-xs font-medium text-muted-foreground border-b border-border/50 mb-2">
-          <span>Pastarieji paieškos žodžiai</span>
+          <span>{{ $t('search.recent_searches') }}</span>
           <Button variant="ghost" size="sm" class="h-5 px-2 text-xs hover:bg-destructive/10 hover:text-destructive"
             @click="handleClearAllHistory">
-            Išvalyti viską
+            {{ $t('search.clear_all_history') }}
           </Button>
         </div>
         <div v-for="search in recentSearches.slice(0, 5)" :key="`recent-${search}`" 
@@ -134,7 +141,7 @@ const props = withDefaults(defineProps<Props>(), {
   query: '',
   isSearching: false,
   recentSearches: () => [],
-  placeholder: 'Ieškoti dokumentų...',
+  placeholder: '',  // Will use translation fallback
   typeToSearch: false
 })
 

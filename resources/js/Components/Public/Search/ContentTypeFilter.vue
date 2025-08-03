@@ -48,7 +48,7 @@
         <!-- Other Documents -->
         <div v-if="otherContentTypes.length > 0" class="space-y-2">
           <h5 class="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-            Kiti
+            {{ $t('search.other_types') }}
           </h5>
           <div class="flex flex-wrap gap-1.5">
             <Badge v-for="contentType in otherContentTypes" :key="contentType.value"
@@ -71,12 +71,12 @@
       <div class="flex gap-1 pt-2 border-t border-border/50">
         <Button variant="ghost" size="sm" class="h-6 px-1.5 text-xs" @click="selectAll">
           <CheckSquare class="w-3 h-3 mr-1" />
-          Visi
+          {{ $t('search.select_all') }}
         </Button>
         <Button variant="ghost" size="sm" class="h-6 px-1.5 text-xs" :disabled="selectedContentTypes.length === 0"
           @click="clearSelection">
           <RotateCcw class="w-3 h-3 mr-1" />
-          Išvalyti
+          {{ $t('search.clear_all') }}
         </Button>
       </div>
     </div>

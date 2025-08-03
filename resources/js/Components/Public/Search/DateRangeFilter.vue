@@ -16,13 +16,13 @@
     <div v-if="dateRange.preset === 'custom'" class="space-y-3 p-3 border rounded-lg bg-muted/20">
       <div class="flex items-center gap-2 text-sm font-medium">
         <CalendarDays class="w-4 h-4" />
-        <span>Pasirinkti datų intervalą</span>
+        <span>{{ $t('search.select_date_range') }}</span>
       </div>
 
       <div class="grid grid-cols-1 gap-3">
         <!-- From Date -->
         <div class="space-y-2">
-          <label class="text-xs font-medium text-muted-foreground">Nuo datos</label>
+          <label class="text-xs font-medium text-muted-foreground">{{ $t('search.date_from') }}</label>
           <Popover v-model:open="fromDateOpen">
             <PopoverTrigger as-child>
               <Button variant="outline" :class="[
@@ -30,7 +30,7 @@
                 !dateRange.from && 'text-muted-foreground'
               ]">
                 <CalendarIcon class="mr-2 h-4 w-4" />
-                {{ dateRange.from ? formatDate(dateRange.from) : 'Pasirinkti datą' }}
+                {{ dateRange.from ? formatDate(dateRange.from) : $t('search.select_date') }}
               </Button>
             </PopoverTrigger>
             <PopoverContent class="w-auto p-0 z-50" align="start">
@@ -42,7 +42,7 @@
 
         <!-- To Date -->
         <div class="space-y-2">
-          <label class="text-xs font-medium text-muted-foreground">Iki datos</label>
+          <label class="text-xs font-medium text-muted-foreground">{{ $t('search.date_to') }}</label>
           <Popover v-model:open="toDateOpen">
             <PopoverTrigger as-child>
               <Button variant="outline" :class="[
@@ -50,7 +50,7 @@
                 !dateRange.to && 'text-muted-foreground'
               ]">
                 <CalendarIcon class="mr-2 h-4 w-4" />
-                {{ dateRange.to ? formatDate(dateRange.to) : 'Pasirinkti datą' }}
+                {{ dateRange.to ? formatDate(dateRange.to) : $t('search.select_date') }}
               </Button>
             </PopoverTrigger>
             <PopoverContent class="w-auto p-0 z-50" align="start">
@@ -64,7 +64,7 @@
         <Button v-if="dateRange.from || dateRange.to" variant="ghost" size="sm" class="w-full h-6 text-xs"
           @click="clearCustomRange">
           <RotateCcw class="w-3 h-3 mr-1" />
-          Išvalyti intervalą
+          {{ $t('search.clear_range') }}
         </Button>
       </div>
     </div>
@@ -73,14 +73,14 @@
     <div v-if="dateRange.preset === 'year-range'" class="space-y-4 p-3 border rounded-lg bg-muted/20">
       <div class="flex items-center gap-2 text-sm font-medium">
         <CalendarDays class="w-4 h-4" />
-        <span>Pasirinkti metų intervalą</span>
+        <span>{{ $t('search.select_year_range') }}</span>
       </div>
 
       <div class="space-y-4">
         <!-- Year Range Display -->
         <div class="flex items-center justify-between text-sm">
-          <span class="text-muted-foreground">Nuo: <strong>{{ yearRangeValues[0] }}</strong></span>
-          <span class="text-muted-foreground">Iki: <strong>{{ yearRangeValues[1] }}</strong></span>
+          <span class="text-muted-foreground">{{ $t('search.from_date') }}: <strong>{{ yearRangeValues[0] }}</strong></span>
+          <span class="text-muted-foreground">{{ $t('search.to_date') }}: <strong>{{ yearRangeValues[1] }}</strong></span>
         </div>
 
         <!-- Slider -->
@@ -102,7 +102,7 @@
       <Button variant="ghost" size="sm" class="h-6 px-1.5 text-xs" :disabled="!hasActiveDateFilter"
         @click="clearDateFilter">
         <RotateCcw class="w-3 h-3 mr-1" />
-        Išvalyti
+        {{ $t('search.clear') }}
       </Button>
     </div>
   </div>
@@ -155,42 +155,42 @@ const emit = defineEmits<Emits>()
 const fromDateOpen = ref(false)
 const toDateOpen = ref(false)
 
-// Date presets configuration
+// Date presets configuration - using hardcoded values but could be translated in template
 const datePresets = [
   {
     key: 'recent',
-    label: 'Pastarieji',
-    description: '3 mėnesiai',
+    label: 'Recent',
+    description: '3 months',
     icon: '🕒'
   },
   {
     key: '3months',
-    label: '3 mėnesiai',
-    description: 'Paskutiniai 90 dienų',
+    label: '3 months',
+    description: 'Last 90 days',
     icon: '📅'
   },
   {
     key: '6months',
-    label: '6 mėnesiai',
-    description: 'Pusmetis atgal',
+    label: '6 months',
+    description: 'Half year ago',
     icon: '📅'
   },
   {
     key: '1year',
-    label: 'Metai',
-    description: 'Paskutiniai 12 mėn.',
+    label: 'Year',
+    description: 'Last 12 months',
     icon: '🗓️'
   },
   {
     key: 'year-range',
-    label: 'Metų intervalas',
-    description: 'Pasirinkti metų intervalą',
+    label: 'Year range',
+    description: 'Select year range',
     icon: '📊'
   },
   {
     key: 'custom',
-    label: 'Pasirinkti',
-    description: 'Konkretus intervalas',
+    label: 'Custom',
+    description: 'Specific range',
     icon: '🎯'
   }
 ]
