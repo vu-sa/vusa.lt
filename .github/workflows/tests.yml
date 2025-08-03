@@ -78,7 +78,21 @@ jobs:
     - name: Install npm dependencies
       run: npm ci
     
+    - name: Get Playwright version
+      id: playwright-version
+      run: echo "version=$(npm list playwright --depth=0 --json | jq -r '.dependencies.playwright.version // "latest"')" >> $GITHUB_OUTPUT
+    
+    - name: Cache Playwright browsers
+      id: cache-playwright
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/ms-playwright
+        key: ${{ runner.os }}-playwright-${{ steps.playwright-version.outputs.version }}
+        restore-keys: |
+          ${{ runner.os }}-playwright-
+    
     - name: Install Playwright Browsers
+      if: steps.cache-playwright.outputs.cache-hit != 'true'
       run: npx playwright install chromium --with-deps
     
     - name: Set up environment
@@ -86,9 +100,9 @@ jobs:
         cp .env.example .env
         php artisan key:generate --force
     
-    - name: Execute tests via npm script
+    - name: Execute tests with coverage (unit + component tests)
       run: |
-        LARAVEL_BYPASS_ENV_CHECK=1 npm run coverage
+        LARAVEL_BYPASS_ENV_CHECK=1 npm run coverage:ci
     
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v5

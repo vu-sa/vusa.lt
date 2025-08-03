@@ -15,9 +15,8 @@ import { computed, onMounted } from 'vue';
 import { usePage, Head } from '@inertiajs/vue3';
 import DocumentSearchInterface from '@/Components/Public/Search/DocumentSearchInterface.vue';
 
-// Props (keeping for backward compatibility but we'll extract what we need)
+// Props - now only used for static metadata
 const props = defineProps<{
-  documents?: PaginatedModels<App.Entities.Document>;
   allContentTypes?: App.Entities.Document['content_type'][];
 }>();
 

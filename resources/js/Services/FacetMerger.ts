@@ -1,4 +1,4 @@
-import type { DocumentFacet, DocumentSearchFilters } from '@/Composables/useDocumentSearch'
+import type { DocumentFacet, DocumentSearchFilters } from '@/Types/DocumentSearchTypes'
 
 export class FacetMerger {
   /**

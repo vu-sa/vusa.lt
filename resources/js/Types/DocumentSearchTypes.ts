@@ -56,6 +56,13 @@ export interface DocumentSearchPreferences {
   recentSearches: string[]
 }
 
+// Language utilities
+export interface LanguageInfo {
+  code: string
+  display: string
+  flag: string
+}
+
 // Typesense client interfaces
 export interface TypesenseNode {
   protocol: string
@@ -116,7 +123,7 @@ export interface FacetStats {
 export interface LanguageInfo {
   code: string
   display: string
-  flag?: string
+  flag: string
 }
 
 // Search result processing

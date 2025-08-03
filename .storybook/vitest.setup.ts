@@ -1,42 +1,47 @@
-import { beforeAll, vi } from 'vitest';
-import { setProjectAnnotations } from '@storybook/vue3-vite';
-import * as a11yAddonAnnotations from "@storybook/addon-a11y/preview";
-import * as projectAnnotations from './preview';
+import { beforeAll, beforeEach, afterEach } from 'vitest'
+import { setProjectAnnotations } from '@storybook/vue3-vite'
+import * as projectAnnotations from './preview'
 
-// Mock the fn() function that might be used in story files
-vi.stubGlobal('fn', vi.fn);
+// Apply Storybook's project annotations to Vitest tests
+const project = setProjectAnnotations([projectAnnotations])
 
-// Create a global route mock and make it available to all tests
-const routeMock = vi.fn((name, params) => `/mocked-route/${name}`);
-vi.stubGlobal('route', routeMock);
+// Apply project-level setup
+beforeAll(project.beforeAll)
 
-// For browser environment (Storybook running in browser)
-if (typeof window !== 'undefined') {
-  window.route = routeMock;
-}
+// Apply per-test setup and cleanup
+beforeEach(() => {
+  if (typeof project.beforeEach === 'function') {
+    return project.beforeEach()
+  }
+})
 
-// Add global mock for stories
-vi.mock('storybook/test', async () => {
-  const actual = await vi.importActual('storybook/test');
-  return {
-    ...actual,
-    userEvent: {
-      click: vi.fn(),
-      type: vi.fn(),
-      keyboard: vi.fn(),
-      tab: vi.fn(),
-    },
-    within: vi.fn(() => ({
-      getByRole: vi.fn().mockReturnValue({}),
-      getByText: vi.fn().mockReturnValue({}),
-      findByText: vi.fn().mockResolvedValue({}),
-      findByRole: vi.fn().mockResolvedValue({}),
-      getAllByRole: vi.fn().mockReturnValue([{}]),
-    })),
-  };
-});
+afterEach(() => {
+  if (typeof project.afterEach === 'function') {
+    return project.afterEach()
+  }
+})
 
-// This is an important step to apply the right configuration when testing your stories.
-const project = setProjectAnnotations([a11yAddonAnnotations, projectAnnotations]);
+// Essential browser API mocks for testing environment
+beforeAll(() => {
+  // Mock matchMedia for responsive components
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: (query: string) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: () => {},
+      removeListener: () => {},
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      dispatchEvent: () => {},
+    }),
+  })
 
-beforeAll(project.beforeAll);
+  // Mock ResizeObserver
+  globalThis.ResizeObserver = class ResizeObserver {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  }
+})

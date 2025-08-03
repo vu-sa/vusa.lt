@@ -17,49 +17,9 @@ import ziggy from 'vite-plugin-ziggy';
 // import { loadEnv } from "vite";
 // const token = loadEnv('production', './', 'CODECOV').CODECOV_TOKEN;
 
-// This makes so that the <docs> block in Vue SFCs is removed
-const vueDocsPlugin = {
-  name: 'vue-docs',
-  transform(code: string, id: string) {
-    if (!/vue&type=docs/.test(id)) return
-    return `export default ''`
-  }
-}
-
-export default defineConfig({
-  plugins: [
-    vueDevTools({
-      appendTo: 'resources/js/app.ts',
-    }),
-    vueDocsPlugin,
-    laravel([
-      "resources/js/app.ts",
-      // Compiles the same way as app.ts
-      //"resources/js/admin.ts",
-      //"resources/js/public.ts",
-
-      // Also build .css, because it is used in minimal.blade.php
-      "resources/css/app.css"
-    ]),
-    tailwindcss(),
-    ziggy(),
-    Markdown({
-      markdownItOptions: {
-        html: true,
-        linkify: true,
-        typographer: true,
-      },
-      wrapperClasses: undefined
-    }),
-    Components({
-      resolvers: [
-        IconsResolver(),
-        NaiveUiResolver(),
-        VueUseComponentsResolver()
-      ],
-      dts: 'resources/js/Types/components.d.ts',
-    }),
-    Icons(),
+export default defineConfig(({ command }) => {
+  // Define common plugins that will be used in both build and test
+  const commonPlugins = [
     vue({
       include: [/\.vue$/, /\.md$/],
       template: {
@@ -75,42 +35,53 @@ export default defineConfig({
         propsDestructure: true,
       },
     }),
-    i18n(),
     vueJsx({
       // options are passed on to @vue/babel-plugin-jsx
     }),
-    // codecovVitePlugin({
-    //   enableBundleAnalysis: token !== undefined,
-    //   bundleName: "Application",
-    //   uploadToken: token,
-    // }),
-  ],
-  test: {
-    globals: true,
-    coverage: {
-      provider: 'istanbul',
-      reporter: ['text', 'json', 'html', 'lcov'],
-      include: [
-        "resources/js/**/*.ts",
-        "resources/js/**/*.vue",
+    Components({
+      resolvers: [
+        IconsResolver(),
+        NaiveUiResolver(),
+        VueUseComponentsResolver()
       ],
-      exclude: [
-        "**/*.d.ts",
-        "**/node_modules/**",
-        "resources/js/Types/**",
-      ]
-    },
-    setupFiles: [
-      'tests/setup.ts'
+      dts: 'resources/js/Types/components.d.ts',
+    }),
+    Icons(),
+    i18n(),
+  ]
+
+  // Core plugins needed for both dev and build
+  const corePlugins = [
+    laravel([
+      "resources/js/app.ts",
+      "resources/css/app.css"
+    ]),
+    tailwindcss(),
+    ziggy(),
+    Markdown({
+      markdownItOptions: {
+        html: true,
+        linkify: true,
+        typographer: true,
+      },
+      wrapperClasses: undefined
+    }),
+  ]
+
+  // Dev-only plugins - disabled for Storybook
+  const devPlugins = command !== 'test' && !process.env.STORYBOOK ? [
+    vueDevTools({
+      appendTo: 'resources/js/app.ts',
+    }),
+  ] : []
+
+  return {
+    plugins: [
+      vueDocsPlugin,
+      ...commonPlugins,
+      ...corePlugins,
+      ...devPlugins,
     ],
-    deps: {
-      optimizer: {
-        web: {
-          include: ['vue', '@inertiajs/vue3']
-        },
-      }
-    },
-  },
   resolve: {
     alias: {
       "@": "/resources/js",
@@ -129,7 +100,8 @@ export default defineConfig({
       'vue'
     ]
   },
-  css: {
-    transformer: 'lightningcss',
+    css: {
+      transformer: 'lightningcss',
+    }
   }
-});
+})

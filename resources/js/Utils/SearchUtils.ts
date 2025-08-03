@@ -1,4 +1,4 @@
-import type { DocumentSearchFilters, LanguageInfo, SearchError } from '@/types/DocumentSearchTypes'
+import type { DocumentSearchFilters, LanguageInfo, SearchError } from '@/Types/DocumentSearchTypes'
 
 /**
  * Language display utilities
@@ -85,7 +85,8 @@ export class FilterUtils {
     if (filters.tenants.length > 0) summary.push(`${filters.tenants.length} org.`)
     if (filters.contentTypes.length > 0) summary.push(`${filters.contentTypes.length} tipas`)
     if (filters.languages.length > 0) summary.push(`${filters.languages.length} kalba`)
-    if (filters.dateRange.preset !== 'recent' || filters.dateRange.from || filters.dateRange.to) {
+    if ((filters.dateRange.preset && filters.dateRange.preset !== 'recent') || 
+        filters.dateRange.from || filters.dateRange.to) {
       summary.push('data')
     }
     return summary
@@ -193,7 +194,6 @@ export class DateUtils {
     }
     
     if (isNaN(dateObj.getTime())) {
-      console.warn('Invalid date provided:', date)
       return 0
     }
     

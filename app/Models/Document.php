@@ -86,16 +86,18 @@ class Document extends Model
      */
     protected function getContentTypeCategory(): string
     {
-        if (!$this->content_type) return 'Kita';
-        
+        if (! $this->content_type) {
+            return 'Kita';
+        }
+
         if (str_starts_with($this->content_type, 'VU SA P ')) {
             return 'VU SA P';
         }
-        
+
         if (str_starts_with($this->content_type, 'VU SA ')) {
             return 'VU SA';
         }
-        
+
         return 'Kita';
     }
 
@@ -104,7 +106,7 @@ class Document extends Model
      */
     protected function getLanguageCode(): string
     {
-        return match($this->language) {
+        return match ($this->language) {
             'Lietuvių', 'Lithuanian' => 'lt',
             'Anglų', 'English' => 'en',
             default => 'unknown'
@@ -116,7 +118,7 @@ class Document extends Model
      */
     protected function getTenantHierarchy(): array
     {
-        if (!$this->institution || !$this->institution->tenant) {
+        if (! $this->institution || ! $this->institution->tenant) {
             return [];
         }
 
@@ -139,19 +141,31 @@ class Document extends Model
      */
     protected function getDateRangeBucket(): string
     {
-        if (!$this->document_date) return 'unknown';
-        
+        if (! $this->document_date) {
+            return 'unknown';
+        }
+
         $now = now();
         $docDate = $this->document_date;
-        
+
         $monthsAgo = $now->diffInMonths($docDate);
-        
-        if ($monthsAgo <= 1) return 'recent_1month';
-        if ($monthsAgo <= 3) return 'recent_3months';
-        if ($monthsAgo <= 6) return 'recent_6months';
-        if ($monthsAgo <= 12) return 'recent_1year';
-        if ($monthsAgo <= 24) return 'recent_2years';
-        
+
+        if ($monthsAgo <= 1) {
+            return 'recent_1month';
+        }
+        if ($monthsAgo <= 3) {
+            return 'recent_3months';
+        }
+        if ($monthsAgo <= 6) {
+            return 'recent_6months';
+        }
+        if ($monthsAgo <= 12) {
+            return 'recent_1year';
+        }
+        if ($monthsAgo <= 24) {
+            return 'recent_2years';
+        }
+
         return 'older';
     }
 
@@ -160,11 +174,13 @@ class Document extends Model
      */
     protected function getFileExtension(): string
     {
-        if (!$this->name) return 'unknown';
-        
+        if (! $this->name) {
+            return 'unknown';
+        }
+
         $extension = strtolower(pathinfo($this->name, PATHINFO_EXTENSION));
-        
-        return match($extension) {
+
+        return match ($extension) {
             'pdf' => 'pdf',
             'doc', 'docx' => 'word',
             'xls', 'xlsx' => 'excel',

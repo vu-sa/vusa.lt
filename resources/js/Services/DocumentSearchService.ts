@@ -1,4 +1,4 @@
-import type { DocumentSearchFilters, DocumentFacet, SearchError } from '@/Composables/useDocumentSearch'
+import type { DocumentSearchFilters, DocumentFacet, SearchError } from '@/Types/DocumentSearchTypes'
 
 interface SearchParams {
   q: string

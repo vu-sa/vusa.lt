@@ -216,7 +216,9 @@ const handleClearAllHistory = () => {
 
 const focusInput = async () => {
   await nextTick()
-  inputRef.value?.focus()
+  if (inputRef.value && typeof inputRef.value.focus === 'function') {
+    inputRef.value.focus()
+  }
 }
 
 // Handle focus and blur events

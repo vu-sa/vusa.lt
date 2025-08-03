@@ -1,8 +1,5 @@
-<docs>
-Implemented in FormForm.vue
-</docs>
-
 <template>
+  <!-- Implemented in FormForm.vue -->
   <TransitionGroup ref="el" tag="div">
     <div v-for="model in contents" :key="model?.id || model?.name"
       class="relative grid w-full grid-cols-[24px__1fr] gap-4 border border-b-0 border-zinc-300 p-1 first:rounded-t-lg last:rounded-b-lg last:border-b dark:border-zinc-700/40 dark:bg-zinc-800/5">

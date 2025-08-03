@@ -532,7 +532,6 @@ onMounted(() => {
   }
 
   if (!localStorage.getItem('search-shortcut-seen')) {
-    console.log('Use Cmd+K (Mac) or Ctrl+K (Windows/Linux) to quickly open search')
     localStorage.setItem('search-shortcut-seen', 'true')
   }
 })

@@ -196,7 +196,7 @@ describe('auth: document manager', function () {
     });
 });
 
-describe('document filtering and search', function () {
+describe('document admin table functionality', function () {
     test('can filter documents by institution', function () {
         $anotherInstitution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
 
@@ -210,7 +210,7 @@ describe('document filtering and search', function () {
         ]))->assertStatus(200);
     });
 
-    test('can search documents by name', function () {
+    test('admin table search works for document management', function () {
         Document::factory()->create([
             'institution_id' => $this->institution->id,
             'name' => 'Special Report.pdf',
@@ -220,6 +220,7 @@ describe('document filtering and search', function () {
             'name' => 'Regular Document.pdf',
         ]);
 
+        // Admin table uses backend search (different from public frontend search)
         asUser($this->documentManager)->get(route('documents.index', [
             'search' => 'Special',
         ]))->assertStatus(200);

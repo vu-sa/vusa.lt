@@ -302,21 +302,14 @@ const getLanguageDisplay = (languageValue: string): string => {
 
 // Initialize from props and load all documents
 onMounted(async () => {
-  console.log('=== DocumentSearchInterface onMounted ===')
-
   // Initialize search client first
-  console.log('Initializing search client...')
   await searchController.initializeSearchClient()
-  console.log('Search client initialized')
 
   // Load initial facets for the merged facet system
-  console.log('Loading initial facets...')
   await searchController.loadInitialFacets()
-  console.log('Initial facets loaded')
 
   // Apply initial filters if provided
   if (Object.keys(props.initialFilters).length > 0) {
-    console.log('Applying initial filters:', props.initialFilters)
     if (props.initialFilters.tenants) {
       (props.initialFilters.tenants as string[]).forEach((tenant: string) => searchController.toggleTenant(tenant))
     }
@@ -333,15 +326,11 @@ onMounted(async () => {
 
   // Set initial query if provided, otherwise search all documents
   if (props.initialQuery) {
-    console.log('Searching with initial query:', props.initialQuery)
     searchController.search(props.initialQuery)
   } else {
     // Trigger initial "show all documents" search with newest first sorting  
     // Use wildcard search to show all documents on page load
-    console.log('Triggering initial wildcard search for all documents')
     searchController.search('*', true) // immediate = true for initial load
   }
-
-  console.log('=== DocumentSearchInterface initialization complete ===')
 })
 </script>

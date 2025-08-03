@@ -42,9 +42,9 @@
             {{ $tChoice("forms.fields.type", 0) }}
           </FormLabel>
           <FormControl>
-            <Select v-bind="componentField">
+            <Select v-bind="componentField" :disabled="isLoadingTypes">
               <SelectTrigger>
-                <SelectValue :placeholder="$t('Koks posėdžio tipas?')" />
+                <SelectValue :placeholder="isLoadingTypes ? $t('Loading...') : $t('Koks posėdžio tipas?')" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem v-for="type in meetingTypes" :key="type.id" :value="type.id">
@@ -66,7 +66,7 @@
 
 <script setup lang="ts">
 import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
-import { ref, computed, inject } from "vue";
+import { ref, computed, inject, onMounted } from "vue";
 import { Form } from "vee-validate";
 import { toTypedSchema } from '@vee-validate/zod';
 import * as z from 'zod';
@@ -103,6 +103,7 @@ const emit = defineEmits<{
 const props = defineProps<{
   loading?: boolean;
   meeting: App.Entities.Meeting;
+  meetingTypes?: Array<{id: number, title: string, model_type: string}>;
 }>();
 
 // Access shared form state from parent component
@@ -174,12 +175,27 @@ const onSubmit = (values) => {
   emit("submit", formData);
 };
 
-const fetchMeetingTypes = async () => {
-  const response = await fetch(route("api.types.index"));
-  const data = await response.json();
+// State for managing meeting types
+const meetingTypes = ref(props.meetingTypes || []);
+const isLoadingTypes = ref(!props.meetingTypes);
 
-  return data.filter((type) => type.model_type === "App\\Models\\Meeting");
+const fetchMeetingTypes = async () => {
+  try {
+    const response = await fetch(route("api.types.index"));
+    const data = await response.json();
+    meetingTypes.value = data.filter((type) => type.model_type === "App\\Models\\Meeting");
+  } catch (error) {
+    console.error('Failed to fetch meeting types:', error);
+    meetingTypes.value = [];
+  } finally {
+    isLoadingTypes.value = false;
+  }
 };
 
-const meetingTypes = await fetchMeetingTypes();
+// Only fetch if types weren't provided via props
+onMounted(() => {
+  if (!props.meetingTypes) {
+    fetchMeetingTypes();
+  }
+});
 </script>

@@ -1,7 +1,3 @@
-<docs>
-This layout also handles form errors. If there are any errors, it will display them in an alert.
-</docs>
-
 <template>
   <NDialogProvider>
     <Alert v-if="$page.props.errors && Object.keys($page.props.errors).length > 0 && open" variant="destructive"

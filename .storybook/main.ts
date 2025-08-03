@@ -1,37 +1,42 @@
 import type { StorybookConfig } from '@storybook/vue3-vite';
-// import { fileURLToPath } from 'node:url';
-// import { dirname } from 'node:path';
 
-// Get the directory name using ESM compatible approach
-// const __filename = fileURLToPath(import.meta.url);
-// const __dirname = dirname(__filename);
-
+/**
+ * Minimal Storybook Configuration
+ * Following official Vue3 + Vite setup guidelines
+ */
 const config: StorybookConfig = {
-  "stories": [
-    "../stories/**/*.mdx",
+  stories: [
     "../resources/js/**/*.stories.@(js|jsx|mjs|ts|tsx)"
   ],
-  "addons": [
-    "@chromatic-com/storybook",
+  addons: [
+    "@storybook/addon-docs",
     "@storybook/addon-vitest",
-    "@storybook/addon-coverage",
-    "@storybook/addon-a11y",
-    "@storybook/addon-docs"
+    "@storybook/addon-a11y"
   ],
-  "framework": {
-    "name": "@storybook/vue3-vite",
-    "options": {}
+  framework: {
+    name: "@storybook/vue3-vite",
+    options: {}
   },
-  // Add Vite configuration for mocking modules, mostly for preview.ts
+  core: {
+    disableTelemetry: true
+  },
+  typescript: {
+    check: false
+  },
+  
+  // Minimal Vite configuration for path aliases only
   async viteFinal(config) {
-    if (config.resolve) {
-      config.resolve.alias = {
-        ...config.resolve.alias,
-        '@': '/resources/js',
-        '#mocks': '/.storybook/mocks'
-      };
-    }
-    return config;
+    const { mergeConfig } = await import('vite');
+    const path = await import('path');
+    
+    return mergeConfig(config, {
+      resolve: {
+        alias: {
+          "@": "/resources/js",
+          "ziggy-js": "/vendor/tightenco/ziggy/dist",
+        }
+      }
+    });
   }
 };
 

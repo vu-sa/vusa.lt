@@ -13,16 +13,16 @@ import type {
   SearchState, 
   DocumentSearchPreferences,
   DocumentSearchController
-} from '@/Types/DocumentSearchTypes'
-import { DocumentSearchService } from '@/Services/DocumentSearchService'
-import { FacetMerger } from '@/Services/FacetMerger'
+} from '../Types/DocumentSearchTypes'
+import { DocumentSearchService } from '../Services/DocumentSearchService'
+import { FacetMerger } from '../Services/FacetMerger'
 import { 
   LanguageUtils, 
   RecentSearchManager, 
   FilterUtils, 
   ErrorUtils, 
   QueryUtils 
-} from '@/Utils/SearchUtils'
+} from '../Utils/SearchUtils'
 
 // Re-export types for backward compatibility
 export type { 
@@ -187,7 +187,7 @@ export const useDocumentSearch = (): DocumentSearchController => {
       typesenseClient.value = {
         apiKey: typesenseConfig.apiKey,
         nodes: typesenseConfig.nodes,
-        search: async (collection: string, searchParams: any) => {
+        search: async (collection: string, searchParams: any, abortSignal?: AbortSignal) => {
           const node = typesenseConfig.nodes[0]
           const baseUrl = `${node.protocol}://${node.host}:${node.port}`
           const url = new URL(`${baseUrl}/collections/${collection}/documents/search`)
@@ -203,7 +203,8 @@ export const useDocumentSearch = (): DocumentSearchController => {
             headers: {
               'X-TYPESENSE-API-KEY': typesenseConfig.apiKey,
               'Content-Type': 'application/json',
-            }
+            },
+            signal: abortSignal
           })
           
           if (!response.ok) {

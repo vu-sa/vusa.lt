@@ -1,41 +1,38 @@
-import { fn } from 'storybook/test';
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import { fn } from 'storybook/test';
+import Button from './Button.vue';
 
-import { Button } from "./";
-
-// More on how to set up stories at: https://storybook.js.org/docs/writing-stories
 const meta: Meta<typeof Button> = {
-  title: 'Shadcn/Button',
+  title: 'UI/Button',
   component: Button,
-  // This component will have an automatically generated docsPage entry: https://storybook.js.org/docs/writing-docs/autodocs
   tags: ['autodocs'],
   argTypes: {
-    variant: { control: 'select', options: ['default', 'destructive', 'outline', 'secondary', 'ghost', 'link'] },
-    size: { control: 'select', options: ['default', 'xs', 'sm', 'lg', 'xl', '2xl', 'icon'] },
+    variant: { 
+      control: 'select', 
+      options: ['default', 'destructive', 'outline', 'secondary', 'ghost', 'link'] 
+    },
+    size: { 
+      control: 'select', 
+      options: ['default', 'sm', 'lg', 'icon'] 
+    },
   },
   args: {
     variant: 'default',
     size: 'default',
-    // Use `fn` to spy on the onClick arg, which will appear in the actions panel once invoked: https://storybook.js.org/docs/essentials/actions#action-args
     onClick: fn(),
   },
 };
 
 export default meta;
-
 type Story = StoryObj<typeof meta>;
-/*
- *👇 Render functions are a framework specific feature to allow you control on how the component renders.
- * See https://storybook.js.org/docs/api/csf
- * to learn how to use render functions.
- */
-export const Primary: Story = {
+
+export const Default: Story = {
   render: (args) => ({
     components: { Button },
     setup() {
       return { args };
     },
-    template: '<Button v-bind="args">Button</Button>',
+    template: '<Button v-bind="args">Click me</Button>',
   }),
 };
 
@@ -48,33 +45,7 @@ export const Secondary: Story = {
     setup() {
       return { args };
     },
-    template: '<Button v-bind="args">Button</Button>',
-  }),
-};
-
-export const Small: Story = {
-  args: {
-    size: 'sm',
-  },
-  render: (args) => ({
-    components: { Button },
-    setup() {
-      return { args };
-    },
-    template: '<Button v-bind="args">Button</Button>',
-  }),
-};
-
-export const Large: Story = {
-  args: {
-    size: 'lg',
-  },
-  render: (args) => ({
-    components: { Button },
-    setup() {
-      return { args };
-    },
-    template: '<Button v-bind="args">Button</Button>',
+    template: '<Button v-bind="args">Secondary</Button>',
   }),
 };
 
@@ -87,19 +58,6 @@ export const Destructive: Story = {
     setup() {
       return { args };
     },
-    template: '<Button v-bind="args">Button</Button>',
-  }),
-};
-
-export const VeryLarge: Story = {
-  args: {
-    size: '2xl',
-  },
-  render: (args) => ({
-    components: { Button },
-    setup() {
-      return { args };
-    },
-    template: '<Button v-bind="args">Button</Button>',
+    template: '<Button v-bind="args">Delete</Button>',
   }),
 };

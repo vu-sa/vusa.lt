@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/vue3-vite";
 import { userEvent, within, fn } from "storybook/test";
 import NewMeetingModal from "./NewMeetingModal.vue";
-import { usePage, router } from "#mocks/inertia.mock";
+import { usePage, router } from "@/mocks/inertia.mock";
 
 // Mock institution data
 const mockInstitution = { id: 'inst1', name: 'Faculty of Science' };

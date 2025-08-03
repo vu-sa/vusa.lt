@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import SuggestionAlert from './SuggestionAlert.vue';
 
 // Import the mock for laravel-vue-i18n
-import { trans } from '../../../../.storybook/mocks/laravel-vue-i18n.mock';
+import { trans } from '@/mocks/i18n.mock';
 
 const meta: Meta<typeof SuggestionAlert> = {
   title: 'Alerts/SuggestionAlert',
