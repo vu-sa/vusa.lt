@@ -192,7 +192,7 @@ return [
     'years' => 'Years',
     'document_type_description' => 'Protocols, regulations, other',
     'language_description' => 'Lithuanian, English',
-    
+
     // Date range presets
     'date_recent' => 'Recent',
     'date_3_months' => '3 months',

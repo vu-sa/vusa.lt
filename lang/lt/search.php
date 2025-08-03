@@ -196,7 +196,7 @@ return [
     'years' => 'Metai',
     'document_type_description' => 'Protokolai, nuostatai, kiti',
     'language_description' => 'Lietuvių, anglų kalba',
-    
+
     // Date range presets
     'date_recent' => 'Pastarieji',
     'date_3_months' => '3 mėnesiai',
