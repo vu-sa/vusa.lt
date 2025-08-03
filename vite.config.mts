@@ -77,7 +77,6 @@ export default defineConfig(({ command }) => {
 
   return {
     plugins: [
-      vueDocsPlugin,
       ...commonPlugins,
       ...corePlugins,
       ...devPlugins,
