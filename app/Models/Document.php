@@ -168,28 +168,6 @@ class Document extends Model
     }
 
     /**
-     * Get file extension from document name
-     */
-    protected function getFileExtension(): string
-    {
-        if (! $this->name) {
-            return 'unknown';
-        }
-
-        $extension = strtolower(pathinfo($this->name, PATHINFO_EXTENSION));
-
-        return match ($extension) {
-            'pdf' => 'pdf',
-            'doc', 'docx' => 'word',
-            'xls', 'xlsx' => 'excel',
-            'ppt', 'pptx' => 'powerpoint',
-            'txt' => 'text',
-            'url' => 'link',
-            default => 'other'
-        };
-    }
-
-    /**
      * Determine if the model should be searchable.
      */
     public function shouldBeSearchable()

@@ -85,26 +85,6 @@ test('document language code is standardized', function () {
     expect($document->toSearchableArray()['language_code'])->toBe('unknown');
 });
 
-test('document file extension is categorized correctly', function () {
-    $document = Document::factory()->create(['name' => 'document.pdf']);
-    expect($document->toSearchableArray()['file_extension'])->toBe('pdf');
-
-    $document = Document::factory()->create(['name' => 'document.docx']);
-    expect($document->toSearchableArray()['file_extension'])->toBe('word');
-
-    $document = Document::factory()->create(['name' => 'spreadsheet.xlsx']);
-    expect($document->toSearchableArray()['file_extension'])->toBe('excel');
-
-    $document = Document::factory()->create(['name' => 'presentation.pptx']);
-    expect($document->toSearchableArray()['file_extension'])->toBe('powerpoint');
-
-    $document = Document::factory()->create(['name' => 'link.url']);
-    expect($document->toSearchableArray()['file_extension'])->toBe('link');
-
-    $document = Document::factory()->create(['name' => 'unknown.xyz']);
-    expect($document->toSearchableArray()['file_extension'])->toBe('other');
-});
-
 test('document date range bucket is calculated correctly', function () {
     // Test the most important cases: null handling and that it returns valid strings
 
