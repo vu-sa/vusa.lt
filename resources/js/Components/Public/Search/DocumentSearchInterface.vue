@@ -183,6 +183,7 @@
 <script setup lang="ts">
 import { computed, onMounted, watch, ref } from 'vue'
 import { usePage } from '@inertiajs/vue3'
+import { trans as $t } from 'laravel-vue-i18n'
 
 // ShadcnVue components
 import { Button } from '@/Components/ui/button'
@@ -298,7 +299,7 @@ const getLanguageFlag = (languageValue: string): string => {
 const languageTranslations = computed(() => ({
   lithuanian: 'LT',
   english: 'EN', 
-  unknown: 'Unknown'
+  unknown: $t('search.language_unknown')
 }))
 
 const getLanguageDisplay = (languageValue: string): string => {

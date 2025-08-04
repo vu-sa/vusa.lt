@@ -3,12 +3,21 @@ import type { DocumentSearchFilters, DocumentFacet, SearchError } from '@/Types/
 interface SearchParams {
   q: string
   query_by: string
+  query_by_weights?: string
   facet_by: string
   max_facet_values: number
   per_page: number
   page: number
   sort_by: string
   filter_by?: string
+  prefix?: boolean
+  infix?: string
+  prioritize_exact_match?: boolean
+  prioritize_token_position?: boolean
+  typo_tokens_threshold?: number
+  min_len_1typo?: number
+  min_len_2typo?: number
+  drop_tokens_threshold?: number
 }
 
 interface SearchResponse {
@@ -111,19 +120,33 @@ export class DocumentSearchService {
     isLoadMore: boolean,
     currentPage: number
   ): SearchParams {
+    const query = filters.query.trim()
     const searchParams: SearchParams = {
-      q: filters.query.trim(),
-      query_by: 'title,summary',
+      q: query,
+      query_by: 'title,name,summary,content_type,document_year,document_date_formatted',
+      query_by_weights: '10,8,3,2,6,4',
       facet_by: [
         'content_type',
         'tenant_shortname',
         'language',
-        'document_date'
+        'document_date',
+        'is_in_effect'
       ].join(','),
       max_facet_values: 50,
       per_page: perPage,
       page: isLoadMore ? currentPage + 1 : 1,
-      sort_by: 'document_date:desc,created_at:desc'
+      // Smart sorting: relevance for searches, chronological for browsing
+      // _text_match:desc = most relevant results first
+      // document_date:desc = newer documents first (as tiebreaker or for browsing)
+      sort_by: (query && query !== '*') ? '_text_match:desc,document_date:desc' : 'document_date:desc,created_at:desc',
+      prefix: false,
+      infix: 'fallback',
+      prioritize_exact_match: true,
+      prioritize_token_position: true,
+      typo_tokens_threshold: 2,
+      min_len_1typo: 4,
+      min_len_2typo: 7,
+      drop_tokens_threshold: 10
     }
 
     // Build filter conditions
@@ -248,7 +271,8 @@ export class DocumentSearchService {
       'content_type': 'Document Type',
       'tenant_shortname': 'Organization',
       'language': 'Language',
-      'document_date': 'Date'
+      'document_date': 'Date',
+      'is_in_effect': 'Status'
     }
     return labels[field] || field
   }
@@ -261,12 +285,14 @@ export class DocumentSearchService {
     try {
       const searchRequest: SearchParams = {
         q: '*',
-        query_by: 'title,summary',
+        query_by: 'title,name,summary,content_type,document_year,document_date_formatted',
+        query_by_weights: '10,8,3,2,6,4',
         facet_by: [
           'content_type',
           'tenant_shortname',
           'language',
-          'document_date'
+          'document_date',
+          'is_in_effect'
         ].join(','),
         max_facet_values: 50,
         per_page: 1,

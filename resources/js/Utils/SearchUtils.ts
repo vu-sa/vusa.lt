@@ -1,4 +1,5 @@
 import type { DocumentSearchFilters, LanguageInfo, SearchError } from '@/Types/DocumentSearchTypes'
+import { trans as $t } from 'laravel-vue-i18n'
 
 /**
  * Language display utilities
@@ -16,7 +17,7 @@ export class LanguageUtils {
   }
 
   static getLanguageDisplay(languageValue: string): string {
-    return this.LANGUAGE_MAP[languageValue]?.display || 'Nežinoma'
+    return this.LANGUAGE_MAP[languageValue]?.display || $t('search.language_unknown')
   }
 
   static getLanguageCode(languageValue: string): string {

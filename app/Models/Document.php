@@ -55,9 +55,7 @@ class Document extends Model
             'tenant_shortname' => $this->institution && $this->institution->tenant ? $this->institution->tenant->shortname : null,
             'tenant_name' => $this->institution && $this->institution->tenant ? $this->institution->tenant->name : null,
             'tenant_type' => $this->institution && $this->institution->tenant ? $this->institution->tenant->type : null,
-            'effective_date' => $this->effective_date ? strtotime($this->effective_date) : null,
-            'expiration_date' => $this->expiration_date ? strtotime($this->expiration_date) : null,
-            'is_in_effect' => $this->is_in_effect,
+            'is_in_effect' => $this->calculateIsInEffect(),
             'anonymous_url' => $this->anonymous_url,
             'is_active' => $this->is_active,
             'created_at' => $this->created_at->timestamp,
@@ -70,12 +68,12 @@ class Document extends Model
             'file_extension' => $this->getFileExtension(),
         ];
 
-        // Only include document_date related fields if document_date exists
+        // Only include document_date if it exists (used for sorting and faceting)
         if ($this->document_date) {
             $searchableArray['document_date'] = strtotime($this->document_date);
+            // Add searchable date fields for year-based queries (e.g., "2015", "2024")
+            $searchableArray['document_year'] = (string) $this->document_date->year;
             $searchableArray['document_date_formatted'] = $this->document_date->format('Y-m-d');
-            $searchableArray['document_year'] = $this->document_date->year;
-            $searchableArray['document_month'] = $this->document_date->format('Y-m');
         }
 
         return $searchableArray;
@@ -219,22 +217,32 @@ class Document extends Model
         return $this->hasManyDeepFromRelations($this->institution(), (new Institution)->tenant());
     }
 
-    // Check if after effective date or before expiration date. If one is missing, it is ignored.
-    protected function getIsInEffectAttribute()
+    /**
+     * Calculate if document is currently in effect based on effective and expiration dates
+     */
+    public function calculateIsInEffect(): ?bool
     {
+        $now = Carbon::now();
+
+        // If both dates are null, document has no defined validity period
         if ($this->effective_date === null && $this->expiration_date === null) {
-            return null;
+            return null; // UI will not show Galioja/Negalioja for these
         }
 
-        if ($this->effective_date !== null && $this->expiration_date === null) {
-            return Carbon::now()->isAfter($this->effective_date);
-        }
+        // Check effective date constraint (if exists)
+        $effectiveCheck = $this->effective_date === null || $now->greaterThanOrEqualTo($this->effective_date);
+        
+        // Check expiration date constraint (if exists)  
+        $expirationCheck = $this->expiration_date === null || $now->lessThanOrEqualTo($this->expiration_date);
 
-        if ($this->effective_date === null && $this->expiration_date !== null) {
-            return Carbon::now()->isBefore($this->expiration_date);
-        }
+        // Document is in effect if both constraints are satisfied
+        return $effectiveCheck && $expirationCheck;
+    }
 
-        return Carbon::now()->isAfter($this->effective_date) && Carbon::now()->isBefore($this->expiration_date);
+    // Accessor attribute that uses the method above
+    protected function getIsInEffectAttribute(): ?bool
+    {
+        return $this->calculateIsInEffect();
     }
 
     // Also used in SharepointGraphService::batchProcessDocuments

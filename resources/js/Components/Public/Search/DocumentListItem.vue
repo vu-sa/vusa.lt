@@ -41,7 +41,7 @@
                 </Badge>
 
                 <!-- Status -->
-                <Badge v-if="document.is_in_effect !== null" :variant="document.is_in_effect ? 'default' : 'secondary'"
+                <Badge v-if="'is_in_effect' in document && document.is_in_effect !== null" :variant="document.is_in_effect ? 'default' : 'secondary'"
                   class="text-xs">
                   <component :is="document.is_in_effect ? CheckCircle : Clock" class="w-3 h-3 mr-1" />
                   {{ document.is_in_effect ? 'Galioja' : 'Negalioja' }}

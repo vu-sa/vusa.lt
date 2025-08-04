@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import {
   LanguageUtils,
   RecentSearchManager,
@@ -9,6 +9,16 @@ import {
   PerformanceUtils
 } from '../SearchUtils'
 import type { DocumentSearchFilters, SearchError } from '@/types/DocumentSearchTypes'
+
+// Mock the translation function
+vi.mock('laravel-vue-i18n', () => ({
+  trans: vi.fn((key: string) => {
+    const translations: Record<string, string> = {
+      'search.language_unknown': 'Not specified'
+    }
+    return translations[key] || key
+  })
+}))
 
 describe('LanguageUtils', () => {
   describe('getLanguageFlag', () => {
@@ -40,10 +50,10 @@ describe('LanguageUtils', () => {
       expect(LanguageUtils.getLanguageDisplay('English')).toBe('EN')
     })
 
-    it('returns "Nežinoma" for unknown languages', () => {
-      expect(LanguageUtils.getLanguageDisplay('Unknown')).toBe('Nežinoma')
-      expect(LanguageUtils.getLanguageDisplay('Français')).toBe('Nežinoma')
-      expect(LanguageUtils.getLanguageDisplay('')).toBe('Nežinoma')
+    it('returns translated "Not specified" for unknown languages', () => {
+      expect(LanguageUtils.getLanguageDisplay('Unknown')).toBe('Not specified')
+      expect(LanguageUtils.getLanguageDisplay('Français')).toBe('Not specified')
+      expect(LanguageUtils.getLanguageDisplay('')).toBe('Not specified')
     })
   })
 

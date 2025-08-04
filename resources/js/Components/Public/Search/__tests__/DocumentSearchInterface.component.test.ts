@@ -51,6 +51,16 @@ vi.mock('@inertiajs/vue3', () => ({
   }))
 }))
 
+// Mock Laravel Vue i18n
+vi.mock('laravel-vue-i18n', () => ({
+  trans: vi.fn((key: string) => {
+    const translations: Record<string, string> = {
+      'search.language_unknown': 'Not specified'
+    }
+    return translations[key] || key
+  })
+}))
+
 // Mock ShadcnVue components
 vi.mock('@/Components/ui/button', () => ({
   Button: {
@@ -532,7 +542,7 @@ describe('DocumentSearchInterface', () => {
       
       expect(vm.getLanguageDisplay('Lietuvių')).toBe('LT')
       expect(vm.getLanguageDisplay('Anglų')).toBe('EN')
-      expect(vm.getLanguageDisplay('Unknown')).toBe('Unknown')
+      expect(vm.getLanguageDisplay('Unknown')).toBe('Not specified')
     })
   })
 

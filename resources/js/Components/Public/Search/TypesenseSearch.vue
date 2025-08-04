@@ -333,27 +333,42 @@ const searchAdapter = computed(() => {
       },
       additionalSearchParameters: {
         query_by: 'title,summary,short',
+        prefix: false,
+        infix: 'fallback',
+        sort_by: '_text_match:desc,created_at:desc',
         num_typos: getTypesenseConfig.value.searchParams?.num_typos || 1,
-        typo_tokens_threshold: getTypesenseConfig.value.searchParams?.typo_tokens_threshold || 1,
-        drop_tokens_threshold: getTypesenseConfig.value.searchParams?.drop_tokens_threshold || 1,
-        max_hits: 100, // Limit total results to improve performance
+        typo_tokens_threshold: getTypesenseConfig.value.searchParams?.typo_tokens_threshold || 2,
+        drop_tokens_threshold: getTypesenseConfig.value.searchParams?.drop_tokens_threshold || 10,
+        min_len_1typo: 4,
+        min_len_2typo: 7,
+        prioritize_exact_match: true,
+        prioritize_token_position: true,
+        max_hits: 100,
         per_page: 20,
       },
       collectionSpecificSearchParameters: {
         documents: {
-          query_by: getTypesenseConfig.value.searchParams?.query_by?.documents || 'title,summary',
+          query_by: getTypesenseConfig.value.searchParams?.query_by?.documents || 'title,name,summary,content_type,document_year,document_date_formatted',
+          query_by_weights: '10,8,3,2,6,4',
+          sort_by: '_text_match:desc,document_date:desc',
           per_page: 15,
         },
         news: {
           query_by: getTypesenseConfig.value.searchParams?.query_by?.news || 'title,short',
+          query_by_weights: '10,4',
+          sort_by: '_text_match:desc,publish_time:desc',
           per_page: 15,
         },
         pages: {
           query_by: getTypesenseConfig.value.searchParams?.query_by?.pages || 'title',
+          query_by_weights: '10',
+          sort_by: '_text_match:desc,created_at:desc',
           per_page: 10,
         },
         calendar: {
           query_by: getTypesenseConfig.value.searchParams?.query_by?.calendar || 'title,title_lt,title_en',
+          query_by_weights: '10,8,8',
+          sort_by: '_text_match:desc,date:desc',
           per_page: 10,
         },
       }

@@ -143,7 +143,7 @@ return [
     'view_mode_compact' => 'Compact',
     'language_lithuanian' => 'LT',
     'language_english' => 'EN',
-    'language_unknown' => 'Unknown',
+    'language_unknown' => 'Not specified',
 
     // Search input specific
     'search_documents_placeholder' => 'Search documents by title...',

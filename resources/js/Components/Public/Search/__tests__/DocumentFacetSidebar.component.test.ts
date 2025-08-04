@@ -11,6 +11,28 @@ vi.mock('@inertiajs/vue3', () => ({
   }))
 }))
 
+// Mock Laravel Vue i18n
+vi.mock('laravel-vue-i18n', () => ({
+  trans: vi.fn((key: string) => {
+    const translations: Record<string, string> = {
+      'search.language_unknown': 'Not specified',
+      'search.filters': 'Filters',
+      'search.clear_filters': 'Clear',
+      'search.clear_filters_count': 'Clear ({count})',
+      'search.tenants': 'Organizations',
+      'search.document_type': 'Document type',
+      'search.document_type_description': 'Protocols, regulations, other',
+      'search.language': 'Language',
+      'search.language_description': 'Lithuanian, English',
+      'search.date': 'Date',
+      'search.document_creation_time': 'Document creation time',
+      'search.language_filters_after_search': 'Language filters will be shown after search',
+      'search.filter_documents': 'Filter documents'
+    }
+    return translations[key] || key
+  })
+}))
+
 // Mock ShadcnVue components
 vi.mock('@/Components/ui/button', () => ({
   Button: {
@@ -190,7 +212,7 @@ describe('DocumentFacetSidebar', () => {
       const wrapper = createWrapper()
       
       expect(wrapper.find('.lg\\:hidden').exists()).toBe(true)
-      expect(wrapper.text()).toContain('search.filters')
+      expect(wrapper.text()).toContain('Filters')
     })
 
     it('shows desktop filters on desktop view', () => {
@@ -210,27 +232,27 @@ describe('DocumentFacetSidebar', () => {
     it('renders tenant filter section', () => {
       const wrapper = createWrapper()
       
-      expect(wrapper.text()).toContain('search.tenants')
+      expect(wrapper.text()).toContain('Organizations')
       expect(wrapper.findComponent({ name: 'TenantFilter' }).exists()).toBe(true)
     })
 
     it('renders content type filter section', () => {
       const wrapper = createWrapper()
       
-      expect(wrapper.text()).toContain('search.document_type')
+      expect(wrapper.text()).toContain('Document type')
       expect(wrapper.findComponent({ name: 'ContentTypeFilter' }).exists()).toBe(true)
     })
 
     it('renders language filter section', () => {
       const wrapper = createWrapper()
       
-      expect(wrapper.text()).toContain('search.language')
+      expect(wrapper.text()).toContain('Language')
     })
 
     it('renders date range filter section', () => {
       const wrapper = createWrapper()
       
-      expect(wrapper.text()).toContain('search.date')
+      expect(wrapper.text()).toContain('Date')
       expect(wrapper.findComponent({ name: 'DateRangeFilter' }).exists()).toBe(true)
     })
   })
@@ -287,7 +309,7 @@ describe('DocumentFacetSidebar', () => {
         facets: [mockTenantFacet, mockContentTypeFacet] // No language facet
       })
       
-      expect(wrapper.text()).toContain('search.language_filters_after_search')
+      expect(wrapper.text()).toContain('Language filters will be shown after search')
     })
   })
 
@@ -296,28 +318,28 @@ describe('DocumentFacetSidebar', () => {
       const wrapper = createWrapper({ activeFilterCount: 2 })
       
       const clearButtons = wrapper.findAll('button').filter(btn => 
-        btn.text().includes('search.clear_filters')
+        btn.text().includes('Clear')
       )
       
       expect(clearButtons.length).toBeGreaterThan(0)
-      expect(clearButtons[0]?.text()).toContain('search.clear_filters_count')
+      expect(clearButtons[0]?.text()).toContain('Clear (')
     })
 
     it('disables clear button when no filters are active', () => {
       const wrapper = createWrapper({ activeFilterCount: 0 })
       
       const clearButtons = wrapper.findAll('button').filter(btn => 
-        btn.text().includes('search.clear_filters')
+        btn.text().includes('Clear')
       )
       
-      expect(clearButtons[0]?.text()).toBe('search.clear_filters')
+      expect(clearButtons[0]?.text()).toBe('Clear')
     })
 
     it('emits clearFilters when clear button is clicked', async () => {
       const wrapper = createWrapper({ activeFilterCount: 2 })
       
       const clearButton = wrapper.findAll('button').find(btn => 
-        btn.text().includes('search.clear_filters')
+        btn.text().includes('Clear')
       )
       
       if (clearButton) {
@@ -387,7 +409,7 @@ describe('DocumentFacetSidebar', () => {
       
       expect(vm.getLanguageDisplay('Lietuvių')).toBe('LT')
       expect(vm.getLanguageDisplay('Anglų')).toBe('EN')
-      expect(vm.getLanguageDisplay('Unknown')).toBe('Unknown')
+      expect(vm.getLanguageDisplay('Unknown')).toBe('Not specified')
     })
   })
 

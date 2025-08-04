@@ -319,6 +319,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { usePage } from '@inertiajs/vue3'
+import { trans as $t } from 'laravel-vue-i18n'
 
 // ShadcnVue components
 import { Button } from '@/Components/ui/button'
@@ -509,7 +510,8 @@ const getLanguageFlag = (languageValue: string): string => {
 const getLanguageDisplay = (languageValue: string): string => {
   if (languageValue === 'Lietuvių' || languageValue === 'Lithuanian') return 'LT'
   if (languageValue === 'Anglų' || languageValue === 'English') return 'EN'
-  return 'Unknown' // For Unknown or other languages
+  if (languageValue === 'Unknown') return $t('search.language_unknown')
+  return languageValue // For any other language values, show as-is
 }
 
 // Computed properties

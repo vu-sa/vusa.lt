@@ -162,8 +162,8 @@ return [
                 'collection-schema' => [
                     'fields' => [
                         ['name' => 'id', 'type' => 'string'],
-                        ['name' => 'title', 'type' => 'string'],
-                        ['name' => 'short', 'type' => 'string', 'optional' => true],
+                        ['name' => 'title', 'type' => 'string', 'infix' => true],
+                        ['name' => 'short', 'type' => 'string', 'optional' => true, 'infix' => true],
                         ['name' => 'permalink', 'type' => 'string'],
                         ['name' => 'image', 'type' => 'string', 'optional' => true],
                         ['name' => 'publish_time', 'type' => 'int64'],
@@ -175,7 +175,7 @@ return [
                 ],
                 'search-parameters' => [
                     'query_by' => 'title,short',
-                    'query_by_weights' => '4,2',
+                    'query_by_weights' => '10,4',
                 ],
             ],
 
@@ -184,7 +184,7 @@ return [
                 'collection-schema' => [
                     'fields' => [
                         ['name' => 'id', 'type' => 'string'],
-                        ['name' => 'title', 'type' => 'string'],
+                        ['name' => 'title', 'type' => 'string', 'infix' => true],
                         ['name' => 'permalink', 'type' => 'string'],
                         ['name' => 'lang', 'type' => 'string', 'facet' => true],
                         ['name' => 'tenant_name', 'type' => 'string', 'facet' => true],
@@ -195,7 +195,7 @@ return [
                 ],
                 'search-parameters' => [
                     'query_by' => 'title',
-                    'query_by_weights' => '4',
+                    'query_by_weights' => '10',
                 ],
             ],
 
@@ -204,9 +204,9 @@ return [
                 'collection-schema' => [
                     'fields' => [
                         ['name' => 'id', 'type' => 'string'],
-                        ['name' => 'title', 'type' => 'string'],
-                        ['name' => 'title_lt', 'type' => 'string', 'locale' => 'lt', 'optional' => true],
-                        ['name' => 'title_en', 'type' => 'string', 'locale' => 'en', 'optional' => true],
+                        ['name' => 'title', 'type' => 'string', 'infix' => true],
+                        ['name' => 'title_lt', 'type' => 'string', 'locale' => 'lt', 'optional' => true, 'infix' => true],
+                        ['name' => 'title_en', 'type' => 'string', 'locale' => 'en', 'optional' => true, 'infix' => true],
                         ['name' => 'date', 'type' => 'int64', 'sort' => true],
                         ['name' => 'end_date', 'type' => 'int64', 'optional' => true],
                         ['name' => 'lang', 'type' => 'string', 'facet' => true],
@@ -217,7 +217,7 @@ return [
                 ],
                 'search-parameters' => [
                     'query_by' => 'title,title_lt,title_en',
-                    'query_by_weights' => '5,4,4',
+                    'query_by_weights' => '10,8,8',
                 ],
             ],
 
@@ -226,7 +226,8 @@ return [
                 'collection-schema' => [
                     'fields' => [
                         ['name' => 'id', 'type' => 'string'],
-                        ['name' => 'title', 'type' => 'string'],
+                        ['name' => 'title', 'type' => 'string', 'infix' => true],
+                        ['name' => 'name', 'type' => 'string', 'infix' => true, 'optional' => true],
                         ['name' => 'summary', 'type' => 'string', 'optional' => true],
                         ['name' => 'language', 'type' => 'string', 'facet' => true],
                         ['name' => 'content_type', 'type' => 'string', 'facet' => true, 'optional' => true],
@@ -234,6 +235,9 @@ return [
                         ['name' => 'institution_name_en', 'type' => 'string', 'facet' => true, 'optional' => true],
                         ['name' => 'tenant_shortname', 'type' => 'string', 'facet' => true, 'optional' => true],
                         ['name' => 'document_date', 'type' => 'int64', 'facet' => true, 'sort' => true, 'optional' => true],
+                        ['name' => 'document_year', 'type' => 'string', 'optional' => true],
+                        ['name' => 'document_date_formatted', 'type' => 'string', 'optional' => true],
+                        ['name' => 'is_in_effect', 'type' => 'bool', 'facet' => true, 'optional' => true],
                         ['name' => 'anonymous_url', 'type' => 'string'],
                         ['name' => 'is_active', 'type' => 'bool'],
                         ['name' => 'created_at', 'type' => 'int64'],
@@ -241,8 +245,8 @@ return [
                     'default_sorting_field' => 'created_at',
                 ],
                 'search-parameters' => [
-                    'query_by' => 'title,summary',
-                    'query_by_weights' => '3,2',
+                    'query_by' => 'title,name,summary,content_type,document_year,document_date_formatted',
+                    'query_by_weights' => '10,8,3,2,6,4',
                 ],
             ],
         ],

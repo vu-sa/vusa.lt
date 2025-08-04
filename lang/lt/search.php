@@ -147,7 +147,7 @@ return [
     'view_mode_compact' => 'Kompaktiškas',
     'language_lithuanian' => 'LT',
     'language_english' => 'EN',
-    'language_unknown' => 'Nežinoma',
+    'language_unknown' => 'Nenurodyta',
 
     // Search input specific
     'search_documents_placeholder' => 'Ieškoti dokumentų pagal pavadinimą...',
