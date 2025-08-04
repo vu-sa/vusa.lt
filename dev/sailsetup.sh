@@ -27,4 +27,13 @@ fi
 touch database/database.sqlite &&
 
 ./vendor/bin/sail artisan migrate:fresh --seed &&
+
+# Install browser dependencies and Playwright browsers for frontend testing
+echo "Installing browser system dependencies..."
+./vendor/bin/sail exec laravel.test apt-get update &&
+./vendor/bin/sail exec laravel.test apt-get install -y libnspr4 libnss3 libatk-bridge2.0-0 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxrandr2 libgbm1 libxss1 libasound2t64 &&
+
+echo "Installing Playwright browsers for testing..."
+./vendor/bin/sail npx playwright install &&
+
 ./vendor/bin/sail npm run dev

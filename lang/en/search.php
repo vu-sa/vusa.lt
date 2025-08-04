@@ -79,6 +79,21 @@ return [
     'suggestions' => 'Suggestions',
     'clear' => 'Clear',
 
+    // Date range filter
+    'select_date_range' => 'Select date range',
+    'select_date' => 'Select date',
+    'select_year_range' => 'Select year range',
+    'clear_range' => 'Clear range',
+
+    // Error messages
+    'search_error' => 'Search error',
+    'technical_error' => 'Sorry, a technical error occurred. Please try again.',
+    'try_again' => 'Try again',
+    'report_error' => 'Report error',
+
+    // Document details
+    'effective_date' => 'Effective date:',
+
     // Navigation
     'next' => 'Next',
     'previous' => 'Previous',
@@ -108,4 +123,89 @@ return [
     'enable_all_types' => 'Enable All',
     'clear_all_types' => 'Clear All',
     'click_to_disable_type' => 'Click to disable :type',
+
+    // Document search specific
+    'document_search_title' => 'Documents',
+    'document_search_description' => 'Search VU SR documents archive – find protocols, decisions and other documents.',
+    'document_page_title' => 'Documents - VU SR',
+    'document_page_description' => 'Search VU SR documents archive',
+    'offline_message' => 'No internet connection - search is unavailable',
+    'showing_results' => 'Showing',
+    'found_results' => 'Found',
+    'document_singular' => 'document',
+    'document_plural' => 'documents',
+    'newest_first' => '(newest first)',
+    'by_query' => 'for',
+    'no_documents_found' => 'No documents found',
+    'min_chars_search' => 'Enter at least 3 characters to search',
+    'enter_search_or_browse' => 'Enter search terms or browse all documents',
+    'view_mode_list' => 'List',
+    'view_mode_compact' => 'Compact',
+    'language_lithuanian' => 'LT',
+    'language_english' => 'EN',
+    'language_unknown' => 'Unknown',
+
+    // Search input specific
+    'search_documents_placeholder' => 'Search documents by title...',
+    'search_documents_placeholder_alt' => 'Search documents...',
+    'search_button' => 'Search',
+    'clear_search_button' => 'Clear search',
+    'auto_search_enabled' => 'Auto search enabled',
+    'enable_auto_search' => 'Enable auto search',
+    'disable_auto_search' => 'Disable auto search',
+    'recent_searches' => 'Recent searches',
+    'clear_all_history' => 'Clear all',
+
+    // Facet sidebar specific
+    'filters' => 'Filters',
+    'filter_documents' => 'Filter documents',
+    'clear_filters' => 'Clear',
+    'clear_filters_count' => 'Clear (:count)',
+    'tenants' => 'Organizations',
+    'document_type' => 'Document type',
+    'language' => 'Language',
+    'date' => 'Date',
+    'document_creation_time' => 'Document creation time',
+    'language_filters_after_search' => 'Language filters will be shown after search',
+
+    // Results specific
+    'loading_more' => 'Loading...',
+    'show_more_results' => 'Show more results',
+    'no_results_criteria' => 'No documents found matching your search criteria.',
+    'clear_filters_action' => 'Clear filters',
+    'min_chars_required' => 'At least 3 characters required',
+    'min_chars_description' => 'Enter at least 3 characters to search documents.',
+    'or_browse_all' => 'Or',
+    'browse_all_documents' => 'browse all documents',
+
+    // Filter component specific
+    'select_all' => 'All',
+    'clear_all' => 'Clear',
+    'tenants_organizations' => 'Organizations',
+    'units' => 'Units',
+    'other_types' => 'Other',
+    'date_from' => 'From date',
+    'date_to' => 'To date',
+    'from_date' => 'From',
+    'to_date' => 'To',
+    'last_90_days' => 'Last 90 days',
+    'years' => 'Years',
+    'document_type_description' => 'Protocols, regulations, other',
+    'language_description' => 'Lithuanian, English',
+
+    // Date range presets
+    'date_recent' => 'Recent',
+    'date_3_months' => '3 months',
+    'date_6_months' => '6 months',
+    'date_1_year' => 'Year',
+    'date_year_range' => 'Year range',
+    'date_custom' => 'Custom',
+    'date_recent_desc' => '3 months',
+    'date_3_months_desc' => 'Last 90 days',
+    'date_6_months_desc' => 'Half year ago',
+    'date_1_year_desc' => 'Last 12 months',
+    'date_year_range_desc' => 'Select year range',
+    'date_custom_desc' => 'Specific range',
+    'date_from_format' => 'From :date',
+    'date_to_format' => 'To :date',
 ];

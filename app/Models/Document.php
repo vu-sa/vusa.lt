@@ -19,6 +19,10 @@ class Document extends Model
 
     protected $casts = [
         'is_active' => 'boolean',
+        'document_date' => 'datetime',
+        'effective_date' => 'datetime',
+        'expiration_date' => 'datetime',
+        'checked_at' => 'datetime',
     ];
 
     protected static function booted()
@@ -39,20 +43,152 @@ class Document extends Model
             $this->load('institution.tenant');
         }
 
-        return [
+        $searchableArray = [
             'id' => (string) $this->id,
             'title' => $this->title,
             'summary' => $this->summary,
+            'name' => $this->name,
             'language' => $this->language ?? 'Unknown',
             'content_type' => $this->content_type,
             'institution_name_lt' => $this->institution ? $this->institution->getTranslation('name', 'lt') : null,
             'institution_name_en' => $this->institution ? $this->institution->getTranslation('name', 'en') : null,
             'tenant_shortname' => $this->institution && $this->institution->tenant ? $this->institution->tenant->shortname : null,
-            'document_date' => $this->document_date ? strtotime($this->document_date) : now()->timestamp,
+            'tenant_name' => $this->institution && $this->institution->tenant ? $this->institution->tenant->name : null,
+            'tenant_type' => $this->institution && $this->institution->tenant ? $this->institution->tenant->type : null,
+            'effective_date' => $this->effective_date ? strtotime($this->effective_date) : null,
+            'expiration_date' => $this->expiration_date ? strtotime($this->expiration_date) : null,
+            'is_in_effect' => $this->is_in_effect,
             'anonymous_url' => $this->anonymous_url,
             'is_active' => $this->is_active,
             'created_at' => $this->created_at->timestamp,
+            'updated_at' => $this->updated_at->timestamp,
+            // Enhanced faceting fields
+            'content_type_category' => $this->getContentTypeCategory(),
+            'language_code' => $this->getLanguageCode(),
+            'tenant_hierarchy' => $this->getTenantHierarchy(),
+            'date_range_bucket' => $this->getDateRangeBucket(),
+            'file_extension' => $this->getFileExtension(),
         ];
+
+        // Only include document_date related fields if document_date exists
+        if ($this->document_date) {
+            $searchableArray['document_date'] = strtotime($this->document_date);
+            $searchableArray['document_date_formatted'] = $this->document_date->format('Y-m-d');
+            $searchableArray['document_year'] = $this->document_date->year;
+            $searchableArray['document_month'] = $this->document_date->format('Y-m');
+        }
+
+        return $searchableArray;
+    }
+
+    /**
+     * Get content type category for better faceting
+     */
+    protected function getContentTypeCategory(): string
+    {
+        if (! $this->content_type) {
+            return 'Kita';
+        }
+
+        if (str_starts_with($this->content_type, 'VU SA P ')) {
+            return 'VU SA P';
+        }
+
+        if (str_starts_with($this->content_type, 'VU SA ')) {
+            return 'VU SA';
+        }
+
+        return 'Kita';
+    }
+
+    /**
+     * Get standardized language code
+     */
+    protected function getLanguageCode(): string
+    {
+        return match ($this->language) {
+            'Lietuvių', 'Lithuanian' => 'lt',
+            'Anglų', 'English' => 'en',
+            default => 'unknown'
+        };
+    }
+
+    /**
+     * Get tenant hierarchy path for nested filtering
+     */
+    protected function getTenantHierarchy(): array
+    {
+        if (! $this->institution || ! $this->institution->tenant) {
+            return [];
+        }
+
+        $tenant = $this->institution->tenant;
+        $hierarchy = [$tenant->shortname];
+
+        // Add parent tenant if exists
+        if ($tenant->parent_id) {
+            $parent = $tenant->parent;
+            if ($parent) {
+                array_unshift($hierarchy, $parent->shortname);
+            }
+        }
+
+        return $hierarchy;
+    }
+
+    /**
+     * Get date range bucket for faceted date filtering
+     */
+    protected function getDateRangeBucket(): string
+    {
+        if (! $this->document_date) {
+            return 'unknown';
+        }
+
+        $now = now();
+        $docDate = $this->document_date;
+
+        $monthsAgo = $now->diffInMonths($docDate);
+
+        if ($monthsAgo <= 1) {
+            return 'recent_1month';
+        }
+        if ($monthsAgo <= 3) {
+            return 'recent_3months';
+        }
+        if ($monthsAgo <= 6) {
+            return 'recent_6months';
+        }
+        if ($monthsAgo <= 12) {
+            return 'recent_1year';
+        }
+        if ($monthsAgo <= 24) {
+            return 'recent_2years';
+        }
+
+        return 'older';
+    }
+
+    /**
+     * Get file extension from document name
+     */
+    protected function getFileExtension(): string
+    {
+        if (! $this->name) {
+            return 'unknown';
+        }
+
+        $extension = strtolower(pathinfo($this->name, PATHINFO_EXTENSION));
+
+        return match ($extension) {
+            'pdf' => 'pdf',
+            'doc', 'docx' => 'word',
+            'xls', 'xlsx' => 'excel',
+            'ppt', 'pptx' => 'powerpoint',
+            'txt' => 'text',
+            'url' => 'link',
+            default => 'other'
+        };
     }
 
     /**

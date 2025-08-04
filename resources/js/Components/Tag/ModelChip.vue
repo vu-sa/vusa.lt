@@ -1,7 +1,3 @@
-<docs>
-Component is useful for inline, standartized showings of models and their icons
-</docs>
-
 <template>
   <NTag class="mx-1 mb-1" round size="tiny">
     <template #icon>

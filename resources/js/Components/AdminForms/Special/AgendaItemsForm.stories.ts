@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/vue3-vite";
 import { userEvent, within, fn } from "storybook/test";
 import AgendaItemsForm from "./AgendaItemsForm.vue";
-import { usePage, router } from "#mocks/inertia.mock";
+import { usePage, router } from "@/mocks/inertia.mock";
 
 // Override usePage mock to include necessary auth data for this component
 usePage.mockImplementation(() => ({

@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/vue3-vite";
 import { userEvent, within } from "storybook/test";
 import InstitutionSelectorForm from "./InstitutionSelectorForm.vue";
-import { usePage, router } from "#mocks/inertia.mock";
+import { usePage, router } from "@/mocks/inertia.mock";
 import { fn } from 'storybook/test';
 
 // Mock institution data

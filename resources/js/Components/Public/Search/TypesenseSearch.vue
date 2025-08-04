@@ -11,9 +11,8 @@
 
         <!-- Content Type Indicators (when filters are closed and some types are disabled OR no types are enabled) -->
         <div v-if="!showFilters && shouldShowIndicators" 
-          class="flex-shrink-0 px-6 py-2 border-b border-zinc-200 dark:border-zinc-700 bg-zinc-50/50 dark:bg-zinc-900/25">
-          
-          <!-- When types are enabled - show indicators -->
+          class="flex-shrink-0 px-6 py-1 border-b border-zinc-200 dark:border-zinc-700 bg-zinc-50/50 dark:bg-zinc-900/25">
+<!-- When types are enabled - show indicators -->
           <div v-if="hasEnabledTypes" class="flex items-center gap-2 flex-wrap">
             <span class="text-xs text-muted-foreground font-medium">
               {{ $t('search.searching_in') }}:
@@ -35,9 +34,9 @@
               </Badge>
               <!-- Close button -->
               <button
-                @click="searchController.toggleContentType(contentType.id)"
                 class="ml-0.5 p-0.5 rounded-sm hover:bg-red-200 dark:hover:bg-red-800/50 transition-colors focus:outline-none focus:ring-1 focus:ring-vusa-red focus:ring-opacity-50"
                 :title="$t('search.click_to_disable_type', { type: $t(contentType.name) })"
+                @click="searchController.toggleContentType(contentType.id)"
               >
                 <svg class="w-2.5 h-2.5 opacity-60 hover:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -48,9 +47,9 @@
             <!-- Clear all button when multiple types selected -->
             <button
               v-if="enabledContentTypes.length > 1"
-              @click="clearAllTypes"
               class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium transition-all duration-200 text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 focus:outline-none focus:ring-1 focus:ring-zinc-400 focus:ring-opacity-50"
               :title="$t('search.clear_all_types')"
+              @click="clearAllTypes"
             >
               <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -68,10 +67,10 @@
               <span class="text-xs font-medium">{{ $t('search.no_content_types_selected') }}</span>
             </div>
             <Button
-              @click="enableAllTypes"
               variant="outline"
               size="sm"
               class="text-xs h-6 px-2"
+              @click="enableAllTypes"
             >
               {{ $t('search.enable_all_types') }}
             </Button>
@@ -126,7 +125,7 @@
     <!-- Search Trigger Button (optional) -->
     <div v-if="showTrigger">
       <Button @click="openDialog">
-        <IconSearch class="w-4 h-4 mr-2" />
+        <IconSearch class="w-4 h-4 mr-1" />
         {{ $t('search.search') }}
       </Button>
     </div>
@@ -533,7 +532,6 @@ onMounted(() => {
   }
 
   if (!localStorage.getItem('search-shortcut-seen')) {
-    console.log('Use Cmd+K (Mac) or Ctrl+K (Windows/Linux) to quickly open search')
     localStorage.setItem('search-shortcut-seen', 'true')
   }
 })

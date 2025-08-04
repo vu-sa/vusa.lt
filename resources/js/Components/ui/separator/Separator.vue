@@ -1,15 +1,12 @@
-<docs>
-# Changes
-
-- Updated the background color from `bg-border` to `bg-zinc-100` for better visual consistency.
-- Increased margins for better spacing between content sections (from my-1/mx-2 to my-6/mx-4).
-</docs>
-
 <script setup lang="ts">
 import type { HTMLAttributes } from 'vue'
 import { cn } from '@/Utils/Shadcn/utils'
 import { reactiveOmit } from '@vueuse/core'
 import { Separator, type SeparatorProps } from 'reka-ui'
+
+// ---- Changes from base:
+// - Updated the background color from `bg-border` to `bg-zinc-100` for better visual consistency.
+// - Increased margins for better spacing between content sections (from my-1/mx-2 to my-6/mx-4).
 
 const props = withDefaults(defineProps<
   SeparatorProps & { class?: HTMLAttributes['class'] }

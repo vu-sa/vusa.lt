@@ -28,6 +28,8 @@ Local domain (and subdomain) setup must be configured for the site to work prope
 1. Modify your host file to direct *www.vusa.test* to 127.0.0.1.
 2. Redirect any other subdomains, e.g. *if.vusa.test* to 127.0.0.1
 
+**Testing**: Run `./vendor/bin/sail npm run test` for frontend tests and `./vendor/bin/sail artisan test` for backend tests.
+
 If any questions arise how to setup for development, please write to <it@vusa.lt> :smile:
 
 **macOS Performance Tip:** For faster development with colima, use:

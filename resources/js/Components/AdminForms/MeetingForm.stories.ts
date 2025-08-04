@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/vue3-vite";
 import { userEvent, within, fn } from "storybook/test";
 import MeetingForm from "./MeetingForm.vue";
-import { usePage, router } from "#mocks/inertia.mock";
+import { usePage, router } from "@/mocks/inertia.mock";
 
 // Override usePage mock to include necessary auth data for this component
 usePage.mockImplementation(() => ({
@@ -53,6 +53,11 @@ const meta: Meta<typeof MeetingForm> = {
       start_time: '2025-04-20T10:00:00',
       type_id: 1
     },
+    meetingTypes: [
+      { id: 1, title: 'Regular Meeting', model_type: 'App\\Models\\Meeting' },
+      { id: 2, title: 'Special Meeting', model_type: 'App\\Models\\Meeting' },
+      { id: 3, title: 'Emergency Meeting', model_type: 'App\\Models\\Meeting' }
+    ],
     onSubmit: fn(),
   },
   decorators: [
@@ -160,7 +165,7 @@ export const Prefilled: Story = {
   }),
 };
 
-// Form with validation errors
+// Form with validation errors - Note: Complex async interactions may need manual testing
 export const WithInteraction: Story = {
   render: (args) => ({
     components: { MeetingForm },
@@ -176,12 +181,16 @@ export const WithInteraction: Story = {
   }),
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement);
-    // Wait for the component to be fully loaded with its async data
-    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    // Wait for component to render completely
+    await new Promise(resolve => setTimeout(resolve, 100));
 
     // Find and interact with the type selector
-    const typeSelectTrigger = canvas.getByText(/Koks posėdžio tipas/i);
+    const typeSelectTrigger = canvas.getByRole('combobox');
     await userEvent.click(typeSelectTrigger);
+    
+    // Wait for dropdown to open
+    await new Promise(resolve => setTimeout(resolve, 100));
     
     // Select option from dropdown
     const specialMeeting = await canvas.findByText('Special Meeting');
@@ -192,6 +201,6 @@ export const WithInteraction: Story = {
     await userEvent.click(submitButton);
     
     // Verify the submit function was called
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await new Promise(resolve => setTimeout(resolve, 100));
   },
 };
