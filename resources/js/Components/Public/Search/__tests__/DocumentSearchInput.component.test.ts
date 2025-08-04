@@ -61,14 +61,14 @@ describe('DocumentSearchInput', () => {
       const wrapper = createWrapper()
       
       expect(wrapper.find('input').exists()).toBe(true)
-      expect(wrapper.find('input').attributes('placeholder')).toBe('Ieškoti dokumentų pagal pavadinimą...')
+      expect(wrapper.find('input').attributes('placeholder')).toBe('search.search_documents_placeholder')
       expect(wrapper.find('input').attributes('role')).toBe('search')
     })
 
     it('displays custom placeholder when provided', () => {
       const wrapper = createWrapper({ placeholder: 'Custom placeholder' })
       
-      expect(wrapper.find('input').attributes('placeholder')).toBe('Ieškoti dokumentų pagal pavadinimą...')
+      expect(wrapper.find('input').attributes('placeholder')).toBe('search.search_documents_placeholder')
     })
 
     it('shows current query value', () => {
@@ -125,7 +125,7 @@ describe('DocumentSearchInput', () => {
     it('shows type-to-search status when enabled', () => {
       const wrapper = createWrapper({ typeToSearch: true })
       
-      expect(wrapper.text()).toContain('Automatinė paieška įjungta')
+      expect(wrapper.text()).toContain('search.auto_search_enabled')
     })
 
     it('hides type-to-search status when disabled', () => {
@@ -248,7 +248,7 @@ describe('DocumentSearchInput', () => {
       await wrapper.find('input').trigger('focus')
       await nextTick()
       
-      expect(wrapper.text()).toContain('Pastarieji paieškos žodžiai')
+      expect(wrapper.text()).toContain('search.recent_searches')
       expect(wrapper.text()).toContain('recent search 1')
     })
 
@@ -384,7 +384,7 @@ describe('DocumentSearchInput', () => {
       await wrapper.find('input').trigger('focus')
       await nextTick()
       
-      expect(wrapper.text()).toContain('Pastarieji paieškos žodžiai')
+      expect(wrapper.text()).toContain('search.recent_searches')
     })
   })
 
@@ -404,7 +404,7 @@ describe('DocumentSearchInput', () => {
     it('has proper button titles for tooltips', () => {
       const wrapper = createWrapper({ typeToSearch: false })
       
-      expect(wrapper.find('[title="Įjungti automatinę paiešką"]').exists()).toBe(true)
+      expect(wrapper.find('[title*="search.enable_auto_search"]').exists()).toBe(true)
     })
   })
 

@@ -190,7 +190,7 @@ describe('DocumentFacetSidebar', () => {
       const wrapper = createWrapper()
       
       expect(wrapper.find('.lg\\:hidden').exists()).toBe(true)
-      expect(wrapper.text()).toContain('Filtrai')
+      expect(wrapper.text()).toContain('search.filters')
     })
 
     it('shows desktop filters on desktop view', () => {
@@ -210,27 +210,27 @@ describe('DocumentFacetSidebar', () => {
     it('renders tenant filter section', () => {
       const wrapper = createWrapper()
       
-      expect(wrapper.text()).toContain('Dariniai')
+      expect(wrapper.text()).toContain('search.tenants')
       expect(wrapper.findComponent({ name: 'TenantFilter' }).exists()).toBe(true)
     })
 
     it('renders content type filter section', () => {
       const wrapper = createWrapper()
       
-      expect(wrapper.text()).toContain('Dokumentų tipas')
+      expect(wrapper.text()).toContain('search.document_type')
       expect(wrapper.findComponent({ name: 'ContentTypeFilter' }).exists()).toBe(true)
     })
 
     it('renders language filter section', () => {
       const wrapper = createWrapper()
       
-      expect(wrapper.text()).toContain('Kalba')
+      expect(wrapper.text()).toContain('search.language')
     })
 
     it('renders date range filter section', () => {
       const wrapper = createWrapper()
       
-      expect(wrapper.text()).toContain('Data')
+      expect(wrapper.text()).toContain('search.date')
       expect(wrapper.findComponent({ name: 'DateRangeFilter' }).exists()).toBe(true)
     })
   })
@@ -287,7 +287,7 @@ describe('DocumentFacetSidebar', () => {
         facets: [mockTenantFacet, mockContentTypeFacet] // No language facet
       })
       
-      expect(wrapper.text()).toContain('Kalbų filtrai bus rodomi atlikus paiešką')
+      expect(wrapper.text()).toContain('search.language_filters_after_search')
     })
   })
 
@@ -296,28 +296,28 @@ describe('DocumentFacetSidebar', () => {
       const wrapper = createWrapper({ activeFilterCount: 2 })
       
       const clearButtons = wrapper.findAll('button').filter(btn => 
-        btn.text().includes('Išvalyti')
+        btn.text().includes('search.clear_filters')
       )
       
       expect(clearButtons.length).toBeGreaterThan(0)
-      expect(clearButtons[0].text()).toContain('Išvalyti (2)')
+      expect(clearButtons[0]?.text()).toContain('search.clear_filters_count')
     })
 
     it('disables clear button when no filters are active', () => {
       const wrapper = createWrapper({ activeFilterCount: 0 })
       
       const clearButtons = wrapper.findAll('button').filter(btn => 
-        btn.text().includes('Išvalyti')
+        btn.text().includes('search.clear_filters')
       )
       
-      expect(clearButtons[0].text()).toBe('Išvalyti')
+      expect(clearButtons[0]?.text()).toBe('search.clear_filters')
     })
 
     it('emits clearFilters when clear button is clicked', async () => {
       const wrapper = createWrapper({ activeFilterCount: 2 })
       
       const clearButton = wrapper.findAll('button').find(btn => 
-        btn.text().includes('Išvalyti')
+        btn.text().includes('search.clear_filters')
       )
       
       if (clearButton) {
@@ -387,7 +387,7 @@ describe('DocumentFacetSidebar', () => {
       
       expect(vm.getLanguageDisplay('Lietuvių')).toBe('LT')
       expect(vm.getLanguageDisplay('Anglų')).toBe('EN')
-      expect(vm.getLanguageDisplay('Unknown')).toBe('Nežinoma')
+      expect(vm.getLanguageDisplay('Unknown')).toBe('Unknown')
     })
   })
 
