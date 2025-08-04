@@ -123,8 +123,8 @@ export class DocumentSearchService {
     const query = filters.query.trim()
     const searchParams: SearchParams = {
       q: query,
-      query_by: 'title,name,summary,content_type,document_year,document_date_formatted',
-      query_by_weights: '10,8,3,2,6,4',
+      query_by: 'title,summary,content_type,document_year,document_date_formatted',
+      query_by_weights: '10,3,2,6,4',
       facet_by: [
         'content_type',
         'tenant_shortname',
@@ -285,8 +285,8 @@ export class DocumentSearchService {
     try {
       const searchRequest: SearchParams = {
         q: '*',
-        query_by: 'title,name,summary,content_type,document_year,document_date_formatted',
-        query_by_weights: '10,8,3,2,6,4',
+        query_by: 'title,summary,content_type,document_year,document_date_formatted',
+        query_by_weights: '10,3,2,6,4',
         facet_by: [
           'content_type',
           'tenant_shortname',

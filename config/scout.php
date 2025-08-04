@@ -245,8 +245,8 @@ return [
                     'default_sorting_field' => 'created_at',
                 ],
                 'search-parameters' => [
-                    'query_by' => 'title,name,summary,content_type,document_year,document_date_formatted',
-                    'query_by_weights' => '10,8,3,2,6,4',
+                    'query_by' => 'title,summary,content_type,document_year,document_date_formatted',
+                    'query_by_weights' => '10,3,2,6,4',
                 ],
             ],
         ],

@@ -129,8 +129,8 @@ describe('DocumentSearchService', () => {
         q: '*',
         per_page: 24,
         page: 1,
-        query_by: 'title,name,summary,content_type,document_year,document_date_formatted',
-        query_by_weights: '10,8,3,2,6,4',
+        query_by: 'title,summary,content_type,document_year,document_date_formatted',
+        query_by_weights: '10,3,2,6,4',
         facet_by: 'content_type,tenant_shortname,language,document_date,is_in_effect',
         max_facet_values: 50,
         sort_by: 'document_date:desc,created_at:desc',
@@ -159,8 +159,8 @@ describe('DocumentSearchService', () => {
       
       expect(mockClient.search).toHaveBeenCalledWith('documents', expect.objectContaining({
         q: 'test search',
-        query_by: 'title,name,summary,content_type,document_year,document_date_formatted',
-        query_by_weights: '10,8,3,2,6,4',
+        query_by: 'title,summary,content_type,document_year,document_date_formatted',
+        query_by_weights: '10,3,2,6,4',
         sort_by: '_text_match:desc,document_date:desc',
         filter_by: 'is_active:=true'
       }))
@@ -319,8 +319,8 @@ describe('DocumentSearchService', () => {
         q: '*',
         per_page: 1, // Minimal results needed
         page: 1,
-        query_by: 'title,name,summary,content_type,document_year,document_date_formatted',
-        query_by_weights: '10,8,3,2,6,4',
+        query_by: 'title,summary,content_type,document_year,document_date_formatted',
+        query_by_weights: '10,3,2,6,4',
         facet_by: 'content_type,tenant_shortname,language,document_date,is_in_effect',
         max_facet_values: 50,
         sort_by: 'document_date:desc,created_at:desc',
@@ -448,8 +448,8 @@ describe('DocumentSearchService', () => {
       await service.performSearch(filters, 24, false, 0)
       
       expect(mockClient.search).toHaveBeenCalledWith('documents', expect.objectContaining({
-        query_by: 'title,name,summary,content_type,document_year,document_date_formatted',
-        query_by_weights: '10,8,3,2,6,4',
+        query_by: 'title,summary,content_type,document_year,document_date_formatted',
+        query_by_weights: '10,3,2,6,4',
         sort_by: '_text_match:desc,document_date:desc',
         max_facet_values: 50,
         prefix: false,
@@ -471,8 +471,8 @@ describe('DocumentSearchService', () => {
       
       expect(mockClient.search).toHaveBeenCalledWith('documents', expect.objectContaining({
         q: '*',
-        query_by: 'title,name,summary,content_type,document_year,document_date_formatted',
-        query_by_weights: '10,8,3,2,6,4',
+        query_by: 'title,summary,content_type,document_year,document_date_formatted',
+        query_by_weights: '10,3,2,6,4',
         sort_by: 'document_date:desc,created_at:desc'
       }))
     })

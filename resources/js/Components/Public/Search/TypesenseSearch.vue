@@ -348,8 +348,8 @@ const searchAdapter = computed(() => {
       },
       collectionSpecificSearchParameters: {
         documents: {
-          query_by: getTypesenseConfig.value.searchParams?.query_by?.documents || 'title,name,summary,content_type,document_year,document_date_formatted',
-          query_by_weights: '10,8,3,2,6,4',
+          query_by: getTypesenseConfig.value.searchParams?.query_by?.documents || 'title,summary,content_type,document_year,document_date_formatted',
+          query_by_weights: '10,3,2,6,4',
           sort_by: '_text_match:desc,document_date:desc',
           per_page: 15,
         },
