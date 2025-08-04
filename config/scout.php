@@ -235,7 +235,7 @@ return [
                         ['name' => 'institution_name_en', 'type' => 'string', 'facet' => true, 'optional' => true],
                         ['name' => 'tenant_shortname', 'type' => 'string', 'facet' => true, 'optional' => true],
                         ['name' => 'document_date', 'type' => 'int64', 'facet' => true, 'sort' => true, 'optional' => true],
-                        ['name' => 'document_year', 'type' => 'string', 'optional' => true],
+                        ['name' => 'document_year', 'type' => 'string', 'infix' => true, 'optional' => true],
                         ['name' => 'document_date_formatted', 'type' => 'string', 'optional' => true],
                         ['name' => 'is_in_effect', 'type' => 'bool', 'facet' => true, 'optional' => true],
                         ['name' => 'anonymous_url', 'type' => 'string'],
