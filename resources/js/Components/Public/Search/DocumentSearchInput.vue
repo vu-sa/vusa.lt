@@ -1,5 +1,5 @@
 <template>
-  <div class="flex-shrink-0 px-4 lg:px-6 py-4">
+  <div class="flex-shrink-0 px-0 sm:px-2 lg:px-4 py-2 sm:py-3 lg:py-4">
     <!--         <div class="p-2">
         <div class="flex items-center justify-between px-2 py-1 text-xs font-medium text-muted-foreground border-b border-border/50 mb-2">
           <span>{{ $t('search.recent_searches') }}</span>
@@ -11,23 +11,23 @@
     <div class="relative w-full max-w-3xl mx-auto">
       <!-- Search Container with Enhanced Background -->
       <div
-        class="relative p-4 bg-gradient-to-br from-primary/5 via-background to-secondary/5 border border-primary/20 rounded-lg shadow-sm backdrop-blur-sm">
+        class="relative p-3 sm:p-4 bg-gradient-to-br from-primary/5 via-background to-secondary/5 border border-primary/20 rounded-lg shadow-sm backdrop-blur-sm">
         <div class="relative">
           <!-- Search Icon and Input -->
           <div class="relative">
-            <div class="absolute left-4 top-1/2 -translate-y-1/2 text-primary/60">
+            <div class="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-primary/60 z-10">
               <Search class="w-4 h-4" />
             </div>
 
             <Input ref="inputRef" role="search" :model-value="query"
               :placeholder="$t('search.search_documents_placeholder')"
-              class="w-full h-11 text-base pl-11 pr-36 rounded-lg border border-primary/20 bg-background/80 backdrop-blur-sm focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-primary/40 transition-all duration-200 placeholder:text-muted-foreground/60"
+              class="w-full h-11 text-base pl-10 sm:pl-11 pr-20 sm:pr-36 rounded-lg border border-primary/20 bg-background/80 backdrop-blur-sm focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-primary/40 transition-all duration-200 placeholder:text-muted-foreground/60"
               @input="handleInput" @keydown.enter="handleEnter" @focus="handleFocus" @blur="handleBlur" />
 
-            <div class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+            <div class="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 sm:gap-2">
               <!-- Type to search toggle button -->
               <Button type="button" variant="ghost" size="icon"
-                class="h-8 w-8 hover:bg-primary/10 transition-all duration-200 rounded-md"
+                class="h-8 w-8 hover:bg-primary/10 transition-all duration-200 rounded-md flex-shrink-0"
                 :class="{ 'bg-primary/15 text-primary shadow-sm': props.typeToSearch }"
                 :title="props.typeToSearch ? $t('search.disable_auto_search') : $t('search.enable_auto_search')"
                 @click="toggleTypeToSearch">
@@ -38,7 +38,7 @@
 
               <!-- Clear button when there's text -->
               <Button v-if="query && !isSearching" type="button" variant="ghost" size="icon"
-                class="h-8 w-8 hover:bg-destructive/10 hover:text-destructive transition-all duration-200 rounded-md"
+                class="h-8 w-8 hover:bg-destructive/10 hover:text-destructive transition-all duration-200 rounded-md flex-shrink-0"
                 @click="handleClear">
                 <span class="sr-only">{{ $t('search.clear_search_button') }}</span>
                 <X class="w-3.5 h-3.5" />
@@ -46,14 +46,14 @@
 
               <!-- Search button (only shown when typeToSearch is off) -->
               <Button v-if="query && !isSearching && !props.typeToSearch" type="button" size="sm"
-                class="h-8 px-3 bg-primary hover:bg-primary/90 text-primary-foreground rounded-md shadow-sm hover:shadow-md transition-all duration-200"
+                class="h-8 px-2 sm:px-3 bg-primary hover:bg-primary/90 text-primary-foreground rounded-md shadow-sm hover:shadow-md transition-all duration-200 flex-shrink-0"
                 :disabled="query.length < 3" @click="handleSearch">
-                <Search class="w-3.5 h-3.5 mr-1.5" />
-                {{ $t('search.search_button') }}
+                <Search class="w-3.5 h-3.5 sm:mr-1.5" />
+                <span class="hidden sm:inline">{{ $t('search.search_button') }}</span>
               </Button>
 
               <!-- Loading spinner with transition -->
-              <div v-if="isSearching" class="w-8 h-8 flex items-center justify-center">
+              <div v-if="isSearching" class="w-8 h-8 flex items-center justify-center flex-shrink-0">
                 <div class="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent" />
               </div>
             </div>

@@ -1,73 +1,126 @@
 <template>
   <div
-    class="group transition-all duration-200 border rounded-lg bg-card hover:shadow-lg hover:bg-accent/20 min-h-[88px]">
+    class="group transition-all duration-200 border rounded-lg bg-card hover:shadow-lg hover:bg-accent/20">
     <!-- Main clickable content -->
     <a :href="document.anonymous_url" target="_blank" rel="noopener noreferrer"
-      class="block p-4 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring rounded-lg"
+      class="block p-3 sm:p-4 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring rounded-lg"
       @click="trackDocumentClick">
-      <div class="flex items-start gap-4">
+      <div class="flex items-start gap-3 sm:gap-4">
         <!-- Document Icon -->
-        <div :class="getDocumentIconClasses()" class="flex-shrink-0">
-          <Icon :icon="getDocumentIcon()" class="w-5 h-5" />
+        <div :class="getDocumentIconClasses()" class="flex-shrink-0 mt-0.5">
+          <Icon :icon="getDocumentIcon()" class="w-4 h-4 sm:w-5 sm:h-5" />
         </div>
 
         <!-- Main Content -->
         <div class="flex-1 min-w-0">
-          <!-- Title and Badges Row -->
-          <div class="flex items-start justify-between gap-4 mb-2">
-            <div class="flex-1 min-w-0">
-              <h3
-                class="text-base font-semibold text-card-foreground group-hover:text-primary transition-colors line-clamp-1 mb-2">
-                {{ document.title }}
-              </h3>
+          <!-- Title -->
+          <div class="mb-2 sm:mb-3">
+            <h3
+              class="text-sm sm:text-base font-semibold text-card-foreground group-hover:text-primary transition-colors line-clamp-2 leading-tight sm:leading-normal">
+              {{ document.title }}
+            </h3>
+          </div>
 
-              <!-- Badges Row -->
-              <div class="flex items-center gap-2 flex-wrap">
-                <!-- Organization -->
-                <Badge variant="outline" class="text-xs">
-                  <Building2 class="w-3 h-3 mr-1" />
-                  {{ getTenantDisplayName() }}
-                </Badge>
+          <!-- Mobile Layout: Stack everything -->
+          <div class="sm:hidden space-y-2">
+            <!-- Primary badges row -->
+            <div class="flex items-center gap-1 flex-wrap">
+              <!-- Organization -->
+              <Badge variant="outline" class="text-xs px-1.5 py-0.5 max-w-40">
+                <Building2 class="w-3 h-3 mr-1 flex-shrink-0" />
+                <span class="truncate">{{ getTenantDisplayName() }}</span>
+              </Badge>
 
-                <!-- Content Type -->
-                <Badge v-if="document.content_type" variant="outline" class="text-xs">
-                  <FileText class="w-3 h-3 mr-1" />
-                  {{ document.content_type }}
-                </Badge>
-
-                <!-- Language -->
-                <Badge v-if="document.language" variant="secondary" class="text-xs">
-                  {{ getLanguageCode() }}
-                </Badge>
-
-                <!-- Status -->
-                <Badge v-if="'is_in_effect' in document && document.is_in_effect !== null" :variant="document.is_in_effect ? 'default' : 'secondary'"
-                  class="text-xs">
-                  <component :is="document.is_in_effect ? CheckCircle : Clock" class="w-3 h-3 mr-1" />
-                  {{ document.is_in_effect ? 'Galioja' : 'Negalioja' }}
-                </Badge>
-              </div>
-            </div>
-
-            <!-- Date and Actions -->
-            <div class="flex items-center gap-3 flex-shrink-0">
               <!-- Date Badge -->
-              <Badge variant="outline" class="text-xs">
+              <Badge variant="outline" class="text-xs px-1.5 py-0.5 flex-shrink-0">
                 <Calendar class="w-3 h-3 mr-1" />
                 {{ formatDocumentDate() }}
               </Badge>
+            </div>
 
-              <!-- External Link Icon -->
-              <ExternalLink class="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+            <!-- Secondary badges row -->
+            <div class="flex items-center gap-1 flex-wrap">
+              <!-- Content Type -->
+              <Badge v-if="document.content_type" variant="outline" class="text-xs px-1.5 py-0.5 max-w-36">
+                <FileText class="w-3 h-3 mr-1 flex-shrink-0" />
+                <span class="truncate">{{ document.content_type }}</span>
+              </Badge>
+
+              <!-- Language -->
+              <Badge v-if="document.language" variant="secondary" class="text-xs px-1.5 py-0.5 flex-shrink-0">
+                {{ getLanguageCode() }}
+              </Badge>
+
+              <!-- Status -->
+              <Badge v-if="'is_in_effect' in document && document.is_in_effect !== null" 
+                :variant="document.is_in_effect ? 'default' : 'secondary'"
+                class="text-xs px-1.5 py-0.5 flex-shrink-0">
+                <component :is="document.is_in_effect ? CheckCircle : Clock" class="w-3 h-3 mr-1" />
+                <span class="hidden xs:inline">{{ document.is_in_effect ? 'Galioja' : 'Negalioja' }}</span>
+                <span class="xs:hidden">{{ document.is_in_effect ? '✓' : '○' }}</span>
+              </Badge>
+            </div>
+          </div>
+
+          <!-- Desktop Layout: Horizontal with date on right -->
+          <div class="hidden sm:block">
+            <!-- Badges and Date Row -->
+            <div class="flex items-start justify-between gap-4 mb-2">
+              <div class="flex-1 min-w-0">
+                <!-- Badges Row -->
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <!-- Organization -->
+                  <Badge variant="outline" class="text-xs max-w-48">
+                    <Building2 class="w-3 h-3 mr-1 flex-shrink-0" />
+                    <span class="truncate">{{ getTenantDisplayName() }}</span>
+                  </Badge>
+
+                  <!-- Content Type -->
+                  <Badge v-if="document.content_type" variant="outline" class="text-xs max-w-52">
+                    <FileText class="w-3 h-3 mr-1 flex-shrink-0" />
+                    <span class="truncate">{{ document.content_type }}</span>
+                  </Badge>
+
+                  <!-- Language -->
+                  <Badge v-if="document.language" variant="secondary" class="text-xs flex-shrink-0">
+                    {{ getLanguageCode() }}
+                  </Badge>
+
+                  <!-- Status -->
+                  <Badge v-if="'is_in_effect' in document && document.is_in_effect !== null" 
+                    :variant="document.is_in_effect ? 'default' : 'secondary'"
+                    class="text-xs flex-shrink-0">
+                    <component :is="document.is_in_effect ? CheckCircle : Clock" class="w-3 h-3 mr-1" />
+                    {{ document.is_in_effect ? 'Galioja' : 'Negalioja' }}
+                  </Badge>
+                </div>
+              </div>
+
+              <!-- Date and Actions -->
+              <div class="flex items-center gap-3 flex-shrink-0">
+                <!-- Date Badge -->
+                <Badge variant="outline" class="text-xs">
+                  <Calendar class="w-3 h-3 mr-1" />
+                  {{ formatDocumentDate() }}
+                </Badge>
+
+                <!-- External Link Icon -->
+                <ExternalLink class="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+              </div>
             </div>
           </div>
 
           <!-- Summary -->
-          <div v-if="document.summary" class="mt-3">
-            <p class="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+          <div v-if="document.summary" class="mt-2 sm:mt-3">
+            <p class="text-xs sm:text-sm text-muted-foreground line-clamp-2 leading-relaxed">
               {{ document.summary }}
             </p>
           </div>
+        </div>
+
+        <!-- Mobile External Link Icon -->
+        <div class="sm:hidden flex-shrink-0 mt-1">
+          <ExternalLink class="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
         </div>
       </div>
     </a>
@@ -112,3 +165,14 @@ const {
 // For list view, use simple date format
 const formatDocumentDate = formatDocumentDateSimple
 </script>
+
+<style scoped>
+/* Custom breakpoint for very small screens */
+@media (min-width: 375px) {
+  .xs\:inline {
+    display: inline;
+  }
+  .xs\:hidden {
+    display: none;
+  }
+}</style>

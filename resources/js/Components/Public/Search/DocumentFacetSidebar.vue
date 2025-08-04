@@ -22,7 +22,7 @@
             </div>
           </SheetHeader>
           <ScrollArea class="h-full pr-4">
-            <div class="mt-8 pb-6">
+            <div class="mt-8 pb-32">
               <!-- Mobile filters content - same as desktop but in sheet -->
               <div class="space-y-6">
                 <!-- Filter Header -->
