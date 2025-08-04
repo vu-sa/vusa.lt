@@ -1,12 +1,12 @@
 <template>
   <Head>
     <title>{{ $t('search.document_page_title') }}</title>
-    <meta name="description" :content="$t('search.document_page_description')" />
+    <meta name="description" :content="$t('search.document_page_description')">
   </Head>
   
   <DocumentSearchInterface
-    :initial-query="initialQuery"
-    :initial-filters="initialFilters"
+    :initial-query
+    :initial-filters
   />
 </template>
 

@@ -6,6 +6,7 @@ use App\Enums\ModelEnum;
 use App\Models\ChangelogItem;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Services\Typesense\TypesenseManager;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -84,6 +85,7 @@ class HandleInertiaRequests extends Middleware
             // 'tenants' property is shared in public pages from \App\Http\Controllers\PublicController.php
             // 'tenant.banners' property is shared in public pages from \App\Http\Controllers\PublicController.php
             'tenants' => fn () => $this->getTenantsForInertia(),
+            'typesenseConfig' => fn () => TypesenseManager::getFrontendConfig(),
         ]);
     }
 

@@ -134,7 +134,7 @@ export const useDocumentSearch = (): DocumentSearchController => {
   }
 
   // Initialize Typesense search client
-  const initializeSearchClient = () => {
+  const initializeSearchClient = async () => {
     const page = usePage()
     const typesenseConfig = page.props.typesenseConfig as any
 
@@ -218,6 +218,13 @@ export const useDocumentSearch = (): DocumentSearchController => {
 
       // Initialize search service
       searchService.value = new DocumentSearchService(typesenseClient.value)
+
+      // Load initial facets after client initialization
+      if (typesenseClient.value) {
+        // Use nextTick to ensure the client is fully set up
+        await nextTick()
+        await loadInitialFacets()
+      }
 
       return adapter.searchClient
     } catch (error) {
@@ -500,17 +507,6 @@ export const useDocumentSearch = (): DocumentSearchController => {
     internalQuery.value = newQuery
   })
 
-  // Initialize search client on mount
-  const client = initializeSearchClient()
-  
-  // Load initial facets after client initialization
-  if (client && typesenseClient.value) {
-    // Use nextTick to ensure the client is fully set up
-    nextTick(() => {
-      loadInitialFacets()
-    })
-  }
-
   // Retry functionality
   const retrySearch = () => {
     if (searchError.value?.retryable) {
@@ -519,15 +515,11 @@ export const useDocumentSearch = (): DocumentSearchController => {
     }
   }
 
-
   // Network monitoring setup
   if (typeof window !== 'undefined') {
     window.addEventListener('online', updateOnlineStatus)
     window.addEventListener('offline', updateOnlineStatus)
   }
-
-  // Initialize search client on mount
-  initializeSearchClient()
 
   // Cleanup on unmount
   onUnmounted(() => {

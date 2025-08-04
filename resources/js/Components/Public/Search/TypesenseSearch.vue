@@ -189,7 +189,6 @@ interface SearchComponentProps {
   searchTerm?: string
   showTrigger?: boolean
   dialogOpen?: boolean
-  typesenseConfig?: TypesenseConfig
 }
 
 // Component setup
@@ -199,7 +198,6 @@ const props = withDefaults(defineProps<SearchComponentProps>(), {
   searchTerm: '',
   showTrigger: false,
   dialogOpen: false,
-  typesenseConfig: undefined
 })
 
 const emit = defineEmits<{
@@ -308,12 +306,13 @@ const handleUpdateContentTypeResults = (
 
 // Remove preview handler - no longer needed
 
-// Typesense configuration
+// Typesense configuration - now uses global shared data
 const getTypesenseConfig = computed((): TypesenseConfig | null => {
-  if (props.typesenseConfig && 
-      props.typesenseConfig.apiKey && 
-      !['xyz', 'xyza'].includes(props.typesenseConfig.apiKey)) {
-    return props.typesenseConfig
+  const typesenseConfig = page.props.typesenseConfig as any
+  
+  if (typesenseConfig?.apiKey && 
+      !['xyz', 'xyza'].includes(typesenseConfig.apiKey)) {
+    return typesenseConfig
   }
   return null
 })
