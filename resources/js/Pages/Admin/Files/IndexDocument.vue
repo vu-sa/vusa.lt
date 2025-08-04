@@ -1,52 +1,39 @@
 <template>
-  <IndexTablePage
-    ref="indexTablePageRef"
-    v-bind="tableConfig"
-    @data-loaded="onDataLoaded"
-    @sorting-changed="handleSortingChange"
-    @page-changed="handlePageChange"
-    @filter-changed="handleFilterChange"
-  >
+  <IndexTablePage ref="indexTablePageRef" v-bind="tableConfig" @data-loaded="onDataLoaded"
+    @sorting-changed="handleSortingChange" @page-changed="handlePageChange" @filter-changed="handleFilterChange">
     <template #headerActions>
-      <FilePicker 
-        v-if="$page.props.app.url.startsWith('https')" 
-        :loading="loading" 
-        round 
-        size="sm"
-        @pick="handleDocumentPick"
-      >
-        {{ $t("forms.add") }}
-      </FilePicker>
+      <div class="flex items-center gap-2">
+        <FilePicker v-if="$page.props.app.url.startsWith('https')" :loading round size="sm" @pick="handleDocumentPick">
+          <div class="flex items-center gap-2">
+            <ExternalLinkIcon class="h-4 w-4" />
+            {{ $t("Upload from SharePoint") }}
+          </div>
+        </FilePicker>
+
+        <Button variant="outline" size="sm" :loading="bulkSyncLoading" @click="handleBulkSync">
+          <div class="flex items-center gap-2">
+            <RefreshCwIcon class="h-4 w-4" />
+            {{ $t("Sync All") }}
+          </div>
+        </Button>
+      </div>
     </template>
-    
+
     <template #filters>
-      <!-- TODO: needs to get all of the types from db, like the ShowDocuments.vue-->
-      <!-- <DataTableFilter
-        v-if="contentTypeOptions.length > 0"
-        v-model:value="selectedContentType"
-        :options="contentTypeOptions"
-        @update:value="handleContentTypeFilterChange"
-      >
+      <DataTableFilter v-if="contentTypeOptions.length > 0" v-model:value="selectedContentType"
+        :options="contentTypeOptions" @update:value="handleContentTypeFilterChange">
         {{ $t("content_type") }}
       </DataTableFilter>
 
-      <DataTableFilter
-        v-if="languageOptions.length > 0"
-        v-model:value="selectedLanguage"
-        :options="languageOptions"
-        @update:value="handleLanguageFilterChange"
-      >
+      <DataTableFilter v-if="languageOptions.length > 0" v-model:value="selectedLanguage" :options="languageOptions"
+        @update:value="handleLanguageFilterChange">
         {{ $t("language") }}
       </DataTableFilter>
 
-      <DataTableFilter
-        v-if="institutionOptions.length > 0"
-        v-model:value="selectedInstitutionId"
-        :options="institutionOptions"
-        @update:value="handleInstitutionFilterChange"
-      >
+      <DataTableFilter v-if="institutionOptions.length > 0" v-model:value="selectedInstitutionId"
+        :options="institutionOptions" @update:value="handleInstitutionFilterChange">
         {{ $t("institution") }}
-      </DataTableFilter> -->
+      </DataTableFilter>
     </template>
   </IndexTablePage>
 </template>
@@ -67,12 +54,14 @@ import { Button } from "@/Components/ui/button";
 import { ExternalLinkIcon, RefreshCwIcon } from "lucide-vue-next";
 import DataTableFilter from "@/Components/ui/data-table/DataTableFilter.vue";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
+import { formatRelativeTime, formatStaticTime } from "@/Utils/IntlTime";
+import { LocaleEnum } from "@/Types/enums";
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
-import { 
+import {
   type IndexTablePageProps
 } from "@/Types/TableConfigTypes";
-import { 
-  createTimestampColumn, 
+import {
+  createTimestampColumn,
   createTextColumn,
   createTitleColumn
 } from '@/Utils/DataTableColumns';
@@ -99,11 +88,12 @@ const entityName = 'document';
 // Breadcrumbs setup
 usePageBreadcrumbs(() => [
   BreadcrumbHelpers.homeItem(),
-  BreadcrumbHelpers.createBreadcrumbItem($t("administration.title"), route("administration")),
-  BreadcrumbHelpers.createBreadcrumbItem($t("Documents"), undefined, Icons.DOCUMENT)
+  BreadcrumbHelpers.createBreadcrumbItem($t("Administravimas"), route("administration"), Icons.TYPE),
+  BreadcrumbHelpers.createBreadcrumbItem($t("Dokumentai"), undefined, Icons.DOCUMENT)
 ]);
 
 const loading = ref(false);
+const bulkSyncLoading = ref(false);
 const indexTablePageRef = ref<InstanceType<typeof IndexTablePage> | null>(null);
 
 // Initialize filter states
@@ -157,99 +147,275 @@ const institutionOptions = computed(() => {
 
 // Column definitions using Tanstack Table format and standardized column helpers
 const columns = computed<ColumnDef<App.Entities.Document, any>[]>(() => [
-  createTitleColumn<App.Entities.Document>({
+  {
     accessorKey: "title",
     header: () => $t("forms.fields.title"),
-    routeName: "documents.show",
-    width: 350,
     cell: ({ row }) => {
       const title = row.getValue("title");
+      const hasUrl = row.original.anonymous_url;
+
       return (
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <div class="max-w-[340px] truncate">
-                <a href={row.original.anonymous_url} target="_blank" rel="noopener noreferrer" class="font-medium hover:underline">
-                  {title}
-                </a>
+              <div class="min-w-0 flex-1">
+                {hasUrl ? (
+                  <a
+                    href={row.original.anonymous_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="font-medium hover:underline text-blue-600 hover:text-blue-800 line-clamp-2 text-sm leading-tight"
+                    title={title}
+                  >
+                    {title}
+                    <ExternalLinkIcon class="inline h-3 w-3 ml-1 opacity-60" />
+                  </a>
+                ) : (
+                  <span class="font-medium text-gray-600 line-clamp-2 text-sm leading-tight" title={title}>
+                    {title}
+                  </span>
+                )}
               </div>
             </TooltipTrigger>
-            <TooltipContent side="top" align="start">
-              <p>{title}</p>
+            <TooltipContent side="top" align="start" class="max-w-md">
+              <div class="space-y-1">
+                <p class="font-medium">{title}</p>
+                {hasUrl && (
+                  <p class="text-xs text-gray-400">Click to open document</p>
+                )}
+              </div>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
       );
-    }
-  }),
-  {
-    id: "actions",
-    header: () => $t("actions"),
-    cell: ({ row }) => (
-      <div class="flex justify-center">
-        <Button 
-          size="icon" 
-          variant="ghost"
-          onClick={() => handleDocumentRefresh(row.original)}
-          title={$t("refresh")}
-        >
-          <RefreshCwIcon class="h-4 w-4" />
-        </Button>
-      </div>
-    ),
-    size: 80,
-  },
-  createTimestampColumn("document_date", {
-    title: $t("date"),
-    width: 130,
+    },
+    size: 300,
     enableSorting: true,
-  }),
-  createTextColumn("content_type", {
-    cell: ({ row }) => (
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div class="truncate max-w-[140px]">
-              {row.getValue("content_type")}
-            </div>
-          </TooltipTrigger>
-          <TooltipContent side="top">
-            <p>{row.getValue("content_type")}</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    ),
-    width: 150
-  }),
+  },
+  {
+    accessorKey: "language",
+    header: () => $t("lang"),
+    cell: ({ row }) => {
+      const language = row.getValue("language");
+      if (!language) return '—';
+      return (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span class="text-xs px-2 py-1 bg-gray-100 rounded-md truncate" title={language}>
+                {language === 'Lietuvių' ? 'LT' : language === 'Anglų' ? 'EN' : language}
+              </span>
+            </TooltipTrigger>
+            <TooltipContent side="top">
+              <p>{language}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      );
+    },
+    size: 70,
+    enableSorting: true,
+  },
+  {
+    accessorKey: "document_date",
+    header: () => $t("date"),
+    cell: ({ row }) => {
+      const date = row.getValue("document_date");
+      if (!date) return '—';
+
+      return (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span class="text-sm cursor-help font-mono">
+                {formatStaticTime(date, {
+                  year: "numeric",
+                  month: "2-digit",
+                  day: "2-digit"
+                }, LocaleEnum.LT)}
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{formatStaticTime(date, {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+                weekday: "long"
+              }, LocaleEnum.LT)}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      );
+    },
+    size: 100,
+    enableSorting: true,
+  },
+  {
+    accessorKey: "content_type",
+    header: () => $t("content_type"),
+    cell: ({ row }) => {
+      const contentType = row.getValue("content_type");
+      if (!contentType) return '—';
+
+      // Shorten common content types for display
+      const shortType = contentType
+        .replace('Parlamento ', 'Parl. ')
+        .replace(' sprendimas', ' spr.')
+        .replace(' protokolas', ' prot.')
+        .replace(' darbotvarkė', ' d.t.');
+
+      return (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span class="text-xs px-2 py-1 bg-gray-100 rounded-md truncate max-w-[140px] block" title={contentType}>
+                {shortType}
+              </span>
+            </TooltipTrigger>
+            <TooltipContent side="top">
+              <p>{contentType}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      );
+    },
+    size: 150,
+    enableSorting: true,
+  },
   // createTextColumn("language", {
   //   width: 100
   // }),
   {
-    accessorKey: "institution.short_name",
+    accessorKey: "institution_name_lt",
     header: () => $t("institution"),
     cell: ({ row }) => {
+      // Using paginateRaw() workaround returns database models with nested institution
       const institution = row.original.institution;
-      return institution ? institution.short_name : '';
+      if (!institution) return '—';
+
+      const shortName = institution.short_name || institution.name;
+      const fullName = institution.name;
+
+      return (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span class="text-xs font-medium text-indigo-600 bg-indigo-50 px-2 py-1 rounded-md">
+                {shortName}
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{fullName || shortName}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      );
     },
-    size: 150,
+    size: 120,
+    enableSorting: true,
   },
-  createTimestampColumn("checked_at", {
-    cell: ({ row }) => (
-      <div class="flex items-center gap-2">
-        <span>{row.getValue("checked_at") ? 
-          new Date(row.getValue("checked_at") as string).toLocaleString() : 
-          ''}</span>
-        <Button 
-          size="icon" 
-          variant="ghost"
-          onClick={() => handleDocumentRefresh(row.original)}
-        >
-          <RefreshCwIcon class="h-4 w-4" />
-        </Button>
-      </div>
-    ),
-    width: 220
-  }),
+  {
+    accessorKey: "sync_status",
+    header: () => $t("Sync Status"),
+    cell: ({ row }) => {
+      const status = row.original.sync_status || 'pending';
+      const attempts = row.original.sync_attempts || 0;
+      const statusConfig = {
+        'pending': {
+          color: 'text-gray-600',
+          bgColor: 'bg-gray-100',
+          dotColor: 'bg-gray-400',
+          label: 'Pending',
+          icon: '⏳'
+        },
+        'syncing': {
+          color: 'text-blue-600',
+          bgColor: 'bg-blue-50',
+          dotColor: 'bg-blue-500 animate-pulse',
+          label: 'Syncing...',
+          icon: '🔄'
+        },
+        'success': {
+          color: 'text-green-600',
+          bgColor: 'bg-green-50',
+          dotColor: 'bg-green-500',
+          label: 'Success',
+          icon: '✅'
+        },
+        'failed': {
+          color: 'text-red-600',
+          bgColor: 'bg-red-50',
+          dotColor: 'bg-red-500',
+          label: 'Failed',
+          icon: '❌'
+        }
+      };
+
+      const config = statusConfig[status] || statusConfig['pending'];
+
+      return (
+        <div class={`inline-flex items-center gap-2 px-2 py-1 rounded-full text-xs font-medium ${config.bgColor} ${config.color}`}>
+          <div class={`w-2 h-2 rounded-full ${config.dotColor}`}></div>
+          <span>{config.label}</span>
+          {attempts > 1 && (
+            <span class="bg-white/50 px-1 rounded text-xs">
+              {attempts}
+            </span>
+          )}
+        </div>
+      );
+    },
+    size: 140,
+  },
+  {
+    accessorKey: "checked_at",
+    header: () => $t("Last Check"),
+    cell: ({ row }) => {
+      const checkedAt = row.getValue("checked_at");
+
+      return (
+        <div class="flex items-center gap-2">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span class="text-sm cursor-help">
+                  {checkedAt ?
+                    formatRelativeTime(checkedAt, { numeric: "auto" }, LocaleEnum.LT) :
+                    $t('Never')}
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>
+                  {checkedAt ?
+                    formatStaticTime(checkedAt, {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit"
+                    }, LocaleEnum.LT) :
+                    $t('Document has never been synced')
+                  }
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={() => handleDocumentRefresh(row.original)}
+            title={$t("refresh")}
+            class="h-6 w-6"
+          >
+            <RefreshCwIcon class="h-3 w-3" />
+          </Button>
+        </div>
+      );
+    },
+    size: 130,
+    enableSorting: true,
+  },
   createStandardActionsColumn<App.Entities.Document>("documents", {
     // canView: true,
     // canEdit: true,
@@ -269,15 +435,16 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Document>>(() => {
     totalCount: props.meta.total,
     initialPage: props.meta.current_page,
     pageSize: props.meta.per_page,
-    
+
     // Advanced features
     initialFilters: props.filters,
-    initialSorting: [{ id: "checked_at", desc: true }],
+    initialSorting: props.sorting && props.sorting.length > 0 ? props.sorting : [{ id: "created_at", desc: true }],
     enableFiltering: true,
     enableColumnVisibility: true,
-    
+
     // Page layout
     headerTitle: $t("Documents"),
+    headerDescription: $t("Documents are automatically synchronized from SharePoint. Manual refresh is rarely needed - the system updates content intelligently in the background."),
     icon: Icons.DOCUMENT,
     canCreate: false,
     // breadcrumbs handled via usePageBreadcrumbs
@@ -374,6 +541,23 @@ const handleDocumentRefresh = (document: App.Entities.Document) => {
   });
 };
 
+const handleBulkSync = () => {
+  bulkSyncLoading.value = true;
+
+  router.post(route("documents.bulk-sync"), {}, {
+    onSuccess: () => {
+      bulkSyncLoading.value = false;
+      // Reload the current page after bulk sync
+      if (indexTablePageRef.value) {
+        indexTablePageRef.value.reloadData();
+      }
+    },
+    onError() {
+      bulkSyncLoading.value = false;
+    },
+  });
+};
+
 // Sync filter values when changed externally
 watch(() => props.filters, (newFilters) => {
   if (newFilters) {
@@ -388,4 +572,5 @@ watch(() => props.filters, (newFilters) => {
     }
   }
 }, { deep: true });
+
 </script>

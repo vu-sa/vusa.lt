@@ -24,9 +24,10 @@ const options: FilePickerOptions = {
   "entry": {
     "sharePoint": {
       "byPath": {
+        // TODO: Move to configuration - hardcoded SharePoint URLs and paths
         "web": "https://vustudentuatstovybe.sharepoint.com/sites/vieningai",
-        "list": "Bendrai naudojami dokumentai",
-        "folder": "Archyvas"
+        "list": "Bendrai naudojami dokumentai", // TODO: Make configurable
+        "folder": "Archyvas" // TODO: Make configurable
       }
     }
   },
@@ -49,6 +50,7 @@ const options: FilePickerOptions = {
     locations: {
       sharePoint: {
         "byPath": {
+          // TODO: Move to configuration - hardcoded SharePoint site URL
           "folder": "https://vustudentuatstovybe.sharepoint.com/sites/vieningai"
         }
       }
@@ -61,9 +63,10 @@ const options: FilePickerOptions = {
   leftNav: {
     enabled: false
   },
-  title: "Pridėk failą prie vusa.lt dokumentų",
+  title: "Select Documents from SharePoint Archive",
 }
 
+// TODO: Move to configuration - hardcoded SharePoint base URL
 const baseUrl = "https://vustudentuatstovybe.sharepoint.com";
 
 const msalParams = {
@@ -89,20 +92,20 @@ async function getToken(command): Promise<string> {
     accessToken = resp.accessToken;
 
   } catch (e) {
+    try {
+      // per examples we fall back to popup
+      const resp = await app.loginPopup(authParams!);
+      app.setActiveAccount(resp.account);
 
-    // per examples we fall back to popup
-    const resp = await app.loginPopup(authParams!);
-    app.setActiveAccount(resp.account);
-
-    if (resp.idToken) {
-
-      const resp2 = await app.acquireTokenSilent(authParams!);
-      accessToken = resp2.accessToken;
-
-    } else {
-
-      // throw the error that brought us here
-      throw e;
+      if (resp.idToken) {
+        const resp2 = await app.acquireTokenSilent(authParams!);
+        accessToken = resp2.accessToken;
+      } else {
+        throw new Error('Authentication failed: No ID token received');
+      }
+    } catch (authError) {
+      console.error('SharePoint authentication failed:', authError);
+      throw new Error(`Authentication failed: ${authError.message || 'Please check popup blockers and try again'}`);
     }
   }
 
@@ -110,8 +113,18 @@ async function getToken(command): Promise<string> {
 }
 
 async function openPicker() {
+  try {
+    // Notify user about the popup window
+    if (window.document.visibilityState === 'hidden') {
+      alert('📁 Opening SharePoint file picker in a new window...\n\nPlease complete authentication in the popup window.');
+    }
 
-  const win = window.open("", "Picker", "width=1080,height=680");
+    const win = window.open("", "SharePoint File Picker", "width=1080,height=680,menubar=no,toolbar=no,location=no,status=no,scrollbars=yes,resizable=yes");
+    
+    if (!win) {
+      alert('⚠️ Popup blocked! Please allow popups for this site and try again.\n\nThe SharePoint file picker needs to open in a new window for authentication.');
+      return;
+    }
 
   const queryString = new URLSearchParams({
     filePicker: JSON.stringify(options),
@@ -214,6 +227,11 @@ async function openPicker() {
                 }
               });
             } catch (error) {
+              console.error('SharePoint authentication error:', error);
+              const errorMessage = error.message.includes('popup') 
+                ? 'Authentication failed. Please check popup blocker settings and try again.'
+                : error.message || 'Authentication failed. Please try again.';
+              
               port.postMessage({
                 type: "result",
                 id: message.data.id,
@@ -221,7 +239,7 @@ async function openPicker() {
                   result: "error",
                   error: {
                     code: "unableToObtainToken",
-                    message: error.message
+                    message: errorMessage
                   }
                 }
               });
@@ -307,17 +325,24 @@ async function openPicker() {
   });
 
   window.onbeforeunload = () => {
-    port.postMessage({
-      type: "result",
-      id: "close",
-      data: {
-        result: "success"
-      }
-    });
+    if (port) {
+      port.postMessage({
+        type: "result",
+        id: "close",
+        data: {
+          result: "success"
+        }
+      });
 
-    port.close();
+      port.close();
+    }
 
     win?.close();
+  }
+  
+  } catch (error) {
+    console.error('SharePoint FilePicker error:', error);
+    alert(`❌ SharePoint connection failed:\n\n${error.message}\n\nPlease check your internet connection and try again.`);
   }
 }
 </script>

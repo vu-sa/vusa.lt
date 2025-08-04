@@ -59,14 +59,14 @@
             <div class="text-xs sm:text-sm text-muted-foreground min-w-0 flex-1 pr-2">
               <template v-if="searchController.totalHits.value > 0">
                 <template v-if="searchController.searchState.value.query === '*' && !hasActiveFilters">
-                  <span class="hidden sm:inline">{{ $t('search.showing_results') }}</span>
-                  <strong class="text-foreground">{{ searchController.totalHits.value.toLocaleString() }}</strong>{{ ' ' }}
+                  <span class="hidden sm:inline">{{ $t('search.showing_results') }}</span>{{ ' ' }}
+                  <strong class="text-foreground">{{ searchController.totalHits.value.toLocaleString() }}</strong>&nbsp;
                   <span class="hidden sm:inline">{{ searchController.totalHits.value === 1 ? $t('search.document_singular') : $t('search.document_plural') }}</span>
                   <span class="sm:hidden">{{ searchController.totalHits.value === 1 ? 'dok.' : 'dok.' }}</span>{{ ' ' }}
                   <span class="hidden sm:inline">{{ $t('search.newest_first') }}</span>
                 </template>
                 <template v-else>
-                  <span class="hidden sm:inline">{{ $t('search.found_results') }}</span>
+                  <span class="hidden sm:inline">{{ $t('search.found_results') }}</span>{{ ' ' }}
                   <strong class="text-foreground">{{ searchController.totalHits.value.toLocaleString() }}</strong>{{ ' ' }}
                   <span class="hidden sm:inline">{{ searchController.totalHits.value === 1 ? $t('search.document_singular') : $t('search.document_plural') }}</span>
                   <span class="sm:hidden">{{ searchController.totalHits.value === 1 ? 'dok.' : 'dok.' }}</span>
