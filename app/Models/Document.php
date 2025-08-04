@@ -231,8 +231,8 @@ class Document extends Model
 
         // Check effective date constraint (if exists)
         $effectiveCheck = $this->effective_date === null || $now->greaterThanOrEqualTo($this->effective_date);
-        
-        // Check expiration date constraint (if exists)  
+
+        // Check expiration date constraint (if exists)
         $expirationCheck = $this->expiration_date === null || $now->lessThanOrEqualTo($this->expiration_date);
 
         // Document is in effect if both constraints are satisfied
