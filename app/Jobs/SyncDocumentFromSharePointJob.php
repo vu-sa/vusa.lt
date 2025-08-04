@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Log;
 
 class SyncDocumentFromSharePointJob implements ShouldQueue
 {
-    use Queueable, InteractsWithQueue, SerializesModels;
+    use InteractsWithQueue, Queueable, SerializesModels;
 
     /**
      * The number of times the job may be attempted.
@@ -92,7 +92,7 @@ class SyncDocumentFromSharePointJob implements ShouldQueue
         // Update document status to indicate permanent failure
         $this->document->update([
             'sync_status' => 'failed',
-            'sync_error_message' => 'Job failed after ' . $this->tries . ' attempts: ' . $exception->getMessage(),
+            'sync_error_message' => 'Job failed after '.$this->tries.' attempts: '.$exception->getMessage(),
         ]);
     }
 }

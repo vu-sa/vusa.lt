@@ -37,12 +37,12 @@ class TanstackTableService
                     if (method_exists($model, $relation)) {
                         $relationObj = $model->{$relation}();
                         $relatedTable = $relationObj->getRelated()->getTable();
-                        
+
                         // Handle different relationship types
                         if ($relationObj instanceof \Illuminate\Database\Eloquent\Relations\BelongsTo) {
                             $foreignKey = $relationObj->getForeignKeyName();
                             $ownerKey = $relationObj->getOwnerKeyName();
-                            
+
                             // Generate a unique join name to avoid conflicts
                             $joinName = "{$relatedTable}_sort";
 
@@ -60,7 +60,7 @@ class TanstackTableService
                             // For HasMany, HasOne, etc.
                             $foreignKey = $relationObj->getForeignKeyName();
                             $localKey = $relationObj->getLocalKeyName() ?: 'id';
-                            
+
                             // Generate a unique join name to avoid conflicts
                             $joinName = "{$relatedTable}_sort";
 

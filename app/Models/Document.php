@@ -198,7 +198,7 @@ class Document extends Model
         if (\Illuminate\Support\Facades\Context::get('search_context') === 'admin') {
             return true;
         }
-        
+
         // For public context, only index documents that have anonymous access
         return ! empty($this->anonymous_url);
     }

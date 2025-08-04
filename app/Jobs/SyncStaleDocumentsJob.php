@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Log;
 
 class SyncStaleDocumentsJob implements ShouldQueue
 {
-    use Queueable, InteractsWithQueue, SerializesModels;
+    use InteractsWithQueue, Queueable, SerializesModels;
 
     /**
      * The number of times the job may be attempted.
@@ -44,6 +44,7 @@ class SyncStaleDocumentsJob implements ShouldQueue
 
         if ($staleDocuments->isEmpty()) {
             Log::info('No stale documents found for sync');
+
             return;
         }
 
@@ -65,6 +66,7 @@ class SyncStaleDocumentsJob implements ShouldQueue
                         'document_id' => $document->id,
                         'sync_attempts' => $document->sync_attempts,
                     ]);
+
                     continue;
                 }
 
@@ -77,7 +79,7 @@ class SyncStaleDocumentsJob implements ShouldQueue
             }
 
             // Longer delay between batches
-            if (!$batch->isEmpty()) {
+            if (! $batch->isEmpty()) {
                 sleep(2); // 2 second delay between batches
             }
         });
@@ -104,14 +106,14 @@ class SyncStaleDocumentsJob implements ShouldQueue
             // Exclude documents that are currently being synced
             ->where('sync_status', '!=', 'syncing')
             // Prioritize active documents and documents with anonymous URLs (public)
-            ->orderByRaw("
+            ->orderByRaw('
                 CASE 
                     WHEN is_active = 1 AND anonymous_url IS NOT NULL THEN 1
                     WHEN is_active = 1 THEN 2
                     WHEN anonymous_url IS NOT NULL THEN 3
                     ELSE 4
                 END
-            ")
+            ')
             // Secondary sort by last check time (oldest first)
             ->orderBy('checked_at', 'asc')
             // Limit to prevent overwhelming the system
@@ -130,9 +132,9 @@ class SyncStaleDocumentsJob implements ShouldQueue
         }
 
         // Skip if it failed recently and has multiple attempts
-        if ($document->sync_status === 'failed' && 
-            $document->sync_attempts >= 3 && 
-            $document->last_sync_attempt_at && 
+        if ($document->sync_status === 'failed' &&
+            $document->sync_attempts >= 3 &&
+            $document->last_sync_attempt_at &&
             $document->last_sync_attempt_at > now()->subHours(6)) {
             return true;
         }

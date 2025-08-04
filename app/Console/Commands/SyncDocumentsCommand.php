@@ -50,7 +50,7 @@ class SyncDocumentsCommand extends Command
     private function syncStaleDocuments()
     {
         $this->info('Dispatching stale documents sync job...');
-        
+
         if ($this->option('dry-run')) {
             $staleCount = Document::query()
                 ->where(function ($query) {
@@ -59,21 +59,22 @@ class SyncDocumentsCommand extends Command
                 })
                 ->where('sync_status', '!=', 'syncing')
                 ->count();
-            
+
             $this->info("Would sync {$staleCount} stale documents");
+
             return 0;
         }
 
         SyncStaleDocumentsJob::dispatch();
         $this->info('Stale documents sync job dispatched successfully');
-        
+
         return 0;
     }
 
     private function syncAllDocuments()
     {
         $limit = (int) $this->option('limit');
-        
+
         $query = Document::query()
             ->where('sync_status', '!=', 'syncing')
             ->orderBy('checked_at', 'asc')
@@ -82,30 +83,31 @@ class SyncDocumentsCommand extends Command
         if ($this->option('dry-run')) {
             $count = $query->count();
             $this->info("Would sync {$count} documents (limit: {$limit})");
-            
+
             $documents = $query->get(['id', 'title', 'checked_at', 'sync_status']);
             $this->table(
                 ['ID', 'Title', 'Last Checked', 'Status'],
-                $documents->map(fn($doc) => [
+                $documents->map(fn ($doc) => [
                     $doc->id,
                     substr($doc->title ?? 'Untitled', 0, 50),
                     $doc->checked_at ? $doc->checked_at->format('Y-m-d H:i') : 'Never',
-                    $doc->sync_status ?? 'pending'
+                    $doc->sync_status ?? 'pending',
                 ])
             );
-            
+
             return 0;
         }
 
         $documents = $query->get();
-        
+
         if ($documents->isEmpty()) {
             $this->info('No documents to sync');
+
             return 0;
         }
 
         $this->info("Dispatching sync jobs for {$documents->count()} documents...");
-        
+
         $bar = $this->output->createProgressBar($documents->count());
         $bar->start();
 
@@ -118,14 +120,14 @@ class SyncDocumentsCommand extends Command
         $bar->finish();
         $this->newLine();
         $this->info('All sync jobs dispatched successfully');
-        
+
         return 0;
     }
 
     private function syncFailedDocuments()
     {
         $limit = (int) $this->option('limit');
-        
+
         $query = Document::query()
             ->where('sync_status', 'failed')
             ->where('sync_attempts', '<', 5) // Don't retry documents that have failed too many times
@@ -135,30 +137,31 @@ class SyncDocumentsCommand extends Command
         if ($this->option('dry-run')) {
             $count = $query->count();
             $this->info("Would retry {$count} failed documents (limit: {$limit})");
-            
+
             $documents = $query->get(['id', 'title', 'sync_attempts', 'sync_error_message']);
             $this->table(
                 ['ID', 'Title', 'Attempts', 'Last Error'],
-                $documents->map(fn($doc) => [
+                $documents->map(fn ($doc) => [
                     $doc->id,
                     substr($doc->title ?? 'Untitled', 0, 30),
                     $doc->sync_attempts,
-                    substr($doc->sync_error_message ?? '', 0, 50)
+                    substr($doc->sync_error_message ?? '', 0, 50),
                 ])
             );
-            
+
             return 0;
         }
 
         $failedDocuments = $query->get();
-        
+
         if ($failedDocuments->isEmpty()) {
             $this->info('No failed documents to retry');
+
             return 0;
         }
 
         $this->info("Retrying sync for {$failedDocuments->count()} failed documents...");
-        
+
         foreach ($failedDocuments as $document) {
             SyncDocumentFromSharePointJob::dispatch($document);
             $this->line("Dispatched retry for: {$document->title}");
@@ -166,7 +169,7 @@ class SyncDocumentsCommand extends Command
         }
 
         $this->info('All retry jobs dispatched successfully');
-        
+
         return 0;
     }
 }

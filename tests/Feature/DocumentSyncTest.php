@@ -17,9 +17,9 @@ beforeEach(function () {
 describe('Document Sync Jobs', function () {
     test('individual sync job can be created and has correct properties', function () {
         $document = Document::factory()->create();
-        
+
         $job = new SyncDocumentFromSharePointJob($document);
-        
+
         expect($job->document->id)->toBe($document->id);
         expect($job->tries)->toBe(3);
         expect($job->timeout)->toBe(120);
@@ -32,28 +32,28 @@ describe('Document Sync Jobs', function () {
             'checked_at' => now()->subDays(2), // Stale (older than 24h)
             'sync_status' => 'success',
         ]);
-        
+
         $staleDocument2 = Document::factory()->create([
             'checked_at' => null, // Never checked - also stale
             'sync_status' => 'pending',
         ]);
-        
+
         $freshDocument = Document::factory()->create([
             'checked_at' => now()->subHours(12), // Fresh (less than 24h)
             'sync_status' => 'success',
         ]);
 
         // Run the stale documents job
-        $job = new SyncStaleDocumentsJob();
+        $job = new SyncStaleDocumentsJob;
         $job->handle();
 
         // Assert: Only stale documents should be queued
         Queue::assertPushed(SyncDocumentFromSharePointJob::class, 2);
-        
+
         Queue::assertPushed(SyncDocumentFromSharePointJob::class, function ($job) use ($staleDocument1) {
             return $job->document->id === $staleDocument1->id;
         });
-        
+
         Queue::assertPushed(SyncDocumentFromSharePointJob::class, function ($job) use ($staleDocument2) {
             return $job->document->id === $staleDocument2->id;
         });
@@ -68,7 +68,7 @@ describe('Document Sync Jobs', function () {
             'last_sync_attempt_at' => now()->subHours(1),
         ]);
 
-        $job = new SyncStaleDocumentsJob();
+        $job = new SyncStaleDocumentsJob;
         $job->handle();
 
         // No jobs should be dispatched for documents with excessive failures
@@ -84,7 +84,7 @@ describe('Document Sync Jobs', function () {
             'last_sync_attempt_at' => now()->subHours(2), // Recent failure
         ]);
 
-        $job = new SyncStaleDocumentsJob();
+        $job = new SyncStaleDocumentsJob;
         $job->handle();
 
         // Should skip recently failed documents
@@ -96,7 +96,7 @@ describe('Document Sync Controller', function () {
     test('refresh endpoint dispatches sync job for authorized users', function () {
         $user = \App\Models\User::factory()->create();
         $user->assignRole(config('permission.super_admin_role_name'));
-        
+
         $document = Document::factory()->create();
 
         $response = $this->actingAs($user)
@@ -105,7 +105,7 @@ describe('Document Sync Controller', function () {
         Queue::assertPushed(SyncDocumentFromSharePointJob::class, function ($job) use ($document) {
             return $job->document->id === $document->id;
         });
-        
+
         $response->assertSessionHas('success', 'Document refresh has been queued. It will be updated shortly.');
     });
 
@@ -118,7 +118,7 @@ describe('Document Sync Controller', function () {
 
         // User gets redirected due to authorization failure (could be 403 or 302)
         expect($response->status())->toBeIn([302, 403]);
-        
+
         // Ensure no sync jobs were dispatched (ignore scout jobs)
         Queue::assertNotPushed(SyncDocumentFromSharePointJob::class);
     });
@@ -130,7 +130,7 @@ describe('Document Sync Command', function () {
         Document::factory()->count(3)->create([
             'checked_at' => now()->subDays(2), // Stale
         ]);
-        
+
         Document::factory()->create([
             'checked_at' => now()->subHours(12), // Fresh
         ]);
@@ -148,12 +148,12 @@ describe('Document Sync Command', function () {
             'sync_status' => 'failed',
             'sync_attempts' => 2, // Eligible for retry
         ]);
-        
+
         Document::factory()->create([
-            'sync_status' => 'failed', 
+            'sync_status' => 'failed',
             'sync_attempts' => 6, // Too many attempts - should be skipped
         ]);
-        
+
         Document::factory()->create([
             'sync_status' => 'success', // Not failed
         ]);
@@ -179,7 +179,7 @@ describe('Document Sync Command', function () {
 describe('Document Sync Status', function () {
     test('documents have correct default sync status', function () {
         $document = Document::factory()->create();
-        
+
         expect($document->sync_status)->toBe('pending');
         expect($document->sync_attempts)->toBe(0);
         expect($document->last_sync_attempt_at)->toBeNull();
@@ -188,14 +188,14 @@ describe('Document Sync Status', function () {
     test('sync status is included in admin table display', function () {
         $user = \App\Models\User::factory()->create();
         $user->assignRole(config('permission.super_admin_role_name'));
-        
+
         Document::factory()->create([
             'sync_status' => 'success',
             'title' => 'Test Document',
         ]);
 
         $response = $this->actingAs($user)->get(route('documents.index'));
-        
+
         $response->assertOk();
         // The page should load successfully - detailed UI testing would require browser tests
     });
