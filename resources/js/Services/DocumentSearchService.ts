@@ -161,22 +161,22 @@ export class DocumentSearchService {
   private buildFilterConditions(filters: DocumentSearchFilters): string[] {
     const filterConditions: string[] = ['is_active:=true']
 
-    // Tenant filters
+    // Tenant filters - use exact match for each tenant
     if (filters.tenants.length > 0) {
-      const tenantFilter = filters.tenants.map(t => `"${t}"`).join(',')
-      filterConditions.push(`tenant_shortname:[${tenantFilter}]`)
+      const tenantConditions = filters.tenants.map(t => `tenant_shortname:="${t}"`)
+      filterConditions.push(`(${tenantConditions.join(' || ')})`)
     }
 
-    // Content type filters
+    // Content type filters - use exact match for each type
     if (filters.contentTypes.length > 0) {
-      const typeFilter = filters.contentTypes.map(t => `"${t}"`).join(',')
-      filterConditions.push(`content_type:[${typeFilter}]`)
+      const typeConditions = filters.contentTypes.map(t => `content_type:="${t}"`)
+      filterConditions.push(`(${typeConditions.join(' || ')})`)
     }
 
-    // Language filters
+    // Language filters - use exact match for each language
     if (filters.languages.length > 0) {
-      const langFilter = filters.languages.map(l => `"${l}"`).join(',')
-      filterConditions.push(`language:[${langFilter}]`)
+      const langConditions = filters.languages.map(l => `language:="${l}"`)
+      filterConditions.push(`(${langConditions.join(' || ')})`)
     }
 
     // Date range filtering

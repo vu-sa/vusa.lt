@@ -77,7 +77,7 @@ export const useSearchState = () => {
     return filters.value.tenants.length > 0 ||
            filters.value.contentTypes.length > 0 ||
            filters.value.languages.length > 0 ||
-           (filters.value.dateRange.preset && filters.value.dateRange.preset !== 'recent') ||
+           !!filters.value.dateRange.preset ||
            filters.value.dateRange.from || 
            filters.value.dateRange.to
   })

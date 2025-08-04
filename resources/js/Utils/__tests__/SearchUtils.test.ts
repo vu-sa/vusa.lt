@@ -8,7 +8,7 @@ import {
   QueryUtils,
   PerformanceUtils
 } from '../SearchUtils'
-import type { DocumentSearchFilters, SearchError } from '@/types/DocumentSearchTypes'
+import type { DocumentSearchFilters, SearchError } from '@/Types/DocumentSearchTypes'
 
 // Mock the translation function
 vi.mock('laravel-vue-i18n', () => ({
@@ -198,7 +198,7 @@ describe('FilterUtils', () => {
     })
 
     it('detects date range filters', () => {
-      const filters1 = { ...baseFilters, dateRange: { preset: '3months' } }
+      const filters1 = { ...baseFilters, dateRange: { preset: '3months' as const } }
       const filters2 = { ...baseFilters, dateRange: { from: new Date() } }
       const filters3 = { ...baseFilters, dateRange: { to: new Date() } }
       
@@ -207,9 +207,9 @@ describe('FilterUtils', () => {
       expect(FilterUtils.hasActiveFilters(filters3)).toBe(true)
     })
 
-    it('ignores "recent" preset as it is default', () => {
-      const filters = { ...baseFilters, dateRange: { preset: 'recent' } }
-      expect(FilterUtils.hasActiveFilters(filters)).toBe(false)
+    it('counts "recent" preset as an active filter when explicitly selected', () => {
+      const filters = { ...baseFilters, dateRange: { preset: 'recent' as const } }
+      expect(FilterUtils.hasActiveFilters(filters)).toBe(true)
     })
   })
 
@@ -233,7 +233,7 @@ describe('FilterUtils', () => {
     it('counts date range as one filter regardless of from/to/preset', () => {
       const filters = {
         ...baseFilters,
-        dateRange: { from: new Date(), to: new Date(), preset: 'custom' }
+        dateRange: { from: new Date(), to: new Date(), preset: 'custom' as const }
       }
       
       expect(FilterUtils.countActiveFilters(filters)).toBe(1)

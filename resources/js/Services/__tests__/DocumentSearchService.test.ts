@@ -172,7 +172,7 @@ describe('DocumentSearchService', () => {
       await service.performSearch(filters, 24, false, 0)
       
       expect(mockClient.search).toHaveBeenCalledWith('documents', expect.objectContaining({
-        filter_by: 'is_active:=true && tenant_shortname:["vu-sa","vu-mif"]'
+        filter_by: 'is_active:=true && (tenant_shortname:="vu-sa" || tenant_shortname:="vu-mif")'
       }))
     })
 
@@ -182,7 +182,7 @@ describe('DocumentSearchService', () => {
       await service.performSearch(filters, 24, false, 0)
       
       expect(mockClient.search).toHaveBeenCalledWith('documents', expect.objectContaining({
-        filter_by: 'is_active:=true && content_type:["Protocol","Resolution"]'
+        filter_by: 'is_active:=true && (content_type:="Protocol" || content_type:="Resolution")'
       }))
     })
 
@@ -192,7 +192,7 @@ describe('DocumentSearchService', () => {
       await service.performSearch(filters, 24, false, 0)
       
       expect(mockClient.search).toHaveBeenCalledWith('documents', expect.objectContaining({
-        filter_by: 'is_active:=true && language:["Lithuanian","English"]'
+        filter_by: 'is_active:=true && (language:="Lithuanian" || language:="English")'
       }))
     })
 
@@ -200,7 +200,7 @@ describe('DocumentSearchService', () => {
       const filters = { 
         ...baseFilters, 
         query: '*', 
-        dateRange: { preset: '3months' }
+        dateRange: { preset: '3months' as const }
       }
       
       await service.performSearch(filters, 24, false, 0)
@@ -216,7 +216,7 @@ describe('DocumentSearchService', () => {
       const filters = { 
         ...baseFilters, 
         query: '*', 
-        dateRange: { preset: 'custom', from: fromDate, to: toDate }
+        dateRange: { preset: 'custom' as const, from: fromDate, to: toDate }
       }
       
       await service.performSearch(filters, 24, false, 0)
@@ -241,7 +241,7 @@ describe('DocumentSearchService', () => {
       await service.performSearch(filters, 24, false, 0)
       
       expect(mockClient.search).toHaveBeenCalledWith('documents', expect.objectContaining({
-        filter_by: 'is_active:=true && tenant_shortname:["vu-sa"] && content_type:["Protocol"] && language:["Lithuanian"]'
+        filter_by: 'is_active:=true && (tenant_shortname:="vu-sa") && (content_type:="Protocol") && (language:="Lithuanian")'
       }))
     })
 
@@ -302,7 +302,7 @@ describe('DocumentSearchService', () => {
       await service.performSearch(filters, 24, false, 0)
       
       expect(mockClient.search).toHaveBeenCalledWith('documents', expect.objectContaining({
-        filter_by: 'is_active:=true && tenant_shortname:["vu-sa [special]","test & co"]'
+        filter_by: 'is_active:=true && (tenant_shortname:="vu-sa [special]" || tenant_shortname:="test & co")'
       }))
     })
   })

@@ -113,6 +113,7 @@ import { ref, computed } from 'vue'
 import { format } from 'date-fns'
 import { lt } from 'date-fns/locale'
 import { CalendarDate, today, getLocalTimeZone, type DateValue } from '@internationalized/date'
+import { trans as $t } from 'laravel-vue-i18n'
 
 // ShadcnVue components
 import { Button } from '@/Components/ui/button'
@@ -155,45 +156,45 @@ const emit = defineEmits<Emits>()
 const fromDateOpen = ref(false)
 const toDateOpen = ref(false)
 
-// Date presets configuration - using hardcoded values but could be translated in template
-const datePresets = [
+// Date presets configuration - using translation keys
+const datePresets = computed(() => [
   {
     key: 'recent',
-    label: 'Recent',
-    description: '3 months',
+    label: $t('search.date_recent'),
+    description: $t('search.date_recent_desc'),
     icon: '🕒'
   },
   {
     key: '3months',
-    label: '3 months',
-    description: 'Last 90 days',
+    label: $t('search.date_3_months'),
+    description: $t('search.date_3_months_desc'),
     icon: '📅'
   },
   {
     key: '6months',
-    label: '6 months',
-    description: 'Half year ago',
+    label: $t('search.date_6_months'),
+    description: $t('search.date_6_months_desc'),
     icon: '📅'
   },
   {
     key: '1year',
-    label: 'Year',
-    description: 'Last 12 months',
+    label: $t('search.date_1_year'),
+    description: $t('search.date_1_year_desc'),
     icon: '🗓️'
   },
   {
     key: 'year-range',
-    label: 'Year range',
-    description: 'Select year range',
+    label: $t('search.date_year_range'),
+    description: $t('search.date_year_range_desc'),
     icon: '📊'
   },
   {
     key: 'custom',
-    label: 'Custom',
-    description: 'Specific range',
+    label: $t('search.date_custom'),
+    description: $t('search.date_custom_desc'),
     icon: '🎯'
   }
-]
+])
 
 // Helper functions
 const formatDate = (date: Date | string | null | undefined): string => {
@@ -219,10 +220,10 @@ const calendarDateToDate = (calendarDate: CalendarDate | undefined): Date | unde
 
 // Computed properties
 const hasActiveDateFilter = computed(() => {
-  // Only show active filter if it's not the default 'recent' preset or has custom dates
-  return (props.dateRange.preset && props.dateRange.preset !== 'recent') ||
-    props.dateRange.from ||
-    props.dateRange.to
+  // Show active filter if user has explicitly selected any preset or custom dates
+  return !!props.dateRange.preset || 
+         !!props.dateRange.from || 
+         !!props.dateRange.to
 })
 
 // Year range slider computed properties
@@ -316,9 +317,7 @@ const clearCustomRange = () => {
 }
 
 const clearDateFilter = () => {
-  const newRange: DateRange = {
-    preset: 'recent'
-  }
+  const newRange: DateRange = {}
 
   emit('update:dateRange', newRange)
 }
@@ -342,7 +341,7 @@ const handleYearRangeChange = (value: number[] | undefined) => {
 const getActiveDateRangeDescription = (): string => {
   // Only show description for non-default presets
   if (props.dateRange.preset && props.dateRange.preset !== 'recent' && props.dateRange.preset !== 'custom') {
-    const preset = datePresets.find(p => p.key === props.dateRange.preset)
+    const preset = datePresets.value.find(p => p.key === props.dateRange.preset)
     return preset ? `${preset.label} (${preset.description})` : ''
   }
 
@@ -351,11 +350,11 @@ const getActiveDateRangeDescription = (): string => {
   }
 
   if (props.dateRange.from) {
-    return `Nuo ${formatDate(props.dateRange.from)}`
+    return $t('search.date_from_format', { date: formatDate(props.dateRange.from) })
   }
 
   if (props.dateRange.to) {
-    return `Iki ${formatDate(props.dateRange.to)}`
+    return $t('search.date_to_format', { date: formatDate(props.dateRange.to) })
   }
 
   return ''

@@ -66,7 +66,7 @@ export class FilterUtils {
     return filters.tenants.length > 0 ||
            filters.contentTypes.length > 0 ||
            filters.languages.length > 0 ||
-           (filters.dateRange.preset && filters.dateRange.preset !== 'recent') ||
+           !!filters.dateRange.preset ||
            !!filters.dateRange.from || 
            !!filters.dateRange.to
   }
@@ -76,8 +76,7 @@ export class FilterUtils {
     if (filters.tenants.length > 0) count++
     if (filters.contentTypes.length > 0) count++
     if (filters.languages.length > 0) count++
-    if ((filters.dateRange.preset && filters.dateRange.preset !== 'recent') || 
-        filters.dateRange.from || filters.dateRange.to) count++
+    if (filters.dateRange.preset || filters.dateRange.from || filters.dateRange.to) count++
     return count
   }
 
@@ -86,8 +85,7 @@ export class FilterUtils {
     if (filters.tenants.length > 0) summary.push(`${filters.tenants.length} org.`)
     if (filters.contentTypes.length > 0) summary.push(`${filters.contentTypes.length} tipas`)
     if (filters.languages.length > 0) summary.push(`${filters.languages.length} kalba`)
-    if ((filters.dateRange.preset && filters.dateRange.preset !== 'recent') || 
-        filters.dateRange.from || filters.dateRange.to) {
+    if (filters.dateRange.preset || filters.dateRange.from || filters.dateRange.to) {
       summary.push('data')
     }
     return summary
