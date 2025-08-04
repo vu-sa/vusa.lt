@@ -37,21 +37,43 @@ class TanstackTableService
                     if (method_exists($model, $relation)) {
                         $relationObj = $model->{$relation}();
                         $relatedTable = $relationObj->getRelated()->getTable();
-                        $foreignKey = $relationObj->getForeignKeyName();
-                        $localKey = $relationObj->getLocalKeyName() ?: 'id';
 
-                        // Generate a unique join name to avoid conflicts
-                        $joinName = "{$relatedTable}_sort";
+                        // Handle different relationship types
+                        if ($relationObj instanceof \Illuminate\Database\Eloquent\Relations\BelongsTo) {
+                            $foreignKey = $relationObj->getForeignKeyName();
+                            $ownerKey = $relationObj->getOwnerKeyName();
 
-                        // Only add join if not already added
-                        if (! in_array($joinName, $addedJoins)) {
-                            $query->leftJoin(
-                                "{$relatedTable} as {$joinName}",
-                                "{$joinName}.{$localKey}",
-                                '=',
-                                "{$model->getTable()}.{$foreignKey}"
-                            );
-                            $addedJoins[] = $joinName;
+                            // Generate a unique join name to avoid conflicts
+                            $joinName = "{$relatedTable}_sort";
+
+                            // Only add join if not already added
+                            if (! in_array($joinName, $addedJoins)) {
+                                $query->leftJoin(
+                                    "{$relatedTable} as {$joinName}",
+                                    "{$model->getTable()}.{$foreignKey}",
+                                    '=',
+                                    "{$joinName}.{$ownerKey}"
+                                );
+                                $addedJoins[] = $joinName;
+                            }
+                        } else {
+                            // For HasMany, HasOne, etc.
+                            $foreignKey = $relationObj->getForeignKeyName();
+                            $localKey = $relationObj->getLocalKeyName() ?: 'id';
+
+                            // Generate a unique join name to avoid conflicts
+                            $joinName = "{$relatedTable}_sort";
+
+                            // Only add join if not already added
+                            if (! in_array($joinName, $addedJoins)) {
+                                $query->leftJoin(
+                                    "{$relatedTable} as {$joinName}",
+                                    "{$joinName}.{$localKey}",
+                                    '=',
+                                    "{$model->getTable()}.{$foreignKey}"
+                                );
+                                $addedJoins[] = $joinName;
+                            }
                         }
 
                         // Apply sorting

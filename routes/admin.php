@@ -118,6 +118,7 @@ Route::resource('files', FilesController::class);
 
 Route::resource('documents', DocumentController::class)->except('create', 'edit');
 Route::post('documents/{document}/refresh', [DocumentController::class, 'refresh'])->name('documents.refresh');
+Route::post('documents/bulk-sync', [DocumentController::class, 'bulkSync'])->name('documents.bulk-sync');
 
 Route::resource('duties', DutyController::class);
 Route::resource('dutiables', DutiableController::class)->except(['index', 'show']);
