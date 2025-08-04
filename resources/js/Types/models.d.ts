@@ -164,11 +164,15 @@ declare global {
       sharepoint_list_id?: string
       created_at?: string
       checked_at?: string | null
+      sync_status: string
+      sync_error_message?: string | null
+      sync_attempts: boolean
+      last_sync_attempt_at?: string | null
       updated_at?: string
       effective_date?: string | null
       expiration_date?: string | null
       // mutators
-      is_in_effect: unknown
+      is_in_effect: bool
       // relations
       institution?: Institution
       // counts
@@ -1243,10 +1247,10 @@ declare global {
       // columns
       id: number
       alias?: string | null
-      name: string[]
-      description?: string[] | null
       created_at: string
       updated_at: string
+      name?: string[] | null
+      description?: string[] | null
       // mutators
       translations: unknown
       // relations
