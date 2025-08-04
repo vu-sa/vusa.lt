@@ -53,11 +53,10 @@ class SyncStaleDocumentsJob implements ShouldQueue
         ]);
 
         $successCount = 0;
-        $failedCount = 0;
         $skippedCount = 0;
 
         // Process documents in batches to avoid overwhelming SharePoint API
-        $staleDocuments->chunk(10)->each(function ($batch) use (&$successCount, &$failedCount, &$skippedCount) {
+        $staleDocuments->chunk(10)->each(function ($batch) use (&$successCount, &$skippedCount) {
             foreach ($batch as $document) {
                 // Skip documents that have failed too many times recently
                 if ($this->shouldSkipDocument($document)) {
@@ -86,7 +85,6 @@ class SyncStaleDocumentsJob implements ShouldQueue
 
         Log::info('Completed scheduled sync dispatch', [
             'dispatched' => $successCount,
-            'failed' => $failedCount,
             'skipped' => $skippedCount,
             'total_found' => $staleDocuments->count(),
         ]);
