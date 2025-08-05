@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property string $id
- * @property array<array-key, mixed> $name
+ * @property array|string $name
  * @property string $degree
  * @property int $tenant_id
  * @property \Illuminate\Support\Carbon $created_at

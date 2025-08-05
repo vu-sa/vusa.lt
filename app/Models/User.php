@@ -30,7 +30,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string|null $phone
  * @property string|null $facebook_url
  * @property string $name
- * @property array<array-key, mixed>|null $pronouns
+ * @property array|string|null $pronouns
  * @property bool $show_pronouns
  * @property string|null $password
  * @property int $is_active

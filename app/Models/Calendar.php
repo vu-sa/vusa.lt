@@ -14,11 +14,11 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 
 /**
  * @property int $id
- * @property array<array-key, mixed>|null $title
- * @property array<array-key, mixed>|null $description
- * @property array<array-key, mixed>|null $location
- * @property array<array-key, mixed>|null $organizer
- * @property array<array-key, mixed>|null $cto_url URL for Call To Action
+ * @property array|string|null $title
+ * @property array|string|null $description
+ * @property array|string|null $location
+ * @property array|string|null $organizer
+ * @property array|string|null $cto_url URL for Call To Action
  * @property string|null $facebook_url
  * @property string|null $video_url
  * @property bool $is_draft

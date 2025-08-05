@@ -14,8 +14,8 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 /**
  * @property string $id
- * @property array<array-key, mixed> $name
- * @property array<array-key, mixed> $description
+ * @property array|string $name
+ * @property array|string $description
  * @property string|null $address
  * @property string|null $meeting_url
  * @property string|null $image

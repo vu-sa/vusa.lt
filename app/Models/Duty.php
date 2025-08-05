@@ -20,8 +20,8 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 /**
  * @property string $id
- * @property array<array-key, mixed>|null $name
- * @property array<array-key, mixed>|null $description
+ * @property array|string|null $name
+ * @property array|string|null $description
  * @property string $institution_id
  * @property int $order Order of duty in institution
  * @property string|null $email Commonly the @vusa.lt email address, which is used as the OAuth login. Personal mail is stored in users.email.

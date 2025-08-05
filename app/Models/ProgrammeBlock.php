@@ -9,8 +9,8 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * @property int $id
  * @property int $programme_section_id
- * @property array<array-key, mixed> $title
- * @property array<array-key, mixed>|null $description
+ * @property array|string $title
+ * @property array|string|null $description
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ProgrammePart> $parts

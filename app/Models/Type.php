@@ -16,8 +16,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
 /**
  * @property int $id
  * @property int|null $parent_id
- * @property array<array-key, mixed>|null $title
- * @property array<array-key, mixed>|null $description
+ * @property array|string|null $title
+ * @property array|string|null $description
  * @property string|null $model_type
  * @property string|null $slug
  * @property \Illuminate\Support\Carbon $created_at

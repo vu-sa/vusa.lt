@@ -10,8 +10,8 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * @property int $id
  * @property int $programme_id
- * @property array<array-key, mixed> $title
- * @property array<array-key, mixed>|null $description
+ * @property array|string $title
+ * @property array|string|null $description
  * @property int $order
  * @property \Illuminate\Support\Carbon $start_time
  * @property \Illuminate\Support\Carbon $created_at

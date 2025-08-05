@@ -9,8 +9,8 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 /**
  * @property int $id
- * @property array<array-key, mixed> $name
- * @property array<array-key, mixed>|null $description
+ * @property array|string $name
+ * @property array|string|null $description
  * @property string|null $icon
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at

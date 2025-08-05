@@ -7,8 +7,8 @@ use App\Models\Traits\HasTranslations;
 /**
  * @property int $id
  * @property string $training_id
- * @property array<array-key, mixed> $name
- * @property array<array-key, mixed>|null $description
+ * @property array|string $name
+ * @property array|string|null $description
  * @property \Illuminate\Support\Carbon|null $due_date
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at

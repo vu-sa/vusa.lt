@@ -19,8 +19,8 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 /**
  * @property string $id
  * @property string|null $identifier
- * @property array<array-key, mixed> $name
- * @property array<array-key, mixed>|null $description
+ * @property array|string $name
+ * @property array|string|null $description
  * @property int|null $resource_category_id
  * @property string|null $location
  * @property int $capacity

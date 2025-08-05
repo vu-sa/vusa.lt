@@ -8,9 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property int $id
- * @property array<array-key, mixed> $title
+ * @property array|string $title
  * @property \Illuminate\Support\Carbon $date
- * @property array<array-key, mixed> $description
+ * @property array|string $description
  * @property string|null $permission_id
  * @property-read mixed $translations
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ChangelogItem newModelQuery()

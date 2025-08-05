@@ -23,11 +23,11 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 /**
  * @property string $id
- * @property array<array-key, mixed>|null $name
- * @property array<array-key, mixed>|null $short_name
+ * @property array|string|null $name
+ * @property array|string|null $short_name
  * @property string $alias
- * @property array<array-key, mixed>|null $description
- * @property array<array-key, mixed>|null $address
+ * @property array|string|null $description
+ * @property array|string|null $address
  * @property string|null $phone
  * @property string|null $email
  * @property string|null $website

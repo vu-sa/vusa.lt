@@ -170,7 +170,7 @@ return [
     */
 
     'model_hooks' => [
-        // App\Support\IdeHelper\MyModelHook::class
+        App\Support\TranslatableModelIdeHelperHook::class,
     ],
 
     /*

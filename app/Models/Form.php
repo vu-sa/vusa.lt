@@ -11,11 +11,11 @@ use Laravel\Scout\Searchable;
 
 /**
  * @property string $id
- * @property array<array-key, mixed> $name
- * @property array<array-key, mixed>|null $description
+ * @property array|string $name
+ * @property array|string|null $description
  * @property string|null $user_id
  * @property int $tenant_id
- * @property array<array-key, mixed>|null $path URL path for visible forms
+ * @property array|string|null $path URL path for visible forms
  * @property string|null $publish_time
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at

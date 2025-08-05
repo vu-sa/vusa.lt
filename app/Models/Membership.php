@@ -11,7 +11,7 @@ use Laravel\Scout\Searchable;
 
 /**
  * @property string $id
- * @property array<array-key, mixed> $name
+ * @property array|string $name
  * @property int $tenant_id
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at

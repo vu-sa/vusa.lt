@@ -8,8 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property int $id
- * @property array<array-key, mixed> $title
- * @property array<array-key, mixed>|null $description
+ * @property array|string $title
+ * @property array|string|null $description
  * @property string $start_date
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at

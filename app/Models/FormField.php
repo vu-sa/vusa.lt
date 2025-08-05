@@ -8,15 +8,15 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 /**
  * @property int $id
  * @property string $form_id
- * @property array<array-key, mixed> $label
- * @property array<array-key, mixed>|null $description
+ * @property array|string $label
+ * @property array|string|null $description
  * @property string $type
  * @property string|null $subtype
  * @property array<array-key, mixed>|null $options
  * @property bool $is_required
  * @property int $order
- * @property array<array-key, mixed>|null $default_value
- * @property array<array-key, mixed>|null $placeholder
+ * @property array|string|null $default_value
+ * @property array|string|null $placeholder
  * @property bool $use_model_options
  * @property string|null $options_model
  * @property string|null $options_model_field

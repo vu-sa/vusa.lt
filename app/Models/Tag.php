@@ -13,8 +13,8 @@ use Illuminate\Support\Str;
  * @property string|null $alias
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
- * @property array<array-key, mixed>|null $name
- * @property array<array-key, mixed>|null $description
+ * @property array|string|null $name
+ * @property array|string|null $description
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\News> $news
  * @property-read mixed $translations
  * @method static \Database\Factories\TagFactory factory($count = null, $state = [])

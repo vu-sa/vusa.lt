@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property int $id
- * @property array<array-key, mixed> $title
+ * @property array|string $title
  * @property int $duration
  * @property string|null $start_time
  * @property \Illuminate\Support\Carbon $created_at
