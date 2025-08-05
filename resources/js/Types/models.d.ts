@@ -168,53 +168,12 @@ declare global {
       effective_date?: string | null
       expiration_date?: string | null
       // mutators
-      is_in_effect: unknown
+      is_in_effect: bool
       // relations
       institution?: Institution
       // counts
       // exists
       institution_exists: boolean
-    }
-
-    export interface Doing {
-      // columns
-      id: string
-      title: string
-      drive_item_name?: string | null
-      state: unknown
-      date: string
-      extra_attributes?: string | null
-      created_at: string
-      updated_at: string
-      deleted_at?: string | null
-      // relations
-      goals?: Goal[]
-      matters?: Matter[]
-      types?: Type[]
-      users?: User[]
-      comments?: Comment[]
-      commentable?: Doing
-      files?: SharepointFile[]
-      tasks?: Task[]
-      activities?: Activity[]
-      // counts
-      goals_count: number
-      matters_count: number
-      types_count: number
-      users_count: number
-      comments_count: number
-      files_count: number
-      tasks_count: number
-      activities_count: number
-      // exists
-      goals_exists: boolean
-      matters_exists: boolean
-      types_exists: boolean
-      users_exists: boolean
-      comments_exists: boolean
-      files_exists: boolean
-      tasks_exists: boolean
-      activities_exists: boolean
     }
 
     export interface Duty {
@@ -365,8 +324,6 @@ declare global {
       updated_at: string
       deleted_at?: string | null
       // relations
-      matters?: Matter[]
-      doings?: Doing[]
       group?: GoalGroup
       tenant?: Tenant
       commentable?: Goal
@@ -375,15 +332,11 @@ declare global {
       tasks?: Task[]
       activities?: Activity[]
       // counts
-      matters_count: number
-      doings_count: number
       comments_count: number
       files_count: number
       tasks_count: number
       activities_count: number
       // exists
-      matters_exists: boolean
-      doings_exists: boolean
       group_exists: boolean
       tenant_exists: boolean
       comments_exists: boolean
@@ -402,15 +355,12 @@ declare global {
       deleted_at?: string | null
       // relations
       goals?: Goal[]
-      matters?: Matter[]
       activities?: Activity[]
       // counts
       goals_count: number
-      matters_count: number
       activities_count: number
       // exists
       goals_exists: boolean
-      matters_exists: boolean
       activities_exists: boolean
     }
 
@@ -444,7 +394,6 @@ declare global {
       types?: Type[]
       tenant?: Tenant
       documents?: Document[]
-      matters?: Matter[]
       meetings?: Meeting[]
       users?: User
       available_trainings?: Training[]
@@ -458,7 +407,6 @@ declare global {
       duties_count: number
       types_count: number
       documents_count: number
-      matters_count: number
       meetings_count: number
       available_trainings_count: number
       comments_count: number
@@ -471,44 +419,12 @@ declare global {
       types_exists: boolean
       tenant_exists: boolean
       documents_exists: boolean
-      matters_exists: boolean
       meetings_exists: boolean
       available_trainings_exists: boolean
       comments_exists: boolean
       outgoing_relationships_exists: boolean
       incoming_relationships_exists: boolean
       files_exists: boolean
-      activities_exists: boolean
-    }
-
-    export interface Matter {
-      // columns
-      id: string
-      title: string
-      description?: string | null
-      created_at: string
-      updated_at: string
-      deleted_at?: string | null
-      // relations
-      institutions?: Institution[]
-      institution?: Institution[]
-      meetings?: Meeting[]
-      doings?: Doing[]
-      goals?: Goal[]
-      activities?: Activity[]
-      // counts
-      institutions_count: number
-      institution_count: number
-      meetings_count: number
-      doings_count: number
-      goals_count: number
-      activities_count: number
-      // exists
-      institutions_exists: boolean
-      institution_exists: boolean
-      meetings_exists: boolean
-      doings_exists: boolean
-      goals_exists: boolean
       activities_exists: boolean
     }
 
@@ -523,7 +439,6 @@ declare global {
       updated_at: string
       deleted_at?: string | null
       // relations
-      matters?: Matter[]
       agenda_items?: AgendaItem[]
       institutions?: Institution[]
       comments?: Comment[]
@@ -533,7 +448,6 @@ declare global {
       tasks?: Task[]
       activities?: Activity[]
       // counts
-      matters_count: number
       agenda_items_count: number
       institutions_count: number
       comments_count: number
@@ -542,7 +456,6 @@ declare global {
       tasks_count: number
       activities_count: number
       // exists
-      matters_exists: boolean
       agenda_items_exists: boolean
       institutions_exists: boolean
       comments_exists: boolean
@@ -694,31 +607,13 @@ declare global {
       student_benefit?: string | null
       start_time?: string | null
       // relations
-      matter?: Matter
       meeting?: Meeting
       activities?: Activity[]
       // counts
       activities_count: number
       // exists
-      matter_exists: boolean
       meeting_exists: boolean
       activities_exists: boolean
-    }
-
-    export interface Doable {
-      // columns
-      doable_type: string
-      doable_id: string
-      doing_id: string
-      created_at: string
-      updated_at: string
-      // relations
-      doing?: Doing
-      user?: User
-      // counts
-      // exists
-      doing_exists: boolean
-      user_exists: boolean
     }
 
     export interface Dutiable {
@@ -748,21 +643,6 @@ declare global {
       duty_exists: boolean
       study_program_exists: boolean
       user_exists: boolean
-    }
-
-    export interface GoalMatter {
-      // columns
-      goal_id: string
-      matter_id: string
-      created_at: string
-      updated_at: string
-      // relations
-      goal?: Goal
-      matter?: Matter
-      // counts
-      // exists
-      goal_exists: boolean
-      matter_exists: boolean
     }
 
     export interface MembershipUser {
@@ -1243,10 +1123,10 @@ declare global {
       // columns
       id: number
       alias?: string | null
-      name: string[]
-      description?: string[] | null
       created_at: string
       updated_at: string
+      name?: string[] | null
+      description?: string[] | null
       // mutators
       translations: unknown
       // relations
@@ -1405,7 +1285,6 @@ declare global {
       // relations
       institutions?: Institution[]
       duties?: Duty[]
-      doings?: Doing[]
       meetings?: Meeting[]
       roles?: Role[]
       descendants?: Type[]
@@ -1418,7 +1297,6 @@ declare global {
       // counts
       institutions_count: number
       duties_count: number
-      doings_count: number
       meetings_count: number
       roles_count: number
       descendants_count: number
@@ -1429,7 +1307,6 @@ declare global {
       // exists
       institutions_exists: boolean
       duties_exists: boolean
-      doings_exists: boolean
       meetings_exists: boolean
       roles_exists: boolean
       descendants_exists: boolean
@@ -1475,7 +1352,6 @@ declare global {
       has_password: unknown
       translations: unknown
       // relations
-      doings?: Doing[]
       duties?: Duty[]
       previous_duties?: Duty[]
       current_duties?: Duty[]
@@ -1490,7 +1366,6 @@ declare global {
       activities?: Activity[]
       notifications?: DatabaseNotification[]
       // counts
-      doings_count: number
       duties_count: number
       previous_duties_count: number
       current_duties_count: number
@@ -1505,7 +1380,6 @@ declare global {
       activities_count: number
       notifications_count: number
       // exists
-      doings_exists: boolean
       duties_exists: boolean
       previous_duties_exists: boolean
       current_duties_exists: boolean

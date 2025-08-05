@@ -361,12 +361,6 @@ const menuItems = computed(() => [
         show: auth?.can.create.meeting
       },
       {
-        title: $t('Veiklos'),
-        icon: Icons.DOING,
-        href: route('doings.index'),
-        show: auth?.can.create.doing
-      },
-      {
         title: $t('Tikslai'),
         icon: Icons.GOAL,
         href: route('goals.index'),
@@ -377,15 +371,9 @@ const menuItems = computed(() => [
         icon: Icons.GOAL_GROUP,
         href: route('goalGroups.index'),
         show: auth?.can.create.goalGroup
-      },
-      {
-        title: $t('Svarstomi klausimai'),
-        icon: Icons.MATTER,
-        href: route('matters.index'),
-        show: auth?.can.create.matter
-      },
+},
     ],
-    show: auth?.can.create.meeting || auth?.can.create.doing || auth?.can.create.goal || auth?.can.create.goalGroup || auth?.can.create.matter,
+    show: auth?.can.create.meeting || auth?.can.create.goal || auth?.can.create.goalGroup,
     visibleItems: [] as MenuItemType[]
   },
   {

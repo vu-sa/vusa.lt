@@ -9,17 +9,6 @@ declare namespace App.Entities {
 
   export type Document = Omit<models.Document, "sharepoint_id" | "eTag" | "public_url_created_at" | "sharepoint_site_id" | "sharepoint_list_id" | "created_at" | "updated_at">
 
-  export interface Doing extends Omit<models.Doing, "state"> {
-    state:
-      | "draft"
-      | "pending_changes"
-      | "pending_padalinys_approval"
-      | "pending_final_approval"
-      | "approved"
-      | "pending_completion"
-      | "completed"
-      | "cancelled";
-  }
   export type Dutiable = models.Dutiable;
 
   export type Duty = models.Duty & {
@@ -34,9 +23,7 @@ declare namespace App.Entities {
 
   export type Goal = models.Goal;
   export type GoalGroup = models.GoalGroup;
-  export type GoalMatter = models.GoalMatter;
   export type Institution = models.Institution;
-  export type Matter = models.Matter;
   // export interface Media extends models.Media {
   //   original_url?: string;
   // }

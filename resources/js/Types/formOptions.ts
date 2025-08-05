@@ -5,12 +5,6 @@ const uppercase = (string: string) => {
 };
 
 export const modelDefaults = {
-  matter: [
-    "Studijų tinklelio peržiūra",
-    "Studentų nuomonės išnagrinėjimas posėdyje",
-    "Dėstytojo keitimas",
-  ],
-  doing: ["Susitikimas su studentais", "Susitikimas su koordinatoriumi"],
 };
 
 export const modelTypes = {
@@ -28,15 +22,12 @@ export const modelTypes = {
   ],
   type: [
     uppercase(ModelEnum.DUTY),
-    uppercase(ModelEnum.DOING),
     uppercase(ModelEnum.INSTITUTION),
     uppercase(ModelEnum.MEETING),
   ],
 };
 
 export const modelStatus = {
-  doing: ["Sukurtas", "Pabaigtas"],
-  matter: ["Sukurtas", "Pabaigtas"],
 };
 
 export const documentTemplate = {

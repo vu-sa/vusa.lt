@@ -779,8 +779,8 @@ return new class extends Migration
 
         if (Schema::hasTable('agenda_items')) {
             Schema::table('agenda_items', function (Blueprint $table) {
-                $table->foreign(['meeting_id'], 'institution_meeting_matter_meeting_id_foreign')->references(['id'])->on('meetings');
-                $table->foreign(['matter_id'], 'institution_meeting_matter_matter_id_foreign')->references(['id'])->on('matters');
+                $table->foreign(['meeting_id'])->references(['id'])->on('meetings');
+                $table->foreign(['matter_id'])->references(['id'])->on('matters');
             });
         }
 
@@ -1164,8 +1164,8 @@ return new class extends Migration
 
         if (Schema::hasTable('agenda_items')) {
             Schema::table('agenda_items', function (Blueprint $table) {
-                $table->dropForeign('institution_meeting_matter_meeting_id_foreign');
-                $table->dropForeign('institution_meeting_matter_matter_id_foreign');
+                $table->dropForeign('agenda_items_meeting_id_foreign');
+                $table->dropForeign('agenda_items_matter_id_foreign');
             });
         }
 

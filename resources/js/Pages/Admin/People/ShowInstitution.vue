@@ -15,7 +15,7 @@
     <template #more-options>
       <MoreOptionsButton edit @edit-click="router.visit(route('institutions.edit', institution.id))" />
     </template>
-    <LastMeetingCard :last-meeting="institution?.lastMeeting" :institution="institution" :doing-types="doingTypes"
+    <LastMeetingCard :last-meeting="institution?.lastMeeting" :institution="institution"
       content-style="margin-top: 0.5em" />
     <template #below>
       <MeetingsTabPane v-if="currentTab === 'Susitikimai'" :institution="institution"
@@ -31,8 +31,6 @@
         </Suspense>
         <FileManager :starting-path="institution.sharepointPath" :fileable="{ ...institution, type: 'Institution' }" />
       </div>
-      <MattersCardGrid v-else-if="currentTab === 'Svarstomi klausimai'" :institution="institution"
-        :matters="institution.matters" />
       <RelatedInstitutions v-else-if="currentTab === 'Susijusios institucijos'" :institution="institution" />
     </template>
   </ShowPageLayout>
@@ -54,11 +52,10 @@ import { BreadcrumbHelpers, usePageBreadcrumbs } from "@/Composables/useBreadcru
 import { Separator } from "@/Components/ui/separator";
 
 const props = defineProps<{
-  doingTypes: any;
   institution: App.Entities.Institution;
 }>();
 
-const currentTab = useStorage("show-institution-tab", "Svarstomi klausimai");
+const currentTab = useStorage("show-institution-tab", "Susitikimai");
 
 const MeetingsTabPane = defineAsyncComponent(
   () => import("@/Components/TabPaneContent/MeetingsTabPane.vue")
@@ -66,10 +63,6 @@ const MeetingsTabPane = defineAsyncComponent(
 
 const FileManager = defineAsyncComponent(
   () => import("@/Features/Admin/SharepointFileManager/Viewer/FileManager.vue")
-);
-
-const MattersCardGrid = defineAsyncComponent(
-  () => import("@/Components/TabPaneContent/MattersCardGrid.vue")
 );
 
 const RelatedInstitutions = defineAsyncComponent(
@@ -107,11 +100,6 @@ const relatedModels = [
     icon: Icons.SHAREPOINT_FILE,
     count: props.institution.files?.length,
   },
-  //{
-  //  name: "Svarstomi klausimai",
-  //  icon: Icons.MATTER,
-  //  count: props.institution.matters?.length,
-  //},
   {
     name: "Susijusios institucijos",
     icon: Icons.INSTITUTION,

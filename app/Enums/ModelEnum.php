@@ -15,7 +15,6 @@ use Spatie\Enum\Laravel\Enum;
  * @method static self CHANGELOG_ITEM()
  * @method static self COMMENT()
  * @method static self DOCUMENT()
- * @method static self DOING()
  * @method static self DUTIABLE()
  * @method static self DUTY()
  *                            File is not a model, but it's used for generating file permissions
@@ -24,7 +23,6 @@ use Spatie\Enum\Laravel\Enum;
  * @method static self GOAL_GROUP()
  * @method static self GOAL()
  * @method static self INSTITUTION()
- * @method static self MATTER()
  * @method static self MEETING()
  * @method static self MEMBERSHIP()
  * @method static self NAVIGATION()

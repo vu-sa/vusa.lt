@@ -2,7 +2,6 @@
 
 namespace Database\Factories;
 
-use App\Models\Doing;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -34,10 +33,4 @@ class CommentFactory extends Factory
     //     );
     // }
 
-    // public function commentable()
-    // {
-    //     return $this->faker->randomElement([
-    //         Doing::class,
-    //     ]);
-    // }
 }

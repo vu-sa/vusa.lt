@@ -1,5 +1,4 @@
 export enum AllowedFileablesEnum {
-  "DOING" = "doing",
   "DUTY" = "duty",
   "GOAL" = "goal",
   "INSTITUTION" = "institution",
@@ -50,7 +49,6 @@ export enum ModelEnum {
   "CHANGELOG_ITEM" = "changelogItem",
   "COMMENT" = "comment",
   "DOCUMENT" = "document",
-  "DOING" = "doing",
   "DUTIABLE" = "dutiable",
   "DUTY" = "duty",
   "FILE" = "file",
@@ -58,7 +56,6 @@ export enum ModelEnum {
   "GOAL_GROUP" = "goalGroup",
   "GOAL" = "goal",
   "INSTITUTION" = "institution",
-  "MATTER" = "matter",
   "MEETING" = "meeting",
   "MEMBERSHIP" = "membership",
   "NAVIGATION" = "navigation",

@@ -2,7 +2,6 @@
 
 namespace App\Services\ResourceServices;
 
-use App\Models\Doing;
 use App\Models\Goal;
 use App\Models\Institution;
 use App\Models\Meeting;
@@ -72,24 +71,6 @@ class SharepointFileService
             $path .= '/'.$tenant->shortname;
             $path .= '/'.Str::plural(class_basename($institution)).'/'.$institution->name;
             $path .= '/'.Str::plural(class_basename($fileable)).'/'.$formattedDatetime.'/'.$fileable->name;
-        }
-
-        if ($fileable instanceof Doing) {
-            $fileable->loadMissing('users');
-
-            $path .= '/'.'Users';
-            $path .= '/'.$fileable->users->first()->name;
-            $path .= '/'.Str::plural(class_basename($fileable->getMorphClass()));
-            // add last 4 id letters
-
-            if ($fileable->drive_item_name) {
-                $path .= '/'.$fileable->drive_item_name;
-            } else {
-                $path .= '/'.$fileable->title.'-'.substr($fileable->id, -4);
-                // update doing
-                $fileable->drive_item_name = $fileable->title.'-'.substr($fileable->id, -4);
-                $fileable->save();
-            }
         }
 
         if ($fileable instanceof Goal) {

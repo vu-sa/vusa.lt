@@ -54,7 +54,6 @@ import { Button } from "@/Components/ui/button";
 import IconsRegular from "@/Types/Icons/regular";
 
 const props = defineProps<{
-  doingTypes: any;
   institution: App.Entities.Institution;
   lastMeeting?: App.Entities.Meeting;
 }>();

@@ -1,6 +1,5 @@
 /* eslint-disable no-secrets/no-secrets */
 import Alert24Filled from "~icons/fluent/alert24-filled";
-import BookQuestionMark24Filled from "~icons/fluent/book-question-mark24-filled";
 import Bookmark24Filled from "~icons/fluent/bookmark24-filled";
 import CalendarLtr24Filled from "~icons/fluent/calendar-ltr24-filled";
 import Comment24Filled from "~icons/fluent/comment24-filled";
@@ -50,7 +49,6 @@ const modelIcons: Record<keyof typeof ModelEnum, FunctionalComponent> = {
   GOAL: StarLineHorizontal324Filled,
   GOAL_GROUP: Sparkle24Filled,
   INSTITUTION: PeopleTeam24Filled,
-  MATTER: BookQuestionMark24Filled,
   MEETING: DeviceMeetingRoomRemote24Filled,
   NAVIGATION: Navigation24Filled,
   NEWS: News24Filled,

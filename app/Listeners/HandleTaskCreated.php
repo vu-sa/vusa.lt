@@ -14,7 +14,7 @@ class HandleTaskCreated implements ShouldQueue
     {
         $task = $event->task;
 
-        // check if doing is instance of Doing
+        // check if task is instance of Task
         if (! $task instanceof Task) {
             return;
         }

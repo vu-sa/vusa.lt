@@ -1,6 +1,5 @@
 /* eslint-disable no-secrets/no-secrets */
 import Alert24Regular from "~icons/fluent/alert24-regular";
-import BookQuestionMark24Regular from "~icons/fluent/book-question-mark24-regular";
 import BookOpenGlobe24Regular from "~icons/fluent/book-open-globe24-regular";
 import Bookmark24Regular from "~icons/fluent/bookmark24-regular";
 import CalendarLtr24Regular from "~icons/fluent/calendar-ltr24-regular";
@@ -17,7 +16,6 @@ import Grid24Regular from "~icons/fluent/grid24-regular";
 import Home24Regular from "~icons/fluent/home24-regular";
 import Image24Regular from "~icons/fluent/image24-regular";
 import ImageArrowBack24Regular from "~icons/fluent/image-arrow-back24-regular";
-import Important24Regular from "~icons/fluent/important24-regular";
 import Navigation24Regular from "~icons/fluent/navigation24-regular";
 import News24Regular from "~icons/fluent/news24-regular";
 import Notebook24Regular from "~icons/fluent/notebook24-regular";
@@ -47,14 +45,12 @@ const modelIcons: Record<keyof typeof ModelEnum, Component> = {
   CHANGELOG_ITEM: DocumentBulletList24Regular,
   COMMENT: Comment24Regular,
   DOCUMENT: DocumentMultiple24Regular,
-  DOING: Important24Regular,
   DUTIABLE: PersonClock24Regular,
   DUTY: PuzzlePiece24Regular,
   FORM: DocumentBulletList24Regular,
   GOAL: StarLineHorizontal324Regular,
   GOAL_GROUP: Sparkle24Regular,
   INSTITUTION: PeopleTeam24Regular,
-  MATTER: BookQuestionMark24Regular,
   MEETING: DeviceMeetingRoomRemote24Regular,
   NAVIGATION: Navigation24Regular,
   NEWS: News24Regular,
