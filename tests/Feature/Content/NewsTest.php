@@ -169,15 +169,63 @@ describe('auth: news manager', function () {
 
     test('can duplicate news', function () {
         $news = News::query()->first();
+        $initialCount = News::count();
 
         // Send the POST request to duplicate the news
         $response = asUser($this->newsManager)->post(route('news.duplicate', $news))
             ->assertStatus(302);  // Assert the response status is 302
 
-        // Get the latest news item
-        $latestNews = News::query()->latest()->first();
+        // Verify a new news item was created
+        expect(News::count())->toBe($initialCount + 1);
 
-        // Assert the redirect to the edit route of the latest news item
-        $response->assertRedirect(route('news.edit', $latestNews));
-    })->todo();
+        // Verify redirect to edit page (any news edit page is fine)
+        $response->assertRedirectContains('/mano/news/')
+            ->assertRedirectContains('/edit');
+
+        // Find the duplicated news (should have "(kopija)" in title and be in draft mode)
+        $duplicatedNews = News::query()
+            ->where('title', 'LIKE', '%' . $news->title . ' (kopija)%')
+            ->where('draft', 1)
+            ->latest()
+            ->first();
+
+        // Verify the duplicated news exists and has expected properties
+        expect($duplicatedNews)->not()->toBeNull()
+            ->and($duplicatedNews->title)->toContain('(kopija)')
+            ->and($duplicatedNews->draft)->toBe(1)
+            ->and($duplicatedNews->publish_time)->toBeNull()
+            ->and($duplicatedNews->id)->not()->toBe($news->id);
+    });
+
+    test('can duplicate news with tags', function () {
+        $news = News::query()->first();
+        
+        // Add some tags to the original news
+        $tags = \App\Models\Tag::factory()->count(2)->create();
+        $news->tags()->attach($tags->pluck('id'));
+        
+        $initialCount = News::count();
+
+        // Send the POST request to duplicate the news
+        $response = asUser($this->newsManager)->post(route('news.duplicate', $news))
+            ->assertStatus(302);
+
+        // Verify a new news item was created
+        expect(News::count())->toBe($initialCount + 1);
+
+        // Find the duplicated news
+        $duplicatedNews = News::query()
+            ->where('draft', 1)
+            ->latest()
+            ->first();
+
+        // Load tags relationship
+        $duplicatedNews->load('tags');
+        $news->load('tags');
+
+        // Verify tags were copied
+        expect($duplicatedNews->tags)->toHaveCount(2)
+            ->and($duplicatedNews->tags->pluck('id')->sort()->values()->toArray())
+            ->toBe($news->tags->pluck('id')->sort()->values()->toArray());
+    });
 });

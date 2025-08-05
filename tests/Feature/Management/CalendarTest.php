@@ -100,4 +100,72 @@ describe('auth: calendar manager', function () {
             }
         }
     });
+
+    test('can duplicate calendar event', function () {
+        $calendar = Calendar::factory()->create([
+            'title' => ['lt' => 'Test renginys', 'en' => 'Test event'],
+            'description' => ['lt' => 'Test aprašymas', 'en' => 'Test description'],
+            'is_draft' => false,
+        ]);
+
+        $calendarManager = makeTenantUser('Communication Coordinator');
+        $initialCount = Calendar::count();
+
+        // Send the POST request to duplicate the calendar
+        $response = asUser($calendarManager)->post(route('calendar.duplicate', $calendar))
+            ->assertStatus(302);  // Assert the response status is 302
+
+        // Verify a new calendar item was created
+        expect(Calendar::count())->toBe($initialCount + 1);
+
+        // Verify redirect to edit page (any calendar edit page is fine)
+        $response->assertRedirectContains('/mano/calendar/')
+            ->assertRedirectContains('/edit');
+
+        // Find the duplicated calendar (should have "(kopija)" in title and be in draft mode)
+        $duplicatedCalendar = Calendar::query()
+            ->where('is_draft', true)
+            ->latest()
+            ->first();
+
+        // Verify the duplicated calendar exists and has expected properties
+        expect($duplicatedCalendar)->not()->toBeNull()
+            ->and($duplicatedCalendar->title)->toContain('(kopija)')
+            ->and($duplicatedCalendar->is_draft)->toBeTrue()
+            ->and($duplicatedCalendar->id)->not()->toBe($calendar->id)
+            ->and($duplicatedCalendar->description)->toBe($calendar->description);
+    });
+
+    test('can duplicate calendar with proper translations', function () {
+        $calendar = Calendar::factory()->create([
+            'title' => ['lt' => 'Lietuviškas renginys', 'en' => 'English event'],
+            'description' => ['lt' => 'Lietuviškas aprašymas', 'en' => 'English description'],
+            'is_draft' => false,
+        ]);
+
+        $calendarManager = makeTenantUser('Communication Coordinator');
+        $initialCount = Calendar::count();
+
+        // Send the POST request to duplicate the calendar
+        $response = asUser($calendarManager)->post(route('calendar.duplicate', $calendar))
+            ->assertStatus(302);
+
+        // Verify a new calendar item was created
+        expect(Calendar::count())->toBe($initialCount + 1);
+
+        // Find the duplicated calendar
+        $duplicatedCalendar = Calendar::query()
+            ->where('is_draft', true)
+            ->latest()
+            ->first();
+
+        // Verify the duplicated calendar has proper translations
+        expect($duplicatedCalendar)->not()->toBeNull()  
+            ->and($duplicatedCalendar->getTranslation('title', 'lt'))->toContain('(kopija)')
+            ->and($duplicatedCalendar->getTranslation('title', 'lt'))->toContain('Lietuviškas renginys')
+            ->and($duplicatedCalendar->getTranslation('title', 'en'))->toContain('(copy)')
+            ->and($duplicatedCalendar->getTranslation('title', 'en'))->toContain('English event')
+            ->and($duplicatedCalendar->is_draft)->toBeTrue()
+            ->and($duplicatedCalendar->id)->not()->toBe($calendar->id);
+    });
 });
