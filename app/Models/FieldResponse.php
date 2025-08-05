@@ -5,6 +5,21 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property int $id
+ * @property int $registration_id
+ * @property int $form_field_id
+ * @property string $response
+ * @property \Illuminate\Support\Carbon $created_at
+ * @property \Illuminate\Support\Carbon $updated_at
+ * @property-read \App\Models\FormField $formField
+ * @property-read \App\Models\Registration $registration
+ * @method static \Database\Factories\FieldResponseFactory factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|FieldResponse newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|FieldResponse newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|FieldResponse query()
+ * @mixin \Eloquent
+ */
 class FieldResponse extends Model
 {
     /** @use HasFactory<\Database\Factories\FieldResponseFactory> */

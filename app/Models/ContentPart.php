@@ -7,6 +7,23 @@ use App\Tiptap\TiptapEditor;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property int $id
+ * @property int $content_id
+ * @property string $type
+ * @property array<array-key, mixed> $json_content
+ * @property array<array-key, mixed>|null $options
+ * @property int $order
+ * @property \Illuminate\Support\Carbon $created_at
+ * @property \Illuminate\Support\Carbon $updated_at
+ * @property-read \App\Models\Content $content
+ * @property mixed $html
+ * @method static \Database\Factories\ContentPartFactory factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ContentPart newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ContentPart newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ContentPart query()
+ * @mixin \Eloquent
+ */
 class ContentPart extends Model
 {
     use HasFactory;

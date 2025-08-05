@@ -12,6 +12,29 @@ use App\States\ReservationResource\ReservationResourceState;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
+/**
+ * @property int $id
+ * @property string $reservation_id
+ * @property string $resource_id
+ * @property \Illuminate\Support\Carbon|null $start_time
+ * @property \Illuminate\Support\Carbon|null $end_time
+ * @property int $quantity
+ * @property ReservationResourceState $state
+ * @property string|null $returned_at
+ * @property \Illuminate\Support\Carbon $created_at
+ * @property \Illuminate\Support\Carbon $updated_at
+ * @property string|null $deleted_at
+ * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $commentable
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Comment> $comments
+ * @property-read bool $approvable
+ * @property-read mixed $state_properties
+ * @property-read Reservation $reservation
+ * @property-read Resource $resource
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ReservationResource newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ReservationResource newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ReservationResource query()
+ * @mixin \Eloquent
+ */
 class ReservationResource extends Pivot implements Decidable
 {
     use HasComments, MakesDecisions;

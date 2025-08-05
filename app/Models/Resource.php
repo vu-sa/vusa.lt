@@ -16,6 +16,39 @@ use Laravel\Scout\Searchable;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
+/**
+ * @property string $id
+ * @property string|null $identifier
+ * @property array<array-key, mixed> $name
+ * @property array<array-key, mixed>|null $description
+ * @property int|null $resource_category_id
+ * @property string|null $location
+ * @property int $capacity
+ * @property int $tenant_id
+ * @property int $is_reservable
+ * @property \Illuminate\Support\Carbon $created_at
+ * @property \Illuminate\Support\Carbon $updated_at
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property-read ReservationResource|null $pivot
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Reservation> $active_reservations
+ * @property-read \App\Models\ResourceCategory|null $category
+ * @property-read \Spatie\MediaLibrary\MediaCollections\Models\Collections\MediaCollection<int, \Spatie\MediaLibrary\MediaCollections\Models\Media> $media
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Reservation> $reservations
+ * @property-read \App\Models\Tenant $tenant
+ * @property-read mixed $translations
+ * @method static \Database\Factories\ResourceFactory factory($count = null, $state = [])
+ * @method static \AjCastro\EagerLoadPivotRelations\EagerLoadPivotBuilder<static>|Resource newModelQuery()
+ * @method static \AjCastro\EagerLoadPivotRelations\EagerLoadPivotBuilder<static>|Resource newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Resource onlyTrashed()
+ * @method static \AjCastro\EagerLoadPivotRelations\EagerLoadPivotBuilder<static>|Resource query()
+ * @method static \AjCastro\EagerLoadPivotRelations\EagerLoadPivotBuilder<static>|Resource whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
+ * @method static \AjCastro\EagerLoadPivotRelations\EagerLoadPivotBuilder<static>|Resource whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
+ * @method static \AjCastro\EagerLoadPivotRelations\EagerLoadPivotBuilder<static>|Resource whereLocale(string $column, string $locale)
+ * @method static \AjCastro\EagerLoadPivotRelations\EagerLoadPivotBuilder<static>|Resource whereLocales(string $column, array $locales)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Resource withTrashed(bool $withTrashed = true)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Resource withoutTrashed()
+ * @mixin \Eloquent
+ */
 class Resource extends Model implements HasMedia
 {
     use EagerLoadPivotTrait, HasFactory, HasTranslations, HasUlids, InteractsWithMedia, Searchable, SoftDeletes;
@@ -32,7 +65,7 @@ class Resource extends Model implements HasMedia
             ->useDisk('spatieMediaLibrary');
     }
 
-    public function toSearchableArray()
+    public function toSearchableArray(): array
     {
         return [
             'name->'.app()->getLocale() => $this->getTranslation('name', app()->getLocale()),
@@ -50,7 +83,7 @@ class Resource extends Model implements HasMedia
         return $this->reservations()->wherePivotIn('state', ['created', 'reserved', 'lent']);
     }
 
-    public function managers()
+    public function managers(): \Illuminate\Support\Collection
     {
         return GetResourceManagers::execute($this);
     }
@@ -65,7 +98,7 @@ class Resource extends Model implements HasMedia
         return $this->belongsTo(ResourceCategory::class, 'resource_category_id');
     }
 
-    public function leftCapacityAtTime($datetime, $symbol_start = '<', $symbol_end = '>=', array $exceptReservations = [], array $exceptResources = [])
+    public function leftCapacityAtTime(\Carbon\Carbon|string $datetime, string $symbol_start = '<', string $symbol_end = '>=', array $exceptReservations = [], array $exceptResources = []): int
     {
         // where pivot state is reserved or lent
         $builder = $this->active_reservations()
@@ -91,7 +124,7 @@ class Resource extends Model implements HasMedia
 
     // $resource = Resource::find("01h2y03by254dm8f3p9nkpfxn9");
     // $resource->leftCapacityAtTimePeriod("2023-05-01 00:00:00", "2023-07-10 23:59:59");
-    public function getCapacityAtDateTimeRange($from, $to, array $exceptReservations = [], array $exceptResources = []): array
+    public function getCapacityAtDateTimeRange(\Carbon\Carbon|string|int $from, \Carbon\Carbon|string|int $to, array $exceptReservations = [], array $exceptResources = []): array
     {
         /* dd($exceptReservations, $exceptResources); */
         // if $from and $to are numbers (timestamps), convert them to Carbon
@@ -117,7 +150,9 @@ class Resource extends Model implements HasMedia
 
         // get left capacity at start and end of each reservation
         $reservations->each(function ($reservation) use (&$leftCapacity, $from, $to) {
+            /** @phpstan-ignore-next-line */
             $start = Carbon::parse($reservation->pivot->start_time) > Carbon::parse($from) ? $reservation->pivot->start_time : $from;
+            /** @phpstan-ignore-next-line */
             $end = Carbon::parse($reservation->pivot->end_time) < Carbon::parse($to) ? $reservation->pivot->end_time : $to;
 
             $leftCapacity[strval(Carbon::parse($start)->getTimestampMs())] = $this->leftCapacityAtTimeArray($start)

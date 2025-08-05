@@ -16,6 +16,40 @@ use Spatie\SchemaOrg\Organization;
 use Spatie\Sitemap\Contracts\Sitemapable;
 use Spatie\Sitemap\Tags\Url;
 
+/**
+ * @property int $id
+ * @property string $title
+ * @property int|null $category_id
+ * @property string|null $permalink
+ * @property string $short
+ * @property string $lang
+ * @property int|null $other_lang_id
+ * @property int $content_id
+ * @property mixed|null $image
+ * @property string|null $image_author
+ * @property int $important
+ * @property int $tenant_id
+ * @property Carbon|null $publish_time
+ * @property string|null $main_points
+ * @property string|null $read_more
+ * @property int|null $draft
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property Carbon|null $deleted_at
+ * @property-read \App\Models\Content $content
+ * @property-read News|null $other_language_news
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Tag> $tags
+ * @property-read \App\Models\Tenant $tenant
+ * @property-read \App\Models\User|null $user
+ * @method static \Database\Factories\NewsFactory factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|News newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|News newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|News onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|News query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|News withTrashed(bool $withTrashed = true)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|News withoutTrashed()
+ * @mixin \Eloquent
+ */
 class News extends Model implements Feedable, Sitemapable
 {
     use HasFactory, Searchable, SoftDeletes;

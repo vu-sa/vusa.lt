@@ -33,7 +33,6 @@ class EventServiceProvider extends ServiceProvider
             \App\Listeners\UpdateSharepointFolder::class,
         ],
         \Spatie\ModelStates\Events\StateChanged::class => [
-            \App\Listeners\HandleDoingStateChange::class,
             \App\Listeners\ReservationResource\HandleReservationResourceReserved::class,
             \App\Listeners\ReservationResource\HandleReservationResourceLent::class,
         ],

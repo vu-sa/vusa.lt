@@ -24,6 +24,61 @@ use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Permission\Traits\HasRoles;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
+/**
+ * @property string $id
+ * @property string $email
+ * @property string|null $phone
+ * @property string|null $facebook_url
+ * @property string $name
+ * @property array<array-key, mixed>|null $pronouns
+ * @property bool $show_pronouns
+ * @property string|null $password
+ * @property int $is_active
+ * @property string|null $email_verified_at
+ * @property string|null $remember_token
+ * @property \Illuminate\Support\Carbon|null $last_action
+ * @property string|null $last_changelog_check
+ * @property string|null $microsoft_token
+ * @property \Illuminate\Support\Carbon $updated_at
+ * @property \Illuminate\Support\Carbon $created_at
+ * @property string|null $profile_photo_path
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property bool $name_was_changed
+ * @property-read Collection<int, \Spatie\Activitylog\Models\Activity> $activities
+ * @property-read MembershipUser|Dutiable|Trainable|null $pivot
+ * @property-read Collection<int, \App\Models\Training> $availableTrainingsThroughUser
+ * @property-read Collection<int, \App\Models\Duty> $current_duties
+ * @property-read Collection<int, Dutiable> $dutiables
+ * @property-read Collection<int, \App\Models\Duty> $duties
+ * @property-read mixed $has_password
+ * @property-read Collection<int, \App\Models\Institution> $institutions
+ * @property-read Collection<int, \App\Models\Membership> $memberships
+ * @property-read \Illuminate\Notifications\DatabaseNotificationCollection<int, \Illuminate\Notifications\DatabaseNotification> $notifications
+ * @property-read Collection<int, \App\Models\Permission> $permissions
+ * @property-read Collection<int, \App\Models\Duty> $previous_duties
+ * @property-read Collection<int, \App\Models\Reservation> $reservations
+ * @property-read Collection<int, \App\Models\Role> $roles
+ * @property-read Collection<int, \App\Models\Task> $tasks
+ * @property-read Collection<int, \App\Models\Tenant> $tenants
+ * @property-read Collection<int, \App\Models\Training> $trainings
+ * @property-read mixed $translations
+ * @method static \Database\Factories\UserFactory factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User permission($permissions, $without = false)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User role($roles, $guard = null, $without = false)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereLocale(string $column, string $locale)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereLocales(string $column, array $locales)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User withTrashed(bool $withTrashed = true)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User withoutPermission($permissions)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User withoutRole($roles, $guard = null)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User withoutTrashed()
+ * @mixin \Eloquent
+ */
 class User extends Authenticatable
 {
     use HasFactory, HasImpersonation, HasRelationships, HasRoles, HasTranslations, HasUlids, HasUnitRelation, LogsActivity, Notifiable, Searchable, SoftDeletes;
@@ -125,11 +180,6 @@ class User extends Authenticatable
         }
 
         return $this->email;
-    }
-
-    public function doings()
-    {
-        return $this->belongsToMany(Doing::class);
     }
 
     public function duties(): \Illuminate\Database\Eloquent\Relations\MorphToMany

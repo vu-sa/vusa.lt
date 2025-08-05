@@ -8,6 +8,20 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property string $sharepoint_id
+ * @property string $id
+ * @property-read Model|\Eloquent $commentable
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Comment> $comments
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, SharepointFileable> $fileables
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Institution> $institutions
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Meeting> $meetings
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Type> $types
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SharepointFile newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SharepointFile newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SharepointFile query()
+ * @mixin \Eloquent
+ */
 class SharepointFile extends Model
 {
     use HasComments, HasFactory, HasUuids;

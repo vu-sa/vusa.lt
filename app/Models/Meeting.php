@@ -16,6 +16,34 @@ use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
+/**
+ * @property string $id
+ * @property string $title
+ * @property string|null $description
+ * @property \Illuminate\Support\Carbon $start_time
+ * @property string|null $end_time
+ * @property \Illuminate\Support\Carbon $created_at
+ * @property \Illuminate\Support\Carbon $updated_at
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, AgendaItem> $agendaItems
+ * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $commentable
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Comment> $comments
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\SharepointFile> $files
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Institution> $institutions
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Task> $tasks
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Tenant> $tenants
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Type> $types
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $users
+ * @method static \Database\Factories\MeetingFactory factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Meeting newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Meeting newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Meeting onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Meeting query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Meeting withTrashed(bool $withTrashed = true)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Meeting withoutTrashed()
+ * @mixin \Eloquent
+ */
 class Meeting extends Model
 {
     use HasComments, HasFactory, HasRelationships, HasSharepointFiles, HasTasks, HasUlids, LogsActivity, Searchable, SoftDeletes;
@@ -36,11 +64,6 @@ class Meeting extends Model
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()->logUnguarded()->logOnlyDirty();
-    }
-
-    public function matters()
-    {
-        return $this->belongsToMany(Matter::class, 'agenda_items')->using(AgendaItem::class);
     }
 
     public function agendaItems()

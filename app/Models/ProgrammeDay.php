@@ -7,6 +7,31 @@ use App\Models\Traits\HasTranslations;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property int $id
+ * @property int $programme_id
+ * @property array<array-key, mixed> $title
+ * @property array<array-key, mixed>|null $description
+ * @property int $order
+ * @property \Illuminate\Support\Carbon $start_time
+ * @property \Illuminate\Support\Carbon $created_at
+ * @property \Illuminate\Support\Carbon $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, ProgrammeElement> $elements
+ * @property-read ProgrammeElement|null $pivot
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ProgrammePart> $parts
+ * @property-read \App\Models\Programme $programme
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ProgrammeSection> $sections
+ * @property-read mixed $translations
+ * @method static \Database\Factories\ProgrammeDayFactory factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProgrammeDay newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProgrammeDay newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProgrammeDay query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProgrammeDay whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProgrammeDay whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProgrammeDay whereLocale(string $column, string $locale)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProgrammeDay whereLocales(string $column, array $locales)
+ * @mixin \Eloquent
+ */
 class ProgrammeDay extends Model
 {
     /** @use HasFactory<\Database\Factories\ProgrammeDayFactory> */

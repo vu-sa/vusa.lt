@@ -7,7 +7,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-// NOTE: right now only used for Doing::class
+// NOTE: Generic state change notification
 class StateChangeNotification extends Notification implements ShouldQueue
 {
     use Queueable;

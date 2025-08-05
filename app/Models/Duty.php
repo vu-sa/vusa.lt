@@ -18,6 +18,55 @@ use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Permission\Traits\HasRoles;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
+/**
+ * @property string $id
+ * @property array<array-key, mixed>|null $name
+ * @property array<array-key, mixed>|null $description
+ * @property string $institution_id
+ * @property int $order Order of duty in institution
+ * @property string|null $email Commonly the @vusa.lt email address, which is used as the OAuth login. Personal mail is stored in users.email.
+ * @property string $contacts_grouping
+ * @property int|null $places_to_occupy Full number of positions to occupy for this duty
+ * @property \Illuminate\Support\Carbon $created_at
+ * @property \Illuminate\Support\Carbon $updated_at
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Pivots\AgendaItem> $agendaItems
+ * @property-read \App\Models\Typeable|Dutiable|Trainable|null $pivot
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Training> $availableTrainings
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $current_users
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Dutiable> $dutiables
+ * @property-read \App\Models\Institution|null $institution
+ * @property-read \App\Models\Institution|null $institutions
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Meeting> $meetings
+ * @property-read \Illuminate\Notifications\DatabaseNotificationCollection<int, \Illuminate\Notifications\DatabaseNotification> $notifications
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Permission> $permissions
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $previous_users
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Reservation> $reservations
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Resource> $resources
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Role> $roles
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Task> $tasks
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Tenant> $tenants
+ * @property-read mixed $translations
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Type> $types
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $users
+ * @method static \Database\Factories\DutyFactory factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty permission($permissions, $without = false)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty role($roles, $guard = null, $without = false)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty whereLocale(string $column, string $locale)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty whereLocales(string $column, array $locales)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty withTrashed(bool $withTrashed = true)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty withoutPermission($permissions)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty withoutRole($roles, $guard = null)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty withoutTrashed()
+ * @mixin \Eloquent
+ */
 class Duty extends Model implements AuthorizableContract
 {
     use Authorizable, HasFactory, HasRelationships, HasRoles, HasTranslations, HasUlids, LogsActivity, Notifiable, Searchable, SoftDeletes;
@@ -80,11 +129,6 @@ class Duty extends Model implements AuthorizableContract
             ->withTimestamps();
     }
 
-    public function matters()
-    {
-        return $this->hasManyDeepFromRelations($this->institution(), (new Institution)->matters());
-    }
-
     public function types()
     {
         return $this->morphToMany(Type::class, 'typeable')->using(Typeable::class)->withPivot(['typeable_type']);
@@ -99,11 +143,6 @@ class Duty extends Model implements AuthorizableContract
     public function institutions(): BelongsTo
     {
         return $this->institution();
-    }
-
-    public function doings()
-    {
-        return $this->hasManyDeepFromRelations($this->users(), (new User)->doings());
     }
 
     // it has only one tenant all times, but it's better to have this method with this name
