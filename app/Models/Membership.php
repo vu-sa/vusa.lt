@@ -20,7 +20,6 @@ use Laravel\Scout\Searchable;
  * @property-read \App\Models\Tenant $tenant
  * @property-read mixed $translations
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $users
- *
  * @method static \Database\Factories\MembershipFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Membership newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Membership newQuery()
@@ -29,7 +28,6 @@ use Laravel\Scout\Searchable;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Membership whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Membership whereLocale(string $column, string $locale)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Membership whereLocales(string $column, array $locales)
- *
  * @mixin \Eloquent
  */
 class Membership extends Model

@@ -20,7 +20,6 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read ProgrammeElement|null $pivot
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ProgrammeDay> $programmeDays
  * @property-read mixed $translations
- *
  * @method static \Database\Factories\ProgrammePartFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ProgrammePart newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ProgrammePart newQuery()
@@ -29,7 +28,6 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ProgrammePart whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ProgrammePart whereLocale(string $column, string $locale)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ProgrammePart whereLocales(string $column, array $locales)
- *
  * @mixin \Eloquent
  */
 class ProgrammePart extends Model

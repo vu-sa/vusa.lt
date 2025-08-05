@@ -25,11 +25,9 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Tenant|null $tenant
  * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $trainable
  * @property-read User|null $user
- *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Trainable newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Trainable newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Trainable query()
- *
  * @mixin \Eloquent
  */
 class Trainable extends MorphPivot

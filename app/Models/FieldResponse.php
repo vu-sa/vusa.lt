@@ -14,12 +14,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \Illuminate\Support\Carbon $updated_at
  * @property-read \App\Models\FormField $formField
  * @property-read \App\Models\Registration $registration
- *
  * @method static \Database\Factories\FieldResponseFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|FieldResponse newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|FieldResponse newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|FieldResponse query()
- *
  * @mixin \Eloquent
  */
 class FieldResponse extends Model

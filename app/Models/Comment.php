@@ -24,7 +24,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read Model|\Eloquent $commentable
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Comment> $comments
  * @property-read \App\Models\User $user
- *
  * @method static \Database\Factories\CommentFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Comment newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Comment newQuery()
@@ -32,7 +31,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Comment query()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Comment withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Comment withoutTrashed()
- *
  * @mixin \Eloquent
  */
 class Comment extends Model

@@ -13,7 +13,6 @@ use Illuminate\Database\Eloquent\Model;
  * @property array|string $description
  * @property string|null $permission_id
  * @property-read mixed $translations
- *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ChangelogItem newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ChangelogItem newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ChangelogItem query()
@@ -21,7 +20,6 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ChangelogItem whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ChangelogItem whereLocale(string $column, string $locale)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ChangelogItem whereLocales(string $column, array $locales)
- *
  * @mixin \Eloquent
  */
 class ChangelogItem extends Model

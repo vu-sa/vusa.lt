@@ -34,7 +34,6 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Task> $tasks
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Tenant> $tenants
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $users
- *
  * @method static \Database\Factories\ReservationFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Reservation newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Reservation newQuery()
@@ -42,7 +41,6 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Reservation query()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Reservation withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Reservation withoutTrashed()
- *
  * @mixin \Eloquent
  */
 class Reservation extends Model

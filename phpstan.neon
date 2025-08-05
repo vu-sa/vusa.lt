@@ -10,6 +10,10 @@ parameters:
     # Level 10 is the highest level
     level: 5
 
+    # PHPStan stub files for third-party packages
+    stubFiles:
+        - stubs/EagerLoadPivotBuilder.stub
+
 #    ignoreErrors:
 #        - '#PHPDoc tag @var#'
 #

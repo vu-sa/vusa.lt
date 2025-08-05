@@ -19,14 +19,12 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Type> $types
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $users
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $usersThroughDuties
- *
  * @method static \Database\Factories\RoleFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Role newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Role newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Role permission($permissions, $without = false)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Role query()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Role withoutPermission($permissions)
- *
  * @mixin \Eloquent
  */
 class Role extends SpatieRole

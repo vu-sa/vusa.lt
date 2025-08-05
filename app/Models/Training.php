@@ -37,7 +37,6 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Trainable> $trainables
  * @property-read mixed $translations
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $users
- *
  * @method static \Database\Factories\TrainingFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Training newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Training newQuery()
@@ -46,7 +45,6 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Training whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Training whereLocale(string $column, string $locale)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Training whereLocales(string $column, array $locales)
- *
  * @mixin \Eloquent
  */
 class Training extends Model

@@ -30,7 +30,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read \App\Models\GoalGroup|null $group
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Task> $tasks
  * @property-read \App\Models\Tenant $tenant
- *
  * @method static \Database\Factories\GoalFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Goal newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Goal newQuery()
@@ -38,7 +37,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Goal query()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Goal withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Goal withoutTrashed()
- *
  * @mixin \Eloquent
  */
 class Goal extends Model

@@ -19,12 +19,10 @@ use Laravel\Scout\Searchable;
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
  * @property-read \App\Models\Tenant $tenant
- *
  * @method static \Database\Factories\QuickLinkFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|QuickLink newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|QuickLink newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|QuickLink query()
- *
  * @mixin \Eloquent
  */
 class QuickLink extends Model

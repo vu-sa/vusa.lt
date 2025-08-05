@@ -19,7 +19,6 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Goal> $goals
- *
  * @method static \Database\Factories\GoalGroupFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|GoalGroup newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|GoalGroup newQuery()
@@ -27,7 +26,6 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|GoalGroup query()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|GoalGroup withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|GoalGroup withoutTrashed()
- *
  * @mixin \Eloquent
  */
 class GoalGroup extends Model

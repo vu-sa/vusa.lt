@@ -36,7 +36,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read Type|null $recursiveParent
  * @property-read Collection<int, \App\Models\Role> $roles
  * @property-read mixed $translations
- *
  * @method static \Database\Factories\TypeFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Type newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Type newQuery()
@@ -48,7 +47,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Type whereLocales(string $column, array $locales)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Type withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Type withoutTrashed()
- *
  * @mixin \Eloquent
  */
 class Type extends Model

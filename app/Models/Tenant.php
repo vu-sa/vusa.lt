@@ -37,12 +37,10 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $users
  * @property-read int|null $users_count
  * @property-read int|null $reservations_count
- *
  * @method static \Database\Factories\TenantFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Tenant newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Tenant newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Tenant query()
- *
  * @mixin \Eloquent
  */
 class Tenant extends Model

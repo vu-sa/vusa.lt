@@ -18,11 +18,9 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Institution> $institutions
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Relationshipable> $relationshipables
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Type> $types
- *
  * @method static \AjCastro\EagerLoadPivotRelations\EagerLoadPivotBuilder<static>|Relationship newModelQuery()
  * @method static \AjCastro\EagerLoadPivotRelations\EagerLoadPivotBuilder<static>|Relationship newQuery()
  * @method static \AjCastro\EagerLoadPivotRelations\EagerLoadPivotBuilder<static>|Relationship query()
- *
  * @mixin \Eloquent
  */
 class Relationship extends Model

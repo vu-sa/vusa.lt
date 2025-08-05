@@ -29,12 +29,10 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Institution> $institutions
  * @property-read Meeting $meeting
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Tenant> $tenants
- *
  * @method static \Database\Factories\AgendaItemFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|AgendaItem newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|AgendaItem newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|AgendaItem query()
- *
  * @mixin \Eloquent
  */
 class AgendaItem extends Pivot

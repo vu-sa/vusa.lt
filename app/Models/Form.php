@@ -26,7 +26,6 @@ use Laravel\Scout\Searchable;
  * @property-read \App\Models\Training|null $training
  * @property-read mixed $translations
  * @property-read \App\Models\User|null $user
- *
  * @method static \Database\Factories\FormFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Form newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Form newQuery()
@@ -38,7 +37,6 @@ use Laravel\Scout\Searchable;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Form whereLocales(string $column, array $locales)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Form withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Form withoutTrashed()
- *
  * @mixin \Eloquent
  */
 class Form extends Model

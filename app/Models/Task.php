@@ -24,7 +24,6 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Model|\Eloquent $taskable
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Tenant> $tenants
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $users
- *
  * @method static \Database\Factories\TaskFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Task newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Task newQuery()
@@ -32,7 +31,6 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Task query()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Task withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Task withoutTrashed()
- *
  * @mixin \Eloquent
  */
 class Task extends Model
