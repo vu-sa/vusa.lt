@@ -66,109 +66,6 @@
         </div>
       </section>
 
-      <!-- Recent activity and stats -->
-      <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <!-- Recent activity - temporarily disabled -->
-        <Card class="lg:col-span-4 opacity-75 relative">
-          <div class="absolute inset-0 bg-background/50 backdrop-blur-[1px] flex items-center justify-center z-10">
-            <div class="bg-background/90 px-4 py-2 rounded-md shadow-sm border border-border/40">
-              <p class="text-sm font-medium text-muted-foreground">{{ $t('Veiksmų istorija laikinai nepasiekiama') }}</p>
-            </div>
-          </div>
-          <CardHeader>
-            <div class="flex items-center justify-between">
-              <div>
-                <CardTitle class="flex items-center gap-2">
-                  <ActivityIcon class="h-5 w-5 text-primary" /> 
-                  {{ showTenantActivities ? $t('Padalinio veiksmai') : $t('Jūsų naujausi veiksmai') }}
-                </CardTitle>
-                <CardDescription>
-                  {{ showTenantActivities ? $t('Veiksmų istorija jūsų padalinyje') : $t('Jūsų veiksmų sistemoje istorija') }}
-                </CardDescription>
-              </div>
-              
-              <!-- Activity view type toggle - disabled -->
-              <div v-if="canViewTenantActivities" class="flex items-center gap-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  disabled
-                  class="text-xs"
-                >
-                  {{ showTenantActivities ? $t('Rodyti mano veiksmus') : $t('Rodyti padalinio veiksmus') }}
-                </Button>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <ActivityTimeline 
-              :activities="[]" 
-              :loading="false"
-            />
-          </CardContent>
-        </Card>
-
-        <!-- Resources & stats -->
-        <Card class="lg:col-span-3">
-          <CardHeader>
-            <CardTitle class="flex items-center gap-2">
-              <LayoutDashboardIcon class="h-5 w-5 text-primary" /> 
-              {{ $t('Statistika') }}
-            </CardTitle>
-          </CardHeader>
-          <CardContent class="space-y-8">
-            <!-- Tasks stats -->
-            <div>
-              <div class="mb-2 flex items-center justify-between">
-                <h4 class="font-medium">{{ $t('Užduotys') }}</h4>
-                <Link :href="route('userTasks')">
-                  <Button variant="ghost" size="sm">{{ $t('Visos') }} →</Button>
-                </Link>
-              </div>
-              <div class="flex items-center gap-6">
-                <div class="flex flex-col items-center gap-1">
-                  <div class="flex h-12 w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900">
-                    <CheckCircle2Icon class="h-5 w-5 text-green-500 dark:text-green-400" />
-                  </div>
-                  <p class="text-xs text-muted-foreground">{{ $t('Atliktos') }}</p>
-                  <p class="text-2xl font-bold">{{ taskStats.completed }}</p>
-                </div>
-                <div class="flex flex-col items-center gap-1">
-                  <div class="flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900">
-                    <ClockIcon class="h-5 w-5 text-amber-500 dark:text-amber-400" />
-                  </div>
-                  <p class="text-xs text-muted-foreground">{{ $t('Vykdomos') }}</p>
-                  <p class="text-2xl font-bold">{{ taskStats.pending }}</p>
-                </div>
-                <div class="flex flex-col items-center gap-1">
-                  <div class="flex h-12 w-12 items-center justify-center rounded-full bg-red-100 dark:bg-red-900">
-                    <AlertTriangleIcon class="h-5 w-5 text-red-500 dark:text-red-400" />
-                  </div>
-                  <p class="text-xs text-muted-foreground">{{ $t('Vėluoja') }}</p>
-                  <p class="text-2xl font-bold">{{ taskStats.overdue }}</p>
-                </div>
-              </div>
-            </div>
-
-            <!-- Quick links -->
-            <div>
-              <h4 class="mb-2 font-medium">{{ $t('Trumposios nuorodos') }}</h4>
-              <div class="space-y-2">
-                <Link v-for="link in quickLinks" :key="link.title" :href="link.href">
-                  <div class="group flex items-center justify-between rounded-md p-2 hover:bg-muted">
-                    <div class="flex items-center gap-2">
-                      <component :is="link.icon" class="h-4 w-4 text-primary" />
-                      <span>{{ link.title }}</span>
-                    </div>
-                    <ChevronRightIcon class="h-4 w-4 opacity-0 transition-opacity group-hover:opacity-100" />
-                  </div>
-                </Link>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
       <!-- Resources and tools -->
       <section>
         <div class="mb-6">
@@ -235,7 +132,6 @@ import { computed, ref } from "vue";
 
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import { addressivize } from "@/Utils/String";
-import ActivityTimeline from "@/Components/Dashboard/ActivityTimeline.vue";
 import NewMeetingModal from "@/Components/Modals/NewMeetingModal.vue";
 
 // UI components
@@ -260,7 +156,6 @@ import {
   ClipboardIcon,
   BuildingIcon,
   FileTextIcon,
-  Activity as ActivityIcon,
   ChevronRight as ChevronRightIcon,
   LayoutDashboard as LayoutDashboardIcon,
   Clock as ClockIcon,
@@ -275,7 +170,6 @@ import {
 
 // Get data from props
 const props = defineProps<{
-  recentActivities: any[];
   taskStats: {
     completed: number;
     pending: number;
@@ -283,7 +177,6 @@ const props = defineProps<{
   };
   unreadNotificationsCount: number;
   hasNotifications: boolean;
-  canViewTenantActivities: boolean;
 }>();
 
 // Modal state
@@ -384,17 +277,6 @@ const navigateToNotifications = () => {
   router.visit(route('notifications.index'));
 };
 
-// Activity view type toggle
-const showTenantActivities = computed(() => usePage().props.showTenantActivities ?? false);
-const toggleActivityViewType = () => {
-  router.visit(route('dashboard'), {
-    data: {
-      view_type: showTenantActivities.value ? 'personal' : 'tenant'
-    },
-    preserveState: true,
-    only: ['recentActivities', 'showTenantActivities']
-  });
-};
 </script>
 
 <style scoped>
