@@ -7,7 +7,7 @@
       <section class="relative overflow-hidden rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 p-6 shadow-sm dark:from-primary/20 dark:to-background lg:p-8">
         <div class="flex flex-col items-start gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 class="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl text-primary dark:text-primary-foreground/90">
+            <h1 class="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl text-primary">
               {{ $t('Labas') }}, {{ userNameAddress }}! <span class="inline-block animate-wave origin-bottom-right">👋</span>
             </h1>
             <p class="mt-2 max-w-xl text-muted-foreground">
