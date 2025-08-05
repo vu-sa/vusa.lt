@@ -41,6 +41,7 @@ use Spatie\Sitemap\Tags\Url;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Tag> $tags
  * @property-read \App\Models\Tenant $tenant
  * @property-read \App\Models\User|null $user
+ *
  * @method static \Database\Factories\NewsFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|News newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|News newQuery()
@@ -48,6 +49,7 @@ use Spatie\Sitemap\Tags\Url;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|News query()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|News withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|News withoutTrashed()
+ *
  * @mixin \Eloquent
  */
 class News extends Model implements Feedable, Sitemapable

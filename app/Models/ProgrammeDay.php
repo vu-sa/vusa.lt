@@ -22,6 +22,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read \App\Models\Programme $programme
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ProgrammeSection> $sections
  * @property-read mixed $translations
+ *
  * @method static \Database\Factories\ProgrammeDayFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ProgrammeDay newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ProgrammeDay newQuery()
@@ -30,6 +31,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ProgrammeDay whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ProgrammeDay whereLocale(string $column, string $locale)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ProgrammeDay whereLocales(string $column, array $locales)
+ *
  * @mixin \Eloquent
  */
 class ProgrammeDay extends Model

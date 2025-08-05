@@ -18,7 +18,7 @@ class TranslatableModelIdeHelperHook implements ModelHookInterface
 {
     public function run(ModelsCommand $command, Model $model): void
     {
-        if (!in_array(HasTranslations::class, class_uses_recursive($model))) {
+        if (! in_array(HasTranslations::class, class_uses_recursive($model))) {
             return;
         }
 

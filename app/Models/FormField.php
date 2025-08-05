@@ -25,6 +25,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\FieldResponse> $fieldResponses
  * @property-read \App\Models\Form $form
  * @property-read mixed $translations
+ *
  * @method static \Database\Factories\FormFieldFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|FormField newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|FormField newQuery()
@@ -33,6 +34,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|FormField whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
  * @method static \Illuminate\Database\Eloquent\Builder<static>|FormField whereLocale(string $column, string $locale)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|FormField whereLocales(string $column, array $locales)
+ *
  * @mixin \Eloquent
  */
 class FormField extends Model

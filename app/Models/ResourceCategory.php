@@ -17,6 +17,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Resource> $resources
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Tenant> $tenants
  * @property-read mixed $translations
+ *
  * @method static \Database\Factories\ResourceCategoryFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ResourceCategory newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ResourceCategory newQuery()
@@ -25,6 +26,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ResourceCategory whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ResourceCategory whereLocale(string $column, string $locale)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ResourceCategory whereLocales(string $column, array $locales)
+ *
  * @mixin \Eloquent
  */
 class ResourceCategory extends Model

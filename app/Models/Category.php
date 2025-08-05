@@ -16,10 +16,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Calendar> $calendars
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\News> $news
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Page> $pages
+ *
  * @method static \Database\Factories\CategoryFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Category newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Category newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Category query()
+ *
  * @mixin \Eloquent
  */
 class Category extends Model

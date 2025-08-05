@@ -17,9 +17,11 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
  * @property \Illuminate\Support\Carbon $updated_at
  * @property-read Membership $membership
  * @property-read User $user
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|MembershipUser newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|MembershipUser newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|MembershipUser query()
+ *
  * @mixin \Eloquent
  */
 class MembershipUser extends Pivot

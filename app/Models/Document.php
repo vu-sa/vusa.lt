@@ -32,10 +32,12 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read bool|null $is_in_effect
  * @property-read \App\Models\Institution|null $institution
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Tenant> $tenant
+ *
  * @method static \Database\Factories\DocumentFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Document newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Document newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Document query()
+ *
  * @mixin \Eloquent
  */
 class Document extends Model

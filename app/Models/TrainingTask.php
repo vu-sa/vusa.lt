@@ -14,6 +14,7 @@ use App\Models\Traits\HasTranslations;
  * @property \Illuminate\Support\Carbon $updated_at
  * @property-read \App\Models\Training $training
  * @property-read mixed $translations
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TrainingTask newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TrainingTask newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TrainingTask query()
@@ -21,6 +22,7 @@ use App\Models\Traits\HasTranslations;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TrainingTask whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TrainingTask whereLocale(string $column, string $locale)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TrainingTask whereLocales(string $column, array $locales)
+ *
  * @mixin \Eloquent
  */
 class TrainingTask extends Model

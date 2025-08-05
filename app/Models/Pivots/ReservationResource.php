@@ -29,10 +29,12 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
  * @property-read bool $approvable
  * @property-read mixed $state_properties
  * @property-read Reservation $reservation
- * @property-read Resource $resource
+ * @property-read resource $resource
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ReservationResource newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ReservationResource newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ReservationResource query()
+ *
  * @mixin \Eloquent
  */
 class ReservationResource extends Pivot implements Decidable

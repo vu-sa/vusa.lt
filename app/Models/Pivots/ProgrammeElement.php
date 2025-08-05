@@ -17,9 +17,11 @@ use Illuminate\Database\Eloquent\Relations\MorphPivot;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, ProgrammeBlock> $blocks
  * @property-read ProgrammeDay|null $day
  * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $elementable
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ProgrammeElement newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ProgrammeElement newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ProgrammeElement query()
+ *
  * @mixin \Eloquent
  */
 class ProgrammeElement extends MorphPivot

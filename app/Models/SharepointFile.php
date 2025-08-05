@@ -17,9 +17,11 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Institution> $institutions
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Meeting> $meetings
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Type> $types
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SharepointFile newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SharepointFile newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SharepointFile query()
+ *
  * @mixin \Eloquent
  */
 class SharepointFile extends Model

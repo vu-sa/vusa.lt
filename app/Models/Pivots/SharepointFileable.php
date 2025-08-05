@@ -18,9 +18,11 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Institution|null $institution
  * @property-read Meeting|null $meeting
  * @property-read Type|null $type
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SharepointFileable newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SharepointFileable newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SharepointFileable query()
+ *
  * @mixin \Eloquent
  */
 class SharepointFileable extends MorphPivot

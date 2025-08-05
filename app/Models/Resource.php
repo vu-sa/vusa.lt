@@ -36,6 +36,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Reservation> $reservations
  * @property-read \App\Models\Tenant $tenant
  * @property-read mixed $translations
+ *
  * @method static \Database\Factories\ResourceFactory factory($count = null, $state = [])
  * @method static \AjCastro\EagerLoadPivotRelations\EagerLoadPivotBuilder<static>|Resource newModelQuery()
  * @method static \AjCastro\EagerLoadPivotRelations\EagerLoadPivotBuilder<static>|Resource newQuery()
@@ -47,6 +48,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
  * @method static \AjCastro\EagerLoadPivotRelations\EagerLoadPivotBuilder<static>|Resource whereLocales(string $column, array $locales)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Resource withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Resource withoutTrashed()
+ *
  * @mixin \Eloquent
  */
 class Resource extends Model implements HasMedia
