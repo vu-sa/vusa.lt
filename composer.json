@@ -42,10 +42,11 @@
         "staudenmeir/eloquent-has-many-deep": "^v1.18",
         "symfony/psr-http-message-bridge": "^7.1",
         "tightenco/ziggy": "^2.0",
-        "typesense/typesense-php": "*",
+        "typesense/typesense-php": "^5.1",
         "ueberdosis/tiptap-php": "^2.0"
     },
     "require-dev": {
+        "barryvdh/laravel-ide-helper": "^3.6",
         "fakerphp/faker": "^1.9.1",
         "fumeapp/modeltyper": "^3.0",
         "kitloong/laravel-migrations-generator": "^7.0.1",
@@ -78,10 +79,17 @@
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi"
         ],
+        "post-install-cmd": [
+            "@php artisan vendor:publish --tag=laravel-assets --ansi --force",
+            "@php artisan typescript:transform",
+            "@php artisan model:typer --optional-relations --optional-nullables --global > resources/js/Types/models.d.ts",
+            "@php artisan ide-helper:models --write"
+        ],
         "post-update-cmd": [
             "@php artisan vendor:publish --tag=laravel-assets --ansi --force",
             "@php artisan typescript:transform",
-            "@php artisan model:typer --optional-relations --optional-nullables --global > resources/js/Types/models.d.ts"
+            "@php artisan model:typer --optional-relations --optional-nullables --global > resources/js/Types/models.d.ts",
+            "@php artisan ide-helper:models --write"
         ],
         "post-root-package-install": [
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
@@ -89,8 +97,20 @@
         "post-create-project-cmd": [
             "@php artisan key:generate --ansi"
         ],
+        "test": [
+            "./vendor/bin/pest"
+        ],
+        "lint": [
+            "./vendor/bin/pint"
+        ],
+        "analyze": [
+            "./vendor/bin/phpstan analyse --no-progress --memory-limit=2G"
+        ],
         "phpstan": [
             "./vendor/bin/phpstan analyse --no-progress --memory-limit=2G"
+        ],
+        "ide-helper": [
+            "@php artisan ide-helper:models --write"
         ]
     },
     "extra": {
