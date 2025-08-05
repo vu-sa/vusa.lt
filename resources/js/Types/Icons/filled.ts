@@ -15,7 +15,6 @@ import Grid24Filled from "~icons/fluent/grid24-filled";
 import Home24Filled from "~icons/fluent/home24-filled";
 import Image24Filled from "~icons/fluent/image24-filled";
 import ImageArrowBack24Filled from "~icons/fluent/image-arrow-back24-filled";
-import Important24Filled from "~icons/fluent/important24-filled";
 import Navigation24Filled from "~icons/fluent/navigation24-filled";
 import News24Filled from "~icons/fluent/news24-filled";
 import PeopleTeam24Filled from "~icons/fluent/people-team24-filled";
@@ -43,7 +42,6 @@ const modelIcons: Record<keyof typeof ModelEnum, FunctionalComponent> = {
   CHANGELOG_ITEM: DocumentBulletList24Filled,
   COMMENT: Comment24Filled,
   DOCUMENT: DocumentMultiple24Filled,
-  DOING: Important24Filled,
   DUTIABLE: PersonClock24Filled,
   DUTY: PuzzlePiece24Filled,
   GOAL: StarLineHorizontal324Filled,
