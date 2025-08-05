@@ -24,7 +24,7 @@ class HandleDutiableChange implements ShouldQueue
     /**
      * Handle the event.
      *
-     * @param  App\Events\DutiableChanged  $event
+     * @param  DutiableChanged  $event
      * @return void
      */
     public function handle(DutiableChanged $event)

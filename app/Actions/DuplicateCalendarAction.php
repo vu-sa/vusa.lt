@@ -18,7 +18,7 @@ class DuplicateCalendarAction
             
             // Handle translatable title field properly
             $rawTitle = $newCalendar->getTranslations('title');
-            if (!empty($rawTitle) && is_array($rawTitle)) {
+            if (!empty($rawTitle)) {
                 // For translatable fields, append to each language
                 foreach ($rawTitle as $locale => $title) {
                     $suffix = $locale === 'lt' ? __('(kopija)', [], 'lt') : __('(kopija)', [], 'en');

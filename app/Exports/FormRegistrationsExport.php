@@ -27,16 +27,8 @@ class FormRegistrationsExport implements FromArray
             $this->form->formFields->each(function ($formField) use (&$registrationArray, $registration) {
                 $fieldResponse = $registration->fieldResponses->firstWhere('form_field_id', $formField->id);
 
-                // Handle response as string or array with 'value' key
-                $responseValue = null;
-                if ($fieldResponse) {
-                    $response = $fieldResponse->response;
-                    if (is_array($response) && isset($response['value'])) {
-                        $responseValue = $response['value'];
-                    } elseif (is_string($response)) {
-                        $responseValue = $response;
-                    }
-                }
+                // Use the FieldResponse helper method for consistent access
+                $responseValue = $fieldResponse?->getValue();
 
                 $registrationArray[] = $responseValue;
             });

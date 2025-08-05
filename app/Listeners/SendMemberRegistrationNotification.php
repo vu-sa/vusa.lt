@@ -6,6 +6,7 @@ use App\Events\MemberRegistrationCreated;
 use App\Helpers\AddressivizeHelper;
 use App\Mail\ConfirmMemberRegistration;
 use App\Models\FieldResponse;
+use App\Models\Institution;
 use App\Models\Tenant;
 use App\Notifications\MemberRegistered;
 use App\Settings\FormSettings;
@@ -59,8 +60,18 @@ class SendMemberRegistrationNotification implements ShouldQueue
         });
 
         // Finalize variables
+        $tenant = Tenant::query()->find($tenantResponse->getValue());
+        if (!$tenant) {
+            report('Tenant not found for member registration!');
+            return;
+        }
 
-        $institution = Tenant::query()->find($tenantResponse->response['value'])->primary_institution()->first();
+        /** @var Institution|null $institution */
+        $institution = $tenant->primary_institution;
+        if (!$institution) {
+            report('Primary institution not found for tenant!');
+            return;
+        }
 
         // Find duty for tenant which has a role set in FormSettings::class
         $mailableDuties = $institution->duties()->whereHas('roles', function ($query) {
@@ -77,8 +88,8 @@ class SendMemberRegistrationNotification implements ShouldQueue
                 'institution_name' => $institution->name,
                 'configured_role_id' => app(FormSettings::class)->member_registration_notification_recipient_role_id,
                 'registration_id' => $event->registration->id,
-                'registration_email' => $emailResponse->response['value'],
-                'registration_name' => $nameResponse->response['value'],
+                'registration_email' => $emailResponse->getValue(),
+                'registration_name' => $nameResponse->getValue(),
                 'available_duties_count' => $institution->duties()->count(),
                 'total_roles_in_institution' => $institution->duties()->with('roles')->get()->pluck('roles')->flatten()->unique('id')->count(),
             ]);
@@ -87,14 +98,14 @@ class SendMemberRegistrationNotification implements ShouldQueue
             return;
         }
 
-        Mail::to($emailResponse->response['value'])->send(new ConfirmMemberRegistration(
-            AddressivizeHelper::addressivizeEveryWord($nameResponse->response['value']),
+        Mail::to($emailResponse->getValue())->send(new ConfirmMemberRegistration(
+            AddressivizeHelper::addressivizeEveryWord($nameResponse->getValue()),
             $institution,
             $dutyContact
         ));
 
         foreach ($mailableDuties as $mailableDuty) {
-            Notification::send($mailableDuty->current_users()->first(), new MemberRegistered($event->registration->id, $nameResponse->response['value'], $institution, $mailableDuty->email));
+            Notification::send($mailableDuty->current_users()->first(), new MemberRegistered($event->registration->id, $nameResponse->getValue(), $institution, $mailableDuty->email));
         }
     }
 }

@@ -23,6 +23,8 @@ class StoreRegistrationRequest extends FormRequest
     {
         return [
             'data' => 'required|array',
+            'data.*' => 'required|array', // Each field response must be an array
+            'data.*.value' => 'present', // Each response must have a 'value' key (can be null)
             'user_id' => 'nullable|exists:users,id',
         ];
     }
