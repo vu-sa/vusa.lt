@@ -5,7 +5,7 @@ concurrency: production
 on:
   workflow_dispatch:
   workflow_run:
-    workflows: ["PHP Code Quality", "Frontend Tests"]
+    workflows: ["Tests"]
     branches:
       - main
     types:
@@ -21,57 +21,40 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         
-      # Try to download artifacts from previous workflow runs
-      - name: Download build artifacts
-        id: download-build
+      - name: Download vendor artifacts
         uses: actions/download-artifact@v4
-        continue-on-error: true
         with:
           name: build-assets
           path: ./
           
-      # Set up SSH keys
-      - name: Install SSH keys
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: Install npm dependencies
+        run: npm ci
+        
+      - name: Build production frontend assets
         run: |
-          install -m 600 -D /dev/null ~/.ssh/id_rsa
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.SSH_HOST }} > ~/.ssh/known_hosts
-          
-      # Build frontend and backend assets if needed
-      - name: Build assets if needed
-        if: steps.download-build.outcome != 'success'
-        run: |
-          # Setup PHP
-          echo "Setting up PHP dependencies..."
-          sudo apt-get update
-          sudo apt-get install -y php8.3-cli php8.3-curl php8.3-mbstring php8.3-xml php8.3-zip php8.3-dom
-          
-          # Install Composer dependencies
-          echo "Installing Composer dependencies..."
-          composer install -q --no-ansi --no-interaction --no-scripts --no-dev
-          tar -czf vendor.tar.gz vendor
-          
-          # Install and build NPM dependencies
-          echo "Installing and building frontend assets..."
-          npm ci
           VITE_POSTHOG_API_KEY=${{ secrets.POSTHOG_API_KEY }} \
           VITE_ARCHYVAS_PASSWORD=${{ secrets.ARCHYVAS_PASSWORD }} \
           VITE_ATSTOVAI_PASSWORD=${{ secrets.ATSTOVAI_PASSWORD }} \
           VITE_SHAREPOINT_CLIENT_ID=${{ secrets.SHAREPOINT_CLIENT_ID }} \
           VITE_SHAREPOINT_TENANT_ID=${{ secrets.SHAREPOINT_TENANT_ID }} \
           npm run build
-          tar -czf build.tar.gz public/build
           
-      # Package downloaded artifacts if they exist
-      - name: Package downloaded artifacts
-        if: steps.download-build.outcome == 'success'
+      - name: Install SSH keys
         run: |
-          if [ -d "public/build" ]; then
-            tar -czf build.tar.gz public/build
-          fi
-          if [ -d "vendor" ]; then
-            tar -czf vendor.tar.gz vendor
-          fi
+          install -m 600 -D /dev/null ~/.ssh/id_rsa
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} > ~/.ssh/known_hosts
+          
+      - name: Package build artifacts
+        run: |
+          tar -czf build.tar.gz public/build
+          tar -czf vendor.tar.gz vendor
           
       # Build docs if needed
       - name: Build docs
@@ -82,15 +65,9 @@ jobs:
       # Deploy to server
       - name: Upload and run on server
         run: |
-          # Upload code changes
-          echo "Uploading code changes..."
-          if [ -f build.tar.gz ]; then
-            scp build.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ vars.SITE_DIR }}/build.tar.gz
-          fi
-          
-          if [ -f vendor.tar.gz ]; then
-            scp vendor.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ vars.SITE_DIR }}/vendor.tar.gz
-          fi
+          echo "Uploading build artifacts..."
+          scp build.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ vars.SITE_DIR }}/build.tar.gz
+          scp vendor.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ vars.SITE_DIR }}/vendor.tar.gz
           
           # Upload docs changes
           echo "Uploading documentation..."
@@ -98,11 +75,10 @@ jobs:
             scp docs.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ vars.SITE_DIR }}/docs.tar.gz
           fi
           
-          # Apply changes on server
           echo "Applying changes on server..."
           ssh -T ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ vars.SITE_DIR }} && git pull && \
-          if [ -f build.tar.gz ]; then rm -rf public/build && tar -xzf build.tar.gz && rm build.tar.gz; fi && \
-          if [ -f vendor.tar.gz ]; then rm -rf vendor && tar -xzf vendor.tar.gz && rm vendor.tar.gz; fi && \
+          rm -rf public/build && tar -xzf build.tar.gz && rm build.tar.gz && \
+          rm -rf vendor && tar -xzf vendor.tar.gz && rm vendor.tar.gz && \
           if [ -f docs.tar.gz ]; then rm -rf public/docs/* && tar -xzf docs.tar.gz -C public/docs && rm docs.tar.gz; fi"
           
       # Optimize after upload
@@ -111,16 +87,6 @@ jobs:
           ssh -T ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ vars.SITE_DIR }} && /opt/php83/bin/php /usr/local/bin/composer dump-autoload && /opt/php83/bin/php artisan optimize"
           rm -rf ~/.ssh
       
-      # Save artifacts for future workflow runs
-      - name: Archive production artifacts
-        if: steps.download-build.outcome != 'success'
-        uses: actions/upload-artifact@v4
-        with:
-          name: production-assets
-          path: |
-            public/build
-            vendor
-          retention-days: 1
       
       # Notify about deployment completion
       - name: Deployment notification

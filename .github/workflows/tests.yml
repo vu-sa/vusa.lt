@@ -1,4 +1,4 @@
-name: Frontend Tests
+name: Tests
 
 on:
   push:
@@ -21,8 +21,6 @@ jobs:
       js: ${{ steps.filter.outputs.js }}
     steps:
     - uses: actions/checkout@v4
-      with:
-        fetch-depth: ${{ github.event_name == 'pull_request' && 0 || 1 }}
     - uses: dorny/paths-filter@v3
       id: filter
       with:
@@ -41,15 +39,10 @@ jobs:
             - 'package-lock.json'
             - 'vite.config.mts'
             - 'tsconfig.json'
-        # For PRs, compare only latest commits
-        # For push events, check only the pushed commits
-        base: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
-        ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.event.after }}
 
   setup:
     needs: changes
-    # Run setup if we're going to run any tests
-    if: ${{ github.event_name == 'pull_request' || github.event_name == 'push' && github.ref == 'refs/heads/main' || needs.changes.outputs.php == 'true' || needs.changes.outputs.js == 'true' }}
+    if: ${{ needs.changes.outputs.php == 'true' || needs.changes.outputs.js == 'true' || github.ref == 'refs/heads/main' }}
     uses: ./.github/workflows/setup.yml
     with:
       include-coverage: true
@@ -57,12 +50,11 @@ jobs:
         
   js-tests:
     needs: [changes, setup]
-    if: ${{ needs.changes.outputs.js == 'true' || (github.event_name == 'push' && github.ref == 'refs/heads/main') }}
+    if: ${{ needs.changes.outputs.js == 'true' || github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
     
-    # Download build artifacts
     - name: Download build artifacts
       uses: actions/download-artifact@v4
       with:
@@ -78,21 +70,13 @@ jobs:
     - name: Install npm dependencies
       run: npm ci
     
-    - name: Get Playwright version
-      id: playwright-version
-      run: echo "version=$(npm list playwright --depth=0 --json | jq -r '.dependencies.playwright.version // "latest"')" >> $GITHUB_OUTPUT
-    
     - name: Cache Playwright browsers
-      id: cache-playwright
       uses: actions/cache@v4
       with:
         path: ~/.cache/ms-playwright
-        key: ${{ runner.os }}-playwright-${{ steps.playwright-version.outputs.version }}
-        restore-keys: |
-          ${{ runner.os }}-playwright-
+        key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
     
     - name: Install Playwright Browsers
-      if: steps.cache-playwright.outputs.cache-hit != 'true'
       run: npx playwright install chromium --with-deps
     
     - name: Set up environment
@@ -100,40 +84,83 @@ jobs:
         cp .env.example .env
         php artisan key:generate --force
     
-    - name: Execute tests with coverage (unit + component tests)
-      run: |
-        LARAVEL_BYPASS_ENV_CHECK=1 npm run coverage:ci
+    - name: Execute tests with coverage
+      run: LARAVEL_BYPASS_ENV_CHECK=1 npm run coverage:ci
     
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v5
       with:
-        verbose: true
         files: ./coverage/clover.xml
         flags: frontend
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  php-tests:
+    needs: [changes, setup]
+    if: ${{ needs.changes.outputs.php == 'true' || github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
     
-    # Save test coverage as artifact
-    - name: Archive coverage reports
-      uses: actions/upload-artifact@v4
+    - name: Download build artifacts
+      uses: actions/download-artifact@v4
       with:
-        name: vitest-coverage
-        path: ./coverage
-        retention-days: 1
+        name: build-assets
+        path: ./
+    
+    - name: Start Typesense
+      uses: jirevwe/typesense-github-action@v1.0.1
+      with:
+        typesense-version: "0.25.2"
+        typesense-api-key: xyz
+    
+    - name: Setup PHP with Xdebug
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: 8.3
+        extensions: dom, curl, libxml, mbstring, zip, fileinfo
+        coverage: xdebug
+    
+    - name: Create SQLite database
+      run: |
+        touch database/database.sqlite
+        cp .env.example .env
+        php artisan key:generate --force
+    
+    - name: Execute tests with coverage
+      env:
+        DB_CONNECTION: sqlite
+        DB_DATABASE: database/database.sqlite
+        SCOUT_DRIVER: database
+        TYPESENSE_HOST: localhost
+        TYPESENSE_PORT: 8108
+        TYPESENSE_API_KEY: xyz
+        TYPESENSE_PROTOCOL: http
+      run: php artisan test --coverage --coverage-clover ./coverage.xml
+    
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v5
+      with:
+        files: ./coverage.xml
+        flags: backend
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         
-  # New job to always report status to the PR
   status-check:
-    name: Frontend tests completed
-    needs: [changes, js-tests]
+    name: Tests completed
+    needs: [changes, js-tests, php-tests]
     if: always()
     runs-on: ubuntu-latest
     steps:
       - name: Set status
         run: |
-          if [[ "${{ needs.js-tests.result }}" == "success" || "${{ needs.js-tests.result }}" == "skipped" ]]; then
-            echo "Frontend tests passed or were skipped"
+          JS_RESULT="${{ needs.js-tests.result }}"
+          PHP_RESULT="${{ needs.php-tests.result }}"
+          
+          if [[ "$JS_RESULT" == "success" || "$JS_RESULT" == "skipped" ]] && [[ "$PHP_RESULT" == "success" || "$PHP_RESULT" == "skipped" ]]; then
+            echo "All tests passed or were skipped"
             exit 0
           else
-            echo "Frontend tests failed"
+            echo "Some tests failed: JS=$JS_RESULT, PHP=$PHP_RESULT"
             exit 1
           fi
