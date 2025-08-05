@@ -31,26 +31,25 @@ beforeEach(function () {
 describe('auth: simple user', function () {
     test('cannot access duties index', function () {
         asUser($this->user)->get(route('duties.index'))
-            ->assertStatus(302)
-            ->assertRedirect(config('app.url'));
+            ->assertStatus(403);
     });
 
     test('cannot create duties', function () {
         asUser($this->user)->post(route('duties.store'), [
             'name' => ['lt' => 'Test Duty', 'en' => 'Test Duty'],
             'institution_id' => $this->adminDuty->institution_id,
-        ])->assertStatus(302);
+        ])->assertStatus(403);
     });
 
     test('cannot update duties', function () {
         asUser($this->user)->put(route('duties.update', $this->adminDuty), [
             'name' => ['lt' => 'Updated Duty', 'en' => 'Updated Duty'],
-        ])->assertStatus(302);
+        ])->assertStatus(403);
     });
 
     test('cannot delete duties', function () {
         asUser($this->user)->delete(route('duties.destroy', $this->adminDuty))
-            ->assertStatus(302);
+            ->assertStatus(403);
     });
 });
 
@@ -131,7 +130,7 @@ describe('auth: duty manager', function () {
             'contacts_grouping' => $otherDuty->contacts_grouping ?? 'none',
             'places_to_occupy' => $otherDuty->places_to_occupy ?? 1,
             'current_users' => [$newUser->id],
-        ])->assertStatus(302); // Expect redirect for unauthorized access, not 403
+        ])->assertStatus(403); // Expect 403 for unauthorized access to different tenant
     });
 });
 

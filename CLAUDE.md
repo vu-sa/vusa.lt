@@ -171,6 +171,12 @@ Uses unified breadcrumb system with automatic lifecycle management.
 - **Admin interfaces**: Use `toFullArray()` for full translation objects
 - **Public interfaces**: Use `toArray()` for localized strings  
 - **Factory data**: Always include `['lt' => '...', 'en' => '...']`
+- **PHPDoc for PHPStan**: Override auto-generated `@property` annotations for translatable fields from `array<array-key, mixed>|null` to `string|null` to enable clean property access (e.g., `$model->name` instead of `$model->getTranslation('name', app()->getLocale())`)
+
+### IDE Helper Integration
+- **Automatic generation**: PHPDoc annotations are generated after `composer install/update`
+- **Manual generation**: Run `composer ide-helper` to regenerate type annotations
+- **Custom overrides**: After running ide-helper, manually fix translatable field types from array to string for better static analysis
 
 ### Testing Permissions
 ```php
@@ -216,11 +222,47 @@ $user->assignRole(config('permission.super_admin_role_name'));
 </style>
 ```
 
+## Error Handling & Authorization
+
+### 403 Forbidden Response Pattern
+**Implementation**: Consistent 403 error handling across all admin routes
+
+**Behavior**:
+- **Inertia requests**: Return 302 redirect with `error` flash message → Displays as Sonner toast notification
+- **Direct page visits**: Return 403 HTTP status with `resources/views/errors/403.blade.php` 
+- **API requests**: Return 403 JSON response
+
+**Key Files**:
+- `app/Exceptions/Handler.php` - Main error handling logic
+- `app/Http/Middleware/TenantPermission.php` - Uses `abort(403)` for unauthorized access
+- `resources/js/Components/Layouts/AdminLayout.vue` - Toast notification handling via `vue-sonner`
+
+**Flash Data Structure**:
+```php
+// ✅ Current: Clean error flash
+return back()->with(['error' => 'Error message']);
+
+// ❌ Deprecated: statusCode flashing
+return back()->with(['error' => 'Message', 'statusCode' => 403]);
+```
+
+**Frontend Integration**:
+```vue  
+// AdminLayout automatically handles error flash messages
+watch(() => usePage().props.flash.error, (msg) => {
+  if (msg) {
+    toast.error(msg);  // Vue Sonner toast
+  }
+});
+```
+
+**Testing**: All authorization tests expect 403 status codes, not 302 redirects
+
 ## Security
 
-- Always use `authorize()` in controllers
-- Test permission scenarios thoroughly
-- Use secure response status codes
+- Always use `authorize()` in controllers or `TenantPermission` middleware
+- Test permission scenarios thoroughly  
+- Use secure response status codes (403 for forbidden, not 302)
 - Validate inputs through Form Requests
 
 ## Remember

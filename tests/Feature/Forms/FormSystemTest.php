@@ -22,8 +22,7 @@ beforeEach(function () {
 describe('auth: simple user', function () {
     test('cannot access forms management', function () {
         asUser($this->user)->get(route('forms.index'))
-            ->assertStatus(302)
-            ->assertRedirect(config('app.url'));
+            ->assertStatus(403);
     });
 
     test('can submit registration to published form', function () {

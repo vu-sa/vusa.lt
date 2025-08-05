@@ -37,11 +37,8 @@ class TenantPermission
                 return response()->json(['message' => 'Forbidden. Insufficient permissions.'], 403);
             }
 
-            // For regular web routes, redirect to dashboard with error message
-            return redirect()->route('dashboard')->with([
-                'info' => 'Insufficient permissions to access this resource.',
-                'statusCode' => 403,
-            ]);
+            // For web routes, throw authorization exception (handled by Handler.php)
+            abort(403, 'Insufficient permissions to access this resource.');
         }
 
         return $next($request);

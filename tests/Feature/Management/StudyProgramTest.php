@@ -39,14 +39,13 @@ describe('auth: simple user without permissions', function () {
     test('cannot index study programs', function () {
         asUser($this->user)
             ->get(route('studyPrograms.index'))
-            ->assertStatus(302)
-            ->assertRedirectToRoute('dashboard');
+            ->assertStatus(403);
     });
 
     test('cannot access study program create page', function () {
         asUser($this->user)
             ->get(route('studyPrograms.create'))
-            ->assertStatus(302);
+            ->assertStatus(403);
     });
 
     test('cannot store study program', function () {
@@ -58,8 +57,7 @@ describe('auth: simple user without permissions', function () {
 
         asUser($this->user)
             ->post(route('studyPrograms.store'), $validData)
-            ->assertStatus(302)
-            ->assertRedirectToRoute('dashboard');
+            ->assertStatus(403);
 
         $this->assertDatabaseMissing('study_programs', [
             'name->lt' => 'Test StudyProgram',
@@ -69,7 +67,7 @@ describe('auth: simple user without permissions', function () {
     test('cannot access study program edit page', function () {
         asUser($this->user)
             ->get(route('studyPrograms.edit', $this->studyProgram))
-            ->assertStatus(302);
+            ->assertStatus(403);
     });
 
     test('cannot update study program', function () {
@@ -81,8 +79,7 @@ describe('auth: simple user without permissions', function () {
 
         asUser($this->user)
             ->patch(route('studyPrograms.update', $this->studyProgram), $updateData)
-            ->assertStatus(302)
-            ->assertRedirectToRoute('dashboard');
+            ->assertStatus(403);
 
         $this->assertDatabaseMissing('study_programs', [
             'name->lt' => 'Updated StudyProgram',
@@ -92,7 +89,7 @@ describe('auth: simple user without permissions', function () {
     test('cannot delete study program', function () {
         asUser($this->user)
             ->delete(route('studyPrograms.destroy', $this->studyProgram))
-            ->assertStatus(302);
+            ->assertStatus(403);
 
         $this->assertDatabaseHas('study_programs', [
             'id' => $this->studyProgram->id,
@@ -102,7 +99,7 @@ describe('auth: simple user without permissions', function () {
     test('cannot access merge study programs page', function () {
         asUser($this->user)
             ->get(route('studyPrograms.merge'))
-            ->assertStatus(302);
+            ->assertStatus(403);
     });
 
     test('cannot merge study programs', function () {
@@ -119,7 +116,7 @@ describe('auth: simple user without permissions', function () {
 
         asUser($this->user)
             ->post(route('studyPrograms.mergeStudyPrograms'), $mergeData)
-            ->assertStatus(302);
+            ->assertStatus(403);
 
         // Both study programs should still exist
         $this->assertDatabaseHas('study_programs', ['id' => $this->studyProgram->id]);

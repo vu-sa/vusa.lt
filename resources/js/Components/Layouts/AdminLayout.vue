@@ -1,5 +1,6 @@
 <template>
-  <Head :title="title" />
+
+  <Head :title />
 
   <SidebarProvider>
     <AppSidebar />
@@ -11,51 +12,53 @@
           <Separator orientation="vertical" class="mr-2 h-4" />
           <UnifiedBreadcrumbs />
         </div>
-        
+
         <div class="flex-shrink-0 flex items-center gap-2">
-          <slot name="headerActions"></slot>
+          <slot name="headerActions" />
           <TasksIndicator />
           <NotificationsIndicator />
         </div>
       </header>
-      
+
       <!-- Main content area -->
       <main class="flex-1 overflow-auto p-4 md:p-6">
         <!-- System announcements banner -->
-        <div v-if="systemMessage" 
-             class="mb-6 rounded-lg border p-4 bg-amber-50 text-amber-900 dark:bg-amber-950 dark:text-amber-50">
+        <div v-if="systemMessage"
+          class="mb-6 rounded-lg border p-4 bg-amber-50 text-amber-900 dark:bg-amber-950 dark:text-amber-50">
           <div class="flex">
             <InfoIcon class="mr-3 h-5 w-5 flex-shrink-0" aria-hidden="true" />
             <div>
-              <h3 class="font-medium">{{ $t('System Announcement') }}</h3>
-              <div class="mt-1 text-sm" v-html="systemMessage"></div>
+              <h3 class="font-medium">
+                {{ $t('System Announcement') }}
+              </h3>
+              <div class="mt-1 text-sm" v-html="systemMessage" />
             </div>
           </div>
         </div>
-        
+
         <slot />
       </main>
-      
+
       <!-- Footer -->
       <!-- <footer v-if="showFooter" class="border-t px-4 py-3 text-center text-xs text-muted-foreground">
         <div>© {{ currentYear }} {{ appName }} - {{ $t('Version') }} {{ appVersion }}</div>
       </footer> -->
-      
+
       <!-- Bottom action bar for mobile screens -->
-      <div v-if="showMobileActionBar" 
-           class="md:hidden fixed bottom-0 left-0 right-0 border-t bg-background p-2 flex items-center justify-around">
+      <div v-if="showMobileActionBar"
+        class="md:hidden fixed bottom-0 left-0 right-0 border-t bg-background p-2 flex items-center justify-around">
         <slot name="mobileActions">
           <!-- Default mobile actions -->
           <Button variant="ghost" size="sm" class="flex-col h-14 w-16" as="a" :href="route('dashboard')">
             <HomeIcon class="h-5 w-5" aria-hidden="true" />
             <span class="text-xs mt-1">{{ $t('Home') }}</span>
           </Button>
-          
+
           <Button v-if="createUrl" variant="ghost" size="sm" class="flex-col h-14 w-16" as="a" :href="createUrl">
             <PlusIcon class="h-5 w-5" aria-hidden="true" />
             <span class="text-xs mt-1">{{ $t('New') }}</span>
           </Button>
-          
+
           <Button variant="ghost" size="sm" class="flex-col h-14 w-16" as="a" :href="route('profile')">
             <UserIcon class="h-5 w-5" aria-hidden="true" />
             <span class="text-xs mt-1">{{ $t('Profile') }}</span>
@@ -64,23 +67,24 @@
       </div>
     </SidebarInset>
   </SidebarProvider>
-  
+
   <!-- Toast notifications -->
-  <Toaster />
+  <Toaster rich-colors />
 </template>
 
 <script setup lang="ts">
 import { Head, Link, router, usePage } from "@inertiajs/vue3";
-import { useMessage } from "naive-ui";
 import { breakpointsTailwind, useBreakpoints, useOnline, useTimeoutFn } from "@vueuse/core";
 import { computed, onMounted, watch, onBeforeUnmount, ref, nextTick } from "vue";
-import { 
-  InfoIcon, 
-  HomeIcon, 
-  PlusIcon, 
+import {
+  InfoIcon,
+  HomeIcon,
+  PlusIcon,
   UserIcon,
 } from 'lucide-vue-next';
 import { trans as $t } from "laravel-vue-i18n";
+import { useToasts } from '@/Composables/useToasts';
+import 'vue-sonner/style.css'
 
 import AppSidebar from '@/Components/AppSidebar.vue'
 import TasksIndicator from '@/Components/TasksIndicator.vue'
@@ -145,57 +149,31 @@ onMounted(() => {
 
 const mounted = ref(false);
 const online = useOnline();
-const message = useMessage();
+let offlineToastId: string | number | undefined;
 
-// Handle online/offline status
-const handleOnlineStatus = () => {
-  if (!online.value) {
-    message.error($t("Your internet connection was lost."), {
-      duration: 0,
-      closable: true,
-      onClose: () => {
-        if (online.value) {
-          message.success($t("Your internet connection was restored."));
-        }
-      }
-    });
-  } else {
-    message.success($t("Your internet connection was restored."));
+// Initialize unified toast system
+const toasts = useToasts();
+
+// Handle online/offline status with Sonner
+const handleOnlineStatus = (isOnline: boolean) => {
+  if (!isOnline) {
+    // Show persistent offline toast
+    offlineToastId = toasts.error($t("Your internet connection was lost."));
+  } else if (mounted.value) {
+    // Dismiss offline toast and show restoration message
+    if (offlineToastId) {
+      // Note: toast.dismiss() is not available in our composable, but the success message will show
+      offlineToastId = undefined;
+    }
+    toasts.success($t("Your internet connection was restored."));
   }
 };
 
 // Watch online status after component is mounted
 watch(online, (isOnline) => {
   if (!mounted.value) return;
-  handleOnlineStatus();
+  handleOnlineStatus(isOnline);
 });
-
-// Handle flash messages
-watch(() => usePage().props.flash.success, (msg) => {
-  if (msg) {
-    message.success(msg);
-    usePage().props.flash.success = null;
-  }
-});
-
-watch(() => usePage().props.flash.info, (msg) => {
-  if (msg) {
-    message.info(msg);
-    usePage().props.flash.info = null;
-  }
-});
-
-// Debug mode for errors (only in development)
-if (usePage().props.app.env === "local") {
-  watch(() => usePage().props.errors, (errors) => {
-    if (errors) {
-      // Loop over the object and display each error
-      Object.entries(errors).forEach(([key, value]) => {
-        message.error(`${key}: ${value}`);
-      });
-    }
-  });
-}
 
 // Detect mobile
 const isMobile = ref(false);
@@ -209,6 +187,9 @@ onMounted(() => {
   mounted.value = true;
   updateIsMobile();
   window.addEventListener("resize", updateIsMobile);
+  
+  // Initialize flash message handling
+  toasts.initializeToasts();
 });
 
 // Clean up event listeners

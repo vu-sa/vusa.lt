@@ -75,8 +75,7 @@ class HandleInertiaRequests extends Middleware
                 'data' => fn () => $request->session()->get('data'),
                 'info' => fn () => $request->session()->get('info'),
                 'success' => fn () => $request->session()->get('success'),
-                // since inertia responses cannot have a 40X status code, we have to pass it in the flash data
-                'statusCode' => fn () => $request->session()->get('statusCode'),
+                'error' => fn () => $request->session()->get('error'),
             ],
             'seo' => [
                 'title' => fn () => $request->session()->get('seo.title'),

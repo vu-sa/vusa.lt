@@ -29,31 +29,31 @@ describe('auth: simple user', function () {
         asUser($this->user)->get(route('dashboard'))->assertStatus(200);
     });
 
-    test('can\'t index calendar', function () {
-        asUser($this->user)->get(route('calendar.index'))->assertStatus(302)->assertRedirectToRoute('dashboard');
+    test('cannot index calendar', function () {
+        asUser($this->user)->get(route('calendar.index'))->assertStatus(403);
     });
 
-    test('can\'t access calendar event create page', function () {
-        asUser($this->user)->get(route('calendar.create'))->assertStatus(302);
+    test('cannot access calendar event create page', function () {
+        asUser($this->user)->get(route('calendar.create'))->assertStatus(403);
     });
 
-    test('can\'t store calendar event', function () {
+    test('cannot store calendar event', function () {
         asUser($this->user)->post(route('calendar.store'), [
             'title' => 'Test event',
             'description' => 'Test event description',
             // Emulate JS date picker
             'start_date' => strtotime(now()->format('Y-m-d H:i:s')) * 1000,
             'end_date' => strtotime(now()->addHour()->format('Y-m-d H:i:s')) * 1000,
-        ])->assertStatus(302);
+        ])->assertStatus(403);
     });
 
-    test('can\' t access the calendar event edit page', function () {
+    test('cannot access the calendar event edit page', function () {
         $calendar = Calendar::query()->first();
 
-        asUser($this->user)->get(route('calendar.edit', $calendar))->assertStatus(302);
+        asUser($this->user)->get(route('calendar.edit', $calendar))->assertStatus(403);
     });
 
-    test('can\'t update calendar', function () {
+    test('cannot update calendar', function () {
         $calendar = Calendar::query()->first();
 
         asUser($this->user)->put(route('calendar.update', $calendar), [
@@ -62,21 +62,21 @@ describe('auth: simple user', function () {
             // Emulate JS date picker
             'start_date' => strtotime(now()->addDay()->format('Y-m-d H:i:s')) * 1000,
             'end_date' => strtotime(now()->addDay()->addHour()->format('Y-m-d H:i:s')) * 1000,
-        ])->assertStatus(302);
+        ])->assertStatus(403);
     });
 
-    test('can\'t delete calendar', function () {
+    test('cannot delete calendar', function () {
         $calendar = Calendar::query()->first();
 
-        asUser($this->user)->delete(route('calendar.destroy', $calendar))->assertStatus(302);
+        asUser($this->user)->delete(route('calendar.destroy', $calendar))->assertStatus(403);
     });
 });
 
 describe('auth: calendar manager', function () {
     test('saves images to calendar', function () {
-        $calendarManager = makeTenantUser('Resource Manager');
+        // Use Communication Coordinator role which has calendar permissions
+        $calendarManager = makeTenantUser('Communication Coordinator');
 
-        // Create a test image file
         $image = \Illuminate\Http\UploadedFile::fake()->image('calendar-image.jpg', 800, 600);
 
         $calendarData = [

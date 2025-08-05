@@ -17,11 +17,11 @@ describe('auth: simple user', function () {
     });
 
     test('can\'t index tenants', function () {
-        asUser($this->user)->get(route('tenants.index'))->assertStatus(302)->assertRedirectToRoute('dashboard');
+        asUser($this->user)->get(route('tenants.index'))->assertStatus(403);
     });
 
     test('can\'t access tenant create page', function () {
-        asUser($this->user)->get(route('tenants.create'))->assertStatus(302);
+        asUser($this->user)->get(route('tenants.create'))->assertStatus(403);
     });
 
     test('can\'t store tenants', function () {
@@ -30,13 +30,13 @@ describe('auth: simple user', function () {
             'shortname' => 'test',
             'type' => 'pagrindinis',
             'alias' => 'test',
-        ])->assertStatus(302)->assertRedirectToRoute('dashboard');
+        ])->assertStatus(403);
     });
 
     test('can\' t access the tenant edit page', function () {
         $tenant = Tenant::query()->first();
 
-        asUser($this->user)->get(route('tenants.edit', $tenant))->assertStatus(302);
+        asUser($this->user)->get(route('tenants.edit', $tenant))->assertStatus(403);
     });
 
     test('can\'t update tenant', function () {
@@ -47,12 +47,12 @@ describe('auth: simple user', function () {
             'shortname' => 'test',
             'type' => 'pagrindinis',
             'alias' => 'test',
-        ])->assertStatus(302)->assertRedirectToRoute('dashboard');
+        ])->assertStatus(403);
     });
 
     test('can\'t delete tenant', function () {
         $tenant = Tenant::query()->first();
 
-        asUser($this->user)->delete(route('tenants.destroy', $tenant))->assertStatus(302);
+        asUser($this->user)->delete(route('tenants.destroy', $tenant))->assertStatus(403);
     });
 });

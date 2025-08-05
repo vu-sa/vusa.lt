@@ -82,6 +82,14 @@ function asUser(User $user): TestCase
     return test()->actingAs($user);
 }
 
+function asUserWithInertia(User $user): TestCase
+{
+    return test()->actingAs($user)->withHeaders([
+        'X-Inertia' => 'true',
+        'X-Inertia-Version' => 'test-version',
+    ]);
+}
+
 // Simplified test helpers
 function expectSecureRoute(string $route, ?User $user = null): void
 {

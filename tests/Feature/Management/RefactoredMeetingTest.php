@@ -54,8 +54,7 @@ describe('authorization tests', function () {
                     'institution_id' => $this->institution->id,
                     'type_id' => $this->meetingType->id,
                 ])
-                ->assertStatus(302)
-                ->assertRedirectToRoute('dashboard');
+                ->assertStatus(403);
 
             $this->assertEquals($this->initialMeetingCount, Meeting::count());
         });
@@ -63,8 +62,7 @@ describe('authorization tests', function () {
         test('cannot view meetings index without permission', function () {
             asUser($this->user)
                 ->get(route('meetings.index'))
-                ->assertStatus(302)
-                ->assertRedirectToRoute('dashboard');
+                ->assertStatus(403);
         });
     });
 

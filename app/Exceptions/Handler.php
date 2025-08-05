@@ -47,18 +47,16 @@ class Handler extends ExceptionHandler
     {
         $response = parent::render($request, $e);
 
-        // TODO: Maybe make errors work something like this: https://inertiajs.com/error-handling
-
-        // Resolve 403 errors with a flash message
-        // But only if the request is an Inertia request, otherwise it results in a redirect loop
-        if (! in_array($response->getStatusCode(), [403])
-            || ! $response->headers->get('x-inertia') === 'true') {
-            return $response;
+        // Handle 403 errors with redirect and flash message for Inertia requests
+        // Direct visits will get the full 403 error page
+        if ($response->getStatusCode() === 403) {
+            if ($request->header('X-Inertia')) {
+                return back()->with([
+                    'error' => __($e->getMessage() ?: 'This action is unauthorized.'),
+                ]);
+            }
         }
 
-        return back()->with([
-            'info' => __($e->getMessage()) ?? 'Neturite teisių atlikti šiam veiksmui.',
-            'statusCode' => $response->getStatusCode(),
-        ]);
+        return $response;
     }
 }

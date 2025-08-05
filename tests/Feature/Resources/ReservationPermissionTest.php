@@ -41,7 +41,7 @@ describe('auth: simple user', function () {
     });
 
     test('can\'t index reservations', function () {
-        asUser($this->user)->get(route('reservations.index'))->assertStatus(302)->assertRedirectToRoute('dashboard');
+        asUser($this->user)->get(route('reservations.index'))->assertStatus(403);
     });
 
     test('can access reservation create page', function () {
@@ -63,7 +63,7 @@ describe('auth: simple user', function () {
             $reservation->toArray()
         );
 
-        $response->assertStatus(302);
+        $response->assertRedirect();
 
         $this->followRedirects($response)
             ->assertStatus(200)->assertInertia(fn (Assert $page) => $page
@@ -77,21 +77,14 @@ describe('auth: simple user', function () {
 
         $response = asUser($this->user)->get(route('reservations.show', $this->reservation->id));
 
-        $response->assertStatus(302)->assertRedirect(route('dashboard'));
-
-        $this->followRedirects($response)
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/ShowAdminHome')
-                ->whereNot('flash.statusCode', null)
-                ->where('flash.statusCode', 403)
-            );
+        $response->assertStatus(403);
     });
     test('can access reservation after they are assigned to it', function () {
         $response = asUser($this->reservationManager)->put(route('reservations.add-users', $this->reservation->id), [
             'users' => [$this->user->id],
         ]);
 
-        $response->assertStatus(302)->assertRedirect(route('dashboard'));
+        $response->assertRedirect(route('dashboard'));
 
         $this->followRedirects($response)
             ->assertInertia(fn (Assert $page) => $page
@@ -124,7 +117,7 @@ describe('auth: simple user', function () {
             'decision' => 'cancel',
         ]);
 
-        $response->assertStatus(302)->assertRedirect(route('reservations.show', $reservation->id));
+        $response->assertRedirect(route('reservations.show', $reservation->id));
 
         $resource = $reservation->load(['resources' => fn ($query) => $query->where('resources.id', $resource->id)])->resources->first();
 
@@ -135,7 +128,7 @@ describe('auth: simple user', function () {
     test('can\'t delete reservation', function () {
         $reservation = Reservation::query()->first();
 
-        asUser($this->user)->delete(route('reservations.destroy', $reservation))->assertStatus(302);
+        asUser($this->user)->delete(route('reservations.destroy', $reservation))->assertStatus(403);
     });
 });
 
@@ -145,7 +138,7 @@ describe('auth: reservation manager', function () {
     });
 
     test('can\'t index reservations', function () {
-        asUser($this->reservationManager)->get(route('reservations.index'))->assertStatus(302);
+        asUser($this->reservationManager)->get(route('reservations.index'))->assertStatus(403);
     });
 
     test('can access reservation create page', function () {
@@ -167,7 +160,7 @@ describe('auth: reservation manager', function () {
             $reservation->toArray()
         );
 
-        $response->assertStatus(302);
+        $response->assertRedirect();
 
         $this->followRedirects($response)
             ->assertStatus(200)->assertInertia(fn (Assert $page) => $page
@@ -200,7 +193,7 @@ describe('auth: reservation manager', function () {
             'decision' => 'cancel',
         ]);
 
-        $response->assertStatus(302)->assertRedirect(route('reservations.show', $this->reservation->id));
+        $response->assertRedirect(route('reservations.show', $this->reservation->id));
 
         $resource = $this->reservation->load(['resources' => fn ($query) => $query->where('resources.id', $resource->id)])->resources->first();
 
@@ -217,15 +210,14 @@ describe('auth: reservation manager', function () {
         asUser($this->reservationManager)->get(route('reservations.show', $this->reservation->id))
             ->assertStatus(200);
 
-        $response = $this->post(route('users.comments.store', $this->reservationManager->id), [
+        $response = asUserWithInertia($this->reservationManager)->post(route('users.comments.store', $this->reservationManager->id), [
             'commentable_type' => 'reservation_resource',
             'commentable_id' => $this->reservation->resources->first()->pivot->id,
             'comment' => 'test',
             'decision' => 'approve',
         ]);
 
-        $response->assertStatus(302)->assertRedirect(route('reservations.show', $this->reservation->id));
-        $this->followRedirects($response)->assertStatus(200);
+        $response->assertRedirect(route('reservations.show', $this->reservation->id));
 
         $resource = $this->reservation->load(['resources' => fn ($query) => $query->where('resources.id', $resource->id)])->resources->first();
 
@@ -242,15 +234,14 @@ describe('auth: reservation manager', function () {
         asUser($this->reservationManager)->get(route('reservations.show', $this->reservation->id))
             ->assertStatus(200);
 
-        $response = $this->post(route('users.comments.store', $this->reservationManager->id), [
+        $response = asUserWithInertia($this->reservationManager)->post(route('users.comments.store', $this->reservationManager->id), [
             'commentable_type' => 'reservation_resource',
             'commentable_id' => $this->reservation->resources->first()->pivot->id,
             'comment' => 'test',
             'decision' => 'reject',
         ]);
 
-        $response->assertStatus(302)->assertRedirect(route('reservations.show', $this->reservation->id));
-        $this->followRedirects($response)->assertStatus(200);
+        $response->assertRedirect(route('reservations.show', $this->reservation->id));
 
         $resource = $this->reservation->load(['resources' => fn ($query) => $query->where('resources.id', $resource->id)])->resources->first();
 
@@ -265,15 +256,14 @@ describe('auth: reservation manager', function () {
 
         $this->actingAs($this->reservationManager)->get(route('reservations.show', $this->reservation->id));
 
-        $response = $this->post(route('users.comments.store', $this->reservationManager->id), [
+        $response = asUserWithInertia($this->reservationManager)->post(route('users.comments.store', $this->reservationManager->id), [
             'commentable_type' => 'reservation_resource',
             'commentable_id' => $this->reservation->resources->first()->pivot->id,
             'comment' => 'test',
             'decision' => 'approve',
         ]);
 
-        $response->assertStatus(302)->assertRedirect(route('reservations.show', $this->reservation->id));
-        $this->followRedirects($response)->assertStatus(200);
+        $response->assertRedirect(route('reservations.show', $this->reservation->id));
 
         $resource = $this->reservation->load(['resources' => fn ($query) => $query->where('resources.id', $resource->id)])->resources->first();
 
@@ -288,15 +278,14 @@ describe('auth: reservation manager', function () {
 
         $this->actingAs($this->reservationManager)->get(route('reservations.show', $this->reservation->id));
 
-        $response = $this->post(route('users.comments.store', $this->reservationManager->id), [
+        $response = asUserWithInertia($this->reservationManager)->post(route('users.comments.store', $this->reservationManager->id), [
             'commentable_type' => 'reservation_resource',
             'commentable_id' => $this->reservation->resources->first()->pivot->id,
             'comment' => 'test',
             'decision' => 'approve',
         ]);
 
-        $response->assertStatus(302)->assertRedirect(route('reservations.show', $this->reservation->id));
-        $this->followRedirects($response)->assertStatus(200);
+        $response->assertRedirect(route('reservations.show', $this->reservation->id));
 
         $resource = $this->reservation->load(['resources' => fn ($query) => $query->where('resources.id', $resource->id)])->resources->first();
 
@@ -313,21 +302,20 @@ describe('auth: reservation manager', function () {
 
         $this->actingAs($this->reservationManager)->get(route('reservations.show', $this->reservation->id));
 
-        $response = $this->post(route('users.comments.store', $this->reservationManager->id), [
+        $response = asUserWithInertia($this->reservationManager)->post(route('users.comments.store', $this->reservationManager->id), [
             'commentable_type' => 'reservation_resource',
             'commentable_id' => $resource->pivot->id,
             'comment' => 'test',
             'decision' => 'approve',
         ]);
 
-        $response->assertStatus(302)->assertRedirect(route('reservations.show', $this->reservation->id));
-        $this->followRedirects($response)->assertStatus(200);
+        $response->assertRedirect(route('reservations.show', $this->reservation->id));
 
         // assert that the resource is still in cancelled state
         expect(get_class($resource->pivot->state))->toEqual(Cancelled::class);
     });
 
     test('can\'t delete reservation', function () {
-        asUser($this->reservationManager)->delete(route('reservations.destroy', $this->reservation))->assertStatus(302)->assertRedirectToRoute('dashboard');
+        asUser($this->reservationManager)->delete(route('reservations.destroy', $this->reservation))->assertRedirectToRoute('dashboard');
     });
 });

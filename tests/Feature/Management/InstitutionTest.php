@@ -17,30 +17,30 @@ describe('auth: simple user', function () {
         asUser($this->user)->get(route('dashboard'))->assertStatus(200);
     });
 
-    test('can\'t index institutions', function () {
-        asUser($this->user)->get(route('institutions.index'))->assertStatus(302)->assertRedirectToRoute('dashboard');
+    test('cannot index institutions', function () {
+        asUser($this->user)->get(route('institutions.index'))->assertStatus(403);
     });
 
-    test('can\'t access institution create page', function () {
-        asUser($this->user)->get(route('institutions.create'))->assertStatus(302);
+    test('cannot access institution create page', function () {
+        asUser($this->user)->get(route('institutions.create'))->assertStatus(403);
     });
 
-    test('can\'t store institution', function () {
+    test('cannot store institution', function () {
         asUser($this->user)->post(route('institutions.store'), [
             'name' => ['lt' => 'Test User'],
             'short_name' => ['lt' => 'test'],
             'tenant_id' => $this->tenant->id,
             'alias' => 'test',
-        ])->assertStatus(302)->assertRedirectToRoute('dashboard');
+        ])->assertStatus(403);
     });
 
-    test('can\' t access the institution edit page', function () {
+    test('cannot access the institution edit page', function () {
         $institution = Institution::query()->first();
 
-        asUser($this->user)->get(route('institutions.edit', $institution))->assertStatus(302);
+        asUser($this->user)->get(route('institutions.edit', $institution))->assertStatus(403);
     });
 
-    test('can\'t update institutions', function () {
+    test('cannot update institution', function () {
         $institution = Institution::query()->first();
 
         asUser($this->user)->put(route('institutions.update', $institution), [
@@ -48,12 +48,12 @@ describe('auth: simple user', function () {
             'short_name' => ['lt' => 'test'],
             'tenant_id' => $this->tenant->id,
             'alias' => 'test',
-        ])->assertStatus(302)->assertRedirectToRoute('dashboard');
+        ])->assertStatus(403);
     });
 
-    test('can\'t delete institution', function () {
+    test('cannot delete institution', function () {
         $institution = Institution::query()->first();
 
-        asUser($this->user)->delete(route('institutions.destroy', $institution))->assertStatus(302);
+        asUser($this->user)->delete(route('institutions.destroy', $institution))->assertStatus(403);
     });
 });

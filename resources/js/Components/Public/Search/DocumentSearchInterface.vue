@@ -25,7 +25,7 @@
       <div class="mb-2">
         <DocumentSearchInput :query="searchController.searchState.value.query"
           :is-searching="searchController.isSearching.value" :recent-searches="searchController.recentSearches.value"
-          :type-to-search @update:query="handleQueryUpdate" @update:type-to-search="handleTypeToSearchUpdate"
+          :type-to-search="typeToSearch" @update:query="handleQueryUpdate" @update:type-to-search="handleTypeToSearchUpdate"
           @search="handleSearch" @select-recent="handleSelectRecent" @clear="handleClear" 
           @remove-recent="handleRemoveRecent" @clear-all-history="handleClearAllHistory" />
       </div>
@@ -262,8 +262,8 @@ const filterSummary = computed(() => {
 
 // Event handlers  
 const handleQueryUpdate = (query: string) => {
-  // Don't trigger search on empty query - let clear handle it
-  if (query.trim() !== '') {
+  // Only auto-search if typeToSearch is enabled and query is not empty
+  if (typeToSearch.value && query.trim() !== '') {
     searchController.search(query)
   }
 }

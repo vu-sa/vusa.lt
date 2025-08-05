@@ -20,8 +20,7 @@ beforeEach(function () {
 describe('auth: simple user', function () {
     test('cannot access documents index', function () {
         asUser($this->user)->get(route('documents.index'))
-            ->assertStatus(302)
-            ->assertRedirect(config('app.url'));
+            ->assertStatus(403);
     });
 
     test('cannot store sharepoint documents', function () {
@@ -34,14 +33,14 @@ describe('auth: simple user', function () {
                     'list_id' => 'list-id-123',
                 ],
             ],
-        ])->assertStatus(302);
+        ])->assertStatus(403);
     });
 
     test('cannot refresh documents', function () {
         $document = Document::factory()->create(['institution_id' => $this->institution->id]);
 
         asUser($this->user)->post(route('documents.refresh', $document))
-            ->assertStatus(302);
+            ->assertStatus(403);
     });
 });
 

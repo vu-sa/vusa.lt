@@ -31,11 +31,11 @@ describe('auth: simple user', function () {
     });
 
     test('can\'t index news', function () {
-        asUser($this->user)->get(route('news.index'))->assertStatus(302)->assertRedirectToRoute('dashboard');
+        asUser($this->user)->get(route('news.index'))->assertStatus(403);
     });
 
     test('can\'t access news create page', function () {
-        asUser($this->user)->get(route('news.create'))->assertStatus(302);
+        asUser($this->user)->get(route('news.create'))->assertStatus(403);
     });
 
     test('can\'t store news', function () {
@@ -56,13 +56,39 @@ describe('auth: simple user', function () {
             'image' => 'image.jpg',
             'publish_time' => now()->timestamp,
             'short' => 'Short news',
-        ])->assertStatus(302)->assertRedirectToRoute('dashboard');
+        ])->assertStatus(403);
+    });
+
+    test('can\'t store news via inertia', function () {
+        $response = asUser($this->user)->post(route('news.store'), [
+            'title' => 'News 1',
+            'permalink' => 'news-1',
+            'content' => [
+                'parts' => [
+                    [
+                        'type' => 'text',
+                        'json_content' => ['lt' => 'News content'],
+                        'options' => [],
+                        'order' => 1,
+                    ],
+                ],
+            ],
+            'lang' => 'lt',
+            'image' => 'image.jpg',
+            'publish_time' => now()->timestamp,
+            'short' => 'Short news',
+        ], [
+            'X-Inertia' => 'true',
+            'X-Inertia-Version' => 'test-version',
+        ]);
+
+        $response->assertStatus(302)->assertSessionHas('error');
     });
 
     test('can\' t access the news edit page', function () {
         $news = News::query()->first();
 
-        asUser($this->user)->get(route('news.edit', $news))->assertStatus(302);
+        asUser($this->user)->get(route('news.edit', $news))->assertStatus(403);
     });
 
     test('can\'t update news', function () {
@@ -85,13 +111,13 @@ describe('auth: simple user', function () {
             'image' => 'image.jpg',
             'publish_time' => now()->timestamp,
             'short' => 'Short news',
-        ])->assertStatus(302)->assertRedirectToRoute('dashboard');
+        ])->assertStatus(403);
     });
 
     test('can\'t delete news', function () {
         $news = News::query()->first();
 
-        asUser($this->user)->delete(route('news.destroy', $news))->assertStatus(302);
+        asUser($this->user)->delete(route('news.destroy', $news))->assertStatus(403);
     });
 });
 
@@ -164,7 +190,7 @@ describe('auth: news manager', function () {
     test('can delete news', function () {
         $news = News::query()->first();
 
-        asUser($this->newsManager)->delete(route('news.destroy', $news))->assertStatus(302);
+        asUserWithInertia($this->newsManager)->delete(route('news.destroy', $news))->assertRedirect();
     });
 
     test('can duplicate news', function () {

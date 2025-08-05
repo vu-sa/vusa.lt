@@ -36,14 +36,13 @@ describe('auth: simple user without permissions', function () {
     test('cannot index tags', function () {
         asUser($this->user)
             ->get(route('tags.index'))
-            ->assertStatus(302)
-            ->assertRedirectToRoute('dashboard');
+            ->assertStatus(403);
     });
 
     test('cannot access tag create page', function () {
         asUser($this->user)
             ->get(route('tags.create'))
-            ->assertStatus(302);
+            ->assertStatus(403);
     });
 
     test('cannot store new tag', function () {
@@ -55,13 +54,13 @@ describe('auth: simple user without permissions', function () {
 
         asUser($this->user)
             ->post(route('tags.store'), $tagData)
-            ->assertStatus(302);
+            ->assertStatus(403);
     });
 
     test('cannot edit existing tag', function () {
         asUser($this->user)
             ->get(route('tags.edit', $this->tag))
-            ->assertStatus(302);
+            ->assertStatus(403);
     });
 
     test('cannot update existing tag', function () {
@@ -73,13 +72,13 @@ describe('auth: simple user without permissions', function () {
 
         asUser($this->user)
             ->patch(route('tags.update', $this->tag), $updateData)
-            ->assertStatus(302);
+            ->assertStatus(403);
     });
 
     test('cannot delete tag', function () {
         asUser($this->user)
             ->delete(route('tags.destroy', $this->tag))
-            ->assertStatus(302);
+            ->assertStatus(403);
     });
 });
 
@@ -328,7 +327,7 @@ describe('tag merging', function () {
     test('simple user cannot access merge tags page', function () {
         asUser($this->user)
             ->get(route('tags.merge'))
-            ->assertStatus(302);
+            ->assertStatus(403);
     });
 
     test('simple user cannot process tag merge', function () {
@@ -339,6 +338,6 @@ describe('tag merging', function () {
 
         asUser($this->user)
             ->post(route('tags.processMerge'), $mergeData)
-            ->assertStatus(302);
+            ->assertStatus(403);
     });
 });
