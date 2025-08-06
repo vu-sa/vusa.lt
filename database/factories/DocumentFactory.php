@@ -73,6 +73,9 @@ class DocumentFactory extends Factory
             'sharepoint_list_id' => $this->faker->uuid,
             'effective_date' => $this->faker->optional(0.6)->dateTimeBetween('-1 year', '+3 months')?->format('Y-m-d'),
             'expiration_date' => $this->faker->optional(0.3)->dateTimeBetween('+6 months', '+3 years')?->format('Y-m-d'),
+            'sync_status' => 'pending',
+            'sync_attempts' => 0,
+            'last_sync_attempt_at' => null,
         ];
     }
 

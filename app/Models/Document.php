@@ -54,6 +54,7 @@ class Document extends Model
         'effective_date' => 'datetime',
         'expiration_date' => 'datetime',
         'checked_at' => 'datetime',
+        'last_sync_attempt_at' => 'datetime',
     ];
 
     protected static function booted()
@@ -79,24 +80,23 @@ class Document extends Model
             'title' => $this->title,
             'summary' => $this->summary,
             'name' => $this->name,
-            'language' => $this->language ?? 'Unknown',
+            'language' => $this->language,
             'content_type' => $this->content_type,
+            'institution_id' => $this->institution ? $this->institution->id : null,
             'institution_name_lt' => $this->institution ? $this->institution->getTranslation('name', 'lt') : null,
             'institution_name_en' => $this->institution ? $this->institution->getTranslation('name', 'en') : null,
             'tenant_shortname' => $this->institution && $this->institution->tenant ? $this->institution->tenant->shortname : null,
-            'tenant_name' => $this->institution && $this->institution->tenant ? $this->institution->tenant->fullname : null,
-            'tenant_type' => $this->institution && $this->institution->tenant ? $this->institution->tenant->type : null,
-            'is_in_effect' => $this->calculateIsInEffect(),
             'anonymous_url' => $this->anonymous_url,
             'is_active' => $this->is_active,
+            'sync_status' => $this->sync_status,
+            'checked_at' => $this->checked_at ? $this->checked_at->timestamp : null,
+            'is_in_effect' => $this->calculateIsInEffect(),
             'created_at' => $this->created_at->timestamp,
-            'updated_at' => $this->updated_at->timestamp,
             // Enhanced faceting fields
             'content_type_category' => $this->getContentTypeCategory(),
             'language_code' => $this->getLanguageCode(),
             'tenant_hierarchy' => $this->getTenantHierarchy(),
             'date_range_bucket' => $this->getDateRangeBucket(),
-            'file_extension' => $this->getFileExtension(),
         ];
 
         // Only include document_date if it exists (used for sorting and faceting)
@@ -191,33 +191,16 @@ class Document extends Model
     }
 
     /**
-     * Get file extension from document name
-     */
-    protected function getFileExtension(): string
-    {
-        if (! $this->name) {
-            return 'unknown';
-        }
-
-        $extension = strtolower(pathinfo($this->name, PATHINFO_EXTENSION));
-
-        return match ($extension) {
-            'pdf' => 'pdf',
-            'doc', 'docx' => 'word',
-            'xls', 'xlsx' => 'excel',
-            'ppt', 'pptx' => 'powerpoint',
-            'txt' => 'text',
-            'url' => 'link',
-            default => 'other'
-        };
-    }
-
-    /**
      * Determine if the model should be searchable.
      */
     public function shouldBeSearchable()
     {
-        // Only index documents that have anonymous access (public)
+        // For admin context, index all documents regardless of publication status
+        if (\Illuminate\Support\Facades\Context::get('search_context') === 'admin') {
+            return true;
+        }
+
+        // For public context, only index documents that have anonymous access
         return ! empty($this->anonymous_url);
     }
 
@@ -271,66 +254,92 @@ class Document extends Model
     // Also used in SharepointGraphService::batchProcessDocuments
     public function refreshFromSharepoint()
     {
-        // For metadata fields
-        $contentField = 'Turinys'; // Content Type
-        $institutionField = 'Padalinys'; // Entity
-
-        $graph = new SharepointGraphService(siteId: $this->sharepoint_site_id, driveId: config('filesystems.sharepoint.archive_drive_id'), listId: $this->sharepoint_list_id);
-
-        $additionalData = $graph->getListItem($this->sharepoint_site_id, $this->sharepoint_list_id, $this->sharepoint_id)->getAdditionalData();
-
-        if ($this->eTag === $additionalData['@odata.etag']) {
-
-            $this->checked_at = Carbon::now();
-            $this->save();
-
-            return null;
-        }
-
-        $this->document_date = isset($additionalData['Date']) ? Carbon::parseFromLocale(time: $additionalData['Date'], timezone: 'UTC')->setTimezone('Europe/Vilnius') : $this->document_date;
-        $this->effective_date = isset($additionalData['Effective_x0020_Date']) ? Carbon::parseFromLocale(time: $additionalData['Effective_x0020_Date'], timezone: 'UTC')->setTimezone('Europe/Vilnius') : $this->effective_date;
-        $this->expiration_date = isset($additionalData['Expiration_x0020_Date0']) ? Carbon::parseFromLocale(time: $additionalData['Expiration_x0020_Date0'], timezone: 'UTC')->setTimezone('Europe/Vilnius') : $this->expiration_date;
-
-        $this->name = $additionalData['Name'] ?? $this->name;
-        $this->title = $additionalData['Title'] ?? $this->title;
-        $this->eTag = $additionalData['@odata.etag'] ?? $this->eTag;
-        $this->language = $additionalData['Language'] ?? $this->language;
-
-        if (isset($additionalData[$institutionField]['Label'])) {
-            $this->institution()->associate(Institution::query()->where('name->lt', $additionalData[$institutionField]['Label'])->orWhere('short_name->lt', $additionalData[$institutionField]['Label'])->first());
-        }
-
-        $this->content_type = isset($additionalData[$contentField]['Label']) ? $additionalData[$contentField]['Label'] : $this->content_type;
-
-        $this->summary = $additionalData['Summary'] ?? $this->summary;
-
-        // Get drive item
-        $driveItem = $graph->getDriveItemByListItem($this->sharepoint_site_id, $this->sharepoint_list_id, $this->sharepoint_id);
-
-        // Add thumbnails
-        /* collect($driveItem->getThumbnails())->each(function ($thumbnailSet) { */
-        /*    $this->thumbnail_url = $thumbnailSet->getLarge()->getUrl(); */
-        /* }); */
-
-        $anonymous_permission = $graph->getDriveItemPublicLink($driveItem->getId());
-
-        if ($anonymous_permission === null) {
-            $anonymous_permission = $graph->createPublicPermission(siteId: $this->sharepoint_site_id, driveItemId: $driveItem->getId(), datetime: false);
-
-            $this->anonymous_url = $anonymous_permission->getLink()->getWebUrl();
-
-            /* $this->anonymous_url_expiration_date = Carbon::parse($anonymous_permission->getExpirationDateTime()); */
-        } else {
-            $this->anonymous_url = $anonymous_permission->getLink()->getWebUrl();
-            /* $this->anonymous_url_expiration_date = Carbon::parse($anonymous_permission->getExpirationDateTime()); */
-        }
-
-        $this->checked_at = Carbon::now();
-
+        // Update sync tracking
+        $this->sync_status = 'syncing';
+        $this->sync_attempts = ($this->sync_attempts ?? 0) + 1;
+        $this->last_sync_attempt_at = Carbon::now();
+        $this->sync_error_message = null;
         $this->save();
 
-        $this->refresh();
+        try {
+            // TODO: Move to configuration - hardcoded SharePoint field names
+            $contentField = 'Turinys'; // Content Type - TODO: Make configurable
+            $institutionField = 'Padalinys'; // Entity - TODO: Make configurable
 
-        return $this;
+            $graph = new SharepointGraphService(siteId: $this->sharepoint_site_id, driveId: config('filesystems.sharepoint.archive_drive_id'), listId: $this->sharepoint_list_id);
+
+            $additionalData = $graph->getListItem($this->sharepoint_site_id, $this->sharepoint_list_id, $this->sharepoint_id)->getAdditionalData();
+
+            if ($this->eTag === $additionalData['@odata.etag']) {
+                $this->checked_at = Carbon::now();
+                $this->sync_status = 'success';
+                $this->save();
+
+                return null;
+            }
+
+            $this->document_date = isset($additionalData['Date']) ? Carbon::parseFromLocale(time: $additionalData['Date'], timezone: 'UTC')->setTimezone('Europe/Vilnius') : $this->document_date;
+            $this->effective_date = isset($additionalData['Effective_x0020_Date']) ? Carbon::parseFromLocale(time: $additionalData['Effective_x0020_Date'], timezone: 'UTC')->setTimezone('Europe/Vilnius') : $this->effective_date;
+            $this->expiration_date = isset($additionalData['Expiration_x0020_Date0']) ? Carbon::parseFromLocale(time: $additionalData['Expiration_x0020_Date0'], timezone: 'UTC')->setTimezone('Europe/Vilnius') : $this->expiration_date;
+
+            $this->name = $additionalData['Name'] ?? $this->name;
+            $this->title = $additionalData['Title'] ?? $this->title;
+            $this->eTag = $additionalData['@odata.etag'] ?? $this->eTag;
+            $this->language = $additionalData['Language'] ?? $this->language;
+
+            if (isset($additionalData[$institutionField]['Label'])) {
+                $this->institution()->associate(Institution::query()->where('name->lt', $additionalData[$institutionField]['Label'])->orWhere('short_name->lt', $additionalData[$institutionField]['Label'])->first());
+            }
+
+            $this->content_type = isset($additionalData[$contentField]['Label']) ? $additionalData[$contentField]['Label'] : $this->content_type;
+
+            $this->summary = $additionalData['Summary'] ?? $this->summary;
+
+            // Get drive item
+            $driveItem = $graph->getDriveItemByListItem($this->sharepoint_site_id, $this->sharepoint_list_id, $this->sharepoint_id);
+
+            // Add thumbnails
+            /* collect($driveItem->getThumbnails())->each(function ($thumbnailSet) { */
+            /*    $this->thumbnail_url = $thumbnailSet->getLarge()->getUrl(); */
+            /* }); */
+
+            $anonymous_permission = $graph->getDriveItemPublicLink($driveItem->getId());
+
+            if ($anonymous_permission === null) {
+                $anonymous_permission = $graph->createPublicPermission(siteId: $this->sharepoint_site_id, driveItemId: $driveItem->getId(), datetime: false);
+
+                $this->anonymous_url = $anonymous_permission->getLink()->getWebUrl();
+
+                /* $this->anonymous_url_expiration_date = Carbon::parse($anonymous_permission->getExpirationDateTime()); */
+            } else {
+                $this->anonymous_url = $anonymous_permission->getLink()->getWebUrl();
+                /* $this->anonymous_url_expiration_date = Carbon::parse($anonymous_permission->getExpirationDateTime()); */
+            }
+
+            $this->checked_at = Carbon::now();
+            $this->sync_status = 'success';
+            $this->save();
+
+            $this->refresh();
+
+            return $this;
+        } catch (\Exception $e) {
+            // Log the error with context
+            \Log::error('SharePoint document sync failed', [
+                'document_id' => $this->id,
+                'sharepoint_id' => $this->sharepoint_id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'sync_attempt' => $this->sync_attempts,
+            ]);
+
+            // Update sync status with error
+            $this->sync_status = 'failed';
+            $this->sync_error_message = $e->getMessage();
+            $this->save();
+
+            // Re-throw the exception to let the caller handle it
+            throw $e;
+        }
     }
 }

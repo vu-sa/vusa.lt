@@ -164,6 +164,10 @@ declare global {
       sharepoint_list_id?: string
       created_at?: string
       checked_at?: string | null
+      sync_status: string
+      sync_error_message?: string | null
+      sync_attempts: boolean
+      last_sync_attempt_at?: string | null
       updated_at?: string
       effective_date?: string | null
       expiration_date?: string | null
