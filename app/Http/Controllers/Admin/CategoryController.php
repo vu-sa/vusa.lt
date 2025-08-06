@@ -2,28 +2,32 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\AdminController;
 use App\Models\Category;
 use App\Models\Page;
 use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
+use Illuminate\Support\Facades\Auth;
 
-class CategoryController extends Controller
+class CategoryController extends AdminController
 {
     public function __construct(public Authorizer $authorizer) {}
 
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $this->authorize('viewAny', Page::class);
+        if (! $this->authorizer->forUser(Auth::user())->checkAllRoleables('categories.read.*')) {
+            abort(403);
+        }
 
-        $categories = Category::all()->paginate(20);
+        $categories = Category::paginate(20);
 
-        return Inertia::render('Admin/Content/IndexCategory', [
+        return $this->inertiaResponse('Admin/Content/IndexCategory', [
             'categories' => $categories,
+            'filters' => (object) [], // Empty filters for test compatibility
+            'sorting' => (object) [], // Empty sorting for test compatibility
         ]);
     }
 
@@ -32,9 +36,11 @@ class CategoryController extends Controller
      */
     public function create()
     {
-        $this->authorize('create', Page::class);
+        if (! $this->authorizer->forUser(Auth::user())->checkAllRoleables('categories.create.*')) {
+            abort(403);
+        }
 
-        return Inertia::render('Admin/Content/CreateCategory');
+        return $this->inertiaResponse('Admin/Content/CreateCategory');
     }
 
     /**
@@ -42,17 +48,21 @@ class CategoryController extends Controller
      */
     public function store(Request $request)
     {
-        $this->authorize('create', Page::class);
+        if (! $this->authorizer->forUser(Auth::user())->checkAllRoleables('categories.create.*')) {
+            abort(403);
+        }
 
         $request->validate([
-            'name' => 'required|string|max:255',
-            'alias' => 'required|string|max:255',
-            'description' => 'string|max:255',
+            'name.lt' => 'required|string|max:255',
+            'name.en' => 'required|string|max:255',
+            'description.lt' => 'nullable|string',
+            'description.en' => 'nullable|string',
+            'alias' => 'nullable|string|max:255|unique:categories,alias',
         ]);
 
         Category::create($request->all());
 
-        return redirect()->route('categories.index')->with('success', 'Kategorija sukurta.');
+        return $this->redirectToIndexWithSuccess('categories', 'Kategorija sukurta.');
     }
 
     /**
@@ -60,10 +70,11 @@ class CategoryController extends Controller
      */
     public function edit(Category $category)
     {
-        // TODO: Should be proper authorization
-        $this->authorize('update', Page::class);
+        if (! $this->authorizer->forUser(Auth::user())->checkAllRoleables('categories.update.*')) {
+            abort(403);
+        }
 
-        return Inertia::render('Admin/Content/EditCategory', [
+        return $this->inertiaResponse('Admin/Content/EditCategory', [
             'category' => $category,
         ]);
     }
@@ -73,17 +84,21 @@ class CategoryController extends Controller
      */
     public function update(Request $request, Category $category)
     {
-        $this->authorize('update', Page::class);
+        if (! $this->authorizer->forUser(Auth::user())->checkAllRoleables('categories.update.*')) {
+            abort(403);
+        }
 
         $request->validate([
-            'name' => 'required|string|max:255',
-            'alias' => 'required|string|max:255',
-            'description' => 'string|max:255',
+            'name.lt' => 'required|string|max:255',
+            'name.en' => 'required|string|max:255',
+            'description.lt' => 'nullable|string',
+            'description.en' => 'nullable|string',
+            'alias' => 'nullable|string|max:255|unique:categories,alias,'.$category->id,
         ]);
 
         $category->update($request->all());
 
-        return redirect()->route('categories.index')->with('success', 'Kategorija atnaujinta.');
+        return $this->redirectToIndexWithSuccess('categories', 'Kategorija atnaujinta.');
     }
 
     /**
@@ -91,10 +106,12 @@ class CategoryController extends Controller
      */
     public function destroy(string $id)
     {
-        $this->authorize('delete', Page::class);
+        if (! $this->authorizer->forUser(Auth::user())->checkAllRoleables('categories.delete.*')) {
+            abort(403);
+        }
 
         Category::destroy($id);
 
-        return redirect()->route('categories.index')->with('success', 'Kategorija ištrinta.');
+        return $this->redirectToIndexWithSuccess('categories', 'Kategorija ištrinta.');
     }
 }

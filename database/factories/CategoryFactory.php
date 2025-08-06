@@ -16,10 +16,21 @@ class CategoryFactory extends Factory
      */
     public function definition(): array
     {
+        $nameLt = fake('lt_LT')->words(2, true);
+        $nameEn = fake('en_US')->words(2, true);
+        $descriptionLt = fake('lt_LT')->sentence();
+        $descriptionEn = fake('en_US')->sentence();
+
         return [
-            'alias' => $this->faker->word,
-            'name' => $this->faker->word,
-            'description' => $this->faker->sentence,
+            'name' => [
+                'lt' => ucwords($nameLt),
+                'en' => ucwords($nameEn),
+            ],
+            'description' => [
+                'lt' => $descriptionLt,
+                'en' => $descriptionEn,
+            ],
+            'alias' => \Illuminate\Support\Str::slug($nameEn),
         ];
     }
 }
