@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexDocumentRequest;
 use App\Http\Requests\StoreDocumentRequest;
 use App\Http\Requests\UpdateDocumentRequest;
@@ -12,9 +12,8 @@ use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\SharepointGraphService;
 use App\Services\TanstackTableService;
 use Illuminate\Database\Eloquent\Collection;
-use Inertia\Inertia;
 
-class DocumentController extends Controller
+class DocumentController extends AdminController
 {
     use HasTanstackTables;
 
@@ -25,7 +24,7 @@ class DocumentController extends Controller
      */
     public function index(IndexDocumentRequest $request)
     {
-        $this->authorize('viewAny', Document::class);
+        $this->handleAuthorization('viewAny', Document::class);
 
         // Build base query with eager loading
         $query = Document::query()->with(['institution']);
@@ -53,7 +52,7 @@ class DocumentController extends Controller
         // Get the sorting state using the custom method to ensure consistent parsing
         $sorting = $request->getSorting();
 
-        return Inertia::render('Admin/Files/IndexDocument', [
+        return $this->inertiaResponse('Admin/Files/IndexDocument', [
             'data' => $documents->items(),
             'meta' => [
                 'total' => $documents->total(),
@@ -91,8 +90,8 @@ class DocumentController extends Controller
             /* $model->save(); */
         }
 
-        // Check if model is defined (documents array is not empty)
-        if ($model === null || $documentCollection->isEmpty()) {
+        // Check if documents array is not empty
+        if ($model === null) {
             return redirect()->route('documents.index')->with('info', 'No documents to process.');
         }
 
@@ -105,7 +104,7 @@ class DocumentController extends Controller
 
     public function refresh(Document $document)
     {
-        $this->authorize('update', $document);
+        $this->handleAuthorization('update', $document);
 
         $result = $document->refreshFromSharepoint();
 
@@ -137,7 +136,7 @@ class DocumentController extends Controller
      */
     public function destroy(Document $document)
     {
-        $this->authorize('delete', $document);
+        $this->handleAuthorization('delete', $document);
 
         $document->delete();
 

@@ -101,7 +101,7 @@ describe('SendMemberRegistrationNotification Listener', function () {
         new ConfirmMemberRegistration(
             'Jonas Jonaitis',
             $institution,
-            $mailableDuties->first()  // @phpstan-ignore-line
+            $mailableDuties->first()
         );
     });
 
@@ -131,7 +131,7 @@ describe('SendMemberRegistrationNotification Listener', function () {
         new ConfirmMemberRegistration(
             'Jonas Jonaitis',
             $institution,
-            $mailableDuties->first()  // @phpstan-ignore-line
+            $mailableDuties->first()
         );
     });
 
@@ -164,7 +164,7 @@ describe('SendMemberRegistrationNotification Listener', function () {
         new ConfirmMemberRegistration(
             'Jonas Jonaitis',
             $institution,
-            $mailableDuties->first()  // @phpstan-ignore-line
+            $mailableDuties->first()
         );
     });
 

@@ -2,29 +2,26 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\AdminController;
 use App\Http\Requests\StoreAgendaItemsRequest;
 use App\Http\Requests\UpdateAgendaItemRequest;
 use App\Models\Pivots\AgendaItem;
 use App\Services\ModelAuthorizer as Authorizer;
-use Inertia\Inertia;
 
-class AgendaItemController extends Controller
+class AgendaItemController extends AdminController
 {
     public function __construct(public Authorizer $authorizer) {}
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
      */
     public function store(StoreAgendaItemsRequest $request)
     {
         if ($request->has('agendaItemTitles')) {
-            foreach ($request->safe()->agendaItemTitles as $agendaItemTitle) {
+            $validatedData = $request->safe();
+            foreach ($validatedData['agendaItemTitles'] as $agendaItemTitle) {
                 AgendaItem::create([
-                    'meeting_id' => $request->safe()->meeting_id,
+                    'meeting_id' => $validatedData['meeting_id'],
                     'title' => $agendaItemTitle,
                 ]);
             }
@@ -37,24 +34,18 @@ class AgendaItemController extends Controller
 
     /**
      * Display the specified resource.
-     *
-     * @param  \App\Models\AgendaItem  $agendaItem
-     * @return \Illuminate\Http\Response
      */
     public function show(AgendaItem $agendaItem)
     {
-        $this->authorize('view', $agendaItem);
+        $this->handleAuthorization('view', $agendaItem);
 
-        return Inertia::render('Admin/Representation/ShowAgendaItem', [
+        return $this->inertiaResponse('Admin/Representation/ShowAgendaItem', [
             'agendaItem' => $agendaItem,
         ]);
     }
 
     /**
      * Update the specified resource in storage.
-     *
-     * @param  \App\Models\AgendaItem  $agendaItem
-     * @return \Illuminate\Http\Response
      */
     public function update(UpdateAgendaItemRequest $request, AgendaItem $agendaItem)
     {
@@ -66,13 +57,10 @@ class AgendaItemController extends Controller
 
     /**
      * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\AgendaItem  $agendaItem
-     * @return \Illuminate\Http\Response
      */
     public function destroy(AgendaItem $agendaItem)
     {
-        $this->authorize('delete', $agendaItem);
+        $this->handleAuthorization('delete', $agendaItem);
 
         $agendaItem->delete();
 

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\DuplicateNewsAction;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\AdminController;
 use App\Http\Requests\UpdateNewsRequest;
 use App\Models\Content;
 use App\Models\News;
@@ -12,20 +12,18 @@ use App\Models\Tenant;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ModelIndexer;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
+use Illuminate\Support\Carbon;
 
-class NewsController extends Controller
+class NewsController extends AdminController
 {
     public function __construct(public Authorizer $authorizer) {}
 
     /**
      * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function index(Request $request)
     {
-        $this->authorize('viewAny', News::class);
+        $this->handleAuthorization('viewAny', News::class);
 
         $indexer = new ModelIndexer(new News);
 
@@ -35,44 +33,40 @@ class NewsController extends Controller
             ->sortAllColumns(['publish_time' => 'descend'])
             ->builder->paginate(20);
 
-        return Inertia::render('Admin/Content/IndexNews', [
+        return $this->inertiaResponse('Admin/Content/IndexNews', [
             'news' => $news,
         ]);
     }
 
     /**
      * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function create()
     {
-        $this->authorize('create', News::class);
+        $this->handleAuthorization('create', News::class);
 
         $tags = Tag::orderBy('alias')->get();
 
-        return Inertia::render('Admin/Content/CreateNews', [
+        return $this->inertiaResponse('Admin/Content/CreateNews', [
             'availableTags' => $tags->map->toFullArray(),
         ]);
     }
 
     public function duplicate(News $news)
     {
-        $this->authorize('create', News::class);
+        $this->handleAuthorization('create', News::class);
 
-        $newNews = (new DuplicateNewsAction)->execute($news);
+        $newNews = DuplicateNewsAction::execute($news);
 
-        return redirect()->route('news.edit', $newNews)->with('success', 'Naujiena sėkmingai nukopijuota!');
+        return $this->redirectWithSuccess('news.edit', 'Naujiena sėkmingai nukopijuota!', $newNews);
     }
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
-        $this->authorize('create', News::class);
+        $this->handleAuthorization('create', News::class);
 
         $request->validate([
             'title' => 'required',
@@ -115,9 +109,9 @@ class NewsController extends Controller
         ]);
 
         if (is_string($request->publish_time)) {
-            $news->publish_time = strtotime($request->publish_time);
+            $news->publish_time = Carbon::createFromTimestamp(strtotime($request->publish_time));
         } else {
-            $news->publish_time = $request->publish_time / 1000;
+            $news->publish_time = Carbon::createFromTimestamp($request->publish_time / 1000);
         }
 
         $news->save();
@@ -127,17 +121,15 @@ class NewsController extends Controller
             $news->tags()->sync($request->tags);
         }
 
-        return redirect()->route('news.index')->with('success', 'Naujiena sėkmingai sukurta!');
+        return $this->redirectToIndexWithSuccess('news', 'Naujiena sėkmingai sukurta!');
     }
 
     /**
      * Show the form for editing the specified resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function edit(News $news)
     {
-        $this->authorize('update', $news);
+        $this->handleAuthorization('update', $news);
 
         $other_lang_pages = News::with('tenant:id,shortname')->when(! request()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) use ($news) {
             $query->where('tenant_id', $news->tenant_id);
@@ -145,7 +137,7 @@ class NewsController extends Controller
 
         $tags = Tag::orderBy('alias')->get();
 
-        return Inertia::render('Admin/Content/EditNews', [
+        return $this->inertiaResponse('Admin/Content/EditNews', [
             'news' => [
                 'id' => $news->id,
                 'title' => $news->title,
@@ -153,7 +145,7 @@ class NewsController extends Controller
                 'content' => $news->content,
                 'lang' => $news->lang,
                 'other_lang_id' => $news->other_language_news?->id,
-                'category' => $news->category,
+                'category' => $news->category_id,
                 'tenant' => $news->tenant,
                 'draft' => $news->draft,
                 'short' => $news->short,
@@ -169,8 +161,6 @@ class NewsController extends Controller
 
     /**
      * Update the specified resource in storage.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function update(UpdateNewsRequest $request, News $news)
     {
@@ -223,26 +213,22 @@ class NewsController extends Controller
 
     /**
      * Remove the specified resource from storage.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function destroy(News $news)
     {
-        $this->authorize('delete', $news);
+        $this->handleAuthorization('delete', $news);
 
         $news->delete();
 
-        return redirect()->route('news.index')->with('info', 'Naujiena sėkmingai ištrinta!');
+        return $this->redirectToIndexWithInfo('news', 'Naujiena sėkmingai ištrinta!');
     }
 
     /**
      * Restore the specified resource from storage.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function restore(News $news)
     {
-        $this->authorize('restore', $news);
+        $this->handleAuthorization('restore', $news);
 
         $news->restore();
 

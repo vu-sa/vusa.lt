@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\AdminController;
 use App\Http\Requests\StoreMeetingRequest;
 use App\Models\Meeting;
 use App\Services\ModelAuthorizer as Authorizer;
@@ -13,18 +13,16 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
-class MeetingController extends Controller
+class MeetingController extends AdminController
 {
     public function __construct(public Authorizer $authorizer) {}
 
     /**
      * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function index()
     {
-        $this->authorize('viewAny', Meeting::class);
+        $this->handleAuthorization('viewAny', Meeting::class);
 
         $indexer = new ModelIndexer(new Meeting);
 
@@ -34,50 +32,49 @@ class MeetingController extends Controller
             ->sortAllColumns(['start_time' => 'descend'])
             ->builder->paginate(20);
 
-        return Inertia::render('Admin/Representation/IndexMeeting', [
+        return $this->inertiaResponse('Admin/Representation/IndexMeeting', [
             'meetings' => $meetings,
         ]);
     }
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
      */
     public function store(StoreMeetingRequest $request)
     {
+        $validatedData = $request->safe();
+
         // generate title for meeting - YYYY-mm-dd HH.mm posėdis
-        $title = Carbon::parse($request->safe()->only('start_time')['start_time'])->locale('lt-LT')->isoFormat('YYYY MMMM DD [d.] HH.mm [val.]').' posėdis';
+        $title = Carbon::parse($validatedData['start_time'])->locale('lt-LT')->isoFormat('YYYY MMMM DD [d.] HH.mm [val.]').' posėdis';
 
-        $meeting = Meeting::create($request->safe()->only('start_time') + ['title' => $title]);
+        $meeting = Meeting::create([
+            'start_time' => $validatedData['start_time'],
+            'title' => $title,
+        ]);
 
-        $meeting->institutions()->attach($request->safe()->institution_id);
+        $meeting->institutions()->attach($validatedData['institution_id']);
 
-        $meeting->types()->attach($request->safe()->type_id);
+        $meeting->types()->attach($validatedData['type_id']);
 
         return back()->with(['success' => 'Posėdis sukurtas sėkmingai!', 'data' => $meeting]);
     }
 
     /**
      * Display the specified resource.
-     *
-     * @param  \App\Models\Meeting  $meting
-     * @return \Illuminate\Http\Response
      */
     public function show(Meeting $meeting)
     {
-        $this->authorize('view', $meeting);
+        $this->handleAuthorization('view', $meeting);
 
         $meeting->load('institutions', 'activities.causer', 'files', 'comments', 'agendaItems', 'types')->load(['tasks' => function ($query) {
             $query->with('users', 'taskable');
         }]);
 
         // show meeting
-        return Inertia::render('Admin/Representation/ShowMeeting', [
+        return $this->inertiaResponse('Admin/Representation/ShowMeeting', [
             'meeting' => [
                 ...$meeting->toArray(),
-                'sharepointPath' => $meeting->institutions ? SharepointFileService::pathForFileableDriveItem($meeting) : null,
+                'sharepointPath' => $meeting->institutions->isNotEmpty() ? SharepointFileService::pathForFileableDriveItem($meeting) : null,
             ],
             'taskableInstitutions' => Inertia::lazy(fn () => $meeting->institutions->load('users')),
         ]);
@@ -85,26 +82,22 @@ class MeetingController extends Controller
 
     /**
      * Show the form for editing the specified resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function edit(Meeting $meeting)
     {
-        $this->authorize('update', $meeting);
+        $this->handleAuthorization('update', $meeting);
 
-        return Inertia::render('Admin/Representation/EditMeeting', [
+        return $this->inertiaResponse('Admin/Representation/EditMeeting', [
             'meeting' => $meeting,
         ]);
     }
 
     /**
      * Update the specified resource in storage.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function update(Request $request, Meeting $meeting)
     {
-        $this->authorize('update', $meeting);
+        $this->handleAuthorization('update', $meeting);
 
         $validated = $request->validate([
             // 'title' => 'required|string',
@@ -123,12 +116,10 @@ class MeetingController extends Controller
 
     /**
      * Remove the specified resource from storage.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function destroy(Meeting $meeting)
     {
-        $this->authorize('delete', $meeting);
+        $this->handleAuthorization('delete', $meeting);
 
         $redirect_url = request()->redirect_to ?? back()->getTargetUrl();
 
@@ -139,7 +130,7 @@ class MeetingController extends Controller
 
     public function restore(Meeting $meeting)
     {
-        $this->authorize('restore', $meeting);
+        $this->handleAuthorization('restore', $meeting);
 
         $meeting->restore();
 

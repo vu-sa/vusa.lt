@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\AdminController;
 use App\Http\Requests\StoreTenantRequest;
 use App\Http\Requests\UpdateContentRequest;
 use App\Http\Requests\UpdateTenantRequest;
@@ -10,9 +10,8 @@ use App\Models\Content;
 use App\Models\Institution;
 use App\Models\Tenant;
 use App\Services\ModelAuthorizer as Authorizer;
-use Inertia\Inertia;
 
-class TenantController extends Controller
+class TenantController extends AdminController
 {
     public function __construct(public Authorizer $authorizer) {}
 
@@ -21,12 +20,12 @@ class TenantController extends Controller
      */
     public function index()
     {
-        $this->authorize('viewAny', Tenant::class);
+        $this->handleAuthorization('viewAny', Tenant::class);
 
         $tenants = Tenant::query()->paginate(15);
 
         // also check if empty array
-        return Inertia::render('Admin/People/IndexTenant', [
+        return $this->inertiaResponse('Admin/People/IndexTenant', [
             'tenants' => $tenants,
         ]);
     }
@@ -36,9 +35,9 @@ class TenantController extends Controller
      */
     public function create()
     {
-        $this->authorize('create', Tenant::class);
+        $this->handleAuthorization('create', Tenant::class);
 
-        return Inertia::render('Admin/People/CreateTenant', [
+        return $this->inertiaResponse('Admin/People/CreateTenant', [
             'assignableInstitutions' => Institution::all(['id', 'name']),
         ]);
     }
@@ -62,9 +61,9 @@ class TenantController extends Controller
      */
     public function edit(Tenant $tenant)
     {
-        $this->authorize('update', $tenant);
+        $this->handleAuthorization('update', $tenant);
 
-        return Inertia::render('Admin/People/EditTenant', [
+        return $this->inertiaResponse('Admin/People/EditTenant', [
             'tenant' => $tenant,
             'assignableInstitutions' => Institution::all(['id', 'name']),
         ]);
@@ -87,7 +86,7 @@ class TenantController extends Controller
      */
     public function destroy(Tenant $tenant)
     {
-        $this->authorize('delete', $tenant);
+        $this->handleAuthorization('delete', $tenant);
 
         $tenant->delete();
 
@@ -96,7 +95,7 @@ class TenantController extends Controller
 
     public function editMainPage(Tenant $tenant)
     {
-        $this->authorize('updateMainPage', $tenant);
+        $this->handleAuthorization('updateMainPage', $tenant);
 
         $tenant->load('content.parts');
 
@@ -106,7 +105,7 @@ class TenantController extends Controller
             $tenant->content()->associate($content)->save();
         }
 
-        return Inertia::render('Admin/Content/EditHomePage', [
+        return $this->inertiaResponse('Admin/Content/EditHomePage', [
             'tenant' => $tenant->load('content.parts'),
         ]);
     }

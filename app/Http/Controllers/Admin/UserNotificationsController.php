@@ -2,17 +2,16 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
-use Inertia\Inertia;
+use App\Http\Controllers\AdminController;
 
-class UserNotificationsController extends Controller
+class UserNotificationsController extends AdminController
 {
     public function index()
     {
         // get all notifications
         $notifications = auth()->user()->notifications;
 
-        return Inertia::render('Admin/ShowNotifications', [
+        return $this->inertiaResponse('Admin/ShowNotifications', [
             'notifications' => $notifications,
         ]);
     }

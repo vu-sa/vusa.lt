@@ -38,11 +38,9 @@ test('simple user can\'t access all users', function () {
 test('simple user can\'t create contact', function () {
     $user = asUser($this->user);
 
-
     $response = $user->get(route('users.create'));
 
     $response->assertStatus(403);
-
 
     $response = $user->post(route('users.store'), [
         'name' => 'Test 1',
@@ -50,7 +48,6 @@ test('simple user can\'t create contact', function () {
     ]);
 
     $response->assertStatus(403);
-
 
     $this->assertDatabaseMissing('users', [
         'name' => 'Test 1',

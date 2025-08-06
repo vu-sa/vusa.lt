@@ -210,7 +210,7 @@ describe('auth: news manager', function () {
 
         // Find the duplicated news (should have "(kopija)" in title and be in draft mode)
         $duplicatedNews = News::query()
-            ->where('title', 'LIKE', '%' . $news->title . ' (kopija)%')
+            ->where('title', 'LIKE', '%'.$news->title.' (kopija)%')
             ->where('draft', 1)
             ->latest()
             ->first();
@@ -225,11 +225,11 @@ describe('auth: news manager', function () {
 
     test('can duplicate news with tags', function () {
         $news = News::query()->first();
-        
+
         // Add some tags to the original news
         $tags = \App\Models\Tag::factory()->count(2)->create();
         $news->tags()->attach($tags->pluck('id'));
-        
+
         $initialCount = News::count();
 
         // Send the POST request to duplicate the news

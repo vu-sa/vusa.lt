@@ -18,14 +18,8 @@ beforeEach(function () {
     // Create a basic user for authorization tests
     $this->user = makeUser($this->tenant);
 
-    // Create an admin user with permissions
-    $this->admin = User::factory()->create();
-
-    // Create admin role with super admin permissions
-    $adminRole = Role::firstOrCreate(['name' => config('permission.super_admin_role_name'), 'guard_name' => 'web']);
-
-    // Assign admin role to user - super admin has all permissions
-    $this->admin->assignRole($adminRole);
+    // Create an admin user with Communication Coordinator role
+    $this->admin = makeAdminForController('Meeting', $this->tenant);
 
     // Create an institution for testing
     $this->institution = Institution::factory()->for($this->tenant)->create();

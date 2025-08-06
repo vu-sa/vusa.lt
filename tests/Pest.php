@@ -103,9 +103,14 @@ function expectApiSecure(string $endpoint, ?User $user = null): void
     expect($response->status())->toBeIn([200, 401, 403, 404]);
 }
 
-function makeTenantUser(?string $role = null): User
+function makeTenantUser(?string $role = null, ?Tenant $tenant = null): User
 {
-    $tenant = Tenant::query()->inRandomOrder()->first();
+    $tenant = $tenant ?? Tenant::query()->inRandomOrder()->first();
+
+    if (! $tenant) {
+        throw new \RuntimeException('No tenants found in database. Ensure test database is properly seeded.');
+    }
+
     $user = makeUser($tenant);
 
     if ($role) {
@@ -113,4 +118,175 @@ function makeTenantUser(?string $role = null): User
     }
 
     return $user;
+}
+
+// Role mapping for different controller domains
+function makeAdminForController(string $controller, ?Tenant $tenant = null): User
+{
+    // Get or create a tenant if none provided
+    $tenant = $tenant ?? Tenant::query()->inRandomOrder()->first();
+
+    if (! $tenant) {
+        throw new \RuntimeException('No tenants found in database. Ensure test database is properly seeded.');
+    }
+
+    $user = makeUser($tenant);
+    $duty = $user->duties()->first();
+
+    // Handle Super Admin role for high-permission controllers
+    $superAdminControllers = [
+        'Tenant',
+    ];
+    if (in_array($controller, $superAdminControllers)) {
+        $user->assignRole(config('permission.super_admin_role_name'));
+
+        return $user;
+    }
+
+    // Handle Global Communication Coordinator role controllers (global resources)
+    $globalCommunicationCoordinatorControllers = [
+        'Category',
+        'Tag',
+        'Navigation',
+    ];
+    if (in_array($controller, $globalCommunicationCoordinatorControllers)) {
+        $user->duties()->first()->assignRole('Global Communication Coordinator');
+
+        return $user;
+    }
+
+    // Handle Communication Coordinator role controllers
+    $communicationCoordinatorControllers = [
+        'Calendar',
+        'User',
+        'Institution',
+        'Duty',
+        'StudyProgram',
+        'Form',
+        'Banner',
+        'Page',
+        'Meeting',
+        'AgendaItem',
+    ];
+    if (in_array($controller, $communicationCoordinatorControllers)) {
+        $user->duties()->first()->assignRole('Communication Coordinator');
+
+        return $user;
+    }
+
+    // Handle Resource Manager role controllers
+    $resourceManagerControllers = [
+        'Document',
+    ];
+    if (in_array($controller, $resourceManagerControllers)) {
+        $user->duties()->first()->assignRole('Resource Manager');
+
+        return $user;
+    }
+
+    return $user;
+}
+
+// Controller test data providers
+function getControllerTestData(string $controller): array
+{
+    $dataMap = [
+        'Page' => [
+            'valid' => [
+                'title' => ['lt' => 'Test puslapis', 'en' => 'Test page'],
+                'content' => ['lt' => 'Test turinys', 'en' => 'Test content'],
+                'permalink' => 'test-page',
+                'lang' => 'lt',
+            ],
+            'invalid' => [
+                'title' => ['lt' => '', 'en' => ''], // Required field empty
+                'content' => ['lt' => '', 'en' => ''],
+                'permalink' => '',
+                'lang' => 'invalid',
+            ],
+        ],
+        'Category' => [
+            'valid' => [
+                'name' => ['lt' => 'Test kategorija', 'en' => 'Test category'],
+                'description' => ['lt' => 'Test aprašymas', 'en' => 'Test description'],
+            ],
+            'invalid' => [
+                'name' => ['lt' => '', 'en' => ''], // Required field empty
+                'description' => ['lt' => '', 'en' => ''],
+            ],
+        ],
+        'Banner' => [
+            'valid' => [
+                'title' => 'Test baneris',
+                'image_url' => 'https://example.com/image.jpg',
+                'link_url' => 'https://example.com',
+                'is_active' => true,
+            ],
+            'invalid' => [
+                'title' => '', // Required field empty
+                'image_url' => '', // Required field empty
+                'link_url' => 'invalid-url',
+            ],
+        ],
+        'Navigation' => [
+            'valid' => [
+                'name' => 'Test Navigation',
+                'url' => '/test-nav',
+                'parent_id' => 0,
+                'order' => 1,
+                'lang' => 'lt',
+            ],
+            'invalid' => [
+                'name' => '', // Required field empty
+                'url' => '',
+            ],
+        ],
+        'Form' => [
+            'valid' => [
+                'name' => ['lt' => 'Test forma', 'en' => 'Test form'],
+                'description' => ['lt' => 'Test aprašymas', 'en' => 'Test description'],
+            ],
+            'invalid' => [
+                'name' => ['lt' => '', 'en' => ''], // Required field empty
+            ],
+        ],
+        'Role' => [
+            'valid' => [
+                'name' => 'Test Role',
+            ],
+            'invalid' => [
+                'name' => '', // Required field empty
+            ],
+        ],
+        'Permission' => [
+            'valid' => [
+                'name' => 'test.permission',
+                'guard_name' => 'web',
+            ],
+            'invalid' => [
+                'name' => '', // Required field empty
+            ],
+        ],
+    ];
+
+    return $dataMap[$controller] ?? [
+        'valid' => ['name' => 'Test'],
+        'invalid' => ['name' => ''],
+    ];
+}
+
+// Helper for getting expected validation errors
+function getControllerValidationErrors(string $controller): array
+{
+    $errorMap = [
+        'Page' => ['title.lt', 'content.lt', 'permalink', 'lang'],
+        'Category' => ['name.lt', 'name.en'],
+        'Banner' => ['title', 'image_url'],
+        'Navigation' => ['name', 'url'],
+        'Form' => ['name.lt'],
+        'Role' => ['name'],
+        'Permission' => ['name'],
+    ];
+
+    return $errorMap[$controller] ?? ['name'];
 }

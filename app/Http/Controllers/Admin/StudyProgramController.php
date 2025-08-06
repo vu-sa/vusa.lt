@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetTenantsForUpserts;
 use App\Enums\DegreeEnum;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexStudyProgramRequest;
 use App\Http\Requests\MergeStudyProgramsRequest;
 use App\Http\Requests\StoreStudyProgramRequest;
@@ -14,9 +14,8 @@ use App\Models\StudyProgram;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\TanstackTableService;
 use Illuminate\Support\Facades\DB;
-use Inertia\Inertia;
 
-class StudyProgramController extends Controller
+class StudyProgramController extends AdminController
 {
     use HasTanstackTables;
 
@@ -27,7 +26,7 @@ class StudyProgramController extends Controller
      */
     public function index(IndexStudyProgramRequest $request)
     {
-        $this->authorize('viewAny', StudyProgram::class);
+        $this->handleAuthorization('viewAny', StudyProgram::class);
 
         // Build base query with eager loading
         $query = StudyProgram::query()->with('tenant');
@@ -58,7 +57,7 @@ class StudyProgramController extends Controller
         // Get the sorting state using the custom method to ensure consistent parsing
         $sorting = $request->getSorting();
 
-        return Inertia::render('Admin/People/IndexStudyProgram', [
+        return $this->inertiaResponse('Admin/People/IndexStudyProgram', [
             'studyPrograms' => [
                 'data' => $studyPrograms->getCollection()->map->toArray(),
                 'meta' => [
@@ -82,9 +81,9 @@ class StudyProgramController extends Controller
      */
     public function create()
     {
-        $this->authorize('create', StudyProgram::class);
+        $this->handleAuthorization('create', StudyProgram::class);
 
-        return Inertia::render('Admin/People/CreateStudyProgram', [
+        return $this->inertiaResponse('Admin/People/CreateStudyProgram', [
             'tenants' => GetTenantsForUpserts::execute('studyPrograms.create.padalinys', $this->authorizer),
             'degreeOptions' => DegreeEnum::getFormOptions(),
         ]);
@@ -95,7 +94,7 @@ class StudyProgramController extends Controller
      */
     public function store(StoreStudyProgramRequest $request)
     {
-        $this->authorize('create', StudyProgram::class);
+        $this->handleAuthorization('create', StudyProgram::class);
 
         $studyProgram = StudyProgram::create($request->validated());
 
@@ -108,9 +107,9 @@ class StudyProgramController extends Controller
      */
     public function edit(StudyProgram $studyProgram)
     {
-        $this->authorize('update', $studyProgram);
+        $this->handleAuthorization('update', $studyProgram);
 
-        return Inertia::render('Admin/People/EditStudyProgram', [
+        return $this->inertiaResponse('Admin/People/EditStudyProgram', [
             'studyProgram' => $studyProgram->load('tenant')->toFullArray(),
             'tenants' => GetTenantsForUpserts::execute('studyPrograms.update.padalinys', $this->authorizer),
             'degreeOptions' => DegreeEnum::getFormOptions(),
@@ -122,7 +121,7 @@ class StudyProgramController extends Controller
      */
     public function update(UpdateStudyProgramRequest $request, StudyProgram $studyProgram)
     {
-        $this->authorize('update', $studyProgram);
+        $this->handleAuthorization('update', $studyProgram);
 
         $studyProgram->update($request->validated());
 
@@ -135,7 +134,7 @@ class StudyProgramController extends Controller
      */
     public function destroy(StudyProgram $studyProgram)
     {
-        $this->authorize('delete', $studyProgram);
+        $this->handleAuthorization('delete', $studyProgram);
 
         // Check if the study program is being used by any dutiables
         $dutiablesCount = \App\Models\Pivots\Dutiable::where('study_program_id', $studyProgram->id)->count();
@@ -155,9 +154,9 @@ class StudyProgramController extends Controller
      */
     public function merge()
     {
-        $this->authorize('viewAny', StudyProgram::class);
+        $this->handleAuthorization('viewAny', StudyProgram::class);
 
-        return Inertia::render('Admin/People/MergeStudyPrograms', [
+        return $this->inertiaResponse('Admin/People/MergeStudyPrograms', [
             'studyPrograms' => StudyProgram::with('tenant')->get()->map->toArray(),
         ]);
     }
@@ -167,7 +166,7 @@ class StudyProgramController extends Controller
      */
     public function mergeStudyPrograms(MergeStudyProgramsRequest $request)
     {
-        $this->authorize('create', StudyProgram::class);
+        $this->handleAuthorization('create', StudyProgram::class);
 
         $targetId = $request->validated()['target_study_program_id'];
         $sourceIds = $request->validated()['source_study_program_ids'];

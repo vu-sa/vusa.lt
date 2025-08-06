@@ -9,22 +9,20 @@ uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->tenant = Tenant::query()->inRandomOrder()->first();
-    $this->user = makeUser($this->tenant);
-
+    $this->regularUser = makeUser($this->tenant);
     $this->documentManager = makeUser($this->tenant);
     $this->documentManager->duties()->first()->assignRole('Resource Manager');
-
     $this->institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
 });
 
-describe('auth: simple user', function () {
+describe('unauthorized access', function () {
     test('cannot access documents index', function () {
-        asUser($this->user)->get(route('documents.index'))
-            ->assertStatus(403);
+        $response = asUser($this->regularUser)->get(route('documents.index'));
+        expect($response->status())->toBe(403);
     });
 
     test('cannot store sharepoint documents', function () {
-        asUser($this->user)->post(route('documents.store'), [
+        $response = asUser($this->regularUser)->post(route('documents.store'), [
             'documents' => [
                 [
                     'name' => 'Test Document.pdf',
@@ -33,24 +31,32 @@ describe('auth: simple user', function () {
                     'list_id' => 'list-id-123',
                 ],
             ],
-        ])->assertStatus(403);
+        ]);
+        expect($response->status())->toBe(403);
     });
 
     test('cannot refresh documents', function () {
         $document = Document::factory()->create(['institution_id' => $this->institution->id]);
 
-        asUser($this->user)->post(route('documents.refresh', $document))
-            ->assertStatus(403);
+        $response = asUser($this->regularUser)->post(route('documents.refresh', $document));
+        expect($response->status())->toBe(403);
+    });
+
+    test('cannot delete documents', function () {
+        $document = Document::factory()->create(['institution_id' => $this->institution->id]);
+
+        $response = asUser($this->regularUser)->delete(route('documents.destroy', $document));
+        expect($response->status())->toBe(403);
     });
 });
 
-describe('auth: document manager', function () {
-    test('can access documents index', function () {
+describe('authorized access', function () {
+    test('document manager can access documents index', function () {
         // Create 3 documents for this institution
         Document::factory()->count(3)->create(['institution_id' => $this->institution->id]);
 
-        asUser($this->documentManager)->get(route('documents.index'))
-            ->assertStatus(200)
+        $response = asUser($this->documentManager)->get(route('documents.index'));
+        $response->assertStatus(200)
             ->assertInertia(fn ($page) => $page
                 ->component('Admin/Files/IndexDocument')
                 ->has('data')
@@ -62,7 +68,19 @@ describe('auth: document manager', function () {
             );
     });
 
-    test('can store sharepoint documents with mocked API', function () {
+    test('super admin can access documents index', function () {
+        $admin = makeAdminForController('Document', $this->tenant);
+        Document::factory()->count(2)->create(['institution_id' => $this->institution->id]);
+
+        $response = asUser($admin)->get(route('documents.index'));
+        $response->assertStatus(200)
+            ->assertInertia(fn ($page) => $page
+                ->component('Admin/Files/IndexDocument')
+                ->has('data')
+            );
+    });
+
+    test('document manager can store sharepoint documents with mocked API', function () {
         // Mock SharePoint HTTP requests
         \Illuminate\Support\Facades\Http::fake([
             'login.microsoftonline.com/*' => \Illuminate\Support\Facades\Http::response([
@@ -106,7 +124,7 @@ describe('auth: document manager', function () {
         }
     });
 
-    test('can refresh document from sharepoint with mocked API', function () {
+    test('document manager can refresh document from sharepoint with mocked API', function () {
         $document = Document::factory()->create([
             'institution_id' => $this->institution->id,
             'sharepoint_id' => 'existing-doc-id',
@@ -132,6 +150,82 @@ describe('auth: document manager', function () {
         expect($response->getStatusCode())->toBeIn([200, 302, 422, 500]);
     });
 
+    test('document manager can delete documents', function () {
+        $document = Document::factory()->create(['institution_id' => $this->institution->id]);
+
+        $response = asUser($this->documentManager)->delete(route('documents.destroy', $document));
+        $response->assertRedirect();
+
+        $this->assertDatabaseMissing('documents', ['id' => $document->id]);
+    });
+
+    test('super admin can delete documents from any tenant', function () {
+        $admin = makeAdminForController('Document', $this->tenant);
+        $otherTenant = Tenant::factory()->create();
+        $otherInstitution = Institution::factory()->create(['tenant_id' => $otherTenant->id]);
+        $otherDocument = Document::factory()->create(['institution_id' => $otherInstitution->id]);
+
+        $response = asUser($admin)->delete(route('documents.destroy', $otherDocument));
+        $response->assertRedirect();
+
+        $this->assertDatabaseMissing('documents', ['id' => $otherDocument->id]);
+    });
+
+    test('cannot manage documents from other tenants as document manager', function () {
+        $otherTenant = Tenant::factory()->create();
+        $otherInstitution = Institution::factory()->create(['tenant_id' => $otherTenant->id]);
+        $otherDocument = Document::factory()->create(['institution_id' => $otherInstitution->id]);
+
+        $response = asUser($this->documentManager)->delete(route('documents.destroy', $otherDocument));
+
+        // Check if it's redirecting to /mano (admin dashboard) which indicates proper authorization
+        if ($response->getStatusCode() === 302) {
+            $redirectLocation = $response->headers->get('Location');
+            // If redirecting to /mano, it's working as expected (authorization middleware level)
+            if (str_contains($redirectLocation, '/mano') || str_contains($redirectLocation, 'vusa.test')) {
+                expect($response->getStatusCode())->toBe(302);
+
+                return;
+            }
+        }
+
+        // Otherwise, expect 403
+        expect($response->status())->toBe(403);
+    });
+
+    test('can filter documents by institution', function () {
+        $anotherInstitution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
+
+        Document::factory()->count(2)->create(['institution_id' => $this->institution->id]);
+        Document::factory()->count(3)->create(['institution_id' => $anotherInstitution->id]);
+
+        $response = asUser($this->documentManager)->get(route('documents.index', [
+            'filters' => json_encode([
+                'institution_id' => $this->institution->id,
+            ]),
+        ]));
+        $response->assertStatus(200);
+    });
+
+    test('admin table search works for document management', function () {
+        Document::factory()->create([
+            'institution_id' => $this->institution->id,
+            'name' => 'Special Report.pdf',
+        ]);
+        Document::factory()->create([
+            'institution_id' => $this->institution->id,
+            'name' => 'Regular Document.pdf',
+        ]);
+
+        // Admin table uses backend search (different from public frontend search)
+        $response = asUser($this->documentManager)->get(route('documents.index', [
+            'search' => 'Special',
+        ]));
+        $response->assertStatus(200);
+    });
+});
+
+describe('validation', function () {
     test('handles sharepoint API errors gracefully', function () {
         // Mock SharePoint API error responses
         \Illuminate\Support\Facades\Http::fake([
@@ -163,70 +257,27 @@ describe('auth: document manager', function () {
         expect($response->getStatusCode())->toBeIn([302, 401, 404, 422, 500]);
     });
 
-    test('can delete documents', function () {
-        $document = Document::factory()->create(['institution_id' => $this->institution->id]);
+    test('requires documents array for store', function () {
+        $response = asUser($this->documentManager)->post(route('documents.store'), []);
 
-        asUser($this->documentManager)->delete(route('documents.destroy', $document))
-            ->assertRedirect();
-
-        $this->assertDatabaseMissing('documents', ['id' => $document->id]);
+        expect($response->status())->toBeIn([302, 422]);
     });
 
-    test('cannot manage documents from other tenants', function () {
-        $otherTenant = Tenant::factory()->create();
-        $otherInstitution = Institution::factory()->create(['tenant_id' => $otherTenant->id]);
-        $otherDocument = Document::factory()->create(['institution_id' => $otherInstitution->id]);
+    test('requires valid sharepoint metadata for documents', function () {
+        $response = asUser($this->documentManager)->post(route('documents.store'), [
+            'documents' => [
+                [
+                    'name' => 'Test Document.pdf',
+                    // Missing required SharePoint fields
+                ],
+            ],
+        ]);
 
-        $response = asUser($this->documentManager)->delete(route('documents.destroy', $otherDocument));
-
-        // Check if it's redirecting to /mano (admin dashboard) which indicates proper authorization
-        if ($response->getStatusCode() === 302) {
-            $redirectLocation = $response->headers->get('Location');
-            // If redirecting to /mano, it's working as expected (authorization middleware level)
-            if (str_contains($redirectLocation, '/mano') || str_contains($redirectLocation, 'vusa.test')) {
-                expect($response->getStatusCode())->toBe(302);
-
-                return;
-            }
-        }
-
-        // Otherwise, expect 403
-        $response->assertStatus(403);
+        expect($response->status())->toBeIn([302, 422]);
     });
 });
 
-describe('document admin table functionality', function () {
-    test('can filter documents by institution', function () {
-        $anotherInstitution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
-
-        Document::factory()->count(2)->create(['institution_id' => $this->institution->id]);
-        Document::factory()->count(3)->create(['institution_id' => $anotherInstitution->id]);
-
-        asUser($this->documentManager)->get(route('documents.index', [
-            'filters' => json_encode([
-                'institution_id' => $this->institution->id,
-            ]),
-        ]))->assertStatus(200);
-    });
-
-    test('admin table search works for document management', function () {
-        Document::factory()->create([
-            'institution_id' => $this->institution->id,
-            'name' => 'Special Report.pdf',
-        ]);
-        Document::factory()->create([
-            'institution_id' => $this->institution->id,
-            'name' => 'Regular Document.pdf',
-        ]);
-
-        // Admin table uses backend search (different from public frontend search)
-        asUser($this->documentManager)->get(route('documents.index', [
-            'search' => 'Special',
-        ]))->assertStatus(200);
-    });
-});
-
-describe('document access control', function () {
+describe('relationships', function () {
     test('documents are scoped to tenant through institution', function () {
         $otherTenant = Tenant::factory()->create();
         $otherInstitution = Institution::factory()->create(['tenant_id' => $otherTenant->id]);
@@ -237,8 +288,8 @@ describe('document access control', function () {
         // Create documents for other tenant
         $otherDocs = Document::factory()->count(3)->create(['institution_id' => $otherInstitution->id]);
 
-        asUser($this->documentManager)->get(route('documents.index'))
-            ->assertStatus(200)
+        $response = asUser($this->documentManager)->get(route('documents.index'));
+        $response->assertStatus(200)
             ->assertInertia(fn ($page) => $page
                 ->component('Admin/Files/IndexDocument')
                 ->has('data')
@@ -255,9 +306,7 @@ describe('document access control', function () {
                 })
             );
     });
-});
 
-describe('document metadata and properties', function () {
     test('document factory creates valid sharepoint document', function () {
         $document = Document::factory()->create([
             'institution_id' => $this->institution->id,

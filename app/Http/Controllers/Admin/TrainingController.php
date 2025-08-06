@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\AdminController;
 use App\Http\Requests\StoreTrainingRequest;
 use App\Http\Requests\UpdateTrainingRequest;
 use App\Models\Duty;
@@ -16,9 +16,8 @@ use App\Models\Type;
 use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ModelIndexer;
-use Inertia\Inertia;
 
-class TrainingController extends Controller
+class TrainingController extends AdminController
 {
     public function __construct(public Authorizer $authorizer) {}
 
@@ -27,7 +26,7 @@ class TrainingController extends Controller
      */
     public function index()
     {
-        $this->authorize('viewAny', Training::class);
+        $this->handleAuthorization('viewAny', Training::class);
 
         $indexer = new ModelIndexer(new Training);
 
@@ -37,7 +36,7 @@ class TrainingController extends Controller
             ->sortAllColumns()
             ->builder->paginate(15);
 
-        return Inertia::render('Admin/People/IndexTraining', [
+        return $this->inertiaResponse('Admin/People/IndexTraining', [
             'trainings' => $trainings,
         ]);
     }
@@ -47,9 +46,9 @@ class TrainingController extends Controller
      */
     public function create()
     {
-        $this->authorize('create', Training::class);
+        $this->handleAuthorization('create', Training::class);
 
-        return Inertia::render('Admin/People/CreateTraining');
+        return $this->inertiaResponse('Admin/People/CreateTraining');
     }
 
     /**
@@ -85,7 +84,7 @@ class TrainingController extends Controller
 
         $training->load('programmes.days.elements');
 
-        return Inertia::render('Admin/People/ShowTraining', [
+        return $this->inertiaResponse('Admin/People/ShowTraining', [
             'training' => [
                 ...$training->toArray(),
                 'programmes' => $training->programmes->map(function ($programme) {
@@ -140,13 +139,17 @@ class TrainingController extends Controller
     {
         $training->load('form', 'tenant', 'organizer', 'trainables', 'tasks');
 
-        return Inertia::render('Admin/People/EditTraining', [
+        return $this->inertiaResponse('Admin/People/EditTraining', [
 
             'training' => [
                 ...$training->toFullArray(),
                 'form' => [
                     ...($training->form ? $training->form->toFullArray() : []),
-                    'form_fields' => $training->form?->formFields()->orderBy('order')->get()->map->toFullArray(),
+                    'form_fields' => $training->form?->formFields()->orderBy('order')->get()
+                        ->map(function ($field) {
+                            /** @var \App\Models\FormField $field */
+                            return $field->toFullArray();
+                        }),
                 ],
                 'tasks' => $training->tasks->map->toFullArray(),
                 'programme' => collect([
@@ -240,8 +243,8 @@ class TrainingController extends Controller
             return redirect()->route('trainings.show', $training)->with('success', 'Jūs jau užsiregistravote į šiuos mokymus!');
         }
 
-        $training->form = [
-            $training->form->toArray(),
+        $processedForm = [
+            ...$training->form->toArray(),
             'form_fields' => $training->form->formFields->map(function ($field) {
                 $options = $field->options;
 
@@ -262,8 +265,11 @@ class TrainingController extends Controller
         ];
 
         // NOTE: Form formation repeated in PublicPageController:349
-        return Inertia::render('Admin/People/ShowTrainingRegistration', [
-            'training' => $training,
+        return $this->inertiaResponse('Admin/People/ShowTrainingRegistration', [
+            'training' => [
+                ...$training->toArray(),
+                'form' => $processedForm,
+            ],
         ]);
     }
 }

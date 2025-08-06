@@ -3,12 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetTenantsForUpserts;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexInstitutionRequest;
 use App\Http\Requests\StoreInstitutionRequest;
 use App\Http\Requests\UpdateInstitutionRequest; // Create this request class
 use App\Http\Traits\HasTanstackTables;
-use App\Models\Doing;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Type;
@@ -17,7 +16,7 @@ use App\Services\TanstackTableService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
-class InstitutionController extends Controller
+class InstitutionController extends AdminController
 {
     use HasTanstackTables;
 
@@ -26,9 +25,9 @@ class InstitutionController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(IndexInstitutionRequest $request)
+    public function index(IndexInstitutionRequest $request): \Inertia\Response
     {
-        $this->authorize('viewAny', Institution::class);
+        $this->handleAuthorization('viewAny', Institution::class);
 
         // Build base query with eager loading
         $query = Institution::query()->with(['meetings' => fn ($query) => $query->orderBy('start_time'), 'tenant', 'types']);
@@ -60,7 +59,7 @@ class InstitutionController extends Controller
         $sorting = $request->getSorting();
 
         // Return response with all necessary data
-        return Inertia::render('Admin/People/IndexInstitution', [
+        return $this->inertiaResponse('Admin/People/IndexInstitution', [
             'data' => $institutions->items(),
             'meta' => [
                 'total' => $institutions->total(),
@@ -80,16 +79,14 @@ class InstitutionController extends Controller
 
     /**
      * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function create()
     {
-        $this->authorize('create', Institution::class);
+        $this->handleAuthorization('create', Institution::class);
 
         Inertia::share('seo.title', 'Nauja institucija');
 
-        return Inertia::render('Admin/People/CreateInstitution', [
+        return $this->inertiaResponse('Admin/People/CreateInstitution', [
             'assignableTenants' => GetTenantsForUpserts::execute('institutions.create.padalinys', $this->authorizer),
             'institutionTypes' => Type::where('model_type', Institution::class)->get(),
         ]);
@@ -97,8 +94,6 @@ class InstitutionController extends Controller
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function store(StoreInstitutionRequest $request)
     {
@@ -113,21 +108,19 @@ class InstitutionController extends Controller
 
     /**
      * Display the specified resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function show(Institution $institution)
     {
-        $this->authorize('view', $institution);
+        $this->handleAuthorization('view', $institution);
 
         // TODO: only show current_users
-        $institution->load('tenant', 'duties.current_users', 'matters')->load(['meetings' => function ($query) {
+        $institution->load('tenant', 'duties.current_users')->load(['meetings' => function ($query) {
             $query->with('tasks', 'comments', 'files')->orderBy('start_time', 'asc');
         }])->load('activities.causer');
 
         // Inertia::share('layout.navBackground', $institution->image_url ?? null);
 
-        return Inertia::render('Admin/People/ShowInstitution', [
+        return $this->inertiaResponse('Admin/People/ShowInstitution', [
             'institution' => [
                 ...$institution->toArray(),
                 'current_users' => $institution->duties->load('current_users')->pluck('current_users')->flatten()->unique('id')->values(),
@@ -136,18 +129,15 @@ class InstitutionController extends Controller
                 'sharepointPath' => $institution->tenant ? $institution->sharepoint_path() : null,
                 'lastMeeting' => $institution->lastMeeting(),
             ],
-            'doingTypes' => Type::where('model_type', Doing::class)->get(['id', 'title']),
         ]);
     }
 
     /**
      * Show the form for editing the specified resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function edit(Institution $institution)
     {
-        $this->authorize('update', $institution);
+        $this->handleAuthorization('update', $institution);
 
         $institution->load('types')->load(['duties' => function ($query) {
             $query->with('current_users')->orderBy('order', 'asc');
@@ -155,7 +145,7 @@ class InstitutionController extends Controller
 
         Inertia::share('seo.title', $institution->name);
 
-        return Inertia::render('Admin/People/EditInstitution', [
+        return $this->inertiaResponse('Admin/People/EditInstitution', [
             'institution' => [
                 ...$institution->toFullArray(),
                 'types' => $institution->types->pluck('id'),
@@ -167,8 +157,6 @@ class InstitutionController extends Controller
 
     /**
      * Update the specified resource in storage.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function update(UpdateInstitutionRequest $request, Institution $institution)
     {
@@ -189,12 +177,10 @@ class InstitutionController extends Controller
 
     /**
      * Remove the specified resource from storage.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function destroy(Institution $institution)
     {
-        $this->authorize('delete', $institution);
+        $this->handleAuthorization('delete', $institution);
 
         // check if auth user is from this institution
         if (auth()->user()->institutions->contains($institution)) {
@@ -208,12 +194,10 @@ class InstitutionController extends Controller
 
     /**
      * Restore the specified resource from storage.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function restore(Institution $institution)
     {
-        $this->authorize('restore', $institution);
+        $this->handleAuthorization('restore', $institution);
 
         $institution->restore();
 

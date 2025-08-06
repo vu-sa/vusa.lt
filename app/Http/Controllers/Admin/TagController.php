@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexTagRequest;
 use App\Http\Requests\MergeTagsRequest;
 use App\Http\Requests\StoreTagRequest;
@@ -11,9 +11,8 @@ use App\Http\Traits\HasTanstackTables;
 use App\Models\Tag;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\TanstackTableService;
-use Inertia\Inertia;
 
-class TagController extends Controller
+class TagController extends AdminController
 {
     use HasTanstackTables;
 
@@ -22,9 +21,9 @@ class TagController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(IndexTagRequest $request)
+    public function index(IndexTagRequest $request): \Inertia\Response
     {
-        $this->authorize('viewAny', Tag::class);
+        $this->handleAuthorization('viewAny', Tag::class);
 
         // Build base query
         $query = Tag::query();
@@ -50,9 +49,13 @@ class TagController extends Controller
         // Get the sorting state
         $sorting = $request->getSorting();
 
-        return Inertia::render('Admin/Content/IndexTag', [
+        return $this->inertiaResponse('Admin/Content/IndexTag', [
             'tags' => [
-                'data' => $tags->getCollection()->map->toFullArray(),
+                'data' => $tags->getCollection()
+                    ->map(function ($tag) {
+                        /** @var \App\Models\Tag $tag */
+                        return $tag->toFullArray();
+                    }),
                 'meta' => [
                     'total' => $tags->total(),
                     'per_page' => $tags->perPage(),
@@ -71,19 +74,19 @@ class TagController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(): \Inertia\Response
     {
-        $this->authorize('create', Tag::class);
+        $this->handleAuthorization('create', Tag::class);
 
-        return Inertia::render('Admin/Content/CreateTag');
+        return $this->inertiaResponse('Admin/Content/CreateTag');
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreTagRequest $request)
+    public function store(StoreTagRequest $request): \Illuminate\Http\RedirectResponse
     {
-        $this->authorize('create', Tag::class);
+        $this->handleAuthorization('create', Tag::class);
 
         $tag = Tag::create($request->validated());
 
@@ -94,11 +97,11 @@ class TagController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Tag $tag)
+    public function show(Tag $tag): \Inertia\Response
     {
-        $this->authorize('view', $tag);
+        $this->handleAuthorization('view', $tag);
 
-        return Inertia::render('Admin/Content/ShowTag', [
+        return $this->inertiaResponse('Admin/Content/ShowTag', [
             'tag' => $tag->toFullArray(),
         ]);
     }
@@ -106,9 +109,9 @@ class TagController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Tag $tag)
+    public function edit(Tag $tag): \Inertia\Response
     {
-        $this->authorize('update', $tag);
+        $this->handleAuthorization('update', $tag);
 
         // Get news that use this tag
         $news = $tag->news()
@@ -117,17 +120,18 @@ class TagController extends Controller
             ->orderBy('publish_time', 'desc')
             ->get()
             ->map(function ($newsItem) {
+                /** @var \App\Models\News $newsItem */
                 return [
                     'id' => $newsItem->id,
                     'title' => $newsItem->title,
                     'permalink' => $newsItem->permalink,
                     'publish_time' => $newsItem->publish_time,
                     'lang' => $newsItem->lang,
-                    'tenant' => $newsItem->tenant?->shortname,
+                    'tenant' => $newsItem->tenant->shortname,
                 ];
             });
 
-        return Inertia::render('Admin/Content/EditTag', [
+        return $this->inertiaResponse('Admin/Content/EditTag', [
             'postTag' => $tag->toFullArray(),
             'news' => $news,
         ]);
@@ -136,9 +140,9 @@ class TagController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateTagRequest $request, Tag $tag)
+    public function update(UpdateTagRequest $request, Tag $tag): \Illuminate\Http\RedirectResponse
     {
-        $this->authorize('update', $tag);
+        $this->handleAuthorization('update', $tag);
 
         $tag->update($request->validated());
 
@@ -150,11 +154,11 @@ class TagController extends Controller
      */
     public function mergeTags()
     {
-        $this->authorize('create', Tag::class);
+        $this->handleAuthorization('create', Tag::class);
 
         $tags = Tag::orderBy('alias')->get();
 
-        return Inertia::render('Admin/Content/MergeTags', [
+        return $this->inertiaResponse('Admin/Content/MergeTags', [
             'tags' => $tags->map->toFullArray(),
         ]);
     }
@@ -164,7 +168,7 @@ class TagController extends Controller
      */
     public function processMergeTags(MergeTagsRequest $request)
     {
-        $this->authorize('create', Tag::class);
+        $this->handleAuthorization('create', Tag::class);
 
         $targetTagId = $request->validated('target_tag_id');
         $sourceTagIds = $request->validated('source_tag_ids');
@@ -206,7 +210,7 @@ class TagController extends Controller
      */
     public function destroy(Tag $tag)
     {
-        $this->authorize('delete', $tag);
+        $this->handleAuthorization('delete', $tag);
 
         $tag->delete();
 

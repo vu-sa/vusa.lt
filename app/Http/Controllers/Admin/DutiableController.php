@@ -2,27 +2,24 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\AdminController;
 use App\Http\Requests\UpdateDutiableRequest;
 use App\Models\Pivots\Dutiable;
 use App\Models\StudyProgram;
 use App\Services\ModelAuthorizer as Authorizer;
-use Inertia\Inertia;
 
-class DutiableController extends Controller
+class DutiableController extends AdminController
 {
     public function __construct(public Authorizer $authorizer) {}
 
     /**
      * Show the form for editing the specified resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function edit(Dutiable $dutiable)
     {
-        $this->authorize('update', $dutiable->duty);
+        $this->handleAuthorization('update', $dutiable->duty);
 
-        return Inertia::render('Admin/People/EditDutiable', [
+        return $this->inertiaResponse('Admin/People/EditDutiable', [
             'dutiable' => $dutiable->load('duty', 'dutiable')->toFullArray(),
             'studyPrograms' => StudyProgram::all(),
         ]);
@@ -31,8 +28,6 @@ class DutiableController extends Controller
     /**
      * Update the specified resource in storage.
      * TODO: this will not work for contacts
-     *
-     * @return \Illuminate\Http\Response
      */
     public function update(Dutiable $dutiable, UpdateDutiableRequest $request)
     {
@@ -45,12 +40,10 @@ class DutiableController extends Controller
 
     /**
      * Remove the specified resource from storage.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function destroy(Dutiable $dutiable)
     {
-        $this->authorize('delete', $dutiable->duty);
+        $this->handleAuthorization('delete', $dutiable->duty);
 
         $user = $dutiable->dutiable;
 
