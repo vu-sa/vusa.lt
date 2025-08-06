@@ -14,7 +14,6 @@ use App\Services\SharepointGraphService;
 use App\Services\TanstackTableService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Context;
-use Inertia\Inertia;
 
 class DocumentController extends AdminController
 {
