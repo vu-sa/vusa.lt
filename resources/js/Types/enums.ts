@@ -1,6 +1,5 @@
 export enum AllowedFileablesEnum {
   "DUTY" = "duty",
-  "GOAL" = "goal",
   "INSTITUTION" = "institution",
   "MEETING" = "meeting",
   "TYPE" = "type",
@@ -53,8 +52,6 @@ export enum ModelEnum {
   "DUTY" = "duty",
   "FILE" = "file",
   "FORM" = "form",
-  "GOAL_GROUP" = "goalGroup",
-  "GOAL" = "goal",
   "INSTITUTION" = "institution",
   "MEETING" = "meeting",
   "MEMBERSHIP" = "membership",

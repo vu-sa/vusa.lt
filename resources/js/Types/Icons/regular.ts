@@ -48,8 +48,6 @@ const modelIcons: Record<keyof typeof ModelEnum, Component> = {
   DUTIABLE: PersonClock24Regular,
   DUTY: PuzzlePiece24Regular,
   FORM: DocumentBulletList24Regular,
-  GOAL: StarLineHorizontal324Regular,
-  GOAL_GROUP: Sparkle24Regular,
   INSTITUTION: PeopleTeam24Regular,
   MEETING: DeviceMeetingRoomRemote24Regular,
   NAVIGATION: Navigation24Regular,

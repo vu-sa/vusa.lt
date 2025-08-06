@@ -311,59 +311,6 @@ declare global {
       field_responses_exists: boolean
     }
 
-    export interface Goal {
-      // columns
-      id: string
-      group_id?: string | null
-      tenant_id: number
-      title: string
-      description?: string | null
-      start_date: string
-      end_date?: string | null
-      created_at: string
-      updated_at: string
-      deleted_at?: string | null
-      // relations
-      group?: GoalGroup
-      tenant?: Tenant
-      commentable?: Goal
-      comments?: Comment[]
-      files?: SharepointFile[]
-      tasks?: Task[]
-      activities?: Activity[]
-      // counts
-      comments_count: number
-      files_count: number
-      tasks_count: number
-      activities_count: number
-      // exists
-      group_exists: boolean
-      tenant_exists: boolean
-      comments_exists: boolean
-      files_exists: boolean
-      tasks_exists: boolean
-      activities_exists: boolean
-    }
-
-    export interface GoalGroup {
-      // columns
-      id: string
-      title: string
-      description?: string | null
-      created_at: string
-      updated_at: string
-      deleted_at?: string | null
-      // relations
-      goals?: Goal[]
-      activities?: Activity[]
-      // counts
-      goals_count: number
-      activities_count: number
-      // exists
-      goals_exists: boolean
-      activities_exists: boolean
-    }
-
     export interface Institution {
       // columns
       id: string

@@ -360,20 +360,8 @@ const menuItems = computed(() => [
         href: route('meetings.index'),
         show: auth?.can.create.meeting
       },
-      {
-        title: $t('Tikslai'),
-        icon: Icons.GOAL,
-        href: route('goals.index'),
-        show: auth?.can.create.goal
-      },
-      {
-        title: $t('Tikslų grupės'),
-        icon: Icons.GOAL_GROUP,
-        href: route('goalGroups.index'),
-        show: auth?.can.create.goalGroup
-},
     ],
-    show: auth?.can.create.meeting || auth?.can.create.goal || auth?.can.create.goalGroup,
+    show: auth?.can.create.meeting,
     visibleItems: [] as MenuItemType[]
   },
   {

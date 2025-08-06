@@ -44,8 +44,6 @@ const modelIcons: Record<keyof typeof ModelEnum, FunctionalComponent> = {
   DOCUMENT: DocumentMultiple24Filled,
   DUTIABLE: PersonClock24Filled,
   DUTY: PuzzlePiece24Filled,
-  GOAL: StarLineHorizontal324Filled,
-  GOAL_GROUP: Sparkle24Filled,
   INSTITUTION: PeopleTeam24Filled,
   MEETING: DeviceMeetingRoomRemote24Filled,
   NAVIGATION: Navigation24Filled,

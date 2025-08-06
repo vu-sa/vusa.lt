@@ -21,8 +21,6 @@ declare namespace App.Entities {
   export type Form = models.Form;
   export type FormField = models.FormField;
 
-  export type Goal = models.Goal;
-  export type GoalGroup = models.GoalGroup;
   export type Institution = models.Institution;
   // export interface Media extends models.Media {
   //   original_url?: string;

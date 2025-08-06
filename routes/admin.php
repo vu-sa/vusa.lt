@@ -26,8 +26,6 @@ Route::patch('pages/{page}/restore', [PageController::class, 'restore'])->name('
 Route::patch('news/{news}/restore', [NewsController::class, 'restore'])->name('news.restore')->withTrashed();
 Route::post('news/{news}/duplicate', [NewsController::class, 'duplicate'])->name('news.duplicate');
 Route::patch('duties/{duty}/restore', [DutyController::class, 'restore'])->name('duties.restore')->withTrashed();
-Route::patch('goals/{goal}/restore', [GoalController::class, 'restore'])->name('goals.restore')->withTrashed();
-Route::patch('goalGroups/{goalGroup}/restore', [GoalGroupController::class, 'restore'])->name('goalGroups.restore')->withTrashed();
 Route::patch('institutions/{institution}/restore', [InstitutionController::class, 'restore'])->name('institutions.restore')->withTrashed();
 Route::patch('meetings/{meeting}/restore', [MeetingController::class, 'restore'])->name('meetings.restore')->withTrashed();
 Route::patch('reservations/{reservation}/restore', [ReservationController::class, 'restore'])->name('reservations.restore')->withTrashed();
@@ -89,9 +87,6 @@ Route::post('programmeSections/{programmeSection}/detach', [ProgrammeSectionCont
 Route::resource('calendar', CalendarController::class);
 Route::post('calendar/{calendar}/media/{media}', [CalendarController::class, 'destroyMedia'])->name('calendar.destroyMedia');
 Route::post('calendar/{calendar}/duplicate', [CalendarController::class, 'duplicate'])->name('calendar.duplicate');
-
-Route::resource('goals', GoalController::class);
-Route::resource('goalGroups', GoalGroupController::class)->except(['show']);
 Route::resource('agendaItems', AgendaItemController::class)->except(['index', 'create']);
 Route::resource('meetings', MeetingController::class)->except(['create']);
 

@@ -233,15 +233,6 @@ const quickActions = computed(() => {
     });
   }
 
-  if (usePage().props.auth?.can.create.goal) {
-    actions.push({
-      title: $t('Naujas tikslas'),
-      description: $t('Sukurti naują tikslą ar uždavinį'),
-      href: route('goals.index'),
-      icon: ClipboardIcon,
-    });
-  }
-
   // Always include personal tasks
   actions.push({
     title: $t('Mano užduotys'),

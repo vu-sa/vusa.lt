@@ -9,7 +9,6 @@ use App\Models\Content;
 use App\Models\ContentPart;
 use App\Models\Document;
 use App\Models\Duty;
-use App\Models\Goal;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\News;
@@ -125,8 +124,6 @@ class DatabaseSeeder extends Seeder
         $this->call(RoleCommunicationCoordinatorSeeder::class);
         $this->call(RoleGlobalCommunicationCoordinatorSeeder::class);
         $this->call(RoleResourceManagerSeeder::class);
-
-        Goal::factory(10)->recycle($tenants)->create();
 
         foreach ($tenants as $tenant) {
             QuickLink::factory(6)
