@@ -21,6 +21,8 @@ class FormPolicy extends ModelPolicy
 
     /**
      * Determine whether the user can view the model.
+     *
+     * @param  Form  $form
      */
     public function view(User $user, Model $form): bool
     {
@@ -38,6 +40,8 @@ class FormPolicy extends ModelPolicy
 
     /**
      * Determine whether the user can update the model.
+     *
+     * @param  Form  $form
      */
     public function update(User $user, Model $form): bool
     {
@@ -46,6 +50,8 @@ class FormPolicy extends ModelPolicy
 
     /**
      * Determine whether the user can delete the model.
+     *
+     * @param  Form  $form
      */
     public function delete(User $user, Model $form): bool
     {

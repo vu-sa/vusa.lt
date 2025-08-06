@@ -78,7 +78,7 @@ describe('DuplicateCalendarAction', function () {
 
     test('creates new database record', function () {
         $originalCount = Calendar::count();
-        
+
         $originalCalendar = Calendar::factory()->create([
             'title' => ['lt' => 'Test renginys', 'en' => 'Test event'],
         ]);

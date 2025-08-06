@@ -16,6 +16,8 @@ class UserAttachedToModel extends Notification implements ShouldQueue
 
     /**
      * The model instance.
+     *
+     * @var Model&object{id: int|string, name?: string, title?: string}
      */
     public Model $model;
 
@@ -26,20 +28,18 @@ class UserAttachedToModel extends Notification implements ShouldQueue
 
     /**
      * The notification's subject.
-     *
-     * @var string
      */
     public array $subject;
 
     /**
      * The notification's object.
-     *
-     * @var string
      */
     public array $object;
 
     /**
      * Create a new notification instance.
+     *
+     * @param  Model&object{id: int|string, name?: string, title?: string}  $model
      */
     public function __construct(Model $model, User $attacher)
     {
@@ -92,7 +92,7 @@ class UserAttachedToModel extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         return [
-            'text' => $this->attacher->name.' priskyrė jus prie '.$this->model->name,
+            'text' => $this->attacher->name.' priskyrė jus prie '.(optional($this->model)->name ?: optional($this->model)->title ?: 'objekto'),
             'subject' => $this->subject,
             'object' => $this->object,
         ];

@@ -7,6 +7,7 @@ use App\Http\Controllers\PublicController;
 use App\Models\Calendar;
 use App\Models\Category;
 use App\Models\Form;
+use App\Models\Institution;
 use App\Models\Navigation;
 use App\Models\Page;
 use App\Models\Tenant;
@@ -262,6 +263,7 @@ class PublicPageController extends PublicController
 
         return Inertia::render('Public/PKP', [
             'institutions' => $institutions->map(function ($institution) {
+                /** @var Institution $institution */
                 return [
                     ...$institution->toArray(),
                     'description' => Str::limit(strip_tags($institution->description), 100, '...'),

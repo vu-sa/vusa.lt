@@ -19,10 +19,12 @@ use Illuminate\Support\Facades\Cache;
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
  * @property-read \App\Models\User|null $user
+ *
  * @method static \Database\Factories\NavigationFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Navigation newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Navigation newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Navigation query()
+ *
  * @mixin \Eloquent
  */
 class Navigation extends Model

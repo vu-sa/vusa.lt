@@ -10,6 +10,7 @@ use Carbon\Carbon;
 class TimeRange
 {
     public readonly Carbon $start;
+
     public readonly Carbon $end;
 
     /**
@@ -30,9 +31,6 @@ class TimeRange
 
     /**
      * Parse time input into Carbon instance
-     *
-     * @param  Carbon|string|int  $time
-     * @return Carbon
      */
     private function parseTime(Carbon|string|int $time): Carbon
     {
@@ -49,9 +47,6 @@ class TimeRange
 
     /**
      * Check if a given time falls within this range
-     *
-     * @param  Carbon  $time
-     * @return bool
      */
     public function contains(Carbon $time): bool
     {
@@ -60,9 +55,6 @@ class TimeRange
 
     /**
      * Check if this range overlaps with another range
-     *
-     * @param  TimeRange  $other
-     * @return bool
      */
     public function overlaps(TimeRange $other): bool
     {
@@ -71,8 +63,6 @@ class TimeRange
 
     /**
      * Get the duration of this time range in seconds
-     *
-     * @return int
      */
     public function getDurationInSeconds(): int
     {
@@ -81,8 +71,6 @@ class TimeRange
 
     /**
      * Get start time as timestamp in milliseconds
-     *
-     * @return int
      */
     public function getStartTimestampMs(): int
     {
@@ -91,8 +79,6 @@ class TimeRange
 
     /**
      * Get end time as timestamp in milliseconds
-     *
-     * @return int
      */
     public function getEndTimestampMs(): int
     {

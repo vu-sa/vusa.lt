@@ -12,7 +12,7 @@ uses(RefreshDatabase::class);
 describe('DuplicateNewsAction', function () {
     test('duplicates news with basic properties', function () {
         $content = Content::factory()->create();
-        
+
         $originalNews = News::factory()->create([
             'title' => 'Originalios naujienos',
             'short' => 'Trumpas aprašymas',
@@ -26,9 +26,9 @@ describe('DuplicateNewsAction', function () {
 
         expect($duplicatedNews)->toBeInstanceOf(News::class)
             ->and($duplicatedNews->id)->not()->toBe($originalNews->id)
-            ->and($duplicatedNews->title)->toBe($originalNews->title . ' (kopija)')
+            ->and($duplicatedNews->title)->toBe($originalNews->title.' (kopija)')
             ->and($duplicatedNews->short)->toBe($originalNews->short)
-            ->and($duplicatedNews->permalink)->toStartWith($originalNews->permalink . '-')
+            ->and($duplicatedNews->permalink)->toStartWith($originalNews->permalink.'-')
             ->and($duplicatedNews->permalink)->not()->toBe($originalNews->permalink)
             ->and($duplicatedNews->draft)->toBe(1)
             ->and($duplicatedNews->publish_time)->toBeNull()
@@ -38,7 +38,7 @@ describe('DuplicateNewsAction', function () {
 
     test('creates new content instance', function () {
         $content = Content::factory()->create();
-        
+
         $originalNews = News::factory()->create([
             'content_id' => $content->id,
         ]);
@@ -55,12 +55,12 @@ describe('DuplicateNewsAction', function () {
     test('handles null title gracefully', function () {
         // Test by creating a news object and manually setting title to null
         $content = Content::factory()->create();
-        
+
         $originalNews = News::factory()->make([
             'title' => 'Test title',
             'content_id' => $content->id,
         ]);
-        
+
         // Manually set title to null to test the action's handling
         $originalNews->title = null;
 
@@ -72,7 +72,7 @@ describe('DuplicateNewsAction', function () {
 
     test('handles empty title gracefully', function () {
         $content = Content::factory()->create();
-        
+
         $originalNews = News::factory()->create([
             'title' => '',
             'content_id' => $content->id,
@@ -87,12 +87,12 @@ describe('DuplicateNewsAction', function () {
     test('handles null permalink gracefully', function () {
         // Test by creating a news object and manually setting permalink to null
         $content = Content::factory()->create();
-        
+
         $originalNews = News::factory()->make([
             'permalink' => 'test-permalink',
             'content_id' => $content->id,
         ]);
-        
+
         // Manually set permalink to null to test the action's handling
         $originalNews->permalink = null;
 
@@ -104,7 +104,7 @@ describe('DuplicateNewsAction', function () {
 
     test('handles empty permalink gracefully', function () {
         $content = Content::factory()->create();
-        
+
         $originalNews = News::factory()->create([
             'permalink' => '',
             'content_id' => $content->id,
@@ -118,13 +118,13 @@ describe('DuplicateNewsAction', function () {
 
     test('generates unique permalink with random suffix', function () {
         $content = Content::factory()->create();
-        
+
         $originalNews = News::factory()->create([
             'permalink' => 'test-news',
             'content_id' => $content->id,
         ]);
 
-        $action = new DuplicateNewsAction();
+        $action = new DuplicateNewsAction;
         $duplicatedNews1 = $action->execute($originalNews);
         $duplicatedNews2 = $action->execute($originalNews);
 
@@ -137,7 +137,7 @@ describe('DuplicateNewsAction', function () {
 
     test('copies content parts when they exist', function () {
         $content = Content::factory()->create();
-        
+
         // Create content parts for the original news
         $contentParts = ContentPart::factory()->count(3)->create([
             'content_id' => $content->id,
@@ -146,15 +146,15 @@ describe('DuplicateNewsAction', function () {
         $originalNews = News::factory()->create([
             'content_id' => $content->id,
         ]);
-        
+
         // Load content relationship to ensure parts are accessible
         $originalNews->load('content.parts');
-        
+
         // Verify original news has the parts
         expect($originalNews->content->parts)->toHaveCount(3);
 
         $duplicatedNews = DuplicateNewsAction::execute($originalNews);
-        
+
         // Load the parts relationship for the duplicated news
         $duplicatedNews->load('content.parts');
 
@@ -162,7 +162,7 @@ describe('DuplicateNewsAction', function () {
 
         $duplicatedNews->content->parts->each(function ($duplicatedPart, $index) use ($contentParts, $duplicatedNews) {
             $originalPart = $contentParts[$index];
-            
+
             expect($duplicatedPart->type)->toBe($originalPart->type)
                 ->and($duplicatedPart->json_content)->toBe($originalPart->json_content)
                 ->and($duplicatedPart->options)->toBe($originalPart->options)
@@ -174,7 +174,7 @@ describe('DuplicateNewsAction', function () {
 
     test('handles news without content parts', function () {
         $content = Content::factory()->create();
-        
+
         $originalNews = News::factory()->create([
             'content_id' => $content->id,
         ]);
@@ -187,7 +187,7 @@ describe('DuplicateNewsAction', function () {
 
     test('preserves all non-modified attributes', function () {
         $content = Content::factory()->create();
-        
+
         $originalNews = News::factory()->create([
             'title' => 'Test naujienos',
             'short' => 'Test aprašymas',
@@ -210,9 +210,9 @@ describe('DuplicateNewsAction', function () {
 
     test('creates new database record', function () {
         $content = Content::factory()->create();
-        
+
         $originalCount = News::count();
-        
+
         $originalNews = News::factory()->create([
             'content_id' => $content->id,
         ]);
@@ -225,7 +225,7 @@ describe('DuplicateNewsAction', function () {
 
     test('returns refreshed news instance', function () {
         $content = Content::factory()->create();
-        
+
         $originalNews = News::factory()->create([
             'content_id' => $content->id,
         ]);
@@ -240,33 +240,33 @@ describe('DuplicateNewsAction', function () {
 
     test('copies tags relationship', function () {
         $content = Content::factory()->create();
-        
+
         // Create tags and attach them to the original news
         $tags = Tag::factory()->count(3)->create();
-        
+
         $originalNews = News::factory()->create([
             'content_id' => $content->id,
         ]);
-        
+
         $originalNews->tags()->attach($tags->pluck('id'));
 
         $duplicatedNews = DuplicateNewsAction::execute($originalNews);
-        
+
         // Load the tags relationship for the duplicated news
         $duplicatedNews->load('tags');
 
         expect($duplicatedNews->tags)->toHaveCount(3);
-        
+
         // Verify all original tags are copied to the duplicate
         $originalTagIds = $originalNews->tags->pluck('id')->sort()->values();
         $duplicatedTagIds = $duplicatedNews->tags->pluck('id')->sort()->values();
-        
+
         expect($duplicatedTagIds->toArray())->toBe($originalTagIds->toArray());
     });
 
     test('handles news without tags', function () {
         $content = Content::factory()->create();
-        
+
         $originalNews = News::factory()->create([
             'content_id' => $content->id,
         ]);
@@ -279,7 +279,7 @@ describe('DuplicateNewsAction', function () {
 
     test('uses database transactions', function () {
         $content = Content::factory()->create();
-        
+
         $originalNews = News::factory()->create([
             'content_id' => $content->id,
         ]);

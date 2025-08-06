@@ -6,7 +6,6 @@ use AjCastro\EagerLoadPivotRelations\EagerLoadPivotTrait;
 use App\Actions\GetResourceManagers;
 use App\Collections\ReservationCollection;
 use App\Models\Pivots\ReservationResource;
-use App\Models\Reservation;
 use App\Models\Traits\HasTranslations;
 use App\Services\ResourceCapacityCalculator;
 use App\ValueObjects\TimeRange;
@@ -91,13 +90,12 @@ class Resource extends Model implements HasMedia
 
     /**
      * Get all reservations as a typed collection
-     *
-     * @return ReservationCollection
      */
     public function getReservationsCollection(): ReservationCollection
     {
         /** @var \Illuminate\Database\Eloquent\Collection<int, Reservation> $reservations */
         $reservations = $this->reservations()->get();
+
         return new ReservationCollection($reservations->all());
     }
 
@@ -132,23 +130,23 @@ class Resource extends Model implements HasMedia
      * @param  string  $symbol_end  Comparison operator for end time ('>', '>=')
      * @param  array<int, string>  $exceptReservations  Reservation IDs to exclude from calculation
      * @param  array<int, string>  $exceptResources  Resource IDs to exclude from calculation
-     * @return int  Available capacity at the specified time
+     * @return int Available capacity at the specified time
      */
     public function leftCapacityAtTime(
-        \Carbon\Carbon|string $datetime, 
-        string $symbol_start = '<', 
-        string $symbol_end = '>=', 
-        array $exceptReservations = [], 
+        \Carbon\Carbon|string $datetime,
+        string $symbol_start = '<',
+        string $symbol_end = '>=',
+        array $exceptReservations = [],
         array $exceptResources = []
     ): int {
         $calculator = new ResourceCapacityCalculator($this);
         $time = $datetime instanceof \Carbon\Carbon ? $datetime : \Carbon\Carbon::parse($datetime);
-        
+
         return $calculator->calculateLeftCapacityAtTime(
-            $time, 
-            $symbol_start, 
-            $symbol_end, 
-            $exceptReservations, 
+            $time,
+            $symbol_start,
+            $symbol_end,
+            $exceptReservations,
             $exceptResources
         );
     }
@@ -159,16 +157,16 @@ class Resource extends Model implements HasMedia
      * @param  \Carbon\Carbon|string  $datetime  The time to check capacity at
      * @param  array<int, string>  $exceptReservations  Reservation IDs to exclude from calculation
      * @param  array<int, string>  $exceptResources  Resource IDs to exclude from calculation
-     * @return array{before: int, after: int}  Capacity before and after the specified time
+     * @return array{before: int, after: int} Capacity before and after the specified time
      */
     public function leftCapacityAtTimeArray(
-        \Carbon\Carbon|string $datetime, 
-        array $exceptReservations = [], 
+        \Carbon\Carbon|string $datetime,
+        array $exceptReservations = [],
         array $exceptResources = []
     ): array {
         $calculator = new ResourceCapacityCalculator($this);
         $time = $datetime instanceof \Carbon\Carbon ? $datetime : \Carbon\Carbon::parse($datetime);
-        
+
         return $calculator->calculateCapacityAtTimeArray($time, $exceptReservations, $exceptResources);
     }
 
@@ -187,17 +185,17 @@ class Resource extends Model implements HasMedia
      * @param  array<int, string>  $exceptReservations  Reservation IDs to exclude from calculation
      * @param  array<int, string>  $exceptResources  Resource IDs to exclude from calculation
      * @return array<string, array{before: int, after: int, reservation?: array<string, mixed>, start?: bool, end?: bool}>
-     *               Capacity timeline keyed by timestamp (ms), sorted chronologically
+     *                                                                                                                     Capacity timeline keyed by timestamp (ms), sorted chronologically
      */
     public function getCapacityAtDateTimeRange(
-        \Carbon\Carbon|string|int $from, 
-        \Carbon\Carbon|string|int $to, 
-        array $exceptReservations = [], 
+        \Carbon\Carbon|string|int $from,
+        \Carbon\Carbon|string|int $to,
+        array $exceptReservations = [],
         array $exceptResources = []
     ): array {
         $timeRange = new TimeRange($from, $to);
         $calculator = new ResourceCapacityCalculator($this);
-        
+
         return $calculator->getCapacityTimeline($timeRange, $exceptReservations, $exceptResources);
     }
 
@@ -205,12 +203,12 @@ class Resource extends Model implements HasMedia
      * Find the lowest available capacity within a capacity timeline
      *
      * @param  array<string, array{after: int}>  $capacityTimeline  Timeline from getCapacityAtDateTimeRange()
-     * @return int  The minimum available capacity across all time points
+     * @return int The minimum available capacity across all time points
      */
     public function lowestCapacityAtDateTimeRange(array $capacityTimeline): int
     {
         $calculator = new ResourceCapacityCalculator($this);
-        
+
         return $calculator->findLowestCapacity($capacityTimeline);
     }
 }

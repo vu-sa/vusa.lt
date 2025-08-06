@@ -58,6 +58,7 @@ class TenantPolicy extends ModelPolicy
         }
 
         $tenants = $this->authorizer->getPermissableDuties()->filter(function ($duty) {
+            /** @var \App\Models\Duty $duty */
             return $duty->hasPermissionTo('pages.update.padalinys');
         })->load('institution.tenant')->pluck('institution.tenant');
 
@@ -67,6 +68,8 @@ class TenantPolicy extends ModelPolicy
 
     /**
      * Determine whether the user can delete the model.
+     *
+     * @param  Tenant  $tenant
      */
     public function delete(User $user, Model $tenant): bool
     {

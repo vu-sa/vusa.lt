@@ -102,7 +102,7 @@ describe('authorized access', function () {
 
         // Verify a new category was created
         expect(Category::count())->toBe($initialCount + 1);
-        
+
         // Get the newly created category (it should be different from the beforeEach category)
         $createdCategory = Category::orderBy('id', 'desc')->where('id', '!=', $this->category->id)->first();
         expect($createdCategory)->not->toBeNull();

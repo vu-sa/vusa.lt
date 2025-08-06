@@ -62,12 +62,12 @@ trait HasCommonChecks
             }
 
             // Check for direct relationship
-            if ($permissableModels->contains('id', $model->id)) {
+            if ($permissableModels->contains('id', $model->getKey())) {
                 return true;
             }
 
             // Check related institutions (for institution model)
-            if ($resource === 'institutions') {
+            if ($resource === 'institutions' && $model instanceof \App\Models\Institution) {
                 $institutions = new Collection(RelationshipService::getRelatedInstitutions($model));
 
                 if ($institutions->intersect((new Collection($permissableModels)))->isNotEmpty()) {
@@ -84,7 +84,7 @@ trait HasCommonChecks
                 ->whereIn('duties.id', $authorizer->getPermissableDuties()->pluck('id'))
                 ->get();
 
-            $modelTenants = $model->load($tenantRelation)->$tenantRelation;
+            $modelTenants = $model->load($tenantRelation)->getRelation($tenantRelation);
 
             // Convert to collection for consistent handling
             $modelCollection = new Collection;

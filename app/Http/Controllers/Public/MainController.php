@@ -35,13 +35,13 @@ class MainController extends PublicController
         // get search query
         $search = request()->data['input'];
 
-        $calendar = Calendar::search($search)->orderBy('date', 'desc')->take(5)->get(['id', 'title', 'date', 'permalink', 'lang']);
+        $calendar = Calendar::search($search)->orderBy('date', 'desc')->take(5)->get()->only(['id', 'title', 'date', 'permalink', 'lang']);
 
-        $news = News::search($search)->orderBy('publish_time', 'desc')->take(5)->get(['id', 'title', 'publish_time', 'image', 'permalink', 'lang']);
+        $news = News::search($search)->orderBy('publish_time', 'desc')->take(5)->get()->only(['id', 'title', 'publish_time', 'image', 'permalink', 'lang']);
 
-        $pages = Page::search($search)->orderBy('created_at', 'desc')->take(5)->get(['id', 'title', 'permalink', 'lang']);
+        $pages = Page::search($search)->orderBy('created_at', 'desc')->take(5)->get()->only(['id', 'title', 'permalink', 'lang']);
 
-        $documents = Document::search($search)->orderBy('document_date', 'desc')->take(5)->get(['id', 'name', 'title', 'document_date', 'anonymous_url', 'language', 'content_type', 'created_at', 'summary']);
+        $documents = Document::search($search)->orderBy('document_date', 'desc')->take(5)->get()->only(['id', 'name', 'title', 'document_date', 'anonymous_url', 'language', 'content_type', 'created_at', 'summary']);
 
         return back()->with('search', ['calendar' => $calendar, 'news' => $news, 'pages' => $pages, 'documents' => $documents]);
     }

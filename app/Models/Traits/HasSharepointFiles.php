@@ -13,7 +13,6 @@ use App\Services\ResourceServices\SharepointFileService;
  * Models using this trait should implement SharepointFileableContract
  * to ensure proper type safety with SharepointFileableService
  */
-
 trait HasSharepointFiles
 {
     public function files(): \Illuminate\Database\Eloquent\Relations\MorphToMany

@@ -234,16 +234,12 @@ class PublicController extends Controller
                         ? 'Oficiali Vilniaus universiteto Studentų atstovybės svetainė'
                         : 'Official website of Vilnius University Students\' Representation'
                     )
-                    ->potentialAction([
-                        'SearchAction' => [
-                            '@type' => 'SearchAction',
-                            'target' => [
-                                '@type' => 'EntryPoint',
-                                'urlTemplate' => $baseUrl.'/search?q={search_term_string}',
-                            ],
-                            'query-input' => 'required name=search_term_string',
-                        ],
-                    ]);
+                    ->potentialAction((new \Spatie\SchemaOrg\SearchAction)
+                        ->target((new \Spatie\SchemaOrg\EntryPoint)
+                            ->urlTemplate($baseUrl.'/search?q={search_term_string}')
+                        )
+                        ->setProperty('query-input', 'required name=search_term_string')
+                    );
 
                 return [
                     $organizationSchema,
