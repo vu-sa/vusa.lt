@@ -32,6 +32,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Tenant> $tenants
  * @property-read mixed $translations
  * @property-read User|null $user
+ *
  * @method static \Database\Factories\Pivots\DutiableFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Dutiable newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Dutiable newQuery()
@@ -40,6 +41,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Dutiable whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Dutiable whereLocale(string $column, string $locale)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Dutiable whereLocales(string $column, array $locales)
+ *
  * @mixin \Eloquent
  */
 class Dutiable extends MorphPivot

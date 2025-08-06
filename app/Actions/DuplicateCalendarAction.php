@@ -15,20 +15,20 @@ class DuplicateCalendarAction
 
             // Replicate the calendar item
             $newCalendar = $calendar->replicate();
-            
+
             // Handle translatable title field properly
             $rawTitle = $newCalendar->getTranslations('title');
-            if (!empty($rawTitle)) {
+            if (! empty($rawTitle)) {
                 // For translatable fields, append to each language
                 foreach ($rawTitle as $locale => $title) {
                     $suffix = $locale === 'lt' ? __('(kopija)', [], 'lt') : __('(kopija)', [], 'en');
-                    $newCalendar->setTranslation('title', $locale, ($title ?? '') . ' ' . $suffix);
+                    $newCalendar->setTranslation('title', $locale, ($title ?? '').' '.$suffix);
                 }
             } else {
                 // For simple string fields or when no translations exist
-                $newCalendar->title = ($newCalendar->title ?? '') . ' ' . __('(kopija)');
+                $newCalendar->title = ($newCalendar->title ?? '').' '.__('(kopija)');
             }
-            
+
             $newCalendar->is_draft = true;
             $newCalendar->save();
 

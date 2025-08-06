@@ -19,9 +19,9 @@ class DuplicateNewsAction
             $newNews = $news->replicate();
 
             // Modify the replicated news item
-            $newNews->title = ($newNews->title ?? '') . ' ' . __('(kopija)');
+            $newNews->title = ($newNews->title ?? '').' '.__('(kopija)');
             // Create url friendly 8 letter string
-            $newNews->permalink = ($newNews->permalink ?? '') . '-' . Str::random(8);
+            $newNews->permalink = ($newNews->permalink ?? '').'-'.Str::random(8);
             $newNews->draft = 1;
             $newNews->publish_time = null;
 
@@ -41,7 +41,7 @@ class DuplicateNewsAction
                 ];
             })->toArray();
 
-            if (!empty($contentParts)) {
+            if (! empty($contentParts)) {
                 $newNews->content->parts()->createMany($contentParts);
             }
 

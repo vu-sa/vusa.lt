@@ -10,6 +10,9 @@ use Illuminate\Support\Facades\DB;
 
 class TaskService
 {
+    /**
+     * @param  Model&object{id: int|string}  $model
+     */
     public static function storeTask(string $name, Model $model, Collection $users, ?string $due_date = null)
     {
         $task = new Task;

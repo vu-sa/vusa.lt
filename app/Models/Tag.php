@@ -17,6 +17,7 @@ use Illuminate\Support\Str;
  * @property array|string|null $description
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\News> $news
  * @property-read mixed $translations
+ *
  * @method static \Database\Factories\TagFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Tag newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Tag newQuery()
@@ -25,6 +26,7 @@ use Illuminate\Support\Str;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Tag whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Tag whereLocale(string $column, string $locale)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Tag whereLocales(string $column, array $locales)
+ *
  * @mixin \Eloquent
  */
 class Tag extends Model

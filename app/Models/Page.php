@@ -26,6 +26,7 @@ use Spatie\Sitemap\Tags\Url;
  * @property-read \App\Models\Category|null $category
  * @property-read \App\Models\Content $content
  * @property-read \App\Models\Tenant $tenant
+ *
  * @method static \Database\Factories\PageFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Page newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Page newQuery()
@@ -33,6 +34,7 @@ use Spatie\Sitemap\Tags\Url;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Page query()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Page withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Page withoutTrashed()
+ *
  * @mixin \Eloquent
  */
 class Page extends Model implements Sitemapable
@@ -87,7 +89,7 @@ class Page extends Model implements Sitemapable
             'title' => $this->title,
             'permalink' => $this->permalink,
             'lang' => $this->lang,
-            'tenant_name' => $this->tenant ? $this->tenant->fullname : null,
+            'tenant_name' => $this->tenant->fullname,
             'category_name' => $this->category?->name,
             'created_at' => $this->created_at->timestamp,
         ];

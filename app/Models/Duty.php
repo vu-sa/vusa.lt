@@ -50,6 +50,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read mixed $translations
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Type> $types
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $users
+ *
  * @method static \Database\Factories\DutyFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty newQuery()
@@ -65,6 +66,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty withoutPermission($permissions)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty withoutRole($roles, $guard = null)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty withoutTrashed()
+ *
  * @mixin \Eloquent
  */
 class Duty extends Model implements AuthorizableContract

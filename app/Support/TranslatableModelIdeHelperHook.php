@@ -22,7 +22,12 @@ class TranslatableModelIdeHelperHook implements ModelHookInterface
             return;
         }
 
-        // @phpstan-ignore-next-line
+        // Check if model has getTranslatableAttributes method (from HasTranslations trait)
+        if (! method_exists($model, 'getTranslatableAttributes')) {
+            return;
+        }
+
+        // PHPStan can infer that $model has getTranslatableAttributes after method_exists check
         foreach ($model->getTranslatableAttributes() as $attribute) {
             $types = ['array', 'string'];
 

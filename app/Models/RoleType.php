@@ -13,9 +13,11 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Role $role
  * @property-read \App\Models\Type $type
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|RoleType newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|RoleType newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|RoleType query()
+ *
  * @mixin \Eloquent
  */
 class RoleType extends Pivot

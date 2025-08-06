@@ -54,6 +54,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, \App\Models\Institution> $institutions
  * @property-read Collection<int, \App\Models\Membership> $memberships
  * @property-read \Illuminate\Notifications\DatabaseNotificationCollection<int, \Illuminate\Notifications\DatabaseNotification> $notifications
+ * @property-read \Illuminate\Notifications\DatabaseNotificationCollection<int, \Illuminate\Notifications\DatabaseNotification> $unreadNotifications
  * @property-read Collection<int, \App\Models\Permission> $permissions
  * @property-read Collection<int, \App\Models\Duty> $previous_duties
  * @property-read Collection<int, \App\Models\Reservation> $reservations
@@ -62,6 +63,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, \App\Models\Tenant> $tenants
  * @property-read Collection<int, \App\Models\Training> $trainings
  * @property-read mixed $translations
+ *
  * @method static \Database\Factories\UserFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User newQuery()
@@ -77,6 +79,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User withoutPermission($permissions)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User withoutRole($roles, $guard = null)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User withoutTrashed()
+ *
  * @mixin \Eloquent
  */
 class User extends Authenticatable
@@ -86,7 +89,7 @@ class User extends Authenticatable
     /**
      * The attributes that are mass assignable.
      *
-     * @var string[]
+     * @var list<string>
      */
     protected $fillable = [
         'name', 'email', 'facebook_url', 'password', 'phone', 'profile_photo_path', 'pronouns', 'show_pronouns',
@@ -99,7 +102,7 @@ class User extends Authenticatable
     /**
      * The attributes that should be hidden for serialization.
      *
-     * @var array
+     * @var list<string>
      */
     protected $hidden = [
         'password',
@@ -172,6 +175,7 @@ class User extends Authenticatable
     public function routeNotificationForMail(Notification $notification): array|string
     {
         if ($this->current_duties()->count() > 0) {
+            /** @var \App\Models\Duty $duty */
             foreach ($this->current_duties()->get() as $duty) {
                 if (str_ends_with($duty->email, 'vusa.lt')) {
                     return $duty->email;
@@ -258,7 +262,7 @@ class User extends Authenticatable
     }
 
     /**
-     * @return Collection<Training>
+     * @return \Illuminate\Support\Collection<int, \App\Models\Training>
      */
     public function allAvailableTrainings()
     {

@@ -14,10 +14,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \Illuminate\Support\Carbon $updated_at
  * @property-read \App\Models\FormField $formField
  * @property-read \App\Models\Registration $registration
+ *
  * @method static \Database\Factories\FieldResponseFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|FieldResponse newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|FieldResponse newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|FieldResponse query()
+ *
  * @mixin \Eloquent
  */
 class FieldResponse extends Model
@@ -35,8 +37,6 @@ class FieldResponse extends Model
 
     /**
      * Get the actual value from the response structure.
-     * 
-     * @return mixed
      */
     public function getValue(): mixed
     {
@@ -48,7 +48,7 @@ class FieldResponse extends Model
      */
     public function hasValue(): bool
     {
-        return isset($this->response['value']) && $this->response['value'] !== null && $this->response['value'] !== '';
+        return ! empty($this->response['value']);
     }
 
     public function registration()

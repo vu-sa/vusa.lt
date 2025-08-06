@@ -61,15 +61,17 @@ class SendMemberRegistrationNotification implements ShouldQueue
 
         // Finalize variables
         $tenant = Tenant::query()->find($tenantResponse->getValue());
-        if (!$tenant) {
+        if (! $tenant) {
             report('Tenant not found for member registration!');
+
             return;
         }
 
         /** @var Institution|null $institution */
         $institution = $tenant->primary_institution;
-        if (!$institution) {
+        if (! $institution) {
             report('Primary institution not found for tenant!');
+
             return;
         }
 

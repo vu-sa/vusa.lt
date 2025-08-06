@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ProgrammeDay> $days
  * @property-read Model|\Eloquent $programmable
  * @property-read mixed $translations
+ *
  * @method static \Database\Factories\ProgrammeFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Programme newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Programme newQuery()
@@ -24,6 +25,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Programme whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Programme whereLocale(string $column, string $locale)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Programme whereLocales(string $column, array $locales)
+ *
  * @mixin \Eloquent
  */
 class Programme extends Model

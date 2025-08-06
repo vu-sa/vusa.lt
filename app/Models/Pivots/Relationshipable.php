@@ -16,9 +16,11 @@ use Illuminate\Database\Eloquent\Relations\MorphPivot;
  * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $related_model
  * @property-read Relationship $relationship
  * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $relationshipable
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Relationshipable newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Relationshipable newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Relationshipable query()
+ *
  * @mixin \Eloquent
  */
 class Relationshipable extends MorphPivot

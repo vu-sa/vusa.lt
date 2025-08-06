@@ -18,7 +18,7 @@ class ModelIndexer
     // Usually using Model::class
     private $indexable;
 
-    private ?string $search;
+    private string $search;
 
     private ?array $sorting;
 

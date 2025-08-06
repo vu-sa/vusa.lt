@@ -32,10 +32,12 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read bool|null $is_in_effect
  * @property-read \App\Models\Institution|null $institution
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Tenant> $tenant
+ *
  * @method static \Database\Factories\DocumentFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Document newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Document newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Document query()
+ *
  * @mixin \Eloquent
  */
 class Document extends Model
@@ -82,7 +84,7 @@ class Document extends Model
             'institution_name_lt' => $this->institution ? $this->institution->getTranslation('name', 'lt') : null,
             'institution_name_en' => $this->institution ? $this->institution->getTranslation('name', 'en') : null,
             'tenant_shortname' => $this->institution && $this->institution->tenant ? $this->institution->tenant->shortname : null,
-            'tenant_name' => $this->institution && $this->institution->tenant ? $this->institution->tenant->name : null,
+            'tenant_name' => $this->institution && $this->institution->tenant ? $this->institution->tenant->fullname : null,
             'tenant_type' => $this->institution && $this->institution->tenant ? $this->institution->tenant->type : null,
             'is_in_effect' => $this->calculateIsInEffect(),
             'anonymous_url' => $this->anonymous_url,
@@ -151,14 +153,6 @@ class Document extends Model
 
         $tenant = $this->institution->tenant;
         $hierarchy = [$tenant->shortname];
-
-        // Add parent tenant if exists
-        if ($tenant->parent_id) {
-            $parent = $tenant->parent;
-            if ($parent) {
-                array_unshift($hierarchy, $parent->shortname);
-            }
-        }
 
         return $hierarchy;
     }

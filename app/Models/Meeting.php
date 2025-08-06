@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Contracts\SharepointFileableContract;
 use App\Events\FileableNameUpdated;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Traits\HasComments;
@@ -35,6 +36,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Tenant> $tenants
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Type> $types
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $users
+ *
  * @method static \Database\Factories\MeetingFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Meeting newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Meeting newQuery()
@@ -42,9 +44,10 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Meeting query()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Meeting withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Meeting withoutTrashed()
+ *
  * @mixin \Eloquent
  */
-class Meeting extends Model
+class Meeting extends Model implements SharepointFileableContract
 {
     use HasComments, HasFactory, HasRelationships, HasSharepointFiles, HasTasks, HasUlids, LogsActivity, Searchable, SoftDeletes;
 

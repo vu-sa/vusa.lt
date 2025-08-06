@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Actions\GetInstitutionManagers;
+use App\Contracts\SharepointFileableContract;
 use App\Events\FileableNameUpdated;
 use App\Models\Pivots\Trainable;
 use App\Models\Traits\HasComments;
@@ -59,6 +60,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Type> $types
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $users
  * @property-read int|null $users_count
+ *
  * @method static \Database\Factories\InstitutionFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Institution newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Institution newQuery()
@@ -70,9 +72,10 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Institution whereLocales(string $column, array $locales)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Institution withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Institution withoutTrashed()
+ *
  * @mixin \Eloquent
  */
-class Institution extends Model
+class Institution extends Model implements SharepointFileableContract
 {
     use HasComments, HasContentRelationships, HasFactory, HasRelationships, HasSharepointFiles, HasTranslations, HasUlids, LogsActivity, Searchable, SoftDeletes;
 
@@ -120,8 +123,16 @@ class Institution extends Model
     public function lastMeeting(): ?Meeting
     {
         // get earliest in the future, or if none, latest in past meeting
-        return $this->meetings()->where('start_time', '>=', now())->orderBy('start_time', 'asc')->first()
-            ?? $this->meetings()->where('start_time', '<', now())->orderBy('start_time', 'desc')->first();
+        $futureMeeting = $this->meetings()->where('start_time', '>=', now())->orderBy('start_time', 'asc')->first();
+        if ($futureMeeting) {
+            /** @var Meeting $futureMeeting */
+            return $futureMeeting;
+        }
+
+        $pastMeeting = $this->meetings()->where('start_time', '<', now())->orderBy('start_time', 'desc')->first();
+
+        /** @var Meeting|null $pastMeeting */
+        return $pastMeeting;
     }
 
     public function users(): HasManyDeep

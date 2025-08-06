@@ -35,6 +35,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
  * @property-read \Spatie\MediaLibrary\MediaCollections\Models\Collections\MediaCollection<int, \Spatie\MediaLibrary\MediaCollections\Models\Media> $media
  * @property-read \App\Models\Tenant $tenant
  * @property-read mixed $translations
+ *
  * @method static \Database\Factories\CalendarFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Calendar newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Calendar newQuery()
@@ -43,6 +44,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Calendar whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Calendar whereLocale(string $column, string $locale)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Calendar whereLocales(string $column, array $locales)
+ *
  * @mixin \Eloquent
  */
 class Calendar extends Model implements HasMedia
@@ -109,10 +111,10 @@ class Calendar extends Model implements HasMedia
             'title' => $this->getTranslation('title', app()->getLocale()) ?: $this->getTranslation('title', 'lt') ?: $this->getTranslation('title', 'en'),
             'title_lt' => $this->getTranslation('title', 'lt'),
             'title_en' => $this->getTranslation('title', 'en'),
-            'date' => $this->date ? $this->date->timestamp : now()->timestamp,
+            'date' => $this->date->timestamp,
             'end_date' => $this->end_date ? $this->end_date->timestamp : null,
             'lang' => $this->lang ?? app()->getLocale(),
-            'tenant_name' => $this->tenant ? $this->tenant->fullname : null,
+            'tenant_name' => $this->tenant->fullname,
             'created_at' => $this->created_at->timestamp,
         ];
     }

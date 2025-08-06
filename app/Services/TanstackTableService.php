@@ -145,7 +145,7 @@ class TanstackTableService
     protected function applyJsonSearch(Builder $query, string $column, string $searchText, string $locale, string $boolean = 'and'): void
     {
         $connection = $query->getConnection();
-        $driver = $connection->getDriverName();
+        $driver = config('database.default') === 'sqlite' ? 'sqlite' : 'mysql';
 
         if ($driver === 'sqlite') {
             // SQLite uses json_extract without JSON_UNQUOTE
@@ -197,7 +197,7 @@ class TanstackTableService
             return $query;
         }
 
-        if ($showDeleted) {
+        if ($showDeleted && method_exists($query, 'withTrashed')) {
             return $query->withTrashed();
         }
 
