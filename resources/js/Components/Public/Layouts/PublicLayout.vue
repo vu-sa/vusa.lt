@@ -386,11 +386,14 @@ const toasts = useToasts();
 
 // Handle validation errors (show only first error for public pages)
 watch(() => usePage().props.errors, (errors) => {
-  if (errors) {
+  if (errors && typeof errors === 'object' && Object.keys(errors).length > 0) {
     // In public page, show only one error message at a time
-    const [key, value] = Object.entries(errors)[0];
-    if (key && value) {
-      toasts.error(`${key}: ${value}`);
+    const entries = Object.entries(errors);
+    if (entries.length > 0) {
+      const [key, value] = entries[0];
+      if (key && value) {
+        toasts.error(`${key}: ${value}`);
+      }
     }
   }
 });

@@ -69,6 +69,10 @@ import { Button } from "@/Components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/Components/ui/popover";
 import { Play, Pause, Square, Volume1, Volume2, VolumeX, Loader2 } from "lucide-vue-next";
 
+defineProps<{
+  size?: 'sm' | 'default' | 'lg' | 'icon' | null;
+}>();
+
 const startFM = useTemplateRef<HTMLAudioElement>('startFM');
 
 const audioPlaying = ref(false);
