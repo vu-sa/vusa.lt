@@ -111,6 +111,11 @@ class Training extends Model
         return $this->hasOneDeepFromRelations($this->institution(), (new Institution)->tenant());
     }
 
+    public function tenants()
+    {
+        return $this->tenant();
+    }
+
     public function form()
     {
         return $this->belongsTo(Form::class);

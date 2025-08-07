@@ -109,12 +109,50 @@ test('cannot update resource in invalid state', function () {
 
 ```
 tests/Feature/
+├── Admin/          # MAIN: Comprehensive admin controller tests
+│   ├── Calendar/   # AgendaItem, Calendar, Meeting controllers
+│   ├── Content/    # Banner, Category, News, Page, Tag controllers  
+│   ├── Core/       # Dashboard controller
+│   ├── Forms/      # Form controller
+│   ├── Management/ # Duty, Institution, StudyProgram, Tenant, User controllers
+│   ├── Navigation/ # Navigation controller
+│   ├── Permissions/# Permission, Role controllers
+│   └── Resources/  # Document, Files, Reservation controllers
 ├── Auth/           # Authentication & Authorization
-├── Content/        # News, Pages, Tags, Translation  
-├── Forms/          # Dynamic Forms & Registration
-├── Management/     # Users, Duties, Meetings, Calendar
+├── Content/        # DEPRECATED: Legacy model relationship tests
+├── Forms/          # Dynamic Forms & Registration workflows
+├── Management/     # DEPRECATED: Legacy management tests  
 ├── Public/         # Public-facing features
-├── Resources/      # Documents & Reservations  
-├── System/         # API, Permissions, Integration
-└── Other/          # Legacy tests
+├── Resources/      # DEPRECATED: Legacy resource tests
+├── System/         # API, Permissions, Integration, Search
+└── Other/          # Legacy tests (to be cleaned up)
 ```
+
+**Note**: Admin/ directory contains the current comprehensive controller tests following proper patterns. Other directories contain legacy or specialized tests that may need deprecation.
+
+## Frontend Testing
+
+**3-tier Vitest setup** optimized for daily development:
+- **Unit Tests** (`*.test.ts`): Services, composables, utilities
+- **Component Tests** (`*.component.test.ts`): Vue components with @vue/test-utils
+- **Browser Tests** (`*.stories.ts`): Interactive testing via Storybook + Playwright
+
+**Daily Commands**:
+```bash
+./vendor/bin/sail npm run test       # Unit + component tests only
+./vendor/bin/sail npm run test:all   # Includes browser tests (requires Playwright)
+./vendor/bin/sail npm run storybook  # Interactive component documentation
+```
+
+**File Organization**:
+```
+resources/js/
+├── Services/__tests__/ServiceName.test.ts
+├── Composables/__tests__/useComposable.test.ts  
+├── Utils/__tests__/UtilityName.test.ts
+└── Components/ComponentName/__tests__/ComponentName.component.test.ts
+```
+
+**Coverage Target**: 75% minimum (branches, functions, lines, statements)
+
+**Key Principle**: Stay away from over-testing - focus on application-specific logic, not third-party library functionality.

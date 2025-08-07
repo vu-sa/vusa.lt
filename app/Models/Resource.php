@@ -58,7 +58,18 @@ class Resource extends Model implements HasMedia
 {
     use EagerLoadPivotTrait, HasFactory, HasTranslations, HasUlids, InteractsWithMedia, Searchable, SoftDeletes;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'name', 'description', 'location', 'capacity', 'is_reservable',
+        'tenant_id', 'resource_category_id', 'media',
+    ];
+
+    protected $casts = [
+        'name' => 'array',
+        'description' => 'array',
+        'capacity' => 'integer',
+        'is_reservable' => 'boolean',
+        'deleted_at' => 'datetime',
+    ];
 
     public $translatable = ['name', 'description'];
 
@@ -76,6 +87,14 @@ class Resource extends Model implements HasMedia
             'name->'.app()->getLocale() => $this->getTranslation('name', app()->getLocale()),
             'description->'.app()->getLocale() => $this->getTranslation('description', app()->getLocale()),
         ];
+    }
+
+    /**
+     * Scope to filter only reservable resources
+     */
+    public function scopeReservable($query)
+    {
+        return $query->where('is_reservable', true);
     }
 
     /**

@@ -202,6 +202,37 @@ function getControllerTestData(string $controller): array
                 'url' => '',
             ],
         ],
+        'Training' => [
+            'valid' => [
+                'name' => ['lt' => 'Test Training', 'en' => 'Test Training EN'],
+                'description' => ['lt' => 'Test training description', 'en' => 'Test training description EN'],
+                'start_time' => now()->addDays(7)->timestamp * 1000, // Convert to milliseconds
+                'end_time' => now()->addDays(7)->addHours(3)->timestamp * 1000, // Convert to milliseconds
+                'address' => 'Training Room',
+                'max_participants' => 25,
+                'trainables' => [], // Empty array for related trainables
+                'tasks' => [], // Empty array for related tasks
+            ],
+            'invalid' => [
+                'name' => '', // Required field empty
+                'start_time' => '', // Required field empty
+                'end_time' => '', // Required field empty
+                'max_participants' => -1, // Invalid value
+                'trainables' => [], // Empty array for related trainables
+                'tasks' => [], // Empty array for related tasks
+            ],
+        ],
+        'Relationship' => [
+            'valid' => [
+                'name' => 'Test Relationship Type',
+                'slug' => 'test-relationship-type',
+                'description' => 'Test relationship type description',
+            ],
+            'invalid' => [
+                'name' => '', // Required field empty
+                'slug' => '', // Required field empty
+            ],
+        ],
         default => [
             'valid' => ['name' => 'Test'],
             'invalid' => ['name' => ''],
@@ -216,6 +247,8 @@ function getControllerValidationErrors(string $controller): array
         'Category' => ['name.lt', 'name.en'],
         'Banner' => ['title', 'image_url'],
         'Navigation' => ['name', 'url'],
+        'Training' => ['name', 'start_time', 'end_time', 'max_participants'],
+        'Relationship' => ['name', 'slug'],
         default => ['name'],
     };
 }

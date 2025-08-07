@@ -39,109 +39,22 @@ All Laravel commands **MUST** be run using Laravel Sail:
 
 ### Frontend Testing & Quality Assurance
 
-**Testing Architecture**: 3-tier Vitest setup optimized for daily development:
-- **Unit Tests** (`*.test.ts`): Services, composables, utilities
-- **Component Tests** (`*.component.test.ts`): Vue components with @vue/test-utils
-- **Browser Tests** (`*.stories.ts`): Interactive testing via Storybook + Playwright
+**See**: tests/README.md and tests/CLAUDE.md for complete testing documentation
 
-**Daily Development Commands**:
+**Quick Commands**:
 ```bash
-# Daily development (fast, reliable)
-./vendor/bin/sail npm run test       # Unit + component tests only
-
-# Component development 
+./vendor/bin/sail npm run test       # Daily development (Unit + Component tests)
 ./vendor/bin/sail npm run storybook  # Interactive component documentation
-
-# Full testing suite (when needed)
-./vendor/bin/sail npm run test:all   # Includes browser tests (requires Playwright)
+./vendor/bin/sail artisan test      # Backend tests
 ```
 
-**File Organization**:
-```
-resources/js/
-├── Services/__tests__/ServiceName.test.ts
-├── Composables/__tests__/useComposable.test.ts  
-├── Utils/__tests__/UtilityName.test.ts
-└── Components/
-    └── ComponentName/
-        ├── __tests__/ComponentName.component.test.ts
-        ├── ComponentName.vue
-        └── ComponentName.stories.ts
-```
-
-**Setup**: Playwright browsers install automatically via `./dev/sailsetup.sh`
+**Key Principle**: Stay away from over-testing - focus on application-specific logic, not third-party library functionality
 
 ### Storybook Development
 
-**Storybook Configuration**: Complete isolation from Laravel-specific Vite configuration to prevent conflicts.
+**See**: tests/README.md for complete Storybook setup and usage
 
-**Key Files**:
-- `vite.storybook.config.ts` - Dedicated Vite config for Storybook
-- `.storybook/main.ts` - Storybook main configuration
-- `.storybook/mocks/` - Mocks for Laravel dependencies
-- `.storybook/vitest.setup.ts` - Test environment setup
-
-**Creating Stories**:
-```typescript
-// ComponentName.stories.ts
-import type { Meta, StoryObj } from '@storybook/vue3'
-import ComponentName from './ComponentName.vue'
-
-const meta: Meta<typeof ComponentName> = {
-  title: 'Components/ComponentName',
-  component: ComponentName,
-  parameters: {
-    docs: { description: { component: 'Description here' } }
-  }
-}
-
-export default meta
-type Story = StoryObj<typeof meta>
-
-export const Default: Story = {
-  args: {
-    // Component props
-  }
-}
-```
-
-**Mocking Strategy**:
-- Laravel i18n functions (`trans`, `wTrans`) → `.storybook/mocks/laravel-vue-i18n.mock.ts`
-- Inertia.js (`usePage`, `router`) → `.storybook/mocks/inertia.mock.ts`
-- Ziggy routes (`route()`) → `.storybook/mocks/ziggy.mock.ts`
-- Icons → `.storybook/mocks/icons.mock.ts`
-
-**Storybook URLs**:
-- Development: http://localhost:6006
-- All stories are automatically discovered from `**/*.stories.ts` files
-
-**Best Practices**:
-- Create stories for all reusable components
-- Document component variants and states
-- Include accessibility testing in stories
-- Use realistic mock data that reflects actual usage
-
-```bash
-# Storybook (component documentation)
-npm run storybook          # Start Storybook dev server
-npm run storybook:build    # Build static Storybook
-npm run storybook:test     # Run Storybook tests
-npm run test:storybook     # Run Storybook accessibility tests
-```
-
-**When to Use Each Test Type**:
-- **Unit Tests**: Pure functions, business logic, data transformations, API services
-- **Component Tests**: Vue component behavior, user interactions, props/events, accessibility
-- **Storybook**: Visual component states, design system documentation, manual testing
-
-**Coverage Targets**: 75% minimum (branches, functions, lines, statements)
-
-**Best Practices**:
-- Test user behavior, not implementation details
-- Use descriptive test names that explain the expected behavior
-- Mock external dependencies (APIs, localStorage, etc.)
-- Test accessibility in component tests
-- Create Storybook stories for reusable components
+**Quick Start**: `./vendor/bin/sail npm run storybook`
 
 ### Troubleshooting
 
@@ -211,6 +124,8 @@ function getUserName(user: User): string { return user.name; }
 - **Custom overrides**: After running ide-helper, manually fix translatable field types from array to string for better static analysis
 
 ### Testing Permissions
+**See**: @tests/CLAUDE.md for complete testing patterns
+
 ```php
 // Domain-appropriate testing
 $user->duties()->first()->assignRole('Communication Coordinator');

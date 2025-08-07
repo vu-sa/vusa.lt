@@ -42,6 +42,11 @@ class ResourceCategory extends Model
         return $this->hasMany(Resource::class);
     }
 
+    public function tenant()
+    {
+        return $this->hasManyDeep(Tenant::class, [Resource::class]);
+    }
+
     public function tenants()
     {
         return $this->hasManyDeepFromRelations($this->resources(), (new Resource)->tenant());

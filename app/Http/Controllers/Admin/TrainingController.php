@@ -137,6 +137,8 @@ class TrainingController extends AdminController
      */
     public function edit(Training $training)
     {
+        $this->handleAuthorization('update', $training);
+
         $training->load('form', 'tenant', 'organizer', 'trainables', 'tasks');
 
         return $this->inertiaResponse('Admin/People/EditTraining', [
@@ -212,6 +214,8 @@ class TrainingController extends AdminController
      */
     public function update(UpdateTrainingRequest $request, Training $training)
     {
+        $this->handleAuthorization('update', $training);
+
         $training->update($request->except('trainables', 'tasks'));
 
         $training->trainables()->delete();
@@ -230,6 +234,8 @@ class TrainingController extends AdminController
      */
     public function destroy(Training $training)
     {
+        $this->handleAuthorization('delete', $training);
+
         $training->delete();
 
         return redirect()->route('trainings.index')->with('success', 'Mokymų šablonas ištrintas');
