@@ -62,8 +62,8 @@ jobs:
           npm run docs:build
           tar -czf docs.tar.gz -C public/docs .
           
-      # Deploy to server
-      - name: Upload and run on server
+      # Upload build artifacts
+      - name: Upload build artifacts
         run: |
           echo "Uploading build artifacts..."
           scp build.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ vars.SITE_DIR }}/build.tar.gz
@@ -74,17 +74,25 @@ jobs:
           if [ -f docs.tar.gz ]; then
             scp docs.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ vars.SITE_DIR }}/docs.tar.gz
           fi
-          
-          echo "Applying changes on server..."
-          ssh -T ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ vars.SITE_DIR }} && git pull && \
-          rm -rf public/build && tar -xzf build.tar.gz && rm build.tar.gz && \
-          rm -rf vendor && tar -xzf vendor.tar.gz && rm vendor.tar.gz && \
-          if [ -f docs.tar.gz ]; then rm -rf public/docs/* && tar -xzf docs.tar.gz -C public/docs && rm docs.tar.gz; fi"
-          
-      # Optimize after upload
-      - name: After upload optimization
+
+      # Run deployment process
+      - name: Deploy to production
         run: |
-          ssh -T ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ vars.SITE_DIR }} && /opt/php83/bin/php /usr/local/bin/composer dump-autoload && /opt/php83/bin/php artisan optimize"
+          ssh -T ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ vars.SITE_DIR }} && \
+          git pull && \
+          /opt/php83/bin/php artisan deployment:run"
+
+      # Resume deployment if failed (optional recovery step)
+      - name: Resume deployment
+        if: failure()
+        run: |
+          echo "⚠️ Deployment failed, attempting to resume..."
+          ssh -T ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ vars.SITE_DIR }} && \
+          /opt/php83/bin/php artisan deployment:resume"
+          
+      # Clean up SSH keys
+      - name: Cleanup
+        run: |
           rm -rf ~/.ssh
       
       
