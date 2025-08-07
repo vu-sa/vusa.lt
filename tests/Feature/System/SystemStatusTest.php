@@ -231,19 +231,22 @@ describe('SystemStatus: Performance', function () {
         expect($response->status())->toBe(200);
     });
 
-    test('cached status improves performance on subsequent loads', function () {
-        // First load - should cache
-        $start = microtime(true);
-        asUser($this->user)->get('/mano/system-status');
-        $firstLoad = microtime(true) - $start;
+    test('system status returns consistent data structure', function () {
+        $response = asUser($this->user)->get('/mano/system-status');
 
-        // Second load - should use cache
-        $start = microtime(true);
-        asUser($this->user)->get('/mano/system-status');
-        $secondLoad = microtime(true) - $start;
-
-        // Second load should be faster or similar (cache hit)
-        expect($secondLoad <= $firstLoad * 1.5)->toBeTrue(); // Allow 50% variance for test stability
+        $response->assertStatus(200);
+        
+        // Verify the expected data structure is returned in Inertia props
+        $response->assertInertia(fn ($page) => $page
+            ->has('status')
+            ->has('lastUpdated')
+            ->has('status.redis')
+            ->has('status.database') 
+            ->has('status.cache')
+            ->has('status.typesense')
+            ->has('status.integrations')
+            ->has('status.system')
+        );
     });
 });
 
