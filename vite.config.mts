@@ -68,8 +68,8 @@ export default defineConfig(({ command }) => {
     }),
   ]
 
-  // Dev-only plugins - disabled for Storybook
-  const devPlugins = command !== 'test' && !process.env.STORYBOOK ? [
+  // Dev-only plugins - disabled for Storybook and builds
+  const devPlugins = command === 'serve' && !process.env.STORYBOOK ? [
     vueDevTools({
       appendTo: 'resources/js/app.ts',
     }),

@@ -21,6 +21,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SharepointFile newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SharepointFile newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SharepointFile query()
+ * @method static \Database\Factories\SharepointFileFactory factory($count = null, $state = [])
  *
  * @mixin \Eloquent
  */

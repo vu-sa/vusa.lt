@@ -87,3 +87,37 @@ export enum SearchableModelEnum {
   "DOCUMENT" = "document",
   "CALENDAR" = "calendar",
 }
+export enum SharepointConfigEnum {
+  "API_BASE_URL" = "https://graph.microsoft.com/v1.0/",
+  "DEFAULT_TIMEOUT" = "30",
+  "MAX_RETRIES" = "3",
+  "RETRY_DELAY_MS" = "1000",
+  "DEFAULT_BATCH_SIZE" = "20",
+}
+export enum SharepointFieldEnum {
+  "PADALINYS" = "Padalinys",
+  "TITLE" = "Title",
+  "DATE" = "Date",
+  "EFFECTIVE_DATE" = "Effective_x0020_Date",
+  "EXPIRATION_DATE" = "Expiration_x0020_Date0",
+  "LANGUAGE" = "Language",
+  "TURINYS" = "Turinys",
+  "SUMMARY" = "Summary",
+}
+export enum SharepointFolderEnum {
+  "GENERAL" = "General",
+  "PADALINIAI" = "Padaliniai",
+  "TYPES" = "Types",
+  "INSTITUTIONS" = "Institutions",
+  "MEETINGS" = "Meetings",
+}
+export enum SharepointPermissionTypeEnum {
+  "VIEW" = "view",
+  "EDIT" = "edit",
+  "OWNER" = "owner",
+}
+export enum SharepointScopeEnum {
+  "ANONYMOUS" = "anonymous",
+  "ORGANIZATION" = "organization",
+  "USERS" = "users",
+}

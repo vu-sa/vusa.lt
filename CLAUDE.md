@@ -173,6 +173,38 @@ Uses unified breadcrumb system with automatic lifecycle management.
 - **Factory data**: Always include `['lt' => '...', 'en' => '...']`
 - **PHPDoc for PHPStan**: Override auto-generated `@property` annotations for translatable fields from `array<array-key, mixed>|null` to `string|null` to enable clean property access (e.g., `$model->name` instead of `$model->getTranslation('name', app()->getLocale())`)
 
+### TypeScript & Documentation Guidelines
+
+#### JSDoc Usage (Keep It Simple)
+**✅ DO document**:
+- Complex business logic and algorithms
+- External API integrations and workarounds  
+- Non-obvious behavior or side effects
+- Deprecated functions (with replacement info)
+
+**❌ DON'T document**:
+- Simple functions where TypeScript types are self-explanatory
+- Getters/setters with obvious behavior
+- Internal utilities with clear names
+
+**Example**:
+```typescript
+/**
+ * Transforms Laravel pagination to TanStack format.
+ * Handles snake_case → camelCase conversion.
+ */
+export function transformPaginationData<T>(data: PaginatedModels<T>) { }
+
+// ❌ No need for JSDoc here - types are clear
+function getUserName(user: User): string { return user.name; }
+```
+
+#### Type Safety
+- **New code**: Avoid `any` - use `unknown`, specific interfaces, or `ApiResponse<T>`
+- **Existing code**: Replace `any` opportunistically when touching files
+- **External APIs**: Use provided global types: `ApiResponse<T>`, `FormEvent<T>`, `TableActionEvent<T>`
+- **Unknown data**: Prefer `unknown` over `any` for type safety
+
 ### IDE Helper Integration
 - **Automatic generation**: PHPDoc annotations are generated after `composer install/update`
 - **Manual generation**: Run `composer ide-helper` to regenerate type annotations
@@ -210,6 +242,33 @@ $user->assignRole(config('permission.super_admin_role_name'));
 - **Use Tailwind's hover/focus/responsive modifiers** instead of custom CSS media queries
 - **Prefer utility classes** like `hover:shadow-lg hover:scale-105` over custom hover effects
 - **Keep styles co-located** with components using class attributes
+
+### Managing Long Class Strings
+**✅ Recommended**: Use array syntax with logical grouping
+```vue
+<div 
+  :class="[
+    'flex items-center justify-between', // Layout
+    'bg-white dark:bg-zinc-800',        // Theme
+    'p-4 rounded-lg shadow-sm',         // Spacing & style
+    'hover:shadow-md transition-shadow' // Interactive
+  ]"
+>
+```
+
+**✅ Alternative**: Computed classes for complex logic
+```vue
+<script setup>
+const cardClasses = computed(() => [
+  'flex items-center',
+  isActive ? 'bg-blue-100' : 'bg-gray-100',
+  size === 'large' ? 'p-6' : 'p-4'
+])
+</script>
+<template>
+  <div :class="cardClasses">
+</template>
+```
 
 ### Examples:
 ```vue

@@ -38,6 +38,11 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Document newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Document query()
  *
+ * @property string $sync_status Status of SharePoint sync: pending, syncing, success, failed
+ * @property string|null $sync_error_message Error message from failed sync attempts
+ * @property int $sync_attempts Number of sync attempts made
+ * @property Carbon|null $last_sync_attempt_at Timestamp of last sync attempt
+ *
  * @mixin \Eloquent
  */
 class Document extends Model

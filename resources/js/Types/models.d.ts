@@ -59,10 +59,12 @@ declare global {
       // columns
       id: number
       alias?: string | null
-      name: string
-      description?: string | null
       created_at: string
       updated_at: string
+      name?: string[] | null
+      description?: string[] | null
+      // mutators
+      translations: unknown
       // relations
       pages?: Page[]
       news?: News[]
@@ -239,7 +241,7 @@ declare global {
       id: number
       registration_id: number
       form_field_id: number
-      response: string
+      response: string[]
       created_at: string
       updated_at: string
       // relations
