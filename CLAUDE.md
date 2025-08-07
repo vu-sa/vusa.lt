@@ -78,7 +78,34 @@ Uses unified breadcrumb system with automatic lifecycle management.
 - **No "admin." prefix in route names**: `route('studyPrograms.index')`
 
 ### Permission System
+
+The authorization system uses tenant-based permissions with role-based access control.
+
+#### Permission Structure
 **Format**: `{resource}.{action}.{scope}` (e.g., `news.update.padalinys`)
+
+- **Resource**: Plural model name (`news`, `users`, `documents`)
+- **Action**: Operation (`read`, `create`, `update`, `delete`)
+- **Scope**: Access context:
+  - `all`: Global access to all resources
+  - `own`: Access only to user's directly associated resources
+  - `padalinys`: Access to resources within user's tenant
+
+#### Authorization Flow
+1. **Super Admin Check**: Super admins automatically have all permissions
+2. **Direct User Permission Check**: Check if user has been directly assigned the permission
+3. **Duty-Based Permission Check**: Check permissions through user's duties and their roles
+4. **Scope Evaluation**: Access is granted based on the scope level
+
+#### Key Components
+- **ModelAuthorizer Service**: Core service with caching
+- **Permission Facade**: Clean interface for permission checks
+- **HasCommonChecks Trait**: Shared policy logic
+- **ModelPolicy Base Class**: Common policy functionality
+- **TenantPermission Middleware**: Route protection
+
+#### Vue Components
+Permission checks are available in Vue through `$page.props.auth.can` object.
 
 ### Translatable Models
 - **Admin interfaces**: Use `toFullArray()` for full translation objects
