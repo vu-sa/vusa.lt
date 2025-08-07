@@ -235,13 +235,13 @@ describe('SystemStatus: Performance', function () {
         $response = asUser($this->user)->get('/mano/system-status');
 
         $response->assertStatus(200);
-        
+
         // Verify the expected data structure is returned in Inertia props
         $response->assertInertia(fn ($page) => $page
             ->has('status')
             ->has('lastUpdated')
             ->has('status.redis')
-            ->has('status.database') 
+            ->has('status.database')
             ->has('status.cache')
             ->has('status.typesense')
             ->has('status.integrations')
