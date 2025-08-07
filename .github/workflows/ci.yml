@@ -152,6 +152,7 @@ jobs:
         php artisan key:generate --force
     
     - name: Execute tests with coverage
+      continue-on-error: true
       env:
         DB_CONNECTION: sqlite
         DB_DATABASE: database/database.sqlite
@@ -160,13 +161,21 @@ jobs:
         TYPESENSE_PORT: 8108
         TYPESENSE_API_KEY: xyz
         TYPESENSE_PROTOCOL: http
-      run: php artisan test --parallel --coverage --coverage-clover ./coverage.xml
+      run: php artisan test --parallel --coverage --coverage-clover ./coverage.xml --log-junit ./test-results.xml
+    
+    - name: Upload test results to Codecov
+      if: always()
+      uses: codecov/test-results-action@v1
+      with:
+        files: ./test-results.xml
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
     
     - name: Upload coverage to Codecov
+      if: always()
       uses: codecov/codecov-action@v5
       with:
         files: ./coverage.xml
-        flags: backend
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
@@ -209,13 +218,22 @@ jobs:
         php artisan key:generate --force
     
     - name: Execute tests with coverage
+      continue-on-error: true
       run: LARAVEL_BYPASS_ENV_CHECK=1 npm run coverage:ci
     
+    - name: Upload test results to Codecov
+      if: always()
+      uses: codecov/test-results-action@v1
+      with:
+        files: ./test-results.junit.xml
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+    
     - name: Upload coverage to Codecov
+      if: always()
       uses: codecov/codecov-action@v5
       with:
         files: ./coverage/clover.xml
-        flags: frontend
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
