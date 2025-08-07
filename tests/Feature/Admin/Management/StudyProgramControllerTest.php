@@ -381,7 +381,7 @@ describe('relationships', function () {
 
         expect($program->getTranslations('name'))->toBeArray();
         expect($program->getTranslations('name'))->toHaveKeys(['lt', 'en']);
-        expect($program->degree)->toBeIn(['BA', 'MA', 'PhD', 'INTEGRATED_STUDIES', 'PROFESSIONAL_PEDAGOGY', 'OTHER']);
+        expect($program->degree)->toBeIn(['BA', 'MA', 'PHD', 'INTEGRATED_STUDIES', 'PROFESSIONAL_PEDAGOGY', 'OTHER']);
     });
 });
 
