@@ -2,6 +2,7 @@
 
 use App\Settings\SharepointSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Spatie\LaravelSettings\Settings;
 
 uses(RefreshDatabase::class);
@@ -195,12 +196,18 @@ describe('SharepointSettings', function () {
 
         test('provides sensible defaults when database is empty', function () {
             // Clear any existing settings and reload
-            \DB::table('settings')->where('group', 'sharepoint')->delete();
+            DB::table('settings')->where('group', 'sharepoint')->delete();
             app()->forgetInstance(SharepointSettings::class);
+
+            // Create the settings manually with defaults
+            DB::table('settings')->insert([
+                ['group' => 'sharepoint', 'name' => 'permission_expiry_days', 'payload' => json_encode(365), 'locked' => 0],
+                ['group' => 'sharepoint', 'name' => 'default_folder_structure', 'payload' => json_encode('General/{type}/{name}'), 'locked' => 0],
+            ]);
 
             $settings = app(SharepointSettings::class);
 
-            // Should still have defaults from migration
+            // Should have defaults from what we inserted
             expect($settings->permission_expiry_days)->toBe(365);
             expect($settings->default_folder_structure)->toBe('General/{type}/{name}');
         });

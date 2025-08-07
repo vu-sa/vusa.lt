@@ -10,7 +10,7 @@ uses(RefreshDatabase::class);
 beforeEach(function () {
     $this->tenant = Tenant::query()->inRandomOrder()->first();
     $this->user = makeUser($this->tenant);
-    $this->admin = makeAdminForController('Form', $this->tenant);
+    $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
 });
 
 describe('unauthorized access', function () {
@@ -103,8 +103,10 @@ describe('authorized access', function () {
         Form::factory()->for($this->tenant)->create(['name' => ['lt' => 'My Form', 'en' => 'My Form']]);
         Form::factory()->for($otherTenant)->create(['name' => ['lt' => 'Other Form', 'en' => 'Other Form']]);
 
-        // Note: Super Admin sees all forms across tenants
-        asUser($this->admin)
+        // Use Super Admin user for cross-tenant access
+        $superAdmin = makeAdminUser();
+
+        asUser($superAdmin)
             ->get(route('forms.index'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -147,7 +149,9 @@ describe('authorized access', function () {
         $otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->first();
         $form = Form::factory()->for($otherTenant)->create();
 
-        asUser($this->admin)
+        $superAdmin = makeAdminUser();
+
+        asUser($superAdmin)
             ->get(route('forms.show', $form))
             ->assertStatus(200); // Super Admin can access any tenant's forms
     });
@@ -178,7 +182,9 @@ describe('authorized access', function () {
         $otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->first();
         $form = Form::factory()->for($otherTenant)->create();
 
-        asUser($this->admin)
+        $superAdmin = makeAdminUser();
+
+        asUser($superAdmin)
             ->get(route('forms.edit', $form))
             ->assertStatus(200); // Super Admin can access any tenant's forms
     });

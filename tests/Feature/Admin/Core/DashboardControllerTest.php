@@ -10,7 +10,7 @@ uses(RefreshDatabase::class);
 beforeEach(function () {
     $this->tenant = Tenant::query()->inRandomOrder()->first();
     $this->user = makeUser($this->tenant);
-    $this->admin = makeAdminForController('Dashboard', $this->tenant);
+    $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
 });
 
 describe('dashboard access', function () {

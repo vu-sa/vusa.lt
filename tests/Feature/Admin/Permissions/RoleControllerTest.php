@@ -10,7 +10,7 @@ uses(RefreshDatabase::class);
 beforeEach(function () {
     $this->tenant = Tenant::query()->inRandomOrder()->first();
     $this->user = makeUser($this->tenant);
-    $this->admin = makeTenantUser('Super Admin', $this->tenant);
+    $this->admin = makeAdminUser($this->tenant);
 });
 
 describe('role index', function () {
@@ -229,7 +229,7 @@ describe('role destroy', function () {
         asUser($this->admin)
             ->delete(route('roles.destroy', $role))
             ->assertStatus(302)
-            ->assertSessionHas('error');
+            ->assertSessionHas('info');
 
         $this->assertDatabaseHas('roles', [
             'id' => $role->id,
@@ -240,17 +240,21 @@ describe('role destroy', function () {
 describe('role permission management', function () {
     test('admin can sync permission group to role', function () {
         $role = Role::factory()->create();
-        // Create permissions manually since PermissionFactory doesn't exist
+
+        // Create permissions that match what the controller expects
         $permissions = collect();
-        for ($i = 1; $i <= 3; $i++) {
+        foreach (['create', 'read', 'update', 'delete'] as $ability) {
             $permissions->push(\App\Models\Permission::create([
-                'name' => "test.permission.{$i}",
+                'name' => "test.{$ability}.own",
                 'guard_name' => 'web',
             ]));
         }
 
         $data = [
-            'permissions' => $permissions->pluck('id')->toArray(),
+            'create' => 'own',
+            'read' => 'own',
+            'update' => 'own',
+            'delete' => 'own',
         ];
 
         asUser($this->admin)
@@ -276,17 +280,25 @@ describe('role permission management', function () {
             ->assertRedirect()
             ->assertSessionHas('success');
 
-        $this->assertDatabaseHas('role_duty', [
+        $this->assertDatabaseHas('model_has_roles', [
             'role_id' => $role->id,
-            'duty_id' => $duty->id,
+            'model_id' => $duty->id,
+            'model_type' => 'App\\Models\\Duty',
         ]);
     });
 
     test('admin can sync attachable types to role', function () {
         $role = Role::factory()->create();
 
+        // Create a Type record for Institution
+        $institutionType = \App\Models\Type::create([
+            'title' => ['en' => 'Institution', 'lt' => 'Institucija'],
+            'model_type' => 'App\\Models\\Institution',
+            'slug' => 'institution',
+        ]);
+
         $data = [
-            'attachable_types' => ['App\\Models\\Institution'],
+            'attachable_types' => [$institutionType->id],
         ];
 
         asUser($this->admin)
@@ -294,7 +306,10 @@ describe('role permission management', function () {
             ->assertRedirect()
             ->assertSessionHas('success');
 
-        expect($role->fresh()->attachable_types)->toContain('App\\Models\\Institution');
+        $this->assertDatabaseHas('role_can_attach_types', [
+            'role_id' => $role->id,
+            'type_id' => $institutionType->id,
+        ]);
     });
 });
 

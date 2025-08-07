@@ -68,8 +68,8 @@ describe('authorized access', function () {
             );
     });
 
-    test('super admin can access documents index', function () {
-        $admin = makeAdminForController('Document', $this->tenant);
+    test('admin can access documents index', function () {
+        $admin = makeTenantUserWithRole('Resource Manager', $this->tenant);
         Document::factory()->count(2)->create(['institution_id' => $this->institution->id]);
 
         $response = asUser($admin)->get(route('documents.index'));
@@ -160,12 +160,12 @@ describe('authorized access', function () {
     });
 
     test('super admin can delete documents from any tenant', function () {
-        $admin = makeAdminForController('Document', $this->tenant);
+        $superAdmin = makeAdminUser();
         $otherTenant = Tenant::factory()->create();
         $otherInstitution = Institution::factory()->create(['tenant_id' => $otherTenant->id]);
         $otherDocument = Document::factory()->create(['institution_id' => $otherInstitution->id]);
 
-        $response = asUser($admin)->delete(route('documents.destroy', $otherDocument));
+        $response = asUser($superAdmin)->delete(route('documents.destroy', $otherDocument));
         $response->assertRedirect();
 
         $this->assertDatabaseMissing('documents', ['id' => $otherDocument->id]);

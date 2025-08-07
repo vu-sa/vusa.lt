@@ -14,7 +14,7 @@ class SharepointFileableService
      */
     public function attachFileToFileable(SharepointFile $sharepointFile, SharepointFileableContract $fileable)
     {
-        $fileable->files()->attach($sharepointFile->id);
+        $fileable->files()->syncWithoutDetaching([$sharepointFile->id]);
 
         return $fileable;
     }

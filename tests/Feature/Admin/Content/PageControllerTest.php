@@ -10,11 +10,10 @@ uses(RefreshDatabase::class);
 beforeEach(function () {
     $this->tenant = Tenant::query()->inRandomOrder()->first();
     $this->user = makeUser($this->tenant);
-    $this->admin = makeAdminForController('Page', $this->tenant);
+    $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
 
     $this->page = Page::factory()->for($this->tenant)->create([
-        'title' => ['lt' => 'Test puslapis', 'en' => 'Test page'],
-        'content' => ['lt' => 'Test turinys', 'en' => 'Test content'],
+        'title' => 'Test puslapis',
         'permalink' => 'test-page',
         'lang' => 'lt',
     ]);
@@ -70,12 +69,9 @@ describe('authorized access', function () {
             ->get(route('pages.index'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Content/IndexPage')
+                ->component('Admin/Content/IndexPages')
                 ->has('pages')
                 ->has('pages.data')
-                ->has('pages.meta')
-                ->has('filters')
-                ->has('sorting')
             );
     });
 
@@ -102,11 +98,10 @@ describe('authorized access', function () {
             ->assertSessionHas('success');
 
         $this->assertDatabaseHas('pages', [
-            'title->lt' => $validData['title']['lt'],
-            'title->en' => $validData['title']['en'],
-            'content->lt' => $validData['content']['lt'],
-            'content->en' => $validData['content']['en'],
+            'title' => $validData['title'],
             'permalink' => $validData['permalink'],
+            'lang' => $validData['lang'],
+            'is_active' => $validData['is_active'],
             'tenant_id' => $this->tenant->id,
         ]);
     });
@@ -135,19 +130,17 @@ describe('authorized access', function () {
 
     test('can update page with valid data', function () {
         $updateData = getControllerTestData('Page')['valid'];
-        $updateData['title'] = ['lt' => 'Atnaujintas puslapis', 'en' => 'Updated page'];
+        $updateData['title'] = 'Atnaujintas puslapis';
         $updateData['tenant_id'] = $this->tenant->id;
 
         asUser($this->admin)
             ->patch(route('pages.update', $this->page), $updateData)
             ->assertStatus(302)
-            ->assertRedirect(route('pages.index'))
             ->assertSessionHas('success');
 
         $this->assertDatabaseHas('pages', [
             'id' => $this->page->id,
-            'title->lt' => 'Atnaujintas puslapis',
-            'title->en' => 'Updated page',
+            'title' => 'Atnaujintas puslapis',
         ]);
     });
 
@@ -158,12 +151,12 @@ describe('authorized access', function () {
         asUser($this->admin)
             ->patch(route('pages.update', $this->page), $invalidData)
             ->assertStatus(302)
-            ->assertSessionHasErrors(getControllerValidationErrors('Page'));
+            ->assertSessionHasErrors(['title', 'content.parts', 'lang', 'is_active']);
 
         // Original data should remain unchanged
         $this->assertDatabaseHas('pages', [
             'id' => $this->page->id,
-            'title->lt' => 'Test puslapis',
+            'title' => $this->page->title,
         ]);
     });
 
@@ -172,9 +165,9 @@ describe('authorized access', function () {
             ->delete(route('pages.destroy', $this->page))
             ->assertStatus(302)
             ->assertRedirect(route('pages.index'))
-            ->assertSessionHas('success');
+            ->assertSessionHas('info');
 
-        $this->assertDatabaseMissing('pages', [
+        $this->assertSoftDeleted('pages', [
             'id' => $this->page->id,
         ]);
     });
@@ -184,7 +177,7 @@ describe('filtering and search', function () {
     beforeEach(function () {
         // Create additional pages for testing
         Page::factory()->for($this->tenant)->create([
-            'title' => ['lt' => 'Another page', 'en' => 'Another page EN'],
+            'title' => 'Another page',
             'permalink' => 'another-page',
             'lang' => 'en',
         ]);
@@ -195,7 +188,7 @@ describe('filtering and search', function () {
             ->get(route('pages.index', ['search' => 'Test']))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Content/IndexPage')
+                ->component('Admin/Content/IndexPages')
                 ->has('pages.data')
                 ->where('pages.data', function ($data) {
                     return collect($data)->contains(function ($page) {
@@ -207,11 +200,14 @@ describe('filtering and search', function () {
 
     test('can filter pages by language', function () {
         asUser($this->admin)
-            ->get(route('pages.index', ['lang' => 'lt']))
+            ->get(route('pages.index', ['filters' => json_encode(['lang' => ['en']])]))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Content/IndexPage')
+                ->component('Admin/Content/IndexPages')
                 ->has('pages.data')
+                ->where('pages.data', function ($data) {
+                    return collect($data)->every(fn ($page) => $page['lang'] === 'en');
+                })
             );
     });
 });
@@ -230,8 +226,25 @@ describe('edge cases and business logic', function () {
 
     test('page handles special characters in content', function () {
         $specialCharsData = getControllerTestData('Page')['valid'];
-        $specialCharsData['title'] = ['lt' => 'Puslapis su šiaudiniais žodžiais', 'en' => 'Page with special chars & symbols'];
-        $specialCharsData['content'] = ['lt' => 'Turinys su <b>HTML</b> žymėmis', 'en' => 'Content with <b>HTML</b> tags'];
+        $specialCharsData['title'] = 'Puslapis su šiaudiniais žodžiais';
+        $specialCharsData['content'] = [
+            'parts' => [
+                [
+                    'type' => 'tiptap',
+                    'json_content' => [
+                        'type' => 'doc',
+                        'content' => [
+                            [
+                                'type' => 'paragraph',
+                                'content' => [
+                                    ['type' => 'text', 'text' => 'Turinys su šiaudiniais žodžiais'],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ];
         $specialCharsData['permalink'] = 'special-chars-page';
         $specialCharsData['tenant_id'] = $this->tenant->id;
 
@@ -241,8 +254,8 @@ describe('edge cases and business logic', function () {
             ->assertRedirect(route('pages.index'));
 
         $this->assertDatabaseHas('pages', [
-            'title->lt' => 'Puslapis su šiaudiniais žodžiais',
-            'title->en' => 'Page with special chars & symbols',
+            'title' => 'Puslapis su šiaudiniais žodžiais',
+            'permalink' => 'special-chars-page',
         ]);
     });
 });
@@ -251,7 +264,7 @@ describe('tenant isolation', function () {
     beforeEach(function () {
         $this->otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->first();
         $this->otherPage = Page::factory()->for($this->otherTenant)->create();
-        $this->otherAdmin = makeAdminForController('Page', $this->otherTenant);
+        $this->otherAdmin = makeTenantUserWithRole('Communication Coordinator', $this->otherTenant);
     });
 
     test('user only sees pages from their tenant', function () {
@@ -259,7 +272,7 @@ describe('tenant isolation', function () {
             ->get(route('pages.index'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Content/IndexPage')
+                ->component('Admin/Content/IndexPages')
                 ->has('pages.data')
                 ->where('pages.data', function ($data) {
                     return collect($data)->every(fn ($page) => $page['tenant_id'] === $this->tenant->id);
@@ -270,7 +283,7 @@ describe('tenant isolation', function () {
     test('cannot access other tenant page', function () {
         asUser($this->admin)
             ->get(route('pages.edit', $this->otherPage))
-            ->assertStatus(404); // Should not find the page
+            ->assertStatus(403); // Authorization failure - cannot access other tenant's page
     });
 
     test('cannot update other tenant page', function () {
@@ -279,6 +292,6 @@ describe('tenant isolation', function () {
 
         asUser($this->admin)
             ->patch(route('pages.update', $this->otherPage), $updateData)
-            ->assertStatus(404); // Should not find the page
+            ->assertStatus(403); // Authorization failure - cannot update other tenant's page
     });
 });

@@ -26,7 +26,7 @@ class Kernel extends ConsoleKernel
     {
         // Daily SharePoint document sync - runs at 2 AM to avoid peak usage
         $schedule->job(new SyncStaleDocumentsJob)
-            ->daily('02:00')
+            ->dailyAt('02:00')
             ->name('sync-stale-documents')
             ->withoutOverlapping(30); // Prevent overlapping runs, timeout after 30 minutes
 

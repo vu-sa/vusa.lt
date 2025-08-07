@@ -7,6 +7,9 @@ use Illuminate\Support\Facades\Log;
 
 describe('SharePoint Service Robustness', function () {
     beforeEach(function () {
+        // Mock Laravel Sleep to prevent actual delays in tests
+        \Illuminate\Support\Sleep::fake();
+
         $this->settings = Mockery::mock(SharepointSettings::class);
         $this->settings->permission_expiry_days = 365;
 

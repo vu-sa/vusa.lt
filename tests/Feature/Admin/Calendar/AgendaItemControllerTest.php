@@ -16,7 +16,7 @@ beforeEach(function () {
     $this->tenant = Tenant::query()->inRandomOrder()->first();
 
     // Create an admin user with Communication Coordinator role
-    $this->admin = makeAdminForController('AgendaItem', $this->tenant);
+    $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
 
     // Create an institution for testing
     $this->institution = Institution::factory()->for($this->tenant)->create();

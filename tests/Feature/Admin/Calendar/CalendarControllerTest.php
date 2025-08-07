@@ -196,8 +196,8 @@ describe('authorized access', function () {
     });
 
     test('super admin can access all calendar functions', function () {
-        $admin = makeAdminForController('Calendar', $this->tenant);
-        $calendar = Calendar::factory()->create();
+        $admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+        $calendar = Calendar::factory()->for($this->tenant)->create();
 
         // Test index access
         $response = asUser($admin)->get(route('calendar.index'));
@@ -207,7 +207,7 @@ describe('authorized access', function () {
         $response = asUser($admin)->get(route('calendar.create'));
         $response->assertStatus(200);
 
-        // Test edit access - super admin can access calendars from any tenant
+        // Test edit access - admin can access calendars from their tenant
         $response = asUser($admin)->get(route('calendar.edit', $calendar));
         $response->assertStatus(200);
     });

@@ -10,7 +10,7 @@ uses(RefreshDatabase::class);
 beforeEach(function () {
     $this->tenant = Tenant::query()->inRandomOrder()->first();
     $this->user = makeUser($this->tenant);
-    $this->admin = makeAdminForController('Permission', $this->tenant);
+    $this->admin = makeAdminUser($this->tenant);
 });
 
 describe('permission index', function () {
@@ -46,6 +46,7 @@ describe('permission index', function () {
 
     test('permission index shows all permissions regardless of tenant', function () {
         // Permissions are global, not tenant-specific
+        Permission::query()->delete(); // Clear existing permissions
         Permission::factory()->count(5)->create();
 
         asUser($this->admin)
@@ -79,6 +80,7 @@ describe('permission security', function () {
 
 describe('permission data integrity', function () {
     test('permissions are displayed with correct structure', function () {
+        Permission::query()->delete(); // Clear existing permissions
         $permission = Permission::factory()->create([
             'name' => 'test.permission',
             'guard_name' => 'web',
@@ -109,6 +111,7 @@ describe('permission data integrity', function () {
 
 describe('permission filtering and search', function () {
     test('permission index supports basic pagination', function () {
+        Permission::query()->delete(); // Clear existing permissions
         Permission::factory()->count(25)->create();
 
         asUser($this->admin)
@@ -135,6 +138,7 @@ describe('permission filtering and search', function () {
 
 describe('permission system integration', function () {
     test('permissions are properly formatted for frontend', function () {
+        Permission::query()->delete(); // Clear existing permissions
         $permission = Permission::factory()->create([
             'name' => 'manage.users',
             'guard_name' => 'web',

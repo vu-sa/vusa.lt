@@ -76,10 +76,10 @@ describe('SharepointFileService', function () {
         });
 
         test('throws exception for Institution without tenant', function () {
-            $institution = Institution::factory()->make(['name' => 'Test']);
+            $institution = Institution::factory()->make(['name' => 'Test', 'tenant_id' => null]);
 
             expect(fn () => SharepointFileService::pathForFileableDriveItem($institution))
-                ->toThrow(\Exception::class, 'Institution does not have a tenant');
+                ->toThrow(\Exception::class, 'Institution does not have a tenant. Tenant must be assigned.');
         });
 
         test('generates correct path for Meeting model', function () {
@@ -87,14 +87,13 @@ describe('SharepointFileService', function () {
                 'name' => 'Test Institution',
             ]);
 
-            $meeting = Meeting::factory()->make([
+            $meeting = Meeting::factory()->create([
                 'title' => 'Test Meeting',
                 'start_time' => Carbon::create(2023, 6, 15, 14, 30),
             ]);
 
-            // Mock the institutions relationship
-            $meeting->setRelation('institutions', collect([$institution]));
-            $institution->setRelation('tenant', $this->tenant);
+            // Create real relationship in the database
+            $meeting->institutions()->attach($institution->id);
 
             $path = SharepointFileService::pathForFileableDriveItem($meeting);
 
@@ -106,16 +105,18 @@ describe('SharepointFileService', function () {
             $meeting->setRelation('institutions', collect([]));
 
             expect(fn () => SharepointFileService::pathForFileableDriveItem($meeting))
-                ->toThrow(\Exception::class, 'Meeting does not have an institution');
+                ->toThrow(\Exception::class, 'Meeting does not have an institution. Institution must be assigned.');
         });
 
         test('throws exception for Meeting institution without tenant', function () {
-            $institutionWithoutTenant = Institution::factory()->make(['name' => 'Test']);
-            $meeting = Meeting::factory()->make(['title' => 'Test Meeting']);
-            $meeting->setRelation('institutions', collect([$institutionWithoutTenant]));
+            $institutionWithoutTenant = Institution::factory()->create(['name' => 'Test', 'tenant_id' => null]);
+            $meeting = Meeting::factory()->create(['title' => 'Test Meeting']);
+
+            // Attach the institution to the meeting via the pivot table
+            $meeting->institutions()->attach($institutionWithoutTenant->id);
 
             expect(fn () => SharepointFileService::pathForFileableDriveItem($meeting))
-                ->toThrow(\Exception::class, 'Institution does not have a tenant');
+                ->toThrow(\Exception::class, 'Institution does not have a tenant. Tenant must be assigned.');
         });
 
         test('uses SharepointFolderEnum constants', function () {
@@ -143,13 +144,13 @@ describe('SharepointFileService', function () {
         test('formats meeting datetime correctly', function () {
             $institution = Institution::factory()->for($this->tenant)->create();
 
-            $meeting = Meeting::factory()->make([
+            $meeting = Meeting::factory()->create([
                 'title' => 'Test Meeting',
                 'start_time' => Carbon::create(2023, 12, 25, 9, 15, 30), // Christmas morning
             ]);
 
-            $meeting->setRelation('institutions', collect([$institution]));
-            $institution->setRelation('tenant', $this->tenant);
+            // Create real relationship in the database
+            $meeting->institutions()->attach($institution->id);
 
             $path = SharepointFileService::pathForFileableDriveItem($meeting);
 

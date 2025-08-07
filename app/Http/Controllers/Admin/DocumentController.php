@@ -11,7 +11,6 @@ use App\Jobs\SyncDocumentFromSharePointJob;
 use App\Models\Document;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\SharepointGraphService;
-use App\Services\TanstackTableService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Context;
 
@@ -19,7 +18,7 @@ class DocumentController extends AdminController
 {
     use HasTanstackTables;
 
-    public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService) {}
+    public function __construct(public Authorizer $authorizer) {}
 
     /**
      * Display a listing of the resource.

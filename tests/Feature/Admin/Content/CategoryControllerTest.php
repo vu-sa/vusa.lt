@@ -10,7 +10,7 @@ uses(RefreshDatabase::class);
 beforeEach(function () {
     $this->tenant = Tenant::query()->inRandomOrder()->first();
     $this->user = makeUser($this->tenant);
-    $this->admin = makeAdminForController('Category', $this->tenant);
+    $this->admin = makeTenantUserWithRole('Global Communication Coordinator', $this->tenant);
 
     $this->category = Category::factory()->create([
         'name' => ['lt' => 'Test kategorija', 'en' => 'Test category'],
@@ -257,7 +257,7 @@ describe('global access', function () {
     beforeEach(function () {
         $this->otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->first();
         $this->otherCategory = Category::factory()->create();
-        $this->otherAdmin = makeAdminForController('Category', $this->otherTenant);
+        $this->otherAdmin = makeTenantUserWithRole('Global Communication Coordinator', $this->otherTenant);
     });
 
     test('user can see all categories since they are global', function () {

@@ -58,7 +58,7 @@ describe('unauthorized access', function () {
 
 describe('authorized access', function () {
     beforeEach(function () {
-        $this->admin = makeAdminForController('User', $this->tenant);
+        $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
     });
 
     test('can index users', function () {
@@ -103,7 +103,7 @@ describe('authorized access', function () {
     });
 
     test('can access user edit page', function () {
-        $user = User::factory()->create();
+        $user = makeUser($this->tenant);
 
         $response = asUser($this->admin)->get(route('users.edit', $user));
 
@@ -116,7 +116,7 @@ describe('authorized access', function () {
     });
 
     test('can update user', function () {
-        $user = User::factory()->create();
+        $user = makeUser($this->tenant);
 
         $updateData = [
             'name' => 'Updated User',
@@ -136,7 +136,7 @@ describe('authorized access', function () {
     });
 
     test('can delete user', function () {
-        $user = User::factory()->create();
+        $user = makeUser($this->tenant);
 
         $response = asUser($this->admin)->delete(route('users.destroy', $user));
 
@@ -150,7 +150,7 @@ describe('authorized access', function () {
 
 describe('validation', function () {
     beforeEach(function () {
-        $this->admin = makeAdminForController('User', $this->tenant);
+        $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
     });
 
     test('requires name for store', function () {
@@ -194,7 +194,7 @@ describe('validation', function () {
     });
 
     test('requires name for update', function () {
-        $user = User::factory()->create();
+        $user = makeUser($this->tenant);
 
         $response = asUser($this->admin)->put(route('users.update', $user), [
             'email' => 'updated@example.com',
@@ -205,8 +205,10 @@ describe('validation', function () {
     });
 
     test('requires unique email for update', function () {
-        $existingUser = User::factory()->create(['email' => 'existing@example.com']);
-        $user = User::factory()->create(['email' => 'user@example.com']);
+        $existingUser = makeUser($this->tenant);
+        $existingUser->update(['email' => 'existing@example.com']);
+        $user = makeUser($this->tenant);
+        $user->update(['email' => 'user@example.com']);
 
         $response = asUser($this->admin)->put(route('users.update', $user), [
             'name' => 'Updated User',
@@ -220,7 +222,7 @@ describe('validation', function () {
 
 describe('relationships', function () {
     beforeEach(function () {
-        $this->admin = makeAdminForController('User', $this->tenant);
+        $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
     });
 
     test('user has proper model structure', function () {

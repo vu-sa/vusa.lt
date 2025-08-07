@@ -59,7 +59,7 @@ describe('unauthorized access', function () {
 
 describe('authorized access', function () {
     beforeEach(function () {
-        $this->admin = makeAdminForController('Institution', $this->tenant);
+        $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
     });
 
     test('can index institutions', function () {
@@ -149,7 +149,7 @@ describe('authorized access', function () {
 
 describe('validation', function () {
     beforeEach(function () {
-        $this->admin = makeAdminForController('Institution', $this->tenant);
+        $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
     });
 
     test('requires name for store', function () {
@@ -236,7 +236,7 @@ describe('validation', function () {
 
 describe('relationships', function () {
     beforeEach(function () {
-        $this->admin = makeAdminForController('Institution', $this->tenant);
+        $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
     });
 
     test('institution belongs to tenant', function () {
@@ -261,19 +261,14 @@ describe('relationships', function () {
     });
 
     test('cannot edit institution from different tenant', function () {
-        // Since institutions don't seem to have strict tenant isolation at the route level,
-        // let's test that Super Admin can access any institution (which is expected behavior)
+        // Test that a regular tenant user cannot edit an institution from a different tenant
         $otherTenant = Tenant::factory()->create();
         $otherInstitution = Institution::factory()->create(['tenant_id' => $otherTenant->id]);
 
+        // Use the admin from OUR tenant (this.tenant) trying to access OTHER tenant's institution
         $response = asUser($this->admin)->get(route('institutions.edit', $otherInstitution));
 
-        // Super Admin should be able to edit institutions from any tenant
-        $response->assertStatus(200)
-            ->assertInertia(fn ($page) => $page
-                ->component('Admin/People/EditInstitution')
-                ->has('institution')
-                ->where('institution.id', $otherInstitution->id)
-            );
+        // Regular tenant user should be forbidden from accessing other tenant's institutions
+        $response->assertStatus(403);
     });
 });

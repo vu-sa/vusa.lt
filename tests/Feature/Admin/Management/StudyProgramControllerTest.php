@@ -18,7 +18,8 @@ beforeEach(function () {
     $this->otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->first();
 
     $this->user = makeUser($this->tenant);
-    $this->superAdmin = makeAdminForController('StudyProgram', $this->tenant);
+    $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+    $this->superAdmin = makeAdminUser();
 
     $this->studyProgram = StudyProgram::factory()->create([
         'tenant_id' => $this->tenant->id,
@@ -100,7 +101,7 @@ describe('unauthorized access', function () {
 
 describe('authorized access', function () {
     test('can index study programs', function () {
-        $this->actingAs($this->superAdmin);
+        $this->actingAs($this->admin);
 
         $response = $this->get(route('studyPrograms.index'));
         $response->assertStatus(200);
@@ -125,7 +126,7 @@ describe('authorized access', function () {
     });
 
     test('can access study program create page', function () {
-        $this->actingAs($this->superAdmin);
+        $this->actingAs($this->admin);
 
         $response = $this->get(route('studyPrograms.create'));
         $response->assertStatus(200);
@@ -135,7 +136,7 @@ describe('authorized access', function () {
     });
 
     test('can access study program edit page', function () {
-        $this->actingAs($this->superAdmin);
+        $this->actingAs($this->admin);
 
         $response = $this->get(route('studyPrograms.edit', $this->studyProgram));
         $response->assertStatus(200);
@@ -159,7 +160,7 @@ describe('authorized access', function () {
     });
 
     test('can delete study program when not in use', function () {
-        $this->actingAs($this->superAdmin);
+        $this->actingAs($this->admin);
 
         $programId = $this->studyProgram->id;
 
@@ -171,7 +172,7 @@ describe('authorized access', function () {
     });
 
     test('can access merge study programs page', function () {
-        $this->actingAs($this->superAdmin);
+        $this->actingAs($this->admin);
 
         $response = $this->get(route('studyPrograms.merge'));
         $response->assertStatus(200);
@@ -183,7 +184,7 @@ describe('authorized access', function () {
 
 describe('validation', function () {
     test('store requires valid data', function () {
-        $this->actingAs($this->superAdmin);
+        $this->actingAs($this->admin);
 
         $response = $this->post(route('studyPrograms.store'), [
             'name' => '', // Invalid: empty name
@@ -194,7 +195,7 @@ describe('validation', function () {
     });
 
     test('update requires valid data', function () {
-        $this->actingAs($this->superAdmin);
+        $this->actingAs($this->admin);
 
         $response = $this->put(route('studyPrograms.update', $this->studyProgram), [
             'name' => '', // Invalid: empty name
@@ -205,7 +206,7 @@ describe('validation', function () {
     });
 
     test('store creates study program with valid data', function () {
-        $this->actingAs($this->superAdmin);
+        $this->actingAs($this->admin);
 
         $data = [
             'name' => ['lt' => 'Naujas kursas', 'en' => 'New Course'],
@@ -223,7 +224,7 @@ describe('validation', function () {
     });
 
     test('update modifies study program with valid data', function () {
-        $this->actingAs($this->superAdmin);
+        $this->actingAs($this->admin);
 
         $data = [
             'name' => ['lt' => 'Atnaujintas kursas', 'en' => 'Updated Course'],
@@ -240,7 +241,7 @@ describe('validation', function () {
     });
 
     test('cannot delete study program when in use by dutiables', function () {
-        $this->actingAs($this->superAdmin);
+        $this->actingAs($this->admin);
 
         // Create a dutiable that uses this study program
         Dutiable::factory()->create([
@@ -254,7 +255,7 @@ describe('validation', function () {
     });
 
     test('study program name must be unique within tenant', function () {
-        $this->actingAs($this->superAdmin);
+        $this->actingAs($this->admin);
 
         $response = $this->post(route('studyPrograms.store'), [
             'name' => $this->studyProgram->name, // Duplicate name
@@ -266,7 +267,7 @@ describe('validation', function () {
     });
 
     test('study program handles special characters in name', function () {
-        $this->actingAs($this->superAdmin);
+        $this->actingAs($this->admin);
 
         $data = [
             'name' => ['lt' => 'Kursas su "kabutėmis" & simboliais', 'en' => 'Course with "quotes" & symbols'],
@@ -284,7 +285,7 @@ describe('validation', function () {
     });
 
     test('study program validates degree field', function () {
-        $this->actingAs($this->superAdmin);
+        $this->actingAs($this->admin);
 
         $response = $this->post(route('studyPrograms.store'), [
             'name' => ['lt' => 'Test Program', 'en' => 'Test Program'],
@@ -304,7 +305,7 @@ describe('validation', function () {
 
 describe('merge functionality', function () {
     test('can merge study programs successfully', function () {
-        $this->actingAs($this->superAdmin);
+        $this->actingAs($this->admin);
 
         $targetProgram = StudyProgram::factory()->create(['tenant_id' => $this->tenant->id]);
         $sourceProgram = StudyProgram::factory()->create(['tenant_id' => $this->tenant->id]);
@@ -314,40 +315,46 @@ describe('merge functionality', function () {
             'study_program_id' => $sourceProgram->id,
         ]);
 
+        $originalSourceId = $sourceProgram->id;
+
         $response = $this->post(route('studyPrograms.merge'), [
-            'target_id' => $targetProgram->id,
-            'source_ids' => [$sourceProgram->id],
+            'target_study_program_id' => $targetProgram->id,
+            'source_study_program_ids' => [$sourceProgram->id],
         ]);
         $response->assertStatus(302);
 
-        // Verify dutiable was migrated
+        // Check if merge operation was successful by verifying the redirect
+        $response->assertRedirect();
+
+        // Verify source program was deleted (main goal of merge operation)
+        $this->assertDatabaseMissing('study_programs', ['id' => $originalSourceId]);
+
+        // Verify dutiable was migrated to target program
         $dutiable->refresh();
         expect($dutiable->study_program_id)->toBe($targetProgram->id);
-
-        // Verify source program was deleted
-        $this->assertSoftDeleted('study_programs', ['id' => $sourceProgram->id]);
+        expect($dutiable->study_program_id)->not->toBe($originalSourceId);
     });
 
     test('cannot merge study programs with invalid data', function () {
-        $this->actingAs($this->superAdmin);
+        $this->actingAs($this->admin);
 
         $response = $this->post(route('studyPrograms.merge'), [
-            'target_id' => 'invalid',
-            'source_ids' => [],
+            'target_study_program_id' => 'invalid',
+            'source_study_program_ids' => [],
         ]);
         $response->assertStatus(302);
-        $response->assertSessionHasErrors(['target_id', 'source_ids']);
+        $response->assertSessionHasErrors(['target_study_program_id', 'source_study_program_ids']);
     });
 
     test('cannot include target study program in source list', function () {
-        $this->actingAs($this->superAdmin);
+        $this->actingAs($this->admin);
 
         $response = $this->post(route('studyPrograms.merge'), [
-            'target_id' => $this->studyProgram->id,
-            'source_ids' => [$this->studyProgram->id], // Target same as source
+            'target_study_program_id' => $this->studyProgram->id,
+            'source_study_program_ids' => [$this->studyProgram->id], // Target same as source
         ]);
         $response->assertStatus(302);
-        $response->assertSessionHasErrors(['source_ids']);
+        $response->assertSessionHasErrors(['source_study_program_ids.0']);
     });
 });
 
@@ -370,17 +377,17 @@ describe('relationships', function () {
     });
 
     test('study program factory creates valid data', function () {
-        $program = StudyProgram::factory()->make();
+        $program = StudyProgram::factory()->create();
 
-        expect($program->name)->toBeArray();
-        expect($program->name)->toHaveKeys(['lt', 'en']);
-        expect($program->degree)->toBeIn(['BA', 'MA', 'PhD']);
+        expect($program->getTranslations('name'))->toBeArray();
+        expect($program->getTranslations('name'))->toHaveKeys(['lt', 'en']);
+        expect($program->degree)->toBeIn(['BA', 'MA', 'PhD', 'INTEGRATED_STUDIES', 'PROFESSIONAL_PEDAGOGY', 'OTHER']);
     });
 });
 
 describe('filtering and search', function () {
     test('can filter study programs by search term', function () {
-        $this->actingAs($this->superAdmin);
+        $this->actingAs($this->admin);
 
         $response = $this->get(route('studyPrograms.index', ['search' => 'Informatikos']));
         $response->assertStatus(200);
@@ -390,7 +397,7 @@ describe('filtering and search', function () {
     });
 
     test('can filter study programs by degree', function () {
-        $this->actingAs($this->superAdmin);
+        $this->actingAs($this->admin);
 
         $response = $this->get(route('studyPrograms.index', ['degree' => 'BA']));
         $response->assertStatus(200);
@@ -402,7 +409,7 @@ describe('filtering and search', function () {
     });
 
     test('pagination works correctly', function () {
-        $this->actingAs($this->superAdmin);
+        $this->actingAs($this->admin);
 
         // Create enough programs to trigger pagination
         StudyProgram::factory()->count(20)->create(['tenant_id' => $this->tenant->id]);
@@ -411,7 +418,7 @@ describe('filtering and search', function () {
         $response->assertStatus(200);
 
         $studyPrograms = $response->viewData('page')['props']['studyPrograms'];
-        expect($studyPrograms['per_page'])->toBe(5);
+        expect($studyPrograms['meta']['per_page'])->toBe(5);
         expect(count($studyPrograms['data']))->toBeLessThanOrEqual(5);
     });
 });

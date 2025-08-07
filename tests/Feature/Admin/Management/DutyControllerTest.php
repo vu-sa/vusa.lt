@@ -62,7 +62,7 @@ describe('authorized access', function () {
     });
 
     test('super admin can access duties index', function () {
-        $admin = makeAdminForController('Duty', $this->tenant);
+        $admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
         $response = asUser($admin)->get(route('duties.index'));
         $response->assertStatus(200);
     });
@@ -89,7 +89,7 @@ describe('authorized access', function () {
     });
 
     test('super admin can create new duty', function () {
-        $admin = makeAdminForController('Duty', $this->tenant);
+        $admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
         $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
 
         $response = asUser($admin)->post(route('duties.store'), [
@@ -170,7 +170,7 @@ describe('authorized access', function () {
 
 describe('validation', function () {
     test('requires name for store', function () {
-        $admin = makeAdminForController('Duty', $this->tenant);
+        $admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
         $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
 
         $response = asUser($admin)->post(route('duties.store'), [
@@ -184,7 +184,7 @@ describe('validation', function () {
     });
 
     test('requires institution_id for store', function () {
-        $admin = makeAdminForController('Duty', $this->tenant);
+        $admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
 
         $response = asUser($admin)->post(route('duties.store'), [
             'name' => ['lt' => 'Test Duty', 'en' => 'Test Duty'],
@@ -197,7 +197,7 @@ describe('validation', function () {
     });
 
     test('requires contacts_grouping for store', function () {
-        $admin = makeAdminForController('Duty', $this->tenant);
+        $admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
         $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
 
         $response = asUser($admin)->post(route('duties.store'), [
@@ -211,7 +211,7 @@ describe('validation', function () {
     });
 
     test('requires valid email format for store', function () {
-        $admin = makeAdminForController('Duty', $this->tenant);
+        $admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
         $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
 
         $response = asUser($admin)->post(route('duties.store'), [
@@ -226,7 +226,7 @@ describe('validation', function () {
     });
 
     test('requires name for update', function () {
-        $admin = makeAdminForController('Duty', $this->tenant);
+        $admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
 
         $response = asUser($admin)->put(route('duties.update', $this->dutyManagerDuty), [
             'institution_id' => $this->dutyManagerDuty->institution_id,
@@ -244,7 +244,7 @@ describe('validation', function () {
     });
 
     test('can add places_to_occupy validation for store', function () {
-        $admin = makeAdminForController('Duty', $this->tenant);
+        $admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
         $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
 
         // Test that places_to_occupy accepts valid integer

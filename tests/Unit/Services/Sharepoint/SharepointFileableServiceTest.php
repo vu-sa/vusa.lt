@@ -21,7 +21,11 @@ describe('SharepointFileableService', function () {
             $result = $this->service->attachFileToFileable($sharepointFile, $institution);
 
             expect($result)->toBe($institution);
-            expect($institution->files)->toContain($sharepointFile);
+
+            // Refresh the relationship to check attachment worked
+            $institution->refresh();
+            $institution->load('files');
+            expect($institution->files->pluck('id'))->toContain($sharepointFile->id);
         });
 
         test('throws exception for model without HasSharepointFiles trait', function () {
@@ -29,7 +33,7 @@ describe('SharepointFileableService', function () {
             $modelWithoutTrait = new class extends Model {};
 
             expect(fn () => $this->service->attachFileToFileable($sharepointFile, $modelWithoutTrait))
-                ->toThrow(\InvalidArgumentException::class, 'Model does not have HasSharepointFiles trait');
+                ->toThrow(\TypeError::class);
         });
 
         test('works with different model types that have the trait', function () {
@@ -39,7 +43,11 @@ describe('SharepointFileableService', function () {
             $result = $this->service->attachFileToFileable($sharepointFile, $institution);
 
             expect($result)->toBe($institution);
-            expect($institution->files)->toContain($sharepointFile);
+
+            // Refresh the relationship to check attachment worked
+            $institution->refresh();
+            $institution->load('files');
+            expect($institution->files->pluck('id'))->toContain($sharepointFile->id);
         });
 
         test('handles multiple file attachments', function () {
@@ -50,9 +58,12 @@ describe('SharepointFileableService', function () {
             $this->service->attachFileToFileable($sharepointFile1, $institution);
             $this->service->attachFileToFileable($sharepointFile2, $institution);
 
+            // Refresh the relationship to check attachments worked
+            $institution->refresh();
+            $institution->load('files');
             expect($institution->files)->toHaveCount(2);
-            expect($institution->files)->toContain($sharepointFile1);
-            expect($institution->files)->toContain($sharepointFile2);
+            expect($institution->files->pluck('id'))->toContain($sharepointFile1->id);
+            expect($institution->files->pluck('id'))->toContain($sharepointFile2->id);
         });
 
         test('does not duplicate existing attachments', function () {
@@ -63,6 +74,9 @@ describe('SharepointFileableService', function () {
             $this->service->attachFileToFileable($sharepointFile, $institution);
             $this->service->attachFileToFileable($sharepointFile, $institution);
 
+            // Refresh the relationship to check no duplicates
+            $institution->refresh();
+            $institution->load('files');
             // Should still only have one attachment
             expect($institution->files)->toHaveCount(1);
         });
@@ -79,7 +93,13 @@ describe('SharepointFileableService', function () {
 
         test('validates trait using class_uses recursively', function () {
             // Create a class that extends a model with the trait
+            $institution = Institution::factory()->create();
             $extendedModel = new class extends Institution {};
+
+            // Copy the ID from the created institution so it can save to pivot table
+            $extendedModel->id = $institution->id;
+            $extendedModel->exists = true;
+
             $sharepointFile = SharepointFile::factory()->create();
 
             // Should work because Institution has the trait
@@ -100,7 +120,7 @@ describe('SharepointFileableService', function () {
             };
 
             expect(fn () => $this->service->attachFileToFileable($sharepointFile, $modelWithoutTrait))
-                ->toThrow(\InvalidArgumentException::class);
+                ->toThrow(\TypeError::class);
         });
 
         test('works with fresh model instances', function () {
@@ -112,7 +132,10 @@ describe('SharepointFileableService', function () {
 
             $result = $this->service->attachFileToFileable($sharepointFile, $freshInstitution);
 
-            expect($result->files)->toContain($sharepointFile);
+            // Refresh the relationship to check attachment worked
+            $result->refresh();
+            $result->load('files');
+            expect($result->files->pluck('id'))->toContain($sharepointFile->id);
         });
 
         test('handles database persistence correctly', function () {
@@ -139,7 +162,11 @@ describe('SharepointFileableService', function () {
             $result = $this->service->attachFileToFileable($sharepointFile, $institution);
 
             expect($result->tenant_id)->toBe($originalTenantId);
-            expect($result->files)->toContain($sharepointFile);
+
+            // Refresh the relationship to check attachment worked
+            $result->refresh();
+            $result->load('files');
+            expect($result->files->pluck('id'))->toContain($sharepointFile->id);
         });
 
         test('error message is descriptive', function () {
@@ -149,8 +176,8 @@ describe('SharepointFileableService', function () {
             try {
                 $this->service->attachFileToFileable($sharepointFile, $modelWithoutTrait);
                 expect(false)->toBeTrue(); // Should not reach here
-            } catch (\InvalidArgumentException $e) {
-                expect($e->getMessage())->toBe('Model does not have HasSharepointFiles trait');
+            } catch (\TypeError $e) {
+                expect($e->getMessage())->toContain('SharepointFileableContract');
             }
         });
     });

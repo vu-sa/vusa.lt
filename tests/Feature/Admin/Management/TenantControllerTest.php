@@ -58,7 +58,7 @@ describe('unauthorized access', function () {
 
 describe('authorized access', function () {
     beforeEach(function () {
-        $this->admin = makeAdminForController('Tenant', $this->tenant);
+        $this->admin = makeAdminUser($this->tenant);
     });
 
     test('can index tenants', function () {
@@ -149,7 +149,7 @@ describe('authorized access', function () {
 
 describe('validation', function () {
     beforeEach(function () {
-        $this->admin = makeAdminForController('Tenant', $this->tenant);
+        $this->admin = makeAdminUser($this->tenant);
     });
 
     test('requires fullname for store', function () {
@@ -235,7 +235,7 @@ describe('validation', function () {
 
 describe('relationships', function () {
     beforeEach(function () {
-        $this->admin = makeAdminForController('Tenant', $this->tenant);
+        $this->admin = makeAdminUser($this->tenant);
     });
 
     test('tenant has proper model structure', function () {

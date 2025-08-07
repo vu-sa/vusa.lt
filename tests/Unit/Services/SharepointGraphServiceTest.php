@@ -3,13 +3,10 @@
 use App\Enums\SharepointFieldEnum;
 use App\Enums\SharepointPermissionTypeEnum;
 use App\Enums\SharepointScopeEnum;
-use App\Services\SharepointGraphService;
 
 describe('SharepointGraphService enum integration', function () {
     test('uses correct permission scopes for API calls', function () {
-        $service = new SharepointGraphService;
-
-        // Test that enum values work with actual API methods
+        // Test enum values without instantiating the service to avoid SharePoint connection
         $anonymousScope = SharepointScopeEnum::ANONYMOUS();
         $organizationScope = SharepointScopeEnum::ORGANIZATION();
 

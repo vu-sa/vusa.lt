@@ -10,7 +10,7 @@ uses(RefreshDatabase::class);
 beforeEach(function () {
     $this->tenant = Tenant::query()->inRandomOrder()->first();
     $this->user = makeUser($this->tenant);
-    $this->admin = makeAdminForController('Banner', $this->tenant);
+    $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
 
     $this->banner = Banner::factory()->for($this->tenant)->create([
         'title' => 'Test baneris',
@@ -266,7 +266,7 @@ describe('tenant isolation', function () {
     beforeEach(function () {
         $this->otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->first();
         $this->otherBanner = Banner::factory()->for($this->otherTenant)->create();
-        $this->otherAdmin = makeAdminForController('Banner', $this->otherTenant);
+        $this->otherAdmin = makeTenantUserWithRole('Communication Coordinator', $this->otherTenant);
     });
 
     test('user only sees banners from their tenant', function () {

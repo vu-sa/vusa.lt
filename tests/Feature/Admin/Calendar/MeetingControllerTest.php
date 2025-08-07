@@ -19,7 +19,7 @@ beforeEach(function () {
     $this->user = makeUser($this->tenant);
 
     // Create an admin user with Communication Coordinator role
-    $this->admin = makeAdminForController('Meeting', $this->tenant);
+    $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
 
     // Create an institution for testing
     $this->institution = Institution::factory()->for($this->tenant)->create();
