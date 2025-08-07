@@ -1,0 +1,48 @@
+codecov:
+  require_ci_to_pass: yes
+  notify:
+    wait_for_ci: yes
+
+coverage:
+  precision: 2
+  round: down
+  range: "50...100"
+  status:
+    project: off  # Don't require overall project coverage targets
+    patch:
+      default:
+        target: 50%      # Liberal starting point - encourage any testing
+        threshold: 5%    # Allow for reasonable drops
+        if_ci_failed: ignore
+      backend:
+        flags:
+          - backend
+        target: 60%      # Slightly higher for backend since it's more critical
+        threshold: 5%
+        if_ci_failed: ignore
+      frontend:
+        flags:
+          - frontend
+        target: 50%      # Liberal for frontend components
+        threshold: 5%
+        if_ci_failed: ignore
+
+flags:
+  backend:
+    paths:
+      - app/
+      - database/
+      - routes/
+      - config/
+  frontend:
+    paths:
+      - resources/js/
+      - resources/css/
+
+comment:
+  layout: "condensed_header, condensed_files, condensed_footer"
+  behavior: default
+  require_changes: false
+  require_base: no
+  require_head: yes
+  show_carryforward_flags: true
