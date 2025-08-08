@@ -8,10 +8,11 @@ const config: StorybookConfig = {
   stories: [
     "../resources/js/**/*.stories.@(js|jsx|mjs|ts|tsx)"
   ],
+  // NOTE: Don't use storybook-coverage, because of bad dependencies
   addons: [
+    "@storybook/addon-a11y",
     "@storybook/addon-docs",
-    "@storybook/addon-vitest",
-    "@storybook/addon-a11y"
+    "@storybook/addon-vitest"
   ],
   framework: {
     name: "@storybook/vue3-vite",

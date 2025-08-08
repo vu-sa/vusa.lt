@@ -84,7 +84,6 @@
     "@iconify/vue": "^5.0.0",
     "@microsoft/microsoft-graph-types": "^2.25.0",
     "@storybook/addon-a11y": "^9.0.14",
-    "@storybook/addon-coverage": "^2.0.0",
     "@storybook/addon-docs": "^9.0.14",
     "@storybook/addon-vitest": "^9.0.14",
     "@storybook/vue3-vite": "^9.0.14",

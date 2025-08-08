@@ -158,7 +158,7 @@ export default tseslint.config(
             "vue/define-emits-declaration": ["warn", "type-based"],
             "vue/v-bind-style": ["warn", "shorthand", { "sameNameShorthand": "always" }],
             "vue/v-on-style": ["warn", "shorthand"],
-            "vue/prefer-separate-static-class": "warn",
+            "vue/prefer-separate-static-class": "off", // To follow guidelines in CLAUDE.md
             "vue/prefer-true-attribute-shorthand": "warn",
             "vue/no-useless-v-bind": "warn",
             "vue/no-useless-mustaches": "warn",
