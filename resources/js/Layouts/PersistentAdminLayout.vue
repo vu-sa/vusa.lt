@@ -1,19 +1,17 @@
 <template>
   <NConfigProvider :locale="enUS" :theme="isDark ? darkTheme : undefined"
     :theme-overrides="isDark ? darkThemeOverrides : themeOverrides">
-    <NMessageProvider>
-      <AdminLayout>
-        <main
-          class="mb-4 mr-12 grid max-w-7xl grid-cols-[1fr_auto] items-start overflow-auto pb-8 pl-4 pt-4">
-          <slot />
-        </main>
-      </AdminLayout>
-    </NMessageProvider>
+    <AdminLayout>
+      <main
+        class="mb-4 mr-12 grid max-w-7xl grid-cols-[1fr_auto] items-start overflow-auto pb-8 pl-4 pt-4">
+        <slot />
+      </main>
+    </AdminLayout>
   </NConfigProvider>
 </template>
 
 <script setup lang="ts">
-import { NConfigProvider, NMessageProvider, darkTheme, enUS } from "naive-ui";
+import { NConfigProvider, darkTheme, enUS } from "naive-ui";
 import { useDark } from "@vueuse/core";
 
 import AdminLayout from "@/Components/Layouts/AdminLayout.vue";

@@ -3,20 +3,20 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\SearchableModelEnum;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\AdminController;
 use App\Models\Role;
 use App\Services\Typesense\TypesenseManager;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
-use Inertia\Inertia;
 use Typesense\Client;
 
-class SystemStatusController extends Controller
+class SystemStatusController extends AdminController
 {
-    public function index()
+    public function index(Request $request)
     {
-        $this->authorize('viewAny', Role::class);
+        $this->handleAuthorization('viewAny', Role::class);
 
         $status = [
             'redis' => $this->getRedisStatus(),
@@ -27,7 +27,7 @@ class SystemStatusController extends Controller
             'system' => $this->getSystemStatus(),
         ];
 
-        return Inertia::render('Admin/SystemStatus', [
+        return $this->inertiaResponse('Admin/SystemStatus', [
             'status' => $status,
             'lastUpdated' => now()->toISOString(),
         ]);
@@ -57,8 +57,8 @@ class SystemStatusController extends Controller
                 ];
             }
 
-            // If not properly configured but enabled, show warning status
-            $statusLevel = $isConfigured ? 'healthy' : 'warning';
+            // At this point, $isConfigured is always true since $isEnabled is true
+            $statusLevel = 'healthy';
             if ($isUsingPlaceholder) {
                 $statusLevel = 'warning';
             }

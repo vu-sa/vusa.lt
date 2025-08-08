@@ -6,10 +6,23 @@ For a quick overview and basic usage, see @README.md in this directory.
 
 ## Testing Framework & Structure
 
-**Framework**: PestPHP with Laravel Sail  
+**PHP Framework**: PestPHP with Laravel Sail  
+**JavaScript Framework**: Vitest with @vue/test-utils  
 **Database**: SQLite in-memory testing  
-**Coverage**: 263 tests with comprehensive security testing  
-**Organization**: Feature tests organized by domain area
+**Coverage**: 450+ tests with comprehensive security testing  
+**Organization**: Feature tests organized by domain area  
+**Seeding**: Tests are seeded with duties and roles from the DatabaseSeeder and associated role seeders
+
+### JavaScript Testing Setup
+**Mocks Location**: Use `resources/js/mocks/` directory (NOT Storybook mocks):
+- `inertia.mock.ts` - for Inertia.js functionality (usePage, router, useForm)
+- `i18n.mock.ts` - for Laravel translations (trans, wTrans, $t)  
+- `route.mock.ts` - for route generation (route() function, Ziggy)
+
+**Test Locations**:
+- Composables: `resources/js/Composables/__tests__/`
+- Components: `resources/js/Components/**/__tests__/`
+- Services: `resources/js/Services/__tests__/`
 
 ## Testing Commands
 
@@ -53,23 +66,80 @@ For a quick overview and basic usage, see @README.md in this directory.
 
 ```
 tests/Feature/
+├── Admin/          # MAIN: Comprehensive admin controller tests (use this!)
+│   ├── Calendar/   # AgendaItem, Calendar, Meeting controllers
+│   ├── Content/    # Banner, Category, News, Page, Tag controllers  
+│   ├── Core/       # Dashboard controller
+│   ├── Forms/      # Form controller
+│   ├── Management/ # Duty, Institution, StudyProgram, Tenant, User controllers
+│   ├── Navigation/ # Navigation controller
+│   ├── Permissions/# Permission, Role controllers
+│   └── Resources/  # Document, Files, Reservation controllers
 ├── Auth/           # Authentication & Authorization
-├── Content/        # News, Pages, Tags, Translation  
-├── Forms/          # Dynamic Forms & Registration
-├── Management/     # Users, Duties, Meetings, Calendar
+├── Content/        # DEPRECATED: Legacy model tests (avoid, use Admin/ instead)
+├── Forms/          # Dynamic Forms & Registration workflows
+├── Management/     # DEPRECATED: Legacy management tests
 ├── Public/         # Public-facing features
-├── Resources/      # Documents & Reservations  
-├── System/         # API, Permissions, Integration
-└── Other/          # Legacy (to be reorganized)
+├── Resources/      # DEPRECATED: Legacy resource tests
+├── System/         # API, Permissions, Integration, Search
+└── Other/          # Legacy tests (to be cleaned up)
 ```
 
+**Important**: Always use `tests/Feature/Admin/` for new controller tests. Follow the golden standard pattern from `tests/Feature/Admin/Content/PageControllerTest.php`.
+
 ## Key Testing Patterns
+
+### Controller Test Pattern (Follow Admin Structure)
+
+**Golden Standard**: `tests/Feature/Admin/Content/PageControllerTest.php`
+**Current Example**: `tests/Feature/Admin/Content/NewsControllerTest.php` shows proper authorization testing
+
+**Required Structure**:
+```php
+<?php
+use App\Models\ModelName;
+use App\Models\Tenant;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
+
+uses(RefreshDatabase::class);
+
+beforeEach(function () {
+    $this->tenant = Tenant::query()->inRandomOrder()->first();
+    $this->user = makeUser($this->tenant);
+    $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+    $this->model = ModelName::factory()->for($this->tenant)->create();
+});
+
+describe('unauthorized access', function () {
+    test('cannot access index page', function () {
+        asUser($this->user)->get(route('route.index'))->assertStatus(403);
+    });
+    // ... other unauthorized tests
+});
+
+describe('authorized access', function () {
+    test('can access index page', function () {
+        asUser($this->admin)->get(route('route.index'))->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Path/IndexComponent')
+                ->has('data')
+            );
+    });
+    // ... other authorized tests
+});
+
+describe('tenant isolation', function () {
+    // Test cross-tenant access restrictions
+});
+```
 
 ### User Creation & Authentication
 ```php
 // Create test users with specific roles
-$user = makeTenantUser('Communication Coordinator');
-$resourceManager = makeTenantUser('Resource Manager');
+$user = makeTenantUserWithRole('Communication Coordinator', $tenant);
+$resourceManager = makeTenantUserWithRole('Resource Manager', $tenant);
 asUser($user)->get('/mano/news');
 
 // For comprehensive testing when all permissions needed
@@ -230,17 +300,70 @@ test('news with comments loads efficiently')
     ->toHaveQueryCount(2);
 ```
 
+## JavaScript Testing Patterns
+
+### Composable Testing
+```typescript
+import { describe, test, expect, beforeEach, vi } from 'vitest'
+import { useComposableName } from '../useComposableName'
+
+// Mock external dependencies  
+vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'))
+vi.mock('vue-sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }))
+
+describe('useComposableName', () => {
+    test('handles basic functionality', () => {
+        const { method } = useComposableName()
+        
+        method('test input')
+        
+        expect(result).toBe('expected output')
+    })
+})
+```
+
+### Component Testing
+```typescript
+import { describe, test, expect } from 'vitest'
+import { mount } from '@vue/test-utils'
+import ComponentName from '../ComponentName.vue'
+
+describe('ComponentName', () => {
+    test('renders correctly with props', () => {
+        const wrapper = mount(ComponentName, {
+            props: { title: 'Test Title' }
+        })
+        
+        expect(wrapper.text()).toContain('Test Title')
+    })
+})
+```
+
+### Mock Usage
+```typescript
+// Use existing mocks from resources/js/mocks/
+import { usePage } from '@/mocks/inertia.mock'
+import { trans } from '@/mocks/i18n.mock'
+import { route } from '@/mocks/route.mock'
+```
+
 ## Testing Best Practices
 
-### Do's
-- Test both positive and negative scenarios
-- Use factories for consistent test data
-- Test permission scenarios with different roles
-- Mock external services
-- Focus on critical user workflows
-- Use descriptive test names
+### PHP Testing Do's
+- Follow Admin/ controller test structure exactly (`tests/Feature/Admin/Content/NewsControllerTest.php`)
+- Use `makeTenantUserWithRole()` for user creation
+- Test unauthorized (403) and authorized (200) access  
+- Include tenant isolation tests
+- Use `getControllerTestData()` helper functions
+- **Avoid legacy directories**: Use `tests/Feature/Admin/` for new controller tests
 
-### Don'ts
+### JavaScript Testing Do's
+- Use existing mocks from `resources/js/mocks/`
+- Test user interactions and state changes
+- Mock external dependencies properly
+- Follow existing test file patterns
+
+### Universal Don'ts
 - Don't test framework functionality
 - Don't create overly complex test setups
 - Don't ignore failing tests

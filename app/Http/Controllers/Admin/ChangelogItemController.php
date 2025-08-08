@@ -2,16 +2,15 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\AdminController;
 use App\Http\Requests\StoreChangelogItemRequest;
 use App\Models\ChangelogItem;
 use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Http\RedirectResponse;
-use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 
-class ChangelogItemController extends Controller
+class ChangelogItemController extends AdminController
 {
     public function __construct(public Authorizer $authorizer) {}
 
@@ -20,9 +19,9 @@ class ChangelogItemController extends Controller
      */
     public function index(): InertiaResponse
     {
-        $this->authorize('viewAny', ChangelogItem::class);
+        $this->handleAuthorization('viewAny', ChangelogItem::class);
 
-        return Inertia::render('Admin/ModelMeta/IndexChangelogItem', [
+        return $this->inertiaResponse('Admin/ModelMeta/IndexChangelogItem', [
             'changelogItems' => ChangelogItem::paginate(20),
         ]);
     }
@@ -32,9 +31,9 @@ class ChangelogItemController extends Controller
      */
     public function create(): InertiaResponse
     {
-        $this->authorize('create', ChangelogItem::class);
+        $this->handleAuthorization('create', ChangelogItem::class);
 
-        return Inertia::render('Admin/ModelMeta/CreateChangelogItem');
+        return $this->inertiaResponse('Admin/ModelMeta/CreateChangelogItem');
     }
 
     /**
@@ -64,7 +63,7 @@ class ChangelogItemController extends Controller
 
     public function destroy(ChangelogItem $changelogItem): RedirectResponse
     {
-        $this->authorize('delete', $changelogItem);
+        $this->handleAuthorization('delete', $changelogItem);
 
         $changelogItem->delete();
 

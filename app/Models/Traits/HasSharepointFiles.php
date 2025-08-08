@@ -2,13 +2,20 @@
 
 namespace App\Models\Traits;
 
+use App\Contracts\SharepointFileableContract;
 use App\Events\FileableNameUpdated;
 use App\Models\SharepointFile;
 use App\Services\ResourceServices\SharepointFileService;
 
+/**
+ * Provides SharePoint file functionality to models
+ *
+ * Models using this trait should implement SharepointFileableContract
+ * to ensure proper type safety with SharepointFileableService
+ */
 trait HasSharepointFiles
 {
-    public function files()
+    public function files(): \Illuminate\Database\Eloquent\Relations\MorphToMany
     {
         return $this->morphToMany(SharepointFile::class, 'fileable', 'sharepoint_fileables');
     }
@@ -24,7 +31,7 @@ trait HasSharepointFiles
     //     });
     // }
 
-    public function sharepoint_path()
+    public function sharepoint_path(): string
     {
         return SharepointFileService::pathForFileableDriveItem($this);
     }

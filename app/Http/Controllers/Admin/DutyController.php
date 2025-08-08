@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetAttachableTypesForDuty;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\AdminController;
 use App\Http\Requests\StoreDutyRequest;
 use App\Models\Duty;
 use App\Models\Role;
@@ -16,20 +16,17 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Inertia\Inertia;
 
-class DutyController extends Controller
+class DutyController extends AdminController
 {
     public function __construct(public Authorizer $authorizer) {}
 
     /**
      * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function index(Request $request)
     {
-        $this->authorize('viewAny', Duty::class);
+        $this->handleAuthorization('viewAny', Duty::class);
 
         $indexer = new ModelIndexer(new Duty);
 
@@ -39,21 +36,19 @@ class DutyController extends Controller
             ->sortAllColumns()
             ->builder->paginate(20);
 
-        return Inertia::render('Admin/People/IndexDuty', [
+        return $this->inertiaResponse('Admin/People/IndexDuty', [
             'duties' => $duties,
         ]);
     }
 
     /**
      * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function create()
     {
-        $this->authorize('create', Duty::class);
+        $this->handleAuthorization('create', Duty::class);
 
-        return Inertia::render('Admin/People/CreateDuty', [
+        return $this->inertiaResponse('Admin/People/CreateDuty', [
             'dutyTypes' => Type::where('model_type', Duty::class)->get(),
             'roles' => Role::all(),
             'assignableInstitutions' => DutyService::getInstitutionsForUpserts($this->authorizer),
@@ -63,14 +58,13 @@ class DutyController extends Controller
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function store(StoreDutyRequest $request)
     {
         $duty = new Duty;
 
-        $duty->fill($request->safe()->except('types', 'roles', 'current_users'))->save();
+        $validatedData = $request->safe();
+        $duty->fill(collect($validatedData)->except('types', 'roles', 'current_users')->toArray())->save();
 
         $duty->types()->sync($request->types);
 
@@ -81,26 +75,22 @@ class DutyController extends Controller
 
     /**
      * Display the specified resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function show(Duty $duty)
     {
-        $this->authorize('view', $duty);
+        $this->handleAuthorization('view', $duty);
 
-        return Inertia::render('Admin/People/ShowDuty', [
+        return $this->inertiaResponse('Admin/People/ShowDuty', [
             'duty' => $duty->load('institution', 'users', 'activities.causer'),
         ]);
     }
 
     /**
      * Show the form for editing the specified resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function edit(Duty $duty)
     {
-        $this->authorize('update', $duty);
+        $this->handleAuthorization('update', $duty);
 
         $duty->load('institution', 'types', 'roles', 'current_users');
 
@@ -111,7 +101,7 @@ class DutyController extends Controller
             }
         }
 
-        return Inertia::render('Admin/People/EditDuty', [
+        return $this->inertiaResponse('Admin/People/EditDuty', [
             'duty' => $duty->toFullArray(),
             'roles' => Role::all(),
             'dutyTypes' => GetAttachableTypesForDuty::execute()->values(),
@@ -123,12 +113,10 @@ class DutyController extends Controller
 
     /**
      * Update the specified resource in storage.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function update(Request $request, Duty $duty)
     {
-        $this->authorize('update', $duty);
+        $this->handleAuthorization('update', $duty);
 
         $request->validate([
             'name' => 'required',
@@ -189,12 +177,10 @@ class DutyController extends Controller
 
     /**
      * Remove the specified resource from storage.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function destroy(Duty $duty)
     {
-        $this->authorize('delete', $duty);
+        $this->handleAuthorization('delete', $duty);
 
         $duty->delete();
 
@@ -203,7 +189,7 @@ class DutyController extends Controller
 
     public function restore(Duty $duty)
     {
-        $this->authorize('restore', $duty);
+        $this->handleAuthorization('restore', $duty);
 
         $duty->restore();
 

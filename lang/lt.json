@@ -12,6 +12,7 @@
     "New Comment on": "Naujas komentaras įraše",
     "Reservations with unit resources": "Rezervacijos su padalinio resursais",
     "This action is unauthorized.": "Neturite teisių atlikti šiam veiksmui.",
+    "Forbidden": "Uždrausta",
     "List": "Sąrašas",
     "Map": "Žemėlapis",
     "Other Cities": "Kiti miestai",
@@ -46,5 +47,6 @@
     "News": "Naujienos",
     "Events": "Renginiai",
     "Documents": "Dokumentai",
-    "Pages": "Puslapiai"
+    "Pages": "Puslapiai",
+    "(kopija)": "(kopija)"
 }

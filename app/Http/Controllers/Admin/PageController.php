@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\AdminController;
 use App\Http\Requests\StorePageRequest;
 use App\Http\Requests\UpdatePageRequest;
 use App\Models\Category;
@@ -12,20 +12,17 @@ use App\Models\Tenant;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ModelIndexer;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 
-class PageController extends Controller
+class PageController extends AdminController
 {
     public function __construct(public Authorizer $authorizer) {}
 
     /**
      * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function index(Request $request)
     {
-        $this->authorize('viewAny', Page::class);
+        $this->handleAuthorization('viewAny', Page::class);
 
         $indexer = new ModelIndexer(new Page);
 
@@ -35,21 +32,19 @@ class PageController extends Controller
             ->sortAllColumns(['created_at' => 'desc'])
             ->builder->paginate(20);
 
-        return Inertia::render('Admin/Content/IndexPages', [
+        return $this->inertiaResponse('Admin/Content/IndexPages', [
             'pages' => $pages,
         ]);
     }
 
     /**
      * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function create()
     {
-        $this->authorize('create', Page::class);
+        $this->handleAuthorization('create', Page::class);
 
-        return Inertia::render('Admin/Content/CreatePage',
+        return $this->inertiaResponse('Admin/Content/CreatePage',
             [
                 'categories' => Category::all(['id', 'name']),
             ]
@@ -58,12 +53,10 @@ class PageController extends Controller
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function store(StorePageRequest $request)
     {
-        $this->authorize('create', Page::class);
+        $this->handleAuthorization('create', Page::class);
 
         $tenant_id = null;
 
@@ -96,18 +89,16 @@ class PageController extends Controller
 
     /**
      * Show the form for editing the specified resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function edit(Page $page)
     {
-        $this->authorize('update', $page);
+        $this->handleAuthorization('update', $page);
 
         $other_lang_pages = Page::with('tenant:id,shortname')->when(! request()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) use ($page) {
             $query->where('tenant_id', $page->tenant_id);
         })->where('lang', '!=', $page->lang)->select('id', 'title', 'tenant_id')->get();
 
-        return Inertia::render('Admin/Content/EditPage', [
+        return $this->inertiaResponse('Admin/Content/EditPage', [
             'page' => [
                 ...$page->only('id', 'title', 'content', 'permalink', 'text', 'lang', 'category_id', 'tenant_id', 'is_active', 'aside'),
                 'other_lang_id' => $page->getOtherLanguage()?->only('id')['id'],
@@ -119,12 +110,10 @@ class PageController extends Controller
 
     /**
      * Update the specified resource in storage.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function update(UpdatePageRequest $request, Page $page)
     {
-        $this->authorize('update', $page);
+        $this->handleAuthorization('update', $page);
 
         $other_lang_page = Page::find($page->other_lang_id);
 
@@ -151,12 +140,10 @@ class PageController extends Controller
 
     /**
      * Remove the specified resource from storage.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function destroy(Page $page)
     {
-        $this->authorize('delete', $page);
+        $this->handleAuthorization('delete', $page);
 
         $page->delete();
 
@@ -165,7 +152,7 @@ class PageController extends Controller
 
     public function restore(Page $page, Request $request)
     {
-        $this->authorize('restore', $page);
+        $this->handleAuthorization('restore', $page);
 
         $page->restore();
 

@@ -12,21 +12,21 @@ use Spatie\IcalendarGenerator\Components\Event;
 class IcalendarService
 {
     /**
-     * @param Collection<CalendarModel> calendars [TODO:description]
-     * @param [TODO:parameter] en [TODO:description]
-     * @return [TODO:return]
+     * @param  Collection<CalendarModel>  $calendars  Calendar events to parse
+     * @param  bool  $en  Use English translations
+     * @return array<Event> Array of ICS Event objects
      */
-    private function parseCalendarEventsForICS(Collection $calendars, $en = false)
+    private function parseCalendarEventsForICS(Collection $calendars, bool $en = false): array
     {
         // foreach event in calendar
         // create event in ICS
         $events = [];
 
         foreach ($calendars as $event) {
-            $eventObject = Event::create($en ? $event->getTranslation('title', 'en') : $event->getTranslation('title', 'lt'))->uniqueIdentifier($event->id)->startsAt(DateTime::createFromFormat('Y-m-d H:i:s', $event->date));
+            $eventObject = Event::create($en ? $event->getTranslation('title', 'en') : $event->getTranslation('title', 'lt'))->uniqueIdentifier((string) $event->id)->startsAt(DateTime::createFromFormat('Y-m-d H:i:s', $event->date));
 
             $eventObject->description($en
-                ? strip_tags($event?->getTranslation('description', 'en')) : strip_tags($event->getTranslation('description', 'lt')));
+                ? strip_tags($event->getTranslation('description', 'en')) : strip_tags($event->getTranslation('description', 'lt')));
 
             // There are many old events that have no end date. we need to manage this
             if (! is_null($event->end_date)) {
@@ -34,7 +34,7 @@ class IcalendarService
                 $eventObject->endsAt(DateTime::createFromFormat('Y-m-d H:i:s', $event->end_date));
             } else {
                 // check if event date hour is midnight
-                if (Carbon::parse($event->date)->hour.Carbon::parse($event->date)->minute == '0000') {
+                if (sprintf('%02d%02d', Carbon::parse($event->date)->hour, Carbon::parse($event->date)->minute) == '0000') {
                     // make event full day
                     $eventObject->fullDay();
                 } else {
@@ -61,7 +61,7 @@ class IcalendarService
         return $events;
     }
 
-    public function get()
+    public function get(): string
     {
         // get lang from request
         $lang = request()->lang;

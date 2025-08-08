@@ -24,13 +24,13 @@
 <script setup lang="ts">
 import {
   type UploadFileInfo,
-  useMessage,
 } from "naive-ui";
 import { ref } from "vue";
 
 import CardModal from "../Modals/CardModal.vue";
 import VCropper from "../VCropper.vue";
 import { Separator } from "../ui/separator";
+import { useToasts } from '@/Composables/useToasts';
 
 const props = defineProps<{
   folder: string;
@@ -39,7 +39,7 @@ const props = defineProps<{
 const url = defineModel<string | null>("url");
 const showModal = ref(false);
 const showCropper = ref(false);
-const message = useMessage();
+const toasts = useToasts();
 
 const fileList = ref<UploadFileInfo[]>([
 ]);
@@ -59,12 +59,12 @@ const beforeUpload = async (data: {
 }) => {
   // if data.file.file.type is undefined, return false
   if (!data.file.file?.type) {
-    message.error("Įvyko nenumatyta klaida.");
+    toasts.error("Įvyko nenumatyta klaida.");
     return false;
   }
 
   if (!["image/png", "image/jpeg"].includes(data.file.file.type)) {
-    message.error("Prašome kelti tik JPG arba PNG formato failus.");
+    toasts.error("Prašome kelti tik JPG arba PNG formato failus.");
     return false;
   }
   return true;

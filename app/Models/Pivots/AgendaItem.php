@@ -3,7 +3,6 @@
 namespace App\Models\Pivots;
 
 use App\Models\Institution;
-use App\Models\Matter;
 use App\Models\Meeting;
 use Database\Factories\AgendaItemFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -14,6 +13,30 @@ use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
+/**
+ * @property string $id
+ * @property string $meeting_id
+ * @property string|null $matter_id
+ * @property \Illuminate\Support\Carbon $created_at
+ * @property \Illuminate\Support\Carbon $updated_at
+ * @property string $title
+ * @property string|null $description
+ * @property string|null $student_vote
+ * @property string|null $decision
+ * @property string|null $student_benefit
+ * @property string|null $start_time
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Institution> $institutions
+ * @property-read Meeting $meeting
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Tenant> $tenants
+ *
+ * @method static \Database\Factories\AgendaItemFactory factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AgendaItem newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AgendaItem newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AgendaItem query()
+ *
+ * @mixin \Eloquent
+ */
 class AgendaItem extends Pivot
 {
     use HasFactory, HasRelationships, HasUlids, LogsActivity;
@@ -36,18 +59,11 @@ class AgendaItem extends Pivot
         return LogOptions::defaults()->logUnguarded()->logOnlyDirty();
     }
 
-    public function matter()
-    {
-        return $this->belongsTo(Matter::class);
-    }
-
     public function meeting(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Meeting::class);
     }
 
-    // TODO: it's from the meeting side, although agendaItems can be accessed from matters also,
-    // but it's less logical that way
     public function institutions()
     {
         return $this->hasManyDeepFromRelations($this->meeting(), (new Meeting)->institutions());

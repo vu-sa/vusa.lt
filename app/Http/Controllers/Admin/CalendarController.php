@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\DuplicateCalendarAction;
 use App\Actions\GetTenantsForUpserts;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\AdminController;
 use App\Http\Requests\StoreCalendarRequest;
 use App\Http\Requests\UpdateCalendarRequest;
 use App\Models\Calendar;
@@ -12,21 +12,18 @@ use App\Models\Category;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ModelIndexer;
 use Illuminate\Support\Facades\DB;
-use Inertia\Inertia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-class CalendarController extends Controller
+class CalendarController extends AdminController
 {
     public function __construct(public Authorizer $authorizer) {}
 
     /**
      * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function index()
     {
-        $this->authorize('viewAny', Calendar::class);
+        $this->handleAuthorization('viewAny', Calendar::class);
 
         $indexer = new ModelIndexer(new Calendar);
 
@@ -36,7 +33,7 @@ class CalendarController extends Controller
             ->sortAllColumns()
             ->builder->paginate(20);
 
-        return Inertia::render('Admin/Calendar/IndexCalendarEvents', [
+        return $this->inertiaResponse('Admin/Calendar/IndexCalendarEvents', [
             'calendar' => $calendar,
             'allCategories' => Category::all(['id', 'alias', 'name', 'description']),
         ]);
@@ -44,14 +41,12 @@ class CalendarController extends Controller
 
     /**
      * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function create()
     {
-        $this->authorize('create', Calendar::class);
+        $this->handleAuthorization('create', Calendar::class);
 
-        return Inertia::render('Admin/Calendar/CreateCalendarEvent', [
+        return $this->inertiaResponse('Admin/Calendar/CreateCalendarEvent', [
             'assignableTenants' => GetTenantsForUpserts::execute('calendars.create.padalinys', $this->authorizer),
             'categories' => Category::all(),
         ]);
@@ -59,8 +54,6 @@ class CalendarController extends Controller
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function store(StoreCalendarRequest $request)
     {
@@ -84,14 +77,12 @@ class CalendarController extends Controller
 
     /**
      * Display the specified resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function show(Calendar $calendar)
     {
-        $this->authorize('view', $calendar);
+        $this->handleAuthorization('view', $calendar);
 
-        return Inertia::render('Admin/Calendar/ShowCalendarEvent', [
+        return $this->inertiaResponse('Admin/Calendar/ShowCalendarEvent', [
             'calendar' => $calendar,
             'images' => $calendar->getMedia('images'),
         ]);
@@ -99,14 +90,12 @@ class CalendarController extends Controller
 
     /**
      * Show the form for editing the specified resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function edit(Calendar $calendar)
     {
-        $this->authorize('update', $calendar);
+        $this->handleAuthorization('update', $calendar);
 
-        return Inertia::render('Admin/Calendar/EditCalendarEvent', [
+        return $this->inertiaResponse('Admin/Calendar/EditCalendarEvent', [
             'calendar' => [
                 ...$calendar->toFullArray(),
                 'images' => $calendar->getMedia('images')->map(
@@ -125,8 +114,6 @@ class CalendarController extends Controller
 
     /**
      * Update the specified resource in storage.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function update(UpdateCalendarRequest $request, Calendar $calendar)
     {
@@ -156,7 +143,7 @@ class CalendarController extends Controller
 
     public function duplicate(Calendar $calendar)
     {
-        $this->authorize('create', Calendar::class);
+        $this->handleAuthorization('create', Calendar::class);
 
         $newCalendar = DuplicateCalendarAction::execute($calendar);
 
@@ -165,12 +152,10 @@ class CalendarController extends Controller
 
     /**
      * Remove the specified resource from storage.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function destroy(Calendar $calendar)
     {
-        $this->authorize('delete', $calendar);
+        $this->handleAuthorization('delete', $calendar);
 
         $calendar->delete();
 
@@ -180,7 +165,7 @@ class CalendarController extends Controller
     // TODO: something with this???
     public function destroyMedia(Calendar $calendar, Media $media)
     {
-        $this->authorize('update', $calendar);
+        $this->handleAuthorization('update', $calendar);
 
         $calendar->getMedia('images')->where('id', '=', $media->id)->first()->delete();
 

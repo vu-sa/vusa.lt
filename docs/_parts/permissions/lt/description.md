@@ -1,7 +1,7 @@
 Teisės suteikia galimybę pasiekti, kuria nors dalį puslapio, jau
 prisijungus prie jo.
 
-Teisės dažniausiai susijusios su objektais - institucijomis, tikslais ir
+Teisės dažniausiai susijusios su objektais - institucijomis ir
 pan., ir šias teises priskyrus rolei, jos leis atlikti atitinkamus
 veiksmus.
 

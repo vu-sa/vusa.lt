@@ -1,0 +1,95 @@
+codecov:
+  require_ci_to_pass: yes
+  notify:
+    wait_for_ci: yes
+
+coverage:
+  precision: 2
+  round: down
+  range: "60...100"
+  status:
+    project: off
+    patch:
+      default:
+        target: 65%
+        threshold: 3%
+        if_ci_failed: ignore
+
+component_management:
+  individual_components:
+    - component_id: laravel_controllers
+      name: "Laravel Controllers"
+      paths:
+        - "app/Http/Controllers/**"
+      statuses:
+        - type: patch
+          target: 70%
+          threshold: 3%
+          if_ci_failed: ignore
+    - component_id: laravel_models
+      name: "Laravel Models"
+      paths:
+        - "app/Models/**"
+      statuses:
+        - type: patch
+          target: 80%
+          threshold: 3%
+          if_ci_failed: ignore
+    - component_id: laravel_services
+      name: "Laravel Services"
+      paths:
+        - "app/Services/**"
+        - "app/Actions/**"
+      statuses:
+        - type: patch
+          target: 75%
+          threshold: 3%
+          if_ci_failed: ignore
+    - component_id: laravel_features
+      name: "Laravel Features"
+      paths:
+        - "app/Jobs/**"
+        - "app/Console/**"
+        - "app/Traits/**"
+        - "app/Http/Requests/**"
+      statuses:
+        - type: patch
+          target: 65%
+          threshold: 3%
+          if_ci_failed: ignore
+    - component_id: vue_components
+      name: "Vue Components"
+      paths:
+        - "resources/js/Components/**"
+      statuses:
+        - type: patch
+          target: 60%
+          threshold: 3%
+          if_ci_failed: ignore
+    - component_id: vue_pages
+      name: "Vue Pages"
+      paths:
+        - "resources/js/Pages/**"
+      statuses:
+        - type: patch
+          target: 55%
+          threshold: 3%
+          if_ci_failed: ignore
+    - component_id: vue_composables
+      name: "Vue Composables"
+      paths:
+        - "resources/js/Composables/**"
+        - "resources/js/Utils/**"
+      statuses:
+        - type: patch
+          target: 75%
+          threshold: 3%
+          if_ci_failed: ignore
+
+comment:
+  layout: "condensed_header, condensed_files, condensed_footer"
+  behavior: default
+  require_changes: false
+  require_base: no
+  require_head: yes
+  show_carryforward_flags: true

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexDocumentRequest;
 use App\Http\Requests\StoreDocumentRequest;
 use App\Http\Requests\UpdateDocumentRequest;
@@ -11,23 +11,21 @@ use App\Jobs\SyncDocumentFromSharePointJob;
 use App\Models\Document;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\SharepointGraphService;
-use App\Services\TanstackTableService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Context;
-use Inertia\Inertia;
 
-class DocumentController extends Controller
+class DocumentController extends AdminController
 {
     use HasTanstackTables;
 
-    public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService) {}
+    public function __construct(public Authorizer $authorizer) {}
 
     /**
      * Display a listing of the resource.
      */
     public function index(IndexDocumentRequest $request)
     {
-        $this->authorize('viewAny', Document::class);
+        $this->handleAuthorization('viewAny', Document::class);
 
         // Set admin context for indexing all documents
         Context::add('search_context', 'admin');
@@ -106,7 +104,7 @@ class DocumentController extends Controller
         $perPage = $request->input('per_page', 20);
         $results = Document::search($searchText)->options($options)->paginate($perPage);
 
-        return Inertia::render('Admin/Files/IndexDocument', [
+        return $this->inertiaResponse('Admin/Files/IndexDocument', [
             'data' => (new Collection($results->items()))->load('institution.tenant'),
             'meta' => [
                 'total' => $results->total(),
@@ -143,8 +141,8 @@ class DocumentController extends Controller
             /* $model->save(); */
         }
 
-        // Check if model is defined (documents array is not empty)
-        if ($model === null || $documentCollection->isEmpty()) {
+        // Check if documents array is not empty
+        if ($model === null) {
             return redirect()->route('documents.index')->with('info', 'No documents to process.');
         }
 
@@ -157,7 +155,7 @@ class DocumentController extends Controller
 
     public function refresh(Document $document)
     {
-        $this->authorize('update', $document);
+        $this->handleAuthorization('update', $document);
 
         // Dispatch sync job to background instead of synchronous processing
         SyncDocumentFromSharePointJob::dispatch($document);
@@ -208,7 +206,7 @@ class DocumentController extends Controller
      */
     public function destroy(Document $document)
     {
-        $this->authorize('delete', $document);
+        $this->handleAuthorization('delete', $document);
 
         $document->delete();
 

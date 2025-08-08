@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\AdminController;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\Tenant;
@@ -12,46 +12,39 @@ use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
-use Inertia\Inertia;
 
-class RoleController extends Controller
+class RoleController extends AdminController
 {
     public function __construct(public Authorizer $authorizer) {}
 
     /**
      * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function index()
     {
-        $this->authorize('viewAny', Role::class);
+        $this->handleAuthorization('viewAny', Role::class);
 
-        return Inertia::render('Admin/Permissions/IndexRole', [
+        return $this->inertiaResponse('Admin/Permissions/IndexRole', [
             'roles' => Role::paginate(20),
         ]);
     }
 
     /**
      * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function create()
     {
-        $this->authorize('create', Role::class);
+        $this->handleAuthorization('create', Role::class);
 
-        return Inertia::render('Admin/Permissions/CreateRole');
+        return $this->inertiaResponse('Admin/Permissions/CreateRole');
     }
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
-        $this->authorize('create', Role::class);
+        $this->handleAuthorization('create', Role::class);
 
         $validated = $request->validate([
             'name' => 'required|unique:roles,name',
@@ -64,29 +57,25 @@ class RoleController extends Controller
 
     /**
      * Display the specified resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function show(Role $role)
     {
-        $this->authorize('view', $role);
+        $this->handleAuthorization('view', $role);
 
         $role->load('permissions:id,name');
 
         // show role
-        return Inertia::render('Admin/Permissions/ShowRole', [
+        return $this->inertiaResponse('Admin/Permissions/ShowRole', [
             'role' => $role,
         ]);
     }
 
     /**
      * Show the form for editing the specified resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function edit(Role $role)
     {
-        $this->authorize('update', $role);
+        $this->handleAuthorization('update', $role);
 
         // not load Super Admin
         if ($role->name === config('permission.super_admin_role_name')) {
@@ -104,11 +93,11 @@ class RoleController extends Controller
         $allAvailablePermissions = Permission::all()->groupBy(function ($permission) {
             $parts = explode('.', $permission->name);
 
-            return $parts[0] ?? ''; // Model type (e.g., 'tags', 'news')
+            return $parts[0]; // Model type (e.g., 'tags', 'news')
         });
 
         // edit role
-        return Inertia::render('Admin/Permissions/EditRole', [
+        return $this->inertiaResponse('Admin/Permissions/EditRole', [
             'role' => [
                 ...$role->toArray(),
                 'attachable_types' => $role->attachable_types->pluck('id')->toArray(),
@@ -123,12 +112,10 @@ class RoleController extends Controller
 
     /**
      * Update the specified resource in storage.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function update(Request $request, Role $role)
     {
-        $this->authorize('update', $role);
+        $this->handleAuthorization('update', $role);
 
         // not update Super Admin
         if ($role->name === config('permission.super_admin_role_name')) {
@@ -146,12 +133,10 @@ class RoleController extends Controller
 
     /**
      * Remove the specified resource from storage.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function destroy(Role $role)
     {
-        $this->authorize('delete', $role);
+        $this->handleAuthorization('delete', $role);
 
         // check if role is not Super Admin
         if ($role->name === config('permission.super_admin_role_name')) {
@@ -167,7 +152,7 @@ class RoleController extends Controller
 
     public function syncPermissionGroup(Role $role, string $model, Request $request)
     {
-        $this->authorize('update', $role);
+        $this->handleAuthorization('update', $role);
 
         $validated = $request->validate([
             'create' => 'string',
@@ -208,7 +193,7 @@ class RoleController extends Controller
 
     public function syncAttachableTypes(Role $role, Request $request)
     {
-        $this->authorize('update', $role);
+        $this->handleAuthorization('update', $role);
 
         $validated = $request->validate([
             'attachable_types' => 'array',
@@ -221,7 +206,7 @@ class RoleController extends Controller
 
     public function syncDuties(Role $role, Request $request)
     {
-        $this->authorize('update', $role);
+        $this->handleAuthorization('update', $role);
 
         $validated = $request->validate([
             'duties' => 'array',

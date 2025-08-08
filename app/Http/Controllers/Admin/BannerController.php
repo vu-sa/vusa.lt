@@ -3,26 +3,25 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetTenantsForUpserts;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\AdminController;
 use App\Models\Banner;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ModelIndexer;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
-use Inertia\Inertia;
+use Inertia\Response as InertiaResponse;
 
-class BannerController extends Controller
+class BannerController extends AdminController
 {
     public function __construct(public Authorizer $authorizer) {}
 
     /**
      * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(): InertiaResponse
     {
-        $this->authorize('viewAny', Banner::class);
+        $this->handleAuthorization('viewAny', Banner::class);
 
         $indexer = new ModelIndexer(new Banner);
 
@@ -32,31 +31,27 @@ class BannerController extends Controller
             ->sortAllColumns()
             ->builder->paginate(20);
 
-        return Inertia::render('Admin/Content/IndexBanner', [
+        return $this->inertiaResponse('Admin/Content/IndexBanner', [
             'banners' => $banners,
         ]);
     }
 
     /**
      * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
      */
-    public function create()
+    public function create(): InertiaResponse
     {
-        $this->authorize('create', Banner::class);
+        $this->handleAuthorization('create', Banner::class);
 
-        return Inertia::render('Admin/Content/CreateBanner');
+        return $this->inertiaResponse('Admin/Content/CreateBanner');
     }
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
-        $this->authorize('create', Banner::class);
+        $this->handleAuthorization('create', Banner::class);
 
         $request->validate([
             'title' => 'required',
@@ -83,26 +78,27 @@ class BannerController extends Controller
 
     /**
      * Show the form for editing the specified resource.
-     *
-     * @return \Illuminate\Http\Response
      */
-    public function edit(Banner $banner)
+    public function edit(Banner $banner): InertiaResponse
     {
-        $this->authorize('update', $banner);
+        $this->handleAuthorization($banner, 'update');
 
-        return Inertia::render('Admin/Content/EditBanner', [
+        return $this->inertiaResponse('Admin/Content/EditBanner', [
             'banner' => $banner,
         ]);
     }
 
     /**
      * Update the specified resource in storage.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function update(Request $request, Banner $banner)
     {
-        $this->authorize('update', $banner);
+        $this->handleAuthorization('update', $banner);
+
+        $request->validate([
+            'title' => 'required',
+            'image_url' => 'required',
+        ]);
 
         $banner->title = $request->title;
         $banner->is_active = $request->is_active;
@@ -110,22 +106,20 @@ class BannerController extends Controller
         $banner->image_url = $request->image_url;
         $banner->save();
 
-        Cache::forget('banners-'.$banner?->tenant_id);
+        Cache::forget('banners-'.$banner->tenant_id);
 
-        return back()->with('success', 'Baneris atnaujintas!');
+        return $this->backResponse(['success' => 'Baneris atnaujintas!']);
     }
 
     /**
      * Remove the specified resource from storage.
-     *
-     * @return \Illuminate\Http\Response
      */
-    public function destroy(Banner $banner)
+    public function destroy(Banner $banner): RedirectResponse
     {
-        $this->authorize('delete', $banner);
+        $this->handleAuthorization($banner, 'delete');
 
         $banner->delete();
 
-        return redirect()->route('banners.index')->with('info', 'Baneris ištrintas!');
+        return $this->redirectResponse('banners.index')->with('info', 'Baneris ištrintas!');
     }
 }

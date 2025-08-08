@@ -9,6 +9,41 @@ use Illuminate\Support\Facades\Cache;
 use Laravel\Scout\Searchable;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
+/**
+ * @property int $id
+ * @property string $name
+ * @property string $title
+ * @property string $sharepoint_id
+ * @property string|null $eTag
+ * @property Carbon|null $document_date
+ * @property string|null $institution_id
+ * @property string|null $content_type
+ * @property string|null $language
+ * @property string|null $summary
+ * @property string|null $anonymous_url
+ * @property bool $is_active
+ * @property string $sharepoint_site_id
+ * @property string $sharepoint_list_id
+ * @property Carbon $created_at
+ * @property Carbon|null $checked_at
+ * @property string $sync_status Status of SharePoint sync: pending, syncing, success, failed
+ * @property string|null $sync_error_message Error message from failed sync attempts
+ * @property int $sync_attempts Number of sync attempts made
+ * @property Carbon|null $last_sync_attempt_at Timestamp of last sync attempt
+ * @property Carbon $updated_at
+ * @property Carbon|null $effective_date
+ * @property Carbon|null $expiration_date
+ * @property-read bool|null $is_in_effect
+ * @property-read \App\Models\Institution|null $institution
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Tenant> $tenant
+ *
+ * @method static \Database\Factories\DocumentFactory factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Document newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Document newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Document query()
+ *
+ * @mixin \Eloquent
+ */
 class Document extends Model
 {
     use HasFactory, HasRelationships, Searchable;
@@ -122,14 +157,6 @@ class Document extends Model
 
         $tenant = $this->institution->tenant;
         $hierarchy = [$tenant->shortname];
-
-        // Add parent tenant if exists
-        if ($tenant->parent_id) {
-            $parent = $tenant->parent;
-            if ($parent) {
-                array_unshift($hierarchy, $parent->shortname);
-            }
-        }
 
         return $hierarchy;
     }

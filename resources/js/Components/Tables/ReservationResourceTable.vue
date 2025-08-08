@@ -312,7 +312,7 @@ const submitComment = (
       onSuccess: () => {
         loading.value = false;
 
-        if (usePage().props.flash.statusCode !== 403) {
+        if (!usePage().props.flash.error) {
           showStateChangeModal.value = false;
           selectedReservationResource.value = null;
           commentText.value = "";

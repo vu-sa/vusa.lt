@@ -27,14 +27,10 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
                 return true;
             }
 
-            try {
-                // check if request is 404, if yes, return true
-                if ($entry->type === EntryType::REQUEST && $entry->content['response_status'] === 404) {
-                    return true;
-                }
-            } catch (\Exception $e) {
-                report($e);
-
+            // check if request is 404, if yes, return true
+            if ($entry->type === EntryType::REQUEST &&
+                isset($entry->content['response_status']) &&
+                $entry->content['response_status'] === 404) {
                 return true;
             }
 

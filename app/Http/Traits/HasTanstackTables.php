@@ -2,7 +2,6 @@
 
 namespace App\Http\Traits;
 
-use App\Services\DataTableService;
 use App\Services\ModelAuthorizer;
 use App\Services\TanstackTableService;
 use Illuminate\Database\Eloquent\Builder;
@@ -15,14 +14,14 @@ trait HasTanstackTables
      *
      * @param  Builder  $query  The query builder to apply filters to
      * @param  Request  $request  The request object containing filters and sorting
-     * @param  TanstackTableService|DataTableService  $tableService  The service to apply filters with
+     * @param  TanstackTableService  $tableService  The service to apply filters with
      * @param  array  $searchableColumns  Columns to search in
      * @param  array  $options  Additional options
      */
     protected function applyTanstackFilters(
         Builder $query,
         Request $request,
-        $tableService,
+        TanstackTableService $tableService,
         array $searchableColumns = [],
         array $options = []
     ): Builder {

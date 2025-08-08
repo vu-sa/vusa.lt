@@ -41,7 +41,7 @@ class HandleInertiaRequests extends Middleware
      *
      * @see https://inertiajs.com/shared-data
      *
-     * @return array
+     * @return array<string, mixed>
      */
     public function share(Request $request)
     {
@@ -66,7 +66,7 @@ class HandleInertiaRequests extends Middleware
                     ...$user->toArray(),
                     'isSuperAdmin' => $isSuperAdmin,
                     'tenants' => $user->tenants()->get(['tenants.id', 'tenants.shortname', 'tenants.alias'])->unique(),
-                    'unreadNotifications' => $user->unreadNotifications,
+                    'unreadNotifications' => $user->unreadNotifications()->get(),
                 ],
             ],
             'csrf_token' => fn () => csrf_token(),
@@ -75,8 +75,7 @@ class HandleInertiaRequests extends Middleware
                 'data' => fn () => $request->session()->get('data'),
                 'info' => fn () => $request->session()->get('info'),
                 'success' => fn () => $request->session()->get('success'),
-                // since inertia responses cannot have a 40X status code, we have to pass it in the flash data
-                'statusCode' => fn () => $request->session()->get('statusCode'),
+                'error' => fn () => $request->session()->get('error'),
             ],
             'seo' => [
                 'title' => fn () => $request->session()->get('seo.title'),
@@ -101,6 +100,9 @@ class HandleInertiaRequests extends Middleware
         return $user;
     }
 
+    /**
+     * @return Collection<int, Tenant>
+     */
     private function getTenantsForInertia(): Collection
     {
         // TODO: maybe should return all tenants, even pagrindinis
@@ -113,7 +115,10 @@ class HandleInertiaRequests extends Middleware
         return $tenants;
     }
 
-    private function getIndexPermissions(User $user)
+    /**
+     * @return array<string, bool>
+     */
+    private function getIndexPermissions(User $user): array
     {
         return Cache::remember('index-permissions-'.$user->id, 1800, function () use ($user) {
             $labels = ModelEnum::toLabels();
@@ -131,7 +136,10 @@ class HandleInertiaRequests extends Middleware
         });
     }
 
-    private function getCreatePermissions(User $user)
+    /**
+     * @return array<string, bool>
+     */
+    private function getCreatePermissions(User $user): array
     {
         return Cache::remember('create-permissions-'.$user->id, 1800, function () use ($user) {
             $labels = ModelEnum::toLabels();
@@ -148,7 +156,10 @@ class HandleInertiaRequests extends Middleware
         });
     }
 
-    private function getChangesForUser(User $user)
+    /**
+     * @return Collection<int, ChangelogItem>
+     */
+    private function getChangesForUser(User $user): Collection
     {
         $user->makeVisible('last_changelog_check');
 

@@ -227,10 +227,10 @@ return [
                     'fields' => [
                         ['name' => 'id', 'type' => 'string'],
                         ['name' => 'title', 'type' => 'string', 'infix' => true, 'sort' => true],
-                        ['name' => 'summary', 'type' => 'string', 'optional' => true],
+                        ['name' => 'summary', 'type' => 'string', 'infix' => true, 'optional' => true],
                         ['name' => 'name', 'type' => 'string', 'infix' => true, 'optional' => true],
                         ['name' => 'language', 'type' => 'string', 'facet' => true, 'optional' => true, 'sort' => true],
-                        ['name' => 'content_type', 'type' => 'string', 'facet' => true, 'optional' => true, 'sort' => true],
+                        ['name' => 'content_type', 'type' => 'string', 'infix' => true, 'facet' => true, 'optional' => true, 'sort' => true],
                         ['name' => 'institution_name_lt', 'type' => 'string', 'facet' => true, 'optional' => true, 'sort' => true],
                         ['name' => 'institution_name_en', 'type' => 'string', 'facet' => true, 'optional' => true],
                         ['name' => 'tenant_shortname', 'type' => 'string', 'facet' => true, 'optional' => true],

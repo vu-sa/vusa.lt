@@ -12,7 +12,7 @@ class HandleReservationResourceCreated
     {
         $reservationResource = $event->reservationResource;
 
-        // check if doing is instance of Doing
+        // check if reservationResource is instance of ReservationResource
         if (! $reservationResource instanceof ReservationResource) {
             return;
         }

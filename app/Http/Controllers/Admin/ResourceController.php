@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetTenantsForUpserts;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\AdminController;
 use App\Http\Requests\StoreResourceRequest;
 use App\Http\Requests\UpdateResourceRequest;
 use App\Models\Resource;
@@ -11,9 +11,8 @@ use App\Models\ResourceCategory;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ModelIndexer;
 use Illuminate\Database\Eloquent\Builder;
-use Inertia\Inertia;
 
-class ResourceController extends Controller
+class ResourceController extends AdminController
 {
     public function __construct(public Authorizer $authorizer) {}
 
@@ -22,7 +21,7 @@ class ResourceController extends Controller
      */
     public function index()
     {
-        $this->authorize('viewAny', Resource::class);
+        $this->handleAuthorization('viewAny', Resource::class);
 
         $indexer = new ModelIndexer(new Resource);
 
@@ -32,7 +31,7 @@ class ResourceController extends Controller
             ->sortAllColumns()
             ->builder->paginate(20);
 
-        return Inertia::render('Admin/Reservations/IndexResource', [
+        return $this->inertiaResponse('Admin/Reservations/IndexResource', [
             'resources' => $resources,
             'categories' => ResourceCategory::all(),
         ]);
@@ -43,9 +42,9 @@ class ResourceController extends Controller
      */
     public function create()
     {
-        $this->authorize('create', Resource::class);
+        $this->handleAuthorization('create', Resource::class);
 
-        return Inertia::render('Admin/Reservations/CreateResource', [
+        return $this->inertiaResponse('Admin/Reservations/CreateResource', [
             'assignableTenants' => GetTenantsForUpserts::execute('resources.create.padalinys', $this->authorizer),
             'categories' => ResourceCategory::all(),
         ]);
@@ -56,7 +55,7 @@ class ResourceController extends Controller
      */
     public function store(StoreResourceRequest $request)
     {
-        $this->authorize('create', Resource::class);
+        $this->handleAuthorization('create', Resource::class);
 
         $resource = new Resource;
 
@@ -85,9 +84,9 @@ class ResourceController extends Controller
      */
     public function edit(Resource $resource)
     {
-        $this->authorize('update', $resource);
+        $this->handleAuthorization('update', $resource);
 
-        return Inertia::render('Admin/Reservations/EditResource', [
+        return $this->inertiaResponse('Admin/Reservations/EditResource', [
             'resource' => $resource->load('reservations.users')->toFullArray()
                 + ['media' => $resource->getMedia('images')->map(fn ($image) => [
                     'id' => $image->id,
@@ -133,7 +132,7 @@ class ResourceController extends Controller
      */
     public function destroy(Resource $resource)
     {
-        $this->authorize('delete', $resource);
+        $this->handleAuthorization('delete', $resource);
 
         $resource->delete();
 
@@ -146,7 +145,7 @@ class ResourceController extends Controller
      */
     public function restore(Resource $resource)
     {
-        $this->authorize('restore', $resource);
+        $this->handleAuthorization('restore', $resource);
 
         $resource->restore();
 

@@ -2,16 +2,15 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\AdminController;
 use App\Http\Requests\StoreResourceCategoryRequest;
 use App\Http\Requests\UpdateResourceCategoryRequest;
 use App\Models\Resource;
 use App\Models\ResourceCategory;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ModelIndexer;
-use Inertia\Inertia;
 
-class ResourceCategoryController extends Controller
+class ResourceCategoryController extends AdminController
 {
     public function __construct(public Authorizer $authorizer) {}
 
@@ -20,7 +19,7 @@ class ResourceCategoryController extends Controller
      */
     public function index()
     {
-        $this->authorize('viewAny', Resource::class);
+        $this->handleAuthorization('viewAny', Resource::class);
 
         $indexer = new ModelIndexer(new ResourceCategory);
 
@@ -30,7 +29,7 @@ class ResourceCategoryController extends Controller
             ->sortAllColumns()
             ->builder->paginate(20);
 
-        return Inertia::render('Admin/Reservations/IndexResourceCategory', [
+        return $this->inertiaResponse('Admin/Reservations/IndexResourceCategory', [
             'resourceCategories' => $resourceCategories,
         ]);
     }
@@ -40,9 +39,9 @@ class ResourceCategoryController extends Controller
      */
     public function create()
     {
-        $this->authorize('create', Resource::class);
+        $this->handleAuthorization('create', Resource::class);
 
-        return Inertia::render('Admin/Reservations/CreateResourceCategory');
+        return $this->inertiaResponse('Admin/Reservations/CreateResourceCategory');
     }
 
     /**
@@ -52,7 +51,8 @@ class ResourceCategoryController extends Controller
     {
         $resourceCategory = new ResourceCategory;
 
-        $resourceCategory->fill($request->safe()->toArray());
+        $validatedData = $request->safe();
+        $resourceCategory->fill($validatedData->toArray());
         $resourceCategory->save();
 
         return redirect()->route('resourceCategories.index')->with(['success' => 'Resource category created successfully!']);
@@ -63,9 +63,9 @@ class ResourceCategoryController extends Controller
      */
     public function edit(ResourceCategory $resourceCategory)
     {
-        $this->authorize('create', Resource::class);
+        $this->handleAuthorization('create', Resource::class);
 
-        return Inertia::render('Admin/Reservations/EditResourceCategory', [
+        return $this->inertiaResponse('Admin/Reservations/EditResourceCategory', [
             'resourceCategory' => $resourceCategory->toFullArray(),
         ]);
     }
@@ -76,7 +76,8 @@ class ResourceCategoryController extends Controller
     public function update(UpdateResourceCategoryRequest $request, ResourceCategory $resourceCategory)
     {
 
-        $resourceCategory->fill($request->safe()->toArray());
+        $validatedData = $request->safe();
+        $resourceCategory->fill($validatedData->toArray());
         $resourceCategory->save();
 
         return back()->with(['success' => 'Resource category updated successfully!']);
@@ -87,7 +88,7 @@ class ResourceCategoryController extends Controller
      */
     public function destroy(ResourceCategory $resourceCategory)
     {
-        $this->authorize('create', Resource::class);
+        $this->handleAuthorization('create', Resource::class);
 
         $resourceCategory->delete();
 

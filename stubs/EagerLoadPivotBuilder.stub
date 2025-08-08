@@ -1,0 +1,14 @@
+<?php
+
+namespace AjCastro\EagerLoadPivotRelations;
+
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
+
+/**
+ * @template TModelClass of Model
+ * @extends Builder<TModelClass>
+ */
+class EagerLoadPivotBuilder extends Builder
+{
+}

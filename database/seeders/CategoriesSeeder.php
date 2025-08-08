@@ -15,10 +15,10 @@ class CategoriesSeeder extends Seeder
     public function run()
     {
         DB::table('categories')->insert([
-            ['alias' => 'red', 'name' => 'Akademinės naujienos'],
-            ['alias' => 'yellow', 'name' => 'Socialinės naujienos'],
-            ['alias' => 'grey', 'name' => 'Kita informacija'],
-            ['alias' => 'freshmen-camps', 'name' => 'Pirmakursių stovykla'],
+            ['alias' => 'red', 'name' => json_encode(['lt' => 'Akademinės naujienos', 'en' => 'Academic news'])],
+            ['alias' => 'yellow', 'name' => json_encode(['lt' => 'Socialinės naujienos', 'en' => 'Social news'])],
+            ['alias' => 'grey', 'name' => json_encode(['lt' => 'Kita informacija', 'en' => 'Other information'])],
+            ['alias' => 'freshmen-camps', 'name' => json_encode(['lt' => 'Pirmakursių stovykla', 'en' => 'Freshmen camps'])],
         ]);
     }
 }

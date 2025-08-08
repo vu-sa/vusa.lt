@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexTypeRequest;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Role;
@@ -11,9 +11,8 @@ use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\TanstackTableService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use Inertia\Inertia;
 
-class TypeController extends Controller
+class TypeController extends AdminController
 {
     use HasTanstackTables;
 
@@ -21,12 +20,10 @@ class TypeController extends Controller
 
     /**
      * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function index(IndexTypeRequest $request)
     {
-        $this->authorize('viewAny', Type::class);
+        $this->handleAuthorization('viewAny', Type::class);
 
         // Build base query with eager loading
         $query = Type::query();
@@ -52,7 +49,7 @@ class TypeController extends Controller
         // Get the sorting state using the custom method to ensure consistent parsing
         $sorting = $request->getSorting();
 
-        return Inertia::render('Admin/ModelMeta/IndexTypes', [
+        return $this->inertiaResponse('Admin/ModelMeta/IndexTypes', [
             'data' => $types->items(),
             'meta' => [
                 'total' => $types->total(),
@@ -70,14 +67,12 @@ class TypeController extends Controller
 
     /**
      * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function create()
     {
-        $this->authorize('create', Type::class);
+        $this->handleAuthorization('create', Type::class);
 
-        return Inertia::render('Admin/ModelMeta/CreateType', [
+        return $this->inertiaResponse('Admin/ModelMeta/CreateType', [
             'contentTypes' => Type::select('id', 'title', 'model_type')->get(),
             'roles' => Role::all(),
         ]);
@@ -85,12 +80,10 @@ class TypeController extends Controller
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
-        $this->authorize('create', Type::class);
+        $this->handleAuthorization('create', Type::class);
 
         $request->validate([
             'title.lt' => 'required|string',
@@ -117,30 +110,26 @@ class TypeController extends Controller
 
     /**
      * Display the specified resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function show(Type $type)
     {
-        $this->authorize('view', $type);
+        $this->handleAuthorization('view', $type);
 
-        return Inertia::render('Admin/ModelMeta/ShowType', [
+        return $this->inertiaResponse('Admin/ModelMeta/ShowType', [
             'contentType' => $type->toArray(),
         ]);
     }
 
     /**
      * Show the form for editing the specified resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function edit(Type $type)
     {
-        $this->authorize('update', $type);
+        $this->handleAuthorization('update', $type);
 
         $modelType = Str::of($type->model_type)->afterLast('\\')->lower()->plural()->toString();
 
-        return Inertia::render('Admin/ModelMeta/EditType', [
+        return $this->inertiaResponse('Admin/ModelMeta/EditType', [
             'contentType' => [
                 ...$type->load($modelType)->toFullArray(),
                 'roles' => $type->roles->pluck('id')->toArray(),
@@ -155,12 +144,10 @@ class TypeController extends Controller
 
     /**
      * Update the specified resource in storage.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function update(Request $request, Type $type)
     {
-        $this->authorize('update', $type);
+        $this->handleAuthorization('update', $type);
 
         $request->validate([
             'title.lt' => 'required|string',
@@ -186,12 +173,10 @@ class TypeController extends Controller
 
     /**
      * Remove the specified resource from storage.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function destroy(Type $type)
     {
-        $this->authorize('delete', $type);
+        $this->handleAuthorization('delete', $type);
 
         $type->delete();
 
@@ -201,7 +186,7 @@ class TypeController extends Controller
 
     public function restore(Type $type)
     {
-        $this->authorize('restore', $type);
+        $this->handleAuthorization('restore', $type);
 
         $type->restore();
 

@@ -34,11 +34,11 @@ class MemberRegistered extends Notification implements ShouldQueue
      * Get the mail representation of the notification.
      *
      * @param  mixed  $notifiable
-     * @return \Illuminate\Notifications\Messages\MailMessage
+     * @return \App\Mail\InformChairAboutMemberRegistration
      */
     public function toMail($notifiable)
     {
-        return (new InformChairAboutMemberRegistration($this->registration_id, $this->name, $this->institution))
+        return (new InformChairAboutMemberRegistration((string) $this->registration_id, $this->name, $this->institution))
             ->to($this->email);
     }
 

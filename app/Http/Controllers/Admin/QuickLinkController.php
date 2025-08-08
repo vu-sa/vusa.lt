@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetTenantsForUpserts;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\AdminController;
 use App\Models\Calendar;
 use App\Models\Category;
 use App\Models\Institution;
@@ -17,18 +17,16 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
-class QuickLinkController extends Controller
+class QuickLinkController extends AdminController
 {
     public function __construct(public Authorizer $authorizer) {}
 
     /**
      * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function index(Request $request)
     {
-        $this->authorize('viewAny', QuickLink::class);
+        $this->handleAuthorization('viewAny', QuickLink::class);
 
         $indexer = new ModelIndexer(new QuickLink);
 
@@ -38,21 +36,19 @@ class QuickLinkController extends Controller
             ->sortAllColumns()
             ->builder->paginate(15);
 
-        return Inertia::render('Admin/Content/IndexQuickLink', [
+        return $this->inertiaResponse('Admin/Content/IndexQuickLink', [
             'quickLinks' => $quickLinks,
         ]);
     }
 
     /**
      * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function create()
     {
-        $this->authorize('create', QuickLink::class);
+        $this->handleAuthorization('create', QuickLink::class);
 
-        return Inertia::render('Admin/Content/CreateQuickLink', [
+        return $this->inertiaResponse('Admin/Content/CreateQuickLink', [
             'typeOptions' => Inertia::lazy(fn () => $this->getQuickLinkTypeOptions(request()->input('type'))),
             'tenantOptions' => GetTenantsForUpserts::execute('quickLinks.create.padalinys', $this->authorizer),
         ]);
@@ -60,12 +56,10 @@ class QuickLinkController extends Controller
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
-        $this->authorize('create', QuickLink::class);
+        $this->handleAuthorization('create', QuickLink::class);
 
         $request->validate([
             'text' => 'required',
@@ -94,12 +88,10 @@ class QuickLinkController extends Controller
 
     /**
      * Show the form for editing the specified resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function edit(QuickLink $quickLink)
     {
-        $this->authorize('update', $quickLink);
+        $this->handleAuthorization('update', $quickLink);
 
         // $routes = Route::getRoutes();
 
@@ -121,7 +113,7 @@ class QuickLinkController extends Controller
 
         // dd($routesWithoutParams);
 
-        return Inertia::render('Admin/Content/EditQuickLink', [
+        return $this->inertiaResponse('Admin/Content/EditQuickLink', [
             'quickLink' => $quickLink,
             'tenantOptions' => GetTenantsForUpserts::execute('quickLinks.update.padalinys', $this->authorizer),
             'typeOptions' => Inertia::lazy(fn () => $this->getQuickLinkTypeOptions(request()->input('type'))),
@@ -130,12 +122,10 @@ class QuickLinkController extends Controller
 
     /**
      * Update the specified resource in storage.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function update(Request $request, QuickLink $quickLink)
     {
-        $this->authorize('update', $quickLink);
+        $this->handleAuthorization('update', $quickLink);
 
         $request->validate([
             'text' => 'required',
@@ -151,12 +141,10 @@ class QuickLinkController extends Controller
 
     /**
      * Remove the specified resource from storage.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function destroy(QuickLink $quickLink)
     {
-        $this->authorize('delete', $quickLink);
+        $this->handleAuthorization('delete', $quickLink);
 
         $quickLink->delete();
 
@@ -167,9 +155,9 @@ class QuickLinkController extends Controller
     {
         $quickLinks = QuickLink::query()->where('tenant_id', $tenant->id)->where('lang', $lang)->orderBy('order')->get();
 
-        $this->authorize('update', $quickLinks->first());
+        $this->handleAuthorization('update', $quickLinks->first());
 
-        return Inertia::render('Admin/Content/EditQuickLinkOrder', [
+        return $this->inertiaResponse('Admin/Content/EditQuickLinkOrder', [
             'quickLinks' => $quickLinks,
             'tenant' => $tenant,
         ]);
@@ -182,7 +170,7 @@ class QuickLinkController extends Controller
         ]);
 
         foreach ($request->orderList as $idAndOrder) {
-            $this->authorize('update', [QuickLink::class, QuickLink::find($idAndOrder['id']), $this->authorizer]);
+            $this->handleAuthorization('update', [QuickLink::class, QuickLink::find($idAndOrder['id']), $this->authorizer]);
         }
 
         DB::transaction(function () use ($request) {

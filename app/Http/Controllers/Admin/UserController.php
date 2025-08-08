@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\SendWelcomeEmail;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\AdminController;
 use App\Http\Requests\GenerateUserPasswordRequest;
 use App\Http\Requests\MergeUsersRequest;
 use App\Http\Requests\StoreUserRequest;
@@ -24,18 +24,16 @@ use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Laravel\Socialite\Facades\Socialite;
 
-class UserController extends Controller
+class UserController extends AdminController
 {
     public function __construct(public Authorizer $authorizer) {}
 
     /**
      * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function index(Request $request)
     {
-        $this->authorize('viewAny', User::class);
+        $this->handleAuthorization('viewAny', User::class);
 
         $indexer = new ModelIndexer(new User);
 
@@ -52,23 +50,21 @@ class UserController extends Controller
 
         $collection = $users->getCollection()->makeVisible(['last_action']);
 
-        return Inertia::render('Admin/People/IndexUser', [
+        return $this->inertiaResponse('Admin/People/IndexUser', [
             'users' => $users->setCollection($collection),
         ]);
     }
 
     /**
      * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function create()
     {
-        $this->authorize('create', User::class);
+        $this->handleAuthorization('create', User::class);
 
         $permissableTenants = User::find(Auth::id())->hasRole(config('permission.super_admin_role_name')) ? Tenant::all() : $this->authorizer->getTenants();
 
-        return Inertia::render('Admin/People/CreateUser', [
+        return $this->inertiaResponse('Admin/People/CreateUser', [
             'roles' => Role::all(),
             'tenantsWithDuties' => $this->getDutiesForForm($this->authorizer),
             'permissableTenants' => $permissableTenants,
@@ -77,8 +73,6 @@ class UserController extends Controller
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function store(StoreUserRequest $request)
     {
@@ -87,7 +81,8 @@ class UserController extends Controller
 
             $user = new User;
 
-            $user->fill($request->safe()->except(['current_duties', 'roles']));
+            $validatedData = $request->safe();
+            $user->fill(collect($validatedData)->except(['current_duties', 'roles'])->toArray());
 
             $user->save();
 
@@ -106,19 +101,17 @@ class UserController extends Controller
             }
         });
 
-        return redirect()->route('users.index')->with('success', 'Kontaktas sėkmingai sukurtas!');
+        return $this->redirectResponse('users.index')->with('success', 'Kontaktas sėkmingai sukurtas!');
     }
 
     /**
      * Display the specified resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function show(User $user)
     {
-        $this->authorize('view', $user);
+        $this->handleAuthorization('view', $user);
 
-        return Inertia::render('Admin/People/ShowUser', [
+        return $this->inertiaResponse('Admin/People/ShowUser', [
             'user' => $user->load(['duties' => function ($query) {
                 $query->withPivot('start_date', 'end_date');
             }]),
@@ -127,19 +120,17 @@ class UserController extends Controller
 
     /**
      * Show the form for editing the specified resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function edit(User $user)
     {
-        $this->authorize('update', $user);
+        $this->handleAuthorization('update', $user);
 
         // user load duties with pivot
         $user->load('current_duties', 'previous_duties', 'roles');
 
         $permissableTenants = User::find(Auth::id())->hasRole(config('permission.super_admin_role_name')) ? Tenant::all() : $this->authorizer->getTenants();
 
-        return Inertia::render('Admin/People/EditUser', [
+        return $this->inertiaResponse('Admin/People/EditUser', [
             'user' => $user->makeVisible(['last_action'])->append('has_password')->toFullArray(),
             // get all roles
             'roles' => fn () => Role::all(),
@@ -150,29 +141,27 @@ class UserController extends Controller
 
     public function sendWelcomeEmail(User $user)
     {
-        $this->authorize('update', $user);
+        $this->handleAuthorization('update', $user);
 
         SendWelcomeEmail::execute((new Collection)->push($user));
 
-        return back()->with('success', 'Laiškas sėkmingai išsiųstas!');
+        return $this->redirectBackWithSuccess('Laiškas sėkmingai išsiųstas!');
     }
 
     public function renderWelcomeEmail(User $user)
     {
-        $this->authorize('update', $user);
+        $this->handleAuthorization('update', $user);
 
         return new \App\Mail\WelcomeEmail($user);
     }
 
     /**
      * Update the specified resource in storage.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function update(Request $request, User $user)
     {
         // TODO: make duty attach / detach work properly
-        $this->authorize('update', $user);
+        $this->handleAuthorization('update', $user);
 
         $request->validate([
             'name' => 'required',
@@ -241,16 +230,14 @@ class UserController extends Controller
 
     /**
      * Remove the specified resource from storage.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function destroy(User $user)
     {
-        $this->authorize('delete', $user);
+        $this->handleAuthorization('delete', $user);
 
         $user->delete();
 
-        return redirect()->route('users.index')->with('info', 'Kontaktas sėkmingai ištrintas!');
+        return $this->redirectResponse('users.index')->with('info', 'Kontaktas sėkmingai ištrintas!');
     }
 
     private function getDutiesForForm($authorizer)
@@ -272,18 +259,18 @@ class UserController extends Controller
 
     public function storeFromMicrosoft(Request $request)
     {
-        $microsoftUser = Socialite::driver('microsoft')->stateless()->user();
+        $microsoftUser = Socialite::driver('microsoft')->user();
 
         /* dd(Socialite::driver('microsoft')->stateless()); */
 
         // pirmiausia ieškome per vartotoją, per paštą
-        $user = User::where('email', $microsoftUser->email)->first();
+        $user = User::where('email', $microsoftUser->getEmail())->first();
 
         if ($user) {
             // jei randama per vartotojo paštą, prijungiam
 
             // if user role is null, add role
-            $user->microsoft_token = $microsoftUser->token;
+            $user->microsoft_token = $microsoftUser->token ?? null;
 
             $user->save();
 
@@ -293,7 +280,7 @@ class UserController extends Controller
             return redirect()->intended(RouteServiceProvider::HOME);
         }
 
-        $duty = Duty::where('email', $microsoftUser->email)->first();
+        $duty = Duty::where('email', $microsoftUser->getEmail())->first();
 
         if ($duty) {
             // # TEST: if only current users from duty are allowed to login
@@ -311,7 +298,8 @@ class UserController extends Controller
                 return redirect()->route('home', ['subdomain' => 'www', 'lang' => app()->getLocale()])->with('error', 'Nepavyko prisijungti su pareigybiniu paštu, nes pareigybinis paštas neturi aktyvaus vartotojo. Bandykite ištrinti slapukus arba naudoti naršyklės privatų rėžimą.');
             }
 
-            $user->microsoft_token = $microsoftUser->token;
+            /** @var \App\Models\User $user */
+            $user->microsoft_token = $microsoftUser->token ?? null;
 
             $user->save();
 
@@ -345,7 +333,7 @@ class UserController extends Controller
 
     public function merge()
     {
-        $this->authorize('merge', User::class);
+        $this->handleAuthorization('merge', User::class);
 
         $indexer = new ModelIndexer(new User);
 
@@ -356,9 +344,9 @@ class UserController extends Controller
                     'duties.institution:id,tenant_id',
                     'duties.institution.tenant:id,shortname',
                 ])->withCount('duties')])
-            ->builder->get(['id', 'name', 'email']);
+            ->builder->get();
 
-        return Inertia::render('Admin/People/MergeUser', [
+        return $this->inertiaResponse('Admin/People/MergeUser', [
             'users' => $users,
         ]);
     }
@@ -370,13 +358,12 @@ class UserController extends Controller
         $mergedUser = User::query()->find($request->merged_user_id);
 
         DB::transaction(function () use ($keptUser, $mergedUser) {
-            // transfer duties, doings, tasks, memberships, reservations
+            // transfer duties, tasks, memberships, reservations
             foreach ($mergedUser->duties as $duty) {
                 $mergedUser->duties()->updateExistingPivot($duty->id, ['dutiable_id' => $keptUser->id]);
             }
 
             // TODO: some how manage mergeable relationships
-            $mergedUser->doings()->update(['user_id' => $keptUser->id]);
 
             $mergedUser->tasks()->update(['user_id' => $keptUser->id]);
 
@@ -404,7 +391,7 @@ class UserController extends Controller
 
     public function restore(User $user, Request $request)
     {
-        $this->authorize('restore', $user);
+        $this->handleAuthorization('restore', $user);
 
         $user->restore();
 
@@ -415,12 +402,12 @@ class UserController extends Controller
     {
         $user = User::withTrashed()->findOrFail($id);
 
-        $this->authorize('forceDelete', $user);
+        $this->handleAuthorization('forceDelete', $user);
 
         $user->duties()->detach();
         $user->forceDelete();
 
-        return redirect()->route('users.index')->with('success', 'Kontaktas sėkmingai ištrintas!');
+        return $this->redirectResponse('users.index')->with('success', 'Kontaktas sėkmingai ištrintas!');
     }
 
     /**

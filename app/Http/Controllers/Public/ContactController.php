@@ -6,6 +6,7 @@ use App\Http\Controllers\PublicController;
 use App\Models\Institution;
 use App\Models\Tenant;
 use App\Models\Type;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Str;
@@ -163,6 +164,7 @@ class ContactController extends PublicController
 
         // remove descendants without institutions
         $descendants = $descendants->filter(function ($descendant) {
+            /** @var Type $descendant */
             return $descendant->institutions->count() > 0;
         })->values();
 
@@ -188,6 +190,7 @@ class ContactController extends PublicController
         return Inertia::render('Public/Contacts/ContactInstitutionOrType', [
             'institution' => $institution,
             'contacts' => $contacts->map(function ($contact) use ($institution) {
+                /** @var User $contact */
                 return [
                     'id' => $contact->id,
                     'name' => $contact->name,
@@ -210,7 +213,8 @@ class ContactController extends PublicController
     /**
      * contactsCategory
      *
-     * @param  array  $rest
+     * @param  string  $subdomain
+     * @param  string  $lang
      * @return \Inertia\Response
      */
     public function institutionCategory($subdomain, $lang, Type $type)

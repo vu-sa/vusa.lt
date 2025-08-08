@@ -19,8 +19,10 @@ class ModelAuthorizer
      */
     public User $user;
 
+    /** @var Collection<int, \App\Models\Duty> */
     public Collection $duties;
 
+    /** @var Collection<int, \App\Models\Duty> */
     public Collection $permissableDuties;
 
     public bool $isAllScope = false;
@@ -147,7 +149,7 @@ class ModelAuthorizer
      * that permission will be used as context.
      *
      * @param  string|null  $permission  Optional permission to filter duties by
-     * @return Collection<Tenant>
+     * @return Collection<int, Tenant>
      */
     public function getTenants(?string $permission = null): Collection
     {
@@ -183,12 +185,16 @@ class ModelAuthorizer
             ? $this->permissableDuties
             : $this->loadDuties();
 
-        return new Collection($dutiesToUse
+        /** @var Collection<int, Tenant> $tenants */
+        $tenants = $dutiesToUse
             ->load('institution.tenant')
             ->pluck('institution.tenant')
-            ->flatten(1)
+            ->filter()
             ->unique('id')
-            ->values());
+            ->values();
+
+        // Convert to Eloquent Collection to match return type
+        return new Collection($tenants->all());
         // });
     }
 

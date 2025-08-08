@@ -105,6 +105,12 @@ if ($request->has('field') && !empty($request->field)) {
 - Run tests using Sail: `./vendor/bin/sail artisan test`
 - Admin routes use no "admin." prefix (e.g., `route('studyPrograms.index')`)
 
+## Database Inspection
+
+- Use `./vendor/bin/sail artisan db:table {table_name}` to inspect table structure, columns, indexes, and foreign keys
+- This command provides detailed information about column types, constraints, and relationships
+- Helpful for understanding model relationships and database structure during development
+
 ## Working with Larger Components
 
 - Break complex features into smaller, reusable components

@@ -2,7 +2,6 @@
 
 namespace Database\Factories;
 
-use App\Models\Doing;
 use App\Models\Duty;
 use App\Models\Institution;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -21,7 +20,7 @@ class TypeFactory extends Factory
     {
         return [
             'title' => ['lt' => $this->faker->sentence, 'en' => $this->faker->sentence],
-            'model_type' => fake()->randomElement([Doing::class, Duty::class, Institution::class]),
+            'model_type' => fake()->randomElement([Duty::class, Institution::class]),
             'description' => ['lt' => $this->faker->paragraph, 'en' => $this->faker->paragraph],
             'slug' => $this->faker->slug,
         ];

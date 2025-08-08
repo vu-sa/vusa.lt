@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\AdminController;
 use App\Http\Requests\UpdateProgrammeRequest;
 use App\Models\Programme;
 use App\Models\ProgrammeBlock;
@@ -13,7 +13,7 @@ use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class ProgrammeController extends Controller
+class ProgrammeController extends AdminController
 {
     public function __construct(public Authorizer $authorizer) {}
 

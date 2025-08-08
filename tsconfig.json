@@ -52,10 +52,10 @@
     // For `<script setup>`
     // See <https://devblogs.microsoft.com/typescript/announcing-typescript-4-5-beta/#preserve-value-imports>
     "verbatimModuleSyntax": true,
-    // ???
-    //"noEmit": true,
-    //"skipLibCheck": true,
-    //"forceConsistentCasingInFileNames": true,
+    // Performance and consistency improvements
+    "noEmit": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
     ///
     // Enforce using `import type` instead of `import` for types
     "allowImportingTsExtensions": true

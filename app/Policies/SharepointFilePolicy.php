@@ -3,6 +3,7 @@
 namespace App\Policies;
 
 use App\Enums\ModelEnum;
+use App\Models\SharepointFile;
 use App\Models\User;
 use App\Services\ModelAuthorizer;
 use Illuminate\Database\Eloquent\Model;
@@ -19,13 +20,15 @@ class SharepointFilePolicy extends ModelPolicy
 
     /**
      * Determine whether the user can delete the model.
+     *
+     * @param  SharepointFile  $sharepointFile
      */
     public function delete(User $user, Model $sharepointFile): bool
     {
         $fileable = $sharepointFile->fileables->first()->fileable;
 
         // Authorize by fileable
-        if (Gate::allows('delete', $fileable)) {
+        if (Gate::allows('delete', [$fileable])) {
             return true;
         }
 

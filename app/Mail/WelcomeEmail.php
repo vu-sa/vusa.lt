@@ -36,7 +36,7 @@ class WelcomeEmail extends Mailable implements ShouldQueue
         return new Envelope(
             // add emoji in end
             subject: '⭐️ VU SA naujina atstovavimo procesą! | ⭐️ VU SR is updating the representation process!',
-            replyTo: 'it@vusa.lt'
+            replyTo: ['it@vusa.lt']
         );
     }
 

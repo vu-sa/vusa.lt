@@ -31,7 +31,7 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
     data: any;
     info: string | null;
     success: string | null;
-    statusCode: number | null;
+    error: string | null;
   };
   mainNavigation?: App.Entities.Navigation[];
   otherLangURL?: string | null;

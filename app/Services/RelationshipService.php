@@ -98,7 +98,6 @@ class RelationshipService
      *
      * @param  mixed  $model_type
      * @param  mixed  $relationshipable
-     * @return void
      */
     protected static function getGivenModelsFromModelType($model_type, $relationshipable): array
     {

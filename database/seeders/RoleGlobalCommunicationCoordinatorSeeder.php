@@ -26,6 +26,16 @@ class RoleGlobalCommunicationCoordinatorSeeder extends Seeder
             'tags.read.*',
             'tags.update.*',
             'tags.delete.*',
+            // Global navigation management (note: navigations, not navigation)
+            'navigations.create.*',
+            'navigations.read.*',
+            'navigations.update.*',
+            'navigations.delete.*',
+            // Global category management
+            'categories.create.*',
+            'categories.read.*',
+            'categories.update.*',
+            'categories.delete.*',
             // Other global content management permissions can be added here
         ]);
 

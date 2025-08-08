@@ -3,8 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetTenantsForUpserts;
-use App\Http\Controllers\Controller;
-use App\Models\Comment;
+use App\Http\Controllers\AdminController;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Page;
@@ -18,33 +17,23 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Str;
 use Inertia\Inertia;
-use Spatie\Activitylog\Models\Activity;
 
 // HACK: there's so much hacking here...
 // TODO: 1. Refactor, so the tenant selection and authorization is done in a middleware
 // TODO: 2. Non-existing tenants should 404
 
-class DashboardController extends Controller
+class DashboardController extends AdminController
 {
     public function __construct(public Authorizer $authorizer) {}
 
     public function index(Request $request)
     {
         $user = User::query()->find(Auth::id()) ?? abort(404);
-        $userTenantId = $user->current_duties?->first()?->institution?->tenant_id ?? null;
+        $userTenantId = $user->current_duties->first()->institution->tenant_id ?? null;
 
         // TODO: for some reasoning, the chaining doesn't work
         $this->authorizer = $this->authorizer->forUser($user);
-
-        // Check if we should show tenant activities (with proper permission check)
-        $showTenantActivities = $request->input('view_type') === 'tenant' &&
-                               $userTenantId &&
-                               $this->authorizer->check('activity_log.view.padalinys');
-
-        // Get recent activities based on view type
-        // $recentActivities = $this->getRecentActivities($showTenantActivities ? $userTenantId : null);
 
         // Get task statistics for the dashboard
         $taskStats = [
@@ -56,192 +45,12 @@ class DashboardController extends Controller
         // Get notification count
         $unreadNotificationsCount = $user->unreadNotifications()->count();
 
-        return Inertia::render('Admin/ShowAdminHome', [
-            // 'recentActivities' => $recentActivities,
+        return $this->inertiaResponse('Admin/ShowAdminHome', [
             'taskStats' => $taskStats,
             'unreadNotificationsCount' => $unreadNotificationsCount,
             'hasNotifications' => $unreadNotificationsCount > 0,
             'user' => $user,
-            'showTenantActivities' => $showTenantActivities,
-            'canViewTenantActivities' => $this->authorizer->checkAllRoleables('activity_log.view.padalinys'),
         ]);
-    }
-
-    /**
-     * Get recent activities for the current user or tenant
-     *
-     * @param  int|null  $tenantId  If provided, get tenant activities; otherwise get user activities
-     * @return array
-     */
-    private function getRecentActivities(?int $tenantId = null, int $limit = 10)
-    {
-        $userId = Auth::id();
-        $query = Activity::query()->with(['causer', 'subject']);
-
-        if ($tenantId) {
-            // Get tenant activities: activities where subject belongs to the tenant
-            // We use whereHasMorph to handle polymorphic relationships across different models
-            $query->where(function ($q) use ($tenantId) {
-                // Handle regular models with tenant_id
-                $q->whereHasMorph('subject', '*', function ($subjectQuery) use ($tenantId) {
-                    // Only include subjects that belong to the tenant if they have tenant_id
-                    if (method_exists($subjectQuery->getModel(), 'tenant')) {
-                        $subjectQuery->where('tenant_id', $tenantId);
-                    } elseif (method_exists($subjectQuery->getModel(), 'tenants')) {
-                        // For models with a many-to-many relationship with tenants
-                        $subjectQuery->whereHas('tenants', function ($query) use ($tenantId) {
-                            $query->where('tenants.id', $tenantId);
-                        });
-                    }
-                });
-
-                // Special handling for Comment model which doesn't have direct tenant relationship
-                $q->orWhereHasMorph('subject', [Comment::class], function ($commentQuery) use ($tenantId) {
-                    $commentQuery->whereHas('commentable', function ($commentableQuery) use ($tenantId) {
-                        // Get the actual model class of the commentable
-                        $model = $commentableQuery->getModel();
-                        $modelClass = get_class($model);
-
-                        // Check various ways a model might relate to tenants
-                        if (method_exists($model, 'tenant')) {
-                            $commentableQuery->where('tenant_id', $tenantId);
-                        } elseif (method_exists($model, 'tenants')) {
-                            $commentableQuery->whereHas('tenants', function ($query) use ($tenantId) {
-                                $query->where('tenants.id', $tenantId);
-                            });
-                        } elseif (method_exists($model, 'users') && method_exists($model, 'tenants')) {
-                            // For models like Doing that have users which have tenants
-                            $commentableQuery->whereHas('users', function ($userQuery) use ($tenantId) {
-                                $userQuery->whereHas('tenants', function ($tenantQuery) use ($tenantId) {
-                                    $tenantQuery->where('tenants.id', $tenantId);
-                                });
-                            });
-                        } elseif (method_exists($model, 'institutions')) {
-                            // For models that are related to institutions which relate to tenants
-                            $commentableQuery->whereHas('institutions', function ($institutionQuery) use ($tenantId) {
-                                $institutionQuery->where('tenant_id', $tenantId);
-                            });
-                        } elseif (method_exists($model, 'commentable')) {
-                            // Handle nested comments (comments on comments)
-                            $commentableQuery->whereHas('commentable', function ($nestedQuery) use ($tenantId) {
-                                if (method_exists($nestedQuery->getModel(), 'tenant')) {
-                                    $nestedQuery->where('tenant_id', $tenantId);
-                                } elseif (method_exists($nestedQuery->getModel(), 'tenants')) {
-                                    $nestedQuery->whereHas('tenants', function ($query) use ($tenantId) {
-                                        $query->where('tenants.id', $tenantId);
-                                    });
-                                }
-                            });
-                        } elseif ($modelClass === 'App\\Models\\Pivots\\ReservationResource') {
-                            // Special handling for ReservationResource pivot
-                            // Use a safer approach without relying on commentable_type column
-                            $commentableQuery->whereHas('resource', function ($resourceQuery) use ($tenantId) {
-                                $resourceQuery->where('tenant_id', $tenantId);
-                            });
-                        }
-                    });
-                });
-            });
-        } else {
-            // Get only the current user's activities
-            $query->where('causer_id', $userId);
-        }
-
-        $query->orderBy('created_at', 'desc');
-
-        // Add a whereNotNull check and try-catch to make the query more robust
-        try {
-            $activities = $query->limit($limit)->get();
-        } catch (\Exception $e) {
-            \Log::error('Error fetching activities: '.$e->getMessage());
-            $activities = collect([]);
-        }
-
-        // Transform activity data for frontend
-        return $activities->map(function ($activity) {
-            $actionText = $this->getActionText($activity);
-
-            return [
-                'id' => $activity->id,
-                'description' => $activity->description,
-                'causer_id' => $activity->causer_id,
-                'subject_type' => $activity->subject_type,
-                'subject_id' => $activity->subject_id,
-                'created_at' => $activity->created_at,
-                'updated_at' => $activity->updated_at,
-                'properties' => $activity->properties,
-                'user' => $activity->causer ? [
-                    'id' => $activity->causer->id,
-                    'name' => $activity->causer->name,
-                    'avatar' => $activity->causer->profile_photo_path,
-                ] : null,
-                'actionText' => $actionText,
-                'link' => $this->generateLink($activity),
-            ];
-        })->toArray();
-    }
-
-    /**
-     * Generate a readable action text based on activity
-     *
-     * @param  Activity  $activity
-     * @return string
-     */
-    private function getActionText($activity)
-    {
-        $action = $activity->description;
-
-        // Normalize common actions
-        switch ($action) {
-            case 'created':
-                return __('sukūrė');
-            case 'updated':
-                return __('atnaujino');
-            case 'deleted':
-                return __('ištrynė');
-            default:
-                return $action;
-        }
-    }
-
-    /**
-     * Generate a link to the subject if applicable
-     *
-     * @param  Activity  $activity
-     * @return string|null
-     */
-    private function generateLink($activity)
-    {
-        if (! $activity->subject) {
-            return null;
-        }
-
-        $subjectType = $activity->subject_type;
-        $subjectId = $activity->subject_id;
-
-        // Map model types to routes - extend this based on your application's needs
-        $routeMap = [
-            'App\\Models\\Meeting' => "meetings/{$subjectId}/edit",
-            'App\\Models\\Goal' => "goals/{$subjectId}/edit",
-            'App\\Models\\News' => "news/{$subjectId}/edit",
-            'App\\Models\\User' => "users/{$subjectId}",
-            'App\\Models\\Institution' => "institutions/{$subjectId}/edit",
-            'App\\Models\\Form' => "forms/{$subjectId}/edit",
-            'App\\Models\\Page' => "pages/{$subjectId}/edit",
-            'App\\Models\\Document' => "documents/{$subjectId}",
-            'App\\Models\\Calendar' => "calendar/{$subjectId}/edit",
-        ];
-
-        $baseType = class_basename($subjectType);
-        $pluralType = Str::plural(strtolower($baseType));
-
-        // First try to use the predefined map
-        if (isset($routeMap[$subjectType])) {
-            return '/mano/'.$routeMap[$subjectType];
-        }
-
-        // Generate a standard pattern as fallback
-        return "/mano/{$pluralType}/{$subjectId}";
     }
 
     public function atstovavimas()
@@ -285,12 +94,12 @@ class DashboardController extends Controller
             $providedTenant = Tenant::query()->where('id', $selectedTenant['id'])->with('institutions:id,name,tenant_id', 'institutions.meetings:id,title,start_time', 'institutions.duties.current_users:id,name', 'institutions.duties.types:id,title,slug')->first();
         }
 
-        return Inertia::render('Admin/Dashboard/ShowAtstovavimas', [
+        return $this->inertiaResponse('Admin/Dashboard/ShowAtstovavimas', [
             'user' => [...$user->toArray(),
                 'current_duties' => $user->current_duties->map(function ($duty) {
                     return [
                         ...$duty->toArray(),
-                        'institution' => $duty?->institution?->append('relatedInstitutions'),
+                        'institution' => $duty->institution?->append('relatedInstitutions'),
                     ];
                 })],
             'tenants' => $tenants->when($this->authorizer->isAllScope, function ($tenants) {
@@ -302,7 +111,7 @@ class DashboardController extends Controller
 
     public function svetaine()
     {
-        $this->authorize('viewAny', Page::class);
+        $this->handleAuthorization('viewAny', Page::class);
 
         $selectedTenant = request()->input('tenant_id');
 
@@ -333,7 +142,7 @@ class DashboardController extends Controller
             }])->first();
         }
 
-        return Inertia::render('Admin/Dashboard/ShowSvetaine', [
+        return $this->inertiaResponse('Admin/Dashboard/ShowSvetaine', [
             'tenants' => $tenants,
             'providedTenant' => $providedTenant,
         ]);
@@ -374,7 +183,7 @@ class DashboardController extends Controller
             $tenantResourceReservations = new Collection($tenantResourceReservations);
         }
 
-        return Inertia::render('Admin/Dashboard/ShowReservations', [
+        return $this->inertiaResponse('Admin/Dashboard/ShowReservations', [
             'reservations' => $reservations,
             'resources' => [
                 'active' => Resource::where('is_reservable', true)->count(),
@@ -399,7 +208,7 @@ class DashboardController extends Controller
             'current_duties.institution:id,tenant_id',
             'current_duties.institution.tenant:id,shortname')->makeVisible(['name_was_changed', 'show_pronouns']);
 
-        return Inertia::render('Admin/ShowUserSettings', [
+        return $this->inertiaResponse('Admin/ShowUserSettings', [
             'user' => $user->append('has_password')->toFullArray(),
         ]);
     }
@@ -408,14 +217,14 @@ class DashboardController extends Controller
     {
         $user = User::find(Auth::id());
 
-        if ($user->name !== $request->input('name') && ! $user->nameWasChanged) {
+        if ($user->name !== $request->input('name') && ! $user->name_was_changed) {
             $user->name_was_changed = true;
             $user->update($request->all());
         } else {
             $user->update($request->except('name'));
         }
 
-        return redirect()->back()->with('success', 'Nustatymai išsaugoti.');
+        return $this->redirectBackWithSuccess('Nustatymai išsaugoti.');
     }
 
     public function updatePassword(\App\Http\Requests\UpdatePasswordRequest $request)
@@ -434,7 +243,7 @@ class DashboardController extends Controller
 
         $tasks = $user->tasks->load('taskable', 'users');
 
-        return Inertia::render('Admin/ShowTasks', [
+        return $this->inertiaResponse('Admin/ShowTasks', [
             'tasks' => $tasks,
             'taskableInstitutions' => Inertia::lazy(fn () => Institution::select('id', 'name')->withWhereHas('users:users.id,users.name,profile_photo_path,phone')->get()),
         ]);
@@ -445,7 +254,7 @@ class DashboardController extends Controller
         // return institutions with user count
         $institutions = Institution::withCount('users')->get();
 
-        return Inertia::render('Admin/ShowInstitutionGraph', [
+        return $this->inertiaResponse('Admin/ShowInstitutionGraph', [
             'institutions' => $institutions,
             'institutionRelationships' => RelationshipService::getAllRelatedInstitutions(),
         ]);
@@ -461,7 +270,7 @@ class DashboardController extends Controller
         // just send simple email to it@vusa.lt with feedback, conditional user name and with in a queue
         Mail::to('it@vusa.lt')->queue(new \App\Mail\FeedbackMail($request->input('feedback'), $request->input('anonymous') ? null : Auth::user()));
 
-        return redirect()->back()->with('success', 'Ačiū už atsiliepimą!');
+        return $this->redirectBackWithSuccess('Ačiū už atsiliepimą!');
     }
 
     public function atstovavimasSummary(Request $request, $date = null)
@@ -506,18 +315,18 @@ class DashboardController extends Controller
             })->with('meeting.institutions')->get();
 
             // Organize loaded activities by meeting
-            $meetings = new Collection;
-
-            $meetings = $meetings->merge($meetingsWithActivities);
+            /** @var \Illuminate\Support\Collection<int, \App\Models\Meeting> $meetings */
+            $meetings = collect($meetingsWithActivities);
 
             $agendaItemsWithActivities->each(function ($agendaItem) use (&$meetings) {
-                if ($meetings->contains($agendaItem->meeting)) {
-                    if (! $meetings->firstWhere('id', $agendaItem->meeting->id)->changedAgendaItems) {
-                        $meetings->firstWhere('id', $agendaItem->meeting->id)->changedAgendaItems = collect();
+                $meeting = $meetings->firstWhere('id', $agendaItem->meeting->id);
+                if ($meeting) {
+                    if (! $meeting->getAttribute('changedAgendaItems')) {
+                        $meeting->setAttribute('changedAgendaItems', collect());
                     }
-                    $meetings->firstWhere('id', $agendaItem->meeting->id)->changedAgendaItems->push($agendaItem);
+                    $meeting->getAttribute('changedAgendaItems')->push($agendaItem);
                 } else {
-                    $agendaItem->meeting->changedAgendaItems = collect([$agendaItem]);
+                    $agendaItem->meeting->setAttribute('changedAgendaItems', collect([$agendaItem]));
                     $meetings->push($agendaItem->meeting);
                 }
             });
@@ -553,18 +362,18 @@ class DashboardController extends Controller
             })->get();
 
             // Organize loaded activities by meeting
-            $meetings = new Collection;
-
-            $meetings = $meetings->merge($meetingsWithActivities);
+            /** @var \Illuminate\Support\Collection<int, \App\Models\Meeting> $meetings */
+            $meetings = collect($meetingsWithActivities);
 
             $agendaItemsWithActivities->each(function ($agendaItem) use ($meetings) {
-                if ($meetings->contains($agendaItem->meeting)) {
-                    if (! $meetings->firstWhere('id', $agendaItem->meeting->id)->changedAgendaItems) {
-                        $meetings->firstWhere('id', $agendaItem->meeting->id)->changedAgendaItems = collect();
+                $meeting = $meetings->firstWhere('id', $agendaItem->meeting->id);
+                if ($meeting) {
+                    if (! $meeting->getAttribute('changedAgendaItems')) {
+                        $meeting->setAttribute('changedAgendaItems', collect());
                     }
-                    $meetings->firstWhere('id', $agendaItem->meeting->id)->changedAgendaItems->push($agendaItem);
+                    $meeting->getAttribute('changedAgendaItems')->push($agendaItem);
                 } else {
-                    $agendaItem->meeting->changedAgendaItems = collect([$agendaItem]);
+                    $agendaItem->meeting->setAttribute('changedAgendaItems', collect([$agendaItem]));
                     $meetings->push($agendaItem->meeting);
                 }
             });
@@ -574,7 +383,7 @@ class DashboardController extends Controller
 
         // $user = User::query()->where('id', Auth::id())->with('current_duties.institution.meetings.institutions:id,name')->first();
 
-        return Inertia::render('Admin/Dashboard/ShowAtstovavimasActivity', [
+        return $this->inertiaResponse('Admin/Dashboard/ShowAtstovavimasActivity', [
             'meetings' => $meetings->toArray(),
             'date' => $date,
             'tenants' => $tenants->when($this->authorizer->isAllScope, function ($tenants) {

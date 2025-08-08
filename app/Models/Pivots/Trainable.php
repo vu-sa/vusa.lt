@@ -10,6 +10,28 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Relations\MorphPivot;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
+/**
+ * @property int $id
+ * @property string $training_id
+ * @property string $trainable_type
+ * @property string $trainable_id
+ * @property int|null $tenant_id
+ * @property int|null $quota
+ * @property \Illuminate\Support\Carbon $created_at
+ * @property \Illuminate\Support\Carbon $updated_at
+ * @property-read Duty|null $duty
+ * @property-read Institution|null $institution
+ * @property-read Membership|null $membership
+ * @property-read Tenant|null $tenant
+ * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $trainable
+ * @property-read User|null $user
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Trainable newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Trainable newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Trainable query()
+ *
+ * @mixin \Eloquent
+ */
 class Trainable extends MorphPivot
 {
     // NOTE: for some reason, if Searchable trait is used on this model, it will cause an error

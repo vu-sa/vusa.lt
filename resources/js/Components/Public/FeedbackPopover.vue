@@ -27,7 +27,7 @@
 <script setup lang="ts">
 import { ref, watch } from "vue";
 import { router, usePage } from "@inertiajs/vue3";
-import { useMessage } from "naive-ui";
+import { useToasts } from '@/Composables/useToasts';
 import { useMousePressed, useTextSelection } from "@vueuse/core";
 
 import CardModal from "../Modals/CardModal.vue";
@@ -42,7 +42,7 @@ const mousePressed = useMousePressed();
 const textInQuestion = ref("");
 const feedback = ref("");
 
-const message = useMessage();
+const toasts = useToasts();
 
 watch(
   mousePressed.pressed,
@@ -93,7 +93,7 @@ function handleSend() {
       loading.value = false;
       showModal.value = false;
       feedback.value = "";
-      message.success(usePage().props.flash.success);
+      // Flash message will be handled automatically by the layout's useToasts
     }
   });
 }

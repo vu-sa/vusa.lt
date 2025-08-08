@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\AdminController;
 use App\Models\Navigation;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\NavigationService;
@@ -10,39 +10,35 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 
-class NavigationController extends Controller
+class NavigationController extends AdminController
 {
     public function __construct(public Authorizer $authorizer) {}
 
     /**
      * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $this->authorize('viewAny', Navigation::class);
+        $this->handleAuthorization('viewAny', Navigation::class);
 
-        return Inertia::render('Admin/Navigation/IndexNavigation', [
+        return $this->inertiaResponse('Admin/Navigation/IndexNavigation', [
             'navigation' => NavigationService::getNavigationForPublic(),
-            'typeOptions' => Inertia::lazy(fn () => QuickLinkController::getQuickLinkTypeOptions(request()->input('type'))),
+            'typeOptions' => Inertia::lazy(fn () => QuickLinkController::getQuickLinkTypeOptions($request->input('type'))),
         ]);
     }
 
     /**
      * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function create(Request $request)
     {
-        $this->authorize('create', Navigation::class);
+        $this->handleAuthorization('create', Navigation::class);
 
         // If root navigation or simple
 
-        $parent_id = $request?->parent_id ?? 0;
+        $parent_id = $request->parent_id ?? 0;
 
-        return Inertia::render('Admin/Navigation/CreateNavigation',
+        return $this->inertiaResponse('Admin/Navigation/CreateNavigation',
             [
                 'parent_id' => $parent_id,
                 'parentElements' => Navigation::where('parent_id', 0)->get(),
@@ -53,37 +49,33 @@ class NavigationController extends Controller
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
-        $this->authorize('create', Navigation::class);
+        $this->handleAuthorization('create', Navigation::class);
 
         $navigation = new Navigation($request->all());
 
         $navigation->order = Navigation::where('parent_id', $navigation->parent_id)->max('order') + 1;
 
         // The parent navigation element doesn't always exist
-        $navigation->lang = Navigation::where('id', $navigation->parent_id)->first()?->lang ?? app()->getLocale();
+        $navigation->lang = Navigation::where('id', $navigation->parent_id)->first()->lang ?? app()->getLocale();
 
         $navigation->save();
 
         Cache::forget('mainNavigation-'.app()->getLocale());
 
-        return redirect()->route('navigation.index')->with('success', 'Navigation created.');
+        return $this->redirectToIndexWithSuccess('navigation', 'Navigation created.');
     }
 
     /**
      * Show the form for editing the specified resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function edit(Navigation $navigation)
     {
-        $this->authorize('update', $navigation);
+        $this->handleAuthorization('update', $navigation);
 
-        return Inertia::render('Admin/Navigation/EditNavigation', [
+        return $this->inertiaResponse('Admin/Navigation/EditNavigation', [
             'navigationElement' => $navigation,
             'parentElements' => Navigation::where('parent_id', 0)->get(),
             'typeOptions' => Inertia::lazy(fn () => QuickLinkController::getQuickLinkTypeOptions(request()->input('type'))),
@@ -92,12 +84,10 @@ class NavigationController extends Controller
 
     /**
      * Update the specified resource in storage.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function update(Request $request, Navigation $navigation)
     {
-        $this->authorize('update', $navigation);
+        $this->handleAuthorization('update', $navigation);
 
         $navigation->fill($request->all());
 
@@ -175,12 +165,10 @@ class NavigationController extends Controller
 
     /**
      * Remove the specified resource from storage.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function destroy(Navigation $navigation)
     {
-        $this->authorize('delete', $navigation);
+        $this->handleAuthorization('delete', $navigation);
 
         $navigation->delete();
 

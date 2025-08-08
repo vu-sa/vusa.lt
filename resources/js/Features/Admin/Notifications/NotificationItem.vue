@@ -68,9 +68,6 @@ const notificationComponents = {
   ModelCommented: defineAsyncComponent(
     () => import("./NotificationTypes/ModelCommented.vue")
   ),
-  StateChangeNotification: defineAsyncComponent(
-    () => import("./NotificationTypes/StateChangeNotification.vue")
-  ),
 };
 
 const getNotificationComponent = (type: string) => {
@@ -79,8 +76,6 @@ const getNotificationComponent = (type: string) => {
       return notificationComponents.MemberRegistered;
     case "CommentNotification":
       return notificationComponents.ModelCommented;
-    case "StateChangeNotification":
-      return notificationComponents.StateChangeNotification;
     default:
       return notificationComponents.ModelCommented;
   }

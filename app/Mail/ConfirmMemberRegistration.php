@@ -5,6 +5,7 @@ namespace App\Mail;
 use App\Helpers\GenitivizeHelper;
 use App\Models\Duty;
 use App\Models\Institution;
+use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
@@ -22,6 +23,7 @@ class ConfirmMemberRegistration extends Mailable
      */
     public function __construct(public string $name, public Institution $institution, public Duty $dutyContact)
     {
+        /** @var User|null $user */
         $user = $dutyContact->current_users()->first();
 
         $this->contactName = $user?->name ? GenitivizeHelper::genitivizeEveryWord($user->name) : $dutyContact->email;

@@ -183,7 +183,8 @@ class SitemapController extends Controller
         // If no route parameter, extract from HTTP_HOST header (for testing)
         if (! $subdomain) {
             $host = $request->header('host') ?? $request->getHost();
-            $subdomain = explode('.', $host)[0] ?? 'www';
+            $hostParts = explode('.', $host);
+            $subdomain = $hostParts[0];
         }
 
         // Default to www if not set

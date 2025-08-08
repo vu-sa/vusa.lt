@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\AdminController;
 use App\Models\Institution;
 use App\Models\SharepointFile;
 use App\Models\Type;
@@ -11,20 +11,17 @@ use App\Services\ResourceServices\SharepointFileableService;
 use App\Services\ResourceServices\SharepointFileService;
 use App\Services\SharepointGraphService;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 
-class SharepointFileController extends Controller
+class SharepointFileController extends AdminController
 {
     public function __construct(public Authorizer $authorizer) {}
 
     /**
      * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function index(Request $request)
     {
-        $this->authorize('viewAny', SharepointFile::class);
+        $this->handleAuthorization('viewAny', SharepointFile::class);
 
         $graph = new SharepointGraphService(driveId: config('filesystems.sharepoint.vusa_drive_id'));
 
@@ -32,19 +29,17 @@ class SharepointFileController extends Controller
 
         $path = $path ?? 'General';
 
-        return Inertia::render('Admin/Files/IndexSharepoint', [
+        return $this->inertiaResponse('Admin/Files/IndexSharepoint', [
             'path' => $path,
         ]);
     }
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
-        $this->authorize('create', SharepointFile::class);
+        $this->handleAuthorization('create', SharepointFile::class);
 
         $validated = $request->validate([
             'file' => 'required',
@@ -89,12 +84,10 @@ class SharepointFileController extends Controller
 
     /**
      * Remove the specified resource from storage.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function destroy(Request $request, SharepointFile $sharepointFile)
     {
-        $this->authorize('delete', $sharepointFile);
+        $this->handleAuthorization('delete', $sharepointFile);
 
         $sharepointFileService = new SharepointGraphService(driveId: config('filesystems.sharepoint.vusa_drive_id'));
 
@@ -114,7 +107,7 @@ class SharepointFileController extends Controller
 
     public function getDriveItems(Request $request)
     {
-        // $this->authorize('viewAll', [SharepointFile::class, $this->authorizer]);
+        // $this->handleAuthorization('viewAll', [SharepointFile::class, $this->authorizer]);
 
         $sharepointService = new SharepointGraphService(driveId: config('filesystems.sharepoint.vusa_drive_id'));
 

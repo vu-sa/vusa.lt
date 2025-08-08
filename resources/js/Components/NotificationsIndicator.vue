@@ -142,8 +142,6 @@ const getNotificationTitle = (notification: BaseNotification): string => {
       return $t('New Member Registration')
     case 'UserAttachedToModel':
       return $t('Assignment Notification')
-    case 'StateChangeNotification':
-      return $t('Status Update')
     default:
       return data.subject?.name || $t('Notification')
   }
@@ -173,8 +171,6 @@ const getNotificationIcon = (type: string) => {
       return UserPlusIcon
     case 'UserAttachedToModel':
       return UserPlusIcon
-    case 'StateChangeNotification':
-      return CheckIcon
     default:
       return BellIcon
   }
@@ -189,8 +185,6 @@ const getNotificationIconClass = (type: string) => {
       return 'bg-green-500/20 text-green-600 dark:bg-green-500/10 dark:text-green-400'
     case 'UserAttachedToModel':
       return 'bg-purple-500/20 text-purple-600 dark:bg-purple-500/10 dark:text-purple-400'
-    case 'StateChangeNotification':
-      return 'bg-amber-500/20 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400'
     default:
       return 'bg-gray-500/20 text-gray-600 dark:bg-gray-500/10 dark:text-gray-400'
   }

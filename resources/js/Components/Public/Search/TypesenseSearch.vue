@@ -328,8 +328,7 @@ const searchAdapter = computed(() => {
       server: {
         apiKey: getTypesenseConfig.value.apiKey,
         nodes: getTypesenseConfig.value.nodes,
-        connectionTimeoutSeconds: 10,
-        timeoutSeconds: 20,
+        connectionTimeoutSeconds: 20,
       },
       additionalSearchParameters: {
         query_by: 'title,summary,short',

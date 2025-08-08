@@ -119,7 +119,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { useMessage } from 'naive-ui';
+import { useToasts } from '@/Composables/useToasts';
 
 // Components
 import CardModal from '@/Components/Modals/CardModal.vue';
@@ -149,7 +149,7 @@ const emit = defineEmits<{
   update: [path: string],
 }>();
 
-const message = useMessage();
+const toasts = useToasts();
 
 // State
 const showFolderUploadModal = ref(false);
@@ -296,7 +296,7 @@ const createDirectory = () => {
       preserveScroll: true,
       preserveState: true,
       onSuccess: () => {
-        message.success("Aplankas sukurtas");
+        toasts.success("Aplankas sukurtas");
         showFolderUploadModal.value = false;
         loading.value = false;
         emit("update", props.path);
@@ -326,14 +326,14 @@ const deleteFileConfirmed = () => {
       preserveScroll: true,
       preserveState: true,
       onSuccess: () => {
-        message.success(`${filesToDelete.length} failai ištrinti`);
+        toasts.success(`${filesToDelete.length} failai ištrinti`);
         clearSelection();
         loading.value = false;
         showDeleteModal.value = false;
         emit("update", props.path);
       },
       onError: () => {
-        message.error('Klaida trinant failus');
+        toasts.error('Klaida trinant failus');
         loading.value = false;
         showDeleteModal.value = false;
       }
@@ -345,13 +345,13 @@ const deleteFileConfirmed = () => {
         preserveScroll: true,
         preserveState: true,
         onSuccess: () => {
-          message.success("Failas ištrintas");
+          toasts.success("Failas ištrintas");
           loading.value = false;
           showDeleteModal.value = false;
           emit("update", props.path);
         },
         onError: () => {
-          message.error('Klaida trinant failą');
+          toasts.error('Klaida trinant failą');
           loading.value = false;
           showDeleteModal.value = false;
         }
@@ -457,7 +457,7 @@ function handleDeleteFolder() {
       preserveScroll: true,
       preserveState: true,
       onSuccess: () => {
-        message.success(`Aplankas "${folderName}" sėkmingai ištrintas.`);
+        toasts.success(`Aplankas "${folderName}" sėkmingai ištrintas.`);
         loading.value = false;
         // Navigate back to parent directory
         emit("back");
@@ -466,7 +466,7 @@ function handleDeleteFolder() {
         loading.value = false;
         // Show the first error message
         const errorMessage = Object.values(errors)[0];
-        message.error(typeof errorMessage === 'string' ? errorMessage : 'Nepavyko ištrinti aplanko.');
+        toasts.error(typeof errorMessage === 'string' ? errorMessage : 'Nepavyko ištrinti aplanko.');
       }
     });
   }
@@ -484,14 +484,14 @@ function handleFileUpload(files: File[]) {
       preserveScroll: true,
       preserveState: true,
       onSuccess: () => {
-        message.success(`${files.length} ${files.length === 1 ? 'failas įkeltas' : 'failai įkelti'}! Peržiūrėkite juos žemiau.`);
+        toasts.success(`${files.length} ${files.length === 1 ? 'failas įkeltas' : 'failai įkelti'}! Peržiūrėkite juos žemiau.`);
         loading.value = false;
         isUploadMode.value = false;
         uploadAreaRef.value?.clearFiles();
         emit("update", props.path);
       },
       onError: () => {
-        message.error('Klaida įkeliant failus');
+        toasts.error('Klaida įkeliant failus');
         loading.value = false;
       }
     },

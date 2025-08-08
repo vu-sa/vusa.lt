@@ -32,21 +32,25 @@ uses(
 |
 */
 
-expect()->extend('toBeOne', function () {
-    return $this->toBe(1);
+// Authorization-specific expectations
+expect()->extend('toBeAuthorizedFor', function (string $action, mixed $model = null) {
+    return $this->toBeIn([200, 201, 302, 303]);
 });
 
-// Security-focused expectations
+expect()->extend('toRequireAuth', function () {
+    return $this->toBeIn([302, 401, 403]);
+});
+
+expect()->extend('toBeForbidden', function () {
+    return $this->toBe(403);
+});
+
 expect()->extend('toBeSecureResponse', function () {
     return $this->toBeIn([200, 302, 403, 404, 422]);
 });
 
 expect()->extend('toBeSecureApiResponse', function () {
     return $this->toBeIn([200, 401, 403, 404]);
-});
-
-expect()->extend('toRequireAuth', function () {
-    return $this->toBeIn([302, 401, 403]);
 });
 
 expect()->extend('toNotExposePassword', function () {
@@ -82,27 +86,169 @@ function asUser(User $user): TestCase
     return test()->actingAs($user);
 }
 
-// Simplified test helpers
-function expectSecureRoute(string $route, ?User $user = null): void
+function asUserWithInertia(User $user): TestCase
 {
-    $response = $user ? asUser($user)->get($route) : test()->get($route);
-    expect($response->status())->toBeIn([200, 302, 403, 404]);
+    return test()->actingAs($user)->withHeaders([
+        'X-Inertia' => 'true',
+        'X-Inertia-Version' => 'test-version',
+    ]);
 }
 
-function expectApiSecure(string $endpoint, ?User $user = null): void
+function makeTenantUser(?string $role = null, ?Tenant $tenant = null): User
 {
-    $response = $user ? asUser($user)->getJson($endpoint) : test()->getJson($endpoint);
-    expect($response->status())->toBeIn([200, 401, 403, 404]);
-}
+    $tenant = $tenant ?? Tenant::query()->inRandomOrder()->first();
 
-function makeTenantUser(?string $role = null): User
-{
-    $tenant = Tenant::query()->inRandomOrder()->first();
+    if (! $tenant) {
+        throw new \RuntimeException('No tenants found in database. Ensure test database is properly seeded.');
+    }
+
     $user = makeUser($tenant);
 
     if ($role) {
-        $user->duties()->first()->assignRole($role);
+        // Get the duty and assign role to it
+        $duty = $user->duties()->first();
+
+        // Ensure the duty is current (no end_date)
+        $duty->pivot->end_date = null;
+        $duty->pivot->save();
+
+        // Assign role to duty (not user directly) - this is the correct pattern
+        $duty->assignRole($role);
     }
 
     return $user;
+}
+
+function makeTenantUserWithRole(string $role, ?Tenant $tenant = null): User
+{
+    return makeTenantUser($role, $tenant);
+}
+
+function makeAdminUser(?Tenant $tenant = null): User
+{
+    $user = makeTenantUser(null, $tenant);
+    $user->assignRole(config('permission.super_admin_role_name'));
+
+    return $user;
+}
+
+// Controller test data providers (focused on commonly used controllers only)
+function getControllerTestData(string $controller): array
+{
+    return match ($controller) {
+        'Page' => [
+            'valid' => [
+                'title' => 'Test puslapis',
+                'content' => [
+                    'parts' => [
+                        [
+                            'type' => 'tiptap',
+                            'json_content' => [
+                                'type' => 'doc',
+                                'content' => [
+                                    [
+                                        'type' => 'paragraph',
+                                        'content' => [
+                                            ['type' => 'text', 'text' => 'Test turinys'],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+                'permalink' => 'test-page',
+                'lang' => 'lt',
+                'is_active' => true,
+            ],
+            'invalid' => [
+                'title' => '', // Required field empty
+                'content' => ['parts' => []],
+                'permalink' => '',
+                'lang' => 'invalid',
+            ],
+        ],
+        'Category' => [
+            'valid' => [
+                'name' => ['lt' => 'Test kategorija', 'en' => 'Test category'],
+                'description' => ['lt' => 'Test aprašymas', 'en' => 'Test description'],
+            ],
+            'invalid' => [
+                'name' => ['lt' => '', 'en' => ''], // Required field empty
+            ],
+        ],
+        'Banner' => [
+            'valid' => [
+                'title' => 'Test baneris',
+                'image_url' => 'https://example.com/image.jpg',
+                'link_url' => 'https://example.com',
+                'is_active' => true,
+            ],
+            'invalid' => [
+                'title' => '', // Required field empty
+                'image_url' => '', // Required field empty
+            ],
+        ],
+        'Navigation' => [
+            'valid' => [
+                'name' => 'Test Navigation',
+                'url' => '/test-nav',
+                'parent_id' => 0,
+                'order' => 1,
+                'lang' => 'lt',
+            ],
+            'invalid' => [
+                'name' => '', // Required field empty
+                'url' => '',
+            ],
+        ],
+        'Training' => [
+            'valid' => [
+                'name' => ['lt' => 'Test Training', 'en' => 'Test Training EN'],
+                'description' => ['lt' => 'Test training description', 'en' => 'Test training description EN'],
+                'start_time' => now()->addDays(7)->timestamp * 1000, // Convert to milliseconds
+                'end_time' => now()->addDays(7)->addHours(3)->timestamp * 1000, // Convert to milliseconds
+                'address' => 'Training Room',
+                'max_participants' => 25,
+                'trainables' => [], // Empty array for related trainables
+                'tasks' => [], // Empty array for related tasks
+            ],
+            'invalid' => [
+                'name' => '', // Required field empty
+                'start_time' => '', // Required field empty
+                'end_time' => '', // Required field empty
+                'max_participants' => -1, // Invalid value
+                'trainables' => [], // Empty array for related trainables
+                'tasks' => [], // Empty array for related tasks
+            ],
+        ],
+        'Relationship' => [
+            'valid' => [
+                'name' => 'Test Relationship Type',
+                'slug' => 'test-relationship-type',
+                'description' => 'Test relationship type description',
+            ],
+            'invalid' => [
+                'name' => '', // Required field empty
+                'slug' => '', // Required field empty
+            ],
+        ],
+        default => [
+            'valid' => ['name' => 'Test'],
+            'invalid' => ['name' => ''],
+        ],
+    };
+}
+
+function getControllerValidationErrors(string $controller): array
+{
+    return match ($controller) {
+        'Page' => ['title', 'content.parts', 'permalink', 'lang'],
+        'Category' => ['name.lt', 'name.en'],
+        'Banner' => ['title', 'image_url'],
+        'Navigation' => ['name', 'url'],
+        'Training' => ['name', 'start_time', 'end_time', 'max_participants'],
+        'Relationship' => ['name', 'slug'],
+        default => ['name'],
+    };
 }

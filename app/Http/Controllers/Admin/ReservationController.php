@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\AdminController;
 use App\Http\Requests\StoreReservationRequest;
 use App\Http\Requests\UpdateReservationRequest;
 use App\Models\Reservation;
@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 
-class ReservationController extends Controller
+class ReservationController extends AdminController
 {
     public function __construct(public Authorizer $authorizer)
     {
@@ -32,7 +32,7 @@ class ReservationController extends Controller
     {
         // TODO: also return reservations with resources for this tenant
 
-        $this->authorize('viewAny', Reservation::class);
+        $this->handleAuthorization('viewAny', Reservation::class);
 
         $indexer = new ModelIndexer(new Reservation);
 
@@ -46,7 +46,7 @@ class ReservationController extends Controller
             $query->whereIn('id', $this->authorizer->getTenants()->pluck('id'));
         });
 
-        return Inertia::render('Admin/Reservations/IndexReservation', [
+        return $this->inertiaResponse('Admin/Reservations/IndexReservation', [
             'reservations' => $reservations,
             'activeReservations' => $resources->with('reservations.resources.tenant', 'reservations.users')->get()->pluck('reservations')->flatten()->unique('id')->values(),
         ]);
@@ -57,7 +57,7 @@ class ReservationController extends Controller
      */
     public function create()
     {
-        $this->authorize('create', [Reservation::class, $this->authorizer]);
+        $this->handleAuthorization('create', [Reservation::class, $this->authorizer]);
 
         $dateTimeRange = request()->input('dateTimeRange') ?? [
             'start' => now()->setTimeFromTimeString('09:00')->addDay()->format('Uv'),
@@ -70,7 +70,7 @@ class ReservationController extends Controller
             'end' => intval($dateTimeRange['end']),
         ];
 
-        return Inertia::render('Admin/Reservations/CreateReservation', [
+        return $this->inertiaResponse('Admin/Reservations/CreateReservation', [
             // 'assignableTenants' => GetTenantsForUpserts::execute('resources.create.all', $this->authorizer)
             'resources' => Resource::with('tenant')->select('id', 'name', 'capacity', 'is_reservable', 'tenant_id')->get()->map(function ($resource) use ($dateTimeRange) {
                 $capacityAtDateTimeRange = $resource->getCapacityAtDateTimeRange($dateTimeRange['start'], $dateTimeRange['end']);
@@ -90,7 +90,7 @@ class ReservationController extends Controller
      */
     public function store(StoreReservationRequest $request)
     {
-        $this->authorize('create', [Reservation::class, $this->authorizer]);
+        $this->handleAuthorization('create', [Reservation::class, $this->authorizer]);
 
         $reservation = new Reservation;
 
@@ -120,7 +120,7 @@ class ReservationController extends Controller
      */
     public function show(Reservation $reservation)
     {
-        $this->authorize('view', [Reservation::class, $reservation, $this->authorizer]);
+        $this->handleAuthorization('view', [Reservation::class, $reservation, $this->authorizer]);
 
         $modelName = Str::of(class_basename($reservation))->camel()->plural();
 
@@ -129,7 +129,7 @@ class ReservationController extends Controller
         $exceptReservations = collect(request()->input('except-reservations'))->unique()->toArray();
         $exceptResources = collect(request()->input('except-resources'))->unique()->toArray();
 
-        return Inertia::render('Admin/Reservations/ShowReservation', [
+        return $this->inertiaResponse('Admin/Reservations/ShowReservation', [
             'reservation' => [
                 // load pivot relationship comments
                 ...$reservation->load('comments', 'activities.causer', 'users')->toArray(),
@@ -146,7 +146,7 @@ class ReservationController extends Controller
                     ];
                 }),
             ],
-            'allResources' => Inertia::lazy(fn () => Resource::query()->with('tenant')->select('id', 'name', 'is_reservable', 'capacity', 'tenant_id')->get()->map(function ($resource) use ($dateTimeRange, $exceptResources, $exceptReservations) {
+            'allResources' => Inertia::lazy(fn () => Resource::query()->with('tenant')->select(['id', 'name', 'is_reservable', 'capacity', 'tenant_id'])->get()->map(function ($resource) use ($dateTimeRange, $exceptResources, $exceptReservations) {
 
                 $capacityAtDateTimeRange = $resource->getCapacityAtDateTimeRange($dateTimeRange['start'], $dateTimeRange['end'], $exceptReservations, $exceptResources);
 
@@ -169,7 +169,7 @@ class ReservationController extends Controller
      */
     // public function edit(Reservation $reservation)
     // {
-    //     $this->authorize('update', [Reservation::class, $reservation, $this->authorizer]);
+    //     $this->handleAuthorization('update', [Reservation::class, $reservation, $this->authorizer]);
 
     //     $dateTimeRange = request()->input('dateTimeRange') ?? [
     //         'start' => now()->setTimeFromTimeString('09:00')->addDay()->format('Uv'),
@@ -182,7 +182,7 @@ class ReservationController extends Controller
     //         'end' => intval($dateTimeRange['end']),
     //     ];
 
-    //     return Inertia::render('Admin/Reservations/EditReservation', [
+    //     return $this->inertiaResponse('Admin/Reservations/EditReservation', [
     //         'reservation' => $reservation->mergeCasts([
     //             'start_time' => 'timestamp',
     //             'end_time' => 'timestamp',
@@ -222,7 +222,7 @@ class ReservationController extends Controller
      */
     public function destroy(Reservation $reservation)
     {
-        $this->authorize('delete', [Reservation::class, $reservation, $this->authorizer]);
+        $this->handleAuthorization('delete', [Reservation::class, $reservation, $this->authorizer]);
 
         $reservation->delete();
 
@@ -231,7 +231,7 @@ class ReservationController extends Controller
 
     public function restore(Reservation $reservation)
     {
-        $this->authorize('restore', [Reservation::class, $reservation, $this->authorizer]);
+        $this->handleAuthorization('restore', [Reservation::class, $reservation, $this->authorizer]);
 
         $reservation->restore();
 
@@ -240,7 +240,7 @@ class ReservationController extends Controller
 
     public function addUsers(Reservation $reservation, Request $request)
     {
-        $this->authorize('addUsers', [Reservation::class, $reservation, $this->authorizer]);
+        $this->handleAuthorization('addUsers', [Reservation::class, $reservation, $this->authorizer]);
 
         $old_users = $reservation->users;
 

@@ -28,6 +28,11 @@ class UpdateSharepointFolder implements ShouldQueue
      */
     public function handle(FileableNameUpdated $event)
     {
+        // Skip SharePoint operations in testing environment
+        if (app()->environment('testing')) {
+            return;
+        }
+
         $fileable = $event->fileable;
 
         // Check if the "name" or "title" property exists in the $fileable object

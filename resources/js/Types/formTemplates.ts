@@ -31,16 +31,6 @@ export const changelogItemTemplate: Pick<App.Entities.ChangelogItem, "date"> & {
   date: null,
 };
 
-export const doingTemplate: Pick<
-  App.Entities.Doing,
-  "title" | "type_id" | "status" | "date"
-> = {
-  title: "",
-  type_id: null,
-  status: "Sukurtas",
-  date: new Date().toISOString().split("T").join(" ").slice(0, 16) + ":00",
-};
-
 export const formTemplate: Pick<
   App.Entities.Form,
   "name" | "description" | "path" | "form_fields"
@@ -62,14 +52,6 @@ export const formFieldTemplate: Pick<App.Entities.FormField, "label" | "descript
   type: "string",
   subtype: null,
   is_required: false,
-};
-
-export const matterTemplate: Pick<
-  App.Entities.Matter,
-  "title" | "description"
-> = {
-  title: "",
-  description: "",
 };
 
 export const meetingTemplate = {
