@@ -60,7 +60,7 @@ class FormController extends AdminController
     {
         $form = new Form;
 
-        $form->fill($request->only('name', 'description', 'path'));
+        $form->fill($request->only('name', 'description', 'path', 'publish_time'));
 
         $form->tenant()->associate($request->tenant_id);
 
@@ -115,6 +115,11 @@ class FormController extends AdminController
                     return $fieldResponse->formField->id === $tenantField->id;
                 });
 
+                // Check if tenant response exists and has a valid response
+                if (!$tenantResponse || !$tenantResponse->response || !isset($tenantResponse->response['value'])) {
+                    return false;
+                }
+
                 return $tenants->contains('id', $tenantResponse->response['value']);
             });
         }
@@ -158,7 +163,7 @@ class FormController extends AdminController
      */
     public function update(UpdateFormRequest $request, Form $form)
     {
-        $form->update($request->only('name', 'description', 'path'));
+        $form->update($request->only('name', 'description', 'path', 'publish_time'));
 
         $form->tenant()->associate($request->tenant_id);
 

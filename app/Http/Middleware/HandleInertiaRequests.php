@@ -76,6 +76,8 @@ class HandleInertiaRequests extends Middleware
                 'info' => fn () => $request->session()->get('info'),
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),
+                'toast_duration' => fn () => $request->session()->get('toast_duration'),
+                'toast_description' => fn () => $request->session()->get('toast_description'),
             ],
             'seo' => [
                 'title' => fn () => $request->session()->get('seo.title'),

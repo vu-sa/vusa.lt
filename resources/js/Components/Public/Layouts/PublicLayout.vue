@@ -141,7 +141,7 @@
     </div>
     
     <!-- Toast notifications -->
-    <Toaster />
+    <Toaster rich-colors />
   </NConfigProvider>
 </template>
 
@@ -182,6 +182,7 @@ import UnifiedBreadcrumbs from "@/Components/UnifiedBreadcrumbs.vue";
 import { createBreadcrumbState } from '@/Composables/useBreadcrumbsUnified';
 import { Toaster } from "@/Components/ui/sonner";
 import { useToasts } from '@/Composables/useToasts';
+import 'vue-sonner/style.css'
 
 // Use existing Skeleton component for consistency
 import { Skeleton } from '@/Components/ui/skeleton';

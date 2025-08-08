@@ -10,15 +10,30 @@ export function useToasts() {
   const recentToasts = new Set<string>()
   
   /**
-   * Show toast with deduplication
+   * Show toast with deduplication and optional custom duration/description
    */
-  const showToast = (type: 'success' | 'info' | 'error', message: string) => {
+  const showToast = (type: 'success' | 'info' | 'error', message: string, options?: { duration?: number; description?: string }) => {
     // Prevent duplicate toasts within 1 second
     const key = `${type}:${message}`
     if (recentToasts.has(key)) return
     
     recentToasts.add(key)
-    toast[type](message)
+    
+    // Build toast options
+    const toastOptions: any = {}
+    if (options?.duration) {
+      toastOptions.duration = options.duration
+    }
+    if (options?.description) {
+      toastOptions.description = options.description
+    }
+    
+    // Use custom options if provided, otherwise use vue-sonner defaults
+    if (Object.keys(toastOptions).length > 0) {
+      toast[type](message, toastOptions)
+    } else {
+      toast[type](message)
+    }
     
     // Clean up after 1 second
     setTimeout(() => recentToasts.delete(key), 1000)
@@ -33,26 +48,43 @@ export function useToasts() {
       
       types.forEach(type => {
         if (flash[type] && flash[type] !== oldFlash?.[type]) {
-          showToast(type, flash[type])
+          // Check for custom options
+          const options: { duration?: number; description?: string } = {}
+          
+          if (flash.toast_duration) {
+            options.duration = flash.toast_duration
+          }
+          
+          if (flash.toast_description) {
+            options.description = flash.toast_description
+          }
+          
+          showToast(type, flash[type], Object.keys(options).length > 0 ? options : undefined)
           flash[type] = null
         }
       })
+      
+      // Clear toast options after use
+      if (flash.toast_duration) {
+        flash.toast_duration = null
+      }
+      if (flash.toast_description) {
+        flash.toast_description = null
+      }
     }, { deep: true })
   }
   
   /**
-   * Watch validation errors (for development)
+   * Watch validation errors
    */
   const watchValidationErrors = () => {
-    if (usePage().props.app.env === 'local') {
-      watch(() => usePage().props.errors, (errors) => {
-        if (errors) {
-          Object.entries(errors).forEach(([key, value]) => {
-            showToast('error', `${key}: ${value}`)
-          })
-        }
-      })
-    }
+    watch(() => usePage().props.errors, (errors) => {
+      if (errors) {
+        Object.entries(errors).forEach(([key, value]) => {
+          showToast('error', `${key}: ${value}`)
+        })
+      }
+    })
   }
   
   /**
@@ -67,8 +99,8 @@ export function useToasts() {
     showToast,
     initializeToasts,
     // Direct toast methods for component usage
-    success: (message: string) => showToast('success', message),
-    error: (message: string) => showToast('error', message),  
-    info: (message: string) => showToast('info', message),
+    success: (message: string, options?: { duration?: number; description?: string }) => showToast('success', message, options),
+    error: (message: string, options?: { duration?: number; description?: string }) => showToast('error', message, options),  
+    info: (message: string, options?: { duration?: number; description?: string }) => showToast('info', message, options),
   }
 }

@@ -70,22 +70,41 @@ class StoreRegistrationRequest extends FormRequest
      */
     private function validateFieldByType(Validator $validator, FormField $field, $value, string $fieldId): void
     {
-        switch ($field->type) {
-            case 'email':
-                if (! filter_var($value, FILTER_VALIDATE_EMAIL)) {
-                    $validator->errors()->add("data.{$fieldId}.value", "The {$field->label} must be a valid email address.");
-                }
-                break;
+        // Handle email validation - check both type and subtype
+        if ($field->type === 'email' || ($field->type === 'string' && $field->subtype === 'email')) {
+            if (! filter_var($value, FILTER_VALIDATE_EMAIL)) {
+                $validator->errors()->add("data.{$fieldId}.value", "The {$field->label} must be a valid email address.");
+            }
+            return;
+        }
 
+        switch ($field->type) {
             case 'number':
                 if (! is_numeric($value)) {
                     $validator->errors()->add("data.{$fieldId}.value", "The {$field->label} must be a number.");
                 }
                 break;
 
+            case 'enum':
             case 'select':
-                if ($field->options && ! in_array($value, $field->options)) {
-                    $validator->errors()->add("data.{$fieldId}.value", "The selected {$field->label} is invalid.");
+                if ($field->options) {
+                    // Extract values from option objects for validation
+                    $validValues = collect($field->options)->pluck('value')->filter()->toArray();
+                    
+                    // Fallback to direct array values if no 'value' properties exist
+                    if (empty($validValues)) {
+                        $validValues = $field->options;
+                    }
+                    
+                    if (! in_array($value, $validValues)) {
+                        $validator->errors()->add("data.{$fieldId}.value", "The selected {$field->label} is invalid.");
+                    }
+                }
+                break;
+
+            case 'date':
+                if (! strtotime($value)) {
+                    $validator->errors()->add("data.{$fieldId}.value", "The {$field->label} must be a valid date.");
                 }
                 break;
         }

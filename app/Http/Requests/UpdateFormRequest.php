@@ -31,6 +31,7 @@ class UpdateFormRequest extends FormRequest
             'path' => 'required|array',
             'tenant_id' => 'required|exists:tenants,id',
             'form_fields' => 'array',
+            'publish_time' => 'nullable|date',
         ];
     }
 }

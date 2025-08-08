@@ -39,6 +39,10 @@
         <NSelect v-model:value="form.tenant_id" :options="assignableTenants" label-field="shortname" value-field="id"
           placeholder="VU SA ..." :default-value="assignableTenants[0].id ?? ''" />
       </NFormItem>
+      <NFormItem label="Formos paskelbimo laikas">
+        <NDatePicker v-model:value="form.publish_time" placeholder="Data..." type="datetime"
+          value-format="yyyy-MM-dd'T'HH:mm:ss.SSSxxx" />
+      </NFormItem>
     </FormElement>
 
     <FormElement>

@@ -38,6 +38,7 @@ class StoreFormRequest extends FormRequest
             'form_fields.*.order' => 'integer',
             'form_fields.*.options' => 'nullable|array',
             'training_id' => 'nullable|exists:trainings,id',
+            'publish_time' => 'nullable|date',
         ];
     }
 }
