@@ -1,27 +1,28 @@
 <template>
+  <div class="h-screen flex flex-col bg-background">
+    <Head :title />
 
-  <Head :title />
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset class="flex flex-col min-h-0">
+        <!-- Header with breadcrumbs and actions -->
+        <header class="sticky top-0 z-40 flex h-16 items-center justify-between border-b bg-background px-6">
+          <div class="flex items-center flex-1 gap-3">
+            <SidebarTrigger class="-ml-1" />
+            <Separator orientation="vertical" class="mr-2 h-4" />
+            <UnifiedBreadcrumbs />
+          </div>
 
-  <SidebarProvider>
-    <AppSidebar />
-    <SidebarInset class="flex flex-col bg-background">
-      <!-- Header with breadcrumbs and actions -->
-      <header class="sticky top-0 z-40 flex h-16 shrink-0 items-center border-b bg-background px-4 rounded-t-xl">
-        <div class="flex flex-1 items-center gap-2">
-          <SidebarTrigger class="-ml-1" />
-          <Separator orientation="vertical" class="mr-2 h-4" />
-          <UnifiedBreadcrumbs />
-        </div>
+          <div class="flex items-center gap-2">
+            <slot name="headerActions" />
+            <TasksIndicator />
+            <NotificationsIndicator />
+          </div>
+        </header>
 
-        <div class="flex-shrink-0 flex items-center gap-2">
-          <slot name="headerActions" />
-          <TasksIndicator />
-          <NotificationsIndicator />
-        </div>
-      </header>
-
-      <!-- Main content area -->
-      <main class="flex-1 overflow-auto p-4 md:p-6">
+        <!-- Single scroll container -->
+        <main class="flex-1 overflow-auto" style="scroll-behavior: smooth;">
+          <div class="min-h-full p-6">
         <!-- System announcements banner -->
         <div v-if="systemMessage"
           class="mb-6 rounded-lg border p-4 bg-amber-50 text-amber-900 dark:bg-amber-950 dark:text-amber-50">
@@ -36,40 +37,37 @@
           </div>
         </div>
 
-        <slot />
-      </main>
+            <slot />
+          </div>
+        </main>
 
-      <!-- Footer -->
-      <!-- <footer v-if="showFooter" class="border-t px-4 py-3 text-center text-xs text-muted-foreground">
-        <div>© {{ currentYear }} {{ appName }} - {{ $t('Version') }} {{ appVersion }}</div>
-      </footer> -->
+        <!-- Bottom action bar for mobile screens -->
+        <div v-if="showMobileActionBar"
+          class="md:hidden fixed bottom-0 left-0 right-0 border-t bg-background p-2 flex items-center justify-around">
+          <slot name="mobileActions">
+            <!-- Default mobile actions -->
+            <Button variant="ghost" size="sm" class="flex-col h-14 w-16" as="a" :href="route('dashboard')">
+              <HomeIcon class="h-5 w-5" aria-hidden="true" />
+              <span class="text-xs mt-1">{{ $t('Home') }}</span>
+            </Button>
 
-      <!-- Bottom action bar for mobile screens -->
-      <div v-if="showMobileActionBar"
-        class="md:hidden fixed bottom-0 left-0 right-0 border-t bg-background p-2 flex items-center justify-around">
-        <slot name="mobileActions">
-          <!-- Default mobile actions -->
-          <Button variant="ghost" size="sm" class="flex-col h-14 w-16" as="a" :href="route('dashboard')">
-            <HomeIcon class="h-5 w-5" aria-hidden="true" />
-            <span class="text-xs mt-1">{{ $t('Home') }}</span>
-          </Button>
+            <Button v-if="createUrl" variant="ghost" size="sm" class="flex-col h-14 w-16" as="a" :href="createUrl">
+              <PlusIcon class="h-5 w-5" aria-hidden="true" />
+              <span class="text-xs mt-1">{{ $t('New') }}</span>
+            </Button>
 
-          <Button v-if="createUrl" variant="ghost" size="sm" class="flex-col h-14 w-16" as="a" :href="createUrl">
-            <PlusIcon class="h-5 w-5" aria-hidden="true" />
-            <span class="text-xs mt-1">{{ $t('New') }}</span>
-          </Button>
+            <Button variant="ghost" size="sm" class="flex-col h-14 w-16" as="a" :href="route('profile')">
+              <UserIcon class="h-5 w-5" aria-hidden="true" />
+              <span class="text-xs mt-1">{{ $t('Profile') }}</span>
+            </Button>
+          </slot>
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
 
-          <Button variant="ghost" size="sm" class="flex-col h-14 w-16" as="a" :href="route('profile')">
-            <UserIcon class="h-5 w-5" aria-hidden="true" />
-            <span class="text-xs mt-1">{{ $t('Profile') }}</span>
-          </Button>
-        </slot>
-      </div>
-    </SidebarInset>
-  </SidebarProvider>
-
-  <!-- Toast notifications -->
-  <Toaster rich-colors />
+    <!-- Toast notifications -->
+    <Toaster rich-colors />
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -104,22 +102,11 @@ import { Toaster } from "@/Components/ui/sonner";
 const props = withDefaults(defineProps<{
   title?: string;
   createUrl?: string | null;
-  backUrl?: string | null;
   breadcrumbs?: BreadcrumbItem[];
-  showFooter?: boolean;
   showMobileActionBar?: boolean;
 }>(), {
-  showFooter: true,
   showMobileActionBar: false
 });
-
-// App details
-const pageTitle = computed(() => props.title || usePage().component.split('/').pop() || 'Dashboard');
-const appName = computed(() => {
-  return usePage().props.app.locale === 'en' ? 'My VU SR' : 'Mano VU SA';
-});
-const appVersion = computed(() => usePage().props.app.version || '1.0.0');
-const currentYear = new Date().getFullYear();
 
 // System message (announcements)
 const systemMessage = computed(() => usePage().props.app?.systemMessage || null);

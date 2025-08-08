@@ -568,7 +568,13 @@ html.dark {
       height: 0;
     }
   }
+
+  /* Admin Layout Variables */
+  --admin-sidebar-width: 280px;
+  --admin-header-height: 64px;
+  --admin-spacing-unit: 1.5rem; /* 24px */
 }
+
 
 @layer base {
   * {

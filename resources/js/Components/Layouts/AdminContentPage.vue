@@ -3,16 +3,16 @@
     <title>{{ $t(title) }}</title>
   </Head>
 
-  <div class="container">
+  <div class="flex flex-col min-h-full">
     <!-- Pre-header area -->
-    <div class="ml-4 mb-2" v-if="$slots['above-header']">
+    <div class="mb-4" v-if="$slots['above-header']">
       <slot name="above-header" />
     </div>
 
     <!-- Header section with title and actions -->
     <header 
       v-if="title" 
-      class="z-10 mb-4 mt-4 flex flex-col gap-4 md:flex-row md:items-center md:justify-between"
+      class="flex items-center justify-between mb-6 gap-6"
     >
       <div class="flex items-center gap-3">
         <!-- Back button (if not an index page) -->
@@ -28,10 +28,12 @@
         </Button>
 
         <!-- Page title with optional icon -->
-        <h1 class="my-0 inline-flex items-center gap-3 text-2xl font-semibold tracking-tight">
-          <component :is="headingIcon" v-if="headingIcon" class="h-6 w-6" />
-          <slot name="title">{{ $t(title) }}</slot>
-        </h1>
+        <div class="flex items-center gap-3">
+          <component :is="headingIcon" v-if="headingIcon" class="h-6 w-6 text-primary" />
+          <h1 class="text-2xl font-semibold tracking-tight text-foreground">
+            <slot name="title">{{ $t(title) }}</slot>
+          </h1>
+        </div>
       </div>
 
       <div class="flex items-center gap-2">
@@ -47,9 +49,7 @@
 
         <!-- Additional header items -->
         <slot name="after-heading" />
-        <div class="ml-auto" v-if="$slots['aside-header']">
-          <slot name="aside-header" />
-        </div>
+        <slot name="aside-header" />
       </div>
     </header>
 
@@ -59,20 +59,8 @@
     <Separator v-if="title && headerDivider" class="mb-6" />
 
     <!-- Main content layout -->
-    <div class="grid gap-6" :class="aside ? 'md:grid-cols-[1fr_280px]' : ''">
-      <!-- Main content area -->
-      <FadeTransition appear>
-        <div class="relative">
-          <slot />
-        </div>
-      </FadeTransition>
-
-      <!-- Aside/sidebar content if needed -->
-      <div v-if="aside" class="order-first md:order-last">
-        <div class="sticky top-20">
-          <slot name="aside-card" />
-        </div>
-      </div>
+    <div class="flex-1">
+      <slot />
     </div>
   </div>
 </template>
@@ -83,12 +71,10 @@ import { Head, Link } from "@inertiajs/vue3";
 import { computed } from "vue";
 import { ArrowLeft, Plus } from "lucide-vue-next";
 
-import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import { Separator } from "@/Components/ui/separator";
 import { Button } from "@/Components/ui/button";
 
 const props = defineProps<{
-  aside?: boolean;
   backUrl?: string;
   createUrl?: string;
   headerDivider?: boolean;

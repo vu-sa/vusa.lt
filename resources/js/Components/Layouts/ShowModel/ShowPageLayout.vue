@@ -15,12 +15,15 @@
     <template #title>
       <slot name="title" />
     </template>
-    <div class="grid grid-rows-[minmax(300px,50vh)_minmax(450px,auto)] gap-4">
-      <div class="overflow-y-auto">
+    <div class="grid gap-6 flex-1" style="grid-template-rows: minmax(0, 1fr) auto;">
+      <!-- Main content - no overflow here, let content flow naturally -->
+      <div class="min-h-0">
         <slot />
       </div>
-      <div>
-        <div v-if="relatedModels" class="flex-items mb-6 flex gap-4">
+      
+      <!-- Related models and additional content -->
+      <div class="space-y-6">
+        <div v-if="relatedModels" class="flex flex-wrap items-center gap-4">
           <RelatedModelButton v-for="related in relatedModels" :key="related.name" :name="$t(related.name)"
             :icon="related.icon" :count="related.count" :disabled="related.disabled"
             :active="currentTab === related.name" @click="$emit('change:tab', related.name)" />

@@ -8,7 +8,7 @@ import { i18nVue } from "laravel-vue-i18n";
 import { resolvePageComponent } from "laravel-vite-plugin/inertia-helpers";
 
 const AdminLayout = defineAsyncComponent(
-  () => import("./Layouts/PersistentAdminLayout.vue"),
+  () => import("./Components/Layouts/AdminLayout.vue"),
 );
 
 const getPosthog = async () => {
@@ -27,9 +27,6 @@ const metaTitle =
 // get title from appTitle by removing the suffix
 const pageTitle = metaTitle.replace(" - VU SA", "");
 
-const meta = document.createElement("meta");
-meta.name = "naive-ui-style";
-document.head.appendChild(meta);
 
 createInertiaApp({
   title: (title) => {
