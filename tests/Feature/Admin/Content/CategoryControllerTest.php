@@ -10,7 +10,7 @@ uses(RefreshDatabase::class);
 beforeEach(function () {
     $this->tenant = Tenant::query()->inRandomOrder()->first();
     $this->user = makeUser($this->tenant);
-    $this->admin = makeTenantUserWithRole('Global Communication Coordinator', $this->tenant);
+    $this->admin = makeAdminUser($this->tenant);
 
     $this->category = Category::factory()->create([
         'name' => ['lt' => 'Test kategorija', 'en' => 'Test category'],

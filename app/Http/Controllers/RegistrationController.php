@@ -17,6 +17,11 @@ class RegistrationController extends Controller
      */
     public function store(StoreRegistrationRequest $request, Form $form)
     {
+        // Check if form is published
+        if (! $form->publish_time || \Carbon\Carbon::parse($form->publish_time)->isFuture()) {
+            abort(403, 'Form is not yet published');
+        }
+
         $registration = new Registration;
 
         $registration->form()->associate($form);
@@ -30,8 +35,8 @@ class RegistrationController extends Controller
         $formData = $request->validated()['data'];
         $fieldResponses = new Collection;
 
-        collect($formData)->each(function ($value, $key) use ($form, $fieldResponses) {
-            // key represents the form field id, value is the user input
+        collect($formData)->each(function ($fieldData, $key) use ($form, $fieldResponses) {
+            // key represents the form field id, fieldData is the array with 'value' key
 
             // check if the form field exists and belongs to the form
             try {
@@ -42,8 +47,11 @@ class RegistrationController extends Controller
                 return back()->with('error', 'Įvyko nenumatyta klaida. Bandykite dar kartą.');
             }
 
+            // Extract the value from the field data array
+            $responseValue = $fieldData['value'] ?? null;
+
             $fieldResponse = $formField->fieldResponses()->make([
-                'response' => $value,
+                'response' => ['value' => $responseValue],
             ]);
 
             $fieldResponses->push($fieldResponse);

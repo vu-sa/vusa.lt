@@ -10,10 +10,8 @@ use Spatie\Enum\Laravel\Enum;
  * These are hardcoded static values for technical configuration like API endpoints,
  * retry logic, and timeouts. These values should not be changed during runtime.
  *
- * For user-configurable business settings (like permission expiry days or folder structure),
- * use App\Settings\SharepointSettings instead.
- *
- * @see \App\Settings\SharepointSettings For dynamic business configuration
+ * For user-configurable business settings (like permission expiry days), these are
+ * now hardcoded as constants in the SharepointGraphService class.
  *
  * @typescript
  *

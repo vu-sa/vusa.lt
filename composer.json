@@ -12,7 +12,6 @@
         "ajcastro/eager-load-pivot-relations": "^0.3.0",
         "guzzlehttp/guzzle": "^7.2",
         "inertiajs/inertia-laravel": "^2.0",
-        "intervention/image": "^3.0",
         "intervention/image-laravel": "^1.2",
         "laravel/framework": "^12.1.1",
         "laravel/scout": "^10.0",
@@ -80,16 +79,14 @@
             "@php artisan package:discover --ansi"
         ],
         "post-install-cmd": [
-            "@php artisan vendor:publish --tag=laravel-assets --ansi --force",
-            "@php artisan typescript:transform",
-            "@php artisan model:typer --optional-relations --optional-nullables --global > resources/js/Types/models.d.ts",
-            "@php artisan ide-helper:models --write"
+            "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
         ],
         "post-update-cmd": [
             "@php artisan vendor:publish --tag=laravel-assets --ansi --force",
             "@php artisan typescript:transform",
             "@php artisan model:typer --optional-relations --optional-nullables --global > resources/js/Types/models.d.ts",
-            "@php artisan ide-helper:models --write"
+            "@php artisan ide-helper:models -WER",
+            "@composer lint app/Models"
         ],
         "post-root-package-install": [
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
@@ -103,14 +100,8 @@
         "lint": [
             "./vendor/bin/pint"
         ],
-        "analyze": [
-            "./vendor/bin/phpstan analyse --no-progress --memory-limit=2G"
-        ],
         "phpstan": [
             "./vendor/bin/phpstan analyse --no-progress --memory-limit=2G"
-        ],
-        "ide-helper": [
-            "@php artisan ide-helper:models --write"
         ]
     },
     "extra": {

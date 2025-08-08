@@ -4,11 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\UpdateFormSettingsRequest;
-use App\Http\Requests\UpdateSharepointSettingsRequest;
 use App\Models\Form;
 use App\Models\Role;
 use App\Settings\FormSettings;
-use App\Settings\SharepointSettings;
 
 class SettingsController extends AdminController
 {
@@ -36,29 +34,5 @@ class SettingsController extends AdminController
         $settings->save();
 
         return $this->redirectBackWithSuccess('Form settings updated.');
-    }
-
-    /**
-     * Show SharePoint settings.
-     */
-    public function editSharepointSettings(SharepointSettings $settings)
-    {
-        return $this->inertiaResponse('Admin/Settings/EditSharepointSettings', [
-            'permission_expiry_days' => $settings->permission_expiry_days,
-            'default_folder_structure' => $settings->default_folder_structure,
-        ]);
-    }
-
-    /**
-     * Update SharePoint settings.
-     */
-    public function updateSharepointSettings(UpdateSharepointSettingsRequest $request, SharepointSettings $settings)
-    {
-        $settings->permission_expiry_days = $request->permission_expiry_days;
-        $settings->default_folder_structure = $request->default_folder_structure;
-
-        $settings->save();
-
-        return $this->redirectBackWithSuccess('SharePoint settings updated.');
     }
 }

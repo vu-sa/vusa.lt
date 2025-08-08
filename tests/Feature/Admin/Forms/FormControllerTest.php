@@ -203,6 +203,79 @@ describe('authorized access', function () {
     });
 });
 
+describe('form creation with fields', function () {
+    test('can create form with form fields', function () {
+        $formData = [
+            'name' => ['lt' => 'Registracijos forma', 'en' => 'Registration Form'],
+            'description' => ['lt' => 'Aprašymas', 'en' => 'Description'],
+            'path' => ['lt' => 'registracija', 'en' => 'registration'],
+            'tenant_id' => $this->tenant->id,
+            'publish_time' => now()->addHour()->toISOString(),
+            'form_fields' => [
+                [
+                    'type' => 'text',
+                    'label' => ['lt' => 'Pilnas vardas', 'en' => 'Full Name'],
+                    'is_required' => true,
+                    'order' => 1,
+                ],
+                [
+                    'type' => 'email',
+                    'label' => ['lt' => 'El. paštas', 'en' => 'Email'],
+                    'is_required' => true,
+                    'order' => 2,
+                ],
+                [
+                    'type' => 'select',
+                    'label' => ['lt' => 'Padalinys', 'en' => 'Department'],
+                    'options' => ['option1', 'option2', 'option3'],
+                    'is_required' => false,
+                    'order' => 3,
+                ],
+            ],
+        ];
+
+        asUser($this->admin)
+            ->post(route('forms.store'), $formData)
+            ->assertRedirect()
+            ->assertSessionHas('success');
+
+        $form = Form::with('formFields')->where('tenant_id', $this->tenant->id)->latest()->first();
+
+        expect($form)->not()->toBeNull();
+        expect($form->tenant_id)->toBe($this->tenant->id);
+        expect($form->formFields)->toHaveCount(3);
+
+        $textField = $form->formFields->where('type', 'text')->first();
+        expect($textField->is_required)->toBeTrue();
+        expect($textField->getTranslation('label', 'lt'))->toBe('Pilnas vardas');
+    });
+
+    test('can export form responses', function () {
+        $form = Form::factory()->for($this->tenant)->create();
+
+        // Create form field and responses for testing
+        $field = \App\Models\FormField::factory()->create([
+            'form_id' => $form->id,
+            'label' => ['lt' => 'Vardas', 'en' => 'Name'],
+        ]);
+
+        $registration = \App\Models\Registration::factory()->create([
+            'form_id' => $form->id,
+        ]);
+
+        \App\Models\FieldResponse::factory()->create([
+            'registration_id' => $registration->id,
+            'form_field_id' => $field->id,
+            'response' => 'Test Response',
+        ]);
+
+        asUser($this->admin)
+            ->get(route('forms.export', $form))
+            ->assertStatus(200)
+            ->assertHeader('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    });
+});
+
 describe('validation', function () {
     test('store requires valid data', function () {
         $data = [

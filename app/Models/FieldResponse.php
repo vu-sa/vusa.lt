@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $id
  * @property int $registration_id
  * @property int $form_field_id
- * @property array{value: mixed} $response
+ * @property array<array-key, mixed> $response
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
  * @property-read \App\Models\FormField $formField

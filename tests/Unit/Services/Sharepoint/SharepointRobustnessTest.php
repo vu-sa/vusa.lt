@@ -2,7 +2,6 @@
 
 use App\Enums\SharepointConfigEnum;
 use App\Services\SharepointGraphService;
-use App\Settings\SharepointSettings;
 use Illuminate\Support\Facades\Log;
 
 describe('SharePoint Service Robustness', function () {
@@ -10,14 +9,10 @@ describe('SharePoint Service Robustness', function () {
         // Mock Laravel Sleep to prevent actual delays in tests
         \Illuminate\Support\Sleep::fake();
 
-        $this->settings = Mockery::mock(SharepointSettings::class);
-        $this->settings->permission_expiry_days = 365;
-
         $this->service = new SharepointGraphService(
             siteId: 'test-site',
             driveId: 'test-drive',
-            listId: null,
-            settings: $this->settings
+            listId: null
         );
     });
 
@@ -532,7 +527,6 @@ describe('SharePoint Service Robustness', function () {
             // Test with specific datetime
 
             // These are unit tests for the logic, not integration tests
-            expect($this->settings->permission_expiry_days)->toBe(365);
         });
 
         test('batchProcessDocuments handles empty collections', function () {
@@ -692,30 +686,24 @@ describe('SharePoint Service Robustness', function () {
         test('service initialization handles different parameter combinations', function () {
             // Test various initialization scenarios
             $scenarios = [
-                [null, null, null, null],  // All defaults
-                ['custom-site', null, null, null],  // Custom site only
-                ['custom-site', 'custom-drive', null, null],  // Site and drive
-                ['custom-site', 'custom-drive', 'custom-list', null],  // Site, drive, and list
+                [null, null, null],  // All defaults
+                ['custom-site', null, null],  // Custom site only
+                ['custom-site', 'custom-drive', null],  // Site and drive
+                ['custom-site', 'custom-drive', 'custom-list'],  // Site, drive, and list
             ];
 
             foreach ($scenarios as $params) {
-                [$siteId, $driveId, $listId, $settings] = $params;
-
-                // Mock the necessary components for initialization
-                if (! $settings) {
-                    $settings = $this->settings;
-                }
+                [$siteId, $driveId, $listId] = $params;
 
                 $reflection = new ReflectionClass(\App\Services\SharepointGraphService::class);
                 $constructor = $reflection->getConstructor();
 
-                expect($constructor->getNumberOfParameters())->toBe(4);
+                expect($constructor->getNumberOfParameters())->toBe(3);
 
                 $params = $constructor->getParameters();
                 expect($params[0]->getName())->toBe('siteId');
                 expect($params[1]->getName())->toBe('driveId');
                 expect($params[2]->getName())->toBe('listId');
-                expect($params[3]->getName())->toBe('settings');
             }
         });
 
@@ -796,18 +784,6 @@ describe('SharePoint Service Robustness', function () {
     });
 
     describe('integration points', function () {
-        test('works with SharepointSettings correctly', function () {
-            // Test that the service properly uses SharepointSettings
-            expect($this->settings->permission_expiry_days)->toBe(365);
-
-            // Test different expiry day configurations
-            $this->settings->permission_expiry_days = 30;
-            expect($this->settings->permission_expiry_days)->toBe(30);
-
-            $this->settings->permission_expiry_days = 0; // Never expire
-            expect($this->settings->permission_expiry_days)->toBe(0);
-        });
-
         test('integrates with Document model correctly', function () {
             // Test that batchProcessDocuments works with Document model structure
             $documentFields = [

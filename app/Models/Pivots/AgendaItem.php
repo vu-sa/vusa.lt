@@ -64,7 +64,6 @@ class AgendaItem extends Pivot
         return $this->belongsTo(Meeting::class);
     }
 
-    // AgendaItems are accessed through meetings
     public function institutions()
     {
         return $this->hasManyDeepFromRelations($this->meeting(), (new Meeting)->institutions());

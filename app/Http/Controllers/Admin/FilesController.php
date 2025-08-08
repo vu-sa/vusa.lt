@@ -327,7 +327,7 @@ class FilesController extends AdminController
         }
 
         $startingImage = Image::read($data);
-        $image = $startingImage->scaleDown(width: 1600)->toWebp();
+        $image = $startingImage->scaleDown(width: 1600)->toWebp(75);
 
         $path = (string) $request->input('path');
 

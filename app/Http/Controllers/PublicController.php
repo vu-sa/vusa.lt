@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use RalphJSmit\Laravel\SEO\Support\SEOData;
 use Spatie\SchemaOrg\Organization;
-use Spatie\SchemaOrg\WebSite;
 
 class PublicController extends Controller
 {
@@ -226,24 +225,8 @@ class PublicController extends Controller
                         'https://www.linkedin.com/company/vusa-lt',
                     ]);
 
-                // WebSite schema with search functionality
-                $websiteSchema = (new WebSite)
-                    ->name($locale === 'lt' ? 'VU SA svetainė' : 'VU SA website')
-                    ->url($baseUrl)
-                    ->description($locale === 'lt'
-                        ? 'Oficiali Vilniaus universiteto Studentų atstovybės svetainė'
-                        : 'Official website of Vilnius University Students\' Representation'
-                    )
-                    ->potentialAction((new \Spatie\SchemaOrg\SearchAction)
-                        ->target((new \Spatie\SchemaOrg\EntryPoint)
-                            ->urlTemplate($baseUrl.'/search?q={search_term_string}')
-                        )
-                        ->setProperty('query-input', 'required name=search_term_string')
-                    );
-
                 return [
                     $organizationSchema,
-                    $websiteSchema,
                 ];
             });
     }

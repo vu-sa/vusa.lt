@@ -54,7 +54,6 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, \App\Models\Institution> $institutions
  * @property-read Collection<int, \App\Models\Membership> $memberships
  * @property-read \Illuminate\Notifications\DatabaseNotificationCollection<int, \Illuminate\Notifications\DatabaseNotification> $notifications
- * @property-read \Illuminate\Notifications\DatabaseNotificationCollection<int, \Illuminate\Notifications\DatabaseNotification> $unreadNotifications
  * @property-read Collection<int, \App\Models\Permission> $permissions
  * @property-read Collection<int, \App\Models\Duty> $previous_duties
  * @property-read Collection<int, \App\Models\Reservation> $reservations

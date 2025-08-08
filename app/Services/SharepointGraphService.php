@@ -9,7 +9,6 @@ use App\Enums\SharepointScopeEnum;
 use App\Models\Document;
 use App\Models\Institution;
 use App\Models\SharepointFile;
-use App\Settings\SharepointSettings;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
@@ -46,26 +45,27 @@ class SharepointGraphService
 
     protected string $driveId;
 
-    protected ?string $listId;
+    protected $listId;
 
-    protected SharepointSettings $settings;
+    /**
+     * Default number of days for SharePoint permission expiry
+     */
+    private const DEFAULT_PERMISSION_EXPIRY_DAYS = 365;
 
     /**
      * SharePoint Graph API Service
      *
-     * This service uses two types of configuration:
-     * 1. Technical constants from SharepointConfigEnum (API URLs, retry logic, timeouts)
-     * 2. Business settings from SharepointSettings (permission expiry, folder structure)
+     * This service uses technical constants from SharepointConfigEnum for API URLs,
+     * retry logic, timeouts, and other static configuration values.
      *
      * @see \App\Enums\SharepointConfigEnum For static technical configuration
-     * @see \App\Settings\SharepointSettings For dynamic business configuration
      *
      * Set for which sharepoint site and drive to interact with
      * If no siteId or driveId is provided, it will use the default values from config
      *
      * @return void
      */
-    public function __construct(?string $siteId = null, ?string $driveId = null, ?string $listId = null, ?SharepointSettings $settings = null)
+    public function __construct(?string $siteId = null, ?string $driveId = null, ?string $listId = null)
     {
         try {
             $tokenRequestContext = new ClientCredentialContext(
@@ -76,7 +76,6 @@ class SharepointGraphService
 
             $this->graph = new GraphServiceClient($tokenRequestContext);
             $this->graphApiBaseUrl = SharepointConfigEnum::API_BASE_URL()->label;
-            $this->settings = $settings ?? app(SharepointSettings::class);
 
             $this->siteId = $siteId ?? config('filesystems.sharepoint.site_id');
             $this->driveId = $driveId ?? $this->getDrive()->getId();
@@ -259,7 +258,7 @@ class SharepointGraphService
 
         return $this->executeWithRetry(function () use ($siteId, $driveItemId, $datetime) {
             $siteId = $siteId ?? $this->siteId;
-            $datetime = $datetime ?? Carbon::now()->addDays($this->settings->permission_expiry_days);
+            $datetime = $datetime ?? Carbon::now()->addDays(self::DEFAULT_PERMISSION_EXPIRY_DAYS);
 
             $requestBody = new CreateLinkPostRequestBody;
             $requestBody->setType(SharepointPermissionTypeEnum::VIEW()->label);

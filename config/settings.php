@@ -1,7 +1,6 @@
 <?php
 
 use App\Settings\FormSettings;
-use App\Settings\SharepointSettings;
 
 return [
 
@@ -11,7 +10,6 @@ return [
      */
     'settings' => [
         FormSettings::class,
-        SharepointSettings::class,
     ],
 
     /*

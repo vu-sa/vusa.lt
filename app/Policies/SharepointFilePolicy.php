@@ -28,7 +28,7 @@ class SharepointFilePolicy extends ModelPolicy
         $fileable = $sharepointFile->fileables->first()->fileable;
 
         // Authorize by fileable
-        if (Gate::allows('delete', $fileable)) {
+        if (Gate::allows('delete', [$fileable])) {
             return true;
         }
 

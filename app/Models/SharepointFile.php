@@ -18,10 +18,10 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Meeting> $meetings
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Type> $types
  *
+ * @method static \Database\Factories\SharepointFileFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SharepointFile newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SharepointFile newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SharepointFile query()
- * @method static \Database\Factories\SharepointFileFactory factory($count = null, $state = [])
  *
  * @mixin \Eloquent
  */

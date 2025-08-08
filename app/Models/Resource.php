@@ -28,7 +28,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
  * @property string|null $location
  * @property int $capacity
  * @property int $tenant_id
- * @property int $is_reservable
+ * @property bool $is_reservable
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
@@ -45,6 +45,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
  * @method static \AjCastro\EagerLoadPivotRelations\EagerLoadPivotBuilder<static>|Resource newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Resource onlyTrashed()
  * @method static \AjCastro\EagerLoadPivotRelations\EagerLoadPivotBuilder<static>|Resource query()
+ * @method static \AjCastro\EagerLoadPivotRelations\EagerLoadPivotBuilder<static>|Resource reservable()
  * @method static \AjCastro\EagerLoadPivotRelations\EagerLoadPivotBuilder<static>|Resource whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
  * @method static \AjCastro\EagerLoadPivotRelations\EagerLoadPivotBuilder<static>|Resource whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
  * @method static \AjCastro\EagerLoadPivotRelations\EagerLoadPivotBuilder<static>|Resource whereLocale(string $column, string $locale)

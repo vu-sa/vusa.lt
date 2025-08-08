@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Spatie\Permission\Models\Permission;
 
 return new class extends Migration
 {
@@ -11,6 +12,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Remove goal-related permissions
+        Permission::where('name', 'like', 'goals.%')->delete();
+        Permission::where('name', 'like', 'goalGroups.%')->delete();
+
         Schema::dropIfExists('goal_matter');
         Schema::dropIfExists('goals');
         Schema::dropIfExists('goal_groups');

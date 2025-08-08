@@ -21,6 +21,7 @@ class TenantPermission
      */
     public function handle(Request $request, Closure $next, string $permission)
     {
+        // TODO: Review if this Middleware is properly implemented
         // Check if user is authenticated
         if (! Auth::check()) {
             if ($request->expectsJson()) {

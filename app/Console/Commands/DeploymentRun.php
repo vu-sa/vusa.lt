@@ -69,18 +69,18 @@ class DeploymentRun extends Command
         }
 
         $this->info('🚀 Starting deployment process...');
-        
+
         // Clear any existing state if starting from beginning
-        if (!$fromStep) {
+        if (! $fromStep) {
             $this->clearDeploymentState();
         }
 
-        $startFound = !$fromStep; // If no from step, start from beginning
+        $startFound = ! $fromStep; // If no from step, start from beginning
         $overallSuccess = true;
 
         foreach ($this->deploymentSteps as $stepKey => $step) {
             // Skip steps until we reach the starting point
-            if (!$startFound) {
+            if (! $startFound) {
                 if ($stepKey === $fromStep) {
                     $startFound = true;
                 } else {
@@ -89,7 +89,7 @@ class DeploymentRun extends Command
             }
 
             $this->info("📋 {$step['name']}...");
-            
+
             try {
                 // Record that we're attempting this step
                 $this->updateDeploymentState($stepKey, 'running');
@@ -104,21 +104,21 @@ class DeploymentRun extends Command
                 }
 
             } catch (\Exception $e) {
-                $this->error("❌ {$step['name']} failed: " . $e->getMessage());
+                $this->error("❌ {$step['name']} failed: ".$e->getMessage());
                 $this->updateDeploymentState($stepKey, 'failed', $e->getMessage());
 
                 if ($step['critical'] ?? true) {
                     $overallSuccess = false;
-                    
+
                     // If this isn't the maintenance exit step, try to bring site back online
                     if ($stepKey !== 'online') {
                         $this->error('🚨 Critical step failed - attempting to bring site back online...');
                         $this->call('up');
                     }
-                    
+
                     break;
                 } else {
-                    $this->warn("⚠️ Non-critical step failed, continuing deployment...");
+                    $this->warn('⚠️ Non-critical step failed, continuing deployment...');
                     $this->updateDeploymentState($stepKey, 'skipped', $e->getMessage());
                 }
             }
@@ -127,9 +127,11 @@ class DeploymentRun extends Command
         if ($overallSuccess) {
             $this->info('🎉 Deployment completed successfully!');
             $this->clearDeploymentState();
+
             return 0;
         } else {
             $this->error('💥 Deployment failed. Use "deployment:resume --from=STEP" to continue from the failed step.');
+
             return 1;
         }
     }
@@ -139,14 +141,15 @@ class DeploymentRun extends Command
         $this->info('📋 Deployment Plan:');
         $this->line('');
 
-        $startFound = !$fromStep;
-        
+        $startFound = ! $fromStep;
+
         foreach ($this->deploymentSteps as $stepKey => $step) {
-            if (!$startFound) {
+            if (! $startFound) {
                 if ($stepKey === $fromStep) {
                     $startFound = true;
                 } else {
                     $this->line("  <fg=gray>⏸ {$step['name']} (skipped)</>");
+
                     continue;
                 }
             }
@@ -154,26 +157,26 @@ class DeploymentRun extends Command
             $critical = $step['critical'] ?? true;
             $icon = $critical ? '🔴' : '🟡';
             $type = $critical ? 'critical' : 'non-critical';
-            
+
             $this->line("  {$icon} {$step['name']} ({$type})");
         }
 
         $this->line('');
         $this->info('Use "deployment:run" to execute this plan.');
-        
+
         return 0;
     }
 
     private function updateDeploymentState(string $step, string $status, ?string $error = null): void
     {
         $state = $this->getDeploymentState();
-        
+
         $state['steps'][$step] = [
             'status' => $status,
             'timestamp' => now()->toISOString(),
             'error' => $error,
         ];
-        
+
         $state['last_step'] = $step;
         $state['last_status'] = $status;
 
@@ -182,7 +185,7 @@ class DeploymentRun extends Command
 
     private function getDeploymentState(): array
     {
-        if (!Storage::disk('local')->exists('deployment/state.json')) {
+        if (! Storage::disk('local')->exists('deployment/state.json')) {
             return ['steps' => [], 'last_step' => null, 'last_status' => null];
         }
 

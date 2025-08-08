@@ -3,23 +3,19 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\AdminController;
+use App\Http\Requests\StoreCategoryRequest;
+use App\Http\Requests\UpdateCategoryRequest;
 use App\Models\Category;
-use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class CategoryController extends AdminController
 {
-    public function __construct(public Authorizer $authorizer) {}
-
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
-        if (! $this->authorizer->forUser(Auth::user())->checkAllRoleables('categories.read.*')) {
-            abort(403);
-        }
+        $this->handleAuthorization(Category::class, 'viewAny');
 
         $categories = Category::paginate(20);
 
@@ -35,9 +31,7 @@ class CategoryController extends AdminController
      */
     public function create()
     {
-        if (! $this->authorizer->forUser(Auth::user())->checkAllRoleables('categories.create.*')) {
-            abort(403);
-        }
+        $this->handleAuthorization(Category::class, 'create');
 
         return $this->inertiaResponse('Admin/Content/CreateCategory');
     }
@@ -45,21 +39,9 @@ class CategoryController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreCategoryRequest $request)
     {
-        if (! $this->authorizer->forUser(Auth::user())->checkAllRoleables('categories.create.*')) {
-            abort(403);
-        }
-
-        $request->validate([
-            'name.lt' => 'required|string|max:255',
-            'name.en' => 'required|string|max:255',
-            'description.lt' => 'nullable|string',
-            'description.en' => 'nullable|string',
-            'alias' => 'nullable|string|max:255|unique:categories,alias',
-        ]);
-
-        Category::create($request->all());
+        Category::create($request->validated());
 
         return $this->redirectToIndexWithSuccess('categories', 'Kategorija sukurta.');
     }
@@ -69,9 +51,7 @@ class CategoryController extends AdminController
      */
     public function edit(Category $category)
     {
-        if (! $this->authorizer->forUser(Auth::user())->checkAllRoleables('categories.update.*')) {
-            abort(403);
-        }
+        $this->handleAuthorization($category, 'view');
 
         return $this->inertiaResponse('Admin/Content/EditCategory', [
             'category' => $category,
@@ -81,21 +61,9 @@ class CategoryController extends AdminController
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Category $category)
+    public function update(UpdateCategoryRequest $request, Category $category)
     {
-        if (! $this->authorizer->forUser(Auth::user())->checkAllRoleables('categories.update.*')) {
-            abort(403);
-        }
-
-        $request->validate([
-            'name.lt' => 'required|string|max:255',
-            'name.en' => 'required|string|max:255',
-            'description.lt' => 'nullable|string',
-            'description.en' => 'nullable|string',
-            'alias' => 'nullable|string|max:255|unique:categories,alias,'.$category->id,
-        ]);
-
-        $category->update($request->all());
+        $category->update($request->validated());
 
         return $this->redirectToIndexWithSuccess('categories', 'Kategorija atnaujinta.');
     }
@@ -103,13 +71,11 @@ class CategoryController extends AdminController
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Category $category)
     {
-        if (! $this->authorizer->forUser(Auth::user())->checkAllRoleables('categories.delete.*')) {
-            abort(403);
-        }
+        $this->handleAuthorization($category, 'delete');
 
-        Category::destroy($id);
+        $category->delete();
 
         return $this->redirectToIndexWithSuccess('categories', 'Kategorija ištrinta.');
     }

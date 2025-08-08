@@ -45,9 +45,6 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
 
         Route::get('{registrationString}/{registrationForm}', [Public\PublicPageController::class, 'registrationPage'])->name('registrationPage')->whereIn('registrationString', ['registracija', 'registration']);
 
-        // Search route temporarily disabled for Phase 1 implementation
-        // Route::get('search', [Public\TypesenseSearchController::class, 'index'])->name('typesense.search');
-
         Route::get('kalendorius/renginys/{calendar}', [Public\PublicPageController::class, 'calendarEventRedirect'])->name('calendar.event');
 
         Route::get('tapk-vu-sa-nariu', [Public\PublicPageController::class, 'membership'])->name('joinUs');
@@ -65,7 +62,6 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
         Route::get('{registrationString}', [Public\PublicPageController::class, 'curatorRegistrations'])->name('curatorRegistrations')->whereIn('registrationString', ['registracija-i-kuratoriu-programa', 'registration-to-mentor-program']);
 
         Route::get('kalendorius/ics', [Public\MainController::class, 'publicAllEventCalendar'])->name('calendar.ics');
-        Route::post('search', [Public\MainController::class, 'search'])->name('search');
 
         // Note: API routes should be defined in api.php, not here
 

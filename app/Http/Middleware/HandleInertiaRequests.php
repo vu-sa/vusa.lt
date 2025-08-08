@@ -66,7 +66,7 @@ class HandleInertiaRequests extends Middleware
                     ...$user->toArray(),
                     'isSuperAdmin' => $isSuperAdmin,
                     'tenants' => $user->tenants()->get(['tenants.id', 'tenants.shortname', 'tenants.alias'])->unique(),
-                    'unreadNotifications' => $user->unreadNotifications,
+                    'unreadNotifications' => $user->unreadNotifications()->get(),
                 ],
             ],
             'csrf_token' => fn () => csrf_token(),

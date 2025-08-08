@@ -20,38 +20,39 @@ class DeploymentResume extends Command
         }
 
         $fromStep = $this->option('from');
-        
-        if (!$fromStep) {
+
+        if (! $fromStep) {
             $fromStep = $this->detectResumeStep();
-            
-            if (!$fromStep) {
+
+            if (! $fromStep) {
                 $this->error('No deployment state found. Use "deployment:run" to start a new deployment.');
+
                 return 1;
             }
         }
 
         $this->info("🔄 Resuming deployment from step: {$fromStep}");
-        
+
         // Use the main deployment command with --from option
         return $this->call('deployment:run', ['--from' => $fromStep]);
     }
 
     private function detectResumeStep(): ?string
     {
-        if (!Storage::disk('local')->exists('deployment/state.json')) {
+        if (! Storage::disk('local')->exists('deployment/state.json')) {
             return null;
         }
 
         $state = json_decode(Storage::disk('local')->get('deployment/state.json'), true);
-        
-        if (!$state || !isset($state['steps'])) {
+
+        if (! $state || ! isset($state['steps'])) {
             return null;
         }
 
         // Find the last failed step or the step after the last completed step
         $lastFailedStep = null;
         $lastCompletedStep = null;
-        
+
         foreach ($state['steps'] as $stepKey => $stepData) {
             if ($stepData['status'] === 'failed') {
                 $lastFailedStep = $stepKey;
@@ -76,7 +77,7 @@ class DeploymentResume extends Command
     {
         $steps = [
             'backup' => 'maintenance',
-            'maintenance' => 'assets', 
+            'maintenance' => 'assets',
             'assets' => 'migrate',
             'migrate' => 'optimize',
             'optimize' => 'search',
@@ -90,15 +91,17 @@ class DeploymentResume extends Command
 
     private function showDeploymentState(): int
     {
-        if (!Storage::disk('local')->exists('deployment/state.json')) {
+        if (! Storage::disk('local')->exists('deployment/state.json')) {
             $this->info('No deployment state found.');
+
             return 0;
         }
 
         $state = json_decode(Storage::disk('local')->get('deployment/state.json'), true);
-        
-        if (!$state || !isset($state['steps'])) {
+
+        if (! $state || ! isset($state['steps'])) {
             $this->info('No deployment steps found in state.');
+
             return 0;
         }
 
@@ -109,24 +112,24 @@ class DeploymentResume extends Command
             $status = $stepData['status'];
             $timestamp = $stepData['timestamp'] ?? 'unknown';
             $error = $stepData['error'] ?? null;
-            
-            $icon = match($status) {
+
+            $icon = match ($status) {
                 'completed' => '✅',
                 'failed' => '❌',
                 'running' => '🔄',
                 'skipped' => '⏭️',
                 default => '❓'
             };
-            
+
             $this->line("  {$icon} {$stepKey}: {$status} ({$timestamp})");
-            
+
             if ($error) {
                 $this->line("      Error: {$error}");
             }
         }
 
         $this->line('');
-        
+
         if (isset($state['last_step']) && isset($state['last_status'])) {
             $this->info("Last step: {$state['last_step']} ({$state['last_status']})");
         }
