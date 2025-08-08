@@ -43,11 +43,12 @@ class StoreRegistrationRequest extends FormRequest
                 return;
             }
 
+            /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\FormField> $formFields */
             $formFields = $form->formFields()->get();
             $data = $this->input('data', []);
 
             foreach ($formFields as $field) {
-                $fieldId = $field->id;
+                $fieldId = (string) $field->id;
                 $fieldData = $data[$fieldId] ?? null;
                 $value = $fieldData['value'] ?? null;
 
