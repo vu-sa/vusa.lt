@@ -81,16 +81,12 @@ services:
             test: ["CMD", "redis-cli", "ping"]
             retries: 3
             timeout: 5s
-    phpmyadmin:
-        image: phpmyadmin/phpmyadmin:latest
+    adminer:
+        image: adminer:latest
         ports:
-            - 8080:80
+            - 8080:8080
         environment:
-            MYSQL_USERNAME: "${DB_USERNAME}"
-            MYSQL_ROOT_PASSWORD: "${DB_PASSWORD}"
-            PMA_HOST: mariadb
-            # Allow database import from web interface
-            UPLOAD_LIMIT: 1G
+            ADMINER_DEFAULT_SERVER: mariadb
         networks:
           - sail
         depends_on:
