@@ -112,11 +112,7 @@ const columns = computed<DataTableColumns<App.Entities.News>>(() => [
     title: "Paskelbimo data",
     key: "publish_time",
     width: 150,
-    sorter: (a, b) => {
-      return (
-        new Date(a.publish_time).getTime() - new Date(b.publish_time).getTime()
-      );
-    },
+    sorter: true,
     sortOrder: sorters.value.publish_time,
     ellipsis: {
       tooltip: true,
