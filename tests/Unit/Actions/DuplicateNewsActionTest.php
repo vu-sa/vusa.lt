@@ -312,45 +312,53 @@ describe('DuplicateNewsAction', function () {
         expect($duplicatedNews->publish_time)->toBeNull();
 
         // Test that UpdateNewsRequest would handle null publish_time correctly
-        $mockRequest = new class {
+        $mockRequest = new class
+        {
             public $data = ['publish_time' => null];
-            
-            public function input($key) {
+
+            public function input($key)
+            {
                 return $this->data[$key] ?? null;
             }
-            
-            public function merge($data) {
+
+            public function merge($data)
+            {
                 $this->data = array_merge($this->data, $data);
             }
         };
 
         // Create a test instance of UpdateNewsRequest to test prepareForValidation
-        $updateRequest = new class extends \App\Http\Requests\UpdateNewsRequest {
+        $updateRequest = new class extends \App\Http\Requests\UpdateNewsRequest
+        {
             private $mockRequest;
-            
-            public function setMockRequest($mock) {
+
+            public function setMockRequest($mock)
+            {
                 $this->mockRequest = $mock;
             }
-            
-            public function input($key = null, $default = null) {
+
+            public function input($key = null, $default = null)
+            {
                 return $this->mockRequest->input($key) ?? $default;
             }
-            
-            public function merge($data) {
+
+            public function merge($data)
+            {
                 return $this->mockRequest->merge($data);
             }
-            
-            public function testPrepareForValidation() {
+
+            public function testPrepareForValidation()
+            {
                 $this->prepareForValidation();
             }
         };
 
         $testRequest = new $updateRequest;
         $testRequest->setMockRequest($mockRequest);
-        
+
         // This should not convert null to 0
         $testRequest->testPrepareForValidation();
-        
+
         // Verify null is preserved (not converted to 0)
         expect($mockRequest->data['publish_time'])->toBeNull();
     });

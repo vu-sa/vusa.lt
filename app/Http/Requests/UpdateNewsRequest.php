@@ -19,7 +19,7 @@ class UpdateNewsRequest extends FormRequest
     protected function prepareForValidation()
     {
         $publishTime = $this->input('publish_time');
-        
+
         // Only process publish_time if it's not null
         if ($publishTime !== null) {
             $this->merge([

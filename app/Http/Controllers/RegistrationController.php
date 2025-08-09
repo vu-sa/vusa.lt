@@ -8,9 +8,9 @@ use App\Models\Form;
 use App\Models\FormField;
 use App\Models\Registration;
 use App\Settings\FormSettings;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Database\Eloquent\Collection;
 
 class RegistrationController extends Controller
 {
@@ -52,12 +52,13 @@ class RegistrationController extends Controller
                         ->where('form_id', $form->id)
                         ->first();
 
-                    if (!$formField) {
+                    if (! $formField) {
                         Log::error('Form field not found', [
                             'field_id' => $fieldId,
                             'form_id' => $form->id,
-                            'available_fields' => $form->formFields()->pluck('id')->toArray()
+                            'available_fields' => $form->formFields()->pluck('id')->toArray(),
                         ]);
+
                         return back()->with('error', 'Įvyko nenumatyta klaida. Bandykite dar kartą.');
                     }
 
@@ -83,21 +84,22 @@ class RegistrationController extends Controller
                 Log::info('Registration saved successfully', [
                     'registration_id' => $registration->id,
                     'form_id' => $form->id,
-                    'field_responses_count' => $fieldResponses->count()
+                    'field_responses_count' => $fieldResponses->count(),
                 ]);
 
                 return back()->with([
                     'success' => 'Registracija sėkmingai išsiųsta!',
                     'toast_description' => 'Patikrinkite savo el. paštą.',
-                    'toast_duration' => 8000 // 8 seconds for important registration message
+                    'toast_duration' => 8000, // 8 seconds for important registration message
                 ]);
             });
         } catch (\Exception $e) {
             Log::error('Registration save failed', [
                 'error' => $e->getMessage(),
                 'form_id' => $form->id,
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
+
             return back()->with('error', 'Įvyko nenumatyta klaida. Bandykite dar kartą.');
         }
     }

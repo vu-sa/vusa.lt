@@ -116,7 +116,7 @@ class FormController extends AdminController
                 });
 
                 // Check if tenant response exists and has a valid response
-                if (!$tenantResponse || !$tenantResponse->response || !isset($tenantResponse->response['value'])) {
+                if (! $tenantResponse || ! $tenantResponse->response || ! isset($tenantResponse->response['value'])) {
                     return false;
                 }
 

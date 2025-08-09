@@ -75,6 +75,7 @@ class StoreRegistrationRequest extends FormRequest
             if (! filter_var($value, FILTER_VALIDATE_EMAIL)) {
                 $validator->errors()->add("data.{$fieldId}.value", "The {$field->label} must be a valid email address.");
             }
+
             return;
         }
 
@@ -90,12 +91,12 @@ class StoreRegistrationRequest extends FormRequest
                 if ($field->options) {
                     // Extract values from option objects for validation
                     $validValues = collect($field->options)->pluck('value')->filter()->toArray();
-                    
+
                     // Fallback to direct array values if no 'value' properties exist
                     if (empty($validValues)) {
                         $validValues = $field->options;
                     }
-                    
+
                     if (! in_array($value, $validValues)) {
                         $validator->errors()->add("data.{$fieldId}.value", "The selected {$field->label} is invalid.");
                     }

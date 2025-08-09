@@ -175,7 +175,7 @@ class CustomAdminSearchBuilder
         // Apply stored filters
         $this->applyFilters($query);
 
-        // Apply stored ordering  
+        // Apply stored ordering
         $this->applyOrdering($query);
 
         // Apply the callback if set
@@ -193,7 +193,7 @@ class CustomAdminSearchBuilder
     {
         // Store the ordering instruction for later application
         $this->ordering[] = [$column, $direction];
-        
+
         return $this;
     }
 
