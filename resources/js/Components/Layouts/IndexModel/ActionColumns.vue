@@ -4,13 +4,32 @@
       <IFluentMoreVertical24Filled />
     </NButton>
   </NDropdown>
+
+  <Dialog :open="showDeleteDialog" @update:open="showDeleteDialog = $event">
+    <DialogContent class="sm:max-w-[425px]">
+      <DialogHeader>
+        <DialogTitle>{{ $t('Ištrinti įrašą') }}</DialogTitle>
+        <DialogDescription>
+          {{ $t('Ar tikrai norite ištrinti šį įrašą?') }}
+        </DialogDescription>
+      </DialogHeader>
+      
+      <DialogFooter>
+        <Button variant="outline" @click="showDeleteDialog = false">
+          {{ $t('Atšaukti') }}
+        </Button>
+        <Button variant="destructive" @click="confirmDelete">
+          {{ $t('Ištrinti') }}
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
 </template>
 
 <script setup lang="ts" generic="T extends { id: number | string, deleted_at: string | undefined | null }">
 import { trans as $t } from 'laravel-vue-i18n';
-import { h } from 'vue';
+import { h, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { useDialog } from 'naive-ui';
 
 import IFluentArrowCounterclockwise28Regular from "~icons/fluent/arrow-counterclockwise28-regular";
 import IFluentArrowForward20Filled from "~icons/fluent/arrow-forward20-filled";
@@ -19,6 +38,8 @@ import IFluentDelete20Filled from "~icons/fluent/delete20-filled";
 import IFluentEdit20Filled from "~icons/fluent/edit20-filled";
 
 import { type DropdownOption } from 'naive-ui';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
+import { Button } from '@/Components/ui/button';
 
 const props = defineProps<{
   routes: {
@@ -31,7 +52,7 @@ const props = defineProps<{
   modelName: string;
 }>()
 
-const dialog = useDialog();
+const showDeleteDialog = ref(false);
 
 const options: DropdownOption[] = [
   {
@@ -84,18 +105,7 @@ const handleAction = (key: string) => {
       }
       break;
     case 'destroy':
-      // NOTE: Duplicated in AdminForm.vue
-      dialog.warning({
-        title: $t('Ištrinti įrašą'),
-        content: $t('Ar tikrai norite ištrinti šį įrašą?'),
-        positiveText: $t('Ištrinti'),
-        negativeText: $t('Atšaukti'),
-        onPositiveClick: () => {
-          if (props.routes.destroy) {
-            router.delete(route(props.routes.destroy, props.model.id));
-          }
-        },
-      });
+      showDeleteDialog.value = true;
       break;
     case 'restore':
       if (props.model.deleted_at) {
@@ -103,6 +113,13 @@ const handleAction = (key: string) => {
       }
       break;
   }
+};
+
+const confirmDelete = () => {
+  if (props.routes.destroy) {
+    router.delete(route(props.routes.destroy, props.model.id));
+  }
+  showDeleteDialog.value = false;
 };
 
 </script>
