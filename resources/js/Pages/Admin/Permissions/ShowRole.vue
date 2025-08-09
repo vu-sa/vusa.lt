@@ -38,6 +38,7 @@
 <script setup lang="tsx">
 import { NButton, NCard } from "naive-ui";
 import { router } from "@inertiajs/vue3";
+import AdminContentPage from "@/Components/Layouts/AdminContentPage.vue";
 
 interface Role {
   id: string;
