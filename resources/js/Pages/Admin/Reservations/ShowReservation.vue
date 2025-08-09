@@ -112,7 +112,6 @@ const props = defineProps<{
 // Breadcrumbs setup
 usePageBreadcrumbs(() => [
   BreadcrumbHelpers.homeItem(),
-  BreadcrumbHelpers.createBreadcrumbItem($t("administration.title"), route("administration")),
   BreadcrumbHelpers.createRouteBreadcrumb(
     capitalize($tChoice("entities.reservation.model", 2)), 
     "reservations.index", 

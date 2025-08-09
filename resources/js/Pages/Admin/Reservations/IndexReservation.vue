@@ -50,6 +50,7 @@ const canUseRoutes = {
   show: true,
   edit: false,
   destroy: false,
+  duplicate: false
 };
 
 const sorters = ref<Record<string, DataTableSortState["order"]>>({
