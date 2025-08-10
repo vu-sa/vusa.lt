@@ -111,13 +111,53 @@ class FilesController extends AdminController
     public function getFiles(Request $request)
     {
         try {
-            $path = $this->validateAndNormalizePath($request->path ?? 'public/files');
+            $requestedPath = $request->path ?? 'public/files';
+            $path = $this->validateAndNormalizePath($requestedPath);
         } catch (\InvalidArgumentException $e) {
+            return response()->json(['error' => 'Invalid path format'], 400);
+        }
+
+        // If normalization changed the path (e.g., traversal attempts), treat as invalid input
+        if ($requestedPath !== $path) {
             return response()->json(['error' => 'Invalid path format'], 400);
         }
 
         // Check if user can view this specific directory
         if (! $request->user()->can('viewDirectory', [File::class, $path])) {
+            // Mirror index() behaviour but only for root directory requests
+            if (in_array($requestedPath, [null, '', 'public/files'], true) && $this->authorizer->getTenants()->count() > 0) {
+                $allowedPath = 'public/files/padaliniai/vusa'.$this->authorizer->getTenants()->first()->alias;
+
+        if ($request->user()->can('viewDirectory', [File::class, $allowedPath])) {
+                    try {
+                        // Set a flash for Inertia toasts even though this is a JSON request.
+                        // The frontend triggers a small Inertia reload to pick it up.
+                        session()->flash('success', 'Nukreiptas į jūsų padalinio failų aplanką.');
+                        [$files, $directories, $currentDirectory] = $this->getFilesFromStorage($allowedPath);
+
+                        return response()->json([
+                            'files' => $files,
+                            'directories' => $directories,
+                            'path' => $currentDirectory,
+                            'success' => true,
+                            'redirected' => true,
+                        ]);
+                    } catch (\Exception $e) {
+                        Log::error('Error fetching files after fallback', [
+                            'requested_path' => $path,
+                            'fallback_path' => $allowedPath,
+                            'user_id' => $request->user()->id,
+                            'error' => $e->getMessage(),
+                        ]);
+
+                        return response()->json([
+                            'error' => 'Nepavyko gauti failų sąrašo po nukreipimo.',
+                            'code' => 'FETCH_ERROR',
+                        ], 500);
+                    }
+                }
+            }
+
             return response()->json([
                 'error' => 'Neturite teisių peržiūrėti šio aplanko.',
                 'code' => 'INSUFFICIENT_PERMISSIONS',

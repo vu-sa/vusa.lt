@@ -1,23 +1,26 @@
 <template>
   <Spinner class="w-full" :show="loading">
-    <FileManager 
-      small 
+    <FileManager
+      small
       selection-mode
-      class="w-full" 
-      :files 
-      :directories 
-      :path 
-      @update="handleUpdate" 
+      class="w-full"
+      :files
+      :directories
+      :path
+      :allow-upload-in-selection="true"
+      :upload-accept="props.uploadAccept"
+      :upload-extensions="props.uploadExtensions"
+      @update="handleUpdate"
       @back="handleBack"
-      @change-directory="handleChangeDirectory" 
-      @file-selected="(path) => $emit('submit', path)" />
+      @change-directory="handleChangeDirectory"
+      @file-selected="(path) => $emit('submit', path)"
+    />
   </Spinner>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import { useFetch } from '@vueuse/core';
-
+import { ref, watchEffect } from 'vue';
+import { useFileListing } from './useFileListing';
 import FileManager from './FileManager.vue';
 import { Spinner } from '@/Components/ui/spinner';
 
@@ -26,68 +29,34 @@ defineEmits<{
 }>();
 
 const props = defineProps<{
-  fileExtensions?: string[];
+  uploadAccept?: string;
+  uploadExtensions?: string[];
 }>();
 
 const loading = ref(true);
 
-const files = ref([]);
-const directories = ref([]);
-const path = ref("public/files");
+const { filesRaw, directoriesRaw, currentPath, loading: fetchLoading, fetch, back } = useFileListing('public/files');
+const files = filesRaw as any;
+const directories = directoriesRaw as any;
+const path = currentPath as any;
 
-async function handleBack(path: string) {
+async function handleBack() {
   loading.value = true;
-  await getData(path);
+  await back();
 }
 
-async function handleChangeDirectory(path: string) {
+async function handleChangeDirectory(nextPath: string) {
   loading.value = true;
-  await getData(path);
+  await fetch(nextPath);
 }
 
-async function handleUpdate(path: string) {
+async function handleUpdate(nextPath: string) {
   loading.value = true;
-  await getData(path);
+  await fetch(nextPath);
 }
 
-async function getData(changedDirectory: string) {
-  const { data, pending, error, refresh } = await useFetch(route('files.getFiles', {
-    path: changedDirectory
-  })).get().json();
-
-  // Backend now returns file objects instead of strings
-  files.value = data.value.files?.map((file, index) => {
-    return { 
-      id: index, 
-      name: file.name, 
-      path: file.path,
-      size: file.size,
-      modified: file.modified,
-      mimeType: file.mimeType
-    };
-  }) ?? [];
-
-  if (props.fileExtensions) {
-    files.value = files.value.filter((file) => {
-      return props.fileExtensions?.includes(file.name.split('.').pop());
-    });
-  }
-
-  // Backend now returns directory objects instead of strings
-  directories.value = data.value.directories?.map((directory, index) => {
-    return { 
-      id: index, 
-      name: directory.name, 
-      path: directory.path 
-    };
-  }) ?? [];
-
-  path.value = data.value?.path ?? path.value;
-
-  loading.value = false;
-}
-
-await getData("public/files");
-
-loading.value = false;
+loading.value = fetchLoading.value;
+watchEffect(() => {
+  loading.value = fetchLoading.value;
+});
 </script>

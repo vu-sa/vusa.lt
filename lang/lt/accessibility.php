@@ -3,7 +3,11 @@
 return [
     'image_settings' => 'Paveikslėlio nustatymai',
     'select_image' => 'Pasirinkti paveikslėlį',
+    'details' => 'Aprašas',
+    'select_file_step' => 'Pasirink failą',
+    'add_alt_title' => 'Pridėk alternatyvų tekstą ir pavadinimą',
     'alt_text' => 'Alternatyvus tekstas',
+    'alt_text_required' => 'Alternatyvus tekstas privalomas',
     'alt_text_required_explanation' => 'Alternatyvus tekstas yra privalomas prieinamumo reikalavimams. Jis padeda regėjimo negalią turintiems vartotojams suprasti paveikslėlio turinį per ekrano skaitytuvus.',
     'alt_text_example' => 'Pavyzdys: "Studentai diskutuoja grupėje universiteto bibliotekoje"',
     'alt_text_placeholder' => 'Aprašykite, ką vaizduoja paveikslėlis...',

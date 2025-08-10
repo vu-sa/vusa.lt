@@ -3,7 +3,11 @@
 return [
     'image_settings' => 'Image Settings',
     'select_image' => 'Select Image',
+    'details' => 'Details',
+    'select_file_step' => 'Select a file',
+    'add_alt_title' => 'Add alt and title',
     'alt_text' => 'Alternative Text',
+    'alt_text_required' => 'Alt text is required',
     'alt_text_required_explanation' => 'Alt text is required for accessibility compliance. It helps visually impaired users understand image content through screen readers.',
     'alt_text_example' => 'Example: "Students discussing in a group at university library"',
     'alt_text_placeholder' => 'Describe what the image shows...',

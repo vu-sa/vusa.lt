@@ -112,12 +112,17 @@ interface FileUploadProps {
   accept?: string;
   maxSizeMB?: number;
   loading?: boolean;
+  // When true, use provided accept/extensions instead of server-allowed types
+  forceAccept?: boolean;
+  // Optional filtered extensions to display/validate (e.g., only images)
+  extensions?: string[];
 }
 
 const props = withDefaults(defineProps<FileUploadProps>(), {
   accept: '*',
   maxSizeMB: 50,
-  loading: false
+  loading: false,
+  forceAccept: false,
 });
 
 const emit = defineEmits<{
@@ -132,6 +137,10 @@ const allowedTypes = ref<{extensions: string[], accept: string, maxSizeMB: numbe
 
 // Computed accept string for file input
 const acceptString = computed(() => {
+  // If forcing accept, always use provided accept string
+  if (props.forceAccept && props.accept) {
+    return props.accept;
+  }
   if (allowedTypes.value) {
     return allowedTypes.value.accept;
   }
@@ -140,6 +149,9 @@ const acceptString = computed(() => {
 
 // Computed formatted extensions for display
 const formattedExtensions = computed(() => {
+  if (props.forceAccept && props.extensions && props.extensions.length > 0) {
+    return props.extensions.join(', ').toUpperCase();
+  }
   if (allowedTypes.value === null) {
     return 'Kraunama...';
   }
@@ -151,6 +163,8 @@ const formattedExtensions = computed(() => {
 
 // Fetch allowed file types on component mount
 onMounted(async () => {
+  // Skip fetching if caller forces accept/extensions
+  if (props.forceAccept) return;
   try {
     const response = await fetch('/mano/files/allowed-types');
     if (response.ok) {
@@ -184,10 +198,14 @@ function addFiles(files: File[]) {
       return false;
     }
     
-    // Check file type if we have allowed types
-    if (allowedTypes.value?.extensions) {
+    // Resolve allowed extensions: custom filter or server-provided
+    const allowedExts = (props.forceAccept && props.extensions?.length)
+      ? props.extensions.map(e => e.toLowerCase())
+      : (allowedTypes.value?.extensions || undefined);
+
+    if (allowedExts) {
       const fileExtension = file.name.split('.').pop()?.toLowerCase();
-      if (!fileExtension || !allowedTypes.value.extensions.includes(fileExtension)) {
+      if (!fileExtension || !allowedExts.includes(fileExtension)) {
         console.warn(`File type ${fileExtension} is not allowed`);
         return false;
       }

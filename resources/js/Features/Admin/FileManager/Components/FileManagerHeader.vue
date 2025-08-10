@@ -2,7 +2,7 @@
   <div class="space-y-4">
     <!-- Header with actions and search -->
     <div class="flex flex-col sm:flex-row sm:items-center gap-4">
-      <div class="flex gap-2" v-if="!selectionMode">
+  <div class="flex gap-2" v-if="!selectionMode || allowUploadInSelection">
         <!-- Toggle between browse and upload modes -->
         <Button 
           :variant="isUploadMode ? 'outline' : 'default'" 
@@ -20,7 +20,7 @@
           <IFluentCloudArrowUp24Regular class="mr-2 h-4 w-4" />
           Įkelti failus
         </Button>
-        <Button variant="outline" size="sm" @click="$emit('showCreateFolder')">
+  <Button variant="outline" size="sm" @click="$emit('showCreateFolder')">
           <IFluentFolderAdd24Regular class="mr-2 h-4 w-4" />
           Pridėti aplanką
         </Button>
@@ -32,8 +32,7 @@
           v-if="!isUploadMode"
           :model-value="search" 
           @update:model-value="$emit('update:search', $event)"
-          class="w-full" 
-          :size="small ? 'sm' : undefined" 
+          class="w-full"
           placeholder="Ieškoti failų..." 
         />
       </div>
@@ -44,7 +43,7 @@
       <IFluentFolder24Filled class="h-4 w-4 text-muted-foreground flex-shrink-0" />
       <nav class="flex items-center gap-1 text-foreground min-w-0 flex-1">
         <!-- Upload mode indicator -->
-        <span v-if="isUploadMode && !selectionMode" class="text-xs text-muted-foreground mr-2">
+        <span v-if="isUploadMode && (!selectionMode || allowUploadInSelection)" class="text-xs text-muted-foreground mr-2">
           Įkeliama į:
         </span>
         <button 
@@ -97,6 +96,8 @@ const props = defineProps<{
   isUploadMode: boolean;
   selectionMode?: boolean;
   small?: boolean;
+  // Allow upload toggle even in selection mode
+  allowUploadInSelection?: boolean;
 }>();
 
 const emit = defineEmits<{

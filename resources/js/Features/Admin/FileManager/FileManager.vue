@@ -7,16 +7,32 @@
       :is-upload-mode="isUploadMode"
       :selection-mode="props.selectionMode"
       :small="props.small"
+      :allow-upload-in-selection="props.allowUploadInSelection"
       @update:search="search = $event"
       @update:is-upload-mode="isUploadMode = $event"
       @navigate-to-path="navigateToPath"
       @show-create-folder="showFolderUploadModal = true"
     />
+
+    <!-- Inline create-folder form in selection mode (moved near top for visibility) -->
+    <div v-if="props.selectionMode && showFolderUploadModal" class="mt-4 border rounded-md p-4 bg-muted/30">
+      <div class="grid w-full max-w-sm items-center gap-1.5 mb-4">
+        <Label for="folderNameInline">Naujo aplanko pavadinimas</Label>
+        <Input id="folderNameInline" v-model="newFolderName" placeholder="Pavadinimas..." />
+      </div>
+      <div class="flex gap-2">
+        <Button :disabled="loading" :data-loading="loading" @click="createDirectory">Sukurti</Button>
+        <Button variant="outline" @click="showFolderUploadModal = false">Atšaukti</Button>
+      </div>
+    </div>
     
     <!-- Upload Mode -->
-    <div v-if="isUploadMode && !props.selectionMode" class="mt-4">
+    <div v-if="isUploadMode && (!props.selectionMode || props.allowUploadInSelection)" class="mt-4">
       <FileUploadArea 
         :loading="loading"
+        :force-accept="!!props.uploadAccept || !!props.uploadExtensions"
+        :accept="props.uploadAccept || '*'"
+        :extensions="props.uploadExtensions"
         @upload="handleFileUpload"
         @files-selected="onFilesSelected"
         ref="uploadAreaRef"
@@ -57,10 +73,10 @@
         @clear-search="search = ''"
         @delete-folder="handleDeleteFolder"
       />
-      
-      <!-- Properties Bottom Drawer -->
+
+  <!-- Properties Bottom Drawer -->
       <FilePropertiesDrawer
-        v-if="!props.selectionMode"
+  v-if="!props.selectionMode"
         :selected-file="selectedFile"
         :files="shownFiles"
         @preview="previewFile(selectedFile!)"
@@ -70,7 +86,7 @@
     </div>
     
     <!-- Modals -->
-    <CardModal :show="showFolderUploadModal" title="Pridėti aplanką" @close="showFolderUploadModal = false">
+  <CardModal v-if="!props.selectionMode" :show="showFolderUploadModal" title="Pridėti aplanką" @close="showFolderUploadModal = false">
       <div>
         <div class="grid w-full max-w-sm items-center gap-1.5 mb-4">
           <Label for="folderName">Naujo aplanko pavadinimas</Label>
@@ -82,7 +98,7 @@
       </div>
     </CardModal>
     
-    <CardModal :show="showDeleteModal" title="Ištrinti failą" @close="showDeleteModal = false">
+  <CardModal v-if="!props.selectionMode" :show="showDeleteModal" title="Ištrinti failą" @close="showDeleteModal = false">
       <div>
         <p class="mb-4 text-base font-bold">
           {{ selectedFileForDeletion.includes('|||') 
@@ -140,6 +156,12 @@ const props = defineProps<{
   small?: boolean;
   /** Enable file selection mode */
   selectionMode?: boolean;
+  /** Allow showing upload UI even in selection mode */
+  allowUploadInSelection?: boolean;
+  /** Optional accept string for uploads when in selection mode */
+  uploadAccept?: string;
+  /** Optional limited extensions for uploads when in selection mode */
+  uploadExtensions?: string[];
 }>();
 
 const emit = defineEmits<{
@@ -380,6 +402,18 @@ function handleBack() {
 
 function handleFileClick(file: any, event?: MouseEvent) {
   if (props.selectionMode) {
+    // If selection is restricted by allowed extensions, enforce it
+    const allowed = props.uploadExtensions?.length
+      ? props.uploadExtensions.map((e) => e.toLowerCase())
+      : null;
+    if (allowed) {
+      const name: string = file?.name || file?.path || '';
+      const ext = name.includes('.') ? name.split('.').pop()?.toLowerCase() : undefined;
+      if (!ext || !allowed.includes(ext)) {
+        toasts.error('Šio failo tipo pasirinkti negalima.');
+        return;
+      }
+    }
     emit('fileSelected', file.path);
     return;
   }
@@ -398,6 +432,17 @@ function handleFileClick(file: any, event?: MouseEvent) {
 
 function handleFileDoubleClick(file: any) {
   if (props.selectionMode) {
+    const allowed = props.uploadExtensions?.length
+      ? props.uploadExtensions.map((e) => e.toLowerCase())
+      : null;
+    if (allowed) {
+      const name: string = file?.name || file?.path || '';
+      const ext = name.includes('.') ? name.split('.').pop()?.toLowerCase() : undefined;
+      if (!ext || !allowed.includes(ext)) {
+        toasts.error('Šio failo tipo pasirinkti negalima.');
+        return;
+      }
+    }
     emit('fileSelected', file.path);
   }
 }

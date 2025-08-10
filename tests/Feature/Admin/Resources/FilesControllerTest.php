@@ -183,6 +183,19 @@ describe('Files Controller - Directory Listing', function () {
         // Should return error (403 or 400)
         expect($response->status())->toBeIn([400, 403, 422]);
     });
+
+    test('API falls back to tenant directory when unauthorized root', function () {
+        // Request root without explicit path; policy should deny, controller should fall back
+        $response = asUser($this->fileManager)->getJson(route('files.getFiles', ['path' => 'public/files']));
+
+        // Should succeed with fallback and include redirected flag
+        expect($response->status())->toBe(200);
+        expect($response->json('success'))->toBe(true);
+        expect($response->json('redirected'))->toBe(true);
+
+        $path = $response->json('path');
+        expect($path)->toContain('public/files/padaliniai/vusa'.$this->tenant->alias);
+    });
 });
 
 describe('Files Controller - File Upload', function () {
