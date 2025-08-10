@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\DuplicateNewsAction;
 use App\Http\Controllers\AdminController;
+use App\Http\Requests\StoreNewsRequest;
 use App\Http\Requests\UpdateNewsRequest;
 use App\Models\Content;
 use App\Models\News;
@@ -64,22 +65,8 @@ class NewsController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreNewsRequest $request)
     {
-        $this->handleAuthorization('create', News::class);
-
-        $request->validate([
-            'title' => 'required',
-            'permalink' => 'required|unique:news,permalink',
-            'content.parts' => 'required',
-            'lang' => 'required',
-            'image' => 'required',
-            'publish_time' => 'required',
-            'short' => 'required',
-            'tags' => 'nullable|array',
-            'tags.*' => 'integer|exists:tags,id',
-        ]);
-
         $tenant_id = null;
 
         // check if super admin, else set tenant_id
@@ -105,16 +92,9 @@ class NewsController extends AdminController
             'image' => $request->image,
             'image_author' => $request->image_author,
             'draft' => $request->draft ?? 0,
+            'publish_time' => $request->publish_time,
             'tenant_id' => $tenant_id,
         ]);
-
-        if (is_string($request->publish_time)) {
-            $news->publish_time = Carbon::createFromTimestamp(strtotime($request->publish_time));
-        } else {
-            $news->publish_time = Carbon::createFromTimestamp($request->publish_time / 1000);
-        }
-
-        $news->save();
 
         // Sync tags if provided
         if ($request->has('tags') && is_array($request->tags)) {
