@@ -42,7 +42,6 @@ class StoreNewsRequest extends FormRequest
         return [
             'title' => 'required',
             'permalink' => 'required|unique:news,permalink',
-            'content.parts' => 'required',
             'lang' => 'required',
             'image' => 'required',
             'publish_time' => 'required',

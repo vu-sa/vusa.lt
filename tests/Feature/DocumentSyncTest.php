@@ -28,49 +28,63 @@ describe('Document Sync Jobs', function () {
         expect($job->queue)->toBe('sharepoint-sync');
     });
 
-    test('stale documents job identifies old documents correctly', function () {
+    test('rolling refresh job identifies documents for 14-day cycle correctly', function () {
         // Clear any existing documents to ensure clean test
         Document::query()->delete();
 
-        // Create test documents
-        $staleDocument1 = Document::factory()->create([
-            'checked_at' => now()->subDays(2), // Stale (older than 24h)
+        // Create critical documents (older than 14 days, should have priority)
+        $criticalDocument1 = Document::factory()->create([
+            'checked_at' => now()->subDays(15), // Critical - older than 14 days
             'sync_status' => 'success',
+            'is_active' => true,
+            'anonymous_url' => 'https://example.com/doc1',
         ]);
 
-        $staleDocument2 = Document::factory()->create([
-            'checked_at' => null, // Never checked - also stale
+        $criticalDocument2 = Document::factory()->create([
+            'checked_at' => null, // Never checked - critical
             'sync_status' => 'pending',
+            'is_active' => true,
         ]);
 
-        $freshDocument = Document::factory()->create([
-            'checked_at' => now()->subHours(12), // Fresh (less than 24h)
+        // Create documents in 7-14 day range (may be selected to fill quota)
+        $recentDocument = Document::factory()->create([
+            'checked_at' => now()->subDays(10), // Within 7-14 day range
             'sync_status' => 'success',
         ]);
 
-        // Run the stale documents job
+        // Create fresh documents (should not be selected)
+        $freshDocument = Document::factory()->create([
+            'checked_at' => now()->subDays(3), // Fresh (less than 7 days)
+            'sync_status' => 'success',
+        ]);
+
+        // Run the rolling refresh job
         $job = new SyncStaleDocumentsJob;
         $job->handle();
 
-        // Assert: Only stale documents should be queued
-        Queue::assertPushed(SyncDocumentFromSharePointJob::class, 2);
-
-        Queue::assertPushed(SyncDocumentFromSharePointJob::class, function ($job) use ($staleDocument1) {
-            return $job->document->id === $staleDocument1->id;
+        // With 4 total documents, the dynamic quota should be at least 1 (4/14 = 0.28, ceil = 1)
+        // Critical documents should be prioritized
+        Queue::assertPushed(SyncDocumentFromSharePointJob::class, function ($job) use ($criticalDocument1, $criticalDocument2) {
+            return in_array($job->document->id, [$criticalDocument1->id, $criticalDocument2->id]);
         });
 
-        Queue::assertPushed(SyncDocumentFromSharePointJob::class, function ($job) use ($staleDocument2) {
-            return $job->document->id === $staleDocument2->id;
+        // Fresh document should not be selected
+        Queue::assertNotPushed(SyncDocumentFromSharePointJob::class, function ($job) use ($freshDocument) {
+            return $job->document->id === $freshDocument->id;
         });
+
+        // Verify at least one job was pushed (quota-based, so exact count varies)
+        $pushedCount = collect(Queue::pushed(SyncDocumentFromSharePointJob::class))->count();
+        expect($pushedCount)->toBeGreaterThan(0);
     });
 
-    test('stale documents job skips documents with excessive failures', function () {
+    test('rolling refresh job skips documents with excessive failures', function () {
         // Clear any existing documents to ensure clean test
         Document::query()->delete();
 
-        // Create document that has failed too many times
+        // Create document that has failed too many times (over the limit of 5)
         Document::factory()->create([
-            'checked_at' => now()->subDays(2),
+            'checked_at' => now()->subDays(15), // Old enough to be critical
             'sync_status' => 'failed',
             'sync_attempts' => 7, // Over the limit of 5
             'last_sync_attempt_at' => now()->subHours(1),
@@ -83,16 +97,16 @@ describe('Document Sync Jobs', function () {
         Queue::assertNothingPushed();
     });
 
-    test('stale documents job skips recently failed documents', function () {
+    test('rolling refresh job skips recently failed documents', function () {
         // Clear any existing documents to ensure clean test
         Document::query()->delete();
 
         // Create document that failed recently with multiple attempts
         Document::factory()->create([
-            'checked_at' => now()->subDays(2),
+            'checked_at' => now()->subDays(15), // Old enough to be critical
             'sync_status' => 'failed',
             'sync_attempts' => 4, // Under failure limit but failed recently
-            'last_sync_attempt_at' => now()->subHours(2), // Recent failure
+            'last_sync_attempt_at' => now()->subHours(2), // Recent failure (within 6 hours)
         ]);
 
         $job = new SyncStaleDocumentsJob;
@@ -100,6 +114,65 @@ describe('Document Sync Jobs', function () {
 
         // Should skip recently failed documents
         Queue::assertNothingPushed();
+    });
+
+    test('rolling refresh job uses dynamic quota calculation', function () {
+        // Clear any existing documents to ensure clean test
+        Document::query()->delete();
+
+        // Create exactly 14 documents (one per day in cycle)
+        Document::factory()->count(14)->create([
+            'checked_at' => now()->subDays(15), // All critical
+            'sync_status' => 'success',
+        ]);
+
+        $job = new SyncStaleDocumentsJob;
+        $job->handle();
+
+        // With 14 documents, quota should be around 14/14 = 1 per day (with randomization ±10%)
+        // So we should get at least 1 job dispatched
+        $pushedCount = collect(Queue::pushed(SyncDocumentFromSharePointJob::class))->count();
+        expect($pushedCount)->toBeGreaterThanOrEqual(1);
+        expect($pushedCount)->toBeLessThanOrEqual(3); // With randomization, max should be reasonable
+    });
+
+    test('rolling refresh job prioritizes active and public documents', function () {
+        // Clear any existing documents to ensure clean test
+        Document::query()->delete();
+
+        // Create documents with different priorities (all critical age)
+        $highPriority = Document::factory()->create([
+            'checked_at' => now()->subDays(15),
+            'is_active' => true,
+            'anonymous_url' => 'https://example.com/doc',
+            'sync_status' => 'success',
+        ]);
+
+        $mediumPriority = Document::factory()->create([
+            'checked_at' => now()->subDays(16), // Older but lower priority
+            'is_active' => true,
+            'anonymous_url' => null,
+            'sync_status' => 'success',
+        ]);
+
+        $lowPriority = Document::factory()->create([
+            'checked_at' => now()->subDays(17), // Oldest but lowest priority
+            'is_active' => false,
+            'anonymous_url' => null,
+            'sync_status' => 'success',
+        ]);
+
+        $job = new SyncStaleDocumentsJob;
+        $job->handle();
+
+        // High priority document should be more likely to be selected
+        // (We can't guarantee exact selection due to quota randomization, but we can test the logic)
+        $pushedJobs = Queue::pushed(SyncDocumentFromSharePointJob::class);
+        expect(count($pushedJobs))->toBeGreaterThan(0);
+
+        // At least verify that some job was dispatched
+        $dispatchedIds = collect($pushedJobs)->pluck('document.id')->toArray();
+        expect($dispatchedIds)->toContain($highPriority->id);
     });
 });
 
@@ -136,13 +209,18 @@ describe('Document Sync Controller', function () {
 });
 
 describe('Document Sync Command', function () {
-    test('sync command shows stale document count in dry run', function () {
+    test('sync command shows document count for rolling refresh in dry run', function () {
         // Clear any existing documents to ensure clean test
         Document::query()->delete();
 
-        // Create test documents
-        Document::factory()->count(3)->create([
-            'checked_at' => now()->subDays(2), // Stale
+        // Create critical documents (older than 14 days)
+        Document::factory()->count(2)->create([
+            'checked_at' => now()->subDays(15), // Critical
+        ]);
+
+        // Create documents in 7-14 day range
+        Document::factory()->create([
+            'checked_at' => now()->subDays(10), // Within range
         ]);
 
         Document::factory()->create([
@@ -150,7 +228,8 @@ describe('Document Sync Command', function () {
         ]);
 
         $this->artisan('documents:sync --dry-run')
-            ->expectsOutputToContain('Would sync 3 stale documents')
+            ->expectsOutputToContain('Would sync')
+            ->expectsOutputToContain('documents')
             ->assertExitCode(0);
 
         Queue::assertNothingPushed();
