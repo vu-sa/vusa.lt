@@ -134,25 +134,31 @@ describe('DocumentSearchInput', () => {
       expect(wrapper.text()).not.toContain('Automatinė paieška įjungta')
     })
 
-    it('auto-searches on input when typeToSearch is enabled', async () => {
+    it('emits update:query on input when typeToSearch is enabled', async () => {
       const wrapper = createWrapper({ typeToSearch: true })
       const input = wrapper.find('input')
       
-      // Simulate typing a query long enough to trigger search
+      // Simulate typing a query - component should emit update:query, not search
       await input.setValue('test query')
       await input.trigger('input')
       
-      expect(wrapper.emitted('search')).toBeTruthy()
-      expect(wrapper.emitted('search')?.[0]).toEqual(['test query'])
+      expect(wrapper.emitted('update:query')).toBeTruthy()
+      expect(wrapper.emitted('update:query')?.[0]).toEqual(['test query'])
+      // Input component should NOT emit search events - that's handled by parent
+      expect(wrapper.emitted('search')).toBeFalsy()
     })
 
-    it('does not auto-search for short queries even in typeToSearch mode', async () => {
+    it('still emits update:query for short queries in typeToSearch mode', async () => {
       const wrapper = createWrapper({ typeToSearch: true })
       const input = wrapper.find('input')
       
       await input.setValue('ab')
       await input.trigger('input')
       
+      // Component should still emit update:query for any input change
+      expect(wrapper.emitted('update:query')).toBeTruthy()
+      expect(wrapper.emitted('update:query')?.[0]).toEqual(['ab'])
+      // Auto-search logic is handled by parent component, not input
       expect(wrapper.emitted('search')).toBeFalsy()
     })
 
@@ -285,8 +291,8 @@ describe('DocumentSearchInput', () => {
         
         expect(wrapper.emitted('selectRecent')).toBeTruthy()
         expect(wrapper.emitted('selectRecent')?.[0]).toEqual(['recent search 1'])
-        expect(wrapper.emitted('search')).toBeTruthy()
-        expect(wrapper.emitted('search')?.[0]).toEqual(['recent search 1'])
+        // Input component should NOT emit search events - that's handled by parent
+        expect(wrapper.emitted('search')).toBeFalsy()
       }
     })
 

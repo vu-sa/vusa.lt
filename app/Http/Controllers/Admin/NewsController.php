@@ -13,7 +13,6 @@ use App\Models\Tenant;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ModelIndexer;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 
 class NewsController extends AdminController
 {

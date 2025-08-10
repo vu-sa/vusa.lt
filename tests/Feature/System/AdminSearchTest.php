@@ -268,6 +268,9 @@ describe('Public Scout search behavior', function () {
             'anonymous_url' => null,
         ]);
 
+        // Set public search context (default behavior - no admin context)
+        \Illuminate\Support\Facades\Context::forget('search_context');
+
         config(['scout.driver' => 'database']);
         $results = Document::search('')->get();
 

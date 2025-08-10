@@ -1,5 +1,5 @@
 <template>
-  <NForm ref="formRef" :model="model" :rules="rules">
+  <NForm ref="formRef" :model :rules>
     <NFormItem :label="$t('forms.fields.type')" path="typeValue">
       <NSelect v-model:value="model.typeValue" :disabled="!!model.uploadValue" placeholder="Pasirink failo tipą..."
         :options="sharepointFileTypeOptions" />
@@ -39,7 +39,7 @@
       </NInputGroup>
     </NFormItem>
 
-    <NButton type="primary" :disabled="!model.uploadValue" :loading="loading" @click="handleValidateClick">
+    <NButton type="primary" :disabled="!model.uploadValue" :loading @click="handleValidateClick">
       <template #icon>
         <IFluentDocumentAdd24Regular />
       </template>{{ $t('Įkelti failą') }}
@@ -48,15 +48,16 @@
 </template>
 
 <script setup lang="tsx">
-import { generateNameForFile } from "./generateNameForFile";
-import { modelTypes } from "@/Types/formOptions";
 import { ref, watch } from "vue";
-import { splitFileNameAndExtension } from "@/Utils/String";
 import { useForm } from "@inertiajs/vue3";
-import {
-  useMessage,
-} from "naive-ui";
 import type { FormInst, FormRules, UploadFileInfo } from "naive-ui";
+
+import { generateNameForFile } from "./generateNameForFile";
+
+import { modelTypes } from "@/Types/formOptions";
+import { splitFileNameAndExtension } from "@/Utils/String";
+import { useToasts } from "@/Composables/useToasts";
+
 
 const emit = defineEmits<{
   (e: "submit", form: any): void;
@@ -70,7 +71,7 @@ const props = defineProps<{
 }>();
 
 const fileNameEditDisabled = ref(true);
-const message = useMessage();
+const { error } = useToasts();
 
 const originalFileName = ref("");
 const fileExtension = ref<string | undefined>("");
@@ -147,7 +148,7 @@ const beforeUpload = async (data: {
         "application/vnd.openxmlformats-officedocument.presentationml.presentation",
       ].includes(data.file.type)
     ) {
-      message.error("Pristatymas turi būti PDF arba PPTX formatu.");
+      error("Pristatymas turi būti PDF arba PPTX formatu.");
       return false;
     }
     return true;
@@ -160,7 +161,7 @@ const beforeUpload = async (data: {
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     ].includes(data.file.type)
   ) {
-    message.error("Failas turi būti PDF arba DOCX formatu.");
+    error("Failas turi būti PDF arba DOCX formatu.");
     return false;
   }
   return true;
@@ -181,7 +182,7 @@ const handleUploadChange = ({
 
   model.value.uploadValue = fileList[0];
 
-  let { name, extension } = splitFileNameAndExtension(fileList[0].name);
+  const { name, extension } = splitFileNameAndExtension(fileList[0].name);
 
   fileExtension.value = extension;
   originalFileName.value = name;

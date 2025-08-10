@@ -104,6 +104,35 @@ class DocumentController extends AdminController
         $perPage = $request->input('per_page', 20);
         $results = Document::search($searchText)->options($options)->paginate($perPage);
 
+        // Get complete filter options (all distinct values across all documents)
+        // Apply same permission filtering as the main query
+        $baseQuery = Document::query();
+
+        // Apply tenant permission filtering if needed
+        if (! $this->authorizer->isAllScope && ! auth()->user()->isSuperAdmin()) {
+            $allowedTenants = $this->authorizer->getTenants('documents.read.padalinys');
+            if ($allowedTenants->isNotEmpty()) {
+                $allowedTenantIds = $allowedTenants->pluck('id')->toArray();
+                $baseQuery->whereHas('institution.tenant', function ($query) use ($allowedTenantIds) {
+                    $query->whereIn('id', $allowedTenantIds);
+                });
+            }
+        }
+
+        $allContentTypes = (clone $baseQuery)
+            ->distinct('content_type')
+            ->whereNotNull('content_type')
+            ->pluck('content_type')
+            ->sort()
+            ->values();
+
+        $allLanguages = (clone $baseQuery)
+            ->distinct('language')
+            ->whereNotNull('language')
+            ->pluck('language')
+            ->sort()
+            ->values();
+
         return $this->inertiaResponse('Admin/Files/IndexDocument', [
             'data' => (new Collection($results->items()))->load('institution.tenant'),
             'meta' => [
@@ -116,6 +145,10 @@ class DocumentController extends AdminController
             ],
             'filters' => $filters,
             'sorting' => $sorting,
+            'filterOptions' => [
+                'contentTypes' => $allContentTypes,
+                'languages' => $allLanguages,
+            ],
         ]);
     }
 

@@ -40,25 +40,24 @@
 
 <script setup lang="tsx">
 import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
-import { ref, computed, watch } from "vue";
+import { ref, computed, watch, capitalize } from "vue";
 import { router, usePage } from "@inertiajs/vue3";
-import { type ColumnDef } from '@tanstack/vue-table';
-import { capitalize } from "vue";
+import type { ColumnDef } from '@tanstack/vue-table';
+import { ExternalLinkIcon, RefreshCwIcon } from "lucide-vue-next";
 
-import { type Item } from "@/Features/Admin/SharepointFilePicker/picker";
+import type { Item } from "@/Features/Admin/SharepointFilePicker/picker";
 import FilePicker from "@/Features/Admin/SharepointFilePicker/FilePicker.vue";
 import Icons from "@/Types/Icons/regular";
 import IndexTablePage from "@/Components/Layouts/IndexTablePage.vue";
 import SmartLink from "@/Components/Public/SmartLink.vue";
 import { Button } from "@/Components/ui/button";
-import { ExternalLinkIcon, RefreshCwIcon } from "lucide-vue-next";
 import DataTableFilter from "@/Components/ui/data-table/DataTableFilter.vue";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
 import { formatRelativeTime, formatStaticTime } from "@/Utils/IntlTime";
 import { LocaleEnum } from "@/Types/enums";
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
-import {
-  type IndexTablePageProps
+import type {
+  IndexTablePageProps
 } from "@/Types/TableConfigTypes";
 import {
   createTimestampColumn,
@@ -79,6 +78,10 @@ const props = defineProps<{
   };
   filters?: Record<string, any>;
   sorting?: { id: string; desc: boolean }[];
+  filterOptions?: {
+    contentTypes: string[];
+    languages: string[];
+  };
 }>();
 
 // Component constants
@@ -101,37 +104,18 @@ const selectedContentType = ref<string | null>(props.filters?.['content_type'] |
 const selectedLanguage = ref<string | null>(props.filters?.['language'] || null);
 const selectedInstitutionId = ref<number | null>(props.filters?.['institution.id'] || null);
 
-// Extract unique content types and languages for filtering
-const uniqueContentTypes = computed(() => {
-  const types = new Set<string>();
-  props.data.forEach(doc => {
-    if (doc.content_type) {
-      types.add(doc.content_type);
-    }
-  });
-  return Array.from(types);
-});
-
-const uniqueLanguages = computed(() => {
-  const languages = new Set<string>();
-  props.data.forEach(doc => {
-    if (doc.language) {
-      languages.add(doc.language);
-    }
-  });
-  return Array.from(languages);
-});
-
-// Filter options
+// Filter options using complete data from backend instead of current page data
 const contentTypeOptions = computed(() => {
-  return uniqueContentTypes.value.map(type => ({
+  const types = props.filterOptions?.contentTypes || [];
+  return types.map(type => ({
     label: type,
     value: type,
   }));
 });
 
 const languageOptions = computed(() => {
-  return uniqueLanguages.value.map(lang => ({
+  const languages = props.filterOptions?.languages || [];
+  return languages.map(lang => ({
     label: lang,
     value: lang,
   }));
@@ -290,7 +274,7 @@ const columns = computed<ColumnDef<App.Entities.Document, any>[]>(() => [
     header: () => $t("institution"),
     cell: ({ row }) => {
       // Using paginateRaw() workaround returns database models with nested institution
-      const institution = row.original.institution;
+      const { institution } = row.original;
       if (!institution) return '—';
 
       const shortName = institution.short_name || institution.name;

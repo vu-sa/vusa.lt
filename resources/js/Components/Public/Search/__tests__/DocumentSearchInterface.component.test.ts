@@ -220,6 +220,10 @@ describe('DocumentSearchInterface', () => {
       const searchInput = wrapper.findComponent({ name: 'DocumentSearchInput' })
       await searchInput.vm.$emit('update:query', 'test query')
       
+      // For update:query events, search is called with debounced auto-search (1 parameter)
+      // Wait for debounced function to execute (200ms + buffer)
+      await new Promise(resolve => setTimeout(resolve, 300))
+      
       expect(mockSearchController.search).toHaveBeenCalledWith('test query')
     })
 
@@ -229,7 +233,8 @@ describe('DocumentSearchInterface', () => {
       const searchInput = wrapper.findComponent({ name: 'DocumentSearchInput' })
       await searchInput.vm.$emit('search', 'test search')
       
-      expect(mockSearchController.search).toHaveBeenCalledWith('test search')
+      // For search events, search is called immediately with 2 parameters (query, immediate=true)
+      expect(mockSearchController.search).toHaveBeenCalledWith('test search', true)
     })
 
     it('handles recent search selection', async () => {
@@ -238,7 +243,8 @@ describe('DocumentSearchInterface', () => {
       const searchInput = wrapper.findComponent({ name: 'DocumentSearchInput' })
       await searchInput.vm.$emit('select-recent', 'recent search')
       
-      expect(mockSearchController.search).toHaveBeenCalledWith('recent search')
+      // For select-recent events, search is called immediately with 2 parameters (query, immediate=true)
+      expect(mockSearchController.search).toHaveBeenCalledWith('recent search', true)
     })
 
     it('handles clear search', async () => {
@@ -588,6 +594,8 @@ describe('DocumentSearchInterface', () => {
       // User enters search query
       const searchInput = wrapper.findComponent({ name: 'DocumentSearchInput' })
       await searchInput.vm.$emit('update:query', 'test document')
+      // Wait for debounced function to execute (200ms + buffer)
+      await new Promise(resolve => setTimeout(resolve, 300))
       expect(mockSearchController.search).toHaveBeenCalledWith('test document')
       
       // User applies filters

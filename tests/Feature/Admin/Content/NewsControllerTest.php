@@ -141,7 +141,7 @@ describe('auth: news manager', function () {
             'content' => [
                 'parts' => [
                     [
-                        'type' => 'text',
+                        'type' => 'tiptap',
                         'json_content' => ['lt' => 'News content'],
                         'options' => [],
                         'order' => 1,
