@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Carbon;
 
 class UpdateFormRequest extends FormRequest
 {
@@ -12,6 +13,20 @@ class UpdateFormRequest extends FormRequest
     public function authorize(): bool
     {
         return $this->user()->can('update', $this->form);
+    }
+
+    protected function prepareForValidation()
+    {
+        $publishTime = $this->input('publish_time');
+
+        // Only process publish_time if it's not null
+        if ($publishTime !== null) {
+            $this->merge([
+                'publish_time' => is_string($publishTime)
+                    ? Carbon::createFromTimestamp(strtotime($publishTime), 'Europe/Vilnius')
+                    : Carbon::createFromTimestampMs($publishTime, 'Europe/Vilnius'),
+            ]);
+        }
     }
 
     /**

@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Models\Form;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Carbon;
 
 class StoreFormRequest extends FormRequest
 {
@@ -13,6 +14,20 @@ class StoreFormRequest extends FormRequest
     public function authorize(): bool
     {
         return $this->user()->can('create', Form::class);
+    }
+
+    protected function prepareForValidation()
+    {
+        $publishTime = $this->input('publish_time');
+
+        // Only process publish_time if it's not null
+        if ($publishTime !== null) {
+            $this->merge([
+                'publish_time' => is_string($publishTime)
+                    ? Carbon::createFromTimestamp(strtotime($publishTime), 'Europe/Vilnius')
+                    : Carbon::createFromTimestampMs($publishTime, 'Europe/Vilnius'),
+            ]);
+        }
     }
 
     /**
