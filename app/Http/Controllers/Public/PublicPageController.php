@@ -11,6 +11,7 @@ use App\Models\Institution;
 use App\Models\Navigation;
 use App\Models\Page;
 use App\Models\Tenant;
+use App\Models\Type;
 use App\Services\ResourceServices\InstitutionService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
@@ -640,6 +641,75 @@ class PublicPageController extends PublicController
         ]);
     }
 
+    /**
+     * Calculate and cache membership statistics
+     */
+    protected function getMembershipStats(): array
+    {
+        $cacheKey = 'membership_stats';
+        
+        return Cache::remember($cacheKey, 3600, function () { // 60 minutes TTL
+            // Get the student representative type and its descendants
+            $representativeType = Type::query()->where('slug', '=', 'studentu-atstovu-organas')->first();
+            
+            if (!$representativeType) {
+                // Fallback if type doesn't exist
+                return [
+                    'representative_bodies' => 0,
+                    'student_representatives' => 0,
+                    'cached_at' => now(),
+                ];
+            }
+            
+            $representativeTypes = $representativeType->getDescendantsAndSelf();
+            
+            // Calculate number of representative bodies (institutions with student representative types)
+            // Exclude 'pkp' type tenants as they're student initiatives, not formal representation
+            // Also exclude institutions that don't have any active users in their duties
+            $representativeBodies = Institution::query()
+                ->whereHas('types', function ($query) use ($representativeTypes) {
+                    $query->whereIn('id', $representativeTypes->pluck('id'));
+                })
+                ->whereHas('tenant', function ($query) {
+                    $query->where('type', '!=', 'pkp');
+                })
+                ->whereHas('duties.current_users') // Only count institutions that have active users
+                ->where('is_active', true)
+                ->count();
+
+            // Calculate unique student representatives
+            // Get all institutions with representative types and their current users
+            $institutions = Institution::query()
+                ->whereHas('types', function ($query) use ($representativeTypes) {
+                    $query->whereIn('id', $representativeTypes->pluck('id'));
+                })
+                ->whereHas('tenant', function ($query) {
+                    $query->where('type', '!=', 'pkp');
+                })
+                ->whereHas('duties.current_users') // Only get institutions that have active users
+                ->where('is_active', true)
+                ->with(['duties.current_users'])
+                ->get();
+
+            // Collect all unique user IDs from all duties in these institutions
+            $uniqueUserIds = collect();
+            
+            foreach ($institutions as $institution) {
+                foreach ($institution->duties as $duty) {
+                    $uniqueUserIds = $uniqueUserIds->merge($duty->current_users->pluck('id'));
+                }
+            }
+
+            $studentRepresentativeCount = $uniqueUserIds->unique()->count();
+
+            return [
+                'representative_bodies' => $representativeBodies,
+                'student_representatives' => $studentRepresentativeCount,
+                'cached_at' => now(),
+            ];
+        });
+    }
+
     public function membership()
     {
         $this->getBanners();
@@ -648,12 +718,17 @@ class PublicPageController extends PublicController
         // Share other language URL for locale switching
         $this->shareOtherLangURL('joinUs');
 
+        // Get membership statistics
+        $membershipStats = $this->getMembershipStats();
+
         $seo = $this->shareAndReturnSEOObject(
             title: __('Tapk VU SA nariu').' - '.$this->tenant->shortname,
-            description: __('Prisijunk prie VU SA bendruomenės ir būk studentų teisių gynėjas!')
+            description: __('Prisijunk prie VU SA bendruomenės!')
         );
 
-        return Inertia::render('Public/MembershipPage')->withViewData([
+        return Inertia::render('Public/MembershipPage', [
+            'membershipStats' => $membershipStats,
+        ])->withViewData([
             'SEOData' => $seo,
         ]);
     }

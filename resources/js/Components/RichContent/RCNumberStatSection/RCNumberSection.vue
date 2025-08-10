@@ -6,7 +6,7 @@
       </p>
       <div class="flex flex-col md:flex-row my-12 mx-auto font-bold text-xl leading-tight justify-center gap-8">
         <NumberStatistic v-for="numberStat in element.json_content" :key="numberStat.label" :color-class
-          :end-number="numberStat.endNumber">
+          :end-number="numberStat.endNumber" :show-plus="numberStat.showPlus">
           {{ numberStat.label }}
         </NumberStatistic>
       </div>
@@ -16,9 +16,10 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
+
 import NumberStatistic from "./RCNumberStatistic.vue";
 
-import { type NumberStatSection } from "@/Types/contentParts"
+import type { NumberStatSection } from "@/Types/contentParts"
 
 const { element } = defineProps<{
   element: NumberStatSection
