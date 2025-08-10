@@ -1,12 +1,6 @@
 <template>
-  <IndexPageLayout 
-    :title="capitalize($tChoice('entities.reservation.model', 2))" 
-    model-name="reservations"
-    :icon="Icons.RESERVATION" 
-    :can-use-routes 
-    :columns 
-    :paginated-models="reservations"
->
+  <IndexPageLayout :title="capitalize($tChoice('entities.reservation.model', 2))" model-name="reservations"
+    :icon="Icons.RESERVATION" :can-use-routes :columns :paginated-models="reservations">
     <template #after-table>
       <NCard class="mt-4">
         <template #header>
@@ -31,7 +25,6 @@ import { Link, usePage } from "@inertiajs/vue3";
 import { capitalize, computed, provide, ref } from "vue";
 
 import ArrowForward20Filled from "~icons/fluent/arrow-forward20-filled";
-
 import { RESERVATION_DATE_TIME_FORMAT } from "@/Constants/DateTimeFormats";
 import { formatRelativeTime, formatStaticTime } from "@/Utils/IntlTime";
 import Icons from "@/Types/Icons/regular";
@@ -189,21 +182,21 @@ const columns = computed<DataTableColumns<App.Entities.Reservation>>(() => {
         );
       },
     },
-//{
-//      title: "Ar užbaigta",
-//      key: "isCompleted",
-//      filter(value, row) {
-//        return row.isCompleted === value;
-//      },
-//      filterOptions: [
-//        { label: "Taip", value: true },
-//        { label: "Ne", value: false },
-//      ],
-//      defaultFilterOptionValue: false,
-//      render(row) {
-//        return row.isCompleted ? "✅ Taip" : "❌ Ne";
-//      },
-//    }
+    //{
+    //      title: "Ar užbaigta",
+    //      key: "isCompleted",
+    //      filter(value, row) {
+    //        return row.isCompleted === value;
+    //      },
+    //      filterOptions: [
+    //        { label: "Taip", value: true },
+    //        { label: "Ne", value: false },
+    //      ],
+    //      defaultFilterOptionValue: false,
+    //      render(row) {
+    //        return row.isCompleted ? "✅ Taip" : "❌ Ne";
+    //      },
+    //    }
   ];
 });
 

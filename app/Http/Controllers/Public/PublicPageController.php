@@ -28,18 +28,20 @@ class PublicPageController extends PublicController
         return Cache::tags(['calendar', "locale_{$locale}"])
             ->remember($cacheKey, 1800, function () use ($locale) { // 30 minutes TTL
                 if ($locale === 'en') {
-                    return Calendar::query()->with('category')->where('is_international', true)->where('is_draft', false)
+                    return Calendar::query()->with(['category', 'media'])->where('is_international', true)->where('is_draft', false)
                         ->orderBy('date', 'desc')->take(100)->get()->map(function ($event) {
                             return [
                                 ...$event->toArray(),
+                                'images' => $event->getMedia('images'),
                                 'googleLink' => $event->googleLink(),
                             ];
                         });
                 } else {
-                    return Calendar::query()->with('category')->where('is_draft', false)
+                    return Calendar::query()->with(['category', 'media'])->where('is_draft', false)
                         ->orderBy('date', 'desc')->take(100)->get()->map(function ($event) {
                             return [
                                 ...$event->toArray(),
+                                'images' => $event->getMedia('images'),
                                 'googleLink' => $event->googleLink(),
                             ];
                         });

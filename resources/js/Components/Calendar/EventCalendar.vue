@@ -12,19 +12,15 @@
           </div>
           <PopoverRow v-for="attr in attributes" :key="attr.key" :attribute="attr">
             <div class="inline-flex items-center gap-2">
-              <a target="_blank" :href="route('calendar.event', {
+              <a target="_blank" rel="noopener noreferrer" :href="route('calendar.event', {
                 calendar: attr.key,
                 lang: $page.props.app.locale,
               })
                 ">{{ attr.popover.label }}</a>
-              <NConfigProvider class="flex h-fit items-center justify-center" :theme="isDark ? undefined : darkTheme">
-                <div class="my-auto flex items-center justify-center">
-                  <NButton text tag="a" target="_blank" :href="attr.customData.googleLink" color="rgb(189, 40, 53)"
-                    size="tiny">
-                    <IMdiGoogle />
-                  </NButton>
-                </div>
-              </NConfigProvider>
+              <Button variant="ghost" size="icon" as="a" target="_blank" :href="attr.customData.googleLink"
+                class="h-6 w-6 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-950/30">
+                <IMdiGoogle class="h-3 w-3" />
+              </Button>
             </div>
           </PopoverRow>
         </div>
@@ -36,10 +32,12 @@
 <script setup lang="tsx">
 import "v-calendar/style.css";
 import { Calendar, PopoverRow } from "v-calendar";
-import { darkTheme } from "naive-ui";
 import { useDark } from "@vueuse/core";
 import { computed } from "vue";
 import type { PageAddress } from "v-calendar/dist/types/src/utils/page";
+
+import { isSameDay } from "@/Utils/IntlTime";
+import Button from "@/Components/ui/button/Button.vue";
 
 const props = defineProps<{
   calendarEvents: App.Entities.Calendar[];
@@ -54,24 +52,16 @@ const initialPage: PageAddress = {
 
 const isDark = useDark();
 
-// Optimize date comparison function
-const isSameDay = (date1: string, date2: string | null) => {
+// Helper function for date comparison with null handling
+const isSameDayEvent = (date1: string, date2: string | null) => {
   if (!date2) return true;
-  
-  const parsedDate1 = new Date(date1);
-  const parsedDate2 = new Date(date2);
-
-  return (
-    parsedDate1.getFullYear() === parsedDate2.getFullYear() &&
-    parsedDate1.getMonth() === parsedDate2.getMonth() &&
-    parsedDate1.getDate() === parsedDate2.getDate()
-  );
+  return isSameDay(new Date(date1), new Date(date2));
 };
 
 // Create a category color map for better performance
 const categoryColorMap = {
   "freshmen-camps": "yellow",
-  "vu-sa-conferences": "yellow", 
+  "vu-sa-conferences": "yellow",
   "grey": "gray",
 } as const;
 
@@ -79,13 +69,13 @@ const categoryColorMap = {
 const calendarAttributes = computed(() => {
   const attributes = props.calendarEvents.map((event) => {
     const eventColor = categoryColorMap[event.category?.alias as keyof typeof categoryColorMap] || "red";
-    
+
     const startDate = new Date(event.date);
     const endDate = event.end_date ? new Date(event.end_date) : null;
-    
+
     return {
       dates: endDate ? { start: startDate, end: endDate } : startDate,
-      [isSameDay(event.date, event.end_date) ? "dot" : "highlight"]: eventColor,
+      [isSameDayEvent(event.date, event.end_date) ? "dot" : "highlight"]: eventColor,
       popover: {
         label: event.title,
         isInteractive: true,

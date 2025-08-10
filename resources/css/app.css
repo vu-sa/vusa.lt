@@ -122,6 +122,7 @@
 }
 
 @layer base {
+
   /* Only essential typography - no margins, let components control spacing */
   h1 {
     @apply text-2xl md:text-4xl font-black text-gray-900 dark:text-zinc-100 leading-tight tracking-tight;
@@ -153,11 +154,11 @@
   .tracking-inter-tight {
     letter-spacing: -0.02em;
   }
-  
+
   .tracking-inter-normal {
     letter-spacing: -0.01em;
   }
-  
+
   .tracking-inter-wide {
     letter-spacing: 0.02em;
   }
@@ -172,6 +173,7 @@ html.dark {
 }
 
 .typography {
+
   /* Rich content typography with proper spacing and enhanced styling */
   h1 {
     @apply scroll-mt-32 text-4xl font-bold tracking-tight lg:text-5xl mb-6 mt-0 first:mt-0;
@@ -247,8 +249,8 @@ html.dark {
   display: grid;
   grid-template-columns:
     minmax(1rem, 1fr) min(calc(100% - 2rem), 1200px) minmax(1rem, 1fr);
-    
-  @media (width >= 768px) {
+
+  @media (width >=768px) {
     grid-template-columns:
       minmax(2rem, 1fr) min(calc(100% - 4rem), 1200px) minmax(2rem, 1fr);
   }
@@ -259,8 +261,8 @@ html.dark {
   display: grid;
   grid-template-columns:
     minmax(1rem, 1fr) min(calc(100% - 2rem), 1400px) minmax(1rem, 1fr);
-    
-  @media (width >= 768px) {
+
+  @media (width >=768px) {
     grid-template-columns:
       minmax(2rem, 1fr) min(calc(100% - 4rem), 1400px) minmax(2rem, 1fr);
   }
@@ -270,8 +272,8 @@ html.dark {
   display: grid;
   grid-template-columns:
     minmax(0.75rem, 1fr) min(calc(100% - 1.5rem), none) minmax(0.75rem, 1fr);
-    
-  @media (width >= 768px) {
+
+  @media (width >=768px) {
     grid-template-columns:
       minmax(1rem, 1fr) min(calc(100% - 2rem), none) minmax(1rem, 1fr);
   }
@@ -281,8 +283,8 @@ html.dark {
   display: grid;
   grid-template-columns:
     minmax(1rem, 1fr) min(calc(100% - 2rem), 1600px) minmax(1rem, 1fr);
-    
-  @media (width >= 768px) {
+
+  @media (width >=768px) {
     grid-template-columns:
       minmax(2rem, 1fr) min(calc(100% - 4rem), 1600px) minmax(2rem, 1fr);
   }
@@ -296,18 +298,21 @@ html.dark {
   margin-bottom: 0 !important;
 }
 
-.wrapper>*, .wrapper-wide>*, .wrapper-full>*, .wrapper-content>* {
+.wrapper>*,
+.wrapper-wide>*,
+.wrapper-full>*,
+.wrapper-content>* {
   grid-column: 2;
   /* Optimized mobile-first padding */
-  padding-left: 0.75rem;
-  padding-right: 0.75rem;
+  padding-left: 0.25rem;
+  padding-right: 0.25rem;
 
-  @media (width >= 640px) {
+  @media (width >=640px) {
     padding-left: 1rem;
     padding-right: 1rem;
   }
 
-  @media (width >= 768px) {
+  @media (width >=768px) {
     padding-left: 2rem;
     padding-right: 2rem;
   }
@@ -572,7 +577,8 @@ html.dark {
   /* Admin Layout Variables */
   --admin-sidebar-width: 280px;
   --admin-header-height: 64px;
-  --admin-spacing-unit: 1.5rem; /* 24px */
+  --admin-spacing-unit: 1.5rem;
+  /* 24px */
 }
 
 
