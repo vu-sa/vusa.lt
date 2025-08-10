@@ -151,7 +151,7 @@ jobs:
         cp .env.example .env
         php artisan key:generate --force
     
-  - name: Execute tests with coverage
+    - name: Execute tests with coverage
       env:
         DB_CONNECTION: sqlite
         DB_DATABASE: database/database.sqlite
@@ -160,7 +160,7 @@ jobs:
         TYPESENSE_PORT: 8108
         TYPESENSE_API_KEY: xyz
         TYPESENSE_PROTOCOL: http
-  run: php artisan test --parallel --coverage --coverage-clover ./coverage.xml --log-junit ./test-results.xml
+      run: php artisan test --parallel --coverage --coverage-clover ./coverage.xml --log-junit ./test-results.xml
     
     - name: Upload test results to Codecov
       if: always()
