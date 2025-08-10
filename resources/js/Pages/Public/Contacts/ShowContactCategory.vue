@@ -1,40 +1,96 @@
 <template>
-  <div class="mt-12 flex flex-col gap-4">
-    <h1 class="mb-8">
-      {{ $t("Kontaktai") }}: {{ $t(type.title) }}
-    </h1>
-    <template v-for="institution in institutions" :key="institution.id">
-      <InstitutionFigure :institution>
-        <!-- Mostly used for tenant buttons (they have separate sections for coordinators and mentors) -->
-        <template #more>
-          <div v-if="institution.alias === institution.tenant?.alias" class="mt-3 flex flex-wrap gap-2">
-            <NButtonGroup rounded size="small">
-              <NButton v-for="section in padaliniaiSections" :key="section.alias" :tag="SmartLink" :href="route('contacts.alias', {
-                institution: section.alias,
-                subdomain:
-                  institution.alias === 'vusa' ? 'www' : institution.alias,
-                lang: $page.props.app.locale,
-              })">
-                {{ $t(section.title) }}
-              </NButton>
-            </NButtonGroup>
-          </div>
-        </template>
-      </InstitutionFigure>
-      <Separator v-if="institution.id !== institutions[institutions.length - 1].id" />
-    </template>
+  <div class="mt-6 space-y-12 sm:mt-8">
+    <!-- Clean header with modest styling -->
+    <header class="space-y-6">
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100 sm:text-4xl">
+        {{ $t("Kontaktai") }}
+      </h1>
+      <div class="space-y-2">
+        <div class="w-12 h-1 bg-vusa-red rounded-full" />
+        <p class="text-lg text-gray-600 dark:text-gray-400">
+          {{ $t(type.title) }}
+        </p>
+      </div>
+    </header>
+
+    <!-- Institution cards with enhanced organization -->
+    <div v-if="institutionsWithContent.length > 0">
+      <div class="grid grid-cols-1 gap-6">
+        <StaggeredTransitionGroup appear>
+          <article v-for="(institution, index) in institutionsWithContent" :key="institution.id" :data-index="index"
+            class="group relative rounded-lg border border-zinc-200 bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-all duration-200 hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-900 dark:shadow-[0_1px_3px_rgba(0,0,0,0.3)] dark:hover:shadow-[0_4px_12px_rgba(0,0,0,0.4)] sm:p-6"
+            :aria-labelledby="`institution-${institution.id}-title`">
+            <InstitutionFigure :institution hide-types>
+              <!-- Modern section navigation buttons -->
+              <template #more>
+                <nav v-if="institution.alias === institution.tenant?.alias" class="mt-6 rounded-md dark:bg-gray-800/50"
+                  :aria-label="$t('Navigation to different contact sections')">
+                  <div class="flex flex-wrap gap-1.5">
+                    <Button v-for="section in padaliniaiSections" :key="section.alias" :as="SmartLink" :href="route('contacts.alias', {
+                      institution: section.alias,
+                      subdomain: institution.alias === 'vusa' ? 'www' : institution.alias,
+                      lang: $page.props.app.locale,
+                    })" variant="ghost" size="sm"
+                      class="text-xs border border-zinc-200 bg-white text-zinc-700 transition-colors hover:bg-zinc-50 hover:border-zinc-300 hover:text-zinc-900 focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-1 dark:border-zinc-600 dark:bg-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-600 dark:hover:border-zinc-500 dark:hover:text-zinc-100"
+                      :aria-label="`${$t('View')} ${$t(section.title)}`">
+                      {{ $t(section.title) }}
+                    </Button>
+                  </div>
+                </nav>
+              </template>
+            </InstitutionFigure>
+          </article>
+        </StaggeredTransitionGroup>
+      </div>
+    </div>
+
+    <!-- Clean empty state -->
+    <div v-else class="flex flex-col items-center justify-center py-16 text-center">
+      <div class="rounded-full bg-gray-50 p-6 dark:bg-gray-800">
+        <svg class="size-8 text-gray-400 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg>
+      </div>
+      <h3 class="mt-6 text-lg font-semibold text-gray-900 dark:text-gray-100">
+        {{ $t('No contacts available') }}
+      </h3>
+      <p class="mt-2 text-base text-gray-600 dark:text-gray-400">
+        {{ $t('There are currently no contacts available for this category.') }}
+      </p>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { computed } from "vue";
+
 import InstitutionFigure from "@/Components/Public/InstitutionFigure.vue";
 import SmartLink from "@/Components/Public/SmartLink.vue";
+import Button from "@/Components/ui/button/Button.vue";
 import { Separator } from "@/Components/ui/separator";
+import StaggeredTransitionGroup from "@/Components/Transitions/StaggeredTransitionGroup.vue";
 
-defineProps<{
+const props = defineProps<{
   institutions: App.Entities.Institution[];
   type: App.Entities.Type;
 }>();
+
+// Filter institutions that have meaningful content to display
+const institutionsWithContent = computed(() => {
+  return props.institutions.filter(institution => {
+    // Show institution if it has:
+    // 1. Contact information (email, phone, website, social media)
+    // 2. Navigation sections (tenant sections)
+    // 3. Description (even though controller sets it to empty, structure remains)
+    const hasContactInfo = !!(institution.email || institution.phone || institution.website ||
+      institution.facebook_url || institution.instagram_url);
+    const hasNavigationSections = !!(institution.alias === institution.tenant?.alias);
+    const hasBasicInfo = !!(institution.name); // All institutions should have names
+
+    return hasContactInfo || hasNavigationSections || hasBasicInfo;
+  });
+});
 
 const padaliniaiSections = [
   {
