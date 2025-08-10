@@ -128,7 +128,7 @@ class FilesController extends AdminController
             if (in_array($requestedPath, [null, '', 'public/files'], true) && $this->authorizer->getTenants()->count() > 0) {
                 $allowedPath = 'public/files/padaliniai/vusa'.$this->authorizer->getTenants()->first()->alias;
 
-        if ($request->user()->can('viewDirectory', [File::class, $allowedPath])) {
+                if ($request->user()->can('viewDirectory', [File::class, $allowedPath])) {
                     try {
                         // Set a flash for Inertia toasts even though this is a JSON request.
                         // The frontend triggers a small Inertia reload to pick it up.
