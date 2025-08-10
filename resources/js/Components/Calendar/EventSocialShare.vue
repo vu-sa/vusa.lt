@@ -69,6 +69,7 @@ import { computed, ref } from 'vue'
 import { trans as $t } from 'laravel-vue-i18n'
 
 import { formatStaticTime } from '@/Utils/IntlTime'
+import { LocaleEnum } from '@/Types/enums'
 import Button from '@/Components/ui/button/Button.vue'
 
 interface Props {
@@ -108,7 +109,8 @@ const shareText = computed(() => {
   const dateText = formatStaticTime(
     new Date(props.event.date),
     { dateStyle: 'medium', timeStyle: 'short' },
-    props.locale as any
+  // Ensure locale is one of our supported enums
+  (props.locale === LocaleEnum.EN || props.locale === 'en') ? LocaleEnum.EN : LocaleEnum.LT
   )
   return `${title} - ${dateText}`
 })
@@ -118,7 +120,14 @@ const shareDescription = computed(() => {
   const description = Array.isArray(props.event.description)
     ? props.event.description.join(' ')
     : (props.event.description || '')
-  const cleanDescription = description.replace(/<[^>]*>/g, '')
+  // Repeatedly remove tags to handle nested/malformed HTML without external deps
+  const tagRegex = /<[^>]*>/g
+  let cleanDescription = description
+  let prev: string
+  do {
+    prev = cleanDescription
+    cleanDescription = cleanDescription.replace(tagRegex, '')
+  } while (cleanDescription !== prev)
   return cleanDescription.length > 200 ? `${cleanDescription.substring(0, 200)}...` : cleanDescription
 })
 
