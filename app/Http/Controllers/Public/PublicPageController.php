@@ -647,12 +647,12 @@ class PublicPageController extends PublicController
     protected function getMembershipStats(): array
     {
         $cacheKey = 'membership_stats';
-        
+
         return Cache::remember($cacheKey, 3600, function () { // 60 minutes TTL
             // Get the student representative type and its descendants
             $representativeType = Type::query()->where('slug', '=', 'studentu-atstovu-organas')->first();
-            
-            if (!$representativeType) {
+
+            if (! $representativeType) {
                 // Fallback if type doesn't exist
                 return [
                     'representative_bodies' => 0,
@@ -660,9 +660,9 @@ class PublicPageController extends PublicController
                     'cached_at' => now(),
                 ];
             }
-            
+
             $representativeTypes = $representativeType->getDescendantsAndSelf();
-            
+
             // Calculate number of representative bodies (institutions with student representative types)
             // Exclude 'pkp' type tenants as they're student initiatives, not formal representation
             // Also exclude institutions that don't have any active users in their duties
@@ -693,7 +693,7 @@ class PublicPageController extends PublicController
 
             // Collect all unique user IDs from all duties in these institutions
             $uniqueUserIds = collect();
-            
+
             foreach ($institutions as $institution) {
                 foreach ($institution->duties as $duty) {
                     $uniqueUserIds = $uniqueUserIds->merge($duty->current_users->pluck('id'));
