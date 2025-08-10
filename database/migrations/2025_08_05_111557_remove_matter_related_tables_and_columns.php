@@ -20,7 +20,6 @@ return new class extends Migration
         if (Schema::hasTable('agenda_items') && Schema::hasColumn('agenda_items', 'matter_id')) {
             Schema::table('agenda_items', function (Blueprint $table) {
                 $table->dropForeign(['matter_id']);
-                $table->dropColumn('matter_id');
             });
         }
 
