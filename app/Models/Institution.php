@@ -90,7 +90,7 @@ class Institution extends Model implements SharepointFileableContract
         return LogOptions::defaults()->logUnguarded()->logOnlyDirty();
     }
 
-    public function duties()
+    public function duties(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Duty::class);
     }
