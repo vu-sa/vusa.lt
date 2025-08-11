@@ -1,7 +1,7 @@
 codecov:
-  require_ci_to_pass: yes
+  require_ci_to_pass: no  # Allow reports even if some CI jobs fail
   notify:
-    wait_for_ci: yes
+    wait_for_ci: no        # Don't wait for all CI jobs
 
 coverage:
   precision: 2
@@ -91,5 +91,16 @@ comment:
   behavior: default
   require_changes: false
   require_base: no
-  require_head: yes
+  require_head: no      # Don't require head report for comments
   show_carryforward_flags: true
+
+# Add flags to separate frontend and backend coverage
+flags:
+  backend:
+    paths:
+      - "app/"
+    carryforward: false
+  frontend:
+    paths:
+      - "resources/js/"
+    carryforward: false
