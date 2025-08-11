@@ -51,6 +51,7 @@ const contentComponents = shallowRef({
 const props = defineProps<{
   content: models.ContentPart[];
   html?: boolean;
+  class?: string;
 }>();
 
 // Get component for type with fallback

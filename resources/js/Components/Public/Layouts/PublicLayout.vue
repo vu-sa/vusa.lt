@@ -139,6 +139,9 @@
       <!-- Footer outside container for full-width -->
       <SiteFooter />
     </div>
+    
+    <!-- Toast notifications -->
+    <Toaster rich-colors />
   </NConfigProvider>
 </template>
 
@@ -168,7 +171,7 @@
  * This ensures the escape() function only receives string values, preventing the error
  * while maintaining all SEO functionality.
  */
-import { NConfigProvider, darkTheme, useMessage, type GlobalThemeOverrides } from "naive-ui";
+import { NConfigProvider, darkTheme, type GlobalThemeOverrides } from "naive-ui";
 import { computed, defineAsyncComponent, onMounted, ref, toValue, watch, nextTick } from "vue";
 import { useDark, useStorage } from "@vueuse/core";
 
@@ -177,6 +180,9 @@ import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import { Spinner } from "@/Components/ui/spinner";
 import UnifiedBreadcrumbs from "@/Components/UnifiedBreadcrumbs.vue";
 import { createBreadcrumbState } from '@/Composables/useBreadcrumbsUnified';
+import { Toaster } from "@/Components/ui/sonner";
+import { useToasts } from '@/Composables/useToasts';
+import 'vue-sonner/style.css'
 
 // Use existing Skeleton component for consistency
 import { Skeleton } from '@/Components/ui/skeleton';
@@ -376,34 +382,19 @@ const usedThemeOverrides = computed(() => {
 
 const cookieConsent = useStorage("cookie-consent", false);
 
-const message = useMessage();
+// Initialize toast system for flash messages
+const toasts = useToasts();
 
-const successMessage = computed(() => usePage().props.flash.success);
-const infoMessage = computed(() => usePage().props.flash.info);
-const errorMessage = computed(() => usePage().props.errors);
-
-watch(successMessage, (successMessage) => {
-  if (successMessage) {
-    message.success(successMessage);
-    usePage().props.flash.success = null;
-  }
-});
-
-watch(infoMessage, (infoMessage) => {
-  if (infoMessage) {
-    message.info(infoMessage);
-    usePage().props.flash.info = null;
-  }
-});
-
-watch(errorMessage, (errorMessage) => {
-  if (errorMessage) {
-    // loop over the object and display each error
-    for (const [key, value] of Object.entries(errorMessage)) {
-      message.error(`${key}: ${value}`);
-
-      // In public page, show only one error message at a time
-      break
+// Handle validation errors (show only first error for public pages)
+watch(() => usePage().props.errors, (errors) => {
+  if (errors && typeof errors === 'object' && Object.keys(errors).length > 0) {
+    // In public page, show only one error message at a time
+    const entries = Object.entries(errors);
+    if (entries.length > 0) {
+      const [key, value] = entries[0];
+      if (key && value) {
+        toasts.error(`${key}: ${value}`);
+      }
     }
   }
 });
@@ -411,6 +402,9 @@ watch(errorMessage, (errorMessage) => {
 // Listen for navigation events to handle breadcrumb persistence
 onMounted(() => {
   mounted.value = true;
+  
+  // Initialize flash message handling
+  toasts.initializeToasts();
 
   // Setup router navigation events for breadcrumbs
   router.on('start', () => {

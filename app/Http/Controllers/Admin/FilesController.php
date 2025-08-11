@@ -2,17 +2,16 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\AdminController;
 use App\Http\Requests\StoreFilesRequest;
 use App\Models\File;
 use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use Inertia\Inertia;
 use Intervention\Image\Laravel\Facades\Image;
 
-class FilesController extends Controller
+class FilesController extends AdminController
 {
     public function __construct(public Authorizer $authorizer) {}
 
@@ -74,8 +73,6 @@ class FilesController extends Controller
 
     /**
      * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function index(Request $request)
     {
@@ -93,18 +90,18 @@ class FilesController extends Controller
 
                 // Check if user can access their tenant directory
                 if ($request->user()->can('viewDirectory', [File::class, $allowedPath])) {
-                    return redirect()->route('files.index', ['path' => $allowedPath])
+                    return $this->redirectResponse('files.index', ['path' => $allowedPath])
                         ->with('info', 'Nukreiptas į jūsų padalinio failų aplanką.');
                 }
             }
 
             // If no access to tenant directory, redirect to dashboard
-            return redirect()->route('dashboard')->with('error', 'Neturite teisių peržiūrėti failų systemos. Kreipkitės į administratorių dėl prieigos teisių.');
+            return $this->redirectResponse('dashboard')->with('error', 'Neturite teisių peržiūrėti failų systemos. Kreipkitės į administratorių dėl prieigos teisių.');
         }
 
         [$files, $directories, $currentDirectory] = $this->getFilesFromStorage($path);
 
-        return Inertia::render('Admin/Files/Index', [
+        return $this->inertiaResponse('Admin/Files/Index', [
             'files' => $files,
             'directories' => $directories,
             'path' => $currentDirectory,
@@ -114,13 +111,53 @@ class FilesController extends Controller
     public function getFiles(Request $request)
     {
         try {
-            $path = $this->validateAndNormalizePath($request->path ?? 'public/files');
+            $requestedPath = $request->path ?? 'public/files';
+            $path = $this->validateAndNormalizePath($requestedPath);
         } catch (\InvalidArgumentException $e) {
+            return response()->json(['error' => 'Invalid path format'], 400);
+        }
+
+        // If normalization changed the path (e.g., traversal attempts), treat as invalid input
+        if ($requestedPath !== $path) {
             return response()->json(['error' => 'Invalid path format'], 400);
         }
 
         // Check if user can view this specific directory
         if (! $request->user()->can('viewDirectory', [File::class, $path])) {
+            // Mirror index() behaviour but only for root directory requests
+            if (in_array($requestedPath, [null, '', 'public/files'], true) && $this->authorizer->getTenants()->count() > 0) {
+                $allowedPath = 'public/files/padaliniai/vusa'.$this->authorizer->getTenants()->first()->alias;
+
+                if ($request->user()->can('viewDirectory', [File::class, $allowedPath])) {
+                    try {
+                        // Set a flash for Inertia toasts even though this is a JSON request.
+                        // The frontend triggers a small Inertia reload to pick it up.
+                        session()->flash('success', 'Nukreiptas į jūsų padalinio failų aplanką.');
+                        [$files, $directories, $currentDirectory] = $this->getFilesFromStorage($allowedPath);
+
+                        return response()->json([
+                            'files' => $files,
+                            'directories' => $directories,
+                            'path' => $currentDirectory,
+                            'success' => true,
+                            'redirected' => true,
+                        ]);
+                    } catch (\Exception $e) {
+                        Log::error('Error fetching files after fallback', [
+                            'requested_path' => $path,
+                            'fallback_path' => $allowedPath,
+                            'user_id' => $request->user()->id,
+                            'error' => $e->getMessage(),
+                        ]);
+
+                        return response()->json([
+                            'error' => 'Nepavyko gauti failų sąrašo po nukreipimo.',
+                            'code' => 'FETCH_ERROR',
+                        ], 500);
+                    }
+                }
+            }
+
             return response()->json([
                 'error' => 'Neturite teisių peržiūrėti šio aplanko.',
                 'code' => 'INSUFFICIENT_PERMISSIONS',
@@ -152,8 +189,6 @@ class FilesController extends Controller
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function store(StoreFilesRequest $request)
     {
@@ -317,9 +352,10 @@ class FilesController extends Controller
         ]);
 
         // Images can be uploaded as 1. files or as 2. data urls
-        $data = $request->file()['file'] ?? $request->image;
-        $originalName = isset($request->file()['file'])
-            ? $request->file()['file']->getClientOriginalName()
+        $file = $request->file('file');
+        $data = $file ?? $request->image;
+        $originalName = $file !== null
+            ? $file->getClientOriginalName()
             : $request->name;
 
         if (! $data) {
@@ -331,7 +367,7 @@ class FilesController extends Controller
         }
 
         $startingImage = Image::read($data);
-        $image = $startingImage->scaleDown(width: 1600)->toWebp();
+        $image = $startingImage->scaleDown(width: 1600)->toWebp(75);
 
         $path = (string) $request->input('path');
 
@@ -350,8 +386,8 @@ class FilesController extends Controller
 
         $fullPath = storage_path('app/public/'.$path.'/'.$originalName);
 
-        // Intervention Image save() returns null on success, not false
-        $image->save($fullPath, 85);
+        // Intervention Image save() method - quality parameter is set differently in newer versions
+        $image->save($fullPath);
 
         Log::info('Image uploaded and processed', [
             'original_name' => $request->name,

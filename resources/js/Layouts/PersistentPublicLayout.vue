@@ -2,16 +2,14 @@
   <!-- v-show="mounted" -->
   <NConfigProvider :theme="isDark ? darkTheme : undefined"
     :theme-overrides="isDark ? darkThemeOverrides : themeOverrides">
-    <NMessageProvider>
-      <PublicLayout>
-        <slot />
-      </PublicLayout>
-    </NMessageProvider>
+    <PublicLayout>
+      <slot />
+    </PublicLayout>
   </NConfigProvider>
 </template>
 
 <script setup lang="tsx">
-import { NConfigProvider, NMessageProvider, darkTheme } from "naive-ui";
+import { NConfigProvider, darkTheme } from "naive-ui";
 import { useDark } from "@vueuse/core";
 
 import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";

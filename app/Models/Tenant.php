@@ -11,6 +11,40 @@ use Laravel\Scout\Searchable;
 use Staudenmeir\EloquentHasManyDeep\HasManyDeep;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
+/**
+ * @property int $id
+ * @property string|null $type
+ * @property string $fullname
+ * @property string $shortname
+ * @property string $alias
+ * @property string|null $phone
+ * @property string|null $email
+ * @property string|null $address
+ * @property string|null $shortname_vu
+ * @property string|null $primary_institution_id
+ * @property int|null $content_id
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Banner> $banners
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Calendar> $calendar
+ * @property-read \App\Models\Content|null $content
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Duty> $duties
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Institution> $institutions
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\News> $news
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Page> $pages
+ * @property-read \App\Models\Institution|null $primary_institution
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\QuickLink> $quickLinks
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Reservation[] $reservations
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Resource> $resources
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $users
+ * @property-read int|null $users_count
+ * @property-read int|null $reservations_count
+ *
+ * @method static \Database\Factories\TenantFactory factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Tenant newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Tenant newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Tenant query()
+ *
+ * @mixin \Eloquent
+ */
 class Tenant extends Model
 {
     use HasFactory, HasRelationships, Searchable;

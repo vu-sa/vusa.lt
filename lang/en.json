@@ -137,12 +137,9 @@
     "Registracijos": "Registrations",
     "Failai": "Files",
     "Nustatymai": "Settings",
-    "Tikslai": "Goals",
-    "Tikslų grupės": "Goal groups",
     "Veiksmai": "Actions",
     "Institucijos": "Institutions",
     "Institucija": "Institution",
-    "Svarstomi klausimai": "Matters",
     "Susitikimai": "Meetings",
     "Darbotvarkė": "Agenda",
     "Darbotvarkės klausimai": "Agenda items",
@@ -341,5 +338,6 @@
     "Pagalba": "Help",
     "Mano VU SA": "My VU SR",
     "Studentiškos iniciatyvos": "Student initiatives",
-    "Visos iniciatyvos": "All initiatives"
+    "Visos iniciatyvos": "All initiatives",
+    "(kopija)": "(copy)"
 }

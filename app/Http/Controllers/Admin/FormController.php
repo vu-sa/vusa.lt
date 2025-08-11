@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetTenantsForUpserts;
 use App\Exports\FormRegistrationsExport;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\AdminController;
 use App\Http\Requests\StoreFormRequest;
 use App\Http\Requests\UpdateFormRequest;
 use App\Models\Form;
@@ -15,10 +15,9 @@ use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ModelIndexer;
 use App\Settings\FormSettings;
 use Illuminate\Support\Str;
-use Inertia\Inertia;
 use Maatwebsite\Excel\Facades\Excel;
 
-class FormController extends Controller
+class FormController extends AdminController
 {
     public function __construct(public Authorizer $authorizer) {}
 
@@ -27,7 +26,7 @@ class FormController extends Controller
      */
     public function index()
     {
-        $this->authorize('viewAny', Form::class);
+        $this->handleAuthorization('viewAny', Form::class);
 
         $indexer = new ModelIndexer(new Form);
 
@@ -37,7 +36,7 @@ class FormController extends Controller
             ->sortAllColumns()
             ->builder->paginate(15);
 
-        return Inertia::render('Admin/Forms/IndexForm', [
+        return $this->inertiaResponse('Admin/Forms/IndexForm', [
             'forms' => $forms,
         ]);
     }
@@ -47,9 +46,9 @@ class FormController extends Controller
      */
     public function create()
     {
-        $this->authorize('create', Form::class);
+        $this->handleAuthorization('create', Form::class);
 
-        return Inertia::render('Admin/Forms/CreateForm', [
+        return $this->inertiaResponse('Admin/Forms/CreateForm', [
             'assignableTenants' => GetTenantsForUpserts::execute('calendars.create.padalinys', $this->authorizer),
         ]);
     }
@@ -61,7 +60,7 @@ class FormController extends Controller
     {
         $form = new Form;
 
-        $form->fill($request->only('name', 'description', 'path'));
+        $form->fill($request->only('name', 'description', 'path', 'publish_time'));
 
         $form->tenant()->associate($request->tenant_id);
 
@@ -89,7 +88,7 @@ class FormController extends Controller
      */
     public function show(Form $form)
     {
-        $this->authorize('view', $form);
+        $this->handleAuthorization('view', $form);
 
         $form->load('formFields', 'registrations.fieldResponses.formField');
 
@@ -116,11 +115,16 @@ class FormController extends Controller
                     return $fieldResponse->formField->id === $tenantField->id;
                 });
 
+                // Check if tenant response exists and has a valid response
+                if (! $tenantResponse || ! $tenantResponse->response || ! isset($tenantResponse->response['value'])) {
+                    return false;
+                }
+
                 return $tenants->contains('id', $tenantResponse->response['value']);
             });
         }
 
-        return Inertia::render('Admin/Forms/ShowForm', [
+        return $this->inertiaResponse('Admin/Forms/ShowForm', [
             'form' => $form,
             'registrations' => $registrations->values(),
         ]);
@@ -131,12 +135,16 @@ class FormController extends Controller
      */
     public function edit(Form $form)
     {
-        $this->authorize('update', $form);
+        $this->handleAuthorization('update', $form);
 
-        return Inertia::render('Admin/Forms/EditForm', [
+        return $this->inertiaResponse('Admin/Forms/EditForm', [
             'form' => [
                 ...$form->toFullArray(),
-                'form_fields' => $form->formFields()->orderBy('order')->get()->map->toFullArray(),
+                'form_fields' => $form->formFields()->orderBy('order')->get()
+                    ->map(function ($field) {
+                        /** @var \App\Models\FormField $field */
+                        return $field->toFullArray();
+                    }),
                 'registrations_count' => $form->registrations()->count(),
             ],
             'assignableTenants' => GetTenantsForUpserts::execute('calendars.update.padalinys', $this->authorizer),
@@ -155,7 +163,7 @@ class FormController extends Controller
      */
     public function update(UpdateFormRequest $request, Form $form)
     {
-        $form->update($request->only('name', 'description', 'path'));
+        $form->update($request->only('name', 'description', 'path', 'publish_time'));
 
         $form->tenant()->associate($request->tenant_id);
 
@@ -208,7 +216,7 @@ class FormController extends Controller
      */
     public function destroy(Form $form)
     {
-        $this->authorize('delete', $form);
+        $this->handleAuthorization('delete', $form);
 
         $form->delete();
 
@@ -217,10 +225,10 @@ class FormController extends Controller
 
     public function export(Form $form)
     {
-        $this->authorize('update', $form);
+        $this->handleAuthorization('update', $form);
 
         // slugify the form name up to 16 char, and add datetime
-        $fileName = substr(Str::slug($form->name), 0, 20).'-'.now()->format('Y-m-d-H-i-s');
+        $fileName = substr(Str::slug($form->getTranslation('name', app()->getLocale())), 0, 20).'-'.now()->format('Y-m-d-H-i-s');
 
         return Excel::download(new FormRegistrationsExport($form), $fileName.'.xlsx');
     }

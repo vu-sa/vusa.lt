@@ -75,3 +75,77 @@ export const getDaysDifference = (time: number | Date) => {
 
   return daysDifference;
 };
+
+// Calendar-specific utility functions
+
+/**
+ * Check if two dates are on the same day
+ */
+export const isSameDay = (date1: Date, date2: Date): boolean => {
+  return date1.getFullYear() === date2.getFullYear() &&
+    date1.getMonth() === date2.getMonth() &&
+    date1.getDate() === date2.getDate();
+};
+
+/**
+ * Format date for calendar event display (month + day)
+ */
+export const formatEventDate = (
+  time: number | Date,
+  locale: LocaleEnum = LocaleEnum.LT
+): string => {
+  return formatStaticTime(time, {
+    month: 'short',
+    day: 'numeric'
+  }, locale);
+};
+
+/**
+ * Format time only for calendar events
+ */
+export const formatEventTime = (
+  time: number | Date,
+  locale: LocaleEnum = LocaleEnum.LT
+): string => {
+  return formatStaticTime(time, {
+    hour: 'numeric',
+    minute: 'numeric'
+  }, locale);
+};
+
+/**
+ * Format year for calendar events
+ */
+export const formatEventYear = (
+  time: number | Date,
+  locale: LocaleEnum = LocaleEnum.LT
+): string => {
+  return formatStaticTime(time, {
+    year: 'numeric'
+  }, locale);
+};
+
+/**
+ * Format date range for events with start and end dates
+ */
+export const formatDateRange = (
+  startDate: Date,
+  endDate?: Date,
+  locale: LocaleEnum = LocaleEnum.LT
+): string => {
+  if (!endDate) {
+    return formatStaticTime(startDate, { dateStyle: 'medium', timeStyle: 'short' }, locale);
+  }
+
+  const start = formatStaticTime(startDate, { dateStyle: 'medium', timeStyle: 'short' }, locale);
+
+  if (isSameDay(startDate, endDate)) {
+    // Same day - show start time and end time only
+    const endTime = formatEventTime(endDate, locale);
+    return `${start} - ${endTime}`;
+  } else {
+    // Different days - show full date and time for both
+    const end = formatStaticTime(endDate, { dateStyle: 'medium', timeStyle: 'short' }, locale);
+    return `${start} - ${end}`;
+  }
+};

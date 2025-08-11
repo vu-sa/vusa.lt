@@ -10,7 +10,7 @@ class InstitutionService
     /**
      * Get institutions by type slug
      *
-     * @param string typeSlug
+     * @param  string  $typeSlug
      * @return Collection<\App\Models\Institution>
      */
     public function getInstitutionsByTypeSlug($typeSlug): Collection

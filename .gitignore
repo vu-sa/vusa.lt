@@ -1,6 +1,7 @@
 /node_modules
 /storage/*.key
 /storage/clockwork/
+/storage/backups
 /vendor
 .env
 .env.backup

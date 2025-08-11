@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\AdminController;
 use App\Models\ProgrammeSection;
 use App\Services\ModelAuthorizer as Authorizer;
 
-class ProgrammeSectionController extends Controller
+class ProgrammeSectionController extends AdminController
 {
     public function __construct(public Authorizer $authorizer) {}
 

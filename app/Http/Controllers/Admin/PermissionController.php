@@ -2,25 +2,23 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\AdminController;
 use App\Models\Permission;
 use App\Services\ModelAuthorizer as Authorizer;
-use Inertia\Inertia;
+use Illuminate\Http\Request;
 
-class PermissionController extends Controller
+class PermissionController extends AdminController
 {
     public function __construct(public Authorizer $authorizer) {}
 
     /**
      * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $this->authorize('viewAny', Permission::class);
+        $this->handleAuthorization('viewAny', Permission::class);
 
-        return Inertia::render('Admin/Permissions/IndexPermission', [
+        return $this->inertiaResponse('Admin/Permissions/IndexPermission', [
             'permissions' => Permission::paginate(20),
         ]);
     }

@@ -18,11 +18,16 @@ class UpdateNewsRequest extends FormRequest
 
     protected function prepareForValidation()
     {
-        $this->merge([
-            'publish_time' => is_string($this->input('publish_time'))
-                ? strtotime($this->input('publish_time'))
-                : $this->input('publish_time') / 1000,
-        ]);
+        $publishTime = $this->input('publish_time');
+
+        // Only process publish_time if it's not null
+        if ($publishTime !== null) {
+            $this->merge([
+                'publish_time' => is_string($publishTime)
+                    ? strtotime($publishTime)
+                    : $publishTime / 1000,
+            ]);
+        }
     }
 
     /**

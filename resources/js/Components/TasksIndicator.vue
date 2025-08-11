@@ -170,8 +170,6 @@ function getTaskableLabel(task: Task) {
   switch (task.taskable_type) {
     case 'App\\Models\\Meeting':
       return task.taskable.title || $t('Meeting')
-    case 'App\\Models\\Goal':
-      return task.taskable.title || $t('Goal')
     case 'App\\Models\\Reservation':
       return task.taskable.name || $t('Reservation')
     default:
@@ -190,8 +188,6 @@ function getTaskableLink(task: Task) {
   switch (type) {
     case 'meeting':
       return route('meetings.show', task.taskable_id)
-    case 'goal':
-      return route('goals.show', task.taskable_id)
     case 'reservation':
       return route('reservations.show', task.taskable_id)
     default:

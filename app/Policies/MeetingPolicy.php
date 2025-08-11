@@ -26,6 +26,8 @@ class MeetingPolicy extends ModelPolicy
 
     /**
      * Determine whether the user can view the model.
+     *
+     * @param  Meeting  $meeting
      */
     public function view(User $user, Model $meeting): bool
     {
@@ -39,11 +41,14 @@ class MeetingPolicy extends ModelPolicy
 
     /**
      * Determine whether the user can update the model.
+     *
+     * @param  Meeting  $meeting
      */
     public function update(User $user, Model $meeting): bool
     {
-        // Allow meeting organizers to update
-        if ($meeting->organizer_id === $user->id) {
+        // Note: Meeting model doesn't have organizer_id field
+        // Check if user is a participant in the meeting
+        if ($meeting->users->contains('id', $user->id)) {
             return true;
         }
 
@@ -52,11 +57,14 @@ class MeetingPolicy extends ModelPolicy
 
     /**
      * Determine whether the user can add participants to the meeting.
+     *
+     * @param  Meeting  $meeting
      */
-    public function addParticipants(User $user, Meeting $meeting): bool
+    public function addParticipants(User $user, Model $meeting): bool
     {
-        // Allow meeting organizers to add participants
-        if ($meeting->organizer_id === $user->id) {
+        // Note: Meeting model doesn't have organizer_id field
+        // Check if user is a participant in the meeting (can manage participants)
+        if ($meeting->users->contains('id', $user->id)) {
             return true;
         }
 

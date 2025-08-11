@@ -1,5 +1,5 @@
 <template>
-  <span ref="target">{{ numberRef }}</span>
+  <span ref="target">{{ numberRef }}{{ showPlus ? '+' : '' }}</span>
 </template>
 
 <script setup lang="ts">
@@ -9,6 +9,7 @@ import { useIntersectionObserver } from '@vueuse/core'
 
 const props = defineProps<{
   endNumber: number;
+  showPlus?: boolean;
 }>();
 
 const target = useTemplateRef('target')

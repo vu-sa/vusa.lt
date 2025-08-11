@@ -1,17 +1,3 @@
-<script setup lang="ts">
-import { cn } from '@/Utils/Shadcn/utils'
-import { PaginationList, type PaginationListProps } from 'reka-ui'
-import { computed, type HTMLAttributes } from 'vue'
-
-const props = defineProps<PaginationListProps & { class?: HTMLAttributes['class'] }>()
-
-const delegatedProps = computed(() => {
-  const { class: _, ...delegated } = props
-
-  return delegated
-})
-</script>
-
 <template>
   <PaginationList
     v-slot="slotProps"
@@ -22,3 +8,16 @@ const delegatedProps = computed(() => {
     <slot v-bind="slotProps" />
   </PaginationList>
 </template>
+
+<script setup lang="ts">
+import type { PaginationListProps } from "reka-ui"
+import type { HTMLAttributes } from "vue"
+import { reactiveOmit } from "@vueuse/core"
+import { PaginationList } from "reka-ui"
+
+import { cn } from '@/Utils/Shadcn/utils'
+
+const props = defineProps<PaginationListProps & { class?: HTMLAttributes["class"] }>()
+
+const delegatedProps = reactiveOmit(props, "class")
+</script>

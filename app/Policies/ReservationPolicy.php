@@ -4,6 +4,7 @@ namespace App\Policies;
 
 use App\Enums\CRUDEnum;
 use App\Enums\ModelEnum;
+use App\Models\Reservation;
 use App\Models\User;
 use App\Services\ModelAuthorizer;
 use Illuminate\Database\Eloquent\Model;
@@ -26,6 +27,8 @@ class ReservationPolicy extends ModelPolicy
 
     /**
      * Determine whether the user can view the model.
+     *
+     * @param  Reservation  $reservation
      */
     public function view(User $user, Model $reservation): bool
     {
@@ -49,6 +52,8 @@ class ReservationPolicy extends ModelPolicy
 
     /**
      * Determine whether the user can delete the model.
+     *
+     * @param  Reservation  $reservation
      */
     public function delete(User $user, Model $reservation): bool
     {
@@ -61,6 +66,8 @@ class ReservationPolicy extends ModelPolicy
 
     /**
      * Determine whether the user can add users to the model.
+     *
+     * @param  Reservation  $reservation
      */
     public function addUsers(User $user, Model $reservation): bool
     {
@@ -77,6 +84,8 @@ class ReservationPolicy extends ModelPolicy
 
     /**
      * Determine whether the user can update the model.
+     *
+     * @param  Reservation  $reservation
      */
     public function update(User $user, Model $reservation): bool
     {

@@ -30,46 +30,24 @@ function makeContactManager($tenant): User
 test('simple user can\'t access all users', function () {
     $user = asUser($this->user);
 
-    $user->get(route('dashboard'));
-
     $response = $user->get(route('users.index'));
 
-    $response->assertStatus(302)->assertRedirectToRoute('dashboard');
-
-    $this->followRedirects($response)
-        ->assertInertia(fn (Assert $page) => $page
-            ->component('Admin/ShowAdminHome')
-            ->where('flash.statusCode', 403)
-        );
+    $response->assertStatus(403);
 });
 
 test('simple user can\'t create contact', function () {
     $user = asUser($this->user);
 
-    $user->get(route('dashboard'));
-
     $response = $user->get(route('users.create'));
 
-    $response->assertStatus(302)->assertRedirectToRoute('dashboard');
-
-    $this->followRedirects($response)
-        ->assertInertia(fn (Assert $page) => $page
-            ->component('Admin/ShowAdminHome')
-            ->where('flash.statusCode', 403)
-        );
+    $response->assertStatus(403);
 
     $response = $user->post(route('users.store'), [
         'name' => 'Test 1',
         'email' => 'test@email.com',
     ]);
 
-    $response->assertStatus(302)->assertRedirectToRoute('dashboard');
-
-    $this->followRedirects($response)
-        ->assertInertia(fn (Assert $page) => $page
-            ->component('Admin/ShowAdminHome')
-            ->where('flash.statusCode', 403)
-        );
+    $response->assertStatus(403);
 
     $this->assertDatabaseMissing('users', [
         'name' => 'Test 1',

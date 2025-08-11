@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\Doing;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Meeting;
@@ -30,11 +29,6 @@ class TypeSeeder extends Seeder
                 ['title' => json_encode(['lt' => 'Kuratorius', 'en' => '']), 'slug' => 'kuratoriai', 'model_type' => Duty::class],
                 ['title' => json_encode(['lt' => 'Vadovas', 'en' => '']), 'slug' => 'vadovas', 'model_type' => Duty::class],
                 ['title' => json_encode(['lt' => 'Studentų atstovas', 'en' => '']), 'slug' => 'studentu-atstovai', 'model_type' => Duty::class],
-                // Doing::class Types
-                ['title' => json_encode(['lt' => 'Susitikimas', 'en' => '']), 'slug' => 'susitikimas', 'model_type' => Doing::class],
-                ['title' => json_encode(['lt' => 'Laiškas', 'en' => '']), 'slug' => 'laiskas', 'model_type' => Doing::class],
-                ['title' => json_encode(['lt' => 'El. apklausa', 'en' => '']), 'slug' => 'el-apklausa', 'model_type' => Doing::class],
-                ['title' => json_encode(['lt' => 'Focus grupė', 'en' => '']), 'slug' => 'focus-grupe', 'model_type' => Doing::class],
                 // Meeting::class Types
                 ['title' => json_encode(['lt' => 'Gyvas susitikimas', 'en' => 'In-person Meeting']), 'slug' => 'in-person-meeting', 'model_type' => Meeting::class],
                 ['title' => json_encode(['lt' => 'Nuotolinis susitikimas', 'en' => 'Remote Meeting']), 'slug' => 'remote-meeting', 'model_type' => Meeting::class],

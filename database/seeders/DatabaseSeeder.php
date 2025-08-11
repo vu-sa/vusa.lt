@@ -8,11 +8,8 @@ use App\Models\Category;
 use App\Models\Content;
 use App\Models\ContentPart;
 use App\Models\Document;
-use App\Models\Doing;
 use App\Models\Duty;
-use App\Models\Goal;
 use App\Models\Institution;
-use App\Models\Matter;
 use App\Models\Meeting;
 use App\Models\News;
 use App\Models\Page;
@@ -56,7 +53,6 @@ class DatabaseSeeder extends Seeder
         $studyPrograms = StudyProgram::factory(30)->recycle($tenants)->create();
 
         Institution::factory(50)
-            ->has(Matter::factory(3))
             ->has(Meeting::factory(3)->has(AgendaItem::factory(3)))
             ->recycle($tenants)
             ->withType()
@@ -74,7 +70,6 @@ class DatabaseSeeder extends Seeder
 
         $users = User::factory(25)
             ->recycle($studyPrograms)
-            ->has(Doing::factory(5)->withType())
             ->hasAttached(Duty::factory(3)->withType(), ['start_date' => now()->subDay()])
             ->create();
 
@@ -129,8 +124,6 @@ class DatabaseSeeder extends Seeder
         $this->call(RoleCommunicationCoordinatorSeeder::class);
         $this->call(RoleGlobalCommunicationCoordinatorSeeder::class);
         $this->call(RoleResourceManagerSeeder::class);
-
-        Goal::factory(10)->recycle($tenants)->create();
 
         foreach ($tenants as $tenant) {
             QuickLink::factory(6)

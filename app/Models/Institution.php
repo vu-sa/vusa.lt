@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Actions\GetInstitutionManagers;
+use App\Contracts\SharepointFileableContract;
 use App\Events\FileableNameUpdated;
 use App\Models\Pivots\Trainable;
 use App\Models\Traits\HasComments;
@@ -21,7 +22,60 @@ use Spatie\Activitylog\Traits\LogsActivity;
 use Staudenmeir\EloquentHasManyDeep\HasManyDeep;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
-class Institution extends Model
+/**
+ * @property string $id
+ * @property array|string|null $name
+ * @property array|string|null $short_name
+ * @property string $alias
+ * @property array|string|null $description
+ * @property array|string|null $address
+ * @property string|null $phone
+ * @property string|null $email
+ * @property string|null $website
+ * @property string|null $image_url
+ * @property string|null $logo_url
+ * @property string|null $facebook_url
+ * @property string|null $instagram_url
+ * @property int|null $tenant_id
+ * @property int $is_active
+ * @property string $contacts_layout
+ * @property \Illuminate\Support\Carbon $created_at
+ * @property \Illuminate\Support\Carbon $updated_at
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
+ * @property-read \App\Models\Pivots\Relationshipable|Trainable|null $pivot
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Training> $availableTrainings
+ * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $commentable
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Comment> $comments
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Document> $documents
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Duty> $duties
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\SharepointFile> $files
+ * @property-read mixed $maybe_short_name
+ * @property-read mixed $related_institutions
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Relationship> $incomingRelationships
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Meeting> $meetings
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Relationship> $outgoingRelationships
+ * @property-read \App\Models\Tenant|null $tenant
+ * @property-read mixed $translations
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Type> $types
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $users
+ * @property-read int|null $users_count
+ *
+ * @method static \Database\Factories\InstitutionFactory factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Institution newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Institution newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Institution onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Institution query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Institution whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Institution whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Institution whereLocale(string $column, string $locale)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Institution whereLocales(string $column, array $locales)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Institution withTrashed(bool $withTrashed = true)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Institution withoutTrashed()
+ *
+ * @mixin \Eloquent
+ */
+class Institution extends Model implements SharepointFileableContract
 {
     use HasComments, HasContentRelationships, HasFactory, HasRelationships, HasSharepointFiles, HasTranslations, HasUlids, LogsActivity, Searchable, SoftDeletes;
 
@@ -36,7 +90,7 @@ class Institution extends Model
         return LogOptions::defaults()->logUnguarded()->logOnlyDirty();
     }
 
-    public function duties()
+    public function duties(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Duty::class);
     }
@@ -61,11 +115,6 @@ class Institution extends Model
         return $this->hasMany(Document::class);
     }
 
-    public function matters()
-    {
-        return $this->belongsToMany(Matter::class, 'institutions_matters', 'institution_id', 'matter_id');
-    }
-
     public function meetings(): BelongsToMany
     {
         return $this->belongsToMany(Meeting::class);
@@ -74,8 +123,16 @@ class Institution extends Model
     public function lastMeeting(): ?Meeting
     {
         // get earliest in the future, or if none, latest in past meeting
-        return $this->meetings()->where('start_time', '>=', now())->orderBy('start_time', 'asc')->first()
-            ?? $this->meetings()->where('start_time', '<', now())->orderBy('start_time', 'desc')->first();
+        $futureMeeting = $this->meetings()->where('start_time', '>=', now())->orderBy('start_time', 'asc')->first();
+        if ($futureMeeting) {
+            /** @var Meeting $futureMeeting */
+            return $futureMeeting;
+        }
+
+        $pastMeeting = $this->meetings()->where('start_time', '<', now())->orderBy('start_time', 'desc')->first();
+
+        /** @var Meeting|null $pastMeeting */
+        return $pastMeeting;
     }
 
     public function users(): HasManyDeep

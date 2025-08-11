@@ -7,16 +7,32 @@
       :is-upload-mode="isUploadMode"
       :selection-mode="props.selectionMode"
       :small="props.small"
+      :allow-upload-in-selection="props.allowUploadInSelection"
       @update:search="search = $event"
       @update:is-upload-mode="isUploadMode = $event"
       @navigate-to-path="navigateToPath"
       @show-create-folder="showFolderUploadModal = true"
     />
+
+    <!-- Inline create-folder form in selection mode (moved near top for visibility) -->
+    <div v-if="props.selectionMode && showFolderUploadModal" class="mt-4 border rounded-md p-4 bg-muted/30">
+      <div class="grid w-full max-w-sm items-center gap-1.5 mb-4">
+        <Label for="folderNameInline">Naujo aplanko pavadinimas</Label>
+        <Input id="folderNameInline" v-model="newFolderName" placeholder="Pavadinimas..." />
+      </div>
+      <div class="flex gap-2">
+        <Button :disabled="loading" :data-loading="loading" @click="createDirectory">Sukurti</Button>
+        <Button variant="outline" @click="showFolderUploadModal = false">Atšaukti</Button>
+      </div>
+    </div>
     
     <!-- Upload Mode -->
-    <div v-if="isUploadMode && !props.selectionMode" class="mt-4">
+    <div v-if="isUploadMode && (!props.selectionMode || props.allowUploadInSelection)" class="mt-4">
       <FileUploadArea 
         :loading="loading"
+        :force-accept="!!props.uploadAccept || !!props.uploadExtensions"
+        :accept="props.uploadAccept || '*'"
+        :extensions="props.uploadExtensions"
         @upload="handleFileUpload"
         @files-selected="onFilesSelected"
         ref="uploadAreaRef"
@@ -57,10 +73,10 @@
         @clear-search="search = ''"
         @delete-folder="handleDeleteFolder"
       />
-      
-      <!-- Properties Bottom Drawer -->
+
+  <!-- Properties Bottom Drawer -->
       <FilePropertiesDrawer
-        v-if="!props.selectionMode"
+  v-if="!props.selectionMode"
         :selected-file="selectedFile"
         :files="shownFiles"
         @preview="previewFile(selectedFile!)"
@@ -70,7 +86,7 @@
     </div>
     
     <!-- Modals -->
-    <CardModal :show="showFolderUploadModal" title="Pridėti aplanką" @close="showFolderUploadModal = false">
+  <CardModal v-if="!props.selectionMode" :show="showFolderUploadModal" title="Pridėti aplanką" @close="showFolderUploadModal = false">
       <div>
         <div class="grid w-full max-w-sm items-center gap-1.5 mb-4">
           <Label for="folderName">Naujo aplanko pavadinimas</Label>
@@ -82,7 +98,7 @@
       </div>
     </CardModal>
     
-    <CardModal :show="showDeleteModal" title="Ištrinti failą" @close="showDeleteModal = false">
+  <CardModal v-if="!props.selectionMode" :show="showDeleteModal" title="Ištrinti failą" @close="showDeleteModal = false">
       <div>
         <p class="mb-4 text-base font-bold">
           {{ selectedFileForDeletion.includes('|||') 
@@ -119,7 +135,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { useMessage } from 'naive-ui';
+import { useToasts } from '@/Composables/useToasts';
 
 // Components
 import CardModal from '@/Components/Modals/CardModal.vue';
@@ -140,6 +156,12 @@ const props = defineProps<{
   small?: boolean;
   /** Enable file selection mode */
   selectionMode?: boolean;
+  /** Allow showing upload UI even in selection mode */
+  allowUploadInSelection?: boolean;
+  /** Optional accept string for uploads when in selection mode */
+  uploadAccept?: string;
+  /** Optional limited extensions for uploads when in selection mode */
+  uploadExtensions?: string[];
 }>();
 
 const emit = defineEmits<{
@@ -149,7 +171,7 @@ const emit = defineEmits<{
   update: [path: string],
 }>();
 
-const message = useMessage();
+const toasts = useToasts();
 
 // State
 const showFolderUploadModal = ref(false);
@@ -296,7 +318,7 @@ const createDirectory = () => {
       preserveScroll: true,
       preserveState: true,
       onSuccess: () => {
-        message.success("Aplankas sukurtas");
+        toasts.success("Aplankas sukurtas");
         showFolderUploadModal.value = false;
         loading.value = false;
         emit("update", props.path);
@@ -326,14 +348,14 @@ const deleteFileConfirmed = () => {
       preserveScroll: true,
       preserveState: true,
       onSuccess: () => {
-        message.success(`${filesToDelete.length} failai ištrinti`);
+        toasts.success(`${filesToDelete.length} failai ištrinti`);
         clearSelection();
         loading.value = false;
         showDeleteModal.value = false;
         emit("update", props.path);
       },
       onError: () => {
-        message.error('Klaida trinant failus');
+        toasts.error('Klaida trinant failus');
         loading.value = false;
         showDeleteModal.value = false;
       }
@@ -345,13 +367,13 @@ const deleteFileConfirmed = () => {
         preserveScroll: true,
         preserveState: true,
         onSuccess: () => {
-          message.success("Failas ištrintas");
+          toasts.success("Failas ištrintas");
           loading.value = false;
           showDeleteModal.value = false;
           emit("update", props.path);
         },
         onError: () => {
-          message.error('Klaida trinant failą');
+          toasts.error('Klaida trinant failą');
           loading.value = false;
           showDeleteModal.value = false;
         }
@@ -380,6 +402,18 @@ function handleBack() {
 
 function handleFileClick(file: any, event?: MouseEvent) {
   if (props.selectionMode) {
+    // If selection is restricted by allowed extensions, enforce it
+    const allowed = props.uploadExtensions?.length
+      ? props.uploadExtensions.map((e) => e.toLowerCase())
+      : null;
+    if (allowed) {
+      const name: string = file?.name || file?.path || '';
+      const ext = name.includes('.') ? name.split('.').pop()?.toLowerCase() : undefined;
+      if (!ext || !allowed.includes(ext)) {
+        toasts.error('Šio failo tipo pasirinkti negalima.');
+        return;
+      }
+    }
     emit('fileSelected', file.path);
     return;
   }
@@ -398,6 +432,17 @@ function handleFileClick(file: any, event?: MouseEvent) {
 
 function handleFileDoubleClick(file: any) {
   if (props.selectionMode) {
+    const allowed = props.uploadExtensions?.length
+      ? props.uploadExtensions.map((e) => e.toLowerCase())
+      : null;
+    if (allowed) {
+      const name: string = file?.name || file?.path || '';
+      const ext = name.includes('.') ? name.split('.').pop()?.toLowerCase() : undefined;
+      if (!ext || !allowed.includes(ext)) {
+        toasts.error('Šio failo tipo pasirinkti negalima.');
+        return;
+      }
+    }
     emit('fileSelected', file.path);
   }
 }
@@ -457,7 +502,7 @@ function handleDeleteFolder() {
       preserveScroll: true,
       preserveState: true,
       onSuccess: () => {
-        message.success(`Aplankas "${folderName}" sėkmingai ištrintas.`);
+        toasts.success(`Aplankas "${folderName}" sėkmingai ištrintas.`);
         loading.value = false;
         // Navigate back to parent directory
         emit("back");
@@ -466,7 +511,7 @@ function handleDeleteFolder() {
         loading.value = false;
         // Show the first error message
         const errorMessage = Object.values(errors)[0];
-        message.error(typeof errorMessage === 'string' ? errorMessage : 'Nepavyko ištrinti aplanko.');
+        toasts.error(typeof errorMessage === 'string' ? errorMessage : 'Nepavyko ištrinti aplanko.');
       }
     });
   }
@@ -484,14 +529,14 @@ function handleFileUpload(files: File[]) {
       preserveScroll: true,
       preserveState: true,
       onSuccess: () => {
-        message.success(`${files.length} ${files.length === 1 ? 'failas įkeltas' : 'failai įkelti'}! Peržiūrėkite juos žemiau.`);
+        toasts.success(`${files.length} ${files.length === 1 ? 'failas įkeltas' : 'failai įkelti'}! Peržiūrėkite juos žemiau.`);
         loading.value = false;
         isUploadMode.value = false;
         uploadAreaRef.value?.clearFiles();
         emit("update", props.path);
       },
       onError: () => {
-        message.error('Klaida įkeliant failus');
+        toasts.error('Klaida įkeliant failus');
         loading.value = false;
       }
     },

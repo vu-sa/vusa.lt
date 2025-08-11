@@ -4,6 +4,7 @@ use App\Models\Calendar;
 use App\Models\Document;
 use App\Models\News;
 use App\Models\Page;
+use App\Models\Tenant;
 use App\Services\ModelIndexer;
 use Illuminate\Support\Facades\Context;
 
@@ -267,6 +268,9 @@ describe('Public Scout search behavior', function () {
             'anonymous_url' => null,
         ]);
 
+        // Set public search context (default behavior - no admin context)
+        \Illuminate\Support\Facades\Context::forget('search_context');
+
         config(['scout.driver' => 'database']);
         $results = Document::search('')->get();
 
@@ -309,6 +313,9 @@ describe('shouldBeSearchable behavior consistency', function () {
 
 describe('ModelIndexer authorization and filtering', function () {
     test('admin searches respect tenant boundaries', function () {
+        // Ensure we have an "other" tenant
+        $otherTenant = Tenant::factory()->create();
+
         // Create pages for different tenants
         $ownTenantPage = Page::factory()->create([
             'title' => 'Own Tenant Page',
@@ -319,7 +326,7 @@ describe('ModelIndexer authorization and filtering', function () {
         $otherTenantPage = Page::factory()->create([
             'title' => 'Other Tenant Page',
             'is_active' => false,
-            'tenant_id' => ($this->tenant?->id ?? 1) + 1, // Different tenant
+            'tenant_id' => $otherTenant->id, // Use properly created tenant
         ]);
 
         request()->merge(['text' => '']);

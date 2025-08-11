@@ -25,89 +25,70 @@
     </CardHeader>
 
     <CardContent class="mb-2 flex flex-col gap-2 text-sm">
-      <div class="inline-flex items-center gap-2">
-        <IFluentCalendarLtr20Regular class="text-red-500 dark:text-red-400" />
-        <strong>
-          {{ formatStaticTime(
-            new Date(calendarEvent.date),
-            {
-              year: "numeric",
-              month: "short",
-              day: "numeric",
-              hour: "numeric",
-              minute: "numeric",
-            },
-            $page.props.app.locale
-          ) }}
-          <template v-if="calendarEvent.end_date">
-            <span class="mx-1">-</span>
-            {{ formatStaticTime(
-              new Date(calendarEvent.end_date),
-              isSameDay(new Date(calendarEvent.date), new Date(calendarEvent.end_date))
-                ? { hour: "numeric", minute: "numeric" }
-                : { year: "numeric", month: "short", day: "numeric", hour: "numeric", minute: "numeric" },
-              $page.props.app.locale
-            ) }}
-          </template>
-        </strong>
-      </div>
-
-      <div v-if="calendarEvent.location" class="inline-flex items-center gap-2">
-        <IFluentLocation20Regular class="text-red-500 dark:text-red-400" />
-        <a class="line-clamp-1 hover:text-red-500 hover:underline dark:hover:text-red-400" target="_blank"
-          :href="`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(calendarEvent.location)}`">
-          {{ calendarEvent.location }}
-        </a>
-      </div>
-
-      <div class="inline-flex items-center gap-2">
-        <IFluentPeopleTeam20Regular class="text-red-500 dark:text-red-400" />
-        <span class="line-clamp-1">
-          {{ $t("Organizuoja") }}:
-          <strong>{{ eventOrganizer }}</strong>
-        </span>
-      </div>
+      <CalendarEventMeta 
+        :date="calendarEvent.date"
+        :end-date="calendarEvent.end_date"
+        :location="calendarEvent.location"
+        :organizer="eventOrganizer"
+        :tenant="calendarEvent.tenant"
+        variant="neutral"
+        :enable-location-link="true"
+      />
     </CardContent>
 
     <CardFooter v-if="!hideFooter" class="flex justify-between">
       <div v-if="googleLink || calendarEvent.facebook_url" class="flex gap-2">
-        <NPopover v-if="googleLink" trigger="hover">
-          {{ $t("Įsidėk į Google kalendorių") }}
-          <template #trigger>
-            <NButton secondary circle size="small" tag="a" target="_blank" :href="googleLink" @click.stop>
-              <template #icon>
-                <IMdiGoogle />
-              </template>
-            </NButton>
-          </template>
-        </NPopover>
+        <!-- Google Calendar Button -->
+        <Button 
+          v-if="googleLink" 
+          variant="outline" 
+          size="icon" 
+          as="a" 
+          :href="googleLink" 
+          target="_blank"
+          :title="$t('Įsidėk į Google kalendorių')"
+          @click.stop
+        >
+          <IMdiGoogle class="h-4 w-4" />
+        </Button>
 
-        <NPopover v-if="calendarEvent.facebook_url" trigger="hover">
-          {{ $t("Facebook renginys") }}
-          <template #trigger>
-            <NButton title="Facebook" secondary tag="a" target="_blank" :href="calendarEvent.facebook_url" circle
-              size="small">
-              <IMdiFacebook />
-            </NButton>
-          </template>
-        </NPopover>
+        <!-- Facebook Event Button -->
+        <Button 
+          v-if="calendarEvent.facebook_url" 
+          variant="outline" 
+          size="icon" 
+          as="a" 
+          :href="calendarEvent.facebook_url" 
+          target="_blank"
+          :title="$t('Facebook renginys')"
+        >
+          <IMdiFacebook class="h-4 w-4" />
+        </Button>
       </div>
 
       <div class="ml-auto">
-        <NButton
+        <!-- Primary Action Button -->
+        <Button
           v-if="calendarEvent.url || (calendarEvent.tenant?.alias === 'mif' && calendarEvent.category?.alias === 'freshmen-camps')"
-          strong tag="a" round type="primary" :href="calendarEvent.url" target="_blank"
-          @click="calendarEvent.tenant?.alias === 'mif' && calendarEvent.category === 'freshmen-camps' ? showModal = true : null">
-          <template #icon>
-            <IFluentHatGraduation20Filled />
-          </template>
+          as="a" 
+          :href="calendarEvent.url" 
+          target="_blank"
+          class="gap-2"
+          @click="calendarEvent.tenant?.alias === 'mif' && calendarEvent.category === 'freshmen-camps' ? showModal = true : null"
+        >
+          <IFluentHatGraduation20Filled class="h-4 w-4" />
           {{ $t("Dalyvauk") }}!
-        </NButton>
+        </Button>
 
-        <NButton v-else secondary round tag="a"
-          :href="route('calendar.event', { calendar: calendarEvent.id, lang: $page.props.app.locale })">
+        <!-- View Details Button -->
+        <Button 
+          v-else 
+          variant="outline" 
+          as="a"
+          :href="route('calendar.event', { calendar: calendarEvent.id, lang: $page.props.app.locale })"
+        >
           {{ $t("Daugiau") }}
-        </NButton>
+        </Button>
       </div>
     </CardFooter>
   </Card>
@@ -115,22 +96,15 @@
 
 <script setup lang="tsx">
 import { trans as $t } from "laravel-vue-i18n";
-import { NButton, NPopover } from "naive-ui";
 import { computed, ref } from "vue";
-
-// Helper function to check if two dates are on the same day
-const isSameDay = (date1: Date, date2: Date): boolean => {
-  return date1.getFullYear() === date2.getFullYear() &&
-    date1.getMonth() === date2.getMonth() &&
-    date1.getDate() === date2.getDate();
-};
 
 import Card from "../ui/card/Card.vue";
 import CardContent from '../ui/card/CardContent.vue';
 import CardFooter from '../ui/card/CardFooter.vue';
 import CardHeader from '../ui/card/CardHeader.vue';
+import Button from "../ui/button/Button.vue";
+import CalendarEventMeta from "./CalendarEventMeta.vue";
 
-import { formatStaticTime } from "@/Utils/IntlTime";
 import { usePage } from "@inertiajs/vue3";
 
 const props = defineProps<{

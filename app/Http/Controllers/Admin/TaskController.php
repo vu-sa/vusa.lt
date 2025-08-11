@@ -2,16 +2,15 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\AdminController;
 use App\Http\Requests\StoreTaskRequest;
 use App\Models\Task;
 use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
-use Inertia\Inertia;
 
-class TaskController extends Controller
+class TaskController extends AdminController
 {
     public function __construct(public Authorizer $authorizer) {}
 
@@ -31,7 +30,7 @@ class TaskController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return Inertia::render('Admin/ShowTasks', [
+        return $this->inertiaResponse('Admin/ShowTasks', [
             'tasks' => $tasks,
         ]);
     }
@@ -61,20 +60,25 @@ class TaskController extends Controller
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
      */
     public function store(StoreTaskRequest $request)
     {
+        $validatedData = $request->safe();
+        $taskData = [
+            'name' => $validatedData['name'],
+            'taskable_id' => $validatedData['taskable_id'],
+            'taskable_type' => $validatedData['taskable_type'],
+            'due_date' => $validatedData['due_date'],
+        ];
+
         // if separate_tasks is true, create separate tasks for each responsible person
         if ($request->separate_tasks) {
             foreach ($request->responsible_people as $responsible_person) {
-                $task = Task::create($request->safe()->only('name', 'taskable_id', 'taskable_type', 'due_date'));
+                $task = Task::create($taskData);
                 $task->users()->attach($responsible_person);
             }
         } else {
-            $task = Task::create($request->safe()->only('name', 'taskable_id', 'taskable_type', 'due_date'));
+            $task = Task::create($taskData);
             $task->users()->attach($request->responsible_people);
         }
 
@@ -83,12 +87,10 @@ class TaskController extends Controller
 
     /**
      * Update the specified resource in storage.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function update(Request $request, Task $task)
     {
-        $this->authorize('update', $task);
+        $this->handleAuthorization('update', $task);
 
         $validated = $request->validate([
             'name' => 'required',
@@ -105,12 +107,10 @@ class TaskController extends Controller
 
     /**
      * Remove the specified resource from storage.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function destroy(Task $task)
     {
-        $this->authorize('delete', $task);
+        $this->handleAuthorization('delete', $task);
 
         $task->delete();
 
@@ -119,7 +119,7 @@ class TaskController extends Controller
 
     public function updateCompletionStatus(Request $request, Task $task)
     {
-        $this->authorize('update', $task);
+        $this->handleAuthorization('update', $task);
 
         if ($request->completed == true) {
             $task->completed_at = now();

@@ -2,8 +2,7 @@
 
 namespace App\Services\ResourceServices;
 
-use App\Models\Doing;
-use App\Models\Goal;
+use App\Enums\SharepointFolderEnum;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\SharepointFile;
@@ -31,7 +30,7 @@ class SharepointFileService
             abort(500, 'Model does not have HasSharepointFiles trait');
         }
 
-        $path = 'General';
+        $path = SharepointFolderEnum::GENERAL()->label;
 
         if ($fileable instanceof Type) {
             $typeableType = Str::plural(class_basename($fileable->model_type));
@@ -48,7 +47,7 @@ class SharepointFileService
                 abort(500, 'Institution does not have a tenant. Tenant must be assigned.');
             }
 
-            $path .= '/'.'Padaliniai';
+            $path .= '/'.SharepointFolderEnum::PADALINIAI()->label;
             $path .= '/'.$tenant->shortname;
             $path .= '/'.Str::plural(class_basename($fileable->getMorphClass())).'/'.$fileable->name;
         }
@@ -61,7 +60,7 @@ class SharepointFileService
                 abort(500, 'Meeting does not have an institution. Institution must be assigned.');
             }
 
-            $path .= '/'.'Padaliniai';
+            $path .= '/'.SharepointFolderEnum::PADALINIAI()->label;
 
             $tenant = $institution->tenant;
 
@@ -71,36 +70,7 @@ class SharepointFileService
 
             $path .= '/'.$tenant->shortname;
             $path .= '/'.Str::plural(class_basename($institution)).'/'.$institution->name;
-            $path .= '/'.Str::plural(class_basename($fileable)).'/'.$formattedDatetime.'/'.$fileable->name;
-        }
-
-        if ($fileable instanceof Doing) {
-            $fileable->loadMissing('users');
-
-            $path .= '/'.'Users';
-            $path .= '/'.$fileable->users->first()->name;
-            $path .= '/'.Str::plural(class_basename($fileable->getMorphClass()));
-            // add last 4 id letters
-
-            if ($fileable->drive_item_name) {
-                $path .= '/'.$fileable->drive_item_name;
-            } else {
-                $path .= '/'.$fileable->title.'-'.substr($fileable->id, -4);
-                // update doing
-                $fileable->drive_item_name = $fileable->title.'-'.substr($fileable->id, -4);
-                $fileable->save();
-            }
-        }
-
-        if ($fileable instanceof Goal) {
-            $fileable->loadMissing('institutions.tenant');
-
-            $institution = $fileable->institutions->first();
-
-            $path .= '/'.'Padaliniai';
-            $path .= '/'.$institution->tenant->shortname;
-            $path .= '/'.Str::plural(class_basename($institution)).'/'.$institution->name;
-            $path .= '/'.Str::plural(class_basename($fileable->getMorphClass())).'/'.$fileable->title;
+            $path .= '/'.Str::plural(class_basename($fileable)).'/'.$formattedDatetime.'/'.$fileable->title;
         }
 
         return $path;

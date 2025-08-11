@@ -76,38 +76,43 @@
     >
       <template #pagination>
         <!-- Server-side pagination -->
-        <div v-if="enablePagination && totalItems > 0 && data.length > 0" class="flex flex-wrap items-center justify-between gap-2 p-4 border-t">
-          <div class="text-sm text-muted-foreground">
-            {{ $t('Showing') }}
-            <strong>{{ (serverPagination?.pageIndex || 0) * pageSize + 1 }}</strong>
-            {{ $t('to') }}
-            <strong>{{ Math.min((serverPagination?.pageIndex || 0) * pageSize + pageSize, totalItems) }}</strong>
-            {{ $t('of') }}
-            <strong>{{ totalItems }}</strong>
-            {{ $t('results') }}
-          </div>
-          <div class="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              :disabled="(serverPagination?.pageIndex || 0) === 0"
-              @click="handlePrevPage"
-            >
-              {{ $t('Previous') }}
-            </Button>
-            <div class="flex items-center text-sm font-medium">
-              {{ $t('Page') }} {{ (serverPagination?.pageIndex || 0) + 1 }} 
-              {{ $t('of') }} {{ Math.ceil(totalItems / pageSize) }}
+        <div v-if="enablePagination && isServerSide" class="flex flex-wrap items-center justify-between gap-2 p-4 border-t">
+          <!-- Show pagination controls when there are results -->
+          <template v-if="totalItems > 0">
+            <div class="text-sm text-muted-foreground">
+              {{ $t('Showing') }}
+              <strong>{{ (serverPagination?.pageIndex || 0) * pageSize + 1 }}</strong>
+              {{ $t('to') }}
+              <strong>{{ Math.min((serverPagination?.pageIndex || 0) * pageSize + pageSize, totalItems) }}</strong>
+              {{ $t('of') }}
+              <strong>{{ totalItems }}</strong>
+              {{ $t('results') }}
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              :disabled="(serverPagination?.pageIndex || 0) >= Math.ceil(totalItems / pageSize) - 1"
-              @click="handleNextPage"
+            <Pagination 
+              v-slot="{ page }"
+              :items-per-page="pageSize"
+              :total="totalItems" 
+              :default-page="(serverPagination?.pageIndex || 0) + 1"
+              @update:page="(newPage: number) => emit('page-change', newPage - 1)"
             >
-              {{ $t('Next') }}
-            </Button>
-          </div>
+              <PaginationContent>
+                <PaginationPrevious />
+                
+                <div class="flex items-center text-sm font-medium px-4">
+                  {{ $t('Page') }} {{ page }} {{ $t('of') }} {{ Math.ceil(totalItems / pageSize) }}
+                </div>
+                
+                <PaginationNext />
+              </PaginationContent>
+            </Pagination>
+          </template>
+          
+          <!-- Show empty state when no results -->
+          <template v-else>
+            <div class="text-sm text-muted-foreground">
+              {{ $t('No results found') }}
+            </div>
+          </template>
         </div>
       </template>
       
@@ -129,6 +134,13 @@ import type { ColumnDef, SortingState, PaginationState, RowSelectionState } from
 
 import DataTable from './DataTable.vue';
 import { Button } from '@/Components/ui/button';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/Components/ui/pagination';
 
 const props = defineProps<{
   // Data props

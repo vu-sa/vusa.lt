@@ -46,7 +46,7 @@ const filters = ref<Record<string, any>>({
 
 provide("filters", filters);
 
-const columns = computed<DataTableColumns<App.Entities.News>>(() => [
+const columns = computed<DataTableColumns<App.Entities.Page>>(() => [
   {
     title: "ID",
     key: "id",
@@ -121,11 +121,7 @@ const columns = computed<DataTableColumns<App.Entities.News>>(() => [
   {
     title: "Sukurta",
     key: "created_at",
-    sorter: (a, b) => {
-      return (
-        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-      );
-    },
+    sorter: true,
     sortOrder: sorters.value.created_at,
     minWidth: 100,
     ellipsis: {

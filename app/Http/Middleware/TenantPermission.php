@@ -21,6 +21,7 @@ class TenantPermission
      */
     public function handle(Request $request, Closure $next, string $permission)
     {
+        // TODO: Review if this Middleware is properly implemented
         // Check if user is authenticated
         if (! Auth::check()) {
             if ($request->expectsJson()) {
@@ -37,11 +38,8 @@ class TenantPermission
                 return response()->json(['message' => 'Forbidden. Insufficient permissions.'], 403);
             }
 
-            // For regular web routes, redirect to dashboard with error message
-            return redirect()->route('dashboard')->with([
-                'info' => 'Insufficient permissions to access this resource.',
-                'statusCode' => 403,
-            ]);
+            // For web routes, throw authorization exception (handled by Handler.php)
+            abort(403, 'Insufficient permissions to access this resource.');
         }
 
         return $next($request);

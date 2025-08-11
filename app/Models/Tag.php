@@ -8,6 +8,27 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Str;
 
+/**
+ * @property int $id
+ * @property string|null $alias
+ * @property \Illuminate\Support\Carbon $created_at
+ * @property \Illuminate\Support\Carbon $updated_at
+ * @property array|string|null $name
+ * @property array|string|null $description
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\News> $news
+ * @property-read mixed $translations
+ *
+ * @method static \Database\Factories\TagFactory factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Tag newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Tag newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Tag query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Tag whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Tag whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Tag whereLocale(string $column, string $locale)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Tag whereLocales(string $column, array $locales)
+ *
+ * @mixin \Eloquent
+ */
 class Tag extends Model
 {
     use HasFactory, HasTranslations;

@@ -12,6 +12,41 @@ use Spatie\CalendarLinks\Link;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
+/**
+ * @property int $id
+ * @property array|string|null $title
+ * @property array|string|null $description
+ * @property array|string|null $location
+ * @property array|string|null $organizer
+ * @property array|string|null $cto_url URL for Call To Action
+ * @property string|null $facebook_url
+ * @property string|null $video_url
+ * @property bool $is_draft
+ * @property int $is_all_day
+ * @property int $is_international
+ * @property Carbon $date
+ * @property Carbon|null $end_date
+ * @property int|null $category_id
+ * @property int $tenant_id
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property int|null $registration_form_id
+ * @property-read \App\Models\Category|null $category
+ * @property-read \Spatie\MediaLibrary\MediaCollections\Models\Collections\MediaCollection<int, \Spatie\MediaLibrary\MediaCollections\Models\Media> $media
+ * @property-read \App\Models\Tenant $tenant
+ * @property-read mixed $translations
+ *
+ * @method static \Database\Factories\CalendarFactory factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Calendar newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Calendar newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Calendar query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Calendar whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Calendar whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Calendar whereLocale(string $column, string $locale)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Calendar whereLocales(string $column, array $locales)
+ *
+ * @mixin \Eloquent
+ */
 class Calendar extends Model implements HasMedia
 {
     use HasFactory, HasTranslations, InteractsWithMedia, Searchable;
@@ -76,10 +111,10 @@ class Calendar extends Model implements HasMedia
             'title' => $this->getTranslation('title', app()->getLocale()) ?: $this->getTranslation('title', 'lt') ?: $this->getTranslation('title', 'en'),
             'title_lt' => $this->getTranslation('title', 'lt'),
             'title_en' => $this->getTranslation('title', 'en'),
-            'date' => $this->date ? $this->date->timestamp : now()->timestamp,
+            'date' => $this->date->timestamp,
             'end_date' => $this->end_date ? $this->end_date->timestamp : null,
             'lang' => $this->lang ?? app()->getLocale(),
-            'tenant_name' => $this->tenant ? $this->tenant->fullname : null,
+            'tenant_name' => $this->tenant->fullname,
             'created_at' => $this->created_at->timestamp,
         ];
     }

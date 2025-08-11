@@ -19,6 +19,8 @@ class CustomAdminSearchBuilder
 
     private array $filters = [];
 
+    private array $ordering = [];
+
     public function __construct(string $modelClass, string $search = '')
     {
         $this->model = $modelClass;
@@ -49,6 +51,9 @@ class CustomAdminSearchBuilder
 
         // Apply stored filters
         $this->applyFilters($query);
+
+        // Apply stored ordering
+        $this->applyOrdering($query);
 
         // Apply the callback if set (for filters, authorization, etc.)
         if ($this->queryCallback) {
@@ -144,6 +149,9 @@ class CustomAdminSearchBuilder
         // Apply stored filters
         $this->applyFilters($query);
 
+        // Apply stored ordering
+        $this->applyOrdering($query);
+
         // Apply the callback if set
         if ($this->queryCallback) {
             call_user_func($this->queryCallback, $query);
@@ -167,6 +175,9 @@ class CustomAdminSearchBuilder
         // Apply stored filters
         $this->applyFilters($query);
 
+        // Apply stored ordering
+        $this->applyOrdering($query);
+
         // Apply the callback if set
         if ($this->queryCallback) {
             call_user_func($this->queryCallback, $query);
@@ -180,7 +191,9 @@ class CustomAdminSearchBuilder
      */
     public function orderBy(string $column, string $direction = 'asc')
     {
-        // This will be handled by the query callback in the actual implementation
+        // Store the ordering instruction for later application
+        $this->ordering[] = [$column, $direction];
+
         return $this;
     }
 
@@ -204,6 +217,16 @@ class CustomAdminSearchBuilder
             if (! empty($values)) {
                 $query->whereIn($field, $values);
             }
+        }
+    }
+
+    /**
+     * Apply stored ordering to the query
+     */
+    private function applyOrdering(EloquentBuilder $query): void
+    {
+        foreach ($this->ordering as [$column, $direction]) {
+            $query->orderBy($column, $direction);
         }
     }
 

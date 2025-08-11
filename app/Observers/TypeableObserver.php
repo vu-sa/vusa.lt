@@ -12,14 +12,16 @@ class TypeableObserver
      */
     public function saved(Typeable $typeable): void
     {
-        if ($typeable->typeable_type === 'App\Models\Duty') {
+        if ($typeable->getAttribute('typeable_type') === 'App\Models\Duty') {
             $attachable_types = GetAttachableTypesForDuty::execute();
 
-            if ($attachable_types->contains($typeable->type_id)) {
+            if ($attachable_types->contains($typeable->getAttribute('type_id'))) {
                 $roles = $typeable->type->roles;
 
-                // add each role to the duty
-                $typeable->typeable->roles()->syncWithoutDetaching($roles);
+                // add each role to the duty (ensure it's a Duty model)
+                if ($typeable->typeable instanceof \App\Models\Duty) {
+                    $typeable->typeable->roles()->syncWithoutDetaching($roles);
+                }
             }
         }
     }

@@ -41,8 +41,8 @@ CREATE TABLE `agenda_items` (
   PRIMARY KEY (`id`),
   KEY `agenda_items_meeting_id_foreign` (`meeting_id`),
   KEY `agenda_items_matter_id_foreign` (`matter_id`),
-  CONSTRAINT `institution_meeting_matter_matter_id_foreign` FOREIGN KEY (`matter_id`) REFERENCES `matters` (`id`),
-  CONSTRAINT `institution_meeting_matter_meeting_id_foreign` FOREIGN KEY (`meeting_id`) REFERENCES `meetings` (`id`)
+  CONSTRAINT `agenda_items_matter_id_foreign` FOREIGN KEY (`matter_id`) REFERENCES `matters` (`id`),
+  CONSTRAINT `agenda_items_meeting_id_foreign` FOREIGN KEY (`meeting_id`) REFERENCES `meetings` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_lithuanian_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `banners`;

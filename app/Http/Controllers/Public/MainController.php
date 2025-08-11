@@ -3,10 +3,7 @@
 namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\PublicController;
-use App\Models\Calendar;
-use App\Models\Document;
 use App\Models\News;
-use App\Models\Page;
 use App\Models\Tenant;
 use App\Services\IcalendarService;
 use Illuminate\Http\Request;
@@ -28,22 +25,6 @@ class MainController extends PublicController
 
         return response()->json($mainNews, 200, ['Content-type' => 'application/json; charset=utf-8'], JSON_UNESCAPED_UNICODE);
         //
-    }
-
-    public function search()
-    {
-        // get search query
-        $search = request()->data['input'];
-
-        $calendar = Calendar::search($search)->orderBy('date', 'desc')->take(5)->get(['id', 'title', 'date', 'permalink', 'lang']);
-
-        $news = News::search($search)->orderBy('publish_time', 'desc')->take(5)->get(['id', 'title', 'publish_time', 'image', 'permalink', 'lang']);
-
-        $pages = Page::search($search)->orderBy('created_at', 'desc')->take(5)->get(['id', 'title', 'permalink', 'lang']);
-
-        $documents = Document::search($search)->orderBy('document_date', 'desc')->take(5)->get(['id', 'name', 'title', 'document_date', 'anonymous_url', 'language', 'content_type', 'created_at', 'summary']);
-
-        return back()->with('search', ['calendar' => $calendar, 'news' => $news, 'pages' => $pages, 'documents' => $documents]);
     }
 
     public function sendFeedback(Request $request)

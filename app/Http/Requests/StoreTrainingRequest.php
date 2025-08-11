@@ -18,13 +18,19 @@ class StoreTrainingRequest extends FormRequest
 
     protected function prepareForValidation()
     {
-        if ($this->input('start_time') === null) {
-            return;
+        $data = [];
+
+        if ($this->input('start_time') !== null) {
+            $data['start_time'] = Carbon::parse($this->input('start_time') / 1000)->setTimezone('Europe/Vilnius')->toDateTimeString();
         }
 
-        $this->merge([
-            'start_time' => Carbon::parse($this->input('start_time') / 1000)->setTimezone('Europe/Vilnius')->toDateTimeString(),
-        ]);
+        if ($this->input('end_time') !== null) {
+            $data['end_time'] = Carbon::parse($this->input('end_time') / 1000)->setTimezone('Europe/Vilnius')->toDateTimeString();
+        }
+
+        if (! empty($data)) {
+            $this->merge($data);
+        }
     }
 
     /**
@@ -36,13 +42,16 @@ class StoreTrainingRequest extends FormRequest
     {
         return [
             'name' => 'required|array',
-            'name.lt' => 'required|string',
+            'name.lt' => 'required|string|unique:trainings,name->lt',
             'name.en' => 'nullable|string',
             'description' => 'required|array',
             'description.lt' => 'required|string',
             'description.en' => 'nullable|string',
             'institution_id' => 'required|exists:institutions,id',
             'start_time' => 'required|date',
+            'end_time' => 'nullable|date|after:start_time',
+            'address' => 'nullable|string|max:255',
+            'max_participants' => 'nullable|integer|min:0',
         ];
     }
 }

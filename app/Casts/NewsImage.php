@@ -18,10 +18,10 @@ class NewsImage implements CastsAttributes
         if (substr($value, 0, 4) == 'http') {
             return $value;
         } else {
-            return Storage::get(str_replace('uploads', 'public', $value)) == null ? $model?->fallback_image : $value;
+            return Storage::get(str_replace('uploads', 'public', $value)) == null ?
+                (property_exists($model, 'fallback_image') ? $model->fallback_image : '/images/icons/naujienu_foto.png') :
+                $value;
         }
-
-        return $value;
     }
 
     /**

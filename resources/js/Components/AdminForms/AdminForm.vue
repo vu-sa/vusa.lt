@@ -5,7 +5,7 @@
     </div>
     <div class="mt-3 flex justify-end gap-4">
       <slot name="buttons">
-        <NButton v-if="enableDelete" text type="error" @click="handleDelete">
+        <NButton v-if="enableDelete" text type="error" @click="showDeleteDialog = true">
           <template #icon>
             <IFluentDelete24Filled />
           </template>
@@ -20,13 +20,34 @@
       </slot>
     </div>
   </NForm>
+
+  <Dialog :open="showDeleteDialog" @update:open="showDeleteDialog = $event">
+    <DialogContent class="sm:max-w-[425px]">
+      <DialogHeader>
+        <DialogTitle>{{ $t('Ištrinti įrašą') }}</DialogTitle>
+        <DialogDescription>
+          {{ $t('Ar tikrai norite ištrinti šį įrašą?') }}
+        </DialogDescription>
+      </DialogHeader>
+      
+      <DialogFooter>
+        <Button variant="outline" @click="showDeleteDialog = false">
+          {{ $t('Atšaukti') }}
+        </Button>
+        <Button variant="destructive" @click="handleDelete">
+          {{ $t('Ištrinti') }}
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
 </template>
 
 <script setup lang="ts">
-import { useDialog } from 'naive-ui';
 import { trans as $t } from 'laravel-vue-i18n';
-import { inject, watch, type Ref } from 'vue';
+import { inject, watch, ref, type Ref } from 'vue';
 import { useDebounceFn } from '@vueuse/core';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
+import { Button } from '@/Components/ui/button';
 
 const { model } = defineProps<{
   model: Record<string, any>;
@@ -38,20 +59,12 @@ const emit = defineEmits<{
   (event: 'delete'): void;
 }>();
 
-const dialog = useDialog();
+const showDeleteDialog = ref(false);
 
-// NOTE: Duplicated in ActionColumns.vue
 const handleDelete = () => {
-  dialog.warning({
-    title: $t('Ištrinti įrašą'),
-    content: $t('Ar tikrai norite ištrinti šį įrašą?'),
-    positiveText: $t('Ištrinti'),
-    negativeText: $t('Atšaukti'),
-    onPositiveClick: () => {
-      emit('delete');
-    },
-  });
-}
+  emit('delete');
+  showDeleteDialog.value = false;
+};
 
 const autosave = inject<Ref<boolean> | null>('autosave', null);
 

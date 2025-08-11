@@ -3,17 +3,16 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetTenantsForUpserts;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\AdminController;
 use App\Http\Requests\StoreMembershipRequest;
 use App\Http\Requests\UpdateMembershipRequest;
 use App\Imports\MembershipUsersImport;
 use App\Models\Membership;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ModelIndexer;
-use Inertia\Inertia;
 use Maatwebsite\Excel\Facades\Excel;
 
-class MembershipController extends Controller
+class MembershipController extends AdminController
 {
     public function __construct(public Authorizer $authorizer) {}
 
@@ -22,7 +21,7 @@ class MembershipController extends Controller
      */
     public function index()
     {
-        $this->authorize('viewAny', Membership::class);
+        $this->handleAuthorization('viewAny', Membership::class);
 
         $indexer = new ModelIndexer(new Membership);
 
@@ -32,7 +31,7 @@ class MembershipController extends Controller
             ->sortAllColumns()
             ->builder->paginate(15);
 
-        return Inertia::render('Admin/People/IndexMembership', [
+        return $this->inertiaResponse('Admin/People/IndexMembership', [
             'memberships' => $memberships,
         ]);
     }
@@ -42,9 +41,9 @@ class MembershipController extends Controller
      */
     public function create()
     {
-        $this->authorize('create', Membership::class);
+        $this->handleAuthorization('create', Membership::class);
 
-        return Inertia::render('Admin/People/CreateMembership', [
+        return $this->inertiaResponse('Admin/People/CreateMembership', [
             'assignableTenants' => GetTenantsForUpserts::execute('memberships.create.padalinys', $this->authorizer),
         ]);
     }
@@ -72,9 +71,9 @@ class MembershipController extends Controller
      */
     public function edit(Membership $membership)
     {
-        $this->authorize('update', $membership);
+        $this->handleAuthorization('update', $membership);
 
-        return Inertia::render('Admin/People/EditMembership', [
+        return $this->inertiaResponse('Admin/People/EditMembership', [
             'membership' => $membership->toFullArray(),
             'assignableTenants' => GetTenantsForUpserts::execute('memberships.update.padalinys', $this->authorizer),
         ]);
@@ -100,7 +99,7 @@ class MembershipController extends Controller
 
     public function importUsers(Membership $membership)
     {
-        $this->authorize('update', $membership);
+        $this->handleAuthorization('update', $membership);
 
         Excel::import(new MembershipUsersImport($membership), request()->file('file'));
 

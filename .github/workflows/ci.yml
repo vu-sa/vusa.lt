@@ -1,0 +1,260 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches-ignore:
+      - 'dependabot/npm_and_yarn/*'
+      - 'dependabot/composer/*'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      php: ${{ steps.filter.outputs.php }}
+      js: ${{ steps.filter.outputs.js }}
+    steps:
+    - uses: actions/checkout@v4
+    - uses: dorny/paths-filter@v3
+      id: filter
+      with:
+        filters: |
+          php:
+            - '**/*.php'
+            - 'composer.json'
+            - 'composer.lock'
+            - 'phpunit.xml'
+            - 'phpstan.neon'
+          js:
+            - '**/*.vue'
+            - '**/*.js'
+            - '**/*.ts'
+            - '**/*.tsx'
+            - 'package.json'
+            - 'package-lock.json'
+            - 'vite.config.mts'
+            - 'tsconfig.json'
+
+  setup:
+    needs: changes
+    if: ${{ needs.changes.outputs.php == 'true' || needs.changes.outputs.js == 'true' || github.ref == 'refs/heads/main' }}
+    uses: ./.github/workflows/setup.yml
+    with:
+      include-coverage: true
+
+  # PHP Jobs - run in parallel where possible
+  php-lint:
+    needs: [changes, setup]
+    if: ${{ needs.changes.outputs.php == 'true' }}
+    runs-on: ubuntu-latest
+    name: PHP Linting (Pint)
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
+          
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-assets
+          path: ./
+          
+      - name: Fix permissions
+        run: chmod -R +x vendor/bin
+      
+      - name: Set up environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate --force
+      
+      - name: Laravel Pint
+        uses: aglipanci/laravel-pint-action@2.4
+        with:
+          preset: laravel
+          verboseMode: true
+          
+      - name: Git Auto Commit
+        uses: stefanzweifel/git-auto-commit-action@v6.0.1
+        id: auto-commit
+        with:
+          commit_message: PHP Linting (Pint)
+          skip_fetch: true
+
+  php-static-analysis:
+    needs: [changes, php-lint]
+    if: ${{ needs.changes.outputs.php == 'true' }}
+    runs-on: ubuntu-latest
+    name: PHP Static Analysis
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
+      
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-assets
+          path: ./
+          
+      - name: Fix permissions
+        run: |
+          chmod -R +x vendor/bin
+          chmod -R +x vendor/phpstan/phpstan
+          
+      - name: Set up environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate --force
+      
+      - name: Running Static Analysis
+        run: vendor/bin/phpstan analyze --no-progress --memory-limit=384M
+
+  php-tests:
+    needs: [changes, setup, php-lint]
+    if: ${{ needs.changes.outputs.php == 'true' || github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    name: PHP Tests
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
+    
+    - name: Download build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: build-assets
+        path: ./
+    
+    - name: Start Typesense
+      uses: jirevwe/typesense-github-action@v1.0.1
+      with:
+        typesense-version: "0.25.2"
+        typesense-api-key: xyz
+    
+    - name: Setup PHP with Xdebug
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: 8.3
+        extensions: dom, curl, libxml, mbstring, zip, fileinfo
+        coverage: xdebug
+    
+    - name: Create SQLite database
+      run: |
+        touch database/database.sqlite
+        cp .env.example .env
+        php artisan key:generate --force
+    
+    - name: Execute tests with coverage
+      env:
+        DB_CONNECTION: sqlite
+        DB_DATABASE: database/database.sqlite
+        SCOUT_DRIVER: database
+        TYPESENSE_HOST: localhost
+        TYPESENSE_PORT: 8108
+        TYPESENSE_API_KEY: xyz
+        TYPESENSE_PROTOCOL: http
+      run: php artisan test --parallel --coverage --coverage-clover ./coverage.xml --log-junit ./test-results.xml
+    
+    - name: Upload test results to Codecov
+      if: always()
+      uses: codecov/test-results-action@v1
+      with:
+        files: ./test-results.xml
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+    
+    - name: Upload coverage to Codecov
+      if: always()
+      uses: codecov/codecov-action@v5
+      with:
+        files: ./coverage.xml
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  # JS Jobs - run in parallel with PHP jobs
+  js-tests:
+    needs: [changes, setup]
+    if: ${{ needs.changes.outputs.js == 'true' || github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    name: Frontend Tests
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Download build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: build-assets
+        path: ./
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+    
+    - name: Install npm dependencies
+      run: npm ci
+    
+    - name: Cache Playwright browsers
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/ms-playwright
+        key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
+    
+    - name: Install Playwright Browsers
+      run: npx playwright install chromium --with-deps
+    
+    - name: Set up environment
+      run: |
+        cp .env.example .env
+        php artisan key:generate --force
+    
+    - name: Execute tests with coverage
+      run: LARAVEL_BYPASS_ENV_CHECK=1 npm run coverage:ci
+    
+    - name: Upload test results to Codecov
+      if: always()
+      uses: codecov/test-results-action@v1
+      with:
+        files: ./test-results.junit.xml
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+    
+    - name: Upload coverage to Codecov
+      if: always()
+      uses: codecov/codecov-action@v5
+      with:
+        files: ./coverage/clover.xml
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  status-check:
+    name: CI Status
+    needs: [changes, php-static-analysis, php-tests, js-tests]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set status
+        run: |
+          STATIC_ANALYSIS_RESULT="${{ needs.php-static-analysis.result }}"
+          PHP_TESTS_RESULT="${{ needs.php-tests.result }}"
+          JS_TESTS_RESULT="${{ needs.js-tests.result }}"
+          
+          echo "Results: Static Analysis=$STATIC_ANALYSIS_RESULT, PHP Tests=$PHP_TESTS_RESULT, JS Tests=$JS_TESTS_RESULT"
+          
+          # Check if any required job failed
+          if [[ "$STATIC_ANALYSIS_RESULT" == "failure" ]] || [[ "$PHP_TESTS_RESULT" == "failure" ]] || [[ "$JS_TESTS_RESULT" == "failure" ]]; then
+            echo "❌ Some checks failed"
+            exit 1
+          fi
+          
+          # All jobs either succeeded or were skipped
+          echo "✅ All checks passed or were skipped"
+          exit 0

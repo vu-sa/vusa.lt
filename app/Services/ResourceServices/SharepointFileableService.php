@@ -2,14 +2,19 @@
 
 namespace App\Services\ResourceServices;
 
+use App\Contracts\SharepointFileableContract;
 use App\Models\SharepointFile;
-use Illuminate\Database\Eloquent\Model;
 
 class SharepointFileableService
 {
-    public function attachFileToFileable(SharepointFile $sharepointFile, Model $fileable)
+    /**
+     * Attach a SharePoint file to a fileable model
+     *
+     * @return SharepointFileableContract
+     */
+    public function attachFileToFileable(SharepointFile $sharepointFile, SharepointFileableContract $fileable)
     {
-        $fileable->files()->attach($sharepointFile->id);
+        $fileable->files()->syncWithoutDetaching([$sharepointFile->id]);
 
         return $fileable;
     }

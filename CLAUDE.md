@@ -39,109 +39,22 @@ All Laravel commands **MUST** be run using Laravel Sail:
 
 ### Frontend Testing & Quality Assurance
 
-**Testing Architecture**: 3-tier Vitest setup optimized for daily development:
-- **Unit Tests** (`*.test.ts`): Services, composables, utilities
-- **Component Tests** (`*.component.test.ts`): Vue components with @vue/test-utils
-- **Browser Tests** (`*.stories.ts`): Interactive testing via Storybook + Playwright
+**See**: tests/README.md and tests/CLAUDE.md for complete testing documentation
 
-**Daily Development Commands**:
+**Quick Commands**:
 ```bash
-# Daily development (fast, reliable)
-./vendor/bin/sail npm run test       # Unit + component tests only
-
-# Component development 
+./vendor/bin/sail npm run test       # Daily development (Unit + Component tests)
 ./vendor/bin/sail npm run storybook  # Interactive component documentation
-
-# Full testing suite (when needed)
-./vendor/bin/sail npm run test:all   # Includes browser tests (requires Playwright)
+./vendor/bin/sail artisan test      # Backend tests
 ```
 
-**File Organization**:
-```
-resources/js/
-├── Services/__tests__/ServiceName.test.ts
-├── Composables/__tests__/useComposable.test.ts  
-├── Utils/__tests__/UtilityName.test.ts
-└── Components/
-    └── ComponentName/
-        ├── __tests__/ComponentName.component.test.ts
-        ├── ComponentName.vue
-        └── ComponentName.stories.ts
-```
-
-**Setup**: Playwright browsers install automatically via `./dev/sailsetup.sh`
+**Key Principle**: Stay away from over-testing - focus on application-specific logic, not third-party library functionality
 
 ### Storybook Development
 
-**Storybook Configuration**: Complete isolation from Laravel-specific Vite configuration to prevent conflicts.
+**See**: tests/README.md for complete Storybook setup and usage
 
-**Key Files**:
-- `vite.storybook.config.ts` - Dedicated Vite config for Storybook
-- `.storybook/main.ts` - Storybook main configuration
-- `.storybook/mocks/` - Mocks for Laravel dependencies
-- `.storybook/vitest.setup.ts` - Test environment setup
-
-**Creating Stories**:
-```typescript
-// ComponentName.stories.ts
-import type { Meta, StoryObj } from '@storybook/vue3'
-import ComponentName from './ComponentName.vue'
-
-const meta: Meta<typeof ComponentName> = {
-  title: 'Components/ComponentName',
-  component: ComponentName,
-  parameters: {
-    docs: { description: { component: 'Description here' } }
-  }
-}
-
-export default meta
-type Story = StoryObj<typeof meta>
-
-export const Default: Story = {
-  args: {
-    // Component props
-  }
-}
-```
-
-**Mocking Strategy**:
-- Laravel i18n functions (`trans`, `wTrans`) → `.storybook/mocks/laravel-vue-i18n.mock.ts`
-- Inertia.js (`usePage`, `router`) → `.storybook/mocks/inertia.mock.ts`
-- Ziggy routes (`route()`) → `.storybook/mocks/ziggy.mock.ts`
-- Icons → `.storybook/mocks/icons.mock.ts`
-
-**Storybook URLs**:
-- Development: http://localhost:6006
-- All stories are automatically discovered from `**/*.stories.ts` files
-
-**Best Practices**:
-- Create stories for all reusable components
-- Document component variants and states
-- Include accessibility testing in stories
-- Use realistic mock data that reflects actual usage
-
-```bash
-# Storybook (component documentation)
-npm run storybook          # Start Storybook dev server
-npm run storybook:build    # Build static Storybook
-npm run storybook:test     # Run Storybook tests
-npm run test:storybook     # Run Storybook accessibility tests
-```
-
-**When to Use Each Test Type**:
-- **Unit Tests**: Pure functions, business logic, data transformations, API services
-- **Component Tests**: Vue component behavior, user interactions, props/events, accessibility
-- **Storybook**: Visual component states, design system documentation, manual testing
-
-**Coverage Targets**: 75% minimum (branches, functions, lines, statements)
-
-**Best Practices**:
-- Test user behavior, not implementation details
-- Use descriptive test names that explain the expected behavior
-- Mock external dependencies (APIs, localStorage, etc.)
-- Test accessibility in component tests
-- Create Storybook stories for reusable components
+**Quick Start**: `./vendor/bin/sail npm run storybook`
 
 ### Troubleshooting
 
@@ -165,14 +78,81 @@ Uses unified breadcrumb system with automatic lifecycle management.
 - **No "admin." prefix in route names**: `route('studyPrograms.index')`
 
 ### Permission System
+
+The authorization system uses tenant-based permissions with role-based access control.
+
+#### Permission Structure
 **Format**: `{resource}.{action}.{scope}` (e.g., `news.update.padalinys`)
+
+- **Resource**: Plural model name (`news`, `users`, `documents`)
+- **Action**: Operation (`read`, `create`, `update`, `delete`)
+- **Scope**: Access context:
+  - `all`: Global access to all resources
+  - `own`: Access only to user's directly associated resources
+  - `padalinys`: Access to resources within user's tenant
+
+#### Authorization Flow
+1. **Super Admin Check**: Super admins automatically have all permissions
+2. **Direct User Permission Check**: Check if user has been directly assigned the permission
+3. **Duty-Based Permission Check**: Check permissions through user's duties and their roles
+4. **Scope Evaluation**: Access is granted based on the scope level
+
+#### Key Components
+- **ModelAuthorizer Service**: Core service with caching
+- **Permission Facade**: Clean interface for permission checks
+- **HasCommonChecks Trait**: Shared policy logic
+- **ModelPolicy Base Class**: Common policy functionality
+- **TenantPermission Middleware**: Route protection
+
+#### Vue Components
+Permission checks are available in Vue through `$page.props.auth.can` object.
 
 ### Translatable Models
 - **Admin interfaces**: Use `toFullArray()` for full translation objects
 - **Public interfaces**: Use `toArray()` for localized strings  
 - **Factory data**: Always include `['lt' => '...', 'en' => '...']`
+- **PHPDoc for PHPStan**: Override auto-generated `@property` annotations for translatable fields from `array<array-key, mixed>|null` to `string|null` to enable clean property access (e.g., `$model->name` instead of `$model->getTranslation('name', app()->getLocale())`)
+
+### TypeScript & Documentation Guidelines
+
+#### JSDoc Usage (Keep It Simple)
+**✅ DO document**:
+- Complex business logic and algorithms
+- External API integrations and workarounds  
+- Non-obvious behavior or side effects
+- Deprecated functions (with replacement info)
+
+**❌ DON'T document**:
+- Simple functions where TypeScript types are self-explanatory
+- Getters/setters with obvious behavior
+- Internal utilities with clear names
+
+**Example**:
+```typescript
+/**
+ * Transforms Laravel pagination to TanStack format.
+ * Handles snake_case → camelCase conversion.
+ */
+export function transformPaginationData<T>(data: PaginatedModels<T>) { }
+
+// ❌ No need for JSDoc here - types are clear
+function getUserName(user: User): string { return user.name; }
+```
+
+#### Type Safety
+- **New code**: Avoid `any` - use `unknown`, specific interfaces, or `ApiResponse<T>`
+- **Existing code**: Replace `any` opportunistically when touching files
+- **External APIs**: Use provided global types: `ApiResponse<T>`, `FormEvent<T>`, `TableActionEvent<T>`
+- **Unknown data**: Prefer `unknown` over `any` for type safety
+
+### IDE Helper Integration
+- **Automatic generation**: PHPDoc annotations are generated after `composer install/update`
+- **Manual generation**: Run `composer ide-helper` to regenerate type annotations
+- **Custom overrides**: After running ide-helper, manually fix translatable field types from array to string for better static analysis
 
 ### Testing Permissions
+**See**: @tests/CLAUDE.md for complete testing patterns
+
 ```php
 // Domain-appropriate testing
 $user->duties()->first()->assignRole('Communication Coordinator');
@@ -205,6 +185,33 @@ $user->assignRole(config('permission.super_admin_role_name'));
 - **Prefer utility classes** like `hover:shadow-lg hover:scale-105` over custom hover effects
 - **Keep styles co-located** with components using class attributes
 
+### Managing Long Class Strings
+**✅ Recommended**: Use array syntax with logical grouping
+```vue
+<div 
+  :class="[
+    'flex items-center justify-between', // Layout
+    'bg-white dark:bg-zinc-800',        // Theme
+    'p-4 rounded-lg shadow-sm',         // Spacing & style
+    'hover:shadow-md transition-shadow' // Interactive
+  ]"
+>
+```
+
+**✅ Alternative**: Computed classes for complex logic
+```vue
+<script setup>
+const cardClasses = computed(() => [
+  'flex items-center',
+  isActive ? 'bg-blue-100' : 'bg-gray-100',
+  size === 'large' ? 'p-6' : 'p-4'
+])
+</script>
+<template>
+  <div :class="cardClasses">
+</template>
+```
+
 ### Examples:
 ```vue
 <!-- ✅ Good: Direct Tailwind classes -->
@@ -216,11 +223,47 @@ $user->assignRole(config('permission.super_admin_role_name'));
 </style>
 ```
 
+## Error Handling & Authorization
+
+### 403 Forbidden Response Pattern
+**Implementation**: Consistent 403 error handling across all admin routes
+
+**Behavior**:
+- **Inertia requests**: Return 302 redirect with `error` flash message → Displays as Sonner toast notification
+- **Direct page visits**: Return 403 HTTP status with `resources/views/errors/403.blade.php` 
+- **API requests**: Return 403 JSON response
+
+**Key Files**:
+- `app/Exceptions/Handler.php` - Main error handling logic
+- `app/Http/Middleware/TenantPermission.php` - Uses `abort(403)` for unauthorized access
+- `resources/js/Components/Layouts/AdminLayout.vue` - Toast notification handling via `vue-sonner`
+
+**Flash Data Structure**:
+```php
+// ✅ Current: Clean error flash
+return back()->with(['error' => 'Error message']);
+
+// ❌ Deprecated: statusCode flashing
+return back()->with(['error' => 'Message', 'statusCode' => 403]);
+```
+
+**Frontend Integration**:
+```vue  
+// AdminLayout automatically handles error flash messages
+watch(() => usePage().props.flash.error, (msg) => {
+  if (msg) {
+    toast.error(msg);  // Vue Sonner toast
+  }
+});
+```
+
+**Testing**: All authorization tests expect 403 status codes, not 302 redirects
+
 ## Security
 
-- Always use `authorize()` in controllers
-- Test permission scenarios thoroughly
-- Use secure response status codes
+- Always use `authorize()` in controllers or `TenantPermission` middleware
+- Test permission scenarios thoroughly  
+- Use secure response status codes (403 for forbidden, not 302)
 - Validate inputs through Form Requests
 
 ## Remember

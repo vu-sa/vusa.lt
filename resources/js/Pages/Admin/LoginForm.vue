@@ -7,13 +7,13 @@
   }), Fade()]">
     <CarouselContent class="h-full">
       <CarouselItem>
-        <img src="/images/photos/VU SA 2023.jpg" class="size-full object-cover" alt="VU SA members group photo 2023">
+        <img src="/images/become-a-member/20250510_VUSA-156.jpg" class="size-full object-cover" alt="VU SA members group photo 2023">
       </CarouselItem>
       <CarouselItem>
-        <img src="/images/photos/stovykla.jpg" class="size-full object-cover" alt="Students at a summer camp">
+        <img src="/images/become-a-member/mokymai2025-2.jpg" class="size-full object-cover" alt="Students at a summer camp">
       </CarouselItem>
       <CarouselItem>
-        <img src="/images/photos/observatorijos_kiemelis.jpg" class="size-full object-cover"
+        <img src="/images/become-a-member/mokymai2025-1.jpg" class="size-full object-cover"
           alt="Vilnius University Observatory Courtyard">
       </CarouselItem>
     </CarouselContent>

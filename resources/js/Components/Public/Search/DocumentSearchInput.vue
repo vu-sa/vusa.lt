@@ -1,17 +1,11 @@
 <template>
   <div class="flex-shrink-0 px-0 sm:px-2 lg:px-4 py-2 sm:py-3 lg:py-4">
-    <!--         <div class="p-2">
-        <div class="flex items-center justify-between px-2 py-1 text-xs font-medium text-muted-foreground border-b border-border/50 mb-2">
-          <span>{{ $t('search.recent_searches') }}</span>
-          <Button variant="ghost" size="sm" class="h-5 px-2 text-xs hover:bg-destructive/10 hover:text-destructive"
-            @click="handleClearAllHistory">
-            {{ $t('search.clear_all_history') }}
-          </Button>
-        </div> Search Container -->
     <div class="relative w-full max-w-3xl mx-auto">
       <!-- Search Container with Enhanced Background -->
-      <div
-        class="relative p-3 sm:p-4 bg-gradient-to-br from-primary/5 via-background to-secondary/5 border border-primary/20 rounded-lg shadow-sm backdrop-blur-sm">
+      <div class=" relative p-3 sm:p-4
+          bg-gradient-to-br from-primary/5 via-background to-secondary/5
+          border border-primary/20 rounded-lg shadow-sm backdrop-blur-sm
+        ">
         <div class="relative">
           <!-- Search Icon and Input -->
           <div class="relative">
@@ -19,35 +13,48 @@
               <Search class="w-4 h-4" />
             </div>
 
-            <Input ref="inputRef" role="search" :model-value="query"
-              :placeholder="$t('search.search_documents_placeholder')"
-              class="w-full h-11 text-base pl-10 sm:pl-11 pr-20 sm:pr-36 rounded-lg border border-primary/20 bg-background/80 backdrop-blur-sm focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-primary/40 transition-all duration-200 placeholder:text-muted-foreground/60"
-              @input="handleInput" @keydown.enter="handleEnter" @focus="handleFocus" @blur="handleBlur" />
+            <Input ref="inputRef" role="search" :model-value="localQuery"
+              :placeholder="$t('search.search_documents_placeholder')" :class="[
+                'w-full h-11 text-base pl-10 sm:pl-11 pr-20 sm:pr-36 rounded-lg', // Layout & sizing
+                'border border-primary/20 bg-background/80 backdrop-blur-sm', // Border & background
+                'focus-visible:ring-2 focus-visible:ring-primary', // Focus states
+                'focus-visible:border-primary/40 transition-all duration-200', // Focus & transitions
+                'placeholder:text-muted-foreground/60' // Placeholder styling
+              ]" @input="handleInput" @keydown.enter.prevent="handleEnter" @focus="handleFocus" @blur="handleBlur" />
 
             <div class="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 sm:gap-2">
               <!-- Type to search toggle button -->
-              <Button type="button" variant="ghost" size="icon"
-                class="h-8 w-8 hover:bg-primary/10 transition-all duration-200 rounded-md flex-shrink-0"
-                :class="{ 'bg-primary/15 text-primary shadow-sm': props.typeToSearch }"
-                :title="props.typeToSearch ? $t('search.disable_auto_search') : $t('search.enable_auto_search')"
+              <Button type="button" variant="ghost" size="icon" :class="[
+                'h-8 w-8 flex-shrink-0 rounded-md', // Size & shape
+                'hover:bg-primary/10 transition-all duration-200', // Hover & animation
+                { 'bg-primary/15 text-primary shadow-sm': typeToSearch } // Conditional active state
+              ]" :title="typeToSearch ? $t('search.disable_auto_search') : $t('search.enable_auto_search')"
                 @click="toggleTypeToSearch">
-                <span class="sr-only">{{ props.typeToSearch ? $t('search.disable_auto_search') : $t('search.enable_auto_search') }}</span>
+                <span :class="[
+                  'sr-only'
+                ]">{{ typeToSearch ? $t('search.disable_auto_search') :
+                  $t('search.enable_auto_search') }}</span>
                 <Zap class="w-3.5 h-3.5 transition-all duration-200"
-                  :class="{ 'opacity-50': !props.typeToSearch, 'animate-pulse-zap': props.typeToSearch }" />
+                  :class="{ 'opacity-50': !typeToSearch, 'animate-pulse-zap': typeToSearch }" />
               </Button>
 
               <!-- Clear button when there's text -->
-              <Button v-if="query && !isSearching" type="button" variant="ghost" size="icon"
-                class="h-8 w-8 hover:bg-destructive/10 hover:text-destructive transition-all duration-200 rounded-md flex-shrink-0"
-                @click="handleClear">
+              <Button v-if="localQuery && !isSearching" type="button" variant="ghost" size="icon" :class="[
+                'h-8 w-8 flex-shrink-0 rounded-md', // Size & shape
+                'hover:bg-destructive/10 hover:text-destructive', // Hover states
+                'transition-all duration-200' // Animation
+              ]" @click="handleClear">
                 <span class="sr-only">{{ $t('search.clear_search_button') }}</span>
                 <X class="w-3.5 h-3.5" />
               </Button>
 
               <!-- Search button (only shown when typeToSearch is off) -->
-              <Button v-if="query && !isSearching && !props.typeToSearch" type="button" size="sm"
-                class="h-8 px-2 sm:px-3 bg-primary hover:bg-primary/90 text-primary-foreground rounded-md shadow-sm hover:shadow-md transition-all duration-200 flex-shrink-0"
-                :disabled="query.length < 3" @click="handleSearch">
+              <Button v-if="localQuery && !isSearching && !typeToSearch" type="button" size="sm" :class="[
+                'h-8 px-2 sm:px-3 flex-shrink-0 rounded-md', // Size & shape
+                'bg-primary hover:bg-primary/90 text-primary-foreground', // Colors
+                'shadow-sm hover:shadow-md', // Shadows
+                'transition-all duration-200' // Animation
+              ]" :disabled="localQuery.length < 3" @click="handleSearch">
                 <Search class="w-3.5 h-3.5 sm:mr-1.5" />
                 <span class="hidden sm:inline">{{ $t('search.search_button') }}</span>
               </Button>
@@ -60,7 +67,7 @@
           </div>
 
           <!-- Only show auto-search status when enabled -->
-          <div v-if="props.typeToSearch" class="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
+          <div v-if="typeToSearch" class="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
             <Zap class="w-3 h-3 text-primary animate-pulse-zap" />
             <span>{{ $t('search.auto_search_enabled') }}</span>
           </div>
@@ -69,29 +76,41 @@
     </div>
 
     <!-- Search Suggestions Dropdown (only shown when typeToSearch is off) -->
-    <div v-if="showSuggestions && !props.typeToSearch && recentSearches.length > 0"
-      class="absolute z-50 mt-1 left-1/2 -translate-x-1/2 w-full max-w-3xl bg-background border border-border rounded-lg shadow-lg backdrop-blur-sm"
-      @mousedown.prevent>
+    <div v-if="showSuggestions && !typeToSearch && recentSearches.length > 0" :class="[
+      'absolute z-50 mt-1 left-1/2 -translate-x-1/2 w-full max-w-3xl', // Position & size
+      'bg-background border border-border rounded-lg', // Background & border
+      'shadow-lg backdrop-blur-sm' // Effects
+    ]" @mousedown.prevent>
       <!-- Recent Searches -->
       <div class="p-2">
-        <div class="flex items-center justify-between px-2 py-1 text-xs font-medium text-muted-foreground border-b border-border/50 mb-2">
+        <div :class="[
+          'flex items-center justify-between px-2 py-1 mb-2', // Layout & spacing
+          'text-xs font-medium text-muted-foreground', // Typography
+          'border-b border-border/50' // Border
+        ]">
           <span>{{ $t('search.recent_searches') }}</span>
-          <Button variant="ghost" size="sm" class="h-5 px-2 text-xs hover:bg-destructive/10 hover:text-destructive"
-            @click="handleClearAllHistory">
+          <Button variant="ghost" size="sm" :class="[
+            'h-5 px-2 text-xs', // Size & typography
+            'hover:bg-destructive/10 hover:text-destructive' // Hover states
+          ]" @click="handleClearAllHistory">
             {{ $t('search.clear_all_history') }}
           </Button>
         </div>
-        <div v-for="search in recentSearches.slice(0, 5)" :key="`recent-${search}`" 
-          class="flex items-center group hover:bg-accent/50 rounded-md">
-          <Button variant="ghost" size="sm"
-            class="flex-1 justify-start h-8 px-2 text-sm rounded-md"
-            @click="handleSelectSuggestion(search)">
+        <div v-for="search in recentSearches.slice(0, 5)" :key="`recent-${search}`" :class="[
+          'flex items-center group rounded-md', // Layout & grouping
+          'hover:bg-accent/50' // Hover state
+        ]">
+          <Button variant="ghost" size="sm" :class="[
+            'flex-1 justify-start h-8 px-2 text-sm rounded-md' // Layout & styling
+          ]" @click="handleSelectSuggestion(search)">
             <History class="w-4 h-4 mr-2 opacity-60" />
             {{ search }}
           </Button>
-          <Button variant="ghost" size="sm"
-            class="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 hover:bg-destructive/10 hover:text-destructive transition-opacity"
-            @click.stop="handleRemoveSearch(search)">
+          <Button variant="ghost" size="sm" :class="[
+            'h-8 w-8 p-0 opacity-0 group-hover:opacity-100', // Size & visibility
+            'hover:bg-destructive/10 hover:text-destructive', // Hover states
+            'transition-opacity' // Animation
+          ]" @click.stop="handleRemoveSearch(search)">
             <X class="w-3 h-3" />
           </Button>
         </div>
@@ -102,13 +121,7 @@
 
 <script setup lang="ts">
 import { ref, computed, nextTick, watchEffect } from 'vue'
-
 // ShadcnVue components
-import { Button } from '@/Components/ui/button'
-import { Input } from '@/Components/ui/input'
-import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover'
-
-// Icons
 import {
   X,
   History,
@@ -116,9 +129,14 @@ import {
   Zap
 } from 'lucide-vue-next'
 
+import { Button } from '@/Components/ui/button'
+import { Input } from '@/Components/ui/input'
+
+// Icons
+
 // Props and emits
 interface Props {
-  query: string
+  query?: string
   isSearching?: boolean
   recentSearches?: string[]
   placeholder?: string
@@ -137,20 +155,20 @@ interface Emits {
   (e: 'clearAllHistory'): void  // Emit when user clears all history
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  query: '',
-  isSearching: false,
-  recentSearches: () => [],
-  placeholder: '',  // Will use translation fallback
-  typeToSearch: false
-})
+const {
+  query = '',
+  isSearching,
+  recentSearches = [],
+  placeholder = '', // Will use translation fallback
+  typeToSearch
+} = defineProps<Props>()
 
 const emit = defineEmits<Emits>()
 
 // Local state
 const inputRef = ref<HTMLInputElement>()
 const showSuggestions = ref(false)
-const localQuery = ref(props.query)
+const localQuery = ref(query)
 const isInteractingWithDropdown = ref(false)
 
 
@@ -162,13 +180,8 @@ const handleInput = (event: Event) => {
   emit('update:query', value)
 
   // Show suggestions when typing (only when typeToSearch is off)
-  if (!props.typeToSearch && (value.length > 0 || props.recentSearches.length > 0)) {
+  if (!typeToSearch && (value.length > 0 || recentSearches.length > 0)) {
     showSuggestions.value = true
-  }
-
-  // Auto-search when typeToSearch is enabled and query is long enough
-  if (props.typeToSearch && value.length >= 3) {
-    emit('search', value)
   }
 }
 
@@ -192,14 +205,12 @@ const handleClear = () => {
 }
 
 const toggleTypeToSearch = () => {
-  emit('update:typeToSearch', !props.typeToSearch)
+  emit('update:typeToSearch', !typeToSearch)
 }
 
 const handleSelectSuggestion = (search: string) => {
   localQuery.value = search
-  emit('update:query', search)
   emit('selectRecent', search)
-  emit('search', search) // Trigger search immediately when selecting suggestion
   showSuggestions.value = false
 }
 
@@ -231,7 +242,7 @@ const focusInput = async () => {
 // Handle focus and blur events
 const handleFocus = () => {
   // Only show suggestions when typeToSearch is off
-  if (!props.typeToSearch) {
+  if (!typeToSearch) {
     showSuggestions.value = true
   }
   emit('focus')
@@ -242,16 +253,16 @@ const handleBlur = (event: FocusEvent) => {
   if (isInteractingWithDropdown.value) {
     return
   }
-  
+
   // Check if the focus is moving to an element within our dropdown
   const relatedTarget = event.relatedTarget as HTMLElement
   const currentTarget = event.currentTarget as HTMLElement
-  
+
   // If the focus is moving to a descendant of our component, don't hide suggestions
   if (relatedTarget && currentTarget.contains(relatedTarget)) {
     return
   }
-  
+
   // Delay hiding suggestions to allow clicking on them
   setTimeout(() => {
     // Double-check that we're still not interacting with dropdown
@@ -263,7 +274,7 @@ const handleBlur = (event: FocusEvent) => {
 }
 
 // Watch for prop changes
-const syncQuery = computed(() => props.query)
+const syncQuery = computed(() => query ?? '')
 watchEffect(() => {
   if (syncQuery.value !== localQuery.value) {
     localQuery.value = syncQuery.value

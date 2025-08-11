@@ -8,7 +8,7 @@
 </template>
 
 <script setup lang="ts">
-import { useMessage } from "naive-ui";
+import { useToasts } from '@/Composables/useToasts';
 
 const props = defineProps<{
   textToCopy: string;
@@ -17,14 +17,14 @@ const props = defineProps<{
   errorText?: string;
 }>();
 
-const message = useMessage();
+const toasts = useToasts();
 
 const copyToClipboard = async (text: string) => {
   if (navigator.clipboard) {
     await navigator.clipboard.writeText(text);
-    message.success(props.successText ?? "Nuoroda nukopijuota į iškarpinę!");
+    toasts.success(props.successText ?? "Nuoroda nukopijuota į iškarpinę!");
   } else {
-    message.error(props.errorText ?? "Nepavyko nukopijuoti nuorodos į iškarpinę...");
+    toasts.error(props.errorText ?? "Nepavyko nukopijuoti nuorodos į iškarpinę...");
   }
 };
 </script>

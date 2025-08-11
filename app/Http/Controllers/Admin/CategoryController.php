@@ -2,28 +2,27 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\AdminController;
+use App\Http\Requests\StoreCategoryRequest;
+use App\Http\Requests\UpdateCategoryRequest;
 use App\Models\Category;
-use App\Models\Page;
-use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 
-class CategoryController extends Controller
+class CategoryController extends AdminController
 {
-    public function __construct(public Authorizer $authorizer) {}
-
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $this->authorize('viewAny', Page::class);
+        $this->handleAuthorization(Category::class, 'viewAny');
 
-        $categories = Category::all()->paginate(20);
+        $categories = Category::paginate(20);
 
-        return Inertia::render('Admin/Content/IndexCategory', [
+        return $this->inertiaResponse('Admin/Content/IndexCategory', [
             'categories' => $categories,
+            'filters' => (object) [], // Empty filters for test compatibility
+            'sorting' => (object) [], // Empty sorting for test compatibility
         ]);
     }
 
@@ -32,27 +31,19 @@ class CategoryController extends Controller
      */
     public function create()
     {
-        $this->authorize('create', Page::class);
+        $this->handleAuthorization(Category::class, 'create');
 
-        return Inertia::render('Admin/Content/CreateCategory');
+        return $this->inertiaResponse('Admin/Content/CreateCategory');
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreCategoryRequest $request)
     {
-        $this->authorize('create', Page::class);
+        Category::create($request->validated());
 
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'alias' => 'required|string|max:255',
-            'description' => 'string|max:255',
-        ]);
-
-        Category::create($request->all());
-
-        return redirect()->route('categories.index')->with('success', 'Kategorija sukurta.');
+        return $this->redirectToIndexWithSuccess('categories', 'Kategorija sukurta.');
     }
 
     /**
@@ -60,10 +51,9 @@ class CategoryController extends Controller
      */
     public function edit(Category $category)
     {
-        // TODO: Should be proper authorization
-        $this->authorize('update', Page::class);
+        $this->handleAuthorization($category, 'view');
 
-        return Inertia::render('Admin/Content/EditCategory', [
+        return $this->inertiaResponse('Admin/Content/EditCategory', [
             'category' => $category,
         ]);
     }
@@ -71,30 +61,22 @@ class CategoryController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Category $category)
+    public function update(UpdateCategoryRequest $request, Category $category)
     {
-        $this->authorize('update', Page::class);
+        $category->update($request->validated());
 
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'alias' => 'required|string|max:255',
-            'description' => 'string|max:255',
-        ]);
-
-        $category->update($request->all());
-
-        return redirect()->route('categories.index')->with('success', 'Kategorija atnaujinta.');
+        return $this->redirectToIndexWithSuccess('categories', 'Kategorija atnaujinta.');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Category $category)
     {
-        $this->authorize('delete', Page::class);
+        $this->handleAuthorization($category, 'delete');
 
-        Category::destroy($id);
+        $category->delete();
 
-        return redirect()->route('categories.index')->with('success', 'Kategorija ištrinta.');
+        return $this->redirectToIndexWithSuccess('categories', 'Kategorija ištrinta.');
     }
 }

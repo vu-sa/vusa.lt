@@ -68,8 +68,8 @@ export default defineConfig(({ command }) => {
     }),
   ]
 
-  // Dev-only plugins - disabled for Storybook
-  const devPlugins = command !== 'test' && !process.env.STORYBOOK ? [
+  // Dev-only plugins - disabled for Storybook and builds
+  const devPlugins = command === 'serve' && !process.env.STORYBOOK ? [
     vueDevTools({
       appendTo: 'resources/js/app.ts',
     }),
@@ -84,7 +84,7 @@ export default defineConfig(({ command }) => {
   resolve: {
     alias: {
       "@": "/resources/js",
-      // vue: "vue/dist/vue.esm-bundler.js",
+      vue: "vue/dist/vue.esm-bundler.js",
       "ziggy-js": "/vendor/tightenco/ziggy/dist",
     },
   },

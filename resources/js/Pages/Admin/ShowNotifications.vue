@@ -31,7 +31,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { cn } from "@/Utils/Shadcn/utils";
-import { useMessage } from "naive-ui";
+import { useToasts } from '@/Composables/useToasts';
 import { useFetch } from "@vueuse/core";
 import { router, usePage } from "@inertiajs/vue3";
 
@@ -62,7 +62,7 @@ usePageBreadcrumbs([
 ]);
 
 const loading = ref(false);
-const message = useMessage();
+const toasts = useToasts();
 
 const handleAllRead = async () => {
   loading.value = true;
@@ -74,7 +74,7 @@ const handleAllRead = async () => {
 
   if (isFinished.value) {
     loading.value = false;
-    message.success("Visi pranešimai pažymėti kaip perskaityti.");
+    toasts.success("Visi pranešimai pažymėti kaip perskaityti.");
     router.reload();
   }
 };
