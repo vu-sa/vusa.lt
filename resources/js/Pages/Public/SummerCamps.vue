@@ -6,17 +6,14 @@
   <div class="grid grid-cols-1 gap-4 pt-2 last:pb-2 lg:grid-cols-5">
     <div class="typography col-span-3 text-base leading-7">
       <template v-if="year === new Date().getFullYear()">
-        <h2>Labas! 👋</h2>
+        <h2>Labas, būsimas (-a) studente!</h2>
 
         <p class="font-bold">
-          {{ year }} m. pirmakursių stovyklų maratonas jau netrukus!
+          Įstojai į Vilniaus universitetą? Nepraleisk pirmojo studentiško nuotykio – pirmakursių stovyklos!
         </p>
 
         <p>
-          Egzaminai išlaikyti, pakvietimai studijuoti jau išsiųsti, studijų
-          sutartys pasirašytos – tad dabar prasideda pats įdomiausias gyvenimo
-          etapas! Džiaugiamės, jog pasirinkai <strong>Universitetą</strong>, kur
-          <em> Hinc itur ad astra </em> – iš čia kylama į žvaigždes.
+          Džiaugiamės, kad pradėjai įdomiausią gyvenimo etapą ir pasirinkai Universitetą, kur Hinc itur ad astra – iš čia kylama į žvaigždes.
         </p>
 
         <p>
@@ -27,10 +24,8 @@
 
         <p>
           Tačiau dar prieš tai,
-          <a class="font-bold underline" target="_blank" href="/apie">Vilniaus universiteto Studentų atstovybė (VU
-            SA)</a>
-          kviečia Tave susipažinti su tais, kurie per visus mokslo metus lydės
-          daugiausiai – tai Tavo padalinio, kurso, grupės draugai bei, žinoma,
+          <a class="font-bold underline" target="_blank" href="/apie">Vilniaus universiteto Studentų atstovybė (VU SA)</a>
+          kviečia Tave susipažinti su tais (-omis), kurie (-ios) per visus mokslo metus lydės daugiausiai – tai Tavo padalinio,
           <Link
             class="font-bold underline" target="_blank" :href="route('contacts.category', {
               type: 'padaliniai',
@@ -39,34 +34,24 @@
             })
             "
           >
-            kuratoriai
+            kuratoriai (-ės)
           </Link>.
         </p>
 
         <p>
-          Tai puiki galimybė ne tik praplėsti pažinčių ratą, bet ir gauti
-          atsakymus į visus rūpimus klausimus, susijusius su studijomis ar
-          studentišku gyvenimu. Ne iš
-          <em> nuogirdų, interneto ar reklaminių lankstinukų, </em>
-          o iš pirmų lūpų – lygiai tą pačią studijų programą pasirinkusių vyresnių
-          kursų studentų (-čių).
+          Tai puiki galimybė ne tik praplėsti pažinčių ratą, bet ir gauti atsakymus į visus rūpimus klausimus, susijusius su studijomis ar studentišku gyvenimu. Ne iš nuogirdų, interneto platybių ar reklaminių lankstinukų, o iš pirmų lūpų – lygiai tą pačią studijų programą pasirinkusių vyresnių kursų studentų (-čių).
         </p>
 
         <p>
-          Net kelias dienas truksiančioje pirmakursių stovykloje susirasi
-          bendraminčių bei draugų visam likusiam gyvenimui – tad nevalia
-          pražiopsoti kvietimo įsilieti į VU bendruomenę dar net neprasidėjus
-          studijoms!
+          Net kelias dienas truksiančioje pirmakursių stovykloje susirasi bendraminčių visam likusiam gyvenimui – todėl negali pražiopsoti kvietimo įsilieti į VU bendruomenę dar net neprasidėjus studijoms!
         </p>
 
         <p class="font-bold">
-          Bilietų prekyba ir tikslesnė informacija bus paskelbta vėliau! Į kainą įskaičiuotas transportas į ir iš
-          stovyklos. 🚌
+          Bilietų prekyba ir tikslesnė informacija bus paskelbta vėliau! Į kainą įskaičiuotas transportas į ir iš stovyklos. 🚌
         </p>
 
         <p class="font-bold">
-          Sek savo padalinio Facebook puslapį ir sužinok
-          pirmas (-a)!
+          Sek savo padalinio socialinius tinklus ir sužinok pirmas (-a)!
         </p>
 
         <a target="_blank" href="https://vu.lt/parduotuve/" aria-label="Visit VU merchandise store">
