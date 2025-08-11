@@ -48,7 +48,7 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
         Route::get('kalendorius/renginys/{calendar}', [Public\PublicPageController::class, 'calendarEventRedirect'])->name('calendar.event');
 
         Route::get('tapk-nariu', [Public\PublicPageController::class, 'membership'])->name('joinUs');
-        Route::get('become-a-member', [Public\PublicPageController::class, 'membership'])->name('joinUs');
+        Route::get('become-a-member', [Public\PublicPageController::class, 'membership'])->name('joinUs.en');
 
         Route::get('kalendorius/{year}/{month}/{day}/{slug}', [Public\PublicPageController::class, 'calendarMain'])->name('calendar.event.2')->whereNumber('year')->whereNumber('month')->whereNumber('day');
 
