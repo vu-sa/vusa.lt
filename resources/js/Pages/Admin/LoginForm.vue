@@ -1,7 +1,7 @@
 <template>
-
   <Head title="Log in" />
 
+  <!-- Background Carousel -->
   <Carousel class="bg-black-800 h-full fixed -z-50 blur-1 brightness-15 saturate-50 contrast-100" :plugins="[Autoplay({
     delay: 5000,
   }), Fade()]">
@@ -19,165 +19,262 @@
     </CarouselContent>
   </Carousel>
 
-  <NConfigProvider :theme-overrides>
-    <div>
-      <FadeTransition appear>
-        <div class="grid min-h-screen justify-center p-4 sm:grid-cols-2 sm:grid-rows-none">
-          <div class="flex h-fit justify-center sm:h-auto">
-            <AppLogo class="hidden w-96 invert sm:block" />
+  <!-- Main Content -->
+  <div class="min-h-screen">
+    <FadeTransition appear>
+      <div class="grid min-h-screen justify-center p-4 md:grid-cols-2">
+        <!-- Logo Section -->
+        <div class="flex h-fit justify-center sm:h-auto">
+          <AppLogo class="hidden w-96 invert sm:block" />
+        </div>
+        
+        <!-- Login Form Section -->
+        <div class="m-auto mt-0 flex h-auto flex-col items-center gap-6 rounded-lg bg-white/95 backdrop-blur-sm p-8 text-zinc-700 shadow-xl dark:bg-zinc-900/95 dark:text-zinc-300 sm:mt-auto sm:justify-center sm:p-12 max-w-md w-full -order-1 md:order-2">
+          <!-- Mobile Logo -->
+          <div class="flex justify-center mb-4 sm:hidden">
+            <AppLogo class="w-24" />
           </div>
-          <div
-            class="m-auto mt-0 flex h-auto flex-col items-center gap-4 rounded-lg bg-zinc-50 p-4 text-zinc-700 shadow-xl transition-shadow duration-500 ease-in-out hover:shadow-zinc-900/90 dark:bg-zinc-900 sm:mt-auto sm:justify-center sm:p-12">
-            <h1 class="font-bold text-zinc-700">
-              {{ $t("Labas") }}! 👋
+          <!-- Welcome Header -->
+          <div class="text-center space-y-2">
+            <h1 class="text-2xl font-bold text-zinc-800 dark:text-zinc-100">
+              {{ $page.props.app.locale === 'en' ? 'Welcome back' : 'Sveiki sugrįžę' }}
             </h1>
-            <AppLogo class="w-24 sm:hidden" />
-
-            <p class="max-w-xs text-center text-xs text-zinc-600 sm:text-center">
-              <strong>{{ $page.props.app.locale === 'en' ? 'My VU SR' : 'Mano VU SA' }}</strong> {{
-                $t("auth.usage_status") }}.
-              <!-- <Link class="text-zinc-400 underline" :href="route('home')"
-                >Kaip tapti?</Link
-              > -->
+            <p class="text-lg text-zinc-700 dark:text-zinc-300">
+              {{ $page.props.app.locale === 'en' ? 'to my VU SR' : 'į Mano VU SA' }}
             </p>
+            <!-- <p class="text-sm text-zinc-600 dark:text-zinc-400"> -->
+            <!--   {{ $page.props.app.locale === 'en' ? 'Continue your student representation journey' : 'Tęskite savo studentų atstovavimo kelionę' }} -->
+            <!-- </p> -->
+          </div>
 
-            <FadeTransition mode="out-in">
-              <div v-if="!useSimpleRegistration" class="mt-4 flex flex-col gap-4">
-                <MicrosoftButton />
-                <Separator :label="$t('Arba')" />
-                <NButton size="tiny" text quaternary @click="useSimpleRegistration = true">
-                  <template #icon>
-                    <IFluentKey24Filled />
-                  </template>{{ $t("auth.use_other_login") }}
-                </NButton>
+          <!-- Login Options -->
+          <FadeTransition mode="out-in">
+            <!-- Microsoft Login -->
+            <div v-if="!useSimpleRegistration" class="w-full space-y-4">
+              <MicrosoftButton class="w-full" />
+              <p class="text-center text-xs text-zinc-500 dark:text-zinc-400">
+                {{ $page.props.app.locale === 'en' ? 'Quick access with your university account' : 'Greitas priėjimas su universiteto paskyra' }}
+              </p>
+              
+              <!-- Simple Divider -->
+              <div class="relative flex items-center justify-center my-6">
+                <div class="flex-1 border-t border-zinc-300 dark:border-zinc-600"></div>
+                <div class="mx-4 text-sm text-zinc-500 dark:text-zinc-400 bg-white dark:bg-zinc-900 px-2">
+                  {{ $t('Arba') }}
+                </div>
+                <div class="flex-1 border-t border-zinc-300 dark:border-zinc-600"></div>
               </div>
-              <div v-else class="flex flex-col gap-4 sm:w-96 sm:justify-center sm:pt-0">
-                <div class="px-6 py-4">
-                  <div v-if="hasErrors" class="mb-4">
-                    <div class="font-medium text-vusa-red">
-                      {{ $t("Kažkas ne taip") }}...
-                    </div>
-
-                    <ul class="mt-3 text-sm text-vusa-red">
-                      <li v-for="(error, key) in errors" :key>
-                        {{ error }}
-                      </li>
-                    </ul>
-                  </div>
-
-                  <div v-if="status" class="mb-4 text-sm font-medium text-green-600">
-                    {{ status }}
-                  </div>
-
-                  <NForm ref="formRef" :model="form" :rules @submit.prevent="submit">
-                    <NFormItem path="email">
-                      <NInput id="email" v-model:value="form.email" round placeholder="vusa@vusa.lt"
-                        :input-props="{ type: 'email' }" required autofocus />
-                      <template #label>
-                        <strong>{{
-                          $t("forms.fields.email")
-                          }}</strong>
-                      </template>
-                    </NFormItem>
-
-                    <NFormItem class="mt-4" path="password">
-                      <NInput id="password" v-model:value="form.password" round type="password" placeholder="*********"
-                        required autocomplete="current-password" />
-                      <template #label>
-                        <strong>{{
-                          $t("forms.fields.password")
-                          }}</strong>
-                      </template>
-                    </NFormItem>
-
-                    <div class="mt-4 flex items-center justify-between gap-4">
-                      <NButton size="small" secondary @click="useSimpleRegistration = false">
-                        <template #icon>
-                          <IFluentArrowHookUpLeft24Regular />
-                        </template>{{ $t("Grįžti") }}
-                      </NButton>
-                      <NButton size="small" attr-type="submit" :disabled="form.processing" :loading="form.processing">
-                        {{ $t("auth.login") }}
-                      </NButton>
-                    </div>
-                  </NForm>
+              
+              <Button
+                variant="ghost"
+                size="sm"
+                class="w-full text-zinc-600 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200"
+                @click="useSimpleRegistration = true"
+              >
+                <IFluentKey24Filled class="w-4 h-4 mr-2" />
+                {{ $page.props.app.locale === 'en' ? 'Sign in with email' : 'Prisijungti el. paštu' }}
+              </Button>
+            </div>
+            
+            <!-- Email/Password Form -->
+            <div v-else class="w-full space-y-6">
+              <!-- Admin Login Explanation -->
+              <div class="p-3 rounded-md bg-zinc-50/50 border border-zinc-200/30 dark:bg-zinc-800/30 dark:border-zinc-700/30">
+                <div class="text-xs text-zinc-600 dark:text-zinc-400">
+                  <p class="font-medium mb-1 text-zinc-700 dark:text-zinc-300">
+                    {{ $page.props.app.locale === 'en' ? 'Administrator Access' : 'Administratoriaus prieiga' }}
+                  </p>
+                  <p>
+                    {{ $page.props.app.locale === 'en' 
+                      ? 'These credentials should be provided by a VU SR administrator. If you don\'t have them, please continue with Microsoft login.' 
+                      : 'Šiuos prisijungimo duomenis turėjo suteikti VU SA administratorius. Jei jų neturite, prisijunkite su Microsoft paskyra.' }}
+                  </p>
                 </div>
               </div>
-            </FadeTransition>
-          </div>
+              
+              <!-- Status Messages -->
+              <div v-if="Object.keys(errors).length > 0" class="p-4 rounded-lg bg-red-50 border border-red-200 dark:bg-red-950/20 dark:border-red-900/30">
+                <div class="font-medium text-red-800 dark:text-red-200 text-sm">
+                  {{ $page.props.app.locale === 'en' ? 'Something went wrong' : 'Kažkas ne taip' }}...
+                </div>
+                <ul class="mt-2 text-sm text-red-700 dark:text-red-300 space-y-1">
+                  <li v-for="(error, key) in errors" :key="key">
+                    {{ error }}
+                  </li>
+                </ul>
+              </div>
+
+              <div v-if="status" class="p-4 rounded-lg bg-green-50 border border-green-200 dark:bg-green-950/20 dark:border-green-900/30">
+                <div class="text-sm font-medium text-green-800 dark:text-green-200">
+                  {{ status }}
+                </div>
+              </div>
+
+              <!-- Login Form -->
+              <Form v-slot="{ errors: validationErrors }" :validation-schema="validationSchema" @submit="handleSubmit">
+                <div class="space-y-4">
+                  <!-- Email Field -->
+                  <FormField v-slot="{ componentField }" name="email">
+                    <FormItem>
+                      <FormLabel class="text-zinc-800 dark:text-zinc-200">
+                        {{ $t("forms.fields.email") }}
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          id="email"
+                          v-bind="componentField"
+                          type="email"
+                          :placeholder="$page.props.app.locale === 'en' ? 'Enter your email address' : 'Įveskite el. pašto adresą'"
+                          autocomplete="email"
+                          autofocus
+                          class="transition-colors focus:ring-2 focus:ring-vusa-red/20 focus:border-vusa-red"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  </FormField>
+
+                  <!-- Password Field -->
+                  <FormField v-slot="{ componentField }" name="password">
+                    <FormItem>
+                      <FormLabel class="text-zinc-800 dark:text-zinc-200">
+                        {{ $t("forms.fields.password") }}
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          id="password"
+                          v-bind="componentField"
+                          type="password"
+                          :placeholder="$page.props.app.locale === 'en' ? 'Enter your password' : 'Įveskite slaptažodį'"
+                          autocomplete="current-password"
+                          class="transition-colors focus:ring-2 focus:ring-vusa-red/20 focus:border-vusa-red"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  </FormField>
+
+                  <!-- Form Actions -->
+                  <div class="flex items-center justify-between gap-4 pt-4">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      type="button"
+                      class="text-zinc-600 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200"
+                      @click="useSimpleRegistration = false"
+                    >
+                      <IFluentArrowHookUpLeft24Regular class="w-4 h-4 mr-2" />
+                      {{ $t("Grįžti") }}
+                    </Button>
+                    
+                    <Button
+                      type="submit"
+                      size="sm"
+                      class="bg-vusa-red hover:bg-vusa-red/90 text-white transition-colors duration-200 focus:ring-2 focus:ring-vusa-red/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                      :disabled="form.processing"
+                    >
+                      <span v-if="form.processing" class="flex items-center">
+                        <div class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                        {{ $page.props.app.locale === 'en' ? 'Signing in...' : 'Prisijungiama...' }}
+                      </span>
+                      <span v-else>
+                        {{ $page.props.app.locale === 'en' ? 'Sign In' : 'Prisijungti' }}
+                      </span>
+                    </Button>
+                  </div>
+                </div>
+              </Form>
+            </div>
+          </FadeTransition>
         </div>
-      </FadeTransition>
-    </div>
-  </NConfigProvider>
+      </div>
+    </FadeTransition>
+  </div>
 </template>
 
 <script setup lang="ts">
+import { z } from "zod";
+import { toTypedSchema } from "@vee-validate/zod";
 import { trans as $t } from "laravel-vue-i18n";
 import { Head, useForm, usePage } from "@inertiajs/vue3";
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import Autoplay from "embla-carousel-autoplay";
 import Fade from "embla-carousel-fade";
 
+// Components
 import AppLogo from "@/Components/AppLogo.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import MicrosoftButton from "@/Components/Buttons/MicrosoftLoginButton.vue";
 import { Carousel, CarouselContent, CarouselItem } from "@/Components/ui/carousel";
-import { Separator } from "@/Components/ui/separator";
+import { Button } from "@/Components/ui/button";
+import { Input } from "@/Components/ui/input";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/Components/ui/form";
+
+// Icons
+import IFluentKey24Filled from "~icons/fluent/key-24-filled";
+import IFluentArrowHookUpLeft24Regular from "~icons/fluent/arrow-hook-up-left-24-regular";
 
 defineProps<{
   status?: string;
 }>();
 
-const errors = ref({});
-const hasErrors = ref(false);
-const formRef = ref(null);
-
 const useSimpleRegistration = ref(false);
 
-const themeOverrides = {
-  common: {
-    primaryColor: "#bd2835FF",
-    primaryColorHover: "#CD3543FF",
-    primaryColorPressed: "#CC2130FF",
-    primaryColorSuppl: "#B93945FF",
-  },
-};
+// Get errors from Inertia page props
+const errors = computed(() => usePage().props.errors || {});
 
+// Inertia form for submission
 const form = useForm({
   email: "",
   password: "",
   remember: false,
 });
 
-const rules = {
-  email: [
-    {
-      required: true,
-      message: $t("validation.required", { attribute: $t("El. paštas") }),
-      trigger: "blur-sm",
-    },
-  ],
-  password: [
-    {
-      required: true,
-      message: $t("validation.required", {
-        attribute: $t("forms.fields.password"),
-      }),
-      trigger: "blur-sm",
-    },
-  ],
-};
+const $page = usePage();
 
-const submit = () => {
-  formRef.value?.validate((formErrors) => {
-    if (!formErrors)
-      form.post(route("login"), {
-        onFinish: () => {
-          form.reset("password");
-          errors.value = usePage().props.errors;
-          hasErrors.value = Object.keys(errors.value).length > 0;
-        },
-      });
+// Validation schema using Zod
+const validationSchema = toTypedSchema(
+  z.object({
+    email: z
+      .string({ 
+        required_error: $page.props.app.locale === 'en' 
+          ? "Email is required." 
+          : "El. paštas yra privalomas." 
+      })
+      .min(1, $page.props.app.locale === 'en' 
+        ? "Email is required." 
+        : "El. paštas yra privalomas.")
+      .email($page.props.app.locale === 'en' 
+        ? "Please enter a valid email address." 
+        : "Įveskite tinkamą el. pašto adresą."),
+    password: z
+      .string({ 
+        required_error: $page.props.app.locale === 'en' 
+          ? "Password is required." 
+          : "Slaptažodis yra privalomas." 
+      })
+      .min(1, $page.props.app.locale === 'en' 
+        ? "Password is required." 
+        : "Slaptažodis yra privalomas."),
+  })
+);
+
+// Handle form submission
+const handleSubmit = (values: { email: string; password: string }) => {
+  form.email = values.email;
+  form.password = values.password;
+  
+  form.post(route("login"), {
+    onFinish: () => {
+      form.reset("password");
+    },
   });
 };
 </script>

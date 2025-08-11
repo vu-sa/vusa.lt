@@ -68,7 +68,7 @@
 
           <!-- Diploma Supplement Slide -->
           <CarouselItem>
-            <CarouselSlideCard :icon="ExternalLink" :badge="currentLocale === 'lt' ? 'Diplomas' : 'Diploma'"
+            <CarouselSlideCard :icon="ExternalLink" :badge="currentLocale === 'lt' ? 'Diplomo priedėlis' : 'Diploma Supplement'"
               :title="content.benefits.diploma.title" :description="content.benefits.diploma.description"
               image-src="/images/become-a-member/diplomas.webp" image-alt="University diploma and achievements"
               :image-left="false" />
@@ -99,7 +99,7 @@
           @click="() => { carouselApi?.scrollTo(index); restartCarouselAutoplay(); }">
           <img :src="slide.image" :alt="slide.alt"
             class="w-14 h-10 sm:w-16 sm:h-12 object-cover rounded-lg shadow-sm transition-all duration-200" :class="{
-              'opacity-100 scale-105': currentSlide === index,
+              'opacity-100 scale-105 blur-[1px]': currentSlide === index,
               'opacity-70 hover:opacity-90 scale-100 hover:scale-105': currentSlide !== index
             }" loading="lazy">
           <!-- Icon overlay for active slide -->
@@ -168,7 +168,7 @@
           </div>
         </div>
         <div class="relative order-first lg:order-last">
-          <ImageWithDecorations src="/images/become-a-member/20250510_VUSA-144.webp" alt="VU SA turtle mascot Lijana"
+          <ImageWithDecorations src="/images/become-a-member/20250510_VUSA-144.webp" alt="VU SA turtle mascot Lijana" object-position="bottom right"
             height-class="h-64 md:h-80 lg:h-96" :decorations="[
               { type: 'line', position: 'top-right', size: 'lg', color: 'vusa-yellow', opacity: 60 },
             ]" :overlay-content="{
@@ -384,7 +384,7 @@ const carouselSlides = computed(() => [
     image: '/images/become-a-member/diplomas.webp',
     alt: 'University diploma and achievements',
     icon: ExternalLink,
-    label: currentLocale === 'lt' ? 'Diplomas' : 'Diploma'
+    label: currentLocale === 'lt' ? 'Diplomo priedėlis' : 'Diploma Supplement'
   },
   {
     image: '/images/become-a-member/mokymai2025-7.webp',

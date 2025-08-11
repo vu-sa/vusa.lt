@@ -3,7 +3,7 @@
         <div class="text-6xl font-bold mb-1 text-transparent bg-clip-text" :class="[colorClass]">
             <NumberCounter :end-number :show-plus />
         </div>
-        <div class="w-60 text-center">
+        <div class="w-32 sm:w-40 md:w-48 lg:w-60 text-center">
             <slot />
         </div>
     </div>

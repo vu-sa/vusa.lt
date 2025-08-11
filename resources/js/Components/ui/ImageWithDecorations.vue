@@ -1,49 +1,31 @@
 <template>
   <div class="relative">
-    <img 
-      :src="src" 
-      :alt="alt"
-      :loading="loading"
-      :style="objectPosition ? `object-position: ${objectPosition}` : ''"
-      :class="[
-        'w-full object-cover rounded-xl shadow-lg transition-transform duration-300',
-        heightClass,
-        { 'group-hover:scale-105': hoverScale }
-      ]"
-    >
-    
+    <img :src :alt :loading :style="objectPosition ? `object-position: ${objectPosition}` : ''" :class="[
+      'w-full object-cover rounded-xl shadow-lg transition-transform duration-300',
+      heightClass,
+      { 'group-hover:scale-105': hoverScale }
+    ]">
+
     <!-- Decorative elements -->
-    <DecorativeElement
-      v-for="decoration in decorations"
-      :key="`${decoration.type}-${decoration.position}`"
-      :type="decoration.type"
-      :position="decoration.position"
-      :size="decoration.size"
-      :color="decoration.color"
-      :opacity="decoration.opacity"
-      :rotation="decoration.rotation"
-    />
-    
+    <DecorativeElement v-for="decoration in decorations" :key="`${decoration.type}-${decoration.position}`"
+      :type="decoration.type" :position="decoration.position" :size="decoration.size" :color="decoration.color"
+      :opacity="decoration.opacity" :rotation="decoration.rotation" />
+
     <!-- Icon overlay -->
-    <div
-      v-if="icon"
-      class="absolute top-4 right-4 w-10 h-10 bg-white/90 dark:bg-zinc-800/90 rounded-full flex items-center justify-center shadow-sm"
-    >
+    <div v-if="icon"
+      class="absolute top-4 right-4 w-10 h-10 bg-white/90 dark:bg-zinc-800/90 rounded-full flex items-center justify-center shadow-sm">
       <component :is="icon" class="w-5 h-5 text-zinc-600 dark:text-zinc-400" />
     </div>
-    
+
     <!-- Overlay content (like the overlapping text card in hero) -->
-    <div 
-      v-if="overlayContent"
-      :class="[
-        'absolute rounded-xl shadow-xl border border-zinc-100 dark:border-zinc-700',
-        overlayPosition,
-        overlaySize,
-        overlayStyle === 'backdrop' 
-          ? 'bg-white/95 dark:bg-zinc-800/95 backdrop-blur-sm p-3' 
-          : 'bg-white dark:bg-zinc-800 p-2 sm:p-3 md:p-4 2xl:p-6'
-      ]"
-    >
+    <div v-if="overlayContent" :class="[
+      'absolute rounded-xl shadow-xl border border-zinc-100 dark:border-zinc-700',
+      overlayPosition,
+      overlaySize,
+      overlayStyle === 'backdrop'
+        ? 'bg-white/95 dark:bg-zinc-800/95 backdrop-blur-sm p-2.5'
+        : 'bg-white dark:bg-zinc-800 p-2 sm:p-3 md:p-4 2xl:p-6'
+    ]">
       <div class="flex items-center space-x-1 sm:space-x-2 md:space-x-3 mb-1 sm:mb-2">
         <div class="w-2 h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 bg-vusa-yellow rounded-full" />
         <span :class="[
@@ -65,6 +47,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+
 import DecorativeElement from '@/Components/ui/DecorativeElement.vue';
 
 interface DecorationConfig {
@@ -109,7 +92,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const heightClass = computed(() => {
   if (props.heightClass) return props.heightClass;
-  
+
   const heights = {
     'sm': 'h-32 md:h-40',
     'md': 'h-40 md:h-52',
