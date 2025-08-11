@@ -4,10 +4,10 @@
     :class="{ 'opacity-80': variant === 'past' }">
     <!-- Event Image or Date Badge -->
     <div class="flex-shrink-0">
-      <div v-if="(event as any).media && (event as any).media?.length > 0 && variant !== 'compact'"
+      <div v-if="(event as any).images && (event as any).images?.length > 0 && variant !== 'compact'"
         class="w-12 h-10 sm:w-16 sm:h-12 lg:w-20 lg:h-14 rounded-lg overflow-hidden bg-zinc-100 dark:bg-zinc-700 relative">
         <img class="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
-          :class="{ 'opacity-0': imageLoadError }" :src="(event as any).media[0].original_url"
+          :class="{ 'opacity-0': imageLoadError }" :src="(event as any).images[0].original_url"
           :alt="getEventTitle(event)" @error="handleImageError" @load="handleImageLoad">
         <div v-if="imageLoadError"
           class="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-vusa-red/10 to-vusa-red/20 dark:from-vusa-red/20 dark:to-vusa-red/30">
@@ -19,10 +19,10 @@
         <IFluentCalendarLtr20Regular class="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-vusa-red dark:text-vusa-red" />
       </div>
       <!-- For compact variant, show smaller image or icon -->
-      <div v-else-if="(event as any).media && (event as any).media?.length > 0"
+      <div v-else-if="(event as any).images && (event as any).images?.length > 0"
         class="w-10 h-8 sm:w-12 sm:h-10 rounded-lg overflow-hidden bg-zinc-100 dark:bg-zinc-700 relative">
         <img class="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
-          :class="{ 'opacity-0': imageLoadErrorCompact }" :src="(event as any).media[0].original_url"
+          :class="{ 'opacity-0': imageLoadErrorCompact }" :src="(event as any).images[0].original_url"
           :alt="getEventTitle(event)" @error="handleImageErrorCompact" @load="handleImageLoadCompact">
         <div v-if="imageLoadErrorCompact"
           class="absolute inset-0 flex items-center justify-center bg-vusa-red/10 dark:bg-vusa-red/20">
