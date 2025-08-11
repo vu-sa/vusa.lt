@@ -80,6 +80,7 @@ class SendMemberRegistrationNotification implements ShouldQueue
             $query->where('id', app(FormSettings::class)->member_registration_notification_recipient_role_id);
         })->get();
 
+        /** @var \App\Models\Duty|null $dutyContact */
         $dutyContact = $mailableDuties->first();
 
         if ($dutyContact === null) {
@@ -107,6 +108,7 @@ class SendMemberRegistrationNotification implements ShouldQueue
         ));
 
         foreach ($mailableDuties as $mailableDuty) {
+            /** @var \App\Models\Duty $mailableDuty */
             Notification::send($mailableDuty->current_users()->first(), new MemberRegistered($event->registration->id, $nameResponse->getValue(), $institution, $mailableDuty->email));
         }
     }
