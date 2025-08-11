@@ -14,18 +14,37 @@
     <slot />
     <span v-if="!$slots.default" class="sr-only">{{ $t('Paieška') }}</span>
   </Button>
-  <TypesenseSearch 
-    v-model:search-term="searchTerm" 
-    v-model:dialog-open="showSearch"
-    :typesense-config
-  />
+  
+  <!-- Lazy-loaded search dialog - only loads when user clicks search -->
+  <Suspense v-if="searchRequested">
+    <TypesenseSearch 
+      v-model:search-term="searchTerm" 
+      v-model:dialog-open="showSearch"
+      :typesense-config
+    />
+    <template #fallback>
+      <!-- Minimal loading dialog to prevent layout shift -->
+      <div v-if="showSearch" class="fixed inset-0 z-50 bg-black/20 flex items-center justify-center">
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg">
+          <div class="flex items-center gap-2">
+            <div class="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+            <span>{{ $t('Kraunama paieška...') }}</span>
+          </div>
+        </div>
+      </div>
+    </template>
+  </Suspense>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, defineAsyncComponent } from "vue";
 
 import { Button } from "@/Components/ui/button";
-import TypesenseSearch from "@/Components/Public/Search/TypesenseSearch.vue";
+
+// Lazy-load the TypesenseSearch component - only loads when first requested
+const TypesenseSearch = defineAsyncComponent(() => 
+  import("@/Components/Public/Search/TypesenseSearch.vue")
+);
 
 // Import the search icon
 import IFluentSearch20Filled from "~icons/fluent/search-20-filled";
@@ -34,6 +53,7 @@ import IFluentSearch20Filled from "~icons/fluent/search-20-filled";
 const showSearch = ref(false);
 const searchTerm = ref('');
 const typesenseConfig = ref(null);
+const searchRequested = ref(false); // Track if search component should be loaded
 
 // Fetch Typesense configuration from the API
 const fetchTypesenseConfig = async () => {
@@ -49,13 +69,17 @@ const fetchTypesenseConfig = async () => {
   }
 };
 
-// Load configuration on component mount
-onMounted(() => {
-  fetchTypesenseConfig();
-});
-
 // Function to open the search dialog
-const openSearch = () => {
+const openSearch = async () => {
+  // Mark search as requested so the component starts loading
+  searchRequested.value = true;
+  
+  // Fetch config if not already loaded (parallel to component loading)
+  if (!typesenseConfig.value) {
+    fetchTypesenseConfig();
+  }
+  
+  // Show the dialog (will show loading state until component is ready)
   showSearch.value = true;
 };
 </script>
