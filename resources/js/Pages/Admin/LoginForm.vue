@@ -7,19 +7,19 @@
   }), Fade()]">
     <CarouselContent class="h-full">
       <CarouselItem>
-        <img src="/images/become-a-member/20250510_VUSA-156.jpg" class="size-full object-cover" alt="VU SA members group photo 2023">
+        <img src="/images/become-a-member/20250510_VUSA-156.webp" class="size-full object-cover"
+          alt="VU SA members group photo 2025">
       </CarouselItem>
       <CarouselItem>
-        <img src="/images/become-a-member/mokymai2025-2.jpg" class="size-full object-cover" alt="Students at a summer camp">
+        <img src="/images/become-a-member/mokymai2025-2.webp" class="size-full object-cover" alt="Student Trainings">
       </CarouselItem>
       <CarouselItem>
-        <img src="/images/become-a-member/mokymai2025-1.jpg" class="size-full object-cover"
-          alt="Vilnius University Observatory Courtyard">
+        <img src="/images/become-a-member/mokymai2025-1.webp" class="size-full object-cover" alt="Student Trainings">
       </CarouselItem>
     </CarouselContent>
   </Carousel>
 
-  <NConfigProvider :theme-overrides="themeOverrides">
+  <NConfigProvider :theme-overrides>
     <div>
       <FadeTransition appear>
         <div class="grid min-h-screen justify-center p-4 sm:grid-cols-2 sm:grid-rows-none">
@@ -29,12 +29,13 @@
           <div
             class="m-auto mt-0 flex h-auto flex-col items-center gap-4 rounded-lg bg-zinc-50 p-4 text-zinc-700 shadow-xl transition-shadow duration-500 ease-in-out hover:shadow-zinc-900/90 dark:bg-zinc-900 sm:mt-auto sm:justify-center sm:p-12">
             <h1 class="font-bold text-zinc-700">
-              {{ $t("Labas") }}! 👋 
+              {{ $t("Labas") }}! 👋
             </h1>
             <AppLogo class="w-24 sm:hidden" />
 
             <p class="max-w-xs text-center text-xs text-zinc-600 sm:text-center">
-              <strong>{{ $page.props.app.locale === 'en' ? 'My VU SR' : 'Mano VU SA' }}</strong> {{ $t("auth.usage_status") }}.
+              <strong>{{ $page.props.app.locale === 'en' ? 'My VU SR' : 'Mano VU SA' }}</strong> {{
+                $t("auth.usage_status") }}.
               <!-- <Link class="text-zinc-400 underline" :href="route('home')"
                 >Kaip tapti?</Link
               > -->
@@ -58,7 +59,7 @@
                     </div>
 
                     <ul class="mt-3 text-sm text-vusa-red">
-                      <li v-for="(error, key) in errors" :key="key">
+                      <li v-for="(error, key) in errors" :key>
                         {{ error }}
                       </li>
                     </ul>
@@ -68,14 +69,14 @@
                     {{ status }}
                   </div>
 
-                  <NForm ref="formRef" :model="form" :rules="rules" @submit.prevent="submit">
+                  <NForm ref="formRef" :model="form" :rules @submit.prevent="submit">
                     <NFormItem path="email">
                       <NInput id="email" v-model:value="form.email" round placeholder="vusa@vusa.lt"
                         :input-props="{ type: 'email' }" required autofocus />
                       <template #label>
                         <strong>{{
                           $t("forms.fields.email")
-                        }}</strong>
+                          }}</strong>
                       </template>
                     </NFormItem>
 
@@ -85,7 +86,7 @@
                       <template #label>
                         <strong>{{
                           $t("forms.fields.password")
-                        }}</strong>
+                          }}</strong>
                       </template>
                     </NFormItem>
 
@@ -114,13 +115,13 @@
 import { trans as $t } from "laravel-vue-i18n";
 import { Head, useForm, usePage } from "@inertiajs/vue3";
 import { ref } from "vue";
+import Autoplay from "embla-carousel-autoplay";
+import Fade from "embla-carousel-fade";
 
 import AppLogo from "@/Components/AppLogo.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import MicrosoftButton from "@/Components/Buttons/MicrosoftLoginButton.vue";
 import { Carousel, CarouselContent, CarouselItem } from "@/Components/ui/carousel";
-import Autoplay from "embla-carousel-autoplay";
-import Fade from "embla-carousel-fade";
 import { Separator } from "@/Components/ui/separator";
 
 defineProps<{
