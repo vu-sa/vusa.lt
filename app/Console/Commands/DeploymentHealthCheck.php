@@ -92,7 +92,6 @@ class DeploymentHealthCheck extends Command
 
         try {
             $this->call('down', [
-                '--message' => 'Site is temporarily unavailable due to deployment issues. We are working to resolve this.',
                 '--retry' => 300, // 5 minutes
             ]);
 

@@ -187,7 +187,7 @@
     <!-- <DecorativeElement type="square" position="bottom-right" size="sm" color="vusa-yellow" :opacity="30" -->
     <!--   :rotation="true" /> -->
 
-    <div class="container mx-auto px-4 max-w-6xl relative z-10">
+    <div class="container mx-auto px-4 max-w-6xl relative">
       <SectionHeader :title="content.activityAreas.title" :subtitle="content.activityAreas.subtitle" />
 
       <!-- Card Stack Component -->
@@ -198,7 +198,7 @@
 
   <!-- Photo Gallery Section -->
   <section class="py-12 full-bleed relative">
-    <div class="container mx-auto px-4 max-w-6xl relative z-10">
+    <div class="container mx-auto px-4 max-w-6xl relative">
       <SectionHeader 
         :title="currentLocale === 'lt' ? 'Mūsų veikla kadruose' : 'Our activities in frames'"
         :subtitle="currentLocale === 'lt' ? 'Pažvelk į mūsų bendruomenės kasdienybę ir renginius' : 'Take a look at our community\'s daily life and events'" />
@@ -210,7 +210,7 @@
   <!-- Call to Action - Clean and effective -->
   <section
     class="py-16 bg-zinc-50 dark:bg-zinc-900 full-bleed relative overflow-hidden">
-    <div class="container mx-auto px-4 max-w-4xl text-center space-y-6 md:space-y-8 relative z-10">
+    <div class="container mx-auto px-4 max-w-4xl text-center space-y-6 md:space-y-8 relative">
       <h2 class="text-xl sm:text-2xl md:text-3xl font-bold text-zinc-900 dark:text-zinc-100 leading-tight">
         {{ content.callToAction.title }}
       </h2>
@@ -622,7 +622,7 @@ const faqData = computed(() => {
         answer: 'Absoliučiai! Nėra jokių įsipareigojimų ilgam laikui. Gali bet kada nuspręsti baigti dalyvavimą – tiesiog pranešk mums elektroniniu paštu arba asmeniškai. Mes suprantame, kad studentų prioritetai keičiasi. Durys visada bus atviros, jei kada nors norėsi grįžti!'
       },
       {
-        question: 'Ar narystė kažkuo mokama?',
+        question: 'Ar narystė mokama?',
         answer: 'Ne, narystė visiškai nemokama! VU SA finansuojama iš universiteto biudžeto ir kitų šaltinių, todėl nereikia mokėti jokių mokesčių ar įnašų.'
       },
       {

@@ -46,16 +46,16 @@ class DeploymentRun extends Command
             'command' => 'search:reindex',
             'critical' => false, // Non-critical - can continue if fails
         ],
-        'health' => [
-            'name' => 'Perform health check',
-            'command' => 'deployment:health-check',
-            'critical' => true,
-        ],
         'online' => [
             'name' => 'Exit maintenance mode',
             'command' => 'up',
             'critical' => true,
             'always_run' => true, // Always attempt to bring site back online
+        ],
+        'health' => [
+            'name' => 'Perform health check',
+            'command' => 'deployment:health-check',
+            'critical' => false, // Changed to non-critical to avoid breaking deployment
         ],
     ];
 

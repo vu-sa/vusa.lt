@@ -50,16 +50,13 @@
     </div>
 
     <!-- Lightbox -->
-    <VueEasyLightbox
+    <VueEasyLightbox class="z-50"
       :visible="lightboxVisible"
       :imgs="lightboxImages"
       :index="lightboxIndex"
+      scroll-disabled
+      loop
       @hide="closeLightbox"
-      :loop="true"
-      :scroll-disabled="true"
-      :move-disabled="false"
-      :esc-disabled="false"
-      :dbl-click-disabled="false"
     />
   </section>
 </template>
@@ -143,32 +140,3 @@ const closeLightbox = () => {
   lightboxVisible.value = false;
 };
 </script>
-
-<style>
-/* Custom lightbox styles to match the design system */
-.vel-modal {
-  backdrop-filter: blur(8px);
-}
-
-.vel-modal .vel-img {
-  border-radius: 12px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-}
-
-.vel-modal .vel-toolbar {
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(12px);
-  border-radius: 12px;
-}
-
-@media (prefers-color-scheme: dark) {
-  .vel-modal .vel-toolbar {
-    background: rgba(39, 39, 42, 0.9);
-    color: #f4f4f5;
-  }
-  
-  .vel-modal .vel-toolbar .vel-btn {
-    color: #f4f4f5;
-  }
-}
-</style>
