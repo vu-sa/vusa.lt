@@ -223,12 +223,12 @@ class PublicPageController extends PublicController
         $yearsWhenEventsExist = Calendar::query()->whereHas('category', function (Builder $query) {
             $query->where('alias', '=', 'freshmen-camps');
         });
-        
+
         // Filter by locale for years when events exist
         if (app()->getLocale() === 'en') {
             $yearsWhenEventsExist->where('is_international', true);
         }
-        
+
         $yearsWhenEventsExist = $yearsWhenEventsExist->selectRaw('YEAR(date) as year')->distinct()->get()->pluck('year');
 
         $seo = $this->shareAndReturnSEOObject(

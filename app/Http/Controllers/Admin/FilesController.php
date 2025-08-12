@@ -38,8 +38,8 @@ class FilesController extends AdminController
         $path = rtrim($path, '/');
 
         // Additional security: allow Unicode letters, marks (for combining diacritics), numbers, underscores,
-        // hyphens, dots, spaces, and forward slashes
-        if (! preg_match('/^[\p{L}\p{M}\p{N}\/_. -]+$/u', $path)) {
+        // hyphens, dots, spaces, parentheses, and forward slashes
+        if (! preg_match('/^[\p{L}\p{M}\p{N}\/_. ()-]+$/u', $path)) {
             throw new \InvalidArgumentException('Invalid path format');
         }
 
@@ -415,7 +415,7 @@ class FilesController extends AdminController
 
             // Determine upload type based on path structure
             $isTipTapUpload = str_starts_with($path, 'content/');
-            $isUploadImageWithCropperUpload = !str_contains($path, '/') && !str_starts_with($path, 'public/') && !str_starts_with($path, 'content/');
+            $isUploadImageWithCropperUpload = ! str_contains($path, '/') && ! str_starts_with($path, 'public/') && ! str_starts_with($path, 'content/');
 
             if ($isTipTapUpload) {
                 // TipTap uploads: use tenant-based content directory logic
@@ -509,7 +509,7 @@ class FilesController extends AdminController
             $successMessage = "{$shortOriginalName} optimized and converted to WebP";
             $detailMessage = "Compressed from {$originalSizeKB} KB to {$compressedSizeKB} KB ({$compressionRatio}% saved)";
 
-            // Generate correct URL based on upload type  
+            // Generate correct URL based on upload type
             if ($isUploadImageWithCropperUpload) {
                 // UploadImageWithCropper: /uploads/{folder}/file.webp
                 $uploadUrl = '/uploads/'.$path.'/'.$processedName;
@@ -521,7 +521,7 @@ class FilesController extends AdminController
                 $urlPath = str_replace('public/', '', $path);
                 $uploadUrl = '/uploads/'.$urlPath.'/'.$processedName;
             }
-            
+
             $uploadResult = [
                 'url' => $uploadUrl,
                 'name' => $processedName,
