@@ -114,13 +114,30 @@
                 <IFluentSearch24Regular class="h-4 w-4 mr-2" />
                 {{ scanningUsage ? 'Scanning...' : 'Scan Usage' }}
               </Button>
+              <Button v-if="showCompress" :loading="compressing" size="sm" variant="secondary"
+                class="flex-1 sm:flex-none" :title="compressTitle" @click="confirmAndCompress">
+                <IFluentImage24Regular class="h-4 w-4 mr-2" />
+                {{ compressing ? 'Optimizing...' : 'Optimize' }}
+              </Button>
               <Button :disabled="!usageData || (!usageData.is_safe_to_delete)" variant="destructive" size="sm"
                 class="flex-1 sm:flex-none"
-                :title="!usageData ? 'Scan usage first before deleting' : (!usageData.is_safe_to_delete ? 'File in use – cannot delete' : 'Delete file')"
+                :title="!usageData
+                  ? 'Scan usage first before deleting'
+                  : (!usageData.is_safe_to_delete
+                    ? 'File in use – cannot delete'
+                    : 'Delete file')"
                 @click="$emit('delete')">
                 <IFluentDelete24Filled class="h-4 w-4 mr-2" />
                 {{ !usageData ? 'Delete (Scan First)' : 'Delete' }}
               </Button>
+            </div>
+            <div v-if="showCompress"
+              class="mb-6 text-xs bg-amber-50 border border-amber-200 rounded p-3 text-amber-800 flex items-start gap-2">
+              <IFluentInformation16Regular class="h-4 w-4 mt-0.5 shrink-0" />
+              <p>
+                This image is large ({{ fileSize }}). You can optimize it to reduce size. The file will be
+                <strong>overwritten</strong>.
+              </p>
             </div>
 
             <!-- Usage scan results -->
@@ -169,7 +186,12 @@
                         </p>
                       </div>
                       <div class="flex items-center gap-1">
-                        <a :href="usage.edit_url" target="_blank" rel="noopener noreferrer">
+                        <a
+                          :href="usage.edit_url || undefined"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          aria-label="Edit item"
+                        >
                           <Button v-if="usage.edit_url" size="sm" variant="ghost" as-child class="h-6 w-6 p-0"
                             :title="'Edit ' + usage.title">
                             <IFluentEdit16Regular class="h-3 w-3" />
@@ -177,7 +199,7 @@
                         </a>
                         <Button v-if="usage.url && !usage.edit_url" size="sm" variant="ghost" as-child
                           class="h-6 w-6 p-0" :title="'View ' + usage.title">
-                          <a :href="usage.url" target="_blank" rel="noopener noreferrer">
+                          <a :href="usage.url" target="_blank" rel="noopener noreferrer" aria-label="Open item">
                             <IFluentOpen16Regular class="h-3 w-3" />
                           </a>
                         </Button>
@@ -235,10 +257,26 @@ import {
 import { useToasts } from '@/Composables/useToasts';
 // Icons used inside script-added template changes
 import IFluentEdit16Regular from '~icons/fluent/edit-16-regular';
+import IFluentInformation16Regular from '~icons/fluent/info-16-regular';
+
+interface FileEntry { path: string; size?: number; modified?: number; }
+interface UsageDetail {
+  id: number | string;
+  model_type: string;
+  title: string;
+  edit_url?: string; // use undefined instead of null
+  url?: string;
+}
+interface UsageData {
+  is_safe_to_delete: boolean;
+  total_usages: number;
+  usage_details: UsageDetail[];
+  scanned_at: string;
+}
 
 const props = defineProps<{
   selectedFile: string | null;
-  files: any[];
+  files: FileEntry[];
 }>();
 
 const emit = defineEmits<{
@@ -249,9 +287,10 @@ const emit = defineEmits<{
 
 // File usage scanning state
 const scanningUsage = ref(false);
-const usageData = ref<any>(null);
+const usageData = ref<UsageData | null>(null);
 const usageError = ref<string | null>(null);
 const toasts = useToasts();
+const compressing = ref(false);
 
 const fileName = computed(() => {
   if (!props.selectedFile) return '';
@@ -267,12 +306,12 @@ const fileExtension = computed(() => {
 
 const fileSize = computed(() => {
   if (!props.selectedFile) return 'Unknown';
-  const fileInfo = props.files.find((file: any) => file.path === props.selectedFile);
+  const fileInfo = props.files.find((file) => file.path === props.selectedFile);
   if (fileInfo?.size) {
     const bytes = fileInfo.size;
     if (bytes === 0) return '0 B';
     const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const sizes: string[] = ['B', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
   }
@@ -281,7 +320,7 @@ const fileSize = computed(() => {
 
 const fileDate = computed(() => {
   if (!props.selectedFile) return 'Unknown';
-  const fileInfo = props.files.find((file: any) => file.path === props.selectedFile);
+  const fileInfo = props.files.find((file: FileEntry) => file.path === props.selectedFile);
   if (fileInfo?.modified) {
     return new Date(fileInfo.modified * 1000).toLocaleDateString('lt-LT');
   }
@@ -347,6 +386,47 @@ function scanFileUsage() {
     },
     onFinish: () => {
       scanningUsage.value = false;
+    }
+  });
+}
+
+// Image compression state
+const eligibleExtensions = ['JPG', 'JPEG', 'PNG'];
+
+const showCompress = computed(() => {
+  if (!props.selectedFile) return false;
+  if (!eligibleExtensions.includes(fileExtension.value.toUpperCase())) return false;
+  const fileInfo = props.files.find((f) => f.path === props.selectedFile);
+  return !!(fileInfo?.size && fileInfo.size > 500 * 1024);
+});
+
+const compressTitle = computed(() => {
+  return compressing.value ? 'Optimizing image...' : 'Optimize image';
+});
+
+function confirmAndCompress() {
+  if (!props.selectedFile || compressing.value) return;
+  const confirmText = 'Optimize this image? It will be overwritten.';
+  if (!window.confirm(confirmText)) return;
+  compressImage();
+}
+
+function compressImage() {
+  if (!props.selectedFile) return;
+  compressing.value = true;
+  router.post(route('files.compress'), { path: props.selectedFile }, {
+    preserveScroll: true,
+    preserveState: true,
+    onSuccess: (page) => {
+      toasts.success('Image optimized');
+      // Ask parent to refresh listing (parent likely triggers getFiles), otherwise simple location reload
+      router.reload({ only: ['files'] });
+    },
+    onError: (errors) => {
+      toasts.error('Failed to optimize image', { description: errors.error || 'Unknown error' });
+    },
+    onFinish: () => {
+      compressing.value = false;
     }
   });
 }

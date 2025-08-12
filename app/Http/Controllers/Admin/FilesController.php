@@ -58,7 +58,8 @@ class FilesController extends AdminController
             ];
         })->toArray();
 
-        $files = collect(Storage::files($path))->map(function ($file) {
+        $files = collect(Storage::files($path))->map(function ($file) use ($path) {
+            $relativePath = str_replace('public/', '', $file);
             return [
                 'path' => $file,
                 'name' => basename($file),
@@ -66,6 +67,7 @@ class FilesController extends AdminController
                 'size' => Storage::size($file),
                 'modified' => Storage::lastModified($file),
                 'mimeType' => Storage::mimeType($file),
+                'url' => $path.'/'.$relativePath,
             ];
         })->toArray();
 
@@ -293,7 +295,7 @@ class FilesController extends AdminController
         }
         if ($renamedCount > 0) {
             $messages[] = "{$renamedCount} ".
-                ($renamedCount === 1 ? 'failas pervardytas' : ($renamedCount < 10 ? 'failai pervardyti' : 'failų pervardyta')).
+                ($renamedCount === 1 ? 'failas pervardytas' : ($renamedCount < 10 ? 'failai pervardyti' : 'failų pervardita')).
                 ' (egzistavo tokie pat pavadinimai)';
         }
 
@@ -527,6 +529,80 @@ class FilesController extends AdminController
             return response()->json([
                 'error' => $errorMessage
             ], 500);
+        }
+    }
+
+    public function compressImage(Request $request)
+    {
+        $request->validate([
+            'path' => 'required|string',
+        ]);
+
+        try {
+            $path = $this->validateAndNormalizePath($request->input('path'));
+        } catch (\InvalidArgumentException $e) {
+            return back()->withErrors(['error' => 'Neteisingas failo kelias.']);
+        }
+
+        $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+        if (!in_array($extension, ['jpg','jpeg','png'])) {
+            return back()->withErrors(['error' => 'Failo formatas negali būti suspaustas.']);
+        }
+
+        $directoryPath = dirname($path);
+        if (!$request->user()->can('viewDirectory', [File::class, $directoryPath])) {
+            return back()->withErrors(['permission' => 'Neturite teisių modifikuoti failų šiame aplanke.']);
+        }
+
+        if (!\Storage::exists($path) || \Storage::directoryExists($path)) {
+            return back()->withErrors(['error' => 'Failas nerastas.']);
+        }
+
+        try {
+            $fullLocalPath = storage_path('app/'.$path);
+            $originalSize = filesize($fullLocalPath) ?: 0;
+
+            $image = \Intervention\Image\Laravel\Facades\Image::read($fullLocalPath);
+            $image->scaleDown(width: 1600);
+            $quality = $originalSize > 2*1024*1024 ? 72 : 78; // 2MB threshold
+
+            // Always keep original extension (no conversion to webp)
+            if (in_array($extension, ['jpg','jpeg'])) {
+                $image->toJpeg($quality);
+            } elseif ($extension === 'png') {
+                // For PNG we can optionally reduce palette; Intervention's toPng keeps format
+                $image->toPng();
+            }
+
+            $image->save($fullLocalPath);
+            clearstatcache();
+            $newSize = filesize($fullLocalPath) ?: $originalSize;
+            $saved = $originalSize > 0 ? round((1 - $newSize/$originalSize) * 100) : 0;
+
+            \Log::info('Image compressed', [
+                'path' => $path,
+                'converted_to_webp' => false,
+                'original_size' => $originalSize,
+                'new_size' => $newSize,
+                'percent_saved' => $saved,
+                'user_id' => $request->user()->id,
+            ]);
+
+            $fileName = basename($path);
+            $msg = 'Paveikslėlis optimizuotas (sutaupyta '.$saved.'%).';
+
+            return back()->with('success', $fileName.' – '.$msg)->with('data', [
+                'path' => $path,
+                'percent_saved' => $saved,
+                'new_size' => $newSize,
+                'converted' => false,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Image compression failed', [
+                'path' => $path,
+                'error' => $e->getMessage(),
+            ]);
+            return back()->withErrors(['error' => 'Nepavyko optimizuoti paveikslėlio: '.$e->getMessage()]);
         }
     }
 
