@@ -48,7 +48,7 @@ class ContentPart extends Model
     // Add a default value for html attribute
     protected $html = '';
 
-    public function content()
+    public function content(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Content::class);
     }

@@ -144,7 +144,7 @@ class FileUsageScanner
                     }
                 }
             }
-            foreach (array_unique($combiningEscaped) as $cv) {
+            foreach ($combiningEscaped as $cv) {
                 $push($cv);
             }
 
@@ -168,45 +168,13 @@ class FileUsageScanner
                         }
                     }
                 }
-                foreach (array_unique($fullEscapedSet) as $fe) {
+                foreach ($fullEscapedSet as $fe) {
                     $push($fe);
                 }
             }
         }
 
         return $variants; // Already unique by $push logic
-    }
-
-    private function getModelClass(string $modelType): ?string
-    {
-        $mapping = [
-            'calendar' => Calendar::class,
-            'news' => News::class,
-            'duties' => Duty::class,
-            'institutions' => Institution::class,
-            'trainings' => Training::class,
-            'types' => Type::class,
-            'forms' => Form::class,
-            'changelogItems' => ChangelogItem::class,
-        ];
-
-        return $mapping[$modelType] ?? null;
-    }
-
-    private function getFieldForModel(string $modelType): string
-    {
-        $mapping = [
-            'calendar' => 'description',
-            'news' => 'short',
-            'duties' => 'description',
-            'institutions' => 'description',
-            'trainings' => 'description',
-            'types' => 'description',
-            'forms' => 'description',
-            'changelogItems' => 'description',
-        ];
-
-        return $mapping[$modelType] ?? 'description';
     }
 
     /**
@@ -306,11 +274,9 @@ class FileUsageScanner
                     ->get();
 
                 $matched = $allParts->filter(function ($part) use ($variants) {
-                    $content = $part->json_content;
-                    if (! is_string($content)) {
-                        $content = json_encode($content);
-                    }
-                    if ($content === null) {
+                    // json_content is cast as array in the model
+                    $content = json_encode($part->json_content);
+                    if ($content === false) {
                         return false;
                     }
                     foreach ($variants as $v) {

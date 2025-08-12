@@ -182,6 +182,33 @@ function getUserName(user: User): string { return user.name; }
 - **Manual generation**: Run `composer ide-helper` to regenerate type annotations
 - **Custom overrides**: After running ide-helper, manually fix translatable field types from array to string for better static analysis
 
+### PHPStan Static Analysis
+- **Level**: Currently set to level 5 in `phpstan.neon`
+- **Relation detection issues**: PHPStan may not always detect Eloquent relations properly. When you encounter "Relation 'relationName' is not found" errors for relations that clearly exist in the model, add explicit type annotations in the model's PHPDoc:
+
+```php
+/**
+ * @property-read \App\Models\RelatedModel $relationName
+ */
+class MyModel extends Model
+{
+    public function relationName()
+    {
+        return $this->belongsTo(RelatedModel::class);
+    }
+}
+```
+
+- **Collection type inference**: When using `keyBy()` or similar collection methods that return mixed types, add explicit type annotations to help PHPStan understand the expected type:
+
+```php
+/** @var \Illuminate\Support\Collection<int, \App\Models\ModelName> $collection */
+$collection = $model->relation()->get()->keyBy('id');
+```
+
+- **Type casting issues**: When PHPStan complains about type mismatches in array operations, ensure proper type hints and consider using `array_filter()` or explicit type checks
+- **Mixed type handling**: For JSON columns that can contain various data types, use explicit type checks with `is_string()`, `is_array()` before operations
+
 ### Testing Permissions
 **See**: @tests/CLAUDE.md for complete testing patterns
 

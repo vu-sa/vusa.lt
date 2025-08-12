@@ -26,7 +26,7 @@ class Content extends Model
 
     protected $guarded = [];
 
-    public function parts()
+    public function parts(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(ContentPart::class)->orderBy('order');
     }
