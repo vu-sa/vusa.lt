@@ -126,16 +126,16 @@
             <img
               class="size-full rounded-xl object-cover shadow-md transition group-hover:shadow-xl"
               :src="get5thResponsiveImage(event)"
-              :alt="`VU ${getFacultyName(event.tenant)} freshmen camp`"
+              :alt="`VU ${$t(getFacultyNameInLocative(event.tenant))} freshmen camp`"
               loading="lazy"
             >
             <h3 class="p-2 text-center text-lg font-extrabold leading-tight">
-              {{ "VU" + getFacultyName(event.tenant) }}
+              {{ "VU " + $t(getFacultyNameInLocative(event.tenant)) }}
             </h3>
           </div>
           <div v-else>
             <h3 class="p-2 text-center text-xl font-extrabold leading-tight">
-              {{ "VU" + getFacultyName(event.tenant) }}
+              {{ "VU " + $t(getFacultyNameInLocative(event.tenant)) }}
             </h3>
           </div>
         </SmartLink>
@@ -162,6 +162,17 @@ const props = defineProps<{
 const summerCampTitle = computed(() => {
   return props.year === new Date().getFullYear() ? $t("Pirmakursių stovyklos") : `${props.year} ${$t("m. pirmakursių stovyklos")}`;
 });
+
+const getFacultyNameInLocative = ({ fullname }: { fullname: string }) => {
+  // Extract the faculty name part in locative form (before conversion to nominative)
+  let facultyName = fullname.split("Vilniaus universiteto Studentų atstovybė")[1];
+  
+  if (facultyName === undefined) {
+    return "";
+  }
+  
+  return facultyName.trim();
+};
 
 const get5thResponsiveImage = (event: App.Entities.Calendar) => {
   if (event.media.length === 0) return "";
