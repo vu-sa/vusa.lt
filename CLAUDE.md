@@ -37,6 +37,38 @@ All Laravel commands **MUST** be run using Laravel Sail:
 
 ## Key Implementation Notes
 
+### Icon System
+**Location**: `@/Components/icons/` - Complete tree-shakable icon system  
+**Files**: `model-icons.ts`, `form-icons.ts`, `other-icons.ts`  
+**Pattern**: Named exports with regular/filled variants
+
+**✅ Recommended Usage (Best Performance)**:
+```vue
+// Direct imports - Perfect tree-shaking (only imports what you use)
+import { 
+  NewsIcon, NewsIconFilled,       // Clean, concise names!
+  SaveIcon, SaveIconFilled,
+  HomeIcon, HomeIconFilled 
+} from '@/Components/icons';
+```
+
+**⚠️ Dynamic Helpers (Use Sparingly)**:
+```vue
+// WARNING: These import ALL icons in their category
+// Only use when you need truly dynamic icon selection at runtime
+import { getModelIcon, getFormIcon, getOtherIcon } from '@/Components/icons';
+const modelIcon = getModelIcon('NEWS', 'filled');  // Bundles ALL model icons!
+const formIcon = getFormIcon('SAVE', 'regular');   // Bundles ALL form icons!
+const otherIcon = getOtherIcon('HOME', 'filled');  // Bundles ALL other icons!
+```
+
+**❌ Legacy (migrate away from)**:
+```vue
+// Old pattern - poor tree-shaking
+import Icons from '@/Types/Icons/regular';
+import IconsFilled from '@/Types/Icons/filled';
+```
+
 ### Frontend Testing & Quality Assurance
 
 **See**: tests/README.md and tests/CLAUDE.md for complete testing documentation

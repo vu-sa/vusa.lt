@@ -79,7 +79,6 @@
     "@axe-core/playwright": "^4.10.1",
     "@chromatic-com/storybook": "^4.0.1",
     "@eslint/js": "^9.10.0",
-    "@iconify-json/ant-design": "^1.1.16",
     "@iconify-json/fluent": "^1.1.57",
     "@iconify-json/mdi": "^1.1.67",
     "@iconify/vue": "^5.0.0",

@@ -133,7 +133,7 @@ import { BreadcrumbHelpers, usePageBreadcrumbs } from "@/Composables/useBreadcru
 import IMdiContentSave from '~icons/mdi/content-save';
 import IMdiGithub from '~icons/mdi/github';
 import IMdiLock from '~icons/mdi/lock';
-import Icons from "@/Types/Icons/regular";
+import IMdiSettings from '~icons/mdi/settings';
 
 const props = defineProps<{
   user: App.Entities.User;
@@ -160,7 +160,7 @@ const passwordForm = useForm({
 
 // Generate breadcrumbs automatically with new simplified API
 usePageBreadcrumbs([
-  { label: $t('Nustatymai'), icon: Icons.SETTINGS }
+  { label: $t('Nustatymai'), icon: IMdiSettings }
 ]);
 
 const handleSubmit = () => {

@@ -44,6 +44,10 @@ export default defineConfig(({ command }) => {
         NaiveUiResolver(),
         VueUseComponentsResolver()
       ],
+      // For fixing imports: https://github.com/unplugin/unplugin-icons/issues/317#issuecomment-1789146323
+      importPathTransform(path) {
+        return path === '~icons/fluent/speaker224-regular' ? '~icons/fluent/speaker2-24-regular' : path
+      },
       dts: 'resources/js/Types/components.d.ts',
     }),
     Icons(),
