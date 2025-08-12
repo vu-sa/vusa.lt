@@ -151,6 +151,10 @@
         <div v-if="editor && maxCharacters" class="mt-4 text-xs text-gray-500 dark:text-gray-400">
           {{ editor.storage.characterCount.characters() }}
         </div>
+        <div class="mt-2 flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+          <IFluentImage24Regular class="h-4 w-4" />
+          <span>{{ $t('rich-content.drag_drop_images_info') }}</span>
+        </div>
       </div>
       <div class="flex flex-col gap-2">
         <NButton :type="showToolbar ? 'primary' : 'default'" size="small" @click="showToolbar = !showToolbar">
@@ -173,6 +177,7 @@
 import { EditorContent, useEditor } from "@tiptap/vue-3";
 import { BubbleMenu } from "@tiptap/vue-3/menus";
 import { CharacterCount, Placeholder } from "@tiptap/extensions";
+import { FileHandler } from "@tiptap/extension-file-handler";
 import { nextTick, onBeforeUnmount, ref } from "vue";
 import { AccessibleImage } from "./AccessibleImage";
 import { StarterKit } from "@tiptap/starter-kit";
@@ -183,6 +188,7 @@ import { Youtube } from "@tiptap/extension-youtube";
 import LineHorizontal120Regular from "~icons/fluent/line-horizontal-1-20-regular"
 import TextHeader220Filled from "~icons/fluent/text-header-2-20-filled"
 import TextHeader320Filled from "~icons/fluent/text-header-3-20-filled"
+import IFluentImage24Regular from "~icons/fluent/image-24-regular"
 
 import { CustomHeading } from "./CustomHeading";
 import { Video } from './Video';
@@ -194,6 +200,8 @@ import TiptapYoutubeButton from "./TiptapYoutubeButton.vue";
 import latinize from "latinize";
 import { trans as $t } from "laravel-vue-i18n";
 import { Separator } from "../ui/separator";
+import { useToasts } from '@/Composables/useToasts';
+import { router, usePage } from '@inertiajs/vue3';
 
 const props = defineProps<{
   disableTables?: boolean;
@@ -207,6 +215,10 @@ const modelValue = ref(props.modelValue);
 
 const showToolbar = ref(true);
 const showTableToolbar = ref(false);
+const toasts = useToasts();
+
+// Upload state management
+const uploadingFiles = ref(new Map<string, { fileName: string; placeholder: any }>());
 
 const editor = useEditor({
   editorProps: {
@@ -250,6 +262,31 @@ const editor = useEditor({
         class: "aspect-video h-36 w-auto my-2",
       },
     }),
+    FileHandler.configure({
+      allowedMimeTypes: [
+        // Images
+        'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
+        // Documents
+        'application/pdf',
+        'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        // Text files
+        'text/plain', 'text/csv',
+        // Archives
+        'application/zip', 'application/x-rar-compressed',
+        // Web files
+        'text/html', 'text/css', 'text/javascript', 'application/javascript', 'application/json', 'text/xml', 'application/xml',
+        // Audio/Video
+        'audio/mpeg', 'video/mp4', 'video/x-msvideo', 'video/quicktime', 'video/webm'
+      ],
+      onDrop: (currentEditor, files, pos) => {
+        handleFileDrop(currentEditor, files, pos);
+      },
+      onPaste: (currentEditor, files, htmlContent) => {
+        handleFilePaste(currentEditor, files);
+      }
+    }),
   ],
   content: modelValue.value ?? "",
   onUpdate: () => {
@@ -286,6 +323,247 @@ function attachImageWithAlt(imageData: { src: string; alt?: string; title?: stri
       title: imageData.title || '',
     }).run();
   }
+}
+
+// File handling functions
+async function handleFileDrop(currentEditor: any, files: File[], pos?: number) {
+  // Process all files (images and non-images)
+  for (const file of files) {
+    if (file.type.startsWith('image/')) {
+      await processImageUpload(currentEditor, file, pos);
+    } else {
+      await processFileUpload(currentEditor, file, pos);
+    }
+  }
+}
+
+async function handleFilePaste(currentEditor: any, files: File[]) {
+  // Process all files (images and non-images)
+  for (const file of files) {
+    if (file.type.startsWith('image/')) {
+      await processImageUpload(currentEditor, file);
+    } else {
+      await processFileUpload(currentEditor, file);
+    }
+  }
+}
+
+// Add type definitions for upload response
+interface UploadResult {
+  url: string;
+  name: string;
+  originalSize: number;
+  compressedSize: number;
+  compressionRatio: number;
+  message: string;
+}
+
+async function processImageUpload(currentEditor: any, file: File, pos?: number) {
+  const uploadId = `upload-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  
+  try {
+    // 1. Insert upload placeholder
+    const placeholder = insertUploadPlaceholder(currentEditor, file.name, uploadId, pos);
+    uploadingFiles.value.set(uploadId, { fileName: file.name, placeholder });
+    
+    // 2. Upload and compress image using Inertia
+    const uploadData = {
+      image: file,
+      name: file.name,
+      path: `content/${new Date().getFullYear()}/${String(new Date().getMonth() + 1).padStart(2, '0')}`
+    };
+    
+    // Use Inertia router.post - it will automatically convert to FormData
+    await new Promise<UploadResult>((resolve, reject) => {
+      router.post(route('files.uploadImage'), uploadData, {
+        preserveState: true,
+        preserveScroll: true,
+        onSuccess: (page) => {
+          // Get the upload result from flash data
+          const result = page.props.flash?.data as UploadResult;
+          
+          if (result) {
+            // 3. Replace placeholder with actual image
+            replacePlaceholderWithImage(currentEditor, uploadId, {
+              src: result.url,
+              alt: file.name,
+              title: `Uploaded: ${file.name}`
+            });
+            
+            // Note: Success notification is handled automatically by Inertia flash system
+            
+            resolve(result);
+          } else {
+            reject(new Error('Upload succeeded but no data received'));
+          }
+        },
+        onError: (errors) => {
+          const errorMessage = Object.values(errors).flat().join(', ') || 'Upload failed';
+          reject(new Error(errorMessage));
+        }
+      });
+    });
+    
+  } catch (error: any) {
+    console.error('Upload failed:', error);
+    
+    // Replace placeholder with error message
+    replacePlaceholderWithError(currentEditor, uploadId, error.message);
+    
+    toasts.error(`Failed to upload ${file.name}`, {
+      description: error.message
+    });
+  } finally {
+    uploadingFiles.value.delete(uploadId);
+  }
+}
+
+async function processFileUpload(currentEditor: any, file: File, pos?: number) {
+  const uploadId = `upload-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  
+  try {
+    // 1. Insert upload placeholder
+    const placeholder = insertUploadPlaceholder(currentEditor, file.name, uploadId, pos);
+    uploadingFiles.value.set(uploadId, { fileName: file.name, placeholder });
+    
+    // 2. Upload file using regular files.store route (for content folder placement)
+    const formData = new FormData();
+    formData.append('files[0][file]', file);
+    formData.append('path', `content/${new Date().getFullYear()}/${String(new Date().getMonth() + 1).padStart(2, '0')}`);
+    
+    // Use Inertia router.post
+    await new Promise<any>((resolve, reject) => {
+      router.post(route('files.store'), formData, {
+        preserveState: true,
+        preserveScroll: true,
+        onSuccess: (page) => {
+          // 3. Replace placeholder with file link
+          const fileName = file.name;
+          const fileUrl = `/uploads/files/content/${new Date().getFullYear()}/${String(new Date().getMonth() + 1).padStart(2, '0')}/${fileName}`;
+          
+          replacePlaceholderWithFileLink(currentEditor, uploadId, fileName, fileUrl);
+          
+          resolve(page);
+        },
+        onError: (errors) => {
+          const errorMessage = Object.values(errors).flat().join(', ') || 'Upload failed';
+          reject(new Error(errorMessage));
+        }
+      });
+    });
+    
+  } catch (error: any) {
+    console.error('File upload failed:', error);
+    
+    // Replace placeholder with error message
+    replacePlaceholderWithError(currentEditor, uploadId, error.message);
+    
+    toasts.error(`Failed to upload ${file.name}`, {
+      description: error.message
+    });
+  } finally {
+    uploadingFiles.value.delete(uploadId);
+  }
+}
+
+function insertUploadPlaceholder(currentEditor: any, fileName: string, uploadId: string, pos?: number) {
+  const placeholderText = `🔄 Uploading and compressing ${fileName}...`;
+  
+  if (pos !== undefined) {
+    // Insert at specific position (drag-and-drop)
+    currentEditor.chain().focus().insertContentAt(pos, placeholderText).run();
+  } else {
+    // Insert at current cursor position (paste)
+    currentEditor.chain().focus().insertContent(placeholderText).run();
+  }
+  
+  return { uploadId, text: placeholderText };
+}
+
+function replacePlaceholderWithImage(currentEditor: any, uploadId: string, imageData: { src: string; alt: string; title: string }) {
+  const uploadInfo = uploadingFiles.value.get(uploadId);
+  if (!uploadInfo) return;
+  
+  // Find and replace the placeholder text with the image
+  const doc = currentEditor.state.doc;
+  let found = false;
+  
+  doc.descendants((node: any, pos: number) => {
+    if (found) return false;
+    
+    if (node.isText && node.text?.includes(uploadInfo.placeholder.text)) {
+      // Replace the placeholder text with an image
+      const from = pos;
+      const to = pos + uploadInfo.placeholder.text.length;
+      
+      currentEditor
+        .chain()
+        .focus()
+        .deleteRange({ from, to })
+        .insertContentAt(from, {
+          type: 'image',
+          attrs: imageData
+        })
+        .run();
+      
+      found = true;
+    }
+  });
+}
+
+function replacePlaceholderWithFileLink(currentEditor: any, uploadId: string, fileName: string, fileUrl: string) {
+  const uploadInfo = uploadingFiles.value.get(uploadId);
+  if (!uploadInfo) return;
+
+  const { doc } = currentEditor.state;
+  let found = false;
+
+  doc.descendants((node: any, pos: number) => {
+    if (found) return false;
+    
+    if (node.isText && node.text?.includes(uploadInfo.placeholder.text)) {
+      // Replace placeholder with file link
+      const fileLink = `<a href="${fileUrl}" target="_blank" class="file-download-link">${fileName}</a>`;
+      
+      currentEditor
+        .chain()
+        .focus()
+        .setTextSelection({ from: pos, to: pos + node.text.length })
+        .insertContent(fileLink)
+        .run();
+      
+      found = true;
+      return false;
+    }
+  });
+}
+
+function replacePlaceholderWithError(currentEditor: any, uploadId: string, errorMessage: string) {
+  const uploadInfo = uploadingFiles.value.get(uploadId);
+  if (!uploadInfo) return;
+  
+  // Find and replace the placeholder text with error message
+  const doc = currentEditor.state.doc;
+  let found = false;
+  
+  doc.descendants((node: any, pos: number) => {
+    if (found) return false;
+    
+    if (node.isText && node.text?.includes(uploadInfo.placeholder.text)) {
+      // Replace the placeholder text with error message
+      const from = pos;
+      const to = pos + uploadInfo.placeholder.text.length;
+      
+      currentEditor
+        .chain()
+        .focus()
+        .deleteRange({ from, to })
+        .insertContent(`❌ Upload failed: ${errorMessage}`)
+        .run();
+      
+      found = true;
+    }
+  });
 }
 
 function handleUpdate() {

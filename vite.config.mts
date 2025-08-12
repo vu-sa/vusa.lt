@@ -44,6 +44,10 @@ export default defineConfig(({ command }) => {
         NaiveUiResolver(),
         VueUseComponentsResolver()
       ],
+      // For fixing imports: https://github.com/unplugin/unplugin-icons/issues/317#issuecomment-1789146323
+      importPathTransform(path) {
+        return path === '~icons/fluent/speaker224-regular' ? '~icons/fluent/speaker2-24-regular' : path
+      },
       dts: 'resources/js/Types/components.d.ts',
     }),
     Icons(),
@@ -90,6 +94,13 @@ export default defineConfig(({ command }) => {
   },
   build: {
     // sourcemap: true,
+    
+    // NOTE: manualChunks approach was tested (Aug 2025) and found to hurt performance
+    // - Reduced 583 → 409 files (-30%) and 7.9MB → 7.1MB bundle size (-10%)  
+    // - But increased FCP from 11.3s → 19.6s (+73%) due to waterfall loading
+    // - Performance score dropped from 53 → 50 points
+    // - The 583 tiny files loaded faster in parallel than 12 larger sequential chunks
+    // - Real optimization target is 418KB unused JavaScript, not chunk reorganization
   },
   // NOTE: if not included, causes the error: "Cannot read properties of null (reading 'ce')"
   optimizeDeps: {

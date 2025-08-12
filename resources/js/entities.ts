@@ -1,11 +1,12 @@
 import { ModelEnum } from "./Types/enums";
+
 import { pluralizeModels } from "@/Utils/String";
-import Icons from "@/Types/Icons/regular";
+import { getModelIcon } from "@/Components/icons";
 
 // UI metadata for models - titles in Lithuanian
 const modelTitles: Record<keyof typeof ModelEnum, string> = {
   AGENDA_ITEM: "Susitikimo klausimai",
-  BANNER: "Baneriai", 
+  BANNER: "Baneriai",
   CALENDAR: "Kalendorius",
   CATEGORY: "Kategorijos",
   CHANGELOG_ITEM: "Changelog elementai",
@@ -56,7 +57,7 @@ const uiModels: (keyof typeof ModelEnum)[] = [
   "MEETING",
   "MEMBERSHIP",
   "NAVIGATION",
-  "NEWS", 
+  "NEWS",
   "QUICK_LINK",
   "PAGE",
   "PERMISSION",
@@ -77,6 +78,6 @@ const uiModels: (keyof typeof ModelEnum)[] = [
 // Generate entities array dynamically from ModelEnum
 export default uiModels.map((modelKey) => ({
   title: modelTitles[modelKey],
-  icon: Icons[modelKey],
+  icon: getModelIcon(modelKey), // Uses regular variant by default
   key: pluralizeModels(ModelEnum[modelKey]),
 }));

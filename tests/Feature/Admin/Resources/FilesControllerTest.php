@@ -9,6 +9,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 uses(RefreshDatabase::class);
@@ -665,5 +666,229 @@ describe('Files Controller - Error Handling', function () {
 
         expect($response->status())->toBe(302);
         $response->assertSessionHasErrors('files');
+    });
+});
+
+describe('Files Controller - File Usage Scanning', function () {
+    test('file manager can scan file usage in allowed directory', function () {
+        // Create a test file in the allowed directory structure
+        $filePath = 'public/files/padaliniai/vusa'.$this->tenant->alias.'/test-file.pdf';
+
+        // Create the file on the default disk (not public disk) as that's what the controller checks
+        Storage::put($filePath, 'test content');
+
+        $response = asUser($this->fileManager)->post(route('files.scanUsage'), [
+            'path' => $filePath,
+        ]);
+
+        // Debug the response if it's not what we expect
+        if ($response->status() !== 302) {
+            dd([
+                'status' => $response->status(),
+                'content' => $response->getContent(),
+                'headers' => $response->headers->all(),
+            ]);
+        }
+
+        expect($response->status())->toBe(302);
+        $response->assertSessionHas('data');
+
+        $flashData = session('data');
+        expect($flashData)->toHaveKeys(['total_usages', 'is_safe_to_delete', 'scanned_models', 'usage_details', 'scanned_at']);
+    });
+
+    test('file manager cannot scan file usage in forbidden directory', function () {
+        // Create a test file in a forbidden directory
+        $filePath = 'public/files/admin/test-file.pdf';
+        Storage::put($filePath, 'test content');
+
+        $response = asUser($this->fileManager)->post(route('files.scanUsage'), [
+            'path' => $filePath,
+        ]);
+
+        expect($response->status())->toBe(302);
+        $response->assertSessionHasErrors('error');
+        expect(session('errors')->first('error'))->toContain('Neturite teisių skenuoti šio failo naudojimą');
+    });
+
+    test('super admin can scan file usage in any directory', function () {
+        // Create a test file in any directory
+        $filePath = 'public/files/admin/test-file.pdf';
+        Storage::put($filePath, 'test content');
+
+        $response = asUser($this->superAdmin)->post(route('files.scanUsage'), [
+            'path' => $filePath,
+        ]);
+
+        expect($response->status())->toBe(302);
+        $response->assertSessionHas('data');
+
+        $flashData = session('data');
+        expect($flashData)->toHaveKeys(['total_usages', 'is_safe_to_delete', 'scanned_models', 'usage_details', 'scanned_at']);
+    });
+
+    test('file usage scan validates file path format', function () {
+        $response = asUser($this->fileManager)->post(route('files.scanUsage'), [
+            'path' => 'public/files/invalid@#$%characters',  // Invalid characters that would fail the regex
+        ]);
+
+        expect($response->status())->toBe(302);
+        $response->assertSessionHasErrors('error');
+        expect(session('errors')->first('error'))->toContain('Neteisingas failo kelias');
+    });
+
+    test('file usage scan requires existing file', function () {
+        $response = asUser($this->fileManager)->post(route('files.scanUsage'), [
+            'path' => 'public/files/padaliniai/vusa'.$this->tenant->alias.'/nonexistent.pdf',
+        ]);
+
+        expect($response->status())->toBe(302);
+        $response->assertSessionHasErrors('error');
+        expect(session('errors')->first('error'))->toContain('Failas nerastas');
+    });
+
+    test('file usage scan returns appropriate success message for safe files', function () {
+        // Create a test file
+        $filePath = 'public/files/padaliniai/vusa'.$this->tenant->alias.'/safe-file.pdf';
+        Storage::put($filePath, 'test content');
+
+        $response = asUser($this->fileManager)->post(route('files.scanUsage'), [
+            'path' => $filePath,
+        ]);
+
+        expect($response->status())->toBe(302);
+        $response->assertSessionHas('success');
+        expect(session('success'))->toContain('Failas saugus trinti');
+    });
+
+    test('unauthenticated users cannot scan file usage', function () {
+        $response = $this->post(route('files.scanUsage'), [
+            'path' => 'public/files/test.pdf',
+        ]);
+
+        expect($response->status())->toBe(302);
+        $response->assertRedirect(route('login'));
+    });
+
+    test('validates required path parameter', function () {
+        $response = asUser($this->fileManager)->post(route('files.scanUsage'), [
+            // missing 'path' parameter
+        ]);
+
+        expect($response->status())->toBe(302);
+        $response->assertSessionHasErrors('path');
+    });
+
+    test('can scan file with unicode combining marks in filename', function () {
+        // Filename with combining caron marks (decomposed form)
+        $filename = '20231118_Lšečius_-432.jpg'; // contains s + U+030C, c + U+030C
+        $fullPath = $this->allowedPath.'/'.$filename;
+        Storage::put($fullPath, 'unicode test');
+
+        $response = asUser($this->fileManager)->post(route('files.scanUsage'), [
+            'path' => $fullPath,
+        ]);
+
+        expect($response->status())->toBe(302);
+        // Should not have validation error
+        $response->assertSessionDoesntHaveErrors('error');
+    });
+
+    test('scan detects usage in ContentParts with Lithuanian combining marks (NFD + escaped)', function () {
+        // Create file with composed characters
+        $filenameComposed = 'lietuviškas_failas_ščiųž.jpg';
+        $fullPathComposed = $this->allowedPath.'/'.$filenameComposed;
+        Storage::put($fullPathComposed, 'content composed');
+
+        // Create file with decomposed (simulate user input). We'll store same bytes but name already decomposed if environment normalizes.
+        $filenameDecomposed = "Ls\u{030C}ec\u{030C}ius_testas.jpg"; // intentionally uses escaped combining in string literal
+        // Convert escaped unicode to actual combining marks
+        $filenameDecomposedReal = json_decode('"'.addslashes($filenameDecomposed).'"');
+        $fullPathDecomposed = $this->allowedPath.'/'.$filenameDecomposedReal;
+        Storage::put($fullPathDecomposed, 'content decomposed');
+
+        // Insert ContentParts referencing both files with JSON escaped slashes and combining marks
+        $jsonContent = json_encode([
+            'type' => 'doc',
+            'content' => [
+                [
+                    'type' => 'image',
+                    'attrs' => [
+                        'src' => '/uploads/files/padaliniai/vusa'.$this->tenant->alias.'/'.$filenameComposed,
+                        'alt' => null,
+                        'title' => null,
+                        'loading' => 'lazy',
+                    ],
+                ],
+                [
+                    'type' => 'image',
+                    'attrs' => [
+                        'src' => '/uploads/files/padaliniai/vusa'.$this->tenant->alias.'/'.$filenameDecomposedReal,
+                        'alt' => null,
+                        'title' => null,
+                        'loading' => 'lazy',
+                    ],
+                ],
+            ],
+        ]);
+
+        $contentIdParts = DB::table('contents')->insertGetId([
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        DB::table('content_parts')->insert([
+            'content_id' => $contentIdParts,
+            'type' => 'tiptap',
+            'json_content' => $jsonContent,
+            'options' => null,
+            'order' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        // Scan composed file
+        $responseComposed = asUser($this->fileManager)->post(route('files.scanUsage'), [
+            'path' => $fullPathComposed,
+        ]);
+        expect($responseComposed->status())->toBe(302);
+        $responseComposed->assertSessionHas('data');
+        $dataComposed = session('data');
+        expect($dataComposed['total_usages'])->toBeGreaterThan(0);
+
+        // Scan decomposed file
+        $responseDecomposed = asUser($this->fileManager)->post(route('files.scanUsage'), [
+            'path' => $fullPathDecomposed,
+        ]);
+        expect($responseDecomposed->status())->toBe(302);
+        $responseDecomposed->assertSessionHas('data');
+        $dataDecomposed = session('data');
+        expect($dataDecomposed['total_usages'])->toBeGreaterThan(0);
+
+        // Additional: simulate JSON where precomposed š stored as \u0161
+        $filenamePrecomposed = 'vardas_šaltinis.jpg';
+        $fullPathPrecomposed = $this->allowedPath.'/'.$filenamePrecomposed;
+        Storage::put($fullPathPrecomposed, 'precomposed');
+        $jsonWithEscaped = '{"type":"doc","content":[{"type":"image","attrs":{"src":"\/uploads\/files\/padaliniai\/vusa'.$this->tenant->alias.'\/vardas_\u0161altinis.jpg","alt":null}}]}';
+        // Create a Content container to satisfy FK
+        $contentId = DB::table('contents')->insertGetId([
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        DB::table('content_parts')->insert([
+            'content_id' => $contentId,
+            'type' => 'tiptap',
+            'json_content' => $jsonWithEscaped,
+            'options' => null,
+            'order' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        $respPre = asUser($this->fileManager)->post(route('files.scanUsage'), [
+            'path' => $fullPathPrecomposed,
+        ]);
+        expect($respPre->status())->toBe(302);
+        $respPre->assertSessionHas('data');
+        $dataPre = session('data');
+        expect($dataPre['total_usages'])->toBeGreaterThan(0);
     });
 });

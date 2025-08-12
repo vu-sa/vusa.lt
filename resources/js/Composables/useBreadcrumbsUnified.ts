@@ -1,9 +1,9 @@
-import { ref, readonly, provide, inject, computed, onMounted, onUnmounted, watch, type Ref } from 'vue'
+import { type Component, type InjectionKey, ref, readonly, provide, inject, onMounted, onUnmounted, watch, type Ref } from 'vue';
 import { router, usePage } from '@inertiajs/vue3'
-import type { Component, InjectionKey } from 'vue'
-import Home24Filled from '~icons/fluent/home24-filled'
 import { trans as $t } from 'laravel-vue-i18n'
-import Icons from '@/Types/Icons/regular'
+
+import Home24Filled from '~icons/fluent/home24-filled'
+import { TypeIcon } from '@/Components/icons'
 
 /**
  * Unified breadcrumb item interface for both admin and public
@@ -69,7 +69,7 @@ export function getHomeBreadcrumb(context: BreadcrumbContext = 'admin'): Breadcr
       icon: Home24Filled
     }
   }
-  
+
   // Admin context
   return {
     label: $t('Pradinis'),
@@ -83,28 +83,28 @@ export function getHomeBreadcrumb(context: BreadcrumbContext = 'admin'): Breadcr
  */
 export function createBreadcrumbState(context: BreadcrumbContext = 'admin') {
   breadcrumbContext.value = context
-  
+
   /**
    * Set breadcrumbs (replaces all current breadcrumbs)
    */
   function set(items: BreadcrumbItem[]) {
     globalBreadcrumbs.value = [...items]
   }
-  
+
   /**
    * Add a single breadcrumb item to the end
    */
   function add(item: BreadcrumbItem) {
     globalBreadcrumbs.value.push(item)
   }
-  
+
   /**
    * Clear all breadcrumbs
    */
   function clear() {
     globalBreadcrumbs.value = []
   }
-  
+
   /**
    * Set breadcrumbs to just the home item
    */
@@ -124,9 +124,9 @@ export function createBreadcrumbState(context: BreadcrumbContext = 'admin') {
     createRouteBreadcrumb,
     getHomeBreadcrumb: () => getHomeBreadcrumb(context)
   }
-  
+
   provide(breadcrumbsSymbol, state)
-  
+
   return state
 }
 
@@ -135,14 +135,14 @@ export function createBreadcrumbState(context: BreadcrumbContext = 'admin') {
  */
 export function useBreadcrumbs() {
   const breadcrumbs = inject(breadcrumbsSymbol)
-  
+
   if (!breadcrumbs) {
     console.warn(
       '🍞 [Breadcrumbs] State not provided. Using fallback mode.\n' +
       'Make sure to use createBreadcrumbState() in your layout component for full functionality.\n' +
       'Breadcrumbs will not be displayed but the app will continue to work.'
     )
-    
+
     // Return a fallback breadcrumb state that does nothing but doesn't break
     return {
       breadcrumbs: readonly(ref([])),
@@ -158,7 +158,7 @@ export function useBreadcrumbs() {
       __isFallback: true
     }
   }
-  
+
   return breadcrumbs
 }
 
@@ -177,16 +177,16 @@ export function usePageBreadcrumbs(
   const { includeHome = true, clearOnUnmount = false, persistDuringNavigation = true } = options
   const breadcrumbState = useBreadcrumbs()
   const { set, clear, getHomeBreadcrumb } = breadcrumbState
-  
+
   // If we're in fallback mode, just return early - no need to set up watchers
   if ('__isFallback' in breadcrumbState) {
-    return { updateBreadcrumbs: () => {} }
+    return { updateBreadcrumbs: () => { } }
   }
-  
+
   // Update breadcrumbs with current value
   function updateBreadcrumbs() {
     let items: BreadcrumbItem[] | undefined
-    
+
     if (typeof breadcrumbsOrGetter === 'function') {
       items = breadcrumbsOrGetter()
     } else if ('value' in breadcrumbsOrGetter) {
@@ -194,36 +194,36 @@ export function usePageBreadcrumbs(
     } else {
       items = breadcrumbsOrGetter
     }
-    
+
     if (items && items.length > 0) {
       // Check if home is already included
-      const hasHome = items.some(item => 
+      const hasHome = items.some(item =>
         item.href === getHomeBreadcrumb().href ||
         item.label === $t('Pradinis')
       )
-      
+
       // Prepend home if needed and not already present
-      const finalItems = (includeHome && !hasHome) 
+      const finalItems = (includeHome && !hasHome)
         ? [getHomeBreadcrumb(), ...items]
         : items
-      
+
       set(finalItems)
     }
   }
-  
+
   // Watch for changes if it's a ref
   if ('value' in breadcrumbsOrGetter) {
     watch(() => breadcrumbsOrGetter.value, updateBreadcrumbs, { immediate: true })
   }
-  
+
   // Set breadcrumbs on mount
   onMounted(updateBreadcrumbs)
-  
+
   // Only clear on unmount if explicitly requested and not persisting during navigation
   if (clearOnUnmount && !persistDuringNavigation) {
     onUnmounted(clear)
   }
-  
+
   return { updateBreadcrumbs }
 }
 
@@ -236,12 +236,12 @@ export const BreadcrumbHelpers = {
    * Create a basic breadcrumb item
    */
   createBreadcrumbItem,
-  
+
   /**
    * Create a breadcrumb item from a route
    */
   createRouteBreadcrumb,
-  
+
   /**
    * Get the home breadcrumb item
    */
@@ -254,7 +254,7 @@ export const BreadcrumbHelpers = {
   adminForm(sectionName: string, indexRoute: string, currentTitle: string, icon?: Component): BreadcrumbItem[] {
     return [
       getHomeBreadcrumb('admin'),
-      createBreadcrumbItem('Administravimas', route('administration'), Icons.TYPE),
+      createBreadcrumbItem('Administravimas', route('administration'), TypeIcon),
       createRouteBreadcrumb(sectionName, indexRoute, undefined, icon),
       createBreadcrumbItem(currentTitle, undefined, icon),
     ]
@@ -267,7 +267,7 @@ export const BreadcrumbHelpers = {
   adminIndex(sectionName: string, icon?: Component): BreadcrumbItem[] {
     return [
       getHomeBreadcrumb('admin'),
-      createBreadcrumbItem('Administravimas', route('administration'), Icons.TYPE),
+      createBreadcrumbItem('Administravimas', route('administration'), TypeIcon),
       createBreadcrumbItem(sectionName, undefined, icon),
     ]
   },
@@ -290,28 +290,28 @@ export const BreadcrumbHelpers = {
    */
   buildNavigationPath(navigationItemId: number | null, mainNavigation: any[]): BreadcrumbItem[] {
     if (!navigationItemId) return []
-    
+
     const breadcrumbItems: BreadcrumbItem[] = []
     let currentId = navigationItemId
-    
+
     // Build the breadcrumb path by traversing the navigation tree upwards
     while (currentId) {
       // Find the navigation item in the flattened navigation tree
       const navigationItem = this.findNavigationItem(mainNavigation, currentId)
-      
+
       if (!navigationItem) break
-      
+
       // Add to the beginning of array (reverse order)
       breadcrumbItems.unshift({
         label: navigationItem.name,
         href: navigationItem.url || undefined,
         icon: undefined
       })
-      
+
       // Move up to parent
       currentId = navigationItem.parent_id
     }
-    
+
     return breadcrumbItems
   },
 
@@ -323,7 +323,7 @@ export const BreadcrumbHelpers = {
     // First check root level items
     for (const item of navigation) {
       if (item.id === id) return item
-      
+
       // Then check nested items in columns
       if (item.links && Array.isArray(item.links)) {
         // Navigation has columns
@@ -337,25 +337,26 @@ export const BreadcrumbHelpers = {
         }
       }
     }
-    
+
     return null
   },
 
+  // eslint-disable-next-line no-secrets/no-secrets
   /**
    * Generate entity show breadcrumbs (Admin)
    * @example BreadcrumbHelpers.adminShow('Naujienos', 'news.index', {}, 'Mano naujiena', Icons.NEWS, Icons.NEWS)
    */
   adminShow(
-    parentName: string, 
-    parentRoute: string, 
-    parentParams: any, 
+    parentName: string,
+    parentRoute: string,
+    parentParams: any,
     currentName: string,
     parentIcon?: Component,
     currentIcon?: Component
   ): BreadcrumbItem[] {
     return [
       getHomeBreadcrumb('admin'),
-      createBreadcrumbItem('Administravimas', route('administration'), Icons.TYPE),
+      createBreadcrumbItem('Administravimas', route('administration'), TypeIcon),
       createRouteBreadcrumb(parentName, parentRoute, parentParams, parentIcon),
       createBreadcrumbItem(currentName, undefined, currentIcon),
     ]

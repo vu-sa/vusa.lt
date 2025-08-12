@@ -1,108 +1,88 @@
 import { Image } from '@tiptap/extension-image';
-import { Plugin } from '@tiptap/pm/state';
+import type { CommandProps } from '@tiptap/core';
+
+interface SetImageWithAltOptions { 
+  src: string; 
+  alt?: string; 
+  title?: string; 
+  width?: string | number | null; 
+  height?: string | number | null; 
+  align?: 'left' | 'center' | 'right'; 
+}
+
+interface UpdateSizeOptions { 
+  width?: string | number | null; 
+  height?: string | number | null; 
+}
 
 /**
- * Enhanced Image extension with proper alt text support and accessibility features
+ * Simple Image extension with alt text, alignment, and resizing commands
  */
 export const AccessibleImage = Image.extend({
   name: 'image',
 
   addAttributes() {
     return {
-      ...this.parent?.(),
+      src: {
+        default: null,
+      },
       alt: {
         default: '',
-        parseHTML: (element) => element.getAttribute('alt') || '',
-        renderHTML: (attributes) => {
-          if (!attributes.alt) {
-            return {};
-          }
-          return { alt: attributes.alt };
-        },
       },
       title: {
         default: '',
-        parseHTML: (element) => element.getAttribute('title') || '',
-        renderHTML: (attributes) => {
-          if (!attributes.title) {
-            return {};
-          }
-          return { title: attributes.title };
-        },
       },
-      loading: {
-        default: 'lazy',
-        parseHTML: (element) => element.getAttribute('loading') || 'lazy',
-        renderHTML: (attributes) => {
-          return { loading: attributes.loading || 'lazy' };
-        },
+      width: {
+        default: null,
+      },
+      height: {
+        default: null,
+      },
+      align: {
+        default: 'center',
+        parseHTML: (element: HTMLElement) => element.getAttribute('data-align') || 'center',
+        renderHTML: (attributes: { align?: string }) => ({ 'data-align': attributes.align || 'center' }),
       },
     };
   },
 
   addCommands() {
     return {
-      ...this.parent?.(),
-      setImageWithAlt: (options) => ({ commands }) => {
-        return commands.insertContent({
+      setImageWithAlt: (options: SetImageWithAltOptions) => ({ commands }: CommandProps) =>
+        commands.insertContent({
           type: this.name,
           attrs: {
             src: options.src,
             alt: options.alt || '',
             title: options.title || '',
-            loading: 'lazy',
+            width: options.width || null,
+            height: options.height || null,
+            align: options.align || 'center',
           },
-        });
-      },
-      updateImageAlt: (alt) => ({ commands }) => {
-        return commands.updateAttributes(this.name, { alt });
-      },
-      updateImageTitle: (title) => ({ commands }) => {
-        return commands.updateAttributes(this.name, { title });
-      },
+        }),
+      updateImageAlt: (alt: string) => ({ commands }: CommandProps) =>
+        commands.updateAttributes(this.name, { alt }),
+      updateImageTitle: (title: string) => ({ commands }: CommandProps) =>
+        commands.updateAttributes(this.name, { title }),
+      updateImageSize: (options: UpdateSizeOptions) => ({ commands }: CommandProps) =>
+        commands.updateAttributes(this.name, { width: options.width || null, height: options.height || null }),
+      updateImageAlignment: (align: string) => ({ commands }: CommandProps) =>
+        commands.updateAttributes(this.name, { align }),
     };
   },
 
-  addProseMirrorPlugins() {
-    return [
-      new Plugin({
-        props: {
-          handleDOMEvents: {
-            // Add keyboard accessibility for image selection
-            keydown: (view, event) => {
-              if (event.key === 'Enter' || event.key === ' ') {
-                const { state } = view;
-                const { selection } = state;
-                const node = state.doc.nodeAt(selection.from);
-                
-                if (node && node.type.name === this.name) {
-                  // Could add image editing dialog here
-                  event.preventDefault();
-                  return true;
-                }
-              }
-              return false;
-            },
-          },
-        },
-      }),
-    ];
-  },
-
-  renderHTML({ HTMLAttributes }) {
-    const attrs = { ...HTMLAttributes };
+  renderHTML({ HTMLAttributes }: { HTMLAttributes: Record<string, unknown> }) {
+    const align = (HTMLAttributes['data-align'] as string) || 'center';
+    const alignmentClasses: Record<string, string> = {
+      left: 'float-left mr-4 mb-2',
+      right: 'float-right ml-4 mb-2',
+      center: 'mx-auto block'
+    };
     
-    // Ensure alt attribute is always present (even if empty for decorative images)
-    if (!attrs.alt && attrs.alt !== '') {
-      attrs.alt = '';
-    }
-    
-    // Add role for better screen reader support
-    if (!attrs.role) {
-      attrs.role = attrs.alt ? 'img' : 'presentation';
-    }
-
-    return ['img', attrs];
+    return ['img', { 
+      ...HTMLAttributes, 
+      class: `tiptap-image max-w-full h-auto rounded-md ${alignmentClasses[align] || alignmentClasses.center}`,
+    }];
   },
 });
 

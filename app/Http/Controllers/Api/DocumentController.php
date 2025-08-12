@@ -11,9 +11,19 @@ class DocumentController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $documents = Document::all(['id', 'title', 'anonymous_url']);
+        $query = Document::query()->select(['id', 'title', 'anonymous_url']);
+
+        // Search functionality
+        if ($request->has('search') && $request->search) {
+            $search = $request->search;
+            $query->where('title', 'LIKE', "%{$search}%");
+        }
+
+        // Limit results to prevent memory issues
+        $limit = min($request->get('limit', 20), 50); // Max 50 results
+        $documents = $query->limit($limit)->get();
 
         return response()->json($documents);
     }

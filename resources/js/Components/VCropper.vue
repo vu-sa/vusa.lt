@@ -1,33 +1,27 @@
 <template>
   <div class="mb-4 flex items-center gap-2">
-    <NButtonGroup>
-      <NButton @click="zoomImage(0.1)">
-        <template #icon>
-          <IFluentZoomIn16Regular />
-        </template>Priartinti
-      </NButton>
-      <NButton @click="zoomImage(-0.1)">
-        <template #icon>
-          <IFluentZoomOut16Regular />
-        </template>Nutolinti
-      </NButton>
-    </NButtonGroup>
-    <NButton @click="centerImage">
-      <template #icon>
-        <IFluentAlignCenterVertical16Regular />
-      </template>Centruoti
-    </NButton>
-    <NButton @click="rotateImage90">
-      <template #icon>
-        <IFluentArrowRotateClockwise16Regular />
-      </template>Pasukti
-      90°
-    </NButton>
-    <NButton type="primary" @click="handleImageCrop">
-      <template #icon>
-        <IFluentCheckmarkCircle16Filled />
-      </template>Apkirpti
-    </NButton>
+    <div class="flex">
+      <Button variant="outline" size="sm" class="rounded-r-none" @click="zoomImage(0.1)">
+        <IFluentZoomIn16Regular class="mr-2 h-4 w-4" />
+        Priartinti
+      </Button>
+      <Button variant="outline" size="sm" class="rounded-l-none border-l-0" @click="zoomImage(-0.1)">
+        <IFluentZoomOut16Regular class="mr-2 h-4 w-4" />
+        Nutolinti
+      </Button>
+    </div>
+    <Button variant="outline" size="sm" @click="centerImage">
+      <IFluentAlignCenterVertical16Regular class="mr-2 h-4 w-4" />
+      Centruoti
+    </Button>
+    <Button variant="outline" size="sm" @click="rotateImage90">
+      <IFluentArrowRotateClockwise16Regular class="mr-2 h-4 w-4" />
+      Pasukti 90°
+    </Button>
+    <Button variant="default" size="sm" @click="handleImageCrop">
+      <IFluentCheckmarkCircle16Filled class="mr-2 h-4 w-4" />
+      Apkirpti
+    </Button>
   </div>
 
   <cropper-canvas ref="canvas" v-bind="$attrs">
@@ -54,8 +48,9 @@
 import "cropperjs";
 import { computed, useTemplateRef } from "vue";
 import type { CropperCanvas, CropperImage, CropperSelection } from "cropperjs";
-import { useFetch } from "@vueuse/core";
-import { usePage } from "@inertiajs/vue3";
+import { router, usePage } from "@inertiajs/vue3";
+
+import { Button } from "@/Components/ui/button";
 
 const props = defineProps<{
   path: string;
@@ -75,8 +70,11 @@ const fileName = computed(() => {
   let name = src.value?.split("/").pop();
 
   // split by _ and check if first part is a number
-  if (name?.split("_")[0].match(/^\d+$/)) {
-    name = name?.split("_").slice(1).join("_");
+  if (name) {
+    const firstPart = name.split("_")[0];
+    if (firstPart?.match(/^\d+$/)) {
+      name = name.split("_").slice(1).join("_");
+    }
   }
 
   return name;
@@ -101,34 +99,45 @@ const rotateImage90 = () => {
 };
 
 const handleImageCrop = async () => {
-  let dataUrl = await cropImage();
+  const dataUrl = await cropImage();
+  
+  if (!dataUrl) {
+    console.error("Failed to generate crop data");
+    return;
+  }
 
-  const { data } = await useFetch(
-    route("files.uploadImage"), {
-    body: JSON.stringify({
-      image: dataUrl,
+  const blobResponse = await fetch(dataUrl);
+  const blob = await blobResponse.blob();
+
+  router.post(
+    route("files.uploadImage"),
+    {
+      image: new File([blob], fileName.value || "cropped_image.jpg", { type: "image/jpeg" }),
       path: props.path,
       name: fileName.value,
-    }),
-    headers: {
-      "X-CSRF-TOKEN": usePage().props.csrf_token,
-      "Content-Type": "application/json",
+    },
+    {
+      onSuccess: (page) => {
+        if (page.props.data && typeof page.props.data === "object" && "url" in page.props.data) {
+          const url = page.props.data.url as string;
+          src.value = url;
+          centerImage();
+          emit("finish", url);
+        }
+      },
+      onError: (errors) => {
+        console.error("Upload failed:", errors);
+      },
     }
-  }).post().json();
-
-  src.value = data.value.url;
-
-  centerImage();
+  );
   image.value?.$scale(1);
   image.value?.$rotate(0);
-
-  emit("finish", data.value.url);
 };
 
 const cropImage = async () => {
   if (!canvas.value || !image.value) return;
 
-  let dataUrl = await selection.value
+  const dataUrl = await selection.value
     ?.$toCanvas()
     .then((resultCanvas) => {
       return resultCanvas.toDataURL("image/jpg");

@@ -1,9 +1,7 @@
 <template>
-  <NButton size="small" @click="showModal = true">
-    <template #icon>
-      <IMdiYoutube />
-    </template>
-  </NButton>
+  <div @click="showModal = true">
+    <slot />
+  </div>
   
   <Dialog :open="showModal" @update:open="showModal = $event">
     <DialogContent class="sm:max-w-lg">

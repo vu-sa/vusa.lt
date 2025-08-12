@@ -520,27 +520,91 @@ function handleDeleteFolder() {
 function handleFileUpload(files: File[]) {
   loading.value = true;
   
-  const fileList = files.map(file => ({ file }));
+  // Separate image files from other files
+  const imageFiles = files.filter(file => file.type.startsWith('image/'));
+  const otherFiles = files.filter(file => !file.type.startsWith('image/'));
   
-  router.post(
-    route("files.store"),
-    { files: fileList, path: props.path },
-    {
-      preserveScroll: true,
-      preserveState: true,
-      onSuccess: () => {
-        toasts.success(`${files.length} ${files.length === 1 ? 'failas įkeltas' : 'failai įkelti'}! Peržiūrėkite juos žemiau.`);
-        loading.value = false;
-        isUploadMode.value = false;
-        uploadAreaRef.value?.clearFiles();
-        emit("update", props.path);
-      },
-      onError: () => {
-        toasts.error('Klaida įkeliant failus');
-        loading.value = false;
+  let completedUploads = 0;
+  const totalUploads = (imageFiles.length > 0 ? 1 : 0) + (otherFiles.length > 0 ? 1 : 0);
+  
+  const checkCompletion = () => {
+    completedUploads++;
+    if (completedUploads >= totalUploads) {
+      loading.value = false;
+      isUploadMode.value = false;
+      uploadAreaRef.value?.clearFiles();
+      emit("update", props.path);
+    }
+  };
+  
+  // Upload images using the optimization route (one by one for better UX)
+  if (imageFiles.length > 0) {
+    let processedImages = 0;
+    
+      const uploadNextImage = () => {
+        if (processedImages >= imageFiles.length) {
+          checkCompletion();
+          return;
+        }
+        
+        const file = imageFiles[processedImages];
+        if (!file) {
+          processedImages++;
+          uploadNextImage();
+          return;
+        }
+        
+        processedImages++;
+        
+        router.post(
+          route("files.uploadImage"),
+          { 
+            image: file,
+            name: file.name,
+            path: props.path // Use current path instead of content folder
+          },
+          {
+            preserveScroll: true,
+            preserveState: true,
+            onSuccess: () => {
+              // Success notification handled by server
+              uploadNextImage(); // Process next image
+            },
+            onError: () => {
+              toasts.error(`Failed to upload ${file.name}`);
+              uploadNextImage(); // Continue with next image even if one fails
+            }
+          }
+        );
+      };    uploadNextImage();
+  }
+  
+  // Upload non-image files using the regular route (all at once)
+  if (otherFiles.length > 0) {
+    const fileList = otherFiles.map(file => ({ file }));
+    
+    router.post(
+      route("files.store"),
+      { files: fileList, path: props.path },
+      {
+        preserveScroll: true,
+        preserveState: true,
+        onSuccess: () => {
+          // Success notification handled by server
+          checkCompletion();
+        },
+        onError: () => {
+          toasts.error('Klaida įkeliant failus');
+          checkCompletion();
+        }
       }
-    },
-  );
+    );
+  }
+  
+  // If no files to upload, reset loading state
+  if (totalUploads === 0) {
+    loading.value = false;
+  }
 }
 
 function onFilesSelected(files: File[]) {

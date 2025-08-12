@@ -1,8 +1,26 @@
 <template>
-  <component 
-    :is="editorComponent" 
-    v-model="content.json_content" 
-    v-model:options="content.options" />
+  <Suspense>
+    <component 
+      :is="editorComponent" 
+      v-model="content.json_content" 
+      v-model:options="content.options" />
+    <template #fallback>
+      <div class="space-y-3">
+        <div class="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
+          <div class="h-3 w-3 animate-spin rounded-full border-2 border-zinc-300 border-r-transparent dark:border-zinc-600"></div>
+          Loading {{ getContentType(content.type)?.label || content.type }} editor...
+        </div>
+        <div class="rounded-lg border border-zinc-200 bg-zinc-50/50 p-4 dark:border-zinc-700 dark:bg-zinc-800/50">
+          <Skeleton class="h-24 w-full mb-3" />
+          <div class="grid grid-cols-3 gap-2">
+            <Skeleton class="h-8 w-full" />
+            <Skeleton class="h-8 w-full" />
+            <Skeleton class="h-8 w-full" />
+          </div>
+        </div>
+      </div>
+    </template>
+  </Suspense>
 </template>
 
 <script setup lang="ts">
@@ -15,6 +33,7 @@
  */
 import { computed, defineAsyncComponent } from 'vue';
 import { getContentType } from './Types';
+import { Skeleton } from '@/Components/ui/skeleton';
 
 const props = defineProps<{
   /** 

@@ -1,27 +1,78 @@
 <template>
-  <NTabs class="my-2 rounded-xs" type="segment">
-    <NTabPane name="edit" display-directive="show">
-      <template #tab>
-        <IFluentEdit24Filled class="mr-2" />
+  <div class="rich-content-form-element">
+    <!-- Tab Navigation -->
+    <div class="mb-4 flex items-center gap-2 rounded-lg border bg-white p-1 dark:bg-zinc-900 dark:border-zinc-700">
+      <Button
+        :variant="activeTab === 'edit' ? 'default' : 'ghost'"
+        size="sm"
+        class="flex items-center gap-2"
+        @click="activeTab = 'edit'"
+      >
+        <IFluentEdit24Filled class="h-4 w-4" />
         Redagavimas
-      </template>
-      <RichContentEditor v-model:contents="contentParts" />
-    </NTabPane>
-    <NTabPane class="bg-zinc-50 p-4 antialiased dark:bg-zinc-900" name="preview">
-      <template #tab>
-        <IFluentEye24Filled class="mr-2" />
+      </Button>
+      <Button
+        :variant="activeTab === 'preview' ? 'default' : 'ghost'"
+        size="sm"
+        class="flex items-center gap-2"
+        @click="activeTab = 'preview'"
+      >
+        <IFluentEye24Filled class="h-4 w-4" />
         Peržiūra
-      </template>
-      <div class="typography overflow-hidden flex flex-col gap-2 p-4 text-base leading-7 text-zinc-800 dark:text-zinc-300">
-        <RichContentParser :content="contentParts" />
+      </Button>
+    </div>
+
+    <!-- Tab Content -->
+    <div v-show="activeTab === 'edit'">
+      <Suspense>
+        <RichContentEditor v-model:contents="contentParts" />
+        <template #fallback>
+          <div class="space-y-6">
+            <div class="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
+              <div class="h-4 w-4 animate-spin rounded-full border-2 border-zinc-300 border-r-transparent dark:border-zinc-600"></div>
+              Loading rich content editor...
+            </div>
+            <div class="space-y-4">
+              <Skeleton class="h-32 w-full rounded-lg" />
+              <div class="flex gap-2">
+                <Skeleton class="h-10 w-32 rounded" />
+                <Skeleton class="h-10 w-32 rounded" />
+                <Skeleton class="h-10 w-32 rounded" />
+              </div>
+            </div>
+          </div>
+        </template>
+      </Suspense>
+    </div>
+    
+    <div v-show="activeTab === 'preview'" class="rounded-lg border bg-white p-6 dark:bg-zinc-900 dark:border-zinc-700">
+      <div class="typography max-w-none">
+        <Suspense>
+          <RichContentParser :content="contentParts" />
+          <template #fallback>
+            <div class="space-y-4">
+              <div class="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
+                <div class="h-4 w-4 animate-spin rounded-full border-2 border-zinc-300 border-r-transparent dark:border-zinc-600"></div>
+                Loading preview...
+              </div>
+              <Skeleton class="h-48 w-full" />
+            </div>
+          </template>
+        </Suspense>
       </div>
-    </NTabPane>
-  </NTabs>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue';
+import { Button } from '@/Components/ui/button';
+import { Skeleton } from '@/Components/ui/skeleton';
 import RichContentEditor from "./RichContentEditor.vue";
 import RichContentParser from "./RichContentParser.vue";
+import IFluentEdit24Filled from '~icons/fluent/edit24-filled';
+import IFluentEye24Filled from '~icons/fluent/eye24-filled';
 
 const contentParts = defineModel();
+const activeTab = ref<'edit' | 'preview'>('edit');
 </script>

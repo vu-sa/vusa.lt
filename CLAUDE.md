@@ -37,6 +37,38 @@ All Laravel commands **MUST** be run using Laravel Sail:
 
 ## Key Implementation Notes
 
+### Icon System
+**Location**: `@/Components/icons/` - Complete tree-shakable icon system  
+**Files**: `model-icons.ts`, `form-icons.ts`, `other-icons.ts`  
+**Pattern**: Named exports with regular/filled variants
+
+**✅ Recommended Usage (Best Performance)**:
+```vue
+// Direct imports - Perfect tree-shaking (only imports what you use)
+import { 
+  NewsIcon, NewsIconFilled,       // Clean, concise names!
+  SaveIcon, SaveIconFilled,
+  HomeIcon, HomeIconFilled 
+} from '@/Components/icons';
+```
+
+**⚠️ Dynamic Helpers (Use Sparingly)**:
+```vue
+// WARNING: These import ALL icons in their category
+// Only use when you need truly dynamic icon selection at runtime
+import { getModelIcon, getFormIcon, getOtherIcon } from '@/Components/icons';
+const modelIcon = getModelIcon('NEWS', 'filled');  // Bundles ALL model icons!
+const formIcon = getFormIcon('SAVE', 'regular');   // Bundles ALL form icons!
+const otherIcon = getOtherIcon('HOME', 'filled');  // Bundles ALL other icons!
+```
+
+**❌ Legacy (migrate away from)**:
+```vue
+// Old pattern - poor tree-shaking
+import Icons from '@/Types/Icons/regular';
+import IconsFilled from '@/Types/Icons/filled';
+```
+
 ### Frontend Testing & Quality Assurance
 
 **See**: tests/README.md and tests/CLAUDE.md for complete testing documentation
@@ -149,6 +181,33 @@ function getUserName(user: User): string { return user.name; }
 - **Automatic generation**: PHPDoc annotations are generated after `composer install/update`
 - **Manual generation**: Run `composer ide-helper` to regenerate type annotations
 - **Custom overrides**: After running ide-helper, manually fix translatable field types from array to string for better static analysis
+
+### PHPStan Static Analysis
+- **Level**: Currently set to level 5 in `phpstan.neon`
+- **Relation detection issues**: PHPStan may not always detect Eloquent relations properly. When you encounter "Relation 'relationName' is not found" errors for relations that clearly exist in the model, add explicit type annotations in the model's PHPDoc:
+
+```php
+/**
+ * @property-read \App\Models\RelatedModel $relationName
+ */
+class MyModel extends Model
+{
+    public function relationName()
+    {
+        return $this->belongsTo(RelatedModel::class);
+    }
+}
+```
+
+- **Collection type inference**: When using `keyBy()` or similar collection methods that return mixed types, add explicit type annotations to help PHPStan understand the expected type:
+
+```php
+/** @var \Illuminate\Support\Collection<int, \App\Models\ModelName> $collection */
+$collection = $model->relation()->get()->keyBy('id');
+```
+
+- **Type casting issues**: When PHPStan complains about type mismatches in array operations, ensure proper type hints and consider using `array_filter()` or explicit type checks
+- **Mixed type handling**: For JSON columns that can contain various data types, use explicit type checks with `is_string()`, `is_array()` before operations
 
 ### Testing Permissions
 **See**: @tests/CLAUDE.md for complete testing patterns
@@ -271,3 +330,5 @@ watch(() => usePage().props.flash.error, (msg) => {
 This is a **student-run project**. Prioritize maintainability and approachability over complex solutions.
 
 **Note**: Use @ import syntax for referencing other .md files.
+
+- All Vue components use PascalCase

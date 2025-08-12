@@ -1,9 +1,7 @@
 <template>
-  <NButton size="small" @click="handleOpenModal">
-    <template #icon>
-      <IFluentLink20Regular />
-    </template>
-  </NButton>
+  <div @click="handleOpenModal">
+    <slot />
+  </div>
   
   <Dialog :open="showModal" @update:open="showModal = $event">
   <DialogContent class="sm:max-w-4xl max-h-[90vh] !p-0 flex flex-col">
@@ -16,9 +14,15 @@
         </DialogHeader>
       </div>
 
-      <NTabs type="line" class="mt-4 px-8">
-        <NTabPane name="url" tab="Paprasta nuoroda">
-          <div class="space-y-4 pt-4">
+      <Tabs default-value="url" class="mt-4 px-8">
+        <TabsList class="grid w-full grid-cols-3">
+          <TabsTrigger value="url">Paprasta nuoroda</TabsTrigger>
+          <TabsTrigger value="file">Failas iš vusa.lt failų</TabsTrigger>
+          <TabsTrigger value="archiveDocument">Archyvo dokumentas</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="url" class="space-y-4 pt-4">
+          <div class="space-y-4">
             <div class="space-y-2">
               <Label for="url-input">Nuoroda</Label>
               <Input 
@@ -28,28 +32,59 @@
                 type="url"
               />
             </div>
+            <div class="space-y-2">
+              <Label for="link-text-input">Nuorodos tekstas</Label>
+              <Input 
+                id="link-text-input"
+                v-model="linkTextRef" 
+                :placeholder="urlRef || 'Nuorodos tekstas...'"
+              />
+              <p class="text-xs text-muted-foreground">
+                {{ hasSelectedText ? 'Redaguojama esamo teksto nuoroda' : 'Jei paliksite tuščią, bus naudojamas URL' }}
+              </p>
+            </div>
           </div>
-        </NTabPane>
-        <NTabPane name="file" tab="Failas iš vusa.lt failų">
-          <div class="pt-4 max-h-[60vh] overflow-y-auto pr-1">
-            <Suspense>
-              <FileSelector v-if="showModal" @submit="addFileLink" />
-              <template #fallback>
-                <div class="flex h-32 items-center justify-center">
-                  <Spinner size="sm" />
-                </div>
-              </template>
-            </Suspense>
+        </TabsContent>
+        
+        <TabsContent value="file" class="pt-4 max-h-[60vh] overflow-y-auto pr-1 space-y-4">
+          <div class="space-y-2">
+            <Label for="file-link-text">Nuorodos tekstas</Label>
+            <Input 
+              id="file-link-text"
+              v-model="linkTextRef" 
+              placeholder="Nuorodos tekstas..."
+            />
+            <p class="text-xs text-muted-foreground">
+              {{ hasSelectedText ? 'Redaguojama esamo teksto nuoroda' : 'Jei paliksite tuščią, bus naudojamas failo pavadinimas' }}
+            </p>
           </div>
-        </NTabPane>
-        <NTabPane name="archiveDocument" tab="Archyvo dokumentas">
-          <div class="pt-4 max-h-[60vh] overflow-y-auto pr-1">
-            <Suspense>
-              <ArchiveDocumentSelector v-if="showModal" @submit="addArchiveDocumentLink" />
-            </Suspense>
+          <Suspense>
+            <FileSelector v-if="showModal" @submit="addFileLink" />
+            <template #fallback>
+              <div class="flex h-32 items-center justify-center">
+                <Spinner size="sm" />
+              </div>
+            </template>
+          </Suspense>
+        </TabsContent>
+        
+        <TabsContent value="archiveDocument" class="pt-4 max-h-[60vh] overflow-y-auto pr-1 space-y-4">
+          <div class="space-y-2">
+            <Label for="archive-link-text">Nuorodos tekstas</Label>
+            <Input 
+              id="archive-link-text"
+              v-model="linkTextRef" 
+              placeholder="Nuorodos tekstas..."
+            />
+            <p class="text-xs text-muted-foreground">
+              {{ hasSelectedText ? 'Redaguojama esamo teksto nuoroda' : 'Jei paliksite tuščią, bus naudojamas dokumento pavadinimas' }}
+            </p>
           </div>
-        </NTabPane>
-      </NTabs>
+          <Suspense>
+            <ArchiveDocumentSelector v-if="showModal" @submit="addArchiveDocumentLink" />
+          </Suspense>
+        </TabsContent>
+      </Tabs>
 
       <DialogFooter class="px-8 pb-6">
         <Button variant="outline" @click="showModal = false">
@@ -64,12 +99,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
 
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import FileSelector from "@/Features/Admin/FileManager/FileSelector.vue";
 import ArchiveDocumentSelector from "@/Features/Admin/ArchiveDocumentSelector.vue";
 import { Spinner } from "@/Components/ui/spinner";
@@ -79,24 +115,46 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  (e: 'submit', url: string): void
-  (e: 'document:submit', url: string): void
+  (e: 'submit', url: string, text?: string): void
+  (e: 'document:submit', url: string, text?: string): void
 }>()
 
 const showModal = ref(false);
 // keep urlRef always a string to simplify template checks
 const urlRef = ref<string>("");
+const linkTextRef = ref<string>("");
+
+const hasSelectedText = computed(() => {
+  if (!props.editor) return false;
+  const { from, to } = props.editor.state.selection;
+  return from !== to;
+});
 
 function handleOpenModal() {
   // Optional chain on editor and attributes; default to empty string
-  urlRef.value = props.editor?.getAttributes?.('link')?.href ?? "";
+  const linkAttrs = props.editor?.getAttributes?.('link');
+  urlRef.value = linkAttrs?.href ?? "";
+  
+  // Get selected text or current link text
+  const { from, to } = props.editor?.state.selection || { from: 0, to: 0 };
+  if (from !== to) {
+    // Has selected text
+    linkTextRef.value = props.editor?.state.doc.textBetween(from, to) || "";
+  } else if (linkAttrs?.href) {
+    // Editing existing link - try to get the link text
+    linkTextRef.value = props.editor?.state.doc.textBetween(from, to) || "";
+  } else {
+    // No selection, clear text
+    linkTextRef.value = "";
+  }
+  
   showModal.value = true;
 }
 
 function addLink() {
-
   if (typeof urlRef.value === 'string') {
-    emit('submit', urlRef.value);
+    const linkText = linkTextRef.value.trim() || urlRef.value;
+    emit('submit', urlRef.value, linkText);
   }
 
   showModal.value = false;
@@ -107,14 +165,16 @@ function addFileLink(file: string) {
   if (typeof file === 'string' && file.startsWith("public/")) {
     // Map storage path to public uploads URL
     const firstSlash = file.indexOf("/");
-    finalUrl = "/uploads/" + file.substring(firstSlash + 1);
+    finalUrl = `/uploads/${file.substring(firstSlash + 1)}`;
   }
-  emit('submit', finalUrl);
+  const linkText = linkTextRef.value.trim() || finalUrl;
+  emit('submit', finalUrl, linkText);
   showModal.value = false;
 }
 
 function addArchiveDocumentLink(url: string) {
-  emit('document:submit', url);
+  const linkText = linkTextRef.value.trim() || url;
+  emit('document:submit', url, linkText);
   showModal.value = false;
 }
 </script>

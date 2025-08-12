@@ -1,53 +1,87 @@
 <template>
-  <div class="group relative flex">
-    <button 
+  <div class="group relative">
+    <button
+      type="button"
+      tabindex="0"
       :class="buttonClasses"
+      class="w-full h-full aspect-square flex flex-col items-stretch p-2"
       @click="handleClick"
-      @dblclick="handleDoubleClick" 
+      @dblclick="handleDoubleClick"
       @keydown.enter="selectionMode ? handleClick() : undefined"
       @keydown.space.prevent="selectionMode ? handleClick() : undefined"
-      tabindex="0"
     >
   <!-- File/Folder thumbnail or icon -->
-  <div class="h-12 w-12 sm:h-14 sm:w-14 md:h-16 md:w-16 flex items-center justify-center">
+  <div class="flex-1 w-full flex items-center justify-center overflow-hidden rounded-sm">
         <!-- Folder icon -->
         <IFluentFolder24Filled 
           v-if="isFolder" 
-  class="h-12 w-12 sm:h-14 sm:w-14 md:h-16 md:w-16 text-muted-foreground group-hover:text-vusa-red transition-colors" 
+          class="w-3/4 h-3/4 text-muted-foreground group-hover:text-vusa-red transition-colors" 
         />
         <!-- Image thumbnail -->
         <img 
           v-else-if="isImage"
           :src="`/uploads/${item.path?.replace('public/', '') || ''}`"
           :alt="item.name"
-  class="h-12 w-12 sm:h-14 sm:w-14 md:h-16 md:w-16 object-cover rounded shadow-sm"
-        />
+          class="w-full h-full object-cover"
+        >
         <!-- File type icons -->
-        <span v-else class="text-muted-foreground group-hover:text-vusa-red transition-colors">
+        <span 
+          v-else 
+          class="text-muted-foreground group-hover:text-vusa-red transition-colors flex items-center justify-center"
+        >
           <!-- PDF files -->
-  <IFluentDocumentPdf24Regular v-if="getFileExtension(item.path).toLowerCase() === 'pdf'" class="h-12 w-12 sm:h-14 sm:w-14 md:h-16 md:w-16" />
+          <IFluentDocumentPdf24Regular 
+            v-if="getFileExtension(item.path).toLowerCase() === 'pdf'" 
+            class="w-12 h-12" 
+          />
           <!-- Document files -->
-  <IFluentDocumentText24Regular v-else-if="['doc', 'docx', 'odt', 'txt', 'rtf'].includes(getFileExtension(item.path).toLowerCase())" class="h-12 w-12 sm:h-14 sm:w-14 md:h-16 md:w-16" />
+          <IFluentDocumentText24Regular 
+            v-else-if="isDocumentFile(getFileExtension(item.path).toLowerCase())" 
+            class="w-12 h-12" 
+          />
           <!-- Spreadsheet files including CSV -->
-  <IFluentDocumentTable24Regular v-else-if="['xls', 'xlsx', 'csv', 'ods'].includes(getFileExtension(item.path).toLowerCase())" class="h-12 w-12 sm:h-14 sm:w-14 md:h-16 md:w-16" />
+          <IFluentDocumentTable24Regular 
+            v-else-if="isSpreadsheetFile(getFileExtension(item.path).toLowerCase())" 
+            class="w-12 h-12" 
+          />
           <!-- Video files -->
-  <IFluentVideo24Regular v-else-if="['mp4', 'avi', 'mkv', 'mov', 'webm', 'wmv', 'flv', 'm4v'].includes(getFileExtension(item.path).toLowerCase())" class="h-12 w-12 sm:h-14 sm:w-14 md:h-16 md:w-16" />
+          <IFluentVideo24Regular 
+            v-else-if="isVideoFile(getFileExtension(item.path).toLowerCase())" 
+            class="w-12 h-12" 
+          />
           <!-- Audio files -->
-  <IFluentMusicNote24Regular v-else-if="['mp3', 'wav', 'flac', 'aac', 'ogg', 'm4a', 'wma'].includes(getFileExtension(item.path).toLowerCase())" class="h-12 w-12 sm:h-14 sm:w-14 md:h-16 md:w-16" />
+          <IFluentMusicNote24Regular 
+            v-else-if="isAudioFile(getFileExtension(item.path).toLowerCase())" 
+            class="w-12 h-12" 
+          />
           <!-- Archive files -->
-  <IFluentFolderZip24Regular v-else-if="['zip', 'rar', '7z', 'tar', 'gz', 'bz2', 'xz'].includes(getFileExtension(item.path).toLowerCase())" class="h-12 w-12 sm:h-14 sm:w-14 md:h-16 md:w-16" />
+          <IFluentFolderZip24Regular 
+            v-else-if="isArchiveFile(getFileExtension(item.path).toLowerCase())" 
+            class="w-12 h-12" 
+          />
           <!-- Code files -->
-  <IFluentCode24Regular v-else-if="['js', 'ts', 'vue', 'html', 'css', 'php', 'py', 'java', 'cpp', 'c', 'h', 'json', 'xml', 'yml', 'yaml'].includes(getFileExtension(item.path).toLowerCase())" class="h-12 w-12 sm:h-14 sm:w-14 md:h-16 md:w-16" />
+          <IFluentCode24Regular 
+            v-else-if="isCodeFile(getFileExtension(item.path).toLowerCase())" 
+            class="w-12 h-12" 
+          />
           <!-- Image files -->
-  <IFluentImage24Regular v-else-if="['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'tiff', 'ico'].includes(getFileExtension(item.path).toLowerCase())" class="h-12 w-12 sm:h-14 sm:w-14 md:h-16 md:w-16" />
+          <IFluentImage24Regular 
+            v-else-if="isImageFile(getFileExtension(item.path).toLowerCase())" 
+            class="w-12 h-12" 
+          />
           <!-- Default fallback for any other file type -->
-  <IFluentDocument24Regular v-else class="h-12 w-12 sm:h-14 sm:w-14 md:h-16 md:w-16" />
+          <IFluentDocument24Regular 
+            v-else 
+            class="w-12 h-12" 
+          />
         </span>
-      </div>
-  <span class="text-xs sm:text-sm text-center mt-2 line-clamp-2 break-all leading-tight"
-        :class="isFolder ? 'text-foreground font-medium' : 'text-muted-foreground'">
+  </div>
+  <div
+    class="mt-1 text-[10px] sm:text-xs text-center leading-tight px-1 overflow-hidden break-words line-clamp-2 h-8"
+    :class="isFolder ? 'text-foreground font-medium' : 'text-muted-foreground'"
+  >
         {{ item.name }}
-      </span>
+      </div>
     </button>
     
     <!-- Selection indicators -->
@@ -98,7 +132,8 @@ const isImage = computed(() => {
 
 
 const buttonClasses = computed(() => {
-  const baseClasses = 'w-full aspect-square overflow-hidden flex flex-col items-center justify-center p-3 rounded-lg border border-border bg-background transition-all duration-200 hover:shadow-md focus:ring-2 focus:ring-vusa-red focus:ring-offset-2';
+  // Removed aspect-square to allow natural height: icon area (square) + text
+  const baseClasses = 'w-full overflow-hidden flex flex-col items-center justify-start rounded-md border border-border bg-background transition-all duration-200 hover:shadow-md focus:ring-2 focus:ring-vusa-red focus:ring-offset-2';
   
   if (props.selectionMode && props.isSelected) {
     return `${baseClasses} ring-2 ring-vusa-red ring-offset-2 bg-vusa-red/5`;
@@ -138,6 +173,34 @@ const selectionBadgeText = computed(() => {
 function getFileExtension(filePath: string): string {
   const fileName = filePath?.split('/').pop() || '';
   return fileName.split('.').pop()?.toLowerCase() || '';
+}
+
+function isImageFile(extension: string): boolean {
+  return ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'tiff', 'ico'].includes(extension);
+}
+
+function isDocumentFile(extension: string): boolean {
+  return ['doc', 'docx', 'odt', 'txt', 'rtf'].includes(extension);
+}
+
+function isSpreadsheetFile(extension: string): boolean {
+  return ['xls', 'xlsx', 'csv', 'ods'].includes(extension);
+}
+
+function isVideoFile(extension: string): boolean {
+  return ['mp4', 'avi', 'mkv', 'mov', 'webm', 'wmv', 'flv', 'm4v'].includes(extension);
+}
+
+function isAudioFile(extension: string): boolean {
+  return ['mp3', 'wav', 'flac', 'aac', 'ogg', 'm4a', 'wma'].includes(extension);
+}
+
+function isArchiveFile(extension: string): boolean {
+  return ['zip', 'rar', '7z', 'tar', 'gz', 'bz2', 'xz'].includes(extension);
+}
+
+function isCodeFile(extension: string): boolean {
+  return ['js', 'ts', 'vue', 'html', 'css', 'php', 'py', 'java', 'cpp', 'c', 'h', 'json', 'xml', 'yml', 'yaml'].includes(extension);
 }
 
 function handleClick(event?: MouseEvent) {
