@@ -18,6 +18,7 @@ return [
     'restore_content_block_order' => 'Restore Content Block Order',
     'max_blocks_reached' => 'Maximum number of blocks reached',
     'select_content_block' => 'Select Content Block',
+    'drag_drop_images_info' => 'You can drag and drop images directly into the text editor',
     // Accessibility
     'image_alt_text' => 'Alt text (for accessibility)',
     'image_alt_placeholder' => 'Describe what is shown in the image',

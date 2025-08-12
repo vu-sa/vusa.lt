@@ -303,3 +303,5 @@ watch(() => usePage().props.flash.error, (msg) => {
 This is a **student-run project**. Prioritize maintainability and approachability over complex solutions.
 
 **Note**: Use @ import syntax for referencing other .md files.
+
+- All Vue components use PascalCase

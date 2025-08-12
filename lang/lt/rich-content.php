@@ -18,6 +18,7 @@ return [
     'restore_content_block_order' => 'Atkurti turinio blokų tvarką',
     'max_blocks_reached' => 'Pasiektas maksimalus blokų skaičius',
     'select_content_block' => 'Pasirinkite turinio bloką',
+    'drag_drop_images_info' => 'Galite vilkti ir mesti nuotraukas tiesiai į teksto redaktorių',
     // Accessibility
     'image_alt_text' => 'Alt tekstas (prieinamumui)',
     'image_alt_placeholder' => 'Aprašykite, kas pavaizduota nuotraukoje',

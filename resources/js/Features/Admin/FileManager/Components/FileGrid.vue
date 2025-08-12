@@ -11,12 +11,12 @@
             <span v-if="selectedFiles.size > 0"> · pasirinkta {{ selectedFiles.size }}</span>
           </div>
           
-          <div class="flex items-center gap-2">
-            <label class="text-sm text-muted-foreground">Rodyti:</label>
-            <select 
-              :value="itemsPerPage"
-              @change="$emit('update:itemsPerPage', Number($event.target.value))"
+          <div class="flex items-center gap-2" aria-labelledby="items-per-page-label">
+            <span id="items-per-page-label" class="text-sm text-muted-foreground">Rodyti:</span>
+            <select
               class="text-sm border border-border rounded px-2 py-1 bg-background text-foreground"
+              :value="itemsPerPage"
+              @change="$emit('update:itemsPerPage', Number(($event.target as HTMLSelectElement).value))"
             >
               <option :value="25">25</option>
               <option :value="50">50</option>
@@ -30,11 +30,11 @@
         <div v-if="!selectionMode && !isUploadMode">
           <!-- Multi-select controls - responsive layout -->
           <div class="flex flex-col sm:flex-row sm:items-center gap-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              @click="$emit('toggleMultiSelect')"
+            <Button
+              variant="outline"
+              size="sm"
               :class="{ 'bg-vusa-red text-white': isMultiSelectMode }"
+              @click="$emit('toggleMultiSelect')"
             >
               <IFluentCheckmarkCircle24Regular v-if="isMultiSelectMode" class="h-4 w-4 mr-1" />
               <IFluentCircle24Regular v-else class="h-4 w-4 mr-1" />
@@ -64,8 +64,13 @@
     </div>
     
     <!-- Files and folders grid -->
-    <div v-if="hasContent" class="p-6">
-      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 auto-rows-fr">
+    <div v-if="hasContent" class="@container p-6">
+      <div 
+  class="grid gap-4
+               grid-cols-2 @sm:grid-cols-3 @md:grid-cols-4 
+               @lg:grid-cols-5 @xl:grid-cols-6 @2xl:grid-cols-7 
+               @3xl:grid-cols-8 @4xl:grid-cols-10"
+      >
         <!-- Folders -->
         <FileItem
           v-for="folder in paginatedDirectories"
@@ -75,7 +80,7 @@
           :is-multi-selected="false"
           :selection-mode="selectionMode"
           :is-multi-select-mode="isMultiSelectMode"
-          :is-folder="true"
+          is-folder
           @click="$emit('folderClick', folder)"
           @double-click="$emit('folderDoubleClick', folder)"
         />
@@ -89,7 +94,6 @@
           :is-multi-selected="selectedFiles.has(file.path)"
           :selection-mode="selectionMode"
           :is-multi-select-mode="isMultiSelectMode"
-          :is-folder="false"
           @click="$emit('fileClick', file, $event)"
           @double-click="$emit('fileDoubleClick', file)"
         />
@@ -112,8 +116,8 @@
               v-if="typeof page === 'number'"
               :variant="page === currentPage ? 'default' : 'outline'"
               size="sm"
-              @click="$emit('update:currentPage', page)"
               class="w-8 h-8 p-0"
+              @click="$emit('update:currentPage', page)"
             >
               {{ page }}
             </Button>
