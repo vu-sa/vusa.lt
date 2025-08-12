@@ -1,24 +1,40 @@
 <template>
   <div class="mt-4 flex w-full flex-col gap-4">
-    <FadeTransition v-if="showHistory">
-      <div class="ml-auto flex items-center gap-2">
-        <NButtonGroup size="tiny">
-          <NButton :disabled="history?.length < 2" @click="undo()">
-            <template #icon>
-              <IFluentArrowUndo24Filled />
-            </template>
-          </NButton>
-          <NButton @click="redo()">
-            <template #icon>
-              <IFluentArrowRedo24Filled />
-            </template>
-          </NButton>
-        </NButtonGroup>
-        <p class="text-xs leading-5 text-zinc-400">
-          {{ $t('rich-content.restore_content_block_order') }}
-        </p>
+    <!-- Initial loading state -->
+    <div v-if="isInitialLoading" class="space-y-6">
+      <div class="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
+        <div class="h-4 w-4 animate-spin rounded-full border-2 border-zinc-300 border-r-transparent dark:border-zinc-600"></div>
+        Loading content editor...
       </div>
-    </FadeTransition>
+      <div v-for="i in 2" :key="i" class="space-y-4">
+        <div class="flex items-center gap-2">
+          <Skeleton class="h-4 w-4 rounded" />
+          <Skeleton class="h-4 w-32" />
+        </div>
+        <Skeleton class="h-32 w-full rounded-lg" />
+      </div>
+    </div>
+
+    <template v-else>
+      <FadeTransition v-if="showHistory">
+        <div class="ml-auto flex items-center gap-2">
+          <NButtonGroup size="tiny">
+            <NButton :disabled="history?.length < 2" @click="undo()">
+              <template #icon>
+                <IFluentArrowUndo24Filled />
+              </template>
+            </NButton>
+            <NButton @click="redo()">
+              <template #icon>
+                <IFluentArrowRedo24Filled />
+              </template>
+            </NButton>
+          </NButtonGroup>
+          <p class="text-xs leading-5 text-zinc-400">
+            {{ $t('rich-content.restore_content_block_order') }}
+          </p>
+        </div>
+      </FadeTransition>
     <TransitionGroup ref="el" tag="div" class="space-y-6">
       <div v-for="content, index in contents" :key="content?.id ?? content?.key"
         class="group relative transition-all duration-200 hover:z-10">
@@ -138,21 +154,27 @@
         </div>
       </div>
     </div>
+    </template>
   </div>
 </template>
 
 <script setup lang="ts">
 import { moveArrayElement, useSortable } from "@vueuse/integrations/useSortable";
-import { computed, nextTick, ref } from 'vue';
+import { computed, nextTick, ref, onUnmounted } from 'vue';
 import { useManualRefHistory } from '@vueuse/core';
+import { NButton, NButtonGroup, NIcon } from 'naive-ui';
 
 import FadeTransition from "./Transitions/FadeTransition.vue";
 import ContentEditorFactory from './RichContent/ContentEditorFactory.vue';
 import { getAllContentTypes, createContentItem, getContentType } from './RichContent/Types';
 import { Button } from '@/Components/ui/button';
+import { Skeleton } from '@/Components/ui/skeleton';
 import IFluentAdd24Regular from '~icons/fluent/add24-regular';
 import IFluentArrowUp24Regular from '~icons/fluent/arrow-up24-regular';
 import IFluentArrowDown24Regular from '~icons/fluent/arrow-down24-regular';
+import IFluentArrowUndo24Filled from '~icons/fluent/arrow-undo24-filled';
+import IFluentArrowRedo24Filled from '~icons/fluent/arrow-redo24-filled';
+import IFluentReOrderDotsVertical24Regular from '~icons/fluent/re-order-dots-vertical24-regular';
 import IFluentDismiss24Regular from '~icons/fluent/dismiss24-regular';
 import IFluentMoreHorizontal24Regular from '~icons/fluent/more-horizontal24-regular';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/Components/ui/dropdown-menu';
@@ -169,6 +191,23 @@ const el = ref<HTMLElement | null>(null);
 const showHistory = ref(false);
 const showSelection = ref(false);
 const showInsertMenuAt = ref<number | null>(null);
+const isInitialLoading = ref(true);
+
+// Cleanup timeout to prevent memory leaks
+let loadingTimeout: NodeJS.Timeout | null = null;
+
+// Show loading state briefly to indicate the component is ready
+loadingTimeout = setTimeout(() => {
+  isInitialLoading.value = false;
+}, 300);
+
+// Clean up timeout on component unmount
+onUnmounted(() => {
+  if (loadingTimeout) {
+    clearTimeout(loadingTimeout);
+    loadingTimeout = null;
+  }
+});
 
 // Get all content types from registry
 const contentTypes = getAllContentTypes();

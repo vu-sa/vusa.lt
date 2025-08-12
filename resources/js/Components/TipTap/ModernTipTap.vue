@@ -1124,6 +1124,10 @@ function handleUpdate() {
 }
 
 onBeforeUnmount(() => {
+  // Clear any pending uploads to prevent memory leaks
+  uploadingFiles.value.clear();
+  
+  // Destroy editor instance
   editor.value?.destroy();
 });
 

@@ -1,47 +1,75 @@
 <template>
-  <div class="space-y-4">
+  <div class="space-y-4" data-document-selector>
     <div class="space-y-2">
-      <Label for="document-select">Pasirinkite dokumentą</Label>
-      <Combobox v-model="selectedDocument" by="label">
-        <ComboboxAnchor as-child>
-          <ComboboxTrigger as-child>
-            <Button variant="outline" class="w-full justify-between">
-              {{ selectedDocument?.label ?? 'Ieškokite dokumento...' }}
-              <ChevronsUpDownIcon class="ml-2 h-4 w-4 shrink-0 opacity-50" />
-            </Button>
-          </ComboboxTrigger>
-        </ComboboxAnchor>
+      <Label for="document-search">Pasirinkite dokumentą</Label>
+      
+      <!-- Simple search input -->
+      <div class="relative">
+        <Input
+          id="document-search"
+          v-model="searchQuery"
+          type="text"
+          placeholder="Ieškokite dokumento..."
+          class="pr-10"
+          @input="handleSearch"
+        />
+        <SearchIcon class="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+      </div>
 
-        <ComboboxList class="w-full">
-          <div class="relative items-center">
-            <ComboboxInput class="pl-9 focus-visible:ring-0 rounded-none h-10"
-              placeholder="Ieškokite dokumento..." @input="handleSearch" />
-            <span class="absolute start-0 inset-y-0 flex items-center justify-center px-3">
-              <SearchIcon class="size-4 text-muted-foreground" />
-            </span>
+      <!-- Simple dropdown list -->
+      <div 
+        v-if="showResults && (documents.length > 0 || isLoading || searchQuery.length > 0)"
+        class="max-h-60 overflow-y-auto rounded-md border bg-popover text-popover-foreground shadow-md"
+      >
+        <!-- Loading state -->
+        <div v-if="isLoading" class="flex items-center gap-2 p-3 text-sm text-muted-foreground">
+          <div class="h-4 w-4 animate-spin rounded-full border-2 border-muted border-r-transparent"></div>
+          Ieškoma...
+        </div>
+
+        <!-- No results -->
+        <div v-else-if="documents.length === 0 && searchQuery.length > 0" class="p-3 text-sm text-muted-foreground">
+          Dokumentų nerasta.
+        </div>
+
+        <!-- Search hint -->
+        <div v-else-if="documents.length === 0 && searchQuery.length === 0" class="p-3 text-sm text-muted-foreground">
+          Pradėkite rašyti, kad ieškoti dokumentų...
+        </div>
+
+        <!-- Results -->
+        <div v-else class="py-1">
+          <button
+            v-for="document in documents"
+            :key="document.id"
+            @click="selectDocument(document)"
+            class="flex w-full items-center px-3 py-2 text-left text-sm hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none"
+          >
+            <span class="truncate">{{ document.title }}</span>
+          </button>
+          
+          <!-- Show more hint if we hit the limit -->
+          <div v-if="documents.length >= 20" class="border-t px-3 py-2 text-xs text-muted-foreground">
+            Rodoma 20 rezultatų. Patikslinkite paiešką daugiau rezultatų.
           </div>
-
-          <ComboboxEmpty>
-            Dokumentų nerasta.
-          </ComboboxEmpty>
-
-          <ComboboxGroup>
-            <ComboboxItem v-for="option in displayedOptions" :key="option.value" :value="option">
-              <span class="truncate">{{ option.label }}</span>
-              <ComboboxItemIndicator>
-                <CheckIcon class="ml-auto h-4 w-4" />
-              </ComboboxItemIndicator>
-            </ComboboxItem>
-
-            <div v-if="footerMessage" class="border-t border-border mx-1 mt-1 pt-1">
-              <div class="px-2 py-1.5 text-xs text-muted-foreground">
-                {{ footerMessage }}
-              </div>
-            </div>
-          </ComboboxGroup>
-        </ComboboxList>
-      </Combobox>
+        </div>
+      </div>
     </div>
+
+    <!-- Selected document display -->
+    <div v-if="selectedDocument" class="rounded-md border bg-muted/50 p-3">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium">Pasirinktas dokumentas:</p>
+          <p class="text-sm text-muted-foreground">{{ selectedDocument.title }}</p>
+        </div>
+        <Button variant="ghost" size="sm" @click="clearSelection">
+          <XIcon class="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+
+    <!-- Submit button -->
     <Button type="button" class="w-full" :disabled="!selectedDocument" @click="handleSubmit">
       Pridėti
     </Button>
@@ -49,79 +77,108 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { ChevronsUpDown as ChevronsUpDownIcon, Check as CheckIcon, Search as SearchIcon } from 'lucide-vue-next';
+import { ref, onMounted, onUnmounted } from 'vue';
+import { Search as SearchIcon, X as XIcon } from 'lucide-vue-next';
 
 import { Button } from '@/Components/ui/button';
+import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
-import {
-  Combobox,
-  ComboboxAnchor,
-  ComboboxInput,
-  ComboboxItem,
-  ComboboxItemIndicator,
-  ComboboxList,
-  ComboboxTrigger,
-  ComboboxEmpty,
-  ComboboxGroup
-} from '@/Components/ui/combobox';
 
 interface Document {
+  id: number;
   title: string;
   anonymous_url: string;
-}
-
-interface DocumentOption {
-  label: string;
-  value: string;
 }
 
 const emit = defineEmits<{
   submit: [url: string];
 }>();
 
-const selectedDocument = ref<DocumentOption | null>(null);
 const searchQuery = ref('');
-const maxDisplayedResults = 5;
+const selectedDocument = ref<Document | null>(null);
+const documents = ref<Document[]>([]);
+const isLoading = ref(false);
+const showResults = ref(false);
 
-const options = await fetch(route('api.documents.index'))
-  .then((response) => response.json())
-  .then((data: Document[]) => data.map((document) => ({
-    label: document.title,
-    value: document.anonymous_url
-  })));
+let searchTimeout: NodeJS.Timeout | null = null;
 
-const filteredOptions = computed(() => {
-  if (!searchQuery.value.trim()) {
-    return options;
+// Debounced search function
+async function performSearch(query: string) {
+  if (query.length < 2) {
+    documents.value = [];
+    isLoading.value = false;
+    return;
   }
 
-  const query = searchQuery.value.toLowerCase();
-  return options.filter((option) =>
-    option.label.toLowerCase().includes(query)
-  );
-});
+  isLoading.value = true;
+  
+  try {
+    const response = await fetch(`${route('api.documents.index')}?search=${encodeURIComponent(query)}&limit=20`);
+    if (response.ok) {
+      const data = await response.json();
+      documents.value = data;
+    } else {
+      console.error('Search failed:', response.statusText);
+      documents.value = [];
+    }
+  } catch (error) {
+    console.error('Search error:', error);
+    documents.value = [];
+  } finally {
+    isLoading.value = false;
+  }
+}
 
-const displayedOptions = computed(() => filteredOptions.value.slice(0, maxDisplayedResults));
+function handleSearch() {
+  showResults.value = true;
+  
+  // Clear existing timeout
+  if (searchTimeout) {
+    clearTimeout(searchTimeout);
+  }
 
-const footerMessage = computed(() => {
-  if (filteredOptions.value.length === 0) return '';
-  if (filteredOptions.value.length <= maxDisplayedResults) return '';
-  // If user is searching, clarify counts
-  const searching = !!searchQuery.value.trim();
-  return searching
-    ? `Rasta ${filteredOptions.value.length} rezultatų (rodoma ${displayedOptions.value.length})`
-    : `Rodoma ${displayedOptions.value.length} iš ${filteredOptions.value.length} rezultatų`;
-});
+  // Debounce search by 300ms
+  searchTimeout = setTimeout(() => {
+    performSearch(searchQuery.value);
+  }, 300);
+}
 
-function handleSearch(event: Event) {
-  const target = event.target as HTMLInputElement;
-  searchQuery.value = target.value;
+function selectDocument(document: Document) {
+  selectedDocument.value = document;
+  showResults.value = false;
+  searchQuery.value = document.title;
+}
+
+function clearSelection() {
+  selectedDocument.value = null;
+  searchQuery.value = '';
+  documents.value = [];
+  showResults.value = false;
 }
 
 function handleSubmit() {
   if (selectedDocument.value) {
-    emit('submit', selectedDocument.value.value);
+    emit('submit', selectedDocument.value.anonymous_url);
   }
 }
+
+// Close dropdown when clicking outside
+function handleClickOutside(event: Event) {
+  const target = event.target as HTMLElement;
+  if (!target.closest('[data-document-selector]')) {
+    showResults.value = false;
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside);
+});
+
+onUnmounted(() => {
+  // Clean up event listener and timeout
+  document.removeEventListener('click', handleClickOutside);
+  if (searchTimeout) {
+    clearTimeout(searchTimeout);
+  }
+});
 </script>
