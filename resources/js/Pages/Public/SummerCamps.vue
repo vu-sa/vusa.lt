@@ -6,26 +6,26 @@
   <div class="grid grid-cols-1 gap-4 pt-2 last:pb-2 lg:grid-cols-5">
     <div class="typography col-span-3 text-base leading-7">
       <template v-if="year === new Date().getFullYear()">
-        <h2>Labas, būsimas (-a) studente!</h2>
+        <h2>{{ $t("Labas, būsimas (-a) studente!") }}</h2>
 
         <p class="font-bold">
-          Įstojai į Vilniaus universitetą? Nepraleisk pirmojo studentiško nuotykio – pirmakursių stovyklos!
+          {{ $t("Įstojai į Vilniaus universitetą? Nepraleisk pirmojo studentiško nuotykio – pirmakursių stovyklos!") }}
         </p>
 
         <p>
-          Džiaugiamės, kad pradėjai įdomiausią gyvenimo etapą ir pasirinkai Universitetą, kur Hinc itur ad astra – iš čia kylama į žvaigždes.
+          {{ $t("Džiaugiamės, kad pradėjai įdomiausią gyvenimo etapą ir pasirinkai Universitetą, kur Hinc itur ad astra – iš čia kylama į žvaigždes.") }}
         </p>
 
         <p>
-          Prieš prasidedant mokslo metams Tavęs laukia ilgas, bet labai įdomus
-          <a class="font-bold underline" target="_blank" href="/pirmakursiams">susipažinimo</a>
-          su Vilniaus universitetu etapas.
+          {{ $t("Prieš prasidedant mokslo metams Tavęs laukia ilgas, bet labai įdomus") }}
+          <a class="font-bold underline" target="_blank" href="/pirmakursiams">{{ $t("susipažinimo") }}</a>
+          {{ $t("su Vilniaus universitetu etapas.") }}
         </p>
 
         <p>
-          Tačiau dar prieš tai,
-          <a class="font-bold underline" target="_blank" href="/apie">Vilniaus universiteto Studentų atstovybė (VU SA)</a>
-          kviečia Tave susipažinti su tais (-omis), kurie (-ios) per visus mokslo metus lydės daugiausiai – tai Tavo padalinio,
+          {{ $t("Tačiau dar prieš tai,") }}
+          <a class="font-bold underline" target="_blank" href="/apie">{{ $t("Vilniaus universiteto Studentų atstovybė (VU SA)") }}</a>
+          {{ $t("kviečia Tave susipažinti su tais (-omis), kurie (-ios) per visus mokslo metus lydės daugiausiai – tai Tavo padalinio,") }}
           <Link
             class="font-bold underline" target="_blank" :href="route('contacts.category', {
               type: 'padaliniai',
@@ -34,24 +34,24 @@
             })
             "
           >
-            kuratoriai (-ės)
+            {{ $t("kuratoriai (-ės)") }}
           </Link>.
         </p>
 
         <p>
-          Tai puiki galimybė ne tik praplėsti pažinčių ratą, bet ir gauti atsakymus į visus rūpimus klausimus, susijusius su studijomis ar studentišku gyvenimu. Ne iš nuogirdų, interneto platybių ar reklaminių lankstinukų, o iš pirmų lūpų – lygiai tą pačią studijų programą pasirinkusių vyresnių kursų studentų (-čių).
+          {{ $t("Tai puiki galimybė ne tik praplėsti pažinčių ratą, bet ir gauti atsakymus į visus rūpimus klausimus, susijusius su studijomis ar studentišku gyvenimu. Ne iš nuogirdų, interneto platybių ar reklaminių lankstinukų, o iš pirmų lūpų – lygiai tą pačią studijų programą pasirinkusių vyresnių kursų studentų (-čių).") }}
         </p>
 
         <p>
-          Net kelias dienas truksiančioje pirmakursių stovykloje susirasi bendraminčių visam likusiam gyvenimui – todėl negali pražiopsoti kvietimo įsilieti į VU bendruomenę dar net neprasidėjus studijoms!
+          {{ $t("Net kelias dienas truksiančioje pirmakursių stovykloje susirasi bendraminčių visam likusiam gyvenimui – todėl negali pražiopsoti kvietimo įsilieti į VU bendruomenę dar net neprasidėjus studijoms!") }}
         </p>
 
         <p class="font-bold">
-          Bilietų prekyba ir tikslesnė informacija bus paskelbta vėliau! Į kainą įskaičiuotas transportas į ir iš stovyklos. 🚌
+          {{ $t("Bilietų prekyba ir tikslesnė informacija bus paskelbta vėliau! Į kainą įskaičiuotas transportas į ir iš stovyklos. 🚌") }}
         </p>
 
         <p class="font-bold">
-          Sek savo padalinio socialinius tinklus ir sužinok pirmas (-a)!
+          {{ $t("Sek savo padalinio socialinius tinklus ir sužinok pirmas (-a)!") }}
         </p>
 
         <a target="_blank" href="https://vu.lt/parduotuve/" aria-label="Visit VU merchandise store">
@@ -71,16 +71,15 @@
               <template #icon>
                 <i-fluent-arrow-left-24-filled />
               </template>
-              Grįžti
+              {{ $t("Grįžti") }}
             </NButton>
           </SmartLink>
           <h3 class="mb-0">
-            {{ year }} m. pirmakursių stovyklos
+            {{ year }} {{ $t("m. pirmakursių stovyklos") }}
           </h3>
         </div>
         <p>
-          Pirmakursių stovyklos - tai ilgametes tradicijas turintis Vilniaus universiteto studentų atstovybės
-          organizuojamas renginys VU pirmakursiams (-ėms), kuris vyksta kiekvienais metais.
+          {{ $t("Pirmakursių stovyklos - tai ilgametes tradicijas turintis Vilniaus universiteto studentų atstovybės organizuojamas renginys VU pirmakursiams (-ėms), kuris vyksta kiekvienais metais.") }}
         </p>
 
         <SmartLink
@@ -96,7 +95,7 @@
         </a>
       </template>
       <h3 class="mt-6">
-        Stovyklos pagal metus
+        {{ $t("Stovyklos pagal metus") }}
       </h3>
       <div class="flex gap-4">
         <SmartLink
@@ -148,6 +147,7 @@
 <script setup lang="ts">
 import { Link } from "@inertiajs/vue3";
 import { computed } from "vue";
+import { trans as $t } from "laravel-vue-i18n";
 
 import { getFacultyName } from "@/Utils/String";
 import HeaderWithShapeDivider1 from "@/Components/Headers/HeaderWithShapeDivider1.vue";
@@ -160,7 +160,7 @@ const props = defineProps<{
 }>();
 
 const summerCampTitle = computed(() => {
-  return props.year === new Date().getFullYear() ? "Pirmakursių stovyklos" : `${props.year} m. pirmakursių stovyklos`;
+  return props.year === new Date().getFullYear() ? $t("Pirmakursių stovyklos") : `${props.year} ${$t("m. pirmakursių stovyklos")}`;
 });
 
 const get5thResponsiveImage = (event: App.Entities.Calendar) => {
