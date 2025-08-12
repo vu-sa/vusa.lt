@@ -413,8 +413,9 @@ class FilesController extends AdminController
 
             $path = (string) $request->input('path');
 
-            // Determine if this is a TipTap upload (content folder) or FileManager upload (custom path)
+            // Determine upload type based on path structure
             $isTipTapUpload = str_starts_with($path, 'content/');
+            $isUploadImageWithCropperUpload = !str_contains($path, '/') && !str_starts_with($path, 'public/') && !str_starts_with($path, 'content/');
 
             if ($isTipTapUpload) {
                 // TipTap uploads: use tenant-based content directory logic
@@ -436,6 +437,10 @@ class FilesController extends AdminController
                     // Fallback for users with no tenant (shouldn't happen)
                     $path = 'files/content/'.date('Y/m');
                 }
+            } elseif ($isUploadImageWithCropperUpload) {
+                // UploadImageWithCropper uploads: use direct folder path (without 'files' prefix)
+                // Examples: 'banners' -> 'banners/', 'institutions' -> 'institutions/'
+                $path = $path; // Keep as-is (just the folder name)
             } else {
                 // FileManager uploads: use the provided path directly, but validate permissions
                 try {
@@ -453,8 +458,17 @@ class FilesController extends AdminController
             // Get file name without extension and add .webp
             $processedName = pathinfo($originalName, PATHINFO_FILENAME).'.webp';
 
-            // Create organized directory structure
-            $fullDirectoryPath = 'public/'.$path;
+            // Create organized directory structure based on upload type
+            if ($isUploadImageWithCropperUpload) {
+                // UploadImageWithCropper: direct folder path
+                $fullDirectoryPath = 'public/'.$path;
+            } elseif ($isTipTapUpload) {
+                // TipTap: path already has 'files/' prefix
+                $fullDirectoryPath = 'public/'.$path;
+            } else {
+                // FileManager: path already includes 'public/' so don't double-prefix
+                $fullDirectoryPath = $path;
+            }
             if (! Storage::exists($fullDirectoryPath)) {
                 Storage::makeDirectory($fullDirectoryPath);
             }
@@ -495,8 +509,21 @@ class FilesController extends AdminController
             $successMessage = "{$shortOriginalName} optimized and converted to WebP";
             $detailMessage = "Compressed from {$originalSizeKB} KB to {$compressedSizeKB} KB ({$compressionRatio}% saved)";
 
+            // Generate correct URL based on upload type  
+            if ($isUploadImageWithCropperUpload) {
+                // UploadImageWithCropper: /uploads/{folder}/file.webp
+                $uploadUrl = '/uploads/'.$path.'/'.$processedName;
+            } elseif ($isTipTapUpload) {
+                // TipTap: /uploads/files/content/.../file.webp
+                $uploadUrl = '/uploads/'.$path.'/'.$processedName;
+            } else {
+                // FileManager: path is 'public/files/...' so strip 'public/' for URL
+                $urlPath = str_replace('public/', '', $path);
+                $uploadUrl = '/uploads/'.$urlPath.'/'.$processedName;
+            }
+            
             $uploadResult = [
-                'url' => '/uploads/'.$path.'/'.$processedName,
+                'url' => $uploadUrl,
                 'name' => $processedName,
                 'originalSize' => $originalSize,
                 'compressedSize' => $compressedSize,

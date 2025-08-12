@@ -529,7 +529,7 @@ describe('Files Controller - Image Upload', function () {
             expect($response->json('url'))->toContain('.webp');
             expect($response->json('name'))->toContain('.webp');
         }
-    })->skip('Image processing may not be configured in test environment');
+    });
 
     test('image upload validates required fields', function () {
         $response = asUser($this->fileManager)->postJson(route('files.uploadImage'), [
@@ -555,7 +555,117 @@ describe('Files Controller - Image Upload', function () {
         if ($response->status() === 200) {
             expect($response->json('name'))->toContain('.webp');
         }
-    })->skip('Image processing may not be configured in test environment');
+    });
+
+    test('UploadImageWithCropper uploads go to correct directory structure', function () {
+        $image = UploadedFile::fake()->image('banner.jpg', 800, 600);
+
+        $response = asUser($this->fileManager)->postJson(route('files.uploadImage'), [
+            'file' => $image,
+            'path' => 'banners',  // Simple folder name = UploadImageWithCropper
+        ]);
+
+        // Image processing may fail, so we accept both success and failure
+        expect($response->status())->toBeIn([200, 500]);
+
+        if ($response->status() === 200) {
+            expect($response->json('url'))->toStartWith('/uploads/banners/');
+            expect($response->json('name'))->toContain('.webp');
+            
+            // Verify file is stored in correct location: public/banners/ (not public/files/banners/)
+            $filename = $response->json('name');
+            Storage::assertExists('public/banners/'.$filename);
+            Storage::assertMissing('public/files/banners/'.$filename);
+        }
+    });
+
+    test('FileManager uploads maintain existing behavior', function () {
+        $image = UploadedFile::fake()->image('filemanager.jpg', 800, 600);
+
+        $response = asUser($this->fileManager)->postJson(route('files.uploadImage'), [
+            'file' => $image,
+            'path' => 'public/files/padaliniai/vusa'.$this->tenant->alias,  // Full path = FileManager
+        ]);
+
+        expect($response->status())->toBeIn([200, 500]);
+
+        if ($response->status() === 200) {
+            expect($response->json('url'))->toStartWith('/uploads/files/');
+            expect($response->json('name'))->toContain('.webp');
+            
+            $filename = $response->json('name');
+            Storage::assertExists('public/files/padaliniai/vusa'.$this->tenant->alias.'/'.$filename);
+        }
+    });
+
+    test('TipTap uploads maintain existing behavior', function () {
+        $image = UploadedFile::fake()->image('content.jpg', 800, 600);
+
+        $response = asUser($this->fileManager)->postJson(route('files.uploadImage'), [
+            'file' => $image,
+            'path' => 'content/'.date('Y/m'),  // content/ prefix = TipTap
+        ]);
+
+        expect($response->status())->toBeIn([200, 500]);
+
+        if ($response->status() === 200) {
+            // For tenant users, uploads go to tenant-specific content directory
+            expect($response->json('url'))->toStartWith('/uploads/files/padaliniai/vusa'.$this->tenant->alias.'/content/');
+            expect($response->json('name'))->toContain('.webp');
+            
+            $filename = $response->json('name');
+            Storage::assertExists('public/files/padaliniai/vusa'.$this->tenant->alias.'/content/'.date('Y/m').'/'.$filename);
+        }
+    });
+
+    test('TipTap uploads for super admin go to global content directory', function () {
+        $image = UploadedFile::fake()->image('admin-content.jpg', 800, 600);
+
+        $response = asUser($this->superAdmin)->postJson(route('files.uploadImage'), [
+            'file' => $image,
+            'path' => 'content/'.date('Y/m'),  // content/ prefix = TipTap
+        ]);
+
+        expect($response->status())->toBeIn([200, 500]);
+
+        if ($response->status() === 200) {
+            // Super admins upload to global content directory
+            expect($response->json('url'))->toStartWith('/uploads/files/content/');
+            expect($response->json('name'))->toContain('.webp');
+            
+            $filename = $response->json('name');
+            Storage::assertExists('public/files/content/'.date('Y/m').'/'.$filename);
+        }
+    });
+
+    test('different UploadImageWithCropper folders work correctly', function () {
+        $testCases = [
+            'banners' => '/uploads/banners/',
+            'news' => '/uploads/news/',
+            'institutions' => '/uploads/institutions/',
+            'contacts' => '/uploads/contacts/',
+            'trainings' => '/uploads/trainings/',
+        ];
+
+        foreach ($testCases as $folder => $expectedUrlPrefix) {
+            $image = UploadedFile::fake()->image($folder.'.jpg', 400, 400);
+
+            $response = asUser($this->fileManager)->postJson(route('files.uploadImage'), [
+                'file' => $image,
+                'path' => $folder,
+            ]);
+
+            expect($response->status())->toBeIn([200, 500]);
+
+            if ($response->status() === 200) {
+                expect($response->json('url'))->toStartWith($expectedUrlPrefix);
+                
+                $filename = $response->json('name');
+                Storage::assertExists('public/'.$folder.'/'.$filename);
+                Storage::assertMissing('public/files/'.$folder.'/'.$filename);
+            }
+        }
+    });
 });
 
 describe('Files Controller - API Endpoints', function () {

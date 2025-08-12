@@ -34,13 +34,22 @@ class FileUsageScanner
 
             // Direct TipTap fields (confirmed usage from analysis)
             'calendar' => $this->scanTranslatableField(Calendar::class, 'description', $variants),
-            'news' => $this->scanTextField(News::class, 'short', $variants),
+            'news' => $this->scanTextField(News::class, 'short', $variants)
+                ->merge($this->scanTextField(News::class, 'image', $variants)),
+            'banners' => $this->scanTextField(\App\Models\Banner::class, 'image_url', $variants),
             'duties' => $this->scanTranslatableField(Duty::class, 'description', $variants),
-            'institutions' => $this->scanTranslatableField(Institution::class, 'description', $variants),
-            'trainings' => $this->scanTranslatableField(Training::class, 'description', $variants),
+            'institutions' => $this->scanTranslatableField(Institution::class, 'description', $variants)
+                ->merge($this->scanTextField(Institution::class, 'image_url', $variants))
+                ->merge($this->scanTextField(Institution::class, 'logo_url', $variants)),
+            'trainings' => $this->scanTranslatableField(Training::class, 'description', $variants)
+                ->merge($this->scanTextField(Training::class, 'image', $variants)),
             'types' => $this->scanTranslatableField(Type::class, 'description', $variants),
             'forms' => $this->scanTranslatableField(Form::class, 'description', $variants),
             'changelogItems' => $this->scanTranslatableField(ChangelogItem::class, 'description', $variants),
+            
+            // Image fields that may contain legacy paths in /files/ directories
+            'users' => $this->scanTextField(\App\Models\User::class, 'profile_photo_path', $variants),
+            'dutiables' => $this->scanTextField(\App\Models\Pivots\Dutiable::class, 'additional_photo', $variants),
         ];
 
         return $this->processUsageResults($usage, $normalizedUrl);
