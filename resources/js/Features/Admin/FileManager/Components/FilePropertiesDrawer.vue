@@ -126,7 +126,7 @@
                   : (!usageData.is_safe_to_delete
                     ? 'File in use – cannot delete'
                     : 'Delete file')"
-                @click="$emit('delete')">
+                @click="handleDelete">
                 <IFluentDelete24Filled class="h-4 w-4 mr-2" />
                 {{ !usageData ? 'Delete (Scan First)' : 'Delete' }}
               </Button>
@@ -243,6 +243,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
 
 import SmartLink from '@/Components/Public/SmartLink.vue';
 import { Button } from '@/Components/ui/button';
@@ -347,6 +348,17 @@ watch(() => props.selectedFile, () => {
   usageData.value = null;
   usageError.value = null;
 });
+
+// Handle delete confirmation
+function handleDelete() {
+  if (!props.selectedFile) return;
+  
+  // Simply emit delete to let parent handle the confirmation
+  emit('delete');
+  
+  // Close the drawer since deletion will be handled by parent
+  emit('close');
+}
 
 // File usage scanning
 function scanFileUsage() {

@@ -86,49 +86,52 @@
     </div>
     
     <!-- Modals -->
-  <CardModal v-if="!props.selectionMode" :show="showFolderUploadModal" title="Pridėti aplanką" @close="showFolderUploadModal = false">
-      <div>
-        <div class="grid w-full max-w-sm items-center gap-1.5 mb-4">
-          <Label for="folderName">Naujo aplanko pavadinimas</Label>
-          <Input id="folderName" v-model="newFolderName" placeholder="Pavadinimas..." />
+    <!-- Create Folder Dialog -->
+    <Dialog v-if="!props.selectionMode" :open="showFolderUploadModal" @update:open="handleFolderDialogClose">
+      <DialogContent class="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Pridėti aplanką</DialogTitle>
+          <DialogDescription>
+            Sukurkite naują aplanką failų organizavimui
+          </DialogDescription>
+        </DialogHeader>
+        
+        <div class="grid gap-4 py-4">
+          <div class="grid gap-2">
+            <Label for="folderName">Naujo aplanko pavadinimas</Label>
+            <Input 
+              id="folderName" 
+              v-model="newFolderName" 
+              placeholder="Įveskite aplanko pavadinimą..." 
+              @keyup.enter="createDirectory"
+            />
+          </div>
         </div>
-        <Button :disabled="loading" :data-loading="loading" @click="createDirectory">
-          Sukurti
-        </Button>
-      </div>
-    </CardModal>
+        
+        <DialogFooter>
+          <Button variant="outline" @click="handleFolderDialogClose(false)">
+            Atšaukti
+          </Button>
+          <Button 
+            :disabled="loading || !newFolderName.trim()" 
+            @click="createDirectory"
+          >
+            Sukurti
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
     
-  <CardModal v-if="!props.selectionMode" :show="showDeleteModal" title="Ištrinti failą" @close="showDeleteModal = false">
-      <div>
-        <p class="mb-4 text-base font-bold">
-          {{ selectedFileForDeletion.includes('|||') 
-            ? `Ar tikrai nori ištrinti ${selectedFileForDeletion.split('|||').length} failus? Failų bus neįmanoma atkurti!`
-            : 'Ar tikrai nori ištrinti šį failą? Failo bus neįmanoma atkurti!' 
-          }}
-        </p>
-        <p class="mb-4">
-          Prieš ištrinant {{ selectedFileForDeletion.includes('|||') ? 'failus' : 'failą' }}, įsitikink, kad {{ selectedFileForDeletion.includes('|||') ? 'jie nėra naudojami' : 'jis nėra naudojamas' }} jokiame puslapyje.
-        </p>
-        <div class="mb-4 text-zinc-500 max-h-24 overflow-y-auto">
-          <template v-if="selectedFileForDeletion.includes('|||')">
-            <div v-for="file in selectedFileForDeletion.split('|||')" :key="file" class="text-xs font-mono">
-              {{ getFileName(file) }}
-            </div>
-          </template>
-          <template v-else>
-            <span class="text-xs font-mono">{{ selectedFileForDeletion }}</span>
-          </template>
-        </div>
-        <div class="flex gap-2">
-          <Button :disabled="loading" :data-loading="loading" variant="destructive" @click="deleteFileConfirmed">
-            Taip
-          </Button>
-          <Button variant="outline" @click="showDeleteModal = false">
-            Ne
-          </Button>
-        </div>
-      </div>
-    </CardModal>
+    <!-- Delete Confirmation Dialog -->
+    <DeleteConfirmationDialog
+      :is-open="showDeleteModal"
+      :title="getDeleteTitle()"
+      :message="getDeleteMessage()"
+      :is-deleting="loading"
+      @update:open="showDeleteModal = $event"
+      @confirm="deleteFileConfirmed"
+      @cancel="showDeleteModal = false"
+    />
   </div>
 </template>
 
@@ -138,11 +141,19 @@ import { router } from '@inertiajs/vue3';
 import { useToasts } from '@/Composables/useToasts';
 
 // Components
-import CardModal from '@/Components/Modals/CardModal.vue';
+import DeleteConfirmationDialog from '@/Components/Dialogs/DeleteConfirmationDialog.vue';
 import FileUploadArea from '@/Components/FileUpload/FileUploadArea.vue';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/Components/ui/dialog';
 
 // Custom components
 import FileManagerHeader from './Components/FileManagerHeader.vue';
@@ -320,6 +331,7 @@ const createDirectory = () => {
       onSuccess: () => {
         toasts.success("Aplankas sukurtas");
         showFolderUploadModal.value = false;
+        newFolderName.value = ""; // Clear input after successful creation
         loading.value = false;
         emit("update", props.path);
       },
@@ -332,6 +344,14 @@ const createDirectory = () => {
     },
   );
 };
+
+// Handle folder dialog close
+function handleFolderDialogClose(open: boolean) {
+  showFolderUploadModal.value = open;
+  if (!open) {
+    newFolderName.value = ""; // Clear input when dialog is closed
+  }
+}
 
 const deleteFile = (path: string) => {
   selectedFileForDeletion.value = path;
@@ -360,6 +380,36 @@ const deleteFileConfirmed = () => {
         showDeleteModal.value = false;
       }
     });
+  } else if (selectedFileForDeletion.value.startsWith('FOLDER:')) {
+    // Handle folder deletion
+    const folderPath = selectedFileForDeletion.value.replace('FOLDER:', '');
+    router.delete(
+      route("files.deleteDirectory", { path: folderPath }),
+      {
+        preserveScroll: true,
+        preserveState: true,
+        onSuccess: () => {
+          toasts.success("Aplankas ištrintas");
+          loading.value = false;
+          showDeleteModal.value = false;
+          
+          // Check if current path is inside the deleted folder
+          if (props.path === folderPath || props.path.startsWith(`${folderPath}/`)) {
+            // Navigate to parent directory of the deleted folder
+            const parentPath = folderPath.split('/').slice(0, -1).join('/') || '/';
+            emit('changeDirectory', parentPath);
+          } else {
+            // Just refresh current directory
+            emit("update", props.path);
+          }
+        },
+        onError: () => {
+          toasts.error('Klaida trinant aplanką');
+          loading.value = false;
+          showDeleteModal.value = false;
+        }
+      },
+    );
   } else {
     router.delete(
       route("files.delete", { path: selectedFileForDeletion.value }),
@@ -451,6 +501,35 @@ function getFileName(filePath: string): string {
   return filePath.split('/').pop() || 'Unknown file';
 }
 
+// Delete dialog helpers
+function getDeleteTitle(): string {
+  if (selectedFileForDeletion.value.startsWith('FOLDER:')) {
+    return 'Ištrinti aplanką?';
+  }
+  if (selectedFileForDeletion.value.includes('|||')) {
+    const fileCount = selectedFileForDeletion.value.split('|||').length;
+    return `Ištrinti ${fileCount} failus?`;
+  }
+  return 'Ištrinti failą?';
+}
+
+function getDeleteMessage(): string {
+  if (selectedFileForDeletion.value.startsWith('FOLDER:')) {
+    const folderPath = selectedFileForDeletion.value.replace('FOLDER:', '');
+    const folderName = folderPath.split('/').pop() || 'Unknown folder';
+    return `Ar tikrai norite ištrinti tuščią aplanką "${folderName}"? Šio veiksmo nebus galima atšaukti.\n\nDėmesio: Aplankas turi būti tuščias, kad būtų galima jį ištrinti.`;
+  }
+  if (selectedFileForDeletion.value.includes('|||')) {
+    const fileCount = selectedFileForDeletion.value.split('|||').length;
+    const fileList = selectedFileForDeletion.value.split('|||')
+      .map(file => getFileName(file))
+      .join(', ');
+    return `Ar tikrai norite ištrinti ${fileCount} failus? Failų bus neįmanoma atkurti!\n\nFailai: ${fileList}`;
+  }
+  const fileName = getFileName(selectedFileForDeletion.value);
+  return `Ar tikrai norite ištrinti failą "${fileName}"? Failo bus neįmanoma atkurti!\n\nPrieš ištrinant įsitikinkite, kad failas nėra naudojamas jokiame puslapyje.`;
+}
+
 function navigateToPath(targetPath: string) {
   selectedFile.value = null;
   clearSelection();
@@ -493,28 +572,9 @@ function handleDeleteFolder() {
   const folderToDelete = props.path;
   const folderName = folderToDelete.split('/').pop() || 'Unknown folder';
   
-  // Show confirmation dialog
-  if (confirm(`Ar tikrai norite ištrinti tuščią aplanką "${folderName}"? Šio veiksmo nebus galima atšaukti.`)) {
-    loading.value = true;
-    
-    router.delete(route("files.deleteDirectory"), {
-      data: { path: folderToDelete },
-      preserveScroll: true,
-      preserveState: true,
-      onSuccess: () => {
-        toasts.success(`Aplankas "${folderName}" sėkmingai ištrintas.`);
-        loading.value = false;
-        // Navigate back to parent directory
-        emit("back");
-      },
-      onError: (errors) => {
-        loading.value = false;
-        // Show the first error message
-        const errorMessage = Object.values(errors)[0];
-        toasts.error(typeof errorMessage === 'string' ? errorMessage : 'Nepavyko ištrinti aplanko.');
-      }
-    });
-  }
+  // Set up for folder deletion using the unified dialog
+  selectedFileForDeletion.value = `FOLDER:${folderToDelete}`;
+  showDeleteModal.value = true;
 }
 
 function handleFileUpload(files: File[]) {
