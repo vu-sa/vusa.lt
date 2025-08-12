@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 
 {{-- TODO: Enable class="scroll-smooth" when Inertia scroll reset is fixed --}}
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark-mode-init">
 
 <head>
     <meta charset="utf-8">
@@ -35,6 +35,34 @@
     <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
 
     @include('meta-icons')
+
+    {{-- Dark mode initialization script - MUST be before any CSS to prevent flash --}}
+    <script>
+        (function() {
+            // Check localStorage for saved theme preference
+            const savedTheme = localStorage.getItem('vueuse-color-scheme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            
+            // Determine if dark mode should be active
+            let isDark = false;
+            
+            if (savedTheme === 'dark') {
+                isDark = true;
+            } else if (savedTheme === 'light') {
+                isDark = false;
+            } else {
+                // savedTheme is 'auto' or null - use system preference
+                isDark = prefersDark;
+            }
+            
+            if (isDark) {
+                document.documentElement.classList.add('dark');
+            }
+            
+            // Remove initialization class to allow normal operation
+            document.documentElement.classList.remove('dark-mode-init');
+        })();
+    </script>
 
     {{-- CSRF --}}
     {{-- <meta name="csrf-token" content="{{ csrf_token() }}"> --}}
