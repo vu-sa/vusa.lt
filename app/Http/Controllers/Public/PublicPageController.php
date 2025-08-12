@@ -207,7 +207,14 @@ class PublicPageController extends PublicController
         $events = Calendar::query()->whereHas('category', function (Builder $query) {
             $query->where('alias', '=', 'freshmen-camps');
         })->with('tenant:id,alias,fullname')->whereYear('date', $year)
-            ->with(['media'])->get()->sortBy('tenant.alias')->values();
+            ->with(['media']);
+
+        // Filter by locale - only show international events for English users
+        if (app()->getLocale() === 'en') {
+            $events->where('is_international', true);
+        }
+
+        $events = $events->get()->sortBy('tenant.alias')->values();
 
         if ($events->isEmpty() && $year != intval(date('Y'))) {
             return redirect()->route('pirmakursiuStovyklos', ['lang' => app()->getLocale(), 'year' => null]);
@@ -215,7 +222,14 @@ class PublicPageController extends PublicController
 
         $yearsWhenEventsExist = Calendar::query()->whereHas('category', function (Builder $query) {
             $query->where('alias', '=', 'freshmen-camps');
-        })->selectRaw('YEAR(date) as year')->distinct()->get()->pluck('year');
+        });
+        
+        // Filter by locale for years when events exist
+        if (app()->getLocale() === 'en') {
+            $yearsWhenEventsExist->where('is_international', true);
+        }
+        
+        $yearsWhenEventsExist = $yearsWhenEventsExist->selectRaw('YEAR(date) as year')->distinct()->get()->pluck('year');
 
         $seo = $this->shareAndReturnSEOObject(
             title: $year == intval(date('Y')) ? 'Pirmakursių stovyklos - VU SA' : $year.' m. pirmakursių stovyklos - VU SA',
