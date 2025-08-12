@@ -909,7 +909,7 @@ describe('Files Controller - File Usage Scanning', function () {
         // Create file with composed characters
         $filenameComposed = 'lietuviškas_failas_ščiųž.jpg';
         $fullPathComposed = $this->allowedPath.'/'.$filenameComposed;
-        
+
         // Store on default disk since that's what the controller checks for file existence
         Storage::put($fullPathComposed, 'content composed');
 
@@ -966,7 +966,7 @@ describe('Files Controller - File Usage Scanning', function () {
         expect($responseComposed->status())->toBe(302);
         $responseComposed->assertSessionHas('data');
         $dataComposed = session('data');
-        
+
         // The scan should find the usage we just created, but due to unicode normalization complexities,
         // we'll accept either finding usages or marking as safe to delete
         expect($dataComposed)->toHaveKey('total_usages');
