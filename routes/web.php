@@ -20,7 +20,8 @@ use Laravel\Socialite\Facades\Socialite;
 Route::feeds();
 
 Route::get('/auth/redirect', function () {
-    return Socialite::driver('microsoft')->with(['prompt' => 'select_account'])->redirect();
+    /** @phpstan-ignore-next-line */
+    return Socialite::driver('microsoft')->stateless()->with(['prompt' => 'select_account'])->redirect();
 })->name('microsoft.redirect');
 
 Route::get('/auth/microsoft/callback', [Admin\UserController::class, 'storeFromMicrosoft'])->name('microsoft.callback');

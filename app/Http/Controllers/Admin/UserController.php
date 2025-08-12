@@ -259,9 +259,21 @@ class UserController extends AdminController
 
     public function storeFromMicrosoft(Request $request)
     {
-        $microsoftUser = Socialite::driver('microsoft')->user();
+        try {
+            $microsoftUser = Socialite::driver('microsoft')->user();
+        } catch (\Laravel\Socialite\Two\InvalidStateException $e) {
+            // Log the error for debugging
+            \Log::warning('Microsoft OAuth InvalidStateException, retrying with stateless', [
+                'user_ip' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'session_id' => $request->session()->getId(),
+                'referer' => $request->headers->get('referer'),
+            ]);
 
-        /* dd(Socialite::driver('microsoft')->stateless()); */
+            // Retry with stateless method
+            /** @phpstan-ignore-next-line */
+            $microsoftUser = Socialite::driver('microsoft')->stateless()->user();
+        }
 
         // pirmiausia ieškome per vartotoją, per paštą
         $user = User::where('email', $microsoftUser->getEmail())->first();
