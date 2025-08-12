@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\StoreFilesRequest;
 use App\Models\File;
+use App\Services\FileUsageScanner;
 use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -23,18 +24,22 @@ class FilesController extends AdminController
         // Remove any path traversal attempts
         $path = str_replace(['../', '..\\', '../', '..\\'], '', $path);
 
-        // Ensure path starts with public/files
+        // If user supplied only a filename or relative fragment, prepend base directory
         if (! str_starts_with($path, 'public/files')) {
-            $path = 'public/files';
+            $path = ltrim($path, '/');
+            // If it contains a slash treat as relative subpath, else treat as file in root files dir
+            $path = str_contains($path, '/')
+                ? 'public/files/'.$path
+                : 'public/files/'.$path; // single filename
         }
 
         // Normalize path separators and remove duplicate slashes
         $path = preg_replace('#/+#', '/', $path);
         $path = rtrim($path, '/');
 
-        // Additional security: allow common filename characters including Lithuanian characters
-        // Allow letters (including Unicode), numbers, underscores, hyphens, dots, spaces, and forward slashes
-        if (! preg_match('/^[\p{L}\p{N}\/_. -]+$/u', $path)) {
+    // Additional security: allow Unicode letters, marks (for combining diacritics), numbers, underscores,
+    // hyphens, dots, spaces, and forward slashes
+    if (! preg_match('/^[\p{L}\p{M}\p{N}\/_. -]+$/u', $path)) {
             throw new \InvalidArgumentException('Invalid path format');
         }
 
@@ -195,16 +200,43 @@ class FilesController extends AdminController
         $validated = $request->validated();
 
         $files = $validated['files'];
+        $path = (string) $validated['path'];
 
-        try {
-            $path = $this->validateAndNormalizePath($validated['path']);
-        } catch (\InvalidArgumentException $e) {
-            return back()->withErrors(['path' => 'Neteisingas katalogo kelias.']);
-        }
+        // Determine if this is a TipTap upload (content folder) or FileManager upload (custom path)
+        $isTipTapUpload = str_starts_with($path, 'content/');
+        
+        if ($isTipTapUpload) {
+            // TipTap uploads: use tenant-based content directory logic
+            if ($request->user()->hasRole(config('permission.super_admin_role_name'))) {
+                // Super admins always upload to global content directory
+                $path = 'files/content/' . date('Y/m');
+            } elseif ($this->authorizer->getTenants()->count() > 0) {
+                $tenant = $this->authorizer->getTenants()->first();
+                
+                // Check if this is the main tenant (type 'pagrindinis')
+                if ($tenant->type === 'pagrindinis') {
+                    // Main tenant uploads to root content directory
+                    $path = 'files/content/' . date('Y/m');
+                } else {
+                    // Other tenants upload to their specific directory
+                    $path = "files/padaliniai/vusa{$tenant->alias}/content/" . date('Y/m');
+                }
+            } else {
+                // Fallback for users with no tenant (shouldn't happen)
+                $path = 'files/content/' . date('Y/m');
+            }
+        } else {
+            // FileManager uploads: validate path normally
+            try {
+                $path = $this->validateAndNormalizePath($path);
+            } catch (\InvalidArgumentException $e) {
+                return back()->withErrors(['path' => 'Neteisingas katalogo kelias.']);
+            }
 
-        // Check if user has permission to upload to this directory
-        if (! $request->user()->can('viewDirectory', [File::class, $path])) {
-            return back()->withErrors(['permission' => 'Neturite teisių įkelti failų į šį aplanką.']);
+            // Check if user has permission to upload to this directory
+            if (! $request->user()->can('viewDirectory', [File::class, $path])) {
+                return back()->withErrors(['permission' => 'Neturite teisių įkelti failų į šį aplanką.']);
+            }
         }
 
         $uploadedCount = 0;
@@ -343,65 +375,159 @@ class FilesController extends AdminController
     public function uploadImage(Request $request)
     {
         $request->validate([
-            'image' => 'nullable',
+            'image' => 'nullable|image|max:51200', // 50MB max
             'name' => 'nullable|string|max:255',
             'path' => 'required|string',
         ], [
             'path.required' => 'Kelias yra privalomas.',
             'name.max' => 'Failo pavadinimas per ilgas.',
+            'image.image' => 'Failas turi būti paveikslėlis.',
+            'image.max' => 'Paveikslėlis negali būti didesnis nei 50MB.',
         ]);
 
-        // Images can be uploaded as 1. files or as 2. data urls
-        $file = $request->file('file');
-        $data = $file ?? $request->image;
-        $originalName = $file !== null
-            ? $file->getClientOriginalName()
-            : $request->name;
+        try {
+            // Images can be uploaded as 1. files or as 2. data urls
+            $file = $request->file('image') ?? $request->file('file');
+            $data = $file ?? $request->image;
+            $originalName = $file !== null
+                ? $file->getClientOriginalName()
+                : $request->name;
 
-        if (! $data) {
-            return response()->json(['error' => 'Nepateiktas paveikslėlis.'], 400);
+            if (! $data) {
+                return response()->json(['error' => 'Nepateiktas paveikslėlis.'], 400);
+            }
+
+            if (! $originalName) {
+                return response()->json(['error' => 'Nepateiktas failo pavadinimas.'], 400);
+            }
+
+            // Get original file size for compression statistics
+            $originalSize = $file ? $file->getSize() : strlen($data);
+
+            // Process image
+            $startingImage = Image::read($data);
+            $image = $startingImage->scaleDown(width: 1600)->toWebp(75);
+
+            $path = (string) $request->input('path');
+            
+            // Determine if this is a TipTap upload (content folder) or FileManager upload (custom path)
+            $isTipTapUpload = str_starts_with($path, 'content/');
+            
+            if ($isTipTapUpload) {
+                // TipTap uploads: use tenant-based content directory logic
+                if ($request->user()->hasRole(config('permission.super_admin_role_name'))) {
+                    // Super admins always upload to global content directory
+                    $path = 'files/content/' . date('Y/m');
+                } elseif ($this->authorizer->getTenants()->count() > 0) {
+                    $tenant = $this->authorizer->getTenants()->first();
+                    
+                    // Check if this is the main tenant (type 'pagrindinis')
+                    if ($tenant->type === 'pagrindinis') {
+                        // Main tenant uploads to root content directory
+                        $path = 'files/content/' . date('Y/m');
+                    } else {
+                        // Other tenants upload to their specific directory
+                        $path = "files/padaliniai/vusa{$tenant->alias}/content/" . date('Y/m');
+                    }
+                } else {
+                    // Fallback for users with no tenant (shouldn't happen)
+                    $path = 'files/content/' . date('Y/m');
+                }
+            } else {
+                // FileManager uploads: use the provided path directly, but validate permissions
+                try {
+                    $path = $this->validateAndNormalizePath($path);
+                } catch (\InvalidArgumentException $e) {
+                    return response()->json(['error' => 'Neteisingas katalogo kelias.'], 400);
+                }
+                
+                // Check if user has permission to upload to this directory
+                if (!$request->user()->can('viewDirectory', [File::class, $path])) {
+                    return response()->json(['error' => 'Neturite teisių įkelti failų į šį aplanką.'], 403);
+                }
+            }
+
+            // Get file name without extension and add .webp
+            $processedName = pathinfo($originalName, PATHINFO_FILENAME) . '.webp';
+
+            // Create organized directory structure
+            $fullDirectoryPath = 'public/' . $path;
+            if (! Storage::exists($fullDirectoryPath)) {
+                Storage::makeDirectory($fullDirectoryPath);
+            }
+
+            // Check if image exists and rename if needed
+            if (Storage::exists($fullDirectoryPath . '/' . $processedName)) {
+                $processedName = time() . '_' . $processedName;
+            }
+
+            $fullPath = storage_path('app/' . $fullDirectoryPath . '/' . $processedName);
+
+            // Save the compressed image
+            $image->save($fullPath);
+            
+            // Get compressed file size for statistics
+            $compressedSize = filesize($fullPath);
+            $compressionRatio = $originalSize > 0 ? round((1 - $compressedSize / $originalSize) * 100) : 0;
+            $compressedSizeKB = round($compressedSize / 1024, 1);
+            $originalSizeKB = round($originalSize / 1024, 1);
+
+            Log::info('Image uploaded and processed', [
+                'original_name' => $originalName,
+                'processed_name' => $processedName,
+                'path' => $fullDirectoryPath,
+                'original_size' => $originalSize,
+                'compressed_size' => $compressedSize,
+                'compression_ratio' => $compressionRatio,
+                'user_id' => $request->user()->id,
+            ]);
+
+            // Create a shortened name with ellipsis for long filenames using original name
+            $originalExtension = pathinfo($originalName, PATHINFO_EXTENSION);
+            $originalNameWithoutExt = pathinfo($originalName, PATHINFO_FILENAME);
+            $shortOriginalName = strlen($originalNameWithoutExt) > 20 
+                ? substr($originalNameWithoutExt, 0, 20) . '...' . '.' . $originalExtension
+                : $originalName;
+
+            $successMessage = "{$shortOriginalName} optimized and converted to WebP";
+            $detailMessage = "Compressed from {$originalSizeKB} KB to {$compressedSizeKB} KB ({$compressionRatio}% saved)";
+
+            $uploadResult = [
+                'url' => '/uploads/' . $path . '/' . $processedName,
+                'name' => $processedName,
+                'originalSize' => $originalSize,
+                'compressedSize' => $compressedSize,
+                'compressionRatio' => $compressionRatio,
+                'message' => $successMessage,
+            ];
+
+            // Return Inertia response if request is from Inertia, otherwise JSON
+            if ($request->header('X-Inertia')) {
+                return back()->with('data', $uploadResult)->with('success', $successMessage)->with('toast_description', $detailMessage);
+            }
+
+            // Return JSON response for non-Inertia requests (backward compatibility)
+            return response()->json($uploadResult);
+
+        } catch (\Exception $e) {
+            Log::error('Image upload failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'user_id' => $request->user()->id,
+                'request_data' => $request->only(['name', 'path']),
+            ]);
+
+            $errorMessage = 'Nepavyko apdoroti paveikslėlio: ' . $e->getMessage();
+
+            // Return Inertia response if request is from Inertia, otherwise JSON
+            if ($request->header('X-Inertia')) {
+                return back()->withErrors(['upload' => $errorMessage]);
+            }
+
+            return response()->json([
+                'error' => $errorMessage
+            ], 500);
         }
-
-        if (! $originalName) {
-            return response()->json(['error' => 'Nepateiktas failo pavadinimas.'], 400);
-        }
-
-        $startingImage = Image::read($data);
-        $image = $startingImage->scaleDown(width: 1600)->toWebp(75);
-
-        $path = (string) $request->input('path');
-
-        // Get file name without extension and add .webp
-        $originalName = pathinfo($originalName, PATHINFO_FILENAME).'.webp';
-
-        // Check if path exists, create if it doesn't
-        if (! Storage::exists('public/'.$path)) {
-            Storage::makeDirectory('public/'.$path);
-        }
-
-        // Check if image exists and rename if needed
-        if (Storage::exists('public/'.$path.'/'.$originalName)) {
-            $originalName = time().'_'.$originalName;
-        }
-
-        $fullPath = storage_path('app/public/'.$path.'/'.$originalName);
-
-        // Intervention Image save() method - quality parameter is set differently in newer versions
-        $image->save($fullPath);
-
-        Log::info('Image uploaded and processed', [
-            'original_name' => $request->name,
-            'processed_name' => $originalName,
-            'path' => 'public/'.$path,
-            'user_id' => $request->user()->id,
-        ]);
-
-        // Return response with correct URL format
-        return response()->json([
-            'url' => '/uploads/'.$path.'/'.$originalName,
-            'name' => $originalName,
-            'message' => 'Paveikslėlis sėkmingai įkeltas ir optimizuotas.',
-        ]);
     }
 
     public function delete(Request $request)
@@ -633,5 +759,60 @@ class FilesController extends AdminController
             'accept' => '.'.implode(',.', StoreFilesRequest::getAllowedExtensions()),
             'maxSizeMB' => 50,
         ]);
+    }
+
+    /**
+     * Scan file usage across all TipTap-enabled models
+     */
+    public function scanFileUsage(Request $request, FileUsageScanner $scanner)
+    {
+        $request->validate([
+            'path' => 'required|string',
+        ]);
+
+        try {
+            $path = $this->validateAndNormalizePath($request->input('path'));
+        } catch (\InvalidArgumentException $e) {
+            return back()->withErrors(['error' => 'Neteisingas failo kelias.']);
+        }
+
+        // Check if user has permission to view this file
+        $directoryPath = dirname($path);
+        if (!$request->user()->can('viewDirectory', [File::class, $directoryPath])) {
+            return back()->withErrors(['error' => 'Neturite teisių skenuoti šio failo naudojimą.']);
+        }
+
+        // Additional safety check: ensure file exists
+        if (!Storage::exists($path)) {
+            return back()->withErrors(['error' => 'Failas nerastas.']);
+        }
+
+        try {
+            $usageData = $scanner->scanFileUsage($path);
+            
+            Log::info('File usage scanned', [
+                'file_path' => $path,
+                'total_usages' => $usageData['total_usages'],
+                'is_safe_to_delete' => $usageData['is_safe_to_delete'],
+                'user_id' => $request->user()->id,
+            ]);
+
+            // Create appropriate success message
+            if ($usageData['is_safe_to_delete']) {
+                $message = 'Failas saugus trinti - nerasta jokių naudojimų '.count($usageData['scanned_models']).' turinio tipuose.';
+                return back()->with('data', $usageData)->with('success', $message);
+            } else {
+                $message = "Rasta {$usageData['total_usages']} naudojimų - peržiūrėkite detales prieš trinant.";
+                return back()->with('data', $usageData)->with('info', $message);
+            }
+        } catch (\Exception $e) {
+            Log::error('File usage scan failed', [
+                'file_path' => $path,
+                'user_id' => $request->user()->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return back()->withErrors(['error' => 'Nepavyko nuskaityti failo naudojimo: ' . $e->getMessage()]);
+        }
     }
 }

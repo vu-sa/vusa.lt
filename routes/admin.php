@@ -104,6 +104,7 @@ Route::delete('files/deleteDirectory', [FilesController::class, 'deleteDirectory
 Route::post('files/upload-image', [FilesController::class, 'uploadImage'])->name('files.uploadImage');
 Route::delete('files/delete', [FilesController::class, 'delete'])->name('files.delete');
 Route::delete('files/bulk-delete', [FilesController::class, 'bulkDelete'])->name('files.bulkDelete');
+Route::post('files/scan-usage', [FilesController::class, 'scanFileUsage'])->name('files.scanUsage');
 Route::resource('files', FilesController::class);
 
 Route::resource('documents', DocumentController::class)->except('create', 'edit');
