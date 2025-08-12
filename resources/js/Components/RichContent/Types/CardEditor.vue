@@ -39,14 +39,14 @@
       <NInput v-model:value="options.title" type="text" />
     </NFormItem>
     <NFormItem label="Turinys" :show-feedback="false">
-      <OriginalTipTap v-model="content" />
+      <ModernTipTap v-model="content" />
     </NFormItem>
   </div>
 </template>
 
 <script setup lang="ts">
 import { defineModel } from 'vue';
-import OriginalTipTap from '@/Components/TipTap/OriginalTipTap.vue';
+import ModernTipTap from '@/Components/TipTap/ModernTipTap.vue';
 import InfoPopover from '@/Components/Buttons/InfoPopover.vue';
 
 const content = defineModel();

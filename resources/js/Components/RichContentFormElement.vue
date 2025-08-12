@@ -1,27 +1,48 @@
 <template>
-  <NTabs class="my-2 rounded-xs" type="segment">
-    <NTabPane name="edit" display-directive="show">
-      <template #tab>
-        <IFluentEdit24Filled class="mr-2" />
+  <div class="rich-content-form-element">
+    <!-- Tab Navigation -->
+    <div class="mb-4 flex items-center gap-2 rounded-lg border bg-white p-1 dark:bg-zinc-900 dark:border-zinc-700">
+      <Button
+        :variant="activeTab === 'edit' ? 'default' : 'ghost'"
+        size="sm"
+        class="flex items-center gap-2"
+        @click="activeTab = 'edit'"
+      >
+        <IFluentEdit24Filled class="h-4 w-4" />
         Redagavimas
-      </template>
-      <RichContentEditor v-model:contents="contentParts" />
-    </NTabPane>
-    <NTabPane class="bg-zinc-50 p-4 antialiased dark:bg-zinc-900" name="preview">
-      <template #tab>
-        <IFluentEye24Filled class="mr-2" />
+      </Button>
+      <Button
+        :variant="activeTab === 'preview' ? 'default' : 'ghost'"
+        size="sm"
+        class="flex items-center gap-2"
+        @click="activeTab = 'preview'"
+      >
+        <IFluentEye24Filled class="h-4 w-4" />
         Peržiūra
-      </template>
-      <div class="typography overflow-hidden flex flex-col gap-2 p-4 text-base leading-7 text-zinc-800 dark:text-zinc-300">
+      </Button>
+    </div>
+
+    <!-- Tab Content -->
+    <div v-show="activeTab === 'edit'">
+      <RichContentEditor v-model:contents="contentParts" />
+    </div>
+    
+    <div v-show="activeTab === 'preview'" class="rounded-lg border bg-white p-6 dark:bg-zinc-900 dark:border-zinc-700">
+      <div class="typography max-w-none">
         <RichContentParser :content="contentParts" />
       </div>
-    </NTabPane>
-  </NTabs>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue';
+import { Button } from '@/Components/ui/button';
 import RichContentEditor from "./RichContentEditor.vue";
 import RichContentParser from "./RichContentParser.vue";
+import IFluentEdit24Filled from '~icons/fluent/edit24-filled';
+import IFluentEye24Filled from '~icons/fluent/eye24-filled';
 
 const contentParts = defineModel();
+const activeTab = ref<'edit' | 'preview'>('edit');
 </script>

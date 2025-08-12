@@ -1,30 +1,54 @@
 <template>
-  <NButton :size="size ?? 'small'" v-bind="$attrs" @click="handleModalOpen">
+  <div 
+    role="button" 
+    tabindex="0" 
+    @click="handleModalOpen" 
+    @keydown.enter="handleModalOpen" 
+    @keydown.space="handleModalOpen"
+  >
     <slot />
-    <template #icon>
-      <IFluentVideo20Regular />
-    </template>
-  </NButton>
-  <ImageSelector v-model:show-modal="showModal" selection-type="video" @submit="$emit('submit', $event)" />
+  </div>
+  <ImageSelector v-model:show-modal="modalState" selection-type="video" @submit="handleVideoSubmit" />
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
-import type { Size } from "naive-ui/es/button/src/interface";
+import { ref, computed } from "vue";
 
 import ImageSelector from "./ImageSelector.vue";
 
-defineProps<{
-  size?: Size;
+const props = defineProps<{
+  showModal?: boolean;
+}>();
+
+const emit = defineEmits<{
+  (e: 'submit', url: string): void;
+  (e: 'update:showModal', value: boolean): void;
 }>()
 
-defineEmits<{
-  (e: 'submit', url: string): void
-}>()
+const internalModal = ref(false);
 
-const showModal = ref(false);
+// Use external modal control if provided, otherwise use internal state
+const modalState = computed({
+  get: () => props.showModal !== undefined ? props.showModal : internalModal.value,
+  set: (value) => {
+    if (props.showModal !== undefined) {
+      emit('update:showModal', value);
+    } else {
+      internalModal.value = value;
+    }
+  }
+});
 
 async function handleModalOpen() {
-  showModal.value = true;
+  if (props.showModal !== undefined) {
+    emit('update:showModal', true);
+  } else {
+    internalModal.value = true;
+  }
+}
+
+function handleVideoSubmit(videoData: { src: string; alt: string; title: string }) {
+  // Extract just the URL for video submissions
+  emit('submit', videoData.src);
 }
 </script>
