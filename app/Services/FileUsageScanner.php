@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\Calendar;
 use App\Models\ChangelogItem;
 use App\Models\ContentPart;
-use App\Models\Dutiable;
 use App\Models\Duty;
 use App\Models\Form;
 use App\Models\Institution;
@@ -26,13 +25,13 @@ class FileUsageScanner
         // Build list of possible URL/path variants for robust searching (legacy + current)
         $normalizedUrl = $this->normalizeFileUrl($filePath);
         $variants = $this->buildSearchVariants($filePath, $normalizedUrl);
-    // Debug dd removed; variants now include escaped Unicode forms
-        
+        // Debug dd removed; variants now include escaped Unicode forms
+
         // Disable cache for debugging
         $usage = [
             // Rich Content System (ContentPart)
             'contentParts' => $this->scanContentParts($variants),
-            
+
             // Direct TipTap fields (confirmed usage from analysis)
             'calendar' => $this->scanTranslatableField(Calendar::class, 'description', $variants),
             'news' => $this->scanTextField(News::class, 'short', $variants),
@@ -43,8 +42,8 @@ class FileUsageScanner
             'forms' => $this->scanTranslatableField(Form::class, 'description', $variants),
             'changelogItems' => $this->scanTranslatableField(ChangelogItem::class, 'description', $variants),
         ];
-        
-    return $this->processUsageResults($usage, $normalizedUrl);
+
+        return $this->processUsageResults($usage, $normalizedUrl);
     }
 
     /**
@@ -52,13 +51,13 @@ class FileUsageScanner
      */
     private function buildSearchVariants(string $originalPath, string $normalizedUrl): array
     {
-    /**
-     * Generate plausible serialized representations of a file path as stored in rich text JSON:
-     * - Structural variants (legacy /uploads/, storage symlink, raw public path, filename-only)
-     * - Unicode normalization (NFC + NFD) for combining mark differences
-     * - JSON slash escaping (\/)
-     * Full \uXXXX codepoint expansion removed as NFD + slash escaping covers observed cases.
-     */
+        /**
+         * Generate plausible serialized representations of a file path as stored in rich text JSON:
+         * - Structural variants (legacy /uploads/, storage symlink, raw public path, filename-only)
+         * - Unicode normalization (NFC + NFD) for combining mark differences
+         * - JSON slash escaping (\/)
+         * Full \uXXXX codepoint expansion removed as NFD + slash escaping covers observed cases.
+         */
         /**
          * Variant strategy tiers:
          * 1. Structural path forms (canonical, no leading slash, legacy, storage, raw public, filename)
@@ -66,10 +65,9 @@ class FileUsageScanner
          * 3. JSON slash escaped (\/)
          * 4. Unicode codepoint escapes (\uXXXX) only if non-ASCII present (covers decomposed combining marks)
          */
-
         $variants = [];
-        $push = function($value) use (&$variants) {
-            if ($value !== null && $value !== '' && !in_array($value, $variants, true)) {
+        $push = function ($value) use (&$variants) {
+            if ($value !== null && $value !== '' && ! in_array($value, $variants, true)) {
                 $variants[] = $value;
             }
         };
@@ -91,7 +89,7 @@ class FileUsageScanner
         }
 
         if (str_starts_with($originalPath, 'public/')) {
-            $push('/' . str_replace('public/', 'uploads/', $originalPath));
+            $push('/'.str_replace('public/', 'uploads/', $originalPath));
             $push($originalPath);
         }
 
@@ -116,51 +114,69 @@ class FileUsageScanner
         $jsonEscaped = [];
         foreach ($variants as $v) {
             $e = str_replace('/', '\\/', $v);
-            if ($e !== $v) $jsonEscaped[] = $e;
+            if ($e !== $v) {
+                $jsonEscaped[] = $e;
+            }
         }
-        foreach ($jsonEscaped as $e) $push($e);
+        foreach ($jsonEscaped as $e) {
+            $push($e);
+        }
 
         // 4. Targeted unicode escapes: only escape combining marks (U+0300–U+036F) & leave base chars intact.
         if ($hasNonAscii) {
             $combiningEscaped = [];
             foreach ($variants as $v) {
                 // Only process strings that actually contain combining marks
-                if (!preg_match('/\p{M}/u', $v)) continue;
-                $escaped = preg_replace_callback('/(\p{M})/u', function($m) {
+                if (! preg_match('/\p{M}/u', $v)) {
+                    continue;
+                }
+                $escaped = preg_replace_callback('/(\p{M})/u', function ($m) {
                     $cp = strtoupper(dechex(mb_ord($m[0], 'UTF-8')));
-                    return '\\u' . str_pad($cp, 4, '0', STR_PAD_LEFT);
+
+                    return '\\u'.str_pad($cp, 4, '0', STR_PAD_LEFT);
                 }, $v);
                 if ($escaped && $escaped !== $v) {
                     $combiningEscaped[] = $escaped;
                     // Also add slash-escaped version of this combining-escaped variant
                     $slashEsc = str_replace('/', '\\/', $escaped);
-                    if ($slashEsc !== $escaped) $combiningEscaped[] = $slashEsc;
+                    if ($slashEsc !== $escaped) {
+                        $combiningEscaped[] = $slashEsc;
+                    }
                 }
             }
-            foreach (array_unique($combiningEscaped) as $cv) $push($cv);
+            foreach (array_unique($combiningEscaped) as $cv) {
+                $push($cv);
+            }
 
             // Full codepoint escape for entire string (covers precomposed letters stored as \u0161, etc.)
             if (function_exists('mb_ord')) {
                 $fullEscapedSet = [];
                 foreach ($variants as $v) {
-                    if (!preg_match('/[^\x00-\x7F]/', $v)) continue; // ASCII only skip
-                    $fullEscaped = preg_replace_callback('/[\x{80}-\x{10FFFF}]/u', function($m) {
+                    if (! preg_match('/[^\x00-\x7F]/', $v)) {
+                        continue;
+                    } // ASCII only skip
+                    $fullEscaped = preg_replace_callback('/[\x{80}-\x{10FFFF}]/u', function ($m) {
                         $cp = strtolower(dechex(mb_ord($m[0], 'UTF-8')));
-                        return '\\u' . str_pad($cp, 4, '0', STR_PAD_LEFT);
+
+                        return '\\u'.str_pad($cp, 4, '0', STR_PAD_LEFT);
                     }, $v);
                     if ($fullEscaped && $fullEscaped !== $v) {
                         $fullEscapedSet[] = $fullEscaped;
                         $slashEsc = str_replace('/', '\\/', $fullEscaped);
-                        if ($slashEsc !== $fullEscaped) $fullEscapedSet[] = $slashEsc;
+                        if ($slashEsc !== $fullEscaped) {
+                            $fullEscapedSet[] = $slashEsc;
+                        }
                     }
                 }
-                foreach (array_unique($fullEscapedSet) as $fe) $push($fe);
+                foreach (array_unique($fullEscapedSet) as $fe) {
+                    $push($fe);
+                }
             }
         }
 
         return $variants; // Already unique by $push logic
     }
-    
+
     private function getModelClass(string $modelType): ?string
     {
         $mapping = [
@@ -173,10 +189,10 @@ class FileUsageScanner
             'forms' => Form::class,
             'changelogItems' => ChangelogItem::class,
         ];
-        
+
         return $mapping[$modelType] ?? null;
     }
-    
+
     private function getFieldForModel(string $modelType): string
     {
         $mapping = [
@@ -189,24 +205,24 @@ class FileUsageScanner
             'forms' => 'description',
             'changelogItems' => 'description',
         ];
-        
+
         return $mapping[$modelType] ?? 'description';
     }
-    
+
     /**
      * Scan multiple files for usage (batch operation)
      */
     public function scanMultipleFiles(array $filePaths): array
     {
         $results = [];
-        
+
         foreach ($filePaths as $filePath) {
             $results[$filePath] = $this->scanFileUsage($filePath);
         }
-        
+
         return $results;
     }
-    
+
     /**
      * Find all unused files in a directory older than specified days
      */
@@ -217,10 +233,10 @@ class FileUsageScanner
         return [
             'unusedFiles' => [],
             'checkedFiles' => [],
-            'errors' => []
+            'errors' => [],
         ];
     }
-    
+
     /**
      * Normalize file path to URL format for searching
      */
@@ -228,18 +244,18 @@ class FileUsageScanner
     {
         // Convert from "public/files/..." to "/uploads/files/..."
         if (str_starts_with($filePath, 'public/')) {
-            return '/' . str_replace('public/', 'uploads/', $filePath);
+            return '/'.str_replace('public/', 'uploads/', $filePath);
         }
-        
+
         // If already in URL format, return as is
         if (str_starts_with($filePath, '/uploads/')) {
             return $filePath;
         }
-        
+
         // Default case - assume it's a relative path from uploads
-        return '/uploads/' . ltrim($filePath, '/');
+        return '/uploads/'.ltrim($filePath, '/');
     }
-    
+
     /**
      * Scan ContentPart models for file references
      */
@@ -253,7 +269,7 @@ class FileUsageScanner
 
             $query->where(function ($q) use ($variants) {
                 foreach ($variants as $v) {
-                    $q->orWhere('json_content', 'LIKE', '%' . $v . '%');
+                    $q->orWhere('json_content', 'LIKE', '%'.$v.'%');
                 }
             });
 
@@ -261,16 +277,16 @@ class FileUsageScanner
 
             // If still no results, try a more permissive fallback: search by filename alone again (in case of deep nesting / HTML stripping)
             if ($results->isEmpty()) {
-                if (collect($variants)->contains(fn($v)=>preg_match('/[^\x00-\x7F]/', $v))) {
+                if (collect($variants)->contains(fn ($v) => preg_match('/[^\x00-\x7F]/', $v))) {
                     Log::debug('FileUsageScanner: No direct SQL matches for non-ASCII variants', [
-                        'variants' => $variants
+                        'variants' => $variants,
                     ]);
                 }
                 $filenameOnly = basename($variants[0]);
                 if ($filenameOnly) {
                     $fallback = ContentPart::query()
                         ->whereIn('type', ['tiptap', 'shadcn-card', 'shadcn-accordion', 'hero'])
-                        ->where('json_content', 'LIKE', '%' . $filenameOnly . '%')
+                        ->where('json_content', 'LIKE', '%'.$filenameOnly.'%')
                         ->with('content')
                         ->get();
                     if ($fallback->isNotEmpty()) {
@@ -281,7 +297,7 @@ class FileUsageScanner
 
             // Conditional fallback: only run heavy PHP-level scan if variants hint at escaped sequences
             // (\uXXXX or \/). This protects performance for ordinary ASCII paths.
-            $needsEscapedCheck = collect($variants)->contains(function($v){
+            $needsEscapedCheck = collect($variants)->contains(function ($v) {
                 return str_contains($v, '\\u') || str_contains($v, '\\/');
             });
             if ($results->isEmpty() && $needsEscapedCheck) {
@@ -289,12 +305,14 @@ class FileUsageScanner
                     ->whereIn('type', ['tiptap', 'shadcn-card', 'shadcn-accordion', 'hero'])
                     ->get();
 
-                $matched = $allParts->filter(function($part) use ($variants) {
+                $matched = $allParts->filter(function ($part) use ($variants) {
                     $content = $part->json_content;
-                    if (!is_string($content)) {
+                    if (! is_string($content)) {
                         $content = json_encode($content);
                     }
-                    if ($content === null) return false;
+                    if ($content === null) {
+                        return false;
+                    }
                     foreach ($variants as $v) {
                         // Also consider variant with added backslashes before slashes
                         $withEscapedSlashes = str_replace('/', '\\/', $v);
@@ -302,12 +320,14 @@ class FileUsageScanner
                             return true;
                         }
                     }
+
                     return false;
                 });
 
                 if ($matched->isNotEmpty()) {
                     // Eager load content for matched subset
                     $matched->load('content');
+
                     return $matched->values();
                 }
             }
@@ -316,12 +336,13 @@ class FileUsageScanner
         } catch (\Exception $e) {
             Log::error('Error scanning ContentParts', [
                 'variants' => $urlOrVariants,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
-            return new Collection();
+
+            return new Collection;
         }
     }
-    
+
     /**
      * Scan translatable fields (JSON columns)
      */
@@ -329,9 +350,10 @@ class FileUsageScanner
     {
         try {
             $variants = is_array($urlOrVariants) ? $urlOrVariants : [$urlOrVariants];
+
             return $modelClass::where(function ($q) use ($field, $variants) {
                 foreach ($variants as $v) {
-                    $q->orWhere($field, 'LIKE', '%' . $v . '%');
+                    $q->orWhere($field, 'LIKE', '%'.$v.'%');
                 }
             })->get();
         } catch (\Exception $e) {
@@ -339,12 +361,13 @@ class FileUsageScanner
                 'model' => $modelClass,
                 'field' => $field,
                 'variants' => $urlOrVariants,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
-            return new Collection();
+
+            return new Collection;
         }
     }
-    
+
     /**
      * Scan regular text fields
      */
@@ -352,9 +375,10 @@ class FileUsageScanner
     {
         try {
             $variants = is_array($urlOrVariants) ? $urlOrVariants : [$urlOrVariants];
+
             return $modelClass::where(function ($q) use ($field, $variants) {
                 foreach ($variants as $v) {
-                    $q->orWhere($field, 'LIKE', '%' . $v . '%');
+                    $q->orWhere($field, 'LIKE', '%'.$v.'%');
                 }
             })->get();
         } catch (\Exception $e) {
@@ -362,12 +386,13 @@ class FileUsageScanner
                 'model' => $modelClass,
                 'field' => $field,
                 'variants' => $urlOrVariants,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
-            return new Collection();
+
+            return new Collection;
         }
     }
-    
+
     /**
      * Process usage results into a structured format
      */
@@ -377,13 +402,13 @@ class FileUsageScanner
         $totalUsages = 0;
         $rawPartMatches = [];
 
-    // Gather file metadata for robustness (existence + size + hashes)
-    $publicPath = $this->convertUrlToPublicPath($url); // e.g. /uploads/files/... -> public/files/...
-    $absoluteStoragePath = storage_path('app/' . $publicPath); // Storage::put uses storage/app/public/...
-    $fileExists = file_exists($absoluteStoragePath);
-    $filesize = $fileExists ? @filesize($absoluteStoragePath) : null;
-    $hashSha256 = $fileExists ? @hash_file('sha256', $absoluteStoragePath) : null;
-    $hashMd5 = $fileExists ? @hash_file('md5', $absoluteStoragePath) : null;
+        // Gather file metadata for robustness (existence + size + hashes)
+        $publicPath = $this->convertUrlToPublicPath($url); // e.g. /uploads/files/... -> public/files/...
+        $absoluteStoragePath = storage_path('app/'.$publicPath); // Storage::put uses storage/app/public/...
+        $fileExists = file_exists($absoluteStoragePath);
+        $filesize = $fileExists ? @filesize($absoluteStoragePath) : null;
+        $hashSha256 = $fileExists ? @hash_file('sha256', $absoluteStoragePath) : null;
+        $hashMd5 = $fileExists ? @hash_file('md5', $absoluteStoragePath) : null;
 
         foreach ($usage as $modelType => $results) {
             if ($results->isEmpty()) {
@@ -411,6 +436,7 @@ class FileUsageScanner
                     $totalUsages++; // count unique owners / content containers
                     $rawPartMatches = array_merge($rawPartMatches, $parts->pluck('id')->all());
                 }
+
                 continue;
             }
 
@@ -453,8 +479,9 @@ class FileUsageScanner
     {
         // Expecting patterns like /uploads/files/... -> public/files/...
         if (str_starts_with($url, '/uploads/')) {
-            return 'public/' . ltrim(str_replace('/uploads/', '', $url), '/');
+            return 'public/'.ltrim(str_replace('/uploads/', '', $url), '/');
         }
+
         // Already a relative path? Leave as-is; caller prepends storage_path('app/').
         return ltrim($url, '/');
     }
@@ -475,9 +502,10 @@ class FileUsageScanner
             ?? \App\Models\Tenant::where('content_id', $contentId)->first();
 
         $cache[$contentId] = $owner;
+
         return $owner;
     }
-    
+
     /**
      * Get a meaningful title for a model
      */
@@ -485,26 +513,26 @@ class FileUsageScanner
     {
         // Try common title fields
         $titleFields = ['title', 'name', 'subject', 'description'];
-        
+
         foreach ($titleFields as $field) {
             if (isset($model->$field)) {
                 $value = $model->$field;
-                
+
                 // Handle translatable fields
                 if (is_array($value)) {
                     return $value['lt'] ?? $value['en'] ?? json_encode($value);
                 }
-                
-                if (is_string($value) && !empty(trim($value))) {
+
+                if (is_string($value) && ! empty(trim($value))) {
                     return trim(strip_tags($value));
                 }
             }
         }
-        
+
         // Fallback to model class and ID
-        return class_basename($model) . ' #' . $model->id;
+        return class_basename($model).' #'.$model->id;
     }
-    
+
     /**
      * Generate admin URL for a model (if applicable)
      */
@@ -512,7 +540,7 @@ class FileUsageScanner
     {
         try {
             $modelName = strtolower(class_basename($model));
-            
+
             // Handle special cases
             $routeNames = [
                 'calendar' => 'calendar',
@@ -528,13 +556,13 @@ class FileUsageScanner
                 'tenant' => 'tenants',
                 'contentpart' => null, // ContentParts don't have direct admin URLs
             ];
-            
+
             $routeName = $routeNames[$modelName] ?? null;
-            
+
             if ($routeName && $model->id) {
-                return route($routeName . '.show', $model->id);
+                return route($routeName.'.show', $model->id);
             }
-            
+
             return null;
         } catch (\Exception $e) {
             return null;
@@ -563,8 +591,8 @@ class FileUsageScanner
             ];
 
             $base = $routeNames[$modelName] ?? null;
-            if ($base && $model->id && Route::has($base . '.edit')) {
-                return route($base . '.edit', $model->id);
+            if ($base && $model->id && Route::has($base.'.edit')) {
+                return route($base.'.edit', $model->id);
             }
 
             return null;
@@ -572,5 +600,4 @@ class FileUsageScanner
             return null;
         }
     }
-    
 }

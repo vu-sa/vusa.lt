@@ -37,9 +37,9 @@ class FilesController extends AdminController
         $path = preg_replace('#/+#', '/', $path);
         $path = rtrim($path, '/');
 
-    // Additional security: allow Unicode letters, marks (for combining diacritics), numbers, underscores,
-    // hyphens, dots, spaces, and forward slashes
-    if (! preg_match('/^[\p{L}\p{M}\p{N}\/_. -]+$/u', $path)) {
+        // Additional security: allow Unicode letters, marks (for combining diacritics), numbers, underscores,
+        // hyphens, dots, spaces, and forward slashes
+        if (! preg_match('/^[\p{L}\p{M}\p{N}\/_. -]+$/u', $path)) {
             throw new \InvalidArgumentException('Invalid path format');
         }
 
@@ -60,6 +60,7 @@ class FilesController extends AdminController
 
         $files = collect(Storage::files($path))->map(function ($file) use ($path) {
             $relativePath = str_replace('public/', '', $file);
+
             return [
                 'path' => $file,
                 'name' => basename($file),
@@ -206,26 +207,26 @@ class FilesController extends AdminController
 
         // Determine if this is a TipTap upload (content folder) or FileManager upload (custom path)
         $isTipTapUpload = str_starts_with($path, 'content/');
-        
+
         if ($isTipTapUpload) {
             // TipTap uploads: use tenant-based content directory logic
             if ($request->user()->hasRole(config('permission.super_admin_role_name'))) {
                 // Super admins always upload to global content directory
-                $path = 'files/content/' . date('Y/m');
+                $path = 'files/content/'.date('Y/m');
             } elseif ($this->authorizer->getTenants()->count() > 0) {
                 $tenant = $this->authorizer->getTenants()->first();
-                
+
                 // Check if this is the main tenant (type 'pagrindinis')
                 if ($tenant->type === 'pagrindinis') {
                     // Main tenant uploads to root content directory
-                    $path = 'files/content/' . date('Y/m');
+                    $path = 'files/content/'.date('Y/m');
                 } else {
                     // Other tenants upload to their specific directory
-                    $path = "files/padaliniai/vusa{$tenant->alias}/content/" . date('Y/m');
+                    $path = "files/padaliniai/vusa{$tenant->alias}/content/".date('Y/m');
                 }
             } else {
                 // Fallback for users with no tenant (shouldn't happen)
-                $path = 'files/content/' . date('Y/m');
+                $path = 'files/content/'.date('Y/m');
             }
         } else {
             // FileManager uploads: validate path normally
@@ -411,29 +412,29 @@ class FilesController extends AdminController
             $image = $startingImage->scaleDown(width: 1600)->toWebp(75);
 
             $path = (string) $request->input('path');
-            
+
             // Determine if this is a TipTap upload (content folder) or FileManager upload (custom path)
             $isTipTapUpload = str_starts_with($path, 'content/');
-            
+
             if ($isTipTapUpload) {
                 // TipTap uploads: use tenant-based content directory logic
                 if ($request->user()->hasRole(config('permission.super_admin_role_name'))) {
                     // Super admins always upload to global content directory
-                    $path = 'files/content/' . date('Y/m');
+                    $path = 'files/content/'.date('Y/m');
                 } elseif ($this->authorizer->getTenants()->count() > 0) {
                     $tenant = $this->authorizer->getTenants()->first();
-                    
+
                     // Check if this is the main tenant (type 'pagrindinis')
                     if ($tenant->type === 'pagrindinis') {
                         // Main tenant uploads to root content directory
-                        $path = 'files/content/' . date('Y/m');
+                        $path = 'files/content/'.date('Y/m');
                     } else {
                         // Other tenants upload to their specific directory
-                        $path = "files/padaliniai/vusa{$tenant->alias}/content/" . date('Y/m');
+                        $path = "files/padaliniai/vusa{$tenant->alias}/content/".date('Y/m');
                     }
                 } else {
                     // Fallback for users with no tenant (shouldn't happen)
-                    $path = 'files/content/' . date('Y/m');
+                    $path = 'files/content/'.date('Y/m');
                 }
             } else {
                 // FileManager uploads: use the provided path directly, but validate permissions
@@ -442,32 +443,32 @@ class FilesController extends AdminController
                 } catch (\InvalidArgumentException $e) {
                     return response()->json(['error' => 'Neteisingas katalogo kelias.'], 400);
                 }
-                
+
                 // Check if user has permission to upload to this directory
-                if (!$request->user()->can('viewDirectory', [File::class, $path])) {
+                if (! $request->user()->can('viewDirectory', [File::class, $path])) {
                     return response()->json(['error' => 'Neturite teisių įkelti failų į šį aplanką.'], 403);
                 }
             }
 
             // Get file name without extension and add .webp
-            $processedName = pathinfo($originalName, PATHINFO_FILENAME) . '.webp';
+            $processedName = pathinfo($originalName, PATHINFO_FILENAME).'.webp';
 
             // Create organized directory structure
-            $fullDirectoryPath = 'public/' . $path;
+            $fullDirectoryPath = 'public/'.$path;
             if (! Storage::exists($fullDirectoryPath)) {
                 Storage::makeDirectory($fullDirectoryPath);
             }
 
             // Check if image exists and rename if needed
-            if (Storage::exists($fullDirectoryPath . '/' . $processedName)) {
-                $processedName = time() . '_' . $processedName;
+            if (Storage::exists($fullDirectoryPath.'/'.$processedName)) {
+                $processedName = time().'_'.$processedName;
             }
 
-            $fullPath = storage_path('app/' . $fullDirectoryPath . '/' . $processedName);
+            $fullPath = storage_path('app/'.$fullDirectoryPath.'/'.$processedName);
 
             // Save the compressed image
             $image->save($fullPath);
-            
+
             // Get compressed file size for statistics
             $compressedSize = filesize($fullPath);
             $compressionRatio = $originalSize > 0 ? round((1 - $compressedSize / $originalSize) * 100) : 0;
@@ -487,15 +488,15 @@ class FilesController extends AdminController
             // Create a shortened name with ellipsis for long filenames using original name
             $originalExtension = pathinfo($originalName, PATHINFO_EXTENSION);
             $originalNameWithoutExt = pathinfo($originalName, PATHINFO_FILENAME);
-            $shortOriginalName = strlen($originalNameWithoutExt) > 20 
-                ? substr($originalNameWithoutExt, 0, 20) . '...' . '.' . $originalExtension
+            $shortOriginalName = strlen($originalNameWithoutExt) > 20
+                ? substr($originalNameWithoutExt, 0, 20).'...'.'.'.$originalExtension
                 : $originalName;
 
             $successMessage = "{$shortOriginalName} optimized and converted to WebP";
             $detailMessage = "Compressed from {$originalSizeKB} KB to {$compressedSizeKB} KB ({$compressionRatio}% saved)";
 
             $uploadResult = [
-                'url' => '/uploads/' . $path . '/' . $processedName,
+                'url' => '/uploads/'.$path.'/'.$processedName,
                 'name' => $processedName,
                 'originalSize' => $originalSize,
                 'compressedSize' => $compressedSize,
@@ -519,7 +520,7 @@ class FilesController extends AdminController
                 'request_data' => $request->only(['name', 'path']),
             ]);
 
-            $errorMessage = 'Nepavyko apdoroti paveikslėlio: ' . $e->getMessage();
+            $errorMessage = 'Nepavyko apdoroti paveikslėlio: '.$e->getMessage();
 
             // Return Inertia response if request is from Inertia, otherwise JSON
             if ($request->header('X-Inertia')) {
@@ -527,7 +528,7 @@ class FilesController extends AdminController
             }
 
             return response()->json([
-                'error' => $errorMessage
+                'error' => $errorMessage,
             ], 500);
         }
     }
@@ -545,16 +546,16 @@ class FilesController extends AdminController
         }
 
         $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
-        if (!in_array($extension, ['jpg','jpeg','png'])) {
+        if (! in_array($extension, ['jpg', 'jpeg', 'png'])) {
             return back()->withErrors(['error' => 'Failo formatas negali būti suspaustas.']);
         }
 
         $directoryPath = dirname($path);
-        if (!$request->user()->can('viewDirectory', [File::class, $directoryPath])) {
+        if (! $request->user()->can('viewDirectory', [File::class, $directoryPath])) {
             return back()->withErrors(['permission' => 'Neturite teisių modifikuoti failų šiame aplanke.']);
         }
 
-        if (!\Storage::exists($path) || \Storage::directoryExists($path)) {
+        if (! \Storage::exists($path) || \Storage::directoryExists($path)) {
             return back()->withErrors(['error' => 'Failas nerastas.']);
         }
 
@@ -564,10 +565,10 @@ class FilesController extends AdminController
 
             $image = \Intervention\Image\Laravel\Facades\Image::read($fullLocalPath);
             $image->scaleDown(width: 1600);
-            $quality = $originalSize > 2*1024*1024 ? 72 : 78; // 2MB threshold
+            $quality = $originalSize > 2 * 1024 * 1024 ? 72 : 78; // 2MB threshold
 
             // Always keep original extension (no conversion to webp)
-            if (in_array($extension, ['jpg','jpeg'])) {
+            if (in_array($extension, ['jpg', 'jpeg'])) {
                 $image->toJpeg($quality);
             } elseif ($extension === 'png') {
                 // For PNG we can optionally reduce palette; Intervention's toPng keeps format
@@ -577,7 +578,7 @@ class FilesController extends AdminController
             $image->save($fullLocalPath);
             clearstatcache();
             $newSize = filesize($fullLocalPath) ?: $originalSize;
-            $saved = $originalSize > 0 ? round((1 - $newSize/$originalSize) * 100) : 0;
+            $saved = $originalSize > 0 ? round((1 - $newSize / $originalSize) * 100) : 0;
 
             \Log::info('Image compressed', [
                 'path' => $path,
@@ -602,6 +603,7 @@ class FilesController extends AdminController
                 'path' => $path,
                 'error' => $e->getMessage(),
             ]);
+
             return back()->withErrors(['error' => 'Nepavyko optimizuoti paveikslėlio: '.$e->getMessage()]);
         }
     }
@@ -854,18 +856,18 @@ class FilesController extends AdminController
 
         // Check if user has permission to view this file
         $directoryPath = dirname($path);
-        if (!$request->user()->can('viewDirectory', [File::class, $directoryPath])) {
+        if (! $request->user()->can('viewDirectory', [File::class, $directoryPath])) {
             return back()->withErrors(['error' => 'Neturite teisių skenuoti šio failo naudojimą.']);
         }
 
         // Additional safety check: ensure file exists
-        if (!Storage::exists($path)) {
+        if (! Storage::exists($path)) {
             return back()->withErrors(['error' => 'Failas nerastas.']);
         }
 
         try {
             $usageData = $scanner->scanFileUsage($path);
-            
+
             Log::info('File usage scanned', [
                 'file_path' => $path,
                 'total_usages' => $usageData['total_usages'],
@@ -876,9 +878,11 @@ class FilesController extends AdminController
             // Create appropriate success message
             if ($usageData['is_safe_to_delete']) {
                 $message = 'Failas saugus trinti - nerasta jokių naudojimų '.count($usageData['scanned_models']).' turinio tipuose.';
+
                 return back()->with('data', $usageData)->with('success', $message);
             } else {
                 $message = "Rasta {$usageData['total_usages']} naudojimų - peržiūrėkite detales prieš trinant.";
+
                 return back()->with('data', $usageData)->with('info', $message);
             }
         } catch (\Exception $e) {
@@ -888,7 +892,7 @@ class FilesController extends AdminController
                 'error' => $e->getMessage(),
             ]);
 
-            return back()->withErrors(['error' => 'Nepavyko nuskaityti failo naudojimo: ' . $e->getMessage()]);
+            return back()->withErrors(['error' => 'Nepavyko nuskaityti failo naudojimo: '.$e->getMessage()]);
         }
     }
 }

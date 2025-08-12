@@ -9,8 +9,8 @@ use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 uses(RefreshDatabase::class);
 
@@ -672,8 +672,8 @@ describe('Files Controller - Error Handling', function () {
 describe('Files Controller - File Usage Scanning', function () {
     test('file manager can scan file usage in allowed directory', function () {
         // Create a test file in the allowed directory structure
-        $filePath = 'public/files/padaliniai/vusa' . $this->tenant->alias . '/test-file.pdf';
-        
+        $filePath = 'public/files/padaliniai/vusa'.$this->tenant->alias.'/test-file.pdf';
+
         // Create the file on the default disk (not public disk) as that's what the controller checks
         Storage::put($filePath, 'test content');
 
@@ -692,7 +692,7 @@ describe('Files Controller - File Usage Scanning', function () {
 
         expect($response->status())->toBe(302);
         $response->assertSessionHas('data');
-        
+
         $flashData = session('data');
         expect($flashData)->toHaveKeys(['total_usages', 'is_safe_to_delete', 'scanned_models', 'usage_details', 'scanned_at']);
     });
@@ -722,7 +722,7 @@ describe('Files Controller - File Usage Scanning', function () {
 
         expect($response->status())->toBe(302);
         $response->assertSessionHas('data');
-        
+
         $flashData = session('data');
         expect($flashData)->toHaveKeys(['total_usages', 'is_safe_to_delete', 'scanned_models', 'usage_details', 'scanned_at']);
     });
@@ -739,7 +739,7 @@ describe('Files Controller - File Usage Scanning', function () {
 
     test('file usage scan requires existing file', function () {
         $response = asUser($this->fileManager)->post(route('files.scanUsage'), [
-            'path' => 'public/files/padaliniai/vusa' . $this->tenant->alias . '/nonexistent.pdf',
+            'path' => 'public/files/padaliniai/vusa'.$this->tenant->alias.'/nonexistent.pdf',
         ]);
 
         expect($response->status())->toBe(302);
@@ -749,7 +749,7 @@ describe('Files Controller - File Usage Scanning', function () {
 
     test('file usage scan returns appropriate success message for safe files', function () {
         // Create a test file
-        $filePath = 'public/files/padaliniai/vusa' . $this->tenant->alias . '/safe-file.pdf';
+        $filePath = 'public/files/padaliniai/vusa'.$this->tenant->alias.'/safe-file.pdf';
         Storage::put($filePath, 'test content');
 
         $response = asUser($this->fileManager)->post(route('files.scanUsage'), [
@@ -781,8 +781,8 @@ describe('Files Controller - File Usage Scanning', function () {
 
     test('can scan file with unicode combining marks in filename', function () {
         // Filename with combining caron marks (decomposed form)
-        $filename = "20231118_Lšečius_-432.jpg"; // contains s + U+030C, c + U+030C
-        $fullPath = $this->allowedPath . '/' . $filename;
+        $filename = '20231118_Lšečius_-432.jpg'; // contains s + U+030C, c + U+030C
+        $fullPath = $this->allowedPath.'/'.$filename;
         Storage::put($fullPath, 'unicode test');
 
         $response = asUser($this->fileManager)->post(route('files.scanUsage'), [
@@ -797,14 +797,14 @@ describe('Files Controller - File Usage Scanning', function () {
     test('scan detects usage in ContentParts with Lithuanian combining marks (NFD + escaped)', function () {
         // Create file with composed characters
         $filenameComposed = 'lietuviškas_failas_ščiųž.jpg';
-        $fullPathComposed = $this->allowedPath . '/' . $filenameComposed;
+        $fullPathComposed = $this->allowedPath.'/'.$filenameComposed;
         Storage::put($fullPathComposed, 'content composed');
 
         // Create file with decomposed (simulate user input). We'll store same bytes but name already decomposed if environment normalizes.
         $filenameDecomposed = "Ls\u{030C}ec\u{030C}ius_testas.jpg"; // intentionally uses escaped combining in string literal
         // Convert escaped unicode to actual combining marks
-        $filenameDecomposedReal = json_decode('"' . addslashes($filenameDecomposed) . '"');
-        $fullPathDecomposed = $this->allowedPath . '/' . $filenameDecomposedReal;
+        $filenameDecomposedReal = json_decode('"'.addslashes($filenameDecomposed).'"');
+        $fullPathDecomposed = $this->allowedPath.'/'.$filenameDecomposedReal;
         Storage::put($fullPathDecomposed, 'content decomposed');
 
         // Insert ContentParts referencing both files with JSON escaped slashes and combining marks
@@ -814,22 +814,22 @@ describe('Files Controller - File Usage Scanning', function () {
                 [
                     'type' => 'image',
                     'attrs' => [
-                        'src' => '/uploads/files/padaliniai/vusa' . $this->tenant->alias . '/' . $filenameComposed,
+                        'src' => '/uploads/files/padaliniai/vusa'.$this->tenant->alias.'/'.$filenameComposed,
                         'alt' => null,
                         'title' => null,
-                        'loading' => 'lazy'
-                    ]
+                        'loading' => 'lazy',
+                    ],
                 ],
                 [
                     'type' => 'image',
                     'attrs' => [
-                        'src' => '/uploads/files/padaliniai/vusa' . $this->tenant->alias . '/' . $filenameDecomposedReal,
+                        'src' => '/uploads/files/padaliniai/vusa'.$this->tenant->alias.'/'.$filenameDecomposedReal,
                         'alt' => null,
                         'title' => null,
-                        'loading' => 'lazy'
-                    ]
-                ]
-            ]
+                        'loading' => 'lazy',
+                    ],
+                ],
+            ],
         ]);
 
         $contentIdParts = DB::table('contents')->insertGetId([
@@ -866,9 +866,9 @@ describe('Files Controller - File Usage Scanning', function () {
 
         // Additional: simulate JSON where precomposed š stored as \u0161
         $filenamePrecomposed = 'vardas_šaltinis.jpg';
-        $fullPathPrecomposed = $this->allowedPath . '/' . $filenamePrecomposed;
+        $fullPathPrecomposed = $this->allowedPath.'/'.$filenamePrecomposed;
         Storage::put($fullPathPrecomposed, 'precomposed');
-        $jsonWithEscaped = '{"type":"doc","content":[{"type":"image","attrs":{"src":"\/uploads\/files\/padaliniai\/vusa' . $this->tenant->alias . '\/vardas_\u0161altinis.jpg","alt":null}}]}';
+        $jsonWithEscaped = '{"type":"doc","content":[{"type":"image","attrs":{"src":"\/uploads\/files\/padaliniai\/vusa'.$this->tenant->alias.'\/vardas_\u0161altinis.jpg","alt":null}}]}';
         // Create a Content container to satisfy FK
         $contentId = DB::table('contents')->insertGetId([
             'created_at' => now(),
