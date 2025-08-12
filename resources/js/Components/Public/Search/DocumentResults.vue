@@ -59,14 +59,15 @@
     </div>
 
     <!-- Short Query State (when query is too short) -->
-    <div v-else-if="showShortQueryState" class="text-center py-12">
+        <!-- Empty State (when no query and no results) -->
+    <div v-else-if="showEmptyState" class="text-center py-12">
       <div class="max-w-md mx-auto">
         <Search class="w-14 h-14 mx-auto text-muted-foreground mb-5" />
         <h3 class="text-lg font-semibold text-foreground mb-3">
-          {{ $t('search.min_chars_required') }}
+          {{ $t('search.start_searching') }}
         </h3>
         <p class="text-muted-foreground mb-6 leading-relaxed">
-          {{ $t('search.min_chars_description') }}
+          {{ $t('search.search_description') }}
         </p>
         <p class="text-sm text-muted-foreground">
           {{ $t('search.or_browse_all') }} <button class="text-primary hover:underline font-medium" @click="$emit('clearFilters')">
@@ -181,7 +182,7 @@ const showNoResultsState = computed(() => {
   // 1. Not loading AND
   // 2. No results AND
   // 3. User has performed a real search (not empty/wildcard) or applied filters
-  const hasRealQuery = props.searchQuery && props.searchQuery.trim() !== '' && props.searchQuery.trim() !== '*' && props.searchQuery.trim().length >= 3
+  const hasRealQuery = props.searchQuery && props.searchQuery.trim() !== '' && props.searchQuery.trim() !== '*'
   const hasUserFilters = props.hasActiveFilters
 
   return !props.isLoading &&
@@ -189,17 +190,15 @@ const showNoResultsState = computed(() => {
     (hasRealQuery || hasUserFilters)
 })
 
-const showShortQueryState = computed(() => {
-  // Show short query state when:
+const showEmptyState = computed(() => {
+  // Show empty state when:
   // 1. Not loading AND
-  // 2. No results AND  
-  // 3. Query exists but is too short (1-2 characters) AND
+  // 2. No results AND
+  // 3. No query AND
   // 4. No active filters
-  const hasShortQuery = props.searchQuery && props.searchQuery.trim() !== '' && props.searchQuery.trim() !== '*' && props.searchQuery.trim().length < 3
-
   return !props.isLoading &&
     props.results.length === 0 &&
-    hasShortQuery &&
+    (!props.searchQuery || props.searchQuery.trim() === '' || props.searchQuery.trim() === '*') &&
     !props.hasActiveFilters
 })
 

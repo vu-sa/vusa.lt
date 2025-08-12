@@ -299,11 +299,11 @@ export const useDocumentSearch = (): DocumentSearchController => {
       currentPage.value = result.currentPage
       facets.value = result.facets
 
-      // Add to recent searches using utility
-      if (QueryUtils.isValidQuery(filters.value.query)) {
+      // Add to recent searches using utility - use the user's actual query, not internal query
+      if (QueryUtils.isValidQuery(searchQuery.value)) {
         preferences.value.recentSearches = RecentSearchManager.addToRecentSearches(
           preferences.value.recentSearches, 
-          filters.value.query
+          searchQuery.value
         )
       }
 

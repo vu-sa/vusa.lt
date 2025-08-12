@@ -81,14 +81,8 @@
                   </template>
                 </template>
                 <template v-else-if="searchController.searchState.value.query &&
-                  searchController.searchState.value.query.length >= 3 && !searchController.isSearching.value">
+                  searchController.searchState.value.query.length > 0 && !searchController.isSearching.value">
                   {{ $t('search.no_documents_found') }}
-                </template>
-                <template v-else-if="searchController.searchState.value.query &&
-                  searchController.searchState.value.query.length > 0 &&
-                  searchController.searchState.value.query.length < 3">
-                  <span class="hidden sm:inline">{{ $t('search.min_chars_search') }}</span>
-                  <span class="sm:hidden">Min. 3 raidės</span>
                 </template>
                 <template v-else-if="!searchController.searchState.value.query && !searchController.isSearching.value">
                   <span class="hidden sm:inline">{{ $t('search.enter_search_or_browse') }}</span>
@@ -274,6 +268,10 @@ const handleQueryUpdate = (query: string) => {
   } else {
     // Cancel any pending debounced calls when leaving auto conditions
     debouncedAutoSearch.cancel()
+    // If query becomes empty and auto-search is enabled, reset to show all documents
+    if (query.trim() === '' && typeToSearch.value) {
+      searchController.search('*', true)
+    }
   }
 }
 
@@ -282,7 +280,9 @@ const handleSearch = (query: string) => {
   inputQuery.value = query
   // Cancel pending auto-search to avoid double-trigger
   debouncedAutoSearch.cancel()
-  searchController.search(query, true)
+  // If query is empty, search for '*' to show all documents (preserves filters)
+  const searchQuery = query.trim() === '' ? '*' : query
+  searchController.search(searchQuery, true)
 }
 
 const handleSelectRecent = (search: string) => {

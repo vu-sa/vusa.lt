@@ -153,6 +153,7 @@ return [
     'search_documents_placeholder' => 'Ieškoti dokumentų pagal pavadinimą...',
     'search_documents_placeholder_alt' => 'Ieškoti dokumentų...',
     'search_button' => 'Ieškoti',
+    'show_all_button' => 'Rodyti visus',
     'clear_search_button' => 'Išvalyti paiešką',
     'auto_search_enabled' => 'Automatinė paieška įjungta',
     'enable_auto_search' => 'Įjungti automatinę paiešką',

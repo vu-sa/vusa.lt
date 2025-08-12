@@ -149,6 +149,7 @@ return [
     'search_documents_placeholder' => 'Search documents by title...',
     'search_documents_placeholder_alt' => 'Search documents...',
     'search_button' => 'Search',
+    'show_all_button' => 'Show all',
     'clear_search_button' => 'Clear search',
     'auto_search_enabled' => 'Auto search enabled',
     'enable_auto_search' => 'Enable auto search',

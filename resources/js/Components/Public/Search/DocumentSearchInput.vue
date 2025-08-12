@@ -49,14 +49,16 @@
               </Button>
 
               <!-- Search button (only shown when typeToSearch is off) -->
-              <Button v-if="localQuery && !isSearching && !typeToSearch" type="button" size="sm" :class="[
+              <Button v-if="!isSearching && !typeToSearch" type="button" size="sm" :class="[
                 'h-8 px-2 sm:px-3 flex-shrink-0 rounded-md', // Size & shape
                 'bg-primary hover:bg-primary/90 text-primary-foreground', // Colors
                 'shadow-sm hover:shadow-md', // Shadows
                 'transition-all duration-200' // Animation
-              ]" :disabled="localQuery.length < 3" @click="handleSearch">
+              ]" @click="handleSearch">
                 <Search class="w-3.5 h-3.5 sm:mr-1.5" />
-                <span class="hidden sm:inline">{{ $t('search.search_button') }}</span>
+                <span class="hidden sm:inline">{{ 
+                  localQuery.trim() === '' ? $t('search.show_all_button') : $t('search.search_button') 
+                }}</span>
               </Button>
 
               <!-- Loading spinner with transition -->
@@ -186,10 +188,8 @@ const handleInput = (event: Event) => {
 }
 
 const handleSearch = () => {
-  if (localQuery.value.length >= 3) {
-    emit('search', localQuery.value)
-    showSuggestions.value = false
-  }
+  emit('search', localQuery.value)
+  showSuggestions.value = false
 }
 
 const handleEnter = () => {

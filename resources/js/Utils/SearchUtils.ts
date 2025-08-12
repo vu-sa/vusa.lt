@@ -30,11 +30,10 @@ export class LanguageUtils {
  */
 export class RecentSearchManager {
   private static readonly MAX_RECENT_SEARCHES = 10
-  private static readonly MIN_QUERY_LENGTH = 3
 
   static addToRecentSearches(recentSearches: string[], query: string): string[] {
     const trimmed = query.trim()
-    if (trimmed.length < this.MIN_QUERY_LENGTH) {
+    if (trimmed.length === 0 || trimmed === '*') {
       return recentSearches
     }
 
@@ -54,7 +53,7 @@ export class RecentSearchManager {
   }
 
   static isValidSearchQuery(query: string): boolean {
-    return query.trim().length >= this.MIN_QUERY_LENGTH || query.trim() === '*'
+    return query.trim().length > 0 || query.trim() === '*'
   }
 }
 
@@ -241,14 +240,14 @@ export class QueryUtils {
 
   static isValidQuery(query: string): boolean {
     const sanitized = this.sanitizeQuery(query)
-    return sanitized.length >= 3 || this.isWildcardQuery(sanitized)
+    return sanitized.length > 0 && !this.isWildcardQuery(sanitized)
   }
 
   static shouldSearch(query: string, hasActiveFilters: boolean): boolean {
     const sanitized = this.sanitizeQuery(query)
     
     if (this.isWildcardQuery(sanitized)) return true
-    if (sanitized.length >= 3) return true
+    if (sanitized.length > 0) return true // Allow any non-empty query
     if (hasActiveFilters && sanitized.length === 0) return true
     
     return false
@@ -258,7 +257,7 @@ export class QueryUtils {
     const sanitized = this.sanitizeQuery(query)
     
     if (this.isWildcardQuery(sanitized)) return '*'
-    if (sanitized.length >= 3) return sanitized
+    if (sanitized.length > 0) return sanitized // Return any non-empty query
     if (hasActiveFilters) return '*'
     
     return ''
