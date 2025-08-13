@@ -115,6 +115,18 @@ class Institution extends Model implements SharepointFileableContract
         return $this->hasMany(Document::class);
     }
 
+    public function checkIns()
+    {
+        return $this->hasMany(InstitutionCheckIn::class);
+    }
+
+    public function activeCheckIn()
+    {
+        return $this->hasOne(InstitutionCheckIn::class)
+            ->ofMany('checked_at', 'max')
+            ->where('state', \App\States\InstitutionCheckIns\Active::class);
+    }
+
     public function meetings(): BelongsToMany
     {
         return $this->belongsToMany(Meeting::class);

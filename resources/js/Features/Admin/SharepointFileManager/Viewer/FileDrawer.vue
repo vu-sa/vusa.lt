@@ -6,7 +6,7 @@
           <NIcon class="mr-2" size="96" :component="fileIcon" />
           <span class="text-center text-xl tracking-wide">{{
             file?.name
-            }}</span>
+          }}</span>
           <div class="flex gap-2">
             <Spinner class="flex gap-2 items-center" size="sm" :show="loadingPublicPermission">
               <div v-if="publicWebUrl" class="flex gap-2">
@@ -91,7 +91,6 @@ import { useFetch, useStorage } from "@vueuse/core";
 import File from "~icons/mdi/file";
 import FilePdf from "~icons/mdi/file-pdf";
 import FileWord from "~icons/mdi/file-word";
-
 import { formatStaticTime } from "@/Utils/IntlTime";
 import CopyToClipboardButton from "@/Components/Buttons/CopyToClipboardButton.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
@@ -128,7 +127,7 @@ watch(
     if (val) {
       loadingPublicPermission.value = true;
 
-      let { data, isFinished } = await useFetch(
+      const { data, isFinished } = await useFetch(
         // eslint-disable-next-line no-secrets/no-secrets
         route("sharepoint.getDriveItemPublicLink", props.file?.id)
       ).json();
@@ -148,13 +147,13 @@ watch(
 const createPublicPermission = async () => {
   loadingPublicPermission.value = true;
 
-  let { data, isFinished } = await useFetch(
+  const { data, isFinished } = await useFetch(
     route("sharepoint.createPublicPermission", props.file?.id),
     {
-    headers: {
-      "X-CSRF-TOKEN": usePage().props.csrf_token,
-      "Content-Type": "application/json",
-    }
+      headers: {
+        "X-CSRF-TOKEN": usePage().props.csrf_token,
+        "Content-Type": "application/json",
+      }
     }
   ).post().json();
 

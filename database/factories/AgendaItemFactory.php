@@ -20,6 +20,18 @@ class AgendaItemFactory extends Factory
     {
         return [
             'title' => $this->faker->sentence,
+            'order' => $this->faker->numberBetween(1, 10),
+            'description' => $this->faker->optional()->paragraph,
         ];
+    }
+
+    /**
+     * Create agenda items with sequential ordering for a specific meeting.
+     */
+    public function sequentialOrder(int $startOrder = 1): static
+    {
+        return $this->sequence(fn ($sequence) => [
+            'order' => $startOrder + $sequence->index
+        ]);
     }
 }

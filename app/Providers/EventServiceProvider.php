@@ -10,6 +10,7 @@ use App\Models\Typeable;
 use App\Models\User;
 use App\Observers\CalendarObserver;
 use App\Observers\RoleTypeObserver;
+use App\Observers\MeetingObserver;
 use App\Observers\TypeableObserver;
 use App\Observers\UserPermissionObserver;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -57,9 +58,10 @@ class EventServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        Calendar::observe(CalendarObserver::class);
+    Calendar::observe(CalendarObserver::class);
         RoleType::observe(RoleTypeObserver::class);
         Typeable::observe(TypeableObserver::class);
+    \App\Models\Meeting::observe(MeetingObserver::class);
         // TODO: properly implement this and the PermissionService
         // User::observe(UserPermissionObserver::class);
         // Role::observe(UserPermissionObserver::class);

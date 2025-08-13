@@ -7,6 +7,8 @@ use App\Http\Requests\StoreAgendaItemsRequest;
 use App\Http\Requests\UpdateAgendaItemRequest;
 use App\Models\Pivots\AgendaItem;
 use App\Services\ModelAuthorizer as Authorizer;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class AgendaItemController extends AdminController
 {
@@ -19,10 +21,16 @@ class AgendaItemController extends AdminController
     {
         if ($request->has('agendaItemTitles')) {
             $validatedData = $request->safe();
-            foreach ($validatedData['agendaItemTitles'] as $agendaItemTitle) {
+            
+            // Get the highest order for this meeting
+            $maxOrder = AgendaItem::where('meeting_id', $validatedData['meeting_id'])
+                ->max('order') ?? 0;
+                
+            foreach ($validatedData['agendaItemTitles'] as $index => $agendaItemTitle) {
                 AgendaItem::create([
                     'meeting_id' => $validatedData['meeting_id'],
                     'title' => $agendaItemTitle,
+                    'order' => $maxOrder + $index + 1,
                 ]);
             }
 
@@ -65,5 +73,28 @@ class AgendaItemController extends AdminController
         $agendaItem->delete();
 
         return back()->with(['success' => 'Darbotvarkės punktas ištrintas sėkmingai!']);
+    }
+
+    /**
+     * Reorder agenda items for a meeting.
+     */
+    public function reorder(Request $request)
+    {
+        $request->validate([
+            'meeting_id' => 'required|exists:meetings,id',
+            'agenda_items' => 'required|array',
+            'agenda_items.*.id' => 'required|exists:agenda_items,id',
+            'agenda_items.*.order' => 'required|integer|min:1',
+        ]);
+
+        DB::transaction(function () use ($request) {
+            foreach ($request->agenda_items as $item) {
+                AgendaItem::where('id', $item['id'])
+                    ->where('meeting_id', $request->meeting_id)
+                    ->update(['order' => $item['order']]);
+            }
+        });
+
+        return back()->with(['success' => 'Darbotvarkės punktų tvarka pakeista sėkmingai!']);
     }
 }

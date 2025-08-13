@@ -10,6 +10,7 @@ use App\Models\ContentPart;
 use App\Models\Document;
 use App\Models\Duty;
 use App\Models\Institution;
+use App\Models\InstitutionCheckIn;
 use App\Models\Meeting;
 use App\Models\News;
 use App\Models\Page;
@@ -140,6 +141,18 @@ class DatabaseSeeder extends Seeder
         }
 
         QuickLink::factory(200)->recycle($tenants)->create();
+
+        // Seed some check-ins for demo/testing
+        $someInstitutions = Institution::inRandomOrder()->take(10)->get();
+        foreach ($someInstitutions as $inst) {
+            InstitutionCheckIn::factory()
+                ->count(3)
+                ->state([
+                    'institution_id' => $inst->id,
+                    'tenant_id' => $inst->tenant_id,
+                ])
+                ->create();
+        }
     }
 
     /**

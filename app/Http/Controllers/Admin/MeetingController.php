@@ -4,13 +4,17 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\StoreMeetingRequest;
+use App\Models\Pivots\AgendaItem;
+use App\Models\Institution;
 use App\Models\Meeting;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ModelIndexer;
+use App\Services\MeetingSuggestionService;
 use App\Services\ResourceServices\SharepointFileService;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class MeetingController extends AdminController
@@ -44,19 +48,46 @@ class MeetingController extends AdminController
     {
         $validatedData = $request->safe();
 
-        // generate title for meeting - YYYY-mm-dd HH.mm posėdis
-        $title = Carbon::parse($validatedData['start_time'])->locale('lt-LT')->isoFormat('YYYY MMMM DD [d.] HH.mm [val.]').' posėdis';
+        DB::beginTransaction();
+        
+        try {
+            // generate title for meeting - YYYY-mm-dd HH.mm posėdis
+            $title = Carbon::parse($validatedData['start_time'])->locale('lt-LT')->isoFormat('YYYY MMMM DD [d.] HH.mm [val.]').' posėdis';
 
-        $meeting = Meeting::create([
-            'start_time' => $validatedData['start_time'],
-            'title' => $title,
-        ]);
+            $meeting = Meeting::create([
+                'start_time' => $validatedData['start_time'],
+                'title' => $title,
+                'description' => $validatedData['description'] ?? null,
+            ]);
 
-        $meeting->institutions()->attach($validatedData['institution_id']);
+            $meeting->institutions()->attach($validatedData['institution_id']);
 
-        $meeting->types()->attach($validatedData['type_id']);
+            if (isset($validatedData['type_id']) && $validatedData['type_id']) {
+                $meeting->types()->attach($validatedData['type_id']);
+            }
+            
+            // Create agenda items if provided
+            if (isset($validatedData['agendaItems']) && is_array($validatedData['agendaItems'])) {
+                foreach ($validatedData['agendaItems'] as $agendaItemData) {
+                    AgendaItem::create([
+                        'title' => $agendaItemData['title'],
+                        'description' => $agendaItemData['description'] ?? null,
+                        'order' => $agendaItemData['order'],
+                        'meeting_id' => $meeting->id,
+                    ]);
+                }
+            }
 
-        return back()->with(['success' => 'Posėdis sukurtas sėkmingai!', 'data' => $meeting]);
+            DB::commit();
+
+            // For Inertia requests (from modal), redirect to meeting show page
+            return redirect()->route('meetings.show', $meeting)->with(['success' => 'Posėdis sukurtas sėkmingai!']);
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            return back()->withErrors(['general' => $e->getMessage()])->with(['error' => 'Nepavyko sukurti posėdžio.']);
+        }
     }
 
     /**
@@ -66,9 +97,14 @@ class MeetingController extends AdminController
     {
         $this->handleAuthorization('view', $meeting);
 
-        $meeting->load('institutions', 'activities.causer', 'files', 'comments', 'agendaItems', 'types')->load(['tasks' => function ($query) {
-            $query->with('users', 'taskable');
-        }]);
+        $meeting->load('institutions', 'activities.causer', 'files', 'comments', 'types')->load([
+            'tasks' => function ($query) {
+                $query->with('users', 'taskable');
+            },
+            'agendaItems' => function ($query) {
+                $query->orderBy('order');
+            }
+        ]);
 
         // show meeting
         return $this->inertiaResponse('Admin/Representation/ShowMeeting', [
@@ -135,5 +171,38 @@ class MeetingController extends AdminController
         $meeting->restore();
 
         return back()->with('success', 'Posėdis atkurtas!');
+    }
+
+    /**
+     * Get meeting suggestions for an institution based on historical data
+     */
+    public function suggestions(Request $request, MeetingSuggestionService $suggestionService)
+    {
+        $institutionId = $request->get('institution');
+        
+        if (!$institutionId) {
+            return response()->json([], 400);
+        }
+
+        // Find the institution - make sure user has access to it
+        $institution = Institution::find($institutionId);
+        if (!$institution) {
+            return response()->json([], 404);
+        }
+
+        // Check if user has access to this institution (basic permission check)
+        $this->handleAuthorization('viewAny', Meeting::class);
+        
+        try {
+            $suggestions = $suggestionService->getSuggestedMeetingTimes($institution, 4);
+            return response()->json($suggestions);
+        } catch (\Exception $e) {
+            \Log::warning('Failed to get meeting suggestions', [
+                'institution_id' => $institutionId,
+                'error' => $e->getMessage()
+            ]);
+            
+            return response()->json([], 500);
+        }
     }
 }

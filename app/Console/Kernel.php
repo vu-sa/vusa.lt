@@ -41,6 +41,12 @@ class Kernel extends ConsoleKernel
         // $schedule->call(function () {
         //     \App\Actions\Schedulable\TaskNotifier::notifyDaysLeft(1);
         // });
+
+        // Expire stale active check-ins daily at 03:00
+        $schedule->command('checkins:expire-stale')
+            ->dailyAt('03:00')
+            ->name('checkins-expire-stale')
+            ->withoutOverlapping(15);
     }
 
     /**

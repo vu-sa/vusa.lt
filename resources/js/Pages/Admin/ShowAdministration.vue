@@ -360,6 +360,12 @@ const menuItems = computed(() => [
         href: route('meetings.index'),
         show: auth?.can.create.meeting
       },
+      {
+        title: $t('Pažymos'),
+        icon: Icons.MEETING,
+        href: route('check-ins.index'),
+        show: auth?.can.create.meeting
+      },
     ],
     show: auth?.can.create.meeting,
     visibleItems: [] as MenuItemType[]
