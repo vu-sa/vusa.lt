@@ -1,5 +1,6 @@
 <template>
-  <AdminForm :model="form" label-placement="top" @submit:form="$emit('submit:form', form)" @delete="$emit('delete')">
+  <NConfigProvider :theme="naiveTheme">
+    <AdminForm :model="form" label-placement="top" @submit:form="$emit('submit:form', form)" @delete="$emit('delete')">
     <FormElement>
       <template #title>
         {{ $t("forms.context.main_info") }}
@@ -227,6 +228,7 @@
         </template> -->
     </FormElement>
   </AdminForm>
+  </NConfigProvider>
 </template>
 
 <script setup lang="tsx">
@@ -237,9 +239,12 @@ import {
   NTree,
   type TransferRenderSourceList,
   type TreeOption,
+  NConfigProvider,
+  darkTheme,
 } from "naive-ui";
 import { computed, h, ref } from "vue";
 import { router, useForm, usePage } from "@inertiajs/vue3";
+import { useDark } from "@vueuse/core";
 
 import Delete24Regular from "~icons/fluent/delete24-regular";
 import Eye16Regular from "~icons/fluent/eye16-regular";
@@ -265,6 +270,9 @@ defineEmits<{
   (event: "submit:form", form: unknown): void;
   (event: "delete"): void;
 }>();
+
+const isDark = useDark();
+const naiveTheme = computed(() => isDark.value ? darkTheme : null);
 
 const dutyShowMode = ref<"tree" | "transfer">("tree");
 const handleChangeDutyShowMode = () => {
