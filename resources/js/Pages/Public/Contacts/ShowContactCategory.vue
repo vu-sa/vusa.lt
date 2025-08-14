@@ -23,7 +23,7 @@
             <InstitutionFigure :institution hide-types>
               <!-- Modern section navigation buttons -->
               <template #more>
-                <nav v-if="institution.alias === institution.tenant?.alias" class="mt-6 rounded-md dark:bg-gray-800/50"
+                <nav v-if="institution.alias === institution.tenant?.alias" class="mt-6 rounded-md dark:bg-zinc-900/50"
                   :aria-label="$t('Navigation to different contact sections')">
                   <div class="flex flex-wrap gap-1.5">
                     <Button v-for="section in padaliniaiSections" :key="section.alias" :as="SmartLink" :href="route('contacts.alias', {
