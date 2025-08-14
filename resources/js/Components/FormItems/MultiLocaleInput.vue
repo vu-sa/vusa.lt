@@ -1,5 +1,5 @@
 <template>
-  <NConfigProvider :theme="naiveTheme">
+  <NConfigProvider :theme="naiveTheme" class="w-full">
     <div v-if="inputLang === 'lt'" class="w-full">
       <NInput v-model:value="input.lt" :type="inputType" :placeholder="placeholders.lt">
         <template #suffix>
