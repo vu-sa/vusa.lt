@@ -1,6 +1,7 @@
 <template>
   <AdminContentPage title="Rezervacijos">
-    <div class="grid grid-cols-1 gap-4 lg:grid-cols-2 2xl:grid-cols-3">
+    <ThemeProvider>
+      <div class="grid grid-cols-1 gap-4 lg:grid-cols-2 2xl:grid-cols-3">
       <NCard :segmented="{
         footer: 'soft',
       }">
@@ -79,7 +80,8 @@
           </div>
         </template>
       </NCard>
-    </div>
+      </div>
+    </ThemeProvider>
     <Separator v-if="tenants.length > 0" />
     <section v-if="tenants.length > 0" class="mt-8">
       <div class="mb-8 inline-flex items-center gap-6">
@@ -87,14 +89,17 @@
           Rezervacijos padalinyje
         </h3>
         <div>
-          <NSelect :value="providedTenant?.id" filterable
-            :options="tenants.map(tenant => ({ label: tenant.shortname, value: tenant.id }))"
-            @update:value="handleTenantUpdateValue" />
+          <ThemeProvider>
+            <NSelect :value="providedTenant?.id" filterable
+              :options="tenants.map(tenant => ({ label: tenant.shortname, value: tenant.id }))"
+              @update:value="handleTenantUpdateValue" />
+          </ThemeProvider>
         </div>
       </div>
-      <NCard :segmented="{
-        footer: 'soft',
-      }">
+      <ThemeProvider>
+        <NCard :segmented="{
+          footer: 'soft',
+        }">
         <template #header>
           <div class="inline-flex items-center gap-2">
             <component :is="Icons.RESERVATION" />
@@ -141,6 +146,7 @@
           </CardModal>
         </template>
       </NCard>
+      </ThemeProvider>
     </section>
   </AdminContentPage>
 </template>
@@ -159,6 +165,7 @@ import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcru
 import { trans as $t } from "laravel-vue-i18n";
 import IFluentBookmarkAdd24Filled from '~icons/fluent/bookmark-add-24-filled';
 import IFluentCube24Filled from '~icons/fluent/cube-24-filled';
+import ThemeProvider from "@/Components/Providers/ThemeProvider.vue";
 
 const { reservations, tenants, providedTenant } = defineProps<{
   reservations: App.Entities.Reservation[];

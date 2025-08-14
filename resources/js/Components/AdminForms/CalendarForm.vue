@@ -1,6 +1,5 @@
 <template>
-  <NConfigProvider :theme="naiveTheme">
-    <AdminForm :model="form" label-placement="top" @submit:form="$emit('submit:form', form)" @delete="$emit('delete')">
+  <AdminForm :model="form" label-placement="top" @submit:form="$emit('submit:form', form)" @delete="$emit('delete')">
     <FormElement>
       <template #title>
         {{ $t("forms.context.main_info") }}
@@ -146,19 +145,15 @@
       </NFormItem>
     </FormElement>
   </AdminForm>
-  </NConfigProvider>
 </template>
 
 <script setup lang="ts">
 import {
   type UploadFileInfo,
   type UploadInst,
-  NConfigProvider,
-  darkTheme,
 } from "naive-ui";
 import { computed, ref, useTemplateRef } from "vue";
 import { router, useForm, usePage } from "@inertiajs/vue3";
-import { useDark } from "@vueuse/core";
 
 import FormElement from "./FormElement.vue";
 import InfoPopover from "../Buttons/InfoPopover.vue";
@@ -178,9 +173,6 @@ const props = defineProps<{
   assignableTenants: App.Entities.Tenant[];
   rememberKey?: string;
 }>();
-
-const isDark = useDark();
-const naiveTheme = computed(() => isDark.value ? darkTheme : null);
 
 const locale = ref("lt");
 

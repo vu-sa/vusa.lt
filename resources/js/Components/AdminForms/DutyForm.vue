@@ -1,6 +1,5 @@
 <template>
-  <NConfigProvider :theme="naiveTheme">
-    <AdminForm :model="form" label-placement="top" @submit:form="$emit('submit:form', form)" @delete="$emit('delete')">
+  <AdminForm :model="form" label-placement="top" @submit:form="$emit('submit:form', form)" @delete="$emit('delete')">
     <FormElement>
       <template #title>
         {{ $t("forms.context.main_info") }}
@@ -158,7 +157,6 @@
       </NFormItem>
     </FormElement>
   </AdminForm>
-  </NConfigProvider>
 </template>
 
 <script setup lang="tsx">
@@ -166,12 +164,9 @@ import {
   NButton,
   type TransferRenderSourceLabel,
   type TransferRenderTargetLabel,
-  NConfigProvider,
-  darkTheme,
 } from "naive-ui";
 import { computed, ref } from "vue";
 import { useForm, usePage } from "@inertiajs/vue3";
-import { useDark } from "@vueuse/core";
 import IconEdit from "~icons/fluent/edit16-filled";
 import IconEye from "~icons/fluent/eye16-regular";
 
@@ -196,9 +191,6 @@ defineEmits<{
   (event: "submit:form", form: unknown): void;
   (event: "delete"): void;
 }>();
-
-const isDark = useDark();
-const naiveTheme = computed(() => isDark.value ? darkTheme : null);
 
 const locale = ref("lt");
 

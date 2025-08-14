@@ -1,9 +1,10 @@
 <template>
   <PageContent :title="`${$page.props.auth?.user?.name}`">
-    <NCard>
-      <!-- <p>{{ salutation }}</p> -->
-      <div class="mb-4">
-        <NForm :model="form">
+    <ThemeProvider>
+      <NCard>
+        <!-- <p>{{ salutation }}</p> -->
+        <div class="mb-4">
+          <NForm :model="form">
           <FormElement>
             <template #title>
               {{ $t("Nustatymai") }}
@@ -106,16 +107,17 @@
               </li>
             </template>
           </ul>
-        </nform>
-      </div>
-    </NCard>
-    <p class="mt-4 flex items-center justify-center gap-2">
-      <a class="inline-flex items-center" target="_blank" href="https://github.com/vu-sa/vusa.lt/">
-        <NButton text><template #icon>
-            <IMdiGithub />
-          </template>{{ $t("Projekto puslapis") }}</NButton>
-      </a>
-    </p>
+          </nform>
+        </div>
+      </NCard>
+      <p class="mt-4 flex items-center justify-center gap-2">
+        <a class="inline-flex items-center" target="_blank" href="https://github.com/vu-sa/vusa.lt/">
+          <NButton text><template #icon>
+              <IMdiGithub />
+            </template>{{ $t("Projekto puslapis") }}</NButton>
+        </a>
+      </p>
+    </ThemeProvider>
   </PageContent>
 </template>
 
@@ -130,6 +132,7 @@ import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import UploadImageWithCropper from "@/Components/Buttons/UploadImageWithCropper.vue";
 import InfoText from "@/Components/SmallElements/InfoText.vue";
 import { BreadcrumbHelpers, usePageBreadcrumbs } from "@/Composables/useBreadcrumbsUnified";
+import ThemeProvider from "@/Components/Providers/ThemeProvider.vue";
 import IMdiContentSave from '~icons/mdi/content-save';
 import IMdiGithub from '~icons/mdi/github';
 import IMdiLock from '~icons/mdi/lock';
