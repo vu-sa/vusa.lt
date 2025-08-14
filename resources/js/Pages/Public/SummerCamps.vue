@@ -63,7 +63,7 @@
           <SmartLink
             :href="route('pirmakursiuStovyklos', {
               year: null,
-              lang: 'lt',
+              lang: page.props.app.locale,
             })
             "
           >
@@ -85,7 +85,7 @@
         <SmartLink
           :href="route('pirmakursiuStovyklos', {
             year: null,
-            lang: 'lt',
+            lang: page.props.app.locale,
           })
           "
         />
@@ -101,7 +101,7 @@
         <SmartLink
           v-for="eventsYear in yearsWhenEventsExist" :key="eventsYear" :href="route('pirmakursiuStovyklos', {
             year: eventsYear,
-            lang: 'lt',
+            lang: page.props.app.locale,
           })
           "
         >
@@ -117,7 +117,7 @@
         <SmartLink
           :href="route('calendar.event', {
             calendar: event.id,
-            lang: 'lt',
+            lang: page.props.app.locale,
             subdomain: 'www',
           })
           "
@@ -145,7 +145,7 @@
 </template>
 
 <script setup lang="ts">
-import { Link } from "@inertiajs/vue3";
+import { Link, usePage } from "@inertiajs/vue3";
 import { computed } from "vue";
 import { trans as $t } from "laravel-vue-i18n";
 
@@ -158,6 +158,8 @@ const props = defineProps<{
   year: number;
   yearsWhenEventsExist: number[]
 }>();
+
+const page = usePage();
 
 const summerCampTitle = computed(() => {
   return props.year === new Date().getFullYear() ? $t("Pirmakursių stovyklos") : `${props.year} ${$t("m. pirmakursių stovyklos")}`;
