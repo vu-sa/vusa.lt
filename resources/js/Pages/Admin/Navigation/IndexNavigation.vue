@@ -1,11 +1,12 @@
 <template>
   <PageContent title="Navigacija">
-    <NFormItem label-placement="left" label="Rodyti redagavimą">
-      <NSwitch v-model:value="showAdminEdit" />
-    </NFormItem>
-    <NFormItem label-placement="left" label="Rodyti stulpelių keitimo rodykles">
-      <NSwitch v-model:value="showColumnChangeArrows" />
-    </NFormItem>
+    <ThemeProvider>
+      <NFormItem label-placement="left" label="Rodyti redagavimą">
+        <NSwitch v-model:value="showAdminEdit" />
+      </NFormItem>
+      <NFormItem label-placement="left" label="Rodyti stulpelių keitimo rodykles">
+        <NSwitch v-model:value="showColumnChangeArrows" />
+      </NFormItem>
     <TransitionGroup ref="el" tag="div">
       <div v-for="item in navigation" :key="item.id"
         class="relative grid w-full grid-cols-[24px__1fr] gap-4 border border-zinc-300 p-3 shadow-xs first:rounded-t-lg last:rounded-b-lg dark:border-zinc-700/40 dark:bg-zinc-800/5">
@@ -111,6 +112,7 @@
         </NButtonGroup>
       </div>
     </TransitionGroup>
+    </ThemeProvider>
   </PageContent>
 </template>
 
@@ -123,6 +125,7 @@ import { useSortable } from "@vueuse/integrations/useSortable";
 import MainNavigationMenuContent from "@/Components/Public/Nav/MainNavigationMenuContent.vue";
 import OrderEditDeleteButtons from "@/Components/Buttons/OrderEditDeleteButtons.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
+import ThemeProvider from "@/Components/Providers/ThemeProvider.vue";
 
 const props = defineProps<{
   navigation: App.Entities.Navigation;

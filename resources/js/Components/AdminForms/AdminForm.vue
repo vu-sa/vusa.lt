@@ -1,25 +1,27 @@
 <template>
-  <NForm v-bind="$attrs">
-    <div class="flex flex-col">
-      <slot />
-    </div>
-    <div class="mt-3 flex justify-end gap-4">
-      <slot name="buttons">
-        <NButton v-if="enableDelete" text type="error" @click="showDeleteDialog = true">
-          <template #icon>
-            <IFluentDelete24Filled />
-          </template>
-          {{ $t('Ištrinti') }}
-        </NButton>
-        <NButton type="primary" @click="$emit('submit:form')">
-          <template #icon>
-            <IFluentSave24Filled />
-          </template>
-          {{ $t('Išsaugoti') }}
-        </NButton>
-      </slot>
-    </div>
-  </NForm>
+  <ThemeProvider>
+    <NForm v-bind="$attrs">
+      <div class="flex flex-col">
+        <slot />
+      </div>
+      <div class="mt-3 flex justify-end gap-4">
+        <slot name="buttons">
+          <NButton v-if="enableDelete" text type="error" @click="showDeleteDialog = true">
+            <template #icon>
+              <IFluentDelete24Filled />
+            </template>
+            {{ $t('Ištrinti') }}
+          </NButton>
+          <NButton type="primary" @click="$emit('submit:form')">
+            <template #icon>
+              <IFluentSave24Filled />
+            </template>
+            {{ $t('Išsaugoti') }}
+          </NButton>
+        </slot>
+      </div>
+    </NForm>
+  </ThemeProvider>
 
   <Dialog :open="showDeleteDialog" @update:open="showDeleteDialog = $event">
     <DialogContent class="sm:max-w-[425px]">
@@ -48,6 +50,7 @@ import { inject, watch, ref, type Ref } from 'vue';
 import { useDebounceFn } from '@vueuse/core';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { Button } from '@/Components/ui/button';
+import ThemeProvider from '@/Components/Providers/ThemeProvider.vue';
 
 const { model } = defineProps<{
   model: Record<string, any>;

@@ -1,9 +1,11 @@
 <template>
-  <NDropdown placement="bottom-end" :options @select="handleAction">
-    <NButton quaternary size="small">
-      <IFluentMoreVertical24Filled />
-    </NButton>
-  </NDropdown>
+  <NConfigProvider :theme="naiveTheme">
+    <NDropdown placement="bottom-end" :options @select="handleAction">
+      <NButton quaternary size="small">
+        <IFluentMoreVertical24Filled />
+      </NButton>
+    </NDropdown>
+  </NConfigProvider>
 
   <Dialog :open="showDeleteDialog" @update:open="showDeleteDialog = $event">
     <DialogContent class="sm:max-w-[425px]">
@@ -28,16 +30,18 @@
 
 <script setup lang="ts" generic="T extends { id: number | string, deleted_at: string | undefined | null }">
 import { trans as $t } from 'laravel-vue-i18n';
-import { h, ref } from 'vue';
+import { h, ref, computed } from 'vue';
 import { router } from '@inertiajs/vue3';
+import { useDark } from "@vueuse/core";
 
 import IFluentArrowCounterclockwise28Regular from "~icons/fluent/arrow-counterclockwise28-regular";
 import IFluentArrowForward20Filled from "~icons/fluent/arrow-forward20-filled";
 import IFluentCopy24Filled from "~icons/fluent/copy24-filled";
 import IFluentDelete20Filled from "~icons/fluent/delete20-filled";
 import IFluentEdit20Filled from "~icons/fluent/edit20-filled";
+import IFluentMoreVertical24Filled from "~icons/fluent/more-vertical24-filled";
 
-import { type DropdownOption } from 'naive-ui';
+import { type DropdownOption, NConfigProvider, darkTheme } from 'naive-ui';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { Button } from '@/Components/ui/button';
 
@@ -51,6 +55,9 @@ const props = defineProps<{
   model: T;
   modelName: string;
 }>()
+
+const isDark = useDark();
+const naiveTheme = computed(() => isDark.value ? darkTheme : null);
 
 const showDeleteDialog = ref(false);
 

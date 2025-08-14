@@ -246,6 +246,7 @@ const filteredMeetings = computed(() => {
 // Setup breadcrumbs for the Atstovavimas Activity page
 usePageBreadcrumbs([
   { label: $t('Atstovavimas'), href: route('dashboard.atstovavimas'), icon: Icons.MEETING },
+  { label: $t('Changes History'), icon: Icons.CALENDAR },
 ]);
 
 // Handle date change
