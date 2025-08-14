@@ -64,6 +64,9 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
+import { usePage } from "@inertiajs/vue3";
+
+const $page = usePage();
 
 import InstitutionFigure from "@/Components/Public/InstitutionFigure.vue";
 import SmartLink from "@/Components/Public/SmartLink.vue";
@@ -92,19 +95,39 @@ const institutionsWithContent = computed(() => {
   });
 });
 
-const padaliniaiSections = [
-  {
-    title: "Koordinatoriai",
-    alias: "koordinatoriai",
-  },
-  {
-    title: "Kuratoriai",
-    alias: "kuratoriai",
-  },
-  {
-    title: "Studentų atstovai",
-    alias: "studentu-atstovai",
-  },
-];
+const padaliniaiSections = computed(() => {
+  const currentLocale = $page.props.app.locale;
+  
+  const allSections = [
+    {
+      title: "Koordinatoriai",
+      alias: "koordinatoriai",
+    },
+    {
+      title: "Kuratoriai", 
+      alias: "kuratoriai",
+      showOnlyForLanguage: "lt" // Only show on Lithuanian pages
+    },
+    {
+      title: "Mentors",
+      alias: "mentors", // Use separate alias for mentors
+      showOnlyForLanguage: "en" // Only show on English pages
+    },
+    {
+      title: "Studentų atstovai",
+      alias: "studentu-atstovai",
+    },
+  ];
+  
+  // Filter sections based on language
+  return allSections.filter(section => {
+    // If no language restriction, show for all languages
+    if (!section.showOnlyForLanguage) {
+      return true;
+    }
+    // Only show if current locale matches the section's target language
+    return section.showOnlyForLanguage === currentLocale;
+  });
+});
 
 </script>

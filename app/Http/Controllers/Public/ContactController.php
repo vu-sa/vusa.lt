@@ -86,9 +86,15 @@ class ContactController extends PublicController
     public function institutionDutyTypeContacts($subdomain, $lang, Type $type)
     {
         $this->getTenantLinks();
+        
+        // Handle language-specific filtering for mentors/kuratoriai
+        $otherLangTypeSlug = $this->getOtherLanguageTypeSlug($type->slug, $lang);
+        
         Inertia::share('otherLangURL', route('contacts.dutyType', [
             'subdomain' => $this->subdomain,
-            'lang' => $this->getOtherLang(), 'type' => $type->slug]));
+            'lang' => $this->getOtherLang(), 
+            'type' => $otherLangTypeSlug
+        ]));
 
         $types = $type->getDescendantsAndSelf();
 
@@ -472,5 +478,23 @@ class ContactController extends PublicController
         }
 
         return $filteredSections;
+    }
+
+    /**
+     * Get the appropriate type slug for the other language
+     */
+    private function getOtherLanguageTypeSlug(string $currentSlug, string $currentLang): string
+    {
+        // Handle mentor/kuratoriai language switching
+        if ($currentSlug === 'kuratoriai' && $currentLang === 'lt') {
+            return 'mentors'; // Switch to English mentors
+        }
+        
+        if ($currentSlug === 'mentors' && $currentLang === 'en') {
+            return 'kuratoriai'; // Switch to Lithuanian kuratoriai
+        }
+        
+        // For all other types, keep the same slug
+        return $currentSlug;
     }
 }
