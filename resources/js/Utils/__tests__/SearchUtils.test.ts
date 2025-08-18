@@ -84,13 +84,15 @@ describe('RecentSearchManager', () => {
       expect(result).toEqual(['search2', 'search1', 'search3'])
     })
 
-    it('ignores queries shorter than minimum length', () => {
+    it('ignores only empty queries and wildcard queries', () => {
       const recentSearches = ['existing']
-      const result1 = RecentSearchManager.addToRecentSearches(recentSearches, 'ab')
+      const result1 = RecentSearchManager.addToRecentSearches(recentSearches, 'ab') // Now valid
       const result2 = RecentSearchManager.addToRecentSearches(recentSearches, '')
+      const result3 = RecentSearchManager.addToRecentSearches(recentSearches, '*')
       
-      expect(result1).toEqual(['existing'])
-      expect(result2).toEqual(['existing'])
+      expect(result1).toEqual(['ab', 'existing']) // Short queries are now added
+      expect(result2).toEqual(['existing']) // Empty queries still ignored
+      expect(result3).toEqual(['existing']) // Wildcard queries ignored
     })
 
     it('handles case-insensitive duplicates', () => {
@@ -156,10 +158,11 @@ describe('RecentSearchManager', () => {
       expect(RecentSearchManager.isValidSearchQuery(' * ')).toBe(true) // Should trim
     })
 
-    it('rejects short queries', () => {
-      expect(RecentSearchManager.isValidSearchQuery('ab')).toBe(false)
-      expect(RecentSearchManager.isValidSearchQuery('')).toBe(false)
-      expect(RecentSearchManager.isValidSearchQuery('  ')).toBe(false)
+    it('accepts any non-empty queries', () => {
+      expect(RecentSearchManager.isValidSearchQuery('ab')).toBe(true) // Short queries now valid
+      expect(RecentSearchManager.isValidSearchQuery('a')).toBe(true) // Single char valid
+      expect(RecentSearchManager.isValidSearchQuery('')).toBe(false) // Empty still invalid
+      expect(RecentSearchManager.isValidSearchQuery('  ')).toBe(false) // Whitespace still invalid
     })
   })
 })
@@ -473,13 +476,15 @@ describe('QueryUtils', () => {
     it('accepts valid queries', () => {
       expect(QueryUtils.isValidQuery('abc')).toBe(true)
       expect(QueryUtils.isValidQuery('longer query')).toBe(true)
-      expect(QueryUtils.isValidQuery('*')).toBe(true)
+      expect(QueryUtils.isValidQuery('ab')).toBe(true) // Short queries now valid
+      expect(QueryUtils.isValidQuery('a')).toBe(true) // Single char now valid
+      expect(QueryUtils.isValidQuery('*')).toBe(false) // Wildcard is handled separately
     })
 
     it('rejects invalid queries', () => {
-      expect(QueryUtils.isValidQuery('ab')).toBe(false)
-      expect(QueryUtils.isValidQuery('')).toBe(false)
-      expect(QueryUtils.isValidQuery('  ')).toBe(false)
+      expect(QueryUtils.isValidQuery('')).toBe(false) // Empty still invalid
+      expect(QueryUtils.isValidQuery('  ')).toBe(false) // Whitespace still invalid
+      expect(QueryUtils.isValidQuery('*')).toBe(false) // Wildcard handled separately
     })
   })
 
@@ -498,9 +503,10 @@ describe('QueryUtils', () => {
       expect(QueryUtils.shouldSearch('', true)).toBe(true)
     })
 
-    it('rejects short queries without filters', () => {
-      expect(QueryUtils.shouldSearch('ab', false)).toBe(false)
-      expect(QueryUtils.shouldSearch('', false)).toBe(false)
+    it('accepts any non-empty queries regardless of filters', () => {
+      expect(QueryUtils.shouldSearch('ab', false)).toBe(true) // Short queries now valid
+      expect(QueryUtils.shouldSearch('a', false)).toBe(true) // Single char now valid
+      expect(QueryUtils.shouldSearch('', false)).toBe(false) // Empty without filters still invalid
     })
   })
 
@@ -511,9 +517,10 @@ describe('QueryUtils', () => {
       expect(QueryUtils.formatQueryForSearch('', true)).toBe('*') // Empty with filters becomes wildcard
     })
 
-    it('returns empty string for invalid queries', () => {
-      expect(QueryUtils.formatQueryForSearch('ab', false)).toBe('')
-      expect(QueryUtils.formatQueryForSearch('', false)).toBe('')
+    it('returns empty string only for truly empty queries', () => {
+      expect(QueryUtils.formatQueryForSearch('ab', false)).toBe('ab') // Short queries now formatted
+      expect(QueryUtils.formatQueryForSearch('a', false)).toBe('a') // Single char now formatted
+      expect(QueryUtils.formatQueryForSearch('', false)).toBe('') // Empty without filters
     })
   })
 })
