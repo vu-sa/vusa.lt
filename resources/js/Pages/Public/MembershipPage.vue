@@ -6,13 +6,14 @@
       subtitle: currentLocale === 'lt' ? 'Prisijunk prie bendruomenės šiandien' : 'Join the community today'
     }">
     <template #buttons>
-      <Link :href="currentLocale === 'lt' ? '/registracija/nariu-registracija' : '/en/registration/member-registration'">
-      <Button variant="default" size="lg" animation="subtle"
-        class="bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 shadow-lg w-full sm:w-auto">
-        <User class="w-4 h-4 mr-2" />
-        {{ content.callToAction.buttonText }}
-      </Button>
-      </Link>
+      <a target="_blank" rel="noopener noreferrer"
+        :href="currentLocale === 'lt' ? route('member-registration') : route('member-registration.en')">
+        <Button variant="default" size="lg" animation="subtle"
+          class="bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 shadow-lg w-full sm:w-auto">
+          <User class="w-4 h-4 mr-2" />
+          {{ content.callToAction.buttonText }}
+        </Button>
+      </a>
       <Button variant="outline" size="lg" animation="subtle"
         class="border-zinc-300 dark:border-zinc-600 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 w-full sm:w-auto"
         @click="scrollToNextSection">
@@ -38,8 +39,7 @@
           <CarouselItem>
             <CarouselSlideCard :icon="Users" :badge="currentLocale === 'lt' ? 'Bendruomenė' : 'Community'"
               :title="content.whyJoin.environment.title" :description="content.whyJoin.environment.description"
-              image-src="/images/become-a-member/mokymai2025-6.webp" image-alt="Students"
-              :image-left="true" />
+              image-src="/images/become-a-member/mokymai2025-6.webp" image-alt="Students" :image-left="true" />
           </CarouselItem>
 
           <!-- Impact Slide -->
@@ -68,7 +68,8 @@
 
           <!-- Diploma Supplement Slide -->
           <CarouselItem>
-            <CarouselSlideCard :icon="ExternalLink" :badge="currentLocale === 'lt' ? 'Diplomo priedėlis' : 'Diploma Supplement'"
+            <CarouselSlideCard :icon="ExternalLink"
+              :badge="currentLocale === 'lt' ? 'Diplomo priedėlis' : 'Diploma Supplement'"
               :title="content.benefits.diploma.title" :description="content.benefits.diploma.description"
               image-src="/images/become-a-member/diplomas.webp" image-alt="University diploma and achievements"
               :image-left="false" />
@@ -150,14 +151,19 @@
           <div class="space-y-3 md:space-y-4">
             <p class="text-sm sm:text-base md:text-lg text-zinc-600 dark:text-zinc-400 leading-relaxed">
               <span v-if="currentLocale === 'lt'">
-                Mūsų vėžlė Lijana (vardą keičia <i>beveik</i> kasmet) yra ilgiausiai veikianti VU SA narė. Kaip ir jinai, mes tikime, kad nuoseklumas ir kantrybė lemia sėkmę – ne visada reikia skubėti, svarbiausia judėti teisinga kryptimi.
+                Mūsų vėžlė Lijana (vardą keičia <i>beveik</i> kasmet) yra ilgiausiai veikianti VU SA narė. Kaip ir
+                jinai,
+                mes tikime, kad nuoseklumas ir kantrybė lemia sėkmę – ne visada reikia skubėti, svarbiausia judėti
+                teisinga kryptimi.
               </span>
               <span v-else>
-                Our turtle Lijana (the name changes <i>almost</i> every year) is the longest-serving VU SA member. Like her, we believe that consistency and patience determine success – you don't always need to rush, the important thing is to move in the right direction.
+                Our turtle Lijana (the name changes <i>almost</i> every year) is the longest-serving VU SA member. Like
+                her, we believe that consistency and patience determine success – you don't always need to rush, the
+                important thing is to move in the right direction.
               </span>
             </p>
             <p class="text-sm sm:text-base md:text-lg text-zinc-600 dark:text-zinc-400 leading-relaxed">
-              {{ currentLocale === 'lt' ? 'Lijana simbolizuoja mūsų bendruomenės vieningumą – ilgalaikį įsipareigojimą studentų (-čių) gerovei. Užeik susipažinti su ja VU SA Centriniame biure Observatorijos kieme, Universiteto g. 3!' : 'Lijana symbolizes our community\'s unity – long-term commitment to student welfare. Come visit her at the VU SA Central Office in the Observatory Yard, Universiteto st. 3!' }}
+              {{ currentLocale === 'lt' ? 'Lijana simbolizuoja mūsų bendruomenės vieningumą – ilgalaikį įsipareigojimą studentų(-čių) gerovei.Užeik susipažinti su ja VU SA Centriniame biure Observatorijos kieme, Universiteto g. 3!' : 'Lijana symbolizes our community\'s unity – long-term commitment to student welfare. Come visit her at the VU SA Central Office in the Observatory Yard, Universiteto st. 3!' }}
             </p>
           </div>
           <div class="flex items-center gap-4 pt-2">
@@ -168,8 +174,8 @@
           </div>
         </div>
         <div class="relative order-first lg:order-last">
-          <ImageWithDecorations src="/images/become-a-member/20250510_VUSA-144.webp" alt="VU SA turtle mascot Lijana" object-position="bottom right"
-            height-class="h-64 md:h-80 lg:h-96" :decorations="[
+          <ImageWithDecorations src="/images/become-a-member/20250510_VUSA-144.webp" alt="VU SA turtle mascot Lijana"
+            object-position="bottom right" height-class="h-64 md:h-80 lg:h-96" :decorations="[
               { type: 'line', position: 'top-right', size: 'lg', color: 'vusa-yellow', opacity: 60 },
             ]" :overlay-content="{
               title: currentLocale === 'lt' ? 'Faktai' : 'Fun Facts',
@@ -199,28 +205,27 @@
   <!-- Photo Gallery Section -->
   <section class="py-12 full-bleed relative">
     <div class="container mx-auto px-4 max-w-6xl relative">
-      <SectionHeader 
-        :title="currentLocale === 'lt' ? 'Mūsų veikla kadruose' : 'Our activities in frames'"
+      <SectionHeader :title="currentLocale === 'lt' ? 'Mūsų veikla kadruose' : 'Our activities in frames'"
         :subtitle="currentLocale === 'lt' ? 'Pažvelk į mūsų bendruomenės kasdienybę ir renginius' : 'Take a look at our community\'s daily life and events'" />
-      
+
       <PhotoGalleryGrid :images="galleryImages" />
     </div>
   </section>
 
   <!-- Call to Action - Clean and effective -->
-  <section
-    class="py-16 bg-zinc-50 dark:bg-zinc-900 full-bleed relative overflow-hidden">
+  <section class="py-16 bg-zinc-50 dark:bg-zinc-900 full-bleed relative overflow-hidden">
     <div class="container mx-auto px-4 max-w-4xl text-center space-y-6 md:space-y-8 relative">
       <h2 class="text-xl sm:text-2xl md:text-3xl font-bold text-zinc-900 dark:text-zinc-100 leading-tight">
         {{ content.callToAction.title }}
       </h2>
-      <Link :href="currentLocale === 'lt' ? '/registracija/nariu-registracija' : '/en/registration/member-registration'">
-      <Button variant="default" size="lg" animation="subtle"
-        class="bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-200 border-zinc-900 dark:border-zinc-100 hover:border-zinc-800 dark:hover:border-zinc-200">
-        <User class="w-4 h-4 mr-2" />
-        {{ content.callToAction.buttonText }}
-      </Button>
-      </Link>
+      <a target="_blank" rel="noopener noreferrer"
+        :href="currentLocale === 'lt' ? route('member-registration') : route('member-registration.en')">
+        <Button variant="default" size="lg" animation="subtle"
+          class="bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-200 border-zinc-900 dark:border-zinc-100 hover:border-zinc-800 dark:hover:border-zinc-200">
+          <User class="w-4 h-4 mr-2" />
+          {{ content.callToAction.buttonText }}
+        </Button>
+      </a>
     </div>
   </section>
 
@@ -249,7 +254,8 @@
   <section class="py-12 mb-8 full-bleed">
     <div class="container mx-auto px-4 max-w-4xl text-center">
       <div class="space-y-4">
-        <h2 class="text-2xl sm:text-3xl text-zinc-900 dark:text-zinc-50 md:text-4xl lg:text-5xl font-bold leading-tight tracking-tight">
+        <h2
+          class="text-2xl sm:text-3xl text-zinc-900 dark:text-zinc-50 md:text-4xl lg:text-5xl font-bold leading-tight tracking-tight">
           {{ currentLocale === 'lt' ? 'Vieningai Už Studentų ir Studenčių Ateitį!' : 'United for the Future of Students!' }}
         </h2>
         <div class="w-24 h-1 bg-zinc-900/80 dark:bg-zinc-50/80 mx-auto rounded-full" />
@@ -259,7 +265,7 @@
 </template>
 
 <script setup lang="ts">
-import { Link, usePage } from '@inertiajs/vue3';
+import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed, ref, onMounted, onUnmounted, watch } from 'vue';
 import {

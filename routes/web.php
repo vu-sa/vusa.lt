@@ -48,7 +48,6 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
 
         Route::get('kalendorius/renginys/{calendar}', [Public\PublicPageController::class, 'calendarEventRedirect'])->name('calendar.event');
 
-        Route::get('tapk-nariu', [Public\PublicPageController::class, 'membership'])->name('joinUs');
         Route::get('become-a-member', [Public\PublicPageController::class, 'membership'])->name('joinUs.en');
 
         Route::get('kalendorius/{year}/{month}/{day}/{slug}', [Public\PublicPageController::class, 'calendarMain'])->name('calendar.event.2')->whereNumber('year')->whereNumber('month')->whereNumber('day');
@@ -65,6 +64,9 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
 
         Route::get('kalendorius/ics', [Public\MainController::class, 'publicAllEventCalendar'])->name('calendar.ics');
 
+        Route::redirect('nariu-registracija', config('app.url').'/registracija/nariu-registracija', 301)->name('member-registration');
+        Route::redirect('member-registration', config('app.url').'/registration/member-registration', 301)->name('member-registration.en');
+
         // Note: API routes should be defined in api.php, not here
 
         Route::get('dokumentai', [Public\DocumentController::class, 'index'])->name('documents');
@@ -72,13 +74,14 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
         // Redirect reports to external subdomains
         Route::redirect('ataskaita-2022', 'https://ataskaita2022.vusa.lt', 301);
         Route::redirect('ataskaita-2023', 'https://ataskaita2023.vusa.lt', 301);
-        Route::redirect('nariu-registracija', config('app.url').'/registracija/nariu-registracija', 301)->name('member-registration');
     });
 
     Route::domain('{subdomain}.'.explode('.', config('app.url'), 2)[1])->group(function () {
         Route::get('/', [Public\PublicPageController::class, 'home'])->name('home');
         Route::get('{newsString}', [Public\NewsController::class, 'newsArchive'])->name('newsArchive')->whereIn('newsString', ['naujienos', 'news']);
         Route::redirect('/admin', '/mano', 301);
+
+        Route::get('tapk-nariu', [Public\PublicPageController::class, 'membership'])->name('joinUs');
 
         Route::get('kontaktai/id/{institution}', [Public\ContactController::class, 'institutionContacts'])->name('contacts.institution');
 
