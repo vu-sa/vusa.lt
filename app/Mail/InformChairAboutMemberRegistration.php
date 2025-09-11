@@ -16,7 +16,7 @@ class InformChairAboutMemberRegistration extends Mailable // implements ShouldQu
      *
      * @return void
      */
-    public function __construct(public string $registration_id, public string $name, public Institution $institution) {}
+    public function __construct(public string $registration_id, public string $name, public Institution $institution, public string $form_id) {}
 
     /**
      * Build the message.
