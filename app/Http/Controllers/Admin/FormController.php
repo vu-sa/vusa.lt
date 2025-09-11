@@ -38,8 +38,8 @@ class FormController extends AdminController
 
         // Check member registration form access
         $memberFormId = app(FormSettings::class)->member_registration_form_id;
-        $canAccessMemberForm = $memberFormId && 
-            !GetTenantsForUpserts::execute('forms.read.padalinys', $this->authorizer)->isEmpty();
+        $canAccessMemberForm = $memberFormId &&
+            ! GetTenantsForUpserts::execute('forms.read.padalinys', $this->authorizer)->isEmpty();
 
         return $this->inertiaResponse('Admin/Forms/IndexForm', [
             'forms' => $forms,
