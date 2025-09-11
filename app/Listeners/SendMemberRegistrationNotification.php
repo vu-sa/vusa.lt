@@ -109,7 +109,7 @@ class SendMemberRegistrationNotification implements ShouldQueue
 
         foreach ($mailableDuties as $mailableDuty) {
             /** @var \App\Models\Duty $mailableDuty */
-            Notification::send($mailableDuty->current_users()->first(), new MemberRegistered($event->registration->id, $nameResponse->getValue(), $institution, $mailableDuty->email));
+            Notification::send($mailableDuty->current_users()->first(), new MemberRegistered($event->registration->id, $nameResponse->getValue(), $institution, $mailableDuty->email, $form->id));
         }
     }
 }

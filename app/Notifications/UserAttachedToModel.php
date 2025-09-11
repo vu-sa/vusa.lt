@@ -16,8 +16,6 @@ class UserAttachedToModel extends Notification implements ShouldQueue
 
     /**
      * The model instance.
-     *
-     * @var Model&object{id: int|string, name?: string, title?: string}
      */
     public Model $model;
 
@@ -38,8 +36,6 @@ class UserAttachedToModel extends Notification implements ShouldQueue
 
     /**
      * Create a new notification instance.
-     *
-     * @param  Model&object{id: int|string, name?: string, title?: string}  $model
      */
     public function __construct(Model $model, User $attacher)
     {
@@ -57,7 +53,7 @@ class UserAttachedToModel extends Notification implements ShouldQueue
         $this->object = [
             'modelClass' => class_basename(get_class($this->model)),
             'name' => $objectName,
-            'url' => route(Str::of(class_basename(get_class($this->model)))->lcfirst()->plural().'.show', $this->model->id),
+            'url' => route(Str::of(class_basename(get_class($this->model)))->lcfirst()->plural().'.show', $this->model->getKey()),
         ];
     }
 
