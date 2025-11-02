@@ -20,7 +20,7 @@ jobs:
       php: ${{ steps.filter.outputs.php }}
       js: ${{ steps.filter.outputs.js }}
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - uses: dorny/paths-filter@v3
       id: filter
       with:
@@ -55,7 +55,7 @@ jobs:
     runs-on: ubuntu-latest
     name: PHP Linting (Pint)
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 2
           ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
@@ -93,7 +93,7 @@ jobs:
     runs-on: ubuntu-latest
     name: PHP Static Analysis
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
       
@@ -122,7 +122,7 @@ jobs:
     runs-on: ubuntu-latest
     name: PHP Tests
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
       with:
         ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
     
@@ -187,7 +187,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Frontend Tests
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     
     - name: Download build artifacts
       uses: actions/download-artifact@v6
