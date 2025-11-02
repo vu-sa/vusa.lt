@@ -106,7 +106,7 @@
     "eslint-plugin-vue": "^10.0.0",
     "eslint-plugin-vuejs-accessibility": "^2.4.1",
     "globals": "^16.0.0",
-    "jsdom": "^26.0.0",
+    "jsdom": "^27.1.0",
     "laravel-echo": "^2.1.6",
     "laravel-vite-plugin": "^2.0.0",
     "naive-ui": "^2.32.2",
