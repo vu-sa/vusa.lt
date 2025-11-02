@@ -50,7 +50,7 @@ jobs:
           echo "- Frontend (JS/TS): $(curl -s https://codecov.io/gh/VU-SA/vusa.lt/branch/main | grep -o 'Frontend: [0-9.]*%' || echo 'Not available')" >> status-report.md
           
       - name: Create or update status issue
-        uses: peter-evans/create-issue-from-file@v5
+        uses: peter-evans/create-issue-from-file@v6
         with:
           title: CI/CD Status Report
           content-filepath: ./status-report.md
