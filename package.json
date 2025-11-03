@@ -47,7 +47,7 @@
     "@vue-flow/controls": "^1.1.2",
     "@vue-flow/core": "^1.39.1",
     "@vue-flow/node-toolbar": "^1.1.0",
-    "@vueuse/core": "^13.6.0",
+    "@vueuse/core": "^14.0.0",
     "@vueuse/integrations": "^13.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
