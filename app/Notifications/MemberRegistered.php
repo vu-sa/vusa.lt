@@ -17,7 +17,7 @@ class MemberRegistered extends Notification implements ShouldQueue
      *
      * @return void
      */
-    public function __construct(protected int $registration_id, protected string $name, protected Institution $institution, protected string $email) {}
+    public function __construct(protected int $registration_id, protected string $name, protected Institution $institution, protected string $email, protected string $form_id) {}
 
     /**
      * Get the notification's delivery channels.
@@ -38,7 +38,7 @@ class MemberRegistered extends Notification implements ShouldQueue
      */
     public function toMail($notifiable)
     {
-        return (new InformChairAboutMemberRegistration((string) $this->registration_id, $this->name, $this->institution))
+        return (new InformChairAboutMemberRegistration((string) $this->registration_id, $this->name, $this->institution, $this->form_id))
             ->to($this->email);
     }
 
@@ -52,7 +52,7 @@ class MemberRegistered extends Notification implements ShouldQueue
     {
         return [
             'objectName' => $this->name,
-            'actionUrl' => ['routeName' => 'registrations.show', 'model' => $this->registration_id],
+            'actionUrl' => ['routeName' => 'forms.show', 'model' => $this->form_id],
         ];
     }
 }

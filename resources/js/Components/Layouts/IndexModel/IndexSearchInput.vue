@@ -4,34 +4,38 @@
       <span> {{ other.length }}</span>
 
     </Badge>
-    <NPopover>
-      Išvalyti paiešką...
-      <template #trigger>
-        <NButton round @click="sweepSearch"><template #icon>
-            <IFluentBroom16Regular />
-          </template></NButton>
-      </template>
-    </NPopover>
-    <NInputGroup>
-      <NInput v-model:value="searchValue" class="mb-4 md:col-span-4" type="text" clearable round
-        :placeholder="`${$t('Ieškoti')}...`" @update:value="searchIsDirty = true" @keyup.enter="handleSearchInput">
-        <template #prefix>
-          <IFluentSearch20Filled />
+    <NConfigProvider :theme="naiveTheme" class="flex gap-2 flex-1">
+      <NPopover>
+        Išvalyti paiešką...
+        <template #trigger>
+          <NButton round @click="sweepSearch"><template #icon>
+              <IFluentBroom16Regular />
+            </template></NButton>
         </template>
-      </NInput>
-      <NButton round :loading="loading" :type="searchIsDirty ? 'primary' : 'default'" @click="handleSearchInput">
-        <template #icon>
-          <IFluentSearch20Filled />
-        </template>
-      </NButton>
-    </NInputGroup>
+      </NPopover>
+      <NInputGroup class="flex-1">
+        <NInput v-model:value="searchValue" class="mb-4 md:col-span-4" type="text" clearable round
+          :placeholder="`${$t('Ieškoti')}...`" @update:value="searchIsDirty = true" @keyup.enter="handleSearchInput">
+          <template #prefix>
+            <IFluentSearch20Filled />
+          </template>
+        </NInput>
+        <NButton round :loading="loading" :type="searchIsDirty ? 'primary' : 'default'" @click="handleSearchInput">
+          <template #icon>
+            <IFluentSearch20Filled />
+          </template>
+        </NButton>
+      </NInputGroup>
+    </NConfigProvider>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { router } from "@inertiajs/vue3";
 import { Badge } from '@/Components/ui/badge';
+import { NConfigProvider, darkTheme } from "naive-ui";
+import { useDark } from "@vueuse/core";
 
 // TODO: fix this event
 const emit = defineEmits<{
@@ -45,6 +49,9 @@ const props = defineProps<{
   payloadName: string;
   hasSoftDeletes: boolean;
 }>();
+
+const isDark = useDark();
+const naiveTheme = computed(() => isDark.value ? darkTheme : null);
 
 const loading = ref(false);
 const searchIsDirty = ref(false);

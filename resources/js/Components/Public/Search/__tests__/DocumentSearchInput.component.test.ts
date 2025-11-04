@@ -111,13 +111,14 @@ describe('DocumentSearchInput', () => {
       }
     })
 
-    it('does not emit search for queries shorter than 3 characters', async () => {
+    it('emits search for short queries when enter is pressed', async () => {
       const wrapper = createWrapper({ query: 'ab' })
       const input = wrapper.find('input')
       
       await input.trigger('keydown.enter')
       
-      expect(wrapper.emitted('search')).toBeFalsy()
+      expect(wrapper.emitted('search')).toBeTruthy() // Short queries now valid
+      expect(wrapper.emitted('search')[0][0]).toBe('ab')
     })
   })
 
@@ -212,13 +213,18 @@ describe('DocumentSearchInput', () => {
     it('hides clear button when query is empty', () => {
       const wrapper = createWrapper({ query: '' })
       
-      // Clear button should not be visible when query is empty
-      const clearButtons = wrapper.findAll('button').filter(btn => 
-        btn.text().includes('Išvalyti') || btn.find('svg').exists()
-      )
+      // Clear button should not be visible when query is empty (has X icon)
+      const clearButton = wrapper.findAll('button').filter(btn => {
+        const xIcon = btn.findComponent({ name: 'X' })
+        return xIcon.exists()
+      })
       
-      // Should only have the type-to-search toggle button, not clear button
-      expect(clearButtons.length).toBeLessThanOrEqual(1)
+      // Clear button (X icon) should not exist when query is empty
+      expect(clearButton.length).toBe(0)
+      
+      // But other buttons (toggle, search) can exist
+      const allButtons = wrapper.findAll('button')
+      expect(allButtons.length).toBeGreaterThan(0) // Should have toggle and possibly search button
     })
 
     it('emits clear and update:query when clear button is clicked', async () => {

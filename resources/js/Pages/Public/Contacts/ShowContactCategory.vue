@@ -23,7 +23,7 @@
             <InstitutionFigure :institution hide-types>
               <!-- Modern section navigation buttons -->
               <template #more>
-                <nav v-if="institution.alias === institution.tenant?.alias" class="mt-6 rounded-md dark:bg-gray-800/50"
+                <nav v-if="institution.alias === institution.tenant?.alias" class="mt-6 rounded-md dark:bg-zinc-900/50"
                   :aria-label="$t('Navigation to different contact sections')">
                   <div class="flex flex-wrap gap-1.5">
                     <Button v-for="section in padaliniaiSections" :key="section.alias" :as="SmartLink" :href="route('contacts.alias', {
@@ -64,6 +64,9 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
+import { usePage } from "@inertiajs/vue3";
+
+const $page = usePage();
 
 import InstitutionFigure from "@/Components/Public/InstitutionFigure.vue";
 import SmartLink from "@/Components/Public/SmartLink.vue";
@@ -92,19 +95,39 @@ const institutionsWithContent = computed(() => {
   });
 });
 
-const padaliniaiSections = [
-  {
-    title: "Koordinatoriai",
-    alias: "koordinatoriai",
-  },
-  {
-    title: "Kuratoriai",
-    alias: "kuratoriai",
-  },
-  {
-    title: "Studentų atstovai",
-    alias: "studentu-atstovai",
-  },
-];
+const padaliniaiSections = computed(() => {
+  const currentLocale = $page.props.app.locale;
+  
+  const allSections = [
+    {
+      title: "Koordinatoriai",
+      alias: "koordinatoriai",
+    },
+    {
+      title: "Kuratoriai", 
+      alias: "kuratoriai",
+      showOnlyForLanguage: "lt" // Only show on Lithuanian pages
+    },
+    {
+      title: "Mentors",
+      alias: "mentors", // Use separate alias for mentors
+      showOnlyForLanguage: "en" // Only show on English pages
+    },
+    {
+      title: "Studentų atstovai",
+      alias: "studentu-atstovai",
+    },
+  ];
+  
+  // Filter sections based on language
+  return allSections.filter(section => {
+    // If no language restriction, show for all languages
+    if (!section.showOnlyForLanguage) {
+      return true;
+    }
+    // Only show if current locale matches the section's target language
+    return section.showOnlyForLanguage === currentLocale;
+  });
+});
 
 </script>

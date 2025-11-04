@@ -2,12 +2,14 @@
   <IndexSearchInput payload-name="text" :has-soft-deletes="hasSoftDeletes" @complete-search="handleCompletedSearch"
     @update:other="handleShowOther" @sweep="sweepSearch" />
   <!-- Dialog provider is used for the delete button -->
-  <NDialogProvider>
-    <NDataTable remote :data="paginatedModels.data" :columns="columnsWithActions" :loading :pagination="pagination"
-      :row-key="(row) => row.id" pagination-behavior-on-filter="first" v-bind="$attrs"
-      @update:sorter="handleSorterChange" @update:page="handleChange" @update:filters="handleFiltersChange"
-      @update-checked-row-keys="handleCheckedRowKeysChange" />
-  </NDialogProvider>
+  <NConfigProvider :theme="naiveTheme">
+    <NDialogProvider>
+      <NDataTable remote :data="paginatedModels.data" :columns="columnsWithActions" :loading :pagination="pagination"
+        :row-key="(row) => row.id" pagination-behavior-on-filter="first" v-bind="$attrs"
+        @update:sorter="handleSorterChange" @update:page="handleChange" @update:filters="handleFiltersChange"
+        @update-checked-row-keys="handleCheckedRowKeysChange" />
+    </NDialogProvider>
+  </NConfigProvider>
 </template>
 
 <script setup lang="ts">
@@ -18,8 +20,11 @@ import {
   type DataTableRowKey,
   type DataTableSortState,
   NDialogProvider,
+  NConfigProvider,
+  darkTheme,
 } from "naive-ui";
 import { type Ref, computed, h, inject, ref } from "vue";
+import { useDark } from "@vueuse/core";
 import { router } from "@inertiajs/vue3";
 
 import ActionColumns from "./ActionColumns.vue";
@@ -59,6 +64,9 @@ const updateSorters = (
 };
 
 console.log(props.columns)
+
+const isDark = useDark();
+const naiveTheme = computed(() => isDark.value ? darkTheme : null);
 
 const loading = ref(false);
 const otherParams = ref<Record<string, boolean | undefined>>({});

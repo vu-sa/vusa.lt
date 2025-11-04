@@ -19,7 +19,20 @@
         :enable-column-visibility="false"
         :empty-message="$t('No registrations found')"
         :row-class-name="() => ''"
-      />
+      >
+        <template #filters>
+          <DataTableFilter 
+            v-for="field in enumFields" 
+            :key="field.id"
+            v-model:value="enumFilters[String(field.id)]"
+            :options="getFieldOptions({ key: String(field.id) })"
+            multiple
+            @update:value="enumFilters[String(field.id)] = $event"
+          >
+            {{ field.label }}
+          </DataTableFilter>
+        </template>
+      </SimpleDataTable>
     </div>
 
     <!-- Registration Details Dialog -->
@@ -103,6 +116,7 @@ import {
 } from "@/Components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
 import { Badge } from "@/Components/ui/badge";
+import DataTableFilter from "@/Components/ui/data-table/DataTableFilter.vue";
 import { createIdColumn, createTimestampColumn, createTextColumn } from "@/Utils/DataTableColumns.tsx";
 
 const props = defineProps<{
@@ -114,8 +128,39 @@ const showModal = ref(false);
 const selectedRegistration = ref<any>(null);
 const showOptionsFor = ref<string | null>(null);
 
+// Filter state for enum fields
+const enumFilters = ref<Record<string, any[]>>({});
+
 const toggleFieldOptions = (fieldKey: string) => {
   showOptionsFor.value = showOptionsFor.value === fieldKey ? null : fieldKey;
+};
+
+// Helper function to get field options for enum fields - moved up for computed usage
+const getFieldOptions = (field: any) => {
+  const formField = props.form.form_fields.find(f => String(f.id) === field.key);
+  
+  if (!formField || formField.type !== 'enum') {
+    return null;
+  }
+
+  // Handle tenant model options
+  if (formField.use_model_options && formField.options_model === "App\\Models\\Tenant") {
+    const tenants = usePage().props.tenants || [];
+    return tenants.map((tenant: any) => ({
+      value: tenant.id,
+      label: tenant.shortname
+    }));
+  }
+
+  // Handle regular options
+  if (formField.options && Array.isArray(formField.options)) {
+    return formField.options.map((option: any) => ({
+      value: option.value,
+      label: typeof option.label === 'object' ? option.label[usePage().props.app.locale] : option.label
+    }));
+  }
+
+  return null;
 };
 
 // Reset options state when dialog closes
@@ -125,9 +170,42 @@ watch(showModal, (isOpen) => {
   }
 });
 
+// Get enum fields that can have filters
+const enumFields = computed(() => {
+  return props.form.form_fields.filter(field => {
+    if (field.type !== 'enum') return false;
+    const options = getFieldOptions({ key: String(field.id) });
+    return options && Array.isArray(options) && options.length > 0;
+  });
+});
+
+// Initialize filters for enum fields
+watch(enumFields, (fields) => {
+  fields.forEach(field => {
+    if (!enumFilters.value[String(field.id)]) {
+      enumFilters.value[String(field.id)] = [];
+    }
+  });
+}, { immediate: true });
+
 // Transform registration data for table
 const tableData = computed(() => {
-  return props.registrations.map((registration) => {
+  let filteredRegistrations = props.registrations;
+  
+  // Apply enum filters
+  Object.entries(enumFilters.value).forEach(([fieldId, selectedValues]) => {
+    if (selectedValues.length > 0) {
+      filteredRegistrations = filteredRegistrations.filter((registration) => {
+        const fieldResponse = registration.field_responses.find(
+          fr => String(fr.form_field.id) === fieldId
+        );
+        const value = fieldResponse?.response?.value;
+        return selectedValues.includes(value);
+      });
+    }
+  });
+  
+  return filteredRegistrations.map((registration) => {
     const row = { ...registration };
     registration.field_responses.forEach((fieldResponse) => {
       // Check if response exists and has a value property
@@ -153,14 +231,19 @@ const formatFieldValue = (field: any, value: any) => {
   }
 
   if (field.type === 'enum') {
-    const formField = props.form.form_fields.find(f => String(f.id) === field.key);
+    // Handle both table context (field = original form field) and dialog context (field = simplified)
+    const formField = field.id 
+      ? field  // Already the full form field (from table)
+      : props.form.form_fields.find(f => String(f.id) === field.key); // Lookup needed (from dialog)
+    
     if (!formField) return String(value);
     
     // Handle tenant model options
     if (formField.use_model_options && formField.options_model === "App\\Models\\Tenant") {
-      const tenants = usePage().props.tenants;
-      const tenant = tenants.find((tenant: any) => tenant.id === value);
-      return tenant ? `${tenant.shortname} (ID: ${value})` : String(value);
+      const tenants = usePage().props.tenants || [];
+      // Handle both string and number value types for tenant ID comparison
+      const tenant = tenants.find((tenant: any) => String(tenant.id) === String(value) || tenant.id === value);
+      return tenant ? `${tenant.shortname} (ID: ${value})` : `ID: ${value}`;
     }
     
     // Handle regular options - show both label and value
@@ -220,12 +303,15 @@ const registrationColumns = computed<ColumnDef<any, any>[]>(() => {
     // ID column
     createIdColumn({ width: 60 }),
     
-    // Dynamic form field columns with aggressive truncation
+    // Dynamic form field columns with smarter sizing
     ...props.form.form_fields.map((field) => {
+      // Give enum fields more space for formatted labels
+      const columnWidth = field.type === 'enum' ? 180 : 120;
+      
       return {
         accessorKey: String(field.id),
         id: String(field.id),
-        size: 120, // Smaller fixed width
+        size: columnWidth,
         enableSorting: true,
         // Proper TanStack header function - receives header context
         header: (info) => {
@@ -281,33 +367,6 @@ const registrationColumns = computed<ColumnDef<any, any>[]>(() => {
   return columns;
 });
 
-// Helper function to get field options for enum fields
-const getFieldOptions = (field: any) => {
-  const formField = props.form.form_fields.find(f => String(f.id) === field.key);
-  
-  if (!formField || formField.type !== 'enum') {
-    return null;
-  }
-
-  // Handle tenant model options
-  if (formField.use_model_options && formField.options_model === "App\\Models\\Tenant") {
-    const tenants = usePage().props.tenants || [];
-    return tenants.map((tenant: any) => ({
-      value: tenant.id,
-      label: tenant.shortname
-    }));
-  }
-
-  // Handle regular options
-  if (formField.options && Array.isArray(formField.options)) {
-    return formField.options.map((option: any) => ({
-      value: option.value,
-      label: typeof option.label === 'object' ? option.label[usePage().props.app.locale] : option.label
-    }));
-  }
-
-  return null;
-};
 
 // Display fields for dialog - exclude actions and reorder for better UX
 const displayFields = computed(() => {

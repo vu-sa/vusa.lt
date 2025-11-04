@@ -6,15 +6,18 @@
           Pasirinkti padalinį
         </h3>
         <div>
-          <NSelect :value="providedTenant?.id" filterable
-            :options="tenants.map(tenant => ({ label: tenant.shortname, value: tenant.id }))"
-            @update:value="handleTenantUpdateValue" />
+          <ThemeProvider>
+            <NSelect :value="providedTenant?.id" filterable
+              :options="tenants.map(tenant => ({ label: tenant.shortname, value: tenant.id }))"
+              @update:value="handleTenantUpdateValue" />
+          </ThemeProvider>
         </div>
       </div>
-      <div class="grid grid-cols-1 gap-4 lg:grid-cols-2 2xl:grid-cols-3">
-        <NCard :segmented="{
-          footer: 'soft',
-        }">
+      <ThemeProvider>
+        <div class="grid grid-cols-1 gap-4 lg:grid-cols-2 2xl:grid-cols-3">
+          <NCard :segmented="{
+            footer: 'soft',
+          }">
           <template #header>
             <div class="inline-flex items-center gap-2">
               <component :is="Icons.PAGE" />
@@ -126,7 +129,8 @@
             </Link>
           </template>
         </NCard>
-      </div>
+        </div>
+      </ThemeProvider>
     </section>
   </AdminContentPage>
 </template>
@@ -140,6 +144,7 @@ import { computed } from 'vue';
 import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import { trans as $t } from "laravel-vue-i18n";
+import ThemeProvider from "@/Components/Providers/ThemeProvider.vue";
 
 const { tenants, providedTenant } = defineProps<{
   tenants: App.Entities.Tenant[];

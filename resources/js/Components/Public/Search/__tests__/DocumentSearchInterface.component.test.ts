@@ -256,14 +256,17 @@ describe('DocumentSearchInterface', () => {
       expect(mockSearchController.search).toHaveBeenCalledWith('*', true)
     })
 
-    it('does not trigger search for empty queries', async () => {
+    it('triggers search for empty queries when filters are active', async () => {
+      // Set up mock with active filters
+      mockSearchController.hasActiveFilters.value = true
       const wrapper = createWrapper()
       
       const searchInput = wrapper.findComponent({ name: 'DocumentSearchInput' })
       await searchInput.vm.$emit('update:query', '')
       
-      // Should not call search for empty query (no calls expected without onMounted)
-      expect(mockSearchController.search).toHaveBeenCalledTimes(0) // No search calls
+      // Should call search for empty query with filters - gets converted to wildcard
+      await new Promise(resolve => setTimeout(resolve, 300)) // Wait for debounced search
+      expect(mockSearchController.search).toHaveBeenCalledWith('*', true) // Empty with filters becomes wildcard
     })
   })
 
@@ -365,12 +368,15 @@ describe('DocumentSearchInterface', () => {
       expect(wrapper.text()).toContain('search.no_documents_found')
     })
 
-    it('shows minimum character message for short queries', () => {
+    it('shows no results message for short queries with no results', () => {
       mockSearchController.searchState.value.query = 'ab'
+      mockSearchController.totalHits.value = 0
+      mockSearchController.results.value = []
+      mockSearchController.isSearching.value = false
       
       const wrapper = createWrapper()
       
-      expect(wrapper.text()).toContain('search.min_chars_search')
+      expect(wrapper.text()).toContain('search.no_documents_found')
     })
 
     it('shows instruction message when no query', () => {

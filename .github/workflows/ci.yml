@@ -20,7 +20,7 @@ jobs:
       php: ${{ steps.filter.outputs.php }}
       js: ${{ steps.filter.outputs.js }}
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - uses: dorny/paths-filter@v3
       id: filter
       with:
@@ -55,13 +55,13 @@ jobs:
     runs-on: ubuntu-latest
     name: PHP Linting (Pint)
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 2
           ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
           
       - name: Download build artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: build-assets
           path: ./
@@ -81,7 +81,7 @@ jobs:
           verboseMode: true
           
       - name: Git Auto Commit
-        uses: stefanzweifel/git-auto-commit-action@v6.0.1
+        uses: stefanzweifel/git-auto-commit-action@v7.0.0
         id: auto-commit
         with:
           commit_message: PHP Linting (Pint)
@@ -93,12 +93,12 @@ jobs:
     runs-on: ubuntu-latest
     name: PHP Static Analysis
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
       
       - name: Download build artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: build-assets
           path: ./
@@ -122,12 +122,12 @@ jobs:
     runs-on: ubuntu-latest
     name: PHP Tests
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
       with:
         ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
     
     - name: Download build artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v6
       with:
         name: build-assets
         path: ./
@@ -187,16 +187,16 @@ jobs:
     runs-on: ubuntu-latest
     name: Frontend Tests
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     
     - name: Download build artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v6
       with:
         name: build-assets
         path: ./
     
     - name: Setup Node.js
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v6
       with:
         node-version: '20'
         cache: 'npm'

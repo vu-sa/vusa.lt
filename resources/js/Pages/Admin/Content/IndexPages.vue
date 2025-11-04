@@ -2,11 +2,13 @@
   <IndexPageLayout title="Puslapiai" model-name="pages" :can-use-routes="canUseRoutes" :columns="columns"
     :paginated-models="pages" :icon="Icons.PAGE">
     <div class="mb-4">
-      <NDropdown :options="tenantOptions" @select="handleSelect">
-        <NButton size="small">
-          Redaguoti padalinio pagr. puslapį
-        </NButton>
-      </NDropdown>
+      <ThemeProvider>
+        <NDropdown :options="tenantOptions" @select="handleSelect">
+          <NButton size="small">
+            Redaguoti padalinio pagr. puslapį
+          </NButton>
+        </NDropdown>
+      </ThemeProvider>
     </div>
   </IndexPageLayout>
 </template>
@@ -20,6 +22,7 @@ import { langColumn, tenantColumn } from "@/Composables/dataTableColumns";
 import Icons from "@/Types/Icons/regular";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 import PreviewModelButton from "@/Components/Buttons/PreviewModelButton.vue";
+import ThemeProvider from "@/Components/Providers/ThemeProvider.vue";
 
 defineProps<{
   pages: PaginatedModels<App.Entities.Page[]>;
