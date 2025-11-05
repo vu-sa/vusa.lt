@@ -28,6 +28,7 @@ use Spatie\Enum\Laravel\Enum;
  * @method static self QUICK_LINK()
  * @method static self PAGE()
  * @method static self PERMISSION()
+ * @method static self PROBLEM()
  * @method static self RELATIONSHIP()
  * @method static self RELATIONSHIPABLE()
  * @method static self RESERVATION()
