@@ -41,6 +41,9 @@ class RoleStudentRepresentativeSeeder extends Seeder
             'tasks.create.padalinys',
             'tasks.read.own',
             'tasks.update.own',
+            'problems.create.padalinys',
+            'problems.read.padalinys',
+            'problems.update.padalinys',
         ]);
 
         $role->types()->attach(Type::query()->where('slug', 'studentu-atstovai')->firstOrFail());
