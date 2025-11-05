@@ -50,6 +50,7 @@
         "fumeapp/modeltyper": "^3.0",
         "kitloong/laravel-migrations-generator": "^7.0.1",
         "larastan/larastan": "^3.0",
+        "laravel/boost": "*",
         "laravel/pint": "^1.2",
         "laravel/sail": "^1.12",
         "mockery/mockery": "^1.4.4",
