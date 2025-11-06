@@ -1,6 +1,7 @@
 {
     "agents": [
         "claude_code",
+        "copilot",
         "cursor"
     ],
     "editors": [
