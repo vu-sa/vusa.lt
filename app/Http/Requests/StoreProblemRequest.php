@@ -4,7 +4,6 @@ namespace App\Http\Requests;
 
 use App\Models\Problem;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class StoreProblemRequest extends FormRequest
 {
@@ -24,16 +23,19 @@ class StoreProblemRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'title' => ['required', 'string', 'max:255'],
-            'description' => ['required', 'string'],
-            'solution' => ['nullable', 'string'],
-            'tenant_id' => ['required', 'integer', 'exists:tenants,id'],
-            'responsible_user_id' => ['nullable', 'string', 'exists:users,id'],
-            'occurred_at' => ['required', 'date'],
-            'resolved_at' => ['nullable', 'date', 'after_or_equal:occurred_at'],
-            'status' => ['required', 'string', Rule::in(['open', 'in_progress', 'resolved'])],
-            'categories' => ['nullable', 'array'],
-            'categories.*' => ['integer', 'exists:problem_categories,id'],
+            'title.lt' => 'required_without:title.en|nullable|string|max:255',
+            'title.en' => 'required_without:title.lt|nullable|string|max:255',
+            'description.lt' => 'required_without:description.en|nullable|string',
+            'description.en' => 'required_without:description.lt|nullable|string',
+            'solution.lt' => 'nullable|string',
+            'solution.en' => 'nullable|string',
+            'tenant_id' => 'required|integer|exists:tenants,id',
+            'responsible_user_id' => 'nullable|string|exists:users,id',
+            'occurred_at' => 'required|date',
+            'resolved_at' => 'nullable|date|after_or_equal:occurred_at',
+            'status' => 'required|string|in:open,in_progress,resolved',
+            'categories' => 'nullable|array',
+            'categories.*' => 'integer|exists:problem_categories,id',
         ];
     }
 
@@ -43,8 +45,10 @@ class StoreProblemRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'title.required' => 'The problem title is required.',
-            'description.required' => 'The problem description is required.',
+            'title.lt.required_without' => 'The problem title must be provided in at least one language.',
+            'title.en.required_without' => 'The problem title must be provided in at least one language.',
+            'description.lt.required_without' => 'The problem description must be provided in at least one language.',
+            'description.en.required_without' => 'The problem description must be provided in at least one language.',
             'tenant_id.required' => 'The tenant is required.',
             'tenant_id.exists' => 'The selected tenant is invalid.',
             'occurred_at.required' => 'The occurred date is required.',

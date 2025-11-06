@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Traits\HasTranslations;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -13,8 +14,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
  * @property string $id
- * @property string $title
- * @property string $description
+ * @property string|null $title
+ * @property string|null $description
  * @property string|null $solution
  * @property int $tenant_id
  * @property string $created_by
@@ -45,9 +46,11 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class Problem extends Model
 {
-    use HasFactory, HasUlids, LogsActivity, Searchable, SoftDeletes;
+    use HasFactory, HasTranslations, HasUlids, LogsActivity, Searchable, SoftDeletes;
 
     protected $guarded = [];
+
+    public $translatable = ['title', 'description', 'solution'];
 
     protected $casts = [
         'occurred_at' => 'date',
@@ -62,9 +65,9 @@ class Problem extends Model
     public function toSearchableArray(): array
     {
         return [
-            'title' => $this->title,
-            'description' => $this->description,
-            'solution' => $this->solution,
+            'title' => $this->getTranslations('title'),
+            'description' => $this->getTranslations('description'),
+            'solution' => $this->getTranslations('solution'),
             'status' => $this->status,
         ];
     }
