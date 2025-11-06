@@ -48,5 +48,18 @@
     "Events": "Renginiai",
     "Documents": "Dokumentai",
     "Pages": "Puslapiai",
-    "(kopija)": "(kopija)"
+    "(kopija)": "(kopija)",
+    "entities.problem.model": "{1} Problema|[2,9] Problemos|[10,*] Problemos",
+    "entities.problem.title": "Problemos pavadinimas",
+    "entities.problem.description": "Problemos aprašymas",
+    "entities.problem.solution": "Sprendimas",
+    "entities.problem.occurred_at": "Įvykio data",
+    "entities.problem.resolved_at": "Išsprendimo data",
+    "entities.problem.status": "Būsena",
+    "entities.problem.responsible_user": "Atsakingas asmuo",
+    "entities.problem.categories": "Kategorijos",
+    "Rodyti tik mano sukurtas problemas": "Rodyti tik mano sukurtas problemas",
+    "entities.tenant.model": "{1} Padalinys|[2,9] Padaliniai|[10,*] Padalinių",
+    "forms.new_model": "{0} Nauja :model|{1} Naujas :model",
+    "forms.context.main_info": "Pagrindinė informacija"
 }
