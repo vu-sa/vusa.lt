@@ -26,8 +26,7 @@ import PersonBoard24Regular from "~icons/fluent/person-board24-regular";
 import PersonClock24Regular from "~icons/fluent/person-clock24-regular";
 import PuzzlePiece24Regular from "~icons/fluent/puzzle-piece24-regular";
 import ShieldKeyhole24Regular from "~icons/fluent/shield-keyhole24-regular";
-import Sparkle24Regular from "~icons/fluent/sparkle24-regular";
-import StarLineHorizontal324Regular from "~icons/fluent/star-line-horizontal-3-24-regular";
+import FluentClipboardError24Regular from "~icons/fluent/clipboard-error24-regular";
 import Tag24Regular from "~icons/fluent/tag24-regular";
 import TaskListSquareLtr24Regular from "~icons/fluent/task-list-square-ltr24-regular";
 import TextBulletListSquare24Regular from "~icons/fluent/text-bullet-list-square24-regular";
@@ -70,6 +69,7 @@ const modelIcons: Record<keyof typeof ModelEnum, Component> = {
   TRAINING: Notebook24Regular,
   TYPE: DocumentSettings20Regular,
   USER: Person24Regular,
+  PROBLEM: FluentClipboardError24Regular,
 };
 
 const formIcons: Record<keyof typeof FormEnum, Component> = {

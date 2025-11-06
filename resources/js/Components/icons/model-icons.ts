@@ -32,6 +32,7 @@ import PeopleSearch24Regular from "~icons/fluent/people-search24-regular";
 import Notebook24Regular from "~icons/fluent/notebook24-regular";
 import DocumentSettings20Regular from "~icons/fluent/document-settings20-regular";
 import Person24Regular from "~icons/fluent/person24-regular";
+import Alert24Regular from "~icons/fluent/alert24-regular";
 
 // =============================================================================
 // FILLED ICONS - Import each icon only ONCE
@@ -61,6 +62,7 @@ import TaskListSquareLtr24Filled from "~icons/fluent/task-list-square-ltr24-fill
 import Notebook24Filled from "~icons/fluent/notebook24-filled";
 import DocumentSettings20Filled from "~icons/fluent/document-settings20-filled";
 import Person24Filled from "~icons/fluent/person24-filled";
+import Alert24Filled from "~icons/fluent/alert24-filled";
 
 // =============================================================================
 // TREE-SHAKABLE EXPORTS - Clean, concise naming
@@ -83,6 +85,7 @@ export const NavigationIcon = Navigation24Regular;
 export const NewsIcon = News24Regular;
 export const PageIcon = DocumentMultiple24Regular;
 export const PermissionIcon = ShieldKeyhole24Regular;
+export const ProblemIcon = Alert24Regular;
 export const QuickLinkIcon = Grid24Regular;
 export const RelationshipIcon = Flow20Regular;
 export const RelationshipableIcon = FlowchartCircle24Regular;
@@ -118,6 +121,7 @@ export const NavigationIconFilled = Navigation24Filled;
 export const NewsIconFilled = News24Filled;
 export const PageIconFilled = DocumentMultiple24Filled;
 export const PermissionIconFilled = ShieldKeyhole24Filled;
+export const ProblemIconFilled = Alert24Filled;
 export const QuickLinkIconFilled = Grid24Filled;
 export const RelationshipIconFilled = Flow20Filled;
 export const RelationshipableIconFilled = FlowchartCircle24Filled;
@@ -159,6 +163,7 @@ const modelIconMappingRegular: Record<keyof typeof ModelEnum, Component> = {
   NEWS: NewsIcon,
   PAGE: PageIcon,
   PERMISSION: PermissionIcon,
+  PROBLEM: ProblemIcon,
   QUICK_LINK: QuickLinkIcon,
   RELATIONSHIP: RelationshipIcon,
   RELATIONSHIPABLE: RelationshipableIcon,
@@ -196,6 +201,7 @@ const modelIconMappingFilled: Record<keyof typeof ModelEnum, Component> = {
   NEWS: NewsIconFilled,
   PAGE: PageIconFilled,
   PERMISSION: PermissionIconFilled,
+  PROBLEM: ProblemIconFilled,
   QUICK_LINK: QuickLinkIconFilled,
   RELATIONSHIP: RelationshipIconFilled,
   RELATIONSHIPABLE: RelationshipableIconFilled,
