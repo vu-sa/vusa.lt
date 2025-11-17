@@ -93,6 +93,20 @@
           clearable
         />
       </NFormItem>
+
+      <NFormItem
+        :label="$tChoice('entities.institution.model', 2)"
+        class="capitalize"
+      >
+        <NSelect
+          v-model:value="form.institutions"
+          :options="institutionOptions"
+          :placeholder="$tChoice('entities.institution.model', 2)"
+          multiple
+          clearable
+          filterable
+        />
+      </NFormItem>
     </FormElement>
 
     <FormElement>
@@ -159,6 +173,7 @@ type ProblemForm = {
   resolved_at: string | null;
   status: string;
   categories: number[];
+  institutions: string[];
 };
 
 const props = defineProps<{
@@ -166,6 +181,7 @@ const props = defineProps<{
   tenants: Array<App.Entities.Tenant>;
   categories: Array<App.Entities.ProblemCategory>;
   users: Array<App.Entities.User>;
+  institutions: Array<App.Entities.Institution>;
 }>();
 
 defineEmits<{
@@ -199,4 +215,18 @@ const categoryOptions = computed(() =>
     value: category.id,
   }))
 );
+
+const institutionOptions = computed(() => {
+  // Filter institutions by selected tenant
+  const filteredInstitutions = props.form.tenant_id
+    ? props.institutions.filter(
+        (institution) => institution.tenant_id === props.form.tenant_id
+      )
+    : props.institutions;
+
+  return filteredInstitutions.map((institution) => ({
+    label: institution.name,
+    value: institution.id,
+  }));
+});
 </script>

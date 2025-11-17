@@ -14,6 +14,7 @@
         :tenants="tenants"
         :categories="categories"
         :users="users"
+        :institutions="institutions"
         @submit:form="
           (form) => form.post(route('problems.store'), { preserveScroll: true })
         "
@@ -35,6 +36,7 @@ defineProps<{
   tenants: Array<App.Entities.Tenant>;
   categories: Array<App.Entities.ProblemCategory>;
   users: Array<App.Entities.User>;
+  institutions: Array<App.Entities.Institution>;
 }>();
 
 const form = useForm({
@@ -48,5 +50,6 @@ const form = useForm({
   resolved_at: null as string | null,
   status: "open" as string,
   categories: [] as number[],
+  institutions: [] as string[],
 });
 </script>

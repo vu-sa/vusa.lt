@@ -10,6 +10,7 @@
         :tenants="tenants"
         :categories="categories"
         :users="users"
+        :institutions="institutions"
         enable-delete
         @submit:form="handleUpdateProblem"
         @delete="() => router.delete(route('problems.destroy', problem.id))"
@@ -39,6 +40,7 @@ type ProblemForm = {
   resolved_at: string | null;
   status: string;
   categories: number[];
+  institutions: string[];
 };
 
 const props = defineProps<{
@@ -46,6 +48,7 @@ const props = defineProps<{
   tenants: Array<App.Entities.Tenant>;
   categories: Array<App.Entities.ProblemCategory>;
   users: Array<App.Entities.User>;
+  institutions: Array<App.Entities.Institution>;
 }>();
 
 const localizedTitle = computed(() => {
@@ -103,6 +106,7 @@ const form = useForm<ProblemForm>({
   resolved_at: formatDateForPicker(props.problem.resolved_at as string | null),
   status: props.problem.status as string,
   categories: (props.problem.categories || []) as number[],
+  institutions: (props.problem.institutions || []) as string[],
 });
 
 function handleUpdateProblem(form: InertiaForm<ProblemForm>) {

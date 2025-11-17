@@ -49,6 +49,7 @@ import type { PaginatedModels } from "@/Types/PaginatedModels";
 const props = defineProps<{
   problems: PaginatedModels<App.Entities.Problem>;
   categories: Array<App.Entities.ProblemCategory>;
+  institutions: Array<App.Entities.Institution>;
 }>();
 
 const canUseRoutes = {
@@ -73,6 +74,7 @@ const filters = ref<Record<string, any>>({
   "tenant.id": [],
   status: [],
   category: [],
+  institution: [],
 });
 
 provide("filters", filters);
@@ -213,6 +215,37 @@ const columns = computed<DataTableColumns<App.Entities.Problem>>(() => [
           {row.categories.length > 2 && (
             <NTag size="tiny" round>
               +{row.categories.length - 2}
+            </NTag>
+          )}
+        </div>
+      );
+    },
+  },
+  {
+    title: $tChoice("entities.institution.model", 2),
+    key: "institution",
+    minWidth: 150,
+    filter: true,
+    filterOptionValues: filters.value["institution"],
+    filterOptions: props.institutions.map((inst) => ({
+      label: inst.name,
+      value: inst.id,
+    })),
+    render(row: App.Entities.Problem) {
+      if (!row.institutions || row.institutions.length === 0) {
+        return "-";
+      }
+
+      return (
+        <div class="flex flex-wrap gap-1">
+          {row.institutions.slice(0, 2).map((institution, index) => (
+            <NTag size="tiny" round key={institution.id || index}>
+              {institution.name}
+            </NTag>
+          ))}
+          {row.institutions.length > 2 && (
+            <NTag size="tiny" round>
+              +{row.institutions.length - 2}
             </NTag>
           )}
         </div>

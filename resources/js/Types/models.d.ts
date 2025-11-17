@@ -640,13 +640,16 @@ declare global {
       createdBy?: User
       responsibleUser?: User
       categories?: ProblemCategory[]
+      institutions?: Institution[]
       // counts
       categories_count: number
+      institutions_count: number
       // exists
       tenant_exists: boolean
       created_by_exists: boolean
       responsible_user_exists: boolean
       categories_exists: boolean
+      institutions_exists: boolean
     }
 
     export interface ProblemCategory {

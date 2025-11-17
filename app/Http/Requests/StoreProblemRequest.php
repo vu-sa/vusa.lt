@@ -38,6 +38,8 @@ class StoreProblemRequest extends FormRequest
             'status' => 'required|string|in:open,in_progress,resolved',
             'categories' => 'nullable|array',
             'categories.*' => 'integer|exists:problem_categories,id',
+            'institutions' => 'nullable|array',
+            'institutions.*' => 'string|exists:institutions,id',
         ];
     }
 
@@ -57,6 +59,7 @@ class StoreProblemRequest extends FormRequest
             'resolved_at.after_or_equal' => 'The resolved date must be after or equal to the occurred date.',
             'status.in' => 'The selected status is invalid.',
             'categories.*.exists' => 'One or more selected categories are invalid.',
+            'institutions.*.exists' => 'One or more selected institutions are invalid.',
         ];
     }
 }

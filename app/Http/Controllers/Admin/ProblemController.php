@@ -6,6 +6,7 @@ use App\Actions\GetTenantsForUpserts;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\StoreProblemRequest;
 use App\Http\Requests\UpdateProblemRequest;
+use App\Models\Institution;
 use App\Models\Problem;
 use App\Models\ProblemCategory;
 use App\Models\User;
@@ -29,7 +30,7 @@ class ProblemController extends AdminController
         // Build callbacks array for filtering
         $callbacks = [
             // Eager load relationships
-            fn ($query) => $query->with(['tenant', 'createdBy', 'responsibleUser', 'categories']),
+            fn ($query) => $query->with(['tenant', 'createdBy', 'responsibleUser', 'categories', 'institutions']),
         ];
 
         // Manual filtering - extract from indexer filters and handle before filterAllColumns()
@@ -49,6 +50,15 @@ class ProblemController extends AdminController
                 });
                 unset($indexer->filters['category']);
             }
+
+            // Institution filter (relationship)
+            if (isset($indexer->filters['institution']) && ! empty($indexer->filters['institution'])) {
+                $institutionValues = $indexer->filters['institution'];
+                $callbacks[] = fn ($query) => $query->whereHas('institutions', function ($q) use ($institutionValues) {
+                    $q->whereIn('institutions.id', $institutionValues);
+                });
+                unset($indexer->filters['institution']);
+            }
         }
 
         // "Show my problems" toggle (from direct request parameter)
@@ -65,6 +75,7 @@ class ProblemController extends AdminController
         return $this->inertiaResponse('Admin/Problems/IndexProblem', [
             'problems' => $problems,
             'categories' => ProblemCategory::orderBy('slug')->get()->map(fn ($category) => $category->toArray()),
+            'institutions' => Institution::select('id', 'name')->orderBy('name')->get()->map(fn ($institution) => $institution->toArray()),
         ]);
     }
 
@@ -75,10 +86,18 @@ class ProblemController extends AdminController
     {
         $this->handleAuthorization('create', Problem::class);
 
+        $tenants = GetTenantsForUpserts::execute('problems.create.padalinys', $this->authorizer);
+        $tenantIds = collect($tenants)->pluck('id')->toArray();
+
         return $this->inertiaResponse('Admin/Problems/CreateProblem', [
-            'tenants' => GetTenantsForUpserts::execute('problems.create.padalinys', $this->authorizer),
+            'tenants' => $tenants,
             'categories' => ProblemCategory::orderBy('slug')->get()->map(fn ($category) => $category->toArray()),
             'users' => User::select('id', 'name')->orderBy('name')->get(),
+            'institutions' => Institution::select('id', 'name', 'tenant_id')
+                ->whereIn('tenant_id', $tenantIds)
+                ->orderBy('name')
+                ->get()
+                ->map(fn ($institution) => $institution->toArray()),
         ]);
     }
 
@@ -89,7 +108,8 @@ class ProblemController extends AdminController
     {
         $validated = $request->validated();
         $categories = $validated['categories'] ?? [];
-        unset($validated['categories']);
+        $institutions = $validated['institutions'] ?? [];
+        unset($validated['categories'], $validated['institutions']);
 
         $problem = Problem::create([
             ...$validated,
@@ -98,6 +118,10 @@ class ProblemController extends AdminController
 
         if (! empty($categories)) {
             $problem->categories()->sync($categories);
+        }
+
+        if (! empty($institutions)) {
+            $problem->institutions()->sync($institutions);
         }
 
         return $this->redirectToIndexWithSuccess('problems', trans_choice('messages.created', 0, ['model' => trans_choice('entities.problem.model', 1)]));
@@ -117,6 +141,7 @@ class ProblemController extends AdminController
                     'createdBy',
                     'responsibleUser',
                     'categories',
+                    'institutions',
                     'activities.causer',
                 ])->toFullArray(),
             ],
@@ -130,14 +155,23 @@ class ProblemController extends AdminController
     {
         $this->handleAuthorization('update', $problem);
 
-        $problemData = $problem->load(['tenant', 'createdBy', 'responsibleUser', 'categories'])->toFullArray();
+        $problemData = $problem->load(['tenant', 'createdBy', 'responsibleUser', 'categories', 'institutions'])->toFullArray();
         $problemData['categories'] = $problem->categories->pluck('id')->toArray();
+        $problemData['institutions'] = $problem->institutions->pluck('id')->toArray();
+
+        $tenants = GetTenantsForUpserts::execute('problems.update.padalinys', $this->authorizer);
+        $tenantIds = collect($tenants)->pluck('id')->toArray();
 
         return $this->inertiaResponse('Admin/Problems/EditProblem', [
             'problem' => $problemData,
-            'tenants' => GetTenantsForUpserts::execute('problems.update.padalinys', $this->authorizer),
+            'tenants' => $tenants,
             'categories' => ProblemCategory::orderBy('slug')->get()->map(fn ($category) => $category->toArray()),
             'users' => User::select('id', 'name')->orderBy('name')->get(),
+            'institutions' => Institution::select('id', 'name', 'tenant_id')
+                ->whereIn('tenant_id', $tenantIds)
+                ->orderBy('name')
+                ->get()
+                ->map(fn ($institution) => $institution->toArray()),
         ]);
     }
 
@@ -148,13 +182,15 @@ class ProblemController extends AdminController
     {
         $validated = $request->validated();
         $categories = $validated['categories'] ?? [];
-        unset($validated['categories']);
+        $institutions = $validated['institutions'] ?? [];
+        unset($validated['categories'], $validated['institutions']);
 
         $problem->update($validated);
 
         $problem->categories()->sync($categories);
+        $problem->institutions()->sync($institutions);
 
-        return back()->with('success', trans_choice('messages.updated', 0, ['model' => trans_choice('entities.problem.model', 1)]))->with('data', $problem->load('categories'));
+        return back()->with('success', trans_choice('messages.updated', 0, ['model' => trans_choice('entities.problem.model', 1)]))->with('data', $problem->load(['categories', 'institutions']));
     }
 
     /**

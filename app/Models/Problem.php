@@ -31,6 +31,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read \App\Models\User $createdBy
  * @property-read \App\Models\User|null $responsibleUser
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ProblemCategory> $categories
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Institution> $institutions
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Comment> $comments
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Task> $tasks
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
@@ -92,6 +93,11 @@ class Problem extends Model
     public function categories(): BelongsToMany
     {
         return $this->belongsToMany(ProblemCategory::class);
+    }
+
+    public function institutions(): BelongsToMany
+    {
+        return $this->belongsToMany(Institution::class);
     }
 
     public function isResolved(): bool
