@@ -29,6 +29,8 @@ class StoreProblemRequest extends FormRequest
             'description.en' => 'required_without:description.lt|nullable|string',
             'solution.lt' => 'nullable|string',
             'solution.en' => 'nullable|string',
+            'steps_taken.lt' => 'nullable|string',
+            'steps_taken.en' => 'nullable|string',
             'tenant_id' => 'required|integer|exists:tenants,id',
             'responsible_user_id' => 'nullable|string|exists:users,id',
             'occurred_at' => 'required|date',

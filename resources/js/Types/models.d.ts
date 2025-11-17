@@ -617,6 +617,56 @@ declare global {
       user_exists: boolean
     }
 
+    export interface Problem {
+      // columns
+      id: string
+      title?: string[] | null
+      description?: string[] | null
+      solution?: string[] | null
+      steps_taken?: string[] | null
+      tenant_id: number
+      created_by: string
+      responsible_user_id?: string | null
+      occurred_at: string
+      resolved_at?: string | null
+      status: string
+      created_at: string
+      updated_at: string
+      deleted_at?: string | null
+      // mutators
+      translations: unknown
+      // relations
+      tenant?: Tenant
+      createdBy?: User
+      responsibleUser?: User
+      categories?: ProblemCategory[]
+      // counts
+      categories_count: number
+      // exists
+      tenant_exists: boolean
+      created_by_exists: boolean
+      responsible_user_exists: boolean
+      categories_exists: boolean
+    }
+
+    export interface ProblemCategory {
+      // columns
+      id: number
+      name?: string[] | null
+      slug: string
+      description?: string[] | null
+      created_at: string
+      updated_at: string
+      // mutators
+      translations: unknown
+      // relations
+      problems?: Problem[]
+      // counts
+      problems_count: number
+      // exists
+      problems_exists: boolean
+    }
+
     export interface ProgrammeElement {
       // columns
       id: number

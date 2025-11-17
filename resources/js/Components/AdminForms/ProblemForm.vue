@@ -97,6 +97,26 @@
 
     <FormElement>
       <template #title>
+        {{ $tChoice("entities.problem.steps_taken", 1) }}
+      </template>
+      <template #description>
+        <p class="mb-4">
+          {{
+            $t(
+              "Aprašykite veiksmus, kurie jau buvo atlikti bandant išspręsti šią problemą."
+            )
+          }}
+        </p>
+      </template>
+
+      <MultiLocaleTiptapFormItem
+        v-model:input="form.steps_taken"
+        :label="$tChoice('entities.problem.steps_taken', 1)"
+      />
+    </FormElement>
+
+    <FormElement>
+      <template #title>
         {{ $tChoice("entities.problem.solution", 1) }}
       </template>
       <template #description>
@@ -132,6 +152,7 @@ type ProblemForm = {
   title: { lt: string; en: string };
   description: { lt: string; en: string };
   solution: { lt: string; en: string };
+  steps_taken: { lt: string; en: string };
   tenant_id: number | null;
   responsible_user_id: string | null;
   occurred_at: string;

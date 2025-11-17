@@ -17,6 +17,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string|null $title
  * @property string|null $description
  * @property string|null $solution
+ * @property string|null $steps_taken
  * @property int $tenant_id
  * @property string $created_by
  * @property string|null $responsible_user_id
@@ -50,7 +51,7 @@ class Problem extends Model
 
     protected $guarded = [];
 
-    public $translatable = ['title', 'description', 'solution'];
+    public $translatable = ['title', 'description', 'solution', 'steps_taken'];
 
     protected $casts = [
         'occurred_at' => 'date',
@@ -68,6 +69,7 @@ class Problem extends Model
             'title' => $this->getTranslations('title'),
             'description' => $this->getTranslations('description'),
             'solution' => $this->getTranslations('solution'),
+            'steps_taken' => $this->getTranslations('steps_taken'),
             'status' => $this->status,
         ];
     }

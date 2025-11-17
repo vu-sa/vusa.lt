@@ -32,6 +32,7 @@ type ProblemForm = {
   title: { lt: string; en: string };
   description: { lt: string; en: string };
   solution: { lt: string; en: string };
+  steps_taken: { lt: string; en: string };
   tenant_id: number | null;
   responsible_user_id: string | null;
   occurred_at: string;
@@ -89,6 +90,10 @@ const form = useForm<ProblemForm>({
     en: string;
   },
   solution: (props.problem.solution || { lt: "", en: "" }) as {
+    lt: string;
+    en: string;
+  },
+  steps_taken: (props.problem.steps_taken || { lt: "", en: "" }) as {
     lt: string;
     en: string;
   },

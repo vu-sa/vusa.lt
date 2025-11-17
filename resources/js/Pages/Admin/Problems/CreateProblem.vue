@@ -41,6 +41,7 @@ const form = useForm({
   title: { lt: "", en: "" },
   description: { lt: "", en: "" },
   solution: { lt: "", en: "" },
+  steps_taken: { lt: "", en: "" },
   tenant_id: null as number | null,
   responsible_user_id: null as string | null,
   occurred_at: new Date().toISOString().split("T")[0] as string,
