@@ -24,43 +24,7 @@ For a quick overview and basic usage, see @README.md in this directory.
 - Components: `resources/js/Components/**/__tests__/`
 - Services: `resources/js/Services/__tests__/`
 
-## Testing Commands
-
-**Basic Commands**:
-```bash
-# Run all tests
-./vendor/bin/sail artisan test
-
-# Run specific test file
-./vendor/bin/sail artisan test tests/Feature/System/SystemStatusTest.php
-
-# Run tests with coverage
-./vendor/bin/sail artisan test --coverage
-
-# Parallel execution (faster)
-./vendor/bin/sail artisan test --parallel
-
-# Filter specific tests
-./vendor/bin/sail artisan test --filter="SystemStatus"
-```
-
-**Important Notes**:
-- **Verbose output**: Use `-v` flag, NOT `--verbose` (which doesn't exist)
-- **Multiple verbosity levels**: `-v`, `-vv`, `-vvv` for increasing detail
-- **Stop on failure**: Use `--stop-on-failure` to halt on first failing test
-- **Memory limits**: Add `--memory=512M` if tests run out of memory
-
-**Example verbose commands**:
-```bash
-# Verbose output
-./vendor/bin/sail artisan test -v
-
-# Very verbose (includes test output)
-./vendor/bin/sail artisan test -vv
-
-# Maximum verbosity (debug level)
-./vendor/bin/sail artisan test -vvv
-```
+**Testing Commands**: See [tests/README.md](README.md) for all test commands and environment setup.
 
 ## Test Directory Structure
 

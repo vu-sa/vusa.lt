@@ -7,21 +7,17 @@ use App\Http\Controllers\AdminController;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Page;
-use App\Models\Pivots\AgendaItem;
 use App\Models\Resource;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\RelationshipService;
+use App\Services\ResourceServices\DutyService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
-
-// HACK: there's so much hacking here...
-// TODO: 1. Refactor, so the tenant selection and authorization is done in a middleware
-// TODO: 2. Non-existing tenants should 404
 
 class DashboardController extends AdminController
 {
@@ -55,57 +51,110 @@ class DashboardController extends AdminController
 
     public function atstovavimas()
     {
-        $selectedTenant = request()->input('tenant_id');
+        $user = User::query()->where('id', Auth::id())
+            ->with([
+                'current_duties.institution' => function ($query) {
+                    $query->select('id', 'name', 'tenant_id')
+                        ->with([
+                            'meetings' => function ($meetingQuery) {
+                                $meetingQuery->select('id', 'title', 'start_time')
+                                    ->with('agendaItems:id,meeting_id,student_vote,decision,student_benefit')
+                                    ->orderBy('start_time', 'desc');
+                            },
+                        ])
+                        ->with('activeCheckIns')
+                        ->with('checkIns')
+                        ->withCount([
+                            'meetings as upcoming_meetings_count' => function ($query) {
+                                $query->where('start_time', '>', now());
+                            },
+                        ])
+                        ->addSelect([
+                            'last_meeting_date' => Meeting::select('start_time')
+                                ->join('institution_meeting', 'meetings.id', '=', 'institution_meeting.meeting_id')
+                                ->whereColumn('institution_meeting.institution_id', 'institutions.id')
+                                ->orderBy('start_time', 'desc')
+                                ->limit(1),
+                            'days_since_last_meeting' => DutyService::getDaysSinceLastMeetingSql(),
+                        ]);
+                },
+            ])->first();
 
-        $user = User::query()->where('id', Auth::id())->with('current_duties.institution.meetings.institutions:id,name')->first();
+        // Get ALL institutions user can access with dashboard data
+        $accessibleInstitutions = DutyService::getInstitutionsForDashboard($this->authorizer);
 
-        // Leave only tenants that are not 'pkp'
-        $tenants = collect(GetTenantsForUpserts::execute('institutions.update.padalinys', $this->authorizer))->filter(function ($tenant) {
-            return $tenant['type'] !== 'pkp';
-        })->values();
+        // Append completion_status to meetings for dashboard Gantt chart
+        $accessibleInstitutions->each(function ($institution) {
+            $institution->meetings?->each->append('completion_status');
+        });
 
-        // Check if selected tenant is in the list of tenants
-        if ($selectedTenant) {
-            $selectedTenant = $tenants->firstWhere('id', $selectedTenant);
-        } else {
-            // Check if there's tenant with type 'pagrindinis'
-            $selectedTenant = $tenants->firstWhere('type', 'pagrindinis');
-        }
+        // Get available tenants for filtering
+        $availableTenants = collect(GetTenantsForUpserts::execute('institutions.update.padalinys', $this->authorizer))
+            ->filter(function ($tenant) {
+                return $tenant['type'] !== 'pkp';
+            })
+            ->values();
 
-        // If not, select first tenant
-        if (! $selectedTenant) {
-            $selectedTenant = $tenants->first();
-        }
-
-        if (! $selectedTenant) {
-            $providedTenant = null;
-        } elseif ($this->authorizer->isAllScope && request()->input('tenant_id') === '0') {
-            $providedTenant = Tenant::query()->with('institutions:id,name,tenant_id', 'institutions.meetings:id,title,start_time', 'institutions.duties.current_users:id,name', 'institutions.duties.types:id,title,slug')->get();
-
-            $providedTenant = [
-                'id' => 0,
-                'name' => 'Visi padaliniai',
-                'institutions' => $providedTenant->map(function ($tenant) {
-                    return $tenant->institutions;
-                })->flatten(1),
-            ];
-
-        } else {
-            $providedTenant = Tenant::query()->where('id', $selectedTenant['id'])->with('institutions:id,name,tenant_id', 'institutions.meetings:id,title,start_time', 'institutions.duties.current_users:id,name', 'institutions.duties.types:id,title,slug')->first();
-        }
+        // Get recent meetings for templates
+        $recentMeetings = Meeting::with(['institutions', 'agendaItems'])
+            ->whereHas('institutions', function ($query) use ($accessibleInstitutions) {
+                $query->whereIn('institutions.id', $accessibleInstitutions->pluck('id'));
+            })
+            ->where('start_time', '>=', now()->subMonths(6))
+            ->orderBy('start_time', 'desc')
+            ->limit(10)
+            ->get()
+            ->map(function ($meeting) {
+                return [
+                    'id' => (string) $meeting->id,
+                    'title' => $meeting->title,
+                    'start_time' => $meeting->start_time?->toISOString(),
+                    'institution_name' => $meeting->institutions->first()?->name ?? 'Unknown',
+                    'agenda_items' => $meeting->agendaItems->map(fn ($item) => ['title' => $item->title])->toArray(),
+                ];
+            });
 
         return $this->inertiaResponse('Admin/Dashboard/ShowAtstovavimas', [
-            'user' => [...$user->toArray(),
+            'user' => [
+                ...$user->toArray(),
                 'current_duties' => $user->current_duties->map(function ($duty) {
+                    $institution = $duty->institution;
+                    if ($institution) {
+                        // Calculate meeting frequency and health metrics
+                        $recentMeetings = $institution->meetings->where('start_time', '>=', now()->subMonths(3));
+                        $institution->meeting_frequency = $recentMeetings->count() > 0
+                            ? round(3 * 4 / $recentMeetings->count(), 1) // weeks between meetings
+                            : null;
+
+                        // Health score based on recent activity
+                        $healthScore = 100;
+                        if ($institution->days_since_last_meeting > 60) {
+                            $healthScore -= 40;
+                        } elseif ($institution->days_since_last_meeting > 30) {
+                            $healthScore -= 20;
+                        }
+                        if ($institution->upcoming_meetings_count === 0) {
+                            $healthScore -= 30;
+                        }
+
+                        $institution->health_score = max(0, $healthScore);
+
+                        $institution->active_check_in = $institution->activeCheckIns->first() ?? null;
+                        $institution = $institution->append('relatedInstitutions');
+
+                        // Append completion_status to each meeting for dashboard display
+                        $institution->meetings->each->append('completion_status');
+                    }
+
                     return [
                         ...$duty->toArray(),
-                        'institution' => $duty->institution?->append('relatedInstitutions'),
+                        'institution' => $institution,
                     ];
-                })],
-            'tenants' => $tenants->when($this->authorizer->isAllScope, function ($tenants) {
-                return $tenants->prepend(['id' => 0, 'shortname' => 'Visi padaliniai']);
-            }),
-            'providedTenant' => $providedTenant,
+                }),
+            ],
+            'accessibleInstitutions' => $accessibleInstitutions,
+            'availableTenants' => $availableTenants,
+            'recentMeetings' => $recentMeetings,
         ]);
     }
 
@@ -273,123 +322,5 @@ class DashboardController extends AdminController
         return $this->redirectBackWithSuccess('Ačiū už atsiliepimą!');
     }
 
-    public function atstovavimasSummary(Request $request, $date = null)
-    {
-        $selectedTenant = request()->input('tenant_id');
-
-        $date = $date ? $date : now()->toDateString();
-
-        // Leave only tenants that are not 'pkp'
-        $tenants = collect(GetTenantsForUpserts::execute('institutions.update.padalinys', $this->authorizer))->filter(function ($tenant) {
-            return $tenant['type'] !== 'pkp';
-        })->values();
-
-        // Check if selected tenant is in the list of tenants
-        if ($selectedTenant) {
-            $selectedTenant = $tenants->firstWhere('id', $selectedTenant);
-        } else {
-            // Check if there's tenant with type 'pagrindinis'
-            $selectedTenant = $tenants->firstWhere('type', 'pagrindinis');
-        }
-
-        // If not, select first tenant
-        if (! $selectedTenant) {
-            $selectedTenant = $tenants->first();
-        }
-
-        if (! $selectedTenant) {
-            $providedTenant = null;
-            $meetings = null;
-            // All tenants and all activities
-        } elseif ($this->authorizer->isAllScope && request()->input('tenant_id') === '0') {
-            $meetingsWithActivities = Meeting::query()
-                // NOTE: some dark magic doesn't allow to filter activities in this way. In certain cases,
-                // where there are no activity log that day for a meeting, it will exceed compute time of 30s.
-                // ->withWhereHas('activities', function ($query) use ($date) {
-                // $query->where('created_at', '>=', $date)->where('created_at', '<=', $date . ' 23:59:59');
-                // })
-                ->with(['institutions', 'activities.causer'])->get();
-
-            $agendaItemsWithActivities = AgendaItem::query()->withWhereHas('activities', function ($query) use ($date) {
-                $query->with('causer')->where('created_at', '>=', $date)->where('created_at', '<=', $date.' 23:59:59');
-            })->with('meeting.institutions')->get();
-
-            // Organize loaded activities by meeting
-            /** @var \Illuminate\Support\Collection<int, \App\Models\Meeting> $meetings */
-            $meetings = collect($meetingsWithActivities);
-
-            $agendaItemsWithActivities->each(function ($agendaItem) use (&$meetings) {
-                $meeting = $meetings->firstWhere('id', $agendaItem->meeting->id);
-                if ($meeting) {
-                    if (! $meeting->getAttribute('changedAgendaItems')) {
-                        $meeting->setAttribute('changedAgendaItems', collect());
-                    }
-                    $meeting->getAttribute('changedAgendaItems')->push($agendaItem);
-                } else {
-                    $agendaItem->meeting->setAttribute('changedAgendaItems', collect([$agendaItem]));
-                    $meetings->push($agendaItem->meeting);
-                }
-            });
-
-            $providedTenant = Tenant::query()->get();
-
-            $providedTenant = [
-                'id' => 0,
-                'shortname' => 'Visi padaliniai',
-                'institutions' => $providedTenant->map(function ($tenant) {
-                    return $tenant->institutions;
-                })->flatten(1),
-            ];
-
-            // Only one tenant meeting and agenda item activities
-        } else {
-            $meetingsWithActivities = Meeting::query()
-                ->withWhereHas('institutions', function ($query) use ($selectedTenant) {
-                    $query->where('tenant_id', $selectedTenant['id']);
-                })
-                // NOTE: some dark magic doesn't allow to filter activities in this way. In certain cases,
-                // where there are no activity log that day for a meeting, it will exceed compute time of 30s.
-                // ->withWhereHas('activities', function ($query) use ($date) {
-                // $query->where('created_at', '>=', $date)->where('created_at', '<=', $date . ' 23:59:59');
-                // })
-                ->with('activities.causer')
-                ->get();
-
-            $agendaItemsWithActivities = AgendaItem::query()->withWhereHas('meeting.institutions', function ($query) use ($selectedTenant) {
-                $query->where('tenant_id', $selectedTenant['id']);
-            })->withWhereHas('activities', function ($query) use ($date) {
-                $query->with('causer')->where('created_at', '>=', $date)->where('created_at', '<=', $date.' 23:59:59');
-            })->get();
-
-            // Organize loaded activities by meeting
-            /** @var \Illuminate\Support\Collection<int, \App\Models\Meeting> $meetings */
-            $meetings = collect($meetingsWithActivities);
-
-            $agendaItemsWithActivities->each(function ($agendaItem) use ($meetings) {
-                $meeting = $meetings->firstWhere('id', $agendaItem->meeting->id);
-                if ($meeting) {
-                    if (! $meeting->getAttribute('changedAgendaItems')) {
-                        $meeting->setAttribute('changedAgendaItems', collect());
-                    }
-                    $meeting->getAttribute('changedAgendaItems')->push($agendaItem);
-                } else {
-                    $agendaItem->meeting->setAttribute('changedAgendaItems', collect([$agendaItem]));
-                    $meetings->push($agendaItem->meeting);
-                }
-            });
-
-            $providedTenant = Tenant::query()->where('id', $selectedTenant['id'])->first();
-        }
-
-        // $user = User::query()->where('id', Auth::id())->with('current_duties.institution.meetings.institutions:id,name')->first();
-
-        return $this->inertiaResponse('Admin/Dashboard/ShowAtstovavimasActivity', [
-            'meetings' => $meetings->toArray(),
-            'date' => $date,
-            'tenants' => $tenants->when($this->authorizer->isAllScope, function ($tenants) {
-                return $tenants->prepend(['id' => 0, 'shortname' => 'Visi padaliniai']);
-            }),
-            'providedTenant' => $providedTenant,
-        ]);
-    }
+    // Removed atstovavimasSummary endpoint and related view as per simplification request.
 }

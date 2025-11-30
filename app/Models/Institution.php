@@ -45,6 +45,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
  * @property-read \App\Models\Pivots\Relationshipable|Trainable|null $pivot
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Training> $availableTrainings
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\InstitutionCheckIn> $checkIns
  * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $commentable
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Comment> $comments
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Document> $documents
@@ -58,7 +59,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read \App\Models\Tenant|null $tenant
  * @property-read mixed $translations
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Type> $types
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $users
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $users
  * @property-read int|null $users_count
  *
  * @method static \Database\Factories\InstitutionFactory factory($count = null, $state = [])
@@ -113,6 +114,18 @@ class Institution extends Model implements SharepointFileableContract
     public function documents()
     {
         return $this->hasMany(Document::class);
+    }
+
+    public function checkIns()
+    {
+        return $this->hasMany(InstitutionCheckIn::class);
+    }
+
+    public function activeCheckIns()
+    {
+        return $this->checkIns()
+            ->where('start_date', '<=', now())
+            ->where('end_date', '>=', now());
     }
 
     public function meetings(): BelongsToMany

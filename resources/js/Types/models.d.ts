@@ -24,11 +24,11 @@ declare global {
     export interface Calendar {
       // columns
       id: number
-      title?: string[] | null
-      description?: string[] | null
-      location?: string[] | null
-      organizer?: string[] | null
-      cto_url?: string[] | null
+      title?: Array<unknown> | null
+      description?: Array<unknown> | null
+      location?: Array<unknown> | null
+      organizer?: Array<unknown> | null
+      cto_url?: Array<unknown> | null
       facebook_url?: string | null
       video_url?: string | null
       is_draft: boolean
@@ -61,8 +61,8 @@ declare global {
       alias?: string | null
       created_at: string
       updated_at: string
-      name?: string[] | null
-      description?: string[] | null
+      name?: Array<unknown> | null
+      description?: Array<unknown> | null
       // mutators
       translations: unknown
       // relations
@@ -82,9 +82,9 @@ declare global {
     export interface ChangelogItem {
       // columns
       id: number
-      title: string[]
+      title: Array<unknown>
       date: string
-      description: string[]
+      description: Array<unknown>
       permission_id?: string | null
       // mutators
       translations: unknown
@@ -134,8 +134,8 @@ declare global {
       id: number
       content_id: number
       type: string
-      json_content: string[]
-      options?: string[] | null
+      json_content: Array<unknown>
+      options?: Array<unknown> | null
       order: number
       created_at: string
       updated_at: string
@@ -174,7 +174,7 @@ declare global {
       effective_date?: string | null
       expiration_date?: string | null
       // mutators
-      is_in_effect: bool
+      is_in_effect: boolean
       // relations
       institution?: Institution
       // counts
@@ -185,8 +185,8 @@ declare global {
     export interface Duty {
       // columns
       id: string
-      name?: string[] | null
-      description?: string[] | null
+      name?: Array<unknown> | null
+      description?: Array<unknown> | null
       institution_id: string
       order: number
       email?: string | null
@@ -241,7 +241,7 @@ declare global {
       id: number
       registration_id: number
       form_field_id: number
-      response: string[]
+      response: Array<unknown>
       created_at: string
       updated_at: string
       // relations
@@ -259,11 +259,11 @@ declare global {
     export interface Form {
       // columns
       id: string
-      name: string[]
-      description?: string[] | null
+      name: Array<unknown>
+      description?: Array<unknown> | null
       user_id?: string | null
       tenant_id: number
-      path?: string[] | null
+      path?: Array<unknown> | null
       publish_time?: string | null
       created_at: string
       updated_at: string
@@ -291,15 +291,15 @@ declare global {
       // columns
       id: number
       form_id: string
-      label: string[]
-      description?: string[] | null
+      label: Array<unknown>
+      description?: Array<unknown> | null
       type: string
       subtype?: string | null
-      options?: string[] | null
+      options?: Array<unknown> | null
       is_required: boolean
       order: number
-      default_value?: string[] | null
-      placeholder?: string[] | null
+      default_value?: Array<unknown> | null
+      placeholder?: Array<unknown> | null
       use_model_options: boolean
       options_model?: string | null
       options_model_field?: string | null
@@ -315,70 +315,6 @@ declare global {
       // exists
       form_exists: boolean
       field_responses_exists: boolean
-    }
-
-    export interface Institution {
-      // columns
-      id: string
-      name?: string[] | null
-      short_name?: string[] | null
-      alias: string
-      description?: string[] | null
-      address?: string[] | null
-      phone?: string | null
-      email?: string | null
-      website?: string | null
-      image_url?: string | null
-      logo_url?: string | null
-      facebook_url?: string | null
-      instagram_url?: string | null
-      tenant_id?: number | null
-      is_active: boolean
-      contacts_layout: string
-      created_at: string
-      updated_at: string
-      deleted_at?: string | null
-      // mutators
-      related_institutions: unknown
-      maybe_short_name: unknown
-      translations: unknown
-      // relations
-      duties?: Duty[]
-      types?: Type[]
-      tenant?: Tenant
-      documents?: Document[]
-      meetings?: Meeting[]
-      users?: User
-      available_trainings?: Training[]
-      commentable?: Institution
-      comments?: Comment[]
-      outgoing_relationships?: Relationship[]
-      incoming_relationships?: Relationship[]
-      files?: SharepointFile[]
-      activities?: Activity[]
-      // counts
-      duties_count: number
-      types_count: number
-      documents_count: number
-      meetings_count: number
-      available_trainings_count: number
-      comments_count: number
-      outgoing_relationships_count: number
-      incoming_relationships_count: number
-      files_count: number
-      activities_count: number
-      // exists
-      duties_exists: boolean
-      types_exists: boolean
-      tenant_exists: boolean
-      documents_exists: boolean
-      meetings_exists: boolean
-      available_trainings_exists: boolean
-      comments_exists: boolean
-      outgoing_relationships_exists: boolean
-      incoming_relationships_exists: boolean
-      files_exists: boolean
-      activities_exists: boolean
     }
 
     export interface Meeting {
@@ -421,7 +357,7 @@ declare global {
     export interface Membership {
       // columns
       id: string
-      name: string[]
+      name: Array<unknown>
       tenant_id: number
       created_at: string
       updated_at: string
@@ -453,7 +389,7 @@ declare global {
       url: string
       order: number
       is_active: boolean
-      extra_attributes?: string[] | null
+      extra_attributes?: Array<unknown> | null
       created_at?: string
       updated_at?: string
       // relations
@@ -546,29 +482,6 @@ declare global {
       permissions_exists: boolean
     }
 
-    export interface AgendaItem {
-      // columns
-      id: string
-      meeting_id: string
-      matter_id?: string | null
-      created_at: string
-      updated_at: string
-      title: string
-      description?: string | null
-      student_vote?: string | null
-      decision?: string | null
-      student_benefit?: string | null
-      start_time?: string | null
-      // relations
-      meeting?: Meeting
-      activities?: Activity[]
-      // counts
-      activities_count: number
-      // exists
-      meeting_exists: boolean
-      activities_exists: boolean
-    }
-
     export interface Dutiable {
       // columns
       id: string
@@ -580,7 +493,7 @@ declare global {
       study_program_id?: string | null
       additional_email?: string | null
       additional_photo?: string | null
-      description?: string[] | null
+      description?: Array<unknown> | null
       use_original_duty_name: boolean
       created_at: string
       updated_at: string
@@ -669,7 +582,7 @@ declare global {
       updated_at: string
       deleted_at?: string | null
       // mutators
-      approvable: bool
+      approvable: boolean
       state_properties: unknown
       // relations
       reservation?: Reservation
@@ -729,11 +642,35 @@ declare global {
       tenant_exists: boolean
     }
 
+    export interface AgendaItem {
+      // columns
+      id: string
+      meeting_id: string
+      matter_id?: string | null
+      created_at: string
+      updated_at: string
+      title: string
+      order: number
+      description?: string | null
+      student_vote?: string | null
+      decision?: string | null
+      student_benefit?: string | null
+      start_time?: string | null
+      // relations
+      meeting?: Meeting
+      activities?: Activity[]
+      // counts
+      activities_count: number
+      // exists
+      meeting_exists: boolean
+      activities_exists: boolean
+    }
+
     export interface Programme {
       // columns
       id: number
-      title: string[]
-      description?: string[] | null
+      title: Array<unknown>
+      description?: Array<unknown> | null
       start_date: string
       created_at: string
       updated_at: string
@@ -752,8 +689,8 @@ declare global {
       // columns
       id: number
       programme_section_id: number
-      title: string[]
-      description?: string[] | null
+      title: Array<unknown>
+      description?: Array<unknown> | null
       created_at: string
       updated_at: string
       // mutators
@@ -770,8 +707,8 @@ declare global {
       // columns
       id: number
       programme_id: number
-      title: string[]
-      description?: string[] | null
+      title: Array<unknown>
+      description?: Array<unknown> | null
       order: number
       start_time: string
       created_at: string
@@ -797,8 +734,8 @@ declare global {
     export interface ProgrammePart {
       // columns
       id: number
-      title: string[]
-      description?: string[] | null
+      title: Array<unknown>
+      description?: Array<unknown> | null
       instructor?: string | null
       duration: number
       start_time?: string | null
@@ -820,7 +757,7 @@ declare global {
     export interface ProgrammeSection {
       // columns
       id: number
-      title: string[]
+      title: Array<unknown>
       duration: number
       start_time?: string | null
       created_at: string
@@ -936,8 +873,8 @@ declare global {
       // columns
       id: string
       identifier?: string | null
-      name: string[]
-      description?: string[] | null
+      name: Array<unknown>
+      description?: Array<unknown> | null
       resource_category_id?: number | null
       location?: string | null
       capacity: number
@@ -969,8 +906,8 @@ declare global {
     export interface ResourceCategory {
       // columns
       id: number
-      name: string[]
-      description?: string[] | null
+      name: Array<unknown>
+      description?: Array<unknown> | null
       icon?: string | null
       created_at: string
       updated_at: string
@@ -1055,7 +992,7 @@ declare global {
     export interface StudyProgram {
       // columns
       id: string
-      name: string[]
+      name: Array<unknown>
       degree: string
       tenant_id: number
       created_at: string
@@ -1078,8 +1015,8 @@ declare global {
       alias?: string | null
       created_at: string
       updated_at: string
-      name?: string[] | null
-      description?: string[] | null
+      name?: Array<unknown> | null
+      description?: Array<unknown> | null
       // mutators
       translations: unknown
       // relations
@@ -1111,59 +1048,11 @@ declare global {
       users_exists: boolean
     }
 
-    export interface Tenant {
-      // columns
-      id: number
-      type?: string | null
-      fullname: string
-      shortname: string
-      alias: string
-      phone?: string | null
-      email?: string | null
-      address?: string | null
-      shortname_vu?: string | null
-      primary_institution_id?: string | null
-      content_id?: number | null
-      // relations
-      banners?: Banner[]
-      calendar?: Calendar[]
-      duties?: Duty[]
-      institutions?: Institution[]
-      news?: News[]
-      pages?: Page[]
-      quick_links?: QuickLink[]
-      resources?: Resource[]
-      users?: User
-      reservations?: Reservation
-      primary_institution?: Institution
-      content?: Content
-      // counts
-      banners_count: number
-      calendar_count: number
-      duties_count: number
-      institutions_count: number
-      news_count: number
-      pages_count: number
-      quick_links_count: number
-      resources_count: number
-      // exists
-      banners_exists: boolean
-      calendar_exists: boolean
-      duties_exists: boolean
-      institutions_exists: boolean
-      news_exists: boolean
-      pages_exists: boolean
-      quick_links_exists: boolean
-      resources_exists: boolean
-      primary_institution_exists: boolean
-      content_exists: boolean
-    }
-
     export interface Training {
       // columns
       id: string
-      name: string[]
-      description: string[]
+      name: Array<unknown>
+      description: Array<unknown>
       address?: string | null
       meeting_url?: string | null
       image?: string | null
@@ -1208,8 +1097,8 @@ declare global {
       // columns
       id: number
       training_id: string
-      name: string[]
-      description?: string[] | null
+      name: Array<unknown>
+      description?: Array<unknown> | null
       due_date?: string | null
       created_at: string
       updated_at: string
@@ -1226,8 +1115,8 @@ declare global {
       // columns
       id: number
       parent_id?: number | null
-      title?: string[] | null
-      description?: string[] | null
+      title?: Array<unknown> | null
+      description?: Array<unknown> | null
       model_type?: string | null
       slug?: string | null
       created_at: string
@@ -1287,7 +1176,7 @@ declare global {
       phone?: string | null
       facebook_url?: string | null
       name: string
-      pronouns?: string[] | null
+      pronouns?: Array<unknown> | null
       show_pronouns: boolean
       password?: string | null
       is_active: boolean
@@ -1346,6 +1235,146 @@ declare global {
       permissions_exists: boolean
       activities_exists: boolean
       notifications_exists: boolean
+    }
+
+    export interface Tenant {
+      // columns
+      id: number
+      type?: string | null
+      fullname: string
+      shortname: string
+      alias: string
+      phone?: string | null
+      email?: string | null
+      address?: string | null
+      shortname_vu?: string | null
+      primary_institution_id?: string | null
+      content_id?: number | null
+      // relations
+      banners?: Banner[]
+      calendar?: Calendar[]
+      duties?: Duty[]
+      institutions?: Institution[]
+      news?: News[]
+      pages?: Page[]
+      quick_links?: QuickLink[]
+      resources?: Resource[]
+      users?: User
+      reservations?: Reservation
+      primary_institution?: Institution
+      content?: Content
+      // counts
+      banners_count: number
+      calendar_count: number
+      duties_count: number
+      institutions_count: number
+      news_count: number
+      pages_count: number
+      quick_links_count: number
+      resources_count: number
+      // exists
+      banners_exists: boolean
+      calendar_exists: boolean
+      duties_exists: boolean
+      institutions_exists: boolean
+      news_exists: boolean
+      pages_exists: boolean
+      quick_links_exists: boolean
+      resources_exists: boolean
+      primary_institution_exists: boolean
+      content_exists: boolean
+    }
+
+    export interface InstitutionCheckIn {
+      // columns
+      id: string
+      tenant_id?: number | null
+      institution_id: string
+      user_id: string
+      start_date: string
+      end_date: string
+      note?: string | null
+      created_at?: string | null
+      updated_at?: string | null
+      // relations
+      institution?: Institution
+      user?: User
+      tenant?: Tenant
+      activities?: Activity[]
+      // counts
+      activities_count: number
+      // exists
+      institution_exists: boolean
+      user_exists: boolean
+      tenant_exists: boolean
+      activities_exists: boolean
+    }
+
+    export interface Institution {
+      // columns
+      id: string
+      name?: Array<unknown> | null
+      short_name?: Array<unknown> | null
+      alias: string
+      description?: Array<unknown> | null
+      address?: Array<unknown> | null
+      phone?: string | null
+      email?: string | null
+      website?: string | null
+      image_url?: string | null
+      logo_url?: string | null
+      facebook_url?: string | null
+      instagram_url?: string | null
+      tenant_id?: number | null
+      is_active: boolean
+      contacts_layout: string
+      created_at: string
+      updated_at: string
+      deleted_at?: string | null
+      // mutators
+      related_institutions: unknown
+      maybe_short_name: unknown
+      translations: unknown
+      // relations
+      duties?: Duty[]
+      types?: Type[]
+      tenant?: Tenant
+      documents?: Document[]
+      check_ins?: InstitutionCheckIn[]
+      meetings?: Meeting[]
+      users?: User
+      available_trainings?: Training[]
+      commentable?: Institution
+      comments?: Comment[]
+      outgoing_relationships?: Relationship[]
+      incoming_relationships?: Relationship[]
+      files?: SharepointFile[]
+      activities?: Activity[]
+      // counts
+      duties_count: number
+      types_count: number
+      documents_count: number
+      check_ins_count: number
+      meetings_count: number
+      available_trainings_count: number
+      comments_count: number
+      outgoing_relationships_count: number
+      incoming_relationships_count: number
+      files_count: number
+      activities_count: number
+      // exists
+      duties_exists: boolean
+      types_exists: boolean
+      tenant_exists: boolean
+      documents_exists: boolean
+      check_ins_exists: boolean
+      meetings_exists: boolean
+      available_trainings_exists: boolean
+      comments_exists: boolean
+      outgoing_relationships_exists: boolean
+      incoming_relationships_exists: boolean
+      files_exists: boolean
+      activities_exists: boolean
     }
 
   }

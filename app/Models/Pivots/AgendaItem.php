@@ -20,6 +20,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
  * @property string $title
+ * @property int $order
  * @property string|null $description
  * @property string|null $student_vote
  * @property string|null $decision

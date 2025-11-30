@@ -1,121 +1,300 @@
 <template>
-  <div>
-    <Form v-slot="{ values, }" :validation-schema="schema" @submit="onSubmit" :initial-values="initialValues">
-      <FadeTransition>
-        <SuggestionAlert :show-alert="showAlert" @alert-closed="showAlert = false">
-          <template v-if="$page.props.app.locale === 'lt'">
-            <p class="mt-0">
-              <span>Kiekvienas posėdis turi</span>
-              <ModelChip>
-                <template #icon>
-                  <component :is="IconsRegular.AGENDA_ITEM" class="h-4 w-4" />
-                </template>
-                darbotvarkės klausimų
-              </ModelChip>
-            </p>
-            <p class="mb-4">
-              Įrašyk arba įkopijuok visus klausimus, kurie šiuo metu yra numatomi
-              posėdyje.
-            </p>
-          </template>
-          <template v-else>
-            <p class="mt-0">
-              <span>Each meeting has</span>
-              <ModelChip>
-                <template #icon>
-                  <component :is="IconsRegular.AGENDA_ITEM" class="h-4 w-4" />
-                </template>
-                agenda items
-              </ModelChip>
-            </p>
-            <p class="mb-4">
-              Enter or paste all the questions that are currently planned for the
-              meeting.
-            </p>
-          </template>
-        </SuggestionAlert>
-      </FadeTransition>
+  <div class="flex flex-col gap-6">
+    <FadeTransition>
+      <SuggestionAlert :show-alert @alert-closed="showAlert = false">
+        <template v-if="$page.props.app.locale === 'lt'">
+          <p class="mt-0">
+            <span>Kiekvienas posėdis turi</span>
+            <ModelChip>
+              <template #icon>
+                <component :is="IconsRegular.AGENDA_ITEM" class="h-4 w-4" />
+              </template>
+              darbotvarkės klausimų
+            </ModelChip>
+          </p>
+          <p class="mb-4">
+            Įrašyk arba įkopijuok visus klausimus, kurie šiuo metu yra numatomi
+            posėdyje. Galite pradėti nuo ankstesnio posėdžio klausimų.
+          </p>
+        </template>
+        <template v-else>
+          <p class="mt-0">
+            <span>Each meeting has</span>
+            <ModelChip>
+              <template #icon>
+                <component :is="IconsRegular.AGENDA_ITEM" class="h-4 w-4" />
+              </template>
+              agenda items
+            </ModelChip>
+          </p>
+          <p class="mb-4">
+            Enter or paste all the questions that are currently planned for the
+            meeting. You can start from a previous meeting's agenda.
+          </p>
+        </template>
+      </SuggestionAlert>
+    </FadeTransition>
 
+    <Form ref="agendaForm" v-slot="{ values }" :validation-schema="schema" :initial-values="initialValues.value" @submit="onSubmit">
       <div class="space-y-6">
         <FormField ref="agendaItemField" v-slot="{ componentField, setValue }" name="agendaItemTitles">
-          <FieldArray v-slot="{ fields, remove, push }" name="agendaItemTitles">
+          <FieldArray v-slot="{ fields, remove, push, move }" name="agendaItemTitles">
             <FormItem>
-              <FormLabel class="mb-2 inline-flex items-center gap-1">
-                <component :is="IconsFilled.AGENDA_ITEM" class="h-4 w-4" />
-                {{ $t("Darbotvarkės klausimai") }}
+              <FormLabel class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <component :is="IconsFilled.AGENDA_ITEM" class="h-4 w-4" />
+                  {{ $t("Darbotvarkės klausimai") }}
+                </div>
+                <div class="text-xs text-muted-foreground">
+                  {{ fields.length }} {{ $t('klausimai') }}
+                </div>
               </FormLabel>
 
               <div class="flex flex-col gap-4">
-                <!-- Individual items input -->
-                <div v-if="!showQuestionInputInTextArea" class="space-y-2">
-                  <div v-for="(field, index) in fields" :key="field.key" class="flex items-center gap-2">
-                    <span class="ml-1 w-7 flex-shrink-0">{{ `${index + 1}.` }}</span>
-                    <FormControl>
-                      <Input v-model="field.value" :placeholder="`Darbotvarkės klausimas nr. ${index + 1}`"
-                        @keydown.enter.prevent />
-                    </FormControl>
-                    <Button type="button" variant="ghost" size="icon" class="h-8 w-8" @click="remove(index)">
-                      <TrashIcon class="h-4 w-4" />
+                <!-- Individual items input with drag and drop -->
+                <div v-if="!showQuestionInputInTextArea && fields.length > 0" class="space-y-2">
+                  <TransitionGroup name="list" tag="div">
+                    <div v-for="(field, index) in fields" :key="field.key"
+                      class="flex items-start gap-2 p-2 rounded-lg border border-dashed hover:border-solid hover:bg-muted/50 transition-all"
+                      :draggable="true" @dragstart="handleDragStart(index)" @dragover="handleDragOver"
+                      @drop="handleDrop(index, move)">
+                      <GripVertical class="h-4 w-4 mt-2 text-muted-foreground cursor-grab active:cursor-grabbing" />
+                      <span class="w-7 flex-shrink-0 mt-2 text-sm font-medium text-muted-foreground">{{ `${index + 1}.`
+                      }}</span>
+                      <div class="flex-1 space-y-2">
+                        <FormControl>
+                          <Input v-model="(field as any).value" :placeholder="`Darbotvarkės klausimas nr. ${index + 1}`"
+                            @keydown.enter.prevent="addNewItem(index + 1, push)"
+                            @keydown.backspace="handleBackspace(index, (field as any).value, remove)" />
+                        </FormControl>
+                        <!-- Optional description for agenda items -->
+                        <FormControl v-if="showDescriptions">
+                          <Textarea v-model="(field as any).description"
+                            :placeholder="$t('Papildomas aprašymas (neprivalomas)')" class="text-sm resize-none"
+                            :rows="2" />
+                        </FormControl>
+                      </div>
+                      <div class="flex items-center gap-1 mt-2">
+                        <Button type="button" variant="ghost" size="icon" class="h-6 w-6 opacity-50 hover:opacity-100"
+                          @click="duplicateItem(index, (field as any).value, push)">
+                          <Copy class="h-3 w-3" />
+                        </Button>
+                        <Button type="button" variant="ghost" size="icon"
+                          class="h-6 w-6 opacity-50 hover:opacity-100 hover:text-destructive"
+                          :disabled="fields.length === 1"
+                          @click="remove(index)">
+                          <TrashIcon class="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  </TransitionGroup>
+
+                  <!-- Action buttons - only when there are items -->
+                  <div class="flex flex-wrap gap-2 pt-2">
+                    <Button type="button" variant="outline" size="sm" @click="push('')">
+                      <PlusIcon class="mr-2 h-4 w-4" />
+                      {{ $t("Pridėti klausimą") }}
+                    </Button>
+
+                    <Button v-if="fields.length === 0" type="button" variant="outline" size="sm"
+                      @click="showQuestionInputInTextArea = true; agendaInputMode = 'text'">
+                      <DocumentIcon class="mr-2 h-4 w-4" />
+                      {{ $t('Įkelti iš teksto') }}
+                    </Button>
+
+                    <Button type="button" variant="outline" size="sm"
+                      @click="agendaItemField?.setValue([]); agendaInputMode = null">
+                      <ArrowLeft class="mr-2 h-4 w-4" />
+                      {{ $t('Grįžti') }}
                     </Button>
                   </div>
 
-                  <Button type="button" variant="outline" size="sm" class="mt-2" @click="push('')">
-                    <PlusIcon class="mr-2 h-4 w-4" />
-                    {{ $t("Pridėti po vieną") }}
-                  </Button>
+                  <!-- Descriptions Toggle -->
+                  <div class="flex items-center justify-between pt-3 pb-1 px-1">
+                    <div class="space-y-0.5">
+                      <Label class="text-sm font-medium">
+                        {{ $t('Aprašymai') }}
+                      </Label>
+                      <p class="text-xs text-muted-foreground">
+                        {{ $t('Pridėti papildomus aprašymus prie klausimų') }}
+                      </p>
+                    </div>
+                    <Switch v-model="showDescriptions" />
+                  </div>
                 </div>
 
                 <!-- Text area input -->
-                <div v-else class="flex flex-col items-start gap-2">
-                  <FormControl>
-                    <Textarea v-model="questionInputInTextArea"
-                      :placeholder="$page.props.app.locale === 'lt' ? 'Kiekvienas klausimas turi būti iš naujos eilutės, pvz.:\n\nKlausimas nr. 1\nKlausimas nr. 2' : 'Every question must begin from new line, e.g.\n\nQuestion no. 1\nQuestion no. 2'"
-                      class="w-full" :rows="5" />
-                  </FormControl>
-
-                  <div class="flex w-full justify-between gap-2">
-                    <Button type="button" size="sm" variant="outline" @click="showQuestionInputInTextArea = false">
+                <div v-else-if="showQuestionInputInTextArea" class="space-y-4">
+                  <div class="flex items-center justify-between">
+                    <h4 class="font-medium">
+                      {{ $t('Masinis klausimų įvedimas') }}
+                    </h4>
+                    <Button type="button" size="sm" variant="outline" @click="showQuestionInputInTextArea = false; agendaInputMode = null">
+                      <ArrowLeft class="mr-2 h-3 w-3" />
                       {{ $t('Grįžti') }}
                     </Button>
-                    <Button type="button" size="sm" @click="handleQuestionsFromTextArea">
-                      {{ $t('Įkelti iš teksto') }}
+                  </div>
+
+                  <FormControl>
+                    <Textarea v-model="questionInputInTextArea"
+                      :placeholder="$page.props.app.locale === 'lt' ? 'Kiekvienas klausimas turi būti iš naujos eilutės, pvz.:\n\n1. Praėjusio posėdžio protokolo tvirtinimas\n2. Einamųjų reikalų aptarimas\n3. Ateities planų pristatymas\n4. Kiti klausimai' : 'Every question must begin from new line, e.g.\n\n1. Previous meeting protocol approval\n2. Current affairs discussion\n3. Future plans presentation\n4. Other questions'"
+                      class="w-full font-mono text-sm" :rows="8" />
+                  </FormControl>
+
+                  <div class="flex items-center justify-between">
+                    <div class="text-xs text-muted-foreground">
+                      {{ $t('Aptikta') }}: {{ getLineCount(questionInputInTextArea) }} {{ $t('eilutės') }}
+                    </div>
+                    <Button type="button" @click="handleQuestionsFromTextArea">
+                      <Upload class="mr-2 h-4 w-4" />
+                      {{ $t('Įkelti klausimus') }}
                     </Button>
                   </div>
                 </div>
 
-                <!-- Show text area option -->
-                <Button v-if="fields.length === 0 && !showQuestionInputInTextArea" type="button" variant="outline"
-                  @click="showQuestionInputInTextArea = true">
-                  <DocumentIcon class="mr-2 h-4 w-4" />
-                  {{ $t('Įkelti iš teksto') }}
-                </Button>
+                <!-- 3-button selection for starting agenda -->
+                <div v-if="fields.length === 0 && !showQuestionInputInTextArea && !agendaInputMode"
+                  class="text-center py-8 space-y-6">
+                  <div>
+                    <component :is="IconsRegular.AGENDA_ITEM" class="h-10 w-10 mx-auto text-muted-foreground/50 mb-3" />
+                    <h4 class="font-medium text-lg mb-2">{{ $t('Kaip norite sukurti darbotvarkę?') }}</h4>
+                    <p class="text-sm text-muted-foreground">
+                      {{ $t('Pasirinkite vieną iš būdų arba praleiskite šį žingsnį') }}
+                    </p>
+                  </div>
+
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl mx-auto">
+                    <!-- Option 1: From previous meeting -->
+                    <button type="button"
+                      class="flex flex-col items-center gap-3 p-6 rounded-lg border-2 border-dashed hover:border-primary hover:bg-muted/50 transition-all group"
+                      @click="showPreviousMeetingSelector">
+                      <History class="h-8 w-8 text-muted-foreground group-hover:text-primary transition-colors" />
+                      <div class="text-center">
+                        <p class="font-medium">{{ $t('Naudoti ankstesnį') }}</p>
+                        <p class="text-xs text-muted-foreground mt-1">{{ $t('Pasirinkti iš praėjusių posėdžių') }}</p>
+                      </div>
+                    </button>
+
+                    <!-- Option 2: Add one-by-one -->
+                    <button type="button"
+                      class="flex flex-col items-center gap-3 p-6 rounded-lg border-2 border-dashed hover:border-primary hover:bg-muted/50 transition-all group"
+                      @click="startOneByOne">
+                      <PlusIcon class="h-8 w-8 text-muted-foreground group-hover:text-primary transition-colors" />
+                      <div class="text-center">
+                        <p class="font-medium">{{ $t('Pridėti po vieną') }}</p>
+                        <p class="text-xs text-muted-foreground mt-1">{{ $t('Įvesti klausimus paeiliui') }}</p>
+                      </div>
+                    </button>
+
+                    <!-- Option 3: From text -->
+                    <button type="button"
+                      class="flex flex-col items-center gap-3 p-6 rounded-lg border-2 border-dashed hover:border-primary hover:bg-muted/50 transition-all group"
+                      @click="showQuestionInputInTextArea = true; agendaInputMode = 'text'">
+                      <DocumentIcon class="h-8 w-8 text-muted-foreground group-hover:text-primary transition-colors" />
+                      <div class="text-center">
+                        <p class="font-medium">{{ $t('Įkelti iš teksto') }}</p>
+                        <p class="text-xs text-muted-foreground mt-1">{{ $t('Įklijuoti visus klausimus') }}</p>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Previous meeting selector dialog -->
+                <div v-if="showPreviousMeetingList && recentTemplates.length > 0" class="space-y-4">
+                  <div class="flex items-center justify-between">
+                    <h4 class="font-medium">{{ $t('Pasirinkite ankstesnį posėdį') }}</h4>
+                    <Button type="button" size="sm" variant="outline" @click="showPreviousMeetingList = false; agendaInputMode = null">
+                      <ArrowLeft class="mr-2 h-3 w-3" />
+                      {{ $t('Grįžti') }}
+                    </Button>
+                  </div>
+
+                  <div class="space-y-2">
+                    <button v-for="template in recentTemplates" :key="template.id" type="button"
+                      class="w-full flex items-center gap-3 p-4 rounded-lg border hover:border-primary hover:bg-muted/50 transition-all text-left"
+                      @click="loadFromPreviousMeeting(template.id)">
+                      <History class="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                      <div class="flex-1 min-w-0">
+                        <p class="font-medium truncate">{{ template.name }}</p>
+                        <p class="text-xs text-muted-foreground">{{ template.agendaItems.length }} {{ $t('klausimai') }}</p>
+                      </div>
+                      <ArrowRight class="h-4 w-4 text-muted-foreground" />
+                    </button>
+                  </div>
+                </div>
               </div>
               <FormMessage />
             </FormItem>
           </FieldArray>
         </FormField>
 
-        <Button type="submit" :loading="loading">
-          {{ $t("forms.submit") }}
-        </Button>
+        <!-- Action buttons -->
+        <div class="flex items-center justify-between pt-4 border-t">
+          <div class="flex items-center gap-2">
+            <Button v-if="currentFieldCount > 0" type="button" variant="ghost" size="sm" @click="clearAllItems">
+              <Trash2 class="mr-2 h-3 w-3" />
+              {{ $t('Išvalyti visus') }}
+            </Button>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <TooltipProvider v-if="currentFieldCount === 0">
+              <Tooltip>
+                <TooltipTrigger as-child>
+                  <Button type="button" variant="outline" @click="skipAgenda">
+                    {{ $t('Praleisti darbotvarkę') }}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {{ $t('Darbotvarkę galėsite pridėti vėliau') }}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+
+            <Button type="submit" :disabled="loading">
+              <span v-if="loading">
+                <Loader2 class="mr-2 h-4 w-4 animate-spin" />
+                {{ $t('Kuriama...') }}
+              </span>
+              <span class="inline-flex items-center" v-else>
+                {{ $t("Sukurti susitikimą") }}
+                <CheckCircle class="ml-2 h-4 w-4" />
+              </span>
+            </Button>
+          </div>
+        </div>
       </div>
     </Form>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, inject, useTemplateRef } from "vue";
+import { ref, useTemplateRef, computed, onMounted, onUnmounted, watch, nextTick } from "vue";
 import { trans as $t } from "laravel-vue-i18n";
 import { Form, FieldArray } from "vee-validate";
 import { toTypedSchema } from '@vee-validate/zod';
 import * as z from 'zod';
+import {
+  Trash as TrashIcon,
+  Plus as PlusIcon,
+  FileText as DocumentIcon,
+  ArrowRight,
+  History,
+  GripVertical,
+  Copy,
+  ArrowLeft,
+  Upload,
+  Trash2,
+  CheckCircle,
+  Loader2,
+} from "lucide-vue-next";
 
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import IconsFilled from "@/Types/Icons/filled";
 import IconsRegular from "@/Types/Icons/regular";
 import ModelChip from "@/Components/Tag/ModelChip.vue";
 import SuggestionAlert from "@/Components/Alerts/SuggestionAlert.vue";
-
+import { useMeetingTemplates } from "@/Composables/useMeetingTemplates";
 // Import Shadcn components
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
@@ -127,67 +306,236 @@ import {
   FormLabel,
   FormMessage,
 } from "@/Components/ui/form";
-import {
-  Trash as TrashIcon,
-  Plus as PlusIcon,
-  FileText as DocumentIcon,
-} from "lucide-vue-next";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
+import { Switch } from "@/Components/ui/switch";
+import { Label } from "@/Components/ui/label";
 
-const emit = defineEmits<{
-  (e: "submit", data: Record<string, any>): void;
-}>();
+const emit = defineEmits<(e: "submit", data: Record<string, any>) => void>();
 
 const props = defineProps<{
   loading: boolean;
+  institutionId?: string;
+  agendaItems?: Array<{ title: string; description?: string; order: number }>;
+  recentMeetings?: Array<{ id: string; title: string; start_time: string; institution_name: string; agenda_items: { title: string }[] }>;
 }>();
 
-// Access shared form state from parent component
-const formState = inject('meetingFormState');
-const agendaItemField = useTemplateRef<typeof FormField>("agendaItemField");
+// Composables
+const {
+  templates,
+  quickAgendaTemplates,
+  getTemplatesForInstitution,
+  loadRecentMeetings,
+  applyTemplate
+} = useMeetingTemplates(props.recentMeetings);
 
+const agendaItemField = useTemplateRef<typeof FormField>("agendaItemField");
+const agendaForm = useTemplateRef<typeof Form>("agendaForm");
+
+// Local state
 const showAlert = ref(true);
 const showQuestionInputInTextArea = ref(false);
+const showDescriptions = ref(false);
 const questionInputInTextArea = ref("");
+const draggedIndex = ref<number | null>(null);
+const agendaInputMode = ref<'previous' | 'one-by-one' | 'text' | null>(null);
+const showPreviousMeetingList = ref(false);
+
+// Computed properties
+const recentTemplates = computed(() =>
+  availableTemplates.value.filter(t => t.type === 'recent').slice(0, 5)
+);
+
+const availableTemplates = computed(() => {
+  if (!props.institutionId) return templates.value.filter(t => t.isDefault);
+  return getTemplatesForInstitution({ id: props.institutionId } as App.Entities.Institution);
+});
+
+const currentAgendaItems = computed(() =>
+  props.agendaItems?.map(item => item.title) || []
+);
+
+// Track the current field count for use outside FieldArray scope
+const currentFieldCount = ref(0);
 
 // Define validation schema using zod
 const schema = toTypedSchema(z.object({
   agendaItemTitles: z.array(z.string())
-    // .min(1, { message: $t("Pasirink (arba įrašyk) bent vieną klausimą") })
     .refine(items => {
-      // Check that no items are empty
-      return !items.some(item => !item || item.trim() === '');
+      // If there are items, they must not be empty or whitespace-only
+      // Allow empty array (agenda is optional)
+      return items.length === 0 || items.every(item => item && item.trim().length > 0);
     }, { message: $t("Klausimas negali būti tuščias") }),
 }));
 
-// Set initial values from shared state
-const initialValues = {
-  agendaItemTitles: formState?.agendaItemsData.agendaItemTitles || [],
+// Set initial values from props
+const initialValues = computed(() => ({
+  agendaItemTitles: currentAgendaItems.value,
+}));
+
+// Form interaction methods
+const addNewItem = (index: number, push: Function) => {
+  push('');
+  // Focus on the new item after it's added
+  setTimeout(() => {
+    const inputs = document.querySelectorAll('input[placeholder*="Darbotvarkės klausimas"]');
+    const newInput = inputs[index] as HTMLInputElement;
+    newInput?.focus();
+  }, 100);
 };
 
-// Process items from textarea
+const handleBackspace = (index: number, value: string, remove: Function) => {
+  if (value === '' && index > 0) {
+    remove(index);
+    // Focus on previous item
+    setTimeout(() => {
+      const inputs = document.querySelectorAll('input[placeholder*="Darbotvarkės klausimas"]');
+      const prevInput = inputs[index - 1] as HTMLInputElement;
+      prevInput?.focus();
+    }, 100);
+  }
+};
+
+const duplicateItem = (index: number, value: string, push: Function) => {
+  push(value);
+};
+
+const clearAllItems = () => {
+  if (agendaItemField.value) {
+    agendaItemField.value.setValue([]);
+    agendaInputMode.value = null;
+  }
+};
+
+// Drag and drop methods
+const handleDragStart = (index: number) => {
+  draggedIndex.value = index;
+};
+
+const handleDragOver = (event: DragEvent) => {
+  event.preventDefault();
+};
+
+const handleDrop = (targetIndex: number, move: Function) => {
+  if (draggedIndex.value !== null && draggedIndex.value !== targetIndex) {
+    move(draggedIndex.value, targetIndex);
+  }
+  draggedIndex.value = null;
+};
+
+// Text area methods
+const getLineCount = (text: string): number => {
+  return text.split('\n').filter(line => line.trim() !== '').length;
+};
+
 const handleQuestionsFromTextArea = () => {
   const questions = questionInputInTextArea.value
     .split('\n')
-    .map(q => q.trim())
+    .map(q => q.trim().replace(/^\d+\.\s*/, '')) // Remove numbering like "1. "
     .filter(q => q !== '');
 
   if (questions.length > 0) {
-    // Apply the questions from textarea to the form's agendaItemTitles field
     agendaItemField.value?.setValue(questions);
     showQuestionInputInTextArea.value = false;
+    agendaInputMode.value = 'one-by-one'; // Switch to one-by-one view after parsing
+  }
+};
+
+// Utility methods
+const skipAgenda = () => {
+  // Submit with empty agenda
+  const formData = {
+    agendaItemTitles: [],
+  };
+
+  emit("submit", formData);
+};
+
+// New methods for 3-button flow
+const showPreviousMeetingSelector = () => {
+  agendaInputMode.value = 'previous';
+  showPreviousMeetingList.value = true;
+};
+
+const startOneByOne = () => {
+  agendaInputMode.value = 'one-by-one';
+  // Start with one empty item
+  if (agendaItemField.value) {
+    agendaItemField.value.setValue(['']);
+  }
+};
+
+const loadFromPreviousMeeting = (meetingId: string) => {
+  const meeting = availableTemplates.value.find(t => t.id === meetingId);
+  if (meeting && agendaItemField.value) {
+    const items = meeting.agendaItems.map(item => typeof item === 'string' ? item : item.title);
+    agendaItemField.value.setValue(items);
+    showPreviousMeetingList.value = false;
+    agendaInputMode.value = 'one-by-one'; // Switch to one-by-one view after loading
   }
 };
 
 // Submit form handler
-const onSubmit = (values) => {
+const onSubmit = (values: any) => {
   const formData = {
-    agendaItemTitles: values.agendaItemTitles.filter(item => item.trim() !== ''),
+    agendaItemTitles: values.agendaItemTitles.filter((item: string) => item.trim() !== ''),
   };
 
-  // Update shared state
-  if (formState) {
-    formState.agendaItemsData = formData;
-  }
   emit("submit", formData);
 };
+
+// Watch for field count changes
+watch(() => currentAgendaItems.value, (newItems) => {
+  currentFieldCount.value = newItems.length;
+}, { immediate: true });
+
+// Watch for form field value changes to update field count
+watch(() => agendaItemField.value?.value, (newValue) => {
+  if (Array.isArray(newValue)) {
+    currentFieldCount.value = newValue.length;
+  }
+}, { deep: true });
+
+// Auto-set display mode when component receives existing agenda items
+watch(() => currentAgendaItems.value, (newItems) => {
+  // Only auto-set the mode if:
+  // 1. Items exist (user is editing, not creating from scratch)
+  // 2. Mode hasn't been explicitly set yet (preserve user's choice if they've made one)
+  if (newItems.length > 0 && agendaInputMode.value === null) {
+    agendaInputMode.value = 'one-by-one';
+
+    // Explicitly synchronize VeeValidate form state
+    nextTick(() => {
+      agendaForm.value?.setValues({ agendaItemTitles: newItems });
+    });
+  }
+}, { immediate: true });
+
+// Lifecycle
+onMounted(async () => {
+  // Load recent meetings if institution is provided
+  if (props.institutionId) {
+    await loadRecentMeetings(props.institutionId);
+  }
+});
 </script>
+
+<style scoped>
+/* Transition styles for drag and drop */
+.list-move,
+.list-enter-active,
+.list-leave-active {
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.list-enter-from,
+.list-leave-to {
+  opacity: 0;
+  transform: translateX(-10px);
+}
+
+.list-leave-active {
+  position: absolute;
+  right: 0;
+  left: 0;
+}
+</style>

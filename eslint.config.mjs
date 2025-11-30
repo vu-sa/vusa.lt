@@ -80,7 +80,7 @@ export default tseslint.config(
 
             // Code quality and conciseness
             "max-len": ["warn", {
-                "code": 120,
+                "code": 180,
                 "ignoreUrls": true,
                 "ignoreStrings": true,
                 "ignoreTemplateLiterals": true,

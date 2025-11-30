@@ -26,6 +26,7 @@ class UpdateAgendaItemRequest extends FormRequest
         return [
             'title' => 'sometimes|string|max:255',
             'description' => 'nullable|string',
+            'order' => 'sometimes|integer|min:1',
             'decision' => 'nullable|string|in:positive,negative,neutral',
             'student_vote' => 'nullable|string|in:positive,negative,neutral',
             'student_benefit' => 'nullable|string|in:positive,negative,neutral',
@@ -43,6 +44,8 @@ class UpdateAgendaItemRequest extends FormRequest
             'title.string' => 'Darbotvarkės klausimo pavadinimas turi būti tekstas.',
             'title.max' => 'Darbotvarkės klausimo pavadinimas negali būti ilgesnis nei 255 simbolių.',
             'description.string' => 'Darbotvarkės klausimo aprašymas turi būti tekstas.',
+            'order.integer' => 'Darbotvarkės klausimo tvarka turi būti skaičius.',
+            'order.min' => 'Darbotvarkės klausimo tvarka turi būti bent 1.',
             'decision.in' => 'Sprendimo reikšmė turi būti viena iš: positive, negative, neutral.',
             'student_vote.in' => 'Studentų balsavimo reikšmė turi būti viena iš: positive, negative, neutral.',
             'student_benefit.in' => 'Naudos studentams reikšmė turi būti viena iš: positive, negative, neutral.',

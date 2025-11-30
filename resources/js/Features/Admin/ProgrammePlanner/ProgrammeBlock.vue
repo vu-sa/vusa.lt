@@ -54,7 +54,7 @@
 </template>
 
 <script setup lang="ts">
-import { useSortable } from '@vueuse/integrations/useSortable.mjs';
+import { useSortable } from '@vueuse/integrations';
 import { inject, nextTick, ref, useTemplateRef } from 'vue';
 import { router } from "@inertiajs/vue3";
 

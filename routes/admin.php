@@ -10,7 +10,6 @@ Route::inertia('administration', 'Admin/ShowAdministration')->name('administrati
 Route::get('dashboard/atstovavimas', [DashboardController::class, 'atstovavimas'])->name('dashboard.atstovavimas');
 Route::get('dashboard/svetaine', [DashboardController::class, 'svetaine'])->name('dashboard.svetaine');
 Route::get('dashboard/reservations', [DashboardController::class, 'reservations'])->name('dashboard.reservations');
-Route::get('dashboard/atstovavimas/summary/{date?}', [DashboardController::class, 'atstovavimasSummary'])->where('date', '[0-9]{4}-[0-9]{2}-[0-9]{2}')->name('dashboard.atstovavimas.summary');
 
 Route::patch('profile', [DashboardController::class, 'updateUserSettings'])->name('profile.update');
 Route::patch('profile/password', [DashboardController::class, 'updatePassword'])->name('profile.updatePassword');
@@ -88,7 +87,14 @@ Route::resource('calendar', CalendarController::class);
 Route::post('calendar/{calendar}/media/{media}', [CalendarController::class, 'destroyMedia'])->name('calendar.destroyMedia');
 Route::post('calendar/{calendar}/duplicate', [CalendarController::class, 'duplicate'])->name('calendar.duplicate');
 Route::resource('agendaItems', AgendaItemController::class)->except(['index', 'create']);
+Route::post('agendaItems/reorder', [AgendaItemController::class, 'reorder'])->name('agendaItems.reorder');
 Route::resource('meetings', MeetingController::class)->except(['create']);
+
+// Check-ins (read-only index for admins)
+Route::get('check-ins', [InstitutionCheckInAdminController::class, 'index'])->name('check-ins.index');
+// Check-in actions (web guard) for Inertia pages
+Route::post('institutions/{institution}/check-ins', [CheckInActionController::class, 'store'])->name('institutions.check-ins.store');
+Route::delete('institutions/{institution}/check-ins/active', [InstitutionCheckInAdminController::class, 'destroyActiveCheckIns'])->name('institutions.check-ins.destroyActive');
 
 Route::resource('resources', ResourceController::class);
 Route::resource('resourceCategories', ResourceCategoryController::class);

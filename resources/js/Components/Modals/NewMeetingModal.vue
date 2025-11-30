@@ -1,249 +1,441 @@
 <template>
-  <Dialog :open="showModal" @update:open="$emit('close')">
-    <DialogContent class="sm:max-w-4xl">
-      <DialogHeader>
-        <DialogTitle>{{ $t('Pranešti apie posėdį') }}</DialogTitle>
+  <Dialog :open="showModal" @update:open="handleDialogClose">
+    <DialogContent class="sm:max-w-5xl max-h-[90vh] overflow-y-auto p-6 md:p-8 pt-8">
+      <DialogHeader class="relative">
+        <DialogTitle class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <component :is="Icons.MEETING" class="h-5 w-5" />
+            {{ $t('Sukurti susitikimą') }}
+          </div>
+        </DialogTitle>
         <DialogDescription>
-          {{ $t('Sukurkite naują posėdį ir pridėkite darbotvarkės punktus') }}
+          {{ $t('Sukurkite susitikimą su visa darbotvarkę ir papildoma informacija') }}
         </DialogDescription>
       </DialogHeader>
-      
-      <div class="flex flex-col gap-6 md:flex-row">
-        <!-- Shadcn Stepper Component -->
-        <div class="size-fit md:border-r border-border p-4">
-          <Stepper
-            v-model="current"
-            orientation="vertical"
-            class="mx-auto flex w-full max-w-xs flex-col gap-4 items-center justify-center"
-          >
-            <StepperItem :step="1">
-              <StepperTrigger>
-                <StepperIndicator>
-                  <component :is="IconsRegular.INSTITUTION" class="size-6" />
-                </StepperIndicator>
-                <div>
-                  <StepperTitle>{{ $t('Pasirink instituciją') }}</StepperTitle>
-                  <StepperDescription>{{ $t('Pradėkite nuo institucijos pasirinkimo') }}</StepperDescription>
-                </div>
-              </StepperTrigger>
-              <StepperSeparator />
-            </StepperItem>
 
-            <StepperItem :step="2">
-              <StepperTrigger>
-                <StepperIndicator>
-                  <component :is="IconsRegular.MEETING" class="size-6" />
-                </StepperIndicator>
-                <div>
-                  <StepperTitle>{{ $t('Nurodyk posėdžio datą') }}</StepperTitle>
-                  <StepperDescription>{{ $t('Įveskite posėdžio detales ir datą') }}</StepperDescription>
-                </div>
-              </StepperTrigger>
-              <StepperSeparator />
-            </StepperItem>
+      <div class="flex flex-col gap-6 lg:flex-row">
+        <!-- Stepper -->
+        <div class="lg:w-80 lg:border-r border-border lg:pr-6">
+          <div class="space-y-4">
+            <div class="flex items-center justify-between text-sm text-muted-foreground mb-2">
+              <span>{{ $t('Naujausias žingsnis') }}</span>
+              <span>{{ meetingCreation.state.currentStep }}/{{ totalSteps }}</span>
+            </div>
 
-            <StepperItem :step="3">
-              <StepperTrigger>
-                <StepperIndicator>
-                  <component :is="IconsRegular.AGENDA_ITEM" class="size-6" />
-                </StepperIndicator>
-                <div>
-                  <StepperTitle>{{ $t('Įrašyk darbotvarkės klausimus') }}</StepperTitle>
-                  <StepperDescription>{{ $t('Pridėkite darbotvarkės klausimus posėdžiui') }}</StepperDescription>
+            <Stepper
+              orientation="vertical"
+              :linear="false"
+              class="mx-auto flex w-full max-w-md flex-col justify-start gap-4"
+              v-model="meetingCreation.state.currentStep"
+            >
+              <!-- Step 1: Institution -->
+              <StepperItem
+                :step="1"
+                v-slot="{ state }"
+                class="relative flex w-full items-start gap-6"
+                :disabled="loading"
+              >
+                <StepperSeparator
+                  class="absolute left-[18px] top-[38px] block h-[105%] w-0.5 shrink-0 rounded-full bg-muted group-data-[state=completed]:bg-primary"
+                />
+
+                <StepperTrigger as-child>
+                  <button
+                    type="button"
+                    class="z-10 rounded-full shrink-0 w-8 h-8 flex items-center justify-center border-2 transition-all"
+                    :class="[
+                      state === 'completed' || state === 'active'
+                        ? 'bg-primary border-primary text-primary-foreground'
+                        : 'border-muted-foreground/30 text-muted-foreground',
+                      state === 'completed' && 'bg-green-100 border-green-500 text-green-600 dark:bg-green-900 dark:text-green-400'
+                    ]"
+                  >
+                    <CheckCircle v-if="state === 'completed'" class="h-4 w-4" />
+                    <component :is="Icons.INSTITUTION" v-else class="h-4 w-4" />
+                  </button>
+                </StepperTrigger>
+
+                <div class="flex flex-col gap-1 flex-1 min-w-0">
+                  <StepperTitle
+                    :class="[state === 'active' && 'text-primary']"
+                    class="text-sm font-semibold"
+                  >
+                    {{ $t('Pasirinkite instituciją') }}
+                  </StepperTitle>
+                  <StepperDescription
+                    v-if="meetingCreation.state.institution?.name"
+                    :class="[state === 'active' && 'text-primary']"
+                    class="text-xs text-muted-foreground truncate"
+                  >
+                    {{ meetingCreation.state.institution.name }}
+                  </StepperDescription>
                 </div>
-              </StepperTrigger>
-            </StepperItem>
-          </Stepper>
+              </StepperItem>
+
+              <!-- Step 2: Meeting Details -->
+              <StepperItem
+                :step="2"
+                v-slot="{ state }"
+                class="relative flex w-full items-start gap-6"
+                :disabled="loading || 2 > meetingCreation.state.maxCompletedStep + 1"
+              >
+                <StepperSeparator
+                  class="absolute left-[18px] top-[38px] block h-[105%] w-0.5 shrink-0 rounded-full bg-muted group-data-[state=completed]:bg-primary"
+                />
+
+                <StepperTrigger as-child>
+                  <button
+                    type="button"
+                    class="z-10 rounded-full shrink-0 w-8 h-8 flex items-center justify-center border-2 transition-all"
+                    :class="[
+                      state === 'completed' || state === 'active'
+                        ? 'bg-primary border-primary text-primary-foreground'
+                        : 'border-muted-foreground/30 text-muted-foreground',
+                      state === 'completed' && 'bg-green-100 border-green-500 text-green-600 dark:bg-green-900 dark:text-green-400'
+                    ]"
+                  >
+                    <CheckCircle v-if="state === 'completed'" class="h-4 w-4" />
+                    <component :is="Icons.MEETING" v-else class="h-4 w-4" />
+                  </button>
+                </StepperTrigger>
+
+                <div class="flex flex-col gap-1 flex-1 min-w-0">
+                  <StepperTitle
+                    :class="[state === 'active' && 'text-primary']"
+                    class="text-sm font-semibold"
+                  >
+                    {{ $t('Susitikimo detalės') }}
+                  </StepperTitle>
+                  <StepperDescription
+                    v-if="formatMeetingTime()"
+                    :class="[state === 'active' && 'text-primary']"
+                    class="text-xs text-muted-foreground truncate"
+                  >
+                    {{ formatMeetingTime() }}
+                  </StepperDescription>
+                  <StepperDescription
+                    v-if="getMeetingTypeName()"
+                    :class="[state === 'active' && 'text-primary']"
+                    class="text-xs text-muted-foreground truncate"
+                  >
+                    {{ getMeetingTypeName() }}
+                  </StepperDescription>
+                </div>
+              </StepperItem>
+
+              <!-- Step 3: Agenda -->
+              <StepperItem
+                v-if="!isQuickMode"
+                :step="3"
+                v-slot="{ state }"
+                class="relative flex w-full items-start gap-6"
+                :disabled="loading || 3 > meetingCreation.state.maxCompletedStep + 1"
+              >
+                <StepperSeparator
+                  class="absolute left-[18px] top-[38px] block h-[105%] w-0.5 shrink-0 rounded-full bg-muted group-data-[state=completed]:bg-primary"
+                />
+
+                <StepperTrigger as-child>
+                  <button
+                    type="button"
+                    class="z-10 rounded-full shrink-0 w-8 h-8 flex items-center justify-center border-2 transition-all"
+                    :class="[
+                      state === 'completed' || state === 'active'
+                        ? 'bg-primary border-primary text-primary-foreground'
+                        : 'border-muted-foreground/30 text-muted-foreground',
+                      state === 'completed' && 'bg-green-100 border-green-500 text-green-600 dark:bg-green-900 dark:text-green-400'
+                    ]"
+                  >
+                    <CheckCircle v-if="state === 'completed'" class="h-4 w-4" />
+                    <component :is="Icons.AGENDA_ITEM" v-else class="h-4 w-4" />
+                  </button>
+                </StepperTrigger>
+
+                <div class="flex flex-col gap-1 flex-1 min-w-0">
+                  <StepperTitle
+                    :class="[state === 'active' && 'text-primary']"
+                    class="text-sm font-semibold"
+                  >
+                    {{ $t('Darbotvarkė') }}
+                  </StepperTitle>
+                  <StepperDescription
+                    v-if="meetingCreation.state.agendaItems.length"
+                    :class="[state === 'active' && 'text-primary']"
+                    class="text-xs text-muted-foreground truncate"
+                  >
+                    {{ meetingCreation.state.agendaItems.length }} {{ $t('klausimai') }}
+                  </StepperDescription>
+                </div>
+              </StepperItem>
+
+              <!-- Step 4: Review -->
+              <StepperItem
+                v-if="!isQuickMode"
+                :step="4"
+                v-slot="{ state }"
+                class="relative flex w-full items-start gap-6"
+                :disabled="loading || 4 > meetingCreation.state.maxCompletedStep + 1"
+              >
+                <StepperTrigger as-child>
+                  <button
+                    type="button"
+                    class="z-10 rounded-full shrink-0 w-8 h-8 flex items-center justify-center border-2 transition-all"
+                    :class="[
+                      state === 'completed' || state === 'active'
+                        ? 'bg-primary border-primary text-primary-foreground'
+                        : 'border-muted-foreground/30 text-muted-foreground',
+                      state === 'completed' && 'bg-green-100 border-green-500 text-green-600 dark:bg-green-900 dark:text-green-400'
+                    ]"
+                  >
+                    <CheckCircle class="h-4 w-4" />
+                  </button>
+                </StepperTrigger>
+
+                <div class="flex flex-col gap-1 flex-1 min-w-0">
+                  <StepperTitle
+                    :class="[state === 'active' && 'text-primary']"
+                    class="text-sm font-semibold"
+                  >
+                    {{ $t('Peržiūra') }}
+                  </StepperTitle>
+                  <StepperDescription
+                    :class="[state === 'active' && 'text-primary']"
+                    class="text-xs text-muted-foreground truncate"
+                  >
+                    {{ $t('Patikrinkite informaciją prieš kūrimą') }}
+                  </StepperDescription>
+                </div>
+              </StepperItem>
+            </Stepper>
+          </div>
         </div>
 
         <!-- Step Content -->
-        <div class="flex-1">
+        <div class="flex-1 min-h-[400px]">
           <Suspense>
-            <FadeTransition mode="out-in">
-              <InstitutionSelectorForm v-if="current === 1" class="flex w-full flex-col items-start justify-center" :institution="formState.institution_id"
-                @submit="handleInstitutionSelect" />
-              <MeetingForm v-else-if="current === 2" class="flex w-full flex-col items-start justify-center"
-                :meeting="meetingTemplate" @submit="handleMeetingFormSubmit" />
-              <AgendaItemsForm v-else-if="current === 3" :loading="loading" @submit="handleAgendaItemsFormSubmit" />
+            <FadeTransition :key="meetingCreation.state.currentStep" mode="out-in">
+              <InstitutionSelectorForm v-if="meetingCreation.state.currentStep === 1"
+                :selected-institution="meetingCreation.state.institution" @submit="handleInstitutionSelect" />
+              <MeetingDetailsForm v-else-if="meetingCreation.state.currentStep === 2"
+                :meeting="meetingCreation.state.meeting" :institution-id="meetingCreation.state.institution?.id"
+                :loading="meetingCreation.state.loading.validation" :meeting-types @submit="handleMeetingFormSubmit" />
+              <AgendaItemsForm v-else-if="meetingCreation.state.currentStep === 3"
+                :loading="meetingCreation.state.loading.submission"
+                :institution-id="meetingCreation.state.institution?.id"
+                :agenda-items="meetingCreation.state.agendaItems" :recent-meetings="props.recentMeetings"
+                @submit="handleAgendaItemsFormSubmit" />
+              <MeetingReviewForm v-else-if="meetingCreation.state.currentStep === 4"
+                :loading="meetingCreation.state.loading.submission" :meeting-state="meetingCreation.state"
+                @edit-step="meetingCreation.goToStep" @back="meetingCreation.previousStep"
+                @submit="handleFinalSubmit" />
             </FadeTransition>
+            <template #fallback>
+              <div class="flex items-center justify-center h-64">
+                <Loader2 class="h-6 w-6 animate-spin text-muted-foreground" />
+              </div>
+            </template>
           </Suspense>
         </div>
       </div>
-
-      <DialogFooter>
-        <FadeTransition>
-          <ModalHelperButton v-if="!showAlert && current === 3" @click="showAlert = true" />
-        </FadeTransition>
-      </DialogFooter>
     </DialogContent>
   </Dialog>
 </template>
 
 <script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
-import { ref, watch, reactive, provide, onBeforeUnmount } from "vue";
+import { computed, watch, ref, onMounted } from "vue";
+import { usePage } from "@inertiajs/vue3";
+import { CheckCircle, Loader2 } from "lucide-vue-next";
+import { useFetch } from "@vueuse/core";
 
-import { meetingTemplate } from "@/Types/formTemplates";
-import { router, useForm } from "@inertiajs/vue3";
+import { useMeetingCreation } from "@/Composables/useMeetingCreation";
 import AgendaItemsForm from "@/Components/AdminForms/Special/AgendaItemsForm.vue";
-import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
-import IconsRegular from "@/Types/Icons/regular";
-import InstitutionSelectorForm from "../AdminForms/Special/InstitutionSelectorForm.vue";
-import MeetingForm from "@/Components/AdminForms/MeetingForm.vue";
-import ModalHelperButton from "../Buttons/ModalHelperButton.vue";
-
-// Import Shadcn Dialog and Stepper components
+import MeetingDetailsForm from "@/Components/AdminForms/MeetingDetailsForm.vue";
+import MeetingReviewForm from "@/Components/AdminForms/MeetingReviewForm.vue";
+import InstitutionSelectorForm from "@/Components/AdminForms/Special/InstitutionSelectorForm.vue";
+import FadeTransition from "@/Components/Transitions/FadeTransition.vue"
+import Icons from "@/Types/Icons/filled";
+// Import Shadcn components
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/Components/ui/dialog";
-
 import {
   Stepper,
-  StepperDescription,
-  StepperIndicator,
   StepperItem,
-  StepperSeparator,
-  StepperTitle,
   StepperTrigger,
+  StepperIndicator,
+  StepperTitle,
+  StepperDescription,
+  StepperSeparator,
 } from "@/Components/ui/stepper";
 
-const emit = defineEmits(["close"]);
+// Import Lucide icons
+
+const emit = defineEmits<(e: 'close') => void>();
 
 const props = defineProps<{
   institution?: App.Entities.Institution;
   showModal: boolean;
+  suggestedAt?: Date | string;
+  recentMeetings?: Array<{ id: string; title: string; start_time: string; institution_name: string; agenda_items: { title: string }[] }>;
 }>();
 
-const loading = ref(false);
-// Use reactive object to store form data in memory
-const formState = reactive({
-  institution_id: props.institution?.id || '',
-  meetingData: {},
-  agendaItemsData: {
-    agendaItemTitles: [],
+// Meeting types state
+const meetingTypes = ref<Array<{ id: number, title: string, model_type: string }>>([]);
+const isLoadingTypes = ref(true);
+
+// Initialize meeting creation composable
+const meetingCreation = useMeetingCreation({
+  preSelectedInstitution: props.institution,
+  mode: 'detailed',
+  onSuccess: (meeting) => {
+    // Navigate to the created meeting and close modal
+    emit('close');
+  },
+  onError: (errors) => {
+    console.error('Meeting creation failed:', errors);
   }
 });
 
-// Initialize step based on whether we have an institution already
-const current = ref(formState.institution_id ? 2 : 1);
-const showAlert = ref(true);
+// If a suggested date is passed, seed the meeting start_time once modal is shown
+const seedFromProps = () => {
+  if (!props.showModal) return
 
-// Provide form state to child components
-provide('meetingFormState', formState);
-
-// Inertia form for submission
-const meetingAgendaForm = useForm({
-  meeting: {},
-  agendaItems: [],
-});
-
-// Watch for modal close and reset if needed
-watch(() => props.showModal, (newVal) => {
-  if (!newVal) {
-    // Update the form instance with current in-memory data
-    meetingAgendaForm.meeting = { ...formState.meetingData };
-    meetingAgendaForm.agendaItems = { ...formState.agendaItemsData };
+  if (props.institution) {
+    meetingCreation.updateInstitution(props.institution)
+    // Auto-navigate to step 2 when institution is provided
+    meetingCreation.goToStep(2)
   }
-});
 
-// Function to update current step with validation
-const updateStep = (step: number) => {
-  // Only allow going back in steps or proceeding if data is properly filled
-  if (step < current.value) {
-    current.value = step;
+  if (props.suggestedAt) {
+    const dt = typeof props.suggestedAt === 'string' ? new Date(props.suggestedAt) : props.suggestedAt
+    if (!Number.isNaN(dt?.getTime?.())) {
+      meetingCreation.updateMeetingData({ start_time: dt.toISOString?.() ?? String(dt) })
+      // Avoid showing early validation errors before user interacts
+      meetingCreation.clearAllErrors()
+    }
+  }
+}
+
+watch([() => props.showModal, () => props.institution, () => props.suggestedAt], () => {
+  seedFromProps()
+}, { immediate: true })
+
+// Computed properties
+// Force detailed flow only
+const isQuickMode = computed(() => false);
+const totalSteps = computed(() => 4);
+const loading = computed(() => meetingCreation.state.loading.submission);
+
+// Methods
+const handleDialogClose = () => {
+  if (!loading.value) {
+    emit('close');
   }
 };
 
-// Clear form data when component is unmounted if form was successfully submitted
-const formSubmitted = ref(false);
-onBeforeUnmount(() => {
-  if (formSubmitted.value) {
-    // Reset form state
-    formState.institution_id = props.institution?.id || '';
-    formState.meetingData = {};
-    formState.agendaItemsData = {
-      agendaItemTitles: [],
-    };
+// Step navigation handled by Shadcn stepper v-model binding
+
+const handleInstitutionSelect = (institutionId: string) => {
+  // Find the full institution object
+  const duties = usePage().props.auth?.user?.current_duties || [];
+  const duty = duties.find((d: any) => String(d.institution?.id) === String(institutionId));
+  let institution = duty?.institution;
+
+  // Fallback for admins/all-scope: search providedTenant institutions
+  if (!institution) {
+    const provided = (usePage().props as any)?.providedTenant?.institutions || [];
+    institution = provided.find((i: any) => String(i?.id) === String(institutionId));
   }
+
+  if (institution) {
+    meetingCreation.updateInstitution(institution);
+    meetingCreation.nextStep();
+  }
+};
+
+const handleMeetingFormSubmit = (meetingData: any) => {
+  meetingCreation.updateMeetingData(meetingData);
+
+  meetingCreation.nextStep(); // Go to agenda step
+};
+
+const handleAgendaItemsFormSubmit = (agendaData: any) => {
+  const agendaItems = (agendaData.agendaItemTitles || []).map((title: string, index: number) => ({
+    title,
+    description: '',
+    order: index + 1
+  }));
+
+  meetingCreation.updateAgendaItems(agendaItems);
+  meetingCreation.nextStep(); // Go to review step
+};
+
+const handleFinalSubmit = () => {
+  meetingCreation.submitMeeting();
+};
+
+// Helper methods for stepper display
+const formatMeetingTime = (): string => {
+  const startTime = meetingCreation.state.meeting.start_time;
+  if (!startTime) return '';
+
+  const date = new Date(startTime);
+  return date.toLocaleString(undefined, {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit'
+  });
+};
+
+const getAgendaSummary = (): string => {
+  const items = meetingCreation.state.agendaItems;
+  if (items.length === 0) return '';
+  if (items.length === 1) return '1 klausimas';
+  return `${items.length} klausimai`;
+};
+
+const getMeetingTypeName = (): string => {
+  const typeId = meetingCreation.state.meeting.type_id;
+  if (!typeId) return '';
+
+  // Use the fetched meeting types
+  const type = meetingTypes.value.find((t: any) => t.id === typeId);
+
+  if (type) {
+    return type.title;
+  }
+
+  // Fallback - show type ID
+  return `${$t('Tipas')}: #${typeId}`;
+};
+
+// Fetch meeting types
+const fetchMeetingTypes = async () => {
+  try {
+    isLoadingTypes.value = true;
+    const { data, error } = await useFetch(route("api.types.index"), { immediate: true }).get().json()
+    if (error.value) throw error.value
+
+    // Ensure data is an array before filtering
+    const typesData = Array.isArray(data.value) ? data.value : [];
+    meetingTypes.value = typesData.filter((type: any) => type.model_type === "App\\Models\\Meeting");
+  } catch (error) {
+    console.error('Failed to fetch meeting types:', error);
+    meetingTypes.value = [];
+  } finally {
+    isLoadingTypes.value = false;
+  }
+};
+
+// Lifecycle
+onMounted(() => {
+  fetchMeetingTypes();
 });
-
-const handleInstitutionSelect = (id: string) => {
-  formState.institution_id = id;
-  current.value = 2;
-};
-
-const handleMeetingFormSubmit = (meeting: Record<string, any>) => {
-  // Save to in-memory state
-  formState.meetingData = meeting;
-  // Update form data
-  meetingAgendaForm.meeting = meeting;
-  current.value = 3;
-};
-
-const handleAgendaItemsFormSubmit = (agendaItems: Record<string, any>) => {
-  loading.value = true;
-  // Save to in-memory state
-  formState.agendaItemsData = agendaItems;
-
-  // submit meeting
-  meetingAgendaForm
-    .transform((data) => ({
-      ...formState.meetingData,
-      // add institution_id
-      institution_id: formState.institution_id,
-    }))
-    .post(route("meetings.store"), {
-      // after success, submit agenda items
-      onSuccess: (page) => {
-        let id = page.props?.flash?.data.id;
-
-        if (id === undefined) {
-          loading.value = false;
-          return;
-        }
-
-        if (formState.agendaItemsData.agendaItemTitles.length === 0) {
-          emit("close");
-          current.value = 1;
-          formSubmitted.value = true;
-          meetingAgendaForm.reset();
-          router.visit(route("meetings.show", id));
-          return;
-        }
-
-        meetingAgendaForm
-          .transform((data) => ({
-            meeting_id: id,
-            agendaItemTitles: formState.agendaItemsData.agendaItemTitles,
-          }))
-          .post(route("agendaItems.store"), {
-            onSuccess: () => {
-              emit("close");
-              current.value = 1;
-              formSubmitted.value = true;
-              meetingAgendaForm.reset();
-            },
-            onError: (errors) => {
-              // Handle validation errors
-              console.error("Agenda item validation failed:", errors);
-            },
-            onFinish: () => {
-              loading.value = false;
-              router.visit(route("meetings.show", id));
-            },
-          });
-      },
-      onError: (errors) => {
-        // Handle validation errors
-        console.error("Meeting validation failed:", errors);
-        loading.value = false;
-      },
-      preserveScroll: true,
-    });
-};
 </script>

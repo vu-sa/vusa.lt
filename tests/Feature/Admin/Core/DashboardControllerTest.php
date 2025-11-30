@@ -138,8 +138,8 @@ describe('atstovavimas dashboard', function () {
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Dashboard/ShowAtstovavimas')
                 ->has('user')
-                ->has('tenants')
-                ->has('providedTenant')
+                ->has('accessibleInstitutions')
+                ->has('availableTenants')
             );
     });
 
@@ -150,7 +150,8 @@ describe('atstovavimas dashboard', function () {
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Dashboard/ShowAtstovavimas')
                 ->has('user')
-                ->has('tenants')
+                ->has('accessibleInstitutions')
+                ->has('availableTenants')
             );
     });
 
@@ -160,20 +161,28 @@ describe('atstovavimas dashboard', function () {
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Dashboard/ShowAtstovavimas')
-                ->where('tenants', function ($tenants) {
+                ->where('availableTenants', function ($tenants) {
                     return collect($tenants)->every(fn ($tenant) => $tenant['type'] !== 'pkp');
                 })
             );
     });
 
-    test('atstovavimas handles tenant selection', function () {
-        asUser($this->admin)
-            ->get(route('dashboard.atstovavimas', ['tenant_id' => $this->tenant->id]))
-            ->assertStatus(200)
+    test('atstovavimas provides accessible institutions and available tenants', function () {
+        $response = asUser($this->admin)->get(route('dashboard.atstovavimas'));
+        
+        $response->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Dashboard/ShowAtstovavimas')
-                ->has('providedTenant')
-                ->where('providedTenant.id', $this->tenant->id)
+                ->has('accessibleInstitutions')
+                ->has('availableTenants')
+                ->where('availableTenants', function ($tenants) {
+                    // Convert to collection if it's an array, or keep as collection
+                    $collection = collect($tenants);
+                    
+                    // Should have at least one tenant and not include PKP type
+                    return $collection->count() > 0 && 
+                           $collection->every(fn ($tenant) => $tenant['type'] !== 'pkp');
+                })
             );
     });
 });
@@ -425,43 +434,7 @@ describe('feedback functionality', function () {
     });
 });
 
-describe('atstovavimas summary', function () {
-    test('admin can access atstovavimas summary', function () {
-        asUser($this->admin)
-            ->get(route('dashboard.atstovavimas.summary'))
-            ->assertStatus(200)
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Dashboard/ShowAtstovavimasActivity')
-                ->has('meetings')
-                ->has('tenants')
-                ->has('date')
-                ->has('providedTenant')
-            );
-    });
-
-    test('atstovavimas summary accepts date parameter', function () {
-        $testDate = '2024-01-15';
-
-        asUser($this->admin)
-            ->get(route('dashboard.atstovavimas.summary', ['date' => $testDate]))
-            ->assertStatus(200)
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Dashboard/ShowAtstovavimasActivity')
-                ->where('date', $testDate)
-            );
-    });
-
-    test('atstovavimas summary handles tenant filtering', function () {
-        asUser($this->admin)
-            ->get(route('dashboard.atstovavimas.summary', ['tenant_id' => $this->tenant->id]))
-            ->assertStatus(200)
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Dashboard/ShowAtstovavimasActivity')
-                ->has('providedTenant')
-                ->where('providedTenant.id', $this->tenant->id)
-            );
-    });
-});
+// Removed: atstovavimas summary feature and component were deprecated.
 
 describe('tenant isolation', function () {
     beforeEach(function () {
@@ -469,13 +442,18 @@ describe('tenant isolation', function () {
         $this->otherAdmin = makeTenantUserWithRole('Communication Coordinator', $this->otherTenant);
     });
 
-    test('user only sees their tenant data in atstovavimas', function () {
+    test('user sees institutions and tenants based on their permissions', function () {
         asUser($this->admin)
-            ->get(route('dashboard.atstovavimas', ['tenant_id' => $this->tenant->id]))
+            ->get(route('dashboard.atstovavimas'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Dashboard/ShowAtstovavimas')
-                ->where('providedTenant.id', $this->tenant->id)
+                ->has('accessibleInstitutions')
+                ->has('availableTenants')
+                ->where('availableTenants', function ($tenants) {
+                    // User should see tenants they have permissions for
+                    return collect($tenants)->count() > 0;
+                })
             );
     });
 

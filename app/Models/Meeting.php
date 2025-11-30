@@ -99,6 +99,35 @@ class Meeting extends Model implements SharepointFileableContract
         return $this->morphToMany(Type::class, 'typeable');
     }
 
+    /**
+     * Check if all agenda items have completion fields filled.
+     *
+     * @return string 'complete'|'incomplete'|'no_items'
+     */
+    public function getCompletionStatusAttribute(): string
+    {
+        // Load agenda items if not already loaded
+        if (!$this->relationLoaded('agendaItems')) {
+            $this->load('agendaItems');
+        }
+
+        $agendaItems = $this->agendaItems;
+
+        // No agenda items = no_items status
+        if ($agendaItems->isEmpty()) {
+            return 'no_items';
+        }
+
+        // Check if all agenda items have the 3 required fields filled
+        $allComplete = $agendaItems->every(function ($item) {
+            return !empty($item->student_vote)
+                && !empty($item->decision)
+                && !empty($item->student_benefit);
+        });
+
+        return $allComplete ? 'complete' : 'incomplete';
+    }
+
     protected static function booted()
     {
         static::saved(function (Meeting $meeting) {

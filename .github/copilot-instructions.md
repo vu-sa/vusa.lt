@@ -15,38 +15,12 @@
 
 ## Search Architecture
 
-### Scout Driver Usage
-- **Public frontend search**: Uses Typesense for fast, typo-tolerant search experiences
-- **Admin operations**: Uses database driver to prevent circular dependencies during indexing
-- **Testing**: Always uses database driver for consistency and speed
-
-### ModelIndexer Pattern
-```php
-// Admin searches automatically use database driver
-$originalDriver = config('scout.driver');
-config(['scout.driver' => 'database']);
-try {
-    $this->builder = $this->indexable::search($this->search);
-} finally {
-    config(['scout.driver' => $originalDriver]);
-}
-```
-
-### Testing Search Functionality
-- Test `shouldBeSearchable()` and `toSearchableArray()` methods using `make()` instead of `create()` to avoid database operations
-- Use database driver for all tests (configured in `phpunit.xml`)
-- Test Typesense configuration without requiring actual connection using configuration mocking
-- Focus on search data structure and model searchability rules
-- Use `Scout::fake()` pattern is not available - instead use configuration changes and model factories
+**See**: Root CLAUDE.md for complete search architecture and Scout driver usage patterns.
 
 ## Key Implementation Patterns
 
 ### Translatable Models
-- **Admin interfaces**: Use `toFullArray()` to return full translation objects
-- **Public interfaces**: Use `toArray()` to return localized strings
-- **Testing translations**: Use `getTranslations('field')` and `getTranslation('field', 'locale')`
-- **Factory data**: Always include translation arrays: `'name' => ['lt' => '...', 'en' => '...']`
-- Use `MultiLocaleInput` or `MultiLocaleTiptapFormItem` for translatable fields
+**See**: Root CLAUDE.md for complete translatable models documentation. Key point: Use `toFullArray()` for admin, `toArray()` for public interfaces.
 
 ### Translation System (laravel-vue-i18n)
 - **Short/global strings**: Use `lang/lt.json` and `lang/en.json` for simple key-value translations
@@ -150,32 +124,9 @@ if ($request->has('field') && !empty($request->field)) {
 
 ## Styling Guidelines
 
-### Tailwind CSS Best Practices
-- **Use utility classes directly** on elements instead of custom CSS
-- **Avoid `@apply` in `<style>` blocks** except for essential utilities (line-clamp, keyframes)
-- **Leverage Tailwind modifiers** for interactions: `hover:shadow-lg`, `focus:ring-2`, `sm:grid-cols-2`
-- **Keep styles declarative** and visible in templates for better maintainability
+**See**: Root CLAUDE.md for complete Tailwind CSS guidelines and examples.
 
-### Examples:
-```vue
-<!-- ✅ Good: Direct utility classes -->
-<div class="transition-all duration-200 hover:shadow-lg hover:scale-105 focus:ring-2">
-
-<!-- ❌ Avoid: Custom CSS with @apply -->
-<style>
-.card { @apply hover:shadow-md transition-all; }
-</style>
-
-<!-- ✅ Exception: Essential utilities only -->
-<style>
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-</style>
-```
+**Key Points**: Use Tailwind utility classes directly, avoid `@apply` except for essential utilities.
 
 ## Remember
 

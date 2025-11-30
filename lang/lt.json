@@ -29,6 +29,8 @@
     
     "Mark as read": "Pažymėti kaip perskaitytą",
     "You have no unread notifications": "Neturite neperskaitytų pranešimų",
+    "Personal Overview": "Asmeninė apžvalga",
+    "Susitikimų, tikslų ir atstovavimo veiklų stebėjimas": "Susitikimų, tikslų ir atstovavimo veiklų stebėjimas",
     "View All Notifications": "Rodyti visus pranešimus",
     "New Comment": "Naujas komentaras",
     "New Member Registration": "Nauja nario registracija",
@@ -48,5 +50,21 @@
     "Events": "Renginiai",
     "Documents": "Dokumentai",
     "Pages": "Puslapiai",
-    "(kopija)": "(kopija)"
+    "Check-in (pranešimas)": "Pranešimas (nėra susitikimų)",
+    "Užbaigtas susitikimas": "Užbaigtas susitikimas",
+    "Neužbaigtas susitikimas": "Neužbaigtas susitikimas",
+    "Susitikimas be darbotvarkės": "Susitikimas be darbotvarkės",
+    "Būsena": "Būsena",
+    "Ar susitikimas būsimas ar įvykęs": "Ar susitikimas būsimas ar įvykęs",
+    "Būsimas": "Būsimas",
+    "Įvykęs": "Įvykęs",
+    "Užbaigimas": "Užbaigimas",
+    "Darbotvarkės užpildymo būsena": "Darbotvarkės užpildymo būsena",
+    "Užbaigtas": "Užbaigtas",
+    "Neužbaigtas": "Neužbaigtas",
+    "Be darbotvarkės": "Be darbotvarkės",
+    "Artimiausi susitikimai": "Artimiausi susitikimai",
+    "Kitas": "Kitas",
+    "ir dar": "ir dar"
 }
+

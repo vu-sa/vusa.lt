@@ -1,42 +1,76 @@
 <template>
-  <ShowPageLayout :model="meeting"
-    :title="`${mainInstitution?.name} (${meetingTitle})`" :related-models="relatedModels" :current-tab="currentTab" @change:tab="currentTab = $event">
-    <template #title>
-      {{ `${mainInstitution?.name} (${meetingTitle})` }}
-    </template>
-    <template #after-heading>
-      <NTag v-for="type in meeting.types" :key="type.id" size="small" class="mr-2">
-        {{ type.title }}
-      </NTag>
-    </template>
-    <template #more-options>
-      <MoreOptionsButton edit delete @edit-click="showMeetingModal = true" @delete-click="handleMeetingDelete" />
-      <Dialog v-model:open="showMeetingModal">
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{{ $t("Redaguoti posėdžio datą") }}</DialogTitle>
-          </DialogHeader>
-          <Suspense>
-            <MeetingForm class="mt-2" :meeting="meeting" @submit="handleMeetingFormSubmit" />
-          </Suspense>
-        </DialogContent>
-      </Dialog>
-    </template>
-    <div />
-    <div class="my-4 flex items-center gap-4">
-      <NButton size="small" @click="showAgendaItemStoreModal = true">
-        {{ $t("Pridėti klausimų") }}
-        <template #icon>
-          <NIcon size="16" :component="Icons.AGENDA_ITEM" />
-        </template>
-      </NButton>
-      <Separator orientation="vertical" style="background-color: lightgray;" />
-      <div class="flex items-center gap-2">
-        <NSwitch v-model:value="showVoteOptions" size="small" />
-        <label class="text-zinc-500 dark:text-zinc-400">{{ $t("Rodyti balsavimo parinktis") }}</label>
-      </div>
+  <div class="min-h-screen bg-zinc-50 dark:bg-zinc-950">
+    <div class="container mx-auto px-4 py-6 space-y-8">
+      <!-- Meeting Hero Section -->
+      <MeetingHero :meeting :main-institution :agenda-items="meeting.agenda_items" @edit="showMeetingModal = true"
+        @show-delete-dialog="showDeleteDialog = true" />
+
+      <!-- Tabs Navigation -->
+      <Tabs v-model="currentTab" class="space-y-6">
+        <TabsList class="gap-2">
+          <TabsTrigger value="agenda">
+            {{ $t('Darbotvarkė') }}
+            <span v-if="meeting.agenda_items?.length" class="ml-1.5 text-xs opacity-70">
+              ({{ meeting.agenda_items.length }})
+            </span>
+          </TabsTrigger>
+          <TabsTrigger value="files">
+            {{ $t('Failai') }}
+          </TabsTrigger>
+          <TabsTrigger value="tasks">
+            {{ $t('Užduotys') }}
+            <span v-if="meeting.tasks?.length" class="ml-1.5 text-xs opacity-70">
+              ({{ meeting.tasks.length }})
+            </span>
+          </TabsTrigger>
+        </TabsList>
+
+        <!-- Agenda Tab -->
+        <TabsContent value="agenda" class="space-y-8">
+          <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+            <!-- Agenda Items (Main Content) -->
+            <div class="xl:col-span-2">
+              <SortableCardContainer
+                :items="meeting.agenda_items"
+                :meeting-id="meeting.id"
+                @add="showAgendaItemStoreModal = true"
+                @edit="handleAgendaClick"
+                @delete="handleAgendaItemDelete"
+              />
+            </div>
+          </div>
+        </TabsContent>
+
+        <!-- Files Tab -->
+        <TabsContent value="files">
+          <FileManager
+            :starting-path="meeting.sharepointPath"
+            :fileable="{ ...meeting, type: 'Meeting' }"
+          />
+        </TabsContent>
+
+        <!-- Tasks Tab -->
+        <TabsContent value="tasks">
+          <TaskManager
+            :taskable="{ id: meeting.id, type: 'App\\Models\\Meeting' }"
+            :tasks="meeting.tasks"
+          />
+        </TabsContent>
+      </Tabs>
     </div>
-    <NDataTable scroll-x="800" size="small" class="mt-4" :data="meeting.agenda_items" :columns />
+
+    <!-- Modals -->
+    <Dialog v-model:open="showMeetingModal">
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{{ $t("Redaguoti posėdžio datą") }}</DialogTitle>
+        </DialogHeader>
+        <Suspense>
+          <MeetingForm class="mt-2" :meeting @submit="handleMeetingFormSubmit" />
+        </Suspense>
+      </DialogContent>
+    </Dialog>
+
     <Dialog v-model:open="showAgendaItemStoreModal">
       <DialogContent>
         <DialogHeader>
@@ -45,6 +79,7 @@
         <AgendaItemsForm class="w-full" :loading @submit="handleAgendaItemsFormSubmit" />
       </DialogContent>
     </Dialog>
+
     <Dialog v-model:open="showAgendaItemUpdateModal">
       <DialogContent>
         <DialogHeader>
@@ -53,66 +88,142 @@
         <AgendaItemForm v-if="selectedAgendaItem" :agenda-item="selectedAgendaItem" @submit="handleAgendaItemUpdate" />
       </DialogContent>
     </Dialog>
-    <template #below>
-      <FileManager v-if="currentTab === 'Failai'" :starting-path="meeting.sharepointPath"
-        :fileable="{ ...meeting, type: 'Meeting' }" />
-      <TaskManager v-else-if="currentTab === 'Užduotys'" :taskable="{ id: meeting.id, type: 'App\\Models\\Meeting' }"
-        :tasks="meeting.tasks" />
-    </template>
-  </ShowPageLayout>
+
+    <!-- Delete Confirmation Dialog -->
+    <Dialog v-model:open="showDeleteDialog">
+      <DialogContent class="max-w-md">
+        <DialogHeader>
+          <DialogTitle class="flex items-center gap-2 text-destructive">
+            <AlertTriangle class="h-5 w-5" />
+            {{ $t("Šalinti posėdį?") }}
+          </DialogTitle>
+        </DialogHeader>
+
+        <div class="space-y-4">
+          <p class="text-sm text-zinc-600 dark:text-zinc-400">
+            {{ $t("Ar tikrai norite ištrinti šį posėdį? Šis veiksmas negrįžtamas ir bus pašalinti visi su posėdžiu susiję duomenys, įskaitant darbotvarkės punktus.") }}
+          </p>
+
+          <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/50 rounded-lg p-3">
+            <p class="text-sm text-red-800 dark:text-red-300 font-medium">
+              {{ $t("Bus ištrinta:") }}
+            </p>
+            <ul class="text-xs text-red-700 dark:text-red-400 mt-1 space-y-1">
+              <li>• {{ meeting.agenda_items?.length ?? 0 }} {{ $t("darbotvarkės punktai") }}</li>
+              <li v-if="meeting.tasks && meeting.tasks.length">
+                • {{ meeting.tasks.length }} {{ $t("užduotys") }}
+              </li>
+              <li v-if="meeting.files && meeting.files.length">
+                • {{ meeting.files.length }} {{ $t("failai") }}
+              </li>
+            </ul>
+          </div>
+
+          <div class="flex justify-end gap-3">
+            <Button variant="outline" @click="showDeleteDialog = false">
+              {{ $t("Atšaukti") }}
+            </Button>
+            <Button variant="destructive" @click="handleMeetingDelete">
+              <Trash2 class="h-4 w-4 mr-2" />
+              {{ $t("Šalinti posėdį") }}
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  </div>
 </template>
 
 <script setup lang="tsx">
-import { computed, provide, ref } from "vue";
+import { ref, computed } from "vue";
 import { router, useForm } from "@inertiajs/vue3";
 import { useStorage } from "@vueuse/core";
+import { trans as $t } from "laravel-vue-i18n";
+import { AlertTriangle, Trash2 } from 'lucide-vue-next';
 
 import { formatStaticTime } from "@/Utils/IntlTime";
 import { genitivizeEveryWord } from "@/Utils/String";
-import { modelTypes } from "@/Types/formOptions";
-import AgendaItemForm from "@/Components/AdminForms/AgendaItemForm.vue";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
-import FileManager from "@/Features/Admin/SharepointFileManager/Viewer/FileManager.vue";
 import Icons from "@/Types/Icons/filled";
-import MeetingForm from "@/Components/AdminForms/MeetingForm.vue";
-import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
-import ShowPageLayout from "@/Components/Layouts/ShowModel/ShowPageLayout.vue";
-import TaskManager from "@/Features/Admin/TaskManager/TaskManager.vue";
-import { NButton, NDataTable, NIcon, NSwitch, NTag, NTooltip } from "naive-ui";
-import TriStateButton from "@/Components/Buttons/TriStateButton.vue";
-import { trans as $t } from "laravel-vue-i18n";
-
-import IMdiThumbsUpOutline from "~icons/mdi/thumbs-up-outline";
-import IMdiThumbsDownOutline from "~icons/mdi/thumbs-down-outline";
-import IMdiThumbsUpDownOutline from "~icons/mdi/thumbs-up-down-outline";
-import IMdiFileDocument from "~icons/mdi/file-document";
-import IMdiFileDocumentPlus from "~icons/mdi/file-document-plus";
-import AgendaItemsForm from "@/Components/AdminForms/Special/AgendaItemsForm.vue";
 import { BreadcrumbHelpers, usePageBreadcrumbs } from "@/Composables/useBreadcrumbsUnified";
-import { Separator } from "@/Components/ui/separator";
+
+// UI Components
+import { Button } from "@/Components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
+import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
+
+// Custom Components
+import MeetingHero from "@/Components/Meetings/MeetingHero.vue";
+import SortableCardContainer from "@/Components/AgendaItems/SortableCardContainer.vue";
+import SecondaryContentSection from "@/Components/Meetings/SecondaryContentSection.vue";
+import AgendaItemForm from "@/Components/AdminForms/AgendaItemForm.vue";
+import AgendaItemsForm from "@/Components/AdminForms/Special/AgendaItemsForm.vue";
+import MeetingForm from "@/Components/AdminForms/MeetingForm.vue";
+import FileManager from "@/Features/Admin/SharepointFileManager/Viewer/FileManager.vue";
+import TaskManager from "@/Features/Admin/TaskManager/TaskManager.vue";
+
+// Icons
 
 const props = defineProps<{
   meeting: App.Entities.Meeting;
 }>();
 
+// Component state
 const showMeetingModal = ref(false);
 const showAgendaItemStoreModal = ref(false);
 const showAgendaItemUpdateModal = ref(false);
-const currentTab = useStorage("show-meeting-tab", "Failai");
-const showVoteOptions = useStorage("show-vote-options", false);
+const showDeleteDialog = ref(false);
+const currentTab = useStorage("show-meeting-tab", "agenda");
 const loading = ref(false);
 
+// Form handling
 const meetingAgendaForm = useForm({
   meeting: props.meeting.id,
-  // TODO: Shouldn't be an array
   agendaItems: [],
 });
 
-// Used in FileUploader.vue
-provide<boolean>("keepFileable", true);
-
 const selectedAgendaItem = ref<App.Entities.AgendaItem | null>(null);
 
+// Computed values
+const mainInstitution: App.Entities.Institution | string =
+  props.meeting.institutions?.[0] ?? "Be institucijos";
+
+const meetingTitle = computed(() => {
+  if (props.meeting.title && props.meeting.title !== "") {
+    return props.meeting.title;
+  }
+
+  const institutionName = typeof mainInstitution === 'string'
+    ? mainInstitution
+    : mainInstitution.name;
+
+  return `${formatStaticTime(new Date(props.meeting.start_time), {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  })} ${genitivizeEveryWord(institutionName)} posėdis`;
+});
+
+// Generate breadcrumbs automatically with new simplified API
+usePageBreadcrumbs(() => {
+  if (typeof mainInstitution === 'string') {
+    return [
+      { label: mainInstitution, icon: Icons.INSTITUTION },
+      { label: meetingTitle.value, icon: Icons.MEETING }
+    ];
+  }
+
+  return BreadcrumbHelpers.adminShow(
+    mainInstitution.name,
+    "institutions.show",
+    { institution: mainInstitution.id },
+    meetingTitle.value,
+    Icons.INSTITUTION,
+    Icons.MEETING
+  );
+});
+
+// Event handlers
 const handleMeetingFormSubmit = (meeting: App.Entities.Meeting) => {
   router.patch(route("meetings.update", props.meeting.id), meeting, {
     onSuccess: () => {
@@ -120,25 +231,6 @@ const handleMeetingFormSubmit = (meeting: App.Entities.Meeting) => {
     },
   });
 };
-
-const mainInstitution: App.Entities.Institution | string =
-  props.meeting.institutions?.[0] ?? "Be institucijos";
-
-const meetingTitle =
-  props.meeting.title === ""
-    ? `${formatStaticTime(new Date(props.meeting.start_time), {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    })} ${genitivizeEveryWord(mainInstitution.name)} posėdis`
-    : props.meeting.title;
-
-const sharepointFileTypeOptions = computed(() => {
-  return modelTypes.sharepointFile.map((type) => ({
-    label: type,
-    value: type,
-  }));
-});
 
 const handleAgendaClick = (agendaItem: App.Entities.AgendaItem) => {
   selectedAgendaItem.value = agendaItem;
@@ -149,120 +241,6 @@ const handleAgendaItemDelete = (agendaItem: App.Entities.AgendaItem) => {
   router.delete(route("agendaItems.destroy", agendaItem.id));
 };
 
-// Generate breadcrumbs automatically with new simplified API
-usePageBreadcrumbs(() => {
-  if (typeof mainInstitution === 'string') {
-    return [
-      { label: mainInstitution, icon: Icons.INSTITUTION },
-      { label: meetingTitle, icon: Icons.MEETING }
-    ];
-  }
-  
-  return BreadcrumbHelpers.adminShow(
-    mainInstitution.name,
-    "institutions.show", 
-    { institution: mainInstitution.id },
-    meetingTitle,
-    Icons.INSTITUTION,
-    Icons.MEETING
-  );
-});
-
-const columns = [
-  {
-    key: 'index',
-    title() {
-      return $t('No.');
-    },
-    width: 40, render(row, index) { return index + 1; }
-  },
-  {
-    key: 'title',
-    title() {
-      return $t('forms.fields.title');
-    },
-    fixed: 'left', minWidth: 150
-  },
-  {
-    key: 'decision',
-    title() {
-      return $t('Sprendimas');
-    },
-    width: 110,
-    render(row: App.Entities.AgendaItem) {
-      return <TriStateButton state={row.decision} size="tiny" positiveText="Sprendimas priimtas / klausimas patvirtintas" negativeText="Klausimui / sprendimui nepritarta" neutralText="Joks sprendimas (teigiamas ar neigiamas) nepriimtas / susilaikyta" row={row} showOptions={showVoteOptions.value} onEnableOptions={() => showVoteOptions.value = true} onChangeState={(state) => {
-        row.decision = state;
-        handleAgendaItemUpdate(row);
-      }} />
-    }
-  },
-  {
-    key: 'student_vote',
-    title() {
-      return $t('Kaip balsavo studentai');
-    },
-    width: 110,
-    render(row: App.Entities.AgendaItem) {
-      return <TriStateButton state={row.student_vote} size="tiny" row={row} showOptions={showVoteOptions.value} positiveText="Visi pritarė" negativeText="Visi nepritarė" neutralText="Visi susilaikė" onEnableOptions={() => showVoteOptions.value = true}
-        onChangeState={(state) => {
-          row.student_vote = state;
-          handleAgendaItemUpdate(row);
-        }}
-      />
-    }
-  },
-  {
-    key: 'student_benefit',
-    title() {
-      return $t('Ar palanku studentams') + '?';
-    },
-    width: 120,
-    render(row: App.Entities.AgendaItem) {
-      return <TriStateButton state={row.student_benefit} size="tiny" row={row} showOptions={showVoteOptions.value} positiveIcon={IMdiThumbsUpOutline} negativeIcon={IMdiThumbsDownOutline} neutralIcon={IMdiThumbsUpDownOutline} onEnableOptions={() => showVoteOptions.value = true} positiveText="Palanku" negativeText="Nepalanku" neutralText="Sprendimas neturi tiesioginės ar netiesioginės įtakos studentams / dar nėra aišku"
-        onChangeState={(state) => {
-          row.student_benefit = state;
-          handleAgendaItemUpdate(row);
-        }}
-      >
-      </TriStateButton>
-    }
-  },
-  {
-    key: 'description',
-    title() {
-      return $t('forms.fields.description');
-    },
-    width: 100,
-    render(row: App.Entities.AgendaItem) {
-      return <NTooltip trigger="hover" placement="top">
-        {{
-          trigger: () => <NButton size="tiny" color={!row.description ? 'gray' : undefined} quaternary onClick={() => handleAgendaClick(row)}>
-            {{
-              icon: () => <>{!row.description ? <IMdiFileDocumentPlus /> : <IMdiFileDocument />}</>,
-            }}
-          </NButton>,
-          default: () => !row.description ? $t('Pridėti aprašymą') : row.description,
-        }}
-      </NTooltip>
-    }
-  },
-  {
-    key: 'actions', render(row) {
-      return <MoreOptionsButton
-        edit
-        delete
-        small
-        onEditClick={() => {
-          handleAgendaClick(row);
-        }}
-        onDeleteClick={() => {
-          handleAgendaItemDelete(row);
-        }}
-      ></MoreOptionsButton>
-    }
-  }
-]
-
 const handleAgendaItemUpdate = (agendaItem: App.Entities.AgendaItem) => {
   router.patch(route("agendaItems.update", agendaItem.id), agendaItem, {
     onSuccess: () => {
@@ -271,19 +249,6 @@ const handleAgendaItemUpdate = (agendaItem: App.Entities.AgendaItem) => {
   });
 };
 
-const relatedModels = [
-  {
-    name: "Failai",
-    icon: Icons.SHAREPOINT_FILE,
-  },
-  {
-    name: "Užduotys",
-    icon: Icons.TASK,
-    count: props.meeting.tasks?.length,
-  },
-];
-
-// NOTE: Duplicated in NewMeetingModal.vue
 const handleAgendaItemsFormSubmit = (agendaItems: Record<string, any>) => {
   loading.value = true;
 
@@ -293,7 +258,6 @@ const handleAgendaItemsFormSubmit = (agendaItems: Record<string, any>) => {
       ...agendaItems,
     }))
     .post(route("agendaItems.store"), {
-      // after success, redirect to meeting
       onSuccess: () => {
         meetingAgendaForm.reset();
         showAgendaItemStoreModal.value = false;
@@ -305,6 +269,15 @@ const handleAgendaItemsFormSubmit = (agendaItems: Record<string, any>) => {
 };
 
 const handleMeetingDelete = () => {
-  router.delete(route("meetings.destroy", props.meeting.id), { data: { redirect_to: route('institutions.show', mainInstitution.id) } });
+  const redirectTo = typeof mainInstitution === 'string'
+    ? route('admin.dashboard')
+    : route('institutions.show', mainInstitution.id);
+
+  router.delete(route("meetings.destroy", props.meeting.id), {
+    data: { redirect_to: redirectTo },
+    onSuccess: () => {
+      showDeleteDialog.value = false;
+    }
+  });
 };
 </script>
