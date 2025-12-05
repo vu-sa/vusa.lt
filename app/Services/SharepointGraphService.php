@@ -264,7 +264,7 @@ class SharepointGraphService
             // 3. Must NOT have expiration (our standard)
             // 4. CRITICAL: Must NOT be inherited from parent folder
             // 5. CRITICAL: Must be a file URL (:b: or :w:), not a folder URL (:f:)
-            if (!$permission->getLink()
+            if (! $permission->getLink()
                 || $permission->getLink()->getScope() !== 'anonymous'
                 || $permission->getExpirationDateTime() !== null
                 || $permission->getInheritedFrom() !== null) {
@@ -278,6 +278,7 @@ class SharepointGraphService
                     'drive_item_id' => $permission->getId(),
                     'permission_url' => $url,
                 ]);
+
                 return false;
             }
 
@@ -342,9 +343,8 @@ class SharepointGraphService
     /**
      * Delete a permission from a drive item
      *
-     * @param string $driveItemId The drive item ID
-     * @param string $permissionId The permission ID to delete
-     * @return void
+     * @param  string  $driveItemId  The drive item ID
+     * @param  string  $permissionId  The permission ID to delete
      */
     public function deletePermission(string $driveItemId, string $permissionId): void
     {
