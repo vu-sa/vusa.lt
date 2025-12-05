@@ -171,9 +171,21 @@ class SharepointGraphService
 
     public function getListItem(string $siteId, string $listId, string $listItemId): Models\FieldValueSet
     {
-        $listItem = $this->graph->sites()->bySiteId($siteId)->lists()->byListId($listId)->items()->byListItemId($listItemId)->fields()->get()->wait();
+        try {
+            $listItem = $this->graph->sites()->bySiteId($siteId)->lists()->byListId($listId)->items()->byListItemId($listItemId)->fields()->get()->wait();
 
-        return $listItem;
+            return $listItem;
+        } catch (\Microsoft\Graph\Generated\Models\ODataErrors\ODataError $e) {
+            // List item doesn't exist (404) or access denied (403)
+            $this->logWarning('SharePoint list item not found or inaccessible', [
+                'site_id' => $siteId,
+                'list_id' => $listId,
+                'list_item_id' => $listItemId,
+                'error_message' => $e->getMessage() ?: 'Item not found',
+            ]);
+
+            throw new \RuntimeException("SharePoint list item {$listItemId} not found or inaccessible");
+        }
     }
 
     public function updateListItem(string $listId, string $listItemId, array $fields): Models\FieldValueSet
@@ -234,7 +246,7 @@ class SharepointGraphService
         return $this->parseDriveItems($driveItems);
     }
 
-    protected function getDriveItemPermissions(string $driveItemId): PermissionCollectionResponse
+    public function getDriveItemPermissions(string $driveItemId): PermissionCollectionResponse
     {
         $permissions = $this->graph->drives()->byDriveId($this->driveId)->items()->byDriveItemId($driveItemId)->permissions()->get()->wait();
 
@@ -246,8 +258,44 @@ class SharepointGraphService
         $permissions = collect($this->getDriveItemPermissions($driveItemId)->getValue());
 
         $permission = $permissions->filter(function (Models\Permission $permission) {
-            return $permission->getLink() && $permission->getLink()->getScope() == 'anonymous' && $permission->getExpirationDateTime() === null;
+            // Filter criteria:
+            // 1. Must have a link (not SharePoint group permission)
+            // 2. Must be anonymous scope
+            // 3. Must NOT have expiration (our standard)
+            // 4. CRITICAL: Must NOT be inherited from parent folder
+            // 5. CRITICAL: Must be a file URL (:b: or :w:), not a folder URL (:f:)
+            if (!$permission->getLink()
+                || $permission->getLink()->getScope() !== 'anonymous'
+                || $permission->getExpirationDateTime() !== null
+                || $permission->getInheritedFrom() !== null) {
+                return false;
+            }
+
+            // Check URL type - must be file (:b: or :w:), not folder (:f:)
+            $url = $permission->getLink()->getWebUrl();
+            if (str_contains($url, ':f:')) {
+                $this->logWarning('Rejecting folder URL permission on file', [
+                    'drive_item_id' => $permission->getId(),
+                    'permission_url' => $url,
+                ]);
+                return false;
+            }
+
+            return true;
         })->first();
+
+        if ($permission) {
+            $this->logInfo('Found existing public link', [
+                'drive_item_id' => $driveItemId,
+                'permission_id' => $permission->getId(),
+                'permission_url' => $permission->getLink()->getWebUrl(),
+            ]);
+        } else {
+            $this->logInfo('No direct public link found', [
+                'drive_item_id' => $driveItemId,
+                'total_permissions' => $permissions->count(),
+            ]);
+        }
 
         return $permission ?? null;
     }
@@ -256,7 +304,10 @@ class SharepointGraphService
     {
         $this->validateNotEmpty(['driveItemId' => $driveItemId]);
 
-        return $this->executeWithRetry(function () use ($siteId, $driveItemId, $datetime) {
+        // Validate item is a file, not folder
+        $driveItem = $this->validateItemIsFile($driveItemId);
+
+        return $this->executeWithRetry(function () use ($siteId, $driveItemId, $datetime, $driveItem) {
             $siteId = $siteId ?? $this->siteId;
             $datetime = $datetime ?? Carbon::now()->addDays(self::DEFAULT_PERMISSION_EXPIRY_DAYS);
 
@@ -273,13 +324,43 @@ class SharepointGraphService
             // This is the wrong chain, but it should work
             $permission = $this->graph->drives()->byDriveId($driveItemId)->items()->byDriveItemId($driveItemId)->createLink()->withUrl($sharepointPathFinal)->post($requestBody)->wait();
 
+            // Enhanced logging
             $this->logInfo('Public permission created', [
                 'drive_item_id' => $driveItemId,
-                'expiration' => $datetime !== false ? $datetime->toDateTimeString() : 'never',
+                'drive_item_name' => $driveItem->getName(),
+                'drive_item_size' => $driveItem->getSize(),
+                'permission_url' => $permission->getLink()->getWebUrl(),
+                'permission_scope' => $permission->getLink()->getScope(),
+                'expiration' => $datetime !== false && $datetime !== null ? $datetime->toDateTimeString() : 'never',
+                'user_id' => auth()->id() ?? 'system',
             ]);
 
             return $permission;
         }, 'createPublicPermission');
+    }
+
+    /**
+     * Delete a permission from a drive item
+     *
+     * @param string $driveItemId The drive item ID
+     * @param string $permissionId The permission ID to delete
+     * @return void
+     */
+    public function deletePermission(string $driveItemId, string $permissionId): void
+    {
+        $this->graph->drives()
+            ->byDriveId($this->driveId)
+            ->items()
+            ->byDriveItemId($driveItemId)
+            ->permissions()
+            ->byPermissionId($permissionId)
+            ->delete()
+            ->wait();
+
+        $this->logInfo('Permission deleted', [
+            'drive_item_id' => $driveItemId,
+            'permission_id' => $permissionId,
+        ]);
     }
 
     public function uploadDriveItem(string $filePath, UploadedFile $file): Models\DriveItem
@@ -510,6 +591,14 @@ class SharepointGraphService
     }
 
     /**
+     * Log warning message if logging is enabled
+     */
+    private function logWarning(string $message, array $context = []): void
+    {
+        Log::warning($message, $context);
+    }
+
+    /**
      * Execute operation with retry logic
      */
     private function executeWithRetry(callable $operation, string $operationName, ?int $maxRetries = null): mixed
@@ -566,5 +655,47 @@ class SharepointGraphService
                 throw new \InvalidArgumentException("Parameter '{$name}' cannot be empty");
             }
         }
+    }
+
+    /**
+     * Validate that a drive item is a file, not a folder
+     *
+     * @throws \InvalidArgumentException if item is a folder or not a file
+     */
+    private function validateItemIsFile(string $driveItemId): \Microsoft\Graph\Generated\Models\DriveItem
+    {
+        $driveItem = $this->graph->drives()
+            ->byDriveId($this->driveId)
+            ->items()
+            ->byDriveItemId($driveItemId)
+            ->get()
+            ->wait();
+
+        if ($driveItem->getFolder() !== null) {
+            $this->logError('Attempted to create public permission for folder', [
+                'drive_item_id' => $driveItemId,
+                'drive_item_name' => $driveItem->getName(),
+                'drive_item_path' => $driveItem->getWebUrl(),
+                'folder_child_count' => $driveItem->getFolder()->getChildCount(),
+            ]);
+
+            throw new \InvalidArgumentException(
+                "Cannot create public permission for folders. Item: {$driveItem->getName()} (folder with {$driveItem->getFolder()->getChildCount()} items)"
+            );
+        }
+
+        // Additional validation: Check if drive item is actually a file
+        if ($driveItem->getFile() === null) {
+            $this->logError('Drive item is neither file nor folder', [
+                'drive_item_id' => $driveItemId,
+                'drive_item_name' => $driveItem->getName(),
+            ]);
+
+            throw new \InvalidArgumentException(
+                "Cannot create public permission for non-file items. Item: {$driveItem->getName()}"
+            );
+        }
+
+        return $driveItem;
     }
 }

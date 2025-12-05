@@ -87,6 +87,7 @@
 import { computed, ref, watch } from "vue";
 import { router, usePage } from "@inertiajs/vue3";
 import { useFetch, useStorage } from "@vueuse/core";
+import { toast } from "vue-sonner";
 
 import File from "~icons/mdi/file";
 import FilePdf from "~icons/mdi/file-pdf";
@@ -126,6 +127,13 @@ watch(
     publicWebUrl.value = null;
 
     if (val) {
+      // Don't fetch permissions for folders
+      if (props.file?.folder) {
+        publicWebUrl.value = null;
+        loadingPublicPermission.value = false;
+        return;
+      }
+
       loadingPublicPermission.value = true;
 
       let { data, isFinished } = await useFetch(
@@ -146,10 +154,21 @@ watch(
 );
 
 const createPublicPermission = async () => {
+  // Validate item type
+  if (props.file?.folder) {
+    toast.error('Cannot create public link for folders. Please select a file.');
+    return;
+  }
+
+  if (!props.file?.id) {
+    toast.error('No file selected');
+    return;
+  }
+
   loadingPublicPermission.value = true;
 
-  let { data, isFinished } = await useFetch(
-    route("sharepoint.createPublicPermission", props.file?.id),
+  let { data, error } = await useFetch(
+    route("sharepoint.createPublicPermission", props.file.id),
     {
     headers: {
       "X-CSRF-TOKEN": usePage().props.csrf_token,
@@ -158,8 +177,15 @@ const createPublicPermission = async () => {
     }
   ).post().json();
 
-  loadingPublicPermission.value = !isFinished;
-  publicWebUrl.value = data.value;
+  loadingPublicPermission.value = false;
+
+  if (error.value || !data.value?.success) {
+    toast.error(data.value?.error || 'Failed to create public link');
+    return;
+  }
+
+  publicWebUrl.value = data.value.url;
+  toast.success('Public link created successfully');
 };
 
 const fileIcon = computed(() => {
