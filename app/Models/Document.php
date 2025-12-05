@@ -256,6 +256,31 @@ class Document extends Model
         return $this->calculateIsInEffect();
     }
 
+    /**
+     * Mask URL for safe logging (only first/last 4 chars of file ID)
+     *
+     * SharePoint anonymous links are bearer tokens - anyone with the URL can access the file.
+     * This method masks the unique file identifier to prevent URL leakage in logs.
+     */
+    private function maskUrl(?string $url): ?string
+    {
+        if (! $url) {
+            return null;
+        }
+
+        $segments = explode('/', $url);
+        $fileId = end($segments);
+
+        if (strlen($fileId) > 12) {
+            $masked = substr($fileId, 0, 4).'...'.substr($fileId, -4);
+            $segments[count($segments) - 1] = $masked;
+
+            return implode('/', $segments);
+        }
+
+        return 'masked';
+    }
+
     // Also used in SharepointGraphService::batchProcessDocuments
     public function refreshFromSharepoint()
     {
@@ -281,7 +306,7 @@ class Document extends Model
             Log::info('Document sync eTag check', [
                 'document_id' => $this->id,
                 'etag_matches' => $eTagMatches,
-                'current_url' => $this->anonymous_url,
+                'url_masked' => $this->maskUrl($this->anonymous_url),
                 'has_folder_url' => $hasInvalidUrl,
                 'will_skip_permission_check' => $eTagMatches && ! $hasInvalidUrl,
             ]);
@@ -298,7 +323,7 @@ class Document extends Model
             if ($hasInvalidUrl) {
                 Log::warning('Document has folder URL - forcing full sync despite eTag match', [
                     'document_id' => $this->id,
-                    'current_url' => $this->anonymous_url,
+                    'url_masked' => $this->maskUrl($this->anonymous_url),
                 ]);
             }
 
@@ -344,7 +369,7 @@ class Document extends Model
                 'document_id' => $this->id,
                 'drive_item_id' => $driveItem->getId(),
                 'permission_found' => $anonymous_permission !== null,
-                'current_db_url' => $this->anonymous_url,
+                'current_url_masked' => $this->maskUrl($this->anonymous_url),
             ]);
 
             if ($anonymous_permission === null) {
@@ -358,8 +383,7 @@ class Document extends Model
                 $newUrl = $anonymous_permission->getLink()->getWebUrl();
                 Log::info('New permission created', [
                     'document_id' => $this->id,
-                    'new_url' => $newUrl,
-                    'old_url' => $this->anonymous_url,
+                    'url_changed' => $this->anonymous_url !== $newUrl,
                 ]);
 
                 $this->anonymous_url = $newUrl;
@@ -371,16 +395,13 @@ class Document extends Model
 
                 Log::info('Using existing permission', [
                     'document_id' => $this->id,
-                    'permission_url' => $newUrl,
-                    'old_db_url' => $this->anonymous_url,
                     'url_changed' => $urlChanged,
                 ]);
 
                 if ($urlChanged) {
                     Log::warning('Permission URL changed', [
                         'document_id' => $this->id,
-                        'old_url' => $this->anonymous_url,
-                        'new_url' => $newUrl,
+                        'had_previous_url' => ! empty($this->anonymous_url),
                     ]);
                 }
 
@@ -395,6 +416,24 @@ class Document extends Model
             $this->refresh();
 
             return $this;
+        } catch (\InvalidArgumentException $e) {
+            // Folder validation errors from validateItemIsFile()
+            if (str_contains($e->getMessage(), 'Cannot create public permission for folders')) {
+                Log::warning('Document points to folder instead of file', [
+                    'document_id' => $this->id,
+                    'sharepoint_id' => $this->sharepoint_id,
+                    'title' => $this->title,
+                ]);
+
+                $this->sync_status = 'failed';
+                $this->sync_error_message = 'Document references a folder (folders not supported)';
+                $this->save();
+
+                return null; // Don't crash sync
+            }
+
+            // Re-throw other InvalidArgumentExceptions
+            throw $e;
         } catch (\RuntimeException $e) {
             // Check if item is missing from SharePoint
             if (str_contains($e->getMessage(), 'not found or inaccessible')) {
@@ -429,7 +468,7 @@ class Document extends Model
             if ($this->anonymous_url && str_contains($e->getMessage(), 'createLink')) {
                 Log::warning('Clearing stale anonymous_url due to permission creation failure', [
                     'document_id' => $this->id,
-                    'old_url' => $this->anonymous_url,
+                    'had_url' => true,
                 ]);
                 $this->anonymous_url = null;
             }

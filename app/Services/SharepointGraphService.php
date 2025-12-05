@@ -246,7 +246,7 @@ class SharepointGraphService
         return $this->parseDriveItems($driveItems);
     }
 
-    public function getDriveItemPermissions(string $driveItemId): PermissionCollectionResponse
+    protected function getDriveItemPermissions(string $driveItemId): PermissionCollectionResponse
     {
         $permissions = $this->graph->drives()->byDriveId($this->driveId)->items()->byDriveItemId($driveItemId)->permissions()->get()->wait();
 
@@ -276,7 +276,7 @@ class SharepointGraphService
             if (str_contains($url, ':f:')) {
                 $this->logWarning('Rejecting folder URL permission on file', [
                     'drive_item_id' => $permission->getId(),
-                    'permission_url' => $url,
+                    'url_type' => 'folder',
                 ]);
 
                 return false;
@@ -289,7 +289,7 @@ class SharepointGraphService
             $this->logInfo('Found existing public link', [
                 'drive_item_id' => $driveItemId,
                 'permission_id' => $permission->getId(),
-                'permission_url' => $permission->getLink()->getWebUrl(),
+                'url_masked' => $this->maskUrl($permission->getLink()->getWebUrl()),
             ]);
         } else {
             $this->logInfo('No direct public link found', [
@@ -330,9 +330,10 @@ class SharepointGraphService
                 'drive_item_id' => $driveItemId,
                 'drive_item_name' => $driveItem->getName(),
                 'drive_item_size' => $driveItem->getSize(),
-                'permission_url' => $permission->getLink()->getWebUrl(),
+                'permission_id' => $permission->getId(),
+                'url_masked' => $this->maskUrl($permission->getLink()->getWebUrl()),
                 'permission_scope' => $permission->getLink()->getScope(),
-                'expiration' => $datetime !== false && $datetime !== null ? $datetime->toDateTimeString() : 'never',
+                'expiration' => ($datetime instanceof \Carbon\Carbon) ? $datetime->toDateTimeString() : 'never',
                 'user_id' => auth()->id() ?? 'system',
             ]);
 
@@ -596,6 +597,29 @@ class SharepointGraphService
     private function logWarning(string $message, array $context = []): void
     {
         Log::warning($message, $context);
+    }
+
+    /**
+     * Mask sensitive parts of SharePoint URL for safe logging
+     * Returns format: "https://...sharepoint.com/:b:/.../Es4i...Fy-cg" (first/last 4 chars of file ID)
+     *
+     * SharePoint anonymous links are bearer tokens - anyone with the URL can access the file.
+     * This method masks the unique file identifier to prevent URL leakage in logs.
+     */
+    private function maskUrl(string $url): string
+    {
+        // Extract the unique file identifier (last segment after last /)
+        $segments = explode('/', $url);
+        $fileId = end($segments);
+
+        if (strlen($fileId) > 12) {
+            $masked = substr($fileId, 0, 4).'...'.substr($fileId, -4);
+            $segments[count($segments) - 1] = $masked;
+
+            return implode('/', $segments);
+        }
+
+        return 'masked'; // Fallback if format unexpected
     }
 
     /**
