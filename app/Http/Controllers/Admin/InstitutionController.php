@@ -115,7 +115,7 @@ class InstitutionController extends AdminController
 
         // TODO: only show current_users
         $institution->load('tenant', 'duties.current_users')->load(['meetings' => function ($query) {
-            $query->with('tasks', 'comments', 'files')->orderBy('start_time', 'asc');
+            $query->with('tasks', 'comments', 'files', 'institutions.types')->orderBy('start_time', 'asc');
         }])->load('activities.causer');
 
         // Inertia::share('layout.navBackground', $institution->image_url ?? null);

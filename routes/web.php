@@ -85,6 +85,9 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
 
         Route::get('kontaktai/id/{institution}', [Public\ContactController::class, 'institutionContacts'])->name('contacts.institution');
 
+        Route::get('posedziai', [Public\MeetingController::class, 'index'])->name('publicMeetings.index');
+        Route::get('posedziai/{meeting}', [Public\ContactController::class, 'showMeeting'])->name('publicMeetings.show');
+
         Route::get('kontaktai/studentu-atstovai', [Public\ContactController::class, 'studentRepresentatives'])->name('contacts.studentRepresentatives');
         Route::get('kontaktai/{type:slug}', [Public\ContactController::class, 'institutionDutyTypeContacts'])->whereIn('type', [
             'koordinatoriai', 'kuratoriai', 'mentors',

@@ -148,40 +148,6 @@ declare global {
       content_exists: boolean
     }
 
-    export interface Document {
-      // columns
-      id: number
-      name: string
-      title: string
-      sharepoint_id?: string
-      e_tag?: string | null
-      document_date?: string | null
-      institution_id?: string | null
-      content_type?: string | null
-      language?: string | null
-      summary?: string | null
-      anonymous_url?: string | null
-      is_active: boolean
-      sharepoint_site_id?: string
-      sharepoint_list_id?: string
-      created_at?: string
-      checked_at?: string | null
-      sync_status: string
-      sync_error_message?: string | null
-      sync_attempts: boolean
-      last_sync_attempt_at?: string | null
-      updated_at?: string
-      effective_date?: string | null
-      expiration_date?: string | null
-      // mutators
-      is_in_effect: boolean
-      // relations
-      institution?: Institution
-      // counts
-      // exists
-      institution_exists: boolean
-    }
-
     export interface Duty {
       // columns
       id: string
@@ -315,43 +281,6 @@ declare global {
       // exists
       form_exists: boolean
       field_responses_exists: boolean
-    }
-
-    export interface Meeting {
-      // columns
-      id: string
-      title: string
-      description?: string | null
-      start_time: string
-      end_time?: string | null
-      created_at: string
-      updated_at: string
-      deleted_at?: string | null
-      // relations
-      agenda_items?: AgendaItem[]
-      institutions?: Institution[]
-      comments?: Comment[]
-      types?: Type[]
-      commentable?: Meeting
-      files?: SharepointFile[]
-      tasks?: Task[]
-      activities?: Activity[]
-      // counts
-      agenda_items_count: number
-      institutions_count: number
-      comments_count: number
-      types_count: number
-      files_count: number
-      tasks_count: number
-      activities_count: number
-      // exists
-      agenda_items_exists: boolean
-      institutions_exists: boolean
-      comments_exists: boolean
-      types_exists: boolean
-      files_exists: boolean
-      tasks_exists: boolean
-      activities_exists: boolean
     }
 
     export interface Membership {
@@ -1334,6 +1263,7 @@ declare global {
       // mutators
       related_institutions: unknown
       maybe_short_name: unknown
+      has_public_meetings: boolean
       translations: unknown
       // relations
       duties?: Duty[]
@@ -1369,6 +1299,188 @@ declare global {
       documents_exists: boolean
       check_ins_exists: boolean
       meetings_exists: boolean
+      available_trainings_exists: boolean
+      comments_exists: boolean
+      outgoing_relationships_exists: boolean
+      incoming_relationships_exists: boolean
+      files_exists: boolean
+      activities_exists: boolean
+    }
+
+    export interface Meeting {
+      // columns
+      id: string
+      title: string
+      description?: string | null
+      start_time: string
+      end_time?: string | null
+      created_at: string
+      updated_at: string
+      deleted_at?: string | null
+      // mutators
+      is_public: boolean
+      completion_status: string
+      // relations
+      agenda_items?: AgendaItem[]
+      institutions?: Institution[]
+      comments?: Comment[]
+      types?: Type[]
+      commentable?: Meeting
+      files?: SharepointFile[]
+      tasks?: Task[]
+      activities?: Activity[]
+      // counts
+      agenda_items_count: number
+      institutions_count: number
+      comments_count: number
+      types_count: number
+      files_count: number
+      tasks_count: number
+      activities_count: number
+      // exists
+      agenda_items_exists: boolean
+      institutions_exists: boolean
+      comments_exists: boolean
+      types_exists: boolean
+      files_exists: boolean
+      tasks_exists: boolean
+      activities_exists: boolean
+    }
+
+    export interface Document {
+      // columns
+      id: number
+      name: string
+      title: string
+      sharepoint_id?: string
+      e_tag?: string | null
+      document_date?: string | null
+      institution_id?: string | null
+      content_type?: string | null
+      language?: string | null
+      summary?: string | null
+      anonymous_url?: string | null
+      is_active: boolean
+      sharepoint_site_id?: string
+      sharepoint_list_id?: string
+      created_at?: string
+      checked_at?: string | null
+      sync_status: string
+      sync_error_message?: string | null
+      sync_attempts: boolean
+      last_sync_attempt_at?: string | null
+      updated_at?: string
+      effective_date?: string | null
+      expiration_date?: string | null
+      // mutators
+      is_in_effect: boolean
+      // relations
+      institution?: Institution
+      // counts
+      // exists
+      institution_exists: boolean
+    }
+
+    export interface PublicMeeting {
+      // columns
+      id: string
+      title: string
+      description?: string | null
+      start_time: string
+      end_time?: string | null
+      created_at: string
+      updated_at: string
+      deleted_at?: string | null
+      // mutators
+      is_public: boolean
+      completion_status: string
+      // relations
+      institutions?: Institution[]
+      types?: Type[]
+      agenda_items?: AgendaItem[]
+      comments?: Comment[]
+      commentable?: PublicMeeting
+      files?: SharepointFile[]
+      tasks?: Task[]
+      activities?: Activity[]
+      // counts
+      institutions_count: number
+      types_count: number
+      agenda_items_count: number
+      comments_count: number
+      files_count: number
+      tasks_count: number
+      activities_count: number
+      // exists
+      institutions_exists: boolean
+      types_exists: boolean
+      agenda_items_exists: boolean
+      comments_exists: boolean
+      files_exists: boolean
+      tasks_exists: boolean
+      activities_exists: boolean
+    }
+
+    export interface PublicInstitution {
+      // columns
+      id: string
+      name?: Array<unknown> | null
+      short_name?: Array<unknown> | null
+      alias: string
+      description?: Array<unknown> | null
+      address?: Array<unknown> | null
+      phone?: string | null
+      email?: string | null
+      website?: string | null
+      image_url?: string | null
+      logo_url?: string | null
+      facebook_url?: string | null
+      instagram_url?: string | null
+      tenant_id?: number | null
+      is_active: boolean
+      contacts_layout: string
+      created_at: string
+      updated_at: string
+      deleted_at?: string | null
+      // mutators
+      related_institutions: unknown
+      maybe_short_name: unknown
+      has_public_meetings: boolean
+      translations: unknown
+      // relations
+      types?: Type[]
+      duties?: Duty[]
+      meetings?: Meeting[]
+      tenant?: Tenant
+      documents?: Document[]
+      check_ins?: InstitutionCheckIn[]
+      users?: User
+      available_trainings?: Training[]
+      commentable?: PublicInstitution
+      comments?: Comment[]
+      outgoing_relationships?: Relationship[]
+      incoming_relationships?: Relationship[]
+      files?: SharepointFile[]
+      activities?: Activity[]
+      // counts
+      types_count: number
+      duties_count: number
+      meetings_count: number
+      documents_count: number
+      check_ins_count: number
+      available_trainings_count: number
+      comments_count: number
+      outgoing_relationships_count: number
+      incoming_relationships_count: number
+      files_count: number
+      activities_count: number
+      // exists
+      types_exists: boolean
+      duties_exists: boolean
+      meetings_exists: boolean
+      tenant_exists: boolean
+      documents_exists: boolean
+      check_ins_exists: boolean
       available_trainings_exists: boolean
       comments_exists: boolean
       outgoing_relationships_exists: boolean

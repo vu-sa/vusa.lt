@@ -251,6 +251,101 @@ return [
                     'query_by_weights' => '10,3,2,6,4',
                 ],
             ],
+
+            // Public Meetings - Transparency for student representation work
+            \App\Models\PublicMeeting::class => [
+                'collection-schema' => [
+                    'fields' => [
+                        ['name' => 'id', 'type' => 'string'],
+                        ['name' => 'title', 'type' => 'string', 'infix' => true, 'sort' => true],
+                        ['name' => 'description', 'type' => 'string', 'optional' => true, 'infix' => true],
+                        ['name' => 'start_time', 'type' => 'int64', 'sort' => true],
+                        ['name' => 'start_time_formatted', 'type' => 'string', 'optional' => true],
+                        ['name' => 'year', 'type' => 'int32', 'facet' => true],
+                        ['name' => 'month', 'type' => 'int32', 'facet' => true],
+
+                        ['name' => 'institution_id', 'type' => 'string', 'optional' => true],
+                        ['name' => 'institution_name_lt', 'type' => 'string', 'facet' => true, 'optional' => true],
+                        ['name' => 'institution_name_en', 'type' => 'string', 'facet' => true, 'optional' => true],
+                        ['name' => 'tenant_shortname', 'type' => 'string', 'facet' => true, 'optional' => true],
+
+                        ['name' => 'institution_type_id', 'type' => 'int32', 'facet' => true, 'optional' => true],
+                        ['name' => 'institution_type_title', 'type' => 'string', 'facet' => true, 'optional' => true],
+
+                        ['name' => 'completion_status', 'type' => 'string', 'facet' => true],
+                        ['name' => 'agenda_items_count', 'type' => 'int32', 'sort' => true],
+
+                        ['name' => 'total_agenda_items', 'type' => 'int32'],
+                        ['name' => 'items_with_decisions', 'type' => 'int32'],
+                        ['name' => 'completed_items', 'type' => 'int32', 'facet' => true],
+                        ['name' => 'student_success_rate', 'type' => 'int32', 'sort' => true],
+                        ['name' => 'positive_outcomes', 'type' => 'int32'],
+                        ['name' => 'negative_outcomes', 'type' => 'int32'],
+                        ['name' => 'neutral_outcomes', 'type' => 'int32'],
+
+                        ['name' => 'vote_matches', 'type' => 'int32'],
+                        ['name' => 'vote_mismatches', 'type' => 'int32'],
+                        ['name' => 'incomplete_vote_data', 'type' => 'int32'],
+
+                        ['name' => 'has_completed_items', 'type' => 'bool', 'facet' => true],
+                        ['name' => 'is_recent', 'type' => 'bool', 'facet' => true],
+
+                        ['name' => 'created_at', 'type' => 'int64'],
+                    ],
+                    'default_sorting_field' => 'start_time',
+                ],
+                'search-parameters' => [
+                    'query_by' => 'title,description,institution_name_lt,institution_name_en',
+                    'query_by_weights' => '10,5,3,3',
+                ],
+            ],
+
+            // Public Institutions - For contacts search
+            \App\Models\PublicInstitution::class => [
+                'collection-schema' => [
+                    'fields' => [
+                        ['name' => 'id', 'type' => 'string'],
+                        ['name' => 'title', 'type' => 'string', 'infix' => true, 'sort' => true],
+                        ['name' => 'name_lt', 'type' => 'string', 'infix' => true, 'sort' => true],
+                        ['name' => 'name_en', 'type' => 'string', 'infix' => true, 'sort' => true, 'optional' => true],
+                        ['name' => 'short_name_lt', 'type' => 'string', 'infix' => true, 'optional' => true],
+                        ['name' => 'short_name_en', 'type' => 'string', 'infix' => true, 'optional' => true],
+                        ['name' => 'alias', 'type' => 'string', 'infix' => true, 'optional' => true],
+
+                        ['name' => 'email', 'type' => 'string', 'optional' => true],
+                        ['name' => 'phone', 'type' => 'string', 'optional' => true],
+                        ['name' => 'website', 'type' => 'string', 'optional' => true],
+                        ['name' => 'address_lt', 'type' => 'string', 'optional' => true],
+                        ['name' => 'address_en', 'type' => 'string', 'optional' => true],
+
+                        ['name' => 'image_url', 'type' => 'string', 'optional' => true],
+                        ['name' => 'logo_url', 'type' => 'string', 'optional' => true],
+                        ['name' => 'has_logo', 'type' => 'bool', 'sort' => true],
+                        ['name' => 'facebook_url', 'type' => 'string', 'optional' => true],
+                        ['name' => 'instagram_url', 'type' => 'string', 'optional' => true],
+
+                        ['name' => 'tenant_id', 'type' => 'int32', 'optional' => true],
+                        ['name' => 'tenant_shortname', 'type' => 'string', 'facet' => true, 'optional' => true],
+                        ['name' => 'tenant_alias', 'type' => 'string', 'optional' => true],
+
+                        ['name' => 'type_ids', 'type' => 'int32[]', 'optional' => true],
+                        ['name' => 'type_slugs', 'type' => 'string[]', 'facet' => true, 'optional' => true],
+                        ['name' => 'type_titles_lt', 'type' => 'string[]', 'optional' => true],
+                        ['name' => 'type_titles_en', 'type' => 'string[]', 'optional' => true],
+
+                        ['name' => 'duties_count', 'type' => 'int32', 'sort' => true],
+                        ['name' => 'has_contacts', 'type' => 'bool', 'facet' => true],
+
+                        ['name' => 'created_at', 'type' => 'int64'],
+                        ['name' => 'updated_at', 'type' => 'int64', 'sort' => true],
+                    ],
+                    'default_sorting_field' => 'updated_at',
+                ],
+                'search-parameters' => [
+                    'query_by' => 'title,name_lt,name_en,short_name_lt,short_name_en,alias',
+                    'query_by_weights' => '10,10,8,6,4,3',
+                ],
+            ],
         ],
     ],
 

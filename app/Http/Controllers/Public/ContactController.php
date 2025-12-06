@@ -4,13 +4,16 @@ namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\PublicController;
 use App\Models\Institution;
+use App\Models\Meeting;
 use App\Models\Tenant;
 use App\Models\Type;
 use App\Models\User;
+use App\Settings\MeetingSettings;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
+use Illuminate\Support\Carbon;
 
 class ContactController extends PublicController
 {
@@ -19,28 +22,21 @@ class ContactController extends PublicController
         $this->getTenantLinks();
         $this->shareOtherLangURL('contacts', $this->subdomain);
 
-        $tenants = json_decode(base64_decode(request()->input('selectedTenants'))) ??
-            collect([Tenant::query()->where('type', 'pagrindinis')->first()->id, $this->tenant->id])->unique();
-
-        $institutions = Institution::query()->with('tenant', 'types:id,title,model_type,slug')
-            ->whereHas('tenant', fn ($query) => $query->whereIn('id', $tenants)->select(['id', 'shortname', 'alias'])
-            )->withCount('duties')->orderBy('name')->get()->makeHidden(['created_at', 'updated_at', 'deleted_at']);
-
         $seo = $this->shareAndReturnSEOObject(
             title: __('Kontaktų paieška').' - '.$this->tenant->shortname,
-            description: app()->getLocale() === 'lt' ? 'VU SA kontaktų paieškoje vienoje vietoje suraskite visus VU SA kontaktus' : 'In the VU SA contact search, find all VU SA contacts in one place', );
+            description: app()->getLocale() === 'lt' ? 'VU SA kontaktų paieškoje vienoje vietoje suraskite visus VU SA kontaktus' : 'In the VU SA contact search, find all VU SA contacts in one place',
+        );
 
-        return Inertia::render('Public/Contacts/ContactsSearch', [
-            'institutions' => $institutions->map(function ($institution) {
-                return [
-                    ...$institution->toArray(),
-                    // shorten description and add ellipsis
-                    // 'description' => Str::limit(strip_tags($institution->description), 100, '...'),
-                    //  TODO: better solution for displaying description or remove completely
-                    'description' => '',
-                ];
-            }),
-            'selectedTenants' => $tenants,
+        // Get institution type mappings for facet display (slug => title)
+        $institutionTypes = Type::whereHas('institutions')
+            ->get()
+            ->mapWithKeys(fn ($type) => [
+                $type->slug => $type->getTranslation('title', app()->getLocale())
+            ])
+            ->toArray();
+
+        return Inertia::render('Public/Contacts/ShowContacts', [
+            'institutionTypes' => $institutionTypes,
         ])->withViewData(
             ['SEOData' => $seo]
         );
@@ -187,6 +183,10 @@ class ContactController extends PublicController
 
     private function showInstitution(Institution $institution, Collection $contacts, string $title)
     {
+        // Load meetings and group by academic year
+        $meetings = $this->getAllMeetingsForInstitution($institution);
+        $groupedMeetings = $this->groupMeetingsByAcademicYear($meetings);
+
         $seo = $this->shareAndReturnSEOObject(
             title: $title.' - '.$this->tenant->shortname,
             description: Str::limit(strip_tags($institution->description), 160),
@@ -211,9 +211,137 @@ class ContactController extends PublicController
                     'show_pronouns' => $contact->show_pronouns,
                 ];
             }),
+            'currentYearMeetings' => $groupedMeetings['current'] ?? null,
+            'previousYearsMeetings' => $groupedMeetings['previous'] ?? [],
+            'hasMeetings' => ! empty($groupedMeetings),
         ])->withViewData(
             ['SEOData' => $seo]
         );
+    }
+
+    /**
+     * Get recent meetings for institution (limited to configured types)
+     */
+    protected function getRecentMeetings(Institution $institution, int $recentLimit = 3): Collection
+    {
+        $settings = app(MeetingSettings::class);
+        $allowedTypeIds = $settings->getPublicMeetingInstitutionTypeIds();
+
+        // If no types configured, return empty
+        if ($allowedTypeIds->isEmpty()) {
+            return new Collection([]);
+        }
+
+        // Check if institution has any allowed types
+        $institutionTypeIds = $institution->types->pluck('id');
+        $hasAllowedType = $institutionTypeIds->intersect($allowedTypeIds)->isNotEmpty();
+
+        if (! $hasAllowedType) {
+            return new Collection([]);
+        }
+
+        // Load meetings with necessary relationships
+        return $institution->meetings()
+            ->with(['agendaItems' => function ($query) {
+                $query->orderBy('order');
+            }])
+            ->where('start_time', '<=', now()) // Only past meetings
+            ->orderBy('start_time', 'desc')
+            ->take($recentLimit)
+            ->get()
+            ->each->append('completion_status');
+    }
+
+    /**
+     * Get all meetings for institution (for "show more" collapsed section)
+     */
+    protected function getAllMeetings(Institution $institution, int $skipRecent = 3): Collection
+    {
+        $settings = app(MeetingSettings::class);
+        $allowedTypeIds = $settings->getPublicMeetingInstitutionTypeIds();
+
+        if ($allowedTypeIds->isEmpty()) {
+            return new Collection([]);
+        }
+
+        $institutionTypeIds = $institution->types->pluck('id');
+        $hasAllowedType = $institutionTypeIds->intersect($allowedTypeIds)->isNotEmpty();
+
+        if (! $hasAllowedType) {
+            return new Collection([]);
+        }
+
+        // Fetch all meetings and skip on the collection instead of in SQL
+        return $institution->meetings()
+            ->with(['agendaItems' => function ($query) {
+                $query->orderBy('order');
+            }])
+            ->where('start_time', '<=', now())
+            ->orderBy('start_time', 'desc')
+            ->get()
+            ->skip($skipRecent)  // Skip on collection, not query builder
+            ->values()  // Re-index array sequentially (fix keys starting from 3)
+            ->each->append('completion_status');
+    }
+
+    /**
+     * Show individual meeting detail page
+     */
+    public function showMeeting($subdomain, $lang, Meeting $meeting)
+    {
+        $this->getTenantLinks();
+
+        // Verify meeting is public (belongs to allowed institution types)
+        $settings = app(MeetingSettings::class);
+        $allowedTypeIds = $settings->getPublicMeetingInstitutionTypeIds();
+
+        if ($allowedTypeIds->isEmpty()) {
+            abort(404);
+        }
+
+        // Load relationships
+        $meeting->load([
+            'agendaItems' => function ($query) {
+                $query->orderBy('order');
+            },
+            'institutions.types',
+        ]);
+
+        // Check if meeting's institution has allowed type
+        $hasAllowedType = false;
+        foreach ($meeting->institutions as $institution) {
+            $institutionTypeIds = $institution->types->pluck('id');
+            if ($institutionTypeIds->intersect($allowedTypeIds)->isNotEmpty()) {
+                $hasAllowedType = true;
+                break;
+            }
+        }
+
+        if (! $hasAllowedType) {
+            abort(404);
+        }
+
+        // Append completion status
+        $meeting->append('completion_status');
+
+        // Get primary institution for breadcrumbs
+        $primaryInstitution = $meeting->institutions->first();
+
+        Inertia::share('otherLangURL', route('publicMeetings.show', [
+            'subdomain' => $this->subdomain,
+            'lang' => $this->getOtherLang(),
+            'meeting' => $meeting->id,
+        ]));
+
+        $seo = $this->shareAndReturnSEOObject(
+            title: $meeting->title.' - '.$primaryInstitution->name,
+            description: Str::limit(strip_tags($meeting->description), 160),
+        );
+
+        return Inertia::render('Public/Meetings/ShowMeeting', [
+            'meeting' => $meeting,
+            'institution' => $primaryInstitution,
+        ])->withViewData(['SEOData' => $seo]);
     }
 
     /**
@@ -384,6 +512,10 @@ class ContactController extends PublicController
      */
     private function showInstitutionWithMixedContacts(Institution $institution, array $processedContacts, string $title)
     {
+        // Load meetings and group by academic year
+        $meetings = $this->getAllMeetingsForInstitution($institution);
+        $groupedMeetings = $this->groupMeetingsByAcademicYear($meetings);
+
         $seo = $this->shareAndReturnSEOObject(
             title: $title.' - '.$this->tenant->shortname,
             description: Str::limit(strip_tags($institution->description), 160),
@@ -446,6 +578,9 @@ class ContactController extends PublicController
             'institution' => $institution,
             'contactSections' => $transformedSections,
             'hasMixedGrouping' => true,
+            'currentYearMeetings' => $groupedMeetings['current'] ?? null,
+            'previousYearsMeetings' => $groupedMeetings['previous'] ?? [],
+            'hasMeetings' => ! empty($groupedMeetings),
         ])->withViewData(
             ['SEOData' => $seo]
         );
@@ -496,5 +631,90 @@ class ContactController extends PublicController
 
         // For all other types, keep the same slug
         return $currentSlug;
+    }
+
+    /**
+     * Get all meetings for an institution (for grouping by academic year)
+     */
+    protected function getAllMeetingsForInstitution(Institution $institution): Collection
+    {
+        $settings = app(MeetingSettings::class);
+        $allowedTypeIds = $settings->getPublicMeetingInstitutionTypeIds();
+
+        if ($allowedTypeIds->isEmpty()) {
+            return new Collection([]);
+        }
+
+        // Check if institution has any allowed types
+        $institutionTypeIds = $institution->types->pluck('id');
+        $hasAllowedType = $institutionTypeIds->intersect($allowedTypeIds)->isNotEmpty();
+
+        if (! $hasAllowedType) {
+            return new Collection([]);
+        }
+
+        // Load all past meetings with necessary relationships
+        return $institution->meetings()
+            ->with(['agendaItems' => function ($query) {
+                $query->orderBy('order');
+            }])
+            ->where('start_time', '<=', now())
+            ->orderBy('start_time', 'desc')
+            ->get()
+            ->each->append('completion_status');
+    }
+
+    /**
+     * Group meetings by academic year (Sept 1 - Aug 31)
+     */
+    protected function groupMeetingsByAcademicYear(Collection $meetings): array
+    {
+        if ($meetings->isEmpty()) {
+            return [];
+        }
+
+        $grouped = $meetings->groupBy(function ($meeting) {
+            return $this->getAcademicYear($meeting->start_time);
+        });
+
+        $currentAcademicYear = $this->getAcademicYear(now());
+
+        $result = [
+            'current' => null,
+            'previous' => [],
+        ];
+
+        foreach ($grouped as $year => $yearMeetings) {
+            $yearData = [
+                'year_key' => $year,
+                'year_label' => $year.' mokslo metai',
+                'meetings' => $yearMeetings->values(),
+            ];
+
+            if ($year === $currentAcademicYear) {
+                $result['current'] = $yearData;
+            } else {
+                $result['previous'][] = $yearData;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Calculate academic year from date (Sept 1 boundary)
+     *
+     * @param  string|Carbon  $date
+     */
+    protected function getAcademicYear($date): string
+    {
+        $carbon = $date instanceof Carbon ? $date : Carbon::parse($date);
+
+        // If before September 1, use previous year
+        // Example: 2024-05-15 → "2023-2024"
+        // Example: 2024-09-15 → "2024-2025"
+        $startYear = $carbon->month >= 9 ? $carbon->year : $carbon->year - 1;
+
+        return "{$startYear}-".($startYear + 1);
     }
 }

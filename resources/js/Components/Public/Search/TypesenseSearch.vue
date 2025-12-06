@@ -370,6 +370,12 @@ const searchAdapter = computed(() => {
           sort_by: '_text_match:desc,date:desc',
           per_page: 10,
         },
+        public_institutions: {
+          query_by: 'title,name_lt,name_en,short_name_lt,short_name_en,alias',
+          query_by_weights: '10,10,8,6,4,3',
+          sort_by: '_text_match:desc,updated_at:desc',
+          per_page: 10,
+        },
       }
     })
   } catch (error) {

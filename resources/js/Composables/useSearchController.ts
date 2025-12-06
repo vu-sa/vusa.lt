@@ -50,13 +50,22 @@ export const useSearchController = () => {
       order: 2
     },
     {
+      id: 'publicInstitutions',
+      name: 'Institutions',
+      icon: '🏢',
+      color: 'indigo',
+      indexName: 'public_institutions',
+      enabled: true,
+      order: 3
+    },
+    {
       id: 'documents',
       name: 'Documents',
       icon: '📜',
       color: 'purple', 
       indexName: 'documents',
       enabled: true,
-      order: 3
+      order: 4
     },
     {
       id: 'calendar',
@@ -65,7 +74,7 @@ export const useSearchController = () => {
       color: 'amber',
       indexName: 'calendar',
       enabled: true,
-      order: 4
+      order: 5
     }
   ]
 

@@ -63,11 +63,11 @@ export class RecentSearchManager {
 export class FilterUtils {
   static hasActiveFilters(filters: DocumentSearchFilters): boolean {
     return filters.tenants.length > 0 ||
-           filters.contentTypes.length > 0 ||
-           filters.languages.length > 0 ||
-           !!filters.dateRange.preset ||
-           !!filters.dateRange.from || 
-           !!filters.dateRange.to
+           filters.contentTypes?.length > 0 ||
+           filters.languages?.length > 0 ||
+           !!filters.dateRange?.preset ||
+           !!filters.dateRange?.from || 
+           !!filters.dateRange?.to
   }
 
   static countActiveFilters(filters: DocumentSearchFilters): number {

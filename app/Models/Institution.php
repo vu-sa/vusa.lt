@@ -11,6 +11,7 @@ use App\Models\Traits\HasContentRelationships;
 use App\Models\Traits\HasSharepointFiles;
 use App\Models\Traits\HasTranslations;
 use App\Services\RelationshipService;
+use App\Settings\MeetingSettings;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -51,6 +52,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Document> $documents
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Duty> $duties
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\SharepointFile> $files
+ * @property-read bool $has_public_meetings
  * @property-read mixed $maybe_short_name
  * @property-read mixed $related_institutions
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Relationship> $incomingRelationships
@@ -83,6 +85,8 @@ class Institution extends Model implements SharepointFileableContract
     protected $guarded = [];
 
     protected $with = ['types'];
+
+    protected $appends = ['has_public_meetings'];
 
     public $translatable = ['name', 'short_name', 'description', 'address'];
 
@@ -192,6 +196,27 @@ class Institution extends Model implements SharepointFileableContract
     public function getMaybeShortNameAttribute()
     {
         return $this->short_name ?? $this->name;
+    }
+
+    /**
+     * Check if this institution type allows public meetings.
+     * Based on MeetingSettings::getPublicMeetingInstitutionTypeIds().
+     */
+    public function getHasPublicMeetingsAttribute(): bool
+    {
+        $settings = app(MeetingSettings::class);
+        $allowedTypeIds = $settings->getPublicMeetingInstitutionTypeIds();
+
+        if ($allowedTypeIds->isEmpty()) {
+            return false;
+        }
+
+        // Load types if not already loaded
+        if (! $this->relationLoaded('types')) {
+            $this->load('types');
+        }
+
+        return $this->types->pluck('id')->intersect($allowedTypeIds)->isNotEmpty();
     }
 
     public function availableTrainings()

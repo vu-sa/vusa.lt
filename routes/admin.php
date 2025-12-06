@@ -166,4 +166,7 @@ Route::post('sharepoint/{id}/permissions/createPublic', [SharepointFileControlle
 Route::get('settings/forms', [SettingsController::class, 'editFormSettings'])->name('forms.settings.edit');
 Route::post('settings/forms', [SettingsController::class, 'updateFormSettings'])->name('forms.settings.update');
 
+Route::get('settings/meetings', [SettingsController::class, 'editMeetingSettings'])->name('settings.meetings.edit');
+Route::post('settings/meetings', [SettingsController::class, 'updateMeetingSettings'])->name('settings.meetings.update');
+
 Route::post('/logout', [UserController::class, 'logout'])->name('logout');

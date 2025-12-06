@@ -4,9 +4,12 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\UpdateFormSettingsRequest;
+use App\Http\Requests\UpdateMeetingSettingsRequest;
 use App\Models\Form;
 use App\Models\Role;
+use App\Models\Type;
 use App\Settings\FormSettings;
+use App\Settings\MeetingSettings;
 
 class SettingsController extends AdminController
 {
@@ -34,5 +37,30 @@ class SettingsController extends AdminController
         $settings->save();
 
         return $this->redirectBackWithSuccess('Form settings updated.');
+    }
+
+    /**
+     * Show meeting settings.
+     */
+    public function editMeetingSettings(MeetingSettings $settings)
+    {
+        return $this->inertiaResponse('Admin/Settings/EditMeetingSettings', [
+            'selected_type_ids' => $settings->getPublicMeetingInstitutionTypeIds()->toArray(),
+            'available_types' => Type::query()
+                ->where('model_type', 'App\\Models\\Institution')
+                ->get(['id', 'title', 'slug'])
+                ->map->toArray(),
+        ]);
+    }
+
+    /**
+     * Update meeting settings.
+     */
+    public function updateMeetingSettings(UpdateMeetingSettingsRequest $request, MeetingSettings $settings)
+    {
+        $settings->setPublicMeetingInstitutionTypeIds($request->input('type_ids', []));
+        $settings->save();
+
+        return $this->redirectBackWithSuccess('Meeting display settings updated.');
     }
 }

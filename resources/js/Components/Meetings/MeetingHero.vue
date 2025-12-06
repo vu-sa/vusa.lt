@@ -70,6 +70,12 @@
               {{ type.title }}
             </Badge>
           </div>
+
+          <!-- Public Status Badge -->
+          <Badge v-if="meeting.is_public" variant="outline" class="text-xs gap-1 text-green-600 border-green-300 dark:text-green-400 dark:border-green-700">
+            <Globe class="h-3 w-3" />
+            {{ $t('Rodomas viešai') }}
+          </Badge>
         </div>
 
       </CardContent>
@@ -88,7 +94,8 @@ import {
   Edit,
   Trash2,
   GraduationCap,
-  Users
+  Users,
+  Globe
 } from 'lucide-vue-next'
 
 import { formatStaticTime } from '@/Utils/IntlTime'

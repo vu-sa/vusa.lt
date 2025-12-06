@@ -31,6 +31,8 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $commentable
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Comment> $comments
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\SharepointFile> $files
+ * @property-read string $completion_status
+ * @property-read bool $is_public
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Institution> $institutions
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Task> $tasks
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Tenant> $tenants
@@ -56,6 +58,29 @@ class Meeting extends Model implements SharepointFileableContract
     protected $casts = [
         'start_time' => 'datetime',
     ];
+
+    protected $appends = ['is_public'];
+
+    /**
+     * Check if meeting is publicly visible based on institution types.
+     * Uses Institution::has_public_meetings which checks MeetingSettings.
+     */
+    public function getIsPublicAttribute(): bool
+    {
+        // Load institutions if not already loaded
+        if (! $this->relationLoaded('institutions')) {
+            $this->load('institutions.types');
+        }
+
+        // Check if any institution supports public meetings
+        foreach ($this->institutions as $institution) {
+            if ($institution->has_public_meetings) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     public function toSearchableArray()
     {
@@ -107,7 +132,7 @@ class Meeting extends Model implements SharepointFileableContract
     public function getCompletionStatusAttribute(): string
     {
         // Load agenda items if not already loaded
-        if (!$this->relationLoaded('agendaItems')) {
+        if (! $this->relationLoaded('agendaItems')) {
             $this->load('agendaItems');
         }
 
@@ -120,9 +145,9 @@ class Meeting extends Model implements SharepointFileableContract
 
         // Check if all agenda items have the 3 required fields filled
         $allComplete = $agendaItems->every(function ($item) {
-            return !empty($item->student_vote)
-                && !empty($item->decision)
-                && !empty($item->student_benefit);
+            return ! empty($item->student_vote)
+                && ! empty($item->decision)
+                && ! empty($item->student_benefit);
         });
 
         return $allComplete ? 'complete' : 'incomplete';

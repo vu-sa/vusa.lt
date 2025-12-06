@@ -14,6 +14,12 @@
             {{ institution.short_name }}
           </p>
 
+          <!-- Public Meetings Badge -->
+          <Badge v-if="institution.has_public_meetings" variant="outline" class="mt-1 text-xs gap-1 text-green-600 border-green-300 dark:text-green-400 dark:border-green-700">
+            <Globe class="h-3 w-3" />
+            {{ $t('Vieši posėdžiai') }}
+          </Badge>
+
           <!-- Managers in Header -->
           <div v-if="institution.managers?.length > 0" class="flex items-center gap-2 mt-2">
             <span class="text-xs text-zinc-500 dark:text-zinc-400">{{ $t('Vadovai') }}:</span>
@@ -113,9 +119,10 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Calendar, Clock, Users, BarChart3 } from 'lucide-vue-next';
+import { Calendar, Clock, Users, BarChart3, Globe } from 'lucide-vue-next';
 
 import { Button } from '@/Components/ui/button';
+import { Badge } from '@/Components/ui/badge';
 import UserPopover from '@/Components/Avatars/UserPopover.vue';
 import UsersAvatarGroup from '../Avatars/UsersAvatarGroup.vue';
 

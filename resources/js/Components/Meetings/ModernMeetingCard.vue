@@ -53,6 +53,14 @@
           {{ institution.short_name || institution.name }}
         </Badge>
       </div>
+
+      <!-- Public Status Badge -->
+      <div v-if="meeting.is_public" class="mt-3">
+        <Badge variant="outline" class="text-xs gap-1 text-green-600 border-green-300 dark:text-green-400 dark:border-green-700">
+          <Globe class="h-3 w-3" />
+          {{ $t('Rodomas viešai') }}
+        </Badge>
+      </div>
     </CardContent>
   </Card>
 </template>
@@ -68,7 +76,8 @@ import {
   File,
   MessageSquare,
   CheckSquare,
-  Trash2
+  Trash2,
+  Globe
 } from 'lucide-vue-next';
 
 import { Card, CardContent } from '@/Components/ui/card';

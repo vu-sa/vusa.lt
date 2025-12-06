@@ -8,9 +8,7 @@
       <div class="my-3 sm:my-4 lg:my-6 px-2 sm:px-3 lg:px-4">
         <div class="text-center max-w-2xl mx-auto">
           <div class="flex items-center justify-center gap-3 mb-3 sm:mb-4">
-            <div class="p-2 sm:p-3 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-xl">
-              <Search class="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
-            </div>
+            <SearchPageSwitcher page="documents" />
           </div>
           <h1 class="text-2xl sm:text-4xl font-bold text-foreground mb-2 sm:mb-3">
             {{ $t('search.document_search_title') }}
@@ -200,6 +198,7 @@ import {
 } from 'lucide-vue-next'
 
 // Local components
+import SearchPageSwitcher from './SearchPageSwitcher.vue'
 import SearchErrorBoundary from './SearchErrorBoundary.vue'
 import DocumentSearchInput from './DocumentSearchInput.vue'
 import DocumentFacetSidebar from './DocumentFacetSidebar.vue'
