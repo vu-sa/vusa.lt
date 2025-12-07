@@ -30,31 +30,20 @@
           <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
             <!-- Agenda Items (Main Content) -->
             <div class="xl:col-span-2">
-              <SortableCardContainer
-                :items="meeting.agenda_items"
-                :meeting-id="meeting.id"
-                @add="showAgendaItemStoreModal = true"
-                @edit="handleAgendaClick"
-                @delete="handleAgendaItemDelete"
-              />
+              <SortableCardContainer :items="meeting.agenda_items" :meeting-id="meeting.id"
+                @add="showSingleAgendaItemModal = true" @add-bulk="showAgendaItemStoreModal = true" @edit="handleAgendaClick" @delete="handleAgendaItemDelete" />
             </div>
           </div>
         </TabsContent>
 
         <!-- Files Tab -->
         <TabsContent value="files">
-          <FileManager
-            :starting-path="meeting.sharepointPath"
-            :fileable="{ ...meeting, type: 'Meeting' }"
-          />
+          <FileManager :starting-path="meeting.sharepointPath" :fileable="{ ...meeting, type: 'Meeting' }" />
         </TabsContent>
 
         <!-- Tasks Tab -->
         <TabsContent value="tasks">
-          <TaskManager
-            :taskable="{ id: meeting.id, type: 'App\\Models\\Meeting' }"
-            :tasks="meeting.tasks"
-          />
+          <TaskManager :taskable="{ id: meeting.id, type: 'App\\Models\\Meeting' }" :tasks="meeting.tasks" />
         </TabsContent>
       </Tabs>
     </div>
@@ -71,12 +60,36 @@
       </DialogContent>
     </Dialog>
 
+    <Dialog v-model:open="showSingleAgendaItemModal">
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle class="flex items-center gap-2">
+            <Plus class="h-5 w-5" />
+            {{ $t("Pridėti darbotvarkės punktą") }}
+          </DialogTitle>
+        </DialogHeader>
+        <AddAgendaItemForm :meeting-id="meeting.id" :loading @submit="handleSingleAgendaItemSubmit" />
+        <div class="mt-4 pt-4 border-t">
+          <Button variant="outline" size="sm" class="w-full" @click="showSingleAgendaItemModal = false; showAgendaItemStoreModal = true;">
+            {{ $t("Pridėti kelis punktus iš karto") }}...
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+
     <Dialog v-model:open="showAgendaItemStoreModal">
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{{ $t("Pridėti darbotvarkės punktus") }}</DialogTitle>
         </DialogHeader>
-        <AgendaItemsForm class="w-full" :loading @submit="handleAgendaItemsFormSubmit" />
+        <AgendaItemsForm 
+          class="w-full" 
+          :loading 
+          mode="add"
+          :submit-label="$t('Pridėti punktus')"
+          :show-skip-button="false"
+          @submit="handleAgendaItemsFormSubmit" 
+        />
       </DialogContent>
     </Dialog>
 
@@ -139,7 +152,7 @@ import { ref, computed } from "vue";
 import { router, useForm } from "@inertiajs/vue3";
 import { useStorage } from "@vueuse/core";
 import { trans as $t } from "laravel-vue-i18n";
-import { AlertTriangle, Trash2 } from 'lucide-vue-next';
+import { AlertTriangle, Plus, Trash2 } from 'lucide-vue-next';
 
 import { formatStaticTime } from "@/Utils/IntlTime";
 import { genitivizeEveryWord } from "@/Utils/String";
@@ -157,6 +170,7 @@ import MeetingHero from "@/Components/Meetings/MeetingHero.vue";
 import SortableCardContainer from "@/Components/AgendaItems/SortableCardContainer.vue";
 import SecondaryContentSection from "@/Components/Meetings/SecondaryContentSection.vue";
 import AgendaItemForm from "@/Components/AdminForms/AgendaItemForm.vue";
+import AddAgendaItemForm from "@/Components/AdminForms/AddAgendaItemForm.vue";
 import AgendaItemsForm from "@/Components/AdminForms/Special/AgendaItemsForm.vue";
 import MeetingForm from "@/Components/AdminForms/MeetingForm.vue";
 import FileManager from "@/Features/Admin/SharepointFileManager/Viewer/FileManager.vue";
@@ -171,6 +185,7 @@ const props = defineProps<{
 // Component state
 const showMeetingModal = ref(false);
 const showAgendaItemStoreModal = ref(false);
+const showSingleAgendaItemModal = ref(false);
 const showAgendaItemUpdateModal = ref(false);
 const showDeleteDialog = ref(false);
 const currentTab = useStorage("show-meeting-tab", "agenda");
@@ -241,10 +256,29 @@ const handleAgendaItemDelete = (agendaItem: App.Entities.AgendaItem) => {
   router.delete(route("agendaItems.destroy", agendaItem.id));
 };
 
-const handleAgendaItemUpdate = (agendaItem: App.Entities.AgendaItem) => {
-  router.patch(route("agendaItems.update", agendaItem.id), agendaItem, {
+const handleAgendaItemUpdate = (formValues: Record<string, any>) => {
+  if (!selectedAgendaItem.value) return;
+  
+  router.patch(route("agendaItems.update", selectedAgendaItem.value.id), formValues, {
     onSuccess: () => {
       showAgendaItemUpdateModal.value = false;
+    },
+  });
+};
+
+const handleSingleAgendaItemSubmit = (data: { meeting_id: string; title: string; description?: string }) => {
+  loading.value = true;
+
+  router.post(route("agendaItems.store"), {
+    meeting_id: data.meeting_id,
+    agendaItemTitles: [data.title],
+    agendaItemDescriptions: data.description ? [data.description] : [],
+  }, {
+    onSuccess: () => {
+      showSingleAgendaItemModal.value = false;
+    },
+    onFinish: () => {
+      loading.value = false;
     },
   });
 };

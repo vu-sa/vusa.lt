@@ -26,39 +26,41 @@
               orientation="vertical"
               :linear="false"
               class="mx-auto flex w-full max-w-md flex-col justify-start gap-4"
-              v-model="meetingCreation.state.currentStep"
+              :model-value="meetingCreation.state.currentStep"
+              @update:model-value="handleStepChange"
             >
               <!-- Step 1: Institution -->
               <StepperItem
                 :step="1"
                 v-slot="{ state }"
-                class="relative flex w-full items-start gap-6"
+                class="relative flex w-full items-start gap-4"
                 :disabled="loading"
               >
                 <StepperSeparator
-                  class="absolute left-[18px] top-[38px] block h-[105%] w-0.5 shrink-0 rounded-full bg-muted group-data-[state=completed]:bg-primary"
+                  class="absolute left-[17px] top-[38px] block h-[calc(100%+16px)] w-0.5 shrink-0 rounded-full"
+                  :class="state === 'completed' ? 'bg-green-500' : 'bg-border'"
                 />
 
                 <StepperTrigger as-child>
                   <button
                     type="button"
-                    class="z-10 rounded-full shrink-0 w-8 h-8 flex items-center justify-center border-2 transition-all"
+                    class="z-10 size-9 rounded-full shrink-0 flex items-center justify-center border-2 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:cursor-not-allowed"
                     :class="[
-                      state === 'completed' || state === 'active'
-                        ? 'bg-primary border-primary text-primary-foreground'
-                        : 'border-muted-foreground/30 text-muted-foreground',
-                      state === 'completed' && 'bg-green-100 border-green-500 text-green-600 dark:bg-green-900 dark:text-green-400'
+                      state === 'completed' && 'bg-green-50 border-green-500 text-green-600 dark:bg-green-950 dark:border-green-500 dark:text-green-400',
+                      state === 'active' && 'bg-primary border-primary text-primary-foreground ring-2 ring-ring ring-offset-2 ring-offset-background',
+                      state === 'inactive' && 'bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-700 text-muted-foreground'
                     ]"
+                    :disabled="loading"
                   >
-                    <CheckCircle v-if="state === 'completed'" class="h-4 w-4" />
-                    <component :is="Icons.INSTITUTION" v-else class="h-4 w-4" />
+                    <CheckCircle v-if="state === 'completed'" class="size-4" />
+                    <component :is="Icons.INSTITUTION" v-else class="size-4" />
                   </button>
                 </StepperTrigger>
 
-                <div class="flex flex-col gap-1 flex-1 min-w-0">
+                <div class="flex flex-col gap-0.5 pt-1">
                   <StepperTitle
                     :class="[state === 'active' && 'text-primary']"
-                    class="text-sm font-semibold"
+                    class="text-sm font-semibold leading-tight"
                   >
                     {{ $t('Pasirinkite instituciją') }}
                   </StepperTitle>
@@ -76,33 +78,34 @@
               <StepperItem
                 :step="2"
                 v-slot="{ state }"
-                class="relative flex w-full items-start gap-6"
-                :disabled="loading || 2 > meetingCreation.state.maxCompletedStep + 1"
+                class="relative flex w-full items-start gap-4"
+                :disabled="loading || (2 > meetingCreation.state.maxCompletedStep + 1 && meetingCreation.state.currentStep < 2)"
               >
                 <StepperSeparator
-                  class="absolute left-[18px] top-[38px] block h-[105%] w-0.5 shrink-0 rounded-full bg-muted group-data-[state=completed]:bg-primary"
+                  class="absolute left-[17px] top-[38px] block h-[calc(100%+16px)] w-0.5 shrink-0 rounded-full"
+                  :class="state === 'completed' ? 'bg-green-500' : 'bg-border'"
                 />
 
                 <StepperTrigger as-child>
                   <button
                     type="button"
-                    class="z-10 rounded-full shrink-0 w-8 h-8 flex items-center justify-center border-2 transition-all"
+                    class="z-10 size-9 rounded-full shrink-0 flex items-center justify-center border-2 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:cursor-not-allowed"
                     :class="[
-                      state === 'completed' || state === 'active'
-                        ? 'bg-primary border-primary text-primary-foreground'
-                        : 'border-muted-foreground/30 text-muted-foreground',
-                      state === 'completed' && 'bg-green-100 border-green-500 text-green-600 dark:bg-green-900 dark:text-green-400'
+                      state === 'completed' && 'bg-green-50 border-green-500 text-green-600 dark:bg-green-950 dark:border-green-500 dark:text-green-400',
+                      state === 'active' && 'bg-primary border-primary text-primary-foreground ring-2 ring-ring ring-offset-2 ring-offset-background',
+                      state === 'inactive' && 'bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-700 text-muted-foreground'
                     ]"
+                    :disabled="loading || (2 > meetingCreation.state.maxCompletedStep + 1 && meetingCreation.state.currentStep < 2)"
                   >
-                    <CheckCircle v-if="state === 'completed'" class="h-4 w-4" />
-                    <component :is="Icons.MEETING" v-else class="h-4 w-4" />
+                    <CheckCircle v-if="state === 'completed'" class="size-4" />
+                    <component :is="Icons.MEETING" v-else class="size-4" />
                   </button>
                 </StepperTrigger>
 
-                <div class="flex flex-col gap-1 flex-1 min-w-0">
+                <div class="flex flex-col gap-0.5 pt-1">
                   <StepperTitle
                     :class="[state === 'active' && 'text-primary']"
-                    class="text-sm font-semibold"
+                    class="text-sm font-semibold leading-tight"
                   >
                     {{ $t('Susitikimo detalės') }}
                   </StepperTitle>
@@ -128,33 +131,34 @@
                 v-if="!isQuickMode"
                 :step="3"
                 v-slot="{ state }"
-                class="relative flex w-full items-start gap-6"
-                :disabled="loading || 3 > meetingCreation.state.maxCompletedStep + 1"
+                class="relative flex w-full items-start gap-4"
+                :disabled="loading || (3 > meetingCreation.state.maxCompletedStep + 1 && meetingCreation.state.currentStep < 3)"
               >
                 <StepperSeparator
-                  class="absolute left-[18px] top-[38px] block h-[105%] w-0.5 shrink-0 rounded-full bg-muted group-data-[state=completed]:bg-primary"
+                  class="absolute left-[17px] top-[38px] block h-[calc(100%+16px)] w-0.5 shrink-0 rounded-full"
+                  :class="state === 'completed' ? 'bg-green-500' : 'bg-border'"
                 />
 
                 <StepperTrigger as-child>
                   <button
                     type="button"
-                    class="z-10 rounded-full shrink-0 w-8 h-8 flex items-center justify-center border-2 transition-all"
+                    class="z-10 size-9 rounded-full shrink-0 flex items-center justify-center border-2 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:cursor-not-allowed"
                     :class="[
-                      state === 'completed' || state === 'active'
-                        ? 'bg-primary border-primary text-primary-foreground'
-                        : 'border-muted-foreground/30 text-muted-foreground',
-                      state === 'completed' && 'bg-green-100 border-green-500 text-green-600 dark:bg-green-900 dark:text-green-400'
+                      state === 'completed' && 'bg-green-50 border-green-500 text-green-600 dark:bg-green-950 dark:border-green-500 dark:text-green-400',
+                      state === 'active' && 'bg-primary border-primary text-primary-foreground ring-2 ring-ring ring-offset-2 ring-offset-background',
+                      state === 'inactive' && 'bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-700 text-muted-foreground'
                     ]"
+                    :disabled="loading || (3 > meetingCreation.state.maxCompletedStep + 1 && meetingCreation.state.currentStep < 3)"
                   >
-                    <CheckCircle v-if="state === 'completed'" class="h-4 w-4" />
-                    <component :is="Icons.AGENDA_ITEM" v-else class="h-4 w-4" />
+                    <CheckCircle v-if="state === 'completed'" class="size-4" />
+                    <component :is="Icons.AGENDA_ITEM" v-else class="size-4" />
                   </button>
                 </StepperTrigger>
 
-                <div class="flex flex-col gap-1 flex-1 min-w-0">
+                <div class="flex flex-col gap-0.5 pt-1">
                   <StepperTitle
                     :class="[state === 'active' && 'text-primary']"
-                    class="text-sm font-semibold"
+                    class="text-sm font-semibold leading-tight"
                   >
                     {{ $t('Darbotvarkė') }}
                   </StepperTitle>
@@ -173,28 +177,28 @@
                 v-if="!isQuickMode"
                 :step="4"
                 v-slot="{ state }"
-                class="relative flex w-full items-start gap-6"
-                :disabled="loading || 4 > meetingCreation.state.maxCompletedStep + 1"
+                class="relative flex w-full items-start gap-4"
+                :disabled="loading || (4 > meetingCreation.state.maxCompletedStep + 1 && meetingCreation.state.currentStep < 4)"
               >
                 <StepperTrigger as-child>
                   <button
                     type="button"
-                    class="z-10 rounded-full shrink-0 w-8 h-8 flex items-center justify-center border-2 transition-all"
+                    class="z-10 size-9 rounded-full shrink-0 flex items-center justify-center border-2 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:cursor-not-allowed"
                     :class="[
-                      state === 'completed' || state === 'active'
-                        ? 'bg-primary border-primary text-primary-foreground'
-                        : 'border-muted-foreground/30 text-muted-foreground',
-                      state === 'completed' && 'bg-green-100 border-green-500 text-green-600 dark:bg-green-900 dark:text-green-400'
+                      state === 'completed' && 'bg-green-50 border-green-500 text-green-600 dark:bg-green-950 dark:border-green-500 dark:text-green-400',
+                      state === 'active' && 'bg-primary border-primary text-primary-foreground ring-2 ring-ring ring-offset-2 ring-offset-background',
+                      state === 'inactive' && 'bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-700 text-muted-foreground'
                     ]"
+                    :disabled="loading || (4 > meetingCreation.state.maxCompletedStep + 1 && meetingCreation.state.currentStep < 4)"
                   >
-                    <CheckCircle class="h-4 w-4" />
+                    <CheckCircle class="size-4" />
                   </button>
                 </StepperTrigger>
 
-                <div class="flex flex-col gap-1 flex-1 min-w-0">
+                <div class="flex flex-col gap-0.5 pt-1">
                   <StepperTitle
                     :class="[state === 'active' && 'text-primary']"
-                    class="text-sm font-semibold"
+                    class="text-sm font-semibold leading-tight"
                   >
                     {{ $t('Peržiūra') }}
                   </StepperTitle>
@@ -222,7 +226,9 @@
               <AgendaItemsForm v-else-if="meetingCreation.state.currentStep === 3"
                 :loading="meetingCreation.state.loading.submission"
                 :institution-id="meetingCreation.state.institution?.id"
-                :agenda-items="meetingCreation.state.agendaItems" :recent-meetings="props.recentMeetings"
+                :agenda-items="meetingCreation.state.agendaItems" 
+                :recent-meetings="props.recentMeetings"
+                :show-hint="false"
                 @submit="handleAgendaItemsFormSubmit" />
               <MeetingReviewForm v-else-if="meetingCreation.state.currentStep === 4"
                 :loading="meetingCreation.state.loading.submission" :meeting-state="meetingCreation.state"
@@ -338,7 +344,13 @@ const handleDialogClose = () => {
   }
 };
 
-// Step navigation handled by Shadcn stepper v-model binding
+// Handle stepper step changes
+const handleStepChange = (step: number) => {
+  // Allow navigation to any step that's already been completed or the next available step
+  if (step <= meetingCreation.state.maxCompletedStep + 1) {
+    meetingCreation.goToStep(step);
+  }
+};
 
 const handleInstitutionSelect = (institutionId: string) => {
   // Find the full institution object

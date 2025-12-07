@@ -128,7 +128,7 @@
           <div class="flex items-center gap-2" />
 
           <div class="flex items-center gap-2">
-            <Button type="submit" :disabled="loading" class="inline-flex items-center gap-2">
+            <Button type="submit" :disabled="loading || !props.meetingTypes?.length" class="inline-flex items-center gap-2">
               <span v-if="loading" class="inline-flex items-center gap-2">
                 <Loader2 class="h-4 w-4 animate-spin" />
                 <span>{{ $t('Tikrinama...') }}</span>

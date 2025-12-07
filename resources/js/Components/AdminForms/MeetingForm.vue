@@ -57,8 +57,8 @@
         </FormItem>
       </FormField>
 
-      <Button type="submit" :disabled="loading">
-        {{ $t("Toliau") }}...
+      <Button type="submit" :disabled="loading || isLoadingTypes">
+        {{ buttonLabel }}
       </Button>
     </div>
   </Form>
@@ -66,7 +66,7 @@
 
 <script setup lang="ts">
 import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
-import { ref, computed, inject, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { Form } from "vee-validate";
 import { toTypedSchema } from '@vee-validate/zod';
 import * as z from 'zod';
@@ -100,14 +100,14 @@ const emit = defineEmits<{
   (event: "submit", form: any): void;
 }>();
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   loading?: boolean;
   meeting: App.Entities.Meeting;
   meetingTypes?: Array<{id: number, title: string, model_type: string}>;
-}>();
-
-// Access shared form state from parent component
-const formState = inject('meetingFormState');
+  submitLabel?: string;
+}>(), {
+  submitLabel: undefined,
+});
 
 // Define schema using Zod with a single validation approach
 const schema = toTypedSchema(
@@ -129,24 +129,23 @@ const schema = toTypedSchema(
   })
 );
 
-// Determine initial values, using stored state first, then passed prop, then default
-const initialValues = {
-  // Use state date if available, otherwise use prop or undefined
-  date: formState?.meetingData?.date ? new Date(formState.meetingData.date) : 
-        props.meeting?.date ? new Date(props.meeting.date) : undefined,
-  
-  // Use state time if available, otherwise use prop or null
-  time: formState?.meetingData?.date ? {
-    hour: new Date(formState.meetingData.date).getHours(),
-    minute: new Date(formState.meetingData.date).getMinutes()
-  } : props.meeting?.date ? {
-    hour: new Date(props.meeting.date).getHours(),
-    minute: new Date(props.meeting.date).getMinutes()
+// Compute initial date from meeting's start_time
+const meetingDate = computed(() => {
+  if (props.meeting?.start_time) {
+    return new Date(props.meeting.start_time);
+  }
+  return undefined;
+});
+
+// Determine initial values from meeting prop
+const initialValues = computed(() => ({
+  date: meetingDate.value,
+  time: meetingDate.value ? {
+    hour: meetingDate.value.getHours(),
+    minute: meetingDate.value.getMinutes()
   } : null,
-  
-  // Use state type_id if available, otherwise use prop
-  type_id: formState?.meetingData?.type_id || props.meeting?.type_id
-};
+  type_id: props.meeting?.type_id
+}));
 
 // Handle form submission with typed values
 const onSubmit = (values) => {
@@ -167,13 +166,13 @@ const onSubmit = (values) => {
     type_id: values.type_id,
   };
   
-  // Update state
-  if (formState) {
-    formState.meetingData = formData;
-  }
-  
   emit("submit", formData);
 };
+
+// Computed label for submit button
+const buttonLabel = computed(() => {
+  return props.submitLabel || $t("Išsaugoti");
+});
 
 // State for managing meeting types
 const meetingTypes = ref(props.meetingTypes || []);

@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col gap-6">
     <FadeTransition>
-      <SuggestionAlert :show-alert @alert-closed="showAlert = false">
+      <SuggestionAlert v-if="props.showHint" :show-alert @alert-closed="showAlert = false">
         <template v-if="$page.props.app.locale === 'lt'">
           <p class="mt-0">
             <span>Kiekvienas posėdis turi</span>
@@ -96,13 +96,13 @@
                       {{ $t("Pridėti klausimą") }}
                     </Button>
 
-                    <Button v-if="fields.length === 0" type="button" variant="outline" size="sm"
+                    <Button v-if="props.mode === 'create' && fields.length === 0" type="button" variant="outline" size="sm"
                       @click="showQuestionInputInTextArea = true; agendaInputMode = 'text'">
                       <DocumentIcon class="mr-2 h-4 w-4" />
                       {{ $t('Įkelti iš teksto') }}
                     </Button>
 
-                    <Button type="button" variant="outline" size="sm"
+                    <Button v-if="props.mode === 'create'" type="button" variant="outline" size="sm"
                       @click="agendaItemField?.setValue([]); agendaInputMode = null">
                       <ArrowLeft class="mr-2 h-4 w-4" />
                       {{ $t('Grįžti') }}
@@ -152,8 +152,8 @@
                   </div>
                 </div>
 
-                <!-- 3-button selection for starting agenda -->
-                <div v-if="fields.length === 0 && !showQuestionInputInTextArea && !agendaInputMode"
+                <!-- 3-button selection for starting agenda (only in create mode) -->
+                <div v-if="props.mode === 'create' && fields.length === 0 && !showQuestionInputInTextArea && !agendaInputMode"
                   class="text-center py-8 space-y-6">
                   <div>
                     <component :is="IconsRegular.AGENDA_ITEM" class="h-10 w-10 mx-auto text-muted-foreground/50 mb-3" />
@@ -164,14 +164,22 @@
                   </div>
 
                   <div class="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl mx-auto">
-                    <!-- Option 1: From previous meeting -->
+                    <!-- Option 1: From previous meeting (disabled if no templates) -->
                     <button type="button"
-                      class="flex flex-col items-center gap-3 p-6 rounded-lg border-2 border-dashed hover:border-primary hover:bg-muted/50 transition-all group"
-                      @click="showPreviousMeetingSelector">
-                      <History class="h-8 w-8 text-muted-foreground group-hover:text-primary transition-colors" />
+                      class="flex flex-col items-center gap-3 p-6 rounded-lg border-2 border-dashed transition-all group"
+                      :class="recentTemplates.length > 0 
+                        ? 'hover:border-primary hover:bg-muted/50 cursor-pointer' 
+                        : 'opacity-50 cursor-not-allowed'"
+                      :disabled="recentTemplates.length === 0"
+                      @click="recentTemplates.length > 0 && showPreviousMeetingSelector()">
+                      <History class="h-8 w-8 text-muted-foreground transition-colors" :class="recentTemplates.length > 0 && 'group-hover:text-primary'" />
                       <div class="text-center">
                         <p class="font-medium">{{ $t('Naudoti ankstesnį') }}</p>
-                        <p class="text-xs text-muted-foreground mt-1">{{ $t('Pasirinkti iš praėjusių posėdžių') }}</p>
+                        <p class="text-xs text-muted-foreground mt-1">
+                          {{ recentTemplates.length > 0 
+                            ? $t('Pasirinkti iš praėjusių posėdžių') 
+                            : $t('Nėra ankstesnių posėdžių') }}
+                        </p>
                       </div>
                     </button>
 
@@ -231,14 +239,14 @@
         <!-- Action buttons -->
         <div class="flex items-center justify-between pt-4 border-t">
           <div class="flex items-center gap-2">
-            <Button v-if="currentFieldCount > 0" type="button" variant="ghost" size="sm" @click="clearAllItems">
+            <Button v-if="currentFieldCount > 1 || (currentFieldCount === 1 && hasNonEmptyItems)" type="button" variant="ghost" size="sm" @click="clearAllItems">
               <Trash2 class="mr-2 h-3 w-3" />
-              {{ $t('Išvalyti visus') }}
+              {{ $t('Šalinti visus') }}
             </Button>
           </div>
 
           <div class="flex items-center gap-2">
-            <TooltipProvider v-if="currentFieldCount === 0">
+            <TooltipProvider v-if="props.showSkipButton && currentFieldCount === 0">
               <Tooltip>
                 <TooltipTrigger as-child>
                   <Button type="button" variant="outline" @click="skipAgenda">
@@ -251,13 +259,13 @@
               </Tooltip>
             </TooltipProvider>
 
-            <Button type="submit" :disabled="loading">
+            <Button type="submit" :disabled="loading || (props.mode === 'add' && currentFieldCount === 0)">
               <span v-if="loading">
                 <Loader2 class="mr-2 h-4 w-4 animate-spin" />
                 {{ $t('Kuriama...') }}
               </span>
               <span class="inline-flex items-center" v-else>
-                {{ $t("Sukurti susitikimą") }}
+                {{ props.submitLabel || $t("Sukurti susitikimą") }}
                 <CheckCircle class="ml-2 h-4 w-4" />
               </span>
             </Button>
@@ -312,12 +320,25 @@ import { Label } from "@/Components/ui/label";
 
 const emit = defineEmits<(e: "submit", data: Record<string, any>) => void>();
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   loading: boolean;
   institutionId?: string;
   agendaItems?: Array<{ title: string; description?: string; order: number }>;
   recentMeetings?: Array<{ id: string; title: string; start_time: string; institution_name: string; agenda_items: { title: string }[] }>;
-}>();
+  /** 'create' shows template selection, 'add' starts directly in one-by-one mode */
+  mode?: 'create' | 'add';
+  /** Custom label for submit button */
+  submitLabel?: string;
+  /** Whether to show skip button */
+  showSkipButton?: boolean;
+  /** Whether to show the hint/suggestion alert */
+  showHint?: boolean;
+}>(), {
+  mode: 'create',
+  submitLabel: undefined,
+  showSkipButton: true,
+  showHint: true,
+});
 
 // Composables
 const {
@@ -357,14 +378,17 @@ const currentAgendaItems = computed(() =>
 // Track the current field count for use outside FieldArray scope
 const currentFieldCount = ref(0);
 
+// Check if there are any non-empty items (for showing clear button)
+const hasNonEmptyItems = computed(() => {
+  const fieldValue = agendaItemField.value?.value;
+  if (!Array.isArray(fieldValue)) return false;
+  return fieldValue.some((item: string) => item && item.trim() !== '');
+});
+
 // Define validation schema using zod
+// Validation is lenient during input - we filter out empty items on submit
 const schema = toTypedSchema(z.object({
-  agendaItemTitles: z.array(z.string())
-    .refine(items => {
-      // If there are items, they must not be empty or whitespace-only
-      // Allow empty array (agenda is optional)
-      return items.length === 0 || items.every(item => item && item.trim().length > 0);
-    }, { message: $t("Klausimas negali būti tuščias") }),
+  agendaItemTitles: z.array(z.string()),
 }));
 
 // Set initial values from props
@@ -512,9 +536,14 @@ watch(() => currentAgendaItems.value, (newItems) => {
 
 // Lifecycle
 onMounted(async () => {
-  // Load recent meetings if institution is provided
-  if (props.institutionId) {
+  // Load recent meetings if institution is provided (only in create mode)
+  if (props.mode === 'create' && props.institutionId) {
     await loadRecentMeetings(props.institutionId);
+  }
+  
+  // In 'add' mode, start directly in one-by-one mode with an empty item
+  if (props.mode === 'add' && currentAgendaItems.value.length === 0) {
+    startOneByOne();
   }
 });
 </script>

@@ -1,152 +1,103 @@
 <template>
-  <Card class="agenda-item-card group hover:shadow-md transition-all duration-200"
-    :class="{ 'cursor-pointer': !showVoteOptions }">
-    <CardContent class="p-4">
-      <div class="flex items-start gap-3">
-        <!-- Drag Handle -->
+  <Card class="agenda-item-card group transition-all duration-200 hover:shadow-md hover:ring-1 hover:ring-zinc-200 dark:hover:ring-zinc-700">
+    <CardContent class="px-3 py-3 sm:px-4 sm:py-3.5">
+      <div class="flex items-center gap-3">
+        <!-- Drag Handle (visible on hover) -->
         <div
-          class="drag-handle shrink-0 cursor-move p-2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors">
+          class="drag-handle shrink-0 cursor-grab active:cursor-grabbing p-1 -ml-2 text-zinc-300 hover:text-zinc-500 dark:text-zinc-600 dark:hover:text-zinc-400 transition-all duration-150 opacity-0 group-hover:opacity-100">
           <GripVertical class="h-4 w-4" />
         </div>
 
         <!-- Item Number -->
         <div
-          class="flex-shrink-0 w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-sm font-medium text-zinc-600 dark:text-zinc-400">
+          class="flex-shrink-0 w-7 h-7 rounded-lg bg-zinc-100 dark:bg-zinc-800/80 flex items-center justify-center text-xs font-semibold text-zinc-600 dark:text-zinc-300 tabular-nums">
           {{ order }}
         </div>
 
         <!-- Content -->
-        <div class="flex-1 min-w-0 space-y-3" :class="{ 'cursor-pointer': !showVoteOptions }" @click="handleCardClick">
-          <!-- Title and Actions Row -->
-          <div class="flex items-start justify-between gap-2">
-            <h3 class="text-base font-semibold text-zinc-900 dark:text-zinc-100 leading-tight">
-              {{ item.title }}
-            </h3>
-            <DropdownMenu>
-              <DropdownMenuTrigger as-child>
-                <Button variant="ghost" size="icon" class="h-8 w-8 shrink-0">
-                  <MoreVertical class="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem @click="$emit('edit', item)">
-                  <Edit class="h-4 w-4 mr-2" />
-                  {{ $t('Redaguoti') }}
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem class="text-destructive focus:text-destructive" @click="$emit('delete', item)">
-                  <Trash2 class="h-4 w-4 mr-2" />
-                  {{ $t('Šalinti') }}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+        <div class="flex-1 min-w-0">
+          <!-- Title Row with Compact Indicators -->
+          <div class="flex items-center justify-between gap-2">
+            <button type="button" class="text-left flex-1 min-w-0" @click="showDetailed = !showDetailed">
+              <h3
+                class="text-sm font-semibold text-zinc-800 dark:text-zinc-100 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors leading-snug">
+                {{ item.title }}
+              </h3>
+            </button>
+
+            <!-- Right side: Compact indicators + Menu -->
+            <div class="flex items-center gap-1 shrink-0">
+              <!-- Compact Vote Status (always visible) -->
+              <CompactVoteIndicator :decision="item.decision" :student-vote="item.student_vote"
+                :student-benefit="item.student_benefit" @click="showDetailed = !showDetailed" />
+
+              <!-- More menu -->
+              <DropdownMenu>
+                <DropdownMenuTrigger as-child>
+                  <Button variant="ghost" size="icon"
+                    class="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <MoreVertical class="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem @click="$emit('edit', item)">
+                    <Edit class="h-4 w-4 mr-2" />
+                    {{ $t('Redaguoti') }}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem class="text-destructive focus:text-destructive" @click="$emit('delete', item)">
+                    <Trash2 class="h-4 w-4 mr-2" />
+                    {{ $t('Šalinti') }}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
 
-          <!-- Status Badges Row -->
-          <div class="flex flex-wrap items-center gap-2" :class="{ 'mb-0': !showDetailed }">
-            <StatusBadge :state="item.decision" type="decision" :show-tooltip="true" />
-
-            <StatusBadge v-if="item.student_vote || showVoteOptions" :state="item.student_vote" type="student_vote"
-              show-tooltip />
-
-            <StatusBadge v-if="item.student_benefit || showVoteOptions" :state="item.student_benefit"
-              type="student_benefit" :show-tooltip="true" />
-
-            <!-- Description Indicator -->
-            <Button v-if="item.description || !item.description" variant="ghost" size="sm" class="h-6 px-2 text-xs"
-              @click.stop="$emit('edit', item)">
-              <component :is="item.description ? FileText : FilePlus" class="h-3 w-3 mr-1" />
-              {{ item.description ? $t('Aprašymas') : $t('Pridėti aprašymą') }}
-            </Button>
-
-            <!-- Manual Collapse/Expand Toggle -->
-            <Button v-if="showVoteOptions" variant="ghost" size="sm" class="h-6 px-2 text-xs"
-              @click.stop="showDetailed = !showDetailed">
-              <component :is="showDetailed ? ChevronUp : ChevronDown" class="h-3 w-3 mr-1" />
-              {{ showDetailed ? $t('Suskleisti') : $t('Išskleisti') }}
-            </Button>
-          </div>
-
-          <!-- Description Preview -->
-          <div v-if="item.description" class="text-sm text-zinc-600 dark:text-zinc-400 line-clamp-2">
+          <!-- Description Preview (collapsed state) -->
+          <p v-if="item.description && !showDetailed" class="text-[13px] text-zinc-500 dark:text-zinc-400 line-clamp-1 mt-1.5 leading-relaxed">
             {{ item.description }}
-          </div>
+          </p>
 
-          <!-- Detailed Vote Controls (Expandable) -->
+          <!-- Expandable Voting Section -->
           <Collapsible v-model:open="showDetailed">
-            <CollapsibleContent class="space-y-3">
-              <Separator />
+            <CollapsibleContent>
+              <div class="pt-3 space-y-2.5 border-t border-zinc-100 dark:border-zinc-800 mt-3 -mx-1 px-1">
+                <!-- Voting Controls - Compact Layout -->
+                <!-- Decision -->
+                <InlineVoteControl :label="$t('voting_field_decision_label')"
+                  :tooltip="$t('voting_field_decision_tooltip')" :value="item.decision" :options="decisionOptions"
+                  @update="(val) => updateField('decision', val)" />
 
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <!-- Decision Control -->
-                <div class="space-y-2">
-                  <Label class="text-xs font-medium text-zinc-700 dark:text-zinc-300">
-                    {{ $t('Sprendimas') }}
-                  </Label>
-                  <div class="flex gap-1">
-                    <Button variant="outline" size="sm"
-                      :class="item.decision === 'positive' ? 'bg-green-50 border-green-200 text-green-700' : ''"
-                      @click="updateField('decision', 'positive')">
-                      <Check class="h-3 w-3" />
-                    </Button>
-                    <Button variant="outline" size="sm"
-                      :class="item.decision === 'negative' ? 'bg-red-50 border-red-200 text-red-700' : ''"
-                      @click="updateField('decision', 'negative')">
-                      <X class="h-3 w-3" />
-                    </Button>
-                    <Button variant="outline" size="sm"
-                      :class="item.decision === 'neutral' ? 'bg-zinc-50 border-zinc-200 text-zinc-700' : ''"
-                      @click="updateField('decision', 'neutral')">
-                      <Minus class="h-3 w-3" />
-                    </Button>
+                <!-- Student Vote -->
+                <InlineVoteControl :label="$t('voting_field_student_vote_label')"
+                  :tooltip="$t('voting_field_student_vote_tooltip')" :value="item.student_vote" :options="voteOptions"
+                  @update="(val) => updateField('student_vote', val)" />
+
+                <!-- Student Benefit -->
+                <InlineVoteControl :label="$t('voting_field_student_benefit_label')"
+                  :tooltip="$t('voting_field_student_benefit_tooltip')" :value="item.student_benefit"
+                  :options="benefitOptions" @update="(val) => updateField('student_benefit', val)" />
+
+                <!-- Description row - unified display and edit -->
+                <div class="flex items-center gap-3">
+                  <div class="flex items-center gap-1 w-48 sm:w-56 shrink-0 pt-0.5">
+                    <span class="text-xs text-zinc-600 dark:text-zinc-400 truncate">{{ $t('Aprašymas') }}</span>
                   </div>
-                </div>
-
-                <!-- Student Vote Control -->
-                <div class="space-y-2">
-                  <Label class="text-xs font-medium text-zinc-700 dark:text-zinc-300">
-                    {{ $t('Kaip balsavo studentai') }}
-                  </Label>
-                  <div class="flex gap-1">
-                    <Button variant="outline" size="sm"
-                      :class="item.student_vote === 'positive' ? 'bg-green-50 border-green-200 text-green-700' : ''"
-                      @click="updateField('student_vote', 'positive')">
-                      <Check class="h-3 w-3" />
-                    </Button>
-                    <Button variant="outline" size="sm"
-                      :class="item.student_vote === 'negative' ? 'bg-red-50 border-red-200 text-red-700' : ''"
-                      @click="updateField('student_vote', 'negative')">
-                      <X class="h-3 w-3" />
-                    </Button>
-                    <Button variant="outline" size="sm"
-                      :class="item.student_vote === 'neutral' ? 'bg-zinc-50 border-zinc-200 text-zinc-700' : ''"
-                      @click="updateField('student_vote', 'neutral')">
-                      <Minus class="h-3 w-3" />
-                    </Button>
-                  </div>
-                </div>
-
-                <!-- Student Benefit Control -->
-                <div class="space-y-2">
-                  <Label class="text-xs font-medium text-zinc-700 dark:text-zinc-300">
-                    {{ $t('Ar sprendimas palankus studentams') }}?
-                  </Label>
-                  <div class="flex gap-1">
-                    <Button variant="outline" size="sm"
-                      :class="item.student_benefit === 'positive' ? 'bg-green-50 border-green-200 text-green-700' : ''"
-                      @click="updateField('student_benefit', 'positive')">
-                      <ThumbsUp class="h-3 w-3" />
-                    </Button>
-                    <Button variant="outline" size="sm"
-                      :class="item.student_benefit === 'negative' ? 'bg-red-50 border-red-200 text-red-700' : ''"
-                      @click="updateField('student_benefit', 'negative')">
-                      <ThumbsDown class="h-3 w-3" />
-                    </Button>
-                    <Button variant="outline" size="sm"
-                      :class="item.student_benefit === 'neutral' ? 'bg-zinc-50 border-zinc-200 text-zinc-700' : ''"
-                      @click="updateField('student_benefit', 'neutral')">
-                      <Minus class="h-3 w-3" />
-                    </Button>
+                  <div class="flex-1 min-w-0">
+                    <button type="button" class="w-full text-left group/desc" @click="$emit('edit', item)">
+                      <div v-if="item.description"
+                        class="text-sm text-zinc-600 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-900/50 rounded-md p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
+                        <span>{{ item.description }}</span>
+                        <Edit
+                          class="inline-block h-3 w-3 ml-1.5 text-zinc-400 opacity-0 group-hover/desc:opacity-100 transition-opacity" />
+                      </div>
+                      <div v-else
+                        class="text-xs text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-400 transition-colors flex items-center gap-1 py-1">
+                        <Plus class="h-3 w-3" />
+                        {{ $t('Pridėti aprašymą') }}
+                      </div>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -159,32 +110,29 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { trans as $t } from 'laravel-vue-i18n'
 
-// UI Components
+// Icons
 import {
   GripVertical,
   MoreVertical,
   Edit,
   Trash2,
-  FileText,
-  FilePlus,
+  Plus,
   Check,
   X,
   Minus,
   ThumbsUp,
-  ThumbsDown,
-  ChevronUp,
-  ChevronDown
+  ThumbsDown
 } from 'lucide-vue-next'
 
-import StatusBadge from './StatusBadge.vue'
+// UI Components
+import CompactVoteIndicator from './CompactVoteIndicator.vue'
+import InlineVoteControl from './InlineVoteControl.vue'
 
 import { Card, CardContent } from '@/Components/ui/card'
 import { Button } from '@/Components/ui/button'
-import { Label } from '@/Components/ui/label'
-import { Separator } from '@/Components/ui/separator'
 import { Collapsible, CollapsibleContent } from '@/Components/ui/collapsible'
 import {
   DropdownMenu,
@@ -195,8 +143,6 @@ import {
 } from '@/Components/ui/dropdown-menu'
 
 // Custom Components
-
-// Icons
 
 interface AgendaItem {
   id: string
@@ -228,36 +174,36 @@ const emit = defineEmits<Emits>()
 
 const showDetailed = ref(false)
 
-// Auto-expand when showVoteOptions is enabled
+// Check if any votes have been recorded
+const hasAnyVotes = computed(() => {
+  return props.item.decision || props.item.student_vote || props.item.student_benefit
+})
+
+// Auto-expand/collapse when showVoteOptions changes
 watch(() => props.showVoteOptions, (newValue) => {
-  if (newValue) {
-    showDetailed.value = true
-  }
+  showDetailed.value = newValue
 }, { immediate: true })
+
+// Vote options with icons and colors
+const decisionOptions = computed(() => [
+  { value: 'positive', icon: Check, label: $t('Priimtas'), color: 'green' as const },
+  { value: 'negative', icon: X, label: $t('Nepriimtas'), color: 'red' as const },
+  { value: 'neutral', icon: Minus, label: $t('Susilaikyta'), color: 'zinc' as const },
+])
+
+const voteOptions = computed(() => [
+  { value: 'positive', icon: Check, label: $t('Pritarė'), color: 'green' as const },
+  { value: 'negative', icon: X, label: $t('Nepritarė'), color: 'red' as const },
+  { value: 'neutral', icon: Minus, label: $t('Susilaikė'), color: 'zinc' as const },
+])
+
+const benefitOptions = computed(() => [
+  { value: 'positive', icon: ThumbsUp, label: $t('Palanku'), color: 'green' as const },
+  { value: 'negative', icon: ThumbsDown, label: $t('Nepalanku'), color: 'red' as const },
+  { value: 'neutral', icon: Minus, label: $t('Neutralu'), color: 'zinc' as const },
+])
 
 const updateField = (field: string, value: any) => {
   emit('update', props.item, field, value)
 }
-
-const handleCardClick = (event: MouseEvent) => {
-  // Only toggle when showVoteOptions is false
-  if (props.showVoteOptions) return
-
-  // Don't toggle if clicking on interactive elements
-  const target = event.target as HTMLElement
-  const isInteractive = target.closest('button, a, [role="button"], [role="menuitem"]')
-
-  if (!isInteractive) {
-    showDetailed.value = !showDetailed.value
-  }
-}
 </script>
-
-<style scoped>
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-</style>
