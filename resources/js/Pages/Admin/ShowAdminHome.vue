@@ -170,11 +170,6 @@ import {
 
 // Get data from props
 const props = defineProps<{
-  taskStats: {
-    completed: number;
-    pending: number;
-    overdue: number;
-  };
   unreadNotificationsCount: number;
   hasNotifications: boolean;
 }>();

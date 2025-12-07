@@ -90,11 +90,9 @@ Route::resource('agendaItems', AgendaItemController::class)->except(['index', 'c
 Route::post('agendaItems/reorder', [AgendaItemController::class, 'reorder'])->name('agendaItems.reorder');
 Route::resource('meetings', MeetingController::class)->except(['create']);
 
-// Check-ins (read-only index for admins)
-Route::get('check-ins', [InstitutionCheckInAdminController::class, 'index'])->name('check-ins.index');
-// Check-in actions (web guard) for Inertia pages
-Route::post('institutions/{institution}/check-ins', [CheckInActionController::class, 'store'])->name('institutions.check-ins.store');
-Route::delete('institutions/{institution}/check-ins/active', [InstitutionCheckInAdminController::class, 'destroyActiveCheckIns'])->name('institutions.check-ins.destroyActive');
+// Check-in actions for institutions
+Route::post('institutions/{institution}/check-ins', [InstitutionCheckInController::class, 'store'])->name('institutions.check-ins.store');
+Route::delete('institutions/{institution}/check-ins/active', [InstitutionCheckInController::class, 'destroyActive'])->name('institutions.check-ins.destroyActive');
 
 Route::resource('resources', ResourceController::class);
 Route::resource('resourceCategories', ResourceCategoryController::class);

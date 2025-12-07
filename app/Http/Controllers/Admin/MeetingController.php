@@ -5,11 +5,13 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\StoreMeetingRequest;
 use App\Models\Pivots\AgendaItem;
+use App\Models\Institution;
 use App\Models\Meeting;
+use App\Services\CheckInService;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ModelIndexer;
 use App\Services\ResourceServices\SharepointFileService;
-use Carbon\Carbon;
+use Illuminate\Support\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -17,7 +19,7 @@ use Inertia\Inertia;
 
 class MeetingController extends AdminController
 {
-    public function __construct(public Authorizer $authorizer) {}
+    public function __construct(public Authorizer $authorizer, private CheckInService $checkInService) {}
 
     /**
      * Display a listing of the resource.
@@ -59,6 +61,13 @@ class MeetingController extends AdminController
             ]);
 
             $meeting->institutions()->attach($validatedData['institution_id']);
+
+            // Adjust any overlapping check-ins for this institution
+            $institution = Institution::find($validatedData['institution_id']);
+            if ($institution) {
+                $meetingDate = Carbon::parse($validatedData['start_time']);
+                $this->checkInService->adjustForMeeting($institution, $meetingDate);
+            }
 
             if (isset($validatedData['type_id']) && $validatedData['type_id']) {
                 $meeting->types()->attach($validatedData['type_id']);

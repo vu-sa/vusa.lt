@@ -352,8 +352,8 @@ const handleAddCheckInForPriority = () => {
 
 const handleCheckInCreated = () => {
   showCreateCheckIn.value = null
-  // Refresh data using only parameter to avoid full page reload
-  router.reload({ only: ['user'] })
+  // Refresh data to update UI with new check-in
+  router.reload({ only: ['user', 'accessibleInstitutions'] })
 }
 
 const handleRemoveActiveCheckIn = (institutionId: string) => {
@@ -361,8 +361,8 @@ const handleRemoveActiveCheckIn = (institutionId: string) => {
   router.delete(route('institutions.check-ins.destroyActive', institutionId), {
     onFinish: () => setLoading(institutionId, false),
     onSuccess: () => {
-      // Refresh data using only parameter to avoid full page reload
-      router.reload({ only: ['user'] })
+      // Refresh data to update UI after check-in deletion
+      router.reload({ only: ['user', 'accessibleInstitutions'] })
     }
   })
 }

@@ -87,8 +87,8 @@ const filteredInstitutions = computed(() => {
 const handleRemoveActiveCheckIn = (institutionId: string) => {
   router.delete(route('institutions.check-ins.destroyActive', institutionId), {
     onSuccess: () => {
-      // Refresh data using only parameter to avoid full page reload
-      router.reload()
+      // Refresh data to update UI after check-in deletion
+      router.reload({ only: ['user', 'accessibleInstitutions'] })
     }
   })
 }

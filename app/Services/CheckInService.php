@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\Institution;
 use App\Models\InstitutionCheckIn;
-use App\Models\Meeting;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 
@@ -30,10 +29,41 @@ class CheckInService
     }
 
     /**
-     * Delete a check-in
+     * Delete all active check-ins for an institution
      */
-    public function delete(InstitutionCheckIn $checkIn): void
+    public function deleteActive(Institution $institution): int
     {
-        $checkIn->delete();
+        $count = 0;
+        foreach ($institution->activeCheckIns as $checkIn) {
+            $checkIn->delete();
+            $count++;
+        }
+
+        return $count;
+    }
+
+    /**
+     * Adjust check-ins when a meeting is created.
+     * If a meeting date falls within an active check-in period,
+     * reduce the check-in end_date to the day before the meeting.
+     * If the meeting is on or before the start_date, delete the check-in.
+     */
+    public function adjustForMeeting(Institution $institution, Carbon $meetingDate): void
+    {
+        $checkIns = $institution->checkIns()
+            ->where('start_date', '<=', $meetingDate)
+            ->where('end_date', '>=', $meetingDate)
+            ->get();
+
+        foreach ($checkIns as $checkIn) {
+            if ($meetingDate->lte($checkIn->start_date)) {
+                // Meeting is on or before start date - delete the check-in
+                $checkIn->delete();
+            } else {
+                // Reduce end_date to day before meeting
+                $checkIn->end_date = $meetingDate->copy()->subDay();
+                $checkIn->save();
+            }
+        }
     }
 }

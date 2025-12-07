@@ -31,21 +31,12 @@ class DashboardController extends AdminController
         // TODO: for some reasoning, the chaining doesn't work
         $this->authorizer = $this->authorizer->forUser($user);
 
-        // Get task statistics for the dashboard
-        $taskStats = [
-            'completed' => $user->tasks()->where('completed_at', '!=', null)->count(),
-            'pending' => $user->tasks()->where('completed_at', null)->where('due_date', '>=', now())->count(),
-            'overdue' => $user->tasks()->where('completed_at', null)->where('due_date', '<', now())->count(),
-        ];
-
         // Get notification count
         $unreadNotificationsCount = $user->unreadNotifications()->count();
 
         return $this->inertiaResponse('Admin/ShowAdminHome', [
-            'taskStats' => $taskStats,
             'unreadNotificationsCount' => $unreadNotificationsCount,
             'hasNotifications' => $unreadNotificationsCount > 0,
-            'user' => $user,
         ]);
     }
 
