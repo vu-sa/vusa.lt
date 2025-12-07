@@ -161,10 +161,13 @@ Route::get('sharepoint/{id}/permissions', [SharepointFileController::class, 'get
 Route::get('sharepoint/{type}/{id}', [SharepointFileController::class, 'getTypesDriveItems'])->name('sharepoint.getTypesDriveItems');
 Route::post('sharepoint/{id}/permissions/createPublic', [SharepointFileController::class, 'createPublicPermission'])->name('sharepoint.createPublicPermission');
 
-Route::get('settings/forms', [SettingsController::class, 'editFormSettings'])->name('forms.settings.edit');
-Route::post('settings/forms', [SettingsController::class, 'updateFormSettings'])->name('forms.settings.update');
-
+// Settings routes
+Route::get('settings', [SettingsController::class, 'index'])->name('settings.index');
+Route::get('settings/forms', [SettingsController::class, 'editFormSettings'])->name('settings.forms.edit');
+Route::post('settings/forms', [SettingsController::class, 'updateFormSettings'])->name('settings.forms.update');
 Route::get('settings/meetings', [SettingsController::class, 'editMeetingSettings'])->name('settings.meetings.edit');
 Route::post('settings/meetings', [SettingsController::class, 'updateMeetingSettings'])->name('settings.meetings.update');
+Route::get('settings/authorization', [SettingsController::class, 'editAuthorization'])->name('settings.authorization.edit');
+Route::post('settings/authorization', [SettingsController::class, 'updateAuthorization'])->name('settings.authorization.update');
 
 Route::post('/logout', [UserController::class, 'logout'])->name('logout');

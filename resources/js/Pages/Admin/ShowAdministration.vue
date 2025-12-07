@@ -441,8 +441,14 @@ const menuItems = computed(() => [
         href: route('systemStatus'),
         show: auth?.can.create.role || auth?.can.create.permission
       },
+      {
+        title: $t('settings.title'),
+        icon: Icons.SETTING,
+        href: route('settings.index'),
+        show: auth?.can.manageSettings
+      },
     ],
-    show: auth?.can.create.role || auth?.can.create.permission || auth?.can.create.type || auth?.can.create.relationship || auth?.can.create.changelogItem,
+    show: auth?.can.create.role || auth?.can.create.permission || auth?.can.create.type || auth?.can.create.relationship || auth?.can.create.changelogItem || auth?.can.manageSettings,
     visibleItems: [] as MenuItemType[]
   }
 ]);

@@ -15,4 +15,5 @@ export enum OtherIconEnum {
   CALENDAR = "CALENDAR",
   CHEVRON_DOWN = "CHEVRON_DOWN",
   CLOSE = "CLOSE",
+  SETTING = "SETTING",
 }

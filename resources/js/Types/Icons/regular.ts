@@ -25,6 +25,7 @@ import Person24Regular from "~icons/fluent/person24-regular";
 import PersonBoard24Regular from "~icons/fluent/person-board24-regular";
 import PersonClock24Regular from "~icons/fluent/person-clock24-regular";
 import PuzzlePiece24Regular from "~icons/fluent/puzzle-piece24-regular";
+import Settings24Regular from "~icons/fluent/settings24-regular";
 import ShieldKeyhole24Regular from "~icons/fluent/shield-keyhole24-regular";
 import Sparkle24Regular from "~icons/fluent/sparkle24-regular";
 import StarLineHorizontal324Regular from "~icons/fluent/star-line-horizontal-3-24-regular";
@@ -83,6 +84,7 @@ const otherIcons: Record<keyof typeof OtherIconEnum, Component> = {
   HOME: Home24Regular,
   IMAGE: Image24Regular,
   NOTIFICATION: Alert24Regular,
+  SETTING: Settings24Regular,
 };
 
 export default { ...modelIcons, ...formIcons, ...otherIcons };

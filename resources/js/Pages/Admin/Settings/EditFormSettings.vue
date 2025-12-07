@@ -1,30 +1,50 @@
 <template>
-  <PageContent title="Formų nustatymai" :back-url="'/'">
+  <PageContent :title="$t('settings.pages.forms.title')" :back-url="route('settings.index')">
     <UpsertModelLayout>
       <AdminForm :model="form" @submit:form="handleFormSubmit">
         <FormElement>
           <template #title>
-            Narių registracijos forma
+            {{ $t('settings.form_settings.registration_form_title') }}
           </template>
           <template #description>
-            Pasirinkti, kuri registracijos forma iš duombazės bus naudojama narių registracijai. Jeigu registracijos
-            forma turi padalinio laukelį, automatiškai bus siunčiami laiškai užsiregistravusiems ir taip pat žmonėms,
-            kurie turi numatytą rolę.
+            {{ $t('settings.form_settings.registration_form_description') }}
           </template>
-          <NFormItem>
-            <template #label>
-              <span class="inline-flex items-center gap-1">
-                <NIcon :component="Icons.TITLE" />
-                Forma
-              </span>
-            </template>
-            <NSelect v-model:value="form.member_registration_form_id" filterable :options="forms" label-field="name"
-              value-field="id" placeholder="Pasirinkti formą" />
-          </NFormItem>
-          <NFormItem label="Rolė">
-            <NSelect v-model:value="form.member_registration_notification_recipient_role_id" filterable :options="roles"
-              label-field="name" value-field="id" placeholder="Pasirinkti formą" />
-          </NFormItem>
+          
+          <div class="space-y-4">
+            <div class="space-y-2">
+              <Label class="inline-flex items-center gap-1">
+                <component :is="Icons.FORM" class="h-4 w-4" />
+                {{ $t('settings.form_settings.form_label') }}
+              </Label>
+              <Select v-model="form.member_registration_form_id">
+                <SelectTrigger>
+                  <SelectValue :placeholder="$t('settings.form_settings.form_placeholder')" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem v-for="formOption in forms" :key="formOption.id" :value="formOption.id">
+                    {{ formOption.name }}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div class="space-y-2">
+              <Label class="inline-flex items-center gap-1">
+                <component :is="Icons.ROLE" class="h-4 w-4" />
+                {{ $t('settings.form_settings.role_label') }}
+              </Label>
+              <Select v-model="form.member_registration_notification_recipient_role_id">
+                <SelectTrigger>
+                  <SelectValue :placeholder="$t('settings.form_settings.role_placeholder')" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem v-for="role in roles" :key="role.id" :value="role.id">
+                    {{ role.name }}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </FormElement>
       </AdminForm>
     </UpsertModelLayout>
@@ -39,18 +59,28 @@ import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 import AdminForm from "@/Components/AdminForms/AdminForm.vue";
 import FormElement from "@/Components/AdminForms/FormElement.vue";
 import Icons from "@/Types/Icons/regular";
-import { NFormItem } from "naive-ui";
+import { Label } from "@/Components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/Components/ui/select";
 
-const { member_registration_form_id, member_registration_notification_recipient_role_id } = defineProps<{
+const props = defineProps<{
   member_registration_form_id: string | null;
   member_registration_notification_recipient_role_id: string | null;
   forms: App.Entities.Form[];
   roles: App.Entities.Role[];
 }>();
 
-const form = useForm({ member_registration_form_id, member_registration_notification_recipient_role_id });
+const form = useForm({
+  member_registration_form_id: props.member_registration_form_id,
+  member_registration_notification_recipient_role_id: props.member_registration_notification_recipient_role_id,
+});
 
 const handleFormSubmit = () => {
-  form.post(route("forms.settings.update"));
+  form.post(route("settings.forms.update"));
 };
 </script>

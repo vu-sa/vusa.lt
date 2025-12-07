@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\User;
+use App\Settings\SettingsSettings;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 
@@ -33,6 +34,11 @@ class AuthServiceProvider extends ServiceProvider
             if ($user->isSuperAdmin()) {
                 return true;
             }
+        });
+
+        // Define gate for settings management access
+        Gate::define('manage-settings', function (User $user) {
+            return app(SettingsSettings::class)->canUserManageSettings($user);
         });
     }
 }

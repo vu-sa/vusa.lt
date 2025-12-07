@@ -2,13 +2,14 @@
 
 namespace App\Http\Requests;
 
+use App\Settings\SettingsSettings;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateMeetingSettingsRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->isSuperAdmin();
+        return app(SettingsSettings::class)->canUserManageSettings($this->user());
     }
 
     public function rules(): array

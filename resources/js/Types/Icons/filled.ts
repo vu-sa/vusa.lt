@@ -26,6 +26,7 @@ import Person24Filled from "~icons/fluent/person24-filled";
 import PersonBoard24Filled from "~icons/fluent/person-board24-filled";
 import PersonClock24Filled from "~icons/fluent/person-clock24-filled";
 import PuzzlePiece24Filled from "~icons/fluent/puzzle-piece24-filled";
+import Settings24Filled from "~icons/fluent/settings24-filled";
 import ShieldKeyhole24Filled from "~icons/fluent/shield-keyhole24-filled";
 import Sparkle24Filled from "~icons/fluent/sparkle24-filled";
 import StarLineHorizontal324Filled from "~icons/fluent/star-line-horizontal-3-24-filled";
@@ -88,6 +89,7 @@ const otherIcons: Record<keyof typeof OtherIconEnum, FunctionalComponent> = {
   CALENDAR: CalendarLtr24Filled,
   CHEVRON_DOWN: ChevronDown24Filled,
   CLOSE: X,
+  SETTING: Settings24Filled,
 };
 
 export default { ...modelIcons, ...formIcons, ...otherIcons };
