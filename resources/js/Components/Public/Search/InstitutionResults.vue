@@ -1,110 +1,44 @@
 <template>
-  <div class="search-results-container transition-all duration-300 ease-out">
-    <!-- Loading State -->
-    <div v-if="isLoading" class="min-h-[60vh] sm:min-h-[600px]">
-      <div :class="viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 gap-6' : 'space-y-4'">
-        <InstitutionResultsSkeleton v-for="i in getSkeletonCount()" :key="i" :view-mode />
-      </div>
-    </div>
-
-    <!-- Results -->
-    <div v-else-if="results.length > 0" class="min-h-[60vh] sm:min-h-[600px]">
-      <!-- Grid View -->
-      <div v-if="viewMode === 'grid'" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-        <TransitionGroup name="institution-list" appear>
-          <NewInstitutionCard 
-            v-for="institution in processedResults" 
-            :key="institution.id" 
-            :institution 
-            show-metadata
-          />
-        </TransitionGroup>
-      </div>
-
-      <!-- List View -->
-      <div v-else class="space-y-2">
-        <TransitionGroup name="institution-list" appear>
-          <InstitutionCompactListItem 
-            v-for="institution in processedResults" 
-            :key="institution.id" 
-            :institution 
-          />
-        </TransitionGroup>
-      </div>
-
-      <!-- Load More Button -->
-      <div v-if="hasMoreResults" class="flex justify-center pt-8">
-        <Button 
-          variant="outline" 
-          size="lg" 
-          :disabled="isLoadingMore"
-          class="transition-all duration-200 hover:scale-105 focus:scale-105" 
-          @click="emit('loadMore')"
-        >
-          <template v-if="isLoadingMore">
-            <Loader2 class="w-4 h-4 mr-2 animate-spin" />
-            {{ $t('search.loading_more') }}
-          </template>
-          <template v-else>
-            <ChevronDown class="w-4 h-4 mr-2" />
-            {{ $t('search.show_more_results') }}
-          </template>
-        </Button>
-      </div>
-    </div>
-
-    <!-- Empty State for No Results -->
-    <div v-else-if="showNoResultsState" class="text-center py-12">
-      <div class="max-w-md mx-auto">
-        <SearchX class="w-14 h-14 mx-auto text-muted-foreground mb-5" />
-        <h3 class="text-lg font-semibold text-foreground mb-3">
-          {{ $t('search.no_institutions_found') }}
-        </h3>
-        <p class="text-muted-foreground mb-6 leading-relaxed">
-          {{ $t('search.no_institutions_criteria') }}
-        </p>
-        <Button variant="outline" @click="emit('clearFilters')">
-          <RotateCcw class="w-4 h-4 mr-2" />
-          {{ $t('search.clear_filters_action') }}
-        </Button>
-      </div>
-    </div>
-
-    <!-- Empty State -->
-    <div v-else-if="showEmptyState" class="text-center py-12">
-      <div class="max-w-md mx-auto">
-        <Building2 class="w-14 h-14 mx-auto text-muted-foreground mb-5" />
-        <h3 class="text-lg font-semibold text-foreground mb-3">
-          {{ $t('search.browse_institutions') }}
-        </h3>
-        <p class="text-muted-foreground mb-6 leading-relaxed">
-          {{ $t('search.institutions_description') }}
-        </p>
-        <p class="text-sm text-muted-foreground">
-          {{ $t('search.or_browse_all') }} 
-          <button class="text-primary hover:underline font-medium" @click="emit('clearFilters')">
-            {{ $t('search.browse_all_institutions') }}
-          </button>
-        </p>
-      </div>
-    </div>
-  </div>
+  <BaseSearchResults
+    :results="processedResults"
+    :is-loading="isLoading"
+    :has-query="hasQuery"
+    :search-query="searchQuery"
+    :total-hits="totalHits"
+    :has-more-results="hasMoreResults"
+    :is-loading-more="isLoadingMore"
+    :has-active-filters="hasActiveFilters"
+    :skeleton-count="getSkeletonCount()"
+    :loading-container-class="viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 gap-6' : 'space-y-4'"
+    :results-container-class="viewMode === 'grid' ? '' : 'space-y-2'"
+    transition-name="institution-list"
+    :transition-class="viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6' : 'space-y-2'"
+    no-results-title-key="search.no_institutions_found"
+    no-results-description-key="search.no_institutions_criteria"
+    empty-state-title-key="search.browse_institutions"
+    empty-state-description-key="search.institutions_description"
+    browse-all-key="search.browse_all_institutions"
+    :empty-state-icon="Building2"
+    @load-more="emit('loadMore')"
+    @clear-filters="emit('clearFilters')"
+  >
+    <template #skeleton="{ count }">
+      <InstitutionResultsSkeleton v-for="i in count" :key="i" :view-mode />
+    </template>
+    
+    <template #item="{ item }">
+      <NewInstitutionCard v-if="viewMode === 'grid'" :institution="item" show-metadata />
+      <InstitutionCompactListItem v-else :institution="item" />
+    </template>
+  </BaseSearchResults>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { trans as $t } from 'laravel-vue-i18n'
 import { usePage } from '@inertiajs/vue3'
-import { 
-  ChevronDown, 
-  Loader2, 
-  SearchX, 
-  RotateCcw,
-  Building2
-} from 'lucide-vue-next'
+import { Building2 } from 'lucide-vue-next'
 
-import { Button } from '@/Components/ui/button'
-import { Separator } from '@/Components/ui/separator'
+import BaseSearchResults from './Shared/BaseSearchResults.vue'
 import NewInstitutionCard from '@/Components/Cards/NewInstitutionCard.vue'
 import InstitutionCompactListItem from './InstitutionCompactListItem.vue'
 import InstitutionResultsSkeleton from './InstitutionResultsSkeleton.vue'
@@ -174,43 +108,7 @@ const processedResults = computed(() => {
   }))
 })
 
-// Computed states
-const showNoResultsState = computed(() => {
-  return !props.isLoading && 
-         props.results.length === 0 && 
-         (props.hasQuery || props.hasActiveFilters)
-})
-
-const showEmptyState = computed(() => {
-  return !props.isLoading && 
-         props.results.length === 0 && 
-         !props.hasQuery && 
-         !props.hasActiveFilters
-})
-
-// Get skeleton count based on view mode
 const getSkeletonCount = () => {
   return props.viewMode === 'grid' ? 6 : 4
 }
 </script>
-
-<style scoped>
-.institution-list-enter-active,
-.institution-list-leave-active {
-  transition: all 0.3s ease;
-}
-
-.institution-list-enter-from {
-  opacity: 0;
-  transform: translateY(10px);
-}
-
-.institution-list-leave-to {
-  opacity: 0;
-  transform: translateY(-10px);
-}
-
-.institution-list-move {
-  transition: transform 0.3s ease;
-}
-</style>
