@@ -96,14 +96,14 @@
         </template>
       </template>
     </Head>
-    <div class="@container bg-zinc-50 dark:bg-zinc-900">
+    <div class="@container min-h-screen flex flex-col bg-zinc-50 dark:bg-zinc-900">
       <!-- Skip to main content link - positioned first for keyboard navigation -->
       <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[9999] focus:bg-white focus:text-zinc-900 focus:px-4 focus:py-2 focus:rounded-md focus:shadow-lg focus:border-2 focus:border-vusa-red dark:focus:bg-zinc-800 dark:focus:text-zinc-100">
         {{ $t('accessibility.skip_to_main_content') }}
       </a>
       
       <div
-        class="flex flex-col justify-between text-zinc-800 antialiased dark:text-zinc-300 container px-0 @container/main">
+        class="flex-1 flex flex-col text-zinc-800 antialiased dark:text-zinc-300 container px-0 @container/main">
         <MainNavigation :is-theme-dark="isDark" />
 
         <main id="main-content" class="pb-8 pt-12 mt-16">
@@ -137,7 +137,7 @@
       </div>
       
       <!-- Footer outside container for full-width -->
-      <SiteFooter />
+      <SiteFooter class="mt-auto" />
     </div>
     
     <!-- Toast notifications -->

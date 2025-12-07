@@ -1,7 +1,7 @@
 <template>
   <div>
     <InstitutionContacts
-      class="mt-4"
+      class="mt-8"
       :contacts="contacts"
       :contact-sections="contactSections"
       :has-mixed-grouping="hasMixedGrouping"
