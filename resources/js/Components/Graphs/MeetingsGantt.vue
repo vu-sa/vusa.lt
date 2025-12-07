@@ -1,5 +1,5 @@
 <template>
-  <div ref="wrap" class="relative w-full max-w-full">
+  <div ref="wrap" class="relative w-full max-w-full" :class="{ 'h-full flex flex-col': props.height === '100%' }">
     <!-- Header: Legend + Controls -->
     <div class="flex items-center justify-between gap-3 mb-2">
       <div class="flex items-center gap-4 min-w-0">
@@ -63,11 +63,12 @@
       </div>
     </div>
 
-    <div class="flex w-full max-w-full border border-zinc-200 dark:border-zinc-700 rounded-md overflow-hidden"
-      :style="containerHeight ? { height: containerHeight } : {}" :class="{ 'h-full': props.height === '100%' }"
+    <div class="flex w-full max-w-full border border-zinc-200 dark:border-zinc-700 rounded-md"
+      :style="containerHeight ? { height: containerHeight } : {}" :class="{ 'flex-1 min-h-0 h-full': props.height === '100%' }"
       style="min-width: 0;">
       <!-- Left: sticky labels -->
-      <div ref="leftLabels" class="shrink-0 bg-white dark:bg-zinc-900 sticky left-0 z-[1] overflow-hidden"
+      <div ref="leftLabels" class="shrink-0 bg-white dark:bg-zinc-900 z-[1]"
+        :class="props.height === '100%' ? 'overflow-y-auto overflow-x-hidden' : 'overflow-hidden'"
         :style="{ width: `${labelWidth}px` }">
         <div class="grid" :style="{ gridTemplateRows: `22px ${layoutRows.map(r => r.height + 'px').join(' ')}` }">
           <!-- header spacer (align with axis height) -->
@@ -955,25 +956,37 @@ onMounted(() => {
   const labelsContainer = leftLabels.value
 
   if (timelineScroll && labelsContainer) {
-    let isUpdating = false
+    let isSyncing = false
 
     const syncVerticalScroll = () => {
-      if (isUpdating) return
-      isUpdating = true
+      if (isSyncing) return
+      isSyncing = true
 
-      // Sync the label container's scroll position by transforming it
       const { scrollTop } = timelineScroll
-      const labelsContent = labelsContainer.querySelector('.grid') as HTMLElement | null
-      if (labelsContent) {
-        labelsContent.style.transform = `translateY(-${scrollTop}px)`
+      
+      // In fullscreen mode (overflow-y-auto on labels), sync scrollTop directly
+      // In normal mode (overflow-hidden on labels), use transform
+      if (props.height === '100%') {
+        labelsContainer.scrollTop = scrollTop
+      } else {
+        const labelsContent = labelsContainer.querySelector('.grid') as HTMLElement | null
+        if (labelsContent) {
+          labelsContent.style.transform = `translateY(-${scrollTop}px)`
+        }
       }
 
-      requestAnimationFrame(() => {
-        isUpdating = false
-      })
+      requestAnimationFrame(() => { isSyncing = false })
+    }
+
+    const syncFromLabels = () => {
+      if (isSyncing || props.height !== '100%') return
+      isSyncing = true
+      timelineScroll.scrollTop = labelsContainer.scrollTop
+      requestAnimationFrame(() => { isSyncing = false })
     }
 
     timelineScroll.addEventListener('scroll', syncVerticalScroll, { passive: true })
+    labelsContainer.addEventListener('scroll', syncFromLabels, { passive: true })
   }
 
   // attach infinite scroll handler

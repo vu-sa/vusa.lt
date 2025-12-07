@@ -1,6 +1,6 @@
 <template>
   <Dialog :open="isOpen" @update:open="emit('update:isOpen', $event)">
-    <DialogContent class="sm:max-w-[95vw] w-full max-h-[95vh] flex flex-col">
+    <DialogContent class="sm:max-w-[95vw] w-full h-[95vh] !flex flex-col">
       <DialogHeader>
         <DialogTitle class="flex items-center gap-2">
           <component :is="Icons.MEETING" class="h-5 w-5" />

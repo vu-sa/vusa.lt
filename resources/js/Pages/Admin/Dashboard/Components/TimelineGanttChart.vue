@@ -1,5 +1,5 @@
 <template>
-  <Card v-if="institutions.length > 0" class="overflow-hidden" :class="{ 'h-full flex flex-col': height === '100%' }">
+  <Card v-if="institutions.length > 0" :class="{ 'h-full flex flex-col': height === '100%' }">
     <CardContent class="p-4" :class="{ 'flex-1 min-h-0': height === '100%' }">
       <MeetingsGantt
         :meetings="meetings"
