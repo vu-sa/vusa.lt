@@ -110,14 +110,18 @@
               <IFluentAdd24Filled />
               Pridėti stulpelį
             </Button>
-            <NTooltip v-if="isMaxColumnsReached(row)">
-              <template #trigger>
-                <span class="ml-2 text-zinc-400 flex items-center">
-                  <IFluentInfo16Filled class="mr-1" />
-                </span>
-              </template>
-              Maksimalus stulpelių skaičius: {{ MAX_COLUMNS }}
-            </NTooltip>
+            <TooltipProvider v-if="isMaxColumnsReached(row)">
+              <Tooltip>
+                <TooltipTrigger as-child>
+                  <span class="ml-2 text-zinc-400 flex items-center">
+                    <IFluentInfo16Filled class="mr-1" />
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  Maksimalus stulpelių skaičius: {{ MAX_COLUMNS }}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         </div>
       </div>
@@ -140,6 +144,7 @@ import TiptapImageButton from '@/Components/TipTap/TiptapImageButton.vue';
 import type { ContentGrid } from '@/Types/contentParts';
 import { Button } from '@/Components/ui/button';
 import { ButtonGroup } from '@/Components/ui/button-group';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 
 const json_content = defineModel<ContentGrid['json_content']>();
 const options = defineModel<ContentGrid[]>('options')

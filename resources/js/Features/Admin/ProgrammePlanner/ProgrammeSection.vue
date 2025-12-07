@@ -36,14 +36,18 @@
         </template>
       </ProgrammeBlock>
     </div>
-    <NTooltip v-if="editable">
-      <template #trigger>
-        <Button size="icon-sm" class="rounded-full" @click="createProgrammeBlock">
-          <IFluentLayerDiagonalAdd24Regular />
-        </Button>
-      </template>
-      Pridėti programos bloką
-    </NTooltip>
+    <TooltipProvider v-if="editable">
+      <Tooltip>
+        <TooltipTrigger as-child>
+          <Button size="icon-sm" class="rounded-full" @click="createProgrammeBlock">
+            <IFluentLayerDiagonalAdd24Regular />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          Pridėti programos bloką
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
     <CardModal v-model:show="showBlockEditModal" @close="showBlockEditModal = false">
       <NFormItem label="Dienos pavadinimas">
         <MultiLocaleInput v-model:input="selectedBlock.title" />
@@ -63,6 +67,7 @@ import { formatStaticTime } from '@/Utils/IntlTime';
 import ProgrammeBlock from './ProgrammeBlock.vue';
 import CardModal from '@/Components/Modals/CardModal.vue';
 import { Button } from '@/Components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 import MultiLocaleInput from '@/Components/FormItems/MultiLocaleInput.vue';
 
 const section = defineModel<App.Entities.ProgrammeSection | App.Entities.ProgrammePart>('element')

@@ -34,22 +34,26 @@
         </div>
       </div>
       <div class="flex gap-2">
-        <NTooltip v-if="contact.phone">
-          <template #trigger>
-            <a :href="`tel:${contact.phone}`">
-              <Button variant="ghost" size="icon-sm" class="rounded-full">
-                <IFluentPhone20Regular />
-              </Button>
-            </a>
-          </template>
-          <CopyToClipboardButton size="small" circle text :text-to-copy="contact.phone"
-            success-text="Tel. nr. nukopijuotas!" error-text="Nepavyko nukopijuoti tel. nr...">
-            <div class="mt-1 inline-flex items-center gap-1 text-zinc-300 hover:text-vusa-red">
-              <IFluentPhone20Regular />
-              {{ contact.phone }}
-            </div>
-          </CopyToClipboardButton>
-        </NTooltip>
+        <TooltipProvider v-if="contact.phone">
+          <Tooltip>
+            <TooltipTrigger as-child>
+              <a :href="`tel:${contact.phone}`">
+                <Button variant="ghost" size="icon-sm" class="rounded-full">
+                  <IFluentPhone20Regular />
+                </Button>
+              </a>
+            </TooltipTrigger>
+            <TooltipContent>
+              <CopyToClipboardButton size="small" circle text :text-to-copy="contact.phone"
+                success-text="Tel. nr. nukopijuotas!" error-text="Nepavyko nukopijuoti tel. nr...">
+                <div class="mt-1 inline-flex items-center gap-1 text-zinc-300 hover:text-vusa-red">
+                  <IFluentPhone20Regular />
+                  {{ contact.phone }}
+                </div>
+              </CopyToClipboardButton>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
         <a v-if="contact.facebook_url" :href="contact.facebook_url" target="_blank" rel="noopener noreferrer">
           <Button variant="ghost" size="icon-sm" class="rounded-full">
             <IMdiFacebook />
@@ -77,22 +81,26 @@
             </div>
           </div>
         </NPopover>
-        <NTooltip v-else-if="shownContactEmail.length === 1">
-          <template #trigger>
-            <a :key="shownContactEmail[0].email" :href="`mailto:${shownContactEmail[0].email}`">
-              <Button variant="ghost" size="icon-sm" class="rounded-full">
-                <IFluentMail20Regular />
-              </Button>
-            </a>
-          </template>
-          <CopyToClipboardButton size="small" circle text :text-to-copy="shownContactEmail[0].email"
-            success-text="El. paštas nukopijuotas!" error-text="Nepavyko nukopijuoti el. pašto...">
-            <div class="mt-1 inline-flex items-center text-zinc-300 hover:text-vusa-red">
-              <IFluentMail20Regular class="mr-2" />
-              {{ shownContactEmail[0].email }}
-            </div>
-          </CopyToClipboardButton>
-        </NTooltip>
+        <TooltipProvider v-else-if="shownContactEmail.length === 1">
+          <Tooltip>
+            <TooltipTrigger as-child>
+              <a :key="shownContactEmail[0].email" :href="`mailto:${shownContactEmail[0].email}`">
+                <Button variant="ghost" size="icon-sm" class="rounded-full">
+                  <IFluentMail20Regular />
+                </Button>
+              </a>
+            </TooltipTrigger>
+            <TooltipContent>
+              <CopyToClipboardButton size="small" circle text :text-to-copy="shownContactEmail[0].email"
+                success-text="El. paštas nukopijuotas!" error-text="Nepavyko nukopijuoti el. pašto...">
+                <div class="mt-1 inline-flex items-center text-zinc-300 hover:text-vusa-red">
+                  <IFluentMail20Regular class="mr-2" />
+                  {{ shownContactEmail[0].email }}
+                </div>
+              </CopyToClipboardButton>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
     </div>
   </figure>
@@ -103,6 +111,7 @@ import { computed } from "vue";
 import { usePage } from "@inertiajs/vue3";
 
 import { Button } from "@/Components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
 import { changeDutyNameEndings } from "@/Utils/String";
 import CopyToClipboardButton from "../Buttons/CopyToClipboardButton.vue";
 import InfoPopover from "../Buttons/InfoPopover.vue";

@@ -7,7 +7,7 @@
         <PadalinysSelector id="padalinys" size="medium" />
       </div>
 
-      <Separator orientation="vertical" />
+      <Separator orientation="vertical" class="h-6" />
 
       <div class="min-w-64">
         <Label for="search" class="mb-2">{{ $t('forms.fields.title') }}</Label>
@@ -22,7 +22,7 @@
           institutionType.institutions[
             institutionType.institutions.length - 1
           ].id !== institution.id
-        " style="margin-top: 48px; margin-bottom: 48px" />
+        " class="my-12" />
       </template>
     </section>
   </div>

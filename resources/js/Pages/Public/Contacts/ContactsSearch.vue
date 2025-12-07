@@ -17,7 +17,7 @@
     </NFormItem>
     <template v-for="institution in institutions" :key="institution.id">
       <InstitutionFigure :institution="institution" />
-      <Separator v-if="institution.id !== institutions[institutions.length - 1].id" />
+      <Separator v-if="institution.id !== institutions[institutions.length - 1].id" class="my-12" />
     </template>
   </div>
 </template>

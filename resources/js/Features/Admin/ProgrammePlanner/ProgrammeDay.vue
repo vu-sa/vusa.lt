@@ -58,22 +58,30 @@
       </Button>
     </CardModal>
     <div v-if="editable" class="mt-2 flex gap-1">
-      <NTooltip>
-        <template #trigger>
-          <Button size="icon-sm" class="rounded-full" @click="createProgrammePart">
-            <IFluentAdd24Filled />
-          </Button>
-        </template>
-        Pridėti programos dalį
-      </NTooltip>
-      <NTooltip>
-        <template #trigger>
-          <Button size="icon-sm" class="rounded-full" @click="createProgrammeSection">
-            <IFluentWindowBulletListAdd20Filled />
-          </Button>
-        </template>
-        Pridėti programos sekciją
-      </NTooltip>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger as-child>
+            <Button size="icon-sm" class="rounded-full" @click="createProgrammePart">
+              <IFluentAdd24Filled />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            Pridėti programos dalį
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger as-child>
+            <Button size="icon-sm" class="rounded-full" @click="createProgrammeSection">
+              <IFluentWindowBulletListAdd20Filled />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            Pridėti programos sekciją
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     </div>
   </div>
 </template>
@@ -87,6 +95,7 @@ import ProgrammePart from './ProgrammePart.vue';
 import ProgrammeSection from './ProgrammeSection.vue';
 import { formatStaticTime } from '@/Utils/IntlTime';
 import { Button } from '@/Components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 import CardModal from '@/Components/Modals/CardModal.vue';
 import MultiLocaleInput from '@/Components/FormItems/MultiLocaleInput.vue';
 

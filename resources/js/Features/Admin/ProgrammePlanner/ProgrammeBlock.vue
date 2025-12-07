@@ -36,14 +36,18 @@
         Uždaryti
       </Button>
     </CardModal>
-    <NTooltip v-if="editable">
-      <template #trigger>
-        <Button size="icon-sm" variant="secondary" class="rounded-full" @click="createProgrammePart">
-          <IFluentAdd24Filled />
-        </Button>
-      </template>
-      Pridėti programos dalį
-    </NTooltip>
+    <TooltipProvider v-if="editable">
+      <Tooltip>
+        <TooltipTrigger as-child>
+          <Button size="icon-sm" variant="secondary" class="rounded-full" @click="createProgrammePart">
+            <IFluentAdd24Filled />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          Pridėti programos dalį
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   </div>
 </template>
 
@@ -56,6 +60,7 @@ import ProgrammePart from './ProgrammePart.vue';
 import MultiLocaleInput from '@/Components/FormItems/MultiLocaleInput.vue';
 import CardModal from '@/Components/Modals/CardModal.vue';
 import { Button } from '@/Components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 
 defineProps<{
   sectionStartTime: number;

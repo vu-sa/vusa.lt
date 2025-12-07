@@ -76,7 +76,7 @@
       </NCard>
       </div>
     </ThemeProvider>
-    <Separator v-if="tenants.length > 0" />
+    <Separator v-if="tenants.length > 0" class="my-8" />
     <section v-if="tenants.length > 0" class="mt-8">
       <div class="mb-8 inline-flex items-center gap-6">
         <h3 class="mb-0">
