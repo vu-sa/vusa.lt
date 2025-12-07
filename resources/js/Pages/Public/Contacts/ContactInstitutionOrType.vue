@@ -54,12 +54,14 @@
             <div class="flex-1 h-px bg-border" />
           </div>
           <div class="space-y-3">
-            <MeetingCard
+            <MeetingTimelineItem
               v-for="(meeting, index) in currentYearMeetings.meetings"
               :key="meeting.id"
-              :meeting="meeting"
+              :status="meeting.completion_status"
               :is-last="index === currentYearMeetings.meetings.length - 1"
-            />
+            >
+              <MeetingCard :meeting="meeting" />
+            </MeetingTimelineItem>
           </div>
         </div>
 
@@ -88,12 +90,14 @@
               <div class="flex-1 h-px bg-border" />
             </div>
             <div class="space-y-3">
-              <MeetingCard
+              <MeetingTimelineItem
                 v-for="(meeting, index) in yearGroup.meetings"
                 :key="meeting.id"
-                :meeting="meeting"
+                :status="meeting.completion_status"
                 :is-last="index === yearGroup.meetings.length - 1"
-              />
+              >
+                <MeetingCard :meeting="meeting" />
+              </MeetingTimelineItem>
             </div>
           </div>
         </div>
@@ -114,6 +118,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Comp
 import InstitutionContacts from "@/Components/Public/InstitutionContacts.vue";
 import MeetingCard from "@/Components/Public/MeetingCard.vue";
 import MeetingInfoModal from "@/Components/Public/MeetingInfoModal.vue";
+import MeetingTimelineItem from "@/Components/Public/MeetingTimelineItem.vue";
 
 interface ContactGroup {
   name: string;

@@ -1,25 +1,12 @@
 <template>
-  <div class="relative pl-8">
-    <!-- Timeline dot with status color -->
-    <div
-      class="absolute left-0 top-3 h-3 w-3 rounded-full border-2 border-background"
-      :class="getStatusDotColor()"
-    />
-
-    <!-- Timeline line (connects dots) -->
-    <div
-      v-if="!isLast"
-      class="absolute left-[5px] top-6 w-0.5 h-[calc(100%+0.75rem)] bg-border"
-    />
-
-    <!-- Meeting card -->
-    <div
-      class="group border rounded-lg hover:shadow-md transition-all"
-      :class="[
-        getStatusBorderColor(),
-        'bg-card'
-      ]"
-    >
+  <!-- Meeting card -->
+  <div
+    class="group border rounded-lg hover:shadow-md transition-all"
+    :class="[
+      getStatusBorderColor(),
+      'bg-card'
+    ]"
+  >
       <!-- Compact header -->
       <div class="p-4 pb-3">
         <div class="flex items-start justify-between gap-4 mb-2">
@@ -104,7 +91,6 @@
           </div>
         </div>
       </div>
-    </div>
   </div>
 </template>
 
@@ -121,15 +107,9 @@ import { formatStaticTime } from '@/Utils/IntlTime';
 
 const props = withDefaults(defineProps<{
   meeting: App.Entities.Meeting;
-  isLast?: boolean;  // Don't draw timeline line for last item
   showInstitution?: boolean;  // Show institution name (for search results)
 }>(), {
-  isLast: false,
   showInstitution: false
-});
-
-const hasAgendaItems = computed(() => {
-  return props.meeting.agenda_items && props.meeting.agenda_items.length > 0;
 });
 
 // All agenda items count
@@ -173,15 +153,6 @@ const getCompletionLabel = (status: string) => {
     'incomplete': $t('Neužpildyta'),
     'no_items': $t('Nėra darbotvarkės'),
   }[status] || status;
-};
-
-const getStatusDotColor = () => {
-  const status = props.meeting.completion_status;
-  return {
-    'complete': 'bg-green-500 dark:bg-green-400',
-    'incomplete': 'bg-amber-500 dark:bg-amber-400',
-    'no_items': 'bg-zinc-400 dark:bg-zinc-500',
-  }[status] || 'bg-zinc-400';
 };
 
 const getStatusBorderColor = () => {
