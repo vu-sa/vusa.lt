@@ -56,7 +56,8 @@ export function useGanttChartData(
           institution_id: inst.id,
           from: new Date(ci.start_date),
           until: new Date(ci.end_date),
-          mode: 'no_meetings'  // All check-ins represent "no meetings"
+          mode: 'no_meetings',  // All check-ins represent "no meetings"
+          note: ci.note || undefined
         } as AtstovavimosGap;
       }).filter(Boolean);
     }) as AtstovavimosGap[];

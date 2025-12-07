@@ -132,7 +132,7 @@ import { getGanttColors, isDarkModeActive, type GanttColors } from './ganttColor
 
 const props = withDefaults(defineProps<{
   meetings: Array<{ id: string | number, start_time: string | Date, institution_id: string | number, title?: string, institution?: string }>
-  gaps: Array<{ institution_id: string | number, from: string | Date, until: string | Date, mode?: 'heads_up' | 'no_meetings' }>
+  gaps: Array<{ institution_id: string | number, from: string | Date, until: string | Date, mode?: 'heads_up' | 'no_meetings', note?: string }>
   institutions?: Array<{ id: string | number, name?: string, tenant_id?: string | number }>
   daysBefore?: number
   daysAfter?: number
@@ -650,7 +650,10 @@ const render = () => {
       emit('create-meeting', { institution_id: d.institution_id, suggestedAt: d.fromDate })
     })
     .append('title')
-    .text(d => `Check-in: ${d.fromDate.toLocaleDateString()} → ${d.untilDate.toLocaleDateString()}`)
+    .text(d => {
+      const dateRange = `${d.fromDate.toLocaleDateString()} → ${d.untilDate.toLocaleDateString()}`
+      return d.note ? `${d.note}\n${dateRange}` : `Check-in: ${dateRange}`
+    })
 
   // meetings as dots
   const dotGroup = g.append('g')
@@ -777,6 +780,21 @@ const render = () => {
   }
   for (const [k, arr] of meetingsByRow) arr.sort((a, b) => a.x - b.x)
 
+  // Index gaps (check-ins) by institution for quick lookup
+  const gapsByRow = new Map<string | number, Array<{ from: Date; until: Date; note?: string }>>()
+  for (const g of parsedGaps.value) {
+    const k = g.institution_id
+    const arr = gapsByRow.get(k) ?? []
+    arr.push({ from: g.fromDate, until: g.untilDate, note: g.note })
+    gapsByRow.set(k, arr)
+  }
+
+  // Helper to find active gap for a given institution and date
+  const findActiveGap = (institutionId: string | number, date: Date) => {
+    const gaps = gapsByRow.get(institutionId) ?? []
+    return gaps.find(gap => date >= gap.from && date <= gap.until)
+  }
+
   // single mousemove handler: snap to nearest meeting dot in row (within threshold), else center of day
   g.on('mousemove', function (event) {
     const [mx, my] = d3.pointer(event, this as any)
@@ -859,7 +877,21 @@ const render = () => {
         .attr('opacity', props.interactive ? 1 : 0)
 
       const rect = (container as HTMLElement).getBoundingClientRect()
-      const html = `<div class="font-medium text-[12px] leading-tight">${labelFor(rowId)}</div><div class="opacity-80">${fmtDateWithYear.format(dayStart)}</div>`
+      
+      // Build tooltip HTML with optional check-in info
+      const activeGap = findActiveGap(rowId, dayStart)
+      let html = `<div class="font-medium text-[12px] leading-tight">${labelFor(rowId)}</div><div class="opacity-80">${fmtDateWithYear.format(dayStart)}</div>`
+      if (activeGap) {
+        const gapDateRange = `${fmtDate.format(activeGap.from)} → ${fmtDate.format(activeGap.until)}`
+        html += `<div class="mt-1.5 pt-1.5 border-t border-current/20">`
+        html += `<div class="text-[10px] uppercase tracking-wide opacity-60 mb-0.5">Check-in</div>`
+        if (activeGap.note) {
+          html += `<div class="line-clamp-2 text-[11px]">${activeGap.note}</div>`
+        }
+        html += `<div class="opacity-70 text-[10px]">${gapDateRange}</div>`
+        html += `</div>`
+      }
+      
       if (props.interactive) {
         createTip.html(html).classed('hidden', false)
         createTip.style('left', `${event.clientX - rect.left + 8}px`).style('top', `${event.clientY - rect.top + 8}px`)

@@ -13,6 +13,7 @@ export interface AtstovavimosInstitution {
   };
   meetings?: AtstovavimosMeeting[];
   check_ins?: InstitutionCheckIn[];
+  active_check_in?: InstitutionCheckIn | null;
   hasUpcomingMeetings?: boolean;
   upcoming_meetings_count?: number;
   days_since_last_meeting?: number;
@@ -42,6 +43,7 @@ export interface AtstovavimosGap {
   from: Date;
   until: Date;
   mode?: 'heads_up' | 'no_meetings';
+  note?: string;
 }
 
 export interface AtstovavimosTenant {

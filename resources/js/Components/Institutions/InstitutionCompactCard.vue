@@ -24,6 +24,17 @@
           <span v-if="institution.active_check_in?.end_date" class="opacity-75">
             {{ $t('iki') }} {{ formatDate(institution.active_check_in.end_date) }}
           </span>
+          <!-- Info icon with tooltip for check-in note -->
+          <TooltipProvider v-if="institution.active_check_in?.note">
+            <Tooltip>
+              <TooltipTrigger as-child>
+                <Info class="h-3.5 w-3.5 opacity-70 hover:opacity-100 cursor-help" />
+              </TooltipTrigger>
+              <TooltipContent side="top" class="max-w-xs">
+                <p class="text-sm">{{ institution.active_check_in.note }}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </span>
 
         <!-- Fallback status badges -->
@@ -109,8 +120,9 @@ import { Link as InertiaLink } from '@inertiajs/vue3'
 import { Button } from '@/Components/ui/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip'
 import Icons from '@/Types/Icons/filled'
+import { Info } from 'lucide-vue-next'
 import { formatStaticTime } from '@/Utils/IntlTime'
-import type { AtstovavimosInstitution } from '@/Types/models'
+import type { AtstovavimosInstitution } from '@/Pages/Admin/Dashboard/types'
 
 const props = defineProps<{
   institution: AtstovavimosInstitution
