@@ -27,7 +27,7 @@
               <div class="flex items-center gap-1 overflow-hidden">
                 <span v-for="tid in tenantFilter" :key="String(tid)"
                   class="px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-600 truncate">
-                  {{ tenantNames?.[tid] ?? tid }}
+                  {{ mergedTenantNames[tid] ?? tid }}
                 </span>
               </div>
             </div>
@@ -35,6 +35,10 @@
           <template v-if="showOnlyWithActivity">
             <span class="opacity-70">•</span>
             <span class="px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-600">{{ $t('Tik su veikla') }}</span>
+          </template>
+          <template v-if="showOnlyWithPublicMeetings">
+            <span class="opacity-70">•</span>
+            <span class="px-1.5 py-0.5 rounded bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-600">{{ $t('Viešos institucijos') }}</span>
           </template>
         </div>
       </div>
@@ -76,20 +80,31 @@
           <template v-for="(row, idx) in layoutRows" :key="`label-${row.key}`">
             <div v-if="row.type === 'tenant'"
               class="px-3 py-1 text-xs font-medium text-zinc-600 dark:text-zinc-400 border-b border-zinc-200 dark:border-zinc-700 bg-zinc-50/70 dark:bg-zinc-800/70 sticky top-[22px] z-[2]">
-              {{ tenantNames?.[row.tenantId!] ?? row.tenantId }}
+              {{ mergedTenantNames[row.tenantId!] ?? row.tenantId }}
             </div>
             <div v-else
               class="px-3 py-1 text-sm text-zinc-700 dark:text-zinc-300 border-b border-zinc-100 dark:border-zinc-800 flex items-start gap-2 truncate"
               :class="[idx % 2 === 0 ? 'bg-zinc-50/40 dark:bg-zinc-800/30' : '']" :title="labelFor(row.institutionId!)">
               <div class="flex-1 min-w-0">
                 <div class="flex items-center justify-between gap-2">
-                  <button type="button"
-                    class="truncate text-left hover:underline cursor-pointer focus:underline focus:outline-none"
-                    :aria-label="$t('Atidaryti instituciją') + ': ' + (labelFor(row.institutionId!) || row.institutionId)"
-                    @click="visitInstitution(row.institutionId!)"
-                    @keydown.enter.prevent="visitInstitution(row.institutionId!)">
-                    {{ labelFor(row.institutionId!) }}
-                  </button>
+                  <div class="flex items-center gap-1.5 min-w-0">
+                    <button type="button"
+                      class="truncate text-left hover:underline cursor-pointer focus:underline focus:outline-none"
+                      :aria-label="$t('Atidaryti instituciją') + ': ' + (labelFor(row.institutionId!) || row.institutionId)"
+                      @click="visitInstitution(row.institutionId!)"
+                      @keydown.enter.prevent="visitInstitution(row.institutionId!)">
+                      {{ labelFor(row.institutionId!) }}
+                    </button>
+                    <!-- Public meetings indicator -->
+                    <svg v-if="props.institutionHasPublicMeetings?.[row.institutionId!]" 
+                      class="h-3 w-3 text-green-600 dark:text-green-400 shrink-0" 
+                      viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                      :aria-label="$t('Vieši posėdžiai')">
+                      <circle cx="12" cy="12" r="10"/>
+                      <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/>
+                      <path d="M2 12h20"/>
+                    </svg>
+                  </div>
                   <span v-if="lastMeetingByInstitution.get(row.institutionId!)"
                     class="text-[11px] text-zinc-500 dark:text-zinc-500 shrink-0">{{
                       labelLast(lastMeetingByInstitution.get(row.institutionId!)!) }}</span>
@@ -120,7 +135,8 @@
 
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch, nextTick } from 'vue'
-import { router } from '@inertiajs/vue3'
+import { router, usePage } from '@inertiajs/vue3'
+import { trans as $t } from 'laravel-vue-i18n'
 import * as d3 from 'd3'
 
 import { Slider } from '@/Components/ui/slider'
@@ -147,11 +163,14 @@ const props = withDefaults(defineProps<{
   tenantFilter?: Array<string | number>
   institutionTenant?: Record<string | number, string | number>
   tenantNames?: Record<string | number, string>
+  // Public meetings indicator lookup
+  institutionHasPublicMeetings?: Record<string | number, boolean>
   // UI toggles
   showLegend?: boolean
   showTodayLine?: boolean
   interactive?: boolean
   showOnlyWithActivity?: boolean
+  showOnlyWithPublicMeetings?: boolean
   // Row details/expansion (global multi-expand)
   detailsExpanded?: boolean
   expandedRowHeight?: number
@@ -171,6 +190,7 @@ const props = withDefaults(defineProps<{
   showTodayLine: true,
   interactive: true,
   showOnlyWithActivity: false,
+  showOnlyWithPublicMeetings: false,
   detailsExpanded: false,
   expandedRowHeight: 56,
   infiniteScroll: true,
@@ -241,6 +261,11 @@ const institutions = computed(() => {
     const act = activeInstitutionIds.value
     arr = arr.filter(id => act.has(id))
   }
+  // Filter only those with public meetings if requested
+  if (props.showOnlyWithPublicMeetings && props.institutionHasPublicMeetings) {
+    const pubMap = props.institutionHasPublicMeetings
+    arr = arr.filter(id => pubMap[id] || pubMap[String(id)])
+  }
   if (props.institutionsOrder?.length) {
     const orderMap = new Map(props.institutionsOrder.map((id, idx) => [String(id), idx]))
     arr = arr.sort((a, b) => (orderMap.get(String(a)) ?? 1e9) - (orderMap.get(String(b)) ?? 1e9))
@@ -278,18 +303,39 @@ const nameLookup = computed(() => {
   return map
 })
 
+// Merge tenant names from props with global page.props.tenants as fallback
+const page = usePage()
+const mergedTenantNames = computed<Record<string | number, string>>(() => {
+  const result: Record<string | number, string> = {}
+  // First, add from global tenants (as base)
+  const globalTenants = (page.props.tenants as any[]) ?? []
+  for (const tenant of globalTenants) {
+    if (tenant?.id && tenant?.shortname) {
+      result[tenant.id] = tenant.shortname
+      result[String(tenant.id)] = tenant.shortname
+    }
+  }
+  // Then, override with props.tenantNames (if provided)
+  if (props.tenantNames) {
+    for (const [k, v] of Object.entries(props.tenantNames)) {
+      result[k] = v
+    }
+  }
+  return result
+})
+
 const labelFor = (id: string | number) => nameLookup.value.get(id) ?? String(id)
 const tenantFor = (id: string | number) => (props.institutionTenant as any)?.[id as any]
 const tenantLabelFor = (id: string | number) => {
   const t = tenantFor(id)
   if (t == null) return undefined
-  return (props.tenantNames as any)?.[t as any]
+  return mergedTenantNames.value[t as any]
 }
 
 type Row = { type: 'tenant'; key: string; tenantId: string | number } | { type: 'institution'; key: string | number; institutionId: string | number }
 const rows = computed<Row[]>(() => {
   const ids = institutions.value
-  if (props.institutionTenant && props.tenantNames) {
+  if (props.institutionTenant && Object.keys(mergedTenantNames.value).length > 0) {
     const byTenant = new Map<string | number, Array<string | number>>()
     for (const id of ids) {
       const t = tenantFor(id) ?? 'unknown'
@@ -297,7 +343,7 @@ const rows = computed<Row[]>(() => {
       arr.push(id)
       byTenant.set(t, arr)
     }
-    const tenantOrder = Array.from(byTenant.keys()).sort((a, b) => String((props.tenantNames as any)?.[a as any] ?? a).localeCompare(String((props.tenantNames as any)?.[b as any] ?? b)))
+    const tenantOrder = Array.from(byTenant.keys()).sort((a, b) => String(mergedTenantNames.value[a as any] ?? a).localeCompare(String(mergedTenantNames.value[b as any] ?? b)))
     const out: Row[] = []
     for (const t of tenantOrder) {
       out.push({ type: 'tenant', key: `__tenant__:${t}`, tenantId: t })
@@ -1001,7 +1047,7 @@ onUnmounted(() => {
   if (el) el.removeEventListener('scroll', onScroll as any)
 })
 
-watch([parsedMeetings, parsedGaps, institutions, rows, () => props.daysBefore, () => props.daysAfter, () => props.startDate, () => props.tenantFilter, () => props.showOnlyWithActivity, () => props.detailsExpanded, extraBefore, extraAfter, dayWidthPx], () => render())
+watch([parsedMeetings, parsedGaps, institutions, rows, () => props.daysBefore, () => props.daysAfter, () => props.startDate, () => props.tenantFilter, () => props.showOnlyWithActivity, () => props.showOnlyWithPublicMeetings, () => props.detailsExpanded, extraBefore, extraAfter, dayWidthPx], () => render())
 
 /**
  * Infinite scroll handler that extends the date range dynamically

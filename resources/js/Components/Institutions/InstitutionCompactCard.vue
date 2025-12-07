@@ -12,6 +12,15 @@
           class="font-semibold text-sm text-zinc-900 dark:text-zinc-100 truncate">
         {{ institution.name }}
         </InertiaLink>
+        <!-- Public meetings indicator -->
+        <TooltipProvider v-if="institution.has_public_meetings">
+          <Tooltip>
+            <TooltipTrigger as-child>
+              <Globe class="h-3.5 w-3.5 text-green-600 dark:text-green-400 shrink-0" />
+            </TooltipTrigger>
+            <TooltipContent>{{ $t('Vieši posėdžiai') }}</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
 
       <!-- Status row -->
@@ -120,7 +129,7 @@ import { Link as InertiaLink } from '@inertiajs/vue3'
 import { Button } from '@/Components/ui/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip'
 import Icons from '@/Types/Icons/filled'
-import { Info } from 'lucide-vue-next'
+import { Globe, Info } from 'lucide-vue-next'
 import { formatStaticTime } from '@/Utils/IntlTime'
 import type { AtstovavimosInstitution } from '@/Pages/Admin/Dashboard/types'
 

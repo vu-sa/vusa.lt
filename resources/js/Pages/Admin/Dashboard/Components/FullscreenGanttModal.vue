@@ -27,9 +27,11 @@
             :gaps="userGaps"
             :tenant-filter="userTenantFilter"
             :show-only-with-activity="showOnlyWithActivityUser"
+            :show-only-with-public-meetings="showOnlyWithPublicMeetingsUser"
             :institution-names="userInstitutionNames"
             :tenant-names="tenantNames"
             :institution-tenant="userInstitutionTenant"
+            :institution-has-public-meetings="userInstitutionHasPublicMeetings"
             :empty-message="$t('Neturi tiesiogiai priskirtų institucijų')"
             height="100%"
             @create-meeting="$emit('create-meeting', $event)"
@@ -43,9 +45,11 @@
             :gaps="tenantGaps"
             :tenant-filter="[]"
             :show-only-with-activity="showOnlyWithActivityTenant"
+            :show-only-with-public-meetings="showOnlyWithPublicMeetingsTenant"
             :institution-names="tenantInstitutionNames"
             :tenant-names="tenantNames"
             :institution-tenant="tenantInstitutionTenant"
+            :institution-has-public-meetings="tenantInstitutionHasPublicMeetings"
             :empty-message="$t('Šiame padalinyje nėra institucijų')"
             height="100%"
             @create-meeting="$emit('create-meeting', $event)"
@@ -91,16 +95,20 @@ interface Props {
   userGaps: AtstovavimosGap[];
   userTenantFilter: string[];
   showOnlyWithActivityUser: boolean;
+  showOnlyWithPublicMeetingsUser?: boolean;
   userInstitutionNames: Record<string, string>;
   userInstitutionTenant: Record<string, string>;
+  userInstitutionHasPublicMeetings?: Record<string, boolean>;
   
   // Tenant data
   tenantInstitutions: GanttInstitution[];
   tenantMeetings: GanttMeeting[];
   tenantGaps: AtstovavimosGap[];
   showOnlyWithActivityTenant: boolean;
+  showOnlyWithPublicMeetingsTenant?: boolean;
   tenantInstitutionNames: Record<string, string>;
   tenantInstitutionTenant: Record<string, string>;
+  tenantInstitutionHasPublicMeetings?: Record<string, boolean>;
   
   // Shared
   tenantNames: Record<string, string>;

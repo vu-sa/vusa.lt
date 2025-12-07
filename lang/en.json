@@ -633,5 +633,10 @@
   "Redaguoti laikotarpį": "Edit period",
   "Rodyti istorinius narius": "Show historical members",
   "dabar": "now",
-  "d.": "d."
+  "d.": "d.",
+  "Rodyti tik aktyvius": "Show only active",
+  "Rodyti tik viešas institucijas": "Show only public institutions",
+  "Viešos institucijos": "Public institutions",
+  "Tik su veikla": "Only with activity",
+  "Filtras": "Filter"
 }

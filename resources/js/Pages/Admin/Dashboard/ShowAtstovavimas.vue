@@ -31,9 +31,12 @@
           :available-tenants-user="timelineFilters.availableTenantsUser.value"
           :tenant-filter="timelineFilters.userTenantFilter.value"
           :show-only-with-activity="timelineFilters.showOnlyWithActivityUser.value"
+          :show-only-with-public-meetings="timelineFilters.showOnlyWithPublicMeetingsUser.value"
           :institution-names="userInstitutionNames" :tenant-names :institution-tenant="userInstitutionTenant"
+          :institution-has-public-meetings="userInstitutionHasPublicMeetings"
           @update:tenant-filter="timelineFilters.userTenantFilter.value = $event"
           @update:show-only-with-activity="timelineFilters.showOnlyWithActivityUser.value = $event"
+          @update:show-only-with-public-meetings="timelineFilters.showOnlyWithPublicMeetingsUser.value = $event"
           @create-meeting="actions.onGapCreateMeeting" @fullscreen="actions.onGanttFullscreen('user')" />
       </TabsContent>
 
@@ -43,9 +46,12 @@
           :gaps="ganttData.tenantGaps.value" :selected-tenant-id="timelineFilters.selectedTenantForGantt.value"
           :current-tenant="timelineFilters.currentTenant.value"
           :show-only-with-activity="timelineFilters.showOnlyWithActivityTenant.value"
+          :show-only-with-public-meetings="timelineFilters.showOnlyWithPublicMeetingsTenant.value"
           :institution-names="tenantInstitutionNames" :tenant-names :institution-tenant="tenantInstitutionTenant"
+          :institution-has-public-meetings="tenantInstitutionHasPublicMeetings"
           @update:selected-tenant-id="timelineFilters.setSelectedTenants"
           @update:show-only-with-activity="timelineFilters.showOnlyWithActivityTenant.value = $event"
+          @update:show-only-with-public-meetings="timelineFilters.showOnlyWithPublicMeetingsTenant.value = $event"
           @create-meeting="actions.onGapCreateMeeting" @fullscreen="actions.onGanttFullscreen('tenant')" />
       </TabsContent>
     </Tabs>
@@ -70,11 +76,17 @@
       :current-tenant="timelineFilters.currentTenant.value" :user-institutions="formatInstitutionsForUser"
       :user-meetings="atstovavimosData.allUserMeetings.value" :user-gaps="atstovavimosData.userGaps.value"
       :user-tenant-filter="timelineFilters.userTenantFilter.value"
-      :show-only-with-activity-user="timelineFilters.showOnlyWithActivityUser.value" :user-institution-names
-      :user-institution-tenant :tenant-institutions="ganttData.formattedTenantInstitutions.value"
+      :show-only-with-activity-user="timelineFilters.showOnlyWithActivityUser.value"
+      :show-only-with-public-meetings-user="timelineFilters.showOnlyWithPublicMeetingsUser.value"
+      :user-institution-names
+      :user-institution-tenant :user-institution-has-public-meetings="userInstitutionHasPublicMeetings"
+      :tenant-institutions="ganttData.formattedTenantInstitutions.value"
       :tenant-meetings="ganttData.tenantMeetings.value" :tenant-gaps="ganttData.tenantGaps.value"
-      :show-only-with-activity-tenant="timelineFilters.showOnlyWithActivityTenant.value" :tenant-institution-names
-      :tenant-institution-tenant :tenant-names @update:is-open="actions.showFullscreenGantt.value = $event"
+      :show-only-with-activity-tenant="timelineFilters.showOnlyWithActivityTenant.value"
+      :show-only-with-public-meetings-tenant="timelineFilters.showOnlyWithPublicMeetingsTenant.value"
+      :tenant-institution-names
+      :tenant-institution-tenant :tenant-institution-has-public-meetings="tenantInstitutionHasPublicMeetings"
+      :tenant-names @update:is-open="actions.showFullscreenGantt.value = $event"
       @create-meeting="actions.onGapCreateMeeting" />
   </AdminContentPage>
 </template>
@@ -153,6 +165,10 @@ const userInstitutionTenant = computed(() => {
   return ganttData.getInstitutionTenant(atstovavimosData.institutions.value);
 });
 
+const userInstitutionHasPublicMeetings = computed(() => {
+  return ganttData.getInstitutionHasPublicMeetings(atstovavimosData.institutions.value);
+});
+
 const tenantNames = computed(() => {
   return ganttData.getTenantNames();
 });
@@ -176,6 +192,15 @@ const tenantInstitutionTenant = computed(() => {
   const result: Record<string, string> = {};
   for (const i of institutions) {
     result[i.id as string] = String(i.tenant_id ?? '');
+  }
+  return result;
+});
+
+const tenantInstitutionHasPublicMeetings = computed(() => {
+  const institutions = ganttData.tenantInstitutions.value;
+  const result: Record<string, boolean> = {};
+  for (const i of institutions) {
+    result[i.id as string] = Boolean((i as any).has_public_meetings);
   }
   return result;
 });

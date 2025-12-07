@@ -58,8 +58,11 @@
                       month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric'
                     }) }}
                   </div>
-                  <div class="text-sm text-zinc-600 dark:text-zinc-400 mt-1 truncate">
+                  <div class="text-sm text-zinc-600 dark:text-zinc-400 mt-1 truncate flex items-center gap-1">
                     {{ meeting.institutions?.[0]?.name }}
+                    <Globe v-if="meeting.institutions?.[0]?.has_public_meetings" 
+                      class="h-3 w-3 text-green-600 dark:text-green-400 shrink-0" 
+                      :title="$t('Vieši posėdžiai')" />
                   </div>
                 </div>
 
@@ -178,7 +181,7 @@
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { NNumberAnimation } from 'naive-ui';
-import { ArrowRight } from "lucide-vue-next";
+import { ArrowRight, Globe } from "lucide-vue-next";
 
 import type { AtstovavimosMeeting, InstitutionInsights } from '../types';
 

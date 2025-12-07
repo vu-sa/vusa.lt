@@ -9,6 +9,8 @@ export function useTimelineFilters(
   const userTenantFilter = ref<string[]>([]);
   const showOnlyWithActivityUser = ref(false);
   const showOnlyWithActivityTenant = ref(false);
+  const showOnlyWithPublicMeetingsUser = ref(false);
+  const showOnlyWithPublicMeetingsTenant = ref(false);
   const selectedTenantForGantt = ref<string[]>([]); // Changed to array for multiple selection
 
   // Available tenants for user filtering
@@ -46,6 +48,8 @@ export function useTimelineFilters(
     userTenantFilter,
     showOnlyWithActivityUser,
     showOnlyWithActivityTenant,
+    showOnlyWithPublicMeetingsUser,
+    showOnlyWithPublicMeetingsTenant,
     selectedTenantForGantt,
     
     // Computed

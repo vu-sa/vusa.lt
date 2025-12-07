@@ -69,6 +69,27 @@
           </div>
         </div>
 
+        <!-- Institution Indicators Section -->
+        <div class="space-y-3">
+          <h4 class="text-sm font-semibold text-foreground flex items-center gap-2">
+            <component :is="Icons.INSTITUTION" class="h-4 w-4" />
+            {{ $t('Institucijų indikatoriai') }}
+          </h4>
+          <div class="space-y-2 pl-6">
+            <div class="flex items-center gap-3">
+              <svg class="h-4 w-4 text-green-600 dark:text-green-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/>
+                <path d="M2 12h20"/>
+              </svg>
+              <div>
+                <span class="text-sm font-medium">{{ $t('Vieši posėdžiai') }}</span>
+                <p class="text-xs text-muted-foreground">{{ $t('Institucija, kurios posėdžiai yra viešai prieinami') }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Time Indicators Section -->
         <div class="space-y-3">
           <h4 class="text-sm font-semibold text-foreground flex items-center gap-2">

@@ -52,8 +52,9 @@ class DashboardController extends AdminController
         // Get user's institution IDs for filtering
         $userInstitutionIds = $user->current_duties->pluck('institution_id')->filter()->unique();
 
-        // Append completion_status to meetings for dashboard Gantt chart
+        // Append completion_status to meetings and has_public_meetings to institutions for dashboard
         // agendaItems are already eager-loaded by DutyService::getInstitutionsForDashboard
+        // types are already eager-loaded via Institution's $with = ['types']
         $accessibleInstitutions->each(function ($institution) {
             $institution->meetings?->each->append('completion_status');
             // Add active_check_in from already-loaded checkIns
@@ -61,6 +62,8 @@ class DashboardController extends AdminController
                 ?->where('end_date', '>=', now())
                 ->where('start_date', '<=', now())
                 ->first() ?? null;
+            // Append has_public_meetings for UI indicators (uses already-loaded types relation)
+            $institution->append('has_public_meetings');
         });
 
         // Get available tenants for filtering

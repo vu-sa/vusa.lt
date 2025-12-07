@@ -25,6 +25,10 @@
               @update:model-value="(val: boolean) => $emit('update:showOnlyWithActivity', val)" @select.prevent>
               {{ $t('Rodyti tik aktyvius') }}
             </DropdownMenuCheckboxItem>
+            <DropdownMenuCheckboxItem :model-value="showOnlyWithPublicMeetings"
+              @update:model-value="(val: boolean) => $emit('update:showOnlyWithPublicMeetings', val)" @select.prevent>
+              {{ $t('Rodyti tik viešas institucijas') }}
+            </DropdownMenuCheckboxItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -33,7 +37,8 @@
     <!-- Deferred Gantt chart rendering for better initial load performance -->
     <TimelineGanttSkeleton v-if="!isReady" />
     <TimelineGanttChart v-else :institutions="formattedInstitutions" :meetings :gaps :tenant-filter :show-only-with-activity
-      :institution-names :tenant-names :institution-tenant
+      :show-only-with-public-meetings
+      :institution-names :tenant-names :institution-tenant :institution-has-public-meetings="institutionHasPublicMeetings"
       :empty-message="$t('Neturi tiesiogiai priskirtų institucijų')" @create-meeting="$emit('create-meeting', $event)"
       @fullscreen="$emit('fullscreen')" />
   </section>
@@ -72,9 +77,11 @@ interface Props {
   availableTenantsUser: AtstovavimosTenant[];
   tenantFilter: string[];
   showOnlyWithActivity: boolean;
+  showOnlyWithPublicMeetings: boolean;
   institutionNames: Record<string, string>;
   tenantNames: Record<string, string>;
   institutionTenant: Record<string, string>;
+  institutionHasPublicMeetings?: Record<string, boolean>;
 }
 
 const props = defineProps<Props>();
@@ -90,6 +97,7 @@ onMounted(() => {
 const emit = defineEmits<{
   'update:tenantFilter': [value: string[]];
   'update:showOnlyWithActivity': [value: boolean];
+  'update:showOnlyWithPublicMeetings': [value: boolean];
   'create-meeting': [payload: { institution_id: string | number, suggestedAt: Date }];
   'fullscreen': [];
 }>();

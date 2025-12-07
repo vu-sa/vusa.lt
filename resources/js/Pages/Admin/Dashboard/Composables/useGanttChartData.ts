@@ -100,6 +100,11 @@ export function useGanttChartData(
     return Object.fromEntries((institutions ?? []).map(i => [i.id, String(i.tenant?.id ?? '')]));
   };
 
+  // Get public meetings lookup for institutions
+  const getInstitutionHasPublicMeetings = (institutions: AtstovavimosInstitution[]) => {
+    return Object.fromEntries((institutions ?? []).map(i => [String(i.id), Boolean(i.has_public_meetings)]));
+  };
+
   // Format institutions for Gantt component
   const formatInstitutionsForGantt = (institutions: AtstovavimosInstitution[]): GanttInstitution[] => {
     return institutions.map(i => ({
@@ -190,6 +195,7 @@ export function useGanttChartData(
     getInstitutionNames,
     getTenantNames,
     getInstitutionTenant,
+    getInstitutionHasPublicMeetings,
     formatInstitutionsForGantt
   };
 }

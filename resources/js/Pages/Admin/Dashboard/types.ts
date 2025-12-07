@@ -17,6 +17,7 @@ export interface AtstovavimosInstitution {
   hasUpcomingMeetings?: boolean;
   upcoming_meetings_count?: number;
   days_since_last_meeting?: number;
+  has_public_meetings?: boolean;
 }
 
 export interface InstitutionCheckIn {
@@ -35,6 +36,7 @@ export interface AtstovavimosMeeting {
   institutions?: Array<{
     id: string;
     name: string;
+    has_public_meetings?: boolean;
   }>;
 }
 
@@ -72,4 +74,5 @@ export interface GanttInstitution {
   id: string;
   name: string;
   tenant_id?: string;
+  has_public_meetings?: boolean;
 }

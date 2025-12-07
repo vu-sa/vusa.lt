@@ -13,11 +13,13 @@
         :institution-names="institutionNames"
         :tenant-names="tenantNames"
         :institution-tenant="institutionTenant"
+        :institution-has-public-meetings="institutionHasPublicMeetings"
         :tenant-filter="tenantFilter"
         :show-legend="true"
         :show-today-line="true"
         :interactive="true"
         :show-only-with-activity="showOnlyWithActivity"
+        :show-only-with-public-meetings="showOnlyWithPublicMeetings"
   :height="effectiveHeight"
         @create-meeting="$emit('create-meeting', $event)"
         @fullscreen="$emit('fullscreen')"
@@ -51,9 +53,11 @@ interface Props {
   gaps: AtstovavimosGap[];
   tenantFilter: string[];
   showOnlyWithActivity: boolean;
+  showOnlyWithPublicMeetings?: boolean;
   institutionNames: Record<string, string>;
   tenantNames: Record<string, string>;
   institutionTenant: Record<string, string>;
+  institutionHasPublicMeetings?: Record<string, boolean>;
   emptyMessage: string;
   height?: string;
 }
@@ -126,6 +130,12 @@ const effectiveHeight = computed(() => {
       ...props.gaps.map(g => g.institution_id)
     ])
     idsArr = idsArr.filter(id => active.has(id))
+  }
+
+  // Apply showOnlyWithPublicMeetings if enabled
+  if (props.showOnlyWithPublicMeetings && props.institutionHasPublicMeetings) {
+    const pubMap = props.institutionHasPublicMeetings
+    idsArr = idsArr.filter(id => pubMap[id] || pubMap[String(id)])
   }
 
   // Tenant header rows (if grouping enabled via provided mappings)
