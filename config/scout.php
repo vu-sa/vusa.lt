@@ -327,6 +327,7 @@ return [
                         ['name' => 'tenant_id', 'type' => 'int32', 'optional' => true],
                         ['name' => 'tenant_shortname', 'type' => 'string', 'facet' => true, 'optional' => true],
                         ['name' => 'tenant_alias', 'type' => 'string', 'optional' => true],
+                        ['name' => 'tenant_type', 'type' => 'string', 'optional' => true],
 
                         ['name' => 'type_ids', 'type' => 'int32[]', 'optional' => true],
                         ['name' => 'type_slugs', 'type' => 'string[]', 'facet' => true, 'optional' => true],

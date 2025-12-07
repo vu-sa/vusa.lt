@@ -162,6 +162,7 @@ class PublicInstitution extends Institution
             'tenant_id' => $this->tenant?->id,
             'tenant_shortname' => $this->tenant?->shortname,
             'tenant_alias' => $this->tenant?->alias,
+            'tenant_type' => $this->tenant?->type,
 
             // Types for filtering
             'type_ids' => $this->types->pluck('id')->toArray(),

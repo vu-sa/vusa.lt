@@ -94,7 +94,8 @@ const processedResults = computed(() => {
     tenant: result.tenant_id ? {
       id: result.tenant_id,
       shortname: result.tenant_shortname,
-      alias: result.tenant_alias
+      alias: result.tenant_alias,
+      type: result.tenant_type
     } : null,
     types: (result.type_ids || []).map((id: number, index: number) => ({
       id,

@@ -21,18 +21,14 @@
       style="object-position: 50% 35%" loading="lazy" @error="imageError = true">
     <div class="w-full" :class="[imageError ? 'col-span-full' : '']">
       <div>
-        <a class="group inline-flex w-fit items-center gap-3 sm:gap-4" :href="route('contacts.institution', {
-          institution: institution.id,
-          subdomain: institution.tenant?.alias === 'vusa' ? 'www' : institution.tenant?.alias ?? 'www',
-          lang: $page.props.app.locale,
-        })" :aria-describedby="institution.description ? `institution-${institution.id}-description` : undefined">
+        <div class="inline-flex w-fit items-center gap-3 sm:gap-4">
           <img v-if="institution.logo_url && onlyVertical" :alt="`${institution.name} logo`"
-            class="size-12 rounded-full border border-zinc-200 bg-white object-contain shadow-sm transition-shadow group-hover:shadow-md dark:border-zinc-700 sm:size-16"
+            class="size-12 rounded-full border border-zinc-200 bg-white object-contain shadow-sm dark:border-zinc-700 sm:size-16"
             :src="institution.logo_url" loading="lazy">
           <div class="min-w-0 flex-1">
             <div class="space-y-4">
               <h2 :id="`institution-${institution.id}-title`"
-                class="mb-0 mt-0 w-fit text-xl font-bold leading-tight text-zinc-800 transition-colors group-hover:text-vusa-red dark:text-zinc-100 sm:text-2xl xl:text-3xl">
+                class="mb-0 mt-0 w-fit text-xl font-bold leading-tight text-zinc-800 dark:text-zinc-100 sm:text-2xl xl:text-3xl">
                 {{ institution.name }}
               </h2>
               <div class="flex flex-col gap-2 mt-2 sm:flex-row sm:flex-wrap sm:gap-3">
@@ -98,7 +94,7 @@
               <InfoPopover v-if="institutionType.description"> {{ institutionType.description }} </InfoPopover>
             </small>
           </div>
-        </a>
+        </div>
       </div>
       <slot name="more" />
       <div v-if="institution.description" class="my-4 sm:my-5">

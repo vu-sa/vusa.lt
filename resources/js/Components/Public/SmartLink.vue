@@ -1,11 +1,6 @@
 <template>
-  <component
-    :is="useInertiaRouter ? Link : 'a'"
-    v-if="href"
-    :href="href"
-    :prefetch="useInertiaRouter ? prefetch : false"
-    :target="target ?? useInertiaRouter ? undefined : '_blank'"
-  >
+  <component :is="useInertiaRouter ? Link : 'a'" v-if="href" :href :prefetch="useInertiaRouter ? prefetch : false"
+    :target="target ?? useInertiaRouter ? undefined : '_blank'">
     <slot />
   </component>
   <span v-else>
@@ -39,7 +34,7 @@ const useInertiaRouter = computed(() => {
 
 
   // 2. Check if hostname ends in vusa.lt or vusa.test or other ending (???)
-  const hostname = window.location.hostname;
+  const { hostname } = window.location;
 
   if (
     !hostname.endsWith(
@@ -50,7 +45,7 @@ const useInertiaRouter = computed(() => {
   }
 
   // 3. Check if external link
-  if (!props.href.startsWith(window.location.protocol + "//" + window.location.hostname)) {
+  if (!props.href.startsWith(`${window.location.protocol}//${window.location.hostname}`)) {
     return false;
   }
 

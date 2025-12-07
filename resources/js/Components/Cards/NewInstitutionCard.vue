@@ -129,6 +129,7 @@ interface InstitutionData {
     id?: number | null;
     shortname?: string | null;
     alias?: string | null;
+    type?: string | null;
   } | null;
   types?: Array<{
     id?: number;
@@ -159,9 +160,11 @@ const institutionUrl = computed(() => {
   
   // Generate URL from institution data
   const locale = (page.props.app as any)?.locale || 'lt';
-  const subdomain = props.institution.tenant?.alias === 'vusa' 
-    ? 'www' 
-    : (props.institution.tenant?.alias || 'www');
+  // Use www subdomain for: vusa alias, pkp type tenants, or when no tenant
+  const tenant = props.institution.tenant;
+  const subdomain = (!tenant || tenant.alias === 'vusa' || tenant.type === 'pkp')
+    ? 'www'
+    : (tenant.alias || 'www');
   
   // Use alias if available, otherwise use id
   if (props.institution.alias) {

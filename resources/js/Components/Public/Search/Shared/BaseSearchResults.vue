@@ -11,18 +11,13 @@
     <!-- Results -->
     <div v-else-if="results.length > 0" class="min-h-[60vh] sm:min-h-[600px]" :class="resultsContainerClass">
       <TransitionGroup :name="transitionName" :tag="transitionTag" :class="transitionClass" appear>
-        <slot name="item" v-for="item in results" :key="getItemKey(item)" :item="item" />
+        <slot v-for="item in results" :key="getItemKey(item)" name="item" :item />
       </TransitionGroup>
 
       <!-- Load More Button -->
       <div v-if="hasMoreResults" class="flex justify-center pt-6">
-        <Button 
-          variant="outline" 
-          size="lg" 
-          :disabled="isLoadingMore"
-          class="transition-all duration-200 hover:scale-105 focus:scale-105" 
-          @click="emit('loadMore')"
-        >
+        <Button variant="outline" size="lg" :disabled="isLoadingMore"
+          class="transition-all duration-200 hover:scale-105 focus:scale-105" @click="emit('loadMore')">
           <template v-if="isLoadingMore">
             <Loader2 class="w-4 h-4 mr-2 animate-spin" />
             {{ $t('search.loading_more') }}
@@ -63,7 +58,7 @@
           {{ $t(emptyStateDescriptionKey) }}
         </p>
         <p class="text-sm text-muted-foreground">
-          {{ $t('search.or_browse_all') }} 
+          {{ $t('search.or_browse_all') }}
           <button class="text-primary hover:underline font-medium" @click="emit('clearFilters')">
             {{ $t(browseAllKey) }}
           </button>
@@ -98,7 +93,6 @@
 
 <script setup lang="ts" generic="T extends { id: string | number }">
 import { computed, type Component } from 'vue'
-import { Button } from '@/Components/ui/button'
 import {
   Search,
   SearchX,
@@ -110,6 +104,8 @@ import {
   Flag
 } from 'lucide-vue-next'
 
+import { Button } from '@/Components/ui/button'
+
 interface Props {
   results: T[]
   isLoading?: boolean
@@ -120,29 +116,29 @@ interface Props {
   isLoadingMore?: boolean
   hasError?: boolean
   hasActiveFilters?: boolean
-  
+
   // Skeleton configuration
   skeletonCount?: number
-  
+
   // CSS class customization
   loadingContainerClass?: string
   resultsContainerClass?: string
-  
+
   // Transition customization
   transitionName?: string
   transitionTag?: string
   transitionClass?: string
-  
+
   // Translation keys for empty/no-results states
   noResultsTitleKey?: string
   noResultsDescriptionKey?: string
   emptyStateTitleKey?: string
   emptyStateDescriptionKey?: string
   browseAllKey?: string
-  
+
   // Empty state icon
   emptyStateIcon?: Component
-  
+
   // Item key getter (defaults to item.id)
   itemKeyField?: string
 }
