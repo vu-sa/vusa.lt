@@ -5,36 +5,36 @@
       <div ref="commentContainer" class="flex justify-center items-center">
         <UserAvatar :size="23" class="sticky top-4" :user="$page.props.auth?.user" />
       </div>
-      <EditorContent :editor="editor" class="leading-normal" />
+      <EditorContent :editor class="leading-normal" />
     </div>
     <div v-if="editor" class="border-top-0 flex items-center justify-between gap-2 border-zinc-400 p-4">
       <div class="flex flex-wrap items-center gap-2">
         <TiptapFormattingButtons v-model:editor="editor" />
-        <TipTapButton :editor="editor" :type="'bulletList'"
+        <TipTapButton :editor type="bulletList"
           :callback="() => editor?.chain().focus().toggleBulletList().run()">
           <template #icon>
             <IFluentTextBulletListLtr24Filled />
           </template>
         </TipTapButton>
-        <TipTapButton :editor="editor" :type="'orderedList'"
+        <TipTapButton :editor type="orderedList"
           :callback="() => editor?.chain().focus().toggleOrderedList().run()">
           <template #icon>
             <IFluentTextNumberListLtr24Filled />
           </template>
         </TipTapButton>
       </div>
-      <ButtonGroup v-if="enableApprove" orientation="vertical" class="gap-2">
-        <Button :disabled="loading" variant="success" size="sm" @click="$emit('submit:comment', 'approve')">
+      <div v-if="enableApprove" class="flex items-center gap-2">
+        <Button :disabled="loading" variant="outline" size="sm" @click="$emit('submit:comment', 'reject')">
+          <Spinner v-if="loading" />
+          <IFluentCommentError24Regular v-else class="text-destructive" />
+          {{ rejectText ?? `... ${$t("states.decision.reject")}` }}
+        </Button>
+        <Button :disabled="loading" variant="default" size="sm" @click="$emit('submit:comment', 'approve')">
           <Spinner v-if="loading" />
           <IFluentCommentCheckmark24Regular v-else />
           {{ approveText ?? capitalize($t("states.decision.approve")) }}
         </Button>
-        <Button :disabled="loading" variant="warning" size="sm" @click="$emit('submit:comment', 'reject')">
-          <Spinner v-if="loading" />
-          <IFluentCommentError24Regular v-else />
-          {{ rejectText ?? `... ${$t("states.decision.reject")}` }}
-        </Button>
-      </ButtonGroup>
+      </div>
       <Button v-else size="sm" :disabled="disabled || loading" @click="$emit('submit:comment')">
         <Spinner v-if="loading" />
         <IFluentSend24Filled v-else />
@@ -47,12 +47,12 @@
 <script setup lang="ts">
 import { EditorContent, useEditor } from "@tiptap/vue-3";
 import { capitalize, onBeforeUnmount, ref } from "vue";
-
 import { StarterKit } from "@tiptap/starter-kit";
-import { Button } from "@/Components/ui/button";
-import { ButtonGroup } from "@/Components/ui/button-group";
-import { Spinner } from "@/Components/ui/spinner";
+
 import TipTapButton from "./TipTap/TipTapButton.vue";
+
+import { Button } from "@/Components/ui/button";
+import { Spinner } from "@/Components/ui/spinner";
 import TiptapFormattingButtons from "@/Components/TipTap/TiptapFormattingButtons.vue";
 import UserAvatar from "@/Components/Avatars/UserAvatar.vue";
 

@@ -16,10 +16,10 @@
         <div class="-ml-2 relative group/more" :style="{ zIndex: 0 }">
           <Avatar :class="[
             avatarSizeClass,
-            'transition-transform duration-200 group-hover/more:scale-110 group-hover/more:ring-2 group-hover/more:ring-primary/40 cursor-pointer border-2 border-background'
+            'transition-transform duration-200 group-hover/more:scale-110 group-hover/more:ring-2 group-hover/more:ring-primary/40 cursor-pointer'
           ]">
             <AvatarFallback
-              class="bg-primary/10 text-primary-foreground font-medium hover:bg-primary/20 transition-colors"
+              class="text-foreground font-medium transition-colors"
               :class="textSizeClass">
               +{{ remainingCount }}
             </AvatarFallback>

@@ -88,7 +88,6 @@
   --sidebar-ring: oklch(0.442 0.017 285.786);
 }
 
-
 @utility container {
   margin-inline: auto;
   padding-inline: 2rem;
@@ -464,7 +463,6 @@ html.dark-mode-init {
   padding: 0;
 }
 
-
 /* Consolidated theme colors for Tailwind CSS v4 */
 @theme inline {
   /* VU SA Brand Colors - converted to OKLCH */
@@ -484,27 +482,27 @@ html.dark-mode-init {
   --color-status-success: oklch(0.696 0.17 162.48);
   --color-status-success-muted: oklch(0.95 0.052 163.051);
   --color-status-success-foreground: oklch(0.378 0.077 168.94);
-  
+
   /* Warning - Amber tones (unified, no orange) */
   --color-status-warning: oklch(0.769 0.188 70.08);
   --color-status-warning-muted: oklch(0.962 0.059 95.617);
   --color-status-warning-foreground: oklch(0.414 0.112 45.904);
-  
+
   /* Danger - Red/Rose tones */
   --color-status-danger: oklch(0.637 0.237 25.331);
   --color-status-danger-muted: oklch(0.936 0.032 17.717);
   --color-status-danger-foreground: oklch(0.396 0.141 25.723);
-  
+
   /* Info - Blue tones */
   --color-status-info: oklch(0.623 0.214 259.815);
   --color-status-info-muted: oklch(0.932 0.032 255.585);
   --color-status-info-foreground: oklch(0.379 0.146 265.522);
-  
+
   /* Neutral - Slate tones */
   --color-status-neutral: oklch(0.554 0.046 257.417);
   --color-status-neutral-muted: oklch(0.968 0.007 247.896);
   --color-status-neutral-foreground: oklch(0.372 0.044 257.287);
-  
+
   /* Gantt Chart specific colors */
   --color-gantt-meeting-complete: oklch(0.21 0.006 285.885);
   --color-gantt-meeting-incomplete: oklch(0.637 0.237 25.331);
@@ -626,7 +624,6 @@ html.dark-mode-init {
   --admin-spacing-unit: 1.5rem;
   /* 24px */
 }
-
 
 @layer base {
   * {

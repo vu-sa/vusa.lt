@@ -115,11 +115,8 @@
     "Laiko juostos legenda": "Laiko juostos legenda",
     "Susipažinkite su laiko juostos simboliais ir jų reikšmėmis": "Susipažinkite su laiko juostos simboliais ir jų reikšmėmis",
     "Susitikimai": "Susitikimai",
-    "Užbaigtas susitikimas": "Užbaigtas susitikimas",
     "Susitikimas su visa užpildyta informacija ir darbotvarkės punktais": "Susitikimas su visa užpildyta informacija ir darbotvarkės punktais",
-    "Neužbaigtas susitikimas": "Neužbaigtas susitikimas",
     "Susitikimas, kuriam trūksta informacijos arba neužpildyti darbotvarkės punktai": "Susitikimas, kuriam trūksta informacijos arba neužpildyti darbotvarkės punktai",
-    "Susitikimas be darbotvarkės": "Susitikimas be darbotvarkės",
     "Susitikimas, kuriam nebuvo pridėta jokių darbotvarkės punktų": "Susitikimas, kuriam nebuvo pridėta jokių darbotvarkės punktų",
     "Atstovavimo padengimas": "Atstovavimo padengimas",
     "Pranešimas apie nebuvimą": "Pranešimas apie nebuvimą",
@@ -142,6 +139,21 @@
     "Naudokite mastelio slankiklį, kad priartintumėte ar atitolintumėte laiko juostą": "Naudokite mastelio slankiklį, kad priartintumėte ar atitolintumėte laiko juostą",
     "Slinkite horizontaliai, kad naršytumėte per laikotarpius": "Slinkite horizontaliai, kad naršytumėte per laikotarpius",
     "Legenda": "Legenda",
-    "Uždaryti": "Uždaryti"
+    "Uždaryti": "Uždaryti",
+
+    "Tuščia": "Tuščia",
+    "Laukia patvirtinimo": "Laukia patvirtinimo",
+    "Patvirtinta": "Patvirtinta",
+    "Mišri būsena": "Mišri būsena",
+    "Užbaigta": "Užbaigta",
+    "valdytojai": "valdytojai",
+    "laukia": "laukia",
+    "Valdyk rezervacijos išteklius ir jų būsenas": "Valdyk rezervacijos išteklius ir jų būsenas",
+    "Pridėti": "Pridėti",
+    "Pridėti išteklių": "Pridėti išteklių",
+    "Pridėti valdytoją": "Pridėti valdytoją",
+    "Būsenų informacija": "Būsenų informacija",
+    "Aprašymas nepateiktas.": "Aprašymas nepateiktas.",
+    "No users found.": "Naudotojų nerasta."
 }
 

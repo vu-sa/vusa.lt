@@ -1,12 +1,12 @@
 <template>
-  <div class="h-screen flex flex-col bg-background">
+  <div class="bg-background">
     <Head :title />
 
     <SidebarProvider>
       <AppSidebar />
-      <SidebarInset class="flex flex-col min-h-0">
+      <SidebarInset class="flex flex-col">
         <!-- Header with breadcrumbs and actions -->
-        <header class="sticky top-0 z-40 flex h-16 items-center justify-between border-b bg-background px-6">
+        <header class="sticky top-0 z-40 flex h-16 shrink-0 items-center justify-between border-b bg-background px-6">
           <div class="flex items-center flex-1 gap-3">
             <SidebarTrigger class="-ml-1" />
             <Separator orientation="vertical" class="mr-2 h-4" />
@@ -21,7 +21,7 @@
         </header>
 
         <!-- Single scroll container -->
-        <main class="flex-1 overflow-auto" style="scroll-behavior: smooth;">
+        <main class="flex-1 min-w-0 overflow-auto" style="scroll-behavior: smooth;">
           <div class="min-h-full p-6">
         <!-- System announcements banner -->
         <div v-if="systemMessage"
@@ -81,6 +81,7 @@ import {
   UserIcon,
 } from 'lucide-vue-next';
 import { trans as $t } from "laravel-vue-i18n";
+
 import { useToasts } from '@/Composables/useToasts';
 import 'vue-sonner/style.css'
 

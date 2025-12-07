@@ -1,108 +1,169 @@
 <template>
-  <ShowPageLayout :title="reservation.name" :model="reservation"
-    :related-models="relatedModels" :current-tab="currentTab" @change:tab="currentTab = $event">
-    <template #after-heading>
-      <UsersAvatarGroup v-if="reservation.users && reservation.users.length > 0" class="mr-2"
-        :users="reservation.users" />
-    </template>
-    <template #more-options>
-      <MoreOptionsButton :more-options="moreOptions" @more-option-click="handleMoreOptionClick" />
-    </template>
+  <AdminContentPage>
+    <div class="min-w-0 w-full space-y-6">
+      <!-- Hero Section -->
+      <ReservationHero :reservation @add-resource="handleAddResource" @add-user="handleAddUser"
+        @show-help="showReservationHelpModal = true" />
 
-    <ReservationResourceTable v-model:selected-reservation-resource="selectedReservationResource" class="mb-4"
-      :reservation @edit:reservation-resource="editReservationResource" />
-    <Button variant="secondary" size="sm" @click="handleMoreOptionClick('add-resource')">
-      <IFluentAdd24Filled />
-      {{ $t("Pridėti rezervacijos išteklių") }}
-    </Button>
+      <!-- Main Content with Tabs -->
+      <Tabs v-model="currentTab" class="space-y-4">
+        <TabsList class="h-auto flex-wrap gap-2">
+          <TabsTrigger value="resources" class="gap-2">
+            <component :is="Icons.RESOURCE" class="size-4" />
+            {{ capitalize($tChoice('entities.resource.model', 2)) }}
+            <Badge variant="secondary" class="ml-1">
+              {{ reservation.resources?.length ?? 0 }}
+            </Badge>
+          </TabsTrigger>
+          <TabsTrigger value="description" class="gap-2">
+            <IFluentTextDescription24Regular class="size-4" />
+            {{ $t('Aprašymas') }}
+          </TabsTrigger>
+          <TabsTrigger value="comments" class="gap-2">
+            <component :is="Icons.COMMENT" class="size-4" />
+            {{ $t('Komentarai') }}
+            <Badge v-if="allCommentsCount > 0" variant="secondary" class="ml-1">
+              {{ allCommentsCount }}
+            </Badge>
+          </TabsTrigger>
+        </TabsList>
 
-    <CardModal :title="$t('entities.meta.help', {
-      model: $tChoice('entities.reservation.model', 2),
-    })
-      " :show="showReservationHelpModal" @close="showReservationHelpModal = false">
-      <MdSuspenseWrapper directory="reservations" :locale="$page.props.app.locale" file="help" />
-    </CardModal>
-    <CardModal :show="showReservationResourceCreateModal" :title="RESERVATION_CARD_MODAL_TITLES.create_reservation_resource[
-      $page.props.app.locale
-    ][reservationResourceFormRouteName]
-      " @close="showReservationResourceCreateModal = false">
-      <Suspense>
-        <ReservationResourceForm :reservation-resource-form="reservationResourceForm" :all-resources
-          :reservation-resource-form-route-name :currently-used-capacity
-          @success="showReservationResourceCreateModal = false" />
-      </Suspense>
-    </CardModal>
-    <CardModal :show="showReservationAddUserModal" :title="RESERVATION_CARD_MODAL_TITLES.attach_user_to_reservation[
-      $page.props.app.locale
-    ]
-      " @close="showReservationAddUserModal = false">
-      <NForm :model="reservationUserForm">
-        <NFormItem :label="$t('Naudotojai')">
-          <NSelect v-model:value="reservationUserForm.users" :placeholder="`${$t('Pasirinkite')}...`" filterable
-            clearable label-field="name" value-field="id" multiple :render-label="renderUserFormLabel"
-            :render-tag="renderUserFormTag" :options="allUsers" />
-        </NFormItem>
-        <NFormItem>
-          <Button @click="handleSubmitUserForm">
+        <!-- Resources Tab -->
+        <TabsContent value="resources" class="space-y-4">
+          <Card>
+            <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-4">
+              <div>
+                <CardTitle class="text-base">
+                  {{ $t('Rezervuoti ištekliai') }}
+                </CardTitle>
+                <CardDescription>{{ $t('Valdyk rezervacijos išteklius ir jų būsenas') }}</CardDescription>
+              </div>
+              <Button size="sm" @click="handleAddResource">
+                <IFluentAdd24Filled class="size-4" />
+                {{ $t('Pridėti') }}
+              </Button>
+            </CardHeader>
+            <CardContent class="pt-0">
+              <div class="overflow-x-auto">
+                <ReservationResourceTable v-model:selected-reservation-resource="selectedReservationResource"
+                  :reservation @edit:reservation-resource="editReservationResource" />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <!-- Description Tab -->
+        <TabsContent value="description">
+          <Card>
+            <CardHeader>
+              <CardTitle class="flex items-center gap-2 text-base">
+                <IFluentTextDescription24Regular class="size-5" />
+                {{ $t('Aprašymas') }}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p v-if="reservation.description" class="text-sm text-muted-foreground whitespace-pre-wrap">
+                {{ reservation.description }}
+              </p>
+              <p v-else class="text-sm text-muted-foreground italic">
+                {{ $t('Aprašymas nepateiktas.') }}
+              </p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <!-- Comments Tab -->
+        <TabsContent value="comments" class="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle class="flex items-center gap-2 text-base">
+                <component :is="Icons.COMMENT" class="size-5" />
+                {{ $t('Komentarai') }}
+              </CardTitle>
+              <CardDescription>
+                {{ RESERVATION_HELP_TEXTS.comments[$page.props.app.locale] }}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <CommentViewer commentable_type="reservation" :model="reservation" :comments="getAllComments()" />
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
+
+    <!-- Dialogs -->
+    <Dialog :open="showReservationHelpModal" @update:open="showReservationHelpModal = $event">
+      <DialogContent class="max-w-3xl">
+        <DialogHeader>
+          <DialogTitle>{{ $t('entities.meta.help', { model: $tChoice('entities.reservation.model', 2) }) }}
+          </DialogTitle>
+        </DialogHeader>
+        <MdSuspenseWrapper directory="reservations" :locale="$page.props.app.locale" file="help" />
+      </DialogContent>
+    </Dialog>
+
+    <Dialog :open="showReservationResourceCreateModal" @update:open="showReservationResourceCreateModal = $event">
+      <DialogContent class="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>
+            {{
+              RESERVATION_CARD_MODAL_TITLES.create_reservation_resource[$page.props.app.locale][reservationResourceFormRouteName]
+            }}
+          </DialogTitle>
+        </DialogHeader>
+        <ReservationResourceForm :reservation-resource-form :all-resources :reservation-resource-form-route-name
+          :currently-used-capacity @success="showReservationResourceCreateModal = false" />
+      </DialogContent>
+    </Dialog>
+
+    <Dialog :open="showReservationAddUserModal" @update:open="showReservationAddUserModal = $event">
+      <DialogContent class="max-w-lg">
+        <DialogHeader>
+          <DialogTitle>
+            {{ RESERVATION_CARD_MODAL_TITLES.attach_user_to_reservation[$page.props.app.locale] }}
+          </DialogTitle>
+        </DialogHeader>
+        <div class="space-y-4">
+          <UserMultiSelect ref="userMultiSelectRef" v-model="selectedUsersList" :users="allUsers ?? []"
+            :label="$t('Naudotojai')" :placeholder="`${$t('Pasirinkite')}...`" :empty-text="$t('No users found.')" />
+          <Button :disabled="selectedUsersList.length === 0 || reservationUserForm.processing"
+            @click="handleSubmitUserForm">
+            <IFluentCheckmark24Filled v-if="!reservationUserForm.processing" class="size-4" />
             {{ $t("forms.submit") }}
           </Button>
-        </NFormItem>
-      </NForm>
-    </CardModal>
-    <template #below>
-      <div v-if="currentTab === 'Komentarai'">
-        <InfoText class="mb-4">
-          {{
-            RESERVATION_HELP_TEXTS.comments[$page.props.app.locale]
-          }}
-        </InfoText>
-        <CommentViewer class="mt-auto h-min" :commentable_type="'reservation'" :model="reservation"
-          :comments="getAllComments()" />
-      </div>
-      <div v-else-if="currentTab === 'Aprašymas'">
-        <p>{{ reservation.description }}</p>
-      </div>
-    </template>
-  </ShowPageLayout>
+        </div>
+      </DialogContent>
+    </Dialog>
+  </AdminContentPage>
 </template>
 
-<script setup lang="tsx">
+<script setup lang="ts">
 import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
-import {
-  NIcon,
-  NTag,
-  NForm,
-  NFormItem,
-  NSelect,
-  type MenuOption,
-  type SelectRenderLabel,
-  type SelectRenderTag,
-} from "naive-ui";
-import { ref, toRaw, computed } from "vue";
+import { ref, toRaw, computed, watch, capitalize } from "vue";
 import { router, useForm } from "@inertiajs/vue3";
 import { useStorage } from "@vueuse/core";
-import { capitalize } from "vue";
 
+import ReservationHero from "./Partials/ReservationHero.vue";
+
+import { Badge } from "@/Components/ui/badge";
 import { Button } from "@/Components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/Components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
 import { RESERVATION_CARD_MODAL_TITLES } from "@/Constants/I18n/CardModalTitles";
 import { RESERVATION_HELP_TEXTS } from "@/Constants/I18n/HelpTexts";
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
-
-import CardModal from "@/Components/Modals/CardModal.vue";
+import AdminContentPage from "@/Components/Layouts/AdminContentPage.vue";
 import CommentViewer from "@/Features/Admin/CommentViewer/CommentViewer.vue";
 import Icons from "@/Types/Icons/filled";
-import InfoText from "@/Components/SmallElements/InfoText.vue";
+import MdSuspenseWrapper from "@/Features/MarkdownGetterFromDocs/MdSuspenseWrapper.vue";
 import ReservationResourceForm from "@/Components/AdminForms/ReservationResourceForm.vue";
 import ReservationResourceTable from "@/Components/Tables/ReservationResourceTable.vue";
-import ShowPageLayout from "@/Components/Layouts/ShowModel/ShowPageLayout.vue";
-import UserAvatar from "@/Components/Avatars/UserAvatar.vue";
-import UsersAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
-import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
-import MdSuspenseWrapper from "@/Features/MarkdownGetterFromDocs/MdSuspenseWrapper.vue";
+import UserMultiSelect from "@/Components/Forms/UserMultiSelect.vue";
 
 const props = defineProps<{
   reservation: App.Entities.Reservation;
-  // NOTE: allResources is used only in reservationResourceForm
   allResources?: App.Entities.Resource[];
   allUsers?: App.Entities.User[];
 }>();
@@ -111,77 +172,98 @@ const props = defineProps<{
 usePageBreadcrumbs(() => [
   BreadcrumbHelpers.homeItem(),
   BreadcrumbHelpers.createRouteBreadcrumb(
-    capitalize($tChoice("entities.reservation.model", 2)), 
-    "reservations.index", 
-    {}, 
+    capitalize($tChoice("entities.reservation.model", 2)),
+    "reservations.index",
+    {},
     Icons.RESERVATION
   ),
   BreadcrumbHelpers.createBreadcrumbItem(props.reservation.name)
 ]);
 
-const currentTab = useStorage("show-reservation-tab", "Komentarai");
-const selectedReservationResource =
-  ref<App.Entities.ReservationResource | null>(null);
+// Tab management
+const currentTab = useStorage("show-reservation-tab", "resources");
 
+// Resource form state
+const selectedReservationResource = ref<App.Entities.ReservationResource | null>(null);
 const showReservationResourceCreateModal = ref(false);
 const showReservationAddUserModal = ref(false);
 const showReservationHelpModal = ref(false);
 
 const reservationResourceForm = useForm({
-  id: undefined,
-  resource_id: null,
+  id: undefined as string | undefined,
+  resource_id: null as string | null,
   reservation_id: props.reservation.id,
   quantity: 1,
   start_time: new Date(props.reservation.start_time).getTime(),
   end_time: new Date(props.reservation.end_time).getTime(),
 });
 
-// NOTE: I try to manage both cases of forms in one file, so this is needed
 const reservationResourceFormRouteName = ref('reservationResources.store');
 const currentlyUsedCapacity = ref(0);
 
+// User form state
 const reservationUserForm = useForm({
-  users: null,
+  users: null as number[] | null,
 });
 
-const moreOptions: MenuOption[] = [
-  {
-    label() {
-      return $t("Pridėti rezervacijos išteklių");
-    },
-    icon() {
-      return <NIcon component={Icons.RESOURCE}></NIcon>;
-    },
-    key: "add-resource",
-  },
-  {
-    label() {
-      return $t("Pridėti rezervacijos valdytoją");
-    },
-    icon() {
-      return <NIcon component={Icons.USER}></NIcon>;
-    },
-    key: "add-user",
-  },
-];
+const selectedUsersList = ref<App.Entities.User[]>([]);
+const userMultiSelectRef = ref<InstanceType<typeof UserMultiSelect> | null>(null);
 
-const handleMoreOptionClick = (key: 'add-resource' | 'add-user') => {
-  switch (key) {
-    case "add-resource":
-      reservationResourceFormRouteName.value = 'reservationResources.store';
-      currentlyUsedCapacity.value = 0;
-      reservationResourceForm.reset();
-      showReservationResourceCreateModal.value = true;
-      break;
-    case "add-user":
-      router.reload({
-        only: ["allUsers"],
+// Watch selection changes to update form
+watch(selectedUsersList, (users) => {
+  reservationUserForm.users = users.map(u => u.id);
+}, { deep: true });
+
+// Comments computation
+const allCommentsCount = computed(() => {
+  const baseComments = props.reservation.comments?.length ?? 0;
+  const resourceComments = props.reservation.resources?.reduce(
+    (acc, r) => acc + (r.pivot?.comments?.length ?? 0),
+    0
+  ) ?? 0;
+  return baseComments + resourceComments;
+});
+
+const getAllComments = () => {
+  let comments = toRaw(props.reservation.comments) ?? [];
+  const resources = toRaw(props.reservation.resources) ?? [];
+
+  if (resources.length > 0) {
+    resources.forEach((resource) => {
+      resource.pivot?.comments?.forEach((comment) => {
+        comments.push({
+          ...comment,
+          comment: `<strong>${resource.name}</strong> ${comment.comment}`,
+        });
       });
-      showReservationAddUserModal.value = true;
-      break;
-    default:
-      break;
+    });
   }
+
+  comments.sort((a, b) => {
+    return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+  });
+
+  comments = comments.filter(
+    (comment, index, self) =>
+      index === self.findIndex((c) => c.id === comment.id)
+  );
+
+  return comments;
+};
+
+// Action handlers
+const handleAddResource = () => {
+  reservationResourceFormRouteName.value = 'reservationResources.store';
+  currentlyUsedCapacity.value = 0;
+  reservationResourceForm.reset();
+  showReservationResourceCreateModal.value = true;
+};
+
+const handleAddUser = () => {
+  router.reload({
+    only: ["allUsers"],
+  });
+  showReservationAddUserModal.value = true;
 };
 
 const handleSubmitUserForm = () => {
@@ -192,6 +274,8 @@ const handleSubmitUserForm = () => {
     {
       onSuccess: () => {
         reservationUserForm.reset();
+        selectedUsersList.value = [];
+        userMultiSelectRef.value?.reset();
         showReservationAddUserModal.value = false;
       },
     }
@@ -211,80 +295,4 @@ const editReservationResource = (rResource: App.Entities.ReservationResource) =>
 
   showReservationResourceCreateModal.value = true;
 };
-
-const getAllComments = () => {
-  // WARNING: Not using toRaw() here causes a bug: Uncaught DOMException: Failed to execute 'replaceState' on 'History': #<Object> could not be cloned
-  let comments = toRaw(props.reservation.comments) ?? [];
-  let resources = toRaw(props.reservation.resources) ?? [];
-
-  if (resources.length > 0) {
-    resources.forEach((resource) => {
-      // for each comment in resource.pivot.comments, prepend the resource name
-      resource.pivot?.comments?.forEach((comment) => {
-        comments.push({
-          ...comment,
-          comment: `<strong>${resource.name}</strong> ${comment.comment}`,
-        });
-      });
-    });
-  }
-
-  // order by created_at
-  comments.sort((a, b) => {
-    return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-  });
-
-  // filter by unique id
-  // ! They should be unique already, but they're not..? Maybe optimize
-  comments = comments.filter(
-    (comment, index, self) =>
-      index === self.findIndex((c) => c.id === comment.id)
-  );
-
-  return comments;
-};
-
-const renderUserFormLabel: SelectRenderLabel = (option, selected) => {
-  return (
-    <div class="inline-flex items-center gap-2">
-      <UserAvatar user={option} size={20} />
-      <span>{option.name}</span>
-    </div>
-  );
-};
-
-const renderUserFormTag: SelectRenderTag = ({
-  option,
-  handleClose,
-}: {
-  option: App.Entities.User;
-  handleClose: () => void;
-}) => {
-  return (
-    <NTag
-      round
-      closable
-      onClose={(e) => {
-        e.stopPropagation();
-        handleClose();
-      }}
-    >
-      <div class="inline-flex items-center gap-2 align-middle">
-        <UserAvatar user={option} size={18} />
-        <span>{option.name}</span>
-      </div>
-    </NTag>
-  );
-};
-
-const relatedModels = [
-  {
-    name: "Aprašymas",
-  },
-  {
-    name: "Komentarai",
-    icon: Icons.COMMENT,
-    count: props.reservation.comments?.length,
-  },
-];
 </script>

@@ -589,5 +589,21 @@
   "Naudokite mastelio slankiklį, kad priartintumėte ar atitolintumėte laiko juostą": "Use the scale slider to zoom in or out of the timeline",
   "Slinkite horizontaliai, kad naršytumėte per laikotarpius": "Scroll horizontally to navigate through time periods",
   "Legenda": "Legend",
-  "Uždaryti": "Close"
+  "Uždaryti": "Close",
+
+  "Tuščia": "Empty",
+  "Laukia patvirtinimo": "Awaiting approval",
+  "Patvirtinta": "Approved",
+  "Mišri būsena": "Mixed status",
+  "Užbaigta": "Completed",
+  "valdytojai": "managers",
+  "Būsenų informacija": "Status information",
+  "laukia": "pending",
+  "Rezervuoti ištekliai": "Reserved resources",
+  "Valdyk rezervacijos išteklius ir jų būsenas": "Manage reservation resources and their statuses",
+  "Pridėti": "Add",
+  "Pridėti išteklių": "Add resource",
+  "Pridėti valdytoją": "Add manager",
+  "Aprašymas nepateiktas.": "No description provided.",
+  "No users found.": "No users found."
 }

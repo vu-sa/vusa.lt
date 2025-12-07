@@ -206,6 +206,10 @@ export default tseslint.config(
 
             // Project-specific overrides
             "no-undef": "off", // Namespaces shown as undefined, disabled for now
+            
+            // Accessibility - disabled for ShadcnVue compatibility
+            "vuejs-accessibility/label-has-for": "off",
+            "vuejs-accessibility/form-control-has-label": "off",
         },
     }
 );
