@@ -1,5 +1,5 @@
 import { ref, computed, onMounted } from 'vue';
-import type { AtstovavimosInstitution, AtstovavimosTenant, TimelineFilters } from '../types';
+import type { AtstovavimosInstitution, AtstovavimosTenant } from '../types';
 
 export function useTimelineFilters(
   institutions: AtstovavimosInstitution[],
@@ -28,27 +28,6 @@ export function useTimelineFilters(
       : undefined
   );
 
-  // Filter functions
-  function toggleUserTenantFilter(id: string, checked: boolean) {
-    const set = new Set(userTenantFilter.value);
-    if (checked) set.add(id);
-    else set.delete(id);
-    userTenantFilter.value = Array.from(set);
-  }
-
-  function toggleTenantForGantt(id: string, checked: boolean) {
-    const set = new Set(selectedTenantForGantt.value);
-    if (checked) set.add(id);
-    else set.delete(id);
-    selectedTenantForGantt.value = Array.from(set);
-  }
-
-  function handleTenantUpdateValue(value: string) {
-    // Legacy function for backward compatibility, now toggles tenant
-    const isSelected = selectedTenantForGantt.value.includes(value);
-    toggleTenantForGantt(value, !isSelected);
-  }
-
   function setSelectedTenants(tenantIds: string[]) {
     selectedTenantForGantt.value = tenantIds;
   }
@@ -60,14 +39,6 @@ export function useTimelineFilters(
       const firstTenantId = String(availableTenants[0]?.id);
       selectedTenantForGantt.value = [firstTenantId];
     }
-  });
-
-  // Export filter state for serialization
-  const getFilterState = (): TimelineFilters => ({
-    userTenantFilter: userTenantFilter.value,
-    showOnlyWithActivityUser: showOnlyWithActivityUser.value,
-    showOnlyWithActivityTenant: showOnlyWithActivityTenant.value,
-    selectedTenantForGantt: selectedTenantForGantt.value
   });
 
   return {
@@ -82,10 +53,6 @@ export function useTimelineFilters(
     currentTenant,
     
     // Actions
-    toggleUserTenantFilter,
-    toggleTenantForGantt,
     setSelectedTenants,
-    handleTenantUpdateValue,
-    getFilterState
   };
 }

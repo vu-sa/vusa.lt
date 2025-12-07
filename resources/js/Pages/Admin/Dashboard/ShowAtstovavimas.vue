@@ -135,7 +135,7 @@ const isAdmin = computed(() => {
 });
 
 // Initialize composables
-const atstovavimosData = useAtstovavimosData(props.user, props.accessibleInstitutions);
+const atstovavimosData = useAtstovavimosData(props.user);
 const timelineFilters = useTimelineFilters(atstovavimosData.institutions.value, props.availableTenants);
 const actions = useAtstovavimosActions(props.accessibleInstitutions);
 const ganttData = useGanttChartData(props.accessibleInstitutions, props.availableTenants, timelineFilters.selectedTenantForGantt);

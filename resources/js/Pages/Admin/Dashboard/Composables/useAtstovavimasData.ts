@@ -9,8 +9,7 @@ import type {
 } from '../types';
 
 export function useAtstovavimosData(
-  user: AtstovavimosUser,
-  accessibleInstitutions: App.Entities.Institution[]
+  user: AtstovavimosUser
 ) {
   // User's direct institutions (from current_duties)
   const institutions = computed<AtstovavimosInstitution[]>(() => {
@@ -29,13 +28,7 @@ export function useAtstovavimosData(
       );
   });
 
-  // Additional institutions user can access (for admin functionality)
-  const additionalInstitutions = computed(() => {
-    const myIds = institutions.value.map(inst => inst.id);
-    return accessibleInstitutions.filter(inst => !myIds.includes(inst.id));
-  });
-
-  // All meetings from user's institutions
+  // All meetings from user's institutions (internal computed for upcomingMeetings and sortedMeetings)
   const meetings = computed<AtstovavimosMeeting[]>(() => {
     return institutions.value.flatMap((institution: AtstovavimosInstitution) => {
       return (institution?.meetings ?? []).map(meeting => ({
@@ -123,20 +116,12 @@ export function useAtstovavimosData(
     };
   });
 
-  // Statistics
-  const hasUpcomingMeetingCount = computed(() => 
-    institutions.value.filter((institution: AtstovavimosInstitution) => !!institution?.hasUpcomingMeetings).length
-  );
-
   return {
     institutions,
-    additionalInstitutions,
-    meetings,
     allUserMeetings,
     userGaps,
     upcomingMeetings,
     sortedMeetings,
     institutionsInsights,
-    hasUpcomingMeetingCount
   };
 }

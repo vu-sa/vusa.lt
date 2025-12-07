@@ -50,13 +50,6 @@ export interface AtstovavimosTenant {
   type: string;
 }
 
-export interface TimelineFilters {
-  userTenantFilter: string[];
-  showOnlyWithActivityUser: boolean;
-  showOnlyWithActivityTenant: boolean;
-  selectedTenantForGantt: string[]; // Changed to array for multiple selection
-}
-
 export interface InstitutionInsights {
   withoutMeetings: AtstovavimosInstitution[];
   withOldMeetings: Array<AtstovavimosInstitution & {
@@ -77,15 +70,4 @@ export interface GanttInstitution {
   id: string;
   name: string;
   tenant_id?: string;
-}
-
-export interface ModalState {
-  showMeetingModal: boolean;
-  showAllMeetingModal: boolean;
-  showAllInstitutionModal: boolean;
-  showCreateCheckIn: { open: boolean; institutionId?: string } | null;
-  showFullscreenGantt: boolean;
-  fullscreenGanttType: 'user' | 'tenant';
-  selectedInstitution?: any;
-  selectedSuggestedAt?: Date;
 }
