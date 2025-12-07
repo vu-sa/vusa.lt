@@ -19,6 +19,68 @@ export const pluralizeModels = (word: string, forPermissions = true) => {
   return word + "s";
 };
 
+/**
+ * Detect if a Lithuanian word is feminine based on its ending
+ * Feminine endings: -a, -ė, -is (some), -ija, -tis
+ * Masculine endings: -as, -is (most), -us, -ys
+ */
+export const isLithuanianFeminine = (word: string): boolean => {
+  const lowercased = word.toLowerCase().trim();
+  
+  // Feminine patterns (order matters - check longer patterns first)
+  if (lowercased.endsWith('ija')) return true;  // komisija, kolegija
+  if (lowercased.endsWith('tis')) return true;  //atis patterns (but rare)
+  if (lowercased.endsWith('yba')) return true;  // taryba
+  if (lowercased.endsWith('a') && !lowercased.endsWith('as')) return true;  // komisija, taryba
+  if (lowercased.endsWith('ė')) return true;    // grupė
+  
+  // Masculine by default (as, is, us, ys, etc.)
+  return false;
+};
+
+/**
+ * Pluralize a Lithuanian word and return "Visi" or "Visos" accordingly
+ * Returns { word: pluralized word, visi: "Visi" or "Visos" }
+ */
+export const pluralizeLithuanian = (word: string): { word: string; visi: string } => {
+  const isFeminine = isLithuanianFeminine(word);
+  const lowercased = word.toLowerCase().trim();
+  
+  let pluralized = word;
+  
+  // Pluralize based on ending
+  if (lowercased.endsWith('ija')) {
+    // komisija -> komisijos
+    pluralized = word.slice(0, -1) + 'os';
+  } else if (lowercased.endsWith('yba')) {
+    // taryba -> tarybos
+    pluralized = word.slice(0, -1) + 'os';
+  } else if (lowercased.endsWith('a') && !lowercased.endsWith('as')) {
+    // -a -> -os (feminine)
+    pluralized = word.slice(0, -1) + 'os';
+  } else if (lowercased.endsWith('ė')) {
+    // grupė -> grupės
+    pluralized = word.slice(0, -1) + 'ės';
+  } else if (lowercased.endsWith('as')) {
+    // dekanatas -> dekanatuose? No, just keep nominative plural: dekanatai
+    pluralized = word.slice(0, -2) + 'ai';
+  } else if (lowercased.endsWith('is')) {
+    // -is -> -iai (masculine)
+    pluralized = word.slice(0, -2) + 'iai';
+  } else if (lowercased.endsWith('us')) {
+    // -us -> -ūs or -ai
+    pluralized = word.slice(0, -2) + 'ai';
+  } else if (lowercased.endsWith('ys')) {
+    // -ys -> -iai
+    pluralized = word.slice(0, -2) + 'iai';
+  }
+  
+  return {
+    word: pluralized.toLowerCase(),
+    visi: isFeminine ? 'Visos' : 'Visi'
+  };
+};
+
 export const genitivize = (name: string | null) => {
   if (name === null) {
     return "";

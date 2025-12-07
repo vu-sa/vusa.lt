@@ -2,22 +2,22 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-See @README.md for project overview and @package.json for available npm commands.
+See [README.md](README.md) for project overview and [package.json](package.json) for available npm commands.
 
 ## 📚 Documentation Hub
 
 **Specialized Documentation** (for detailed guidance):
 - **Core Patterns**: @.github/copilot-instructions.md - DO/DON'T patterns, search architecture, key implementations
-- **Testing (Backend)**: @tests/CLAUDE.md - PHP testing patterns, security tests, permission testing
-- **Testing (Frontend)**: @resources/js/CLAUDE.md - Vitest, component tests, mocks
-- **Data Tables**: @resources/js/Components/Tables/CLAUDE.md - TanStack tables, decision tree, patterns
-- **Storybook**: @.storybook/CLAUDE.md - Visual testing, browser tests, mock system
-- **Breadcrumbs**: @resources/js/Composables/BREADCRUMBS_GUIDE.md - Breadcrumb system patterns
+- **Testing (Backend)**: [tests/CLAUDE.md](tests/CLAUDE.md) - PHP testing patterns, security tests, permission testing
+- **Testing (Frontend)**: [resources/js/CLAUDE.md](resources/js/CLAUDE.md) - Vitest, component tests, mocks
+- **Data Tables**: [resources/js/Components/Tables/CLAUDE.md](resources/js/Components/Tables/CLAUDE.md) - TanStack tables, decision tree, patterns
+- **Storybook**: [.storybook/CLAUDE.md](.storybook/CLAUDE.md) - Visual testing, browser tests, mock system
+- **Breadcrumbs**: [resources/js/Composables/BREADCRUMBS_GUIDE.md](resources/js/Composables/BREADCRUMBS_GUIDE.md) - Breadcrumb system patterns
 
 **Quick References** (for README-style documentation):
-- **Testing Overview**: @tests/README.md - Commands, environment, authorization testing
-- **Tables Guide**: @resources/js/Components/Tables/README.md - Complete TanStack documentation
-- **Storybook Setup**: @.storybook/README.md - Configuration and setup guide
+- **Testing Overview**: [tests/README.md](tests/README.md) - Commands, environment, authorization testing
+- **Tables Guide**: [resources/js/Components/Tables/README.md](resources/js/Components/Tables/README.md) - Complete TanStack documentation
+- **Storybook Setup**: [.storybook/README.md](.storybook/README.md) - Configuration and setup guide
 
 ## Project Overview
 
@@ -53,7 +53,7 @@ All Laravel commands **MUST** be run using Laravel Sail:
 
 ### Core Development Patterns
 
-**See**: @.github/copilot-instructions.md for complete DO/DON'T patterns, search architecture, and implementation guidelines.
+**See**: [.github/copilot-instructions.md](.github/copilot-instructions.md) for complete DO/DON'T patterns, search architecture, and implementation guidelines.
 
 **Quick reference**:
 - Use Laravel built-in features over custom implementations
@@ -64,7 +64,7 @@ All Laravel commands **MUST** be run using Laravel Sail:
 
 ### Icon System
 
-**Location**: `@/Components/icons/` - Complete tree-shakable icon system
+**Location**: `resources/js/Components/icons/` - Complete tree-shakable icon system
 
 **✅ Recommended**: Direct imports for best tree-shaking
 ```vue
@@ -75,7 +75,7 @@ import { NewsIcon, SaveIcon, HomeIconFilled } from '@/Components/icons';
 
 ### Frontend Testing
 
-**See**: @resources/js/CLAUDE.md and @tests/README.md for complete testing documentation
+**See**: [resources/js/CLAUDE.md](resources/js/CLAUDE.md) and [tests/README.md](tests/README.md) for complete testing documentation
 
 **Quick Commands**:
 ```bash
@@ -88,7 +88,7 @@ import { NewsIcon, SaveIcon, HomeIconFilled } from '@/Components/icons';
 
 ### Data Tables
 
-**See**: @resources/js/Components/Tables/CLAUDE.md for complete documentation
+**See**: [resources/js/Components/Tables/CLAUDE.md](resources/js/Components/Tables/CLAUDE.md) for complete documentation
 
 **Quick Decision Tree**:
 - Full admin page with header/breadcrumbs? → `IndexTablePage.vue`
@@ -97,7 +97,7 @@ import { NewsIcon, SaveIcon, HomeIconFilled } from '@/Components/icons';
 
 ### Breadcrumb System
 
-**See**: @resources/js/Composables/BREADCRUMBS_GUIDE.md
+**See**: [resources/js/Composables/BREADCRUMBS_GUIDE.md](resources/js/Composables/BREADCRUMBS_GUIDE.md)
 
 **Quick Reference**:
 - **Index pages**: Use `IndexPageLayout` (automatic breadcrumbs)
@@ -145,7 +145,7 @@ Permission checks are available in Vue through `$page.props.auth.can` object.
 
 ### Testing Permissions
 
-**See**: @tests/CLAUDE.md for complete patterns
+**See**: [tests/CLAUDE.md](tests/CLAUDE.md) for complete patterns
 
 ```php
 // Domain-appropriate testing
@@ -218,7 +218,7 @@ $collection = $model->relation()->get()->keyBy('id');
 
 ### Scout Search Drivers
 
-**See**: @.github/copilot-instructions.md for complete architecture
+**See**: [.github/copilot-instructions.md](.github/copilot-instructions.md) for complete architecture
 
 - **Default driver**: `database` (SCOUT_DRIVER env var)
 - **Admin searches**: Always use database driver (prevents circular dependencies)
@@ -294,12 +294,10 @@ return back()->with(['error' => 'Message', 'statusCode' => 403]);
 
 - `npm run typecheck` command is not supported in this app
 - **Database inspection**: `./vendor/bin/sail artisan db:table {table_name}`
-- **For testing issues**: See @tests/CLAUDE.md
-- **For Storybook issues**: See @.storybook/CLAUDE.md
-- **For table issues**: See @resources/js/Components/Tables/CLAUDE.md
+- **For testing issues**: See [tests/CLAUDE.md](tests/CLAUDE.md)
+- **For Storybook issues**: See [.storybook/CLAUDE.md](.storybook/CLAUDE.md)
+- **For table issues**: See [resources/js/Components/Tables/CLAUDE.md](resources/js/Components/Tables/CLAUDE.md)
 
 ## Remember
 
 This is a **student-run project**. Prioritize maintainability and approachability over complex solutions.
-
-**Note**: Use @ syntax for referencing other .md files. All Vue components use PascalCase.

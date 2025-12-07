@@ -61,19 +61,19 @@
                 <!-- Contact Links -->
                 <div class="flex flex-wrap gap-1.5">
                   <a v-if="institution.website" :href="institution.website" target="_blank" rel="noopener noreferrer"
-                    class="inline-flex items-center gap-1 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                    class="inline-flex items-center gap-1 rounded-md bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-700 transition-colors hover:bg-zinc-200 dark:bg-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-600"
                     @click.stop>
                     <IFluentGlobe20Regular class="size-3" />
                     <span class="text-xs font-medium">{{ extractDomain(institution.website) }}</span>
                   </a>
                   <a v-if="institution.email" :href="`mailto:${institution.email}`"
-                    class="inline-flex items-center gap-1 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                    class="inline-flex items-center gap-1 rounded-md bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-700 transition-colors hover:bg-zinc-200 dark:bg-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-600"
                     @click.stop>
                     <IFluentMail20Regular class="size-3" />
                     <span class="text-xs font-medium">{{ institution.email }}</span>
                   </a>
                   <a v-if="institution.phone" :href="`tel:${institution.phone}`"
-                    class="inline-flex items-center gap-1 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                    class="inline-flex items-center gap-1 rounded-md bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-700 transition-colors hover:bg-zinc-200 dark:bg-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-600"
                     @click.stop>
                     <IFluentPhone20Regular class="size-3" />
                     <span class="text-xs font-medium">{{ institution.phone }}</span>

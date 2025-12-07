@@ -1,17 +1,7 @@
 <template>
-  <div class="mt-6 space-y-12 sm:mt-8">
-    <!-- Clean header with modest styling -->
-    <header class="space-y-6">
-      <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100 sm:text-4xl">
-        {{ $t("Kontaktai") }}
-      </h1>
-      <div class="space-y-2">
-        <div class="w-12 h-1 bg-vusa-red rounded-full" />
-        <p class="text-lg text-gray-600 dark:text-gray-400">
-          {{ $t(type.title) }}
-        </p>
-      </div>
-    </header>
+  <div class="mt-6 space-y-8 sm:mt-8 sm:space-y-12">
+    <!-- Header -->
+    <ContactPageHeader :title="$t('Kontaktai')" :subtitle="$t(type.title)" />
 
     <!-- Institution cards with enhanced organization -->
     <div v-if="institutionsWithContent.length > 0">
@@ -44,18 +34,15 @@
       </div>
     </div>
 
-    <!-- Clean empty state -->
+    <!-- Empty state -->
     <div v-else class="flex flex-col items-center justify-center py-16 text-center">
-      <div class="rounded-full bg-gray-50 p-6 dark:bg-gray-800">
-        <svg class="size-8 text-gray-400 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-        </svg>
+      <div class="rounded-full bg-zinc-100 p-6 dark:bg-zinc-800">
+        <UsersIcon class="size-8 text-zinc-400 dark:text-zinc-500" />
       </div>
-      <h3 class="mt-6 text-lg font-semibold text-gray-900 dark:text-gray-100">
+      <h3 class="mt-6 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
         {{ $t('No contacts available') }}
       </h3>
-      <p class="mt-2 text-base text-gray-600 dark:text-gray-400">
+      <p class="mt-2 text-base text-zinc-600 dark:text-zinc-400">
         {{ $t('There are currently no contacts available for this category.') }}
       </p>
     </div>
@@ -65,14 +52,15 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { usePage } from "@inertiajs/vue3";
+import { UsersIcon } from "lucide-vue-next";
 
-const $page = usePage();
-
+import ContactPageHeader from "@/Components/Public/ContactPageHeader.vue";
 import InstitutionFigure from "@/Components/Public/InstitutionFigure.vue";
 import SmartLink from "@/Components/Public/SmartLink.vue";
 import Button from "@/Components/ui/button/Button.vue";
-import { Separator } from "@/Components/ui/separator";
 import StaggeredTransitionGroup from "@/Components/Transitions/StaggeredTransitionGroup.vue";
+
+const $page = usePage();
 
 const props = defineProps<{
   institutions: App.Entities.Institution[];

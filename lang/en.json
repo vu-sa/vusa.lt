@@ -48,7 +48,24 @@
   "Vilniaus universiteto Studentų atstovybė Teisės fakultete": "Vilnius University Students' Representation in Faculty of Law",
   "Vilnius universiteto Studentų atstovybė Verslo mokykloje": "Vilnius University Students' Representation in Business School",
   "Studentų atstovai": "Student representatives",
+  "VU SA studentų atstovai": "VU SA student representatives",
   "Programos, klubai ir projektai": "Programs, clubs and projects",
+
+  "Susipažinkite su studentų atstovais įvairiose VU institucijose ir darbo grupėse.": "Meet student representatives in various VU institutions and working groups.",
+  "Susipažinkite su VU SA programomis, klubais ir projektais.": "Discover VU SA programs, clubs and projects.",
+  "institucijų": "institutions",
+  "atstovų": "representatives",
+  "daugiau": "more",
+  "Vardas arba institucija...": "Name or institution...",
+  "Žiūrėti visus kontaktus": "View all contacts",
+  "Visi kontaktai": "All contacts",
+  "Žiūrėti visus": "View all",
+  "Visi": "All",
+  "Visi padaliniai": "All units",
+  "Kitos institucijos": "Other institutions",
+  "Plačiau apie instituciją": "More about the institution",
+  "Plačiau": "More",
+  "Centriniai": "Central",
 
   "Išvalyti pasirinkimą": "Clear selection",
   "Balsavimo duomenys": "Voting data",
@@ -638,5 +655,11 @@
   "Rodyti tik viešas institucijas": "Show only public institutions",
   "Viešos institucijos": "Public institutions",
   "Tik su veikla": "Only with activity",
-  "Filtras": "Filter"
+  "Filtras": "Filter",
+  "Ieškoti": "Search",
+  "Ieškoti pagal pavadinimą...": "Search by name...",
+  "Rezultatų nerasta": "No results found",
+  "Pabandykite pakeisti paieškos užklausą.": "Try changing your search query.",
+  "Išvalyti paiešką": "Clear search",
+  "Žiūrėti visus kontaktus": "View all contacts"
 }

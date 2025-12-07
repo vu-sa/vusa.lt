@@ -94,6 +94,15 @@ test('can open representation padaliniai category', function () {
         );
 });
 
+test('can open student representative organ category', function () {
+    $this->get(route('contacts.category', ['subdomain' => 'www', 'lang' => 'lt', 'type' => 'studentu-atstovu-organas']))
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Public/Contacts/ShowStudentReps')
+            ->has('types')
+            ->has('categoryType')
+        );
+});
+
 // Contact grouping tests
 test('institution page with no grouping shows flat contacts', function () {
     $institution = Institution::factory()->create();

@@ -21,6 +21,8 @@
           <p class="text-base sm:text-lg text-muted-foreground px-2">
             {{ $t('search.institution_search_description') }}
           </p>
+          <!-- Slot for additional content below subtitle -->
+          <slot name="after-subtitle" />
         </div>
       </div>
 
@@ -84,8 +86,8 @@
                       $t('search.institution_singular') : $t('search.institution_plural') }}</span>
                   </template>
                   <template v-else>
-                    <span class="hidden sm:inline">{{ $t('search.found_results') }} </span>
-                    <strong class="text-foreground">{{ searchController.totalHits.value.toLocaleString() }}</strong>
+                    <span class="hidden sm:inline">{{ $t('search.found_results') }} </span>{{" "}}
+                    <strong class="text-foreground">{{ searchController.totalHits.value.toLocaleString() }}</strong>{{" "}}
                     <span class="hidden sm:inline"> {{ searchController.totalHits.value === 1 ? 
                       $t('search.institution_singular') : $t('search.institution_plural') }}</span>
                     <template v-if="searchController.searchState.value.query && 

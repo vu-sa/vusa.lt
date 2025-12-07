@@ -30,7 +30,7 @@
           <h3 class="mb-3 text-lg font-semibold">{{ section.dutyName }}</h3>
           <div v-if="section.type === 'grouped_duty'" class="space-y-4">
             <div v-for="group in section.groups" :key="group.name" class="space-y-3">
-              <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ group.name }}</h4>
+              <h4 class="text-sm font-medium text-zinc-700 dark:text-zinc-300">{{ group.name }}</h4>
               <div class="space-y-2">
                 <ContactCard v-for="contact in group.contacts" :key="contact.id" :contact="contact" :duties="contact.duties || []" />
               </div>

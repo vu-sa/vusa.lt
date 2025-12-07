@@ -104,10 +104,7 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
 
         Route::get('kontaktai', [Public\ContactController::class, 'contacts'])->name('contacts');
         Route::get('kontaktai/kategorija/{type:slug}', [Public\ContactController::class, 'institutionCategory'])
-            ->name('contacts.category')
-            ->whereIn(
-                'type', ['padaliniai']
-            );
+            ->name('contacts.category');
 
         Route::get('{newsString}/{news:permalink}', [Public\NewsController::class, 'news'])
             ->whereIn('newsString', ['naujiena', 'news'])

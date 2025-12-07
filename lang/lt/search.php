@@ -136,7 +136,7 @@ return [
     'document_page_description' => 'Ieškokite VU SA dokumentų archyve',
     'offline_message' => 'Nėra interneto ryšio - paieška nepasiekiama',
     'showing_results' => 'Rodomi',
-    'found_results' => 'Rasti',
+    'found_results' => 'Surasta rezultatų:',
     'document_singular' => 'dokumentas',
     'document_plural' => 'dokumentai',
     'newest_first' => '(naujausi pirmiausia)',

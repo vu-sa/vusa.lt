@@ -220,71 +220,6 @@ class ContactController extends PublicController
     }
 
     /**
-     * Get recent meetings for institution (limited to configured types)
-     */
-    protected function getRecentMeetings(Institution $institution, int $recentLimit = 3): Collection
-    {
-        $settings = app(MeetingSettings::class);
-        $allowedTypeIds = $settings->getPublicMeetingInstitutionTypeIds();
-
-        // If no types configured, return empty
-        if ($allowedTypeIds->isEmpty()) {
-            return new Collection([]);
-        }
-
-        // Check if institution has any allowed types
-        $institutionTypeIds = $institution->types->pluck('id');
-        $hasAllowedType = $institutionTypeIds->intersect($allowedTypeIds)->isNotEmpty();
-
-        if (! $hasAllowedType) {
-            return new Collection([]);
-        }
-
-        // Load meetings with necessary relationships
-        return $institution->meetings()
-            ->with(['agendaItems' => function ($query) {
-                $query->orderBy('order');
-            }])
-            ->where('start_time', '<=', now()) // Only past meetings
-            ->orderBy('start_time', 'desc')
-            ->take($recentLimit)
-            ->get()
-            ->each->append('completion_status');
-    }
-
-    /**
-     * Get all meetings for institution (for "show more" collapsed section)
-     */
-    protected function getAllMeetings(Institution $institution, int $skipRecent = 3): Collection
-    {
-        $settings = app(MeetingSettings::class);
-        $allowedTypeIds = $settings->getPublicMeetingInstitutionTypeIds();
-
-        if ($allowedTypeIds->isEmpty()) {
-            return new Collection([]);
-        }
-
-        $institutionTypeIds = $institution->types->pluck('id');
-        $hasAllowedType = $institutionTypeIds->intersect($allowedTypeIds)->isNotEmpty();
-
-        if (! $hasAllowedType) {
-            return new Collection([]);
-        }
-
-        // Fetch all meetings and skip on the collection instead of in SQL
-        return $institution->meetings()
-            ->with(['agendaItems' => function ($query) {
-                $query->orderBy('order');
-            }])
-            ->where('start_time', '<=', now())
-            ->orderBy('start_time', 'desc')
-            ->get()
-            ->skip($skipRecent)  // Skip on collection, not query builder
-            ->values()  // Re-index array sequentially (fix keys starting from 3)
-            ->each->append('completion_status');
-    }
-
-    /**
      * Show individual meeting detail page
      */
     public function showMeeting($subdomain, $lang, Meeting $meeting)
@@ -359,28 +294,69 @@ class ContactController extends PublicController
             'subdomain' => $this->subdomain,
             'lang' => $this->getOtherLang(), 'type' => $type->slug]));
 
-        $institutions = $type->load(['institutions' => function ($query) {
-            $query->orderBy('name')->with(['tenant' => function ($query) {
-                $query->where('type', 'padalinys');
-            }]);
-        }])->institutions;
+        // For padaliniai type, use the traditional ShowContactCategory view
+        if ($type->slug === 'padaliniai') {
+            $institutions = $type->load(['institutions' => function ($query) {
+                $query->orderBy('name')->with(['tenant' => function ($query) {
+                    $query->where('type', 'padalinys');
+                }]);
+            }])->institutions;
+
+            $seo = $this->shareAndReturnSEOObject(
+                title: __('Kontaktai').': '.$type->title.' - VU SA',
+                description: Str::limit($type->description, 160),
+            );
+
+            return Inertia::render('Public/Contacts/ShowContactCategory', [
+                'institutions' => $institutions->map(function ($institution) {
+                    return [
+                        ...$institution->toArray(),
+                        'description' => '',
+                    ];
+                }),
+                'type' => $type->unsetRelation('institutions'),
+            ])->withViewData(
+                ['SEOData' => $seo]
+            );
+        }
+
+        // For other types (pkp, studentu-atstovu-organas), use ShowStudentReps format
+        $descendants = $type->getDescendantsAndSelf();
+
+        // Default to showing all tenants on www (pagrindinis), filter by tenant on padalinys subdomains
+        // Can be overridden with ?all=1 or ?all=0 query parameter
+        $isMainTenant = $this->tenant->type === 'pagrindinis';
+        $showAllTenants = request()->has('all') ? request()->boolean('all') : $isMainTenant;
+
+        $descendants->load(['institutions' => function ($query) use ($showAllTenants) {
+            $query
+                ->with('duties.current_users:id,name,email,phone,facebook_url,profile_photo_path')
+                ->with('tenant:id,alias,shortname,type')
+                ->where('is_active', true)
+                // Order by tenant type 'pagrindinis' first, then by name
+                ->orderByRaw("CASE WHEN EXISTS (SELECT 1 FROM tenants WHERE tenants.id = institutions.tenant_id AND tenants.type = 'pagrindinis') THEN 0 ELSE 1 END")
+                ->orderBy('name');
+
+            // Only filter by tenant if not showing all
+            if (!$showAllTenants) {
+                $query->where('tenant_id', '=', $this->tenant->id);
+            }
+        }]);
+
+        // Remove descendants without institutions
+        $descendants = $descendants->filter(function ($descendant) {
+            return $descendant->institutions->count() > 0;
+        })->values();
 
         $seo = $this->shareAndReturnSEOObject(
-            title: __('Kontaktai').': '.$type->title.' - VU SA',
+            title: __('Kontaktai').': '.$type->title.' - '.$this->tenant->shortname,
             description: Str::limit($type->description, 160),
         );
 
-        return Inertia::render('Public/Contacts/ShowContactCategory', [
-            'institutions' => $institutions->map(function ($institution) {
-                return [
-                    ...$institution->toArray(),
-                    // shorten description and add ellipsis
-                    // 'description' => Str::limit(strip_tags($institution->description), 100, '...'),
-                    //  TODO: better solution for displaying description or remove completely
-                    'description' => '',
-                ];
-            }),
-            'type' => $type->unsetRelation('institutions'),
+        return Inertia::render('Public/Contacts/ShowStudentReps', [
+            'types' => $descendants,
+            'categoryType' => $type->only(['id', 'slug', 'title', 'description']),
+            'showAllTenants' => $showAllTenants,
         ])->withViewData(
             ['SEOData' => $seo]
         );

@@ -8,13 +8,24 @@
     :initial-query
     :initial-filters
     :type-labels="institutionTypes"
-  />
+  >
+    <!-- Student representatives link slot -->
+    <template #after-subtitle>
+      <SmartLink 
+        :href="route('contacts.studentRepresentatives', { subdomain: 'www', lang: $page.props.app.locale })"
+        class="mt-3 inline-flex items-center gap-1.5 rounded-full bg-zinc-100 px-4 py-1.5 text-sm font-medium text-zinc-700 transition-colors hover:bg-vusa-red/10 hover:text-vusa-red dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-vusa-red/20 dark:hover:text-vusa-red"
+      >
+        {{ $t('VU SA studentų atstovai (-ės)') }} →
+      </SmartLink>
+    </template>
+  </InstitutionSearchInterface>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted } from 'vue';
 import { usePage, Head } from '@inertiajs/vue3';
 import InstitutionSearchInterface from '@/Components/Public/Search/InstitutionSearchInterface.vue';
+import SmartLink from '@/Components/Public/SmartLink.vue';
 
 interface Props {
   institutionTypes?: Record<string, string>
@@ -23,6 +34,8 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   institutionTypes: () => ({})
 })
+
+const $page = usePage();
 
 // Expose type labels for the search interface
 const institutionTypes = computed(() => props.institutionTypes)

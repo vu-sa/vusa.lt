@@ -141,6 +141,8 @@ interface Props {
   size: "tiny" | "small" | "medium";
   /** Additional options to prepend to the dropdown list */
   prependOptions?: Array<DropdownOption>;
+  /** Override default label when on main tenant (instead of "Padaliniai") */
+  mainTenantLabel?: string;
 }
 
 interface FacultyLocation {
@@ -283,11 +285,10 @@ const otherCitiesFaculties = computed(() => {
 });
 
 const padalinys = computed(() => {
-  return $t(
-    usePage().props.tenant?.alias !== "vusa"
-      ? usePage().props.tenant?.shortname.split(" ").pop() ?? "Padaliniai"
-      : "Padaliniai",
-  );
+  if (usePage().props.tenant?.alias === "vusa") {
+    return $t(props.mainTenantLabel ?? "Padaliniai");
+  }
+  return $t(usePage().props.tenant?.shortname.split(" ").pop() ?? "Padaliniai");
 });
 
 const isDisabled = computed(() => {
