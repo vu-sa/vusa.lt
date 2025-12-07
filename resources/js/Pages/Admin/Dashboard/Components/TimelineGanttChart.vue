@@ -21,8 +21,12 @@
   :height="effectiveHeight"
         @create-meeting="$emit('create-meeting', $event)"
         @fullscreen="$emit('fullscreen')"
+        @show-legend-modal="showLegendModal = true"
       />
     </CardContent>
+    
+    <!-- Legend Modal -->
+    <GanttLegendModal :is-open="showLegendModal" @update:is-open="showLegendModal = $event" />
   </Card>
   <p v-else class="text-sm text-muted-foreground">
     {{ emptyMessage }}
@@ -32,6 +36,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import MeetingsGantt from "@/Components/Graphs/MeetingsGantt.vue";
+import GanttLegendModal from "@/Components/Graphs/GanttLegendModal.vue";
 import { Card, CardContent } from "@/Components/ui/card";
 
 import type { 
@@ -59,6 +64,9 @@ const emit = defineEmits<{
   'create-meeting': [payload: { institution_id: string | number, suggestedAt: Date }];
   'fullscreen': [];
 }>();
+
+// Legend modal state
+const showLegendModal = ref(false);
 
 // Format institutions for Gantt component
 const formattedInstitutions = computed(() => {

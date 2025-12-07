@@ -12,7 +12,7 @@
         <!-- Search -->
         <div class="relative">
           <input v-model="searchQuery" type="text" :placeholder="$t('Ieškoti institucijų...')"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            class="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100">
         </div>
 
         <!-- Compact institution list -->
@@ -31,7 +31,7 @@
         </div>
 
         <!-- Empty state -->
-        <div v-if="filteredInstitutions.length === 0" class="text-center py-8 text-gray-500">
+        <div v-if="filteredInstitutions.length === 0" class="text-center py-8 text-zinc-500 dark:text-zinc-400">
           <component :is="Icons.INSTITUTION" class="h-12 w-12 mx-auto mb-4 opacity-50" />
           <p>{{ searchQuery ? $t('Institucijų nerasta pagal paiešką') : $t('Institucijų nerasta') }}</p>
         </div>

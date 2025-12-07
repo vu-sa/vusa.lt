@@ -28,11 +28,11 @@
       <!-- Timeline container skeleton -->
       <div class="flex w-full border rounded-md overflow-hidden" style="height: 400px;">
         <!-- Left labels skeleton -->
-        <div class="w-56 bg-white border-r">
-          <div class="p-3 border-b">
+        <div class="w-56 bg-white dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-700">
+          <div class="p-3 border-b border-zinc-200 dark:border-zinc-700">
             <Skeleton class="h-4 w-full" />
           </div>
-          <div v-for="i in 8" :key="i" class="p-3 border-b" :class="i % 2 === 0 ? 'bg-slate-50/40' : ''">
+          <div v-for="i in 8" :key="i" class="p-3 border-b border-zinc-100 dark:border-zinc-800" :class="i % 2 === 0 ? 'bg-zinc-50/40 dark:bg-zinc-800/30' : ''">
             <div class="flex items-center justify-between">
               <Skeleton class="h-4 w-32" />
               <Skeleton class="h-3 w-12" />
@@ -41,7 +41,7 @@
         </div>
 
         <!-- Right timeline skeleton -->
-        <div class="flex-1 bg-gray-50">
+        <div class="flex-1 bg-zinc-50 dark:bg-zinc-900">
           <!-- Timeline axis skeleton -->
           <div class="h-6 border-b bg-white px-4 flex items-center gap-8">
             <Skeleton v-for="i in 6" :key="i" class="h-3 w-8" />

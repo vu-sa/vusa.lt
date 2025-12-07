@@ -1,15 +1,15 @@
 <template>
   <div
-    class="flex items-center justify-between p-3 rounded-lg border transition-all duration-200 hover:shadow-sm hover:bg-gray-50/30">
+    class="flex items-center justify-between p-3 rounded-lg border border-zinc-200 dark:border-zinc-600 bg-white/80 dark:bg-zinc-700/50 transition-all duration-200 hover:shadow-sm hover:bg-zinc-50 dark:hover:bg-zinc-600/50">
     <!-- Left: Institution Info -->
     <div class="flex-1 min-w-0 mr-3">
       <div class="flex items-center gap-2.5 mb-1.5">
         <!-- Status dot -->
-        <div class="w-3 h-3 rounded-full shrink-0 ring-2 ring-white dark:ring-gray-900" :class="statusDotClass" />
+        <div class="w-3 h-3 rounded-full shrink-0 ring-2 ring-white dark:ring-zinc-700" :class="statusDotClass" />
 
         <!-- Institution name -->
         <InertiaLink :href="route('institutions.show', institution.id)"
-          class="font-semibold text-sm text-gray-900 dark:text-gray-100 truncate">
+          class="font-semibold text-sm text-zinc-900 dark:text-zinc-100 truncate">
         {{ institution.name }}
         </InertiaLink>
       </div>
@@ -18,7 +18,7 @@
       <div class="flex items-center gap-2 ml-5">
         <!-- Active check-in badge -->
         <span v-if="institution.active_check_in"
-          class="inline-flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-full border font-medium bg-emerald-100 text-emerald-800 border-emerald-200">
+          class="inline-flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-full border font-medium bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-300 dark:border-emerald-700/50">
           <div class="w-2 h-2 rounded-full bg-current opacity-75" />
           {{ $t('Pranešta apie nebuvimą') }}
           <span v-if="institution.active_check_in?.end_date" class="opacity-75">
@@ -29,7 +29,7 @@
         <!-- Fallback status badges -->
         <!-- Upcoming meeting badge -->
         <span v-else-if="nextMeetingDate"
-          class="inline-flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-full border font-medium bg-blue-100 text-blue-800 border-blue-200">
+          class="inline-flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-full border font-medium bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/40 dark:text-blue-300 dark:border-blue-700/50">
           <div class="w-2 h-2 rounded-full bg-current opacity-75" />
           {{ $t('Suplanuotas susitikimas') }}
           <span class="opacity-75">
@@ -38,18 +38,18 @@
         </span>
         <!-- Needs meeting badge (only if no past AND no upcoming) -->
         <span v-else-if="!lastMeetingDate && !nextMeetingDate"
-          class="text-xs px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 border border-gray-200 shrink-0 font-medium">
+          class="text-xs px-2.5 py-1 rounded-full bg-zinc-100 text-zinc-700 border border-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700 shrink-0 font-medium">
           {{ $t('Reikia susitikimo') }}
         </span>
         <span v-else-if="daysSinceLast !== undefined && daysSinceLast > 60"
-          class="text-xs px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 border border-amber-200 shrink-0 font-medium">
+          class="text-xs px-2.5 py-1 rounded-full bg-amber-100 text-amber-700 border border-amber-200 dark:bg-amber-900/40 dark:text-amber-300 dark:border-amber-700/50 shrink-0 font-medium">
           {{ $t('Senokas susitikimas') }}
         </span>
 
         <!-- Last meeting info -->
-        <span v-if="!institution.active_check_in && lastMeetingDate" class="text-xs text-gray-500">
+        <span v-if="!institution.active_check_in && lastMeetingDate" class="text-xs text-zinc-500 dark:text-zinc-400">
           {{ formatDate(lastMeetingDate) }}
-          <span v-if="daysSinceLast !== undefined && daysSinceLast > 30" class="text-amber-600 font-medium">
+          <span v-if="daysSinceLast !== undefined && daysSinceLast > 30" class="text-amber-600 dark:text-amber-400 font-medium">
             ({{ daysSinceLast }} {{ $t('d.') }})
           </span>
         </span>
@@ -75,7 +75,7 @@
         <Tooltip>
           <TooltipTrigger as-child>
             <Button variant="ghost" size="sm"
-              class="h-8 w-8 opacity-60 hover:opacity-100 hover:bg-orange-50 hover:text-orange-700 transition-all"
+              class="h-8 w-8 opacity-60 hover:opacity-100 hover:bg-amber-50 hover:text-amber-700 dark:hover:bg-amber-900/30 dark:hover:text-amber-400 transition-all"
               @click="emit('add-check-in', institution.id)">
               <component :is="Icons.NOTIFICATION" class="h-3.5 w-3.5" />
             </Button>
@@ -89,7 +89,7 @@
         <Tooltip>
           <TooltipTrigger as-child>
             <Button variant="ghost" size="sm"
-              class="h-8 w-8 opacity-60 hover:opacity-100 hover:bg-rose-50 hover:text-rose-700 transition-all"
+              class="h-8 w-8 opacity-60 hover:opacity-100 hover:bg-rose-50 hover:text-rose-700 dark:hover:bg-rose-900/30 dark:hover:text-rose-400 transition-all"
               @click="emit('remove-active-check-in', institution.id)">
               <component :is="Icons.CLOSE" class="h-3.5 w-3.5" />
             </Button>
@@ -166,7 +166,7 @@ const statusDotClass = computed(() => {
   if (!lastMeetingDate.value) {
     return 'bg-rose-400'
   }
-  return 'bg-slate-400'
+  return 'bg-zinc-400'
 })
 
 function formatDate(date: Date | string): string {

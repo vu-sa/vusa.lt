@@ -1,7 +1,7 @@
 <template>
   <section class="space-y-6">
     <div class="flex items-center justify-between">
-      <h2 id="personal-overview-heading" class="text-2xl font-semibold tracking-tight text-gray-900 dark:text-gray-100">
+      <h2 id="personal-overview-heading" class="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
         {{ $t('Personal Overview') }}
       </h2>
     </div>

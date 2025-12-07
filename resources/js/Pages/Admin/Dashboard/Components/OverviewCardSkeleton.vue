@@ -1,7 +1,7 @@
 <template>
   <Card class="flex flex-col relative overflow-hidden">
     <!-- Status indicator skeleton -->
-    <div class="absolute top-0 right-0 w-16 h-16 -mr-8 -mt-8 rotate-45 bg-gray-200" />
+    <div class="absolute top-0 right-0 w-12 h-12 -mr-6 -mt-6 rotate-45 bg-zinc-200 dark:bg-zinc-700" />
 
     <CardHeader class="pb-4 relative z-10">
       <CardTitle class="flex items-center gap-2">
@@ -40,7 +40,7 @@
       </div>
     </CardContent>
 
-    <CardFooter class="border-t bg-gray-50/40 p-3 relative z-10">
+    <CardFooter class="border-t border-zinc-200 dark:border-zinc-700 bg-zinc-50/60 dark:bg-zinc-800/40 p-3 relative z-10">
       <div class="flex gap-2 w-full">
         <Skeleton class="h-8 flex-1 rounded" />
         <Skeleton class="h-8 w-28 rounded" />

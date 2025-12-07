@@ -207,8 +207,8 @@ const modernMeetingColumns = computed<ColumnDef<any, any>[]>(() => [
           <span class={cn(
             "inline-flex items-center rounded-full px-2 py-1 text-xs font-medium",
             isUpcoming
-              ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
-              : "bg-gray-100 text-gray-600 dark:bg-gray-800/30 dark:text-gray-400"
+              ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400"
+              : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800/50 dark:text-zinc-400"
           )}>
             {isUpcoming ? $t('Būsimas') : $t('Įvykęs')}
           </span>
@@ -242,7 +242,7 @@ const modernMeetingColumns = computed<ColumnDef<any, any>[]>(() => [
       const status = row.original.completion_status;
 
       if (!status) {
-        return <span class="text-xs text-gray-400">—</span>;
+        return <span class="text-xs text-zinc-400 dark:text-zinc-500">—</span>;
       }
 
       const statusConfig = {

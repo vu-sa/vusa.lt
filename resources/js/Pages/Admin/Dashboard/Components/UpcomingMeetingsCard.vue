@@ -1,21 +1,19 @@
 <template>
     <Card :class="[
-    'flex flex-col relative overflow-hidden',
-    upcomingMeetings.length > 0
-      ? 'border-orange-200 bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20'
-      : 'border-gray-200 bg-gradient-to-br from-gray-50 to-zinc-50 dark:from-gray-900/20 dark:to-zinc-900/20'
+    'flex flex-col relative overflow-hidden shadow-sm dark:shadow-zinc-950/50',
+    'border-zinc-200 dark:border-zinc-600 bg-gradient-to-br from-white to-zinc-50 dark:from-zinc-800 dark:to-zinc-900'
   ]" role="region" :aria-label="$t('Tavo artėjantys susitikimai')">
-    <!-- Status indicator -->
+    <!-- Status indicator - small amber accent when meetings exist -->
     <div :class="[
-      'absolute top-0 right-0 w-16 h-16 -mr-8 -mt-8 rotate-45',
-      upcomingMeetings.length > 0 ? 'bg-orange-200 dark:bg-orange-800' : 'bg-gray-200 dark:bg-gray-700'
+      'absolute top-0 right-0 w-12 h-12 -mr-6 -mt-6 rotate-45',
+      upcomingMeetings.length > 0 ? 'bg-amber-400/60 dark:bg-amber-600/40' : 'bg-zinc-200 dark:bg-zinc-700'
     ]" aria-hidden="true" />
 
     <CardHeader class="pb-3 relative z-10">
       <CardTitle class="flex items-center gap-2">
         <component :is="Icons.MEETING" :class="[
           'h-5 w-5',
-          upcomingMeetings.length > 0 ? 'text-orange-600 dark:text-orange-400' : 'text-gray-600 dark:text-gray-300'
+          upcomingMeetings.length > 0 ? 'text-amber-600 dark:text-amber-500' : 'text-zinc-600 dark:text-zinc-400'
         ]" aria-hidden="true" />
         {{ $t('Tavo artėjantys susitikimai') }}
       </CardTitle>
@@ -26,13 +24,13 @@
       <div class="flex items-end gap-4 mb-6">
         <span :class="[
           'text-4xl font-bold',
-          upcomingMeetings.length > 0 ? 'text-orange-700 dark:text-orange-300' : 'text-gray-700 dark:text-gray-300'
+          upcomingMeetings.length > 0 ? 'text-zinc-800 dark:text-zinc-100' : 'text-zinc-700 dark:text-zinc-300'
         ]" :aria-label="$t('Susitikimų skaičius') + ': ' + upcomingMeetings.length">
           <NNumberAnimation :from="0" :to="upcomingMeetings.length" />
         </span>
         <div :class="[
           'px-2 py-1 rounded-full text-xs font-medium mb-2',
-          upcomingMeetings.length > 0 ? 'bg-orange-200 text-orange-800 dark:bg-orange-800/50 dark:text-orange-200' : 'bg-gray-200 text-gray-800 dark:bg-gray-700/50 dark:text-gray-200'
+          upcomingMeetings.length > 0 ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300' : 'bg-zinc-200 text-zinc-700 dark:bg-zinc-700/50 dark:text-zinc-300'
         ]" role="status" :aria-label="$t('Būsenos indikatorius')">
           {{ upcomingMeetings.length > 0 ? $t('Reikia dėmesio') : $t('Viskas tvarkoje') }}
         </div>
@@ -41,7 +39,7 @@
       <!-- Content section - flex-1 to push actions down -->
       <div class="flex-1 flex flex-col justify-center min-h-[200px]">
         <div v-if="upcomingMeetings.length > 0" class="space-y-2">
-          <p class="text-sm font-medium text-orange-800 dark:text-orange-200">
+          <p class="text-sm font-medium text-zinc-700 dark:text-zinc-300">
             {{ upcomingMeetings.length === 1 ? $t('Kitas susitikimas') : $t('Artimiausi susitikimai') }}:
           </p>
 
@@ -50,24 +48,24 @@
             <Link
               v-for="(meeting, index) in upcomingMeetings.slice(0, 3)"
               :key="meeting.id"
-              class="block p-3 bg-white/60 dark:bg-black/20 rounded-md border border-orange-200 dark:border-orange-700 hover:bg-white/80 dark:hover:bg-black/30 transition-colors"
+              class="block p-3 bg-white/60 dark:bg-zinc-800/50 rounded-md border border-zinc-200 dark:border-zinc-700 hover:bg-white/80 dark:hover:bg-zinc-700/50 hover:border-amber-300 dark:hover:border-amber-700/50 transition-colors"
               :href="route('meetings.show', meeting.id)"
             >
               <div class="flex items-start justify-between gap-2">
                 <div class="flex-1 min-w-0">
-                  <div class="font-semibold text-orange-900 dark:text-orange-100 truncate">
+                  <div class="font-semibold text-zinc-900 dark:text-zinc-100 truncate">
                     {{ formatStaticTime(new Date(meeting.start_time), {
                       month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric'
                     }) }}
                   </div>
-                  <div class="text-sm text-orange-700 dark:text-orange-300 mt-1 truncate">
+                  <div class="text-sm text-zinc-600 dark:text-zinc-400 mt-1 truncate">
                     {{ meeting.institutions?.[0]?.name }}
                   </div>
                 </div>
 
                 <!-- Show position badge for first meeting -->
                 <div v-if="index === 0" class="flex-shrink-0">
-                  <span class="inline-flex items-center rounded-full bg-orange-200 dark:bg-orange-800/50 px-2 py-0.5 text-xs font-medium text-orange-800 dark:text-orange-200">
+                  <span class="inline-flex items-center rounded-full bg-amber-100 dark:bg-amber-900/40 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-300">
                     {{ $t('Kitas') }}
                   </span>
                 </div>
@@ -79,7 +77,7 @@
           <div v-if="upcomingMeetings.length > 3" class="text-center pt-2">
             <button
               @click="$emit('show-all-meetings')"
-              class="text-xs text-orange-700 dark:text-orange-300 hover:underline"
+              class="text-xs text-zinc-600 dark:text-zinc-400 hover:text-amber-600 dark:hover:text-amber-400 hover:underline transition-colors"
             >
               {{ $t('ir dar') }} {{ upcomingMeetings.length - 3 }}...
             </button>
@@ -90,21 +88,17 @@
           <div class="text-4xl mb-4">
             🎉
           </div>
-          <p class="text-gray-800 dark:text-gray-200 font-medium mb-2">
+          <p class="text-zinc-800 dark:text-zinc-200 font-medium mb-2">
             {{ $t('Artėjančių susitikimų nėra!') }}
           </p>
-          <p class="text-sm text-gray-600 dark:text-gray-400">
+          <p class="text-sm text-zinc-600 dark:text-zinc-400">
             {{ $t('Puikus laikas planuoti naują veiklą') }}
           </p>
         </div>
       </div>
 
       <!-- Prominent CTA within card -->
-      <div class="mt-6 pt-4" :class="[
-        upcomingMeetings.length > 0 
-          ? 'border-t border-orange-200 dark:border-orange-700' 
-          : 'border-t border-gray-200 dark:border-gray-700'
-      ]">
+      <div class="mt-6 pt-4 border-t border-zinc-200 dark:border-zinc-700">
         <div class="flex justify-between items-center">
           <TooltipProvider>
             <Tooltip>
@@ -148,10 +142,10 @@
       </div>
     </CardContent>
 
-    <CardFooter class="border-t bg-gray-50/40 dark:bg-gray-900/20 p-4 relative z-10">
+    <CardFooter class="border-t border-zinc-200 dark:border-zinc-600 bg-zinc-50/60 dark:bg-zinc-800/60 p-4 relative z-10">
       <!-- Meeting insights to encourage registration -->
       <div class="text-xs text-center w-full space-y-1">
-        <div v-if="institutionsInsights.withoutMeetings.length > 0" class="text-gray-600 dark:text-gray-400">
+        <div v-if="institutionsInsights.withoutMeetings.length > 0" class="text-zinc-600 dark:text-zinc-400">
           <div class="font-medium">
             {{ $t('Reikia dėmesio') }}:
           </div>
@@ -169,7 +163,7 @@
             ({{ institutionsInsights.withOldMeetings[0].daysSinceLastMeeting }} {{ $t('d.') }})
           </div>
         </div>
-        <div v-else class="text-green-600 dark:text-green-400">
+        <div v-else class="text-emerald-600 dark:text-emerald-400">
           <div class="font-medium">
             {{ $t('Puikus aktyvumas!') }}
           </div>

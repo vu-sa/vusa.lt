@@ -96,14 +96,14 @@ export function useAtstovavimosActions(
   // Check-in state helpers
   const stateInfo = (state: string) => {
     const map: Record<string, { text: string; color: string }> = {
-      'App\\States\\InstitutionCheckIns\\Active': { text: 'Aktyvi', color: 'bg-amber-100 text-amber-800' },
-      'App\\States\\InstitutionCheckIns\\Expired': { text: 'Nebegalioja', color: 'bg-gray-100 text-gray-700' },
-      'App\\States\\InstitutionCheckIns\\Invalidated': { text: 'Nebegalioja (yra posėdis)', color: 'bg-rose-100 text-rose-800' },
-      'App\\States\\InstitutionCheckIns\\Withdrawn': { text: 'Atšaukta', color: 'bg-gray-100 text-gray-700' },
-      'App\\States\\InstitutionCheckIns\\Disputed': { text: 'Ginčijama', color: 'bg-amber-100 text-amber-800' },
-      'App\\States\\InstitutionCheckIns\\AdminSuppressed': { text: 'Slopinama', color: 'bg-orange-100 text-orange-800' },
+      'App\\States\\InstitutionCheckIns\\Active': { text: 'Aktyvi', color: 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300' },
+      'App\\States\\InstitutionCheckIns\\Expired': { text: 'Nebegalioja', color: 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-400' },
+      'App\\States\\InstitutionCheckIns\\Invalidated': { text: 'Nebegalioja (yra posėdis)', color: 'bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300' },
+      'App\\States\\InstitutionCheckIns\\Withdrawn': { text: 'Atšaukta', color: 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-400' },
+      'App\\States\\InstitutionCheckIns\\Disputed': { text: 'Ginčijama', color: 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300' },
+      'App\\States\\InstitutionCheckIns\\AdminSuppressed': { text: 'Slopinama', color: 'bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300' },
     };
-    return map[state] ?? { text: state?.split('\\').pop() ?? 'Unknown', color: 'bg-gray-100 text-gray-800' };
+    return map[state] ?? { text: state?.split('\\').pop() ?? 'Unknown', color: 'bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-300' };
   };
 
   const isActive = (state: string) => state === 'App\\States\\InstitutionCheckIns\\Active';

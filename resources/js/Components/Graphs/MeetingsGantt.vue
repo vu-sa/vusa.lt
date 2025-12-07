@@ -3,30 +3,22 @@
     <!-- Header: Legend + Controls -->
     <div class="flex items-center justify-between gap-3 mb-2">
       <div class="flex items-center gap-4 min-w-0">
-        <div v-if="showLegend" class="flex flex-wrap items-center gap-4 text-[11px] text-slate-600">
-          <div class="flex items-center gap-1">
-            <span class="inline-block w-2 h-2 rounded-full bg-black" /><span>{{ $t('Užbaigtas susitikimas') || 'Complete meeting' }}</span>
-          </div>
-          <div class="flex items-center gap-1">
-            <span class="inline-block w-2 h-2 rounded-full bg-red-600" /><span>{{ $t('Neužbaigtas susitikimas') ||
-              'Incomplete meeting' }}</span>
-          </div>
-          <div class="flex items-center gap-1">
-            <span class="inline-block w-2 h-2 rounded-full border border-red-600" /><span>{{ $t('Susitikimas be darbotvarkės') || 'No agenda items' }}</span>
-          </div>
-          <div class="flex items-center gap-1">
-            <span class="inline-block w-4 h-[2px] rounded-full bg-amber-500" /><span>{{ $t('Nėra susitikimų') }}</span>
-          </div>
-          <div class="flex items-center gap-1"
-            :title="$t('Summer vacation') + ', ' + $t('Winter vacation') + ', ' + $t('Easter vacation')">
-            <span
-              class="inline-block w-4 h-[2px] rounded-sm bg-gradient-to-r from-amber-400/30 via-blue-300/30 to-violet-300/30" />
-            <span>{{ $t('Vacation periods') || 'Atostogų periodai' }}</span>
-          </div>
-        </div>
+        <!-- Legend toggle button -->
+        <button 
+          v-if="showLegend" 
+          type="button"
+          class="flex items-center gap-1.5 text-[11px] text-zinc-600 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
+          @click="$emit('show-legend-modal')"
+        >
+          <span class="inline-block w-2 h-2 rounded-full bg-foreground dark:bg-white" />
+          <span>{{ $t('Legenda') }}</span>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 opacity-60" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+          </svg>
+        </button>
         <!-- Institution count and active filters -->
-        <div class="flex items-center gap-2 text-[11px] text-slate-600 truncate">
-          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded border border-slate-200 bg-white/70">{{
+        <div class="flex items-center gap-2 text-[11px] text-zinc-600 dark:text-zinc-400 truncate">
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded border border-zinc-200 dark:border-zinc-600 bg-white/70 dark:bg-zinc-800/70">{{
             $t('Institucijų') }}: {{layoutRows.filter(r => r.type === 'institution').length}}</span>
           <template v-if="tenantFilter?.length">
             <span class="opacity-70">•</span>
@@ -34,7 +26,7 @@
               <span class="opacity-70 shrink-0">{{ $t('Filtras') }}:</span>
               <div class="flex items-center gap-1 overflow-hidden">
                 <span v-for="tid in tenantFilter" :key="String(tid)"
-                  class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200 truncate">
+                  class="px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-600 truncate">
                   {{ tenantNames?.[tid] ?? tid }}
                 </span>
               </div>
@@ -42,52 +34,52 @@
           </template>
           <template v-if="showOnlyWithActivity">
             <span class="opacity-70">•</span>
-            <span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200">{{ $t('Tik su veikla') }}</span>
+            <span class="px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-600">{{ $t('Tik su veikla') }}</span>
           </template>
         </div>
       </div>
       <div class="flex items-center gap-3 ml-auto">
         <!-- Details toggle -->
-        <label class="flex items-center gap-1 text-[11px] text-slate-600 select-none cursor-pointer">
+        <label class="flex items-center gap-1 text-[11px] text-zinc-600 dark:text-zinc-400 select-none cursor-pointer">
           <input type="checkbox" :checked="!!detailsExpanded"
             @change="emit('update:detailsExpanded', !detailsExpanded)">
           <span>{{ $t('Išsamios eilutės') }}</span>
         </label>
         <!-- Scale slider -->
-        <div class="w-40 flex items-center gap-2 text-[11px] text-slate-600">
+        <div class="w-40 flex items-center gap-2 text-[11px] text-zinc-600 dark:text-zinc-400">
           <span class="shrink-0">{{ $t('Mastelis') }}</span>
           <Slider :min="6" :max="72" :step="2" :model-value="[dayWidthPx || dayWidth]"
             @update:model-value="onScaleChange" />
         </div>
         <!-- Sticky current year badge -->
         <div v-if="currentYear"
-          class="px-2 py-0.5 rounded border text-xs text-slate-700 bg-white/70 backdrop-blur border-slate-200">
+          class="px-2 py-0.5 rounded border text-xs text-zinc-700 dark:text-zinc-300 bg-white/70 dark:bg-zinc-800/70 backdrop-blur border-zinc-200 dark:border-zinc-600">
           {{ currentYear }}
         </div>
-        <button type="button" class="px-2 py-1 text-xs border rounded hover:bg-slate-50 dark:hover:bg-slate-900"
+        <button type="button" class="px-2 py-1 text-xs border border-zinc-200 dark:border-zinc-600 rounded hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300"
           @click="$emit('fullscreen', true)">
           {{ $t('Visas ekranas') }}
         </button>
       </div>
     </div>
 
-    <div class="flex w-full max-w-full border rounded-md overflow-hidden"
+    <div class="flex w-full max-w-full border border-zinc-200 dark:border-zinc-700 rounded-md overflow-hidden"
       :style="containerHeight ? { height: containerHeight } : {}" :class="{ 'h-full': props.height === '100%' }"
       style="min-width: 0;">
       <!-- Left: sticky labels -->
-      <div ref="leftLabels" class="shrink-0 bg-white sticky left-0 z-[1] overflow-hidden"
+      <div ref="leftLabels" class="shrink-0 bg-white dark:bg-zinc-900 sticky left-0 z-[1] overflow-hidden"
         :style="{ width: `${labelWidth}px` }">
         <div class="grid" :style="{ gridTemplateRows: `22px ${layoutRows.map(r => r.height + 'px').join(' ')}` }">
           <!-- header spacer (align with axis height) -->
-          <div class="border-b border-slate-200 bg-white sticky top-0 z-20" />
+          <div class="border-b border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 sticky top-0 z-20" />
           <template v-for="(row, idx) in layoutRows" :key="`label-${row.key}`">
             <div v-if="row.type === 'tenant'"
-              class="px-3 py-1 text-xs font-medium text-slate-600 border-b border-slate-200 bg-slate-50/70 sticky top-[22px] z-[2]">
+              class="px-3 py-1 text-xs font-medium text-zinc-600 dark:text-zinc-400 border-b border-zinc-200 dark:border-zinc-700 bg-zinc-50/70 dark:bg-zinc-800/70 sticky top-[22px] z-[2]">
               {{ tenantNames?.[row.tenantId!] ?? row.tenantId }}
             </div>
             <div v-else
-              class="px-3 py-1 text-sm text-slate-700 border-b border-slate-100 flex items-start gap-2 truncate"
-              :class="[idx % 2 === 0 ? 'bg-slate-50/40' : '']" :title="labelFor(row.institutionId!)">
+              class="px-3 py-1 text-sm text-zinc-700 dark:text-zinc-300 border-b border-zinc-100 dark:border-zinc-800 flex items-start gap-2 truncate"
+              :class="[idx % 2 === 0 ? 'bg-zinc-50/40 dark:bg-zinc-800/30' : '']" :title="labelFor(row.institutionId!)">
               <div class="flex-1 min-w-0">
                 <div class="flex items-center justify-between gap-2">
                   <button type="button"
@@ -98,10 +90,10 @@
                     {{ labelFor(row.institutionId!) }}
                   </button>
                   <span v-if="lastMeetingByInstitution.get(row.institutionId!)"
-                    class="text-[11px] text-slate-500 shrink-0">{{
+                    class="text-[11px] text-zinc-500 dark:text-zinc-500 shrink-0">{{
                       labelLast(lastMeetingByInstitution.get(row.institutionId!)!) }}</span>
                 </div>
-                <div v-if="detailsExpanded" class="mt-1 text-[11px] text-slate-600 leading-snug space-y-0.5">
+                <div v-if="detailsExpanded" class="mt-1 text-[11px] text-zinc-600 dark:text-zinc-500 leading-snug space-y-0.5">
                   <div v-if="tenantLabelFor(row.institutionId!)" class="truncate">
                     <span class="opacity-70">{{ $t('Padalinys') }}:</span>
                     <span class="ml-1">{{ tenantLabelFor(row.institutionId!) }}</span>
@@ -118,7 +110,7 @@
       </div>
 
       <!-- Right: scrollable timeline -->
-      <div ref="rightScroll" class="flex-1 overflow-auto min-w-0 h-full" style="width: 0; min-width: 0;">
+      <div ref="rightScroll" class="flex-1 overflow-auto min-w-0 h-full bg-white dark:bg-zinc-900" style="width: 0; min-width: 0;">
         <svg ref="svgEl" role="img" aria-label="Meetings timeline" class="block" />
       </div>
     </div>
@@ -131,6 +123,7 @@ import { router } from '@inertiajs/vue3'
 import * as d3 from 'd3'
 
 import { Slider } from '@/Components/ui/slider'
+import { getGanttColors, isDarkModeActive, type GanttColors } from './ganttColors'
 
 /**
  * MeetingsGantt (d3)
@@ -202,6 +195,7 @@ const emit = defineEmits<{
   (e: 'create-meeting', payload: { institution_id: string | number, suggestedAt: Date }): void
   (e: 'fullscreen', payload: boolean): void
   (e: 'update:detailsExpanded', payload: boolean): void
+  (e: 'show-legend-modal'): void
 }>()
 
 // Navigate to institution details (admin route helper if available)
@@ -424,6 +418,9 @@ const render = () => {
   const svg = d3.select(svgEl.value)
   if (!container || svg.empty()) return
 
+  // Get color palette based on current theme
+  const colors = getGanttColors(isDarkModeActive())
+
   // derive width from current date span
   const totalDays = Math.max(1, d3.timeDay.count(minTime.value, maxTime.value))
   const viewportW = (rightScroll.value?.clientWidth ?? container.clientWidth) || 800
@@ -449,7 +446,10 @@ const render = () => {
     .selectAll('.gantt-tooltip-create')
     .data([null])
     .join('div')
-    .attr('class', 'gantt-tooltip-create pointer-events-none absolute z-10 hidden bg-white/95 text-[11px] text-slate-700 shadow-sm ring-1 ring-black/5 rounded px-2 py-1')
+    .attr('class', `gantt-tooltip-create pointer-events-none absolute z-10 hidden text-[11px] shadow-sm ring-1 rounded px-2 py-1`)
+    .style('background', colors.tooltipBg)
+    .style('color', colors.tooltipText)
+    .style('--tw-ring-color', colors.tooltipBorder)
 
   // gradients
   const defs = svg.append('defs')
@@ -457,10 +457,10 @@ const render = () => {
     .attr('id', 'safeBand')
     .attr('x1', '0%').attr('x2', '100%')
     .attr('y1', '0%').attr('y2', '0%')
-  safeGrad.append('stop').attr('offset', '0%').attr('stop-color', 'rgba(16,185,129,0)')
-  safeGrad.append('stop').attr('offset', '40%').attr('stop-color', 'rgba(16,185,129,0.18)')
-  safeGrad.append('stop').attr('offset', '60%').attr('stop-color', 'rgba(16,185,129,0.18)')
-  safeGrad.append('stop').attr('offset', '100%').attr('stop-color', 'rgba(16,185,129,0)')
+  safeGrad.append('stop').attr('offset', '0%').attr('stop-color', colors.safetyBandStart)
+  safeGrad.append('stop').attr('offset', '40%').attr('stop-color', colors.safetyBandMid)
+  safeGrad.append('stop').attr('offset', '60%').attr('stop-color', colors.safetyBandMid)
+  safeGrad.append('stop').attr('offset', '100%').attr('stop-color', colors.safetyBandEnd)
 
   const x = d3.scaleTime().domain([minTime.value, maxTime.value]).range([0, innerWidth])
   curX = x
@@ -478,13 +478,13 @@ const render = () => {
     .attr('height', d => d.r.height)
     .attr('fill', d => {
       if (d.r.type === 'tenant') {
-        return 'rgba(248,250,252,0.7)' // Match bg-slate-50/70 background for tenant labels
+        return colors.tenantRow
       }
-      return d.i % 2 === 0 ? 'rgba(0,0,0,0.02)' : 'transparent'
+      return d.i % 2 === 0 ? colors.zebraEven : colors.zebraOdd
     })
     .attr('class', 'transition-colors duration-150')
-    .on('mouseenter', function (event, d: any) { if (d.r.type !== 'tenant') d3.select(this).attr('fill', 'rgba(59,130,246,0.08)') })
-    .on('mouseleave', function (event, d: any) { if (d.r.type !== 'tenant') d3.select(this).attr('fill', (d.i % 2 === 0 ? 'rgba(0,0,0,0.02)' : 'transparent')) })
+    .on('mouseenter', function (event, d: any) { if (d.r.type !== 'tenant') d3.select(this).attr('fill', colors.rowHover) })
+    .on('mouseleave', function (event, d: any) { if (d.r.type !== 'tenant') d3.select(this).attr('fill', (d.i % 2 === 0 ? colors.zebraEven : colors.zebraOdd)) })
 
   // background day bands + gridlines (excluding tenant rows)
   const days = d3.timeDay.range(minTime.value, maxTime.value)
@@ -509,7 +509,7 @@ const render = () => {
     .attr('y', d => rowTop(d.row.key))
     .attr('width', d => x(d3.timeDay.offset(d.day, 1)) - x(d.day))
     .attr('height', d => rowHeightFor(d.row.key))
-    .attr('fill', 'rgba(120,120,120,0.10)')
+    .attr('fill', colors.gridLine)
 
   /**
    * Vacation period bands (subtle background overlays)
@@ -551,10 +551,10 @@ const render = () => {
     .attr('height', d => rowHeightFor(d.row.key))
     .attr('fill', d => {
       switch (d.period.type) {
-        case 'summer': return 'rgba(251, 191, 36, 0.08)' // amber-400/8%
-        case 'winter': return 'rgba(147, 197, 253, 0.08)' // blue-300/8%
-        case 'easter': return 'rgba(196, 181, 253, 0.08)' // violet-300/8%
-        default: return 'rgba(156, 163, 175, 0.08)' // gray-400/8%
+        case 'summer': return colors.vacationSummer
+        case 'winter': return colors.vacationWinter
+        case 'easter': return colors.vacationEaster
+        default: return colors.vacationDefault
       }
     })
     .attr('pointer-events', 'none')
@@ -585,7 +585,7 @@ const render = () => {
     .attr('x2', d => x(d))
     .attr('y1', 0)
     .attr('y2', innerH)
-    .attr('stroke', 'rgba(0,0,0,0.18)')
+    .attr('stroke', colors.yearMarker)
     .attr('stroke-dasharray', '4,3')
     .attr('pointer-events', 'none')
   // labels
@@ -598,7 +598,7 @@ const render = () => {
     .attr('class', 'year-label')
     .attr('x', d => x(d) + 4)
     .attr('y', -6)
-    .attr('fill', 'rgb(71,85,105)')
+    .attr('fill', colors.axisText)
     .style('font-size', '11px')
     .text(d => yearFmt(d))
 
@@ -612,7 +612,7 @@ const render = () => {
     .attr('x2', innerWidth)
     .attr('y1', d => rowTop(d.key) + d.height)
     .attr('y2', d => rowTop(d.key) + d.height)
-    .attr('stroke', 'rgba(0,0,0,0.06)')
+    .attr('stroke', colors.gridLine)
 
   // green bands around meetings (±14 days) — sits above backgrounds, below gaps/dots
   const bandGroup = g.append('g')
@@ -643,7 +643,7 @@ const render = () => {
     .attr('y2', d => rowCenter(d.institution_id))
     .attr('stroke-width', 3)
     .attr('stroke-linecap', 'round')
-    .attr('stroke', 'rgba(245, 158, 11, 0.9)')  // Single color: amber
+    .attr('stroke', colors.gap)
     .style('cursor', 'pointer')
     .on('click', (event, d: any) => {
       // Emit a suggested create-meeting action for this institution at the start of gap
@@ -665,19 +665,19 @@ const render = () => {
     .attr('fill', (d: any) => {
       // Determine fill color based on completion status
       if (d.completion_status === 'complete') {
-        return '#000000';  // Black for complete
+        return colors.meetingComplete
       } else if (d.completion_status === 'no_items') {
-        return 'none';  // No fill for empty meetings
+        return 'none'  // No fill for empty meetings
       } else {
-        return '#dc2626';  // Bright red (red-600) for incomplete
+        return colors.meetingIncomplete
       }
     })
     .attr('stroke', (d: any) => {
       // Add stroke for no_items case to create outline
       if (d.completion_status === 'no_items') {
-        return '#dc2626';  // Bright red outline
+        return colors.meetingNoItems
       }
-      return 'none';
+      return 'none'
     })
     .attr('stroke-width', (d: any) => {
       return d.completion_status === 'no_items' ? 1.5 : 0;
@@ -716,7 +716,10 @@ const render = () => {
     .selectAll('.gantt-tooltip')
     .data([null])
     .join('div')
-    .attr('class', 'gantt-tooltip pointer-events-none absolute z-10 hidden bg-white/95 text-[11px] text-slate-700 shadow-sm ring-1 ring-black/5 rounded px-2 py-1')
+    .attr('class', `gantt-tooltip pointer-events-none absolute z-10 hidden text-[11px] shadow-sm ring-1 rounded px-2 py-1`)
+    .style('background', colors.tooltipBg)
+    .style('color', colors.tooltipText)
+    .style('--tw-ring-color', colors.tooltipBorder)
 
   const fmt = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' })
   dots
@@ -741,7 +744,7 @@ const render = () => {
       .attr('x2', x(t))
       .attr('y1', 0)
       .attr('y2', innerH)
-      .attr('stroke', 'rgba(59,130,246,0.8)')
+      .attr('stroke', colors.todayLine)
       .attr('stroke-width', 1)
       .attr('pointer-events', 'none')
   }
@@ -750,7 +753,7 @@ const render = () => {
   const hoverLine = g.append('line')
     .attr('y1', 0)
     .attr('y2', innerH)
-    .attr('stroke', 'rgba(0,0,0,0.25)')
+    .attr('stroke', colors.hoverLine)
     .attr('stroke-dasharray', '2,2')
     .attr('opacity', 0)
     .attr('pointer-events', 'none')
@@ -759,7 +762,7 @@ const render = () => {
   const createCircle = g.append('circle')
     .attr('r', 7)
     .attr('fill', 'none')
-    .attr('stroke', 'rgba(59,130,246,0.9)')
+    .attr('stroke', colors.hoverCircle)
     .attr('stroke-dasharray', '4,3')
     .attr('opacity', 0)
     .attr('pointer-events', 'none')
@@ -1043,7 +1046,15 @@ svg :global(text) {
   fill: rgb(113, 113, 122);
 }
 
+:global(.dark) svg :global(text) {
+  fill: rgb(161, 161, 170);
+}
+
 .row-hover:hover {
   background: rgba(0, 0, 0, 0.03);
+}
+
+:global(.dark) .row-hover:hover {
+  background: rgba(255, 255, 255, 0.05);
 }
 </style>

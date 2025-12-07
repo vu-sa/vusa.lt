@@ -1,5 +1,5 @@
 <template>
-  <Card class="flex flex-col relative overflow-hidden" role="region" :aria-label="$t('Tavo institucijos')">
+  <Card class="flex flex-col relative overflow-hidden border-zinc-200 dark:border-zinc-600 bg-gradient-to-br from-white to-zinc-50 dark:from-zinc-800 dark:to-zinc-900 shadow-sm dark:shadow-zinc-950/50" role="region" :aria-label="$t('Tavo institucijos')">
     <!-- Status indicator corner -->
     <div :class="statusIndicatorClasses" aria-hidden="true" />
 
@@ -8,7 +8,7 @@
         <component :is="Icons.INSTITUTION" :class="iconClasses" aria-hidden="true" />
         <span class="font-semibold">{{ $t('Tavo institucijos') }}</span>
         <span v-if="limitedInstitutions.length < institutions.length"
-          class="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600 ml-auto font-medium">
+          class="text-xs px-2 py-1 rounded-full bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400 ml-auto font-medium">
           {{ limitedInstitutions.length }}/{{ institutions.length }}
         </span>
       </CardTitle>
@@ -23,11 +23,11 @@
       </div>
 
       <!-- Activity Overview - simplified -->
-      <div v-if="institutions.length > 0" class="space-y-3 pt-2 border-t border-gray-100">
+      <div v-if="institutions.length > 0" class="space-y-3 pt-2 border-t border-zinc-100 dark:border-zinc-800">
         <!-- Progress indicator -->
-        <div class="w-full h-1.5 rounded-full bg-gray-100 overflow-hidden flex">
+        <div class="w-full h-1.5 rounded-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden flex">
           <div :style="{ width: `${(segCounts.green / institutions.length) * 100}%` }" class="h-1.5 bg-emerald-400" />
-          <div :style="{ width: `${(segCounts.red / institutions.length) * 100}%` }" class="h-1.5 bg-gray-400" />
+          <div :style="{ width: `${(segCounts.red / institutions.length) * 100}%` }" class="h-1.5 bg-zinc-400 dark:bg-zinc-600" />
         </div>
 
         <!-- Critical attention callout - Smaller -->
@@ -46,7 +46,7 @@
       </div>
     </CardContent>
 
-    <CardFooter class="border-t bg-gray-50/40 p-4 relative z-10">
+    <CardFooter class="border-t border-zinc-200 dark:border-zinc-600 bg-zinc-50/60 dark:bg-zinc-800/60 p-4 relative z-10">
       <div class="flex gap-3 w-full">
         <Button size="sm" variant="outline" class="flex-1 font-medium" @click="$emit('show-all-modal')">
           <component :is="Icons.INSTITUTION" class="h-3.5 w-3.5 mr-2" />
@@ -191,74 +191,74 @@ const urgencyLevel = computed(() => {
 // Dynamic CSS classes based on urgency - only for specific elements
 
 const statusIndicatorClasses = computed(() => {
-  const base = 'absolute top-0 right-0 w-16 h-16 -mr-8 -mt-8 rotate-45'
+  const base = 'absolute top-0 right-0 w-12 h-12 -mr-6 -mt-6 rotate-45'
   const urgencyClasses = {
-    success: 'bg-green-200 dark:bg-green-800',
-    warning: 'bg-amber-200 dark:bg-amber-800',
-    danger: 'bg-gray-200 dark:bg-gray-800'
+    success: 'bg-emerald-400/60 dark:bg-emerald-600/40',
+    warning: 'bg-amber-400/60 dark:bg-amber-600/40',
+    danger: 'bg-zinc-200 dark:bg-zinc-700'
   }
   return `${base} ${urgencyClasses[urgencyLevel.value]}`
 })
 
 const iconClasses = computed(() => {
   const urgencyClasses = {
-    success: 'h-5 w-5 text-green-600 dark:text-green-400',
-    warning: 'h-5 w-5 text-amber-600 dark:text-amber-400',
-    danger: 'h-5 w-5 text-gray-600 dark:text-gray-400'
+    success: 'h-5 w-5 text-emerald-600 dark:text-emerald-400',
+    warning: 'h-5 w-5 text-amber-600 dark:text-amber-500',
+    danger: 'h-5 w-5 text-zinc-600 dark:text-zinc-400'
   }
   return urgencyClasses[urgencyLevel.value]
 })
 
 const summaryBorderClasses = computed(() => {
   const urgencyClasses = {
-    success: 'border-green-200 dark:border-green-700',
-    warning: 'border-amber-200 dark:border-amber-700',
-    danger: 'border-gray-200 dark:border-gray-700'
+    success: 'border-emerald-200 dark:border-emerald-700/50',
+    warning: 'border-amber-200 dark:border-amber-700/50',
+    danger: 'border-zinc-200 dark:border-zinc-700'
   }
   return urgencyClasses[urgencyLevel.value]
 })
 
 const summaryTextClasses = computed(() => {
   const urgencyClasses = {
-    success: 'text-green-700 dark:text-green-300',
+    success: 'text-emerald-700 dark:text-emerald-300',
     warning: 'text-amber-700 dark:text-amber-300',
-    danger: 'text-gray-700 dark:text-gray-300'
+    danger: 'text-zinc-700 dark:text-zinc-300'
   }
   return urgencyClasses[urgencyLevel.value]
 })
 
 const summarySubtextClasses = computed(() => {
   const urgencyClasses = {
-    success: 'text-green-600 dark:text-green-400',
+    success: 'text-emerald-600 dark:text-emerald-400',
     warning: 'text-amber-600 dark:text-amber-400',
-    danger: 'text-gray-600 dark:text-gray-400'
+    danger: 'text-zinc-600 dark:text-zinc-400'
   }
   return urgencyClasses[urgencyLevel.value]
 })
 
 const progressBackgroundClasses = computed(() => {
   const urgencyClasses = {
-    success: 'bg-green-200 dark:bg-green-700',
-    warning: 'bg-amber-200 dark:bg-amber-700',
-    danger: 'bg-gray-200 dark:bg-gray-700'
+    success: 'bg-emerald-200 dark:bg-emerald-700/50',
+    warning: 'bg-amber-200 dark:bg-amber-700/50',
+    danger: 'bg-zinc-200 dark:bg-zinc-700'
   }
   return urgencyClasses[urgencyLevel.value]
 })
 
 const progressBarClasses = computed(() => {
   const urgencyClasses = {
-    success: 'bg-green-600 dark:bg-green-400',
+    success: 'bg-emerald-600 dark:bg-emerald-400',
     warning: 'bg-amber-600 dark:bg-amber-400',
-    danger: 'bg-gray-600 dark:bg-gray-400'
+    danger: 'bg-zinc-600 dark:bg-zinc-400'
   }
   return urgencyClasses[urgencyLevel.value]
 })
 
 const insightTextClasses = computed(() => {
   const urgencyClasses = {
-    success: 'text-green-500 dark:text-green-400',
+    success: 'text-emerald-500 dark:text-emerald-400',
     warning: 'text-amber-500 dark:text-amber-400',
-    danger: 'text-gray-500 dark:text-gray-400'
+    danger: 'text-zinc-500 dark:text-zinc-400'
   }
   return urgencyClasses[urgencyLevel.value]
 })
@@ -286,30 +286,30 @@ const hasCheckIn = (inst: AtstovavimosInstitution): boolean => !!inst.active_che
 
 const meetingSummaryBorderClasses = computed(() => {
   const urgencyClasses: Record<string, string> = {
-    success: 'border-green-200 dark:border-green-700',
-    warning: 'border-amber-200 dark:border-amber-700',
-    danger: 'border-gray-200 dark:border-gray-700',
-    neutral: 'border-gray-200 dark:border-gray-700',
+    success: 'border-emerald-200 dark:border-emerald-700/50',
+    warning: 'border-amber-200 dark:border-amber-700/50',
+    danger: 'border-zinc-200 dark:border-zinc-700',
+    neutral: 'border-zinc-200 dark:border-zinc-700',
   }
   return urgencyClasses[meetingUrgencyLevel.value]
 })
 
 const meetingSummaryTextClasses = computed(() => {
   const urgencyClasses: Record<string, string> = {
-    success: 'text-green-700 dark:text-green-300',
+    success: 'text-emerald-700 dark:text-emerald-300',
     warning: 'text-amber-700 dark:text-amber-300',
-    danger: 'text-gray-700 dark:text-gray-300',
-    neutral: 'text-gray-700 dark:text-gray-300',
+    danger: 'text-zinc-700 dark:text-zinc-300',
+    neutral: 'text-zinc-700 dark:text-zinc-300',
   }
   return urgencyClasses[meetingUrgencyLevel.value]
 })
 
 const meetingSummarySubtextClasses = computed(() => {
   const urgencyClasses: Record<string, string> = {
-    success: 'text-green-600 dark:text-green-400',
+    success: 'text-emerald-600 dark:text-emerald-400',
     warning: 'text-amber-600 dark:text-amber-400',
-    danger: 'text-gray-600 dark:text-gray-400',
-    neutral: 'text-gray-600 dark:text-gray-400',
+    danger: 'text-zinc-600 dark:text-zinc-400',
+    neutral: 'text-zinc-600 dark:text-zinc-400',
   }
   return urgencyClasses[meetingUrgencyLevel.value]
 })

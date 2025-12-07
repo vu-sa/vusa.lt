@@ -1,13 +1,13 @@
 <template>
   <section class="space-y-6" aria-labelledby="user-timeline-heading">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-      <h2 id="user-timeline-heading" class="text-2xl font-semibold tracking-tight text-gray-900 dark:text-gray-100">
+      <h2 id="user-timeline-heading" class="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
         {{ $t('Tavo institucijos') }} — {{ $t('laiko juosta') }}
       </h2>
       <div class="flex items-center gap-2">
         <DropdownMenu>
           <DropdownMenuTrigger as-child>
-            <Button size="sm" variant="outline" class="border-gray-300 hover:border-gray-400 focus:border-gray-500">
+            <Button size="sm" variant="outline" class="border-zinc-300 hover:border-zinc-400 focus:border-zinc-500 dark:border-zinc-600 dark:hover:border-zinc-500">
               {{ $t('Filtrai') }}
             </Button>
           </DropdownMenuTrigger>
