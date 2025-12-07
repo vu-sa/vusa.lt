@@ -10,15 +10,19 @@
             {{ duty.name }}
           </h1>
           <div class="mt-1 inline-flex items-center gap-4">
-          <span v-if="duty.institution?.name" class="text-sm text-zinc-500 dark:text-zinc-400 flex items-center gap-1">
+          <Link 
+            v-if="duty.institution?.name" 
+            :href="route('institutions.show', duty.institution.id)"
+            class="text-sm text-zinc-500 dark:text-zinc-400 flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+          >
             <Building class="h-3 w-3" />
             {{ duty.institution.name }}
-          </span>
+          </Link>
           <!-- Duty email if available -->
-          <span v-if="duty.email" class="text-sm text-zinc-500 dark:text-zinc-400 flex items-center gap-1">
+          <a v-if="duty.email" :href="`mailto:${duty.email}`" class="text-sm text-zinc-500 dark:text-zinc-400 flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
             <IFluentMail20Regular class="h-3 w-3" />
             {{ duty.email }}
-          </span>
+          </a>
           </div>
         </div>
       </div>
@@ -123,6 +127,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Button } from '@/Components/ui/button';
 import { Building, UserPlus, Settings, Users, Clock, History, Badge } from 'lucide-vue-next';
