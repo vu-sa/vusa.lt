@@ -35,11 +35,11 @@
 
       <NUpload ref="upload" :action="route('membershipUsers.import', membership.id)" :default-upload="false"
         :headers="{ 'X-CSRF-TOKEN': $page.props.csrf_token }" @change="handleChange">
-        <NButton>Įkelti failą</NButton>
+        <Button variant="outline">Įkelti failą</Button>
       </NUpload>
-      <NButton type="primary" :disabled="fileListLength === 0" style="margin-top: 12px" @click="handleClick">
+      <Button :disabled="fileListLength === 0" style="margin-top: 12px" @click="handleClick">
         Importuoti
-      </NButton>
+      </Button>
     </FormElement>
   </AdminForm>
 </template>
@@ -52,6 +52,7 @@ import FormElement from "./FormElement.vue";
 import AdminForm from "./AdminForm.vue";
 import Icons from "@/Types/Icons/regular";
 import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";
+import { Button } from "@/Components/ui/button";
 import { ref, useTemplateRef } from "vue";
 
 const { membership, rememberKey } = defineProps<{

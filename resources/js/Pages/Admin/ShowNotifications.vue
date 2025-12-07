@@ -6,13 +6,12 @@
         <span class="text-sm text-zinc-600 dark:text-zinc-400">{{ $t("Rodyti perskaitytus") }}</span>
       </div>
 
-      <NButton :disabled="shownNotifications.length === 0" size="tiny" :loading="loading" text @click="handleAllRead">
+      <Button :disabled="shownNotifications.length === 0" size="xs" :loading="loading" variant="ghost" @click="handleAllRead">
+        <IFluentCheckmarkCircle24Regular />
         {{
           $t("Pažymėti visus")
-        }}<template #icon>
-          <IFluentCheckmarkCircle24Regular />
-        </template>
-      </NButton>
+        }}
+      </Button>
     </div>
 
     <div class="border text-center p-4 dark:border-zinc-700 rounded-sm">
@@ -36,6 +35,7 @@ import { useFetch } from "@vueuse/core";
 import { router, usePage } from "@inertiajs/vue3";
 
 import AdminContentPage from "@/Components/Layouts/AdminContentPage.vue";
+import { Button } from "@/Components/ui/button";
 import type { NotificationData } from "@/Features/Admin/Notifications/NotificationItem.vue";
 import NotificationItem from "@/Features/Admin/Notifications/NotificationItem.vue";
 

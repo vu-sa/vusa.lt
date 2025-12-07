@@ -47,12 +47,10 @@
                 </NSwitch>
               </NFormItem>
             </div>
-            <NButton :loading type="primary" @click="handleSubmit">
+            <Button :disabled="loading" variant="default" @click="handleSubmit">
+              <IMdiContentSave />
               {{ $t("Išsaugoti") }}
-              <template #icon>
-                <IMdiContentSave />
-              </template>
-            </NButton>
+            </Button>
           </FormElement>
 
           <!-- Password Change Section -->
@@ -85,12 +83,10 @@
                   placeholder="Pakartokite naują slaptažodį" 
                 />
               </NFormItem>
-              <NButton :loading="passwordLoading" type="primary" @click="handlePasswordUpdate">
+              <Button :disabled="passwordLoading" variant="default" @click="handlePasswordUpdate">
+                <IMdiLock />
                 {{ $t("Keisti slaptažodį") }}
-                <template #icon>
-                  <IMdiLock />
-                </template>
-              </NButton>
+              </Button>
             </NForm>
           </FormElement>
 
@@ -112,9 +108,10 @@
       </NCard>
       <p class="mt-4 flex items-center justify-center gap-2">
         <a class="inline-flex items-center" target="_blank" href="https://github.com/vu-sa/vusa.lt/">
-          <NButton text><template #icon>
-              <IMdiGithub />
-            </template>{{ $t("Projekto puslapis") }}</NButton>
+          <Button variant="link">
+            <IMdiGithub />
+            {{ $t("Projekto puslapis") }}
+          </Button>
         </a>
       </p>
     </ThemeProvider>
@@ -126,6 +123,7 @@ import { trans as $t } from "laravel-vue-i18n";
 import { ref, computed } from "vue";
 import { useForm } from "@inertiajs/vue3";
 
+import { Button } from "@/Components/ui/button";
 import FormElement from "@/Components/AdminForms/FormElement.vue";
 import MultiLocaleInput from "@/Components/FormItems/MultiLocaleInput.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";

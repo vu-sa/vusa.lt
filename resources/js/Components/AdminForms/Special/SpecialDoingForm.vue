@@ -22,7 +22,7 @@
         />
       </NFormItem>
     </div>
-    <NButton type="primary" @click="handleValidateForm"> Pradėti! </NButton>
+    <Button @click="handleValidateForm"> Pradėti! </Button>
   </NForm>
 </template>
 
@@ -30,12 +30,12 @@
 import {
   type FormInst,
   type FormRules,
-  NButton,
   NDatePicker,
   NForm,
   NFormItem,
   NInput,
 } from "naive-ui";
+import { Button } from "@/Components/ui/button";
 import { ref } from "vue";
 
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";

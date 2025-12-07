@@ -7,16 +7,12 @@
       <ProgrammeDay v-for="(day, index) in programmeDays" :key="day.id" v-model:day="programmeDays[index]"
         :data-id="day.id">
         <template v-if="editable" #buttons>
-          <NButton size="tiny" secondary circle @click="showDayEditModal = true; selectedDay = day">
-            <template #icon>
-              <IFluentEdit24Filled />
-            </template>
-          </NButton>
-          <NButton size="tiny" secondary circle @click="deleteProgrammeDay(index)">
-            <template #icon>
-              <IFluentDelete24Filled />
-            </template>
-          </NButton>
+          <Button size="icon-xs" variant="ghost" class="rounded-full" @click="showDayEditModal = true; selectedDay = day">
+            <IFluentEdit24Filled />
+          </Button>
+          <Button size="icon-xs" variant="ghost" class="rounded-full" @click="deleteProgrammeDay(index)">
+            <IFluentDelete24Filled />
+          </Button>
         </template>
       </ProgrammeDay>
     </div>
@@ -33,20 +29,18 @@
           hours: Array.from({ length: 22 - 8 + 1 }, (v, i) => i + 8),
         }" type="datetime" clearable :actions="['confirm']" />
     </NFormItem>
-    <NButton @click="showDayEditModal = false">
+    <Button variant="outline" @click="showDayEditModal = false">
       Uždaryti
-    </NButton>
+    </Button>
   </CardModal>
   <div class="flex items-center justify-between gap-2">
-    <NButton v-if="editable" rounded-sm @click="createDay">
-      <template #icon>
-        <IFluentCalendarAdd24Regular />
-      </template>
+    <Button v-if="editable" variant="outline" @click="createDay">
+      <IFluentCalendarAdd24Regular />
       Pridėti programos dieną
-    </NButton>
-    <NButton v-if="editable" type="primary" @click="submitForm">
+    </Button>
+    <Button v-if="editable" @click="submitForm">
       Išsaugoti
-    </NButton>
+    </Button>
   </div>
 </template>
 
@@ -55,6 +49,7 @@ import { provide, ref, useTemplateRef } from 'vue';
 import { useSortable } from '@vueuse/integrations/useSortable'
 import { router } from "@inertiajs/vue3";
 
+import { Button } from '@/Components/ui/button';
 import ProgrammeDay from './ProgrammeDay.vue';
 import MultiLocaleInput from '@/Components/FormItems/MultiLocaleInput.vue';
 import CardModal from '@/Components/Modals/CardModal.vue';

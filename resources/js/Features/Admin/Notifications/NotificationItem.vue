@@ -6,11 +6,9 @@
       <component :is="getNotificationComponent(notificationType)" :notification />
     </div>
     <div class="flex flex-col gap-2">
-      <NButton v-if="!notification.read_at" size="tiny" tertiary circle @click.stop="handleClick">
-        <template #icon>
-          <IFluentCheckmark24Filled />
-        </template>
-      </NButton>
+      <Button v-if="!notification.read_at" variant="ghost" size="icon-xs" class="rounded-full" @click.stop="handleClick">
+        <IFluentCheckmark24Filled />
+      </Button>
     </div>
   </button>
 </template>
@@ -19,6 +17,8 @@
 import { defineAsyncComponent } from "vue";
 import { router, usePage } from "@inertiajs/vue3";
 import { useFetch } from "@vueuse/core";
+
+import { Button } from "@/Components/ui/button";
 
 export type NotificationData = {
   object: {

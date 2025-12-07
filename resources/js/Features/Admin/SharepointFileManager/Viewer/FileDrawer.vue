@@ -10,31 +10,26 @@
           <div class="flex gap-2">
             <Spinner class="flex gap-2 items-center" size="sm" :show="loadingPublicPermission">
               <div v-if="publicWebUrl" class="flex gap-2">
-                <NButtonGroup size="small">
-                  <NButton type="primary" tag="a" target="_blank" :href="publicWebUrl">
-                    <template #icon>
-                      <IFluentOpen24Regular />
-                    </template>
+                <ButtonGroup>
+                  <Button size="sm" as="a" target="_blank" :href="publicWebUrl">
+                    <IFluentOpen24Regular />
                     Atidaryti
-                  </NButton>
+                  </Button>
                   <CopyToClipboardButton show-icon :text-to-copy="publicWebUrl">
                     Kopijuoti
                   </CopyToClipboardButton>
-                </NButtonGroup>
+                </ButtonGroup>
               </div>
-              <NButton v-else-if="!loadingPublicPermission" size="small" @click="createPublicPermission">
+              <Button v-else-if="!loadingPublicPermission" size="sm" variant="outline" @click="createPublicPermission">
+                <IFluentDocumentLink24Regular />
                 Sukurti viešą
                 nuorodą
-                <template #icon>
-                  <IFluentDocumentLink24Regular />
-                </template>
-              </NButton>
-              <NButton v-if="!route().current('sharepointFiles.index')" size="tiny" :loading="loadingDelete"
-                type="error" class="mt-4" @click="handleDelete(file?.sharepointFile)">
-                <template #icon>
-                  <IFluentDelete24Filled />
-                </template>
-              </NButton>
+              </Button>
+              <Button v-if="!route().current('sharepointFiles.index')" size="xs" variant="destructive"
+                :disabled="loadingDelete" class="mt-4" @click="handleDelete(file?.sharepointFile)">
+                <Spinner v-if="loadingDelete" />
+                <IFluentDelete24Filled v-else />
+              </Button>
             </Spinner>
           </div>
           <NTable>
@@ -96,6 +91,8 @@ import CopyToClipboardButton from "@/Components/Buttons/CopyToClipboardButton.vu
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import { Spinner } from "@/Components/ui/spinner";
 import { Drawer, DrawerContent } from "@/Components/ui/drawer";
+import { Button } from "@/Components/ui/button";
+import { ButtonGroup } from "@/Components/ui/button-group";
 
 // define emit for close
 const props = defineProps<{

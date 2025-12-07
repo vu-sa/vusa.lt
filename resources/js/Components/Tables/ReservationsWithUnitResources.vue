@@ -6,8 +6,6 @@
 import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
 import {
   type DataTableColumns,
-  NButton,
-  NIcon,
   NTag,
 } from "naive-ui";
 import { Link, usePage } from "@inertiajs/vue3";
@@ -15,6 +13,7 @@ import { capitalize, computed } from "vue";
 
 import ArrowForward20Filled from "~icons/fluent/arrow-forward20-filled";
 
+import { Button } from "@/Components/ui/button";
 import { RESERVATION_DATE_TIME_FORMAT } from "@/Constants/DateTimeFormats";
 import { formatRelativeTime, formatStaticTime } from "@/Utils/IntlTime";
 import UsersAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
@@ -180,11 +179,9 @@ const columnsWithActions = computed(() => {
       render(row) {
         return (
           <Link href={route("reservations.show", row.id)} >
-            <NButton quaternary size="small">
-              <NIcon>
-                <ArrowForward20Filled />
-              </NIcon>
-            </NButton>
+            <Button variant="ghost" size="icon-sm">
+              <ArrowForward20Filled />
+            </Button>
           </Link>
         );
       },

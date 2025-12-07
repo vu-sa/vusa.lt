@@ -108,13 +108,14 @@
         <template #label>
           <div class="flex items-center gap-2">
             <span><strong>{{ $t("Pareigybės") }}</strong></span><a target="_blank" :href="route('duties.create')">
-              <NButton size="tiny" round secondary><template #icon>
-                  <IFluentAdd24Filled />
-                </template>Sukurti naują pareigybę?</NButton>
+              <Button size="xs" variant="secondary">
+                <IFluentAdd24Filled />
+                Sukurti naują pareigybę?
+              </Button>
             </a>
-            <NButton class="ml-auto" size="tiny" round @click="handleChangeDutyShowMode">
+            <Button class="ml-auto" size="xs" variant="outline" @click="handleChangeDutyShowMode">
               Pakeisti rodymo būdą
-            </NButton>
+            </Button>
           </div>
         </template>
         <NTransfer ref="transfer" v-model:value="form.current_duties" :options="flattenDutyOptions" :render-source-list="dutyShowMode === 'tree' ? renderSourceList : undefined
@@ -157,9 +158,9 @@
             <div class="flex gap-2">
               <NPopconfirm @positive-click="generatePassword">
                 <template #trigger>
-                  <NButton size="small" type="primary">
+                  <Button size="sm">
                     {{ $t("Generuoti naują slaptažodį") }}
-                  </NButton>
+                  </Button>
                 </template>
                 <span>{{ $t("Ar tikrai norite sugeneruoti naują slaptažodį šiam naudotojui?") }}</span>
                 <template v-if="user.has_password">
@@ -169,9 +170,9 @@
               
               <NPopconfirm v-if="user.has_password" @positive-click="deletePassword">
                 <template #trigger>
-                  <NButton size="small" type="error">
+                  <Button size="sm" variant="destructive">
                     {{ $t("Ištrinti slaptažodį") }}
-                  </NButton>
+                  </Button>
                 </template>
                 <span>{{ $t("Ar tikrai norite ištrinti šio naudotojo slaptažodį?") }}</span>
                 <p class="text-orange-500 mt-1">{{ $t("Dėmesio: Naudotojas nebegalės prisijungti su slaptažodžiu!") }}</p>
@@ -188,16 +189,15 @@
                 :value="$page.props.flash.data" 
                 class="font-mono"
               />
-              <NButton 
-                size="small" 
+              <Button 
+                size="sm" 
+                variant="outline"
                 class="absolute right-2 top-1/2 transform -translate-y-1/2"
                 @click="copyPasswordToClipboard"
               >
-                <template #icon>
-                  <IFluentCopy16Regular />
-                </template>
+                <IFluentCopy16Regular />
                 {{ hasCopied ? $t("Nukopijuota!") : $t("Kopijuoti") }}
-              </NButton>
+              </Button>
             </div>
             <p class="text-sm text-orange-600">
               {{ $t("Šis slaptažodis bus rodomas tik vieną kartą! Įsitikinkite, kad jį išsaugojote saugiai.") }}
@@ -215,15 +215,13 @@
               <span class="underline">{{ user.email }}</span>
             </span>
             <template #trigger>
-              <NButton>Siųsti laišką</NButton>
+              <Button variant="outline">Siųsti laišką</Button>
             </template>
           </NPopconfirm>
-          <NButton tag="a" size="tiny" text :href="route('users.renderWelcomeEmail', user.id)" target="_blank"
+          <Button variant="link" size="icon-xs" as="a" :href="route('users.renderWelcomeEmail', user.id)" target="_blank"
             class="ml-2 align-middle">
-            <template #icon>
-              <IFluentEye24Filled />
-            </template>
-          </NButton>
+            <IFluentEye24Filled />
+          </Button>
         </template> -->
     </FormElement>
   </AdminForm>
@@ -232,7 +230,6 @@
 <script setup lang="tsx">
 import {
   type DataTableColumns,
-  NButton,
   NIcon,
   NTree,
   type TransferRenderSourceList,
@@ -240,6 +237,7 @@ import {
 } from "naive-ui";
 import { computed, h, ref } from "vue";
 import { router, useForm, usePage } from "@inertiajs/vue3";
+import { Button } from "@/Components/ui/button";
 
 import Delete24Regular from "~icons/fluent/delete24-regular";
 import Eye16Regular from "~icons/fluent/eye16-regular";
@@ -339,17 +337,15 @@ const existingDutyColumns: DataTableColumns = [
     key: "actions",
     render(row) {
       return (
-        <NButton
-          secondary
-          size="tiny"
-          tag="a"
+        <Button
+          variant="secondary"
+          size="icon-xs"
+          as="a"
           href={route("dutiables.edit", row.pivot.id as string)}
           target="_blank"
         >
-          {{
-            icon: () => <NIcon component={PersonEdit24Regular} />,
-          }}
-        </NButton>
+          <NIcon component={PersonEdit24Regular} />
+        </Button>
       );
     },
   },
@@ -361,9 +357,9 @@ const previousDutyColumns: DataTableColumns = [
     key: "delete",
     render(row) {
       return (
-        <NButton
-          size="tiny"
-          type="error"
+        <Button
+          size="icon-xs"
+          variant="destructive"
           onClick={() =>
             router.delete(route("dutiables.destroy", row.pivot.id), {
               preserveState: true,
@@ -371,10 +367,8 @@ const previousDutyColumns: DataTableColumns = [
             })
           }
         >
-          {{
-            icon: () => <NIcon component={Delete24Regular} />,
-          }}
-        </NButton>
+          <NIcon component={Delete24Regular} />
+        </Button>
       );
     },
   },
@@ -400,11 +394,9 @@ const renderLabel = ({ option }: { option: TreeOption }) => {
             : route("duties.edit", option.value as string)
         }
       >
-        <NButton size="tiny" text>
-          {{
-            icon: <NIcon component={Eye16Regular} />,
-          }}
-        </NButton>
+        <Button size="icon-xs" variant="link">
+          <NIcon component={Eye16Regular} />
+        </Button>
       </a>
     </span>
   );
@@ -423,11 +415,9 @@ const renderTargetLabel = ({ option }: { option: TreeOption }) => {
     <span class="inline-flex items-center gap-2">
       {option.label}
       <a target="_blank" href={route("duties.edit", option.value as string)}>
-        <NButton size="tiny" text>
-          {{
-            icon: <NIcon component={Eye16Regular} />,
-          }}
-        </NButton>
+        <Button size="icon-xs" variant="link">
+          <NIcon component={Eye16Regular} />
+        </Button>
       </a>
     </span>
   );

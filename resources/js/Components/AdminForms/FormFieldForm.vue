@@ -60,9 +60,9 @@
       <MultiLocaleInput v-model:input="model.placeholder" />
     </NFormItem>
     <NFormItem :show-label="false">
-      <NButton type="primary" @click="handleSubmit">
+      <Button @click="handleSubmit">
         Pateikti
-      </NButton>
+      </Button>
     </NFormItem>
   </NForm>
 </template>
@@ -70,12 +70,12 @@
 <script setup lang="ts">
 import {
   type FormInst,
-  NButton,
   NForm,
 } from "naive-ui";
 import { computed, ref } from "vue";
 import { useForm } from "@inertiajs/vue3";
 
+import { Button } from "@/Components/ui/button";
 import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";
 import MultiLocaleTiptapFormItem from "../FormItems/MultiLocaleTiptapFormItem.vue";
 import Collapsible from "@/Components/ui/collapsible/Collapsible.vue";

@@ -8,9 +8,9 @@
         placeholder="Aprašykite klausimo kontekstą, svarstymą, pakomentuokite balsavimą..." />
     </NFormItem>
     <NFormItem :show-label="false">
-      <NButton type="primary" @click="handleSubmit">
+      <Button @click="handleSubmit">
         Pateikti
-      </NButton>
+      </Button>
     </NFormItem>
   </NForm>
 </template>
@@ -19,12 +19,13 @@
 import {
   type FormInst,
   type FormRules,
-  NButton,
   NForm,
   NInput,
 } from "naive-ui";
 import { ref } from "vue";
 import { useForm } from "@inertiajs/vue3";
+
+import { Button } from "@/Components/ui/button";
 
 // import { modelDefaults } from "@/Types/formOptions";
 

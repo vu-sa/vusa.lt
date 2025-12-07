@@ -1,10 +1,8 @@
 <template>
   <NDropdown placement="bottom-end" trigger="click" :options="dropdownOptions" @select="handleSelect">
-    <NButton :size="small ? 'tiny' : 'small'" :disabled="disabled" circle quaternary @click.stop>
-      <template #icon>
-        <IFluentMoreHorizontal24Filled />
-      </template>
-    </NButton>
+    <Button :size="small ? 'icon-xs' : 'icon-sm'" :disabled="disabled" variant="ghost" class="rounded-full" @click.stop>
+      <IFluentMoreHorizontal24Filled />
+    </Button>
   </NDropdown>
   <NModal v-model:show="showDeleteModal" preset="dialog" title="Ištrinti įrašą?"
     content="Šis įrašas bus ištrintas negrįžtamai..." type="warning" :positive-text="$t('forms.delete')"
@@ -20,6 +18,7 @@ import {
 } from "naive-ui";
 import { computed, ref } from "vue";
 
+import { Button } from "@/Components/ui/button";
 import Delete24Filled from "~icons/fluent/delete24-filled";
 import Edit24Filled from "~icons/fluent/edit24-filled";
 

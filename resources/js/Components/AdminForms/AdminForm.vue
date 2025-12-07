@@ -6,18 +6,14 @@
       </div>
       <div class="mt-3 flex justify-end gap-4">
         <slot name="buttons">
-          <NButton v-if="enableDelete" text type="error" @click="showDeleteDialog = true">
-            <template #icon>
-              <IFluentDelete24Filled />
-            </template>
+          <Button v-if="enableDelete" variant="ghost" class="text-red-600 hover:text-red-700 hover:bg-red-50" @click="showDeleteDialog = true">
+            <IFluentDelete24Filled />
             {{ $t('Ištrinti') }}
-          </NButton>
-          <NButton type="primary" @click="$emit('submit:form')">
-            <template #icon>
-              <IFluentSave24Filled />
-            </template>
+          </Button>
+          <Button @click="$emit('submit:form')">
+            <IFluentSave24Filled />
             {{ $t('Išsaugoti') }}
-          </NButton>
+          </Button>
         </slot>
       </div>
     </NForm>

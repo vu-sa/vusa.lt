@@ -20,9 +20,9 @@
           :disabled="reservationResourceForm.resource_id === null" min="1" :max="capacityMax" placeholder="" />
       </NFormItem>
       <NFormItem :show-label="false">
-        <NButton :disabled="reservationResourceForm.resource_id === null" type="primary" @click="handleSubmit">
+        <Button :disabled="reservationResourceForm.resource_id === null" @click="handleSubmit">
           {{ $t("forms.submit") }}
-        </NButton>
+        </Button>
       </NFormItem>
     </NForm>
   </Spinner>
@@ -31,7 +31,6 @@
 <script setup lang="tsx">
 import { type InertiaForm, router, useForm } from "@inertiajs/vue3";
 import {
-  NButton,
   NDatePicker,
   NForm,
   NFormItem,
@@ -39,6 +38,7 @@ import {
   NSelect,
   type SelectOption,
 } from "naive-ui";
+import { Button } from "@/Components/ui/button";
 import { capitalize } from "@/Utils/String";
 import { computed, ref, watch } from "vue";
 import {

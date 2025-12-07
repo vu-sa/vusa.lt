@@ -44,9 +44,9 @@
             @click="tag.alias && navigateToTaggedNews(tag.alias)"
             class="cursor-pointer"
           >
-            <NButton size="tiny" round class="hover:bg-red-50 dark:hover:bg-red-950 transition-colors">
+            <Button size="xs" variant="outline" class="rounded-full hover:bg-red-50 dark:hover:bg-red-950 transition-colors">
               {{ typeof tag.name === 'object' ? (tag.name[locale] || tag.name.lt || tag.name.en) : tag.name }}
-            </NButton>
+            </Button>
           </button>
         </div>
       </div>
@@ -60,7 +60,7 @@
           {{ $t("Puslapis egzistuoja kita kalba") }}!
           <span class="ml-2">
             <SmartLink :href="otherLangURL">
-              <NButton tertiary round size="small">{{ $t("Atidaryti") }}.</NButton>
+              <Button variant="ghost" size="sm" class="rounded-full">{{ $t("Atidaryti") }}.</Button>
             </SmartLink>
           </span>
         </em>
@@ -85,8 +85,8 @@ import SmartLink from "@/Components/Public/SmartLink.vue";
 import IFluentOrganization16Regular from "~icons/fluent/organization-16-regular";
 import IFluentCalendarLtr16Regular from "~icons/fluent/calendar-ltr-16-regular";
 
-// Import NButton for tag buttons
-import { NButton } from "naive-ui";
+// Import Button for tag buttons
+import { Button } from "@/Components/ui/button";
 
 const props = defineProps<{
   article: App.Entities.News;

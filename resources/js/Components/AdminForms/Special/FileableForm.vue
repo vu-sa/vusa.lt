@@ -26,9 +26,9 @@
           clearable virtual-scroll :options="options" check-strategy="all" @update:value="handleSelect" />
       </NFormItem>
       <NFormItem>
-        <NButton type="primary" @click="handleClick">
+        <Button @click="handleClick">
           Pateikti
-        </NButton>
+        </Button>
       </NFormItem>
     </NForm>
     <template #description>
@@ -45,8 +45,8 @@ import {
   NForm,
   NFormItem,
   NTreeSelect,
-  NButton,
 } from "naive-ui";
+import { Button } from "@/Components/ui/button";
 import { onMounted, ref, useTemplateRef } from "vue";
 import { useFetch } from "@vueuse/core";
 

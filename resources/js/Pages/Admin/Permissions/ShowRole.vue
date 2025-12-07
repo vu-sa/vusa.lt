@@ -27,17 +27,19 @@
       </div>
       
       <template #action>
-        <NButton type="primary" @click="router.visit(route('roles.edit', role))">
+        <Button @click="router.visit(route('roles.edit', role))">
           Redaguoti
-        </NButton>
+        </Button>
       </template>
     </NCard>
   </AdminContentPage>
 </template>
 
 <script setup lang="tsx">
-import { NButton, NCard } from "naive-ui";
+import { NCard } from "naive-ui";
 import { router } from "@inertiajs/vue3";
+
+import { Button } from "@/Components/ui/button";
 import AdminContentPage from "@/Components/Layouts/AdminContentPage.vue";
 
 interface Role {

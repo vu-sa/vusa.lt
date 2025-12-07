@@ -19,16 +19,12 @@
         v-for="(element, index) in day.elements" :key="element?.id ?? index" v-model:element="day.elements[index]"
         :parent="day" handle-class="element-handle" :data-id="element.id" :data-type="element.type">
         <template v-if="editable" #buttons>
-          <NButton size="tiny" secondary circle @click="handleEditElement(element)">
-            <template #icon>
-              <IFluentEdit24Filled />
-            </template>
-          </NButton>
-          <NButton size="tiny" secondary circle @click="deleteProgrammeElement(index)">
-            <template #icon>
-              <IFluentDelete24Filled />
-            </template>
-          </NButton>
+          <Button size="icon-xs" variant="secondary" class="rounded-full" @click="handleEditElement(element)">
+            <IFluentEdit24Filled />
+          </Button>
+          <Button size="icon-xs" variant="secondary" class="rounded-full" @click="deleteProgrammeElement(index)">
+            <IFluentDelete24Filled />
+          </Button>
         </template>
       </component>
       <!-- calculate current time from previous parts and blocks -->
@@ -46,9 +42,9 @@
       <NFormItem label="Aprašymas">
         <MultiLocaleInput v-model:input="selectedPart.description" />
       </NFormItem>
-      <NButton @click="showPartEditModal = false">
+      <Button variant="outline" @click="showPartEditModal = false">
         Uždaryti
-      </NButton>
+      </Button>
     </CardModal>
     <CardModal v-model:show="showSectionEditModal" :section="selectedSection" @close="showSectionEditModal = false">
       <NFormItem label="Sekcijos pavadinimas">
@@ -57,28 +53,24 @@
       <NFormItem label="Sekcijos trukmė">
         <NInputNumber v-model:value="selectedSection.duration" />
       </NFormItem>
-      <NButton type="primary" @click="showSectionEditModal = false">
+      <Button @click="showSectionEditModal = false">
         Išsaugoti
-      </NButton>
+      </Button>
     </CardModal>
     <div v-if="editable" class="mt-2 flex gap-1">
       <NTooltip>
         <template #trigger>
-          <NButton size="small" circle @click="createProgrammePart">
-            <template #icon>
-              <IFluentAdd24Filled />
-            </template>
-          </NButton>
+          <Button size="icon-sm" class="rounded-full" @click="createProgrammePart">
+            <IFluentAdd24Filled />
+          </Button>
         </template>
         Pridėti programos dalį
       </NTooltip>
       <NTooltip>
         <template #trigger>
-          <NButton size="small" circle @click="createProgrammeSection">
-            <template #icon>
-              <IFluentWindowBulletListAdd20Filled />
-            </template>
-          </NButton>
+          <Button size="icon-sm" class="rounded-full" @click="createProgrammeSection">
+            <IFluentWindowBulletListAdd20Filled />
+          </Button>
         </template>
         Pridėti programos sekciją
       </NTooltip>
@@ -94,6 +86,7 @@ import { router } from "@inertiajs/vue3";
 import ProgrammePart from './ProgrammePart.vue';
 import ProgrammeSection from './ProgrammeSection.vue';
 import { formatStaticTime } from '@/Utils/IntlTime';
+import { Button } from '@/Components/ui/button';
 import CardModal from '@/Components/Modals/CardModal.vue';
 import MultiLocaleInput from '@/Components/FormItems/MultiLocaleInput.vue';
 

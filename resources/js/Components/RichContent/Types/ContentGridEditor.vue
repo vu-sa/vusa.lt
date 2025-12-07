@@ -2,12 +2,10 @@
   <div class="mt-4 flex flex-col gap-4">
     <!-- Ensure the json_content is initialized properly -->
     <div v-if="!isModelValueInitialized" class="flex justify-center">
-      <NButton primary @click="initializeModelValue">
-        <template #icon>
-          <IFluentAdd24Filled />
-        </template>
+      <Button @click="initializeModelValue">
+        <IFluentAdd24Filled />
         Sukurti tinklelį
-      </NButton>
+      </Button>
     </div>
 
     <template v-else>
@@ -36,24 +34,18 @@
             Eilutė {{ rowIndex + 1 }}
           </h4>
           <div class="flex-grow" />
-          <NButtonGroup size="small">
-            <NButton v-if="rowIndex > 0" quaternary circle @click="moveRow(rowIndex, rowIndex - 1)">
-              <template #icon>
-                <IFluentArrowUp24Filled />
-              </template>
-            </NButton>
-            <NButton v-if="rowIndex < json_content.json_content.length - 1" quaternary circle
+          <ButtonGroup>
+            <Button v-if="rowIndex > 0" variant="ghost" size="icon-sm" class="rounded-full" @click="moveRow(rowIndex, rowIndex - 1)">
+              <IFluentArrowUp24Filled />
+            </Button>
+            <Button v-if="rowIndex < json_content.json_content.length - 1" variant="ghost" size="icon-sm" class="rounded-full"
               @click="moveRow(rowIndex, rowIndex + 1)">
-              <template #icon>
-                <IFluentArrowDown24Filled />
-              </template>
-            </NButton>
-            <NButton quaternary circle @click="removeRow(rowIndex)">
-              <template #icon>
-                <IFluentDelete24Filled />
-              </template>
-            </NButton>
-          </NButtonGroup>
+              <IFluentArrowDown24Filled />
+            </Button>
+            <Button variant="ghost" size="icon-sm" class="rounded-full" @click="removeRow(rowIndex)">
+              <IFluentDelete24Filled />
+            </Button>
+          </ButtonGroup>
         </div>
 
         <!-- Column layout -->
@@ -67,24 +59,18 @@
                   <NSelect v-model:value="column.width" :options="columnWidthOptions" />
                 </NFormItem>
                 <div class="flex-grow" />
-                <NButtonGroup size="small">
-                  <NButton v-if="colIndex > 0" quaternary circle @click="moveColumn(rowIndex, colIndex, colIndex - 1)">
-                    <template #icon>
-                      <IFluentArrowLeft24Filled />
-                    </template>
-                  </NButton>
-                  <NButton v-if="colIndex < row.columns.length - 1" quaternary circle
+                <ButtonGroup>
+                  <Button v-if="colIndex > 0" variant="ghost" size="icon-sm" class="rounded-full" @click="moveColumn(rowIndex, colIndex, colIndex - 1)">
+                    <IFluentArrowLeft24Filled />
+                  </Button>
+                  <Button v-if="colIndex < row.columns.length - 1" variant="ghost" size="icon-sm" class="rounded-full"
                     @click="moveColumn(rowIndex, colIndex, colIndex + 1)">
-                    <template #icon>
-                      <IFluentArrowRight24Filled />
-                    </template>
-                  </NButton>
-                  <NButton quaternary circle @click="removeColumn(rowIndex, colIndex)">
-                    <template #icon>
-                      <IFluentDelete24Filled />
-                    </template>
-                  </NButton>
-                </NButtonGroup>
+                    <IFluentArrowRight24Filled />
+                  </Button>
+                  <Button variant="ghost" size="icon-sm" class="rounded-full" @click="removeColumn(rowIndex, colIndex)">
+                    <IFluentDelete24Filled />
+                  </Button>
+                </ButtonGroup>
               </div>
 
               <!-- Column content type selector -->
@@ -106,12 +92,10 @@
                       </TiptapImageButton>
                       <div v-else class="relative">
                         <img :src="column.content.value" class="aspect-video w-full rounded-lg object-cover">
-                        <NButton class="absolute top-1 right-1" size="small" quaternary circle
+                        <Button class="absolute top-1 right-1 rounded-full" size="icon-sm" variant="ghost"
                           @click="column.content.value = null">
-                          <template #icon>
-                            <IFluentDismiss20Regular />
-                          </template>
-                        </NButton>
+                          <IFluentDismiss20Regular />
+                        </Button>
                       </div>
                     </div>
                   </NFormItem>
@@ -122,12 +106,10 @@
 
           <!-- Add column button -->
           <div class="mt-2 flex justify-center">
-            <NButton quaternary :disabled="isMaxColumnsReached(row)" @click="addColumn(rowIndex)">
-              <template #icon>
-                <IFluentAdd24Filled />
-              </template>
+            <Button variant="ghost" :disabled="isMaxColumnsReached(row)" @click="addColumn(rowIndex)">
+              <IFluentAdd24Filled />
               Pridėti stulpelį
-            </NButton>
+            </Button>
             <NTooltip v-if="isMaxColumnsReached(row)">
               <template #trigger>
                 <span class="ml-2 text-zinc-400 flex items-center">
@@ -142,12 +124,10 @@
 
       <!-- Add row button -->
       <div class="mt-2 flex justify-center">
-        <NButton quaternary @click="addRow">
-          <template #icon>
-            <IFluentAdd24Filled />
-          </template>
+        <Button variant="ghost" @click="addRow">
+          <IFluentAdd24Filled />
           Pridėti eilutę
-        </NButton>
+        </Button>
       </div>
     </template>
   </div>
@@ -158,6 +138,8 @@ import { defineModel, computed, onMounted, ref, watch } from 'vue';
 import CompactTiptap from '@/Components/TipTap/CompactTiptap.vue';
 import TiptapImageButton from '@/Components/TipTap/TiptapImageButton.vue';
 import type { ContentGrid } from '@/Types/contentParts';
+import { Button } from '@/Components/ui/button';
+import { ButtonGroup } from '@/Components/ui/button-group';
 
 const json_content = defineModel<ContentGrid['json_content']>();
 const options = defineModel<ContentGrid[]>('options')

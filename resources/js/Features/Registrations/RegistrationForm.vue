@@ -6,9 +6,9 @@
         <div class="text-sm mt-1 text-zinc-600 dark:text-zinc-400" v-html="field.description" />
       </div>
     </template>
-    <NButton attr-type="submit" type="primary">
+    <Button type="submit">
       {{ $t("Pateikti") }}
-    </NButton>
+    </Button>
   </AutoForm>
 </template>
 
@@ -19,6 +19,7 @@ import { toTypedSchema } from "@vee-validate/zod";
 import { ref, watch } from "vue";
 import { router, usePage } from "@inertiajs/vue3";
 
+import { Button } from "@/Components/ui/button";
 import AutoForm from "@/Components/ui/auto-form/AutoForm.vue";
 import AutoFormField from "@/Components/ui/auto-form/AutoFormField.vue";
 

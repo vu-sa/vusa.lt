@@ -12,18 +12,14 @@
           </p>
         </div>
         <div class="flex gap-2">
-          <NButton secondary tag="a" :href="route('calendar.ics', { lang: $page.props.app.locale })">
-            <template #icon>
-              <IFluentCalendarLtr20Regular />
-            </template>
+          <Button variant="secondary" as="a" :href="route('calendar.ics', { lang: $page.props.app.locale })">
+            <IFluentCalendarLtr20Regular />
             {{ $t("iCalendar") }}
-          </NButton>
-          <NButton secondary @click="showModal = true">
-            <template #icon>
-              <IFluentArrowSync20Regular />
-            </template>
+          </Button>
+          <Button variant="secondary" @click="showModal = true">
+            <IFluentArrowSync20Regular />
             {{ $t("Sinchronizuoti") }}
-          </NButton>
+          </Button>
         </div>
       </div>
 
@@ -54,20 +50,16 @@
           </div>
 
           <!-- Search button -->
-          <NButton type="primary" :loading="searchLoading" @click="applyFilters">
-            <template #icon>
-              <IFluentSearch20Filled />
-            </template>
+          <Button :disabled="searchLoading" @click="applyFilters">
+            <IFluentSearch20Filled />
             {{ $t("Ieškoti") }}
-          </NButton>
+          </Button>
 
           <!-- Reset filters button -->
-          <NButton v-if="filters.search || filters.category || filters.tenant" @click="resetFilters">
-            <template #icon>
-              <IFluentDelete20Regular />
-            </template>
+          <Button v-if="filters.search || filters.category || filters.tenant" variant="secondary" @click="resetFilters">
+            <IFluentDelete20Regular />
             {{ $t("Išvalyti") }}
-          </NButton>
+          </Button>
         </div>
       </div>
     </header>
@@ -90,9 +82,11 @@
 
 <script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
-import { NButton, NTabs, NTabPane, NSelect } from "naive-ui";
+import { NTabs, NTabPane, NSelect } from "naive-ui";
 import { ref, computed } from "vue";
 import { router, usePage } from "@inertiajs/vue3";
+
+import { Button } from "@/Components/ui/button";
 import CalendarSyncModal from "@/Components/Modals/CalendarSyncModal.vue";
 import EventListContent from "@/Components/Calendar/EventListContent.vue";
 

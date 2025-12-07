@@ -27,26 +27,20 @@
       <ProgrammeBlock v-for="(block, index) in section.blocks" :key="block.id" v-model:block="section.blocks[index]"
         :section-start-time>
         <template v-if="editable" #buttons>
-          <NButton size="tiny" secondary circle @click="showBlockEditModal = true; selectedBlock = block">
-            <template #icon>
-              <IFluentEdit24Filled />
-            </template>
-          </NButton>
-          <NButton size="tiny" secondary circle @click="deleteProgrammeBlock(index)">
-            <template #icon>
-              <IFluentDelete24Filled />
-            </template>
-          </NButton>
+          <Button size="icon-xs" variant="secondary" class="rounded-full" @click="showBlockEditModal = true; selectedBlock = block">
+            <IFluentEdit24Filled />
+          </Button>
+          <Button size="icon-xs" variant="secondary" class="rounded-full" @click="deleteProgrammeBlock(index)">
+            <IFluentDelete24Filled />
+          </Button>
         </template>
       </ProgrammeBlock>
     </div>
     <NTooltip v-if="editable">
       <template #trigger>
-        <NButton size="small" circle @click="createProgrammeBlock">
-          <template #icon>
-            <IFluentLayerDiagonalAdd24Regular />
-          </template>
-        </NButton>
+        <Button size="icon-sm" class="rounded-full" @click="createProgrammeBlock">
+          <IFluentLayerDiagonalAdd24Regular />
+        </Button>
       </template>
       Pridėti programos bloką
     </NTooltip>
@@ -54,9 +48,9 @@
       <NFormItem label="Dienos pavadinimas">
         <MultiLocaleInput v-model:input="selectedBlock.title" />
       </NFormItem>
-      <NButton @click="showBlockEditModal = false">
+      <Button variant="outline" @click="showBlockEditModal = false">
         Uždaryti
-      </NButton>
+      </Button>
     </CardModal>
   </div>
 </template>
@@ -68,6 +62,7 @@ import { router } from "@inertiajs/vue3";
 import { formatStaticTime } from '@/Utils/IntlTime';
 import ProgrammeBlock from './ProgrammeBlock.vue';
 import CardModal from '@/Components/Modals/CardModal.vue';
+import { Button } from '@/Components/ui/button';
 import MultiLocaleInput from '@/Components/FormItems/MultiLocaleInput.vue';
 
 const section = defineModel<App.Entities.ProgrammeSection | App.Entities.ProgrammePart>('element')

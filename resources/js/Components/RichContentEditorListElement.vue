@@ -7,27 +7,19 @@
       </NTag>
       <div class="ml-auto flex gap-4">
         <!-- up and down arrows -->
-        <NButton type="primary" circle color="#EEEEEE" size="small" bordered @click="$emit('up')">
-          <template #icon>
-            <IFluentArrowUp24Regular />
-          </template>
-        </NButton>
-        <NButton type="primary" circle color="#EEEEEE" size="small" bordered @click="$emit('down')">
-          <template #icon>
-            <IFluentArrowDown24Regular />
-          </template>
-        </NButton>
-        <NButton type="primary" circle color="#EEEEEE" size="small" bordered @click="$emit('expand')">
-          <template #icon>
-            <IFluentArrowMinimizeVertical24Regular v-if="isExpanded" />
-            <IFluentArrowMaximizeVertical24Regular v-else />
-          </template>
-        </NButton>
-        <NButton :disabled="!canDelete" circle type="error" size="small" @click="$emit('remove')">
-          <template #icon>
-            <IFluentDismiss24Regular />
-          </template>
-        </NButton>
+        <Button size="icon-sm" variant="outline" class="rounded-full" @click="$emit('up')">
+          <IFluentArrowUp24Regular />
+        </Button>
+        <Button size="icon-sm" variant="outline" class="rounded-full" @click="$emit('down')">
+          <IFluentArrowDown24Regular />
+        </Button>
+        <Button size="icon-sm" variant="outline" class="rounded-full" @click="$emit('expand')">
+          <IFluentArrowMinimizeVertical24Regular v-if="isExpanded" />
+          <IFluentArrowMaximizeVertical24Regular v-else />
+        </Button>
+        <Button :disabled="!canDelete" size="icon-sm" variant="destructive" class="rounded-full" @click="$emit('remove')">
+          <IFluentDismiss24Regular />
+        </Button>
       </div>
     </div>
     <slot />
@@ -36,6 +28,8 @@
 
 <script setup lang="ts">
 import type { Component } from 'vue';
+import { NIcon, NTag } from 'naive-ui';
+import { Button } from '@/Components/ui/button';
 
 defineProps<{
   icon: Component;

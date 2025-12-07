@@ -54,22 +54,20 @@
         <!-- Registration component -->
         <div class="flex gap-2">
           <Link v-if="userCanRegister" :href="route('trainings.showRegistration', training.id)">
-          <NButton :disabled="!userCanRegister">
+          <Button :disabled="!userCanRegister">
             Registruotis
-          </NButton>
+          </Button>
           </Link>
-          <NButton v-else-if="userIsRegistered" type="warning" disabled>
+          <Button v-else-if="userIsRegistered" variant="warning" disabled>
             Atšaukti registraciją
-          </NButton>
-          <NButton v-else disabled>
+          </Button>
+          <Button v-else disabled>
             Registruotis
-          </NButton>
+          </Button>
           <!-- Share button -->
-          <NButton>
-            <template #icon>
-              <IFluentShareAndroid24Regular />
-            </template>
-          </NButton>
+          <Button variant="secondary" size="icon">
+            <IFluentShareAndroid24Regular />
+          </Button>
         </div>
       </CardFooter>
     </Card>
@@ -112,6 +110,7 @@
 <script setup lang="ts">
 import UserPopover from "@/Components/Avatars/UserPopover.vue";
 import AdminContentPage from "@/Components/Layouts/AdminContentPage.vue";
+import { Button } from "@/Components/ui/button";
 import Card from "@/Components/ui/card/Card.vue";
 import CardContent from "@/Components/ui/card/CardContent.vue";
 import CardHeader from "@/Components/ui/card/CardHeader.vue";

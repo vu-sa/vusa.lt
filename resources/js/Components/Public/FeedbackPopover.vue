@@ -1,19 +1,16 @@
 <template>
   <NPopover :show-arrow="false" raw :show="showPopover" :x="coordinates.x" :y="coordinates.y" trigger="manual">
-    <NButton :type="showPopover ? 'error' : 'default'" @click="handleFeedbackClick">
-      <template #icon>
-        <IFluentPersonFeedback24Filled />
-      </template>
-    </NButton>
+    <Button :variant="showPopover ? 'destructive' : 'outline'" size="icon" @click="handleFeedbackClick">
+      <IFluentPersonFeedback24Filled />
+    </Button>
   </NPopover>
   <CardModal :show="showModal" title="Pranešk apie klaidą!" @close="handleModalClose">
     <template #footer>
-      <NButton type="primary" :loading @click="handleSend">
+      <Button :disabled="loading" @click="handleSend">
+        <Spinner v-if="loading" />
+        <IFluentSend24Filled v-else />
         {{ $t("Siųsti") }}
-        <template #icon>
-          <IFluentSend24Filled />
-        </template>
-      </NButton>
+      </Button>
     </template>
     <div>
       <p class="mb-4 text-xs opacity-80">
@@ -30,6 +27,8 @@ import { router, usePage } from "@inertiajs/vue3";
 import { useToasts } from '@/Composables/useToasts';
 import { useMousePressed, useTextSelection } from "@vueuse/core";
 
+import { Button } from "@/Components/ui/button";
+import { Spinner } from "@/Components/ui/spinner";
 import CardModal from "../Modals/CardModal.vue";
 
 const showPopover = ref(false);

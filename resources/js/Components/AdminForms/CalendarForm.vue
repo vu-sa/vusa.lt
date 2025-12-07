@@ -40,15 +40,13 @@
       </NFormItem>
       <NFormItem label="Viešinimo auditorija">
         <div class="grid w-full grid-cols-2 gap-4">
-          <NButton strong :type="form.is_international ? 'primary' : 'default'" @click="form.is_international = true">
+          <Button :variant="form.is_international ? 'default' : 'outline'" @click="form.is_international = true">
+            <IFluentGlobe20Regular width="16" />
             Visi studentai
-            <template #icon>
-              <IFluentGlobe20Regular width="16" />
-            </template>
-          </NButton>
-          <NButton :type="form.is_international ? 'default' : 'primary'" @click="form.is_international = false">
+          </Button>
+          <Button :variant="form.is_international ? 'outline' : 'default'" @click="form.is_international = false">
             Tik lietuviškai mokantys studentai
-          </NButton>
+          </Button>
         </div>
       </NFormItem>
       <NFormItem label="Padalinys" required>
@@ -161,6 +159,7 @@ import TipTap from "@/Components/TipTap/OriginalTipTap.vue";
 import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";
 import SimpleLocaleButton from "../Buttons/SimpleLocaleButton.vue";
 import AdminForm from "./AdminForm.vue";
+import { Button } from "@/Components/ui/button";
 
 defineEmits<{
   (event: "submit:form", form: unknown): void;

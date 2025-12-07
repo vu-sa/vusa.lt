@@ -39,11 +39,10 @@
       </NInputGroup>
     </NFormItem>
 
-    <NButton type="primary" :disabled="!model.uploadValue" :loading @click="handleValidateClick">
-      <template #icon>
-        <IFluentDocumentAdd24Regular />
-      </template>{{ $t('Įkelti failą') }}
-    </NButton>
+    <Button :disabled="!model.uploadValue || loading" @click="handleValidateClick">
+      <IFluentDocumentAdd24Regular />
+      {{ $t('Įkelti failą') }}
+    </Button>
   </NForm>
 </template>
 
@@ -52,6 +51,7 @@ import { ref, watch } from "vue";
 import { useForm } from "@inertiajs/vue3";
 import type { FormInst, FormRules, UploadFileInfo } from "naive-ui";
 
+import { Button } from "@/Components/ui/button";
 import { generateNameForFile } from "./generateNameForFile";
 
 import { modelTypes } from "@/Types/formOptions";

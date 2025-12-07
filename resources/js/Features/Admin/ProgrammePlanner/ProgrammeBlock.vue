@@ -9,16 +9,12 @@
       <ProgrammePart v-for="(part, index) in block?.parts" :key="part.id" v-model:element="block.parts[index]"
         :data-id="part.id" :data-type="part.type" handle-class="block-part-handle" :section-start-time :parent="block">
         <template v-if="editable" #buttons>
-          <NButton size="tiny" secondary circle @click="handleEditPart(part)">
-            <template #icon>
-              <IFluentEdit24Filled />
-            </template>
-          </NButton>
-          <NButton size="tiny" secondary circle @click="deleteProgrammePart(index)">
-            <template #icon>
-              <IFluentDelete24Filled />
-            </template>
-          </NButton>
+          <Button size="icon-xs" variant="secondary" class="rounded-full" @click="handleEditPart(part)">
+            <IFluentEdit24Filled />
+          </Button>
+          <Button size="icon-xs" variant="secondary" class="rounded-full" @click="deleteProgrammePart(index)">
+            <IFluentDelete24Filled />
+          </Button>
         </template>
       </ProgrammePart>
     </div>
@@ -36,17 +32,15 @@
       <NFormItem label="Aprašymas">
         <MultiLocaleInput v-model:input="selectedPart.description" />
       </NFormItem>
-      <NButton @click="showPartEditModal = false">
+      <Button variant="outline" @click="showPartEditModal = false">
         Uždaryti
-      </NButton>
+      </Button>
     </CardModal>
     <NTooltip v-if="editable">
       <template #trigger>
-        <NButton size="small" secondary circle @click="createProgrammePart">
-          <template #icon>
-            <IFluentAdd24Filled />
-          </template>
-        </NButton>
+        <Button size="icon-sm" variant="secondary" class="rounded-full" @click="createProgrammePart">
+          <IFluentAdd24Filled />
+        </Button>
       </template>
       Pridėti programos dalį
     </NTooltip>
@@ -61,6 +55,7 @@ import { router } from "@inertiajs/vue3";
 import ProgrammePart from './ProgrammePart.vue';
 import MultiLocaleInput from '@/Components/FormItems/MultiLocaleInput.vue';
 import CardModal from '@/Components/Modals/CardModal.vue';
+import { Button } from '@/Components/ui/button';
 
 defineProps<{
   sectionStartTime: number;

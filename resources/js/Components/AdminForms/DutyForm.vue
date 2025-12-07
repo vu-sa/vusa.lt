@@ -82,11 +82,10 @@
           <div class="inline-flex items-center gap-2">
             <strong>{{ $t("Nariai") }}</strong>
             <a target="_blank" :href="route('users.create')">
-              <NButton text size="tiny">
-                <template #icon>
-                  <IFluentAdd24Filled />
-                </template>Sukurti naują asmenį
-              </NButton>
+              <Button variant="link" size="xs">
+                <IFluentAdd24Filled />
+                Sukurti naują asmenį
+              </Button>
             </a>
           </div>
         </template>
@@ -116,12 +115,10 @@
               </div>
             </div>
             <a v-if="getUserDutiableId(user)" :href="route('dutiables.edit', { dutiable: getUserDutiableId(user) })" target="_blank">
-              <NButton size="tiny" text>
-                <template #icon>
-                  <IconEdit />
-                </template>
+              <Button variant="link" size="xs">
+                <IconEdit />
                 Redaguoti pareigybės laikotarpį
-              </NButton>
+              </Button>
             </a>
           </div>
         </div>
@@ -161,7 +158,6 @@
 
 <script setup lang="tsx">
 import {
-  NButton,
   type TransferRenderSourceLabel,
   type TransferRenderTargetLabel,
 } from "naive-ui";
@@ -170,6 +166,7 @@ import { useForm, usePage } from "@inertiajs/vue3";
 import IconEdit from "~icons/fluent/edit16-filled";
 import IconEye from "~icons/fluent/eye16-regular";
 
+import { Button } from "@/Components/ui/button";
 import { changeDutyNameEndings } from "@/Utils/String";
 import FormElement from "./FormElement.vue";
 import SimpleLocaleButton from "../Buttons/SimpleLocaleButton.vue";
@@ -238,9 +235,9 @@ const renderSourceLabel: TransferRenderSourceLabel = ({ option }) => {
     <div class="flex items-center gap-2">
       <span>{option.label}</span>
       <a target="_blank" href={route("users.edit", option.value)}>
-        <NButton text size="tiny">
-          {{ icon: <IconEdit /> }}
-        </NButton>
+        <Button variant="ghost" size="icon-xs">
+          <IconEdit />
+        </Button>
       </a>
     </div>
   );
@@ -254,11 +251,9 @@ const renderTargetLabel: TransferRenderTargetLabel = ({ option }) => {
         {option.label}
 
         <a target="_blank" href={route("users.edit", option.value)}>
-          <NButton size="tiny" text>
-            {{
-              icon: <IconEye />,
-            }}
-          </NButton>
+          <Button variant="ghost" size="icon-xs">
+            <IconEye />
+          </Button>
         </a>
       </span>
     </div>

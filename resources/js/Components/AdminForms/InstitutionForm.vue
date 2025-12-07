@@ -103,20 +103,16 @@
         <p>Pareigas prie institucijos galima pridėti dviem būdais:</p>
         <div class="mt-2 flex flex-col gap-2">
           <a target="_blank" :href="route('duties.create')">
-            <NButton size="tiny" tertiary>
+            <Button size="xs" variant="ghost">
+              <IFluentAdd24Filled />
               Sukuriant naują pareigą
-              <template #icon>
-                <IFluentAdd24Filled />
-              </template>
-            </NButton>
+            </Button>
           </a>
           <a target="_blank" :href="route('duties.index')">
-            <NButton size="tiny" tertiary>
+            <Button size="xs" variant="ghost">
+              <IFluentSearch20Filled />
               Surandant jau egzistuojančią pareigą, visų pareigų sąraše
-              <template #icon>
-                <IFluentSearch20Filled />
-              </template>
-            </NButton>
+            </Button>
           </a>
         </div>
       </template>
@@ -129,12 +125,10 @@
           <template #default="{ model }">
             <div class="grid grid-cols-2 items-center justify-center">
               <SmartLink :href="route('duties.edit', model.id)" class="my-2 border-r px-4">
-                <NButton style="white-space: normal; text-align: left" text icon-placement="right">
+                <Button variant="link" class="whitespace-normal text-left">
                   {{ model.name }}
-                  <template #icon>
-                    <IFluentEdit24Regular width="14" />
-                  </template>
-                </NButton>
+                  <IFluentEdit24Regular width="14" />
+                </Button>
               </SmartLink>
               <div class="flex flex-col gap-1 p-2">
                 <template v-for="user in model.current_users" :key="user.id">
@@ -145,9 +139,9 @@
           </template>
         </SortableDutiesTable>
         <div class="mt-4">
-          <NButton type="primary" :disabled="!dutiesWereReordered" @click="saveReorderedDuties">
+          <Button :disabled="!dutiesWereReordered" @click="saveReorderedDuties">
             Atnaujinti eiliškumą
-          </NButton>
+          </Button>
         </div>
       </div>
       <div v-else class="col-span-3 h-fit">
@@ -178,6 +172,7 @@ import SortableDutiesTable from "../Tables/SortableDutiesTable.vue";
 import TipTap from "@/Components/TipTap/OriginalTipTap.vue";
 import UploadImageWithCropper from "../Buttons/UploadImageWithCropper.vue";
 import UserPopover from "../Avatars/UserPopover.vue";
+import { Button } from "@/Components/ui/button";
 import AdminForm from "./AdminForm.vue";
 
 const props = defineProps<{

@@ -49,10 +49,11 @@
 </template>
 
 <script setup lang="tsx">
-import { NButton, type SelectRenderLabel } from "naive-ui";
+import { type SelectRenderLabel } from "naive-ui";
 import { useForm } from "@inertiajs/vue3";
 import IconEye from "~icons/fluent/eye16-regular";
 
+import { Button } from "@/Components/ui/button";
 import Icons from "@/Types/Icons/regular";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
@@ -77,11 +78,9 @@ const renderOptionLabel: SelectRenderLabel = (option) => {
         {option.name}
 
         <a target="_blank" href={route("users.edit", option.id)}>
-          <NButton size="tiny" text>
-            {{
-              icon: <IconEye />,
-            }}
-          </NButton>
+          <Button variant="ghost" size="icon-xs">
+            <IconEye />
+          </Button>
         </a>
       </span>
     </div>

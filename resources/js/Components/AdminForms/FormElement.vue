@@ -7,14 +7,12 @@
           <slot name="title" />
         </h4>
         <CollapsibleTrigger as-child>
-          <NButton size="tiny">
+          <Button size="xs" variant="outline">
             <span v-if="isOpen">{{ $t('Paslėpti') }}</span>
             <span v-else>{{ $t('Rodyti') }}</span>
-            <template #icon>
-              <IFluentChevronDown24Regular v-if="isOpen" />
-              <IFluentChevronRight24Regular v-else />
-            </template>
-          </NButton>
+            <IFluentChevronDown24Regular v-if="isOpen" />
+            <IFluentChevronRight24Regular v-else />
+          </Button>
         </CollapsibleTrigger>
       </div>
     <CollapsibleContent class="grid gap-x-12 lg:grid-cols-6">
@@ -35,7 +33,8 @@
 </template>
 
 <script setup lang="tsx">
-import { NButton, NIcon } from "naive-ui";
+import { NIcon } from "naive-ui";
+import { Button } from "@/Components/ui/button";
 import { ref } from "vue";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../ui/collapsible";
 import type { Component } from "vue";

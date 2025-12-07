@@ -8,34 +8,26 @@
             <FuzzySearcher v-else :data="files" @search:results="updateResults" />
           </div>
           <Skeleton v-if="loading" class="h-10 w-10 rounded-full" />
-          <NButton v-else round @click="showFileUploader = true">
-            <template #icon>
-              <IFluentDocumentAdd24Regular />
-            </template>
+          <Button v-else class="rounded-full" @click="showFileUploader = true">
+            <IFluentDocumentAdd24Regular />
             {{ $t('forms.add') }}
-          </NButton>
+          </Button>
         </div>
         <div class="ml-auto inline-flex items-center gap-4">
           <!-- <NSwitch v-model:value="showThumbnail" :disabled="loading">
             <template #icon><NIcon :component="Image24Regular"></NIcon></template>
           </NSwitch> -->
-          <NButton :disabled="loading" circle quaternary @click="refreshFiles">
-            <template #icon>
-              <IFluentArrowClockwise24Filled />
-            </template>
-          </NButton>
-          <NButtonGroup>
-            <NButton :disabled="loading" :type="viewMode === 'grid' ? 'primary' : 'default'" @click="viewMode = 'grid'">
-              <template #icon>
-                <IFluentGrid24Filled />
-              </template>
-            </NButton>
-            <NButton :disabled="loading" :type="viewMode === 'list' ? 'primary' : 'default'" @click="viewMode = 'list'">
-              <template #icon>
-                <IFluentAppsList20Filled />
-              </template>
-            </NButton>
-          </NButtonGroup>
+          <Button :disabled="loading" variant="ghost" size="icon" class="rounded-full" @click="refreshFiles">
+            <IFluentArrowClockwise24Filled />
+          </Button>
+          <ButtonGroup>
+            <Button :disabled="loading" :variant="viewMode === 'grid' ? 'default' : 'secondary'" size="icon" @click="viewMode = 'grid'">
+              <IFluentGrid24Filled />
+            </Button>
+            <Button :disabled="loading" :variant="viewMode === 'list' ? 'default' : 'secondary'" size="icon" @click="viewMode = 'list'">
+              <IFluentAppsList20Filled />
+            </Button>
+          </ButtonGroup>
         </div>
       </div>
       <div class="mt-4 flex items-center gap-2">
@@ -64,6 +56,8 @@ import { Skeleton } from '@/Components/ui/skeleton';
 import { computed, provide, ref, watch } from "vue";
 import { useFetch, useStorage } from "@vueuse/core";
 
+import { Button } from "@/Components/ui/button";
+import { ButtonGroup } from "@/Components/ui/button-group";
 import FileDrawer from "./FileDrawer.vue";
 import FileUploader from "../Uploader/FileUploader.vue";
 import FileViewer from "./FileGridTable.vue";

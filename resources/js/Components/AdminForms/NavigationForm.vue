@@ -42,11 +42,9 @@
         <NInputGroup>
           <NInput v-model:value="form.url" :disabled="form.linkType !== 'url'" type="text" placeholder="" />
           <!-- link to form.link -->
-          <NButton tag="a" :href="form.url" target="_blank">
-            <template #icon>
-              <IFluentOpen24Regular />
-            </template>
-          </NButton>
+          <Button variant="outline" size="icon" as="a" :href="form.url" target="_blank">
+            <IFluentOpen24Regular />
+          </Button>
         </NInputGroup>
       </NFormItem>
     </FormElement>
@@ -62,14 +60,14 @@
       <NFormItem label="Foninis paveikslėlis">
         <img v-if="form.extra_attributes.image" class="mr-4 size-20 object-cover" :src="form.extra_attributes.image"
           alt="image">
-        <NButtonGroup>
+        <ButtonGroup>
           <TiptapImageButton v-model:show-modal="showModal" @submit="form.extra_attributes.image = $event" />
           <!-- Remove image button -->
-          <NButton v-if="form.extra_attributes.image" type="error" size="small"
+          <Button v-if="form.extra_attributes.image" variant="destructive" size="sm"
             @click="form.extra_attributes.image = null">
             Ištrinti paveikslėlį
-          </NButton>
-        </NButtonGroup>
+          </Button>
+        </ButtonGroup>
       </NFormItem>
     </template>
   </AdminForm>
@@ -86,6 +84,8 @@ import FormElement from "./FormElement.vue";
 import Icons from "@/Types/Icons/regular";
 import TiptapImageButton from "@/Components/TipTap/TiptapImageButton.vue";
 import AdminForm from "./AdminForm.vue";
+import { Button } from "@/Components/ui/button";
+import { ButtonGroup } from "@/Components/ui/button-group";
 
 const props = defineProps<{
   navigation: App.Entities.Navigation;

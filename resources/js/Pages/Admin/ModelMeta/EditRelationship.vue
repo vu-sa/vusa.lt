@@ -5,9 +5,9 @@
         @submit:form="(form) => form.patch(route('relationships.update', relationship.id), { preserveScroll: true })"
         @delete="() => router.delete(route('relationship.destroy', relationship.id))" />
     </UpsertModelLayout>
-    <NButton @click="showModal = true">
+    <Button @click="showModal = true">
       Sukurti ryšį
-    </NButton>
+    </Button>
     <CardModal v-model:show="showModal" :title="`Sukurti naują ryšį`" @close="showModal = false">
       <NForm label-placement="top">
         <div class="grid grid-cols-1 sm:grid-cols-4 lg:grid-cols-6 gap-6">
@@ -22,9 +22,9 @@
             <NSelect v-model:value="relationForm.related_model_id" filterable clearable :options="options" />
           </NFormItem>
         </div>
-        <NButton type="primary" @click="submitRelationForm">
+        <Button @click="submitRelationForm">
           Sukurti
-        </NButton>
+        </Button>
       </NForm>
     </CardModal>
     <NDataTable class="mt-4" size="small" :data="relationship.relationshipables" :columns="relationshipableColumns" />
@@ -33,7 +33,6 @@
 
 <script setup lang="tsx">
 import {
-  NButton,
   NDataTable,
   NForm,
   NFormItem,
@@ -43,6 +42,7 @@ import {
 import { computed, ref } from "vue";
 import { router, useForm } from "@inertiajs/vue3";
 
+import { Button } from "@/Components/ui/button";
 import { modelTypes } from "@/Types/formOptions";
 import CardModal from "@/Components/Modals/CardModal.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";

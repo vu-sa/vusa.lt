@@ -5,13 +5,11 @@
     @remove="handleRemove" />
   <CardModal v-if="url" class="max-w-5xl" :show="showModal" title="Redaguoti paveikslėlį" @close="showModal = false">
     <div id="cropper-buttons" class="flex items-center gap-2">
-      <NButton @click="showCropper = !showCropper">
-        <template #icon>
-          <IFluentCrop24Regular />
-        </template>
+      <Button variant="outline" @click="showCropper = !showCropper">
+        <IFluentCrop24Regular />
         <span v-if="!showCropper"> Įjungti apkirpimą </span>
         <span v-else> Išjungti apkirpimą </span>
-      </NButton>
+      </Button>
     </div>
     <Separator />
     <img v-if="!showCropper" :src="url">
@@ -30,6 +28,7 @@ import { ref } from "vue";
 import CardModal from "../Modals/CardModal.vue";
 import VCropper from "../VCropper.vue";
 import { Separator } from "../ui/separator";
+import { Button } from "@/Components/ui/button";
 import { useToasts } from '@/Composables/useToasts';
 
 const props = defineProps<{

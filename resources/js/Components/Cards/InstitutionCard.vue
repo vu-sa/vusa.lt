@@ -11,29 +11,20 @@
         <div v-if="institutionDuties" class="ml-4 inline-flex gap-3">
           <NPopover>
             <template #trigger>
-              <NButton text size="small" circle @click.stop>
-                <template #icon>
-                  <div>
-                    <UserAvatar :user="$page.props.auth?.user" :size="24" />
-                  </div>
-                </template>
-              </NButton>
+              <Button variant="ghost" size="icon-sm" class="rounded-full" @click.stop>
+                <UserAvatar :user="$page.props.auth?.user" :size="24" />
+              </Button>
             </template>
             <div class="flex flex-col gap-2">
               <Link v-for="duty in institutionDuties" :key="duty.id" :href="route('duties.show', duty.id)">
-              <NButton size="small" secondary>
-                <template #icon>
-                  <UserAvatar :user="$page.props.auth?.user" :size="16" />
-                </template>
+              <Button size="sm" variant="secondary">
+                <UserAvatar :user="$page.props.auth?.user" :size="16" />
                 {{ duty.name }}
-              </NButton>
+              </Button>
               </Link>
             </div>
           </NPopover>
-          <!-- <NButton circle size="small" quaternary @click.stop
-            ><template #icon
-              ><NIcon :component="MoreHorizontal24Filled"></NIcon></template
-          ></NButton> -->
+          <!-- Removed commented NButton for "More options" -->
         </div>
       </slot>
     </template>
@@ -52,9 +43,10 @@
 
 <script setup lang="tsx">
 import { Link } from "@inertiajs/vue3";
-import { NButton, NCard, NPopover, NTag } from "naive-ui";
+import { NCard, NPopover, NTag } from "naive-ui";
 import { computed, ref } from "vue";
 
+import { Button } from "@/Components/ui/button";
 import InstitutionAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
 import UserAvatar from "@/Components/Avatars/UserAvatar.vue";
 

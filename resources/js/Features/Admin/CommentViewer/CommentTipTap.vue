@@ -23,26 +23,23 @@
           </template>
         </TipTapButton>
       </div>
-      <NButtonGroup v-if="enableApprove" size="small" vertical class="gap-2">
-        <NButton :loading type="success" secondary @click="$emit('submit:comment', 'approve')">
-          <template #icon>
-            <IFluentCommentCheckmark24Regular />
-          </template>
+      <ButtonGroup v-if="enableApprove" orientation="vertical" class="gap-2">
+        <Button :disabled="loading" variant="success" size="sm" @click="$emit('submit:comment', 'approve')">
+          <Spinner v-if="loading" />
+          <IFluentCommentCheckmark24Regular v-else />
           {{ approveText ?? capitalize($t("states.decision.approve")) }}
-        </NButton>
-        <NButton :loading type="warning" secondary @click="$emit('submit:comment', 'reject')">
-          <template #icon>
-            <IFluentCommentError24Regular />
-          </template>
+        </Button>
+        <Button :disabled="loading" variant="warning" size="sm" @click="$emit('submit:comment', 'reject')">
+          <Spinner v-if="loading" />
+          <IFluentCommentError24Regular v-else />
           {{ rejectText ?? `... ${$t("states.decision.reject")}` }}
-        </NButton>
-      </NButtonGroup>
-      <NButton v-else size="small" :disabled type="primary" :loading="loading" icon-placement="right"
-        @click="$emit('submit:comment')">
-        <template #icon>
-          <IFluentSend24Filled />
-        </template>{{ submitText ?? $t("Pateikti") }}
-      </NButton>
+        </Button>
+      </ButtonGroup>
+      <Button v-else size="sm" :disabled="disabled || loading" @click="$emit('submit:comment')">
+        <Spinner v-if="loading" />
+        <IFluentSend24Filled v-else />
+        {{ submitText ?? $t("Pateikti") }}
+      </Button>
     </div>
   </div>
 </template>
@@ -52,6 +49,9 @@ import { EditorContent, useEditor } from "@tiptap/vue-3";
 import { capitalize, onBeforeUnmount, ref } from "vue";
 
 import { StarterKit } from "@tiptap/starter-kit";
+import { Button } from "@/Components/ui/button";
+import { ButtonGroup } from "@/Components/ui/button-group";
+import { Spinner } from "@/Components/ui/spinner";
 import TipTapButton from "./TipTap/TipTapButton.vue";
 import TiptapFormattingButtons from "@/Components/TipTap/TiptapFormattingButtons.vue";
 import UserAvatar from "@/Components/Avatars/UserAvatar.vue";

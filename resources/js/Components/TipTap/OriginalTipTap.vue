@@ -5,67 +5,51 @@
     </BubbleMenu>
     <div v-if="showToolbar && editor" class="mt-1 flex min-h-8 flex-wrap items-center gap-2">
       <TiptapFormattingButtons v-model:editor="editor" />
-      <NButtonGroup size="small">
+      <ButtonGroup>
         <TiptapLinkButton :editor="editor"
           @submit="(url) => editor?.chain().focus().extendMarkRange('link').setLink({ href: url, class: '' }).run()"
           @document:submit="(url) => editor?.chain().focus().extendMarkRange('link').setLink({ href: url, class: 'archive-document-link plain' }).run()" />
-        <NButton :disabled="!editor.isActive('link')" @click="editor?.chain().focus().unsetLink().run()">
-          <template #icon>
-            <IFluentLinkDismiss20Filled />
-          </template>
-        </NButton>
-      </NButtonGroup>
-      <NButton size="small" @click="editor?.chain().focus().unsetAllMarks().run()">
-        <template #icon>
-          <IFluentClearFormatting20Filled />
-        </template>
-      </NButton>
+        <Button size="sm" variant="outline" :disabled="!editor.isActive('link')" @click="editor?.chain().focus().unsetLink().run()">
+          <IFluentLinkDismiss20Filled />
+        </Button>
+      </ButtonGroup>
+      <Button size="sm" variant="outline" @click="editor?.chain().focus().unsetAllMarks().run()">
+        <IFluentClearFormatting20Filled />
+      </Button>
       <Separator orientation="vertical" />
-      <NButtonGroup size="small">
-        <NButton :type="editor.isActive('paragraph') ? 'primary' : 'default'"
+      <ButtonGroup>
+        <Button size="sm" :variant="editor.isActive('paragraph') ? 'default' : 'outline'"
           @click="editor?.chain().focus().setParagraph().run()">
-          <template #icon>
-            <IFluentTextT24Regular />
-          </template>
-        </NButton>
-        <NButton :type="editor.isActive('heading', { level: 2 }) ? 'primary' : 'default'"
+          <IFluentTextT24Regular />
+        </Button>
+        <Button size="sm" :variant="editor.isActive('heading', { level: 2 }) ? 'default' : 'outline'"
           @click="editor?.chain().focus().toggleHeading({ level: 2 }).run()">
-          <template #icon>
-            <TextHeader220Filled />
-          </template>
-        </NButton>
-        <NButton :type="editor.isActive('heading', { level: 3 }) ? 'primary' : 'default'"
+          <TextHeader220Filled />
+        </Button>
+        <Button size="sm" :variant="editor.isActive('heading', { level: 3 }) ? 'default' : 'outline'"
           @click="editor?.chain().focus().toggleHeading({ level: 3 }).run()">
-          <template #icon>
-            <TextHeader320Filled />
-          </template>
-        </NButton>
-      </NButtonGroup>
-      <NButtonGroup size="small">
-        <NButton :type="editor.isActive('bulletList') ? 'primary' : 'default'"
+          <TextHeader320Filled />
+        </Button>
+      </ButtonGroup>
+      <ButtonGroup>
+        <Button size="sm" :variant="editor.isActive('bulletList') ? 'default' : 'outline'"
           @click="editor?.chain().focus().toggleBulletList().run()">
-          <template #icon>
-            <IFluentTextBulletListLtr24Filled />
-          </template>
-        </NButton>
-        <NButton :type="editor.isActive('orderedList') ? 'primary' : 'default'"
+          <IFluentTextBulletListLtr24Filled />
+        </Button>
+        <Button size="sm" :variant="editor.isActive('orderedList') ? 'default' : 'outline'"
           @click="editor?.chain().focus().toggleOrderedList().run()">
-          <template #icon>
-            <IFluentTextNumberListLtr24Filled />
-          </template>
-        </NButton>
-        <NButton :type="editor.isActive('blockquote') ? 'primary' : 'default'"
+          <IFluentTextNumberListLtr24Filled />
+        </Button>
+        <Button size="sm" :variant="editor.isActive('blockquote') ? 'default' : 'outline'"
           @click="editor?.chain().focus().toggleBlockquote().run()">
           <IFluentTextQuote24Filled />
-        </NButton>
-      </NButtonGroup>
-      <NButton size="small" :type="editor.isActive('horizontalRule') ? 'primary' : 'default'"
+        </Button>
+      </ButtonGroup>
+      <Button size="sm" :variant="editor.isActive('horizontalRule') ? 'default' : 'outline'"
         @click="editor?.chain().focus().setHorizontalRule().run()">
-        <template #icon>
-          <LineHorizontal120Regular />
-        </template>
-      </NButton>
-      <NButtonGroup size="small">
+        <LineHorizontal120Regular />
+      </Button>
+      <ButtonGroup>
         <Suspense>
           <TiptapImageButton @submit="attachImageWithAlt" />
         </Suspense>
@@ -73,77 +57,53 @@
           <TiptapVideoButton @submit="attachVideoUrl" />
         </Suspense>
         <TiptapYoutubeButton @submit="(youtubeUrl) => editor?.commands.setYoutubeVideo({ src: youtubeUrl })" />
-      </NButtonGroup>
-      <NButtonGroup size="small">
-        <NButton @click="editor?.chain().focus().undo().run()">
-          <template #icon>
-            <IFluentArrowUndo20Regular />
-          </template>
-        </NButton>
-        <NButton @click="editor?.chain().focus().redo().run()">
-          <template #icon>
-            <IFluentArrowRedo20Regular />
-          </template>
-        </NButton>
-      </NButtonGroup>
+      </ButtonGroup>
+      <ButtonGroup>
+        <Button size="sm" variant="outline" @click="editor?.chain().focus().undo().run()">
+          <IFluentArrowUndo20Regular />
+        </Button>
+        <Button size="sm" variant="outline" @click="editor?.chain().focus().redo().run()">
+          <IFluentArrowRedo20Regular />
+        </Button>
+      </ButtonGroup>
     </div>
     <div v-if="showTableToolbar && editor" class="mt-1 flex items-center gap-2">
-      <NButtonGroup size="small">
-        <NButton @click="editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()">
-          <template #icon>
-            <IFluentTableAdd24Regular />
-          </template>
-        </NButton>
-        <NButton @click="editor.chain().focus().toggleHeaderRow().run()">
-          <template #icon>
-            <IFluentTableFreezeRow24Regular />
-          </template>
-        </NButton>
-        <NButton @click="editor.chain().focus().addColumnAfter().run()">
-          <template #icon>
-            <IFluentTableInsertColumn24Regular />
-          </template>
-        </NButton>
-        <NButton @click="editor.chain().focus().addRowBefore().run()">
-          <template #icon>
-            <IFluentTableInsertRow24Regular />
-          </template>
-        </NButton>
-      </NButtonGroup>
-      <NButtonGroup size="small">
-        <NButton @click="editor.chain().focus().deleteColumn().run()">
-          <template #icon>
-            <IFluentTableDeleteColumn24Regular />
-          </template>
-        </NButton>
-        <NButton @click="editor.chain().focus().deleteRow().run()">
-          <template #icon>
-            <IFluentTableDeleteRow24Regular />
-          </template>
-        </NButton>
-        <NButton @click="editor.chain().focus().deleteTable().run()">
-          <template #icon>
-            <IFluentTableDismiss24Regular />
-          </template>
-        </NButton>
-      </NButtonGroup>
-      <NButtonGroup size="small">
-        <NButton @click="editor.chain().focus().mergeCells().run()">
-          <template #icon>
-            <IFluentTableCellsMerge24Regular />
-          </template>
-        </NButton>
-        <NButton @click="editor.chain().focus().splitCell().run()">
-          <template #icon>
-            <IFluentTableCellsSplit24Regular />
-          </template>
-        </NButton>
-      </NButtonGroup>
-      <NButton size="small" @click="editor.chain().focus().fixTables().run()">
-        <template #icon>
-          <IFluentTableSettings24Regular />
-        </template>
-      </NButton>
+      <ButtonGroup>
+        <Button size="sm" variant="outline" @click="editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()">
+          <IFluentTableAdd24Regular />
+        </Button>
+        <Button size="sm" variant="outline" @click="editor.chain().focus().toggleHeaderRow().run()">
+          <IFluentTableFreezeRow24Regular />
+        </Button>
+        <Button size="sm" variant="outline" @click="editor.chain().focus().addColumnAfter().run()">
+          <IFluentTableInsertColumn24Regular />
+        </Button>
+        <Button size="sm" variant="outline" @click="editor.chain().focus().addRowBefore().run()">
+          <IFluentTableInsertRow24Regular />
+        </Button>
+      </ButtonGroup>
+      <ButtonGroup>
+        <Button size="sm" variant="outline" @click="editor.chain().focus().deleteColumn().run()">
+          <IFluentTableDeleteColumn24Regular />
+        </Button>
+        <Button size="sm" variant="outline" @click="editor.chain().focus().deleteRow().run()">
+          <IFluentTableDeleteRow24Regular />
+        </Button>
+        <Button size="sm" variant="outline" @click="editor.chain().focus().deleteTable().run()">
+          <IFluentTableDismiss24Regular />
+        </Button>
+      </ButtonGroup>
+      <ButtonGroup>
+        <Button size="sm" variant="outline" @click="editor.chain().focus().mergeCells().run()">
+          <IFluentTableCellsMerge24Regular />
+        </Button>
+        <Button size="sm" variant="outline" @click="editor.chain().focus().splitCell().run()">
+          <IFluentTableCellsSplit24Regular />
+        </Button>
+      </ButtonGroup>
+      <Button size="sm" variant="outline" @click="editor.chain().focus().fixTables().run()">
+        <IFluentTableSettings24Regular />
+      </Button>
     </div>
     <div class="mt-3 grid grid-cols-[auto__30px] items-center gap-2 only:mt-0">
       <div class="max-h-96 w-full overflow-y-auto overflow-x-hidden">
@@ -157,17 +117,13 @@
         </div>
       </div>
       <div class="flex flex-col gap-2">
-        <NButton :type="showToolbar ? 'primary' : 'default'" size="small" @click="showToolbar = !showToolbar">
-          <template #icon>
-            <IFluentSettings24Filled />
-          </template>
-        </NButton>
-        <NButton v-if="!disableTables" :type="showTableToolbar ? 'primary' : 'default'" size="small"
+        <Button size="sm" :variant="showToolbar ? 'default' : 'outline'" @click="showToolbar = !showToolbar">
+          <IFluentSettings24Filled />
+        </Button>
+        <Button v-if="!disableTables" size="sm" :variant="showTableToolbar ? 'default' : 'outline'"
           @click="showTableToolbar = !showTableToolbar">
-          <template #icon>
-            <IFluentTable24Regular />
-          </template>
-        </NButton>
+          <IFluentTable24Regular />
+        </Button>
       </div>
     </div>
   </div>
@@ -190,6 +146,8 @@ import TextHeader220Filled from "~icons/fluent/text-header-2-20-filled"
 import TextHeader320Filled from "~icons/fluent/text-header-3-20-filled"
 import IFluentImage24Regular from "~icons/fluent/image-24-regular"
 
+import { Button } from "@/Components/ui/button";
+import { ButtonGroup } from "@/Components/ui/button-group";
 import { CustomHeading } from "./CustomHeading";
 import { Video } from './Video';
 import TiptapFormattingButtons from "./TiptapFormattingButtons.vue";

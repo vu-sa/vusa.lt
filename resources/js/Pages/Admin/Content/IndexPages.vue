@@ -4,9 +4,9 @@
     <div class="mb-4">
       <ThemeProvider>
         <NDropdown :options="tenantOptions" @select="handleSelect">
-          <NButton size="small">
+          <Button size="sm" variant="outline">
             Redaguoti padalinio pagr. puslapį
-          </NButton>
+          </Button>
         </NDropdown>
       </ThemeProvider>
     </div>
@@ -23,6 +23,7 @@ import Icons from "@/Types/Icons/regular";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 import PreviewModelButton from "@/Components/Buttons/PreviewModelButton.vue";
 import ThemeProvider from "@/Components/Providers/ThemeProvider.vue";
+import { Button } from "@/Components/ui/button";
 
 defineProps<{
   pages: PaginatedModels<App.Entities.Page[]>;

@@ -8,9 +8,9 @@
       <NPopover>
         Išvalyti paiešką...
         <template #trigger>
-          <NButton round @click="sweepSearch"><template #icon>
-              <IFluentBroom16Regular />
-            </template></NButton>
+          <Button variant="outline" size="icon" class="rounded-full" @click="sweepSearch">
+            <IFluentBroom16Regular />
+          </Button>
         </template>
       </NPopover>
       <NInputGroup class="flex-1">
@@ -20,11 +20,10 @@
             <IFluentSearch20Filled />
           </template>
         </NInput>
-        <NButton round :loading="loading" :type="searchIsDirty ? 'primary' : 'default'" @click="handleSearchInput">
-          <template #icon>
-            <IFluentSearch20Filled />
-          </template>
-        </NButton>
+        <Button class="rounded-full" :disabled="loading" :variant="searchIsDirty ? 'default' : 'outline'" @click="handleSearchInput">
+          <Spinner v-if="loading" />
+          <IFluentSearch20Filled v-else />
+        </Button>
       </NInputGroup>
     </NConfigProvider>
   </div>
@@ -34,6 +33,8 @@
 import { ref, computed } from "vue";
 import { router } from "@inertiajs/vue3";
 import { Badge } from '@/Components/ui/badge';
+import { Button } from '@/Components/ui/button';
+import { Spinner } from '@/Components/ui/spinner';
 import { NConfigProvider, darkTheme } from "naive-ui";
 import { useDark } from "@vueuse/core";
 

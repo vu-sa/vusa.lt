@@ -1,9 +1,9 @@
 <template>
   <NConfigProvider :theme="naiveTheme">
     <NDropdown placement="bottom-end" :options @select="handleAction">
-      <NButton quaternary size="small">
+      <Button variant="ghost" size="icon-sm">
         <IFluentMoreVertical24Filled />
-      </NButton>
+      </Button>
     </NDropdown>
   </NConfigProvider>
 

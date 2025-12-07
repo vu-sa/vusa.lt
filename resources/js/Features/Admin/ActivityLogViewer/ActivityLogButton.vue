@@ -1,9 +1,7 @@
 <template>
-  <NButton size="small" :disabled="!activities" quaternary circle @click="showModal = true">
-    <template #icon>
-      <IFluentDocumentOnePage24Regular />
-    </template>
-  </NButton>
+  <Button size="icon-sm" :disabled="!activities" variant="ghost" class="rounded-full" @click="showModal = true">
+    <IFluentDocumentOnePage24Regular />
+  </Button>
   <CardModal v-model:show="showModal" :segmented="{ content: 'soft' }" class="max-w-xl" title="Įrašo pokyčiai"
     @close="showModal = false">
     <div v-if="activities.length > 0" class="flex flex-col gap-4">
@@ -23,6 +21,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 
+import { Button } from "@/Components/ui/button";
 import ActivityLogItem from "@/Features/Admin/ActivityLogViewer/ActivityLogItem.vue";
 import CardModal from "@/Components/Modals/CardModal.vue";
 

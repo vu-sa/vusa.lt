@@ -8,13 +8,12 @@ import {
   type DataTableColumns,
   type DataTableRowKey,
   type DataTableSortState,
-  NButton,
   NEllipsis,
-  NIcon,
   NTag,
 } from "naive-ui";
 import { computed, provide, ref } from "vue";
 
+import { Button } from "@/Components/ui/button";
 import { capitalize } from "@/Utils/String";
 import Icons from "@/Types/Icons/regular";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
@@ -73,16 +72,12 @@ const columns = computed<DataTableColumns<App.Entities.Duty>>(() => [
           target="_blank"
           class="transition hover:text-vusa-red"
         >
-          <NButton round size="tiny" tertiary>
-            {{
-              default: (
-                <NEllipsis style="max-width: 150px">
-                  {row.institution?.short_name ?? row.institution?.name}
-                </NEllipsis>
-              ),
-              icon: <NIcon component={Icons.INSTITUTION}></NIcon>,
-            }}
-          </NButton>
+          <Button variant="ghost" size="xs" class="rounded-full">
+            <Icons.INSTITUTION />
+            <NEllipsis style="max-width: 150px">
+              {row.institution?.short_name ?? row.institution?.name}
+            </NEllipsis>
+          </Button>
         </a>
       ) : null;
     },

@@ -3,17 +3,20 @@
     <template v-if="locale === 'lt'"> Pildyti anglų kalbos laukelius</template>
     <template v-else> Fill in Lithuanian fields</template>
     <template #trigger>
-      <NButton
-        text
+      <Button
+        variant="ghost"
+        size="sm"
         @click="$emit('update:locale', locale === 'lt' ? 'en' : 'lt')"
-        ><template #icon>{{ locale === "lt" ? "🇱🇹" : "🇬🇧" }}</template></NButton
       >
+        {{ locale === "lt" ? "🇱🇹" : "🇬🇧" }}
+      </Button>
     </template>
   </NTooltip>
 </template>
 
 <script setup lang="ts">
-import { NButton, NTooltip } from "naive-ui";
+import { NTooltip } from "naive-ui";
+import { Button } from "@/Components/ui/button";
 import type { LocaleEnum } from "@/Types/enums";
 
 defineEmits<{

@@ -8,84 +8,68 @@
         <TiptapFormattingButtons v-model:editor="editor" secondary />
 
         <!-- Link controls -->
-        <NButtonGroup size="small">
+        <ButtonGroup>
           <TiptapLinkButton :editor="editor"
             @submit="(url) => editor?.chain().focus().extendMarkRange('link').setLink({ href: url, class: '' }).run()"
             @document:submit="(url) => editor?.chain().focus().extendMarkRange('link').setLink({ href: url, class: 'archive-document-link plain' }).run()" />
-          <NButton :disabled="!editor.isActive('link')" @click="editor?.chain().focus().unsetLink().run()">
-            <template #icon>
-              <IFluentLinkDismiss20Filled />
-            </template>
-          </NButton>
-        </NButtonGroup>
+          <Button size="sm" variant="outline" :disabled="!editor.isActive('link')" @click="editor?.chain().focus().unsetLink().run()">
+            <IFluentLinkDismiss20Filled />
+          </Button>
+        </ButtonGroup>
 
         <!-- Text styles -->
-        <NButtonGroup size="small" class="ml-1">
-          <NButton :type="editor.isActive('paragraph') ? 'primary' : 'default'"
+        <ButtonGroup class="ml-1">
+          <Button size="sm" :variant="editor.isActive('paragraph') ? 'default' : 'outline'"
             @click="editor?.chain().focus().setParagraph().run()">
-            <template #icon>
-              <IFluentTextT24Regular />
-            </template>
-          </NButton>
-          <NButton :type="editor.isActive('heading', { level: 2 }) ? 'primary' : 'default'"
+            <IFluentTextT24Regular />
+          </Button>
+          <Button size="sm" :variant="editor.isActive('heading', { level: 2 }) ? 'default' : 'outline'"
             @click="editor?.chain().focus().toggleHeading({ level: 2 }).run()">
-            <template #icon>
-              <TextHeader220Filled />
-            </template>
-          </NButton>
-        </NButtonGroup>
+            <TextHeader220Filled />
+          </Button>
+        </ButtonGroup>
 
         <!-- More options button that shows a popover with additional controls -->
         <NPopover trigger="click" placement="bottom" class="p-0">
           <template #trigger>
-            <NButton size="small" class="ml-1">
-              <template #icon>
-                <IFluentMoreHorizontal24Regular />
-              </template>
-            </NButton>
+            <Button size="sm" variant="ghost" class="ml-1">
+              <IFluentMoreHorizontal24Regular />
+            </Button>
           </template>
           <div class="p-2 flex flex-col gap-2">
             <!-- Lists -->
-            <NButtonGroup size="small">
-              <NButton :type="editor.isActive('bulletList') ? 'primary' : 'default'"
+            <ButtonGroup>
+              <Button size="sm" :variant="editor.isActive('bulletList') ? 'default' : 'outline'"
                 @click="editor?.chain().focus().toggleBulletList().run()">
-                <template #icon>
-                  <IFluentTextBulletListLtr24Filled />
-                </template>
-              </NButton>
-              <NButton :type="editor.isActive('orderedList') ? 'primary' : 'default'"
+                <IFluentTextBulletListLtr24Filled />
+              </Button>
+              <Button size="sm" :variant="editor.isActive('orderedList') ? 'default' : 'outline'"
                 @click="editor?.chain().focus().toggleOrderedList().run()">
-                <template #icon>
-                  <IFluentTextNumberListLtr24Filled />
-                </template>
-              </NButton>
-              <NButton :type="editor.isActive('blockquote') ? 'primary' : 'default'"
+                <IFluentTextNumberListLtr24Filled />
+              </Button>
+              <Button size="sm" :variant="editor.isActive('blockquote') ? 'default' : 'outline'"
                 @click="editor?.chain().focus().toggleBlockquote().run()">
                 <IFluentTextQuote24Filled />
-              </NButton>
-            </NButtonGroup>
+              </Button>
+            </ButtonGroup>
 
             <!-- Media buttons -->
-            <NButtonGroup size="small">
+            <ButtonGroup>
               <Suspense>
                 <TiptapImageButton @submit="(url) => editor?.chain().focus().setImage({ src: url }).run()" />
               </Suspense>
               <TiptapYoutubeButton @submit="(youtubeUrl) => editor?.commands.setYoutubeVideo({ src: youtubeUrl })" />
-            </NButtonGroup>
+            </ButtonGroup>
 
             <!-- Undo/Redo -->
-            <NButtonGroup size="small">
-              <NButton @click="editor?.chain().focus().undo().run()">
-                <template #icon>
-                  <IFluentArrowUndo20Regular />
-                </template>
-              </NButton>
-              <NButton @click="editor?.chain().focus().redo().run()">
-                <template #icon>
-                  <IFluentArrowRedo20Regular />
-                </template>
-              </NButton>
-            </NButtonGroup>
+            <ButtonGroup>
+              <Button size="sm" variant="outline" @click="editor?.chain().focus().undo().run()">
+                <IFluentArrowUndo20Regular />
+              </Button>
+              <Button size="sm" variant="outline" @click="editor?.chain().focus().redo().run()">
+                <IFluentArrowRedo20Regular />
+              </Button>
+            </ButtonGroup>
           </div>
         </NPopover>
       </div>
@@ -93,63 +77,51 @@
 
     <!-- Toggle for showing/hiding the toolbar -->
     <div v-if="showToolbarToggle" class="flex justify-end mb-1">
-      <NButton size="tiny" quaternary @click="showToolbar = !showToolbar">
-        <template #icon>
-          <IFluentSettings16Filled v-if="!showToolbar" />
-          <IFluentSettings16Regular v-else />
-        </template>
+      <Button size="xs" variant="ghost" @click="showToolbar = !showToolbar">
+        <IFluentSettings16Filled v-if="!showToolbar" />
+        <IFluentSettings16Regular v-else />
         <span class="text-xs">{{ showToolbar ? 'Hide toolbar' : 'Show toolbar' }}</span>
-      </NButton>
+      </Button>
     </div>
 
     <!-- Optional toolbar - hidden by default -->
     <div v-if="showToolbar && editor"
       class="mb-2 flex min-h-8 flex-wrap items-center gap-2 border-b border-zinc-200 dark:border-zinc-700 pb-2">
       <TiptapFormattingButtons v-model:editor="editor" />
-      <NButtonGroup size="small">
+      <ButtonGroup>
         <TiptapLinkButton :editor="editor"
           @submit="(url) => editor?.chain().focus().extendMarkRange('link').setLink({ href: url, class: '' }).run()"
           @document:submit="(url) => editor?.chain().focus().extendMarkRange('link').setLink({ href: url, class: 'archive-document-link plain' }).run()" />
-        <NButton :disabled="!editor.isActive('link')" @click="editor?.chain().focus().unsetLink().run()">
-          <template #icon>
-            <IFluentLinkDismiss20Filled />
-          </template>
-        </NButton>
-      </NButtonGroup>
-      <NButtonGroup size="small">
-        <NButton :type="editor.isActive('paragraph') ? 'primary' : 'default'"
+        <Button size="sm" variant="outline" :disabled="!editor.isActive('link')" @click="editor?.chain().focus().unsetLink().run()">
+          <IFluentLinkDismiss20Filled />
+        </Button>
+      </ButtonGroup>
+      <ButtonGroup>
+        <Button size="sm" :variant="editor.isActive('paragraph') ? 'default' : 'outline'"
           @click="editor?.chain().focus().setParagraph().run()">
-          <template #icon>
-            <IFluentTextT24Regular />
-          </template>
-        </NButton>
-        <NButton :type="editor.isActive('heading', { level: 2 }) ? 'primary' : 'default'"
+          <IFluentTextT24Regular />
+        </Button>
+        <Button size="sm" :variant="editor.isActive('heading', { level: 2 }) ? 'default' : 'outline'"
           @click="editor?.chain().focus().toggleHeading({ level: 2 }).run()">
-          <template #icon>
-            <TextHeader220Filled />
-          </template>
-        </NButton>
-      </NButtonGroup>
-      <NButtonGroup size="small">
-        <NButton :type="editor.isActive('bulletList') ? 'primary' : 'default'"
+          <TextHeader220Filled />
+        </Button>
+      </ButtonGroup>
+      <ButtonGroup>
+        <Button size="sm" :variant="editor.isActive('bulletList') ? 'default' : 'outline'"
           @click="editor?.chain().focus().toggleBulletList().run()">
-          <template #icon>
-            <IFluentTextBulletListLtr24Filled />
-          </template>
-        </NButton>
-        <NButton :type="editor.isActive('orderedList') ? 'primary' : 'default'"
+          <IFluentTextBulletListLtr24Filled />
+        </Button>
+        <Button size="sm" :variant="editor.isActive('orderedList') ? 'default' : 'outline'"
           @click="editor?.chain().focus().toggleOrderedList().run()">
-          <template #icon>
-            <IFluentTextNumberListLtr24Filled />
-          </template>
-        </NButton>
-      </NButtonGroup>
-      <NButtonGroup size="small">
+          <IFluentTextNumberListLtr24Filled />
+        </Button>
+      </ButtonGroup>
+      <ButtonGroup>
         <Suspense>
           <TiptapImageButton @submit="(url) => editor?.chain().focus().setImage({ src: url }).run()" />
         </Suspense>
         <TiptapYoutubeButton @submit="(youtubeUrl) => editor?.commands.setYoutubeVideo({ src: youtubeUrl })" />
-      </NButtonGroup>
+      </ButtonGroup>
     </div>
 
     <!-- Editor content -->
@@ -168,6 +140,8 @@ import { Youtube } from "@tiptap/extension-youtube";
 
 import TextHeader220Filled from "~icons/fluent/text-header-2-20-filled";
 
+import { Button } from "@/Components/ui/button";
+import { ButtonGroup } from "@/Components/ui/button-group";
 import { CustomHeading } from "./CustomHeading";
 import TiptapFormattingButtons from "./TiptapFormattingButtons.vue";
 import TiptapImageButton from "./TiptapImageButton.vue";

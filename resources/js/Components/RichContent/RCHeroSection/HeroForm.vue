@@ -13,9 +13,9 @@
       </TiptapImageButton>
       <div v-else>
         <img :src="json_content.backgroundMedia" class="aspect-video h-24 rounded-lg object-cover">
-        <NButton @click="json_content.backgroundMedia = null">
+        <Button variant="destructive" size="sm" @click="json_content.backgroundMedia = null">
           Ištrinti paveikslėlį
-        </NButton>
+        </Button>
       </div>
     </NFormItem>
     <NFormItem label="Ar tamsinama ir blurinama foninė nuotrauka?" :show-feedback="false">
@@ -27,9 +27,9 @@
       </TiptapImageButton>
       <div v-else>
         <img :src="json_content.rightMedia" class="aspect-video h-24 rounded-lg object-cover">
-        <NButton @click="json_content.rightMedia = null">
+        <Button variant="destructive" size="sm" @click="json_content.rightMedia = null">
           Ištrinti paveikslėlį
-        </NButton>
+        </Button>
       </div>
     </NFormItem>
     <!-- Button text -->
@@ -58,6 +58,7 @@
 import OriginalTipTap from '@/Components/TipTap/OriginalTipTap.vue';
 import TiptapImageButton from '@/Components/TipTap/TiptapImageButton.vue';
 import type { Hero } from '@/Types/contentParts';
+import { Button } from '@/Components/ui/button';
 import { NFormItem } from 'naive-ui';
 
 const options = defineModel<Hero['options']>('options', { default: {} });

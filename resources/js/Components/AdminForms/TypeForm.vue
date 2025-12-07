@@ -101,12 +101,12 @@
 </template>
 
 <script setup lang="tsx">
-import { NButton, NIcon } from "naive-ui";
 import { computed, ref } from "vue";
 import { useForm } from "@inertiajs/vue3";
 
 import Edit16Filled from "~icons/fluent/edit16-filled"
 
+import { Button } from "@/Components/ui/button";
 import { modelTypes } from "@/Types/formOptions";
 import FileManager from "@/Features/Admin/SharepointFileManager/Viewer/FileManager.vue";
 import FormElement from "./FormElement.vue";
@@ -176,11 +176,9 @@ const renderSourceLabel = ({ option }) => {
           })`}
       </span>
       <a target="_blank" href={route(`${props.modelType}.edit`, option.value)}>
-        <NButton onClick={(e) => e.stopPropagation()} text size="tiny">
-          {{
-            icon: <NIcon class="ml-2 align-middle" component={Edit16Filled} />,
-          }}
-        </NButton>
+        <Button onClick={(e) => e.stopPropagation()} variant="ghost" size="icon-xs">
+          <Edit16Filled class="ml-2 align-middle" />
+        </Button>
       </a>
     </>
   );

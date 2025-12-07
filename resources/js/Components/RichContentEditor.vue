@@ -18,18 +18,14 @@
     <template v-else>
       <FadeTransition v-if="showHistory">
         <div class="ml-auto flex items-center gap-2">
-          <NButtonGroup size="tiny">
-            <NButton :disabled="history?.length < 2" @click="undo()">
-              <template #icon>
-                <IFluentArrowUndo24Filled />
-              </template>
-            </NButton>
-            <NButton @click="redo()">
-              <template #icon>
-                <IFluentArrowRedo24Filled />
-              </template>
-            </NButton>
-          </NButtonGroup>
+          <ButtonGroup>
+            <Button size="icon-xs" variant="outline" :disabled="history?.length < 2" @click="undo()">
+              <IFluentArrowUndo24Filled />
+            </Button>
+            <Button size="icon-xs" variant="outline" @click="redo()">
+              <IFluentArrowRedo24Filled />
+            </Button>
+          </ButtonGroup>
           <p class="text-xs leading-5 text-zinc-400">
             {{ $t('rich-content.restore_content_block_order') }}
           </p>
@@ -162,12 +158,13 @@
 import { moveArrayElement, useSortable } from "@vueuse/integrations/useSortable";
 import { computed, nextTick, ref, onUnmounted } from 'vue';
 import { useManualRefHistory } from '@vueuse/core';
-import { NButton, NButtonGroup, NIcon } from 'naive-ui';
+import { NIcon } from 'naive-ui';
 
 import FadeTransition from "./Transitions/FadeTransition.vue";
 import ContentEditorFactory from './RichContent/ContentEditorFactory.vue';
 import { getAllContentTypes, createContentItem, getContentType } from './RichContent/Types';
 import { Button } from '@/Components/ui/button';
+import { ButtonGroup } from '@/Components/ui/button-group';
 import { Skeleton } from '@/Components/ui/skeleton';
 import IFluentAdd24Regular from '~icons/fluent/add24-regular';
 import IFluentArrowUp24Regular from '~icons/fluent/arrow-up24-regular';

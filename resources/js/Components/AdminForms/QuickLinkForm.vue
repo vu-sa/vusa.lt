@@ -17,16 +17,14 @@
         <template #label>
           <div class="inline-flex items-center gap-2">
             <span>Padalinys, kuriam priklauso institucija</span>
-            <NButton v-if="quickLink.tenant_id" secondary tag="a" size="tiny" type="primary" round target="_blank" :href="route('quickLinks.edit-order', {
+            <Button v-if="quickLink.tenant_id" variant="secondary" size="xs" as="a" target="_blank" :href="route('quickLinks.edit-order', {
               tenant: quickLink.tenant_id,
               lang: quickLink.lang,
             })
               ">
+              <NIcon :component="Icons.QUICK_LINK" />
               Atnaujinti nuorodų tvarką
-              <template #icon>
-                <NIcon :component="Icons.QUICK_LINK" />
-              </template>
-            </NButton>
+            </Button>
           </div>
         </template>
         <NSelect v-model:value="form.tenant_id" :options="options" placeholder="VU SA X" clearable />
@@ -55,11 +53,9 @@
         <NInputGroup>
           <NInput v-model:value="form.link" :disabled="form.type !== 'url'" type="text" placeholder="" />
           <!-- link to form.link -->
-          <NButton tag="a" :href="form.link" target="_blank">
-            <template #icon>
-              <IFluentOpen24Regular />
-            </template>
-          </NButton>
+          <Button variant="outline" size="icon" as="a" :href="form.link" target="_blank">
+            <IFluentOpen24Regular />
+          </Button>
         </NInputGroup>
       </NFormItem>
     </FormElement>
@@ -76,6 +72,7 @@ import AdminForm from "./AdminForm.vue";
 import FormElement from "./FormElement.vue";
 import Icons from "@/Types/Icons/regular";
 import FluentIconSelect from "../FormItems/FluentIconSelect.vue";
+import { Button } from "@/Components/ui/button";
 
 const props = defineProps<{
   quickLink: App.Entities.QuickLink;

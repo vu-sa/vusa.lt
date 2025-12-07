@@ -4,9 +4,9 @@
       <NTransfer ref="transfer" v-model:value="currentDuties" :options="flattenDutyOptions"
         :render-source-list="renderSourceList" source-filterable :show-irrelevant-nodes="true" />
       <template #action>
-        <NButton type="primary" class="mt-4" @click="handleDutyUpdate">
+        <Button class="mt-4" @click="handleDutyUpdate">
           Atnaujinti
-        </NButton>
+        </Button>
       </template>
     </NCard>
     <NCard>
@@ -22,9 +22,9 @@
           " />
       </NFormItem>
       <template #action>
-        <NButton type="primary" class="mt-4" @click="handleAttachableTypesUpdate">
+        <Button class="mt-4" @click="handleAttachableTypesUpdate">
           Atnaujinti
-        </NButton>
+        </Button>
       </template>
     </NCard>
     <h2 class="mt-4">
@@ -36,7 +36,6 @@
 
 <script setup lang="tsx">
 import {
-  NButton,
   NIcon,
   NTransfer,
   NTree,
@@ -48,6 +47,7 @@ import { router } from "@inertiajs/vue3";
 
 import Eye16Regular from "~icons/fluent/eye16-regular"
 
+import { Button } from "@/Components/ui/button";
 import AdminContentPage from "@/Components/Layouts/AdminContentPage.vue";
 import RolePermissionForms from "@/Components/AdminForms/RolePermissionForms.vue";
 
@@ -95,11 +95,9 @@ const renderLabel = ({ option }: { option: TreeOption }) => {
             : route("duties.edit", option.value)
         }
       >
-        <NButton size="tiny" text>
-          {{
-            icon: <NIcon component={Eye16Regular} />,
-          }}
-        </NButton>
+        <Button variant="ghost" size="icon-xs">
+          <Eye16Regular />
+        </Button>
       </a>
     </span>
   );

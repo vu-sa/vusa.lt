@@ -36,12 +36,10 @@
           </div>
           <template #footer>
             <Link :href="route('pages.index')">
-            <NButton size="small" secondary>
-              <template #icon>
-                <Icons.PAGE />
-              </template>
+            <Button size="sm" variant="secondary">
+              <Icons.PAGE />
               {{ $t('Rodyti visus') }}
-            </NButton>
+            </Button>
             </Link>
           </template>
         </NCard>
@@ -68,12 +66,10 @@
           </div>
           <template #footer>
             <Link :href="route('news.index')">
-            <NButton size="small" secondary>
-              <template #icon>
-                <Icons.NEWS />
-              </template>
+            <Button size="sm" variant="secondary">
+              <Icons.NEWS />
               {{ $t('Rodyti visus') }}
-            </NButton>
+            </Button>
             </Link>
           </template>
         </NCard>
@@ -94,12 +90,10 @@
           </span>
           <template #footer>
             <Link :href="route('quickLinks.index')">
-            <NButton size="small" secondary>
-              <template #icon>
-                <Icons.QUICK_LINK />
-              </template>
+            <Button size="sm" variant="secondary">
+              <Icons.QUICK_LINK />
               {{ $t('Rodyti visus') }}
-            </NButton>
+            </Button>
             </Link>
           </template>
         </NCard>
@@ -120,12 +114,10 @@
           </span>
           <template #footer>
             <Link :href="route('calendar.index')">
-            <NButton size="small" secondary>
-              <template #icon>
-                <Icons.CALENDAR />
-              </template>
+            <Button size="sm" variant="secondary">
+              <Icons.CALENDAR />
               {{ $t('Rodyti visus') }}
-            </NButton>
+            </Button>
             </Link>
           </template>
         </NCard>
@@ -142,6 +134,7 @@ import { binX, plot, rectY } from '@observablehq/plot';
 import { onMounted, ref, watch } from 'vue';
 import { computed } from 'vue';
 import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
+import { Button } from '@/Components/ui/button';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import { trans as $t } from "laravel-vue-i18n";
 import ThemeProvider from "@/Components/Providers/ThemeProvider.vue";

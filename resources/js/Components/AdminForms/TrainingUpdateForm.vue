@@ -121,19 +121,15 @@
               <NFormItem label="Užduotis">
                 <div class="flex items-start gap-4">
                   <MultiLocaleInput v-model:input="value.name" />
-                  <NButtonGroup class="ml-4">
-                    <NButton @click="onTasksCreateAdd">
-                      <template #icon>
-                        <!-- add -->
-                        <IFluentAdd24Filled />
-                      </template>
-                    </NButton>
-                    <NButton @click="onTasksRemove(index)">
-                      <template #icon>
-                        <IFluentDelete24Filled />
-                      </template>
-                    </NButton>
-                  </NButtonGroup>
+                  <ButtonGroup class="ml-4">
+                    <Button variant="outline" size="icon-sm" @click="onTasksCreateAdd">
+                      <!-- add -->
+                      <IFluentAdd24Filled />
+                    </Button>
+                    <Button variant="outline" size="icon-sm" @click="onTasksRemove(index)">
+                      <IFluentDelete24Filled />
+                    </Button>
+                  </ButtonGroup>
                 </div>
               </NFormItem>
             </template>
@@ -145,18 +141,14 @@
       </NTabPane>
     </NTabs>
     <template #buttons>
-      <NButton @click="$emit('submit:form', form)">
-        <template #icon>
-          <IFluentSave24Filled />
-        </template>
-        {{ $t('Išsaugoti dabartinę būseną') }}
-      </NButton>
-      <NButton type="primary">
-        <template #icon>
-          <IFluentSave24Filled />
-        </template>
+      <Button variant="outline" @click="$emit('submit:form', form)">
+        <IFluentSave24Filled />
+        {{ $t('Įsaugoti dabartinę būseną') }}
+      </Button>
+      <Button>
+        <IFluentSave24Filled />
         {{ $t('Teikti tvirtinimui') }}
-      </NButton>
+      </Button>
     </template>
   </AdminForm>
 </template>
@@ -170,6 +162,8 @@ import FormElement from "./FormElement.vue";
 import AdminForm from "./AdminForm.vue";
 import Icons from "@/Types/Icons/regular";
 import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";
+import { Button } from "@/Components/ui/button";
+import { ButtonGroup } from "@/Components/ui/button-group";
 import SimpleLocaleButton from "../Buttons/SimpleLocaleButton.vue";
 import TipTap from "@/Components/TipTap/OriginalTipTap.vue";
 import UploadImageWithCropper from "../Buttons/UploadImageWithCropper.vue";

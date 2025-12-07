@@ -27,12 +27,13 @@
 <script setup lang="tsx">
 import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
 import { Link, router, usePage } from "@inertiajs/vue3";
-import { type MenuOption, NButton, NIcon, NImage, NImageGroup, NPopover, NSpace } from "naive-ui";
+import { type MenuOption, NIcon, NImage, NImageGroup, NPopover, NSpace } from "naive-ui";
 import { computed, ref } from "vue";
 
 import Delete16Regular from "~icons/fluent/delete16-regular";
 import DismissCircle24Regular from "~icons/fluent/dismiss-circle24-regular";
 
+import { Button } from "@/Components/ui/button";
 import { RESERVATION_DATE_TIME_FORMAT } from "@/Constants/DateTimeFormats";
 import { capitalize } from "@/Utils/String";
 import { formatStaticTime } from "@/Utils/IntlTime";
@@ -198,32 +199,24 @@ const dataTableColumns = [
       return (
         <div class="flex items-center space-x-2">
           {["created", "reserved", "lent"].includes(row.pivot?.state) ? (
-            <NButton
-              size="tiny"
-              type={row.pivot?.approvable ? "primary" : "info"}
+            <Button
+              size="xs"
+              variant={row.pivot?.approvable ? "default" : "secondary"}
               onClick={() => handleStateChange(row)}
             >
-              {{
-                default: () => (
-                  <span>
-                    {row.pivot?.approvable
-                      ? $t("Keisti būseną")
-                      : $t("Komentuoti")}
-                  </span>
-                ),
-              }}
-            </NButton>
+              {row.pivot?.approvable
+                ? $t("Keisti būseną")
+                : $t("Komentuoti")}
+            </Button>
           ) : null}
           {["cancelled", "rejected"].includes(row.pivot?.state) ? (
-            <NButton
-              size="small"
-              type="error"
+            <Button
+              size="sm"
+              variant="destructive"
               onClick={() => handlePivotDelete(row)}
             >
-              {{
-                icon: () => <NIcon component={Delete16Regular} />,
-              }}
-            </NButton>
+              <Delete16Regular />
+            </Button>
           ) : null}
           {["created", "reserved"].includes(row.pivot?.state) ? (
             <>

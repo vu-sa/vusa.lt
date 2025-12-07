@@ -11,14 +11,12 @@
           <!-- Current tag filter display -->
           <div v-if="props.currentTag" class="mt-3 flex items-center gap-2">
             <span class="text-sm text-zinc-500 dark:text-zinc-400">{{ $t('Filtruojama pagal žymą:') }}</span>
-            <NButton 
-              size="small" 
-              type="primary" 
-              round
-              class="relative"
+            <Button 
+              size="sm"
+              class="rounded-full"
             >
               {{ typeof props.currentTag.name === 'object' ? (props.currentTag.name[$page.props.app.locale] || props.currentTag.name.lt || props.currentTag.name.en) : props.currentTag.name }}
-            </NButton>
+            </Button>
             <SmartLink 
               :href="route('newsArchive', {
                 lang: $page.props.app.locale,
@@ -27,11 +25,9 @@
               })"
               class="plain"
             >
-              <NButton size="small" quaternary circle>
-                <template #icon>
-                  <XIcon class="h-4 w-4" />
-                </template>
-              </NButton>
+              <Button size="icon-sm" variant="ghost" class="rounded-full">
+                <XIcon class="h-4 w-4" />
+              </Button>
             </SmartLink>
           </div>
         </div>
@@ -171,8 +167,8 @@ import { trans as $t } from "laravel-vue-i18n";
 // onMounted/onUnmounted no longer needed - usePageBreadcrumbs handles lifecycle
 import { usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import { XIcon, ChevronLeftIcon, ChevronRightIcon } from "lucide-vue-next";
-import { NButton } from "naive-ui";
 
+import { Button } from "@/Components/ui/button";
 import NewsCard from "@/Components/Public/News/NewsCard.vue";
 import SmartLink from "@/Components/Public/SmartLink.vue";
 import { 

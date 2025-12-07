@@ -68,39 +68,29 @@
       
       <CardFooter class="flex gap-2">
         <a v-if="institution.facebook_url" :href="institution.facebook_url" target="_blank" rel="noopener noreferrer">
-          <NButton tertiary size="small" circle @click.stop>
-            <template #icon>
-              <IMdiFacebook />
-            </template>
-          </NButton>
+          <Button variant="ghost" size="icon-sm" class="rounded-full" @click.stop>
+            <IMdiFacebook />
+          </Button>
         </a>
         <a v-if="institution.instagram_url" :href="institution.instagram_url" target="_blank" rel="noopener noreferrer">
-          <NButton tertiary size="small" circle @click.stop>
-            <template #icon>
-              <IMdiInstagram />
-            </template>
-          </NButton>
+          <Button variant="ghost" size="icon-sm" class="rounded-full" @click.stop>
+            <IMdiInstagram />
+          </Button>
         </a>
         <a v-if="institution.website" :href="institution.website" target="_blank" rel="noopener noreferrer">
-          <NButton tertiary size="small" circle @click.stop>
-            <template #icon>
-              <IFluentGlobe20Regular />
-            </template>
-          </NButton>
+          <Button variant="ghost" size="icon-sm" class="rounded-full" @click.stop>
+            <IFluentGlobe20Regular />
+          </Button>
         </a>
         <a v-if="institution.email" :href="`mailto:${institution.email}`">
-          <NButton tertiary size="small" circle @click.stop>
-            <template #icon>
-              <IFluentMail20Regular />
-            </template>
-          </NButton>
+          <Button variant="ghost" size="icon-sm" class="rounded-full" @click.stop>
+            <IFluentMail20Regular />
+          </Button>
         </a>
         <a v-if="institution.phone" :href="`tel:${institution.phone}`">
-          <NButton tertiary size="small" circle @click.stop>
-            <template #icon>
-              <IFluentPhone20Regular />
-            </template>
-          </NButton>
+          <Button variant="ghost" size="icon-sm" class="rounded-full" @click.stop>
+            <IFluentPhone20Regular />
+          </Button>
         </a>
       </CardFooter>
     </Card>
@@ -113,6 +103,7 @@ import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Building2, Users } from 'lucide-vue-next';
 import { Badge } from '../ui/badge';
+import { Button } from '../ui/button';
 import Card from '../ui/card/Card.vue';
 import CardContent from '../ui/card/CardContent.vue';
 import CardFooter from '../ui/card/CardFooter.vue';

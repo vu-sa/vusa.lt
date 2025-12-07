@@ -72,27 +72,21 @@
             </div>
             <span class="my-1">{{ model.label?.lt }}</span>
             <div class="flex justify-end gap-2">
-              <NButton size="tiny" @click="handleEditFormField(model)">
-                <template #icon>
-                  <IFluentEdit24Filled />
-                </template>
-              </NButton>
-              <NButton size="tiny" :disabled="hasRegistrations" @click="handleDeleteFormField(model)">
-                <template #icon>
-                  <IFluentDelete24Filled color="red" />
-                </template>
-              </NButton>
+              <Button size="icon-xs" variant="ghost" @click="handleEditFormField(model)">
+                <IFluentEdit24Filled />
+              </Button>
+              <Button size="icon-xs" variant="ghost" :disabled="hasRegistrations" @click="handleDeleteFormField(model)">
+                <IFluentDelete24Filled class="text-red-500" />
+              </Button>
             </div>
           </div>
         </template>
       </SortableFormFieldsTable>
       <div class="mt-4">
-        <NButton type="primary" :disabled="hasRegistrations" @click="handleNewFormFieldCreate">
-          <template #icon>
-            <IFluentAdd24Filled />
-          </template>
+        <Button :disabled="hasRegistrations" @click="handleNewFormFieldCreate">
+          <IFluentAdd24Filled />
           {{ $t("forms.add") }}
-        </NButton>
+        </Button>
       </div>
     </FormElement>
     <CardModal v-model:show="showFormFieldModal" title="Formos laukelis" @close="showFormFieldModal = false">
@@ -107,6 +101,7 @@ import { Link, useForm } from "@inertiajs/vue3";
 import { computed, reactive, ref } from "vue";
 
 import { formFieldTemplate } from "@/Types/formTemplates";
+import { Button } from "@/Components/ui/button";
 import FormElement from "./FormElement.vue";
 import Icons from "@/Types/Icons/filled";
 import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";

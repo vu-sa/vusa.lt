@@ -4,7 +4,6 @@
 </template>
 
 <script setup lang="tsx">
-import { NButton } from "naive-ui";
 import { computed, provide, ref } from "vue";
 import { router, usePage } from "@inertiajs/vue3";
 import type { DataTableColumns, DataTableSortState } from "naive-ui";

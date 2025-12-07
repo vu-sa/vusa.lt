@@ -37,11 +37,9 @@
         <NTooltip v-if="contact.phone">
           <template #trigger>
             <a :href="`tel:${contact.phone}`">
-              <NButton tertiary size="small" circle>
-                <template #icon>
-                  <IFluentPhone20Regular />
-                </template>
-              </NButton>
+              <Button variant="ghost" size="icon-sm" class="rounded-full">
+                <IFluentPhone20Regular />
+              </Button>
             </a>
           </template>
           <CopyToClipboardButton size="small" circle text :text-to-copy="contact.phone"
@@ -53,19 +51,15 @@
           </CopyToClipboardButton>
         </NTooltip>
         <a v-if="contact.facebook_url" :href="contact.facebook_url" target="_blank" rel="noopener noreferrer">
-          <NButton tertiary size="small" circle>
-            <template #icon>
-              <IMdiFacebook />
-            </template>
-          </NButton>
+          <Button variant="ghost" size="icon-sm" class="rounded-full">
+            <IMdiFacebook />
+          </Button>
         </a>
         <NPopover v-if="shownContactEmail.length > 1" trigger="hover" placement="bottom-start">
           <template #trigger>
-            <NButton tertiary size="small" circle>
-              <template #icon>
-                <IFluentMail20Regular />
-              </template>
-            </NButton>
+            <Button variant="ghost" size="icon-sm" class="rounded-full">
+              <IFluentMail20Regular />
+            </Button>
           </template>
           <div class="p-2">
             <div class="flex flex-col text-sm">
@@ -86,11 +80,9 @@
         <NTooltip v-else-if="shownContactEmail.length === 1">
           <template #trigger>
             <a :key="shownContactEmail[0].email" :href="`mailto:${shownContactEmail[0].email}`">
-              <NButton tertiary size="small" circle>
-                <template #icon>
-                  <IFluentMail20Regular />
-                </template>
-              </NButton>
+              <Button variant="ghost" size="icon-sm" class="rounded-full">
+                <IFluentMail20Regular />
+              </Button>
             </a>
           </template>
           <CopyToClipboardButton size="small" circle text :text-to-copy="shownContactEmail[0].email"
@@ -110,6 +102,7 @@
 import { computed } from "vue";
 import { usePage } from "@inertiajs/vue3";
 
+import { Button } from "@/Components/ui/button";
 import { changeDutyNameEndings } from "@/Utils/String";
 import CopyToClipboardButton from "../Buttons/CopyToClipboardButton.vue";
 import InfoPopover from "../Buttons/InfoPopover.vue";

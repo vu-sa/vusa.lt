@@ -27,20 +27,16 @@
         <template #footer>
           <div class="flex items-center gap-2">
             <Link :href="route('reservations.create')">
-            <NButton size="small">
-              <template #icon>
-                <IFluentBookmarkAdd24Filled />
-              </template>
+            <Button size="sm">
+              <IFluentBookmarkAdd24Filled />
               Kurti naują
-            </NButton>
+            </Button>
             </Link>
 
-            <NButton size="small" secondary @click="showReservationsModal = true">
-              <template #icon>
-                <Icons.RESERVATION />
-              </template>
+            <Button size="sm" variant="secondary" @click="showReservationsModal = true">
+              <Icons.RESERVATION />
               {{ $t('Peržiūrėti visas') }}
-            </NButton>
+            </Button>
             <CardModal v-model:show="showReservationsModal" title="Visos rezervacijos"
               @close="showReservationsModal = false">
               <NDataTable :data="reservations" :columns="reservationColumns" :pagination="{ pageSize: 7 }" />
@@ -70,12 +66,10 @@
         <template #footer>
           <div class="flex items-center gap-2">
             <Link :href="route('resources.index')">
-            <NButton size="small" secondary>
-              <template #icon>
-                <IFluentCube24Filled />
-              </template>
+            <Button size="sm" variant="secondary">
+              <IFluentCube24Filled />
               Peržiūrėti visus
-            </NButton>
+            </Button>
             </Link>
           </div>
         </template>
@@ -119,18 +113,14 @@
         </div>
         <template #footer>
           <div class="flex items-center gap-2">
-            <NButton size="small" @click="showTenantReservationsModal = true">
-              <template #icon>
-                <Icons.RESERVATION />
-              </template>
+            <Button size="sm" @click="showTenantReservationsModal = true">
+              <Icons.RESERVATION />
               Peržiūrėti aktyvias
-            </NButton>
-            <NButton size="small" secondary @click="showTenantUsersReservationsModal = true">
-              <template #icon>
-                <Icons.TENANT />
-              </template>
+            </Button>
+            <Button size="sm" variant="secondary" @click="showTenantUsersReservationsModal = true">
+              <Icons.TENANT />
               Ką skolinasi padalinys?
-            </NButton>
+            </Button>
           </div>
           <CardModal v-model:show="showTenantReservationsModal" class="max-w-6xl" title="Visos rezervacijos"
             @close="showTenantReservationsModal = false">
@@ -154,6 +144,7 @@
 <script setup lang="ts">
 //import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
+import { Button } from '@/Components/ui/button';
 import CardModal from '@/Components/Modals/CardModal.vue';
 import ReservationsWithUnitResources from '@/Components/Tables/ReservationsWithUnitResources.vue';
 import { Separator } from '@/Components/ui/separator';

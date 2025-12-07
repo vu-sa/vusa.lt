@@ -13,19 +13,19 @@
         </span>
       </p>
       <div class="flex gap-2">
-        <a :href="`${$page.props.app.url}/privatumas`" target="_blank">
-          <NButton size="small" round secondary>{{
-            $t("Privatumo politika")
-            }}</NButton>
-        </a>
-
-        <NButton size="small" round secondary type="warning" @click="$emit('okayCookieConsent')">{{ $t("Gerai") }}
-        </NButton>
+        <Button as="a" :href="`${$page.props.app.url}/privatumas`" target="_blank" size="sm" variant="secondary" class="rounded-full">
+          {{ $t("Privatumo politika") }}
+        </Button>
+        <Button size="sm" variant="warning" class="rounded-full" @click="$emit('okayCookieConsent')">
+          {{ $t("Gerai") }}
+        </Button>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { Button } from '@/Components/ui/button';
+
 defineEmits(["okayCookieConsent"]);
 </script>

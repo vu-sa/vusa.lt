@@ -94,9 +94,9 @@
       </NFormItem>
     </FormElement>
     <template #buttons>
-      <NButton type="primary" :disabled="!conditionAcquaintance" @click="submit">
+      <Button :disabled="!conditionAcquaintance" @click="submit">
         Pateikti
-      </NButton>
+      </Button>
     </template>
   </AdminForm>
 </template>
@@ -104,7 +104,6 @@
 <script setup lang="tsx">
 import { router, useForm } from "@inertiajs/vue3";
 import {
-  NButton,
   NCheckbox,
   NDatePicker,
   NDynamicInput,
@@ -115,6 +114,7 @@ import {
   NSelect,
   type SelectOption,
 } from "naive-ui";
+import { Button } from "@/Components/ui/button";
 import { computed, ref, watch } from "vue";
 
 import { RESERVATION_PLACEHOLDERS } from "@/Constants/I18n/Placeholders";

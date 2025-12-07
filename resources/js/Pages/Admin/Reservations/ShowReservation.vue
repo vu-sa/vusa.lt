@@ -11,12 +11,10 @@
 
     <ReservationResourceTable v-model:selected-reservation-resource="selectedReservationResource" class="mb-4"
       :reservation @edit:reservation-resource="editReservationResource" />
-    <NButton secondary size="small" @click="handleMoreOptionClick('add-resource')">
-      <template #icon>
-        <IFluentAdd24Filled />
-      </template>
+    <Button variant="secondary" size="sm" @click="handleMoreOptionClick('add-resource')">
+      <IFluentAdd24Filled />
       {{ $t("Pridėti rezervacijos išteklių") }}
-    </NButton>
+    </Button>
 
     <CardModal :title="$t('entities.meta.help', {
       model: $tChoice('entities.reservation.model', 2),
@@ -45,9 +43,9 @@
             :render-tag="renderUserFormTag" :options="allUsers" />
         </NFormItem>
         <NFormItem>
-          <NButton type="primary" @click="handleSubmitUserForm">
+          <Button @click="handleSubmitUserForm">
             {{ $t("forms.submit") }}
-          </NButton>
+          </Button>
         </NFormItem>
       </NForm>
     </CardModal>
@@ -73,7 +71,6 @@ import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
 import {
   NIcon,
   NTag,
-  NButton,
   NForm,
   NFormItem,
   NSelect,
@@ -86,6 +83,7 @@ import { router, useForm } from "@inertiajs/vue3";
 import { useStorage } from "@vueuse/core";
 import { capitalize } from "vue";
 
+import { Button } from "@/Components/ui/button";
 import { RESERVATION_CARD_MODAL_TITLES } from "@/Constants/I18n/CardModalTitles";
 import { RESERVATION_HELP_TEXTS } from "@/Constants/I18n/HelpTexts";
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
