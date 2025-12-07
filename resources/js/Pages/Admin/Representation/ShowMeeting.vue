@@ -2,7 +2,7 @@
   <div class="min-h-screen bg-zinc-50 dark:bg-zinc-950">
     <div class="container mx-auto px-4 py-6 space-y-8">
       <!-- Meeting Hero Section -->
-      <MeetingHero :meeting :main-institution :agenda-items="meeting.agenda_items" @edit="showMeetingModal = true"
+      <MeetingHero :meeting :main-institution :agenda-items="meeting.agenda_items" :representatives @edit="showMeetingModal = true"
         @show-delete-dialog="showDeleteDialog = true" />
 
       <!-- Tabs Navigation -->
@@ -46,6 +46,34 @@
           <TaskManager :taskable="{ id: meeting.id, type: 'App\\Models\\Meeting' }" :tasks="meeting.tasks" />
         </TabsContent>
       </Tabs>
+
+      <!-- Previous/Next Meeting Navigation -->
+      <div v-if="previousMeeting || nextMeeting" class="flex flex-col sm:flex-row justify-between gap-4 pt-4">
+        <Link
+          v-if="previousMeeting"
+          :href="route('meetings.show', previousMeeting.id)"
+          class="flex items-center gap-2 px-4 py-3 rounded-xl ring-1 ring-zinc-300 dark:ring-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors group"
+        >
+          <ChevronLeft class="h-5 w-5 text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-300 transition-colors" />
+          <div class="text-left">
+            <span class="text-xs text-zinc-500 dark:text-zinc-400">{{ $t('Ankstesnis posėdis') }}</span>
+            <p class="text-sm font-medium text-zinc-700 dark:text-zinc-300">{{ formatMeetingNavDate(previousMeeting.start_time) }}</p>
+          </div>
+        </Link>
+        <div v-else />
+
+        <Link
+          v-if="nextMeeting"
+          :href="route('meetings.show', nextMeeting.id)"
+          class="flex items-center gap-2 px-4 py-3 rounded-xl ring-1 ring-zinc-300 dark:ring-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors group sm:ml-auto"
+        >
+          <div class="text-right">
+            <span class="text-xs text-zinc-500 dark:text-zinc-400">{{ $t('Kitas posėdis') }}</span>
+            <p class="text-sm font-medium text-zinc-700 dark:text-zinc-300">{{ formatMeetingNavDate(nextMeeting.start_time) }}</p>
+          </div>
+          <ChevronRight class="h-5 w-5 text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-300 transition-colors" />
+        </Link>
+      </div>
     </div>
 
     <!-- Modals -->
@@ -149,10 +177,10 @@
 
 <script setup lang="tsx">
 import { ref, computed } from "vue";
-import { router, useForm } from "@inertiajs/vue3";
+import { router, useForm, Link } from "@inertiajs/vue3";
 import { useStorage } from "@vueuse/core";
 import { trans as $t } from "laravel-vue-i18n";
-import { AlertTriangle, Plus, Trash2 } from 'lucide-vue-next';
+import { AlertTriangle, Plus, Trash2, ChevronLeft, ChevronRight } from 'lucide-vue-next';
 
 import { formatStaticTime } from "@/Utils/IntlTime";
 import { genitivizeEveryWord } from "@/Utils/String";
@@ -180,6 +208,9 @@ import TaskManager from "@/Features/Admin/TaskManager/TaskManager.vue";
 
 const props = defineProps<{
   meeting: App.Entities.Meeting;
+  representatives: App.Entities.User[];
+  previousMeeting?: { id: string; start_time: string } | null;
+  nextMeeting?: { id: string; start_time: string } | null;
 }>();
 
 // Component state
@@ -218,6 +249,17 @@ const meetingTitle = computed(() => {
     day: "numeric",
   })} ${genitivizeEveryWord(institutionName)} posėdis`;
 });
+
+// Format date for navigation buttons
+const formatMeetingNavDate = (date: string) => {
+  return formatStaticTime(new Date(date), {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
 
 // Generate breadcrumbs automatically with new simplified API
 usePageBreadcrumbs(() => {

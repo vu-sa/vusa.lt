@@ -1,7 +1,7 @@
 <template>
-  <div class="fixed bottom-0 z-50 w-screen">
+  <div class="fixed bottom-0 left-0 right-0 z-50 flex justify-center px-4">
     <div
-      class="mx-auto mb-12 flex size-fit max-w-sm flex-wrap items-center justify-center gap-4 bg-white p-4 shadow-md dark:bg-zinc-700 sm:rounded-md md:max-w-none">
+      class="mb-8 flex size-fit max-w-sm flex-wrap items-center justify-center gap-4 bg-white p-4 shadow-lg rounded-xl dark:bg-zinc-800 md:max-w-none">
       <p class="typography flex h-fit items-center gap-4 px-4 text-sm">
         <IFluentCookies24Regular />
         <span>

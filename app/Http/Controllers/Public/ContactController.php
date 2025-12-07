@@ -262,6 +262,24 @@ class ContactController extends PublicController
         // Get primary institution for breadcrumbs
         $primaryInstitution = $meeting->institutions->first();
 
+        // Get representatives who were active at meeting time
+        $representatives = $meeting->getRepresentativesActiveAt();
+
+        // Get previous and next meetings for the same institution
+        $previousMeeting = Meeting::query()
+            ->whereHas('institutions', fn ($q) => $q->where('institutions.id', $primaryInstitution->id))
+            ->where('start_time', '<', $meeting->start_time)
+            ->orderBy('start_time', 'desc')
+            ->select(['id', 'start_time'])
+            ->first();
+
+        $nextMeeting = Meeting::query()
+            ->whereHas('institutions', fn ($q) => $q->where('institutions.id', $primaryInstitution->id))
+            ->where('start_time', '>', $meeting->start_time)
+            ->orderBy('start_time', 'asc')
+            ->select(['id', 'start_time'])
+            ->first();
+
         Inertia::share('otherLangURL', route('publicMeetings.show', [
             'subdomain' => $this->subdomain,
             'lang' => $this->getOtherLang(),
@@ -276,6 +294,9 @@ class ContactController extends PublicController
         return Inertia::render('Public/Meetings/ShowMeeting', [
             'meeting' => $meeting,
             'institution' => $primaryInstitution,
+            'representatives' => $representatives,
+            'previousMeeting' => $previousMeeting,
+            'nextMeeting' => $nextMeeting,
         ])->withViewData(['SEOData' => $seo]);
     }
 

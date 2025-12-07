@@ -10,7 +10,7 @@
         <div class="flex items-center gap-2">
           <!-- Status Dot -->
           <div
-            :class="getStatusDotColor()"
+            :class="getStatusDotColor(meeting.completion_status)"
             class="w-2 h-2 rounded-full flex-shrink-0"
           />
           <!-- Date -->
@@ -27,10 +27,10 @@
         <div class="flex items-center gap-2 text-xs text-muted-foreground">
           <!-- Completion Status Badge -->
           <Badge
-            :variant="getCompletionVariant()"
+            :variant="getCompletionVariant(meeting.completion_status)"
             class="text-[10px] font-medium px-1.5 py-0 flex-shrink-0"
           >
-            {{ getCompletionLabel() }}
+            {{ getCompletionLabel(meeting.completion_status) }}
           </Badge>
 
           <!-- Institution (clickable link) -->
@@ -62,7 +62,7 @@
       <div class="hidden sm:flex sm:items-center sm:gap-3 sm:w-full">
         <!-- Status Dot -->
         <div
-          :class="getStatusDotColor()"
+          :class="getStatusDotColor(meeting.completion_status)"
           class="w-2 h-2 rounded-full flex-shrink-0"
         />
 
@@ -108,10 +108,10 @@
 
           <!-- Completion Status Badge -->
           <Badge
-            :variant="getCompletionVariant()"
+            :variant="getCompletionVariant(meeting.completion_status)"
             class="text-xs font-medium px-1.5 py-0.5 flex-shrink-0"
           >
-            {{ getCompletionLabel() }}
+            {{ getCompletionLabel(meeting.completion_status) }}
           </Badge>
 
           <!-- Arrow -->
@@ -130,6 +130,7 @@ import { Badge } from '@/Components/ui/badge';
 import { ArrowRightIcon } from 'lucide-vue-next';
 import MeetingOutcomeIndicators from './MeetingOutcomeIndicators.vue';
 import { formatStaticTime } from '@/Utils/IntlTime';
+import { useMeetingStatus } from '@/Composables/useMeetingStatus';
 
 // Typesense search result document structure
 interface MeetingSearchDocument {
@@ -167,6 +168,9 @@ const props = defineProps<{
 
 const page = usePage();
 const locale = computed(() => page.props.app?.locale || 'lt');
+
+// Use shared meeting status utilities
+const { getCompletionVariant, getCompletionLabel, getStatusDotColor } = useMeetingStatus();
 
 // Get institution name based on current locale
 const institutionName = computed(() => {
@@ -225,28 +229,5 @@ const getInstitutionUrl = () => {
   });
 };
 
-const getCompletionVariant = () => {
-  return {
-    'complete': 'success',
-    'incomplete': 'warning',
-    'no_items': 'secondary',
-  }[props.meeting.completion_status] || 'secondary';
-};
 
-const getCompletionLabel = () => {
-  return {
-    'complete': $t('Užpildyta'),
-    'incomplete': $t('Neužpildyta'),
-    'no_items': $t('Nėra darbotvarkės'),
-  }[props.meeting.completion_status] || props.meeting.completion_status;
-};
-
-const getStatusDotColor = () => {
-  const status = props.meeting.completion_status;
-  return {
-    'complete': 'bg-green-500 dark:bg-green-400',
-    'incomplete': 'bg-amber-500 dark:bg-amber-400',
-    'no_items': 'bg-zinc-400 dark:bg-zinc-500',
-  }[status] || 'bg-zinc-400';
-};
 </script>

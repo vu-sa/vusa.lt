@@ -1,31 +1,28 @@
 <template>
-  <!-- Meeting card -->
-  <div
-    class="group border rounded-lg hover:shadow-md transition-all"
-    :class="[
-      getStatusBorderColor(),
-      'bg-card'
-    ]"
+  <!-- Meeting card with gradient styling - fully clickable -->
+  <SmartLink
+    :href="route('publicMeetings.show', { meeting: meeting.id, subdomain: $page.props.tenant?.subdomain })"
+    class="group relative block overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-50 to-zinc-100/50 ring-1 ring-zinc-200/50 transition-all duration-300 hover:ring-zinc-300 hover:shadow-lg dark:from-zinc-800/80 dark:to-zinc-900 dark:ring-zinc-700/50 dark:hover:ring-zinc-600 cursor-pointer"
   >
-      <!-- Compact header -->
-      <div class="p-4 pb-3">
+    <!-- Compact header -->
+    <div class="p-4 pb-3">
         <div class="flex items-start justify-between gap-4 mb-2">
           <!-- Date & Time -->
           <div class="flex-1 min-w-0">
-            <time class="text-sm font-semibold text-foreground block">
+            <time class="text-sm font-semibold text-zinc-900 dark:text-zinc-100 block">
               {{ formatMeetingDate(meeting.start_time) }}
             </time>
 
             <!-- Institution name (when shown in search context) -->
             <div v-if="showInstitution && meeting.institutions?.[0]" class="mt-1">
-              <span class="text-xs font-medium text-muted-foreground">
+              <span class="text-xs font-medium text-zinc-500 dark:text-zinc-400">
                 {{ meeting.institutions[0].name }}
               </span>
             </div>
 
             <!-- Outcome indicators (replacing progress bar) -->
             <div class="mt-1.5 flex items-center gap-2">
-              <span class="text-xs text-muted-foreground">
+              <span class="text-xs text-zinc-500 dark:text-zinc-400">
                 {{ allAgendaItems.length }}
                 {{ allAgendaItems.length === 1 ? $t('klausimas') : $t('klausimai') }}
               </span>
@@ -43,26 +40,19 @@
           </Badge>
         </div>
 
-        <!-- Compact "View full" action -->
+        <!-- View action indicator -->
         <div class="flex justify-end">
-          <Button
-            variant="ghost"
-            size="sm"
-            class="h-6 px-2 text-xs"
-            as-child
-          >
-            <Link :href="route('publicMeetings.show', { meeting: meeting.id, subdomain: $page.props.tenant?.subdomain })">
-              {{ $t('Peržiūrėti') }}
-              <ArrowRightIcon class="h-3 w-3 ml-1" />
-            </Link>
-          </Button>
+          <span class="text-xs text-zinc-500 dark:text-zinc-400 group-hover:text-vusa-red transition-colors flex items-center gap-1">
+            {{ $t('Peržiūrėti') }}
+            <ArrowRightIcon class="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+          </span>
         </div>
       </div>
 
       <!-- Agenda items (showing all items, vote details only when available) -->
       <div
         v-if="allAgendaItems.length > 0"
-        class="border-t bg-muted/30 px-4 py-3"
+        class="border-t border-zinc-200/50 bg-zinc-100/50 px-4 py-3 dark:border-zinc-700/50 dark:bg-zinc-800/50"
       >
         <div class="space-y-2">
           <div
@@ -70,11 +60,11 @@
             :key="item.id"
             class="text-xs"
           >
-            <p class="font-medium text-foreground mb-1">
+            <p class="font-medium text-zinc-900 dark:text-zinc-100 mb-1">
               {{ item.order }}. {{ item.title }}
             </p>
             <!-- Vote details only when at least one value exists -->
-            <div v-if="hasDecisionData(item)" class="flex gap-4 text-muted-foreground">
+            <div v-if="hasDecisionData(item)" class="flex gap-4 text-zinc-500 dark:text-zinc-400">
               <span class="flex items-center gap-1">
                 {{ $t('Studentų balsas') }}:
                 <VoteIndicator :vote="item.student_vote" type="vote" compact />
@@ -91,19 +81,22 @@
           </div>
         </div>
       </div>
-  </div>
+  </SmartLink>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { Link } from '@inertiajs/vue3';
+import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Badge } from '@/Components/ui/badge';
-import { Button } from '@/Components/ui/button';
 import { ArrowRightIcon } from 'lucide-vue-next';
 import AgendaOutcomeIndicators from './AgendaOutcomeIndicators.vue';
 import VoteIndicator from './VoteIndicator.vue';
+import SmartLink from './SmartLink.vue';
 import { formatStaticTime } from '@/Utils/IntlTime';
+import { useMeetingStatus } from '@/Composables/useMeetingStatus';
+
+const $page = usePage();
 
 const props = withDefaults(defineProps<{
   meeting: App.Entities.Meeting;
@@ -139,28 +132,6 @@ const formatMeetingDate = (date: string) => {
   });
 };
 
-const getCompletionVariant = (status: string) => {
-  return {
-    'complete': 'success',
-    'incomplete': 'warning',
-    'no_items': 'secondary',
-  }[status] || 'secondary';
-};
-
-const getCompletionLabel = (status: string) => {
-  return {
-    'complete': $t('Užpildyta'),
-    'incomplete': $t('Neužpildyta'),
-    'no_items': $t('Nėra darbotvarkės'),
-  }[status] || status;
-};
-
-const getStatusBorderColor = () => {
-  const status = props.meeting.completion_status;
-  return {
-    'complete': 'border-green-200 dark:border-green-800/30',
-    'incomplete': 'border-amber-200 dark:border-amber-800/30',
-    'no_items': 'border-border',
-  }[status] || 'border-border';
-};
+// Use shared meeting status utilities
+const { getCompletionVariant, getCompletionLabel } = useMeetingStatus();
 </script>

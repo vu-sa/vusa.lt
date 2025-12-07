@@ -57,7 +57,7 @@
             <MeetingTimelineItem
               v-for="(meeting, index) in currentYearMeetings.meetings"
               :key="meeting.id"
-              :status="meeting.completion_status"
+              :vote-alignment="getVoteAlignment(meeting)"
               :is-last="index === currentYearMeetings.meetings.length - 1"
             >
               <MeetingCard :meeting="meeting" />
@@ -93,7 +93,7 @@
               <MeetingTimelineItem
                 v-for="(meeting, index) in yearGroup.meetings"
                 :key="meeting.id"
-                :status="meeting.completion_status"
+                :vote-alignment="getVoteAlignment(meeting)"
                 :is-last="index === yearGroup.meetings.length - 1"
               >
                 <MeetingCard :meeting="meeting" />
@@ -151,4 +151,35 @@ defineProps<{
 const showMeetings = ref(true);  // Expanded by default
 const showPreviousYears = ref(false);
 const showInfoModal = ref(false);
+
+/**
+ * Calculate vote alignment for a meeting based on agenda items
+ * Returns: 'aligned' (all match), 'mixed' (some match), 'misaligned' (none match), 'no_data'
+ */
+const getVoteAlignment = (meeting: App.Entities.Meeting): 'aligned' | 'mixed' | 'misaligned' | 'no_data' => {
+  const items = meeting.agenda_items || [];
+  
+  // Filter items that have both student_vote and decision
+  const itemsWithBothVotes = items.filter(
+    item => item.student_vote && item.decision
+  );
+  
+  if (itemsWithBothVotes.length === 0) {
+    return 'no_data';
+  }
+  
+  // Count matches and mismatches
+  const matches = itemsWithBothVotes.filter(
+    item => item.student_vote === item.decision
+  ).length;
+  const mismatches = itemsWithBothVotes.length - matches;
+  
+  if (mismatches === 0) {
+    return 'aligned';  // All student votes accepted
+  } else if (matches === 0) {
+    return 'misaligned';  // No student votes accepted
+  } else {
+    return 'mixed';  // Some matches, some mismatches
+  }
+};
 </script>

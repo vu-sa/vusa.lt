@@ -82,8 +82,19 @@
               </div>
             </div>
             <small v-for="institutionType in institution.types" v-show="!props.hideTypes" :key="institutionType.id"
-              class="mb-4 inline-flex gap-2 text-zinc-500 last:mb-0">
-              <span>{{ $t(institutionType.title) }}</span>
+              class="mb-4 inline-flex items-center gap-2 text-zinc-500 last:mb-0">
+              <a 
+                v-if="institutionType.slug"
+                :href="route('contacts.category', {
+                  subdomain: institution.tenant?.alias === 'vusa' ? 'www' : institution.tenant?.alias ?? 'www',
+                  lang: $page.props.app.locale,
+                  type: institutionType.slug,
+                }) + '?all=1'"
+                class="hover:text-vusa-red hover:underline transition-colors"
+              >
+                {{ $t(institutionType.title) }}
+              </a>
+              <span v-else>{{ $t(institutionType.title) }}</span>
               <InfoPopover v-if="institutionType.description"> {{ institutionType.description }} </InfoPopover>
             </small>
           </div>

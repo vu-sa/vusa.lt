@@ -8,6 +8,7 @@ use App\Models\Pivots\AgendaItem;
 use App\Models\Traits\HasComments;
 use App\Models\Traits\HasSharepointFiles;
 use App\Models\Traits\HasTasks;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -113,6 +114,63 @@ class Meeting extends Model implements SharepointFileableContract
     public function users()
     {
         return $this->hasManyDeepFromRelations($this->institutions(), (new Institution)->users());
+    }
+
+    /**
+     * Get student representatives who were active at the time of this meeting.
+     * Filters duties by 'studentu-atstovai' type and checks dutiables pivot dates.
+     *
+     * @return Collection<User>
+     */
+    public function getRepresentativesActiveAt(): Collection
+    {
+        $meetingDate = $this->start_time->toDateString();
+
+        // Get all institution IDs for this meeting
+        $institutionIds = $this->institutions->pluck('id');
+
+        if ($institutionIds->isEmpty()) {
+            return new Collection;
+        }
+
+        // Get the student representative type
+        $studentRepType = Type::query()->where('slug', 'studentu-atstovai')->first();
+
+        if (! $studentRepType) {
+            return new Collection;
+        }
+
+        // Get duties that belong to these institutions and have the student rep type
+        $dutyIds = Duty::query()
+            ->whereIn('institution_id', $institutionIds)
+            ->whereHas('types', fn ($q) => $q->where('types.id', $studentRepType->id))
+            ->pluck('id');
+
+        if ($dutyIds->isEmpty()) {
+            return new Collection;
+        }
+
+        // Get users who were active in these duties at the meeting date
+        return User::query()
+            ->whereHas('duties', function ($query) use ($dutyIds, $meetingDate) {
+                $query->whereIn('duties.id', $dutyIds)
+                    ->where('dutiables.start_date', '<=', $meetingDate)
+                    ->where(function ($q) use ($meetingDate) {
+                        $q->whereNull('dutiables.end_date')
+                            ->orWhere('dutiables.end_date', '>=', $meetingDate);
+                    });
+            })
+            ->with(['duties' => function ($query) use ($dutyIds, $meetingDate) {
+                // Also load the specific duty info for context
+                $query->whereIn('duties.id', $dutyIds)
+                    ->where('dutiables.start_date', '<=', $meetingDate)
+                    ->where(function ($q) use ($meetingDate) {
+                        $q->whereNull('dutiables.end_date')
+                            ->orWhere('dutiables.end_date', '>=', $meetingDate);
+                    });
+            }])
+            ->get()
+            ->unique('id');
     }
 
     public function tenants()

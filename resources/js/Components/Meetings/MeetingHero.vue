@@ -6,15 +6,38 @@
       <CardContent class="p-6">
         <!-- Header Row -->
         <div class="flex items-start justify-between mb-4">
-          <div class="space-y-1">
-            <div class="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
-              <component :is="getInstitutionIcon()" class="h-4 w-4" />
-              <span>{{ typeof mainInstitution === 'string' ? mainInstitution : mainInstitution.name }}</span>
+          <div class="space-y-2">
+            <!-- Meeting type badge and institution -->
+            <div class="flex items-center gap-3">
+              <Badge variant="secondary" class="gap-1">
+                <Video class="h-3 w-3" />
+                {{ $t('Posėdis') }}
+              </Badge>
+              <div class="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
+                <component :is="getInstitutionIcon()" class="h-4 w-4" />
+                <template v-if="typeof mainInstitution === 'string'">
+                  <span>{{ mainInstitution }}</span>
+                </template>
+                <template v-else>
+                  <Link :href="route('institutions.show', mainInstitution.id)" class="hover:text-zinc-900 dark:hover:text-zinc-100 hover:underline transition-colors">
+                    {{ mainInstitution.name }}
+                  </Link>
+                </template>
+              </div>
             </div>
 
             <h1 class="text-2xl md:text-3xl font-bold text-zinc-900 dark:text-zinc-100 leading-tight">
               {{ meetingTitle }}
             </h1>
+
+            <!-- Representatives -->
+            <div v-if="representatives && representatives.length > 0" class="flex items-center gap-2 pt-1">
+              <span class="text-sm text-zinc-500 dark:text-zinc-400">{{ $t('Studentų atstovai') }}:</span>
+              <UsersAvatarGroup :users="representatives" :max="5" :size="28" />
+            </div>
+            <div v-else-if="representatives" class="flex items-center gap-2 pt-1">
+              <span class="text-sm text-zinc-400 dark:text-zinc-500 italic">{{ $t('Atstovai nežinomi') }}</span>
+            </div>
           </div>
 
           <!-- Actions -->
@@ -85,6 +108,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { Link } from '@inertiajs/vue3'
 import { trans as $t } from 'laravel-vue-i18n'
 import {
   Building,
@@ -95,7 +119,8 @@ import {
   Trash2,
   GraduationCap,
   Users,
-  Globe
+  Globe,
+  Video
 } from 'lucide-vue-next'
 
 import { formatStaticTime } from '@/Utils/IntlTime'
@@ -112,12 +137,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/Components/ui/dropdown-menu'
-
-// Icons
+import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue'
 
 interface Props {
   meeting: App.Entities.Meeting
   mainInstitution: App.Entities.Institution | string
+  representatives?: App.Entities.User[]
   agendaItems: App.Entities.AgendaItem[]
 }
 

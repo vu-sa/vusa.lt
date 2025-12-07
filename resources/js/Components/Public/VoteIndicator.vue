@@ -50,7 +50,7 @@ const getLabel = () => {
 const getColorClass = () => {
   switch (props.vote) {
     case 'positive': return 'text-green-600 dark:text-green-400';
-    case 'negative': return 'text-red-600 dark:text-red-400';
+    case 'negative': return 'text-orange-600 dark:text-orange-400';
     case 'neutral': return 'text-zinc-600 dark:text-zinc-400';
     default: return 'text-zinc-300 dark:text-zinc-500';  // null/undefined = lighter gray (no data)
   }

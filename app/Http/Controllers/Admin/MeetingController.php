@@ -116,12 +116,41 @@ class MeetingController extends AdminController
         // Append is_public now that institutions.types are loaded (avoids N+1)
         $meeting->append('is_public');
 
+        // Get representatives who were active at meeting time
+        $representatives = $meeting->getRepresentativesActiveAt();
+
+        // Get primary institution for navigation
+        $primaryInstitution = $meeting->institutions->first();
+
+        // Get previous and next meetings for the same institution
+        $previousMeeting = null;
+        $nextMeeting = null;
+
+        if ($primaryInstitution) {
+            $previousMeeting = Meeting::query()
+                ->whereHas('institutions', fn ($q) => $q->where('institutions.id', $primaryInstitution->id))
+                ->where('start_time', '<', $meeting->start_time)
+                ->orderBy('start_time', 'desc')
+                ->select(['id', 'start_time'])
+                ->first();
+
+            $nextMeeting = Meeting::query()
+                ->whereHas('institutions', fn ($q) => $q->where('institutions.id', $primaryInstitution->id))
+                ->where('start_time', '>', $meeting->start_time)
+                ->orderBy('start_time', 'asc')
+                ->select(['id', 'start_time'])
+                ->first();
+        }
+
         // show meeting
         return $this->inertiaResponse('Admin/Representation/ShowMeeting', [
             'meeting' => [
                 ...$meeting->toArray(),
                 'sharepointPath' => $meeting->institutions->isNotEmpty() ? SharepointFileService::pathForFileableDriveItem($meeting) : null,
             ],
+            'representatives' => $representatives,
+            'previousMeeting' => $previousMeeting,
+            'nextMeeting' => $nextMeeting,
             'taskableInstitutions' => Inertia::lazy(fn () => $meeting->institutions->load('users')),
         ]);
     }

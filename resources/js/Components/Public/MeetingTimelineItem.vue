@@ -1,9 +1,9 @@
 <template>
   <div class="relative pl-8">
-    <!-- Timeline dot with status color -->
+    <!-- Timeline dot with vote alignment color -->
     <div
       class="absolute left-0 top-3 h-3 w-3 rounded-full border-2 border-background"
-      :class="statusDotColor"
+      :class="voteAlignmentDotColor"
     />
 
     <!-- Timeline line (connects dots) -->
@@ -22,17 +22,21 @@ import { computed } from 'vue';
 
 const props = withDefaults(defineProps<{
   isLast?: boolean;
-  status?: 'complete' | 'incomplete' | 'no_items' | string;
+  // Vote alignment: 'aligned' = all student votes match decisions, 
+  // 'mixed' = some match some don't, 'misaligned' = none match,
+  // 'no_data' = no vote data available
+  voteAlignment?: 'aligned' | 'mixed' | 'misaligned' | 'no_data' | string;
 }>(), {
   isLast: false,
-  status: 'no_items'
+  voteAlignment: 'no_data'
 });
 
-const statusDotColor = computed(() => {
+const voteAlignmentDotColor = computed(() => {
   return {
-    'complete': 'bg-green-500 dark:bg-green-400',
-    'incomplete': 'bg-amber-500 dark:bg-amber-400',
-    'no_items': 'bg-zinc-400 dark:bg-zinc-500',
-  }[props.status] || 'bg-zinc-400';
+    'aligned': 'bg-green-500 dark:bg-green-400',      // All student votes accepted
+    'mixed': 'bg-amber-500 dark:bg-amber-400',        // Some matches, some mismatches  
+    'misaligned': 'bg-red-500 dark:bg-red-400',       // No student votes accepted
+    'no_data': 'bg-zinc-400 dark:bg-zinc-500',        // No vote data to compare
+  }[props.voteAlignment] || 'bg-zinc-400';
 });
 </script>
