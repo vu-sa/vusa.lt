@@ -40,26 +40,16 @@ class TypesenseManager
     {
         $apiKey = config('scout.typesense.client-settings.api_key');
 
-        return ! empty($apiKey) && $apiKey !== 'xyz';
+        return ! empty($apiKey);
     }
 
     /**
-     * Check if Typesense configuration has default/placeholder values
-     */
-    public static function isUsingPlaceholderConfig(): bool
-    {
-        $apiKey = config('scout.typesense.client-settings.api_key');
-
-        return in_array($apiKey, ['xyz', 'xyza'], true);
-    }
-
-    /**
-     * Get a warning message if using placeholder configuration
+     * Get a warning message if Typesense is not configured
      */
     public static function getConfigWarning(): ?string
     {
-        if (self::isUsingPlaceholderConfig()) {
-            return 'Typesense is using placeholder API key. Search functionality will use database fallback. Configure TYPESENSE_API_KEY for full search features.';
+        if (! self::isConfigured()) {
+            return 'Typesense API key is not configured. Search functionality will use database fallback. Configure TYPESENSE_API_KEY for full search features.';
         }
 
         return null;

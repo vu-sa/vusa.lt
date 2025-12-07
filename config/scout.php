@@ -118,7 +118,7 @@ return [
 
     'typesense' => [
         'client-settings' => [
-            'api_key' => env('TYPESENSE_API_KEY', 'xyz'),
+            'api_key' => env('TYPESENSE_API_KEY'),
             'search_only_key' => env('TYPESENSE_SEARCH_ONLY_KEY'),
             'nodes' => [
                 [

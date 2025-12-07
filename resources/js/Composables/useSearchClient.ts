@@ -29,7 +29,7 @@ export const useSearchClient = () => {
     const page = usePage()
     const typesenseConfig = page.props.typesenseConfig as TypesenseConfig
 
-    if (!typesenseConfig?.apiKey || ['xyz', 'xyza'].includes(typesenseConfig.apiKey)) {
+    if (!typesenseConfig?.apiKey) {
       initializationError.value = 'Typesense not configured - document search unavailable'
       return null
     }

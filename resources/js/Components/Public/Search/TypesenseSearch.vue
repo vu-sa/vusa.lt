@@ -310,8 +310,7 @@ const handleUpdateContentTypeResults = (
 const getTypesenseConfig = computed((): TypesenseConfig | null => {
   const typesenseConfig = page.props.typesenseConfig as any
   
-  if (typesenseConfig?.apiKey && 
-      !['xyz', 'xyza'].includes(typesenseConfig.apiKey)) {
+  if (typesenseConfig?.apiKey) {
     return typesenseConfig
   }
   return null

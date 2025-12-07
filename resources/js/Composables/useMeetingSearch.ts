@@ -139,7 +139,7 @@ export const useMeetingSearch = (): MeetingSearchController => {
     const page = usePage()
     const typesenseConfig = page.props.typesenseConfig as any
 
-    if (!typesenseConfig?.apiKey || ['xyz', 'xyza'].includes(typesenseConfig.apiKey)) {
+    if (!typesenseConfig?.apiKey) {
       console.warn('Typesense not configured - meeting search unavailable')
       return null
     }

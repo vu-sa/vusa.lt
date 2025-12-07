@@ -35,12 +35,12 @@ test('typesense manager detects proper configuration', function () {
     config(['scout.typesense.client-settings.api_key' => 'test-api-key-123']);
     expect(TypesenseManager::isConfigured())->toBeTrue();
 
-    // With default 'xyz' API key, should not be configured
-    config(['scout.typesense.client-settings.api_key' => 'xyz']);
-    expect(TypesenseManager::isConfigured())->toBeFalse();
-
     // With empty API key, should not be configured
     config(['scout.typesense.client-settings.api_key' => '']);
+    expect(TypesenseManager::isConfigured())->toBeFalse();
+
+    // With null API key, should not be configured
+    config(['scout.typesense.client-settings.api_key' => null]);
     expect(TypesenseManager::isConfigured())->toBeFalse();
 });
 

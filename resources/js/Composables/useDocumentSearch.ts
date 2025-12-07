@@ -138,7 +138,7 @@ export const useDocumentSearch = (): DocumentSearchController => {
     const page = usePage()
     const typesenseConfig = page.props.typesenseConfig as any
 
-    if (!typesenseConfig?.apiKey || ['xyz', 'xyza'].includes(typesenseConfig.apiKey)) {
+    if (!typesenseConfig?.apiKey) {
       console.warn('Typesense not configured - document search unavailable')
       return null
     }
