@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Actions\GetTenantsForUpserts;
 use App\Http\Controllers\AdminController;
 use App\Models\Institution;
-use App\Models\Meeting;
 use App\Models\Page;
 use App\Models\Resource;
 use App\Models\Tenant;
@@ -42,41 +41,26 @@ class DashboardController extends AdminController
 
     public function atstovavimas()
     {
+        // Get basic user info with duty institution IDs only
         $user = User::query()->where('id', Auth::id())
-            ->with([
-                'current_duties.institution' => function ($query) {
-                    $query->select('id', 'name', 'tenant_id')
-                        ->with([
-                            'meetings' => function ($meetingQuery) {
-                                $meetingQuery->select('id', 'title', 'start_time')
-                                    ->with('agendaItems:id,meeting_id,student_vote,decision,student_benefit')
-                                    ->orderBy('start_time', 'desc');
-                            },
-                        ])
-                        ->with('activeCheckIns')
-                        ->with('checkIns')
-                        ->withCount([
-                            'meetings as upcoming_meetings_count' => function ($query) {
-                                $query->where('start_time', '>', now());
-                            },
-                        ])
-                        ->addSelect([
-                            'last_meeting_date' => Meeting::select('start_time')
-                                ->join('institution_meeting', 'meetings.id', '=', 'institution_meeting.meeting_id')
-                                ->whereColumn('institution_meeting.institution_id', 'institutions.id')
-                                ->orderBy('start_time', 'desc')
-                                ->limit(1),
-                            'days_since_last_meeting' => DutyService::getDaysSinceLastMeetingSql(),
-                        ]);
-                },
-            ])->first();
+            ->with(['current_duties:id,name,institution_id'])
+            ->first();
 
-        // Get ALL institutions user can access with dashboard data
+        // Get ALL institutions user can access with dashboard data (already has meetings, checkIns, etc.)
         $accessibleInstitutions = DutyService::getInstitutionsForDashboard($this->authorizer);
 
+        // Get user's institution IDs for filtering
+        $userInstitutionIds = $user->current_duties->pluck('institution_id')->filter()->unique();
+
         // Append completion_status to meetings for dashboard Gantt chart
+        // agendaItems are already eager-loaded by DutyService::getInstitutionsForDashboard
         $accessibleInstitutions->each(function ($institution) {
             $institution->meetings?->each->append('completion_status');
+            // Add active_check_in from already-loaded checkIns
+            $institution->active_check_in = $institution->checkIns
+                ?->where('end_date', '>=', now())
+                ->where('start_date', '<=', now())
+                ->first() ?? null;
         });
 
         // Get available tenants for filtering
@@ -86,56 +70,33 @@ class DashboardController extends AdminController
             })
             ->values();
 
-        // Get recent meetings for templates
-        $recentMeetings = Meeting::with(['institutions', 'agendaItems'])
-            ->whereHas('institutions', function ($query) use ($accessibleInstitutions) {
-                $query->whereIn('institutions.id', $accessibleInstitutions->pluck('id'));
+        // Derive recent meetings from already-loaded data (no separate query)
+        $sixMonthsAgo = now()->subMonths(6);
+        $recentMeetings = $accessibleInstitutions
+            ->flatMap(function ($institution) use ($sixMonthsAgo) {
+                return $institution->meetings
+                    ?->filter(fn ($meeting) => $meeting->start_time >= $sixMonthsAgo)
+                    ->map(fn ($meeting) => [
+                        'id' => (string) $meeting->id,
+                        'title' => $meeting->title,
+                        'start_time' => $meeting->start_time?->toISOString(),
+                        'institution_name' => $institution->name ?? 'Unknown',
+                        'agenda_items' => $meeting->agendaItems->map(fn ($item) => ['title' => $item->title])->toArray(),
+                    ]) ?? collect();
             })
-            ->where('start_time', '>=', now()->subMonths(6))
-            ->orderBy('start_time', 'desc')
-            ->limit(10)
-            ->get()
-            ->map(function ($meeting) {
-                return [
-                    'id' => (string) $meeting->id,
-                    'title' => $meeting->title,
-                    'start_time' => $meeting->start_time?->toISOString(),
-                    'institution_name' => $meeting->institutions->first()?->name ?? 'Unknown',
-                    'agenda_items' => $meeting->agendaItems->map(fn ($item) => ['title' => $item->title])->toArray(),
-                ];
-            });
+            ->sortByDesc('start_time')
+            ->unique('id')
+            ->take(10)
+            ->values();
+
+        // Build user's institutions from accessibleInstitutions (avoid duplicate query)
+        $userInstitutions = $accessibleInstitutions->whereIn('id', $userInstitutionIds);
 
         return $this->inertiaResponse('Admin/Dashboard/ShowAtstovavimas', [
             'user' => [
                 ...$user->toArray(),
-                'current_duties' => $user->current_duties->map(function ($duty) {
-                    $institution = $duty->institution;
-                    if ($institution) {
-                        // Calculate meeting frequency and health metrics
-                        $recentMeetings = $institution->meetings->where('start_time', '>=', now()->subMonths(3));
-                        $institution->meeting_frequency = $recentMeetings->count() > 0
-                            ? round(3 * 4 / $recentMeetings->count(), 1) // weeks between meetings
-                            : null;
-
-                        // Health score based on recent activity
-                        $healthScore = 100;
-                        if ($institution->days_since_last_meeting > 60) {
-                            $healthScore -= 40;
-                        } elseif ($institution->days_since_last_meeting > 30) {
-                            $healthScore -= 20;
-                        }
-                        if ($institution->upcoming_meetings_count === 0) {
-                            $healthScore -= 30;
-                        }
-
-                        $institution->health_score = max(0, $healthScore);
-
-                        $institution->active_check_in = $institution->activeCheckIns->first() ?? null;
-                        $institution = $institution->append('relatedInstitutions');
-
-                        // Append completion_status to each meeting for dashboard display
-                        $institution->meetings->each->append('completion_status');
-                    }
+                'current_duties' => $user->current_duties->map(function ($duty) use ($userInstitutions) {
+                    $institution = $userInstitutions->firstWhere('id', $duty->institution_id);
 
                     return [
                         ...$duty->toArray(),

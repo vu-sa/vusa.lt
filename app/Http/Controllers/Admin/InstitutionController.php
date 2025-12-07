@@ -118,6 +118,10 @@ class InstitutionController extends AdminController
             $query->with('tasks', 'comments', 'files', 'institutions.types')->orderBy('start_time', 'asc');
         }])->load('activities.causer');
 
+        // Append public visibility flags now that types are loaded (avoids N+1)
+        $institution->append('has_public_meetings');
+        $institution->meetings->each->append('is_public');
+
         // Inertia::share('layout.navBackground', $institution->image_url ?? null);
 
         return $this->inertiaResponse('Admin/People/ShowInstitution', [

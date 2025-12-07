@@ -76,6 +76,11 @@ export function useGanttChartData(
     })?.flat() ?? [];
   });
 
+  // Memoized tenant names lookup - only computed once since availableTenants is static
+  const cachedTenantNames = computed(() => {
+    return Object.fromEntries((availableTenants ?? []).map(t => [t.id, t.shortname]));
+  });
+
   // Institution name mappings for Gantt charts
   const getInstitutionNames = (institutions: AtstovavimosInstitution[]) => {
     return Object.fromEntries(
@@ -87,7 +92,7 @@ export function useGanttChartData(
   };
 
   const getTenantNames = () => {
-    return Object.fromEntries((availableTenants ?? []).map(t => [t.id, t.shortname]));
+    return cachedTenantNames.value;
   };
 
   const getInstitutionTenant = (institutions: AtstovavimosInstitution[]) => {

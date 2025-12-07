@@ -113,6 +113,9 @@ class MeetingController extends AdminController
             }
         ]);
 
+        // Append is_public now that institutions.types are loaded (avoids N+1)
+        $meeting->append('is_public');
+
         // show meeting
         return $this->inertiaResponse('Admin/Representation/ShowMeeting', [
             'meeting' => [

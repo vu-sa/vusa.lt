@@ -30,7 +30,9 @@
       </div>
     </div>
 
-    <TimelineGanttChart :institutions="formattedInstitutions" :meetings :gaps :tenant-filter :show-only-with-activity
+    <!-- Deferred Gantt chart rendering for better initial load performance -->
+    <TimelineGanttSkeleton v-if="!isReady" />
+    <TimelineGanttChart v-else :institutions="formattedInstitutions" :meetings :gaps :tenant-filter :show-only-with-activity
       :institution-names :tenant-names :institution-tenant
       :empty-message="$t('Neturi tiesiogiai priskirtų institucijų')" @create-meeting="$emit('create-meeting', $event)"
       @fullscreen="$emit('fullscreen')" />
@@ -38,7 +40,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import type {
@@ -49,6 +51,7 @@ import type {
 } from '../types';
 
 import TimelineGanttChart from './TimelineGanttChart.vue';
+import TimelineGanttSkeleton from './TimelineGanttSkeleton.vue';
 
 import { Button } from "@/Components/ui/button";
 import {
@@ -75,6 +78,14 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+
+// Deferred rendering - wait for next frame after mount to render heavy Gantt chart
+const isReady = ref(false);
+onMounted(() => {
+  requestAnimationFrame(() => {
+    isReady.value = true;
+  });
+});
 
 const emit = defineEmits<{
   'update:tenantFilter': [value: string[]];

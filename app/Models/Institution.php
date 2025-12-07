@@ -86,7 +86,8 @@ class Institution extends Model implements SharepointFileableContract
 
     protected $with = ['types'];
 
-    protected $appends = ['has_public_meetings'];
+    // Note: has_public_meetings is NOT auto-appended due to performance.
+    // Append it explicitly where needed: $institution->append('has_public_meetings')
 
     public $translatable = ['name', 'short_name', 'description', 'address'];
 

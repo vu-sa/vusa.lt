@@ -81,7 +81,7 @@
 
 <script setup lang="tsx">
 import { Head as InertiaHead } from "@inertiajs/vue3";
-import { computed, watch } from 'vue';
+import { computed } from 'vue';
 import { trans as $t } from "laravel-vue-i18n";
 
 // Layout and base components
@@ -161,20 +161,22 @@ const currentTenant = computed(() => {
   return timelineFilters.currentTenant.value;
 });
 
+// Memoized tenant institution lookups - only recompute when tenantInstitutions changes
 const tenantInstitutionNames = computed(() => {
-  return Object.fromEntries(ganttData.tenantInstitutions.value.map(i => [i.id, String(i.name ?? '')]));
+  const institutions = ganttData.tenantInstitutions.value;
+  const result: Record<string, string> = {};
+  for (const i of institutions) {
+    result[i.id as string] = String(i.name ?? '');
+  }
+  return result;
 });
 
 const tenantInstitutionTenant = computed(() => {
-  return Object.fromEntries(ganttData.tenantInstitutions.value.map(i => [i.id, String(i.tenant_id ?? '')]));
+  const institutions = ganttData.tenantInstitutions.value;
+  const result: Record<string, string> = {};
+  for (const i of institutions) {
+    result[i.id as string] = String(i.tenant_id ?? '');
+  }
+  return result;
 });
-
-// Debug watcher
-watch(
-  () => timelineFilters.selectedTenantForGantt.value,
-  (newValue, oldValue) => {
-    // Tenant selection changed
-  },
-  { deep: true, immediate: true }
-);
 </script>

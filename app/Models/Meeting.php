@@ -59,7 +59,8 @@ class Meeting extends Model implements SharepointFileableContract
         'start_time' => 'datetime',
     ];
 
-    protected $appends = ['is_public'];
+    // Note: is_public is NOT auto-appended due to performance (triggers N+1 queries).
+    // Append it explicitly where needed: $meeting->append('is_public')
 
     /**
      * Check if meeting is publicly visible based on institution types.
