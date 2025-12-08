@@ -49,6 +49,15 @@ class DashboardController extends AdminController
         // Get ALL institutions user can access with dashboard data (already has meetings, checkIns, etc.)
         $accessibleInstitutions = DutyService::getInstitutionsForDashboard($this->authorizer);
 
+        // Filter out institutions with excluded types (e.g., padalinys, pkp - institutions that don't have formal meetings)
+        $excludedTypeIds = app(\App\Settings\MeetingSettings::class)->getExcludedInstitutionTypeIds();
+        if ($excludedTypeIds->isNotEmpty()) {
+            $accessibleInstitutions = $accessibleInstitutions->filter(function ($institution) use ($excludedTypeIds) {
+                // Exclude institution if any of its types are in the excluded list
+                return $institution->types->pluck('id')->intersect($excludedTypeIds)->isEmpty();
+            })->values();
+        }
+
         // Get user's institution IDs for filtering
         $userInstitutionIds = $user->current_duties->pluck('institution_id')->filter()->unique();
 

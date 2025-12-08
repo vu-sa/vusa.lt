@@ -17,6 +17,8 @@ class UpdateMeetingSettingsRequest extends FormRequest
         return [
             'type_ids' => 'nullable|array',
             'type_ids.*' => 'integer|exists:types,id',
+            'excluded_type_ids' => 'nullable|array',
+            'excluded_type_ids.*' => 'integer|exists:types,id',
         ];
     }
 }

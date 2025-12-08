@@ -79,6 +79,7 @@ class SettingsController extends AdminController
 
         return $this->inertiaResponse('Admin/Settings/EditMeetingSettings', [
             'selected_type_ids' => $meetingSettings->getPublicMeetingInstitutionTypeIds()->toArray(),
+            'excluded_type_ids' => $meetingSettings->getExcludedInstitutionTypeIds()->toArray(),
             'available_types' => Type::query()
                 ->where('model_type', 'App\\Models\\Institution')
                 ->get(['id', 'title', 'slug'])
@@ -94,6 +95,7 @@ class SettingsController extends AdminController
         $this->authorizeSettingsAccess($settingsSettings);
 
         $meetingSettings->setPublicMeetingInstitutionTypeIds($request->input('type_ids', []));
+        $meetingSettings->setExcludedInstitutionTypeIds($request->input('excluded_type_ids', []));
         $meetingSettings->save();
 
         return $this->redirectBackWithSuccess(__('settings.messages.updated'));

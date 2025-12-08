@@ -52,6 +52,10 @@ return [
         'types_label' => 'Institution Types',
         'types_placeholder' => 'Select institution types',
         'no_types_found' => 'No institution types found.',
+        'excluded_types_title' => 'Institution Types Without Meetings',
+        'excluded_types_description' => 'Select institution types that should be hidden from the representation dashboard. Institutions of these types (e.g., unit, PKP) do not have formal meetings and should not be tracked.',
+        'excluded_types_label' => 'Excluded Institution Types',
+        'excluded_types_placeholder' => 'Select institution types to exclude',
     ],
 
     // Messages

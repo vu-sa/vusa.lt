@@ -52,6 +52,10 @@ return [
         'types_label' => 'Institucijų tipai',
         'types_placeholder' => 'Pasirinkti institucijų tipus',
         'no_types_found' => 'Institucijų tipų nerasta.',
+        'excluded_types_title' => 'Institucijų tipai be posėdžių',
+        'excluded_types_description' => 'Pasirinkite institucijų tipus, kurie neturėtų būti rodomi atstovavimo skydelyje. Šių tipų institucijos (pvz., padalinys, PKP) neturi formalių posėdžių ir neturėtų būti stebimos.',
+        'excluded_types_label' => 'Išskirti institucijų tipai',
+        'excluded_types_placeholder' => 'Pasirinkti institucijų tipus išskyrimui',
     ],
 
     // Messages
