@@ -7,7 +7,9 @@ use App\Http\Controllers\AdminController;
 use App\Http\Requests\GenerateUserPasswordRequest;
 use App\Http\Requests\MergeUsersRequest;
 use App\Http\Requests\StoreUserRequest;
+use App\Models\Comment;
 use App\Models\Duty;
+use App\Models\InstitutionCheckIn;
 use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
@@ -382,6 +384,22 @@ class UserController extends AdminController
             $mergedUser->memberships()->update(['user_id' => $keptUser->id]);
 
             $mergedUser->reservations()->update(['user_id' => $keptUser->id]);
+
+            // Transfer comments to the kept user
+            Comment::query()->where('user_id', $mergedUser->id)->update(['user_id' => $keptUser->id]);
+
+            // Transfer institution check-ins to the kept user
+            InstitutionCheckIn::query()->where('user_id', $mergedUser->id)->update(['user_id' => $keptUser->id]);
+
+            // Transfer training participations to the kept user
+            DB::table('training_user')
+                ->where('user_id', $mergedUser->id)
+                ->update(['user_id' => $keptUser->id]);
+
+            // Transfer training organizer role to the kept user
+            DB::table('trainings')
+                ->where('organizer_id', $mergedUser->id)
+                ->update(['organizer_id' => $keptUser->id]);
 
             $mergedUser->forceDelete();
         });
