@@ -284,6 +284,18 @@ const institutions = computed(() => {
   return arr
 })
 
+// Filtered meetings based on currently visible institutions
+const filteredMeetings = computed(() => {
+  const visibleIds = new Set(institutions.value)
+  return parsedMeetings.value.filter(m => visibleIds.has(m.institution_id))
+})
+
+// Filtered gaps based on currently visible institutions
+const filteredGaps = computed(() => {
+  const visibleIds = new Set(institutions.value)
+  return parsedGaps.value.filter(g => visibleIds.has(g.institution_id))
+})
+
 const nameLookup = computed(() => {
   const map = new Map<string | number, string>()
   // prefer explicitly provided names
@@ -407,10 +419,10 @@ const containerHeight = computed(() => {
   return `${Math.max(200, paddedHeight)}px` // Ensure minimum height
 })
 
-// last meeting per institution (for label meta)
+// last meeting per institution (for label meta) - based on filtered meetings
 const lastMeetingByInstitution = computed(() => {
   const m = new Map<string | number, Date>()
-  for (const it of parsedMeetings.value) {
+  for (const it of filteredMeetings.value) {
     const cur = m.get(it.institution_id)
     if (!cur || it.date > cur) m.set(it.institution_id, it.date)
   }
@@ -666,7 +678,7 @@ const render = () => {
   const bandDays = 14
   bandGroup
     .selectAll('rect')
-    .data(parsedMeetings.value)
+    .data(filteredMeetings.value)
     .enter()
     .append('rect')
     .attr('x', d => x(d3.timeDay.offset(d.date, -bandDays)))
@@ -681,7 +693,7 @@ const render = () => {
 
   gapGroup
     .selectAll('line')
-    .data(parsedGaps.value)
+    .data(filteredGaps.value)
     .enter()
     .append('line')
     .attr('x1', d => x(d.fromDate))
@@ -706,7 +718,7 @@ const render = () => {
   const dotGroup = g.append('g')
   const dots = dotGroup
     .selectAll('circle')
-    .data(parsedMeetings.value)
+    .data(filteredMeetings.value)
     .enter()
     .append('circle')
     .attr('cx', d => x(d.date))
@@ -819,7 +831,7 @@ const render = () => {
 
   // Index meetings by row for snapping
   const meetingsByRow = new Map<string | number, { x: number; d: any }[]>()
-  for (const m of parsedMeetings.value) {
+  for (const m of filteredMeetings.value) {
     const k = m.institution_id
     const arr = meetingsByRow.get(k) ?? []
     arr.push({ x: x(m.date), d: m })
@@ -829,7 +841,7 @@ const render = () => {
 
   // Index gaps (check-ins) by institution for quick lookup
   const gapsByRow = new Map<string | number, Array<{ from: Date; until: Date; note?: string }>>()
-  for (const g of parsedGaps.value) {
+  for (const g of filteredGaps.value) {
     const k = g.institution_id
     const arr = gapsByRow.get(k) ?? []
     arr.push({ from: g.fromDate, until: g.untilDate, note: g.note })

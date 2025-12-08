@@ -73,7 +73,8 @@
       @update:is-open="actions.showAllMeetingModal.value = $event" />
 
     <FullscreenGanttModal :is-open="actions.showFullscreenGantt.value" :gantt-type="actions.fullscreenGanttType.value"
-      :current-tenant="timelineFilters.currentTenant.value" :user-institutions="formatInstitutionsForUser"
+      :current-tenant="timelineFilters.currentTenant.value" :available-tenants="props.availableTenants"
+      :user-institutions="formatInstitutionsForUser"
       :user-meetings="atstovavimosData.allUserMeetings.value" :user-gaps="atstovavimosData.userGaps.value"
       :user-tenant-filter="timelineFilters.userTenantFilter.value"
       :show-only-with-activity-user="timelineFilters.showOnlyWithActivityUser.value"
@@ -82,11 +83,15 @@
       :user-institution-tenant :user-institution-has-public-meetings="userInstitutionHasPublicMeetings"
       :tenant-institutions="ganttData.formattedTenantInstitutions.value"
       :tenant-meetings="ganttData.tenantMeetings.value" :tenant-gaps="ganttData.tenantGaps.value"
+      :tenant-filter="timelineFilters.selectedTenantForGantt.value"
       :show-only-with-activity-tenant="timelineFilters.showOnlyWithActivityTenant.value"
       :show-only-with-public-meetings-tenant="timelineFilters.showOnlyWithPublicMeetingsTenant.value"
       :tenant-institution-names
       :tenant-institution-tenant :tenant-institution-has-public-meetings="tenantInstitutionHasPublicMeetings"
       :tenant-names @update:is-open="actions.showFullscreenGantt.value = $event"
+      @update:tenant-filter="timelineFilters.setSelectedTenants"
+      @update:show-only-with-activity-tenant="timelineFilters.showOnlyWithActivityTenant.value = $event"
+      @update:show-only-with-public-meetings-tenant="timelineFilters.showOnlyWithPublicMeetingsTenant.value = $event"
       @create-meeting="actions.onGapCreateMeeting" />
   </AdminContentPage>
 </template>
