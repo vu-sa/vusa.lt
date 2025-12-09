@@ -21,6 +21,10 @@ return [
             'title' => 'Meeting Display Settings',
             'description' => 'Configure which institution types have publicly visible meetings.',
         ],
+        'atstovavimas' => [
+            'title' => 'Representation Settings',
+            'description' => 'Configure which roles grant access to tenant-wide institutions in the representation dashboard.',
+        ],
         'authorization' => [
             'title' => 'Settings Authorization',
             'description' => 'Configure which role can manage system settings.',
@@ -58,6 +62,16 @@ return [
         'excluded_types_placeholder' => 'Select institution types to exclude',
     ],
 
+    // Atstovavimas settings page
+    'atstovavimas_settings' => [
+        'coordinator_roles_title' => 'Tenant Representation Coordinator Roles',
+        'coordinator_roles_description' => 'Select roles that grant access to all tenant institutions in the representation dashboard. Users with these roles will see all institutions in their tenant(s), not just those they are directly assigned to.',
+        'coordinator_roles_label' => 'Coordinator Roles',
+        'coordinator_roles_placeholder' => 'Select roles',
+        'no_roles_found' => 'No roles found.',
+        'coordinator_roles_note' => 'Note: Super Admins always see all institutions regardless of this setting. Users without these roles will only see institutions they are assigned to through duties.',
+    ],
+
     // Messages
     'messages' => [
         'updated' => 'Settings updated successfully.',
@@ -70,6 +84,7 @@ return [
         'index' => 'Settings',
         'forms' => 'Form Settings',
         'meetings' => 'Meeting Settings',
+        'atstovavimas' => 'Representation Settings',
         'authorization' => 'Authorization',
     ],
 ];

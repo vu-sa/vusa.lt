@@ -6,6 +6,7 @@ use App\Facades\Permission;
 use App\Models\Duty;
 use App\Models\Role;
 use App\Models\User;
+use App\Settings\AtstovavimasSettings;
 
 /**
  * Observer to handle permission cache invalidation when relevant models change.
@@ -22,6 +23,7 @@ class UserPermissionObserver
         }
 
         Permission::resetCache($userId);
+        AtstovavimasSettings::clearCoordinatorCache($userId);
     }
 
     /**

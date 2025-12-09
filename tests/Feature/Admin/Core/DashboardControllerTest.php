@@ -168,6 +168,15 @@ describe('atstovavimas dashboard', function () {
     });
 
     test('atstovavimas provides accessible institutions and available tenants', function () {
+        // Configure coordinator role so the admin (Communication Coordinator) can see tenant data
+        $coordinatorRole = \App\Models\Role::where('name', 'Communication Coordinator')->first();
+        if ($coordinatorRole) {
+            $settings = app(\App\Settings\AtstovavimasSettings::class);
+            $settings->coordinator_role_ids = [$coordinatorRole->id];
+            $settings->save();
+            app()->forgetInstance(\App\Settings\AtstovavimasSettings::class);
+        }
+
         $response = asUser($this->admin)->get(route('dashboard.atstovavimas'));
         
         $response->assertStatus(200)
@@ -182,6 +191,122 @@ describe('atstovavimas dashboard', function () {
                     // Should have at least one tenant and not include PKP type
                     return $collection->count() > 0 && 
                            $collection->every(fn ($tenant) => $tenant['type'] !== 'pkp');
+                })
+            );
+
+        // Clean up
+        if ($coordinatorRole) {
+            $settings = app(\App\Settings\AtstovavimasSettings::class);
+            $settings->coordinator_role_ids = [];
+            $settings->save();
+        }
+    });
+});
+
+describe('atstovavimas dashboard authorization', function () {
+    test('regular user only sees their assigned institutions', function () {
+        // Regular user without coordinator role should only see their own institution
+        $userInstitutionId = $this->user->current_duties->first()->institution_id;
+
+        asUser($this->user)
+            ->get(route('dashboard.atstovavimas'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Dashboard/ShowAtstovavimas')
+                ->has('accessibleInstitutions')
+                ->where('accessibleInstitutions', function ($institutions) use ($userInstitutionId) {
+                    $collection = collect($institutions);
+                    // Should only contain the user's assigned institution
+                    return $collection->count() >= 1 &&
+                           $collection->contains(fn ($inst) => $inst['id'] == $userInstitutionId);
+                })
+            );
+    });
+
+    test('regular user has no available tenants for tenant tab', function () {
+        // Regular user without coordinator role should not see the tenant tab
+        asUser($this->user)
+            ->get(route('dashboard.atstovavimas'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Dashboard/ShowAtstovavimas')
+                ->where('availableTenants', function ($tenants) {
+                    $collection = collect($tenants);
+                    // Regular users should have empty availableTenants
+                    return $collection->isEmpty();
+                })
+            );
+    });
+
+    test('user with coordinator role sees tenant-wide institutions', function () {
+        // First, configure a coordinator role in settings
+        $coordinatorRole = \App\Models\Role::where('name', 'Communication Coordinator')->first();
+        
+        expect($coordinatorRole)->not->toBeNull('Communication Coordinator role should exist');
+        
+        // Verify admin has this role through their duty
+        $adminDuties = $this->admin->current_duties()->with('roles')->get();
+        $adminDutyRoles = $adminDuties->pluck('roles')->flatten()->pluck('name')->toArray();
+        
+        // Debug: check duty relationships
+        expect($adminDuties)->not->toBeEmpty('Admin should have current duties');
+        expect($adminDutyRoles)->toContain('Communication Coordinator');
+        
+        // Get a fresh settings instance and update it
+        $settings = app(\App\Settings\AtstovavimasSettings::class);
+        $settings->coordinator_role_ids = [$coordinatorRole->id];
+        $settings->save();
+        
+        // Clear the cached settings instance so the controller gets fresh values
+        app()->forgetInstance(\App\Settings\AtstovavimasSettings::class);
+        
+        // Verify settings were saved correctly
+        $freshSettings = app(\App\Settings\AtstovavimasSettings::class);
+        expect($freshSettings->coordinator_role_ids)->toBe([$coordinatorRole->id]);
+        expect($freshSettings->userHasCoordinatorRole($this->admin))->toBeTrue();
+
+        // The admin (Communication Coordinator) should have available tenants
+        asUser($this->admin)
+            ->get(route('dashboard.atstovavimas'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Dashboard/ShowAtstovavimas')
+                ->has('accessibleInstitutions')
+                ->where('availableTenants', function ($tenants) {
+                    $collection = collect($tenants);
+                    // Coordinator should have available tenants for the tenant tab
+                    return $collection->isNotEmpty();
+                })
+            );
+
+        // Clean up settings
+        $settings = app(\App\Settings\AtstovavimasSettings::class);
+        $settings->coordinator_role_ids = [];
+        $settings->save();
+    });
+
+    test('super admin sees all institutions across tenants', function () {
+        $superAdmin = makeAdminUser($this->tenant);
+
+        // Create an institution in a different tenant
+        $otherTenant = Tenant::factory()->create(['type' => 'padalinys']);
+        $otherInstitution = \App\Models\Institution::factory()->for($otherTenant)->create();
+
+        asUser($superAdmin)
+            ->get(route('dashboard.atstovavimas'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Dashboard/ShowAtstovavimas')
+                ->has('accessibleInstitutions')
+                ->where('accessibleInstitutions', function ($institutions) use ($otherInstitution) {
+                    $collection = collect($institutions);
+                    // Super admin should see institutions from other tenants
+                    return $collection->contains(fn ($inst) => $inst['id'] == $otherInstitution->id);
+                })
+                ->where('availableTenants', function ($tenants) {
+                    $collection = collect($tenants);
+                    // Super admin should see all non-PKP tenants
+                    return $collection->isNotEmpty();
                 })
             );
     });
@@ -440,6 +565,15 @@ describe('tenant isolation', function () {
     beforeEach(function () {
         $this->otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->first();
         $this->otherAdmin = makeTenantUserWithRole('Communication Coordinator', $this->otherTenant);
+        
+        // Configure coordinator role so Communication Coordinators can see tenant data
+        $coordinatorRole = \App\Models\Role::where('name', 'Communication Coordinator')->first();
+        if ($coordinatorRole) {
+            $settings = app(\App\Settings\AtstovavimasSettings::class);
+            $settings->coordinator_role_ids = [$coordinatorRole->id];
+            $settings->save();
+            app()->forgetInstance(\App\Settings\AtstovavimasSettings::class);
+        }
     });
 
     test('user sees institutions and tenants based on their permissions', function () {

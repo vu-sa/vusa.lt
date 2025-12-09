@@ -21,6 +21,10 @@ return [
             'title' => 'Posėdžių rodymo nustatymai',
             'description' => 'Konfigūruokite, kurių institucijų tipų posėdžiai rodomi viešai.',
         ],
+        'atstovavimas' => [
+            'title' => 'Atstovavimo nustatymai',
+            'description' => 'Konfigūruokite, kurios rolės suteikia prieigą prie padalinio institucijų atstovavimo skydelyje.',
+        ],
         'authorization' => [
             'title' => 'Nustatymų autorizacija',
             'description' => 'Konfigūruokite, kuri rolė gali valdyti sistemos nustatymus.',
@@ -58,6 +62,16 @@ return [
         'excluded_types_placeholder' => 'Pasirinkti institucijų tipus išskyrimui',
     ],
 
+    // Atstovavimas settings page
+    'atstovavimas_settings' => [
+        'coordinator_roles_title' => 'Padalinio atstovavimo koordinatorių rolės',
+        'coordinator_roles_description' => 'Pasirinkite roles, kurios suteikia prieigą prie visų padalinio institucijų atstovavimo skydelyje. Naudotojai su šiomis rolėmis matys visas savo padalinio(-ių) institucijas, o ne tik tas, kurioms jie tiesiogiai priskirti.',
+        'coordinator_roles_label' => 'Koordinatoriaus rolės',
+        'coordinator_roles_placeholder' => 'Pasirinkti roles',
+        'no_roles_found' => 'Rolių nerasta.',
+        'coordinator_roles_note' => 'Pastaba: Super Administratoriai visada mato visas institucijas, nepaisant šio nustatymo. Naudotojai be šių rolių matys tik tas institucijas, kurioms jie priskirti per pareigas.',
+    ],
+
     // Messages
     'messages' => [
         'updated' => 'Nustatymai atnaujinti sėkmingai.',
@@ -70,6 +84,7 @@ return [
         'index' => 'Nustatymai',
         'forms' => 'Formų nustatymai',
         'meetings' => 'Posėdžių nustatymai',
+        'atstovavimas' => 'Atstovavimo nustatymai',
         'authorization' => 'Autorizacija',
     ],
 ];

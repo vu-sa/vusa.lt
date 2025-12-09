@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\AdminController;
+use App\Http\Requests\UpdateAtstovavimasSettingsRequest;
 use App\Http\Requests\UpdateFormSettingsRequest;
 use App\Http\Requests\UpdateMeetingSettingsRequest;
 use App\Http\Requests\UpdateSettingsAuthorizationRequest;
 use App\Models\Form;
 use App\Models\Role;
 use App\Models\Type;
+use App\Settings\AtstovavimasSettings;
 use App\Settings\FormSettings;
 use App\Settings\MeetingSettings;
 use App\Settings\SettingsSettings;
@@ -133,5 +135,31 @@ class SettingsController extends AdminController
         $settings->save();
 
         return $this->redirectBackWithSuccess(__('settings.messages.authorization_updated'));
+    }
+
+    /**
+     * Show atstovavimas settings.
+     */
+    public function editAtstovavimasSettings(AtstovavimasSettings $atstovavimasSettings, SettingsSettings $settingsSettings)
+    {
+        $this->authorizeSettingsAccess($settingsSettings);
+
+        return $this->inertiaResponse('Admin/Settings/EditAtstovavimasSettings', [
+            'coordinator_role_ids' => $atstovavimasSettings->getCoordinatorRoleIds()->toArray(),
+            'roles' => Role::all(['id', 'name']),
+        ]);
+    }
+
+    /**
+     * Update atstovavimas settings.
+     */
+    public function updateAtstovavimasSettings(UpdateAtstovavimasSettingsRequest $request, AtstovavimasSettings $atstovavimasSettings, SettingsSettings $settingsSettings)
+    {
+        $this->authorizeSettingsAccess($settingsSettings);
+
+        $atstovavimasSettings->coordinator_role_ids = $request->input('coordinator_role_ids', []);
+        $atstovavimasSettings->save();
+
+        return $this->redirectBackWithSuccess(__('settings.messages.updated'));
     }
 }

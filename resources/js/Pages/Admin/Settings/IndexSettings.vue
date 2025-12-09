@@ -41,6 +41,21 @@
               </CardHeader>
             </Card>
           </Link>
+
+          <!-- Atstovavimas Settings -->
+          <Link :href="route('settings.atstovavimas.edit')">
+            <Card class="h-full transition-all duration-200 hover:shadow-md hover:ring-1 hover:ring-primary/20">
+              <CardHeader>
+                <CardTitle class="flex items-center gap-2">
+                  <NIcon :component="Icons.INSTITUTION" />
+                  {{ $t('settings.pages.atstovavimas.title') }}
+                </CardTitle>
+                <CardDescription>
+                  {{ $t('settings.pages.atstovavimas.description') }}
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </Link>
         </div>
       </section>
 

@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\RelationshipService;
 use App\Services\ResourceServices\DutyService;
+use App\Settings\AtstovavimasSettings;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -77,12 +78,39 @@ class DashboardController extends AdminController
             $institution->append('meeting_periodicity_days');
         });
 
-        // Get available tenants for filtering
-        $availableTenants = collect(GetTenantsForUpserts::execute('institutions.update.padalinys', $this->authorizer))
-            ->filter(function ($tenant) {
-                return $tenant['type'] !== 'pkp';
-            })
-            ->values();
+        // Get available tenants for filtering - only for coordinators and admins
+        // Regular users should not see the tenant tab (they only see their assigned institutions)
+        $atstovavimasSettings = app(AtstovavimasSettings::class);
+        $hasGlobalAccess = $this->authorizer->forUser($user)->checkAllRoleables('duties.create.all');
+        $coordinatorTenantIds = $atstovavimasSettings->getCoordinatorTenantIds($user);
+
+        if ($hasGlobalAccess) {
+            // Super admins see all tenants
+            $availableTenants = Tenant::query()
+                ->where('type', '!=', 'pkp')
+                ->orderBy('shortname_vu')
+                ->get(['id', 'shortname', 'type'])
+                ->map(fn ($tenant) => [
+                    'id' => $tenant->id,
+                    'shortname' => __($tenant->shortname),
+                    'type' => $tenant->type,
+                ]);
+        } elseif ($coordinatorTenantIds->isNotEmpty()) {
+            // Coordinators see only tenants where they have coordinator access
+            $availableTenants = Tenant::query()
+                ->whereIn('id', $coordinatorTenantIds)
+                ->where('type', '!=', 'pkp')
+                ->orderBy('shortname_vu')
+                ->get(['id', 'shortname', 'type'])
+                ->map(fn ($tenant) => [
+                    'id' => $tenant->id,
+                    'shortname' => __($tenant->shortname),
+                    'type' => $tenant->type,
+                ]);
+        } else {
+            // Regular users don't see the tenant tab
+            $availableTenants = collect();
+        }
 
         // Derive recent meetings from already-loaded data (no separate query)
         $sixMonthsAgo = now()->subMonths(6);
