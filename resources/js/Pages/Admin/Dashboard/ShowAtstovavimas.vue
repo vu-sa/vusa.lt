@@ -34,6 +34,7 @@
           :show-only-with-public-meetings="timelineFilters.showOnlyWithPublicMeetingsUser.value"
           :institution-names="userInstitutionNames" :tenant-names :institution-tenant="userInstitutionTenant"
           :institution-has-public-meetings="userInstitutionHasPublicMeetings"
+          :institution-periodicity="userInstitutionPeriodicity"
           :duty-members="userDutyMembers" :inactive-periods="userInactivePeriods"
           :show-duty-members="timelineFilters.showDutyMembersUser.value"
           @update:tenant-filter="timelineFilters.userTenantFilter.value = $event"
@@ -53,6 +54,7 @@
           :show-only-with-public-meetings="timelineFilters.showOnlyWithPublicMeetingsTenant.value"
           :institution-names="tenantInstitutionNames" :tenant-names :institution-tenant="tenantInstitutionTenant"
           :institution-has-public-meetings="tenantInstitutionHasPublicMeetings"
+          :institution-periodicity="tenantInstitutionPeriodicity"
           :duty-members="ganttData.tenantDutyMembers.value" :inactive-periods="ganttData.tenantInactivePeriods.value"
           :show-duty-members="timelineFilters.showDutyMembersTenant.value"
           :is-hidden="actions.showFullscreenGantt.value"
@@ -75,6 +77,7 @@
       :show-only-with-public-meetings-user="timelineFilters.showOnlyWithPublicMeetingsUser.value"
       :user-institution-names
       :user-institution-tenant :user-institution-has-public-meetings="userInstitutionHasPublicMeetings"
+      :user-institution-periodicity="userInstitutionPeriodicity"
       :user-duty-members="userDutyMembers" :user-inactive-periods="userInactivePeriods"
       :show-duty-members-user="timelineFilters.showDutyMembersUser.value"
       :tenant-institutions="ganttData.formattedTenantInstitutions.value"
@@ -84,6 +87,7 @@
       :show-only-with-public-meetings-tenant="timelineFilters.showOnlyWithPublicMeetingsTenant.value"
       :tenant-institution-names
       :tenant-institution-tenant :tenant-institution-has-public-meetings="tenantInstitutionHasPublicMeetings"
+      :tenant-institution-periodicity="tenantInstitutionPeriodicity"
       :tenant-duty-members="ganttData.tenantDutyMembers.value" :tenant-inactive-periods="ganttData.tenantInactivePeriods.value"
       :show-duty-members-tenant="timelineFilters.showDutyMembersTenant.value"
       :tenant-names @update:is-open="actions.showFullscreenGantt.value = $event"
@@ -219,6 +223,10 @@ const userInstitutionHasPublicMeetings = computed(() => {
   return ganttData.getInstitutionHasPublicMeetings(atstovavimosData.institutions.value);
 });
 
+const userInstitutionPeriodicity = computed(() => {
+  return ganttData.getInstitutionPeriodicity(atstovavimosData.institutions.value);
+});
+
 // User duty members and inactive periods
 const userDutyMembers = computed(() => {
   return ganttData.getDutyMembersFromInstitutions(atstovavimosData.institutions.value);
@@ -262,5 +270,9 @@ const tenantInstitutionHasPublicMeetings = computed(() => {
     result[i.id as string] = Boolean((i as any).has_public_meetings);
   }
   return result;
+});
+
+const tenantInstitutionPeriodicity = computed(() => {
+  return ganttData.getInstitutionPeriodicity(ganttData.tenantInstitutions.value);
 });
 </script>

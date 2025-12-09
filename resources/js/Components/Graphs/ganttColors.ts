@@ -25,6 +25,7 @@ export interface GanttColors {
   safetyBandStart: string;
   safetyBandMid: string;
   safetyBandEnd: string;
+  safetyBandFlat: string;
   
   // Today line
   todayLine: string;
@@ -64,6 +65,9 @@ export interface GanttColors {
   // Month headers
   monthHeaderBg: string;
   monthHeaderText: string;
+  
+  // Axis background (solid, for sticky header)
+  axisBg: string;
 }
 
 /**
@@ -84,6 +88,7 @@ export const lightModeColors: GanttColors = {
   safetyBandStart: 'oklch(0.696 0.17 162.48 / 0%)', // emerald-500/0%
   safetyBandMid: 'oklch(0.696 0.17 162.48 / 18%)', // emerald-500/18%
   safetyBandEnd: 'oklch(0.696 0.17 162.48 / 0%)', // emerald-500/0%
+  safetyBandFlat: 'oklch(0.696 0.17 162.48 / 12%)', // emerald-500/12% - flat low-opacity green
   
   // Today line - prominent blue
   todayLine: 'oklch(0.623 0.214 259.815 / 80%)', // blue-500/80%
@@ -123,6 +128,9 @@ export const lightModeColors: GanttColors = {
   // Month headers
   monthHeaderBg: 'oklch(0.968 0.007 247.896 / 90%)', // slate-50/90%
   monthHeaderText: 'oklch(0.446 0.043 257.281)', // slate-600
+  
+  // Axis background (solid, for sticky header)
+  axisBg: 'oklch(1 0 0)', // white
 };
 
 /**
@@ -143,6 +151,7 @@ export const darkModeColors: GanttColors = {
   safetyBandStart: 'oklch(0.65 0.12 163.223 / 0%)', // emerald dimmed/0%
   safetyBandMid: 'oklch(0.65 0.12 163.223 / 8%)', // emerald dimmed/8%
   safetyBandEnd: 'oklch(0.65 0.12 163.223 / 0%)', // emerald dimmed/0%
+  safetyBandFlat: 'oklch(0.65 0.12 163.223 / 6%)', // emerald dimmed/6% - flat low-opacity green
   
   // Today line - subtle blue
   todayLine: 'oklch(0.65 0.12 254.624 / 60%)', // blue-400 dimmed/60%
@@ -182,6 +191,9 @@ export const darkModeColors: GanttColors = {
   // Month headers
   monthHeaderBg: 'oklch(0.274 0.006 286.033 / 80%)', // zinc-800/80%
   monthHeaderText: 'oklch(0.705 0.015 286.067)', // zinc-400
+  
+  // Axis background (solid, for sticky header)
+  axisBg: 'oklch(0.21 0.006 285.885)', // zinc-900
 };
 
 /**

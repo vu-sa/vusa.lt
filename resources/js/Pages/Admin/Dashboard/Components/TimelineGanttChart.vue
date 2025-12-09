@@ -14,6 +14,7 @@
         :tenant-names="tenantNames"
         :institution-tenant="institutionTenant"
         :institution-has-public-meetings="institutionHasPublicMeetings"
+        :institution-periodicity="institutionPeriodicity"
         :tenant-filter="tenantFilter"
         :show-legend="true"
         :show-today-line="true"
@@ -69,6 +70,8 @@ interface Props {
   dutyMembers?: GanttDutyMember[];
   inactivePeriods?: InactivePeriod[];
   showDutyMembers?: boolean;
+  // Meeting periodicity per institution (days between expected meetings)
+  institutionPeriodicity?: Record<string | number, number>;
 }
 
 const props = defineProps<Props>();

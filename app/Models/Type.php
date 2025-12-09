@@ -63,6 +63,7 @@ class Type extends Model implements SharepointFileableContract
     protected $casts = [
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'extra_attributes' => 'array',
     ];
 
     public function getActivitylogOptions(): LogOptions
@@ -163,5 +164,29 @@ class Type extends Model implements SharepointFileableContract
         } elseif (Str::contains($this->model_type, 'Meeting')) {
             return $this->model_type::select('id', 'title')->with('tenants')->orderBy('title')->get();
         }
+    }
+
+    /**
+     * Scope to filter types for Institutions only.
+     */
+    public function scopeForInstitutions($query)
+    {
+        return $query->where('model_type', Institution::class);
+    }
+
+    /**
+     * Scope to filter types for Duties only.
+     */
+    public function scopeForDuties($query)
+    {
+        return $query->where('model_type', Duty::class);
+    }
+
+    /**
+     * Scope to filter types for Meetings only.
+     */
+    public function scopeForMeetings($query)
+    {
+        return $query->where('model_type', Meeting::class);
     }
 }

@@ -73,6 +73,8 @@ class DashboardController extends AdminController
                 ->first() ?? null;
             // Append has_public_meetings for UI indicators (uses already-loaded types relation)
             $institution->append('has_public_meetings');
+            // Append meeting_periodicity_days for overdue warnings (inherits from types, defaults to 30)
+            $institution->append('meeting_periodicity_days');
         });
 
         // Get available tenants for filtering

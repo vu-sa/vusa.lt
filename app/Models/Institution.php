@@ -39,6 +39,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string|null $instagram_url
  * @property int|null $tenant_id
  * @property int $is_active
+ * @property int|null $meeting_periodicity_days
  * @property string $contacts_layout
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
@@ -53,6 +54,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Duty> $duties
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\SharepointFile> $files
  * @property-read bool $has_public_meetings
+ * @property-read int $meeting_periodicity_days Meeting periodicity in days (from types or default 30)
  * @property-read mixed $maybe_short_name
  * @property-read mixed $related_institutions
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Relationship> $incomingRelationships
@@ -218,6 +220,35 @@ class Institution extends Model implements SharepointFileableContract
         }
 
         return $this->types->pluck('id')->intersect($allowedTypeIds)->isNotEmpty();
+    }
+
+    /**
+     * Get meeting periodicity in days.
+     * Priority: 1) Institution override, 2) Minimum from assigned types, 3) Default 30 days.
+     */
+    public function getMeetingPeriodicityDaysAttribute(): int
+    {
+        // 1) Use institution-level override if set
+        if ($this->attributes['meeting_periodicity_days'] ?? null) {
+            return (int) $this->attributes['meeting_periodicity_days'];
+        }
+
+        // 2) Inherit from types - use minimum periodicity if multiple types have it set
+        if (! $this->relationLoaded('types')) {
+            $this->load('types');
+        }
+
+        $periodicities = $this->types
+            ->map(fn ($type) => $type->extra_attributes['meeting_periodicity_days'] ?? null)
+            ->filter()
+            ->values();
+
+        if ($periodicities->isNotEmpty()) {
+            return (int) $periodicities->min();
+        }
+
+        // 3) Default to 30 days
+        return 30;
     }
 
     public function availableTrainings()

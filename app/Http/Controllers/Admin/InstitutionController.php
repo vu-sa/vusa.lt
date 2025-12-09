@@ -120,6 +120,7 @@ class InstitutionController extends AdminController
 
         // Append public visibility flags now that types are loaded (avoids N+1)
         $institution->append('has_public_meetings');
+        $institution->append('meeting_periodicity_days');
         $institution->meetings->each->append('is_public');
 
         // Inertia::share('layout.navBackground', $institution->image_url ?? null);

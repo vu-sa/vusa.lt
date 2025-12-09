@@ -107,6 +107,14 @@ export function useGanttChartData(
     return Object.fromEntries((institutions ?? []).map(i => [String(i.id), Boolean(i.has_public_meetings)]));
   };
 
+  // Get meeting periodicity lookup for institutions (days between expected meetings)
+  const getInstitutionPeriodicity = (institutions: AtstovavimosInstitution[]) => {
+    return Object.fromEntries((institutions ?? []).map(i => [
+      String(i.id), 
+      (i as any).meeting_periodicity_days ?? 30
+    ]));
+  };
+
   // Format institutions for Gantt component
   const formatInstitutionsForGantt = (institutions: AtstovavimosInstitution[]): GanttInstitution[] => {
     return institutions.map(i => ({
@@ -354,6 +362,7 @@ export function useGanttChartData(
     getTenantNames,
     getInstitutionTenant,
     getInstitutionHasPublicMeetings,
+    getInstitutionPeriodicity,
     formatInstitutionsForGantt,
     getDutyMembersFromInstitutions,
     getInactivePeriodsFromInstitutions

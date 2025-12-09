@@ -96,19 +96,30 @@ export function useAtstovavimosData(
       !Array.isArray(inst?.meetings) || inst.meetings.length === 0
     );
     
-    // Find institutions with oldest last meetings
+    // Find institutions with oldest last meetings and compare against periodicity
     const institutionsWithOldMeetings = institutionsWithMeetings
       .map((inst: AtstovavimosInstitution) => {
         const lastMeeting = (inst.meetings as any[]).sort((a: any, b: any) => 
           new Date(b.start_time).getTime() - new Date(a.start_time).getTime()
         )[0];
+        const daysSinceLastMeeting = Math.floor((new Date().getTime() - new Date(lastMeeting.start_time).getTime()) / (1000 * 60 * 60 * 24));
+        // Get periodicity from institution (accessor handles inheritance from types, defaults to 30)
+        const periodicity = (inst as any).meeting_periodicity_days ?? 30;
         return {
           ...inst,
           lastMeetingDate: new Date(lastMeeting.start_time),
-          daysSinceLastMeeting: Math.floor((new Date().getTime() - new Date(lastMeeting.start_time).getTime()) / (1000 * 60 * 60 * 24))
+          daysSinceLastMeeting,
+          periodicity,
+          isOverdue: daysSinceLastMeeting > periodicity
         };
       })
-      .sort((a, b) => b.daysSinceLastMeeting - a.daysSinceLastMeeting)
+      // Sort by how overdue they are (days over periodicity), then by days since last meeting
+      .sort((a, b) => {
+        const aOverdue = a.daysSinceLastMeeting - a.periodicity;
+        const bOverdue = b.daysSinceLastMeeting - b.periodicity;
+        if (aOverdue !== bOverdue) return bOverdue - aOverdue;
+        return b.daysSinceLastMeeting - a.daysSinceLastMeeting;
+      })
       .slice(0, 2);
     
     return {

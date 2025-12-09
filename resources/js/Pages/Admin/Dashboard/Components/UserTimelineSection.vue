@@ -25,6 +25,7 @@
     <TimelineGanttChart v-else :institutions="formattedInstitutions" :meetings :gaps :tenant-filter :show-only-with-activity
       :show-only-with-public-meetings
       :institution-names :tenant-names :institution-tenant :institution-has-public-meetings="institutionHasPublicMeetings"
+      :institution-periodicity="institutionPeriodicity"
       :duty-members :inactive-periods :show-duty-members :day-width="dayWidthPx"
       :empty-message="$t('Neturi tiesiogiai priskirtų institucijų')" @create-meeting="$emit('create-meeting', $event)"
       @fullscreen="$emit('fullscreen')" @update:day-width="emit('update:dayWidth', $event)" />
@@ -66,6 +67,8 @@ interface Props {
   dayWidthPx?: number;
   inactivePeriods?: InactivePeriod[];
   showDutyMembers?: boolean;
+  // Meeting periodicity per institution (days between expected meetings)
+  institutionPeriodicity?: Record<string | number, number>;
 }
 
 const props = defineProps<Props>();

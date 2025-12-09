@@ -155,6 +155,16 @@
       <NFormItem label="Techninė žymė">
         <NInput v-model:value="form.alias" type="text" placeholder="vu-sa" />
       </NFormItem>
+      <NFormItem>
+        <template #label>
+          <span class="inline-flex items-center gap-1">
+            Susitikimų periodiškumas (dienomis)
+            <InfoPopover>Perrašo tipo nustatymą. Jei nenurodyta, naudojamas tipo arba numatytasis 30 dienų nustatymas.</InfoPopover>
+          </span>
+        </template>
+        <NInputNumber v-model:value="form.meeting_periodicity_days" :min="1" :max="365" clearable
+          placeholder="30" />
+      </NFormItem>
     </FormElement>
   </AdminForm>
 </template>
@@ -164,6 +174,7 @@ import { computed, ref } from "vue";
 import { router, useForm } from "@inertiajs/vue3";
 
 import FormElement from "./FormElement.vue";
+import InfoPopover from "../Buttons/InfoPopover.vue";
 import InfoText from "../SmallElements/InfoText.vue";
 import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";
 import SimpleLocaleButton from "../Buttons/SimpleLocaleButton.vue";

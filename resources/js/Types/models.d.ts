@@ -1048,6 +1048,7 @@ declare global {
       description?: Array<unknown> | null
       model_type?: string | null
       slug?: string | null
+      extra_attributes?: { meeting_periodicity_days?: number | null } | null
       created_at: string
       updated_at: string
       deleted_at?: string | null
@@ -1256,6 +1257,7 @@ declare global {
       instagram_url?: string | null
       tenant_id?: number | null
       is_active: boolean
+      meeting_periodicity_days?: number | null
       contacts_layout: string
       created_at: string
       updated_at: string
@@ -1264,6 +1266,7 @@ declare global {
       related_institutions: unknown
       maybe_short_name: unknown
       has_public_meetings: boolean
+      meeting_periodicity_days: number
       translations: unknown
       // relations
       duties?: Duty[]

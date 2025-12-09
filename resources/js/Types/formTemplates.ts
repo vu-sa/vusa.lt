@@ -82,7 +82,7 @@ export const newsTemplate = {
 
 export const typeTemplate: Pick<
   App.Entities.Type,
-  "title" | "slug" | "description" | "model_type" | "parent_id"
+  "title" | "slug" | "description" | "model_type" | "parent_id" | "extra_attributes"
 > = {
   title: { lt: '', en: '' },
   slug: "",
@@ -90,6 +90,7 @@ export const typeTemplate: Pick<
   model_type: "",
   parent_id: null,
   roles: [],
+  extra_attributes: {},
 };
 
 export const tagTemplate: Pick<

@@ -30,6 +30,7 @@
     <TimelineGanttSkeleton v-if="!isReady || isHidden" />
     <TimelineGanttChart v-else-if="!isHidden" :institutions="formattedInstitutions" :meetings :gaps :tenant-filter="selectedTenantId"
       :show-only-with-activity :show-only-with-public-meetings :institution-names :tenant-names :institution-tenant :institution-has-public-meetings="institutionHasPublicMeetings"
+      :institution-periodicity="institutionPeriodicity"
       :duty-members :inactive-periods :show-duty-members
       :empty-message="$t('Šiame padalinyje nėra institucijų')" @create-meeting="$emit('create-meeting', $event)"
       @fullscreen="$emit('fullscreen')" />
@@ -73,6 +74,8 @@ interface Props {
   showDutyMembers?: boolean;
   // When true, hide the Gantt chart to save rendering resources (e.g., when fullscreen modal is open)
   isHidden?: boolean;
+  // Meeting periodicity per institution (days between expected meetings)
+  institutionPeriodicity?: Record<string | number, number>;
 }
 
 const props = defineProps<Props>();

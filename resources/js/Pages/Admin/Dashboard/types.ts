@@ -59,6 +59,8 @@ export interface InstitutionInsights {
   withOldMeetings: Array<AtstovavimosInstitution & {
     lastMeetingDate: Date;
     daysSinceLastMeeting: number;
+    periodicity: number;
+    isOverdue: boolean;
   }>;
 }
 

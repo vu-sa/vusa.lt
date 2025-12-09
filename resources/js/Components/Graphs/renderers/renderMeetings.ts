@@ -44,6 +44,8 @@ export interface MeetingRenderContext {
   tooltipManager?: GanttTooltipManager
   /** Callback when create-meeting is triggered */
   onCreateMeeting?: (payload: { institution_id: string | number; suggestedAt: Date }) => void
+  /** Meeting periodicity per institution (days between expected meetings) */
+  institutionPeriodicity?: Record<string | number, number>
 }
 
 // Fluent UI people-team-20-filled SVG path (viewBox 0 0 20 20)
@@ -58,21 +60,32 @@ const ICON_SIZE = 14
  * Render meeting icons
  */
 export function renderMeetings(ctx: MeetingRenderContext): void {
-  const { g, container, x, meetings, colors, rowCenter, labelFor, interactive, tooltipManager } = ctx
+  const { g, container, x, meetings, colors, rowCenter, labelFor, interactive, tooltipManager, institutionPeriodicity } = ctx
 
-  // Safety bands around meetings (±14 days green glow)
-  const bandDays = 14
+  // Default periodicity in days (half for each side of the meeting)
+  const defaultPeriodicity = 30
+
+  // Safety bands around meetings - use half of institution's periodicity for each side
+  // This creates a "safe zone" where meetings are expected
   g.append('g')
     .attr('class', 'safety-bands')
     .selectAll('rect')
     .data(meetings)
     .enter()
     .append('rect')
-    .attr('x', d => x(d3.timeDay.offset(d.date, -bandDays)))
+    .attr('x', d => {
+      const periodicity = institutionPeriodicity?.[d.institution_id] ?? defaultPeriodicity
+      const bandDays = Math.floor(periodicity / 2)
+      return x(d3.timeDay.offset(d.date, -bandDays))
+    })
     .attr('y', d => ctx.rowTop(d.institution_id))
-    .attr('width', d => Math.max(2, x(d3.timeDay.offset(d.date, bandDays)) - x(d3.timeDay.offset(d.date, -bandDays))))
+    .attr('width', d => {
+      const periodicity = institutionPeriodicity?.[d.institution_id] ?? defaultPeriodicity
+      const bandDays = Math.floor(periodicity / 2)
+      return Math.max(2, x(d3.timeDay.offset(d.date, bandDays)) - x(d3.timeDay.offset(d.date, -bandDays)))
+    })
     .attr('height', d => ctx.rowHeightFor(d.institution_id))
-    .attr('fill', 'url(#safeBand)')
+    .attr('fill', colors.safetyBandFlat ?? colors.safetyBandMid)
     .attr('stroke', 'transparent')
 
   // Meeting icons group

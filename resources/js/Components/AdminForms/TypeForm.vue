@@ -84,6 +84,24 @@
           " />
       </NFormItem>
     </FormElement>
+    <FormElement v-if="form.model_type === 'App\\Models\\Institution'">
+      <template #title>
+        Institucijos nustatymai
+      </template>
+      <template #description>
+        Nustatymai, taikomi visoms šio tipo institucijoms.
+      </template>
+      <NFormItem>
+        <template #label>
+          <span class="inline-flex items-center gap-1">
+            Susitikimų periodiškumas (dienomis)
+            <InfoPopover>Rekomenduojamas laikotarpis tarp susitikimų. Jei nenurodyta, naudojamas 30 dienų numatymas.</InfoPopover>
+          </span>
+        </template>
+        <NInputNumber v-model:value="extraAttributesPeriodicityDays" :min="1" :max="365" clearable
+          placeholder="30" />
+      </NFormItem>
+    </FormElement>
     <FormElement no-divider>
       <template #title>
         Kiti nustatymai
@@ -135,8 +153,28 @@ const props = defineProps<{
 const locale = ref("lt");
 
 const form = props.rememberKey
-  ? useForm(props.rememberKey, props.type)
-  : useForm(props.type);
+  ? useForm(props.rememberKey, {
+      ...props.type,
+      extra_attributes: props.type.extra_attributes ?? {},
+    })
+  : useForm({
+      ...props.type,
+      extra_attributes: props.type.extra_attributes ?? {},
+    });
+
+// Computed property to handle extra_attributes.meeting_periodicity_days
+const extraAttributesPeriodicityDays = computed({
+  get: () => form.extra_attributes?.meeting_periodicity_days ?? null,
+  set: (value) => {
+    if (!form.extra_attributes) {
+      form.extra_attributes = {};
+    }
+    form.extra_attributes = {
+      ...form.extra_attributes,
+      meeting_periodicity_days: value,
+    };
+  },
+});
 
 // map e.g. form.institutions to id only, so it's used in transfer values
 

@@ -112,6 +112,23 @@
           {{ $t('šiais metais') }}
         </div>
       </div>
+
+      <!-- Meeting Periodicity Status -->
+      <div class="bg-zinc-50 dark:bg-zinc-800/50 rounded-lg p-4">
+        <div class="flex items-center gap-2 mb-2">
+          <Repeat class="h-4 w-4" :class="periodicityStatusColor" />
+          <span class="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+            {{ $t('Periodiškumas') }}
+          </span>
+        </div>
+        <div class="text-sm" :class="periodicityStatusColor">
+          {{ $t('Kas') }} {{ institution.meeting_periodicity_days }} {{ $t('d.') }}
+        </div>
+        <div v-if="daysSinceLastMeeting !== null" class="text-xs" :class="isOverdue ? 'text-red-500 dark:text-red-400' : 'text-zinc-500 dark:text-zinc-400'">
+          {{ daysSinceLastMeeting }} {{ $t('d. nuo paskutinio') }}
+          <span v-if="isOverdue" class="font-medium">({{ $t('vėluoja') }})</span>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -119,7 +136,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Calendar, Clock, Users, BarChart3, Globe } from 'lucide-vue-next';
+import { Calendar, Clock, Users, BarChart3, Globe, Repeat } from 'lucide-vue-next';
 
 import { Button } from '@/Components/ui/button';
 import { Badge } from '@/Components/ui/badge';
@@ -155,6 +172,29 @@ const lastMeeting = computed(() => {
   if (!props.meetings.length) return null;
   return [...props.meetings]
     .sort((a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime())[0];
+});
+
+// Periodicity status calculations
+const daysSinceLastMeeting = computed(() => {
+  if (!lastMeeting.value) return null;
+  const date = new Date(lastMeeting.value.start_time);
+  const now = new Date();
+  return Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+});
+
+const isOverdue = computed(() => {
+  if (daysSinceLastMeeting.value === null) return false;
+  const periodicity = props.institution.meeting_periodicity_days ?? 30;
+  return daysSinceLastMeeting.value > periodicity;
+});
+
+const periodicityStatusColor = computed(() => {
+  if (daysSinceLastMeeting.value === null) return 'text-zinc-500';
+  const periodicity = props.institution.meeting_periodicity_days ?? 30;
+  const ratio = daysSinceLastMeeting.value / periodicity;
+  if (ratio > 1) return 'text-red-500 dark:text-red-400';
+  if (ratio > 0.8) return 'text-amber-500 dark:text-amber-400';
+  return 'text-green-500 dark:text-green-400';
 });
 
 const formatRelativeTime = (dateString: string) => {

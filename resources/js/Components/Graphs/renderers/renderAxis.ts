@@ -52,6 +52,19 @@ export function renderAxis(ctx: AxisRenderContext): void {
 
   if (axisSvg.empty()) return
 
+  // Get the full width of the axis SVG
+  const svgWidth = axisSvg.attr('width') ? parseFloat(axisSvg.attr('width')) : 0
+
+  // Add a solid background rectangle to prevent content from showing through when scrolling
+  if (svgWidth > 0) {
+    axisSvg.insert('rect', ':first-child')
+      .attr('x', 0)
+      .attr('y', 0)
+      .attr('width', svgWidth)
+      .attr('height', axisHeight)
+      .attr('fill', colors.axisBg)
+  }
+
   const axisG = axisSvg.append('g')
     .attr('transform', `translate(${marginLeft},${axisHeight - 2})`)
 

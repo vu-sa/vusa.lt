@@ -157,13 +157,22 @@
             }}
           </div>
         </div>
+        <div v-else-if="overdueInstitution" class="text-red-600 dark:text-red-400">
+          <div class="font-medium">
+            {{ $t('Vėluoja susitikimas') }}:
+          </div>
+          <div>
+            {{ overdueInstitution.name }}
+            ({{ overdueInstitution.daysSinceLastMeeting }} {{ $t('d.') }} / {{ overdueInstitution.periodicity }} {{ $t('d. rekomenduojama') }})
+          </div>
+        </div>
         <div v-else-if="institutionsInsights.withOldMeetings.length > 0" class="text-amber-600 dark:text-amber-400">
           <div class="font-medium">
             {{ $t('Seniausi susitikimai') }}:
           </div>
           <div>
             {{ institutionsInsights.withOldMeetings[0].name }}
-            ({{ institutionsInsights.withOldMeetings[0].daysSinceLastMeeting }} {{ $t('d.') }})
+            ({{ institutionsInsights.withOldMeetings[0].daysSinceLastMeeting }} {{ $t('d.') }} / {{ institutionsInsights.withOldMeetings[0].periodicity }} {{ $t('d.') }})
           </div>
         </div>
         <div v-else class="text-emerald-600 dark:text-emerald-400">
@@ -178,6 +187,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { NNumberAnimation } from 'naive-ui';
@@ -198,6 +208,11 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+
+// Find the first overdue institution (where days since last meeting exceeds periodicity)
+const overdueInstitution = computed(() => {
+  return props.institutionsInsights.withOldMeetings.find(inst => inst.isOverdue) ?? null;
+});
 
 const emit = defineEmits<{
   'show-all-meetings': [];

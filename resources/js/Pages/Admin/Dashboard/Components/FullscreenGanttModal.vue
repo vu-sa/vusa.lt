@@ -60,6 +60,7 @@
             :tenant-names="tenantNames"
             :institution-tenant="userInstitutionTenant"
             :institution-has-public-meetings="userInstitutionHasPublicMeetings"
+            :institution-periodicity="userInstitutionPeriodicity"
             :duty-members="userDutyMembers"
             :inactive-periods="userInactivePeriods"
             :show-duty-members="showDutyMembersUser"
@@ -81,6 +82,7 @@
             :tenant-names="tenantNames"
             :institution-tenant="tenantInstitutionTenant"
             :institution-has-public-meetings="tenantInstitutionHasPublicMeetings"
+            :institution-periodicity="tenantInstitutionPeriodicity"
             :duty-members="tenantDutyMembers"
             :inactive-periods="tenantInactivePeriods"
             :show-duty-members="showDutyMembersTenant"
@@ -138,6 +140,7 @@ interface Props {
   userInstitutionNames: Record<string, string>;
   userInstitutionTenant: Record<string, string>;
   userInstitutionHasPublicMeetings?: Record<string, boolean>;
+  userInstitutionPeriodicity?: Record<string | number, number>;
   userDutyMembers?: GanttDutyMember[];
   userInactivePeriods?: InactivePeriod[];
   showDutyMembersUser?: boolean;
@@ -152,6 +155,7 @@ interface Props {
   tenantInstitutionNames: Record<string, string>;
   tenantInstitutionTenant: Record<string, string>;
   tenantInstitutionHasPublicMeetings?: Record<string, boolean>;
+  tenantInstitutionPeriodicity?: Record<string | number, number>;
   tenantDutyMembers?: GanttDutyMember[];
   tenantInactivePeriods?: InactivePeriod[];
   showDutyMembersTenant?: boolean;

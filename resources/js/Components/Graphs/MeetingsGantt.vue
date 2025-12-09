@@ -263,6 +263,8 @@ const props = withDefaults(defineProps<{
   dutyMembers?: Array<{ institution_id: string | number, user: { id: string, name: string, profile_photo_path?: string | null }, start_date: string | Date, end_date?: string | Date | null }>
   inactivePeriods?: Array<{ institution_id: string | number, from: string | Date, until: string | Date }>
   showDutyMembers?: boolean
+  // Meeting periodicity per institution (days between expected meetings)
+  institutionPeriodicity?: Record<string | number, number>
 }>(), {
   daysBefore: 60,
   daysAfter: 60,
@@ -813,6 +815,7 @@ const render = () => {
     labelFor,
     interactive: true,
     tooltipManager,
+    institutionPeriodicity: props.institutionPeriodicity,
   })
 
   // Duty member avatar markers using extracted renderer
