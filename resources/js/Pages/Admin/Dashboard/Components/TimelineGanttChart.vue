@@ -4,11 +4,11 @@
       <MeetingsGantt
         :meetings="meetings"
         :gaps="gaps"
-        :days-before="30"
+        :days-before="60"
         :days-after="60"
         :label-width="240"
-  v-model:detailsExpanded="detailsExpanded"
-  :expanded-row-height="56"
+        v-model:detailsExpanded="detailsExpanded"
+        :expanded-row-height="56"
         :institutions="formattedInstitutions"
         :institution-names="institutionNames"
         :tenant-names="tenantNames"
@@ -20,7 +20,10 @@
         :interactive="true"
         :show-only-with-activity="showOnlyWithActivity"
         :show-only-with-public-meetings="showOnlyWithPublicMeetings"
-  :height="effectiveHeight"
+        :duty-members="dutyMembers"
+        :inactive-periods="inactivePeriods"
+        :show-duty-members="showDutyMembers"
+        :height="effectiveHeight"
         @create-meeting="$emit('create-meeting', $event)"
         @fullscreen="$emit('fullscreen')"
         @show-legend-modal="showLegendModal = true"
@@ -44,7 +47,9 @@ import { Card, CardContent } from "@/Components/ui/card";
 import type { 
   GanttMeeting, 
   GanttInstitution, 
-  AtstovavimosGap 
+  AtstovavimosGap,
+  GanttDutyMember,
+  InactivePeriod 
 } from '../types';
 
 interface Props {
@@ -60,6 +65,10 @@ interface Props {
   institutionHasPublicMeetings?: Record<string, boolean>;
   emptyMessage: string;
   height?: string;
+  // Duty members display
+  dutyMembers?: GanttDutyMember[];
+  inactivePeriods?: InactivePeriod[];
+  showDutyMembers?: boolean;
 }
 
 const props = defineProps<Props>();

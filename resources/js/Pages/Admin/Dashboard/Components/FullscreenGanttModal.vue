@@ -19,41 +19,31 @@
             }}
           </DialogDescription>
         </div>
-        <!-- Tenant filter dropdown for tenant view -->
-        <div v-if="ganttType === 'tenant' && availableTenants.length > 0" class="flex items-center gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger as-child>
-              <Button size="sm" variant="outline">
-                {{
-                  tenantFilter.length === 0 ? $t('Visi padaliniai') :
-                    tenantFilter.length === 1 ? availableTenants.find(t => String(t.id) === tenantFilter[0])?.shortname || $t('Padalinys') :
-                      `${tenantFilter.length} ${$t('padaliniai')}`
-                }}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" class="w-64">
-              <DropdownMenuLabel>{{ $t('Padaliniai') }} ({{ tenantFilter.length }}/{{ availableTenants.length }})
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <div class="max-h-48 overflow-y-auto">
-                <DropdownMenuCheckboxItem v-for="t in availableTenants" :key="t.id"
-                  :model-value="tenantFilter.includes(String(t.id))" @update:model-value="(checked: boolean) => {
-                    toggleTenantFilter(String(t.id), checked);
-                  }" @select.prevent>
-                  {{ t.shortname }}
-                </DropdownMenuCheckboxItem>
-              </div>
-              <DropdownMenuSeparator />
-              <DropdownMenuCheckboxItem :model-value="showOnlyWithActivityTenant"
-                @update:model-value="(val: boolean) => $emit('update:showOnlyWithActivityTenant', val)" @select.prevent>
-                {{ $t('Rodyti tik aktyvius') }}
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem :model-value="showOnlyWithPublicMeetingsTenant"
-                @update:model-value="(val: boolean) => $emit('update:showOnlyWithPublicMeetingsTenant', val)" @select.prevent>
-                {{ $t('Rodyti tik viešas institucijas') }}
-              </DropdownMenuCheckboxItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+        <!-- Filter dropdown for both views -->
+        <div class="flex items-center gap-2">
+          <GanttFilterDropdown
+            v-if="ganttType === 'tenant'"
+            :tenants="availableTenants"
+            :selected-tenants="tenantFilter"
+            :show-only-with-activity="showOnlyWithActivityTenant"
+            :show-only-with-public-meetings="showOnlyWithPublicMeetingsTenant ?? false"
+            :show-duty-members="showDutyMembersTenant ?? true"
+            :show-reset="false"
+            @update:selected-tenants="handleTenantFilterUpdate"
+            @update:show-only-with-activity="(val: boolean) => emit('update:showOnlyWithActivityTenant', val)"
+            @update:show-only-with-public-meetings="(val: boolean) => emit('update:showOnlyWithPublicMeetingsTenant', val)"
+            @update:show-duty-members="(val: boolean) => emit('update:showDutyMembersTenant', val)"
+          />
+          <GanttFilterDropdown
+            v-else-if="ganttType === 'user'"
+            :show-only-with-activity="showOnlyWithActivityUser ?? false"
+            :show-only-with-public-meetings="showOnlyWithPublicMeetingsUser ?? false"
+            :show-duty-members="showDutyMembersUser ?? true"
+            :show-reset="false"
+            @update:show-only-with-activity="(val: boolean) => emit('update:showOnlyWithActivityUser', val)"
+            @update:show-only-with-public-meetings="(val: boolean) => emit('update:showOnlyWithPublicMeetingsUser', val)"
+            @update:show-duty-members="(val: boolean) => emit('update:showDutyMembersUser', val)"
+          />
         </div>
       </DialogHeader>
       
@@ -70,6 +60,9 @@
             :tenant-names="tenantNames"
             :institution-tenant="userInstitutionTenant"
             :institution-has-public-meetings="userInstitutionHasPublicMeetings"
+            :duty-members="userDutyMembers"
+            :inactive-periods="userInactivePeriods"
+            :show-duty-members="showDutyMembersUser"
             :empty-message="$t('Neturi tiesiogiai priskirtų institucijų')"
             height="100%"
             @create-meeting="$emit('create-meeting', $event)"
@@ -88,6 +81,9 @@
             :tenant-names="tenantNames"
             :institution-tenant="tenantInstitutionTenant"
             :institution-has-public-meetings="tenantInstitutionHasPublicMeetings"
+            :duty-members="tenantDutyMembers"
+            :inactive-periods="tenantInactivePeriods"
+            :show-duty-members="showDutyMembersTenant"
             :empty-message="$t('Šiame padalinyje nėra institucijų')"
             height="100%"
             @create-meeting="$emit('create-meeting', $event)"
@@ -104,7 +100,7 @@
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 
 import {
   Dialog,
@@ -113,23 +109,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/Components/ui/dialog";
-import { Button } from "@/Components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger
-} from "@/Components/ui/dropdown-menu";
 import Icons from "@/Types/Icons/filled";
 
+import GanttFilterDropdown from './GanttFilterDropdown.vue';
 import TimelineGanttChart from './TimelineGanttChart.vue';
 import type { 
   GanttMeeting, 
   GanttInstitution, 
   AtstovavimosGap,
-  AtstovavimosTenant 
+  AtstovavimosTenant,
+  GanttDutyMember,
+  InactivePeriod 
 } from '../types';
 
 interface Props {
@@ -148,6 +138,9 @@ interface Props {
   userInstitutionNames: Record<string, string>;
   userInstitutionTenant: Record<string, string>;
   userInstitutionHasPublicMeetings?: Record<string, boolean>;
+  userDutyMembers?: GanttDutyMember[];
+  userInactivePeriods?: InactivePeriod[];
+  showDutyMembersUser?: boolean;
   
   // Tenant data
   tenantInstitutions: GanttInstitution[];
@@ -159,6 +152,9 @@ interface Props {
   tenantInstitutionNames: Record<string, string>;
   tenantInstitutionTenant: Record<string, string>;
   tenantInstitutionHasPublicMeetings?: Record<string, boolean>;
+  tenantDutyMembers?: GanttDutyMember[];
+  tenantInactivePeriods?: InactivePeriod[];
+  showDutyMembersTenant?: boolean;
   
   // Shared
   tenantNames: Record<string, string>;
@@ -171,25 +167,23 @@ const emit = defineEmits<{
   'update:tenantFilter': [value: string[]];
   'update:showOnlyWithActivityTenant': [value: boolean];
   'update:showOnlyWithPublicMeetingsTenant': [value: boolean];
+  'update:showDutyMembersTenant': [value: boolean];
+  'update:showOnlyWithActivityUser': [value: boolean];
+  'update:showOnlyWithPublicMeetingsUser': [value: boolean];
+  'update:showDutyMembersUser': [value: boolean];
   'create-meeting': [payload: { institution_id: string | number, suggestedAt: Date }];
 }>();
 
-// Local state for tenant filter
+// Local state for tenant filter - synced with props
 const tenantFilter = ref<string[]>(props.tenantFilter);
 
-// Toggle tenant selection
-function toggleTenantFilter(tenantId: string, checked: boolean) {
-  const newSelection = [...tenantFilter.value];
-  if (checked) {
-    if (!newSelection.includes(tenantId)) {
-      newSelection.push(tenantId);
-    }
-  } else {
-    const index = newSelection.indexOf(tenantId);
-    if (index > -1) {
-      newSelection.splice(index, 1);
-    }
-  }
+// Sync local state with props when they change (e.g., from parent TenantTimelineSection)
+watch(() => props.tenantFilter, (newVal) => {
+  tenantFilter.value = [...newVal];
+}, { deep: true });
+
+// Handle tenant filter update from GanttFilterDropdown
+function handleTenantFilterUpdate(newSelection: string[]) {
   tenantFilter.value = newSelection;
   emit('update:tenantFilter', newSelection);
 }

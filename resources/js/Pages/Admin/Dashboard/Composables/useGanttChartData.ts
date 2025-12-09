@@ -4,7 +4,9 @@ import type {
   AtstovavimosGap, 
   GanttMeeting, 
   GanttInstitution,
-  AtstovavimosTenant 
+  AtstovavimosTenant,
+  GanttDutyMember,
+  InactivePeriod 
 } from '../types';
 
 export function useGanttChartData(
@@ -177,6 +179,158 @@ export function useGanttChartData(
       .slice(0, 2);
   });
 
+  // Extract duty members from tenant institutions for Gantt display
+  const tenantDutyMembers = computed<GanttDutyMember[]>(() => {
+    const members: GanttDutyMember[] = [];
+    
+    for (const institution of tenantInstitutions.value) {
+      const inst = institution as any;
+      for (const duty of (inst.duties ?? [])) {
+        for (const user of (duty.users ?? [])) {
+          // Access pivot data for start_date and end_date
+          const pivot = user.pivot ?? {};
+          if (!pivot.start_date) continue;
+          
+          members.push({
+            institution_id: String(institution.id),
+            duty_id: String(duty.id),
+            user: {
+              id: String(user.id),
+              name: String(user.name ?? ''),
+              profile_photo_path: user.profile_photo_path ?? null
+            },
+            start_date: new Date(pivot.start_date),
+            end_date: pivot.end_date ? new Date(pivot.end_date) : null
+          });
+        }
+      }
+    }
+    
+    return members;
+  });
+
+  // Calculate inactive periods for tenant institutions (when no duty members were active)
+  const tenantInactivePeriods = computed<InactivePeriod[]>(() => {
+    const periods: InactivePeriod[] = [];
+    
+    for (const institution of tenantInstitutions.value) {
+      const instId = String(institution.id);
+      const instMembers = tenantDutyMembers.value.filter(m => m.institution_id === instId);
+      
+      if (instMembers.length === 0) continue;
+      
+      // Sort members by start_date
+      const sortedMembers = [...instMembers].sort((a, b) => 
+        a.start_date.getTime() - b.start_date.getTime()
+      );
+      
+      // Find gaps where no member was active
+      // Build a timeline of active periods
+      const activePeriods: Array<{ from: Date; until: Date }> = [];
+      
+      for (const member of sortedMembers) {
+        const from = member.start_date;
+        const until = member.end_date ?? new Date(); // If no end_date, assume still active
+        
+        // Merge overlapping periods
+        if (activePeriods.length === 0) {
+          activePeriods.push({ from, until });
+        } else {
+          const last = activePeriods[activePeriods.length - 1]!;
+          if (from <= last.until) {
+            // Overlapping - extend the last period if needed
+            if (until > last.until) {
+              last.until = until;
+            }
+          } else {
+            // Gap found - this is an inactive period
+            periods.push({
+              institution_id: instId,
+              from: last.until,
+              until: from
+            });
+            activePeriods.push({ from, until });
+          }
+        }
+      }
+    }
+    
+    return periods;
+  });
+
+  // Helper to extract duty members from user's institutions (for user tab)
+  const getDutyMembersFromInstitutions = (institutions: AtstovavimosInstitution[]): GanttDutyMember[] => {
+    const members: GanttDutyMember[] = [];
+    
+    for (const institution of institutions) {
+      const inst = institution as any;
+      for (const duty of (inst.duties ?? [])) {
+        for (const user of (duty.users ?? [])) {
+          const pivot = user.pivot ?? {};
+          if (!pivot.start_date) continue;
+          
+          members.push({
+            institution_id: String(institution.id),
+            duty_id: String(duty.id),
+            user: {
+              id: String(user.id),
+              name: String(user.name ?? ''),
+              profile_photo_path: user.profile_photo_path ?? null
+            },
+            start_date: new Date(pivot.start_date),
+            end_date: pivot.end_date ? new Date(pivot.end_date) : null
+          });
+        }
+      }
+    }
+    
+    return members;
+  };
+
+  // Helper to calculate inactive periods from institutions
+  const getInactivePeriodsFromInstitutions = (institutions: AtstovavimosInstitution[]): InactivePeriod[] => {
+    const dutyMembers = getDutyMembersFromInstitutions(institutions);
+    const periods: InactivePeriod[] = [];
+    
+    for (const institution of institutions) {
+      const instId = String(institution.id);
+      const instMembers = dutyMembers.filter(m => m.institution_id === instId);
+      
+      if (instMembers.length === 0) continue;
+      
+      const sortedMembers = [...instMembers].sort((a, b) => 
+        a.start_date.getTime() - b.start_date.getTime()
+      );
+      
+      const activePeriods: Array<{ from: Date; until: Date }> = [];
+      
+      for (const member of sortedMembers) {
+        const from = member.start_date;
+        const until = member.end_date ?? new Date();
+        
+        if (activePeriods.length === 0) {
+          activePeriods.push({ from, until });
+        } else {
+          const last = activePeriods[activePeriods.length - 1]!;
+          if (from <= last.until) {
+            if (until > last.until) {
+              last.until = until;
+            }
+          } else {
+            periods.push({
+              institution_id: instId,
+              from: last.until,
+              until: from
+            });
+            activePeriods.push({ from, until });
+          }
+        }
+      }
+    }
+    
+    return periods;
+  };
+
   return {
     // Tenant data
     tenantInstitutions,
@@ -184,6 +338,10 @@ export function useGanttChartData(
     tenantGaps,
     allTenantMeetings,
     formattedTenantInstitutions,
+    
+    // Duty members data
+    tenantDutyMembers,
+    tenantInactivePeriods,
     
     // Calendar
     tenantCalendarAttributes,
@@ -196,6 +354,8 @@ export function useGanttChartData(
     getTenantNames,
     getInstitutionTenant,
     getInstitutionHasPublicMeetings,
-    formatInstitutionsForGantt
+    formatInstitutionsForGantt,
+    getDutyMembersFromInstitutions,
+    getInactivePeriodsFromInstitutions
   };
 }

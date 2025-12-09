@@ -76,3 +76,24 @@ export interface GanttInstitution {
   tenant_id?: string;
   has_public_meetings?: boolean;
 }
+
+// Duty member for Gantt chart display
+export interface GanttDutyMember {
+  institution_id: string;
+  duty_id: string;
+  user: {
+    id: string;
+    name: string;
+    profile_photo_path?: string | null;
+  };
+  start_date: Date;
+  end_date?: Date | null;
+}
+
+// Period when institution had no active duty members
+export interface InactivePeriod {
+  institution_id: string;
+  from: Date;
+  until: Date;
+}
+

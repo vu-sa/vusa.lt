@@ -38,9 +38,9 @@
         </h3>
         <div class="flex flex-wrap gap-2">
           <Button v-for="inst in myInstitutions" :key="`mine-${inst.value}`" type="button" size="sm" variant="secondary"
-            class="h-8" @click="selectInstitution(inst.value)">
-            <component :is="Icons.INSTITUTION" class="mr-2 h-3 w-3" />
-            <span class="truncate max-w-56">{{ inst.label }}</span>
+            class="h-8 max-w-full" @click="selectInstitution(inst.value)">
+            <component :is="Icons.INSTITUTION" class="mr-2 h-3 w-3 shrink-0" />
+            <span class="truncate max-w-48 sm:max-w-56 md:max-w-72" :title="inst.label">{{ inst.label }}</span>
           </Button>
         </div>
       </div>
@@ -114,9 +114,9 @@
             <!-- Selected Institution Display -->
             <div v-if="selectedInstitution && selectedInstitutionData" class="mt-3 p-3 bg-muted/50 rounded-lg">
               <div class="flex items-start gap-3">
-                <component :is="Icons.INSTITUTION" class="h-5 w-5 mt-0.5 text-primary" />
-                <div class="flex-1">
-                  <h4 class="font-medium">
+                <component :is="Icons.INSTITUTION" class="h-5 w-5 mt-0.5 text-primary shrink-0" />
+                <div class="flex-1 min-w-0">
+                  <h4 class="font-medium truncate" :title="selectedInstitutionData.name">
                     {{ selectedInstitutionData.name }}
                   </h4>
                   <div class="mt-2 space-y-1 text-sm text-muted-foreground">

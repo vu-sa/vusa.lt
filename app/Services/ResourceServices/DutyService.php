@@ -37,6 +37,7 @@ class DutyService
                 'meetings:id,title,start_time',
                 'meetings.agendaItems:id,meeting_id,student_vote,decision,student_benefit',
                 'duties.current_users:id,name',
+                'duties.users:id,name,profile_photo_path',
                 'duties.types:id,title,slug',
                 'checkIns'
             ])

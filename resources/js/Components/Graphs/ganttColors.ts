@@ -54,6 +54,16 @@ export interface GanttColors {
   tooltipBg: string;
   tooltipText: string;
   tooltipBorder: string;
+  
+  // Center line indicator
+  centerLine: string;
+  centerDateBg: string;
+  centerDateText: string;
+  centerDateBorder: string;
+  
+  // Month headers
+  monthHeaderBg: string;
+  monthHeaderText: string;
 }
 
 /**
@@ -89,8 +99,8 @@ export const lightModeColors: GanttColors = {
   vacationEaster: 'oklch(0.811 0.111 293.571 / 8%)', // violet-300/8%
   vacationDefault: 'oklch(0.707 0.022 261.325 / 8%)', // gray-400/8%
   
-  // Row backgrounds
-  zebraEven: 'oklch(0.21 0.006 285.885 / 2%)', // zinc-900/2%
+  // Row backgrounds - very subtle to not compete with weekend bands
+  zebraEven: 'oklch(0.21 0.006 285.885 / 1%)', // zinc-900/1%
   zebraOdd: 'transparent',
   tenantRow: 'oklch(0.968 0.007 247.896 / 70%)', // slate-50/70%
   
@@ -103,6 +113,16 @@ export const lightModeColors: GanttColors = {
   tooltipBg: 'oklch(1 0 0 / 95%)', // white/95%
   tooltipText: 'oklch(0.372 0.044 257.287)', // slate-700
   tooltipBorder: 'oklch(0.21 0.006 285.885 / 5%)', // zinc-900/5%
+  
+  // Center line indicator
+  centerLine: 'oklch(0.637 0.237 25.331 / 60%)', // red-500/60%
+  centerDateBg: 'oklch(1 0 0 / 90%)', // white/90%
+  centerDateText: 'oklch(0.372 0.044 257.287)', // slate-700
+  centerDateBorder: 'oklch(0.21 0.006 285.885 / 15%)', // zinc-900/15%
+  
+  // Month headers
+  monthHeaderBg: 'oklch(0.968 0.007 247.896 / 90%)', // slate-50/90%
+  monthHeaderText: 'oklch(0.446 0.043 257.281)', // slate-600
 };
 
 /**
@@ -115,43 +135,53 @@ export const darkModeColors: GanttColors = {
   meetingIncomplete: 'oklch(0.712 0.194 13.428)', // rose-400
   meetingNoItems: 'oklch(0.712 0.194 13.428)', // rose-400 (stroke only)
   
-  // Gap lines - slightly brighter amber
-  gap: 'oklch(0.828 0.189 84.429 / 85%)', // amber-400/85%
-  gapOpacity: 0.85,
+  // Gap lines - subtle amber
+  gap: 'oklch(0.75 0.14 84.429 / 70%)', // amber-400 dimmed/70%
+  gapOpacity: 0.7,
   
-  // Safety bands - slightly more visible emerald gradient
-  safetyBandStart: 'oklch(0.765 0.177 163.223 / 0%)', // emerald-400/0%
-  safetyBandMid: 'oklch(0.765 0.177 163.223 / 15%)', // emerald-400/15%
-  safetyBandEnd: 'oklch(0.765 0.177 163.223 / 0%)', // emerald-400/0%
+  // Safety bands - subtle emerald gradient (reduced brightness)
+  safetyBandStart: 'oklch(0.65 0.12 163.223 / 0%)', // emerald dimmed/0%
+  safetyBandMid: 'oklch(0.65 0.12 163.223 / 8%)', // emerald dimmed/8%
+  safetyBandEnd: 'oklch(0.65 0.12 163.223 / 0%)', // emerald dimmed/0%
   
-  // Today line - brighter blue
-  todayLine: 'oklch(0.707 0.165 254.624 / 80%)', // blue-400/80%
+  // Today line - subtle blue
+  todayLine: 'oklch(0.65 0.12 254.624 / 60%)', // blue-400 dimmed/60%
   
   // Hover effects
-  hoverLine: 'oklch(0.985 0 0 / 20%)', // white/20%
-  hoverCircle: 'oklch(0.707 0.165 254.624 / 90%)', // blue-400/90%
-  rowHover: 'oklch(0.707 0.165 254.624 / 10%)', // blue-400/10%
+  hoverLine: 'oklch(0.985 0 0 / 15%)', // white/15%
+  hoverCircle: 'oklch(0.65 0.12 254.624 / 80%)', // blue-400 dimmed/80%
+  rowHover: 'oklch(0.65 0.12 254.624 / 6%)', // blue-400 dimmed/6%
   
-  // Vacation periods - subtle but visible overlays
-  vacationSummer: 'oklch(0.828 0.189 84.429 / 6%)', // amber-400/6%
-  vacationWinter: 'oklch(0.809 0.105 251.813 / 6%)', // blue-300/6%
-  vacationEaster: 'oklch(0.811 0.111 293.571 / 6%)', // violet-300/6%
-  vacationDefault: 'oklch(0.705 0.015 286.067 / 6%)', // zinc-400/6%
+  // Vacation periods - very subtle overlays (reduced brightness)
+  vacationSummer: 'oklch(0.75 0.14 84.429 / 4%)', // amber-400 dimmed/4%
+  vacationWinter: 'oklch(0.72 0.08 251.813 / 4%)', // blue-300 dimmed/4%
+  vacationEaster: 'oklch(0.72 0.08 293.571 / 4%)', // violet-300 dimmed/4%
+  vacationDefault: 'oklch(0.65 0.01 286.067 / 4%)', // zinc-400 dimmed/4%
   
-  // Row backgrounds
-  zebraEven: 'oklch(0.985 0 0 / 3%)', // white/3%
+  // Row backgrounds - very subtle to not compete with weekend bands
+  zebraEven: 'oklch(0.985 0 0 / 1%)', // white/1%
   zebraOdd: 'transparent',
-  tenantRow: 'oklch(0.274 0.006 286.033 / 70%)', // zinc-800/70%
+  tenantRow: 'oklch(0.274 0.006 286.033 / 60%)', // zinc-800/60%
   
   // Grid and axis
-  gridLine: 'oklch(0.705 0.015 286.067 / 12%)', // zinc-400/12%
-  yearMarker: 'oklch(0.985 0 0 / 15%)', // white/15%
+  gridLine: 'oklch(0.65 0.01 286.067 / 6%)', // zinc-400 dimmed/6%
+  yearMarker: 'oklch(0.985 0 0 / 10%)', // white/10%
   axisText: 'oklch(0.705 0.015 286.067)', // zinc-400
   
   // Tooltips
   tooltipBg: 'oklch(0.21 0.006 285.885 / 95%)', // zinc-900/95%
   tooltipText: 'oklch(0.929 0.013 255.508)', // slate-200
   tooltipBorder: 'oklch(0.985 0 0 / 10%)', // white/10%
+  
+  // Center line indicator
+  centerLine: 'oklch(0.712 0.194 13.428 / 50%)', // rose-400/50%
+  centerDateBg: 'oklch(0.274 0.006 286.033 / 90%)', // zinc-800/90%
+  centerDateText: 'oklch(0.929 0.013 255.508)', // slate-200
+  centerDateBorder: 'oklch(0.985 0 0 / 15%)', // white/15%
+  
+  // Month headers
+  monthHeaderBg: 'oklch(0.274 0.006 286.033 / 80%)', // zinc-800/80%
+  monthHeaderText: 'oklch(0.705 0.015 286.067)', // zinc-400
 };
 
 /**

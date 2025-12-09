@@ -222,6 +222,10 @@ export function useMeetingCreation(options: UseMeetingCreationOptions = {}) {
     state.meeting.institution_id = institution.id
     
     if (validateInstitution(institution.id)) {
+      // Mark step 1 as completed so we can navigate to step 2
+      if (state.maxCompletedStep < 1) {
+        state.maxCompletedStep = 1
+      }
       // Auto-advance in quick mode if this completes the form
       if (isQuickMode.value && state.validation.meeting) {
         nextStep()

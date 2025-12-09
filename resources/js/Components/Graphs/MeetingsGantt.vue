@@ -1,5 +1,5 @@
 <template>
-  <div ref="wrap" class="relative w-full max-w-full" :class="{ 'h-full flex flex-col': props.height === '100%' }">
+  <div ref="wrap" class="relative w-full max-w-full outline-none" tabindex="0" :class="{ 'h-full flex flex-col': props.height === '100%' }">
     <!-- Header: Legend + Controls -->
     <div class="flex items-center justify-between gap-3 mb-2">
       <div class="flex items-center gap-4 min-w-0">
@@ -25,10 +25,13 @@
             <div class="flex items-center gap-1 truncate">
               <span class="opacity-70 shrink-0">{{ $t('Filtras') }}:</span>
               <div class="flex items-center gap-1 overflow-hidden">
-                <span v-for="tid in tenantFilter" :key="String(tid)"
-                  class="px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-600 truncate">
+                <button v-for="tid in tenantFilter" :key="String(tid)"
+                  type="button"
+                  class="px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-600 truncate hover:bg-zinc-200 dark:hover:bg-zinc-600 cursor-pointer transition-colors"
+                  :title="$t('Slinkti į') + ' ' + (mergedTenantNames[tid] ?? tid)"
+                  @click="scrollToTenant(tid)">
                   {{ mergedTenantNames[tid] ?? tid }}
-                </span>
+                </button>
               </div>
             </div>
           </template>
@@ -52,14 +55,59 @@
         <!-- Scale slider -->
         <div class="w-40 flex items-center gap-2 text-[11px] text-zinc-600 dark:text-zinc-400">
           <span class="shrink-0">{{ $t('Mastelis') }}</span>
-          <Slider :min="6" :max="72" :step="2" :model-value="[dayWidthPx || dayWidth]"
+          <Slider :min="3" :max="36" :step="1" :model-value="[dayWidthPx || dayWidth]"
             @update:model-value="onScaleChange" />
         </div>
-        <!-- Sticky current year badge -->
-        <div v-if="currentYear"
-          class="px-2 py-0.5 rounded border text-xs text-zinc-700 dark:text-zinc-300 bg-white/70 dark:bg-zinc-800/70 backdrop-blur border-zinc-200 dark:border-zinc-600">
-          {{ currentYear }}
-        </div>
+        <!-- Current year badge with navigation dropdown -->
+        <DropdownMenu v-if="currentYear">
+          <DropdownMenuTrigger as-child>
+            <button type="button"
+              class="px-2 py-0.5 rounded border text-xs text-zinc-700 dark:text-zinc-300 bg-white/70 dark:bg-zinc-800/70 backdrop-blur border-zinc-200 dark:border-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-700 cursor-pointer transition-colors flex items-center gap-1">
+              {{ currentYear }}
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 opacity-60" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+              </svg>
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" class="min-w-[160px]">
+            <DropdownMenuLabel class="text-xs">{{ $t('Eiti į metus') }}</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem @click="navigateYears(-3)" class="cursor-pointer">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M15.707 15.707a1 1 0 01-1.414 0l-5-5a1 1 0 010-1.414l5-5a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+                <path fill-rule="evenodd" d="M9.707 15.707a1 1 0 01-1.414 0l-5-5a1 1 0 010-1.414l5-5a1 1 0 111.414 1.414L5.414 10l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+              </svg>
+              <span>-3 {{ $t('metai') }}</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem @click="navigateYears(-1)" class="cursor-pointer">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+              </svg>
+              <span>-1 {{ $t('metai') }}</span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem @click="setCenterDate(null); navigateToToday()" class="cursor-pointer">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                <circle cx="10" cy="10" r="3" />
+              </svg>
+              <span>{{ $t('Šiandien') }}</span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem @click="navigateYears(1)" class="cursor-pointer">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+              </svg>
+              <span>+1 {{ $t('metai') }}</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem @click="navigateYears(3)" class="cursor-pointer">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M4.293 15.707a1 1 0 010-1.414L8.586 10 4.293 5.707a1 1 0 111.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                <path fill-rule="evenodd" d="M10.293 15.707a1 1 0 010-1.414L14.586 10l-4.293-4.293a1 1 0 111.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+              </svg>
+              <span>+3 {{ $t('metai') }}</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
         <button type="button" class="px-2 py-1 text-xs border border-zinc-200 dark:border-zinc-600 rounded hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300"
           @click="$emit('fullscreen', true)">
           {{ $t('Visas ekranas') }}
@@ -71,15 +119,16 @@
       :style="containerHeight ? { height: containerHeight } : {}" :class="{ 'flex-1 min-h-0 h-full': props.height === '100%' }"
       style="min-width: 0;">
       <!-- Left: sticky labels -->
-      <div ref="leftLabels" class="shrink-0 bg-white dark:bg-zinc-900 z-[1]"
+      <div ref="leftLabels" class="shrink-0 bg-white dark:bg-zinc-900 z-[35]"
         :class="props.height === '100%' ? 'overflow-y-auto overflow-x-hidden' : 'overflow-hidden'"
-        :style="{ width: `${labelWidth}px` }">
+        :style="{ width: `${labelWidth}px` }"
+        style="isolation: isolate;">
         <div class="grid" :style="{ gridTemplateRows: `22px ${layoutRows.map(r => r.height + 'px').join(' ')}` }">
           <!-- header spacer (align with axis height) -->
           <div class="border-b border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 sticky top-0 z-20" />
           <template v-for="(row, idx) in layoutRows" :key="`label-${row.key}`">
             <div v-if="row.type === 'tenant'"
-              class="px-3 py-1 text-xs font-medium text-zinc-600 dark:text-zinc-400 border-b border-zinc-200 dark:border-zinc-700 bg-zinc-50/70 dark:bg-zinc-800/70 sticky top-[22px] z-[2]">
+              class="px-3 py-1 text-xs font-medium text-zinc-600 dark:text-zinc-400 border-b border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 sticky top-[22px] z-[30]">
               {{ mergedTenantNames[row.tenantId!] ?? row.tenantId }}
             </div>
             <div v-else
@@ -91,13 +140,14 @@
                     <button type="button"
                       class="truncate text-left hover:underline cursor-pointer focus:underline focus:outline-none"
                       :aria-label="$t('Atidaryti instituciją') + ': ' + (labelFor(row.institutionId!) || row.institutionId)"
-                      @click="visitInstitution(row.institutionId!)"
-                      @keydown.enter.prevent="visitInstitution(row.institutionId!)">
+                      @click="visitInstitution(row.institutionId!, $event)"
+                      @auxclick.middle.prevent="visitInstitution(row.institutionId!, $event)"
+                      @keydown.enter.prevent="visitInstitution(row.institutionId!, $event)">
                       {{ labelFor(row.institutionId!) }}
                     </button>
                     <!-- Public meetings indicator -->
                     <svg v-if="props.institutionHasPublicMeetings?.[row.institutionId!]" 
-                      class="h-3 w-3 text-green-600 dark:text-green-400 shrink-0" 
+                      class="h-3 w-3 text-green-600 dark:text-green-500/70 shrink-0" 
                       viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                       :aria-label="$t('Vieši posėdžiai')">
                       <circle cx="12" cy="12" r="10"/>
@@ -109,11 +159,7 @@
                     class="text-[11px] text-zinc-500 dark:text-zinc-500 shrink-0">{{
                       labelLast(lastMeetingByInstitution.get(row.institutionId!)!) }}</span>
                 </div>
-                <div v-if="detailsExpanded" class="mt-1 text-[11px] text-zinc-600 dark:text-zinc-500 leading-snug space-y-0.5">
-                  <div v-if="tenantLabelFor(row.institutionId!)" class="truncate">
-                    <span class="opacity-70">{{ $t('Padalinys') }}:</span>
-                    <span class="ml-1">{{ tenantLabelFor(row.institutionId!) }}</span>
-                  </div>
+                <div v-if="detailsExpanded" class="mt-1 text-[11px] text-zinc-600 dark:text-zinc-500 leading-snug">
                   <div class="truncate">
                     <span class="opacity-70">{{ $t('Susitikimų') }}:</span>
                     <span class="ml-1">{{meetings.filter(m => m.institution_id === row.institutionId).length}}</span>
@@ -125,8 +171,13 @@
         </div>
       </div>
 
-      <!-- Right: scrollable timeline -->
+      <!-- Right: scrollable timeline with sticky header -->
       <div ref="rightScroll" class="flex-1 overflow-auto min-w-0 h-full bg-white dark:bg-zinc-900" style="width: 0; min-width: 0;">
+        <!-- Sticky x-axis header - uses isolate to create new stacking context -->
+        <div ref="axisScroll" class="sticky top-0 z-30 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-700" style="isolation: isolate;">
+          <svg ref="axisEl" role="img" aria-label="Timeline axis" class="block" style="height: 22px;" />
+        </div>
+        <!-- Chart content -->
         <svg ref="svgEl" role="img" aria-label="Meetings timeline" class="block" />
       </div>
     </div>
@@ -140,7 +191,35 @@ import { trans as $t } from 'laravel-vue-i18n'
 import * as d3 from 'd3'
 
 import { Slider } from '@/Components/ui/slider'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/Components/ui/dropdown-menu'
 import { getGanttColors, isDarkModeActive, type GanttColors } from './ganttColors'
+import { useGanttSettings } from '@/Pages/Admin/Dashboard/Composables/useGanttSettings'
+import { useGanttInteractions } from './composables/useGanttInteractions'
+import { useGanttViewport } from './composables/useGanttViewport'
+
+import {
+  setupDefs,
+  renderBackground,
+  renderAxis,
+  renderVacations,
+  renderMeetings,
+  renderGaps,
+  renderDutyMembers,
+  renderInactivePeriods,
+  renderTodayLine,
+  renderHoverEffects,
+  createGanttTooltip,
+  createCenterLine,
+  type GanttTooltipManager,
+  type CenterLineManager,
+} from './renderers'
 
 /**
  * MeetingsGantt (d3)
@@ -180,8 +259,12 @@ const props = withDefaults(defineProps<{
   extendThresholdPx?: number
   // Container height
   height?: string
+  // Duty members display
+  dutyMembers?: Array<{ institution_id: string | number, user: { id: string, name: string, profile_photo_path?: string | null }, start_date: string | Date, end_date?: string | Date | null }>
+  inactivePeriods?: Array<{ institution_id: string | number, from: string | Date, until: string | Date }>
+  showDutyMembers?: boolean
 }>(), {
-  daysBefore: 30,
+  daysBefore: 60,
   daysAfter: 60,
   dayWidth: 24,
   rowHeight: 28,
@@ -197,20 +280,27 @@ const props = withDefaults(defineProps<{
   extendStepDays: 30,
   extendThresholdPx: 200,
   height: '400px',
+  showDutyMembers: true,
 })
 
 const wrap = ref<HTMLElement | null>(null)
 const rightScroll = ref<HTMLElement | null>(null)
+const axisScroll = ref<HTMLElement | null>(null)
 const leftLabels = ref<HTMLElement | null>(null)
 const svgEl = ref<SVGSVGElement | null>(null)
+const axisEl = ref<SVGSVGElement | null>(null)
 let ro: ResizeObserver | null = null
-const didInitialAutoScroll = ref(false)
-const extending = ref(false)
-const extraBefore = ref(0) // in days
-const extraAfter = ref(0) // in days
-const dayWidthPx = ref<number>(0)
-const currentYear = ref<number | null>(null)
-let curX: d3.ScaleTime<number, number> | null = null
+// curX as ref so it can be passed to composables
+const curXRef = ref<d3.ScaleTime<number, number> | null>(null)
+// Center line manager for scroll updates
+let centerLineManager: CenterLineManager | null = null
+
+// Use injected Gantt settings (eliminates prop drilling for dayWidth, etc.)
+// Falls back to local settings if no provider is found (standalone usage)
+const ganttSettings = useGanttSettings()
+const dayWidthPx = ganttSettings.dayWidthPx
+const centerDateTimestamp = ganttSettings.centerDateTimestamp
+const setCenterDate = ganttSettings.setCenterDate
 
 const emit = defineEmits<{
   (e: 'create-meeting', payload: { institution_id: string | number, suggestedAt: Date }): void
@@ -220,15 +310,34 @@ const emit = defineEmits<{
 }>()
 
 // Navigate to institution details (admin route helper if available)
-const visitInstitution = (id: string | number) => {
+const visitInstitution = (id: string | number, event?: MouseEvent | KeyboardEvent) => {
   // @ts-ignore route helper might be globally available (ziggy)
   const routeFn = (window as any)?.route
   const url = routeFn ? routeFn('institutions.show', id) : `/admin/institutions/${id}`
-  router.visit(url)
+  // Support Ctrl/Cmd+click to open in new tab
+  if (event && (event.ctrlKey || event.metaKey || (event instanceof MouseEvent && event.button === 1))) {
+    window.open(url, '_blank')
+  } else {
+    router.visit(url)
+  }
 }
 
 const parsedMeetings = computed(() => props.meetings.map(m => ({ ...m, date: new Date(m.start_time) })))
 const parsedGaps = computed(() => props.gaps.map(g => ({ ...g, fromDate: new Date(g.from), untilDate: new Date(g.until) })))
+
+// Parsed duty members with Date objects
+const parsedDutyMembers = computed(() => (props.dutyMembers ?? []).map(m => ({
+  ...m,
+  startDate: new Date(m.start_date),
+  endDate: m.end_date ? new Date(m.end_date) : null
+})))
+
+// Parsed inactive periods with Date objects
+const parsedInactivePeriods = computed(() => (props.inactivePeriods ?? []).map(p => ({
+  ...p,
+  fromDate: new Date(p.from),
+  untilDate: new Date(p.until)
+})))
 
 // Active institution ids referenced by data
 const activeInstitutionIds = computed(() => {
@@ -294,6 +403,33 @@ const filteredMeetings = computed(() => {
 const filteredGaps = computed(() => {
   const visibleIds = new Set(institutions.value)
   return parsedGaps.value.filter(g => visibleIds.has(g.institution_id))
+})
+
+// Filtered duty members based on currently visible institutions (when showDutyMembers is true)
+const filteredDutyMembers = computed(() => {
+  if (!props.showDutyMembers) return []
+  const visibleIds = new Set(institutions.value.map(String))
+  return parsedDutyMembers.value.filter(m => visibleIds.has(String(m.institution_id)))
+})
+
+// Filtered inactive periods based on currently visible institutions (when showDutyMembers is true)
+const filteredInactivePeriods = computed(() => {
+  if (!props.showDutyMembers) return []
+  const visibleIds = new Set(institutions.value.map(String))
+  return parsedInactivePeriods.value.filter(p => visibleIds.has(String(p.institution_id)))
+})
+
+// Group duty members by institution and start date for avatar stacking
+const groupedDutyMembers = computed(() => {
+  const groups = new Map<string, typeof filteredDutyMembers.value>()
+  for (const member of filteredDutyMembers.value) {
+    // Group by institution + day (same day = same group)
+    const dayKey = `${member.institution_id}:${member.startDate.toDateString()}`
+    const arr = groups.get(dayKey) ?? []
+    arr.push(member)
+    groups.set(dayKey, arr)
+  }
+  return groups
 })
 
 const nameLookup = computed(() => {
@@ -445,16 +581,63 @@ const today = () => {
 // Import vacation configuration
 import { getVacationPeriods } from '@/Pages/Admin/Dashboard/Components/vacationConfig';
 
-const minTime = computed(() => {
-  if (props.startDate) return d3.timeDay.offset(new Date(props.startDate), -extraBefore.value)
-  return d3.timeDay.offset(today(), -(props.daysBefore + extraBefore.value))
-})
+// Initialize interaction composable for scroll, zoom, and navigation
+const interactions = useGanttInteractions(
+  {
+    daysBefore: props.daysBefore,
+    daysAfter: props.daysAfter,
+    infiniteScroll: props.infiniteScroll,
+    extendThresholdPx: props.extendThresholdPx ?? 200,
+    extendStepDays: props.extendStepDays ?? 30,
+    startDate: props.startDate ? new Date(props.startDate) : null,
+    centerDateTimestamp: centerDateTimestamp, // Pass ref, not value
+  },
+  {
+    rightScroll,
+    leftLabels,
+    curX: curXRef,
+    layoutRows: computed(() => layoutRows.value.map(r => ({ key: r.key, top: r.top }))),
+    dayWidthPx,
+  },
+  {
+    onDayWidthChange: (width: number) => ganttSettings.setDayWidth(width),
+  }
+)
 
-const maxTime = computed(() => d3.timeDay.offset(today(), props.daysAfter + extraAfter.value))
+// Destructure commonly used values from interactions composable
+const {
+  extraBefore,
+  extraAfter,
+  extending,
+  currentYear,
+  didInitialAutoScroll,
+  minTime,
+  maxTime,
+  applyInitialExtension,
+  applyInitialScrollPosition,
+  onScroll,
+  onScaleChange,
+  navigateYears,
+  navigateToToday,
+  scrollToTenant,
+  setupVerticalScrollSync,
+  attachScrollHandler,
+  attachKeyboardHandler,
+  updateCurrentYear,
+} = interactions
 
-// Margins: top matches the left labels header (22px). Bottom set to 0 so SVG
-// height matches the left grid height exactly to avoid vertical overflow.
-const margin = { top: 22, right: 8, bottom: 0, left: 8 }
+// Initialize viewport composable for horizontal culling (performance optimization)
+const viewport = useGanttViewport(rightScroll, curXRef, { bufferPx: 300 })
+
+// Create viewport-culled data for rendering
+const visibleMeetings = viewport.createVisibleMeetings(filteredMeetings)
+const visibleGaps = viewport.createVisibleGaps(filteredGaps)
+const visibleDutyMembers = viewport.createVisibleDutyMembers(filteredDutyMembers)
+
+// Margins: top is 0 since x-axis is now in a separate sticky SVG.
+// Bottom set to 0 so SVG height matches the left grid height exactly.
+const margin = { top: 0, right: 8, bottom: 0, left: 8 }
+const axisHeight = 22 // Height of the sticky x-axis header
 
 /**
  * Main render function for the gantt chart
@@ -475,6 +658,7 @@ const margin = { top: 22, right: 8, bottom: 0, left: 8 }
 const render = () => {
   const container = wrap.value
   const svg = d3.select(svgEl.value)
+  const axisSvg = d3.select(axisEl.value)
   if (!container || svg.empty()) return
 
   // Get color palette based on current theme
@@ -483,664 +667,293 @@ const render = () => {
   // derive width from current date span
   const totalDays = Math.max(1, d3.timeDay.count(minTime.value, maxTime.value))
   const viewportW = (rightScroll.value?.clientWidth ?? container.clientWidth) || 800
-  const innerW = totalDays * (dayWidthPx.value || props.dayWidth)
+  const calculatedW = totalDays * (dayWidthPx.value || props.dayWidth)
+  // Ensure minimum width slightly larger than viewport to guarantee horizontal scrollbar
+  const innerW = Math.max(calculatedW, viewportW + 50)
   const rowsH = layoutRows.value.reduce((acc, r) => acc + r.height, 0)
 
-  // Calculate the ideal content height (rows + top axis header)
-  const idealHeight = rowsH + margin.top
+  // Calculate the ideal content height (rows only, axis is separate)
+  const idealHeight = rowsH
 
   // Use the ideal height directly - the container will handle overflow
-  const height = Math.max(margin.top + 50, idealHeight) // Ensure minimum height
+  const height = Math.max(50, idealHeight) // Ensure minimum height
 
   svg.attr('width', innerW).attr('height', height)
   svg.selectAll('*').remove()
+  
+  // Also set axis SVG width to match
+  if (!axisSvg.empty()) {
+    axisSvg.attr('width', innerW).attr('height', axisHeight)
+    axisSvg.selectAll('*').remove()
+  }
 
   const innerWidth = innerW - margin.left - margin.right
   const innerH = height - margin.top - margin.bottom
 
   const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`)
 
-  // custom tooltip for create affordance (separate from meeting tooltip)
-  const createTip = d3.select(container)
-    .selectAll('.gantt-tooltip-create')
-    .data([null])
-    .join('div')
-    .attr('class', `gantt-tooltip-create pointer-events-none absolute z-10 hidden text-[11px] shadow-sm ring-1 rounded px-2 py-1`)
-    .style('background', colors.tooltipBg)
-    .style('color', colors.tooltipText)
-    .style('--tw-ring-color', colors.tooltipBorder)
-
-  // gradients
+  // gradients and patterns
   const defs = svg.append('defs')
-  const safeGrad = defs.append('linearGradient')
-    .attr('id', 'safeBand')
-    .attr('x1', '0%').attr('x2', '100%')
-    .attr('y1', '0%').attr('y2', '0%')
-  safeGrad.append('stop').attr('offset', '0%').attr('stop-color', colors.safetyBandStart)
-  safeGrad.append('stop').attr('offset', '40%').attr('stop-color', colors.safetyBandMid)
-  safeGrad.append('stop').attr('offset', '60%').attr('stop-color', colors.safetyBandMid)
-  safeGrad.append('stop').attr('offset', '100%').attr('stop-color', colors.safetyBandEnd)
+  setupDefs({
+    defs,
+    colors,
+    isDarkMode: isDarkModeActive(),
+  })
+
+  // Create unified tooltip manager for all renderers
+  // Remove old tooltip elements first to prevent duplicates
+  d3.select(container).selectAll('.gantt-tooltip, .gantt-tooltip-create, .gantt-tooltip-member, .gantt-unified-tooltip').remove()
+  const tooltipManager = createGanttTooltip(container, colors)
+
+  // Create or update center line indicator
+  if (centerLineManager) {
+    centerLineManager.destroy()
+  }
+  if (rightScroll.value) {
+    const currentLocale = (page.props.app as any)?.locale ?? 'lt'
+    centerLineManager = createCenterLine({
+      container: container as HTMLElement,
+      rightScroll: rightScroll.value,
+      x: d3.scaleTime().domain([minTime.value, maxTime.value]).range([0, innerWidth]),
+      colors,
+      marginLeft: margin.left,
+      axisHeight,
+      locale: currentLocale,
+      onNavigateToToday: () => {
+        // Clear stored center date and navigate to today
+        setCenterDate(null)
+        navigateToToday()
+      },
+    })
+  }
 
   const x = d3.scaleTime().domain([minTime.value, maxTime.value]).range([0, innerWidth])
-  curX = x
+  curXRef.value = x
   // Variable-row layout handled manually via rowTop/rowHeightFor — no band scale
 
-  // zebra row background + hoverable rows
-  const rowBg = g.append('g')
-    .selectAll('rect')
-    .data(layoutRows.value.map((r, i) => ({ r, i })))
-    .enter()
-    .append('rect')
-    .attr('x', 0)
-    .attr('y', d => rowTop(d.r.key))
-    .attr('width', innerWidth)
-    .attr('height', d => d.r.height)
-    .attr('fill', d => {
-      if (d.r.type === 'tenant') {
-        return colors.tenantRow
-      }
-      return d.i % 2 === 0 ? colors.zebraEven : colors.zebraOdd
-    })
-    .attr('class', 'transition-colors duration-150')
-    .on('mouseenter', function (event, d: any) { if (d.r.type !== 'tenant') d3.select(this).attr('fill', colors.rowHover) })
-    .on('mouseleave', function (event, d: any) { if (d.r.type !== 'tenant') d3.select(this).attr('fill', (d.i % 2 === 0 ? colors.zebraEven : colors.zebraOdd)) })
-
-  // background day bands + gridlines (excluding tenant rows)
-  const days = d3.timeDay.range(minTime.value, maxTime.value)
-  const institutionRows = layoutRows.value.filter(r => r.type === 'institution')
-
-  // Create day bands only for institution rows (skip tenant rows)
-  const dayBands = []
-  for (const day of days) {
-    if (day.getDay() === 1) { // Monday
-      for (const row of institutionRows) {
-        dayBands.push({ day, row })
-      }
-    }
-  }
-
-  g.append('g')
-    .selectAll('rect')
-    .data(dayBands)
-    .enter()
-    .append('rect')
-    .attr('x', d => x(d.day))
-    .attr('y', d => rowTop(d.row.key))
-    .attr('width', d => x(d3.timeDay.offset(d.day, 1)) - x(d.day))
-    .attr('height', d => rowHeightFor(d.row.key))
-    .attr('fill', colors.gridLine)
-
-  /**
-   * Vacation period bands (subtle background overlays)
-   *
-   * Renders semi-transparent colored bands across institution rows for vacation
-   * periods (summer, winter, easter). These provide visual context for when
-   * meetings typically don't occur.
-   *
-   * Color scheme:
-   * - Summer: Amber (warm)
-   * - Winter: Blue (cold)
-   * - Easter: Violet (spring)
-   *
-   * Vacation periods are calculated dynamically from vacationConfig.ts based
-   * on the current date range. Each band spans the full height of institution
-   * rows but not tenant header rows.
-   */
-  const vacationPeriods = getVacationPeriods(minTime.value, maxTime.value)
-  const vacationBands = []
-  for (const period of vacationPeriods) {
-    for (const row of institutionRows) {
-      vacationBands.push({ period, row })
-    }
-  }
-
-  g.append('g')
-    .selectAll('rect.vacation-band')
-    .data(vacationBands)
-    .enter()
-    .append('rect')
-    .attr('class', 'vacation-band')
-    .attr('x', d => Math.max(0, x(d.period.start)))
-    .attr('y', d => rowTop(d.row.key))
-    .attr('width', d => {
-      const startX = Math.max(0, x(d.period.start))
-      const endX = Math.min(innerWidth, x(d.period.end))
-      return Math.max(0, endX - startX)
-    })
-    .attr('height', d => rowHeightFor(d.row.key))
-    .attr('fill', d => {
-      switch (d.period.type) {
-        case 'summer': return colors.vacationSummer
-        case 'winter': return colors.vacationWinter
-        case 'easter': return colors.vacationEaster
-        default: return colors.vacationDefault
-      }
-    })
-    .attr('pointer-events', 'none')
-    .append('title')
-    .text(d => {
-      const typeLabel = d.period.type === 'summer' ? 'Summer vacation' :
-        d.period.type === 'winter' ? 'Winter vacation' :
-          d.period.type === 'easter' ? 'Easter vacation' : 'Vacation'
-      return `${typeLabel}: ${d.period.start.toLocaleDateString()} - ${d.period.end.toLocaleDateString()}`
-    })
-
-  // x axis ticks (weekly)
-  const xAxis = d3.axisTop<Date>(x).ticks(d3.timeWeek.every(1)).tickFormat(d3.timeFormat('%b %d') as any)
-  g.append('g').attr('transform', 'translate(0,0)').attr('class', 'text-[10px]').call(xAxis as any)
-
-  // year markers: vertical line at Jan 1 and label the year above axis
-  const yStart = d3.timeYear.floor(minTime.value)
-  const yEnd = d3.timeYear.ceil(maxTime.value)
-  const years = d3.timeYear.range(yStart, yEnd)
-  // lines
-  g.append('g')
-    .selectAll('line.year-marker')
-    .data(years)
-    .enter()
-    .append('line')
-    .attr('class', 'year-marker')
-    .attr('x1', d => x(d))
-    .attr('x2', d => x(d))
-    .attr('y1', 0)
-    .attr('y2', innerH)
-    .attr('stroke', colors.yearMarker)
-    .attr('stroke-dasharray', '4,3')
-    .attr('pointer-events', 'none')
-  // labels
-  const yearFmt = d3.timeFormat('%Y')
-  g.append('g')
-    .selectAll('text.year-label')
-    .data(years)
-    .enter()
-    .append('text')
-    .attr('class', 'year-label')
-    .attr('x', d => x(d) + 4)
-    .attr('y', -6)
-    .attr('fill', colors.axisText)
-    .style('font-size', '11px')
-    .text(d => yearFmt(d))
-
-  // row guides (subtle)
-  g.append('g')
-    .selectAll('line')
-    .data(layoutRows.value)
-    .enter()
-    .append('line')
-    .attr('x1', 0)
-    .attr('x2', innerWidth)
-    .attr('y1', d => rowTop(d.key) + d.height)
-    .attr('y2', d => rowTop(d.key) + d.height)
-    .attr('stroke', colors.gridLine)
-
-  // green bands around meetings (±14 days) — sits above backgrounds, below gaps/dots
-  const bandGroup = g.append('g')
-  const bandDays = 14
-  bandGroup
-    .selectAll('rect')
-    .data(filteredMeetings.value)
-    .enter()
-    .append('rect')
-    .attr('x', d => x(d3.timeDay.offset(d.date, -bandDays)))
-    .attr('y', d => rowTop(d.institution_id))
-    .attr('width', d => Math.max(2, x(d3.timeDay.offset(d.date, bandDays)) - x(d3.timeDay.offset(d.date, -bandDays))))
-    .attr('height', d => rowHeightFor(d.institution_id))
-    .attr('fill', 'url(#safeBand)')
-    .attr('stroke', 'transparent')
-
-  // gaps (check-ins) as stroked lines - single style for all
-  const gapGroup = g.append('g')
-
-  gapGroup
-    .selectAll('line')
-    .data(filteredGaps.value)
-    .enter()
-    .append('line')
-    .attr('x1', d => x(d.fromDate))
-    .attr('x2', d => x(d.untilDate))
-    .attr('y1', d => rowCenter(d.institution_id))
-    .attr('y2', d => rowCenter(d.institution_id))
-    .attr('stroke-width', 3)
-    .attr('stroke-linecap', 'round')
-    .attr('stroke', colors.gap)
-    .style('cursor', 'pointer')
-    .on('click', (event, d: any) => {
-      // Emit a suggested create-meeting action for this institution at the start of gap
-      emit('create-meeting', { institution_id: d.institution_id, suggestedAt: d.fromDate })
-    })
-    .append('title')
-    .text(d => {
-      const dateRange = `${d.fromDate.toLocaleDateString()} → ${d.untilDate.toLocaleDateString()}`
-      return d.note ? `${d.note}\n${dateRange}` : `Check-in: ${dateRange}`
-    })
-
-  // meetings as dots
-  const dotGroup = g.append('g')
-  const dots = dotGroup
-    .selectAll('circle')
-    .data(filteredMeetings.value)
-    .enter()
-    .append('circle')
-    .attr('cx', d => x(d.date))
-    .attr('cy', d => rowCenter(d.institution_id))
-    .attr('r', 3)
-    .attr('fill', (d: any) => {
-      // Determine fill color based on completion status
-      if (d.completion_status === 'complete') {
-        return colors.meetingComplete
-      } else if (d.completion_status === 'no_items') {
-        return 'none'  // No fill for empty meetings
-      } else {
-        return colors.meetingIncomplete
-      }
-    })
-    .attr('stroke', (d: any) => {
-      // Add stroke for no_items case to create outline
-      if (d.completion_status === 'no_items') {
-        return colors.meetingNoItems
-      }
-      return 'none'
-    })
-    .attr('stroke-width', (d: any) => {
-      return d.completion_status === 'no_items' ? 1.5 : 0;
-    })
-    .attr('tabindex', 0)
-    .style('cursor', 'pointer')
-    .on('click', (event, d: any) => {
-      const routeFn = (window as any)?.route
-      const url = routeFn ? routeFn('meetings.show', d.id) : `/admin/meetings/${d.id}`
-      router.visit(url)
-    })
-    .on('keydown', (event: KeyboardEvent, d: any) => {
-      if (event.key === 'Enter' || event.key === ' ') {
-        const routeFn = (window as any)?.route
-        const url = routeFn ? routeFn('meetings.show', d.id) : `/admin/meetings/${d.id}`
-        router.visit(url)
-      }
-    })
-    .on('mouseenter', function () { d3.select(this).attr('r', 4) })
-    .on('mouseleave', function () { d3.select(this).attr('r', 3) })
-
-  dots.append('title').text((d: any) => {
-    let status = '';
-    if (d.completion_status === 'complete') {
-      status = ' ✓';
-    } else if (d.completion_status === 'no_items') {
-      status = ' (no agenda items)';
-    } else {
-      status = ' (incomplete)';
-    }
-    return (d.title || labelFor(d.institution_id) || new Date(d.date).toLocaleString()) + status;
+  // Render background (zebra rows, Monday grid, year markers, row separators)
+  renderBackground({
+    g,
+    x,
+    layoutRows: layoutRows.value,
+    innerWidth,
+    innerHeight: innerH,
+    colors,
+    minTime: minTime.value,
+    maxTime: maxTime.value,
+    rowTop,
+    rowHeightFor,
+    dayWidthPx: dayWidthPx.value,
   })
 
-  // custom tooltip for meetings
-  const tipDiv = d3.select(container)
-    .selectAll('.gantt-tooltip')
-    .data([null])
-    .join('div')
-    .attr('class', `gantt-tooltip pointer-events-none absolute z-10 hidden text-[11px] shadow-sm ring-1 rounded px-2 py-1`)
-    .style('background', colors.tooltipBg)
-    .style('color', colors.tooltipText)
-    .style('--tw-ring-color', colors.tooltipBorder)
+  // Render vacation period bands using extracted renderer
+  renderVacations({
+    g,
+    x,
+    layoutRows: layoutRows.value,
+    innerWidth,
+    minTime: minTime.value,
+    maxTime: maxTime.value,
+    colors,
+    rowTop,
+    rowHeightFor,
+  })
 
-  const fmt = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' })
-  dots
-    .on('mouseenter', (event, d: any) => {
-      const rect = (container as HTMLElement).getBoundingClientRect()
-      const name = labelFor(d.institution_id)
-      const html = `<div class="font-medium text-[12px] leading-tight">${d.title ?? name}</div><div class="opacity-80">${fmt.format(d.date)}</div><div class="opacity-70">${name}</div>`
-      tipDiv.html(html).classed('hidden', false)
-      tipDiv.style('left', `${event.clientX - rect.left + 8}px`).style('top', `${event.clientY - rect.top + 8}px`)
+  // Inactive periods (no active duty members) - render as diagonal striped rectangles
+  if (props.showDutyMembers) {
+    renderInactivePeriods({
+      g,
+      x,
+      innerWidth,
+      inactivePeriods: filteredInactivePeriods.value,
+      dutyMembers: filteredDutyMembers.value,
+      minTime: minTime.value,
+      maxTime: maxTime.value,
+      rowTop,
+      rowHeightFor,
     })
-    .on('mousemove', (event) => {
-      const rect = (container as HTMLElement).getBoundingClientRect()
-      tipDiv.style('left', `${event.clientX - rect.left + 8}px`).style('top', `${event.clientY - rect.top + 8}px`)
+  }
+
+  // Render sticky x-axis in separate SVG using extracted renderer
+  const currentLocale = (page.props.app as any)?.locale ?? 'lt'
+  renderAxis({
+    axisSvg,
+    x,
+    marginLeft: margin.left,
+    axisHeight,
+    dayWidthPx: dayWidthPx.value || props.dayWidth,
+    minTime: minTime.value,
+    maxTime: maxTime.value,
+    colors,
+    locale: currentLocale,
+  })
+
+  // gaps (check-ins) as stroked lines - using extracted renderer
+  renderGaps({
+    g,
+    x,
+    gaps: filteredGaps.value,
+    colors,
+    rowCenter,
+    onCreateMeeting: (payload: { institution_id: string | number; suggestedAt: Date }) => emit('create-meeting', payload),
+  })
+
+  // Render meeting icons with safety bands and tooltips using extracted renderer
+  renderMeetings({
+    g,
+    container: container as HTMLElement,
+    x,
+    meetings: filteredMeetings.value,
+    colors,
+    rowCenter,
+    rowTop,
+    rowHeightFor,
+    labelFor,
+    interactive: true,
+    tooltipManager,
+  })
+
+  // Duty member avatar markers using extracted renderer
+  if (props.showDutyMembers) {
+    renderDutyMembers({
+      g,
+      defs,
+      container: container as HTMLElement,
+      x,
+      groupedDutyMembers: groupedDutyMembers.value,
+      innerWidth,
+      detailsExpanded: props.detailsExpanded,
+      colors,
+      rowTop,
+      rowHeightFor,
+      tooltipManager,
     })
-    .on('mouseleave', () => { tipDiv.classed('hidden', true) })
-
-  // today line
-  const t = new Date()
-  if (props.showTodayLine && t >= minTime.value && t <= maxTime.value) {
-    g.append('line')
-      .attr('x1', x(t))
-      .attr('x2', x(t))
-      .attr('y1', 0)
-      .attr('y2', innerH)
-      .attr('stroke', colors.todayLine)
-      .attr('stroke-width', 1)
-      .attr('pointer-events', 'none')
   }
 
-  // hover indicator line across the chart (full-height)
-  const hoverLine = g.append('line')
-    .attr('y1', 0)
-    .attr('y2', innerH)
-    .attr('stroke', colors.hoverLine)
-    .attr('stroke-dasharray', '2,2')
-    .attr('opacity', 0)
-    .attr('pointer-events', 'none')
-
-  // dashed circle affordance for creating a meeting on hovered row/day
-  const createCircle = g.append('circle')
-    .attr('r', 7)
-    .attr('fill', 'none')
-    .attr('stroke', colors.hoverCircle)
-    .attr('stroke-dasharray', '4,3')
-    .attr('opacity', 0)
-    .attr('pointer-events', 'none')
-
-  // Index meetings by row for snapping
-  const meetingsByRow = new Map<string | number, { x: number; d: any }[]>()
-  for (const m of filteredMeetings.value) {
-    const k = m.institution_id
-    const arr = meetingsByRow.get(k) ?? []
-    arr.push({ x: x(m.date), d: m })
-    meetingsByRow.set(k, arr)
-  }
-  for (const [k, arr] of meetingsByRow) arr.sort((a, b) => a.x - b.x)
-
-  // Index gaps (check-ins) by institution for quick lookup
-  const gapsByRow = new Map<string | number, Array<{ from: Date; until: Date; note?: string }>>()
-  for (const g of filteredGaps.value) {
-    const k = g.institution_id
-    const arr = gapsByRow.get(k) ?? []
-    arr.push({ from: g.fromDate, until: g.untilDate, note: g.note })
-    gapsByRow.set(k, arr)
-  }
-
-  // Helper to find active gap for a given institution and date
-  const findActiveGap = (institutionId: string | number, date: Date) => {
-    const gaps = gapsByRow.get(institutionId) ?? []
-    return gaps.find(gap => date >= gap.from && date <= gap.until)
-  }
-
-  // single mousemove handler: snap to nearest meeting dot in row (within threshold), else center of day
-  g.on('mousemove', function (event) {
-    const [mx, my] = d3.pointer(event, this as any)
-    const dayStart = d3.timeDay.floor(x.invert(mx))
-    if (my >= 0 && my <= innerH && rows.value.length) {
-      // Find row by Y position (supports variable heights)
-      let rowObj: Row | undefined
-      for (const lr of layoutRows.value) {
-        if (my >= lr.top && my < lr.top + lr.height) {
-          rowObj = (lr.type === 'tenant' ? { type: 'tenant', key: lr.key, tenantId: lr.tenantId } as any : { type: 'institution', key: lr.key, institutionId: lr.institutionId } as any)
-          break
-        }
-      }
-      if (!rowObj) return
-      if (rowObj.type === 'tenant') {
-        createCircle.attr('opacity', 0)
-        createTip.classed('hidden', true)
-        hoverLine.attr('opacity', 0)
-        return
-      }
-      const rowId = rowObj.institutionId
-      const rowTopY = rowTop(rowObj.key)
-      const rowBottom = rowTopY + rowHeightFor(rowObj.key)
-      const dayEnd = d3.timeDay.offset(dayStart, 1)
-      let centerX = (x(dayStart) + x(dayEnd)) / 2
-      let circleR = 7
-      const rowMeetings = meetingsByRow.get(rowId) || []
-      if (rowMeetings.length) {
-        /**
-         * Binary search to find the nearest meeting to the mouse position
-         * 
-         * Uses a binary search algorithm to efficiently find the meeting
-         * closest to the current mouse x-coordinate in O(log n) time.
-         * 
-         * Algorithm:
-         * 1. Perform binary search to find the meeting at or after mouse position
-         * 2. Check both the found meeting and the one before it
-         * 3. Select the meeting closest to the mouse x-coordinate
-         * 4. If within snap threshold (8px), snap to that meeting
-         * 
-         * @complexity O(log n) where n is the number of meetings in the row
-         */
-        let lo = 0, hi = rowMeetings.length - 1
-        while (lo < hi) {
-          const mid = Math.floor((lo + hi) / 2)
-          const midVal = rowMeetings[mid]
-          if (!midVal) break
-          if (midVal.x < mx) lo = mid + 1
-          else hi = mid
-        }
-        const candA = rowMeetings[lo]
-        const candB = rowMeetings[Math.max(0, lo - 1)]
-        const candidates = [candA, candB].filter((c): c is { x: number; d: any } => !!c)
-        let best = candidates.length ? candidates[0] : undefined
-        if (candidates.length > 1 && candidates[0] && candidates[1]) {
-          if (Math.abs(candidates[1].x - mx) < Math.abs(candidates[0].x - mx)) {
-            best = candidates[1]
-          }
-        }
-        const dist = best ? Math.abs(best.x - mx) : Infinity
-        const snapThreshold = 8
-        if (best && dist <= snapThreshold) {
-          centerX = best.x
-          circleR = 4
-        }
-      }
-
-      hoverLine
-        .attr('x1', centerX)
-        .attr('x2', centerX)
-        .attr('y1', 0)
-        .attr('y2', innerH)
-        .attr('opacity', 1)
-
-      // Show create affordance only when interactive
-      createCircle
-        .attr('cx', centerX)
-        .attr('cy', rowCenter(rowObj.key))
-        .attr('r', circleR)
-        .attr('opacity', props.interactive ? 1 : 0)
-
-      const rect = (container as HTMLElement).getBoundingClientRect()
-      
-      // Build tooltip HTML with optional check-in info
-      const activeGap = findActiveGap(rowId, dayStart)
-      let html = `<div class="font-medium text-[12px] leading-tight">${labelFor(rowId)}</div><div class="opacity-80">${fmtDateWithYear.format(dayStart)}</div>`
-      if (activeGap) {
-        const gapDateRange = `${fmtDate.format(activeGap.from)} → ${fmtDate.format(activeGap.until)}`
-        html += `<div class="mt-1.5 pt-1.5 border-t border-current/20">`
-        html += `<div class="text-[10px] uppercase tracking-wide opacity-60 mb-0.5">Check-in</div>`
-        if (activeGap.note) {
-          html += `<div class="line-clamp-2 text-[11px]">${activeGap.note}</div>`
-        }
-        html += `<div class="opacity-70 text-[10px]">${gapDateRange}</div>`
-        html += `</div>`
-      }
-      
-      if (props.interactive) {
-        createTip.html(html).classed('hidden', false)
-        createTip.style('left', `${event.clientX - rect.left + 8}px`).style('top', `${event.clientY - rect.top + 8}px`)
-      }
-    } else {
-      createCircle.attr('opacity', 0)
-      createTip.classed('hidden', true)
-      hoverLine.attr('opacity', 0)
-    }
+  // Today line using extracted renderer
+  renderTodayLine({
+    g,
+    x,
+    innerHeight: innerH,
+    minTime: minTime.value,
+    maxTime: maxTime.value,
+    colors,
+    showTodayLine: props.showTodayLine,
   })
 
-  g.on('mouseleave', () => {
-    hoverLine.attr('opacity', 0)
-    createCircle.attr('opacity', 0)
-    createTip.classed('hidden', true)
+  // Hover effects and click-to-create using extracted renderer
+  renderHoverEffects({
+    g,
+    container: container as HTMLElement,
+    x,
+    innerHeight: innerH,
+    layoutRows: layoutRows.value,
+    meetings: filteredMeetings.value,
+    gaps: filteredGaps.value,
+    colors,
+    rowTop,
+    rowHeightFor,
+    rowCenter,
+    labelFor,
+    fmtDateWithYear,
+    fmtDate,
+    interactive: props.interactive,
+    tooltipManager,
+    onCreateMeeting: (payload) => emit('create-meeting', payload),
   })
 
-  // click-to-create only when not clicking on dots or gaps
-  g.on('click', function (event) {
-    const target = event.target as Node
-    if ((dotGroup.node() && dotGroup.node()!.contains(target)) || (gapGroup.node() && gapGroup.node()!.contains(target))) {
-      return
-    }
-    const [mx, my] = d3.pointer(event, this as any)
-    if (my < 0 || my > innerH || !layoutRows.value.length) return
-    const day = d3.timeDay.floor(x.invert(mx))
-    let rowObj: Row | undefined
-    for (const lr of layoutRows.value) {
-      if (my >= lr.top && my < lr.top + lr.height) {
-        rowObj = (lr.type === 'tenant' ? { type: 'tenant', key: lr.key, tenantId: lr.tenantId } as any : { type: 'institution', key: lr.key, institutionId: lr.institutionId } as any)
-        break
-      }
-    }
-    if (!rowObj) return
-    if (rowObj.type === 'institution' && props.interactive) emit('create-meeting', { institution_id: rowObj.institutionId, suggestedAt: day })
-  })
-
-  // auto-scroll to today's position
-  const left = x(new Date())
-  if (rightScroll.value && !didInitialAutoScroll.value) {
-    rightScroll.value.scrollLeft = Math.max(0, left - 8)
-    didInitialAutoScroll.value = true
-  }
-  // update current year badge from center of viewport
-  const el = rightScroll.value
-  if (el && curX) {
-    const center = el.scrollLeft + el.clientWidth / 2
-    const d = curX.invert(center)
-    currentYear.value = d.getFullYear()
-  }
+  // Apply initial scroll position using the composable's function
+  // This centers on the stored center date (from localStorage) or today
+  applyInitialScrollPosition(x, margin.left)
+  
+  // Update current year badge from center of viewport
+  updateCurrentYear()
 } // end render
 
 onMounted(() => {
-  dayWidthPx.value = props.dayWidth
+  // Apply initial extension for low zoom levels BEFORE first render
+  // This ensures the timeline has the correct range when we calculate initial scroll position
+  applyInitialExtension()
+  
+  // Now render with correct extensions already applied
   render()
   ro = new ResizeObserver(() => render())
   if (wrap.value) ro.observe(wrap.value)
 
-  // Synchronize vertical scrolling between labels and timeline
-  const timelineScroll = rightScroll.value
-  const labelsContainer = leftLabels.value
-
-  if (timelineScroll && labelsContainer) {
-    let isSyncing = false
-
-    const syncVerticalScroll = () => {
-      if (isSyncing) return
-      isSyncing = true
-
-      const { scrollTop } = timelineScroll
-      
-      // In fullscreen mode (overflow-y-auto on labels), sync scrollTop directly
-      // In normal mode (overflow-hidden on labels), use transform
-      if (props.height === '100%') {
-        labelsContainer.scrollTop = scrollTop
-      } else {
-        const labelsContent = labelsContainer.querySelector('.grid') as HTMLElement | null
-        if (labelsContent) {
-          labelsContent.style.transform = `translateY(-${scrollTop}px)`
-        }
+  // Watch for dark mode changes via MutationObserver on document.documentElement
+  const themeObserver = new MutationObserver((mutations) => {
+    for (const mutation of mutations) {
+      if (mutation.attributeName === 'class') {
+        // Re-render when theme class changes
+        render()
+        break
       }
-
-      requestAnimationFrame(() => { isSyncing = false })
-    }
-
-    const syncFromLabels = () => {
-      if (isSyncing || props.height !== '100%') return
-      isSyncing = true
-      timelineScroll.scrollTop = labelsContainer.scrollTop
-      requestAnimationFrame(() => { isSyncing = false })
-    }
-
-    timelineScroll.addEventListener('scroll', syncVerticalScroll, { passive: true })
-    labelsContainer.addEventListener('scroll', syncFromLabels, { passive: true })
-  }
-
-  // attach infinite scroll handler
-  if (timelineScroll && props.infiniteScroll) {
-    timelineScroll.addEventListener('scroll', onScroll, { passive: true })
-  }
-})
-
-onUnmounted(() => {
-  ro?.disconnect()
-  const el = rightScroll.value
-  if (el) el.removeEventListener('scroll', onScroll as any)
-})
-
-watch([parsedMeetings, parsedGaps, institutions, rows, () => props.daysBefore, () => props.daysAfter, () => props.startDate, () => props.tenantFilter, () => props.showOnlyWithActivity, () => props.showOnlyWithPublicMeetings, () => props.detailsExpanded, extraBefore, extraAfter, dayWidthPx], () => render())
-
-/**
- * Infinite scroll handler that extends the date range dynamically
- *
- * Monitors horizontal scroll position and extends the timeline when the user
- * scrolls near the edges:
- * - **Left edge**: Adds days to the past (extraBefore), preserves viewport by
- *   adjusting scrollLeft to compensate for the added width
- * - **Right edge**: Adds days to the future (extraAfter), viewport naturally
- *   stays in place
- *
- * This enables seamless exploration of the timeline without loading all data
- * upfront. The `extending` flag prevents concurrent extensions.
- *
- * @see props.infiniteScroll - Enable/disable infinite scroll
- * @see props.extendThresholdPx - Distance from edge to trigger extension (default: 200px)
- * @see props.extendStepDays - Number of days to add on each extension (default: 30)
- */
-function onScroll() {
-  if (!props.infiniteScroll) return
-  const el = rightScroll.value
-  if (!el || extending.value) return
-  const threshold = props.extendThresholdPx ?? 200
-  const stepDays = props.extendStepDays ?? 30
-  const atLeft = el.scrollLeft <= threshold
-  const atRight = (el.scrollLeft + el.clientWidth) >= (el.scrollWidth - threshold)
-  if (atLeft) {
-    extending.value = true
-    const prev = el.scrollLeft
-    extraBefore.value += stepDays
-    nextTick(() => {
-      // preserve viewport by shifting right by added width
-      el.scrollLeft = prev + stepDays * (dayWidthPx.value || props.dayWidth)
-      extending.value = false
-    })
-  } else if (atRight) {
-    extending.value = true
-    extraAfter.value += stepDays
-    nextTick(() => { extending.value = false })
-  }
-}
-
-/**
- * Zoom/scale handler that adjusts day width while preserving viewport center
- *
- * When the user adjusts the scale slider, this function:
- * 1. Captures the date at the center of the current viewport (anchor date)
- * 2. Updates the day width (zoom level)
- * 3. Re-renders the chart with the new scale
- * 4. Adjusts scrollLeft so the same anchor date remains at the viewport center
- *
- * This creates a smooth zoom experience where the user's focus point stays
- * stable, similar to zooming in map applications.
- *
- * @param values - Array containing the new day width from the slider component
- *
- * @example
- * // User drags slider from 24px to 48px per day
- * // The date at viewport center (e.g., March 15) stays centered
- * onScaleChange([48])
- */
-function onScaleChange(values?: number[]) {
-  const newWidth = Math.max(4, Math.min(96, values?.[0] ?? props.dayWidth))
-  const el = rightScroll.value
-  let anchorDate: Date | null = null
-  let centerOffset = 0
-  if (el && curX) {
-    centerOffset = el.clientWidth / 2
-    const center = el.scrollLeft + centerOffset
-    anchorDate = curX.invert(center)
-  }
-  dayWidthPx.value = newWidth
-  nextTick(() => {
-    if (el && curX && anchorDate) {
-      // curX updated by render watcher
-      const newX = curX as d3.ScaleTime<number, number>
-      const target = newX(anchorDate as Date) - centerOffset
-      el.scrollLeft = Math.max(0, target)
     }
   })
-}
+  themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
+
+  // Setup vertical scroll synchronization using composable
+  const cleanupVerticalSync = setupVerticalScrollSync(props.height === '100%')
+  
+  // Attach infinite scroll handler using composable
+  const cleanupScrollHandler = attachScrollHandler()
+  
+  // Attach viewport tracking for horizontal culling
+  const cleanupViewport = viewport.attachViewportTracking()
+
+  // Attach keyboard navigation handler
+  const cleanupKeyboard = attachKeyboardHandler(wrap.value)
+
+  // Setup center line scroll handler with debounced center date saving
+  let saveCenterDateTimeout: ReturnType<typeof setTimeout> | null = null
+  
+  // Helper function to save current center date immediately
+  const saveCurrentCenterDate = () => {
+    if (rightScroll.value && curXRef.value) {
+      const scrollLeft = rightScroll.value.scrollLeft
+      const viewportWidth = rightScroll.value.clientWidth
+      const xScalePosition = scrollLeft + viewportWidth / 2 - margin.left
+      const centerDate = curXRef.value.invert(xScalePosition)
+      setCenterDate(centerDate)
+    }
+  }
+  
+  const handleCenterLineScroll = () => {
+    centerLineManager?.update()
+    
+    // Debounced save of center date to localStorage (200ms delay for faster persistence)
+    if (saveCenterDateTimeout) clearTimeout(saveCenterDateTimeout)
+    saveCenterDateTimeout = setTimeout(saveCurrentCenterDate, 200)
+  }
+  rightScroll.value?.addEventListener('scroll', handleCenterLineScroll, { passive: true })
+  
+  // Also save on beforeunload to catch any pending scroll position
+  const handleBeforeUnload = () => {
+    if (saveCenterDateTimeout) {
+      clearTimeout(saveCenterDateTimeout)
+    }
+    saveCurrentCenterDate()
+  }
+  window.addEventListener('beforeunload', handleBeforeUnload)
+
+  // Store cleanup functions for onUnmounted
+  onUnmounted(() => {
+    ro?.disconnect()
+    themeObserver.disconnect()
+    cleanupVerticalSync?.()
+    cleanupScrollHandler?.()
+    cleanupViewport?.()
+    cleanupKeyboard?.()
+    centerLineManager?.destroy()
+    rightScroll.value?.removeEventListener('scroll', handleCenterLineScroll)
+    window.removeEventListener('beforeunload', handleBeforeUnload)
+    if (saveCenterDateTimeout) clearTimeout(saveCenterDateTimeout)
+    // Save final position on unmount
+    saveCurrentCenterDate()
+  })
+})
+
+watch([parsedMeetings, parsedGaps, parsedDutyMembers, parsedInactivePeriods, institutions, rows, () => props.daysBefore, () => props.daysAfter, () => props.startDate, () => props.tenantFilter, () => props.showOnlyWithActivity, () => props.showOnlyWithPublicMeetings, () => props.showDutyMembers, () => props.detailsExpanded, extraBefore, extraAfter, dayWidthPx], () => render())
 </script>
 
 <style scoped>
