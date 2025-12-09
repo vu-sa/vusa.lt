@@ -40,13 +40,15 @@ export interface InactivePeriodsRenderContext {
   rowTop: (key: string | number) => number
   /** Get row height by key */
   rowHeightFor: (key: string | number) => number
+  /** All visible institution IDs (to detect institutions with no members) */
+  allInstitutionIds?: Array<string | number>
 }
 
 /**
  * Render inactive period overlays with diagonal stripes
  */
 export function renderInactivePeriods(ctx: InactivePeriodsRenderContext): void {
-  const { g, x, innerWidth, inactivePeriods, dutyMembers, minTime, maxTime, rowTop, rowHeightFor } = ctx
+  const { g, x, innerWidth, inactivePeriods, dutyMembers, minTime, maxTime, rowTop, rowHeightFor, allInstitutionIds } = ctx
 
   // Group duty members by institution
   const membersByInstitution = new Map<string, DutyMember[]>()
@@ -58,6 +60,22 @@ export function renderInactivePeriods(ctx: InactivePeriodsRenderContext): void {
   }
 
   const computedInactivePeriods: InactivePeriod[] = []
+
+  // For institutions with NO members at all, show inactive for entire timeline
+  if (allInstitutionIds) {
+    for (const instId of allInstitutionIds) {
+      const instIdStr = String(instId)
+      if (!membersByInstitution.has(instIdStr)) {
+        // Institution has no duty members at all - inactive for entire visible period
+        const periodEnd = maxTime ?? new Date(new Date().getTime() + 365 * 24 * 60 * 60 * 1000)
+        computedInactivePeriods.push({
+          institution_id: instIdStr,
+          fromDate: minTime,
+          untilDate: periodEnd
+        })
+      }
+    }
+  }
 
   // For each institution with members, compute inactive periods
   for (const [instId, members] of membersByInstitution) {

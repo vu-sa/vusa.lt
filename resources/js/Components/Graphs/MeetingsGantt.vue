@@ -775,6 +775,7 @@ const render = () => {
       maxTime: maxTime.value,
       rowTop,
       rowHeightFor,
+      allInstitutionIds: institutions.value,
     })
   }
 
