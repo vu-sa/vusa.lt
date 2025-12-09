@@ -8,6 +8,7 @@ interface StoredFilters {
   showOnlyWithActivityTenant: boolean;
   showOnlyWithPublicMeetingsTenant: boolean;
   showDutyMembersTenant: boolean;
+  showRelatedInstitutionsUser: boolean;
   scrollPosition?: number;
 }
 
@@ -45,6 +46,7 @@ export function useTimelineFilters(
   const showOnlyWithPublicMeetingsTenant = ref(stored.showOnlyWithPublicMeetingsTenant ?? false);
   const showDutyMembersUser = ref(true);
   const showDutyMembersTenant = ref(stored.showDutyMembersTenant ?? true);
+  const showRelatedInstitutionsUser = ref(stored.showRelatedInstitutionsUser ?? true);
   const selectedTenantForGantt = ref<string[]>(stored.selectedTenantForGantt ?? []);
   const scrollPosition = ref<number>(stored.scrollPosition ?? 0);
 
@@ -76,12 +78,13 @@ export function useTimelineFilters(
       showOnlyWithActivityTenant: showOnlyWithActivityTenant.value,
       showOnlyWithPublicMeetingsTenant: showOnlyWithPublicMeetingsTenant.value,
       showDutyMembersTenant: showDutyMembersTenant.value,
+      showRelatedInstitutionsUser: showRelatedInstitutionsUser.value,
       scrollPosition: scrollPosition.value,
     });
   }
 
   // Watch for changes and persist
-  watch([selectedTenantForGantt, showOnlyWithActivityTenant, showOnlyWithPublicMeetingsTenant, showDutyMembersTenant, scrollPosition], () => {
+  watch([selectedTenantForGantt, showOnlyWithActivityTenant, showOnlyWithPublicMeetingsTenant, showDutyMembersTenant, showRelatedInstitutionsUser, scrollPosition], () => {
     persistFilters();
   }, { deep: true });
 
@@ -109,6 +112,7 @@ export function useTimelineFilters(
     showOnlyWithActivityUser.value = false;
     showOnlyWithPublicMeetingsUser.value = false;
     showDutyMembersUser.value = true;
+    showRelatedInstitutionsUser.value = true;
   }
 
   // Initialize on mount - only set default tenant if no stored value
@@ -129,6 +133,7 @@ export function useTimelineFilters(
     showOnlyWithPublicMeetingsTenant,
     showDutyMembersUser,
     showDutyMembersTenant,
+    showRelatedInstitutionsUser,
     selectedTenantForGantt,
     scrollPosition,
     

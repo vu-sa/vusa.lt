@@ -89,7 +89,10 @@ const formattedInstitutions = computed(() => {
   let institutions = props.institutions.map(i => ({
     id: i.id,
     name: i.name,
-    tenant_id: i.tenant_id
+    tenant_id: i.tenant_id,
+    is_related: i.is_related,
+    relationship_direction: i.relationship_direction,
+    source_institution_id: i.source_institution_id
   }));
 
   // Filter to show only institutions with meetings if showOnlyWithActivity is true

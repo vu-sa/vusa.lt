@@ -134,6 +134,18 @@ class DashboardController extends AdminController
         // Build user's institutions from accessibleInstitutions (avoid duplicate query)
         $userInstitutions = $accessibleInstitutions->whereIn('id', $userInstitutionIds);
 
+        // Get related institutions for user's direct institutions (cached)
+        $relatedInstitutions = RelationshipService::getRelatedInstitutionsForMultiple(
+            new Collection($userInstitutions->values()->all())
+        );
+
+        // Append completion_status to related institution meetings and other computed attributes
+        $relatedInstitutions->each(function ($institution) {
+            $institution->meetings?->each->append('completion_status');
+            $institution->append('has_public_meetings');
+            $institution->append('meeting_periodicity_days');
+        });
+
         return $this->inertiaResponse('Admin/Dashboard/ShowAtstovavimas', [
             'user' => [
                 ...$user->toArray(),
@@ -147,6 +159,7 @@ class DashboardController extends AdminController
                 }),
             ],
             'accessibleInstitutions' => $accessibleInstitutions,
+            'relatedInstitutions' => $relatedInstitutions->values(),
             'availableTenants' => $availableTenants,
             'recentMeetings' => $recentMeetings,
         ]);

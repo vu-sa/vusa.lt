@@ -55,6 +55,18 @@
       >
         {{ $t('Rodyti narius') }}
       </DropdownMenuCheckboxItem>
+      
+      <DropdownMenuCheckboxItem 
+        v-if="hasRelatedInstitutions"
+        :model-value="showRelatedInstitutions"
+        @update:model-value="(val: boolean) => $emit('update:showRelatedInstitutions', val)" 
+        @select.prevent
+      >
+        <span class="flex items-center gap-1.5">
+          <IFluentLink20Regular class="h-4 w-4 text-muted-foreground" />
+          {{ $t('Rodyti susijusias institucijas') }}
+        </span>
+      </DropdownMenuCheckboxItem>
 
       <!-- Reset button -->
       <template v-if="showReset">
@@ -84,6 +96,7 @@ import {
   DropdownMenuTrigger
 } from "@/Components/ui/dropdown-menu";
 import IFluentArrowReset20Regular from '~icons/fluent/arrow-reset-20-regular';
+import IFluentLink20Regular from '~icons/fluent/link-20-regular';
 
 interface Tenant {
   id: string | number;
@@ -98,6 +111,8 @@ interface Props {
   showOnlyWithActivity: boolean;
   showOnlyWithPublicMeetings: boolean;
   showDutyMembers: boolean;
+  showRelatedInstitutions?: boolean;
+  hasRelatedInstitutions?: boolean;
   // UI options
   showReset?: boolean;
   triggerLabelOverride?: string;
@@ -107,6 +122,8 @@ const props = withDefaults(defineProps<Props>(), {
   tenants: undefined,
   selectedTenants: () => [],
   showReset: true,
+  showRelatedInstitutions: true,
+  hasRelatedInstitutions: false,
 });
 
 const emit = defineEmits<{
@@ -114,6 +131,7 @@ const emit = defineEmits<{
   'update:showOnlyWithActivity': [value: boolean];
   'update:showOnlyWithPublicMeetings': [value: boolean];
   'update:showDutyMembers': [value: boolean];
+  'update:showRelatedInstitutions': [value: boolean];
   'reset': [];
 }>();
 

@@ -37,10 +37,13 @@
           :institution-periodicity="userInstitutionPeriodicity"
           :duty-members="userDutyMembers" :inactive-periods="userInactivePeriods"
           :show-duty-members="timelineFilters.showDutyMembersUser.value"
+          :related-institutions="relatedInstitutions"
+          :show-related-institutions="timelineFilters.showRelatedInstitutionsUser.value"
           @update:tenant-filter="timelineFilters.userTenantFilter.value = $event"
           @update:show-only-with-activity="timelineFilters.showOnlyWithActivityUser.value = $event"
           @update:show-only-with-public-meetings="timelineFilters.showOnlyWithPublicMeetingsUser.value = $event"
           @update:show-duty-members="timelineFilters.showDutyMembersUser.value = $event"
+          @update:show-related-institutions="timelineFilters.showRelatedInstitutionsUser.value = $event"
           @create-meeting="actions.onGapCreateMeeting" @fullscreen="actions.onGanttFullscreen('user')"
           @reset-filters="timelineFilters.resetUserFilters" />
       </TabsContent>
@@ -141,7 +144,7 @@ import { useAtstovavimosActions } from './Composables/useAtstovavimasActions';
 import { useGanttChartData } from './Composables/useGanttChartData';
 import { provideGanttSettings } from './Composables/useGanttSettings';
 // Icons and utils
-import type { AtstovavimosUser, AtstovavimosTenant } from './types';
+import type { AtstovavimosUser, AtstovavimosTenant, AtstovavimosInstitution } from './types';
 
 import Icons from "@/Types/Icons/filled";
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
@@ -163,9 +166,18 @@ usePageBreadcrumbs(() => [
 const props = defineProps<{
   user: AtstovavimosUser;
   accessibleInstitutions: App.Entities.Institution[];
+  relatedInstitutions?: AtstovavimosInstitution[];
   availableTenants: AtstovavimosTenant[];
   recentMeetings?: Array<{ id: string; title: string; start_time: string; institution_name: string; agenda_items: { title: string }[] }>;
 }>();
+
+// Related institutions computed (for passing to UserTimelineSection)
+const relatedInstitutions = computed<AtstovavimosInstitution[]>(() => {
+  return (props.relatedInstitutions ?? []).map(inst => ({
+    ...inst,
+    id: String(inst.id),
+  }));
+});
 
 // Tab state with URL persistence
 const getInitialTab = () => {

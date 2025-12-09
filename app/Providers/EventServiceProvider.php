@@ -4,12 +4,16 @@ namespace App\Providers;
 
 use App\Models\Calendar;
 use App\Models\Duty;
+use App\Models\Institution;
 use App\Models\Meeting;
+use App\Models\Pivots\Relationshipable;
 use App\Models\Role;
 use App\Models\RoleType;
 use App\Models\Typeable;
 use App\Models\User;
 use App\Observers\CalendarObserver;
+use App\Observers\InstitutionObserver;
+use App\Observers\RelationshipableObserver;
 use App\Observers\RoleTypeObserver;
 use App\Observers\MeetingObserver;
 use App\Observers\TypeableObserver;
@@ -59,9 +63,11 @@ class EventServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-    Calendar::observe(CalendarObserver::class);
+        Calendar::observe(CalendarObserver::class);
         RoleType::observe(RoleTypeObserver::class);
         Typeable::observe(TypeableObserver::class);
+        Institution::observe(InstitutionObserver::class);
+        Relationshipable::observe(RelationshipableObserver::class);
         // TODO: properly implement this and the PermissionService
         // User::observe(UserPermissionObserver::class);
         // Role::observe(UserPermissionObserver::class);

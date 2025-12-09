@@ -123,6 +123,9 @@ class InstitutionController extends AdminController
         $institution->append('meeting_periodicity_days');
         $institution->meetings->each->append('is_public');
 
+        // Get related institutions as flat list with metadata (cached)
+        $relatedInstitutionsFlat = \App\Services\RelationshipService::getRelatedInstitutionsCached($institution);
+
         // Inertia::share('layout.navBackground', $institution->image_url ?? null);
 
         return $this->inertiaResponse('Admin/People/ShowInstitution', [
@@ -130,7 +133,13 @@ class InstitutionController extends AdminController
                 ...$institution->toArray(),
                 'current_users' => $institution->duties->load('current_users')->pluck('current_users')->flatten()->unique('id')->values(),
                 'managers' => $institution->managers(),
+                // Provide both formats for backwards compatibility during transition
                 'relatedInstitutions' => $institution->related_institution_relationshipables(),
+                'relatedInstitutionsFlat' => $relatedInstitutionsFlat->map(fn ($item) => [
+                    ...$item['institution']->load('meetings', 'tenant')->toArray(),
+                    'direction' => $item['direction'],
+                    'type' => $item['type'],
+                ])->values(),
                 'sharepointPath' => $institution->tenant ? $institution->sharepoint_path() : null,
                 'lastMeeting' => $institution->lastMeeting(),
             ],

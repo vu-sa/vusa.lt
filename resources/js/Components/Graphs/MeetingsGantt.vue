@@ -132,13 +132,28 @@
               {{ mergedTenantNames[row.tenantId!] ?? row.tenantId }}
             </div>
             <div v-else
-              class="px-3 py-1 text-sm text-zinc-700 dark:text-zinc-300 border-b border-zinc-100 dark:border-zinc-800 flex items-start gap-2 truncate"
-              :class="[idx % 2 === 0 ? 'bg-zinc-50/40 dark:bg-zinc-800/30' : '']" :title="labelFor(row.institutionId!)">
+              class="px-3 py-1 text-sm border-b flex items-start gap-2 truncate"
+              :class="[
+                idx % 2 === 0 ? 'bg-zinc-50/40 dark:bg-zinc-800/30' : '',
+                row.isRelated 
+                  ? 'text-zinc-500 dark:text-zinc-400 border-zinc-100 dark:border-zinc-800 border-dashed bg-blue-50/30 dark:bg-blue-900/10' 
+                  : 'text-zinc-700 dark:text-zinc-300 border-zinc-100 dark:border-zinc-800'
+              ]" 
+              :title="labelFor(row.institutionId!)">
               <div class="flex-1 min-w-0">
                 <div class="flex items-center justify-between gap-2">
                   <div class="flex items-center gap-1.5 min-w-0">
+                    <!-- Related institution indicator -->
+                    <svg v-if="row.isRelated" 
+                      class="h-3 w-3 text-blue-500 dark:text-blue-400 shrink-0" 
+                      viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                      :aria-label="$t('Susijusi institucija')">
+                      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                    </svg>
                     <button type="button"
                       class="truncate text-left hover:underline cursor-pointer focus:underline focus:outline-none"
+                      :class="[row.isRelated ? 'opacity-80' : '']"
                       :aria-label="$t('Atidaryti instituciją') + ': ' + (labelFor(row.institutionId!) || row.institutionId)"
                       @click="visitInstitution(row.institutionId!, $event)"
                       @auxclick.middle.prevent="visitInstitution(row.institutionId!, $event)"
@@ -229,7 +244,7 @@ import {
 const props = withDefaults(defineProps<{
   meetings: Array<{ id: string | number, start_time: string | Date, institution_id: string | number, title?: string, institution?: string }>
   gaps: Array<{ institution_id: string | number, from: string | Date, until: string | Date, mode?: 'heads_up' | 'no_meetings', note?: string }>
-  institutions?: Array<{ id: string | number, name?: string, tenant_id?: string | number }>
+  institutions?: Array<{ id: string | number, name?: string, tenant_id?: string | number, is_related?: boolean, relationship_direction?: 'outgoing' | 'incoming', source_institution_id?: string }>
   daysBefore?: number
   daysAfter?: number
   dayWidth?: number
@@ -484,9 +499,15 @@ const tenantLabelFor = (id: string | number) => {
   return mergedTenantNames.value[t as any]
 }
 
-type Row = { type: 'tenant'; key: string; tenantId: string | number } | { type: 'institution'; key: string | number; institutionId: string | number }
+type Row = { type: 'tenant'; key: string; tenantId: string | number } | { type: 'institution'; key: string | number; institutionId: string | number; isRelated?: boolean; relationshipDirection?: 'outgoing' | 'incoming' }
 const rows = computed<Row[]>(() => {
   const ids = institutions.value
+  // Create a map for quick lookup of institution metadata
+  const institutionMeta = new Map<string | number, { is_related?: boolean; relationship_direction?: 'outgoing' | 'incoming' }>()
+  props.institutions?.forEach(i => {
+    institutionMeta.set(i.id, { is_related: i.is_related, relationship_direction: i.relationship_direction })
+  })
+  
   if (props.institutionTenant && Object.keys(mergedTenantNames.value).length > 0) {
     const byTenant = new Map<string | number, Array<string | number>>()
     for (const id of ids) {
@@ -499,15 +520,21 @@ const rows = computed<Row[]>(() => {
     const out: Row[] = []
     for (const t of tenantOrder) {
       out.push({ type: 'tenant', key: `__tenant__:${t}`, tenantId: t })
-      for (const iid of byTenant.get(t) ?? []) out.push({ type: 'institution', key: iid, institutionId: iid })
+      for (const iid of byTenant.get(t) ?? []) {
+        const meta = institutionMeta.get(iid)
+        out.push({ type: 'institution', key: iid, institutionId: iid, isRelated: meta?.is_related, relationshipDirection: meta?.relationship_direction })
+      }
     }
     return out
   }
-  return ids.map(iid => ({ type: 'institution', key: iid, institutionId: iid } as Row))
+  return ids.map(iid => {
+    const meta = institutionMeta.get(iid)
+    return { type: 'institution', key: iid, institutionId: iid, isRelated: meta?.is_related, relationshipDirection: meta?.relationship_direction } as Row
+  })
 })
 
 // Layout with variable row heights (supports one expanded institution row)
-interface LayoutRow { key: string | number; type: Row['type']; tenantId?: string | number; institutionId?: string | number; top: number; height: number }
+interface LayoutRow { key: string | number; type: Row['type']; tenantId?: string | number; institutionId?: string | number; isRelated?: boolean; relationshipDirection?: 'outgoing' | 'incoming'; top: number; height: number }
 const layoutRows = computed<LayoutRow[]>(() => {
   const out: LayoutRow[] = []
   let y = 0
@@ -516,7 +543,16 @@ const layoutRows = computed<LayoutRow[]>(() => {
     const h = isInst
       ? (props.detailsExpanded ? (props.expandedRowHeight || props.rowHeight) : props.rowHeight)
       : props.rowHeight
-    out.push({ key: r.key, type: r.type, tenantId: (r as any).tenantId, institutionId: (r as any).institutionId, top: y, height: h })
+    out.push({ 
+      key: r.key, 
+      type: r.type, 
+      tenantId: (r as any).tenantId, 
+      institutionId: (r as any).institutionId, 
+      isRelated: (r as any).isRelated,
+      relationshipDirection: (r as any).relationshipDirection,
+      top: y, 
+      height: h 
+    })
     y += h
   }
   return out

@@ -679,5 +679,12 @@
   "Nario pradžia": "Member start",
   "Atstovo pareigų pradžios data institucijoje": "The date when the representative started their duties in the institution",
   "Be aktyvių narių": "No active members",
-  "Laikotarpis, kai institucija neturėjo aktyvių atstovų": "Period when the institution had no active representatives"
+  "Laikotarpis, kai institucija neturėjo aktyvių atstovų": "Period when the institution had no active representatives",
+  "Rodyti susijusias institucijas": "Show related institutions",
+  "Susijusi institucija": "Related institution",
+  "Nėra susijusių institucijų": "No related institutions",
+  "Išeinantis ryšys": "Outgoing relationship",
+  "Įeinantis ryšys": "Incoming relationship",
+  "Ryšys per institucijos tipą": "Relationship through institution type",
+  "Tipas": "Type"
 }

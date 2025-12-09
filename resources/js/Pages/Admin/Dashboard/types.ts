@@ -18,6 +18,11 @@ export interface AtstovavimosInstitution {
   upcoming_meetings_count?: number;
   days_since_last_meeting?: number;
   has_public_meetings?: boolean;
+  // Related institution metadata (only present for related institutions)
+  is_related?: boolean;
+  relationship_direction?: 'outgoing' | 'incoming';
+  relationship_type?: 'direct' | 'type-based';
+  source_institution_id?: string;
 }
 
 export interface InstitutionCheckIn {
@@ -78,6 +83,10 @@ export interface GanttInstitution {
   name: string;
   tenant_id?: string;
   has_public_meetings?: boolean;
+  // Related institution metadata
+  is_related?: boolean;
+  relationship_direction?: 'outgoing' | 'incoming';
+  source_institution_id?: string;
 }
 
 // Duty member for Gantt chart display
