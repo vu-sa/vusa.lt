@@ -23,12 +23,16 @@ export interface GanttSettings {
   showDutyMembers: Ref<boolean>;
   /** Center date timestamp to restore on page load (null = today) */
   centerDateTimestamp: Ref<number | null>;
+  /** Vertical scroll position to restore on page load (null = top) */
+  verticalScrollPosition: Ref<number | null>;
   /** Update day width */
   setDayWidth: (width: number) => void;
   /** Toggle details expanded state */
   toggleDetailsExpanded: () => void;
   /** Set the center date to persist */
   setCenterDate: (date: Date | null) => void;
+  /** Set the vertical scroll position to persist */
+  setVerticalScrollPosition: (position: number | null) => void;
   /** Reset all settings to defaults */
   resetSettings: () => void;
 }
@@ -38,6 +42,7 @@ interface StoredSettings {
   detailsExpanded?: boolean;
   showDutyMembers?: boolean;
   centerDateTimestamp?: number | null;
+  verticalScrollPosition?: number | null;
 }
 
 const GANTT_SETTINGS_KEY: InjectionKey<GanttSettings> = Symbol('gantt-settings');
@@ -76,6 +81,7 @@ export function provideGanttSettings(): GanttSettings {
   const detailsExpanded = ref<boolean>(stored.detailsExpanded ?? false);
   const showDutyMembers = ref<boolean>(stored.showDutyMembers ?? true);
   const centerDateTimestamp = ref<number | null>(stored.centerDateTimestamp ?? null);
+  const verticalScrollPosition = ref<number | null>(stored.verticalScrollPosition ?? null);
 
   // Persist settings on change
   function persistSettings() {
@@ -84,10 +90,11 @@ export function provideGanttSettings(): GanttSettings {
       detailsExpanded: detailsExpanded.value,
       showDutyMembers: showDutyMembers.value,
       centerDateTimestamp: centerDateTimestamp.value,
+      verticalScrollPosition: verticalScrollPosition.value,
     });
   }
 
-  watch([dayWidthPx, detailsExpanded, showDutyMembers, centerDateTimestamp], () => {
+  watch([dayWidthPx, detailsExpanded, showDutyMembers, centerDateTimestamp, verticalScrollPosition], () => {
     persistSettings();
   });
 
@@ -103,11 +110,16 @@ export function provideGanttSettings(): GanttSettings {
     centerDateTimestamp.value = date ? date.getTime() : null;
   }
 
+  function setVerticalScrollPosition(position: number | null) {
+    verticalScrollPosition.value = position;
+  }
+
   function resetSettings() {
     dayWidthPx.value = DEFAULT_DAY_WIDTH;
     detailsExpanded.value = false;
     showDutyMembers.value = true;
     centerDateTimestamp.value = null;
+    verticalScrollPosition.value = null;
     if (typeof window !== 'undefined') {
       localStorage.removeItem(STORAGE_KEY);
     }
@@ -118,9 +130,11 @@ export function provideGanttSettings(): GanttSettings {
     detailsExpanded,
     showDutyMembers,
     centerDateTimestamp,
+    verticalScrollPosition,
     setDayWidth,
     toggleDetailsExpanded,
     setCenterDate,
+    setVerticalScrollPosition,
     resetSettings,
   };
 
@@ -149,6 +163,7 @@ export function useGanttSettings(): GanttSettings {
     const detailsExpanded = ref<boolean>(stored.detailsExpanded ?? false);
     const showDutyMembers = ref<boolean>(stored.showDutyMembers ?? true);
     const centerDateTimestamp = ref<number | null>(stored.centerDateTimestamp ?? null);
+    const verticalScrollPosition = ref<number | null>(stored.verticalScrollPosition ?? null);
 
     // Persist settings on change (same as provider branch)
     function persistFallbackSettings() {
@@ -157,10 +172,11 @@ export function useGanttSettings(): GanttSettings {
         detailsExpanded: detailsExpanded.value,
         showDutyMembers: showDutyMembers.value,
         centerDateTimestamp: centerDateTimestamp.value,
+        verticalScrollPosition: verticalScrollPosition.value,
       });
     }
 
-    watch([dayWidthPx, detailsExpanded, showDutyMembers, centerDateTimestamp], () => {
+    watch([dayWidthPx, detailsExpanded, showDutyMembers, centerDateTimestamp, verticalScrollPosition], () => {
       persistFallbackSettings();
     });
 
@@ -169,14 +185,17 @@ export function useGanttSettings(): GanttSettings {
       detailsExpanded,
       showDutyMembers,
       centerDateTimestamp,
+      verticalScrollPosition,
       setDayWidth: (w) => { dayWidthPx.value = Math.max(MIN_DAY_WIDTH, Math.min(MAX_DAY_WIDTH, w)); },
       toggleDetailsExpanded: () => { detailsExpanded.value = !detailsExpanded.value; },
       setCenterDate: (date: Date | null) => { centerDateTimestamp.value = date ? date.getTime() : null; },
+      setVerticalScrollPosition: (position: number | null) => { verticalScrollPosition.value = position; },
       resetSettings: () => {
         dayWidthPx.value = DEFAULT_DAY_WIDTH;
         detailsExpanded.value = false;
         showDutyMembers.value = true;
         centerDateTimestamp.value = null;
+        verticalScrollPosition.value = null;
         if (typeof window !== 'undefined') {
           localStorage.removeItem(STORAGE_KEY);
         }

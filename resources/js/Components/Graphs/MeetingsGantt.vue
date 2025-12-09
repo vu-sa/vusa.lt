@@ -301,6 +301,8 @@ const ganttSettings = useGanttSettings()
 const dayWidthPx = ganttSettings.dayWidthPx
 const centerDateTimestamp = ganttSettings.centerDateTimestamp
 const setCenterDate = ganttSettings.setCenterDate
+const verticalScrollPosition = ganttSettings.verticalScrollPosition
+const setVerticalScrollPosition = ganttSettings.setVerticalScrollPosition
 
 const emit = defineEmits<{
   (e: 'create-meeting', payload: { institution_id: string | number, suggestedAt: Date }): void
@@ -906,6 +908,7 @@ onMounted(() => {
 
   // Setup center line scroll handler with debounced center date saving
   let saveCenterDateTimeout: ReturnType<typeof setTimeout> | null = null
+  let saveVerticalScrollTimeout: ReturnType<typeof setTimeout> | null = null
   
   // Helper function to save current center date immediately
   const saveCurrentCenterDate = () => {
@@ -917,6 +920,13 @@ onMounted(() => {
       setCenterDate(centerDate)
     }
   }
+
+  // Helper function to save current vertical scroll position immediately
+  const saveCurrentVerticalScroll = () => {
+    if (rightScroll.value) {
+      setVerticalScrollPosition(rightScroll.value.scrollTop)
+    }
+  }
   
   const handleCenterLineScroll = () => {
     centerLineManager?.update()
@@ -924,6 +934,10 @@ onMounted(() => {
     // Debounced save of center date to localStorage (200ms delay for faster persistence)
     if (saveCenterDateTimeout) clearTimeout(saveCenterDateTimeout)
     saveCenterDateTimeout = setTimeout(saveCurrentCenterDate, 200)
+
+    // Debounced save of vertical scroll position to localStorage
+    if (saveVerticalScrollTimeout) clearTimeout(saveVerticalScrollTimeout)
+    saveVerticalScrollTimeout = setTimeout(saveCurrentVerticalScroll, 200)
   }
   rightScroll.value?.addEventListener('scroll', handleCenterLineScroll, { passive: true })
   
@@ -932,9 +946,22 @@ onMounted(() => {
     if (saveCenterDateTimeout) {
       clearTimeout(saveCenterDateTimeout)
     }
+    if (saveVerticalScrollTimeout) {
+      clearTimeout(saveVerticalScrollTimeout)
+    }
     saveCurrentCenterDate()
+    saveCurrentVerticalScroll()
   }
   window.addEventListener('beforeunload', handleBeforeUnload)
+
+  // Restore vertical scroll position after initial render
+  if (verticalScrollPosition.value != null && rightScroll.value) {
+    nextTick(() => {
+      if (rightScroll.value) {
+        rightScroll.value.scrollTop = verticalScrollPosition.value ?? 0
+      }
+    })
+  }
 
   // Store cleanup functions for onUnmounted
   onUnmounted(() => {
@@ -948,8 +975,10 @@ onMounted(() => {
     rightScroll.value?.removeEventListener('scroll', handleCenterLineScroll)
     window.removeEventListener('beforeunload', handleBeforeUnload)
     if (saveCenterDateTimeout) clearTimeout(saveCenterDateTimeout)
+    if (saveVerticalScrollTimeout) clearTimeout(saveVerticalScrollTimeout)
     // Save final position on unmount
     saveCurrentCenterDate()
+    saveCurrentVerticalScroll()
   })
 })
 
