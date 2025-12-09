@@ -97,6 +97,9 @@ export function useAtstovavimosData(
     );
     
     // Find institutions with oldest last meetings and compare against periodicity
+    // Only include institutions that are overdue (>100%) or approaching (>=80%) the periodicity threshold
+    const APPROACHING_THRESHOLD = 0.8; // 80% of periodicity
+    
     const institutionsWithOldMeetings = institutionsWithMeetings
       .map((inst: AtstovavimosInstitution) => {
         const lastMeeting = (inst.meetings as any[]).sort((a: any, b: any) => 
@@ -105,14 +108,19 @@ export function useAtstovavimosData(
         const daysSinceLastMeeting = Math.floor((new Date().getTime() - new Date(lastMeeting.start_time).getTime()) / (1000 * 60 * 60 * 24));
         // Get periodicity from institution (accessor handles inheritance from types, defaults to 30)
         const periodicity = (inst as any).meeting_periodicity_days ?? 30;
+        const isOverdue = daysSinceLastMeeting > periodicity;
+        const isApproaching = !isOverdue && daysSinceLastMeeting >= (periodicity * APPROACHING_THRESHOLD);
         return {
           ...inst,
           lastMeetingDate: new Date(lastMeeting.start_time),
           daysSinceLastMeeting,
           periodicity,
-          isOverdue: daysSinceLastMeeting > periodicity
+          isOverdue,
+          isApproaching
         };
       })
+      // Filter to only include institutions that need attention (overdue or approaching)
+      .filter(inst => inst.isOverdue || inst.isApproaching)
       // Sort by how overdue they are (days over periodicity), then by days since last meeting
       .sort((a, b) => {
         const aOverdue = a.daysSinceLastMeeting - a.periodicity;

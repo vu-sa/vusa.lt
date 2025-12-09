@@ -157,29 +157,29 @@
             }}
           </div>
         </div>
-        <div v-else-if="overdueInstitution" class="text-red-600 dark:text-red-400">
+        <div v-else-if="overdueInstitution" class="text-orange-600 dark:text-orange-400">
           <div class="font-medium">
-            {{ $t('Vėluoja susitikimas') }}:
+            {{ $t('Senokas susitikimas') }}:
           </div>
           <div>
             {{ overdueInstitution.name }}
             ({{ overdueInstitution.daysSinceLastMeeting }} {{ $t('d.') }} / {{ overdueInstitution.periodicity }} {{ $t('d. rekomenduojama') }})
           </div>
         </div>
-        <div v-else-if="institutionsInsights.withOldMeetings.length > 0" class="text-amber-600 dark:text-amber-400">
+        <div v-else-if="approachingInstitution" class="text-amber-600 dark:text-amber-400">
           <div class="font-medium">
-            {{ $t('Seniausi susitikimai') }}:
+            {{ $t('Artėja susitikimo laikas') }}:
           </div>
           <div>
-            {{ institutionsInsights.withOldMeetings[0].name }}
-            ({{ institutionsInsights.withOldMeetings[0].daysSinceLastMeeting }} {{ $t('d.') }} / {{ institutionsInsights.withOldMeetings[0].periodicity }} {{ $t('d.') }})
+            {{ approachingInstitution.name }}
+            ({{ approachingInstitution.daysSinceLastMeeting }} {{ $t('d.') }} / {{ approachingInstitution.periodicity }} {{ $t('d.') }})
           </div>
         </div>
-        <div v-else class="text-emerald-600 dark:text-emerald-400">
+        <div v-else class="text-zinc-600 dark:text-zinc-400">
           <div class="font-medium">
-            {{ $t('Puikus aktyvumas!') }}
+            {{ $t('Viskas tvarkoje') }}
           </div>
-          <div>{{ $t('Visi susitikimai aktualūs') }}</div>
+          <div>{{ $t('Nepamirškite registruoti susitikimus') }}</div>
         </div>
       </div>
     </CardFooter>
@@ -212,6 +212,11 @@ const props = defineProps<Props>();
 // Find the first overdue institution (where days since last meeting exceeds periodicity)
 const overdueInstitution = computed(() => {
   return props.institutionsInsights.withOldMeetings.find(inst => inst.isOverdue) ?? null;
+});
+
+// Find the first approaching institution (80%+ but not yet overdue)
+const approachingInstitution = computed(() => {
+  return props.institutionsInsights.withOldMeetings.find(inst => inst.isApproaching) ?? null;
 });
 
 const emit = defineEmits<{

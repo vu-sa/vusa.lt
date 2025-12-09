@@ -61,15 +61,22 @@
           class="text-xs px-2.5 py-1 rounded-full bg-zinc-100 text-zinc-700 border border-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700 shrink-0 font-medium">
           {{ $t('Reikia susitikimo') }}
         </span>
-        <span v-else-if="daysSinceLast !== undefined && daysSinceLast > 60"
-          class="text-xs px-2.5 py-1 rounded-full bg-amber-100 text-amber-700 border border-amber-200 dark:bg-amber-900/40 dark:text-amber-300 dark:border-amber-700/50 shrink-0 font-medium">
+        <span v-else-if="isOverdue"
+          class="text-xs px-2.5 py-1 rounded-full bg-orange-100 text-orange-700 border border-orange-200 dark:bg-orange-900/40 dark:text-orange-300 dark:border-orange-700/50 shrink-0 font-medium">
           {{ $t('Senokas susitikimas') }}
         </span>
+        <span v-else-if="isApproaching"
+          class="text-xs px-2.5 py-1 rounded-full bg-amber-100 text-amber-700 border border-amber-200 dark:bg-amber-900/40 dark:text-amber-300 dark:border-amber-700/50 shrink-0 font-medium">
+          {{ $t('Artėja susitikimo laikas') }}
+        </span>
 
-        <!-- Last meeting info -->
-        <span v-if="!institution.active_check_in && lastMeetingDate" class="text-xs text-zinc-500 dark:text-zinc-400">
+        <!-- Last meeting info - only show when no upcoming meeting -->
+        <span v-if="!institution.active_check_in && !nextMeetingDate && lastMeetingDate" class="text-xs text-zinc-500 dark:text-zinc-400">
           {{ formatDate(lastMeetingDate) }}
-          <span v-if="daysSinceLast !== undefined && daysSinceLast > 30" class="text-amber-600 dark:text-amber-400 font-medium">
+          <span v-if="isOverdue" class="text-orange-600 dark:text-orange-400 font-medium">
+            ({{ daysSinceLast }} {{ $t('d.') }})
+          </span>
+          <span v-else-if="isApproaching" class="text-amber-600 dark:text-amber-400 font-medium">
             ({{ daysSinceLast }} {{ $t('d.') }})
           </span>
         </span>
@@ -176,16 +183,36 @@ const daysSinceLast = computed(() => {
   return Math.floor(diffMs / (1000 * 60 * 60 * 24))
 })
 
+// Get periodicity from institution (accessor handles inheritance from types, defaults to 30)
+const periodicity = computed(() => {
+  return (props.institution as any).meeting_periodicity_days ?? 30
+})
+
+// Calculate thresholds based on periodicity
+const APPROACHING_THRESHOLD = 0.8 // 80% of periodicity
+const isApproaching = computed(() => {
+  if (daysSinceLast.value === undefined) return false
+  return daysSinceLast.value >= (periodicity.value * APPROACHING_THRESHOLD) && daysSinceLast.value <= periodicity.value
+})
+
+const isOverdue = computed(() => {
+  if (daysSinceLast.value === undefined) return false
+  return daysSinceLast.value > periodicity.value
+})
+
 const statusDotClass = computed(() => {
   const hasUpcoming = (props.institution.upcoming_meetings_count || 0) > 0
   if (hasUpcoming || props.institution.active_check_in) {
     return 'bg-emerald-400'
   }
-  if (daysSinceLast.value !== undefined && daysSinceLast.value > 60) {
+  if (isOverdue.value) {
+    return 'bg-orange-400'
+  }
+  if (isApproaching.value) {
     return 'bg-amber-400'
   }
   if (!lastMeetingDate.value) {
-    return 'bg-rose-400'
+    return 'bg-zinc-400'
   }
   return 'bg-zinc-400'
 })

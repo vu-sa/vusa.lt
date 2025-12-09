@@ -14,7 +14,7 @@
       </CardTitle>
     </CardHeader>
 
-    <CardContent class="flex-1 relative z-10 space-y-4">
+    <CardContent class="flex-1 relative z-10 space-y-4 pt-2">
       <!-- Institution List - improved spacing -->
       <div class="space-y-2">
         <InstitutionCompactCard v-for="inst in limitedInstitutions" :key="inst.id" :institution="inst"
@@ -22,28 +22,7 @@
           @schedule-meeting="$emit('schedule-meeting', $event)" @add-check-in="handleAddCheckIn" @remove-active-check-in="handleRemoveActiveCheckIn" />
       </div>
 
-      <!-- Activity Overview - simplified -->
-      <div v-if="institutions.length > 0" class="space-y-3 pt-2 border-t border-zinc-100 dark:border-zinc-800">
-        <!-- Progress indicator -->
-        <div class="w-full h-1.5 rounded-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden flex">
-          <div :style="{ width: `${(segCounts.green / institutions.length) * 100}%` }" class="h-1.5 bg-emerald-400" />
-          <div :style="{ width: `${(segCounts.red / institutions.length) * 100}%` }" class="h-1.5 bg-zinc-400 dark:bg-zinc-600" />
-        </div>
 
-        <!-- Critical attention callout - Smaller -->
-        <!-- <div v-if="institutionsNeedingAttention.length > 0" -->
-        <!--   class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-md"> -->
-        <!--   <div class="text-xs font-medium text-gray-700 mb-1 flex items-center gap-1"> -->
-        <!--     <component :is="Icons.NOTIFICATION" class="h-3 w-3" /> -->
-        <!--     {{ institutionsNeedingAttention.length }} {{ $t('reikia dėmesio') }} -->
-        <!--   </div> -->
-        <!--   <Button size="sm" variant="outline" class="h-6 text-xs border-gray-300 text-gray-700 hover:bg-gray-100" -->
-        <!--     @click="handleAddCheckInForPriority"> -->
-        <!--     <component :is="Icons.PLUS" class="h-3 w-3 mr-1" /> -->
-        <!--     {{ $t('Pranešti apie nebuvimą') }} -->
-        <!--   </Button> -->
-        <!-- </div> -->
-      </div>
     </CardContent>
 
     <CardFooter class="border-t border-zinc-200 dark:border-zinc-600 bg-zinc-50/60 dark:bg-zinc-800/60 p-4 relative z-10">
@@ -322,17 +301,6 @@ const hasUpcomingMeeting = (inst: AtstovavimosInstitution) => {
   const now = new Date()
   return inst.meetings.some(m => new Date(m.start_time) > now)
 }
-
-const segCounts = computed(() => {
-  let green = 0, red = 0
-  for (const inst of props.institutions) {
-    const hasUpcoming = hasUpcomingMeeting(inst)
-    const hasCheckIn = !!inst.active_check_in
-    if (hasUpcoming || hasCheckIn) green++
-    else red++
-  }
-  return { green, blue: 0, red }
-})
 
 // Action handlers with loading states
 const setLoading = (institutionId: string, loading: boolean) => {

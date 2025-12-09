@@ -61,6 +61,7 @@ export interface InstitutionInsights {
     daysSinceLastMeeting: number;
     periodicity: number;
     isOverdue: boolean;
+    isApproaching: boolean;
   }>;
 }
 
