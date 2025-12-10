@@ -4,7 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetTenantsForUpserts;
 use App\Http\Controllers\AdminController;
+use App\Models\Calendar;
 use App\Models\Institution;
+use App\Models\Meeting;
+use App\Models\News;
 use App\Models\Page;
 use App\Models\Resource;
 use App\Models\Tenant;
@@ -13,6 +16,7 @@ use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\RelationshipService;
 use App\Services\ResourceServices\DutyService;
 use App\Settings\AtstovavimasSettings;
+use App\Settings\MeetingSettings;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -34,9 +38,138 @@ class DashboardController extends AdminController
         // Get notification count
         $unreadNotificationsCount = $user->unreadNotifications()->count();
 
+        // Get task statistics for the dashboard
+        $taskStats = [
+            'total' => $user->tasks()->whereNull('completed_at')->count(),
+            'overdue' => $user->tasks()->whereNull('completed_at')->where('due_date', '<', now())->count(),
+            'dueSoon' => $user->tasks()->whereNull('completed_at')
+                ->where('due_date', '>=', now())
+                ->where('due_date', '<=', now()->addDays(7))
+                ->count(),
+        ];
+
+        // Get upcoming tasks (due within 14 days or overdue)
+        $upcomingTasks = $user->tasks()
+            ->whereNull('completed_at')
+            ->where(function ($query) {
+                $query->where('due_date', '<=', now()->addDays(14))
+                    ->orWhere('due_date', '<', now());
+            })
+            ->orderByRaw('CASE WHEN due_date < ? THEN 0 ELSE 1 END', [now()]) // Overdue first
+            ->orderBy('due_date')
+            ->with('taskable')
+            ->take(10)
+            ->get()
+            ->map(fn ($task) => [
+                'id' => $task->id,
+                'name' => $task->name,
+                'due_date' => $task->due_date?->toISOString(),
+                'is_overdue' => $task->due_date && $task->due_date < now(),
+                'taskable_type' => class_basename($task->taskable_type ?? ''),
+                'taskable_id' => $task->taskable_id,
+            ]);
+
+        // Get user's institutions and upcoming meetings
+        $userInstitutionIds = $user->current_duties->pluck('institution_id')->filter()->unique();
+        
+        $upcomingMeetings = Meeting::query()
+            ->whereHas('institutions', fn ($q) => $q->whereIn('institutions.id', $userInstitutionIds))
+            ->where('start_time', '>', now())
+            ->where('start_time', '<', now()->addMonths(2))
+            ->orderBy('start_time')
+            ->with(['institutions:id,name'])
+            ->take(3)
+            ->get()
+            ->map(fn ($meeting) => [
+                'id' => $meeting->id,
+                'title' => $meeting->title,
+                'start_time' => $meeting->start_time?->toISOString(),
+                'institution_name' => $meeting->institutions->first()?->name,
+            ]);
+
+        // Get institutions needing attention (overdue meetings based on periodicity)
+        $meetingSettings = app(MeetingSettings::class);
+        $excludedTypeIds = $meetingSettings->getExcludedInstitutionTypeIds();
+        
+        $userInstitutions = Institution::query()
+            ->whereIn('id', $userInstitutionIds)
+            ->with(['meetings' => fn ($q) => $q->orderByDesc('start_time')->take(1), 'types'])
+            ->get()
+            ->filter(function ($institution) use ($excludedTypeIds) {
+                // Exclude institutions with excluded types
+                if ($excludedTypeIds->isNotEmpty()) {
+                    return $institution->types->pluck('id')->intersect($excludedTypeIds)->isEmpty();
+                }
+                return true;
+            });
+
+        $institutionsNeedingAttention = $userInstitutions
+            ->map(function ($institution) {
+                $lastMeeting = $institution->meetings->first();
+                $periodicity = $institution->meeting_periodicity_days ?? 30;
+                
+                if (!$lastMeeting) {
+                    return [
+                        'id' => $institution->id,
+                        'name' => $institution->name,
+                        'days_since_last_meeting' => null,
+                        'periodicity' => $periodicity,
+                        'status' => 'no_meetings',
+                    ];
+                }
+
+                $daysSinceLastMeeting = (int) now()->diffInDays($lastMeeting->start_time);
+                $isOverdue = $daysSinceLastMeeting > $periodicity;
+                $isApproaching = !$isOverdue && $daysSinceLastMeeting >= ($periodicity * 0.8);
+
+                if (!$isOverdue && !$isApproaching) {
+                    return null;
+                }
+
+                return [
+                    'id' => $institution->id,
+                    'name' => $institution->name,
+                    'days_since_last_meeting' => $daysSinceLastMeeting,
+                    'periodicity' => $periodicity,
+                    'status' => $isOverdue ? 'overdue' : 'approaching',
+                    'last_meeting_date' => $lastMeeting->start_time->toISOString(),
+                ];
+            })
+            ->filter()
+            ->sortByDesc(fn ($i) => ($i['days_since_last_meeting'] ?? 999) - $i['periodicity'])
+            ->take(3)
+            ->values();
+
+        // Get upcoming calendar events (non-draft, future) - return full models for EventCard component
+        $upcomingCalendarEvents = Calendar::query()
+            ->where('is_draft', false)
+            ->where('date', '>=', now())
+            ->with(['tenant:id,shortname', 'category:id,name'])
+            ->orderBy('date')
+            ->take(3)
+            ->get();
+
+        // Get latest published news - return full models for NewsCard component
+        $locale = app()->getLocale();
+        $latestNews = News::query()
+            ->where('draft', false)
+            ->whereNotNull('publish_time')
+            ->where('publish_time', '<=', now())
+            ->where('lang', $locale)
+            ->with(['tenant:id,shortname'])
+            ->orderByDesc('publish_time')
+            ->take(3)
+            ->get();
+
         return $this->inertiaResponse('Admin/ShowAdminHome', [
             'unreadNotificationsCount' => $unreadNotificationsCount,
             'hasNotifications' => $unreadNotificationsCount > 0,
+            'taskStats' => $taskStats,
+            'upcomingTasks' => $upcomingTasks,
+            'upcomingMeetings' => $upcomingMeetings,
+            'institutionsNeedingAttention' => $institutionsNeedingAttention,
+            'upcomingCalendarEvents' => $upcomingCalendarEvents,
+            'latestNews' => $latestNews,
         ]);
     }
 

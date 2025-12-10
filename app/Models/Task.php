@@ -41,6 +41,11 @@ class Task extends Model
 
     protected $guarded = [];
 
+    protected $casts = [
+        'due_date' => 'datetime',
+        'completed_at' => 'datetime',
+    ];
+
     public function taskable(): MorphTo
     {
         return $this->morphTo();

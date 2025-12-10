@@ -1,9 +1,10 @@
 <template>
   <Popover>
     <PopoverTrigger as-child>
-      <Button variant="outline" size="icon" class="rounded-full relative">
+      <Button variant="outline" size="icon" class="rounded-full relative md:w-auto md:px-3 md:gap-2">
         <CheckSquare2Icon class="h-4 w-4" />
-        <span v-if="pendingTasks > 0" class="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground">
+        <span class="hidden md:inline text-sm">{{ pendingTasks }}</span>
+        <span v-if="pendingTasks > 0" class="md:hidden absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground">
           {{ pendingTasks > 9 ? '9+' : pendingTasks }}
         </span>
         <span class="sr-only">{{ $t('Tasks') }}</span>

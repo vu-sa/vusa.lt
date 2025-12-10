@@ -1,9 +1,11 @@
 <?php
 
+use App\Models\Calendar;
 use App\Models\News;
 use App\Models\Page;
 use App\Models\QuickLink;
 use App\Models\Resource;
+use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -22,7 +24,6 @@ beforeEach(function () {
     $this->quickLink = QuickLink::factory()->for($this->tenant)->create();
     $this->resource = Resource::factory()->for($this->tenant)->create();
 });
-
 describe('dashboard access', function () {
     test('any authenticated user can access dashboard', function () {
         // Dashboard is accessible to any authenticated user
@@ -34,7 +35,11 @@ describe('dashboard access', function () {
                 ->has('taskStats')
                 ->has('unreadNotificationsCount')
                 ->has('hasNotifications')
-                ->has('user')
+                ->has('upcomingTasks')
+                ->has('upcomingMeetings')
+                ->has('institutionsNeedingAttention')
+                ->has('upcomingCalendarEvents')
+                ->has('latestNews')
             );
     });
 
@@ -45,13 +50,16 @@ describe('dashboard access', function () {
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/ShowAdminHome')
                 ->has('taskStats')
-                ->has('taskStats.completed')
-                ->has('taskStats.pending')
+                ->has('taskStats.total')
                 ->has('taskStats.overdue')
+                ->has('taskStats.dueSoon')
                 ->has('unreadNotificationsCount')
                 ->has('hasNotifications')
-                ->has('user')
-                ->where('user.id', $this->admin->id)
+                ->has('upcomingTasks')
+                ->has('upcomingMeetings')
+                ->has('institutionsNeedingAttention')
+                ->has('upcomingCalendarEvents')
+                ->has('latestNews')
             );
     });
 
@@ -70,9 +78,9 @@ describe('dashboard data structure', function () {
                 ->component('Admin/ShowAdminHome')
                 ->has('taskStats')
                 ->where('taskStats', function ($taskStats) {
-                    return isset($taskStats['completed'])
-                        && isset($taskStats['pending'])
-                        && isset($taskStats['overdue']);
+                    return isset($taskStats['total'])
+                        && isset($taskStats['overdue'])
+                        && isset($taskStats['dueSoon']);
                 })
             );
     });
@@ -94,16 +102,15 @@ describe('dashboard data structure', function () {
             );
     });
 
-    test('user data is included', function () {
+    test('upcoming data is included', function () {
         asUser($this->admin)
             ->get(route('dashboard'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/ShowAdminHome')
-                ->has('user')
-                ->where('user.id', $this->admin->id)
-                ->where('user.name', $this->admin->name)
-                ->where('user.email', $this->admin->email)
+                ->has('upcomingTasks')
+                ->has('upcomingMeetings')
+                ->has('institutionsNeedingAttention')
             );
     });
 });
@@ -123,9 +130,205 @@ describe('dashboard performance', function () {
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/ShowAdminHome')
-                ->where('taskStats.completed', 0)
-                ->where('taskStats.pending', 0)
+                ->where('taskStats.total', 0)
                 ->where('taskStats.overdue', 0)
+                ->where('taskStats.dueSoon', 0)
+            );
+    });
+});
+
+describe('dashboard tasks with due dates', function () {
+    test('tasks with due dates are properly formatted', function () {
+        // Create a task with a due date for the admin user
+        $task = Task::factory()->create([
+            'name' => 'Test Task',
+            'due_date' => now()->addDays(3),
+            'completed_at' => null,
+        ]);
+        $task->users()->attach($this->admin->id);
+
+        asUser($this->admin)
+            ->get(route('dashboard'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/ShowAdminHome')
+                ->has('upcomingTasks')
+                ->where('upcomingTasks.0.name', 'Test Task')
+                ->where('upcomingTasks.0.is_overdue', false)
+                ->has('upcomingTasks.0.due_date')
+            );
+    });
+
+    test('overdue tasks are correctly identified', function () {
+        // Create an overdue task
+        $task = Task::factory()->create([
+            'name' => 'Overdue Task',
+            'due_date' => now()->subDays(2),
+            'completed_at' => null,
+        ]);
+        $task->users()->attach($this->admin->id);
+
+        asUser($this->admin)
+            ->get(route('dashboard'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/ShowAdminHome')
+                ->where('taskStats.overdue', 1)
+            );
+    });
+
+    test('completed tasks are not included in statistics', function () {
+        // Create a completed task
+        $task = Task::factory()->create([
+            'name' => 'Completed Task',
+            'due_date' => now()->addDays(1),
+            'completed_at' => now(),
+        ]);
+        $task->users()->attach($this->admin->id);
+
+        asUser($this->admin)
+            ->get(route('dashboard'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/ShowAdminHome')
+                ->where('taskStats.total', 0)
+            );
+    });
+
+    test('tasks due within 7 days are counted as dueSoon', function () {
+        // Create a task due in 5 days
+        $task = Task::factory()->create([
+            'name' => 'Due Soon Task',
+            'due_date' => now()->addDays(5),
+            'completed_at' => null,
+        ]);
+        $task->users()->attach($this->admin->id);
+
+        asUser($this->admin)
+            ->get(route('dashboard'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/ShowAdminHome')
+                ->where('taskStats.dueSoon', 1)
+            );
+    });
+});
+
+describe('dashboard calendar and news', function () {
+    test('upcoming calendar events are included', function () {
+        // Create upcoming calendar events
+        Calendar::factory()->for($this->tenant)->create([
+            'title' => ['lt' => 'Test Event LT', 'en' => 'Test Event EN'],
+            'date' => now()->addDays(5),
+            'is_draft' => false,
+        ]);
+
+        asUser($this->admin)
+            ->get(route('dashboard'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/ShowAdminHome')
+                ->has('upcomingCalendarEvents')
+            );
+    });
+
+    test('draft calendar events are not included', function () {
+        // Clear existing calendar events
+        Calendar::query()->delete();
+        
+        // Create a draft calendar event
+        Calendar::factory()->for($this->tenant)->create([
+            'title' => ['lt' => 'Draft Event', 'en' => 'Draft Event'],
+            'date' => now()->addDays(5),
+            'is_draft' => true,
+        ]);
+
+        asUser($this->admin)
+            ->get(route('dashboard'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/ShowAdminHome')
+                ->has('upcomingCalendarEvents', 0)
+            );
+    });
+
+    test('past calendar events are not included', function () {
+        // Clear existing calendar events
+        Calendar::query()->delete();
+        
+        // Create a past calendar event
+        Calendar::factory()->for($this->tenant)->create([
+            'title' => ['lt' => 'Past Event', 'en' => 'Past Event'],
+            'date' => now()->subDays(5),
+            'is_draft' => false,
+        ]);
+
+        asUser($this->admin)
+            ->get(route('dashboard'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/ShowAdminHome')
+                ->has('upcomingCalendarEvents', 0)
+            );
+    });
+
+    test('latest news items are included', function () {
+        // Create published news
+        News::factory()->for($this->tenant)->create([
+            'title' => 'Latest News',
+            'lang' => 'lt',
+            'publish_time' => now()->subHours(1),
+            'draft' => null,
+        ]);
+
+        asUser($this->admin)
+            ->get(route('dashboard'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/ShowAdminHome')
+                ->has('latestNews')
+            );
+    });
+
+    test('draft news items are not included', function () {
+        // Delete any existing news first
+        News::query()->delete();
+        
+        // Create draft news
+        News::factory()->for($this->tenant)->create([
+            'title' => 'Draft News',
+            'lang' => 'lt',
+            'publish_time' => now()->subHours(1),
+            'draft' => 1,
+        ]);
+
+        asUser($this->admin)
+            ->get(route('dashboard'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/ShowAdminHome')
+                ->has('latestNews', 0)
+            );
+    });
+
+    test('future news items are not included', function () {
+        // Delete any existing news first
+        News::query()->delete();
+        
+        // Create future news (scheduled)
+        News::factory()->for($this->tenant)->create([
+            'title' => 'Future News',
+            'lang' => 'lt',
+            'publish_time' => now()->addDays(1),
+            'draft' => null,
+        ]);
+
+        asUser($this->admin)
+            ->get(route('dashboard'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/ShowAdminHome')
+                ->has('latestNews', 0)
             );
     });
 });

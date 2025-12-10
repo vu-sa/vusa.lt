@@ -1,7 +1,7 @@
 <template>
     <Card data-tour="meetings-card" :class="[
     'flex flex-col relative overflow-hidden shadow-sm dark:shadow-zinc-950/50',
-    'border-zinc-200 dark:border-zinc-600 bg-gradient-to-br from-white to-zinc-50 dark:from-zinc-800 dark:to-zinc-900'
+    'border-zinc-200 dark:border-zinc-600 bg-gradient-to-br from-white to-zinc-50 dark:from-zinc-900 dark:to-zinc-950'
   ]" role="region" :aria-label="$t('Tavo artėjantys susitikimai')">
     <!-- Status indicator - small amber accent when meetings exist -->
     <div :class="[

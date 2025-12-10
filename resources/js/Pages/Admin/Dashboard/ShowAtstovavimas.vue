@@ -1,9 +1,24 @@
 <template>
   <AdminContentPage>
-    <InertiaHead :title="$t('Atstovavimas')" />
+    <InertiaHead title="ViSAK" />
 
-    <!-- Hero section with greeting and overview -->
-    <PageHero :title="$t('Atstovavimas')" :subtitle="$t('Susitikimų, tikslų ir atstovavimo veiklų stebėjimas')">
+    <!-- Hero section with ViSAK branding -->
+    <PageHero :subtitle="$t('Susitikimų, tikslų ir atstovavimo veiklų stebėjimas')">
+      <h1 class="text-3xl font-bold tracking-tight sm:text-4xl text-foreground flex items-center gap-3">
+        <span 
+          class="font-black tracking-tight bg-gradient-to-r from-zinc-900 via-zinc-800 to-vusa-red dark:from-zinc-100 dark:via-zinc-200 dark:to-vusa-red bg-clip-text text-transparent transition-all duration-1000"
+          :class="{ 'drop-shadow-[0_0_8px_rgba(189,24,48,0.3)]': showGlow }"
+        >
+          ViSAK
+        </span>
+        <button 
+          @click="showVisakInfo = true"
+          class="text-muted-foreground hover:text-foreground transition-colors"
+          :aria-label="$t('Kas yra ViSAK?')"
+        >
+          <Info class="h-5 w-5" />
+        </button>
+      </h1>
       <template #actions>
         <TooltipProvider>
           <Tooltip>
@@ -18,6 +33,13 @@
         </TooltipProvider>
       </template>
     </PageHero>
+
+    <!-- ViSAK Info Modal -->
+    <VisakInfoModal 
+      :open="showVisakInfo" 
+      @close="showVisakInfo = false"
+      @start-tour="startContextTour"
+    />
 
     <Tabs v-model="activeTab" class="mt-6 mb-32">
       <TabsList class="gap-2">
@@ -147,7 +169,7 @@ import { trans as $t } from "laravel-vue-i18n";
 // UI components
 
 // Extracted components
-import { HelpCircle } from 'lucide-vue-next';
+import { HelpCircle, Info } from 'lucide-vue-next';
 
 import PersonalOverviewSection from './Components/PersonalOverviewSection.vue';
 import UserTimelineSection from './Components/UserTimelineSection.vue';
@@ -155,6 +177,7 @@ import TenantTimelineSection from './Components/TenantTimelineSection.vue';
 import InstitutionDataTable from './Components/InstitutionDataTable.vue';
 import MeetingDataTable from './Components/MeetingDataTable.vue';
 import FullscreenGanttModal from './Components/FullscreenGanttModal.vue';
+import VisakInfoModal from '@/Components/Modals/VisakInfoModal.vue';
 // Composables
 import { useAtstovavimosData } from './Composables/useAtstovavimasData';
 import { useTimelineFilters } from './Composables/useTimelineFilters';
@@ -184,7 +207,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Comp
 
 // Setup breadcrumbs
 usePageBreadcrumbs(() => [
-  BreadcrumbHelpers.createBreadcrumbItem($t('Atstovavimas'), undefined, Icons.MEETING)
+  BreadcrumbHelpers.createBreadcrumbItem('ViSAK', undefined, Icons.MEETING)
 ]);
 
 // Setup product tour
@@ -370,6 +393,20 @@ const getInitialTab = () => {
 };
 
 const activeTab = ref(getInitialTab());
+
+// ViSAK info modal and glow effect
+const showVisakInfo = ref(false);
+const showGlow = ref(false);
+
+// Subtle glow animation after 5 seconds
+onMounted(() => {
+  setTimeout(() => {
+    showGlow.value = true;
+    setTimeout(() => {
+      showGlow.value = false;
+    }, 2000);
+  }, 5000);
+});
 
 // Sync tab state to URL without page reload
 watch(activeTab, (newTab) => {

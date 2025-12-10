@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import NavMain from './NavMain.vue'
 import NavSecondary from './NavSecondary.vue'
+import NavQuickActions from './NavQuickActions.vue'
 import AppLogo from './AppLogo.vue'
+import NewMeetingModal from '@/Components/Modals/NewMeetingModal.vue'
 
 import {
   Sidebar,
@@ -12,6 +14,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarGroupLabel,
+  SidebarSeparator,
   SidebarRail,
   type SidebarProps,
 } from '@/Components/ui/sidebar'
@@ -62,6 +65,8 @@ import {
   UserIcon,
   Send,
   Clock,
+  ExternalLink,
+  Bell,
   type LucideIcon
 } from 'lucide-vue-next'
 
@@ -101,10 +106,10 @@ const currentUser = computed(() => {
 const navMainItems = computed(() => {
   const items = []
 
-  // Representation (Atstovavimas)
+  // Representation (ViSAK - Virtualus Studentų Atstovų Koordinatorius)
   if (usePage().props.auth?.can.create.meeting) {
     items.push({
-      title: $t("Atstovavimas"),
+      title: "ViSAK",
       url: route('dashboard.atstovavimas'),
       icon: GraduationCap,
       isActive: route().current('dashboard.atstovavimas*'),
@@ -140,7 +145,7 @@ const navMainItems = computed(() => {
   return items
 })
 
-// Secondary navigation items (bottom)
+// Secondary navigation items (bottom) - help section only
 const navSecondaryItems = computed(() => {
   return [
     {
@@ -153,11 +158,6 @@ const navSecondaryItems = computed(() => {
       url: '#feedback',
       icon: MessageSquare,
     },
-    // {
-    //   title: usePage().props.app.locale === 'en' ? 'Help' : 'Pagalba',
-    //   url: route('dashboard'),
-    //   icon: LifeBuoy,
-    // },
   ]
 })
 
@@ -171,6 +171,36 @@ const handleSecondaryNavClick = (url: string) => {
     router.visit(url)
   }
 }
+
+// Meeting modal state
+const showMeetingModal = ref(false)
+
+// Handle quick actions
+const handleNewMeeting = () => {
+  showMeetingModal.value = true
+}
+
+const handleNewNews = () => {
+  router.visit(route('news.create'))
+}
+
+const handleNewReservation = () => {
+  router.visit(route('reservations.create'))
+}
+
+// Notification count
+const notificationCount = computed(() => {
+  return usePage().props.auth?.user?.unread_notifications_count || 0
+})
+
+// Public website URL
+const publicWebsiteUrl = computed(() => {
+  const page = usePage()
+  return route('home', {
+    lang: page.props.app.locale,
+    subdomain: page.props.tenant?.subdomain ?? 'www'
+  })
+})
 
 // Feedback dialog state and form
 const showFeedbackDialog = ref(false)
@@ -216,56 +246,80 @@ const handleLogout = () => {
 
 <template>
   <Sidebar v-bind="props">
-    <SidebarHeader>
-      <SidebarMenu>
+    <SidebarHeader class="relative overflow-hidden">
+      <!-- Subtle gradient accent -->
+      <div class="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent dark:from-primary/3 pointer-events-none" />
+      <SidebarMenu class="relative">
         <SidebarMenuItem>
           <Link :href="route('dashboard')">
-          <SidebarMenuButton size="lg"
-            class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
-            <div
-              class="flex aspect-square w-14 h-14 items-center justify-center rounded-lg text-sidebar-primary-foreground">
-              <AppLogo width="48" height="16" />
-            </div>
-            <div class="grid flex-1 text-left text-sm leading-tight">
-              <span class="truncate font-semibold">
-                {{ $t("Mano VU SA") }}
-              </span>
-              <span class="truncate text-xs" />
-            </div>
-            <!-- <ChevronsUpDown class="ml-auto" /> -->
-          </SidebarMenuButton>
+            <SidebarMenuButton size="lg"
+              class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground hover:bg-sidebar-accent/50 transition-colors">
+              <div
+                class="flex aspect-square w-14 h-14 items-center justify-center rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 dark:from-primary/8 dark:to-primary/3 text-sidebar-primary-foreground shadow-sm">
+                <AppLogo width="48" height="16" />
+              </div>
+              <div class="grid flex-1 text-left text-sm leading-tight">
+                <span class="truncate font-semibold text-base">
+                  {{ $t("Mano VU SA") }}
+                </span>
+              </div>
+            </SidebarMenuButton>
           </Link>
         </SidebarMenuItem>
       </SidebarMenu>
     </SidebarHeader>
-    <SidebarContent>
+    <SidebarContent class="flex flex-col">
+      <!-- Main navigation -->
       <NavMain :items="navMainItems" />
+      
+      <SidebarSeparator class="my-2" />
+      
+      <!-- Quick actions -->
+      <NavQuickActions 
+        @new-meeting="handleNewMeeting"
+        @new-news="handleNewNews"
+        @new-reservation="handleNewReservation"
+      />
+
+      <!-- Spacer to push secondary nav to bottom -->
+      <div class="flex-1" />
+
+      <SidebarSeparator class="my-2 group-data-[collapsible=icon]:hidden" />
 
       <!-- Secondary navigation -->
-      <div class="group-data-[collapsible=icon]:hidden mt-auto">
+      <div class="group-data-[collapsible=icon]:hidden">
         <NavSecondary :items="navSecondaryItems" @item-click="handleSecondaryNavClick" />
       </div>
     </SidebarContent>
-    <SidebarFooter>
+    <SidebarFooter class="border-t border-sidebar-border/50">
+      <!-- Back to website link -->
+      <a 
+        :href="publicWebsiteUrl" 
+        target="_blank"
+        class="flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-sidebar-accent/50 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-2"
+      >
+        <ExternalLink class="h-3.5 w-3.5 shrink-0" />
+        <span class="group-data-[collapsible=icon]:hidden">{{ $t('Eiti į vusa.lt') }}</span>
+      </a>
       <SidebarMenu>
         <!-- User account dropdown -->
         <SidebarMenuItem>
           <DropdownMenu>
             <DropdownMenuTrigger as-child>
               <SidebarMenuButton size="lg"
-                class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
-                <Avatar class="h-8 w-8 rounded-lg">
+                class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground hover:bg-sidebar-accent/60 transition-all duration-200">
+                <Avatar class="h-9 w-9 rounded-xl ring-2 ring-primary/10 shadow-sm">
                   <AvatarImage v-if="currentUser.profile_photo_path" :src="currentUser.profile_photo_path"
                     :alt="currentUser.name" />
-                  <AvatarFallback class="rounded-lg">
+                  <AvatarFallback class="rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 text-primary font-semibold">
                     {{ currentUser.name ? currentUser.name.substring(0, 2).toUpperCase() : 'VU' }}
                   </AvatarFallback>
                 </Avatar>
                 <div class="grid flex-1 text-left text-sm leading-tight">
-                  <span class="truncate font-medium">{{ currentUser.name }}</span>
-                  <span class="truncate text-xs">{{ currentUser.email }}</span>
+                  <span class="truncate font-semibold">{{ currentUser.name }}</span>
+                  <span class="truncate text-xs text-muted-foreground">{{ currentUser.email }}</span>
                 </div>
-                <ChevronsUpDown class="ml-auto size-4" />
+                <ChevronsUpDown class="ml-auto size-4 text-muted-foreground" />
               </SidebarMenuButton>
             </DropdownMenuTrigger>
             <!-- User dropdown menu -->
@@ -374,4 +428,7 @@ const handleLogout = () => {
       </DialogFooter>
     </DialogContent>
   </Dialog>
+
+  <!-- New Meeting Modal -->
+  <NewMeetingModal :show-modal="showMeetingModal" @close="showMeetingModal = false" />
 </template>

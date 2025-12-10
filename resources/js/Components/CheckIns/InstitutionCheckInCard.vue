@@ -1,5 +1,5 @@
 <template>
-  <Card data-tour="institution-card" class="flex flex-col relative overflow-hidden border-zinc-200 dark:border-zinc-600 bg-gradient-to-br from-white to-zinc-50 dark:from-zinc-800 dark:to-zinc-900 shadow-sm dark:shadow-zinc-950/50" role="region" :aria-label="$t('Tavo institucijos')">
+  <Card data-tour="institution-card" class="flex flex-col relative overflow-hidden border-zinc-200 dark:border-zinc-600 bg-gradient-to-br from-white to-zinc-50 dark:from-zinc-900 dark:to-zinc-950 shadow-sm dark:shadow-zinc-950/50" role="region" :aria-label="$t('Tavo institucijos')">
     <!-- Status indicator corner -->
     <div data-tour="institution-status" :class="statusIndicatorClasses" aria-hidden="true" />
 
@@ -64,6 +64,13 @@ import { Button } from '@/Components/ui/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip'
 import Icons from '@/Types/Icons/filled'
 import { formatStaticTime } from '@/Utils/IntlTime'
+import { 
+  dashboardCardClasses, 
+  dashboardCardFooterClasses,
+  useDashboardCardStyles,
+  urgencyPalette,
+  type UrgencyLevel 
+} from '@/Composables/useDashboardCardStyles'
 
 const props = defineProps<{
   institutions: unknown[]
@@ -158,7 +165,7 @@ const limitedInstitutions = computed(() => {
 })
 
 // Determine overall urgency level for theming
-const urgencyLevel = computed(() => {
+const urgencyLevel = computed((): UrgencyLevel => {
   const needingAttentionCount = institutionsNeedingAttention.value.length
   const totalCount = props.institutions.length
 
@@ -167,79 +174,26 @@ const urgencyLevel = computed(() => {
   return 'warning'
 })
 
-// Dynamic CSS classes based on urgency - only for specific elements
+// Use the composable for consistent styling
+const { 
+  statusIndicatorClasses, 
+  iconClasses,
+  borderClasses: summaryBorderClasses,
+  textClasses: summaryTextClasses,
+  subtextClasses: summarySubtextClasses,
+  backgroundClasses: progressBackgroundClasses,
+  foregroundClasses: progressBarClasses
+} = useDashboardCardStyles(urgencyLevel)
 
-const statusIndicatorClasses = computed(() => {
-  const base = 'absolute top-0 right-0 w-12 h-12 -mr-6 -mt-6 rotate-45'
-  const urgencyClasses = {
-    success: 'bg-emerald-400/60 dark:bg-emerald-700/35',
-    warning: 'bg-amber-400/60 dark:bg-amber-700/35',
-    danger: 'bg-zinc-200 dark:bg-zinc-700'
-  }
-  return `${base} ${urgencyClasses[urgencyLevel.value]}`
-})
-
-const iconClasses = computed(() => {
-  const urgencyClasses = {
-    success: 'h-5 w-5 text-emerald-600 dark:text-emerald-400/80',
-    warning: 'h-5 w-5 text-amber-600 dark:text-amber-400/80',
-    danger: 'h-5 w-5 text-zinc-600 dark:text-zinc-400'
-  }
-  return urgencyClasses[urgencyLevel.value]
-})
-
-const summaryBorderClasses = computed(() => {
-  const urgencyClasses = {
-    success: 'border-emerald-200 dark:border-emerald-700/50',
-    warning: 'border-amber-200 dark:border-amber-700/50',
-    danger: 'border-zinc-200 dark:border-zinc-700'
-  }
-  return urgencyClasses[urgencyLevel.value]
-})
-
-const summaryTextClasses = computed(() => {
-  const urgencyClasses = {
-    success: 'text-emerald-700 dark:text-emerald-400/80',
-    warning: 'text-amber-700 dark:text-amber-400/80',
-    danger: 'text-zinc-700 dark:text-zinc-300'
-  }
-  return urgencyClasses[urgencyLevel.value]
-})
-
-const summarySubtextClasses = computed(() => {
-  const urgencyClasses = {
-    success: 'text-emerald-600 dark:text-emerald-500/70',
-    warning: 'text-amber-600 dark:text-amber-500/70',
-    danger: 'text-zinc-600 dark:text-zinc-400'
-  }
-  return urgencyClasses[urgencyLevel.value]
-})
-
-const progressBackgroundClasses = computed(() => {
-  const urgencyClasses = {
-    success: 'bg-emerald-200 dark:bg-emerald-700/50',
-    warning: 'bg-amber-200 dark:bg-amber-700/50',
-    danger: 'bg-zinc-200 dark:bg-zinc-700'
-  }
-  return urgencyClasses[urgencyLevel.value]
-})
-
-const progressBarClasses = computed(() => {
-  const urgencyClasses = {
-    success: 'bg-emerald-600 dark:bg-emerald-500/70',
-    warning: 'bg-amber-600 dark:bg-amber-500/70',
-    danger: 'bg-zinc-600 dark:bg-zinc-400'
-  }
-  return urgencyClasses[urgencyLevel.value]
-})
-
+// Additional insight text classes (slightly different shade)
 const insightTextClasses = computed(() => {
-  const urgencyClasses = {
+  const classes: Record<UrgencyLevel, string> = {
     success: 'text-emerald-500 dark:text-emerald-500/70',
     warning: 'text-amber-500 dark:text-amber-500/70',
-    danger: 'text-zinc-500 dark:text-zinc-400'
+    danger: 'text-zinc-500 dark:text-zinc-400',
+    neutral: 'text-zinc-500 dark:text-zinc-400'
   }
-  return urgencyClasses[urgencyLevel.value]
+  return classes[urgencyLevel.value]
 })
 
 // Meetings-specific styling (prioritize meetings over check-ins)
@@ -252,7 +206,7 @@ const hasAnyCheckIn = computed(() => {
   return props.institutions.some(inst => inst.active_check_in)
 })
 
-const meetingUrgencyLevel = computed(() => {
+const meetingUrgencyLevel = computed((): UrgencyLevel => {
   if (upcomingMeetingsOnlyCount.value === 0) {
     return hasAnyCheckIn.value ? 'success' : 'neutral'
   }
@@ -261,45 +215,20 @@ const meetingUrgencyLevel = computed(() => {
 })
 
 // Helper: check if institution has active check-in
-const hasCheckIn = (inst: AtstovavimosInstitution): boolean => !!inst.active_check_in
+const hasCheckIn = (inst: any): boolean => !!inst.active_check_in
 
-const meetingSummaryBorderClasses = computed(() => {
-  const urgencyClasses: Record<string, string> = {
-    success: 'border-emerald-200 dark:border-emerald-700/50',
-    warning: 'border-amber-200 dark:border-amber-700/50',
-    danger: 'border-zinc-200 dark:border-zinc-700',
-    neutral: 'border-zinc-200 dark:border-zinc-700',
-  }
-  return urgencyClasses[meetingUrgencyLevel.value]
-})
-
-const meetingSummaryTextClasses = computed(() => {
-  const urgencyClasses: Record<string, string> = {
-    success: 'text-emerald-700 dark:text-emerald-300',
-    warning: 'text-amber-700 dark:text-amber-300',
-    danger: 'text-zinc-700 dark:text-zinc-300',
-    neutral: 'text-zinc-700 dark:text-zinc-300',
-  }
-  return urgencyClasses[meetingUrgencyLevel.value]
-})
-
-const meetingSummarySubtextClasses = computed(() => {
-  const urgencyClasses: Record<string, string> = {
-    success: 'text-emerald-600 dark:text-emerald-400',
-    warning: 'text-amber-600 dark:text-amber-400',
-    danger: 'text-zinc-600 dark:text-zinc-400',
-    neutral: 'text-zinc-600 dark:text-zinc-400',
-  }
-  return urgencyClasses[meetingUrgencyLevel.value]
-})
+// Use palette for meeting-specific styling
+const meetingSummaryBorderClasses = computed(() => urgencyPalette.border[meetingUrgencyLevel.value])
+const meetingSummaryTextClasses = computed(() => urgencyPalette.text[meetingUrgencyLevel.value])
+const meetingSummarySubtextClasses = computed(() => urgencyPalette.subtext[meetingUrgencyLevel.value])
 
 // Action handlers with loading states
 // Row shading and segmented counts
-const hasUpcomingMeeting = (inst: AtstovavimosInstitution) => {
+const hasUpcomingMeeting = (inst: any) => {
   if (typeof inst.upcoming_meetings_count === 'number') return inst.upcoming_meetings_count > 0
   if (!Array.isArray(inst.meetings)) return false
   const now = new Date()
-  return inst.meetings.some(m => new Date(m.start_time) > now)
+  return inst.meetings.some((m: any) => new Date(m.start_time) > now)
 }
 
 // Action handlers with loading states

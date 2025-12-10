@@ -63,7 +63,10 @@
         @select.prevent
       >
         <span class="flex items-center gap-1.5">
-          <IFluentLink20Regular class="h-4 w-4 text-muted-foreground" />
+          <svg class="h-4 w-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+          </svg>
           {{ $t('Rodyti susijusias institucijas') }}
         </span>
       </DropdownMenuCheckboxItem>
@@ -96,7 +99,6 @@ import {
   DropdownMenuTrigger
 } from "@/Components/ui/dropdown-menu";
 import IFluentArrowReset20Regular from '~icons/fluent/arrow-reset-20-regular';
-import IFluentLink20Regular from '~icons/fluent/link-20-regular';
 
 interface Tenant {
   id: string | number;

@@ -4,9 +4,11 @@
     data-slot="page-hero">
     <div class="flex items-start justify-between gap-4">
       <div>
-        <h1 class="text-3xl font-bold tracking-tight sm:text-4xl text-foreground">
-          {{ title }}
-        </h1>
+        <slot>
+          <h1 class="text-3xl font-bold tracking-tight sm:text-4xl text-foreground">
+            {{ title }}
+          </h1>
+        </slot>
         <p v-if="subtitle" class="mt-3 max-w-xl text-muted-foreground">
           {{ subtitle }}
         </p>
@@ -15,7 +17,7 @@
         <slot name="actions" />
       </div>
     </div>
-    <slot />
+    <slot name="content" />
   </section>
 </template>
 
@@ -25,10 +27,11 @@ import type { HTMLAttributes } from 'vue'
 import { cn } from '@/Utils/Shadcn/utils'
 
 const props = withDefaults(defineProps<{
-  title: string
+  title?: string
   subtitle?: string
   class?: HTMLAttributes['class']
 }>(), {
+  title: undefined,
   subtitle: undefined,
 })
 </script>
