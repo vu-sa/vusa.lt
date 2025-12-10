@@ -57,6 +57,14 @@
       </DropdownMenuCheckboxItem>
       
       <DropdownMenuCheckboxItem 
+        :model-value="showTenantHeaders"
+        @update:model-value="(val: boolean) => $emit('update:showTenantHeaders', val)" 
+        @select.prevent
+      >
+        {{ $t('Rodyti padalinių sekcijas') }}
+      </DropdownMenuCheckboxItem>
+      
+      <DropdownMenuCheckboxItem 
         v-if="hasRelatedInstitutions"
         :model-value="showRelatedInstitutions"
         @update:model-value="(val: boolean) => $emit('update:showRelatedInstitutions', val)" 
@@ -113,6 +121,7 @@ interface Props {
   showOnlyWithActivity: boolean;
   showOnlyWithPublicMeetings: boolean;
   showDutyMembers: boolean;
+  showTenantHeaders: boolean;
   showRelatedInstitutions?: boolean;
   hasRelatedInstitutions?: boolean;
   // UI options
@@ -133,6 +142,7 @@ const emit = defineEmits<{
   'update:showOnlyWithActivity': [value: boolean];
   'update:showOnlyWithPublicMeetings': [value: boolean];
   'update:showDutyMembers': [value: boolean];
+  'update:showTenantHeaders': [value: boolean];
   'update:showRelatedInstitutions': [value: boolean];
   'reset': [];
 }>();

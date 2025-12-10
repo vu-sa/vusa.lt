@@ -16,10 +16,12 @@
           :show-only-with-activity="showOnlyWithActivity"
           :show-only-with-public-meetings="showOnlyWithPublicMeetings"
           :show-duty-members="showDutyMembers"
+          :show-tenant-headers="ganttSettings.showTenantHeaders.value"
           @update:selected-tenants="(val: string[]) => emit('update:selectedTenantId', val)"
           @update:show-only-with-activity="(val: boolean) => emit('update:showOnlyWithActivity', val)"
           @update:show-only-with-public-meetings="(val: boolean) => emit('update:showOnlyWithPublicMeetings', val)"
           @update:show-duty-members="(val: boolean) => emit('update:showDutyMembers', val)"
+          @update:show-tenant-headers="(val: boolean) => ganttSettings.showTenantHeaders.value = val"
           @reset="emit('reset-filters')"
         />
       </div>
@@ -55,6 +57,7 @@ import type {
 import TimelineGanttChart from './TimelineGanttChart.vue';
 import TimelineGanttSkeleton from './TimelineGanttSkeleton.vue';
 import GanttFilterDropdown from './GanttFilterDropdown.vue';
+import { useGanttSettings } from '../Composables/useGanttSettings';
 
 
 interface Props {
@@ -89,6 +92,9 @@ onMounted(() => {
     isReady.value = true;
   });
 });
+
+// Get gantt settings for showTenantHeaders toggle
+const ganttSettings = useGanttSettings();
 
 const emit = defineEmits<{
   'update:selectedTenantId': [value: string[]]; // Changed to array

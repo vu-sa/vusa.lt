@@ -34,6 +34,11 @@ return [
         'time' => 'Laikas',
         'tenant' => 'Padalinys',
         'language' => 'Kalba',
+        'relationship_scope' => 'Ryšio apimtis',
+    ],
+    'options' => [
+        'scope_within_tenant' => 'Tame pačiame padalinyje',
+        'scope_cross_tenant' => 'Tarp padalinių (pagrindinis ↔ padaliniai)',
     ],
     'context' => [
         'main_info' => 'Pagrindinė informacija',

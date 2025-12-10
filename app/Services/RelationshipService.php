@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\AllowedRelationshipablesEnum;
 use App\Models\Institution;
 use App\Models\Pivots\Relationshipable;
+use App\Models\Tenant;
 use App\Models\Type;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
@@ -133,17 +134,23 @@ class RelationshipService
             }
         }
 
-        // Type-based outgoing relationships (same tenant only)
-        $institution->load(['types.outgoingRelationships.pivot.related_model.institutions' => function ($query) use ($institution) {
-            $query->where('tenant_id', $institution->tenant_id);
-        }]);
+        // Type-based outgoing relationships
+        // Handle both within-tenant and cross-tenant scopes
+        $institution->load(['types.outgoingRelationships.pivot.related_model.institutions.tenant']);
 
         foreach ($institution->types as $type) {
             foreach ($type->outgoingRelationships as $relationship) {
                 $targetType = $relationship->pivot->related_model;
+                $scope = $relationship->pivot->scope ?? Relationshipable::SCOPE_WITHIN_TENANT;
+
                 if ($targetType && $targetType->institutions) {
                     foreach ($targetType->institutions as $relatedInstitution) {
                         if ($relatedInstitution->id !== $sourceId) {
+                            // Apply scope filtering
+                            if (! self::institutionMatchesScope($institution, $relatedInstitution, $scope)) {
+                                continue;
+                            }
+
                             $result->push([
                                 'institution' => $relatedInstitution,
                                 'direction' => 'outgoing',
@@ -156,17 +163,23 @@ class RelationshipService
             }
         }
 
-        // Type-based incoming relationships (same tenant only)
-        $institution->load(['types.incomingRelationships.pivot.relationshipable.institutions' => function ($query) use ($institution) {
-            $query->where('tenant_id', $institution->tenant_id);
-        }]);
+        // Type-based incoming relationships
+        // Handle both within-tenant and cross-tenant scopes
+        $institution->load(['types.incomingRelationships.pivot.relationshipable.institutions.tenant']);
 
         foreach ($institution->types as $type) {
             foreach ($type->incomingRelationships as $relationship) {
                 $sourceType = $relationship->pivot->relationshipable;
+                $scope = $relationship->pivot->scope ?? Relationshipable::SCOPE_WITHIN_TENANT;
+
                 if ($sourceType && $sourceType->institutions) {
                     foreach ($sourceType->institutions as $relatedInstitution) {
                         if ($relatedInstitution->id !== $sourceId) {
+                            // Apply scope filtering
+                            if (! self::institutionMatchesScope($institution, $relatedInstitution, $scope)) {
+                                continue;
+                            }
+
                             $result->push([
                                 'institution' => $relatedInstitution,
                                 'direction' => 'incoming',
@@ -181,6 +194,49 @@ class RelationshipService
 
         // Return unique institutions (keep first occurrence with its metadata)
         return $result->unique(fn ($item) => $item['institution']->id);
+    }
+
+    /**
+     * Check if a related institution matches the scope criteria for a type-based relationship.
+     *
+     * @param  Institution  $sourceInstitution  The institution we're finding relations for
+     * @param  Institution  $targetInstitution  The potentially related institution
+     * @param  string  $scope  The relationship scope ('within-tenant' or 'cross-tenant')
+     */
+    protected static function institutionMatchesScope(Institution $sourceInstitution, Institution $targetInstitution, string $scope): bool
+    {
+        if ($scope === Relationshipable::SCOPE_WITHIN_TENANT) {
+            // Within-tenant: institutions must be in the same tenant
+            return $sourceInstitution->tenant_id === $targetInstitution->tenant_id;
+        }
+
+        if ($scope === Relationshipable::SCOPE_CROSS_TENANT) {
+            // Cross-tenant: The relationship connects pagrindinis tenant with padalinys-type tenants
+            // Source institution should be in pagrindinis, target should be in a padalinys-type tenant
+            // OR source is in padalinys-type and target is in pagrindinis
+            $sourceTenant = $sourceInstitution->tenant;
+            $targetTenant = $targetInstitution->tenant;
+
+            // Load tenant if not loaded
+            if (! $sourceTenant) {
+                $sourceTenant = Tenant::find($sourceInstitution->tenant_id);
+            }
+            if (! $targetTenant) {
+                $targetTenant = Tenant::find($targetInstitution->tenant_id);
+            }
+
+            // Allow if one is pagrindinis and the other is padalinys
+            $sourceIsPagrindinis = $sourceTenant?->type === 'pagrindinis';
+            $targetIsPagrindinis = $targetTenant?->type === 'pagrindinis';
+            $sourceIsPadalinys = $sourceTenant?->type === 'padalinys';
+            $targetIsPadalinys = $targetTenant?->type === 'padalinys';
+
+            return ($sourceIsPagrindinis && $targetIsPadalinys)
+                || ($sourceIsPadalinys && $targetIsPagrindinis);
+        }
+
+        // Unknown scope - default to within-tenant behavior
+        return $sourceInstitution->tenant_id === $targetInstitution->tenant_id;
     }
 
     /**
@@ -283,16 +339,12 @@ class RelationshipService
         $outgoingDirect = $institution->load('outgoingRelationships.pivot.related_model.meetings')->outgoingRelationships; // this gets relationshipables which may be figured out
         $incomingDirect = $institution->load('incomingRelationships.pivot.relationshipable.meetings')->incomingRelationships; // this gets relationshipables which may be figured out
 
-        // now by type
-        $outgoingDirectByType = $institution->load(['types.outgoingRelationships.pivot.related_model.institutions' => function ($query) use ($institution) {
-            $query->where('tenant_id', $institution->tenant_id);
-        }])->types->map(function ($type) {
+        // now by type - load all institutions, scope filtering is applied in the calling code
+        $outgoingDirectByType = $institution->load(['types.outgoingRelationships.pivot.related_model.institutions.tenant'])->types->map(function ($type) {
             return $type->outgoingRelationships;
         })->flatten(1);
 
-        $incomingDirectByType = $institution->load(['types.incomingRelationships.pivot.relationshipable.institutions' => function ($query) use ($institution) {
-            $query->where('tenant_id', $institution->tenant_id);
-        }])->types->map(function ($type) {
+        $incomingDirectByType = $institution->load(['types.incomingRelationships.pivot.relationshipable.institutions.tenant'])->types->map(function ($type) {
             return $type->incomingRelationships;
         })->flatten(1);
 
@@ -336,8 +388,8 @@ class RelationshipService
     /**
      * getGivenModelsFromModelType
      *  Okay so the idea of this is to get all relationships (through relationship givers) from a specific model class, while accounting
-     *  for types (this doesn't get direct relationships) and for tenant. Because when you decide if an e.g. institution is related through
-     *  type, you must account for tenant
+     *  for types (this doesn't get direct relationships) and for tenant/scope. Because when you decide if an e.g. institution is related through
+     *  type, you must account for tenant and scope
      *
      * @param  mixed  $model_type
      * @param  mixed  $relationshipable
@@ -346,18 +398,43 @@ class RelationshipService
     {
         // The whole function is only for one relationshipable
         $relationships = [];
+        $scope = $relationshipable->scope ?? Relationshipable::SCOPE_WITHIN_TENANT;
 
         // get all giver models. You only need givers to get all relationships, as receivers will duplicate all given relationships
         // but through the other side
         $givers = $model_type::whereHas('types', function ($query) use ($relationshipable) {
             $query->where('types.id', $relationshipable->relationshipable_id);
-        })->get();
+        })->with('tenant')->get();
 
         // now, for all the givers, find candidates for possible receivers
-        $givers->map(function ($giver) use (&$relationships, $model_type, $relationshipable) {
-            $giver->receiver = $model_type::whereHas('types', function ($query) use ($relationshipable) {
+        $givers->map(function ($giver) use (&$relationships, $model_type, $relationshipable, $scope) {
+            $query = $model_type::whereHas('types', function ($query) use ($relationshipable) {
                 $query->where('types.id', $relationshipable->related_model_id);
-            })->where('tenant_id', $giver->tenant_id)->get()->map(function ($receiver) use ($giver, &$relationships) {
+            })->with('tenant');
+
+            if ($scope === Relationshipable::SCOPE_WITHIN_TENANT) {
+                // Within-tenant: only match same tenant
+                $query->where('tenant_id', $giver->tenant_id);
+            } elseif ($scope === Relationshipable::SCOPE_CROSS_TENANT) {
+                // Cross-tenant: match pagrindinis <-> padalinys relationships
+                $giverTenant = $giver->tenant;
+                if ($giverTenant?->type === 'pagrindinis') {
+                    // Giver is in pagrindinis, find receivers in padalinys-type tenants
+                    $query->whereHas('tenant', function ($q) {
+                        $q->where('type', 'padalinys');
+                    });
+                } elseif ($giverTenant?->type === 'padalinys') {
+                    // Giver is in padalinys, find receivers in pagrindinis tenant
+                    $query->whereHas('tenant', function ($q) {
+                        $q->where('type', 'pagrindinis');
+                    });
+                } else {
+                    // Other tenant types - fall back to within-tenant behavior
+                    $query->where('tenant_id', $giver->tenant_id);
+                }
+            }
+
+            $query->get()->each(function ($receiver) use ($giver, &$relationships) {
                 $relationships[] = [
                     'relationshipable_id' => $giver->id,
                     'related_model_id' => $receiver->id,

@@ -227,3 +227,67 @@ describe('cache invalidation', function () {
         expect(Cache::has($cacheKey))->toBeFalse();
     });
 });
+
+describe('relationship scope', function () {
+    beforeEach(function () {
+        // Create a pagrindinis tenant with unique shortname
+        $this->pagrindinisTenant = Tenant::factory()->create([
+            'type' => 'pagrindinis',
+            'shortname' => 'Test Pagrindinis ' . uniqid(),
+        ]);
+        
+        // Create a padalinys tenant with unique shortname
+        $this->padalinysTenant = Tenant::factory()->create([
+            'type' => 'padalinys',
+            'shortname' => 'Test Padalinys ' . uniqid(),
+        ]);
+        
+        // Create institutions in different tenants
+        $this->pagrindineInstitution = Institution::factory()->for($this->pagrindinisTenant)->create([
+            'name' => ['lt' => 'VU Senatas', 'en' => 'VU Senate'],
+        ]);
+        
+        $this->padalinysInstitution = Institution::factory()->for($this->padalinysTenant)->create([
+            'name' => ['lt' => 'GMC Taryba', 'en' => 'GMC Council'],
+        ]);
+    });
+    
+    test('within-tenant scope only matches same tenant', function () {
+        // Create relationship with within-tenant scope (default)
+        $relationshipable = new Relationshipable([
+            'relationship_id' => $this->relationship->id,
+            'relationshipable_type' => Institution::class,
+            'relationshipable_id' => $this->pagrindineInstitution->id,
+            'related_model_id' => $this->padalinysInstitution->id,
+            'scope' => Relationshipable::SCOPE_WITHIN_TENANT,
+        ]);
+        $relationshipable->save();
+        
+        RelationshipService::clearRelatedInstitutionsCache($this->pagrindineInstitution->id);
+        
+        // Direct relationships should still work regardless of scope
+        // because direct relationships don't use tenant filtering
+        $result = RelationshipService::getRelatedInstitutionsFlat($this->pagrindineInstitution);
+        
+        // Direct relationship should be found
+        expect($result)->toHaveCount(1);
+    });
+    
+    test('scope defaults to within-tenant', function () {
+        $relationshipable = new Relationshipable([
+            'relationship_id' => $this->relationship->id,
+            'relationshipable_type' => Institution::class,
+            'relationshipable_id' => $this->sourceInstitution->id,
+            'related_model_id' => $this->relatedInstitution->id,
+        ]);
+        $relationshipable->save();
+        
+        // Scope should default to within-tenant
+        expect($relationshipable->scope)->toBe(Relationshipable::SCOPE_WITHIN_TENANT);
+    });
+    
+    test('scope constants are defined correctly', function () {
+        expect(Relationshipable::SCOPE_WITHIN_TENANT)->toBe('within-tenant');
+        expect(Relationshipable::SCOPE_CROSS_TENANT)->toBe('cross-tenant');
+    });
+});

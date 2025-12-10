@@ -21,6 +21,9 @@
           <NFormItem label="Ryšio gavėjas" class="col-span-6">
             <NSelect v-model:value="relationForm.related_model_id" filterable clearable :options="options" />
           </NFormItem>
+          <NFormItem v-if="isTypeBasedRelationship" :label="$t('forms.fields.relationship_scope')" class="col-span-6">
+            <NSelect v-model:value="relationForm.scope" :options="scopeOptions" />
+          </NFormItem>
         </div>
         <Button @click="submitRelationForm">
           Sukurti
@@ -32,6 +35,7 @@
 </template>
 
 <script setup lang="tsx">
+import { trans as $t } from "laravel-vue-i18n";
 import {
   NDataTable,
   NForm,
@@ -57,14 +61,36 @@ const props = defineProps<{
 
 const showModal = ref(false);
 
+// Scope constants matching backend
+const SCOPE_WITHIN_TENANT = 'within-tenant';
+const SCOPE_CROSS_TENANT = 'cross-tenant';
+
 const relationTemplate = {
-  model_type: null,
+  model_type: null as string | null,
   model_id: null,
   related_model_id: null,
   relationship_id: props.relationship.id,
+  scope: SCOPE_WITHIN_TENANT,
 };
 
 const relationForm = useForm(relationTemplate);
+
+// Check if the current model type is Type (for showing scope selector)
+const isTypeBasedRelationship = computed(() => {
+  return relationForm.model_type === 'App\\Models\\Type';
+});
+
+// Scope options for the dropdown
+const scopeOptions = computed(() => [
+  {
+    label: $t('forms.options.scope_within_tenant'),
+    value: SCOPE_WITHIN_TENANT,
+  },
+  {
+    label: $t('forms.options.scope_cross_tenant'),
+    value: SCOPE_CROSS_TENANT,
+  },
+]);
 
 const options = computed(() => {
   if (!props.relatedModels) {
@@ -111,6 +137,18 @@ const relationshipableColumns = [
     key: "related_model",
     render(row) {
       return row.related_model.name ?? row.related_model.title;
+    },
+  },
+  {
+    title: $t('forms.fields.relationship_scope'),
+    key: "scope",
+    render(row) {
+      if (row.relationshipable_type !== 'App\\Models\\Type') {
+        return '-';
+      }
+      return row.scope === SCOPE_CROSS_TENANT
+        ? $t('forms.options.scope_cross_tenant')
+        : $t('forms.options.scope_within_tenant');
     },
   },
   {

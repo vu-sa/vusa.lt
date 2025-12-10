@@ -34,6 +34,11 @@ return [
         'time' => 'Time',
         'tenant' => 'Tenant',
         'language' => 'Language',
+        'relationship_scope' => 'Relationship scope',
+    ],
+    'options' => [
+        'scope_within_tenant' => 'Within same tenant',
+        'scope_cross_tenant' => 'Cross-tenant (main ↔ units)',
     ],
     'context' => [
         'main_info' => 'Main information',

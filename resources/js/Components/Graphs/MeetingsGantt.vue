@@ -319,6 +319,7 @@ let centerLineManager: CenterLineManager | null = null
 // Falls back to local settings if no provider is found (standalone usage)
 const ganttSettings = useGanttSettings()
 const dayWidthPx = ganttSettings.dayWidthPx
+const showTenantHeaders = ganttSettings.showTenantHeaders
 const centerDateTimestamp = ganttSettings.centerDateTimestamp
 const setCenterDate = ganttSettings.setCenterDate
 const verticalScrollPosition = ganttSettings.verticalScrollPosition
@@ -511,7 +512,8 @@ const rows = computed<Row[]>(() => {
     institutionMeta.set(i.id, { is_related: i.is_related, relationship_direction: i.relationship_direction })
   })
   
-  if (props.institutionTenant && Object.keys(mergedTenantNames.value).length > 0) {
+  // Only show tenant headers if the setting is enabled and we have tenant data
+  if (showTenantHeaders.value && props.institutionTenant && Object.keys(mergedTenantNames.value).length > 0) {
     const byTenant = new Map<string | number, Array<string | number>>()
     for (const id of ids) {
       const t = tenantFor(id) ?? 'unknown'

@@ -44,6 +44,7 @@ import { computed, ref } from 'vue';
 import MeetingsGantt from "@/Components/Graphs/MeetingsGantt.vue";
 import GanttLegendModal from "@/Components/Graphs/GanttLegendModal.vue";
 import { Card, CardContent } from "@/Components/ui/card";
+import { useGanttSettings } from '../Composables/useGanttSettings';
 
 import type { 
   GanttMeeting, 
@@ -83,6 +84,9 @@ const emit = defineEmits<{
 
 // Legend modal state
 const showLegendModal = ref(false);
+
+// Get gantt settings for showTenantHeaders
+const ganttSettings = useGanttSettings();
 
 // Format institutions for Gantt component
 const formattedInstitutions = computed(() => {
@@ -153,9 +157,9 @@ const effectiveHeight = computed(() => {
     idsArr = idsArr.filter(id => pubMap[id] || pubMap[String(id)])
   }
 
-  // Tenant header rows (if grouping enabled via provided mappings)
+  // Tenant header rows (only if showTenantHeaders is enabled and grouping data available)
   let tenantHeaderCount = 0;
-  if (props.institutionTenant && props.tenantNames) {
+  if (ganttSettings.showTenantHeaders.value && props.institutionTenant && props.tenantNames) {
     const tenantIds = new Set<string|number>();
     for (const id of idsArr) {
       const t = (props.institutionTenant as any)[id as any];

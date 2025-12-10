@@ -21,6 +21,8 @@ export interface GanttSettings {
   detailsExpanded: Ref<boolean>;
   /** Whether to show duty members on the timeline - default: true */
   showDutyMembers: Ref<boolean>;
+  /** Whether to show tenant section headers in the timeline - default: false */
+  showTenantHeaders: Ref<boolean>;
   /** Center date timestamp to restore on page load (null = today) */
   centerDateTimestamp: Ref<number | null>;
   /** Vertical scroll position to restore on page load (null = top) */
@@ -41,6 +43,7 @@ interface StoredSettings {
   dayWidthPx?: number;
   detailsExpanded?: boolean;
   showDutyMembers?: boolean;
+  showTenantHeaders?: boolean;
   centerDateTimestamp?: number | null;
   verticalScrollPosition?: number | null;
 }
@@ -80,6 +83,7 @@ export function provideGanttSettings(): GanttSettings {
   const dayWidthPx = ref<number>(stored.dayWidthPx ?? DEFAULT_DAY_WIDTH);
   const detailsExpanded = ref<boolean>(stored.detailsExpanded ?? false);
   const showDutyMembers = ref<boolean>(stored.showDutyMembers ?? true);
+  const showTenantHeaders = ref<boolean>(stored.showTenantHeaders ?? false);
   const centerDateTimestamp = ref<number | null>(stored.centerDateTimestamp ?? null);
   const verticalScrollPosition = ref<number | null>(stored.verticalScrollPosition ?? null);
 
@@ -89,12 +93,13 @@ export function provideGanttSettings(): GanttSettings {
       dayWidthPx: dayWidthPx.value,
       detailsExpanded: detailsExpanded.value,
       showDutyMembers: showDutyMembers.value,
+      showTenantHeaders: showTenantHeaders.value,
       centerDateTimestamp: centerDateTimestamp.value,
       verticalScrollPosition: verticalScrollPosition.value,
     });
   }
 
-  watch([dayWidthPx, detailsExpanded, showDutyMembers, centerDateTimestamp, verticalScrollPosition], () => {
+  watch([dayWidthPx, detailsExpanded, showDutyMembers, showTenantHeaders, centerDateTimestamp, verticalScrollPosition], () => {
     persistSettings();
   });
 
@@ -118,6 +123,7 @@ export function provideGanttSettings(): GanttSettings {
     dayWidthPx.value = DEFAULT_DAY_WIDTH;
     detailsExpanded.value = false;
     showDutyMembers.value = true;
+    showTenantHeaders.value = false;
     centerDateTimestamp.value = null;
     verticalScrollPosition.value = null;
     if (typeof window !== 'undefined') {
@@ -129,6 +135,7 @@ export function provideGanttSettings(): GanttSettings {
     dayWidthPx,
     detailsExpanded,
     showDutyMembers,
+    showTenantHeaders,
     centerDateTimestamp,
     verticalScrollPosition,
     setDayWidth,
@@ -162,6 +169,7 @@ export function useGanttSettings(): GanttSettings {
     const dayWidthPx = ref<number>(stored.dayWidthPx ?? DEFAULT_DAY_WIDTH);
     const detailsExpanded = ref<boolean>(stored.detailsExpanded ?? false);
     const showDutyMembers = ref<boolean>(stored.showDutyMembers ?? true);
+    const showTenantHeaders = ref<boolean>(stored.showTenantHeaders ?? false);
     const centerDateTimestamp = ref<number | null>(stored.centerDateTimestamp ?? null);
     const verticalScrollPosition = ref<number | null>(stored.verticalScrollPosition ?? null);
 
@@ -171,12 +179,13 @@ export function useGanttSettings(): GanttSettings {
         dayWidthPx: dayWidthPx.value,
         detailsExpanded: detailsExpanded.value,
         showDutyMembers: showDutyMembers.value,
+        showTenantHeaders: showTenantHeaders.value,
         centerDateTimestamp: centerDateTimestamp.value,
         verticalScrollPosition: verticalScrollPosition.value,
       });
     }
 
-    watch([dayWidthPx, detailsExpanded, showDutyMembers, centerDateTimestamp, verticalScrollPosition], () => {
+    watch([dayWidthPx, detailsExpanded, showDutyMembers, showTenantHeaders, centerDateTimestamp, verticalScrollPosition], () => {
       persistFallbackSettings();
     });
 
@@ -184,6 +193,7 @@ export function useGanttSettings(): GanttSettings {
       dayWidthPx,
       detailsExpanded,
       showDutyMembers,
+      showTenantHeaders,
       centerDateTimestamp,
       verticalScrollPosition,
       setDayWidth: (w) => { dayWidthPx.value = Math.max(MIN_DAY_WIDTH, Math.min(MAX_DAY_WIDTH, w)); },
@@ -194,6 +204,7 @@ export function useGanttSettings(): GanttSettings {
         dayWidthPx.value = DEFAULT_DAY_WIDTH;
         detailsExpanded.value = false;
         showDutyMembers.value = true;
+        showTenantHeaders.value = false;
         centerDateTimestamp.value = null;
         verticalScrollPosition.value = null;
         if (typeof window !== 'undefined') {

@@ -28,21 +28,25 @@
             :show-only-with-activity="showOnlyWithActivityTenant"
             :show-only-with-public-meetings="showOnlyWithPublicMeetingsTenant ?? false"
             :show-duty-members="showDutyMembersTenant ?? true"
+            :show-tenant-headers="ganttSettings.showTenantHeaders.value"
             :show-reset="false"
             @update:selected-tenants="handleTenantFilterUpdate"
             @update:show-only-with-activity="(val: boolean) => emit('update:showOnlyWithActivityTenant', val)"
             @update:show-only-with-public-meetings="(val: boolean) => emit('update:showOnlyWithPublicMeetingsTenant', val)"
             @update:show-duty-members="(val: boolean) => emit('update:showDutyMembersTenant', val)"
+            @update:show-tenant-headers="(val: boolean) => ganttSettings.showTenantHeaders.value = val"
           />
           <GanttFilterDropdown
             v-else-if="ganttType === 'user'"
             :show-only-with-activity="showOnlyWithActivityUser ?? false"
             :show-only-with-public-meetings="showOnlyWithPublicMeetingsUser ?? false"
             :show-duty-members="showDutyMembersUser ?? true"
+            :show-tenant-headers="ganttSettings.showTenantHeaders.value"
             :show-reset="false"
             @update:show-only-with-activity="(val: boolean) => emit('update:showOnlyWithActivityUser', val)"
             @update:show-only-with-public-meetings="(val: boolean) => emit('update:showOnlyWithPublicMeetingsUser', val)"
             @update:show-duty-members="(val: boolean) => emit('update:showDutyMembersUser', val)"
+            @update:show-tenant-headers="(val: boolean) => ganttSettings.showTenantHeaders.value = val"
           />
         </div>
       </DialogHeader>
@@ -115,6 +119,7 @@ import Icons from "@/Types/Icons/filled";
 
 import GanttFilterDropdown from './GanttFilterDropdown.vue';
 import TimelineGanttChart from './TimelineGanttChart.vue';
+import { useGanttSettings } from '../Composables/useGanttSettings';
 import type { 
   GanttMeeting, 
   GanttInstitution, 
@@ -177,6 +182,9 @@ const emit = defineEmits<{
   'update:showDutyMembersUser': [value: boolean];
   'create-meeting': [payload: { institution_id: string | number, suggestedAt: Date }];
 }>();
+
+// Get gantt settings for showTenantHeaders toggle
+const ganttSettings = useGanttSettings();
 
 // Local state for tenant filter - synced with props
 const tenantFilter = ref<string[]>(props.tenantFilter);

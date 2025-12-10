@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\MorphPivot;
  * @property string $relationshipable_type
  * @property string $relationshipable_id
  * @property string $related_model_id
+ * @property string $scope
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
  * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $related_model
@@ -25,9 +26,18 @@ use Illuminate\Database\Eloquent\Relations\MorphPivot;
  */
 class Relationshipable extends MorphPivot
 {
+    // Scope constants for relationship resolution
+    public const SCOPE_WITHIN_TENANT = 'within-tenant';
+
+    public const SCOPE_CROSS_TENANT = 'cross-tenant';
+
     protected $table = 'relationshipables';
 
     protected $guarded = [];
+
+    protected $attributes = [
+        'scope' => self::SCOPE_WITHIN_TENANT,
+    ];
 
     public function relationshipable()
     {

@@ -142,11 +142,19 @@ class RelationshipController extends AdminController
             'model_id' => 'required',
             'model_type' => 'required',
             'related_model_id' => 'required',
+            'scope' => 'nullable|in:within-tenant,cross-tenant',
         ]);
 
-        $relationship->models($request->model_type)->attach($request->model_id, [
+        $pivotData = [
             'related_model_id' => $request->related_model_id,
-        ]);
+        ];
+
+        // Only add scope for Type-based relationships
+        if ($request->model_type === \App\Models\Type::class) {
+            $pivotData['scope'] = $request->scope ?? 'within-tenant';
+        }
+
+        $relationship->models($request->model_type)->attach($request->model_id, $pivotData);
 
         return redirect()->route('relationships.edit', $relationship)
             ->with('success', 'Ryšys sukurtas sėkmingai.');

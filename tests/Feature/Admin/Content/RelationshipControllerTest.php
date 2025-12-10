@@ -258,6 +258,57 @@ describe('model relationship operations', function () {
         ]);
     });
 
+    test('can store type relationship with scope', function () {
+        $data = [
+            'model_id' => $this->type->id,
+            'model_type' => Type::class,
+            'related_model_id' => $this->type->id,
+            'scope' => 'cross-tenant',
+        ];
+
+        asUser($this->admin)->post(route('relationships.storeModelRelationship', $this->relationship), $data)
+            ->assertRedirect(route('relationships.edit', $this->relationship))
+            ->assertSessionHas('success', 'Ryšys sukurtas sėkmingai.');
+
+        $this->assertDatabaseHas('relationshipables', [
+            'relationship_id' => $this->relationship->id,
+            'relationshipable_type' => Type::class,
+            'relationshipable_id' => $this->type->id,
+            'scope' => 'cross-tenant',
+        ]);
+    });
+
+    test('scope defaults to within-tenant for type relationships', function () {
+        $data = [
+            'model_id' => $this->type->id,
+            'model_type' => Type::class,
+            'related_model_id' => $this->type->id,
+            // No scope provided - should default to within-tenant
+        ];
+
+        asUser($this->admin)->post(route('relationships.storeModelRelationship', $this->relationship), $data)
+            ->assertRedirect(route('relationships.edit', $this->relationship));
+
+        $this->assertDatabaseHas('relationshipables', [
+            'relationship_id' => $this->relationship->id,
+            'relationshipable_type' => Type::class,
+            'relationshipable_id' => $this->type->id,
+            'scope' => 'within-tenant',
+        ]);
+    });
+
+    test('cannot store model relationship with invalid scope', function () {
+        $data = [
+            'model_id' => $this->type->id,
+            'model_type' => Type::class,
+            'related_model_id' => $this->type->id,
+            'scope' => 'invalid-scope',
+        ];
+
+        asUser($this->admin)->post(route('relationships.storeModelRelationship', $this->relationship), $data)
+            ->assertSessionHasErrors(['scope']);
+    });
+
     test('cannot store model relationship with invalid data', function () {
         $data = [
             'model_id' => '',

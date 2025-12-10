@@ -58,7 +58,8 @@ trait HasCommonChecks
             } else {
                 $permissableModels = $permissableDuties->load($relationFromDuties)
                     ->pluck($relationFromDuties)
-                    ->flatten();
+                    ->flatten()
+                    ->filter(); // Remove null values from duties without the related model
             }
 
             // Check for direct relationship
@@ -70,7 +71,7 @@ trait HasCommonChecks
             if ($resource === 'institutions' && $model instanceof \App\Models\Institution) {
                 $institutions = new Collection(RelationshipService::getRelatedInstitutions($model));
 
-                if ($institutions->intersect((new Collection($permissableModels)))->isNotEmpty()) {
+                if ($institutions->intersect($permissableModels)->isNotEmpty()) {
                     return true;
                 }
             }
