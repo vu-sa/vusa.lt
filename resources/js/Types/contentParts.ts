@@ -81,6 +81,17 @@ export type SpotifyEmbed = {
   options: null
 }
 
+export type SocialEmbed = {
+  json_content: {
+    url: string;
+    platform: 'facebook' | 'instagram' | null;
+    postId?: string;
+  };
+  options: {
+    showCaption?: boolean;
+  }
+}
+
 export type FlowGraph = {
   json_content: {
     nodes?: Record<string, any>[];

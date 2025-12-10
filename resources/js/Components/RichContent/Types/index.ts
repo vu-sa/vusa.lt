@@ -10,6 +10,7 @@ import FlowIcon from '~icons/fluent/flow24-regular';
 import NumberIcon from '~icons/fluent/number-symbol24-regular';
 import HeroIcon from '~icons/fluent/slide-play24-regular';
 import GridIcon from '~icons/fluent/table-simple24-regular';
+import SocialIcon from '~icons/fluent/share-24-regular';
 
 export interface ContentType {
   value: string;
@@ -84,6 +85,14 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     icon: SpotifyIcon,
     description: "Spotify grojaraščio įterpimas",
     defaultContent: () => ({ url: "" }),
+  },
+  "social-embed": {
+    value: "social-embed",
+    label: "Facebook / Instagram",
+    icon: SocialIcon,
+    description: "Facebook arba Instagram įrašo įterpimas",
+    defaultContent: () => ({ url: "", platform: null, postId: "" }),
+    defaultOptions: () => ({ showCaption: true }),
   },
   "flow-graph": {
     value: "flow-graph",

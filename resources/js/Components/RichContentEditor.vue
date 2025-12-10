@@ -213,7 +213,8 @@ const contentTypes = getAllContentTypes();
 const quickAddTypes = computed(() => [
   getContentType('tiptap'),
   getContentType('shadcn-card'),
-  getContentType('image-grid')
+  getContentType('image-grid'),
+  getContentType('social-embed')
 ]);
 
 // Check if max content blocks limit would be exceeded

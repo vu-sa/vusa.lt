@@ -61,6 +61,8 @@ const editorComponent = computed(() => {
       return defineAsyncComponent(() => import('./RCHeroSection/HeroForm.vue'));
     case 'spotify-embed':
       return defineAsyncComponent(() => import('./Types/SpotifyEmbedEditor.vue'));
+    case 'social-embed':
+      return defineAsyncComponent(() => import('./Types/SocialEmbedEditor.vue'));
     case 'flow-graph':
       return defineAsyncComponent(() => import('./Types/FlowGraphEditor.vue'));
     case 'number-stat-section':

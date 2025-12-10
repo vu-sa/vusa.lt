@@ -8,6 +8,7 @@ return [
     'image-grid' => 'Image Grid',
     'hero' => 'Hero Section',
     'spotify-embed' => 'Spotify Embed',
+    'social-embed' => 'Facebook / Instagram Post',
     'number-stat-section' => 'Number Statistics',
     'news' => 'News',
     'calendar' => 'Calendar',

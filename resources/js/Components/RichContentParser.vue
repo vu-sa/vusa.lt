@@ -41,6 +41,7 @@ const contentComponents = shallowRef({
   'image-grid': markRaw(defineAsyncComponent(() => import('./RichContent/Types/ImageGridDisplay.vue'))),
   'hero': markRaw(defineAsyncComponent(() => import('@/Components/RichContent/RCHeroSection/HeroElement.vue'))),
   'spotify-embed': markRaw(defineAsyncComponent(() => import('@/Components/RichContent/RCSpotifyEmbed.vue'))),
+  'social-embed': markRaw(defineAsyncComponent(() => import('@/Components/RichContent/RCSocialEmbed.vue'))),
   'number-stat-section': markRaw(defineAsyncComponent(() => import('@/Components/RichContent/RCNumberStatSection/RCNumberSection.vue'))),
   'news': markRaw(defineAsyncComponent(() => import("@/Components/Public/NewsElement.vue"))),
   'calendar': markRaw(defineAsyncComponent(() => import("@/Components/Public/FullWidth/EventCalendarElement.vue"))),
@@ -73,6 +74,7 @@ function getSpacingClass(type: string, index: number): string {
     'image-grid': 'mb-10', // 2.5rem bottom
     'hero': 'mb-14', // 3.5rem bottom
     'spotify-embed': 'mb-10', // 2.5rem bottom
+    'social-embed': 'mb-10', // 2.5rem bottom
     'number-stat-section': 'mb-12', // 3rem bottom
     'news': 'mb-12', // 3rem bottom
     'calendar': 'mb-12', // 3rem bottom

@@ -8,6 +8,7 @@ return [
     'image-grid' => 'Nuotraukų tinklelis',
     'hero' => 'Antraštės sekcija',
     'spotify-embed' => 'Spotify įterpimas',
+    'social-embed' => 'Facebook / Instagram įrašas',
     'number-stat-section' => 'Skaičių statistika',
     'news' => 'Naujienos',
     'calendar' => 'Kalendorius',
