@@ -6,6 +6,7 @@ use App\Events\FileableNameUpdated;
 use App\Services\ResourceServices\SharepointFileService;
 use Carbon\Carbon;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Support\Facades\Log;
 use Microsoft\Graph\Generated\Models\ODataErrors\ODataError;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
@@ -59,15 +60,20 @@ class UpdateSharepointFolder implements ShouldQueue
 
         $sharepointGraph = new \App\Services\SharepointGraphService(driveId: config('filesystems.sharepoint.vusa_drive_id'));
 
-        // TODO: right now is failing
-        try {
-            $driveItem = $sharepointGraph->updateDriveItemByPath($path, [
-                // the drive item name property in Sharepoint is always "name"
-                'name' => $newName,
+        // Update the drive item - errors are handled silently within the service
+        $driveItem = $sharepointGraph->updateDriveItemByPath($path, [
+            // the drive item name property in Sharepoint is always "name"
+            'name' => $newName,
+        ]);
+
+        if ($driveItem === null) {
+            // Log for monitoring but continue gracefully
+            Log::warning('SharePoint folder update failed', [
+                'path' => $path,
+                'new_name' => $newName,
+                'fileable_type' => get_class($fileable),
+                'fileable_id' => $fileable->id ?? null,
             ]);
-        } catch (ODataError $e) {
-            // TODO: handle the error
-            report($e);
         }
     }
 }

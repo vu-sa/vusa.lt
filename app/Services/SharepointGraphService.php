@@ -154,19 +154,38 @@ class SharepointGraphService
         return $driveItem;
     }
 
-    public function updateDriveItemByPath(string $path, array $fields): Models\DriveItem
+    public function updateDriveItemByPath(string $path, array $fields): ?Models\DriveItem
     {
-        $path = rawurlencode($path);
+        try {
+            $path = rawurlencode($path);
 
-        $sharepointPathFinal = $this->graphApiBaseUrl.'drives/'.$this->driveId.'/root:'."/{$path}";
+            $sharepointPathFinal = $this->graphApiBaseUrl.'drives/'.$this->driveId.'/root:'."/{$path}";
 
-        $updatableDriveItem = $this->graph->drives()->byDriveId($this->driveId)->root()->withUrl($sharepointPathFinal)->get()->wait();
+            $updatableDriveItem = $this->graph->drives()->byDriveId($this->driveId)->root()->withUrl($sharepointPathFinal)->get()->wait();
 
-        isset($fields['name']) ? $updatableDriveItem->setName($fields['name']) : null;
+            isset($fields['name']) ? $updatableDriveItem->setName($fields['name']) : null;
 
-        $result = $this->graph->drives()->byDriveId($this->driveId)->items()->byDriveItemId($updatableDriveItem->getId())->patch($updatableDriveItem)->wait();
+            $result = $this->graph->drives()->byDriveId($this->driveId)->items()->byDriveItemId($updatableDriveItem->getId())->patch($updatableDriveItem)->wait();
 
-        return $result;
+            return $result;
+        } catch (ODataError $e) {
+            $this->logError('Failed to update drive item by path', [
+                'path' => $path,
+                'fields' => $fields,
+                'error' => $e->getMessage(),
+                'error_code' => $e->getError()?->getCode(),
+            ]);
+
+            return null;
+        } catch (\Exception $e) {
+            $this->logError('Unexpected error updating drive item by path', [
+                'path' => $path,
+                'fields' => $fields,
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
     }
 
     public function getListItem(string $siteId, string $listId, string $listItemId): Models\FieldValueSet

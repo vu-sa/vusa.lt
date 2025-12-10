@@ -261,6 +261,35 @@ class UserController extends AdminController
 
     public function storeFromMicrosoft(Request $request)
     {
+        // Handle OAuth errors (e.g., user cancelled login)
+        if ($request->has('error')) {
+            $error = $request->get('error');
+            $errorSubcode = $request->get('error_subcode');
+
+            \Log::info('Microsoft OAuth flow cancelled or denied', [
+                'error' => $error,
+                'error_subcode' => $errorSubcode,
+                'error_description' => $request->get('error_description'),
+                'user_ip' => $request->ip(),
+            ]);
+
+            // User cancelled the login - redirect gracefully
+            if ($error === 'access_denied' || $errorSubcode === 'cancel') {
+                $message = app()->getLocale() === 'en'
+                    ? 'Login was cancelled. Please try again if you wish to sign in.'
+                    : 'Prisijungimas buvo atšauktas. Bandykite dar kartą, jei norite prisijungti.';
+
+                return redirect()->route('login')->with('status', $message);
+            }
+
+            // Other OAuth errors
+            $message = app()->getLocale() === 'en'
+                ? 'An error occurred during login. Please try again.'
+                : 'Prisijungimo metu įvyko klaida. Bandykite dar kartą.';
+
+            return redirect()->route('login')->with('error', $message);
+        }
+
         try {
             $microsoftUser = Socialite::driver('microsoft')->user();
         } catch (\Laravel\Socialite\Two\InvalidStateException $e) {
@@ -275,6 +304,31 @@ class UserController extends AdminController
             // Retry with stateless method
             /** @phpstan-ignore-next-line */
             $microsoftUser = Socialite::driver('microsoft')->stateless()->user();
+        } catch (\GuzzleHttp\Exception\ClientException $e) {
+            // Handle Guzzle HTTP errors (e.g., 400 Bad Request from token exchange)
+            \Log::error('Microsoft OAuth ClientException', [
+                'message' => $e->getMessage(),
+                'user_ip' => $request->ip(),
+            ]);
+
+            $message = app()->getLocale() === 'en'
+                ? 'Login failed. Please try again.'
+                : 'Prisijungimas nepavyko. Bandykite dar kartą.';
+
+            return redirect()->route('login')->with('error', $message);
+        } catch (\Exception $e) {
+            // Catch any other unexpected exceptions
+            \Log::error('Microsoft OAuth unexpected error', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'user_ip' => $request->ip(),
+            ]);
+
+            $message = app()->getLocale() === 'en'
+                ? 'An unexpected error occurred. Please try again.'
+                : 'Įvyko netikėta klaida. Bandykite dar kartą.';
+
+            return redirect()->route('login')->with('error', $message);
         }
 
         // pirmiausia ieškome per vartotoją, per paštą
