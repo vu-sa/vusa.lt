@@ -61,8 +61,22 @@ createInertiaApp({
       .use(i18nVue, {
         fallbackLang: "en",
         resolve: async (lang: string) => {
-          const langs = import.meta.glob("../../lang/*.json");
-          return await langs[`../../lang/${lang}.json`]();
+          // Load JSON translations (shared between admin/public)
+          const jsonLangs = import.meta.glob<{ default: Record<string, string> }>("../../lang/*.json");
+          // Load public-specific PHP translations (shared + public combined)
+          const phpLangs = import.meta.glob<{ default: Record<string, string> }>("../../lang/php_public_*.json");
+          
+          const jsonPath = `../../lang/${lang}.json`;
+          const phpPath = `../../lang/php_public_${lang}.json`;
+          
+          const jsonModule = jsonLangs[jsonPath] ? await jsonLangs[jsonPath]() : null;
+          const phpModule = phpLangs[phpPath] ? await phpLangs[phpPath]() : null;
+          
+          // Merge translations: JSON base + PHP compiled
+          return {
+            ...(jsonModule?.default || {}),
+            ...(phpModule?.default || {}),
+          };
         },
       })
       .use(ZiggyVue)

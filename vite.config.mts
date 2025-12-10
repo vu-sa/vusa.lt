@@ -4,7 +4,7 @@ import Components from 'unplugin-vue-components/vite'
 import Icons from 'unplugin-icons/vite'
 import IconsResolver from 'unplugin-icons/resolver'
 import Markdown from 'unplugin-vue-markdown/vite'
-import i18n from "laravel-vue-i18n/vite";
+import i18nSplit from "./vite-plugins/i18n-split";
 import laravel from "laravel-vite-plugin";
 import vue from "@vitejs/plugin-vue";
 import vueDevTools from 'vite-plugin-vue-devtools'
@@ -51,7 +51,7 @@ export default defineConfig(({ command }) => {
       dts: 'resources/js/Types/components.d.ts',
     }),
     Icons(),
-    i18n(),
+    i18nSplit(),
   ]
 
   // Core plugins needed for both dev and build

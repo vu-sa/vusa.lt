@@ -2,9 +2,40 @@
 
 This directory contains some of the language files used in the application.
 
+## Directory Structure
+
+The translation files are organized into separate directories for optimized bundle sizes:
+
+```
+lang/
+├── admin/          # Admin-only translations (loaded only in admin bundle)
+│   ├── lt/         # Lithuanian PHP translation files
+│   └── en/         # English PHP translation files
+├── public/         # Public-only translations (loaded only in public bundle)
+│   ├── lt/
+│   └── en/
+├── shared/         # Shared translations (loaded in both bundles)
+│   ├── lt/
+│   └── en/
+├── lt.json         # Lithuanian JSON translations (shared)
+├── en.json         # English JSON translations (shared)
+└── php_*.json      # Generated files (gitignored)
+```
+
+### Adding new translations
+
+- **Admin-only**: Place PHP files in `admin/lt/` and `admin/en/` (e.g., `tutorials.php`, `settings.php`)
+- **Public-only**: Place PHP files in `public/lt/` and `public/en/` (e.g., `search.php`)
+- **Shared**: Place PHP files in `shared/lt/` and `shared/en/` (e.g., `common.php`, `validation.php`)
+- **JSON translations**: Add to `lt.json` and `en.json` (shared between both bundles)
+
+The custom Vite plugin (`vite-plugins/i18n-split.ts`) compiles these into:
+- `php_admin_{lang}.json` - shared + admin translations
+- `php_public_{lang}.json` - shared + public translations
+
 ## Shortkeys
 
-Shortkeys are available in directories `en/...` and `lt/...`.
+Shortkeys are available in directories `admin/`, `public/`, and `shared/`.
 
 More on shorkeys: <https://laravel.com/docs/10.x/localization#using-short-keys>
 
@@ -23,9 +54,9 @@ These methods are also used in the application to *translate* strings.
 
 These localization files are located in `resources/js/Constants/I18n/...`. They should consist more of non-repeating, longer strings.
 
-The problem is that by default, all of the localization strings from Laravel are imported to the application. This means that guest users will have to download all of the localization strings, even if they are not using the application administration features.
+~~The problem is that by default, all of the localization strings from Laravel are imported to the application. This means that guest users will have to download all of the localization strings, even if they are not using the application administration features.~~
 
-Of course, some localization fetching methods could be implemented as it's shown [here](https://github.com/xiCO2k/laravel-vue-i18n#with-vite), but it needs a better strategy.
+**UPDATE**: This has been solved! The translation files are now split into admin/public/shared directories, and each bundle only loads the translations it needs. See the directory structure above.
 
 ### A simple `if` statement
 

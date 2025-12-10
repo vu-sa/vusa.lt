@@ -34,8 +34,7 @@ public/vendor/telescope/mix-manifest.json
 # vite builds
 /public/build
 public/hot
-lang/php_en.json
-lang/php_lt.json
+lang/php_*.json
 
 .phpunit.cache
 coverage/*
