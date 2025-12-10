@@ -113,6 +113,7 @@ const navMainItems = computed(() => {
       url: route('dashboard.atstovavimas'),
       icon: GraduationCap,
       isActive: route().current('dashboard.atstovavimas*'),
+      dataTour: 'nav-visak',
     })
   }
 
@@ -141,6 +142,7 @@ const navMainItems = computed(() => {
       url: route('administration'),
       icon: Settings,
       isActive: route().current('administration*'),
+      dataTour: 'nav-administravimas',
     })
   }
 
@@ -154,11 +156,13 @@ const navSecondaryItems = computed(() => {
       title: $t('Dokumentacija'),
       url: 'https://www.vusa.lt/docs',
       icon: BookOpen,
+      dataTour: 'nav-dokumentacija',
     },
     {
       title: $t('Palik atsiliepimą'),
       url: '#feedback',
       icon: MessageSquare,
+      dataTour: 'nav-feedback',
     },
   ]
 })
@@ -305,7 +309,7 @@ const handleLogout = () => {
       </a>
       <SidebarMenu>
         <!-- User account dropdown -->
-        <SidebarMenuItem>
+        <SidebarMenuItem data-tour="user-menu">
           <DropdownMenu>
             <DropdownMenuTrigger as-child>
               <SidebarMenuButton size="lg"

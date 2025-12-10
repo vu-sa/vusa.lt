@@ -6,6 +6,7 @@
     <div class="space-y-6">
       <!-- Simple greeting -->
       <section
+        data-tour="greeting-section"
         class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/8 via-primary/4 to-background p-6 shadow-sm ring-1 ring-primary/10 dark:from-primary/12 dark:via-primary/6 dark:ring-primary/15">
         <div class="absolute inset-0 bg-grid-pattern opacity-[0.03] dark:opacity-[0.02]" />
         <div class="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -28,11 +29,12 @@
         <!-- Upcoming Meetings Card (first for atstovavimas users) -->
         <UpcomingMeetingsCard v-if="hasAtstovavimas" :upcoming-meetings="formattedMeetings"
           :institutions-insights="emptyInsights"
+          data-tour="meetings-card"
           @show-all-meetings="() => router.visit(route('dashboard.atstovavimas'))"
           @create-meeting="showMeetingModal = true" />
 
         <!-- Tasks Card -->
-        <TasksCard :task-stats :upcoming-tasks :class="{ 'lg:max-w-2xl': !hasAtstovavimas }" />
+        <TasksCard :task-stats :upcoming-tasks :class="{ 'lg:max-w-2xl': !hasAtstovavimas }" data-tour="tasks-card" />
       </div>
 
       <!-- Calendar Events Section -->
@@ -50,7 +52,7 @@
 <script setup lang="ts">
 import { Head, router, usePage } from "@inertiajs/vue3";
 import { trans as $t } from "laravel-vue-i18n";
-import { computed, ref } from "vue";
+import { computed, ref, onMounted } from "vue";
 import { format } from "date-fns";
 import { lt, enUS } from "date-fns/locale";
 
@@ -61,6 +63,9 @@ import NewMeetingModal from "@/Components/Modals/NewMeetingModal.vue";
 import CalendarEventsCard from "@/Pages/Admin/Dashboard/Components/CalendarEventsCard.vue";
 import NewsListCard from "@/Pages/Admin/Dashboard/Components/NewsListCard.vue";
 import { addressivize } from "@/Utils/String";
+import { useProductTour } from "@/Composables/useProductTour";
+import { provideTour } from "@/Composables/useTourProvider";
+import { useSidebar } from "@/Components/ui/sidebar/utils";
 
 // Icons
 
@@ -104,6 +109,164 @@ const showMeetingModal = ref(false);
 
 // Check if user has atstovavimas permissions (can create meetings)
 const hasAtstovavimas = computed(() => usePage().props.auth?.can?.create?.meeting);
+
+// Check if user can access administration
+const canAccessAdministration = computed(() => usePage().props.auth?.can?.accessAdministration);
+
+// Get sidebar controls for expanding during tour
+const { setOpen, setOpenMobile, isMobile } = useSidebar();
+
+// Expand sidebar when highlighting sidebar elements
+const expandSidebar = () => {
+  if (isMobile.value) {
+    setOpenMobile(true);
+  } else {
+    setOpen(true);
+  }
+};
+
+// Build conditional tour steps
+const tourSteps = computed(() => {
+  const steps = [];
+  
+  // 1. Welcome step (always)
+  steps.push({
+    popover: {
+      title: $t('tutorials.admin_home.welcome.title'),
+      description: $t('tutorials.admin_home.welcome.description'),
+    },
+  });
+  
+  // 2. Upcoming meetings card (if atstovavimas)
+  if (hasAtstovavimas.value) {
+    steps.push({
+      element: '[data-tour="meetings-card"]',
+      popover: {
+        title: $t('tutorials.admin_home.meetings_card.title'),
+        description: $t('tutorials.admin_home.meetings_card.description'),
+      },
+    });
+  }
+  
+  // 3. ViSAK in sidebar (if atstovavimas)
+  if (hasAtstovavimas.value) {
+    steps.push({
+      element: '[data-tour="nav-visak"]',
+      popover: {
+        title: $t('tutorials.admin_home.nav_visak.title'),
+        description: $t('tutorials.admin_home.nav_visak.description'),
+      },
+      onHighlightStarted: expandSidebar,
+    });
+  }
+  
+  // 4. Administravimas button (if can manage administration)
+  if (canAccessAdministration.value) {
+    steps.push({
+      element: '[data-tour="nav-administravimas"]',
+      popover: {
+        title: $t('tutorials.admin_home.nav_administravimas.title'),
+        description: $t('tutorials.admin_home.nav_administravimas.description'),
+      },
+      onHighlightStarted: expandSidebar,
+    });
+  }
+  
+  // 5. Quick actions section
+  steps.push({
+    element: '[data-tour="quick-actions"]',
+    popover: {
+      title: $t('tutorials.admin_home.quick_actions.title'),
+      description: $t('tutorials.admin_home.quick_actions.description'),
+    },
+    onHighlightStarted: expandSidebar,
+  });
+  
+  // 6. Tasks card
+  steps.push({
+    element: '[data-tour="tasks-card"]',
+    popover: {
+      title: $t('tutorials.admin_home.tasks_card.title'),
+      description: $t('tutorials.admin_home.tasks_card.description'),
+    },
+  });
+  
+  // 7. Tasks indicator in top bar
+  steps.push({
+    element: '[data-tour="tasks-indicator"]',
+    popover: {
+      title: $t('tutorials.admin_home.tasks_indicator.title'),
+      description: $t('tutorials.admin_home.tasks_indicator.description'),
+    },
+  });
+  
+  // 8. Notifications indicator in top bar
+  steps.push({
+    element: '[data-tour="notifications-indicator"]',
+    popover: {
+      title: $t('tutorials.admin_home.notifications_indicator.title'),
+      description: $t('tutorials.admin_home.notifications_indicator.description'),
+    },
+  });
+  
+  // 9. Help button in top bar
+  steps.push({
+    element: '[data-tour="help-button"]',
+    popover: {
+      title: $t('tutorials.admin_home.help_button.title'),
+      description: $t('tutorials.admin_home.help_button.description'),
+    },
+  });
+  
+  // 10. Dokumentacija in sidebar
+  steps.push({
+    element: '[data-tour="nav-dokumentacija"]',
+    popover: {
+      title: $t('tutorials.admin_home.nav_dokumentacija.title'),
+      description: $t('tutorials.admin_home.nav_dokumentacija.description'),
+    },
+    onHighlightStarted: expandSidebar,
+  });
+  
+  // 11. User menu (settings) in sidebar
+  steps.push({
+    element: '[data-tour="user-menu"]',
+    popover: {
+      title: $t('tutorials.admin_home.user_menu.title'),
+      description: $t('tutorials.admin_home.user_menu.description'),
+    },
+    onHighlightStarted: expandSidebar,
+  });
+  
+  // 12. Leave feedback in sidebar (final step)
+  steps.push({
+    element: '[data-tour="nav-feedback"]',
+    popover: {
+      title: $t('tutorials.admin_home.nav_feedback.title'),
+      description: $t('tutorials.admin_home.nav_feedback.description'),
+    },
+    onHighlightStarted: expandSidebar,
+  });
+  
+  return steps;
+});
+
+// Setup product tour
+const { startTour, startTourIfNew } = useProductTour({
+  tourId: 'admin-home-v1',
+  steps: tourSteps.value,
+});
+
+// Register tour with the layout's help button
+provideTour(startTour);
+
+// Auto-start tour for first-time users after component mounts
+onMounted(() => {
+  // Wait 1.5 seconds to ensure DOM is ready
+  setTimeout(() => {
+    startTourIfNew();
+  }, 1500);
+});
 
 // Empty insights for the UpcomingMeetingsCard (we don't have this data on the home page)
 const emptyInsights = {

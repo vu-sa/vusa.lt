@@ -26,6 +26,7 @@ defineProps<{
     url: string
     icon: LucideIcon
     isActive?: boolean
+    dataTour?: string
     items?: {
       title: string
       url: string
@@ -43,7 +44,7 @@ const sectionTitle = $t('Funkcijos')
     <SidebarGroupContent>
     <SidebarMenu>
       <Collapsible v-for="item in items" :key="item.title" as-child :default-open="item.isActive">
-        <SidebarMenuItem>
+        <SidebarMenuItem :data-tour="item.dataTour">
           <SidebarMenuButton as-child :tooltip="item.title">
             <Link :href="item.url">
               <component :is="item.icon" />

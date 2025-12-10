@@ -15,6 +15,23 @@
 
           <div class="flex items-center gap-2">
             <slot name="headerActions" />
+            <TooltipProvider v-if="hasTour">
+              <Tooltip>
+                <TooltipTrigger as-child>
+                  <Button 
+                    variant="outline" 
+                    size="icon" 
+                    class="rounded-full" 
+                    data-tour="help-button"
+                    @click="startTour"
+                  >
+                    <HelpCircle class="h-4 w-4" />
+                    <span class="sr-only">{{ $t('Kaip veikia?') }}</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>{{ $t('Pradėti interaktyvų vadovą') }}</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             <TasksIndicator />
             <NotificationsIndicator />
           </div>
@@ -79,6 +96,7 @@ import {
   HomeIcon,
   PlusIcon,
   UserIcon,
+  HelpCircle,
 } from 'lucide-vue-next';
 import { trans as $t } from "laravel-vue-i18n";
 
@@ -98,6 +116,8 @@ import {
 import UnifiedBreadcrumbs from '@/Components/UnifiedBreadcrumbs.vue';
 import { createBreadcrumbState } from '@/Composables/useBreadcrumbsUnified';
 import type { BreadcrumbItem } from '@/Composables/useBreadcrumbsUnified';
+import { createTourProvider } from '@/Composables/useTourProvider';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 import { Toaster } from "@/Components/ui/sonner";
 
 const props = withDefaults(defineProps<{
@@ -115,12 +135,27 @@ const systemMessage = computed(() => usePage().props.app?.systemMessage || null)
 // Initialize breadcrumb state for the entire admin application
 const breadcrumbState = createBreadcrumbState('admin');
 
-// Clear breadcrumbs when on home page
-watch(() => usePage().component, (component) => {
+// Initialize tour provider - pages can register their tours via provideTour()
+const { hasTour, startTour, clearTour } = createTourProvider();
+
+// Track the current page component to detect navigation
+const currentComponent = ref(usePage().component);
+
+// Clear tour registration when navigating to a new page
+// Use flush: 'sync' to ensure this runs immediately when the prop changes,
+// before the new page component's setup runs and registers its tour
+watch(() => usePage().component, (component, oldComponent) => {
+  // Clear breadcrumbs when on home page
   if (component === 'Admin/ShowAdminHome') {
     breadcrumbState.clear();
   }
-}, { immediate: true });
+  
+  // Only clear tour when actually navigating (not on initial load)
+  if (oldComponent && oldComponent !== component) {
+    clearTour();
+  }
+  currentComponent.value = component;
+}, { flush: 'sync' });
 
 // Handle breadcrumb initialization for new pages with prop-provided breadcrumbs
 watch(() => props.breadcrumbs, (newBreadcrumbs) => {

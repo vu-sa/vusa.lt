@@ -19,19 +19,6 @@
           <Info class="h-5 w-5" />
         </button>
       </h1>
-      <template #actions>
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger as-child>
-              <Button variant="outline" size="sm" class="gap-2" @click="startContextTour">
-                <HelpCircle class="h-4 w-4" />
-                {{ $t('Kaip veikia?') }}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>{{ $t('Pradėti interaktyvų vadovą') }}</TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      </template>
     </PageHero>
 
     <!-- ViSAK Info Modal -->
@@ -138,7 +125,7 @@ import { trans as $t } from "laravel-vue-i18n";
 // UI components
 
 // Extracted components
-import { HelpCircle, Info } from 'lucide-vue-next';
+import { Info } from 'lucide-vue-next';
 
 import PersonalOverviewSection from './Components/PersonalOverviewSection.vue';
 import UserTimelineSection from './Components/UserTimelineSection.vue';
@@ -156,6 +143,7 @@ import { provideGanttSettings } from './Composables/useGanttSettings';
 import type { AtstovavimosUser, AtstovavimosTenant, AtstovavimosInstitution } from './types';
 
 import { useProductTour } from '@/Composables/useProductTour';
+import { provideTour } from '@/Composables/useTourProvider';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 // Icons and utils
@@ -171,8 +159,6 @@ import AddCheckInDialog from "@/Components/CheckIns/AddCheckInDialog.vue";
 import NewMeetingModal from '@/Components/Modals/NewMeetingModal.vue';
 import PageHero from '@/Components/Hero/PageHero.vue';
 import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
-import { Button } from '@/Components/ui/button';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 
 // Setup breadcrumbs
 usePageBreadcrumbs(() => [
@@ -323,6 +309,9 @@ function startContextTour() {
     startTour(true); // voluntary = true
   }
 }
+
+// Register tour with the layout's help button
+provideTour(startContextTour);
 
 // Auto-start tour for first-time users after component mounts
 onMounted(() => {

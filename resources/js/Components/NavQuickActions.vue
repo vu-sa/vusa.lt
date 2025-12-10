@@ -70,7 +70,7 @@ const sectionTitle = $t('Greiti veiksmai')
 </script>
 
 <template>
-  <SidebarGroup v-if="quickActions.length > 0" class="group-data-[collapsible=icon]:hidden">
+  <SidebarGroup v-if="quickActions.length > 0" class="group-data-[collapsible=icon]:hidden" data-tour="quick-actions">
     <SidebarGroupLabel class="flex items-center gap-2">
       <Sparkles class="h-3 w-3 text-muted-foreground" />
       {{ sectionTitle }}

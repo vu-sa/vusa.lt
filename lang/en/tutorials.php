@@ -89,4 +89,56 @@ return [
             'description' => 'We\'re done! Click here to <strong>open the legend</strong> with explanations of all diagram elements.',
         ],
     ],
+
+    // Admin Home Tour
+    'admin_home' => [
+        'welcome' => [
+            'title' => 'Welcome to Mano VU SA!',
+            'description' => 'This is your <strong>main dashboard</strong> where you\'ll find the most important tools and information. Let us briefly introduce you to the main features.',
+        ],
+        'meetings_card' => [
+            'title' => 'Upcoming Meetings',
+            'description' => 'This card shows your <strong>nearest scheduled meetings</strong>. You can quickly create a new meeting or view all of them.',
+        ],
+        'nav_visak' => [
+            'title' => 'ViSAK – Representation',
+            'description' => 'This button opens <strong>ViSAK</strong> – the Virtual Student Representatives Coordinator page where you can manage all your representation activities.',
+        ],
+        'nav_administravimas' => [
+            'title' => 'Administration',
+            'description' => 'This button opens the <strong>administration section</strong> where you can manage users, units, institutions, and other settings.',
+        ],
+        'quick_actions' => [
+            'title' => 'Quick Actions',
+            'description' => 'In this section you\'ll find <strong>quick actions</strong> – create a meeting, news, or reservation with a single click.',
+        ],
+        'tasks_card' => [
+            'title' => 'Tasks',
+            'description' => 'This card shows your <strong>personal tasks</strong> and their status. You\'ll see how many tasks are pending and which are due soon.',
+        ],
+        'tasks_indicator' => [
+            'title' => 'Tasks Indicator',
+            'description' => 'This button shows your <strong>pending tasks count</strong>. Click to review tasks or mark them as complete.',
+        ],
+        'notifications_indicator' => [
+            'title' => 'Notifications',
+            'description' => 'This button shows your <strong>unread notifications</strong>. Click to view the latest notifications.',
+        ],
+        'help_button' => [
+            'title' => 'Help Button',
+            'description' => 'This button allows you to <strong>restart this guide</strong> at any time. Each page with a guide has this button.',
+        ],
+        'nav_dokumentacija' => [
+            'title' => 'Documentation',
+            'description' => 'Click here to open the <strong>detailed platform documentation</strong> with all explanations and instructions.',
+        ],
+        'user_menu' => [
+            'title' => 'Your Profile',
+            'description' => 'In this menu you\'ll find <strong>profile settings</strong>, language and theme options, and the logout button.',
+        ],
+        'nav_feedback' => [
+            'title' => 'Leave Feedback',
+            'description' => 'Have observations or suggestions? <strong>Write to us!</strong> We constantly improve the platform based on your feedback. Good luck! ✨',
+        ],
+    ],
 ];
