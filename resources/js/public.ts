@@ -62,20 +62,24 @@ createInertiaApp({
         fallbackLang: "en",
         resolve: async (lang: string) => {
           // Load JSON translations (shared between admin/public)
-          const jsonLangs = import.meta.glob<{ default: Record<string, string> }>("../../lang/*.json");
+          const jsonLangs = import.meta.glob("../../lang/*.json");
           // Load public-specific PHP translations (shared + public combined)
-          const phpLangs = import.meta.glob<{ default: Record<string, string> }>("../../lang/php_public_*.json");
+          const phpLangs = import.meta.glob("../../lang/php_public_*.json");
           
           const jsonPath = `../../lang/${lang}.json`;
           const phpPath = `../../lang/php_public_${lang}.json`;
           
-          const jsonModule = jsonLangs[jsonPath] ? await jsonLangs[jsonPath]() : null;
-          const phpModule = phpLangs[phpPath] ? await phpLangs[phpPath]() : null;
+          // Load both translation sources
+          const jsonModule = jsonLangs[jsonPath] ? await jsonLangs[jsonPath]() : { default: {} };
+          const phpModule = phpLangs[phpPath] ? await phpLangs[phpPath]() : { default: {} };
           
           // Merge translations: JSON base + PHP compiled
+          // Return in { default: {...} } format expected by laravel-vue-i18n
           return {
-            ...(jsonModule?.default || {}),
-            ...(phpModule?.default || {}),
+            default: {
+              ...(jsonModule as { default: Record<string, string> }).default,
+              ...(phpModule as { default: Record<string, string> }).default,
+            }
           };
         },
       })
