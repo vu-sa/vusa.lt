@@ -430,12 +430,6 @@ const menuItems = computed(() => [
         show: auth?.can.create.relationship
       },
       {
-        title: $t('Pakeitimai'),
-        icon: Icons.CHANGELOG_ITEM,
-        href: route('changelogItems.index'),
-        show: auth?.can.create.changelogItem
-      },
-      {
         title: $t('Sistemos būsena'),
         icon: Icons.NOTIFICATION,
         href: route('systemStatus'),
@@ -448,7 +442,7 @@ const menuItems = computed(() => [
         show: auth?.can.manageSettings
       },
     ],
-    show: auth?.can.create.role || auth?.can.create.permission || auth?.can.create.type || auth?.can.create.relationship || auth?.can.create.changelogItem || auth?.can.manageSettings,
+    show: auth?.can.create.role || auth?.can.create.permission || auth?.can.create.type || auth?.can.create.relationship || auth?.can.manageSettings,
     visibleItems: [] as MenuItemType[]
   }
 ]);

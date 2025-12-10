@@ -1,5 +1,6 @@
 <template>
   <div
+    data-tour="institution-item"
     class="flex items-center justify-between p-3 rounded-lg border border-zinc-200 dark:border-zinc-600 bg-white/80 dark:bg-zinc-700/50 transition-all duration-200 hover:shadow-sm hover:bg-zinc-50 dark:hover:bg-zinc-600/50">
     <!-- Left: Institution Info -->
     <div class="flex-1 min-w-0 mr-3">

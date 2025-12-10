@@ -468,7 +468,6 @@ function getModelDisplayName(modelType: string): string {
     trainings: 'Trainings',
     types: 'Types',
     forms: 'Forms',
-    changelogItems: 'Changelog Items',
     dutiables: 'Duty Assignments',
     contentParts: 'Content Parts',
     page: 'Pages',

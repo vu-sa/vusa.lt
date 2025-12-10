@@ -6,6 +6,10 @@
 /* this contains the default theme, these are optional styles */
 @import '@vue-flow/core/dist/theme-default.css';
 
+/* Driver.js for product tours */
+@import 'driver.js/dist/driver.css';
+@import './driver-tour.css';
+
 @import 'tw-animate-css';
 
 @source '../views';

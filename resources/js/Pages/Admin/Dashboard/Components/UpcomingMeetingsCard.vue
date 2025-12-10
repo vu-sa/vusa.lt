@@ -1,19 +1,19 @@
 <template>
-    <Card :class="[
+    <Card data-tour="meetings-card" :class="[
     'flex flex-col relative overflow-hidden shadow-sm dark:shadow-zinc-950/50',
     'border-zinc-200 dark:border-zinc-600 bg-gradient-to-br from-white to-zinc-50 dark:from-zinc-800 dark:to-zinc-900'
   ]" role="region" :aria-label="$t('Tavo artėjantys susitikimai')">
     <!-- Status indicator - small amber accent when meetings exist -->
     <div :class="[
       'absolute top-0 right-0 w-12 h-12 -mr-6 -mt-6 rotate-45',
-      upcomingMeetings.length > 0 ? 'bg-amber-400/60 dark:bg-amber-600/40' : 'bg-zinc-200 dark:bg-zinc-700'
+      upcomingMeetings.length > 0 ? 'bg-amber-400/60 dark:bg-amber-700/35' : 'bg-zinc-200 dark:bg-zinc-700'
     ]" aria-hidden="true" />
 
     <CardHeader class="pb-3 relative z-10">
       <CardTitle class="flex items-center gap-2">
         <component :is="Icons.MEETING" :class="[
           'h-5 w-5',
-          upcomingMeetings.length > 0 ? 'text-amber-600 dark:text-amber-500' : 'text-zinc-600 dark:text-zinc-400'
+          upcomingMeetings.length > 0 ? 'text-amber-600 dark:text-amber-400/80' : 'text-zinc-600 dark:text-zinc-400'
         ]" aria-hidden="true" />
         {{ $t('Tavo artėjantys susitikimai') }}
       </CardTitle>
@@ -30,7 +30,7 @@
         </span>
         <div :class="[
           'px-2 py-1 rounded-full text-xs font-medium mb-2',
-          upcomingMeetings.length > 0 ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300' : 'bg-zinc-200 text-zinc-700 dark:bg-zinc-700/50 dark:text-zinc-300'
+          upcomingMeetings.length > 0 ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400/80' : 'bg-zinc-200 text-zinc-700 dark:bg-zinc-700/50 dark:text-zinc-300'
         ]" role="status" :aria-label="$t('Būsenos indikatorius')">
           {{ upcomingMeetings.length > 0 ? $t('Reikia dėmesio') : $t('Viskas tvarkoje') }}
         </div>
@@ -68,7 +68,7 @@
 
                 <!-- Show position badge for first meeting -->
                 <div v-if="index === 0" class="flex-shrink-0">
-                  <span class="inline-flex items-center rounded-full bg-amber-100 dark:bg-amber-900/40 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-300">
+                  <span class="inline-flex items-center rounded-full bg-amber-100 dark:bg-amber-900/30 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400/80">
                     {{ $t('Kitas') }}
                   </span>
                 </div>
@@ -106,7 +106,7 @@
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger as-child>
-                <Button size="sm" variant="outline" class="flex-1 mr-2" @click="$emit('show-all-meetings')">
+                <Button data-tour="all-meetings" size="sm" variant="outline" class="flex-1 mr-2" @click="$emit('show-all-meetings')">
                   <component :is="Icons.MEETING" class="mr-2 h-4 w-4" />
                   {{ $t('Visi susitikimai') }}
                 </Button>
@@ -118,15 +118,15 @@
           <!-- Icon-only action buttons -->
           <div class="flex gap-1">
             <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger as-child>
-                  <Button variant="ghost" size="sm" class="h-8 w-8" @click="$emit('create-meeting')">
-                    <component :is="Icons.PLUS" class="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>{{ $t('Sukurti naują susitikimą') }}</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger as-child>
+                <Button data-tour="create-meeting-action" variant="ghost" size="sm" class="h-8 w-8" @click="$emit('create-meeting')">
+                  <component :is="Icons.PLUS" class="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{{ $t('Sukurti naują susitikimą') }}</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
 
             <TooltipProvider v-if="upcomingMeetings.length > 0">
               <Tooltip>
@@ -157,7 +157,7 @@
             }}
           </div>
         </div>
-        <div v-else-if="overdueInstitution" class="text-orange-600 dark:text-orange-400">
+        <div v-else-if="overdueInstitution" class="text-orange-600 dark:text-orange-400/70">
           <div class="font-medium">
             {{ $t('Senokas susitikimas') }}:
           </div>
@@ -166,7 +166,7 @@
             ({{ overdueInstitution.daysSinceLastMeeting }} {{ $t('d.') }} / {{ overdueInstitution.periodicity }} {{ $t('d. rekomenduojama') }})
           </div>
         </div>
-        <div v-else-if="approachingInstitution" class="text-amber-600 dark:text-amber-400">
+        <div v-else-if="approachingInstitution" class="text-amber-600 dark:text-amber-400/70">
           <div class="font-medium">
             {{ $t('Artėja susitikimo laikas') }}:
           </div>

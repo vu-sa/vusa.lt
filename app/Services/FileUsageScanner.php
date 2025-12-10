@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\Calendar;
-use App\Models\ChangelogItem;
 use App\Models\ContentPart;
 use App\Models\Duty;
 use App\Models\Form;
@@ -137,11 +136,6 @@ class FileUsageScanner
                 $totalFound += $usage['forms']->count();
             }
 
-            if (! isset($usage['changelogItems'])) {
-                $usage['changelogItems'] = $this->scanTranslatableField(ChangelogItem::class, 'description', $variantSet, $fileMetadata);
-                $totalFound += $usage['changelogItems']->count();
-            }
-
             // User profile images
             if (! isset($usage['users'])) {
                 $usage['users'] = $this->scanTextField(\App\Models\User::class, 'profile_photo_path', $variantSet, $fileMetadata);
@@ -155,7 +149,7 @@ class FileUsageScanner
         }
 
         // Fill in empty collections for models that weren't scanned
-        $allModelTypes = ['contentParts', 'calendar', 'news', 'banners', 'duties', 'institutions', 'trainings', 'types', 'forms', 'changelogItems', 'users', 'dutiables'];
+        $allModelTypes = ['contentParts', 'calendar', 'news', 'banners', 'duties', 'institutions', 'trainings', 'types', 'forms', 'users', 'dutiables'];
         foreach ($allModelTypes as $modelType) {
             if (! isset($usage[$modelType])) {
                 $usage[$modelType] = new Collection;
@@ -1041,7 +1035,6 @@ class FileUsageScanner
                 'training' => 'trainings',
                 'type' => 'types',
                 'form' => 'forms',
-                'changelogitem' => 'changelogItems',
                 'dutiable' => 'dutiables',
                 'page' => 'pages',
                 'tenant' => 'tenants',
@@ -1075,7 +1068,6 @@ class FileUsageScanner
                 'training' => 'trainings',
                 'type' => 'types',
                 'form' => 'forms',
-                'changelogitem' => 'changelogItems',
                 'dutiable' => 'dutiables',
                 'page' => 'pages',
                 'tenant' => 'tenants',

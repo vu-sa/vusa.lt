@@ -16,6 +16,12 @@ Route::patch('profile/password', [DashboardController::class, 'updatePassword'])
 Route::get('userTasks', [DashboardController::class, 'userTasks'])->name('userTasks');
 Route::get('institutionGraph', [DashboardController::class, 'institutionGraph'])->name('institutionGraph');
 
+// Tutorial/Onboarding routes
+Route::post('tutorials/complete', [TutorialController::class, 'markCompleted'])->name('tutorials.complete');
+Route::get('tutorials/progress', [TutorialController::class, 'getProgress'])->name('tutorials.progress');
+Route::post('tutorials/reset', [TutorialController::class, 'resetTour'])->name('tutorials.reset');
+Route::post('tutorials/reset-all', [TutorialController::class, 'resetAll'])->name('tutorials.resetAll');
+
 // System Status
 Route::get('system-status', [SystemStatusController::class, 'index'])->name('systemStatus');
 
@@ -147,9 +153,6 @@ Route::resource('permissions', PermissionController::class)->only(['index']);
 Route::resource('tasks', TaskController::class)->except(['index', 'create', 'show', 'edit']);
 Route::post('tasks/{task}/updateCompletionStatus', [TaskController::class, 'updateCompletionStatus'])->name('tasks.updateCompletionStatus');
 Route::get('tasks/indicator', [TaskController::class, 'userTasksForIndicator'])->name('tasks.indicator');
-
-Route::resource('changelogItems', ChangelogItemController::class);
-Route::post('changelogItems/approveForUser', [ChangelogItemController::class, 'approveForUser'])->name('changelogItems.approve');
 
 Route::resource('sharepointFiles', SharepointFileController::class)->except('create', 'show', 'edit', 'update');
 

@@ -16,21 +16,6 @@ export const calendarTemplate: Omit<App.Entities.Calendar, "created_at" | "updat
   is_international: false,
 };
 
-export const changelogItemTemplate: Pick<App.Entities.ChangelogItem, "date"> & {
-  title: Record<"lt" | "en", string>;
-  description: Record<"lt" | "en", string>;
-} = {
-  title: {
-    lt: "",
-    en: "",
-  },
-  description: {
-    lt: "",
-    en: "",
-  },
-  date: null,
-};
-
 export const formTemplate: Pick<
   App.Entities.Form,
   "name" | "description" | "path" | "form_fields"

@@ -45,7 +45,6 @@ export enum ModelEnum {
   "BANNER" = "banner",
   "CALENDAR" = "calendar",
   "CATEGORY" = "category",
-  "CHANGELOG_ITEM" = "changelogItem",
   "COMMENT" = "comment",
   "DOCUMENT" = "document",
   "DUTIABLE" = "dutiable",

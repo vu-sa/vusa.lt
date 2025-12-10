@@ -4,6 +4,7 @@ interface User extends Omit<App.Entities.User, "tenants"> {
   tenants: Pick<App.Entities.Tenant, "id" | "shortname">[];
   isSuperAdmin: boolean;
   unreadNotifications: Record<string, any>[] | null;
+  tutorial_progress?: Record<string, string>;
 }
 
 export type PageProps<T extends Record<string, unknown> = Record<string, unknown>> = T & {

@@ -1,5 +1,5 @@
 <template>
-  <section v-if="availableTenants.length > 0" class="space-y-4">
+  <section v-if="availableTenants.length > 0" data-tour="tenant-gantt-section" class="space-y-4">
     <div class="flex flex-col items-start gap-4 md:flex-row md:items-center md:justify-between">
       <h2 class="text-xl font-semibold tracking-tight">
         {{
@@ -9,7 +9,7 @@
               $t('Pasirinkti padaliniai')
         }} — {{ $t('laiko juosta') }}
       </h2>
-      <div class="flex flex-wrap items-center gap-2 ml-auto">
+      <div data-tour="gantt-filters" class="flex flex-wrap items-center gap-2 ml-auto">
         <GanttFilterDropdown
           :tenants="availableTenants"
           :selected-tenants="selectedTenantId"
@@ -28,12 +28,14 @@
     <!-- Deferred Gantt chart rendering for better initial load performance -->
     <!-- When fullscreen modal is open, hide this to save rendering resources -->
     <TimelineGanttSkeleton v-if="!isReady || isHidden" />
-    <TimelineGanttChart v-else-if="!isHidden" :institutions="formattedInstitutions" :meetings :gaps :tenant-filter="selectedTenantId"
-      :show-only-with-activity :show-only-with-public-meetings :institution-names :tenant-names :institution-tenant :institution-has-public-meetings="institutionHasPublicMeetings"
-      :institution-periodicity="institutionPeriodicity"
-      :duty-members :inactive-periods :show-duty-members
-      :empty-message="$t('Šiame padalinyje nėra institucijų')" @create-meeting="$emit('create-meeting', $event)"
-      @fullscreen="$emit('fullscreen')" />
+    <div v-else-if="!isHidden" data-tour="gantt-chart">
+      <TimelineGanttChart :institutions="formattedInstitutions" :meetings :gaps :tenant-filter="selectedTenantId"
+        :show-only-with-activity :show-only-with-public-meetings :institution-names :tenant-names :institution-tenant :institution-has-public-meetings="institutionHasPublicMeetings"
+        :institution-periodicity="institutionPeriodicity"
+        :duty-members :inactive-periods :show-duty-members
+        :empty-message="$t('Šiame padalinyje nėra institucijų')" @create-meeting="$emit('create-meeting', $event)"
+        @fullscreen="$emit('fullscreen')" />
+    </div>
   </section>
 </template>
 

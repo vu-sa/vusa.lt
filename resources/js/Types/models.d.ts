@@ -79,17 +79,6 @@ declare global {
       calendars_exists: boolean
     }
 
-    export interface ChangelogItem {
-      // columns
-      id: number
-      title: Array<unknown>
-      date: string
-      description: Array<unknown>
-      permission_id?: string | null
-      // mutators
-      translations: unknown
-    }
-
     export interface Comment {
       // columns
       id: string
@@ -1113,7 +1102,7 @@ declare global {
       email_verified_at?: string | null
       remember_token?: string | null
       last_action?: string | null
-      last_changelog_check?: string | null
+      tutorial_progress?: Record<string, string> | null
       microsoft_token?: string | null
       updated_at: string
       created_at: string

@@ -90,6 +90,29 @@
             </NForm>
           </FormElement>
 
+          <!-- Tutorial Settings Section -->
+          <FormElement>
+            <template #title>
+              {{ $t("Vadovų nustatymai") }}
+            </template>
+            <template #description>
+              {{ $t("Galite iš naujo peržiūrėti interaktyvius vadovus, kurie padeda susipažinti su sistema.") }}
+            </template>
+            <div class="flex items-center gap-4">
+              <Button 
+                :disabled="tutorialResetLoading" 
+                variant="outline" 
+                @click="handleResetTutorials"
+              >
+                <IMdiRefresh />
+                {{ $t("Atstatyti vadovus") }}
+              </Button>
+              <span v-if="tutorialResetSuccess" class="text-sm text-green-600 dark:text-green-400">
+                {{ $t("Vadovai atstatyti!") }}
+              </span>
+            </div>
+          </FormElement>
+
           <h2>{{ $t("Tavo rolės") }}</h2>
           <ul class="list-inside">
             <li v-for="(role, index) in user.roles" :key="role.id">
@@ -121,7 +144,7 @@
 <script setup lang="tsx">
 import { trans as $t } from "laravel-vue-i18n";
 import { ref, computed } from "vue";
-import { useForm } from "@inertiajs/vue3";
+import { router, useForm } from "@inertiajs/vue3";
 
 import { Button } from "@/Components/ui/button";
 import FormElement from "@/Components/AdminForms/FormElement.vue";
@@ -134,6 +157,7 @@ import ThemeProvider from "@/Components/Providers/ThemeProvider.vue";
 import IMdiContentSave from '~icons/mdi/content-save';
 import IMdiGithub from '~icons/mdi/github';
 import IMdiLock from '~icons/mdi/lock';
+import IMdiRefresh from '~icons/mdi/refresh';
 import IMdiSettings from '~icons/mdi/settings';
 
 const props = defineProps<{
@@ -142,6 +166,8 @@ const props = defineProps<{
 
 const loading = ref(false);
 const passwordLoading = ref(false);
+const tutorialResetLoading = ref(false);
+const tutorialResetSuccess = ref(false);
 
 const form = useForm({
   name: props.user.name,
@@ -184,6 +210,33 @@ const handlePasswordUpdate = () => {
     },
     onError: () => {
       passwordLoading.value = false;
+    },
+  });
+};
+
+const handleResetTutorials = () => {
+  tutorialResetLoading.value = true;
+  tutorialResetSuccess.value = false;
+  
+  router.post(route("tutorials.resetAll"), {}, {
+    preserveScroll: true,
+    preserveState: true,
+    onSuccess: () => {
+      tutorialResetLoading.value = false;
+      tutorialResetSuccess.value = true;
+      
+      // Also clear localStorage
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('vusa-tutorial-progress');
+      }
+      
+      // Hide success message after 3 seconds
+      setTimeout(() => {
+        tutorialResetSuccess.value = false;
+      }, 3000);
+    },
+    onError: () => {
+      tutorialResetLoading.value = false;
     },
   });
 };

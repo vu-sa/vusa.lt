@@ -6,6 +6,7 @@ import { createInertiaApp } from "@inertiajs/vue3";
 import { defineAsyncComponent } from "vue";
 import { i18nVue } from "laravel-vue-i18n";
 import { resolvePageComponent } from "laravel-vite-plugin/inertia-helpers";
+import { initProgress } from "./Composables/useTutorialProgress";
 
 const AdminLayout = defineAsyncComponent(
   () => import("./Components/Layouts/AdminLayout.vue"),
@@ -72,6 +73,9 @@ createInertiaApp({
     });
 
     application.mount(el);
+
+    // Initialize tutorial progress from server data
+    initProgress();
 
     delete el.dataset.page;
 

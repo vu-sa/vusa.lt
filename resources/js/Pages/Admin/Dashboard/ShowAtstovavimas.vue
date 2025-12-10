@@ -3,16 +3,39 @@
     <InertiaHead :title="$t('Atstovavimas')" />
 
     <!-- Hero section with greeting and overview -->
-    <PageHero :title="$t('Atstovavimas')" :subtitle="$t('Susitikimų, tikslų ir atstovavimo veiklų stebėjimas')" />
+    <PageHero :title="$t('Atstovavimas')" :subtitle="$t('Susitikimų, tikslų ir atstovavimo veiklų stebėjimas')">
+      <template #actions>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger as-child>
+              <Button variant="outline" size="sm" class="gap-2" @click="startContextTour">
+                <HelpCircle class="h-4 w-4" />
+                {{ $t('Kaip veikia?') }}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>{{ $t('Pradėti interaktyvų vadovą') }}</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </template>
+    </PageHero>
 
     <Tabs v-model="activeTab" class="mt-6 mb-32">
       <TabsList class="gap-2">
         <TabsTrigger value="user">
           {{ props.user.name }}
         </TabsTrigger>
-        <TabsTrigger value="tenant" :disabled="props.availableTenants.length === 0">
-          {{ currentTenant?.shortname || $t('Padalinys') }}
-        </TabsTrigger>
+        <div class="relative">
+          <SpotlightPopover v-if="props.availableTenants.length > 0" :title="$t('tutorials.tenant_tab_spotlight.title')"
+            :description="$t('tutorials.tenant_tab_spotlight.description')"
+            :is-dismissed="tenantSpotlight.isDismissed.value" position="right" @dismiss="tenantSpotlight.dismiss">
+            <TabsTrigger value="tenant" :disabled="props.availableTenants.length === 0" data-spotlight="tenant-tab">
+              {{ currentTenant?.shortname || $t('Padalinys') }}
+            </TabsTrigger>
+          </SpotlightPopover>
+          <TabsTrigger v-else value="tenant" disabled data-spotlight="tenant-tab">
+            {{ $t('Padalinys') }}
+          </TabsTrigger>
+        </div>
       </TabsList>
 
       <TabsContent value="user" class="mt-6 space-y-8">
@@ -34,11 +57,9 @@
           :show-only-with-public-meetings="timelineFilters.showOnlyWithPublicMeetingsUser.value"
           :institution-names="userInstitutionNames" :tenant-names :institution-tenant="userInstitutionTenant"
           :institution-has-public-meetings="userInstitutionHasPublicMeetings"
-          :institution-periodicity="userInstitutionPeriodicity"
-          :duty-members="userDutyMembers" :inactive-periods="userInactivePeriods"
-          :show-duty-members="timelineFilters.showDutyMembersUser.value"
-          :related-institutions="relatedInstitutions"
-          :show-related-institutions="timelineFilters.showRelatedInstitutionsUser.value"
+          :institution-periodicity="userInstitutionPeriodicity" :duty-members="userDutyMembers"
+          :inactive-periods="userInactivePeriods" :show-duty-members="timelineFilters.showDutyMembersUser.value"
+          :related-institutions :show-related-institutions="timelineFilters.showRelatedInstitutionsUser.value"
           @update:tenant-filter="timelineFilters.userTenantFilter.value = $event"
           @update:show-only-with-activity="timelineFilters.showOnlyWithActivityUser.value = $event"
           @update:show-only-with-public-meetings="timelineFilters.showOnlyWithPublicMeetingsUser.value = $event"
@@ -57,11 +78,10 @@
           :show-only-with-public-meetings="timelineFilters.showOnlyWithPublicMeetingsTenant.value"
           :institution-names="tenantInstitutionNames" :tenant-names :institution-tenant="tenantInstitutionTenant"
           :institution-has-public-meetings="tenantInstitutionHasPublicMeetings"
-          :institution-periodicity="tenantInstitutionPeriodicity"
-          :duty-members="ganttData.tenantDutyMembers.value" :inactive-periods="ganttData.tenantInactivePeriods.value"
+          :institution-periodicity="tenantInstitutionPeriodicity" :duty-members="ganttData.tenantDutyMembers.value"
+          :inactive-periods="ganttData.tenantInactivePeriods.value"
           :show-duty-members="timelineFilters.showDutyMembersTenant.value"
-          :is-hidden="actions.showFullscreenGantt.value"
-          @update:selected-tenant-id="timelineFilters.setSelectedTenants"
+          :is-hidden="actions.showFullscreenGantt.value" @update:selected-tenant-id="timelineFilters.setSelectedTenants"
           @update:show-only-with-activity="timelineFilters.showOnlyWithActivityTenant.value = $event"
           @update:show-only-with-public-meetings="timelineFilters.showOnlyWithPublicMeetingsTenant.value = $event"
           @update:show-duty-members="timelineFilters.showDutyMembersTenant.value = $event"
@@ -73,27 +93,23 @@
     <!-- Modals - FullscreenGanttModal first so modals opened from within it appear on top -->
     <FullscreenGanttModal :is-open="actions.showFullscreenGantt.value" :gantt-type="actions.fullscreenGanttType.value"
       :current-tenant="timelineFilters.currentTenant.value" :available-tenants="props.availableTenants"
-      :user-institutions="formatInstitutionsForUser"
-      :user-meetings="atstovavimosData.allUserMeetings.value" :user-gaps="atstovavimosData.userGaps.value"
-      :user-tenant-filter="timelineFilters.userTenantFilter.value"
+      :user-institutions="formatInstitutionsForUser" :user-meetings="atstovavimosData.allUserMeetings.value"
+      :user-gaps="atstovavimosData.userGaps.value" :user-tenant-filter="timelineFilters.userTenantFilter.value"
       :show-only-with-activity-user="timelineFilters.showOnlyWithActivityUser.value"
       :show-only-with-public-meetings-user="timelineFilters.showOnlyWithPublicMeetingsUser.value"
-      :user-institution-names
-      :user-institution-tenant :user-institution-has-public-meetings="userInstitutionHasPublicMeetings"
-      :user-institution-periodicity="userInstitutionPeriodicity"
-      :user-duty-members="userDutyMembers" :user-inactive-periods="userInactivePeriods"
+      :user-institution-names :user-institution-tenant :user-institution-has-public-meetings
+      :user-institution-periodicity :user-duty-members :user-inactive-periods
       :show-duty-members-user="timelineFilters.showDutyMembersUser.value"
       :tenant-institutions="ganttData.formattedTenantInstitutions.value"
       :tenant-meetings="ganttData.tenantMeetings.value" :tenant-gaps="ganttData.tenantGaps.value"
       :tenant-filter="timelineFilters.selectedTenantForGantt.value"
       :show-only-with-activity-tenant="timelineFilters.showOnlyWithActivityTenant.value"
       :show-only-with-public-meetings-tenant="timelineFilters.showOnlyWithPublicMeetingsTenant.value"
-      :tenant-institution-names
-      :tenant-institution-tenant :tenant-institution-has-public-meetings="tenantInstitutionHasPublicMeetings"
-      :tenant-institution-periodicity="tenantInstitutionPeriodicity"
-      :tenant-duty-members="ganttData.tenantDutyMembers.value" :tenant-inactive-periods="ganttData.tenantInactivePeriods.value"
-      :show-duty-members-tenant="timelineFilters.showDutyMembersTenant.value"
-      :tenant-names @update:is-open="actions.showFullscreenGantt.value = $event"
+      :tenant-institution-names :tenant-institution-tenant :tenant-institution-has-public-meetings
+      :tenant-institution-periodicity :tenant-duty-members="ganttData.tenantDutyMembers.value"
+      :tenant-inactive-periods="ganttData.tenantInactivePeriods.value"
+      :show-duty-members-tenant="timelineFilters.showDutyMembersTenant.value" :tenant-names
+      @update:is-open="actions.showFullscreenGantt.value = $event"
       @update:tenant-filter="timelineFilters.setSelectedTenants"
       @update:show-only-with-activity-tenant="timelineFilters.showOnlyWithActivityTenant.value = $event"
       @update:show-only-with-public-meetings-tenant="timelineFilters.showOnlyWithPublicMeetingsTenant.value = $event"
@@ -131,6 +147,8 @@ import { trans as $t } from "laravel-vue-i18n";
 // UI components
 
 // Extracted components
+import { HelpCircle } from 'lucide-vue-next';
+
 import PersonalOverviewSection from './Components/PersonalOverviewSection.vue';
 import UserTimelineSection from './Components/UserTimelineSection.vue';
 import TenantTimelineSection from './Components/TenantTimelineSection.vue';
@@ -143,8 +161,12 @@ import { useTimelineFilters } from './Composables/useTimelineFilters';
 import { useAtstovavimosActions } from './Composables/useAtstovavimasActions';
 import { useGanttChartData } from './Composables/useGanttChartData';
 import { provideGanttSettings } from './Composables/useGanttSettings';
-// Icons and utils
 import type { AtstovavimosUser, AtstovavimosTenant, AtstovavimosInstitution } from './types';
+
+import { useProductTour } from '@/Composables/useProductTour';
+import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
+import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+// Icons and utils
 
 import Icons from "@/Types/Icons/filled";
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
@@ -157,11 +179,169 @@ import AddCheckInDialog from "@/Components/CheckIns/AddCheckInDialog.vue";
 import NewMeetingModal from '@/Components/Modals/NewMeetingModal.vue';
 import PageHero from '@/Components/Hero/PageHero.vue';
 import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
+import { Button } from '@/Components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 
 // Setup breadcrumbs
 usePageBreadcrumbs(() => [
   BreadcrumbHelpers.createBreadcrumbItem($t('Atstovavimas'), undefined, Icons.MEETING)
 ]);
+
+// Setup product tour
+const { startTour, startTourIfNew } = useProductTour({
+  tourId: 'atstovavimas-overview-v1',
+  steps: [
+    // Welcome step - no element, centered popover
+    {
+      popover: {
+        title: $t('tutorials.atstovavimas_overview.welcome.title'),
+        description: $t('tutorials.atstovavimas_overview.welcome.description'),
+      },
+    },
+    {
+      element: '[data-tour="institution-card"]',
+      popover: {
+        title: $t('tutorials.atstovavimas_overview.institutions_card.title'),
+        description: $t('tutorials.atstovavimas_overview.institutions_card.description'),
+      },
+    },
+    {
+      element: '[data-tour="institution-item"]',
+      popover: {
+        title: $t('tutorials.atstovavimas_overview.institution_item.title'),
+        description: $t('tutorials.atstovavimas_overview.institution_item.description'),
+      },
+    },
+    {
+      element: '[data-tour="meetings-card"]',
+      popover: {
+        title: $t('tutorials.atstovavimas_overview.meetings_card.title'),
+        description: $t('tutorials.atstovavimas_overview.meetings_card.description'),
+      },
+    },
+    {
+      element: '[data-tour="create-meeting"]',
+      popover: {
+        title: $t('tutorials.atstovavimas_overview.create_meeting.title'),
+        description: $t('tutorials.atstovavimas_overview.create_meeting.description'),
+      },
+    },
+    {
+      element: '[data-tour="all-meetings"]',
+      popover: {
+        title: $t('tutorials.atstovavimas_overview.all_meetings.title'),
+        description: $t('tutorials.atstovavimas_overview.all_meetings.description'),
+      },
+    },
+    {
+      element: '[data-tour="timeline-section"]',
+      popover: {
+        title: $t('tutorials.atstovavimas_overview.timeline.title'),
+        description: $t('tutorials.atstovavimas_overview.timeline.description'),
+      },
+    },
+  ],
+});
+
+// Setup tour for tenant Gantt chart
+const { startTour: startGanttTour, startTourIfNew: startGanttTourIfNew, hasCompleted: hasGanttTourCompleted } = useProductTour({
+  tourId: 'gantt-chart-tour-v1',
+  steps: [
+    // 1. Chart Overview
+    {
+      element: '[data-tour="gantt-chart"]',
+      popover: {
+        title: $t('tutorials.gantt_tour.chart_overview.title'),
+        description: $t('tutorials.gantt_tour.chart_overview.description'),
+      },
+    },
+    // 1.1. Institution row (clickable title)
+    {
+      element: '[data-tour="gantt-institution-row"]',
+      popover: {
+        title: $t('tutorials.gantt_tour.institution_row.title'),
+        description: $t('tutorials.gantt_tour.institution_row.description'),
+      },
+    },
+    // 1.1.2. Meeting icons are clickable
+    {
+      element: '[data-tour="gantt-chart"]',
+      popover: {
+        title: $t('tutorials.gantt_tour.meeting_icons.title'),
+        description: $t('tutorials.gantt_tour.meeting_icons.description'),
+      },
+    },
+    // 1.1.3. Safety bands (periodicity zones)
+    {
+      element: '[data-tour="gantt-chart"]',
+      popover: {
+        title: $t('tutorials.gantt_tour.safety_bands.title'),
+        description: $t('tutorials.gantt_tour.safety_bands.description'),
+      },
+    },
+    // 1.2. Filters (click to open)
+    {
+      element: '[data-tour="gantt-filter-trigger"]',
+      popover: {
+        title: $t('tutorials.gantt_tour.filters.title'),
+        description: $t('tutorials.gantt_tour.filters.description'),
+      },
+    },
+    // 2. Fullscreen
+    {
+      element: '[data-tour="gantt-fullscreen"]',
+      popover: {
+        title: $t('tutorials.gantt_tour.fullscreen.title'),
+        description: $t('tutorials.gantt_tour.fullscreen.description'),
+      },
+    },
+    // 3. Year navigation
+    {
+      element: '[data-tour="gantt-date"]',
+      popover: {
+        title: $t('tutorials.gantt_tour.date_navigation.title'),
+        description: $t('tutorials.gantt_tour.date_navigation.description'),
+      },
+    },
+    // 4. Scale slider
+    {
+      element: '[data-tour="gantt-scale"]',
+      popover: {
+        title: $t('tutorials.gantt_tour.scale.title'),
+        description: $t('tutorials.gantt_tour.scale.description'),
+      },
+    },
+    // 5. Legend (last step)
+    {
+      element: '[data-tour="gantt-legend"]',
+      popover: {
+        title: $t('tutorials.gantt_tour.legend.title'),
+        description: $t('tutorials.gantt_tour.legend.description'),
+      },
+    },
+  ],
+});
+
+// Context-aware tour start - runs different tour based on active tab
+// When user clicks the button, it's voluntary (they can close anytime)
+function startContextTour() {
+  if (activeTab.value === 'tenant') {
+    startGanttTour(true); // voluntary = true
+  } else {
+    startTour(true); // voluntary = true
+  }
+}
+
+// Auto-start tour for first-time users after component mounts
+onMounted(() => {
+  // Wait 2 seconds to ensure DOM and Gantt chart are ready
+  setTimeout(() => {
+    startTourIfNew();
+  }, 2000);
+});
+
+// Setup spotlight for tenant tab (for users who can see the tenant view)
+const tenantSpotlight = useFeatureSpotlight('tenant-tab-spotlight-v1');
 
 const props = defineProps<{
   user: AtstovavimosUser;
@@ -200,6 +380,19 @@ watch(activeTab, (newTab) => {
     url.searchParams.set('tab', newTab);
   }
   window.history.replaceState({}, '', url.toString());
+
+  // Auto-dismiss spotlight when tenant tab is clicked
+  if (newTab === 'tenant' && !tenantSpotlight.isDismissed.value) {
+    tenantSpotlight.dismiss();
+  }
+
+  // Auto-start Gantt tour when tenant tab is opened for the first time
+  if (newTab === 'tenant' && !hasGanttTourCompleted.value) {
+    // Wait for DOM to render the Gantt chart
+    setTimeout(() => {
+      startGanttTourIfNew();
+    }, 1500);
+  }
 });
 
 // Computed admin check

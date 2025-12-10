@@ -1,5 +1,5 @@
 <template>
-  <section class="space-y-6" aria-labelledby="user-timeline-heading">
+  <section data-tour="timeline-section" class="space-y-6" aria-labelledby="user-timeline-heading">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <h2 id="user-timeline-heading" class="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
         {{ $t('Tavo institucijos') }} — {{ $t('laiko juosta') }}

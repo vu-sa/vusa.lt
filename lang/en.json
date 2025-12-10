@@ -686,5 +686,11 @@
   "Išeinantis ryšys": "Outgoing relationship",
   "Įeinantis ryšys": "Incoming relationship",
   "Ryšys per institucijos tipą": "Relationship through institution type",
-  "Tipas": "Type"
+  "Tipas": "Type",
+  "Kaip veikia?": "How does it work?",
+  "Pradėti interaktyvų vadovą": "Start interactive guide",
+  "Vadovų nustatymai": "Tutorial Settings",
+  "Galite iš naujo peržiūrėti interaktyvius vadovus, kurie padeda susipažinti su sistema.": "You can replay interactive tutorials that help you learn the system.",
+  "Atstatyti vadovus": "Reset Tutorials",
+  "Vadovai atstatyti!": "Tutorials reset!"
 }

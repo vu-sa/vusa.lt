@@ -7,6 +7,7 @@
         <button 
           v-if="showLegend" 
           type="button"
+          data-tour="gantt-legend"
           class="flex items-center gap-1.5 text-[11px] text-zinc-600 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
           @click="$emit('show-legend-modal')"
         >
@@ -53,7 +54,7 @@
           <span>{{ $t('Išsamios eilutės') }}</span>
         </label>
         <!-- Scale slider -->
-        <div class="w-40 flex items-center gap-2 text-[11px] text-zinc-600 dark:text-zinc-400">
+        <div data-tour="gantt-scale" class="w-40 flex items-center gap-2 text-[11px] text-zinc-600 dark:text-zinc-400">
           <span class="shrink-0">{{ $t('Mastelis') }}</span>
           <Slider :min="3" :max="36" :step="1" :model-value="[dayWidthPx || dayWidth]"
             @update:model-value="onScaleChange" />
@@ -62,6 +63,7 @@
         <DropdownMenu v-if="currentYear">
           <DropdownMenuTrigger as-child>
             <button type="button"
+              data-tour="gantt-date"
               class="px-2 py-0.5 rounded border text-xs text-zinc-700 dark:text-zinc-300 bg-white/70 dark:bg-zinc-800/70 backdrop-blur border-zinc-200 dark:border-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-700 cursor-pointer transition-colors flex items-center gap-1">
               {{ currentYear }}
               <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 opacity-60" viewBox="0 0 20 20" fill="currentColor">
@@ -108,7 +110,7 @@
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-        <button type="button" class="px-2 py-1 text-xs border border-zinc-200 dark:border-zinc-600 rounded hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300"
+        <button type="button" data-tour="gantt-fullscreen" class="px-2 py-1 text-xs border border-zinc-200 dark:border-zinc-600 rounded hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300"
           @click="$emit('fullscreen', true)">
           {{ $t('Visas ekranas') }}
         </button>
@@ -152,6 +154,7 @@
                       <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
                     </svg>
                     <button type="button"
+                      :data-tour="idx === 1 ? 'gantt-institution-row' : undefined"
                       class="truncate text-left hover:underline cursor-pointer focus:underline focus:outline-none"
                       :class="[row.isRelated ? 'opacity-80' : '']"
                       :aria-label="$t('Atidaryti instituciją') + ': ' + (labelFor(row.institutionId!) || row.institutionId)"

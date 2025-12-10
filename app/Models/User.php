@@ -37,7 +37,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string|null $email_verified_at
  * @property string|null $remember_token
  * @property \Illuminate\Support\Carbon|null $last_action
- * @property string|null $last_changelog_check
+ * @property array|null $tutorial_progress
  * @property string|null $microsoft_token
  * @property \Illuminate\Support\Carbon $updated_at
  * @property \Illuminate\Support\Carbon $created_at
@@ -107,7 +107,7 @@ class User extends Authenticatable
         'password',
         'remember_token',
         'email_verified_at',
-        'last_changelog_check',
+        'tutorial_progress',
         'last_action',
         'microsoft_token',
         'name_was_changed',
@@ -117,6 +117,7 @@ class User extends Authenticatable
         'last_action' => 'datetime',
         'show_pronouns' => 'boolean',
         'name_was_changed' => 'boolean',
+        'tutorial_progress' => 'array',
     ];
 
     public function getActivitylogOptions(): LogOptions

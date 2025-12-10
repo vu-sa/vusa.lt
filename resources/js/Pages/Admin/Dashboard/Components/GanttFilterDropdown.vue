@@ -1,7 +1,7 @@
 <template>
   <DropdownMenu>
     <DropdownMenuTrigger as-child>
-      <Button size="sm" variant="outline">
+      <Button size="sm" variant="outline" data-tour="gantt-filter-trigger">
         {{ triggerLabel }}
       </Button>
     </DropdownMenuTrigger>
