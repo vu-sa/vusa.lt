@@ -59,15 +59,15 @@
             <IMdiFacebook />
           </Button>
         </a>
-        <NPopover v-if="shownContactEmail.length > 1" trigger="hover" placement="bottom-start">
-          <template #trigger>
+        <Popover v-if="shownContactEmail.length > 1">
+          <PopoverTrigger as-child>
             <Button variant="ghost" size="icon-sm" class="rounded-full">
               <IFluentMail20Regular />
             </Button>
-          </template>
-          <div class="p-2">
+          </PopoverTrigger>
+          <PopoverContent align="start" class="w-auto">
             <div class="flex flex-col text-sm">
-              <template v-for="email in shownContactEmail" :key="email.email">
+              <template v-for="(email, index) in shownContactEmail" :key="email.email">
                 <span class="font-bold text-zinc-800 dark:text-zinc-100">{{ email.name }}</span>
                 <div class="inline-flex items-center">
                   <CopyToClipboardButton size="small" circle text :text-to-copy="email.email"
@@ -76,11 +76,11 @@
                     <span>{{ email.email }}</span>
                   </CopyToClipboardButton>
                 </div>
-                <hr class="my-3 border border-zinc-300 last:hidden dark:border-zinc-500">
+                <hr v-if="index < shownContactEmail.length - 1" class="my-3 border border-zinc-300 dark:border-zinc-500">
               </template>
             </div>
-          </div>
-        </NPopover>
+          </PopoverContent>
+        </Popover>
         <TooltipProvider v-else-if="shownContactEmail.length === 1">
           <Tooltip>
             <TooltipTrigger as-child>
@@ -111,6 +111,7 @@ import { computed } from "vue";
 import { usePage } from "@inertiajs/vue3";
 
 import { Button } from "@/Components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/Components/ui/popover";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
 import { changeDutyNameEndings } from "@/Utils/String";
 import CopyToClipboardButton from "../Buttons/CopyToClipboardButton.vue";

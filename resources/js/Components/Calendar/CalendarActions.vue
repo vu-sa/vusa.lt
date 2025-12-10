@@ -18,25 +18,33 @@
     <!-- Social/External actions -->
     <div v-if="showSocialActions" class="flex items-center gap-1">
       <!-- Google Calendar -->
-      <NPopover v-if="googleLink" trigger="hover">
-        <template #trigger>
-          <Button :size="iconButtonSize" variant="secondary" class="rounded-full" as="a" :href="googleLink" target="_blank" rel="noopener noreferrer"
-            @click.stop>
-            <IMdiGoogle />
-          </Button>
-        </template>
-        {{ $t("Įsidėk į Google kalendorių") }}
-      </NPopover>
+      <TooltipProvider v-if="googleLink">
+        <Tooltip>
+          <TooltipTrigger as-child>
+            <Button :size="iconButtonSize" variant="secondary" class="rounded-full" as="a" :href="googleLink" target="_blank" rel="noopener noreferrer"
+              @click.stop>
+              <IMdiGoogle />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            {{ $t("Įsidėk į Google kalendorių") }}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
 
       <!-- Facebook Event -->
-      <NPopover v-if="facebookUrl" trigger="hover">
-        <template #trigger>
-          <Button :size="iconButtonSize" variant="secondary" class="rounded-full" as="a" :href="facebookUrl" target="_blank" @click.stop>
-            <IMdiFacebook />
-          </Button>
-        </template>
-        {{ $t("Facebook renginys") }}
-      </NPopover>
+      <TooltipProvider v-if="facebookUrl">
+        <Tooltip>
+          <TooltipTrigger as-child>
+            <Button :size="iconButtonSize" variant="secondary" class="rounded-full" as="a" :href="facebookUrl" target="_blank" @click.stop>
+              <IMdiFacebook />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            {{ $t("Facebook renginys") }}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     </div>
   </div>
 </template>
@@ -44,10 +52,10 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { trans as $t } from 'laravel-vue-i18n'
-import { NPopover } from 'naive-ui'
 import { usePage } from '@inertiajs/vue3'
 
 import { Button } from '@/Components/ui/button'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip'
 
 interface Props {
   /** Event participation/registration URL */

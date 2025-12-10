@@ -171,6 +171,21 @@
   }
 }
 
+/* Font family utilities */
+@layer utilities {
+  .font-heading {
+    font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  }
+
+  .font-public {
+    font-family: 'Atkinson Hyperlegible', ui-sans-serif, system-ui, sans-serif;
+  }
+
+  .font-admin {
+    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  }
+}
+
 html.dark {
   color-scheme: dark;
 }
@@ -262,6 +277,8 @@ html.dark-mode-init {
   display: grid;
   grid-template-columns:
     minmax(1rem, 1fr) min(calc(100% - 2rem), 1200px) minmax(1rem, 1fr);
+  /* CSS containment for performance - isolates layout calculations */
+  contain: layout style;
 
   @media (width >=768px) {
     grid-template-columns:
@@ -274,6 +291,7 @@ html.dark-mode-init {
   display: grid;
   grid-template-columns:
     minmax(1rem, 1fr) min(calc(100% - 2rem), 1400px) minmax(1rem, 1fr);
+  contain: layout style;
 
   @media (width >=768px) {
     grid-template-columns:
@@ -285,6 +303,7 @@ html.dark-mode-init {
   display: grid;
   grid-template-columns:
     minmax(0.75rem, 1fr) min(calc(100% - 1.5rem), none) minmax(0.75rem, 1fr);
+  contain: layout style;
 
   @media (width >=768px) {
     grid-template-columns:
@@ -296,6 +315,7 @@ html.dark-mode-init {
   display: grid;
   grid-template-columns:
     minmax(1rem, 1fr) min(calc(100% - 2rem), 1600px) minmax(1rem, 1fr);
+  contain: layout style;
 
   @media (width >=768px) {
     grid-template-columns:
@@ -469,6 +489,11 @@ html.dark-mode-init {
 
 /* Consolidated theme colors for Tailwind CSS v4 */
 @theme inline {
+  /* Font Families */
+  --font-heading: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --font-public: 'Atkinson Hyperlegible', ui-sans-serif, system-ui, sans-serif;
+  --font-admin: 'Inter', ui-sans-serif, system-ui, sans-serif;
+
   /* VU SA Brand Colors - converted to OKLCH */
   --color-vusa-red: oklch(0.5 0.2 25);
   --color-vusa-red-secondary: oklch(0.4 0.18 25);

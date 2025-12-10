@@ -81,6 +81,7 @@ class PageController extends AdminController
             'lang' => $request->lang,
             'other_lang_id' => $request->other_lang_id,
             'is_active' => $request->is_active,
+            'layout' => $request->layout ?? 'default',
             'tenant_id' => $tenant_id,
         ]);
 
@@ -100,7 +101,7 @@ class PageController extends AdminController
 
         return $this->inertiaResponse('Admin/Content/EditPage', [
             'page' => [
-                ...$page->only('id', 'title', 'content', 'permalink', 'text', 'lang', 'category_id', 'tenant_id', 'is_active', 'aside'),
+                ...$page->only('id', 'title', 'content', 'permalink', 'text', 'lang', 'category_id', 'tenant_id', 'is_active', 'aside', 'layout'),
                 'other_lang_id' => $page->getOtherLanguage()?->only('id')['id'],
             ],
             'otherLangPages' => $other_lang_pages,
@@ -117,7 +118,7 @@ class PageController extends AdminController
 
         $other_lang_page = Page::find($page->other_lang_id);
 
-        $page->update($request->only('title', 'lang', 'other_lang_id', 'category_id', 'is_active'));
+        $page->update($request->only('title', 'lang', 'other_lang_id', 'category_id', 'is_active', 'layout'));
 
         $content = Content::query()->find($page->content->id);
 

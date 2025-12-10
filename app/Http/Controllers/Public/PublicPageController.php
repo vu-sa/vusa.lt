@@ -146,7 +146,7 @@ class PublicPageController extends PublicController
         return Inertia::render('Public/ContentPage', [
             'navigationItemId' => $navigation_item?->id,
             'page' => [
-                ...$page->only('id', 'title', 'lang', 'category', 'tenant', 'permalink', 'other_lang_id'),
+                ...$page->only('id', 'title', 'lang', 'category', 'tenant', 'permalink', 'other_lang_id', 'layout', 'highlights', 'featured_image', 'meta_description'),
                 'content' => $page->content,
                 /* 'content' => [ */
                 /*    ...$page->content->toArray(), */

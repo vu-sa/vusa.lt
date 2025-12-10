@@ -64,6 +64,31 @@ export const newsTemplate = {
   image: null,
   image_author: null,
   tags: [],
+  highlights: [],
+  layout: "modern" as const,
+}
+
+export const pageTemplate = {
+  title: "",
+  permalink: "",
+  lang: "lt",
+  category_id: null,
+  other_lang_id: null,
+  is_active: true,
+  content: {
+    parts: [
+      {
+        type: "tiptap",
+        json_content: {},
+        key: "initial-tiptap",
+      },
+    ]
+  },
+  highlights: [],
+  layout: "default" as const,
+  featured_image: null,
+  meta_description: "",
+  publish_time: null,
 }
 
 export const typeTemplate: Pick<

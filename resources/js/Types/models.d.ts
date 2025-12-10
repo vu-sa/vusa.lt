@@ -333,10 +333,13 @@ declare global {
       tenant_id: number
       publish_time?: string | null
       main_points?: string | null
+      highlights?: string[] | null
+      layout: 'modern' | 'classic' | 'immersive'
       read_more?: string | null
       draft?: boolean | null
       created_at: string
       updated_at: string
+      last_edited_at?: string | null
       deleted_at?: string | null
       // relations
       user?: User
@@ -364,14 +367,21 @@ declare global {
       content_id: number
       category_id?: number | null
       is_active: boolean
+      highlights?: string[] | null
+      layout: 'default' | 'wide' | 'focused'
+      featured_image?: string | null
+      meta_description?: string | null
+      publish_time?: string | null
       tenant_id: number
       created_at: string
       updated_at: string
+      last_edited_at?: string | null
       deleted_at?: string | null
       // relations
       tenant?: Tenant
       category?: Category
       content?: Content
+      other_language_page?: Page
       // counts
       // exists
       tenant_exists: boolean

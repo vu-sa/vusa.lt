@@ -31,12 +31,30 @@
 
           <div class="grid grid-cols-2 gap-2">
             <!-- Category filter -->
-            <NSelect v-model:value="filters.category" :options="categoryOptions" :placeholder="$t('Kategorija')"
-              size="small" style="min-width: 150px" clearable @update:value="applyFilters" />
+            <Select v-model="selectedCategory" @update:model-value="onCategoryChange">
+              <SelectTrigger class="min-w-[150px] h-8 text-sm">
+                <SelectValue :placeholder="$t('Kategorija')" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__all__">{{ $t("Visos kategorijos") }}</SelectItem>
+                <SelectItem v-for="option in categoryOptions" :key="option.value" :value="String(option.value)">
+                  {{ option.label }}
+                </SelectItem>
+              </SelectContent>
+            </Select>
 
             <!-- Tenant filter -->
-            <NSelect v-model:value="filters.tenant" :options="tenantOptions" :placeholder="$t('Padalinys')" size="small"
-              style="min-width: 150px" clearable @update:value="applyFilters" />
+            <Select v-model="selectedTenant" @update:model-value="onTenantChange">
+              <SelectTrigger class="min-w-[150px] h-8 text-sm">
+                <SelectValue :placeholder="$t('Padalinys')" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__all__">{{ $t("Visi padaliniai") }}</SelectItem>
+                <SelectItem v-for="option in tenantOptions" :key="option.value" :value="String(option.value)">
+                  {{ option.label }}
+                </SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
@@ -65,15 +83,20 @@
     </header>
 
     <!-- Tabs for upcoming and past events -->
-    <NTabs type="line" :value="activeTab" @update:value="handleTabChange">
-      <NTabPane name="upcoming" :tab="$t('Būsimi renginiai')" display-directive="show">
+    <Tabs :model-value="activeTab" @update:model-value="handleTabChange">
+      <TabsList class="mb-4">
+        <TabsTrigger value="upcoming">{{ $t('Būsimi renginiai') }}</TabsTrigger>
+        <TabsTrigger value="past">{{ $t('Praėję renginiai') }}</TabsTrigger>
+      </TabsList>
+      
+      <TabsContent value="upcoming">
         <EventListContent :events="events" :tab="activeTab" @page-change="handlePageChange" />
-      </NTabPane>
+      </TabsContent>
 
-      <NTabPane name="past" :tab="$t('Praėję renginiai')" display-directive="show">
+      <TabsContent value="past">
         <EventListContent :events="events" :tab="activeTab" @page-change="handlePageChange" />
-      </NTabPane>
-    </NTabs>
+      </TabsContent>
+    </Tabs>
   </div>
 
   <!-- Calendar Sync Modal -->
@@ -82,11 +105,12 @@
 
 <script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
-import { NTabs, NTabPane, NSelect } from "naive-ui";
 import { ref, computed } from "vue";
 import { router, usePage } from "@inertiajs/vue3";
 
 import { Button } from "@/Components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
 import CalendarSyncModal from "@/Components/Modals/CalendarSyncModal.vue";
 import EventListContent from "@/Components/Calendar/EventListContent.vue";
 
@@ -112,8 +136,10 @@ const searchLoading = ref(false);
 const params = new URLSearchParams(window.location.search);
 
 // Parse category and tenant params
-const categoryParam = params.get('category') ? parseInt(params.get('category')) : null;
-const tenantParam = params.get('tenant') ? parseInt(params.get('tenant')) : null;
+const categoryParamStr = params.get('category');
+const tenantParamStr = params.get('tenant');
+const categoryParam = categoryParamStr ? parseInt(categoryParamStr) : null;
+const tenantParam = tenantParamStr ? parseInt(tenantParamStr) : null;
 
 // Filter state initialized from URL params
 const filters = ref({
@@ -122,6 +148,37 @@ const filters = ref({
   tenant: tenantParam,
   tab: props.activeTab || 'upcoming'
 });
+
+// Computed values for Select components (Shadcn Select uses string values)
+// Use __all__ as sentinel value since SelectItem cannot have empty string value
+const selectedCategory = computed({
+  get: () => filters.value.category ? String(filters.value.category) : '__all__',
+  set: (val: string) => {
+    filters.value.category = val && val !== '__all__' ? parseInt(val) : null;
+  }
+});
+
+const selectedTenant = computed({
+  get: () => filters.value.tenant ? String(filters.value.tenant) : '__all__',
+  set: (val: string) => {
+    filters.value.tenant = val && val !== '__all__' ? parseInt(val) : null;
+  }
+});
+
+// Handlers for select changes
+const onCategoryChange = (value: unknown) => {
+  if (typeof value === 'string') {
+    selectedCategory.value = value;
+    applyFilters();
+  }
+};
+
+const onTenantChange = (value: unknown) => {
+  if (typeof value === 'string') {
+    selectedTenant.value = value;
+    applyFilters();
+  }
+};
 
 // Fetch all available categories and tenants from the backend rather than relying on filtered data
 const page = usePage();
@@ -193,13 +250,13 @@ const applyFilters = () => {
 };
 
 // Handle tab change
-const handleTabChange = (tabValue) => {
+const handleTabChange = (tabValue: string | number) => {
   // Update tab in filters and reset other filters when changing tabs
   filters.value = {
     search: '',
     category: null,
     tenant: null,
-    tab: tabValue
+    tab: String(tabValue)
   };
 
   // Apply filters with the new tab (all filters reset)
@@ -207,7 +264,7 @@ const handleTabChange = (tabValue) => {
 };
 
 // Handle page change
-const handlePageChange = (page) => {
+const handlePageChange = (page: number) => {
   // Update URL with the page parameter
   router.visit(route('calendar.list', {
     lang: usePage().props.app.locale,

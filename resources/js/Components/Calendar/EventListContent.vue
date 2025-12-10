@@ -24,20 +24,50 @@
 
     <!-- Pagination -->
     <div class="mt-6 flex justify-center">
-      <NPagination v-if="events.total > events.per_page" :page-count="events.last_page" :page="events.current_page"
-        :page-slot="7" @update:page="onPageChange" />
+      <Pagination v-if="events.total > events.per_page" 
+        :total="events.total" 
+        :items-per-page="events.per_page" 
+        :page="events.current_page"
+        :sibling-count="1"
+        show-edges
+        @update:page="onPageChange"
+      >
+        <PaginationContent>
+          <PaginationFirst />
+          <PaginationPrevious />
+          <template v-for="(item, index) in paginationItems" :key="index">
+            <PaginationEllipsis v-if="item.type === 'ellipsis'" :index="index" />
+            <PaginationItem v-else :value="item.value" :is-active="item.value === events.current_page" as-child>
+              <Button :variant="item.value === events.current_page ? 'default' : 'outline'" class="h-9 w-9 p-0">
+                {{ item.value }}
+              </Button>
+            </PaginationItem>
+          </template>
+          <PaginationNext />
+          <PaginationLast />
+        </PaginationContent>
+      </Pagination>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
-import { NPagination } from "naive-ui";
-import { Link, usePage } from "@inertiajs/vue3";
+import { computed } from "vue";
+import { usePage } from "@inertiajs/vue3";
 
 import EventCard from "./EventCard.vue";
-
-import Button from "@/Components/ui/button/Button.vue";
+import { Button } from "@/Components/ui/button";
+import { 
+  Pagination, 
+  PaginationContent, 
+  PaginationEllipsis, 
+  PaginationFirst, 
+  PaginationItem, 
+  PaginationLast, 
+  PaginationNext, 
+  PaginationPrevious 
+} from "@/Components/ui/pagination";
 
 const props = defineProps<{
   events: {
@@ -58,6 +88,45 @@ const emit = defineEmits(['pageChange']);
 const onPageChange = (page: number) => {
   emit('pageChange', page);
 };
+
+// Generate pagination items with ellipsis
+const paginationItems = computed(() => {
+  const items: Array<{ type: 'page' | 'ellipsis'; value?: number }> = [];
+  const currentPage = props.events.current_page;
+  const lastPage = props.events.last_page;
+  const siblingCount = 1;
+  
+  // Always show first page
+  items.push({ type: 'page', value: 1 });
+  
+  // Calculate range around current page
+  const leftSibling = Math.max(currentPage - siblingCount, 2);
+  const rightSibling = Math.min(currentPage + siblingCount, lastPage - 1);
+  
+  // Add ellipsis if needed on the left
+  if (leftSibling > 2) {
+    items.push({ type: 'ellipsis' });
+  }
+  
+  // Add pages around current
+  for (let i = leftSibling; i <= rightSibling; i++) {
+    if (i > 1 && i < lastPage) {
+      items.push({ type: 'page', value: i });
+    }
+  }
+  
+  // Add ellipsis if needed on the right
+  if (rightSibling < lastPage - 1) {
+    items.push({ type: 'ellipsis' });
+  }
+  
+  // Always show last page if more than 1 page
+  if (lastPage > 1) {
+    items.push({ type: 'page', value: lastPage });
+  }
+  
+  return items;
+});
 
 // Generate Google Calendar link for events
 const generateGoogleLink = (event: App.Entities.Calendar) => {

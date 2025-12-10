@@ -1,32 +1,76 @@
 <template>
   <section class="pt-8 last:pb-2">
-    <article class="grid grid-cols-1 gap-x-12" :class="{ 'lg:grid-cols-[1fr_250px]': anchorLinks }">
-      <h1 class="col-span-full col-start-1 inline-flex gap-4">
+    <!-- Default layout: content with sidebar for ToC -->
+    <article
+      v-if="pageLayout === 'default'"
+      class="grid grid-cols-1 gap-x-12"
+      :class="{ 'lg:grid-cols-[1fr_250px]': anchorLinks && anchorLinks.length > 0 }"
+    >
+      <h1 class="col-span-full col-start-1 inline-flex gap-4 text-3xl font-bold md:text-4xl">
         <span class="text-gray-900 dark:text-white">{{ page.title }}</span>
       </h1>
       <div class="typography flex max-w-prose flex-col gap-4 py-4 text-base leading-7">
         <RichContentParser :content="(page.content?.parts as unknown as models.ContentPart[]) ?? []" />
       </div>
-      <aside v-if="anchorLinks" class="sticky top-48 hidden h-fit lg:block">
-        <NAnchor ignore-gap :bound="160">
-          <template v-for="link in anchorLinks" :key="link.href">
-            <NAnchorLink :title="link.title" :href="link.href" />
-            <template v-for="child in link.children" :key="child.href">
-              <NAnchorLink :title="child.title" :href="child.href" :indent="true" />
-            </template>
-          </template>
-        </NAnchor>
+      <aside v-if="anchorLinks && anchorLinks.length > 0" class="sticky top-48 hidden h-fit lg:block">
+        <TableOfContents :links="anchorLinks" :offset="160" />
       </aside>
     </article>
+    
+    <!-- Wide layout: full width content, great for pages with images/grids -->
+    <article v-else-if="pageLayout === 'wide'" class="w-full">
+      <h1 class="mb-6 text-3xl font-bold text-gray-900 md:text-4xl lg:text-5xl dark:text-white">{{ page.title }}</h1>
+      <div class="typography flex w-full flex-col gap-4 py-4 text-base leading-7">
+        <RichContentParser :content="(page.content?.parts as unknown as models.ContentPart[]) ?? []" />
+      </div>
+    </article>
+    
+    <!-- Focused layout: centered, narrow reading width for long-form text -->
+    <article v-else-if="pageLayout === 'focused'" class="mx-auto max-w-2xl px-4">
+      <!-- Optional featured image -->
+      <div v-if="page.featured_image" class="mb-8 overflow-hidden rounded-xl">
+        <img 
+          :src="page.featured_image" 
+          :alt="page.title"
+          class="h-auto max-h-[400px] w-full object-cover"
+        >
+      </div>
+      <header class="mb-8 text-center">
+        <h1 class="text-3xl font-bold text-gray-900 md:text-4xl lg:text-5xl dark:text-white">{{ page.title }}</h1>
+        <div v-if="page.meta_description" class="mt-4 text-lg text-muted-foreground">
+          {{ page.meta_description }}
+        </div>
+      </header>
+      <div class="typography prose-lg flex flex-col gap-4 py-4 text-lg leading-8">
+        <RichContentParser :content="(page.content?.parts as unknown as models.ContentPart[]) ?? []" />
+      </div>
+    </article>
   </section>
+  
+  <!-- Mobile ToC (shows for default layout with anchors) -->
+  <TableOfContents
+    v-if="pageLayout === 'default' && anchorLinks && anchorLinks.length > 0"
+    :links="anchorLinks"
+    :offset="160"
+    mobile-only
+    show-mobile-button
+  />
+  
+  <!-- Highlights floating button -->
+  <HighlightsFloatingButton :highlights="page.highlights" />
+  
   <FeedbackPopover />
 </template>
 
 <script setup lang="ts">
-import FeedbackPopover from "@/Components/Public/FeedbackPopover.vue";
-import RichContentParser from "@/Components/RichContentParser.vue";
-import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
+import { computed } from "vue";
 import { usePage } from "@inertiajs/vue3";
+
+import FeedbackPopover from "@/Components/Public/FeedbackPopover.vue";
+import HighlightsFloatingButton from "@/Components/Public/HighlightsFloatingButton.vue";
+import RichContentParser from "@/Components/RichContentParser.vue";
+import TableOfContents from "@/Components/Public/TableOfContents.vue";
+import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 
 // Type definitions for improved type safety and clarity
 interface AnchorLink {
@@ -60,6 +104,10 @@ interface PageContentPart {
 
 interface Page {
   title: string;
+  layout?: 'default' | 'wide' | 'focused';
+  highlights?: string[] | null;
+  meta_description?: string | null;
+  featured_image?: string | null;
   content?: {
     parts: PageContentPart[];
   };
@@ -69,6 +117,9 @@ const props = defineProps<{
   navigationItemId: number;
   page: Page;
 }>();
+
+// Compute layout with default fallback
+const pageLayout = computed(() => props.page.layout || 'default');
 
 // Set breadcrumbs for content page
 usePageBreadcrumbs(() => {
@@ -138,10 +189,3 @@ const anchorLinks = props.page.content?.parts?.reduce((acc: AnchorLink[], part: 
   return acc;
 }, []) ?? [];
 </script>
-
-<style>
-.n-breadcrumb ul {
-  display: flex;
-  flex-wrap: wrap;
-}
-</style>

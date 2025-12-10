@@ -92,6 +92,8 @@ class NewsController extends AdminController
             'image_author' => $request->image_author,
             'draft' => $request->draft ?? 0,
             'publish_time' => $request->publish_time,
+            'layout' => $request->layout ?? 'modern',
+            'highlights' => $request->highlights ?? [],
             'tenant_id' => $tenant_id,
         ]);
 
@@ -132,6 +134,8 @@ class NewsController extends AdminController
                 'tags' => $news->tags->pluck('id')->toArray(),
                 'image_author' => $news->image_author,
                 'publish_time' => $news->publish_time,
+                'layout' => $news->layout ?? 'modern',
+                'highlights' => $news->highlights ?? [],
             ],
             'otherLangNews' => $other_lang_pages,
             'availableTags' => $tags->map->toFullArray(),
@@ -154,6 +158,8 @@ class NewsController extends AdminController
             'short',
             'image',
             'image_author',
+            'layout',
+            'highlights',
         ));
 
         $news->save();
