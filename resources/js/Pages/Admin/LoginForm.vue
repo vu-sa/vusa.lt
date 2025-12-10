@@ -22,24 +22,24 @@
   <!-- Main Content -->
   <div class="min-h-screen">
     <FadeTransition appear>
-      <div class="grid min-h-screen justify-center p-4 md:grid-cols-2">
+      <div class="grid min-h-screen items-center justify-center p-4 md:grid-cols-2">
         <!-- Logo Section -->
-        <div class="flex h-fit justify-center sm:h-auto">
-          <AppLogo class="hidden w-96 invert sm:block" />
+        <div class="hidden md:flex items-center justify-center">
+          <AppLogo class="w-96 invert" />
         </div>
         
         <!-- Login Form Section -->
-        <div class="m-auto mt-0 flex h-auto flex-col items-center gap-6 rounded-lg bg-white/95 backdrop-blur-sm p-8 text-zinc-700 shadow-xl dark:bg-zinc-900/95 dark:text-zinc-300 sm:mt-auto sm:justify-center sm:p-12 max-w-md w-full -order-1 md:order-2">
+        <div class="m-auto flex flex-col items-center gap-6 rounded-2xl bg-gradient-to-br from-white/95 via-white/90 to-zinc-50/85 backdrop-blur-md p-8 text-zinc-700 shadow-2xl ring-1 ring-zinc-200/50 dark:from-zinc-900/95 dark:via-zinc-900/90 dark:to-zinc-800/85 dark:text-zinc-300 dark:ring-zinc-700/50 sm:p-12 max-w-md w-full">
           <!-- Mobile Logo -->
           <div class="flex justify-center mb-4 sm:hidden">
             <AppLogo class="w-24" />
           </div>
           <!-- Welcome Header -->
-          <div class="text-center space-y-2">
-            <h1 class="text-2xl font-bold text-zinc-800 dark:text-zinc-100">
+          <div class="text-center space-y-3">
+            <h1 class="text-3xl font-extrabold tracking-tight text-zinc-800 dark:text-zinc-100">
               {{ $page.props.app.locale === 'en' ? 'Welcome back' : 'Sveiki sugrįžę' }}
             </h1>
-            <p class="text-lg text-zinc-700 dark:text-zinc-300">
+            <p class="text-lg font-medium text-vusa-red/80 dark:text-vusa-red/70">
               {{ $page.props.app.locale === 'en' ? 'to my VU SR' : 'į Mano VU SA' }}
             </p>
             <!-- <p class="text-sm text-zinc-600 dark:text-zinc-400"> -->
@@ -58,11 +58,11 @@
               
               <!-- Simple Divider -->
               <div class="relative flex items-center justify-center my-6">
-                <div class="flex-1 border-t border-zinc-300 dark:border-zinc-600"></div>
-                <div class="mx-4 text-sm text-zinc-500 dark:text-zinc-400 bg-white dark:bg-zinc-900 px-2">
+                <div class="flex-1 border-t border-zinc-300/60 dark:border-zinc-600/60"></div>
+                <div class="mx-4 text-sm text-zinc-500 dark:text-zinc-400 bg-transparent px-2">
                   {{ $t('Arba') }}
                 </div>
-                <div class="flex-1 border-t border-zinc-300 dark:border-zinc-600"></div>
+                <div class="flex-1 border-t border-zinc-300/60 dark:border-zinc-600/60"></div>
               </div>
               
               <Button
