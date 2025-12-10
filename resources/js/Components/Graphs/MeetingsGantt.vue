@@ -46,13 +46,21 @@
           </template>
         </div>
       </div>
-      <div class="flex items-center gap-3 ml-auto">
-        <!-- Details toggle -->
-        <label class="flex items-center gap-1 text-[11px] text-zinc-600 dark:text-zinc-400 select-none cursor-pointer">
-          <input type="checkbox" :checked="!!detailsExpanded"
-            @change="emit('update:detailsExpanded', !detailsExpanded)">
-          <span>{{ $t('Išsamios eilutės') }}</span>
-        </label>
+      <div class="flex items-center gap-2 ml-auto">
+        <!-- Details toggle - icon button with tooltip -->
+        <Tooltip>
+          <TooltipTrigger as-child>
+            <button type="button"
+              class="p-1.5 rounded border text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors"
+              :class="detailsExpanded ? 'bg-zinc-100 dark:bg-zinc-700 border-zinc-300 dark:border-zinc-500' : 'border-zinc-200 dark:border-zinc-600'"
+              @click="emit('update:detailsExpanded', !detailsExpanded)">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
+              </svg>
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>{{ $t('Išsamios eilutės') }}</TooltipContent>
+        </Tooltip>
         <!-- Scale slider -->
         <div data-tour="gantt-scale" class="w-40 flex items-center gap-2 text-[11px] text-zinc-600 dark:text-zinc-400">
           <span class="shrink-0">{{ $t('Mastelis') }}</span>
@@ -110,10 +118,19 @@
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-        <button type="button" data-tour="gantt-fullscreen" class="px-2 py-1 text-xs border border-zinc-200 dark:border-zinc-600 rounded hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300"
-          @click="$emit('fullscreen', true)">
-          {{ $t('Visas ekranas') }}
-        </button>
+        <!-- Fullscreen button - icon with tooltip -->
+        <Tooltip v-if="!hideFullscreenButton">
+          <TooltipTrigger as-child>
+            <button type="button" data-tour="gantt-fullscreen" 
+              class="p-1.5 rounded border border-zinc-200 dark:border-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-400 transition-colors"
+              @click="$emit('fullscreen', true)">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h4a1 1 0 010 2H6.414l2.293 2.293a1 1 0 11-1.414 1.414L5 6.414V8a1 1 0 01-2 0V4zm9 1a1 1 0 010-2h4a1 1 0 011 1v4a1 1 0 01-2 0V6.414l-2.293 2.293a1 1 0 11-1.414-1.414L13.586 5H12zm-9 7a1 1 0 012 0v1.586l2.293-2.293a1 1 0 111.414 1.414L6.414 15H8a1 1 0 010 2H4a1 1 0 01-1-1v-4zm13-1a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 010-2h1.586l-2.293-2.293a1 1 0 111.414-1.414L15 13.586V12a1 1 0 011-1z" clip-rule="evenodd" />
+              </svg>
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>{{ $t('Visas ekranas') }}</TooltipContent>
+        </Tooltip>
       </div>
     </div>
 
@@ -123,7 +140,7 @@
       <!-- Left: sticky labels -->
       <div ref="leftLabels" class="shrink-0 bg-white dark:bg-zinc-900 z-[35]"
         :class="props.height === '100%' ? 'overflow-y-auto overflow-x-hidden' : 'overflow-hidden'"
-        :style="{ width: `${labelWidth}px` }"
+        :style="{ width: `${labelWidthPx}px` }"
         style="isolation: isolate;">
         <div class="grid" :style="{ gridTemplateRows: `22px ${layoutRows.map(r => r.height + 'px').join(' ')}` }">
           <!-- header spacer (align with axis height) -->
@@ -189,6 +206,16 @@
         </div>
       </div>
 
+      <!-- Resize handle for label column -->
+      <div 
+        class="w-1 shrink-0 cursor-col-resize bg-transparent hover:bg-blue-500/30 active:bg-blue-500/50 transition-colors z-[40]"
+        :class="{ 'bg-blue-500/50': isResizing }"
+        @mousedown.prevent="startLabelResize"
+        role="separator"
+        :aria-label="$t('Keisti stulpelio plotį')"
+        aria-orientation="vertical"
+      />
+
       <!-- Right: scrollable timeline with sticky header -->
       <div ref="rightScroll" class="flex-1 overflow-auto min-w-0 h-full bg-white dark:bg-zinc-900" style="width: 0; min-width: 0;">
         <!-- Sticky x-axis header - uses isolate to create new stacking context -->
@@ -217,6 +244,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/Components/ui/tooltip'
 import { getGanttColors, isDarkModeActive, type GanttColors } from './ganttColors'
 import { useGanttSettings } from '@/Pages/Admin/Dashboard/Composables/useGanttSettings'
 import { useGanttInteractions } from './composables/useGanttInteractions'
@@ -283,6 +311,8 @@ const props = withDefaults(defineProps<{
   showDutyMembers?: boolean
   // Meeting periodicity per institution (days between expected meetings)
   institutionPeriodicity?: Record<string | number, number>
+  // Hide fullscreen button (when already in fullscreen modal)
+  hideFullscreenButton?: boolean
 }>(), {
   daysBefore: 60,
   daysAfter: 60,
@@ -319,11 +349,45 @@ let centerLineManager: CenterLineManager | null = null
 // Falls back to local settings if no provider is found (standalone usage)
 const ganttSettings = useGanttSettings()
 const dayWidthPx = ganttSettings.dayWidthPx
+const labelWidthPx = ganttSettings.labelWidth
+const setLabelWidth = ganttSettings.setLabelWidth
 const showTenantHeaders = ganttSettings.showTenantHeaders
 const centerDateTimestamp = ganttSettings.centerDateTimestamp
 const setCenterDate = ganttSettings.setCenterDate
 const verticalScrollPosition = ganttSettings.verticalScrollPosition
 const setVerticalScrollPosition = ganttSettings.setVerticalScrollPosition
+
+// Resize handle state for label column
+const isResizing = ref(false)
+const resizeStartX = ref(0)
+const resizeStartWidth = ref(0)
+
+function startLabelResize(event: MouseEvent) {
+  isResizing.value = true
+  resizeStartX.value = event.clientX
+  resizeStartWidth.value = labelWidthPx.value
+  
+  document.addEventListener('mousemove', handleLabelResize)
+  document.addEventListener('mouseup', stopLabelResize)
+  // Prevent text selection during resize
+  document.body.style.userSelect = 'none'
+  document.body.style.cursor = 'col-resize'
+}
+
+function handleLabelResize(event: MouseEvent) {
+  if (!isResizing.value) return
+  const delta = event.clientX - resizeStartX.value
+  const newWidth = resizeStartWidth.value + delta
+  setLabelWidth(newWidth)
+}
+
+function stopLabelResize() {
+  isResizing.value = false
+  document.removeEventListener('mousemove', handleLabelResize)
+  document.removeEventListener('mouseup', stopLabelResize)
+  document.body.style.userSelect = ''
+  document.body.style.cursor = ''
+}
 
 const emit = defineEmits<{
   (e: 'create-meeting', payload: { institution_id: string | number, suggestedAt: Date }): void

@@ -24,29 +24,35 @@
           <GanttFilterDropdown
             v-if="ganttType === 'tenant'"
             :tenants="availableTenants"
-            :selected-tenants="tenantFilter"
-            :show-only-with-activity="showOnlyWithActivityTenant"
-            :show-only-with-public-meetings="showOnlyWithPublicMeetingsTenant ?? false"
-            :show-duty-members="showDutyMembersTenant ?? true"
+            :selected-tenants="filters.selectedTenantForGantt.value"
+            :show-only-with-activity="filters.showOnlyWithActivityTenant.value"
+            :show-only-with-public-meetings="filters.showOnlyWithPublicMeetingsTenant.value"
+            :show-duty-members="filters.showDutyMembersTenant.value"
             :show-tenant-headers="ganttSettings.showTenantHeaders.value"
             :show-reset="false"
-            @update:selected-tenants="handleTenantFilterUpdate"
-            @update:show-only-with-activity="(val: boolean) => emit('update:showOnlyWithActivityTenant', val)"
-            @update:show-only-with-public-meetings="(val: boolean) => emit('update:showOnlyWithPublicMeetingsTenant', val)"
-            @update:show-duty-members="(val: boolean) => emit('update:showDutyMembersTenant', val)"
+            @update:selected-tenants="(val: string[]) => filters.selectedTenantForGantt.value = val"
+            @update:show-only-with-activity="(val: boolean) => filters.showOnlyWithActivityTenant.value = val"
+            @update:show-only-with-public-meetings="(val: boolean) => filters.showOnlyWithPublicMeetingsTenant.value = val"
+            @update:show-duty-members="(val: boolean) => filters.showDutyMembersTenant.value = val"
             @update:show-tenant-headers="(val: boolean) => ganttSettings.showTenantHeaders.value = val"
           />
           <GanttFilterDropdown
             v-else-if="ganttType === 'user'"
-            :show-only-with-activity="showOnlyWithActivityUser ?? false"
-            :show-only-with-public-meetings="showOnlyWithPublicMeetingsUser ?? false"
-            :show-duty-members="showDutyMembersUser ?? true"
+            :tenants="filters.availableTenantsUser.value"
+            :selected-tenants="filters.userTenantFilter.value"
+            :show-only-with-activity="filters.showOnlyWithActivityUser.value"
+            :show-only-with-public-meetings="filters.showOnlyWithPublicMeetingsUser.value"
+            :show-duty-members="filters.showDutyMembersUser.value"
             :show-tenant-headers="ganttSettings.showTenantHeaders.value"
+            :show-related-institutions="filters.showRelatedInstitutionsUser.value"
+            :has-related-institutions="hasRelatedInstitutions"
             :show-reset="false"
-            @update:show-only-with-activity="(val: boolean) => emit('update:showOnlyWithActivityUser', val)"
-            @update:show-only-with-public-meetings="(val: boolean) => emit('update:showOnlyWithPublicMeetingsUser', val)"
-            @update:show-duty-members="(val: boolean) => emit('update:showDutyMembersUser', val)"
+            @update:selected-tenants="(val: string[]) => filters.userTenantFilter.value = val"
+            @update:show-only-with-activity="(val: boolean) => filters.showOnlyWithActivityUser.value = val"
+            @update:show-only-with-public-meetings="(val: boolean) => filters.showOnlyWithPublicMeetingsUser.value = val"
+            @update:show-duty-members="(val: boolean) => filters.showDutyMembersUser.value = val"
             @update:show-tenant-headers="(val: boolean) => ganttSettings.showTenantHeaders.value = val"
+            @update:show-related-institutions="(val: boolean) => filters.showRelatedInstitutionsUser.value = val"
           />
         </div>
       </DialogHeader>
@@ -54,22 +60,23 @@
       <div class="flex-1 min-h-0 mt-4">
         <div v-if="ganttType === 'user' && userInstitutions.length > 0" class="h-full">
           <TimelineGanttChart
-            :institutions="userInstitutions"
+            :institutions="mergedUserInstitutions"
             :meetings="userMeetings"
             :gaps="userGaps"
-            :tenant-filter="userTenantFilter"
-            :show-only-with-activity="showOnlyWithActivityUser"
-            :show-only-with-public-meetings="showOnlyWithPublicMeetingsUser"
-            :institution-names="userInstitutionNames"
+            :tenant-filter="filters.userTenantFilter.value"
+            :show-only-with-activity="filters.showOnlyWithActivityUser.value"
+            :show-only-with-public-meetings="filters.showOnlyWithPublicMeetingsUser.value"
+            :institution-names="mergedUserInstitutionNames"
             :tenant-names="tenantNames"
-            :institution-tenant="userInstitutionTenant"
+            :institution-tenant="mergedUserInstitutionTenant"
             :institution-has-public-meetings="userInstitutionHasPublicMeetings"
             :institution-periodicity="userInstitutionPeriodicity"
             :duty-members="userDutyMembers"
             :inactive-periods="userInactivePeriods"
-            :show-duty-members="showDutyMembersUser"
+            :show-duty-members="filters.showDutyMembersUser.value"
             :empty-message="$t('Neturi tiesiogiai priskirtų institucijų')"
             height="100%"
+            :hide-fullscreen-button="true"
             @create-meeting="$emit('create-meeting', $event)"
           />
         </div>
@@ -79,9 +86,9 @@
             :institutions="tenantInstitutions"
             :meetings="tenantMeetings"
             :gaps="tenantGaps"
-            :tenant-filter="tenantFilter"
-            :show-only-with-activity="showOnlyWithActivityTenant"
-            :show-only-with-public-meetings="showOnlyWithPublicMeetingsTenant"
+            :tenant-filter="filters.selectedTenantForGantt.value"
+            :show-only-with-activity="filters.showOnlyWithActivityTenant.value"
+            :show-only-with-public-meetings="filters.showOnlyWithPublicMeetingsTenant.value"
             :institution-names="tenantInstitutionNames"
             :tenant-names="tenantNames"
             :institution-tenant="tenantInstitutionTenant"
@@ -89,9 +96,10 @@
             :institution-periodicity="tenantInstitutionPeriodicity"
             :duty-members="tenantDutyMembers"
             :inactive-periods="tenantInactivePeriods"
-            :show-duty-members="showDutyMembersTenant"
+            :show-duty-members="filters.showDutyMembersTenant.value"
             :empty-message="$t('Šiame padalinyje nėra institucijų')"
             height="100%"
+            :hide-fullscreen-button="true"
             @create-meeting="$emit('create-meeting', $event)"
           />
         </div>
@@ -105,8 +113,8 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ref, watch } from 'vue';
 
 import {
   Dialog,
@@ -120,6 +128,7 @@ import Icons from "@/Types/Icons/filled";
 import GanttFilterDropdown from './GanttFilterDropdown.vue';
 import TimelineGanttChart from './TimelineGanttChart.vue';
 import { useGanttSettings } from '../Composables/useGanttSettings';
+import { useTimelineFilters } from '../Composables/useTimelineFilters';
 import type { 
   GanttMeeting, 
   GanttInstitution, 
@@ -132,38 +141,30 @@ import type {
 interface Props {
   isOpen: boolean;
   ganttType: 'user' | 'tenant';
-  currentTenant?: AtstovavimosTenant;
   availableTenants: AtstovavimosTenant[];
   
   // User data
   userInstitutions: GanttInstitution[];
   userMeetings: GanttMeeting[];
   userGaps: AtstovavimosGap[];
-  userTenantFilter: string[];
-  showOnlyWithActivityUser: boolean;
-  showOnlyWithPublicMeetingsUser?: boolean;
   userInstitutionNames: Record<string, string>;
   userInstitutionTenant: Record<string, string>;
   userInstitutionHasPublicMeetings?: Record<string, boolean>;
   userInstitutionPeriodicity?: Record<string | number, number>;
   userDutyMembers?: GanttDutyMember[];
   userInactivePeriods?: InactivePeriod[];
-  showDutyMembersUser?: boolean;
+  userRelatedInstitutions?: GanttInstitution[];
   
   // Tenant data
   tenantInstitutions: GanttInstitution[];
   tenantMeetings: GanttMeeting[];
   tenantGaps: AtstovavimosGap[];
-  tenantFilter: string[];
-  showOnlyWithActivityTenant: boolean;
-  showOnlyWithPublicMeetingsTenant?: boolean;
   tenantInstitutionNames: Record<string, string>;
   tenantInstitutionTenant: Record<string, string>;
   tenantInstitutionHasPublicMeetings?: Record<string, boolean>;
   tenantInstitutionPeriodicity?: Record<string | number, number>;
   tenantDutyMembers?: GanttDutyMember[];
   tenantInactivePeriods?: InactivePeriod[];
-  showDutyMembersTenant?: boolean;
   
   // Shared
   tenantNames: Record<string, string>;
@@ -173,30 +174,50 @@ const props = defineProps<Props>();
 
 const emit = defineEmits<{
   'update:isOpen': [value: boolean];
-  'update:tenantFilter': [value: string[]];
-  'update:showOnlyWithActivityTenant': [value: boolean];
-  'update:showOnlyWithPublicMeetingsTenant': [value: boolean];
-  'update:showDutyMembersTenant': [value: boolean];
-  'update:showOnlyWithActivityUser': [value: boolean];
-  'update:showOnlyWithPublicMeetingsUser': [value: boolean];
-  'update:showDutyMembersUser': [value: boolean];
   'create-meeting': [payload: { institution_id: string | number, suggestedAt: Date }];
 }>();
 
-// Get gantt settings for showTenantHeaders toggle
+// Get shared settings and filter state from providers
 const ganttSettings = useGanttSettings();
+const filters = useTimelineFilters();
 
-// Local state for tenant filter - synced with props
-const tenantFilter = ref<string[]>(props.tenantFilter);
+// Computed: check if we have related institutions for user view
+const hasRelatedInstitutions = computed(() => (props.userRelatedInstitutions?.length ?? 0) > 0);
 
-// Sync local state with props when they change (e.g., from parent TenantTimelineSection)
-watch(() => props.tenantFilter, (newVal) => {
-  tenantFilter.value = [...newVal];
-}, { deep: true });
+// Computed: current tenant for display
+const currentTenant = computed(() => filters.currentTenant.value);
 
-// Handle tenant filter update from GanttFilterDropdown
-function handleTenantFilterUpdate(newSelection: string[]) {
-  tenantFilter.value = newSelection;
-  emit('update:tenantFilter', newSelection);
-}
+// Computed: merged institutions including related when filter is enabled
+const mergedUserInstitutions = computed(() => {
+  if (!filters.showRelatedInstitutionsUser.value || !props.userRelatedInstitutions?.length) {
+    return props.userInstitutions;
+  }
+  return [...props.userInstitutions, ...props.userRelatedInstitutions];
+});
+
+// Computed: merged institution names including related
+const mergedUserInstitutionNames = computed(() => {
+  if (!filters.showRelatedInstitutionsUser.value || !props.userRelatedInstitutions?.length) {
+    return props.userInstitutionNames;
+  }
+  const result = { ...props.userInstitutionNames };
+  props.userRelatedInstitutions.forEach(inst => {
+    result[String(inst.id)] = inst.name;
+  });
+  return result;
+});
+
+// Computed: merged institution tenant mapping
+const mergedUserInstitutionTenant = computed(() => {
+  if (!filters.showRelatedInstitutionsUser.value || !props.userRelatedInstitutions?.length) {
+    return props.userInstitutionTenant;
+  }
+  const result = { ...props.userInstitutionTenant };
+  props.userRelatedInstitutions.forEach(inst => {
+    if (inst.tenant_id) {
+      result[String(inst.id)] = String(inst.tenant_id);
+    }
+  });
+  return result;
+});
 </script>

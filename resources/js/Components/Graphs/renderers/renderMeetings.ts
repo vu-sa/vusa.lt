@@ -91,13 +91,16 @@ export function renderMeetings(ctx: MeetingRenderContext): void {
   // Meeting icons group
   const dotGroup = g.append('g').attr('class', 'meeting-icons')
 
+  // Hit area size (larger than icon for easier hovering)
+  const HIT_AREA_SIZE = 24
+
   const dots = dotGroup
     .selectAll('g.meeting-icon')
     .data(meetings)
     .enter()
     .append('g')
     .attr('class', 'meeting-icon')
-    .attr('transform', d => `translate(${x(d.date) - ICON_SIZE / 2}, ${rowCenter(d.institution_id) - ICON_SIZE / 2})`)
+    .attr('transform', d => `translate(${x(d.date) - HIT_AREA_SIZE / 2}, ${rowCenter(d.institution_id) - HIT_AREA_SIZE / 2})`)
     .attr('tabindex', interactive ? 0 : -1)
     .style('cursor', interactive ? 'pointer' : 'default')
     .on('click', (event: MouseEvent, d: any) => {
@@ -126,10 +129,18 @@ export function renderMeetings(ctx: MeetingRenderContext): void {
       }
     })
 
-  // Add icon path
+  // Add invisible hit area for easier hovering
+  dots.append('rect')
+    .attr('width', HIT_AREA_SIZE)
+    .attr('height', HIT_AREA_SIZE)
+    .attr('fill', 'transparent')
+    .attr('rx', 4)
+
+  // Add icon path (centered within hit area)
+  const iconOffset = (HIT_AREA_SIZE - ICON_SIZE) / 2
   dots.append('path')
     .attr('d', (d: any) => d.completion_status === 'no_items' ? MEETING_ICON_REGULAR : MEETING_ICON_FILLED)
-    .attr('transform', `scale(${ICON_SIZE / 20})`)
+    .attr('transform', `translate(${iconOffset}, ${iconOffset}) scale(${ICON_SIZE / 20})`)
     .attr('fill', (d: any) => {
       if (d.completion_status === 'complete') {
         return colors.meetingComplete

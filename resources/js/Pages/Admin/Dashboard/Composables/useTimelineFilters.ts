@@ -1,16 +1,60 @@
-import { ref, computed, onMounted, watch } from 'vue';
+/**
+ * useTimelineFilters - Shared timeline filter state with Provide/Inject
+ * 
+ * This composable provides centralized filter state management for Gantt charts
+ * across UserTimelineSection, TenantTimelineSection, and FullscreenGanttModal.
+ * 
+ * Uses the same pattern as useGanttSettings for consistency.
+ * 
+ * Usage:
+ * - In parent (ShowAtstovavimas.vue): call provideTimelineFilters()
+ * - In children: call useTimelineFilters() to access shared state
+ */
+import { ref, computed, provide, inject, watch, type Ref, type InjectionKey } from 'vue';
 import type { AtstovavimosInstitution, AtstovavimosTenant } from '../types';
 
 const STORAGE_KEY = 'atstovavimas-timeline-filters';
+
+export interface TimelineFilters {
+  // User section filters
+  userTenantFilter: Ref<string[]>;
+  showOnlyWithActivityUser: Ref<boolean>;
+  showOnlyWithPublicMeetingsUser: Ref<boolean>;
+  showDutyMembersUser: Ref<boolean>;
+  showRelatedInstitutionsUser: Ref<boolean>;
+  
+  // Tenant section filters
+  selectedTenantForGantt: Ref<string[]>;
+  showOnlyWithActivityTenant: Ref<boolean>;
+  showOnlyWithPublicMeetingsTenant: Ref<boolean>;
+  showDutyMembersTenant: Ref<boolean>;
+  
+  // Shared state
+  scrollPosition: Ref<number>;
+  
+  // Computed
+  availableTenantsUser: Ref<AtstovavimosTenant[]>;
+  currentTenant: Ref<AtstovavimosTenant | undefined>;
+  
+  // Actions
+  setSelectedTenants: (tenantIds: string[]) => void;
+  resetTenantFilters: () => void;
+  resetUserFilters: () => void;
+}
 
 interface StoredFilters {
   selectedTenantForGantt: string[];
   showOnlyWithActivityTenant: boolean;
   showOnlyWithPublicMeetingsTenant: boolean;
   showDutyMembersTenant: boolean;
+  showOnlyWithActivityUser: boolean;
+  showOnlyWithPublicMeetingsUser: boolean;
+  showDutyMembersUser: boolean;
   showRelatedInstitutionsUser: boolean;
   scrollPosition?: number;
 }
+
+const TIMELINE_FILTERS_KEY: InjectionKey<TimelineFilters> = Symbol('timeline-filters');
 
 function loadStoredFilters(): Partial<StoredFilters> {
   if (typeof window === 'undefined') return {};
@@ -31,26 +75,38 @@ function saveStoredFilters(filters: StoredFilters) {
   }
 }
 
-export function useTimelineFilters(
+/**
+ * Creates and provides timeline filter state to child components.
+ * Call this once in the parent component (e.g., ShowAtstovavimas.vue).
+ */
+export function provideTimelineFilters(
   institutions: AtstovavimosInstitution[],
   availableTenants: AtstovavimosTenant[]
-) {
-  // Load persisted state
+): TimelineFilters {
   const stored = loadStoredFilters();
-  
-  // Filter state
+
+  // User section filters
   const userTenantFilter = ref<string[]>([]);
-  const showOnlyWithActivityUser = ref(false);
-  const showOnlyWithActivityTenant = ref(stored.showOnlyWithActivityTenant ?? false);
-  const showOnlyWithPublicMeetingsUser = ref(false);
-  const showOnlyWithPublicMeetingsTenant = ref(stored.showOnlyWithPublicMeetingsTenant ?? false);
-  const showDutyMembersUser = ref(true);
-  const showDutyMembersTenant = ref(stored.showDutyMembersTenant ?? true);
+  const showOnlyWithActivityUser = ref(stored.showOnlyWithActivityUser ?? false);
+  const showOnlyWithPublicMeetingsUser = ref(stored.showOnlyWithPublicMeetingsUser ?? false);
+  const showDutyMembersUser = ref(stored.showDutyMembersUser ?? true);
   const showRelatedInstitutionsUser = ref(stored.showRelatedInstitutionsUser ?? true);
+
+  // Tenant section filters
   const selectedTenantForGantt = ref<string[]>(stored.selectedTenantForGantt ?? []);
+  const showOnlyWithActivityTenant = ref(stored.showOnlyWithActivityTenant ?? false);
+  const showOnlyWithPublicMeetingsTenant = ref(stored.showOnlyWithPublicMeetingsTenant ?? false);
+  const showDutyMembersTenant = ref(stored.showDutyMembersTenant ?? true);
+
+  // Shared state
   const scrollPosition = ref<number>(stored.scrollPosition ?? 0);
 
-  // Available tenants for user filtering
+  // Initialize default tenant selection if needed
+  if (selectedTenantForGantt.value.length === 0 && availableTenants.length > 0) {
+    selectedTenantForGantt.value = [String(availableTenants[0]?.id)];
+  }
+
+  // Computed: available tenants for user section
   const availableTenantsUser = computed(() => {
     const ids = new Set<string>();
     institutions.forEach((i: any) => {
@@ -60,53 +116,58 @@ export function useTimelineFilters(
     return availableTenants.filter(t => ids.has(String(t.id)));
   });
 
-  // Current selected tenant (for display purposes, shows first selected)
-  const currentTenant = computed(() => 
-    selectedTenantForGantt.value.length > 0 
+  // Computed: current selected tenant for display
+  const currentTenant = computed(() =>
+    selectedTenantForGantt.value.length > 0
       ? availableTenants.find(t => String(t.id) === selectedTenantForGantt.value[0])
       : undefined
   );
 
-  function setSelectedTenants(tenantIds: string[]) {
-    selectedTenantForGantt.value = tenantIds;
-  }
-
-  // Persist tenant filters to localStorage
+  // Persist filters on change
   function persistFilters() {
     saveStoredFilters({
       selectedTenantForGantt: selectedTenantForGantt.value,
       showOnlyWithActivityTenant: showOnlyWithActivityTenant.value,
       showOnlyWithPublicMeetingsTenant: showOnlyWithPublicMeetingsTenant.value,
       showDutyMembersTenant: showDutyMembersTenant.value,
+      showOnlyWithActivityUser: showOnlyWithActivityUser.value,
+      showOnlyWithPublicMeetingsUser: showOnlyWithPublicMeetingsUser.value,
+      showDutyMembersUser: showDutyMembersUser.value,
       showRelatedInstitutionsUser: showRelatedInstitutionsUser.value,
       scrollPosition: scrollPosition.value,
     });
   }
 
-  // Watch for changes and persist
-  watch([selectedTenantForGantt, showOnlyWithActivityTenant, showOnlyWithPublicMeetingsTenant, showDutyMembersTenant, showRelatedInstitutionsUser, scrollPosition], () => {
+  watch([
+    selectedTenantForGantt,
+    showOnlyWithActivityTenant,
+    showOnlyWithPublicMeetingsTenant,
+    showDutyMembersTenant,
+    showOnlyWithActivityUser,
+    showOnlyWithPublicMeetingsUser,
+    showDutyMembersUser,
+    showRelatedInstitutionsUser,
+    scrollPosition
+  ], () => {
     persistFilters();
   }, { deep: true });
 
-  // Reset filters to defaults
+  function setSelectedTenants(tenantIds: string[]) {
+    selectedTenantForGantt.value = tenantIds;
+  }
+
   function resetTenantFilters() {
     showOnlyWithActivityTenant.value = false;
     showOnlyWithPublicMeetingsTenant.value = false;
     showDutyMembersTenant.value = true;
     scrollPosition.value = 0;
-    // Reset to first tenant
     if (availableTenants.length > 0) {
       selectedTenantForGantt.value = [String(availableTenants[0]?.id)];
     } else {
       selectedTenantForGantt.value = [];
     }
-    // Clear localStorage
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem(STORAGE_KEY);
-    }
   }
 
-  // Reset user filters to defaults
   function resetUserFilters() {
     userTenantFilter.value = [];
     showOnlyWithActivityUser.value = false;
@@ -115,35 +176,48 @@ export function useTimelineFilters(
     showRelatedInstitutionsUser.value = true;
   }
 
-  // Initialize on mount - only set default tenant if no stored value
-  onMounted(() => {
-    // If no stored selection and tenants available, default to first tenant
-    if (selectedTenantForGantt.value.length === 0 && availableTenants.length > 0) {
-      const firstTenantId = String(availableTenants[0]?.id);
-      selectedTenantForGantt.value = [firstTenantId];
-    }
-  });
-
-  return {
-    // State
+  const filters: TimelineFilters = {
+    // User section filters
     userTenantFilter,
     showOnlyWithActivityUser,
-    showOnlyWithActivityTenant,
     showOnlyWithPublicMeetingsUser,
-    showOnlyWithPublicMeetingsTenant,
     showDutyMembersUser,
-    showDutyMembersTenant,
     showRelatedInstitutionsUser,
+    // Tenant section filters
     selectedTenantForGantt,
+    showOnlyWithActivityTenant,
+    showOnlyWithPublicMeetingsTenant,
+    showDutyMembersTenant,
+    // Shared state
     scrollPosition,
-    
     // Computed
-    availableTenantsUser,
-    currentTenant,
-    
+    availableTenantsUser: availableTenantsUser as unknown as Ref<AtstovavimosTenant[]>,
+    currentTenant: currentTenant as unknown as Ref<AtstovavimosTenant | undefined>,
     // Actions
     setSelectedTenants,
     resetTenantFilters,
     resetUserFilters,
   };
+
+  provide(TIMELINE_FILTERS_KEY, filters);
+
+  return filters;
 }
+
+/**
+ * Injects timeline filter state from the parent component.
+ * Call this in child components that need access to shared filter state.
+ */
+export function useTimelineFilters(): TimelineFilters {
+  const filters = inject(TIMELINE_FILTERS_KEY);
+
+  if (!filters) {
+    // This should not happen in production if properly set up
+    throw new Error('useTimelineFilters: No provider found. Ensure provideTimelineFilters() is called in a parent component.');
+  }
+
+  return filters;
+}
+
+// Export the injection key for testing purposes
+export { TIMELINE_FILTERS_KEY };

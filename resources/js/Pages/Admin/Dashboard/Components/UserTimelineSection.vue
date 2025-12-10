@@ -6,32 +6,34 @@
       </h2>
       <div class="flex items-center gap-2">
         <GanttFilterDropdown
-          :tenants="availableTenantsUser"
-          :selected-tenants="tenantFilter"
-          :show-only-with-activity="showOnlyWithActivity"
-          :show-only-with-public-meetings="showOnlyWithPublicMeetings"
-          :show-duty-members="showDutyMembers"
+          :tenants="filters.availableTenantsUser.value"
+          :selected-tenants="filters.userTenantFilter.value"
+          :show-only-with-activity="filters.showOnlyWithActivityUser.value"
+          :show-only-with-public-meetings="filters.showOnlyWithPublicMeetingsUser.value"
+          :show-duty-members="filters.showDutyMembersUser.value"
           :show-tenant-headers="ganttSettings.showTenantHeaders.value"
-          :show-related-institutions="showRelatedInstitutions"
+          :show-related-institutions="filters.showRelatedInstitutionsUser.value"
           :has-related-institutions="hasRelatedInstitutions"
-          @update:selected-tenants="(val: string[]) => emit('update:tenantFilter', val)"
-          @update:show-only-with-activity="(val: boolean) => emit('update:showOnlyWithActivity', val)"
-          @update:show-only-with-public-meetings="(val: boolean) => emit('update:showOnlyWithPublicMeetings', val)"
-          @update:show-duty-members="(val: boolean) => emit('update:showDutyMembers', val)"
+          @update:selected-tenants="(val: string[]) => filters.userTenantFilter.value = val"
+          @update:show-only-with-activity="(val: boolean) => filters.showOnlyWithActivityUser.value = val"
+          @update:show-only-with-public-meetings="(val: boolean) => filters.showOnlyWithPublicMeetingsUser.value = val"
+          @update:show-duty-members="(val: boolean) => filters.showDutyMembersUser.value = val"
           @update:show-tenant-headers="(val: boolean) => ganttSettings.showTenantHeaders.value = val"
-          @update:show-related-institutions="(val: boolean) => emit('update:showRelatedInstitutions', val)"
-          @reset="emit('reset-filters')"
+          @update:show-related-institutions="(val: boolean) => filters.showRelatedInstitutionsUser.value = val"
+          @reset="filters.resetUserFilters()"
         />
       </div>
     </div>
 
     <!-- Deferred Gantt chart rendering for better initial load performance -->
     <TimelineGanttSkeleton v-if="!isReady" />
-    <TimelineGanttChart v-else :institutions="formattedInstitutions" :meetings="allMeetings" :gaps :tenant-filter :show-only-with-activity
-      :show-only-with-public-meetings
+    <TimelineGanttChart v-else :institutions="formattedInstitutions" :meetings="allMeetings" :gaps 
+      :tenant-filter="filters.userTenantFilter.value" 
+      :show-only-with-activity="filters.showOnlyWithActivityUser.value"
+      :show-only-with-public-meetings="filters.showOnlyWithPublicMeetingsUser.value"
       :institution-names="allInstitutionNames" :tenant-names :institution-tenant="allInstitutionTenant" :institution-has-public-meetings="allInstitutionHasPublicMeetings"
       :institution-periodicity="allInstitutionPeriodicity"
-      :duty-members :inactive-periods :show-duty-members :day-width="dayWidthPx"
+      :duty-members :inactive-periods :show-duty-members="filters.showDutyMembersUser.value" :day-width="dayWidthPx"
       :empty-message="$t('Neturi tiesiogiai priskirtų institucijų')" @create-meeting="$emit('create-meeting', $event)"
       @fullscreen="$emit('fullscreen')" @update:day-width="emit('update:dayWidth', $event)" />
   </section>
@@ -54,16 +56,13 @@ import TimelineGanttChart from './TimelineGanttChart.vue';
 import TimelineGanttSkeleton from './TimelineGanttSkeleton.vue';
 import GanttFilterDropdown from './GanttFilterDropdown.vue';
 import { useGanttSettings } from '../Composables/useGanttSettings';
+import { useTimelineFilters } from '../Composables/useTimelineFilters';
 
 
 interface Props {
   institutions: AtstovavimosInstitution[];
   meetings: GanttMeeting[];
   gaps: AtstovavimosGap[];
-  availableTenantsUser: AtstovavimosTenant[];
-  tenantFilter: string[];
-  showOnlyWithActivity: boolean;
-  showOnlyWithPublicMeetings: boolean;
   institutionNames: Record<string, string>;
   tenantNames: Record<string, string>;
   institutionTenant: Record<string, string>;
@@ -72,12 +71,10 @@ interface Props {
   dutyMembers?: GanttDutyMember[];
   dayWidthPx?: number;
   inactivePeriods?: InactivePeriod[];
-  showDutyMembers?: boolean;
   // Meeting periodicity per institution (days between expected meetings)
   institutionPeriodicity?: Record<string | number, number>;
   // Related institutions
   relatedInstitutions?: AtstovavimosInstitution[];
-  showRelatedInstitutions?: boolean;
 }
 
 const props = defineProps<Props>();
@@ -92,17 +89,13 @@ onMounted(() => {
 
 // Get gantt settings for showTenantHeaders toggle
 const ganttSettings = useGanttSettings();
+// Get shared filter state
+const filters = useTimelineFilters();
 
 const emit = defineEmits<{
-  'update:tenantFilter': [value: string[]];
-  'update:showOnlyWithActivity': [value: boolean];
-  'update:showOnlyWithPublicMeetings': [value: boolean];
-  'update:showDutyMembers': [value: boolean];
-  'update:showRelatedInstitutions': [value: boolean];
   'create-meeting': [payload: { institution_id: string | number, suggestedAt: Date }];
   'update:dayWidth': [value: number];
   'fullscreen': [];
-  'reset-filters': [];
 }>();
 
 // Check if we have any related institutions
@@ -120,7 +113,7 @@ const formattedInstitutions = computed(() => {
   }));
 
   // Add related institutions if filter is enabled
-  if (props.showRelatedInstitutions && props.relatedInstitutions?.length) {
+  if (filters.showRelatedInstitutionsUser.value && props.relatedInstitutions?.length) {
     const relatedFormatted = props.relatedInstitutions.map(i => ({
       id: i.id,
       name: String((i as any)?.name?.lt ?? (i as any)?.name?.en ?? (i as any)?.name ?? (i as any)?.shortname ?? i.id),
@@ -137,7 +130,7 @@ const formattedInstitutions = computed(() => {
 
 // All meetings including related institutions
 const allMeetings = computed(() => {
-  if (!props.showRelatedInstitutions || !props.relatedInstitutions?.length) {
+  if (!filters.showRelatedInstitutionsUser.value || !props.relatedInstitutions?.length) {
     return props.meetings;
   }
 
@@ -231,7 +224,7 @@ const calculateInactivePeriods = (institutions: AtstovavimosInstitution[], membe
 const dutyMembers = computed(() => {
   const baseDutyMembers = props.dutyMembers ?? [];
   
-  if (!props.showRelatedInstitutions || !props.relatedInstitutions?.length) {
+  if (!filters.showRelatedInstitutionsUser.value || !props.relatedInstitutions?.length) {
     return baseDutyMembers;
   }
   
@@ -243,7 +236,7 @@ const dutyMembers = computed(() => {
 const inactivePeriods = computed(() => {
   const baseInactivePeriods = props.inactivePeriods ?? [];
   
-  if (!props.showRelatedInstitutions || !props.relatedInstitutions?.length) {
+  if (!filters.showRelatedInstitutionsUser.value || !props.relatedInstitutions?.length) {
     return baseInactivePeriods;
   }
   
@@ -255,7 +248,7 @@ const inactivePeriods = computed(() => {
 // Merge institution lookup maps with related institutions
 const allInstitutionNames = computed(() => {
   const names = { ...props.institutionNames };
-  if (props.showRelatedInstitutions && props.relatedInstitutions?.length) {
+  if (filters.showRelatedInstitutionsUser.value && props.relatedInstitutions?.length) {
     for (const inst of props.relatedInstitutions) {
       names[inst.id] = String((inst as any)?.name?.lt ?? (inst as any)?.name?.en ?? (inst as any)?.name ?? inst.id);
     }
@@ -265,7 +258,7 @@ const allInstitutionNames = computed(() => {
 
 const allInstitutionTenant = computed(() => {
   const tenants = { ...props.institutionTenant };
-  if (props.showRelatedInstitutions && props.relatedInstitutions?.length) {
+  if (filters.showRelatedInstitutionsUser.value && props.relatedInstitutions?.length) {
     for (const inst of props.relatedInstitutions) {
       tenants[inst.id] = String(inst.tenant?.id ?? '');
     }
@@ -275,7 +268,7 @@ const allInstitutionTenant = computed(() => {
 
 const allInstitutionHasPublicMeetings = computed(() => {
   const map = { ...props.institutionHasPublicMeetings };
-  if (props.showRelatedInstitutions && props.relatedInstitutions?.length) {
+  if (filters.showRelatedInstitutionsUser.value && props.relatedInstitutions?.length) {
     for (const inst of props.relatedInstitutions) {
       map[inst.id] = Boolean(inst.has_public_meetings);
     }
@@ -285,7 +278,7 @@ const allInstitutionHasPublicMeetings = computed(() => {
 
 const allInstitutionPeriodicity = computed(() => {
   const map = { ...props.institutionPeriodicity };
-  if (props.showRelatedInstitutions && props.relatedInstitutions?.length) {
+  if (filters.showRelatedInstitutionsUser.value && props.relatedInstitutions?.length) {
     for (const inst of props.relatedInstitutions) {
       map[inst.id] = (inst as any).meeting_periodicity_days ?? 30;
     }

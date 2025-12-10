@@ -288,7 +288,7 @@ class RelationshipService
         $loadedInstitutions = Institution::whereIn('id', $relatedIds)
             ->with([
                 'meetings:id,title,start_time',
-                'meetings.agendaItems:id,meeting_id,student_vote,decision,student_benefit',
+                'meetings.agendaItems:id,meeting_id,title,student_vote,decision,student_benefit',
                 'tenant:id,shortname',
                 'duties.current_users:id,name',
                 'duties.users:id,name,profile_photo_path',

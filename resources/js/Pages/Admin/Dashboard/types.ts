@@ -70,12 +70,23 @@ export interface InstitutionInsights {
   }>;
 }
 
+// Agenda item for Gantt tooltip display
+export interface GanttAgendaItem {
+  id: string;
+  title: string;
+  student_vote?: 'positive' | 'negative' | 'neutral' | null;
+  decision?: 'positive' | 'negative' | 'neutral' | null;
+}
+
 export interface GanttMeeting {
   id: string;
   start_time: Date;
   institution_id: string;
   institution: string;
   completion_status?: 'complete' | 'incomplete' | 'no_items';
+  // Agenda items for tooltip display (limited to first 4)
+  agenda_items?: GanttAgendaItem[];
+  agenda_items_count?: number;
 }
 
 export interface GanttInstitution {

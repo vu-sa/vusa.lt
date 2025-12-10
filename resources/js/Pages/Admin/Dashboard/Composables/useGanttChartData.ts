@@ -32,13 +32,26 @@ export function useGanttChartData(
   // Get meetings from tenant institutions
   const tenantMeetings = computed<GanttMeeting[]>(() => {
     return tenantInstitutions.value.flatMap((institution: any) => {
-      return (institution.meetings ?? []).map((meeting: any) => ({
-        id: String(meeting.id),
-        start_time: new Date(meeting.start_time),
-        institution_id: String(institution.id),
-        institution: String(institution.name ?? ''),
-        completion_status: meeting.completion_status
-      }));
+      return (institution.meetings ?? []).map((meeting: any) => {
+        // Extract agenda items for tooltip (limit to first 4)
+        const agendaItems = (meeting.agenda_items ?? []).slice(0, 4).map((item: any) => ({
+          id: String(item.id),
+          title: String(item.title ?? ''),
+          student_vote: item.student_vote ?? null,
+          decision: item.decision ?? null,
+        }));
+        const totalAgendaCount = (meeting.agenda_items ?? []).length;
+
+        return {
+          id: String(meeting.id),
+          start_time: new Date(meeting.start_time),
+          institution_id: String(institution.id),
+          institution: String(institution.name ?? ''),
+          completion_status: meeting.completion_status,
+          agenda_items: agendaItems,
+          agenda_items_count: totalAgendaCount,
+        };
+      });
     });
   });
 

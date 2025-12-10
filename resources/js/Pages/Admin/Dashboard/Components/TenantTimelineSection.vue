@@ -3,8 +3,8 @@
     <div class="flex flex-col items-start gap-4 md:flex-row md:items-center md:justify-between">
       <h2 class="text-xl font-semibold tracking-tight">
         {{
-          selectedTenantId.length === 0 ? $t('Visi padaliniai') :
-            selectedTenantId.length === 1 ? (availableTenants.find(t => String(t.id) === selectedTenantId[0])?.shortname ||
+          filters.selectedTenantForGantt.value.length === 0 ? $t('Visi padaliniai') :
+            filters.selectedTenantForGantt.value.length === 1 ? (availableTenants.find(t => String(t.id) === filters.selectedTenantForGantt.value[0])?.shortname ||
               $t('Padalinys')) :
               $t('Pasirinkti padaliniai')
         }} — {{ $t('laiko juosta') }}
@@ -12,17 +12,17 @@
       <div data-tour="gantt-filters" class="flex flex-wrap items-center gap-2 ml-auto">
         <GanttFilterDropdown
           :tenants="availableTenants"
-          :selected-tenants="selectedTenantId"
-          :show-only-with-activity="showOnlyWithActivity"
-          :show-only-with-public-meetings="showOnlyWithPublicMeetings"
-          :show-duty-members="showDutyMembers"
+          :selected-tenants="filters.selectedTenantForGantt.value"
+          :show-only-with-activity="filters.showOnlyWithActivityTenant.value"
+          :show-only-with-public-meetings="filters.showOnlyWithPublicMeetingsTenant.value"
+          :show-duty-members="filters.showDutyMembersTenant.value"
           :show-tenant-headers="ganttSettings.showTenantHeaders.value"
-          @update:selected-tenants="(val: string[]) => emit('update:selectedTenantId', val)"
-          @update:show-only-with-activity="(val: boolean) => emit('update:showOnlyWithActivity', val)"
-          @update:show-only-with-public-meetings="(val: boolean) => emit('update:showOnlyWithPublicMeetings', val)"
-          @update:show-duty-members="(val: boolean) => emit('update:showDutyMembers', val)"
+          @update:selected-tenants="(val: string[]) => filters.selectedTenantForGantt.value = val"
+          @update:show-only-with-activity="(val: boolean) => filters.showOnlyWithActivityTenant.value = val"
+          @update:show-only-with-public-meetings="(val: boolean) => filters.showOnlyWithPublicMeetingsTenant.value = val"
+          @update:show-duty-members="(val: boolean) => filters.showDutyMembersTenant.value = val"
           @update:show-tenant-headers="(val: boolean) => ganttSettings.showTenantHeaders.value = val"
-          @reset="emit('reset-filters')"
+          @reset="filters.resetTenantFilters()"
         />
       </div>
     </div>
@@ -31,10 +31,13 @@
     <!-- When fullscreen modal is open, hide this to save rendering resources -->
     <TimelineGanttSkeleton v-if="!isReady || isHidden" />
     <div v-else-if="!isHidden" data-tour="gantt-chart">
-      <TimelineGanttChart :institutions="formattedInstitutions" :meetings :gaps :tenant-filter="selectedTenantId"
-        :show-only-with-activity :show-only-with-public-meetings :institution-names :tenant-names :institution-tenant :institution-has-public-meetings="institutionHasPublicMeetings"
+      <TimelineGanttChart :institutions="formattedInstitutions" :meetings :gaps 
+        :tenant-filter="filters.selectedTenantForGantt.value"
+        :show-only-with-activity="filters.showOnlyWithActivityTenant.value" 
+        :show-only-with-public-meetings="filters.showOnlyWithPublicMeetingsTenant.value" 
+        :institution-names :tenant-names :institution-tenant :institution-has-public-meetings="institutionHasPublicMeetings"
         :institution-periodicity="institutionPeriodicity"
-        :duty-members :inactive-periods :show-duty-members
+        :duty-members :inactive-periods :show-duty-members="filters.showDutyMembersTenant.value"
         :empty-message="$t('Šiame padalinyje nėra institucijų')" @create-meeting="$emit('create-meeting', $event)"
         @fullscreen="$emit('fullscreen')" />
     </div>
@@ -42,7 +45,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watch, ref, onMounted } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import type {
@@ -58,6 +61,7 @@ import TimelineGanttChart from './TimelineGanttChart.vue';
 import TimelineGanttSkeleton from './TimelineGanttSkeleton.vue';
 import GanttFilterDropdown from './GanttFilterDropdown.vue';
 import { useGanttSettings } from '../Composables/useGanttSettings';
+import { useTimelineFilters } from '../Composables/useTimelineFilters';
 
 
 interface Props {
@@ -65,10 +69,6 @@ interface Props {
   tenantInstitutions: GanttInstitution[];
   meetings: GanttMeeting[];
   gaps: AtstovavimosGap[];
-  selectedTenantId: string[]; // Changed to array
-  currentTenant: AtstovavimosTenant | undefined;
-  showOnlyWithActivity: boolean;
-  showOnlyWithPublicMeetings: boolean;
   institutionNames: Record<string, string>;
   tenantNames: Record<string, string>;
   institutionTenant: Record<string, string>;
@@ -76,7 +76,6 @@ interface Props {
   // Duty members display
   dutyMembers?: GanttDutyMember[];
   inactivePeriods?: InactivePeriod[];
-  showDutyMembers?: boolean;
   // When true, hide the Gantt chart to save rendering resources (e.g., when fullscreen modal is open)
   isHidden?: boolean;
   // Meeting periodicity per institution (days between expected meetings)
@@ -95,15 +94,12 @@ onMounted(() => {
 
 // Get gantt settings for showTenantHeaders toggle
 const ganttSettings = useGanttSettings();
+// Get shared filter state
+const filters = useTimelineFilters();
 
 const emit = defineEmits<{
-  'update:selectedTenantId': [value: string[]]; // Changed to array
-  'update:showOnlyWithActivity': [value: boolean];
-  'update:showOnlyWithPublicMeetings': [value: boolean];
-  'update:showDutyMembers': [value: boolean];
   'create-meeting': [payload: { institution_id: string | number, suggestedAt: Date }];
   'fullscreen': [];
-  'reset-filters': [];
 }>();
 
 // Format institutions for Gantt component
@@ -115,24 +111,4 @@ const formattedInstitutions = computed(() => {
   }));
   return formatted;
 });
-
-// Debug checkbox states
-const debugCheckboxStates = computed(() => {
-  return props.availableTenants.map(t => ({
-    id: t.id,
-    shortname: t.shortname,
-    stringId: String(t.id),
-    isSelected: props.selectedTenantId.includes(String(t.id)),
-    selectedArray: [...props.selectedTenantId]
-  }));
-});
-
-// Watch for changes in selected tenants
-watch(
-  () => props.selectedTenantId,
-  (newValue, oldValue) => {
-    // Tenant selection changed
-  },
-  { deep: true, immediate: true }
-);
 </script>

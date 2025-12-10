@@ -25,6 +25,7 @@
         :inactive-periods="inactivePeriods"
         :show-duty-members="showDutyMembers"
         :height="effectiveHeight"
+        :hide-fullscreen-button="hideFullscreenButton"
         @create-meeting="$emit('create-meeting', $event)"
         @fullscreen="$emit('fullscreen')"
         @show-legend-modal="showLegendModal = true"
@@ -73,6 +74,8 @@ interface Props {
   showDutyMembers?: boolean;
   // Meeting periodicity per institution (days between expected meetings)
   institutionPeriodicity?: Record<string | number, number>;
+  // Hide fullscreen button (when already in fullscreen modal)
+  hideFullscreenButton?: boolean;
 }
 
 const props = defineProps<Props>();

@@ -44,13 +44,26 @@ export function useAtstovavimosData(
   // All user meetings flattened with institution mapping for Gantt
   const allUserMeetings = computed<GanttMeeting[]>(() => {
     return institutions.value.map((inst: AtstovavimosInstitution) => {
-      return (inst.meetings ?? []).map((m: any) => ({
-        id: m.id,
-        start_time: new Date(m.start_time),
-        institution_id: inst.id,
-        institution: String(inst.name ?? ''),
-        completion_status: m.completion_status
-      }));
+      return (inst.meetings ?? []).map((m: any) => {
+        // Extract agenda items for tooltip (limit to first 4)
+        const agendaItems = (m.agenda_items ?? []).slice(0, 4).map((item: any) => ({
+          id: String(item.id),
+          title: String(item.title ?? ''),
+          student_vote: item.student_vote ?? null,
+          decision: item.decision ?? null,
+        }));
+        const totalAgendaCount = (m.agenda_items ?? []).length;
+
+        return {
+          id: m.id,
+          start_time: new Date(m.start_time),
+          institution_id: inst.id,
+          institution: String(inst.name ?? ''),
+          completion_status: m.completion_status,
+          agenda_items: agendaItems,
+          agenda_items_count: totalAgendaCount,
+        };
+      });
     }).flat();
   });
 
