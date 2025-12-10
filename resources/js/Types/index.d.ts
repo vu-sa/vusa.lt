@@ -19,6 +19,8 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
     can: {
       index: { [str in ModelEnum]?: boolean };
       create: { [str in ModelEnum]?: boolean };
+      manageSettings?: boolean;
+      accessAdministration?: boolean;
     };
     changes: Array<{
       title: string;

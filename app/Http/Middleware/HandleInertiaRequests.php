@@ -60,6 +60,7 @@ class HandleInertiaRequests extends Middleware
                     'index' => fn () => $this->getIndexPermissions($user),
                     'create' => fn () => $this->getCreatePermissions($user),
                     'manageSettings' => fn () => $user->can('manage-settings'),
+                    'accessAdministration' => fn () => $user->can('access-administration'),
                 ],
                 'user' => fn () => [
                     ...$user->toArray(),

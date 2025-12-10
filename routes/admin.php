@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 Route::get('profile', [DashboardController::class, 'userSettings'])->name('profile');
-Route::inertia('administration', 'Admin/ShowAdministration')->name('administration');
+Route::inertia('administration', 'Admin/ShowAdministration')->name('administration')->middleware('can:access-administration');
 Route::get('dashboard/atstovavimas', [DashboardController::class, 'atstovavimas'])->name('dashboard.atstovavimas');
 Route::get('dashboard/svetaine', [DashboardController::class, 'svetaine'])->name('dashboard.svetaine');
 Route::get('dashboard/reservations', [DashboardController::class, 'reservations'])->name('dashboard.reservations');

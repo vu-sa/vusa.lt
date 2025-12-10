@@ -134,13 +134,15 @@ const navMainItems = computed(() => {
     isActive: route().current('dashboard.reservations*'),
   })
 
-  // Settings/Admin (Administravimas)
-  items.push({
-    title: $t('Administravimas'),
-    url: route('administration'),
-    icon: Settings,
-    isActive: route().current('administration*'),
-  })
+  // Settings/Admin (Administravimas) - only show if user can access administration
+  if (usePage().props.auth?.can.accessAdministration) {
+    items.push({
+      title: $t('Administravimas'),
+      url: route('administration'),
+      icon: Settings,
+      isActive: route().current('administration*'),
+    })
+  }
 
   return items
 })

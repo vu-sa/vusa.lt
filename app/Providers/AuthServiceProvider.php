@@ -40,5 +40,34 @@ class AuthServiceProvider extends ServiceProvider
         Gate::define('manage-settings', function (User $user) {
             return app(SettingsSettings::class)->canUserManageSettings($user);
         });
+
+        // Define gate for administration page access
+        // User can access if they have viewAny permission on any administrative model
+        // Excludes resource model since it's managed through the Reservations dashboard
+        Gate::define('access-administration', function (User $user) {
+            $labels = \App\Enums\ModelEnum::toLabels();
+
+            // Remove special cases that don't grant admin access
+            $excludedModels = [
+                'reservationResource',
+                'file',
+                'resource', // Managed through Reservations dashboard
+            ];
+
+            foreach ($excludedModels as $excluded) {
+                $key = array_search($excluded, $labels);
+                if ($key !== false) {
+                    unset($labels[$key]);
+                }
+            }
+
+            foreach ($labels as $model) {
+                if ($user->can('viewAny', 'App\\Models\\'.ucfirst($model))) {
+                    return true;
+                }
+            }
+
+            return false;
+        });
     }
 }
