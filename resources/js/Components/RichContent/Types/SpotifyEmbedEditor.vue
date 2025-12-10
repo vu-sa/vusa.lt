@@ -7,8 +7,8 @@
 </template>
 
 <script setup lang="ts">
-import { defineModel } from 'vue';
+import type { SpotifyEmbed } from '@/Types/contentParts';
 
-const modelValue = defineModel();
+const modelValue = defineModel<SpotifyEmbed['json_content']>();
 </script>
 

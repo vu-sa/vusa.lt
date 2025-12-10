@@ -1,16 +1,19 @@
 <template>
   <template v-for="(element, index) in content" :key="element.id">
-    <!-- Async components with Suspense (most components) -->
-    <Suspense v-if="isAsyncComponent(element.type)"
+    <!-- Async components with Suspense - wrapped in div for proper spacing classes -->
+    <!-- Note: Suspense doesn't pass through class attributes, so we wrap in a div -->
+    <div v-if="isAsyncComponent(element.type)"
       :class="[getSpacingClass(element.type, index), isFullBleedType(element.type) ? 'full-bleed' : '']">
-      <template #default>
-        <component :is="getComponentForType(element.type)" :element="element" :html="html"
-          :is-first-element="index === 0" />
-      </template>
-      <template #fallback>
-        <LoadingSkeleton />
-      </template>
-    </Suspense>
+      <Suspense>
+        <template #default>
+          <component :is="getComponentForType(element.type)" :element="element" :html="html"
+            :is-first-element="index === 0" />
+        </template>
+        <template #fallback>
+          <LoadingSkeleton />
+        </template>
+      </Suspense>
+    </div>
 
     <!-- Synchronous component rendering (tiptap only) -->
     <component :is="getComponentForType(element.type)" v-else :element="element" :html="html"

@@ -25,10 +25,10 @@
 </template>
 
 <script setup lang="ts">
-import { defineModel } from 'vue';
+import type { ImageGrid } from '@/Types/contentParts';
 import TiptapImageButton from '@/Components/TipTap/TiptapImageButton.vue';
 
-const modelValue = defineModel();
+const modelValue = defineModel<ImageGrid['json_content']>();
 
 const imageGridOptions = [
   {
@@ -46,7 +46,7 @@ const imageGridOptions = [
   }
 ];
 
-function onCreateGridImage() {
+function onCreateGridImage(): ImageGrid['json_content'][number] {
   return {
     colspan: "col-span-2",
     image: "",

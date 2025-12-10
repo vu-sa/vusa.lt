@@ -74,20 +74,15 @@
 
 <script setup lang="ts">
 import { computed, defineAsyncComponent } from 'vue';
+import type { SocialEmbed } from '@/Types/contentParts';
 import FacebookIcon from '~icons/mdi/facebook';
 import InstagramIcon from '~icons/mdi/instagram';
 
 const SocialEmbedPreview = defineAsyncComponent(() => import('./SocialEmbedPreview.vue'));
 
-const modelValue = defineModel<{
-  url: string;
-  platform: 'facebook' | 'instagram' | null;
-  postId?: string;
-}>();
+const modelValue = defineModel<SocialEmbed['json_content']>();
 
-const options = defineModel<{
-  showCaption?: boolean;
-}>('options');
+const options = defineModel<SocialEmbed['options']>('options');
 
 // URL patterns for platform detection
 // Facebook URLs can be in many formats:

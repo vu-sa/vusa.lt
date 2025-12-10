@@ -23,6 +23,18 @@ return [
     'more_content_types' => 'More Content Types',
     'more_types' => 'More Types',
     'drag_drop_images_info' => 'You can drag and drop images directly into the text editor',
+    'drag_drop_hint' => 'You can drag and drop images directly into the text editor',
+    'preview_mode' => 'Preview',
+    'switch_to_preview' => 'Preview',
+    'switch_to_edit' => 'Edit',
+    'preview_all' => 'Preview all',
+    // YouTube modal
+    'youtube_upload_title' => 'Upload YouTube Video',
+    'youtube_upload_description' => 'Enter the YouTube video URL you want to embed.',
+    'youtube_url_label' => 'YouTube URL',
+    'youtube_url_hint' => 'Paste the YouTube video URL',
+    'cancel' => 'Cancel',
+    'upload' => 'Upload',
     // Accessibility
     'image_alt_text' => 'Alt text (for accessibility)',
     'image_alt_placeholder' => 'Describe what is shown in the image',

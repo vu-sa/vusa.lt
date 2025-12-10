@@ -38,20 +38,13 @@
       <div class="space-y-4 overflow-y-auto px-8 pb-6 flex-1">
         <!-- Step 1: File selection -->
         <div v-if="currentStep === 1">
-          <Suspense>
-            <FileSelector 
-              :upload-accept="selectionType === 'video' ? '.mp4,.webm,.ogg' : '.jpg,.jpeg,.png,.gif,.webp,.svg'"
-              :upload-extensions="selectionType === 'video' 
-                ? ['mp4','webm','ogg'] 
-                : ['jpg','jpeg','png','gif','webp','svg']"
-              @submit="handleFileSelected" 
-            />
-            <template #fallback>
-              <div class="flex h-32 items-center justify-center">
-                <Spinner size="sm" />
-              </div>
-            </template>
-          </Suspense>
+          <FileSelector 
+            :upload-accept="selectionType === 'video' ? '.mp4,.webm,.ogg' : '.jpg,.jpeg,.png,.gif,.webp,.svg'"
+            :upload-extensions="selectionType === 'video' 
+              ? ['mp4','webm','ogg'] 
+              : ['jpg','jpeg','png','gif','webp','svg']"
+            @submit="handleFileSelected" 
+          />
         </div>
         
         <!-- Step 2: Details form with preview -->
@@ -164,7 +157,6 @@
 import { ref, watch } from 'vue';
 import { trans as $t } from "laravel-vue-i18n";
 
-import { Spinner } from '@/Components/ui/spinner';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/Components/ui/dialog';

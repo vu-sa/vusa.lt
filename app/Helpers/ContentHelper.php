@@ -48,7 +48,13 @@ class ContentHelper
         $firstTiptapElement = self::getFirstTiptapElement($model->content);
 
         if ($firstTiptapElement) {
-            return Str::limit((new Editor)->setContent($firstTiptapElement->json_content)->getText(), $limit);
+            // Convert ArrayObject to array if needed (Laravel casts JSON columns to ArrayObject)
+            $jsonContent = $firstTiptapElement->json_content;
+            if ($jsonContent instanceof \ArrayObject) {
+                $jsonContent = $jsonContent->getArrayCopy();
+            }
+
+            return Str::limit((new Editor)->setContent($jsonContent)->getText(), $limit);
         }
 
         return null;

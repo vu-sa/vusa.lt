@@ -59,9 +59,9 @@ import OriginalTipTap from '@/Components/TipTap/OriginalTipTap.vue';
 import TiptapImageButton from '@/Components/TipTap/TiptapImageButton.vue';
 import type { Hero } from '@/Types/contentParts';
 import { Button } from '@/Components/ui/button';
-import { NFormItem } from 'naive-ui';
+import { NFormItem, NSwitch, NInput, NSelect } from 'naive-ui';
 
-const options = defineModel<Hero['options']>('options', { default: {} });
-const json_content = defineModel<Hero['json_content']>('json_content', { default: {} });
+const options = defineModel<Hero['options']>('options', { required: true });
+const json_content = defineModel<Hero['json_content']>({ required: true });
 
 </script>

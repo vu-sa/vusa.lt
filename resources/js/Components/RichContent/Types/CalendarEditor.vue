@@ -7,8 +7,8 @@
 </template>
 
 <script setup lang="ts">
-import { defineModel } from 'vue';
+import type { Calendar } from '@/Types/contentParts';
 
-const modelValue = defineModel();
+const modelValue = defineModel<Calendar['json_content']>();
 </script>
 

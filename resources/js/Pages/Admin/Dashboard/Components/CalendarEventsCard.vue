@@ -4,7 +4,8 @@
     'border-zinc-200 dark:border-zinc-600 bg-gradient-to-br from-white to-zinc-50 dark:from-zinc-900 dark:to-zinc-950'
   ]" role="region" :aria-label="$t('Artėjantys renginiai')">
     <!-- Decorative accent -->
-    <div class="absolute top-0 right-0 w-12 h-12 -mr-6 -mt-6 rotate-45 bg-vusa-red/30 dark:bg-vusa-red/20" aria-hidden="true" />
+    <div class="absolute top-0 right-0 w-12 h-12 -mr-6 -mt-6 rotate-45 bg-vusa-red/30 dark:bg-vusa-red/20"
+      aria-hidden="true" />
 
     <CardHeader class="pb-2 relative z-10">
       <div class="flex items-center justify-between">
@@ -12,10 +13,8 @@
           <CalendarDaysIcon class="h-5 w-5 text-vusa-red dark:text-vusa-red" aria-hidden="true" />
           {{ $t('Artėjantys renginiai') }}
         </CardTitle>
-        <a 
-          :href="calendarListUrl" 
-          class="text-xs text-primary hover:underline"
-        >
+        <a :href="route('calendar.list', { lang: locale === 'lt' ? 'lt' : 'en' })"
+          class="text-xs text-primary hover:underline">
           {{ $t('Visi') }} →
         </a>
       </div>
@@ -23,14 +22,14 @@
 
     <CardContent class="flex-1 relative z-10 pt-0">
       <div class="flex flex-col space-y-1">
-        <a 
-          v-for="event in eventsList" 
-          :key="event.id"
-          :href="getEventUrl(event)"
-          class="flex items-center gap-3 py-2 px-2 -mx-2 rounded-md transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-700/50"
-        >
+        <a v-for="event in eventsList" :key="event.id" :href="route('calendar.event', {
+          calendar: event.id,
+          lang: locale === 'lt' ? 'lt' : 'en',
+        })"
+          class="flex items-center gap-3 py-2 px-2 -mx-2 rounded-md transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-700/50">
           <!-- Date badge -->
-          <div class="flex flex-col items-center justify-center rounded-md bg-vusa-red/10 dark:bg-vusa-red/20 px-2.5 py-1.5 text-center min-w-[52px]">
+          <div
+            class="flex flex-col items-center justify-center rounded-md bg-vusa-red/10 dark:bg-vusa-red/20 px-2.5 py-1.5 text-center min-w-[52px]">
             <span class="text-[10px] font-medium uppercase text-vusa-red dark:text-vusa-red">
               {{ formatEventMonth(event.date) }}
             </span>
@@ -40,7 +39,8 @@
           </div>
           <!-- Content -->
           <div class="flex flex-col min-w-0 flex-1">
-            <span class="text-zinc-800 dark:text-zinc-200 font-semibold text-sm leading-tight line-clamp-2 hover:text-vusa-red transition-colors">
+            <span
+              class="text-zinc-800 dark:text-zinc-200 font-semibold text-sm leading-tight line-clamp-2 hover:text-vusa-red transition-colors">
               {{ getEventTitle(event) }}
             </span>
             <span v-if="getEventLocation(event)" class="text-zinc-500 dark:text-zinc-400 text-xs mt-1 truncate">
@@ -73,18 +73,6 @@ const props = defineProps<{
 const page = usePage();
 const locale = computed(() => page.props.app.locale);
 const dateLocale = computed(() => locale.value === 'lt' ? lt : enUS);
-
-// Calendar list URL (external link to public site)
-const calendarListUrl = computed(() => {
-  const calendarString = locale.value === 'lt' ? 'renginiai' : 'events';
-  return `https://www.vusa.lt/${locale.value}/${calendarString}`;
-});
-
-// Build the full URL for a single calendar event (external link)
-const getEventUrl = (event: App.Entities.Calendar) => {
-  const eventString = locale.value === 'lt' ? 'renginys' : 'event';
-  return `https://www.vusa.lt/${locale.value}/${eventString}/${event.id}`;
-};
 
 // Get event title (handles translatable field)
 const getEventTitle = (event: App.Entities.Calendar): string => {

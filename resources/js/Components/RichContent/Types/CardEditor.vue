@@ -45,10 +45,10 @@
 </template>
 
 <script setup lang="ts">
-import { defineModel } from 'vue';
+import type { ShadcnCard } from '@/Types/contentParts';
 import ModernTipTap from '@/Components/TipTap/ModernTipTap.vue';
 import InfoPopover from '@/Components/Buttons/InfoPopover.vue';
 
-const content = defineModel();
-const options = defineModel('options');
+const content = defineModel<ShadcnCard['json_content']>();
+const options = defineModel<ShadcnCard['options']>('options');
 </script>

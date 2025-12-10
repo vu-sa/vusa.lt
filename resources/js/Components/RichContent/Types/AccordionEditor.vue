@@ -16,15 +16,15 @@
 </template>
 
 <script setup lang="ts">
-import { defineModel } from 'vue';
+import type { ShadcnAccordion } from '@/Types/contentParts';
 import OriginalTipTap from '@/Components/TipTap/OriginalTipTap.vue';
 
-const modelValue = defineModel();
+const modelValue = defineModel<ShadcnAccordion['json_content']>();
 
-function onCreate() {
+function onCreate(): ShadcnAccordion['json_content'][number] {
   return {
     label: "",
-    content: {},
+    content: {} as ShadcnAccordion['json_content'][number]['content'],
   };
 }
 </script>

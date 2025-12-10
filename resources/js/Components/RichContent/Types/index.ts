@@ -1,5 +1,8 @@
-import { type Component } from 'vue';
+import { type Component, type AsyncComponentLoader } from 'vue';
 import TextCaseUppercase20Filled from '~icons/fluent/text-case-uppercase20-filled';
+
+// Re-export all type definitions
+export * from './types';
 import AppsListDetail24Regular from '~icons/fluent/apps-list-detail24-regular';
 import CalendarDay24Regular from '~icons/fluent/calendar-day24-regular';
 import ImageMultiple24Regular from '~icons/fluent/image-multiple24-regular';
@@ -62,8 +65,15 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     label: "Hero",
     icon: HeroIcon,
     description: "Didelis turinio blokas su paveiksliuku",
-    defaultContent: () => ({}),
-    defaultOptions: () => ({ is_active: true }),
+    defaultContent: () => ({
+      title: '',
+      subtitle: '',
+      backgroundMedia: null,
+      rightMedia: null,
+      buttonText: '',
+      buttonLink: '',
+    }),
+    defaultOptions: () => ({ is_active: true, backgroundBlur: false, buttonColor: 'red' }),
   },
   "news": {
     value: "news",
@@ -147,7 +157,7 @@ export const getAllContentTypes = (): ContentType[] => {
 };
 
 export const getContentType = (type: string): ContentType => {
-  return contentTypeRegistry[type] || contentTypeRegistry["tiptap"];
+  return contentTypeRegistry[type] ?? contentTypeRegistry["tiptap"]!;
 };
 
 export const createContentItem = (type: string) => {

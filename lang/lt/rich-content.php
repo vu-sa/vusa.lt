@@ -23,6 +23,18 @@ return [
     'more_content_types' => 'Daugiau turinio tipų',
     'more_types' => 'Daugiau tipų',
     'drag_drop_images_info' => 'Galite vilkti ir mesti nuotraukas tiesiai į teksto redaktorių',
+    'drag_drop_hint' => 'Galite vilkti ir mesti nuotraukas tiesiai į teksto redaktorių',
+    'preview_mode' => 'Peržiūra',
+    'switch_to_preview' => 'Peržiūrėti',
+    'switch_to_edit' => 'Redaguoti',
+    'preview_all' => 'Peržiūrėti viską',
+    // YouTube modal
+    'youtube_upload_title' => 'Įkelti YouTube filmuką',
+    'youtube_upload_description' => 'Įveskite YouTube vaizdo įrašo nuorodą, kurią norite įterpti.',
+    'youtube_url_label' => 'YouTube nuoroda',
+    'youtube_url_hint' => 'Įklijuokite YouTube vaizdo įrašo nuorodą',
+    'cancel' => 'Atšaukti',
+    'upload' => 'Įkelti',
     // Accessibility
     'image_alt_text' => 'Alt tekstas (prieinamumui)',
     'image_alt_placeholder' => 'Aprašykite, kas pavaizduota nuotraukoje',

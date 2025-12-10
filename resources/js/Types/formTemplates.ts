@@ -54,6 +54,7 @@ export const newsTemplate = {
       {
         type: "tiptap",
         json_content: {},
+        key: "initial-tiptap",
       },
     ]
   },

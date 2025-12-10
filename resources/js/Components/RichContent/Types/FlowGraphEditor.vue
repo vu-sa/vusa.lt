@@ -9,8 +9,8 @@
 </template>
 
 <script setup lang="ts">
-import { defineModel } from 'vue';
+import type { FlowGraph } from '@/Types/contentParts';
 
-const modelValue = defineModel();
+const modelValue = defineModel<FlowGraph['json_content']>();
 </script>
 

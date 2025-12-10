@@ -30,10 +30,22 @@ class ContentPart extends Model
 {
     use HasFactory;
 
-    protected $casts = [
-        'json_content' => 'array',
-        'options' => 'array',
-    ];
+    /**
+     * Get the attributes that should be cast.
+     * 
+     * Using AsArrayObject for json_content to preserve JSON object structure.
+     * This prevents empty objects {} from becoming empty arrays [] in the database,
+     * which would break content types like Hero that expect object properties.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'json_content' => \Illuminate\Database\Eloquent\Casts\AsArrayObject::class,
+            'options' => \Illuminate\Database\Eloquent\Casts\AsArrayObject::class,
+        ];
+    }
 
     protected $fillable = [
         'type',

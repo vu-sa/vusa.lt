@@ -3,10 +3,10 @@
 </template>
 
 <script setup lang="ts">
-import { defineModel } from 'vue';
+import type { Tiptap } from '@/Types/contentParts';
 
 import ModernTipTap from '@/Components/TipTap/ModernTipTap.vue';
 
-const modelValue = defineModel<Record<string, unknown> | null>();
+const modelValue = defineModel<Tiptap['json_content'] | null>();
 </script>
 

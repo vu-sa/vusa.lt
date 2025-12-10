@@ -34,13 +34,13 @@
 </template>
 
 <script setup lang="ts">
-import { defineModel } from 'vue';
+import type { NumberStatSection } from '@/Types/contentParts';
 import { NInputNumber } from "naive-ui";
 
-const content = defineModel();
-const options = defineModel('options');
+const content = defineModel<NumberStatSection['json_content']>();
+const options = defineModel<NumberStatSection['options']>('options');
 
-function onCreateNumberStat() {
+function onCreateNumberStat(): NumberStatSection['json_content'][number] {
   return {
     endNumber: 0,
     label: ""
