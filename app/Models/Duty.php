@@ -76,7 +76,7 @@ class Duty extends Model implements AuthorizableContract
     protected $guarded = [];
 
     protected $fillable = [
-        'name', 'description', 'email', 'phone', 'order', 'is_active', 'institution_id', 'contacts_grouping',
+        'name', 'description', 'email', 'phone', 'order', 'is_active', 'institution_id', 'contacts_grouping', 'places_to_occupy',
     ];
 
     protected $with = ['types'];

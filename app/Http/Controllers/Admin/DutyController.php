@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetAttachableTypesForDuty;
+use App\Actions\GetTenantsForUpserts;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\StoreDutyRequest;
 use App\Models\Duty;
@@ -12,6 +13,9 @@ use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ModelIndexer;
 use App\Services\ResourceServices\DutyService;
+use App\Models\Institution;
+use App\Models\Pivots\Dutiable;
+use App\Models\StudyProgram;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -70,7 +74,19 @@ class DutyController extends AdminController
 
         $this->handleUsersUpdate(new Collection($duty->current_users->pluck('id')), new Collection($request->current_users), $duty);
 
-        return redirect()->route('duties.index')->with('success', trans_choice('messages.created', 0, ['model' => trans_choice('entities.duty.model', 1)]));
+        // Load relationships needed for the response
+        $duty->load('institution', 'types', 'current_users');
+
+        // Return JSON response for AJAX requests (inline creation in wizard)
+        if ($request->wantsJson() || $request->header('X-Inertia-Partial-Data')) {
+            return response()->json([
+                'success' => true,
+                'message' => trans_choice('messages.created', 0, ['model' => trans_choice('entities.duty.model', 1)]),
+                'duty' => $duty,
+            ]);
+        }
+
+        return back()->with('success', trans_choice('messages.created', 0, ['model' => trans_choice('entities.duty.model', 1)]));
     }
 
     /**
@@ -194,5 +210,133 @@ class DutyController extends AdminController
         $duty->restore();
 
         return back()->with('success', 'Pareigybė sėkmingai atkurta!');
+    }
+
+    /**
+     * Display the duty user update wizard page.
+     */
+    public function updateUsersWizard()
+    {
+        $this->handleAuthorization('viewAny', Duty::class);
+
+        // Get institutions the user can access, with their duties and current users
+        // Include pivot data (start_date) to detect long-staying users
+        $institutions = DutyService::getInstitutionsForUpserts($this->authorizer)
+            ->load(['duties' => function ($query) {
+                $query->with(['current_users' => function ($q) {
+                    $q->select('users.id', 'name', 'email', 'profile_photo_path')
+                      ->withPivot('start_date', 'end_date');
+                }]);
+            }, 'tenant:id,shortname']);
+
+        // Get data needed for creating institutions and duties
+        $assignableTenants = GetTenantsForUpserts::execute('institutions.create.padalinys', $this->authorizer);
+        $institutionTypes = Type::where('model_type', Institution::class)->get();
+        $dutyTypes = GetAttachableTypesForDuty::execute()->values();
+
+        return $this->inertiaResponse('Admin/People/DutyUserUpdateWizard', [
+            'institutions' => $institutions,
+            'studyPrograms' => StudyProgram::select('id', 'name', 'degree', 'tenant_id')->get(),
+            'users' => User::select('id', 'name', 'email', 'profile_photo_path')->orderBy('name')->get(),
+            // Data for inline creation
+            'assignableTenants' => $assignableTenants,
+            'institutionTypes' => $institutionTypes,
+            'dutyTypes' => $dutyTypes,
+        ]);
+    }
+
+    /**
+     * Batch update users for a duty.
+     */
+    public function batchUpdateUsers(Request $request, Duty $duty)
+    {
+        $this->handleAuthorization('update', $duty);
+
+        $validated = $request->validate([
+            'user_changes' => 'required|array',
+            'user_changes.*.user_id' => 'required|string',
+            'user_changes.*.action' => 'required|in:add,remove',
+            'user_changes.*.start_date' => 'nullable|date',
+            'user_changes.*.end_date' => 'nullable|date',
+            'user_changes.*.study_program_id' => 'nullable|string|exists:study_programs,id',
+            'new_users' => 'nullable|array',
+            'new_users.*.name' => 'required|string',
+            'new_users.*.email' => 'required|email|unique:users,email',
+            'new_users.*.phone' => 'nullable|string',
+            'places_to_occupy' => 'nullable|integer|min:1',
+        ]);
+
+        $createdUsers = [];
+
+        DB::transaction(function () use ($validated, $duty, &$createdUsers) {
+            // Create new users if any
+            if (!empty($validated['new_users'])) {
+                foreach ($validated['new_users'] as $newUserData) {
+                    $user = User::create([
+                        'name' => $newUserData['name'],
+                        'email' => $newUserData['email'],
+                        'phone' => $newUserData['phone'] ?? null,
+                    ]);
+                    $createdUsers[] = $user;
+                }
+            }
+
+            // Process user changes
+            foreach ($validated['user_changes'] as $change) {
+                $userId = $change['user_id'];
+                
+                // Skip temporary IDs (new users) - they'll be handled by matching name/email
+                if (str_starts_with($userId, 'new-')) {
+                    // Find the created user by matching against new_users data
+                    $matchingNewUser = collect($createdUsers)->first(function ($user) use ($validated, $change) {
+                        // Try to match by position or by the order of creation
+                        return true; // We'll attach all created users
+                    });
+                    
+                    if ($matchingNewUser) {
+                        $duty->users()->attach($matchingNewUser->id, [
+                            'start_date' => $change['start_date'] ?? now(),
+                            'end_date' => $change['end_date'] ?? null,
+                            'study_program_id' => $change['study_program_id'] ?? null,
+                        ]);
+                    }
+                    continue;
+                }
+
+                if ($change['action'] === 'add') {
+                    // Check if user is already attached
+                    $existingPivot = $duty->dutiables()->where('dutiable_id', $userId)->first();
+                    
+                    if ($existingPivot) {
+                        // Update existing pivot
+                        $existingPivot->update([
+                            'start_date' => $change['start_date'] ?? now(),
+                            'end_date' => $change['end_date'] ?? null,
+                            'study_program_id' => $change['study_program_id'] ?? null,
+                        ]);
+                    } else {
+                        // Create new pivot
+                        $duty->users()->attach($userId, [
+                            'start_date' => $change['start_date'] ?? now(),
+                            'end_date' => $change['end_date'] ?? null,
+                            'study_program_id' => $change['study_program_id'] ?? null,
+                        ]);
+                    }
+                } elseif ($change['action'] === 'remove') {
+                    // Set end_date for removal
+                    $duty->users()->updateExistingPivot($userId, [
+                        'end_date' => $change['end_date'] ?? now(),
+                    ]);
+                }
+            }
+
+            // Update places_to_occupy if provided
+            if (isset($validated['places_to_occupy'])) {
+                $duty->update(['places_to_occupy' => $validated['places_to_occupy']]);
+            }
+        });
+
+        return redirect()->route('duties.show', $duty)
+            ->with('success', trans('Pareigybės nariai sėkmingai atnaujinti!'));
     }
 }

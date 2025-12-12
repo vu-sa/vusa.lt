@@ -103,7 +103,19 @@ class InstitutionController extends AdminController
 
         $institution->types()->sync($request->types);
 
-        return redirect()->route('institutions.index')->with('success', 'Institucija sėkmingai sukurta!');
+        // Load relationships needed for the response
+        $institution->load('tenant:id,shortname', 'types');
+
+        // Return JSON response for AJAX requests (inline creation in wizard)
+        if ($request->wantsJson() || $request->header('X-Inertia-Partial-Data')) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Institucija sėkmingai sukurta!',
+                'institution' => $institution,
+            ]);
+        }
+
+        return back()->with('success', 'Institucija sėkmingai sukurta!');
     }
 
     /**

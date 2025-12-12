@@ -123,6 +123,8 @@ Route::post('documents/{document}/refresh', [DocumentController::class, 'refresh
 Route::post('documents/bulk-sync', [DocumentController::class, 'bulkSync'])->name('documents.bulk-sync');
 
 Route::resource('duties', DutyController::class);
+Route::get('duties-update-users', [DutyController::class, 'updateUsersWizard'])->name('duties.updateUsersWizard');
+Route::post('duties/{duty}/batch-update-users', [DutyController::class, 'batchUpdateUsers'])->name('duties.batchUpdateUsers');
 Route::resource('dutiables', DutiableController::class)->except(['index', 'show']);
 Route::get('studyPrograms/merge', [StudyProgramController::class, 'merge'])->name('studyPrograms.merge');
 Route::post('studyPrograms/merge', [StudyProgramController::class, 'mergeStudyPrograms'])->name('studyPrograms.mergeStudyPrograms');

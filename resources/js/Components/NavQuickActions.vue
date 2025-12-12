@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { usePage } from '@inertiajs/vue3'
+import { usePage, router } from '@inertiajs/vue3'
 import { trans as $t } from "laravel-vue-i18n"
 import type { LucideIcon } from 'lucide-vue-next'
 import {
@@ -8,6 +8,7 @@ import {
   FileText,
   Building2,
   Sparkles,
+  UserCog,
 } from 'lucide-vue-next'
 
 import {
@@ -60,6 +61,15 @@ const quickActions = computed<QuickAction[]>(() => {
       icon: Building2,
       action: () => emit('newReservation'),
       gradient: 'from-emerald-500/15 to-teal-500/15 hover:from-emerald-500/25 hover:to-teal-500/25 dark:from-emerald-400/10 dark:to-teal-400/10 dark:hover:from-emerald-400/20 dark:hover:to-teal-400/20',
+    })
+  }
+
+  if (page.props.auth?.can?.create?.duty) {
+    actions.push({
+      title: $t('Pareigybių atnaujinimas'),
+      icon: UserCog,
+      action: () => router.visit(route('duties.updateUsersWizard')),
+      gradient: 'from-violet-500/15 to-purple-500/15 hover:from-violet-500/25 hover:to-purple-500/25 dark:from-violet-400/10 dark:to-purple-400/10 dark:hover:from-violet-400/20 dark:hover:to-purple-400/20',
     })
   }
 

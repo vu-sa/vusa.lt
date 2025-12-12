@@ -12,21 +12,28 @@ class DutyService
     /**
      * Get institutions available for duty creation/editing (upserts).
      *
-     * This uses permission-based filtering (duties.create.all) because creating duties
-     * is a CRUD operation that should be governed by permissions, not visibility rules.
+     * This uses permission-based filtering (duties.create.all) and coordinator roles
+     * to determine which institutions a user can manage duties for.
      *
-     * Note: This is intentionally different from getInstitutionsForDashboard() which uses
-     * coordinator role-based visibility (configurable business rule via AtstovavimasSettings).
+     * Note: This is intentionally different from getInstitutionsForDashboard() which
+     * also includes institutions where the user is just a member (for viewing purposes).
      *
      * @see getInstitutionsForDashboard() for dashboard visibility logic
      */
     public static function getInstitutionsForUpserts(ModelAuthorizer $authorizer)
     {
+        $user = request()->user();
+        $hasGlobalAccess = $authorizer->forUser($user)->checkAllRoleables('duties.create.all');
+
+        // Get tenant IDs where user has coordinator access (can manage institutions)
+        $atstovavimasSettings = app(AtstovavimasSettings::class);
+        $coordinatorTenantIds = $atstovavimasSettings->getCoordinatorTenantIds($user);
+
         return Institution::select('id', 'name', 'alias', 'tenant_id')
-            ->when(! $authorizer->forUser(request()->user())->checkAllRoleables('duties.create.all'),
-                function ($query) {
-                    $query->whereIn('tenant_id', auth()->user()->tenants->pluck('id'));
-                })
+            ->when(! $hasGlobalAccess, function ($query) use ($coordinatorTenantIds) {
+                // Only show institutions from tenants where user has coordinator access
+                $query->whereIn('tenant_id', $coordinatorTenantIds);
+            })
             ->whereHas('tenant', function ($query) {
                 $query->where('type', '!=', 'pkp');
             })

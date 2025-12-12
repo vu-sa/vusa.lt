@@ -26,17 +26,9 @@
           class="group cursor-pointer"
         >
           <div class="flex items-start gap-3">
-            <!-- Content type indicator / Institution logo -->
+            <!-- Content type indicator -->
             <div class="flex-shrink-0">
-              <!-- Show institution logo if available -->
-              <img 
-                v-if="item.type === 'publicInstitutions' && item.logo_url" 
-                :src="item.logo_url" 
-                :alt="item.title || item.name_lt"
-                class="w-8 h-8 rounded object-contain bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700"
-              />
-              <!-- Default icon for other types or institutions without logo -->
-              <div v-else :class="getIconClasses()">
+              <div :class="getIconClasses()">
                 <component :is="getIconComponent(item.type)" class="w-3 h-3" />
               </div>
             </div>

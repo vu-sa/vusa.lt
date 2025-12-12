@@ -2,12 +2,13 @@
   <PageContent title="Nauja pareiga" :heading-icon="Icons.DUTY">
     <UpsertModelLayout>
       <DutyForm remember-key="CreateDuty" :duty :duty-types :assignable-institutions :assignable-users :roles
-        @submit:form="(form) => form.post(route('duties.store'))" />
+        @submit:form="handleSubmit" />
     </UpsertModelLayout>
   </PageContent>
 </template>
 
 <script setup lang="tsx">
+import { router } from '@inertiajs/vue3';
 import DutyForm from "@/Components/AdminForms/DutyForm.vue";
 import Icons from "@/Types/Icons/regular";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
@@ -30,5 +31,13 @@ const duty = {
   types: [],
   roles: [],
   current_users: [],
+};
+
+const handleSubmit = (form: any) => {
+  form.post(route('duties.store'), {
+    onSuccess: () => {
+      router.visit(route('duties.index'));
+    }
+  });
 };
 </script>
