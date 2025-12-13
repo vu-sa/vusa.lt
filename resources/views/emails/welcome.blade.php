@@ -41,11 +41,11 @@ Iki susitikimų!
 
 Hello, {{ $user->name }}! 👋
 
-VU Students' Representation is moving the representation process to [mano.vusa.lt](https://www.vusa.lt/login?lang=en) – so that YOU could easily, quickly and easily achieve your goals as a students' representative! 🚀
+VU Students' Representation is moving the representation process to [mano.vusa.lt]({{ config('app.url') }}/login?lang=en) – so that YOU could easily, quickly and easily achieve your goals as a students' representative! 🚀
 
 ## How to log in?
 
-To [mano.vusa.lt](https://www.vusa.lt/login?lang=en) log in using your VU Microsoft account!
+To [mano.vusa.lt]({{ config('app.url') }}/login?lang=en) log in using your VU Microsoft account!
 
 {{-- image --}}
 <img src="{{config('app.url') . "/images/admin/login.jpg" }}" alt="mano.vusa.lt" width="100%" />

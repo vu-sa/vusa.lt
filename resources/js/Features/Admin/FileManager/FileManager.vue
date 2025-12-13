@@ -367,12 +367,17 @@ const deleteFileConfirmed = () => {
       data: { paths: filesToDelete },
       preserveScroll: true,
       preserveState: true,
-      onSuccess: () => {
-        toasts.success(`${filesToDelete.length} failai ištrinti`);
-        clearSelection();
+      onSuccess: (page) => {
         loading.value = false;
         showDeleteModal.value = false;
-        emit("update", props.path);
+        // Check if there's a flash error (e.g., from staging read-only mode)
+        if (page.props.flash?.error) {
+          toasts.error(page.props.flash.error);
+        } else {
+          toasts.success(`${filesToDelete.length} failai ištrinti`);
+          clearSelection();
+          emit("update", props.path);
+        }
       },
       onError: () => {
         toasts.error('Klaida trinant failus');
@@ -388,19 +393,23 @@ const deleteFileConfirmed = () => {
       {
         preserveScroll: true,
         preserveState: true,
-        onSuccess: () => {
-          toasts.success("Aplankas ištrintas");
+        onSuccess: (page) => {
           loading.value = false;
           showDeleteModal.value = false;
-          
-          // Check if current path is inside the deleted folder
-          if (props.path === folderPath || props.path.startsWith(`${folderPath}/`)) {
-            // Navigate to parent directory of the deleted folder
-            const parentPath = folderPath.split('/').slice(0, -1).join('/') || '/';
-            emit('changeDirectory', parentPath);
+          // Check if there's a flash error (e.g., from staging read-only mode)
+          if (page.props.flash?.error) {
+            toasts.error(page.props.flash.error);
           } else {
-            // Just refresh current directory
-            emit("update", props.path);
+            toasts.success("Aplankas ištrintas");
+            // Check if current path is inside the deleted folder
+            if (props.path === folderPath || props.path.startsWith(`${folderPath}/`)) {
+              // Navigate to parent directory of the deleted folder
+              const parentPath = folderPath.split('/').slice(0, -1).join('/') || '/';
+              emit('changeDirectory', parentPath);
+            } else {
+              // Just refresh current directory
+              emit("update", props.path);
+            }
           }
         },
         onError: () => {
@@ -416,11 +425,16 @@ const deleteFileConfirmed = () => {
       {
         preserveScroll: true,
         preserveState: true,
-        onSuccess: () => {
-          toasts.success("Failas ištrintas");
+        onSuccess: (page) => {
           loading.value = false;
           showDeleteModal.value = false;
-          emit("update", props.path);
+          // Check if there's a flash error (e.g., from staging read-only mode)
+          if (page.props.flash?.error) {
+            toasts.error(page.props.flash.error);
+          } else {
+            toasts.success("Failas ištrintas");
+            emit("update", props.path);
+          }
         },
         onError: () => {
           toasts.error('Klaida trinant failą');

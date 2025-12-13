@@ -154,7 +154,7 @@ const navSecondaryItems = computed(() => {
   return [
     {
       title: $t('Dokumentacija'),
-      url: 'https://www.vusa.lt/docs',
+      url: '/docs',
       icon: BookOpen,
       dataTour: 'nav-dokumentacija',
     },

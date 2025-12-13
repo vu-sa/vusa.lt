@@ -14,6 +14,7 @@ class Kernel extends HttpKernel
      * @var array<int, string>
      */
     protected $middleware = [
+        \App\Http\Middleware\StagingBasicAuth::class,
         \App\Http\Middleware\BlockRobotsOnStagingDomains::class,
         \Illuminate\Http\Middleware\HandleCors::class,
         // \App\Http\Middleware\TrustHosts::class,
@@ -50,15 +51,18 @@ class Kernel extends HttpKernel
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \App\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            \App\Http\Middleware\StagingReadOnlyMode::class,
             \App\Http\Middleware\RewriteUploadsUrl::class,
             \App\Http\Middleware\SetLocale::class,
             \App\Http\Middleware\HandleInertiaRequests::class,
+            \App\Http\Middleware\StagingEnvironmentWarnings::class,
             \App\Http\Middleware\UpdateLastAction::class,
         ],
 
         'api' => [
             'throttle:api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            \App\Http\Middleware\StagingReadOnlyMode::class,
         ],
 
         'main' => [

@@ -1,0 +1,128 @@
+name: Deploy To Staging
+
+concurrency: staging
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to deploy'
+        required: false
+        default: ''
+        type: string
+
+jobs:
+  deploy:
+    runs-on: ubuntu-24.04
+    environment: Staging
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.inputs.branch || github.ref }}
+        
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: dom, curl, libxml, mbstring, zip, fileinfo
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.composer/cache
+            vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Install Composer dependencies
+        run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist --optimize-autoloader
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: Install npm dependencies
+        run: npm ci
+        
+      - name: Build staging frontend assets
+        run: |
+          VITE_POSTHOG_API_KEY=${{ secrets.POSTHOG_API_KEY }} \
+          VITE_ARCHYVAS_PASSWORD=${{ secrets.ARCHYVAS_PASSWORD }} \
+          VITE_ATSTOVAI_PASSWORD=${{ secrets.ATSTOVAI_PASSWORD }} \
+          VITE_SHAREPOINT_CLIENT_ID=${{ secrets.SHAREPOINT_CLIENT_ID }} \
+          VITE_SHAREPOINT_TENANT_ID=${{ secrets.SHAREPOINT_TENANT_ID }} \
+          npm run build
+          
+      - name: Install SSH keys
+        run: |
+          install -m 600 -D /dev/null ~/.ssh/id_rsa
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} > ~/.ssh/known_hosts
+          
+      - name: Package build artifacts
+        run: |
+          tar -czf build.tar.gz public/build
+          tar -czf vendor.tar.gz vendor
+          
+      # Build docs if needed
+      - name: Build docs
+        run: |
+          npm run docs:build
+          tar -czf docs.tar.gz -C public/docs .
+          
+      # Upload build artifacts
+      - name: Upload build artifacts
+        run: |
+          echo "Uploading build artifacts to staging..."
+          scp build.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ vars.SITE_DIR }}/build.tar.gz
+          scp vendor.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ vars.SITE_DIR }}/vendor.tar.gz
+          
+          # Upload docs changes
+          echo "Uploading documentation..."
+          if [ -f docs.tar.gz ]; then
+            scp docs.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ vars.SITE_DIR }}/docs.tar.gz
+          fi
+
+      # Run deployment process
+      - name: Deploy to staging
+        run: |
+          ssh -T ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'DEPLOY_SCRIPT'
+            cd ${{ vars.SITE_DIR }}
+            
+            # Determine target branch
+            TARGET_BRANCH="${{ github.event.inputs.branch || github.ref_name }}"
+            echo "🎯 Deploying branch: $TARGET_BRANCH"
+            
+            # Fetch all branches
+            git fetch --all --prune
+            
+            # Check if there are uncommitted changes (shouldn't be, but safety check)
+            if ! git diff --quiet || ! git diff --cached --quiet; then
+              echo "⚠️  Uncommitted changes detected, stashing..."
+              git stash push -m "Auto-stash before deployment $(date)"
+            fi
+            
+            # Hard reset to the target branch (removes files from other branches)
+            git checkout "$TARGET_BRANCH" 2>/dev/null || git checkout -b "$TARGET_BRANCH" "origin/$TARGET_BRANCH"
+            git reset --hard "origin/$TARGET_BRANCH"
+            
+            # Clean untracked files (except those in .gitignore like storage/, .env)
+            git clean -fd
+            
+            echo "✅ Branch switched and cleaned"
+            
+            # Run the deployment process
+            /opt/php83/bin/php artisan deployment:run
+          DEPLOY_SCRIPT
+
+      # Resume deployment if failed (optional recovery step)
+      - name: Resume deployment
+        if: failure()
+        run: |
+          ssh -T ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ vars.SITE_DIR }} && \
+          /opt/php83/bin/php artisan deployment:resume" || true

@@ -2,6 +2,9 @@
   <div class="bg-background">
     <Head :title />
 
+    <!-- Staging environment warning banner -->
+    <StagingBanner />
+
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset class="flex flex-col">
@@ -104,6 +107,7 @@ import { useToasts } from '@/Composables/useToasts';
 import 'vue-sonner/style.css'
 
 import AppSidebar from '@/Components/AppSidebar.vue'
+import StagingBanner from '@/Components/StagingBanner.vue'
 import TasksIndicator from '@/Components/TasksIndicator.vue'
 import NotificationsIndicator from '@/Components/NotificationsIndicator.vue'
 import { Separator } from '@/Components/ui/separator'

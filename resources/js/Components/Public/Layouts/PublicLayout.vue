@@ -95,6 +95,9 @@
       </template>
     </Head>
     <div class="@container min-h-screen flex flex-col bg-zinc-50 dark:bg-zinc-900 font-public">
+      <!-- Staging environment warning banner -->
+      <StagingBanner />
+      
       <!-- Skip to main content link - positioned first for keyboard navigation -->
       <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[9999] focus:bg-white focus:text-zinc-900 focus:px-4 focus:py-2 focus:rounded-md focus:shadow-lg focus:border-2 focus:border-vusa-red dark:focus:bg-zinc-800 dark:focus:text-zinc-100">
         {{ $t('accessibility.skip_to_main_content') }}
@@ -182,6 +185,7 @@ import 'vue-sonner/style.css'
 // Critical path components - load synchronously for faster initial render
 import MainNavigation from "@/Components/Public/Layouts/MainNavigation.vue";
 import SiteFooter from "../FullWidth/SiteFooter.vue";
+import StagingBanner from "@/Components/StagingBanner.vue";
 
 // Use existing Skeleton component for consistency
 import { Skeleton } from '@/Components/ui/skeleton';
