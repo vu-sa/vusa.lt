@@ -183,7 +183,7 @@ class PublicInstitution extends Institution
      */
     public function searchableAs(): string
     {
-        return 'public_institutions';
+        return config('scout.prefix').'public_institutions';
     }
 
     /**

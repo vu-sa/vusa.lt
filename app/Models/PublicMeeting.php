@@ -238,7 +238,7 @@ class PublicMeeting extends Meeting
      */
     public function searchableAs(): string
     {
-        return 'public_meetings';
+        return config('scout.prefix').'public_meetings';
     }
 
     /**
