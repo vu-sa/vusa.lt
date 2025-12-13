@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, inject, reactive } from 'vue'
+import { ref, computed, inject, reactive, type ComputedRef } from 'vue'
 import { usePage } from '@inertiajs/vue3'
 import axios from 'axios'
 import { toast } from 'vue-sonner'
@@ -13,7 +13,8 @@ import {
   X,
   Edit3,
   Plus,
-  ChevronDown
+  ChevronDown,
+  Loader2
 } from 'lucide-vue-next'
 
 import { Input } from '@/Components/ui/input'
@@ -30,11 +31,25 @@ import Icons from '@/Types/Icons/regular'
 import type { useDutyUserWizard } from '@/Composables/useDutyUserWizard'
 
 const wizard = inject<ReturnType<typeof useDutyUserWizard>>('dutyUserWizard')!
-const dutyTypes = inject<App.Entities.Type[]>('dutyTypes', [])
+const dutyTypesRef = inject<ComputedRef<App.Entities.Type[]> | App.Entities.Type[]>('dutyTypes', [])
+
+// Unwrap computed ref or use array directly
+const dutyTypes = computed(() => 
+  'value' in dutyTypesRef ? dutyTypesRef.value : dutyTypesRef
+)
 
 const page = usePage()
 const auth = page.props.auth as any
 const canCreateDuty = computed(() => auth?.can?.create?.duty)
+
+// Check if duty types are loading
+const isDutyTypesLoading = computed(() => !dutyTypes.value || dutyTypes.value.length === 0)
+
+// Open create form and trigger lazy load of duty types
+const openCreateForm = () => {
+  wizard.loadDutyTypes()
+  showCreateForm.value = true
+}
 
 // Search state
 const searchQuery = ref('')
@@ -260,9 +275,13 @@ const toggleType = (typeId: string) => {
         </div>
 
         <!-- Types (if available) -->
-        <div v-if="dutyTypes.length > 0" class="space-y-2">
+        <div class="space-y-2">
           <Label class="text-sm font-medium">{{ $t('Tipai') }}</Label>
-          <div class="flex flex-wrap gap-2">
+          <div v-if="isDutyTypesLoading" class="flex items-center gap-2 text-sm text-muted-foreground">
+            <Loader2 class="h-4 w-4 animate-spin" />
+            {{ $t('Kraunami tipai...') }}
+          </div>
+          <div v-else-if="dutyTypes.length > 0" class="flex flex-wrap gap-2">
             <button
               v-for="type in dutyTypes"
               :key="type.id"
@@ -276,6 +295,7 @@ const toggleType = (typeId: string) => {
               {{ type.title }}
             </button>
           </div>
+          <p v-else class="text-sm text-muted-foreground">{{ $t('Nėra galimų tipų') }}</p>
         </div>
 
         <!-- Extra fields (collapsible) -->
@@ -358,7 +378,7 @@ const toggleType = (typeId: string) => {
         v-if="canCreateDuty"
         variant="outline" 
         class="w-full border-dashed"
-        @click="showCreateForm = true"
+        @click="openCreateForm"
       >
         <Plus class="h-4 w-4 mr-2" />
         {{ $t('Sukurti naują pareigybę') }}
@@ -484,7 +504,7 @@ const toggleType = (typeId: string) => {
             <Button v-if="searchQuery" variant="link" class="mt-2" @click="clearSearch">
               {{ $t('Išvalyti paiešką') }}
             </Button>
-            <Button v-else-if="canCreateDuty" variant="default" class="mt-4" @click="showCreateForm = true">
+            <Button v-else-if="canCreateDuty" variant="default" class="mt-4" @click="openCreateForm">
               <Plus class="h-4 w-4 mr-2" />
               {{ $t('Sukurti pirmą pareigybę') }}
             </Button>

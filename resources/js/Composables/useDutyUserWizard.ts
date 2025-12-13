@@ -189,6 +189,41 @@ export function useDutyUserWizard(options: UseDutyUserWizardOptions = {}) {
            state.newPlacesToOccupy !== undefined
   })
 
+  // Track if lazy data has been loaded
+  const lazyDataLoaded = ref({
+    step3: false, // users, studyPrograms
+    dutyTypes: false
+  })
+
+  // Load lazy data for specific steps
+  const loadLazyDataForStep = (step: number) => {
+    if (step === 3 && !lazyDataLoaded.value.step3) {
+      state.loading.users = true
+      router.reload({
+        only: ['users', 'studyPrograms'],
+        onSuccess: () => {
+          lazyDataLoaded.value.step3 = true
+          state.loading.users = false
+        },
+        onError: () => {
+          state.loading.users = false
+        }
+      })
+    }
+  }
+
+  // Load duty types for duty creation modal
+  const loadDutyTypes = () => {
+    if (!lazyDataLoaded.value.dutyTypes) {
+      router.reload({
+        only: ['dutyTypes'],
+        onSuccess: () => {
+          lazyDataLoaded.value.dutyTypes = true
+        }
+      })
+    }
+  }
+
   // Step management
   const goToStep = (step: number) => {
     if (step < 1 || step > totalSteps.value) return
@@ -196,6 +231,7 @@ export function useDutyUserWizard(options: UseDutyUserWizardOptions = {}) {
     
     state.currentStep = step
     clearStepErrors(step)
+    loadLazyDataForStep(step)
   }
 
   const nextStep = () => {
@@ -206,7 +242,9 @@ export function useDutyUserWizard(options: UseDutyUserWizardOptions = {}) {
     }
     
     if (state.currentStep < totalSteps.value) {
-      state.currentStep++
+      const newStep = state.currentStep + 1
+      state.currentStep = newStep
+      loadLazyDataForStep(newStep)
     } else {
       submitChanges()
     }
@@ -534,6 +572,7 @@ export function useDutyUserWizard(options: UseDutyUserWizardOptions = {}) {
     targetCapacity,
     capacityMismatch,
     hasChanges,
+    lazyDataLoaded: readonly(lazyDataLoaded),
     
     // Step navigation
     goToStep,
@@ -543,6 +582,9 @@ export function useDutyUserWizard(options: UseDutyUserWizardOptions = {}) {
     // Data setters
     setInstitution,
     setDuty,
+    
+    // Lazy loading
+    loadDutyTypes,
     
     // User changes
     addUserToAdd,

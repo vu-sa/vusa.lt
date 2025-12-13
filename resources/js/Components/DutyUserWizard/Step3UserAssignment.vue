@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, inject, watch } from 'vue'
+import { ref, computed, inject, watch, type ComputedRef } from 'vue'
 import { trans as $t } from 'laravel-vue-i18n'
 import { usePage } from '@inertiajs/vue3'
 import { 
@@ -13,7 +13,8 @@ import {
   Plus,
   GraduationCap,
   Check,
-  AlertTriangle
+  AlertTriangle,
+  Loader2
 } from 'lucide-vue-next'
 
 import { Input } from '@/Components/ui/input'
@@ -30,11 +31,24 @@ import { getSuggestedEndDate, getTodayDate, formatDateForDisplay } from '@/Compo
 import type { useDutyUserWizard, UserChange, NewUserData } from '@/Composables/useDutyUserWizard'
 
 const wizard = inject<ReturnType<typeof useDutyUserWizard>>('dutyUserWizard')!
-const studyPrograms = inject<App.Entities.StudyProgram[]>('studyPrograms', [])
-const allUsers = inject<App.Entities.User[]>('allUsers', [])
+const studyProgramsRef = inject<ComputedRef<App.Entities.StudyProgram[]> | App.Entities.StudyProgram[]>('studyPrograms', [])
+const allUsersRef = inject<ComputedRef<App.Entities.User[]> | App.Entities.User[]>('allUsers', [])
+
+// Unwrap computed refs or use arrays directly
+const studyPrograms = computed(() => 
+  'value' in studyProgramsRef ? studyProgramsRef.value : studyProgramsRef
+)
+const allUsers = computed(() => 
+  'value' in allUsersRef ? allUsersRef.value : allUsersRef
+)
 
 const page = usePage()
 const auth = page.props.auth as any
+
+// Check if data is still loading (lazy loaded)
+const isLoadingUsers = computed(() => {
+  return wizard.state.loading.users || !allUsers.value || allUsers.value.length === 0
+})
 
 // Search for users
 const userSearchQuery = ref('')
@@ -70,7 +84,7 @@ const availableUsers = computed(() => {
   
   const excludeIds = new Set([...currentUserIds, ...addedUserIds])
   
-  let filtered = allUsers.filter(u => !excludeIds.has(u.id))
+  let filtered = allUsers.value.filter(u => !excludeIds.has(u.id))
   
   if (userSearchQuery.value) {
     const query = userSearchQuery.value.toLowerCase()
@@ -140,7 +154,7 @@ const updateChangeDate = (userId: string, field: 'startDate' | 'endDate', value:
 
 // Update study program
 const updateStudyProgram = (userId: string, programId: string | null) => {
-  const program = studyPrograms.find(p => p.id === programId)
+  const program = studyPrograms.value.find(p => p.id === programId)
   wizard.updateUserChange(userId, { 
     studyProgramId: programId,
     studyProgramName: program?.name?.toString() || null
@@ -202,8 +216,18 @@ const hasDateError = (change: UserChange) => {
 
 <template>
   <div class="space-y-6">
-    <!-- Selected duty header -->
-    <div class="flex items-center gap-3 p-3 rounded-lg bg-primary/5 border border-primary/10">
+    <!-- Loading state while users are being fetched -->
+    <div v-if="isLoadingUsers" class="flex flex-col items-center justify-center py-12 space-y-4">
+      <Loader2 class="h-8 w-8 animate-spin text-primary" />
+      <div class="text-center">
+        <p class="font-medium text-foreground">{{ $t('Kraunami naudotojai...') }}</p>
+        <p class="text-sm text-muted-foreground">{{ $t('Prašome palaukti') }}</p>
+      </div>
+    </div>
+
+    <template v-else>
+      <!-- Selected duty header -->
+      <div class="flex items-center gap-3 p-3 rounded-lg bg-primary/5 border border-primary/10">
       <div class="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
         <Icons.DUTY class="h-5 w-5 text-primary" />
       </div>
@@ -580,5 +604,6 @@ const hasDateError = (change: UserChange) => {
         </span>
       </div>
     </div>
+    </template>
   </div>
 </template>

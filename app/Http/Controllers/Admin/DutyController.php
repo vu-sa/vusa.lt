@@ -6,6 +6,7 @@ use App\Actions\GetAttachableTypesForDuty;
 use App\Actions\GetTenantsForUpserts;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\StoreDutyRequest;
+use Inertia\Inertia;
 use App\Models\Duty;
 use App\Models\Role;
 use App\Models\Type;
@@ -232,16 +233,20 @@ class DutyController extends AdminController
         // Get data needed for creating institutions and duties
         $assignableTenants = GetTenantsForUpserts::execute('institutions.create.padalinys', $this->authorizer);
         $institutionTypes = Type::where('model_type', Institution::class)->get();
-        $dutyTypes = GetAttachableTypesForDuty::execute()->values();
 
         return $this->inertiaResponse('Admin/People/DutyUserUpdateWizard', [
+            // Immediate data for Step 1
             'institutions' => $institutions,
-            'studyPrograms' => StudyProgram::select('id', 'name', 'degree', 'tenant_id')->get(),
-            'users' => User::select('id', 'name', 'email', 'profile_photo_path')->orderBy('name')->get(),
-            // Data for inline creation
+            // Data for inline institution creation (small datasets, load immediately)
             'assignableTenants' => $assignableTenants,
             'institutionTypes' => $institutionTypes,
-            'dutyTypes' => $dutyTypes,
+            // Lazy loaded data - only fetched when explicitly requested via router.reload({ only: [...] })
+            // Step 3: User assignment
+            'users' => Inertia::optional(fn () => User::select('id', 'name', 'email', 'profile_photo_path')
+                ->orderBy('name')->get()),
+            'studyPrograms' => Inertia::optional(fn () => StudyProgram::select('id', 'name', 'degree', 'tenant_id')->get()),
+            // Step 2: Duty creation (only needed if user wants to create a new duty)
+            'dutyTypes' => Inertia::optional(fn () => GetAttachableTypesForDuty::execute()->values()),
         ]);
     }
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, provide, ref, onMounted } from 'vue'
-import { Head, router } from '@inertiajs/vue3'
+import { Head, router, usePage } from '@inertiajs/vue3'
 import { trans as $t } from 'laravel-vue-i18n'
 import { 
   ArrowLeft, 
@@ -31,13 +31,22 @@ import Step4Review from '@/Components/DutyUserWizard/Step4Review.vue'
 
 const props = defineProps<{
   institutions: App.Entities.Institution[]
-  studyPrograms: App.Entities.StudyProgram[]
-  users: App.Entities.User[]
+  // Lazy-loaded props (may be undefined initially)
+  studyPrograms?: App.Entities.StudyProgram[]
+  users?: App.Entities.User[]
   // For inline creation
   assignableTenants: App.Entities.Tenant[]
   institutionTypes: App.Entities.Type[]
-  dutyTypes: App.Entities.Type[]
+  dutyTypes?: App.Entities.Type[] // Lazy-loaded
 }>()
+
+// Get reactive page props for lazy-loaded data
+const page = usePage()
+
+// Computed refs for lazy-loaded data (reactive when data arrives via router.reload)
+const users = computed(() => (page.props.users as App.Entities.User[] | undefined) ?? [])
+const studyPrograms = computed(() => (page.props.studyPrograms as App.Entities.StudyProgram[] | undefined) ?? [])
+const dutyTypes = computed(() => (page.props.dutyTypes as App.Entities.Type[] | undefined) ?? [])
 
 // Reactive institutions list (can be updated when new institution is created)
 const institutionsList = ref([...props.institutions])
@@ -74,12 +83,13 @@ const wizard = useDutyUserWizard({
 
 // Provide wizard to child components
 provide('dutyUserWizard', wizard)
-provide('studyPrograms', props.studyPrograms)
-provide('allUsers', props.users)
+// Provide lazy-loaded data as computed refs (reactive when data arrives)
+provide('studyPrograms', studyPrograms)
+provide('allUsers', users)
 // For inline creation
 provide('assignableTenants', props.assignableTenants)
 provide('institutionTypes', props.institutionTypes)
-provide('dutyTypes', props.dutyTypes)
+provide('dutyTypes', dutyTypes)
 provide('addInstitution', addInstitution)
 
 // Step definitions with icons and descriptions
