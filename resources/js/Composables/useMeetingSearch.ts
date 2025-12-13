@@ -226,7 +226,6 @@ export const useMeetingSearch = (): MeetingSearchController => {
       }
 
       // Initialize search service with collection name from config
-      const collectionName = typesenseConfig.collections?.public_meetings || 'public_meetings'
       searchService.value = new MeetingSearchService(typesenseClient.value, collectionName)
 
       // Load initial facets after client initialization

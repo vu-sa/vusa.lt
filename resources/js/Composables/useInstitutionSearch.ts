@@ -265,7 +265,6 @@ export const useInstitutionSearch = (): InstitutionSearchController => {
       }
 
       // Initialize search service with collection name from config
-      const collectionName = typesenseConfig.collections?.public_institutions || 'public_institutions'
       searchService.value = new InstitutionSearchService(typesenseClient.value, collectionName)
 
       // Load initial facets after client initialization
