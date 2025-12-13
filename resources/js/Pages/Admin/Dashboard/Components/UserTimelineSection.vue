@@ -40,7 +40,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted } from 'vue';
+import { computed, ref, onMounted, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import type {
@@ -75,9 +75,16 @@ interface Props {
   institutionPeriodicity?: Record<string | number, number>;
   // Related institutions
   relatedInstitutions?: AtstovavimosInstitution[];
+  // Flag to show related institutions filter even when data is lazy-loaded
+  mayHaveRelatedInstitutions?: boolean;
 }
 
 const props = defineProps<Props>();
+
+// Get gantt settings for showTenantHeaders toggle
+const ganttSettings = useGanttSettings();
+// Get shared filter state
+const filters = useTimelineFilters();
 
 // Deferred rendering - wait for next frame after mount to render heavy Gantt chart
 const isReady = ref(false);
@@ -85,12 +92,14 @@ onMounted(() => {
   requestAnimationFrame(() => {
     isReady.value = true;
   });
+  
+  // If filter was persisted as ON, trigger lazy load on mount
+  if (filters.showRelatedInstitutionsUser.value && 
+      !filters.relatedInstitutionsLoaded.value && 
+      (props.relatedInstitutions?.length ?? 0) === 0) {
+    filters.loadRelatedInstitutions();
+  }
 });
-
-// Get gantt settings for showTenantHeaders toggle
-const ganttSettings = useGanttSettings();
-// Get shared filter state
-const filters = useTimelineFilters();
 
 const emit = defineEmits<{
   'create-meeting': [payload: { institution_id: string | number, suggestedAt: Date }];
@@ -98,9 +107,18 @@ const emit = defineEmits<{
   'fullscreen': [];
 }>();
 
-// Check if we have any related institutions
+// Check if we have any related institutions (or might have when lazy-loaded)
 const hasRelatedInstitutions = computed(() => {
-  return (props.relatedInstitutions?.length ?? 0) > 0;
+  // Show filter if we have loaded related institutions OR if backend says we might have some
+  return (props.relatedInstitutions?.length ?? 0) > 0 || props.mayHaveRelatedInstitutions === true;
+});
+
+// When "show related institutions" filter is toggled on, trigger lazy load if not already loaded
+watch(() => filters.showRelatedInstitutionsUser.value, (newValue) => {
+  // Load if: filter is ON, data hasn't been loaded yet, and no data exists yet
+  if (newValue && !filters.relatedInstitutionsLoaded.value && (props.relatedInstitutions?.length ?? 0) === 0) {
+    filters.loadRelatedInstitutions();
+  }
 });
 
 // Format institutions for Gantt component - merge with related when enabled
@@ -155,6 +173,7 @@ const extractDutyMembers = (institutions: AtstovavimosInstitution[]): GanttDutyM
   for (const institution of institutions) {
     const inst = institution as any;
     for (const duty of (inst.duties ?? [])) {
+      // Use users (all members including historical) for Gantt timeline display
       for (const user of (duty.users ?? [])) {
         const pivot = user.pivot ?? {};
         if (!pivot.start_date) continue;

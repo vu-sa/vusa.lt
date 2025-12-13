@@ -287,11 +287,12 @@ class RelationshipService
         $relatedIds = $allRelated->pluck('id')->toArray();
         $loadedInstitutions = Institution::whereIn('id', $relatedIds)
             ->with([
+                'types', // explicit since not auto-loaded
                 'meetings:id,title,start_time',
                 'meetings.agendaItems:id,meeting_id,title,student_vote,decision,student_benefit',
                 'tenant:id,shortname',
-                'duties.current_users:id,name',
-                'duties.users:id,name,profile_photo_path',
+                // Load all users (including historical) for Gantt timeline display
+                'duties.users',
                 'duties.types:id,title,slug',
                 'checkIns',
             ])

@@ -39,7 +39,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string|null $instagram_url
  * @property int|null $tenant_id
  * @property int $is_active
- * @property int|null $meeting_periodicity_days
+ * @property int $meeting_periodicity_days
  * @property string $contacts_layout
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
@@ -54,7 +54,6 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Duty> $duties
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\SharepointFile> $files
  * @property-read bool $has_public_meetings
- * @property-read int $meeting_periodicity_days Meeting periodicity in days (from types or default 30)
  * @property-read mixed $maybe_short_name
  * @property-read mixed $related_institutions
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Relationship> $incomingRelationships
@@ -86,7 +85,10 @@ class Institution extends Model implements SharepointFileableContract
 
     protected $guarded = [];
 
-    protected $with = ['types'];
+    // Note: types are NOT auto-loaded to prevent N+1 in collections.
+    // Load explicitly where needed: ->with('types') or ->load('types').
+    // Computed attributes like has_public_meetings and meeting_periodicity_days
+    // will lazy-load types if not already loaded.
 
     // Note: has_public_meetings is NOT auto-appended due to performance.
     // Append it explicitly where needed: $institution->append('has_public_meetings')

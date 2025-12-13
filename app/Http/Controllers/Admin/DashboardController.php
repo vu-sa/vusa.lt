@@ -180,36 +180,38 @@ class DashboardController extends AdminController
             ->with(['current_duties:id,name,institution_id'])
             ->first();
 
-        // Get ALL institutions user can access with dashboard data (already has meetings, checkIns, etc.)
-        $accessibleInstitutions = DutyService::getInstitutionsForDashboard($this->authorizer);
+        // Get only user's directly assigned institutions (lightweight, always loaded)
+        $userInstitutions = DutyService::getUserInstitutionsForDashboard();
 
         // Filter out institutions with excluded types (e.g., padalinys, pkp - institutions that don't have formal meetings)
         $excludedTypeIds = app(\App\Settings\MeetingSettings::class)->getExcludedInstitutionTypeIds();
         if ($excludedTypeIds->isNotEmpty()) {
-            $accessibleInstitutions = $accessibleInstitutions->filter(function ($institution) use ($excludedTypeIds) {
+            $userInstitutions = $userInstitutions->filter(function ($institution) use ($excludedTypeIds) {
                 // Exclude institution if any of its types are in the excluded list
                 return $institution->types->pluck('id')->intersect($excludedTypeIds)->isEmpty();
             })->values();
         }
 
-        // Get user's institution IDs for filtering
-        $userInstitutionIds = $user->current_duties->pluck('institution_id')->filter()->unique();
+        // Helper function to append computed attributes to institutions
+        $appendInstitutionAttributes = function ($institutions) {
+            $institutions->each(function ($institution) {
+                $institution->meetings?->each->append('completion_status');
+                // Add active_check_in from already-loaded checkIns
+                $institution->active_check_in = $institution->checkIns
+                    ?->where('end_date', '>=', now())
+                    ->where('start_date', '<=', now())
+                    ->first() ?? null;
+                // Append has_public_meetings for UI indicators (uses already-loaded types relation)
+                $institution->append('has_public_meetings');
+                // Append meeting_periodicity_days for overdue warnings (inherits from types, defaults to 30)
+                $institution->append('meeting_periodicity_days');
+            });
 
-        // Append completion_status to meetings and has_public_meetings to institutions for dashboard
-        // agendaItems are already eager-loaded by DutyService::getInstitutionsForDashboard
-        // types are already eager-loaded via Institution's $with = ['types']
-        $accessibleInstitutions->each(function ($institution) {
-            $institution->meetings?->each->append('completion_status');
-            // Add active_check_in from already-loaded checkIns
-            $institution->active_check_in = $institution->checkIns
-                ?->where('end_date', '>=', now())
-                ->where('start_date', '<=', now())
-                ->first() ?? null;
-            // Append has_public_meetings for UI indicators (uses already-loaded types relation)
-            $institution->append('has_public_meetings');
-            // Append meeting_periodicity_days for overdue warnings (inherits from types, defaults to 30)
-            $institution->append('meeting_periodicity_days');
-        });
+            return $institutions;
+        };
+
+        // Append computed attributes to user institutions
+        $appendInstitutionAttributes($userInstitutions);
 
         // Get available tenants for filtering - only for coordinators and admins
         // Regular users should not see the tenant tab (they only see their assigned institutions)
@@ -245,9 +247,9 @@ class DashboardController extends AdminController
             $availableTenants = collect();
         }
 
-        // Derive recent meetings from already-loaded data (no separate query)
+        // Derive recent meetings from user's institutions only (lightweight)
         $sixMonthsAgo = now()->subMonths(6);
-        $recentMeetings = $accessibleInstitutions
+        $recentMeetings = $userInstitutions
             ->flatMap(function ($institution) use ($sixMonthsAgo) {
                 return $institution->meetings
                     ?->filter(fn ($meeting) => $meeting->start_time >= $sixMonthsAgo)
@@ -264,20 +266,9 @@ class DashboardController extends AdminController
             ->take(10)
             ->values();
 
-        // Build user's institutions from accessibleInstitutions (avoid duplicate query)
-        $userInstitutions = $accessibleInstitutions->whereIn('id', $userInstitutionIds);
-
-        // Get related institutions for user's direct institutions (cached)
-        $relatedInstitutions = RelationshipService::getRelatedInstitutionsForMultiple(
-            new Collection($userInstitutions->values()->all())
-        );
-
-        // Append completion_status to related institution meetings and other computed attributes
-        $relatedInstitutions->each(function ($institution) {
-            $institution->meetings?->each->append('completion_status');
-            $institution->append('has_public_meetings');
-            $institution->append('meeting_periodicity_days');
-        });
+        // Quick check if user might have related institutions (without loading them)
+        // This enables the filter UI even when relatedInstitutions is lazy-loaded
+        $mayHaveRelatedInstitutions = $userInstitutions->isNotEmpty();
 
         return $this->inertiaResponse('Admin/Dashboard/ShowAtstovavimas', [
             'user' => [
@@ -291,8 +282,43 @@ class DashboardController extends AdminController
                     ];
                 }),
             ],
-            'accessibleInstitutions' => $accessibleInstitutions,
-            'relatedInstitutions' => $relatedInstitutions->values(),
+            // User's own institutions - always loaded (lightweight)
+            'userInstitutions' => $userInstitutions->values(),
+            // Quick flag to show/hide related institutions filter (lazy data may not be loaded yet)
+            'mayHaveRelatedInstitutions' => $mayHaveRelatedInstitutions,
+            // Lazy load relatedInstitutions - only fetched when explicitly requested via Inertia reload
+            'relatedInstitutions' => Inertia::lazy(function () use ($userInstitutions) {
+                $relatedInstitutions = RelationshipService::getRelatedInstitutionsForMultiple(
+                    new Collection($userInstitutions->values()->all())
+                );
+
+                // Append completion_status to related institution meetings and other computed attributes
+                $relatedInstitutions->each(function ($institution) {
+                    $institution->meetings?->each->append('completion_status');
+                    $institution->append('has_public_meetings');
+                    $institution->append('meeting_periodicity_days');
+                });
+
+                return $relatedInstitutions->values();
+            }),
+            // Lazy load tenant institutions - only fetched when tenant tab is opened
+            // Expects 'tenantIds' parameter in the reload request
+            'tenantInstitutions' => Inertia::lazy(function () use ($excludedTypeIds, $appendInstitutionAttributes) {
+                $tenantIds = request()->input('tenantIds', []);
+                $institutions = DutyService::getInstitutionsForTenants($tenantIds, $this->authorizer);
+
+                // Apply same filtering as user institutions
+                if ($excludedTypeIds->isNotEmpty()) {
+                    $institutions = $institutions->filter(function ($institution) use ($excludedTypeIds) {
+                        return $institution->types->pluck('id')->intersect($excludedTypeIds)->isEmpty();
+                    })->values();
+                }
+
+                // Append computed attributes
+                $appendInstitutionAttributes($institutions);
+
+                return $institutions->values();
+            }),
             'availableTenants' => $availableTenants,
             'recentMeetings' => $recentMeetings,
         ]);

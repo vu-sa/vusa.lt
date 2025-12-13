@@ -10,24 +10,11 @@ import type {
 } from '../types';
 
 export function useGanttChartData(
-  accessibleInstitutions: App.Entities.Institution[],
-  availableTenants: AtstovavimosTenant[],
-  selectedTenantForGantt: Ref<string[]> // Changed to accept reactive reference
+  tenantInstitutionsRef: Ref<App.Entities.Institution[]>, // Lazy loaded tenant institutions
+  availableTenants: AtstovavimosTenant[]
 ) {
-  // Filter institutions by selected tenants
-  const tenantInstitutions = computed(() => {
-    if (!selectedTenantForGantt.value.length) {
-      return accessibleInstitutions;
-    }
-    
-    const filtered = accessibleInstitutions.filter(inst => {
-      const tenantId = String(inst.tenant_id);
-      const isIncluded = selectedTenantForGantt.value.includes(tenantId);
-      return isIncluded;
-    });
-    
-    return filtered;
-  });
+  // Use the lazy-loaded tenant institutions directly
+  const tenantInstitutions = tenantInstitutionsRef;
 
   // Get meetings from tenant institutions
   const tenantMeetings = computed<GanttMeeting[]>(() => {
@@ -207,6 +194,7 @@ export function useGanttChartData(
     for (const institution of tenantInstitutions.value) {
       const inst = institution as any;
       for (const duty of (inst.duties ?? [])) {
+        // Use users (all members including historical) for Gantt timeline display
         for (const user of (duty.users ?? [])) {
           // Access pivot data for start_date and end_date
           const pivot = user.pivot ?? {};
@@ -280,12 +268,14 @@ export function useGanttChartData(
   });
 
   // Helper to extract duty members from user's institutions (for user tab)
+  // Uses users which includes all members (current and historical) for timeline display
   const getDutyMembersFromInstitutions = (institutions: AtstovavimosInstitution[]): GanttDutyMember[] => {
     const members: GanttDutyMember[] = [];
     
     for (const institution of institutions) {
       const inst = institution as any;
       for (const duty of (inst.duties ?? [])) {
+        // Use users (all members including historical) for Gantt timeline display
         for (const user of (duty.users ?? [])) {
           const pivot = user.pivot ?? {};
           if (!pivot.start_date) continue;

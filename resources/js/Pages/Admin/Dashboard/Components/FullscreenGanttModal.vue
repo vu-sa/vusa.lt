@@ -154,6 +154,8 @@ interface Props {
   userDutyMembers?: GanttDutyMember[];
   userInactivePeriods?: InactivePeriod[];
   userRelatedInstitutions?: GanttInstitution[];
+  // Flag to show related institutions filter even when data is lazy-loaded
+  mayHaveRelatedInstitutions?: boolean;
   
   // Tenant data
   tenantInstitutions: GanttInstitution[];
@@ -181,8 +183,10 @@ const emit = defineEmits<{
 const ganttSettings = useGanttSettings();
 const filters = useTimelineFilters();
 
-// Computed: check if we have related institutions for user view
-const hasRelatedInstitutions = computed(() => (props.userRelatedInstitutions?.length ?? 0) > 0);
+// Computed: check if we have related institutions for user view (or might have when lazy-loaded)
+const hasRelatedInstitutions = computed(() => {
+  return (props.userRelatedInstitutions?.length ?? 0) > 0 || props.mayHaveRelatedInstitutions === true;
+});
 
 // Computed: current tenant for display
 const currentTenant = computed(() => filters.currentTenant.value);

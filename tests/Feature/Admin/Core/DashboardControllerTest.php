@@ -341,7 +341,7 @@ describe('atstovavimas dashboard', function () {
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Dashboard/ShowAtstovavimas')
                 ->has('user')
-                ->has('accessibleInstitutions')
+                ->has('userInstitutions')
                 ->has('availableTenants')
             );
     });
@@ -353,7 +353,7 @@ describe('atstovavimas dashboard', function () {
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Dashboard/ShowAtstovavimas')
                 ->has('user')
-                ->has('accessibleInstitutions')
+                ->has('userInstitutions')
                 ->has('availableTenants')
             );
     });
@@ -385,7 +385,7 @@ describe('atstovavimas dashboard', function () {
         $response->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Dashboard/ShowAtstovavimas')
-                ->has('accessibleInstitutions')
+                ->has('userInstitutions')
                 ->has('availableTenants')
                 ->where('availableTenants', function ($tenants) {
                     // Convert to collection if it's an array, or keep as collection
@@ -416,8 +416,8 @@ describe('atstovavimas dashboard authorization', function () {
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Dashboard/ShowAtstovavimas')
-                ->has('accessibleInstitutions')
-                ->where('accessibleInstitutions', function ($institutions) use ($userInstitutionId) {
+                ->has('userInstitutions')
+                ->where('userInstitutions', function ($institutions) use ($userInstitutionId) {
                     $collection = collect($institutions);
                     // Should only contain the user's assigned institution
                     return $collection->count() >= 1 &&
@@ -474,7 +474,7 @@ describe('atstovavimas dashboard authorization', function () {
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Dashboard/ShowAtstovavimas')
-                ->has('accessibleInstitutions')
+                ->has('userInstitutions')
                 ->where('availableTenants', function ($tenants) {
                     $collection = collect($tenants);
                     // Coordinator should have available tenants for the tenant tab
@@ -488,28 +488,25 @@ describe('atstovavimas dashboard authorization', function () {
         $settings->save();
     });
 
-    test('super admin sees all institutions across tenants', function () {
+    test('super admin sees all institutions across tenants via tenant tab', function () {
         $superAdmin = makeAdminUser($this->tenant);
 
         // Create an institution in a different tenant
         $otherTenant = Tenant::factory()->create(['type' => 'padalinys']);
         $otherInstitution = \App\Models\Institution::factory()->for($otherTenant)->create();
 
+        // Verify super admin has access to all tenants via availableTenants
         asUser($superAdmin)
             ->get(route('dashboard.atstovavimas'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Dashboard/ShowAtstovavimas')
-                ->has('accessibleInstitutions')
-                ->where('accessibleInstitutions', function ($institutions) use ($otherInstitution) {
-                    $collection = collect($institutions);
-                    // Super admin should see institutions from other tenants
-                    return $collection->contains(fn ($inst) => $inst['id'] == $otherInstitution->id);
-                })
-                ->where('availableTenants', function ($tenants) {
+                ->has('userInstitutions')
+                ->where('availableTenants', function ($tenants) use ($otherTenant) {
                     $collection = collect($tenants);
-                    // Super admin should see all non-PKP tenants
-                    return $collection->isNotEmpty();
+                    // Super admin should see all non-PKP tenants including the other tenant
+                    return $collection->isNotEmpty() &&
+                           $collection->contains(fn ($t) => $t['id'] == $otherTenant->id);
                 })
             );
     });
@@ -785,7 +782,7 @@ describe('tenant isolation', function () {
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Dashboard/ShowAtstovavimas')
-                ->has('accessibleInstitutions')
+                ->has('userInstitutions')
                 ->has('availableTenants')
                 ->where('availableTenants', function ($tenants) {
                     // User should see tenants they have permissions for

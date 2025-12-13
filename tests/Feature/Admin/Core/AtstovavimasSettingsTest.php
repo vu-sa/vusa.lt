@@ -106,7 +106,7 @@ describe('atstovavimas settings update', function () {
 });
 
 describe('coordinator tenant visibility', function () {
-    test('user with coordinator role sees all institutions in coordinator tenant', function () {
+    test('user with coordinator role has access to tenant tab', function () {
         // Create a coordinator role and assign it to user's duty
         $coordinatorRole = Role::where('name', 'Communication Coordinator')->first();
         expect($coordinatorRole)->not->toBeNull();
@@ -131,11 +131,41 @@ describe('coordinator tenant visibility', function () {
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Dashboard/ShowAtstovavimas')
-                ->where('accessibleInstitutions', function ($institutions) use ($extraInstitution) {
-                    $collection = collect($institutions);
-                    // Coordinator should see all institutions in their tenant, including extra one
-                    return $collection->contains(fn ($inst) => $inst['id'] == $extraInstitution->id);
+                // userInstitutions only contains directly assigned institutions
+                ->has('userInstitutions')
+                ->where('availableTenants', function ($tenants) {
+                    $collection = collect($tenants);
+                    // Coordinator should have available tenants (access to tenant tab)
+                    return $collection->isNotEmpty() &&
+                           $collection->contains(fn ($t) => $t['id'] == $this->tenant->id);
                 })
+            );
+    });
+
+    test('coordinator can lazy load tenant institutions', function () {
+        // Create a coordinator role and assign it to user's duty
+        $coordinatorRole = Role::where('name', 'Communication Coordinator')->first();
+        expect($coordinatorRole)->not->toBeNull();
+
+        // Create additional institution in the same tenant
+        $extraInstitution = Institution::factory()->for($this->tenant)->create();
+
+        // Configure the coordinator role in settings
+        $settings = app(AtstovavimasSettings::class);
+        $settings->coordinator_role_ids = [$coordinatorRole->id];
+        $settings->save();
+        app()->forgetInstance(AtstovavimasSettings::class);
+
+        // Create user with coordinator role
+        $coordinator = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+        AtstovavimasSettings::clearCoordinatorCache($coordinator->id);
+
+        // Verify the coordinator has access to available tenants
+        asUser($coordinator)
+            ->get(route('dashboard.atstovavimas'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Dashboard/ShowAtstovavimas')
                 ->where('availableTenants', function ($tenants) {
                     $collection = collect($tenants);
                     // Coordinator should have available tenants
@@ -164,7 +194,7 @@ describe('coordinator tenant visibility', function () {
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Dashboard/ShowAtstovavimas')
-                ->where('accessibleInstitutions', function ($institutions) use ($userInstitutionId, $extraInstitution) {
+                ->where('userInstitutions', function ($institutions) use ($userInstitutionId, $extraInstitution) {
                     $collection = collect($institutions);
                     // Regular user should NOT see the extra institution
                     return $collection->doesntContain(fn ($inst) => $inst['id'] == $extraInstitution->id) &&
@@ -197,7 +227,7 @@ describe('coordinator tenant visibility', function () {
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Dashboard/ShowAtstovavimas')
-                ->where('accessibleInstitutions', function ($institutions) use ($otherInstitution) {
+                ->where('userInstitutions', function ($institutions) use ($otherInstitution) {
                     $collection = collect($institutions);
                     // Coordinator should NOT see institutions from other tenant
                     return $collection->doesntContain(fn ($inst) => $inst['id'] == $otherInstitution->id);

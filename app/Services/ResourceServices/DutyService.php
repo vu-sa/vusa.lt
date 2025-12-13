@@ -6,6 +6,7 @@ use App\Models\Institution;
 use App\Models\Meeting;
 use App\Services\ModelAuthorizer;
 use App\Settings\AtstovavimasSettings;
+use Illuminate\Support\Collection;
 
 class DutyService
 {
@@ -91,10 +92,11 @@ class DutyService
             })
             ->with([
                 'tenant:id,shortname',
+                'types', // explicit since not auto-loaded
                 'meetings:id,title,start_time',
                 'meetings.agendaItems:id,meeting_id,title,student_vote,decision,student_benefit',
-                'duties.current_users:id,name',
-                'duties.users:id,name,profile_photo_path',
+                // Load all users (including historical) for Gantt timeline display
+                'duties.users',
                 'duties.types:id,title,slug',
                 'checkIns'
             ])
@@ -113,4 +115,101 @@ class DutyService
             ->get();
     }
 
+    /**
+     * Get only user's directly assigned institutions for the dashboard.
+     *
+     * This is a lightweight version that only includes institutions where the user
+     * has active duties. Used for the user's personal timeline tab.
+     *
+     * @see getInstitutionsForDashboard() for full access including coordinator tenants
+     */
+    public static function getUserInstitutionsForDashboard()
+    {
+        $user = request()->user();
+
+        // Get user's directly assigned institution IDs
+        $userInstitutionIds = $user->current_duties()
+            ->pluck('institution_id')
+            ->filter()
+            ->unique();
+
+        if ($userInstitutionIds->isEmpty()) {
+            return collect();
+        }
+
+        return self::buildInstitutionQuery()
+            ->whereIn('id', $userInstitutionIds)
+            ->get();
+    }
+
+    /**
+     * Get institutions for specific tenant IDs.
+     *
+     * This is used for lazy-loading tenant timeline data when the tenant tab
+     * is opened or when the tenant filter changes.
+     *
+     * @param Collection|array $tenantIds The tenant IDs to load institutions for
+     * @param ModelAuthorizer $authorizer The authorizer to check access permissions
+     */
+    public static function getInstitutionsForTenants($tenantIds, ModelAuthorizer $authorizer)
+    {
+        $tenantIds = collect($tenantIds)->filter();
+
+        if ($tenantIds->isEmpty()) {
+            return collect();
+        }
+
+        $user = request()->user();
+        $hasGlobalAccess = $authorizer->forUser($user)->checkAllRoleables('duties.create.all');
+
+        // Get tenant IDs where user has coordinator access
+        $atstovavimasSettings = app(AtstovavimasSettings::class);
+        $coordinatorTenantIds = $atstovavimasSettings->getCoordinatorTenantIds($user);
+
+        // Filter to only accessible tenants
+        $accessibleTenantIds = $hasGlobalAccess
+            ? $tenantIds
+            : $tenantIds->intersect($coordinatorTenantIds);
+
+        if ($accessibleTenantIds->isEmpty()) {
+            return collect();
+        }
+
+        return self::buildInstitutionQuery()
+            ->whereIn('tenant_id', $accessibleTenantIds)
+            ->get();
+    }
+
+    /**
+     * Build the base query for dashboard institutions with all needed eager loading.
+     */
+    private static function buildInstitutionQuery()
+    {
+        return Institution::select('id', 'name', 'alias', 'tenant_id')
+            ->whereHas('tenant', function ($query) {
+                $query->where('type', '!=', 'pkp');
+            })
+            ->with([
+                'tenant:id,shortname',
+                'types', // explicit since not auto-loaded
+                'meetings:id,title,start_time',
+                'meetings.agendaItems:id,meeting_id,title,student_vote,decision,student_benefit',
+                // Load all users (including historical) for Gantt timeline display
+                'duties.users',
+                'duties.types:id,title,slug',
+                'checkIns'
+            ])
+            ->withCount([
+                'meetings as upcoming_meetings_count' => function ($query) {
+                    $query->where('start_time', '>', now());
+                }
+            ])
+            ->addSelect([
+                'last_meeting_date' => Meeting::select('start_time')
+                    ->join('institution_meeting', 'meetings.id', '=', 'institution_meeting.meeting_id')
+                    ->whereColumn('institution_meeting.institution_id', 'institutions.id')
+                    ->orderBy('start_time', 'desc')
+                    ->limit(1),
+            ]);
+    }
 }

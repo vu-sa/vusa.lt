@@ -79,7 +79,8 @@ class Duty extends Model implements AuthorizableContract
         'name', 'description', 'email', 'phone', 'order', 'is_active', 'institution_id', 'contacts_grouping', 'places_to_occupy',
     ];
 
-    protected $with = ['types'];
+    // Note: types are NOT auto-loaded to prevent N+1 in collections.
+    // Load explicitly where needed: ->with('duties.types') or ->load('types').
 
     protected $guard_name = 'web';
 

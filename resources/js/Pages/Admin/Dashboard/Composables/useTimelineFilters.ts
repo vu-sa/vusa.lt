@@ -11,6 +11,7 @@
  * - In children: call useTimelineFilters() to access shared state
  */
 import { ref, computed, provide, inject, watch, type Ref, type InjectionKey } from 'vue';
+import { router } from '@inertiajs/vue3';
 import type { AtstovavimosInstitution, AtstovavimosTenant } from '../types';
 
 const STORAGE_KEY = 'atstovavimas-timeline-filters';
@@ -22,12 +23,15 @@ export interface TimelineFilters {
   showOnlyWithPublicMeetingsUser: Ref<boolean>;
   showDutyMembersUser: Ref<boolean>;
   showRelatedInstitutionsUser: Ref<boolean>;
+  relatedInstitutionsLoaded: Ref<boolean>;
   
   // Tenant section filters
   selectedTenantForGantt: Ref<string[]>;
   showOnlyWithActivityTenant: Ref<boolean>;
   showOnlyWithPublicMeetingsTenant: Ref<boolean>;
   showDutyMembersTenant: Ref<boolean>;
+  tenantInstitutionsLoaded: Ref<boolean>;
+  tenantInstitutionsLoading: Ref<boolean>;
   
   // Shared state
   scrollPosition: Ref<number>;
@@ -40,6 +44,8 @@ export interface TimelineFilters {
   setSelectedTenants: (tenantIds: string[]) => void;
   resetTenantFilters: () => void;
   resetUserFilters: () => void;
+  loadRelatedInstitutions: () => void;
+  loadTenantInstitutions: (tenantIds?: string[]) => void;
 }
 
 interface StoredFilters {
@@ -90,13 +96,21 @@ export function provideTimelineFilters(
   const showOnlyWithActivityUser = ref(stored.showOnlyWithActivityUser ?? false);
   const showOnlyWithPublicMeetingsUser = ref(stored.showOnlyWithPublicMeetingsUser ?? false);
   const showDutyMembersUser = ref(stored.showDutyMembersUser ?? true);
-  const showRelatedInstitutionsUser = ref(stored.showRelatedInstitutionsUser ?? true);
+  // Default to false - related institutions are lazy loaded when filter is enabled
+  const showRelatedInstitutionsUser = ref(stored.showRelatedInstitutionsUser ?? false);
+  // Track if related institutions have been loaded via Inertia lazy
+  const relatedInstitutionsLoaded = ref(false);
 
   // Tenant section filters
   const selectedTenantForGantt = ref<string[]>(stored.selectedTenantForGantt ?? []);
   const showOnlyWithActivityTenant = ref(stored.showOnlyWithActivityTenant ?? false);
   const showOnlyWithPublicMeetingsTenant = ref(stored.showOnlyWithPublicMeetingsTenant ?? false);
   const showDutyMembersTenant = ref(stored.showDutyMembersTenant ?? true);
+  // Track if tenant institutions have been loaded via Inertia lazy
+  const tenantInstitutionsLoaded = ref(false);
+  const tenantInstitutionsLoading = ref(false);
+  // Track which tenant IDs have been loaded to know when to reload
+  const loadedTenantIds = ref<string[]>([]);
 
   // Shared state
   const scrollPosition = ref<number>(stored.scrollPosition ?? 0);
@@ -173,7 +187,55 @@ export function provideTimelineFilters(
     showOnlyWithActivityUser.value = false;
     showOnlyWithPublicMeetingsUser.value = false;
     showDutyMembersUser.value = true;
-    showRelatedInstitutionsUser.value = true;
+    showRelatedInstitutionsUser.value = false;
+  }
+
+  // Load related institutions via Inertia lazy reload
+  function loadRelatedInstitutions() {
+    if (relatedInstitutionsLoaded.value) return;
+    
+    router.reload({
+      only: ['relatedInstitutions'],
+      onSuccess: () => {
+        relatedInstitutionsLoaded.value = true;
+      }
+    });
+  }
+
+  // Load tenant institutions via Inertia lazy reload
+  // If tenantIds is not provided, uses the current selectedTenantForGantt value
+  function loadTenantInstitutions(tenantIds?: string[]) {
+    const idsToLoad = tenantIds ?? selectedTenantForGantt.value;
+    
+    // Skip if no tenants selected
+    if (idsToLoad.length === 0) return;
+    
+    // Skip if already loading
+    if (tenantInstitutionsLoading.value) return;
+    
+    // Check if we need to reload (different tenants selected)
+    const idsToLoadSorted = [...idsToLoad].sort();
+    const loadedIdsSorted = [...loadedTenantIds.value].sort();
+    const sameIds = idsToLoadSorted.length === loadedIdsSorted.length && 
+      idsToLoadSorted.every((id, i) => id === loadedIdsSorted[i]);
+    
+    // Skip if already loaded the same tenants
+    if (tenantInstitutionsLoaded.value && sameIds) return;
+    
+    tenantInstitutionsLoading.value = true;
+    
+    router.reload({
+      only: ['tenantInstitutions'],
+      data: { tenantIds: idsToLoad },
+      onSuccess: () => {
+        tenantInstitutionsLoaded.value = true;
+        tenantInstitutionsLoading.value = false;
+        loadedTenantIds.value = [...idsToLoad];
+      },
+      onError: () => {
+        tenantInstitutionsLoading.value = false;
+      }
+    });
   }
 
   const filters: TimelineFilters = {
@@ -183,11 +245,14 @@ export function provideTimelineFilters(
     showOnlyWithPublicMeetingsUser,
     showDutyMembersUser,
     showRelatedInstitutionsUser,
+    relatedInstitutionsLoaded,
     // Tenant section filters
     selectedTenantForGantt,
     showOnlyWithActivityTenant,
     showOnlyWithPublicMeetingsTenant,
     showDutyMembersTenant,
+    tenantInstitutionsLoaded,
+    tenantInstitutionsLoading,
     // Shared state
     scrollPosition,
     // Computed
@@ -197,6 +262,8 @@ export function provideTimelineFilters(
     setSelectedTenants,
     resetTenantFilters,
     resetUserFilters,
+    loadRelatedInstitutions,
+    loadTenantInstitutions,
   };
 
   provide(TIMELINE_FILTERS_KEY, filters);

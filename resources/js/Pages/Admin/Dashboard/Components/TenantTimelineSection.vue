@@ -28,8 +28,12 @@
     </div>
 
     <!-- Deferred Gantt chart rendering for better initial load performance -->
-    <!-- When fullscreen modal is open, hide this to save rendering resources -->
-    <TimelineGanttSkeleton v-if="!isReady || isHidden" />
+    <!-- Show skeleton while loading tenant institutions -->
+    <TimelineGanttSkeleton v-if="!isReady || isHidden || filters.tenantInstitutionsLoading.value" />
+    <!-- Show empty state if loaded but no institutions -->
+    <div v-else-if="!filters.tenantInstitutionsLoaded.value" class="text-center py-12 text-muted-foreground">
+      {{ $t('Pasirinkite padalinį norėdami matyti institucijų laiko juostą') }}
+    </div>
     <div v-else-if="!isHidden" data-tour="gantt-chart">
       <TimelineGanttChart :institutions="formattedInstitutions" :meetings :gaps 
         :tenant-filter="filters.selectedTenantForGantt.value"

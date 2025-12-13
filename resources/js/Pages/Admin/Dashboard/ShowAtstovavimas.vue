@@ -65,6 +65,7 @@
           :institution-periodicity="userInstitutionPeriodicity" :duty-members="userDutyMembers"
           :inactive-periods="userInactivePeriods"
           :related-institutions
+          :may-have-related-institutions="props.mayHaveRelatedInstitutions"
           @create-meeting="actions.onGapCreateMeeting" @fullscreen="actions.onGanttFullscreen('user')" />
       </TabsContent>
 
@@ -89,6 +90,7 @@
       :user-institution-names :user-institution-tenant :user-institution-has-public-meetings
       :user-institution-periodicity :user-duty-members :user-inactive-periods
       :user-related-institutions="formatRelatedInstitutions"
+      :may-have-related-institutions="props.mayHaveRelatedInstitutions"
       :tenant-institutions="ganttData.formattedTenantInstitutions.value"
       :tenant-meetings="ganttData.tenantMeetings.value" :tenant-gaps="ganttData.tenantGaps.value"
       :tenant-institution-names :tenant-institution-tenant :tenant-institution-has-public-meetings
@@ -168,7 +170,8 @@ usePageBreadcrumbs(() => [
 // Setup product tour
 const { startTour, startTourIfNew } = useProductTour({
   tourId: 'atstovavimas-overview-v1',
-  steps: [
+  // Use function to defer translation evaluation until tour starts
+  steps: () => [
     // Welcome step - no element, centered popover
     {
       popover: {
@@ -224,7 +227,8 @@ const { startTour, startTourIfNew } = useProductTour({
 // Setup tour for tenant Gantt chart
 const { startTour: startGanttTour, startTourIfNew: startGanttTourIfNew, hasCompleted: hasGanttTourCompleted } = useProductTour({
   tourId: 'gantt-chart-tour-v1',
-  steps: [
+  // Use function to defer translation evaluation until tour starts
+  steps: () => [
     // 1. Chart Overview
     {
       element: '[data-tour="gantt-chart"]',
@@ -326,11 +330,16 @@ const tenantSpotlight = useFeatureSpotlight('tenant-tab-spotlight-v1');
 
 const props = defineProps<{
   user: AtstovavimosUser;
-  accessibleInstitutions: App.Entities.Institution[];
+  userInstitutions: App.Entities.Institution[];
+  tenantInstitutions?: App.Entities.Institution[];
   relatedInstitutions?: AtstovavimosInstitution[];
+  mayHaveRelatedInstitutions?: boolean;
   availableTenants: AtstovavimosTenant[];
   recentMeetings?: Array<{ id: string; title: string; start_time: string; institution_name: string; agenda_items: { title: string }[] }>;
 }>();
+
+// Reactive computed for tenant institutions (from lazy-loaded props)
+const tenantInstitutionsData = computed(() => props.tenantInstitutions ?? []);
 
 // Related institutions computed (for passing to UserTimelineSection)
 const relatedInstitutions = computed<AtstovavimosInstitution[]>(() => {
@@ -400,11 +409,33 @@ const isAdmin = computed(() => {
 // Initialize composables
 const atstovavimosData = useAtstovavimosData(props.user);
 const timelineFilters = provideTimelineFilters(atstovavimosData.institutions.value, props.availableTenants);
-const actions = useAtstovavimosActions(props.accessibleInstitutions);
-const ganttData = useGanttChartData(props.accessibleInstitutions, props.availableTenants, timelineFilters.selectedTenantForGantt);
+const actions = useAtstovavimosActions(props.userInstitutions);
+const ganttData = useGanttChartData(tenantInstitutionsData, props.availableTenants);
 
 // Provide Gantt settings to child components (eliminates prop drilling for dayWidthPx, etc.)
 provideGanttSettings();
+
+// Load tenant institutions when tenant tab is opened
+watch(activeTab, (newTab) => {
+  if (newTab === 'tenant' && props.availableTenants.length > 0) {
+    timelineFilters.loadTenantInstitutions();
+  }
+});
+
+// Reload tenant institutions when selected tenants change
+watch(() => timelineFilters.selectedTenantForGantt.value, (newTenants) => {
+  // Only reload if on tenant tab and we have tenants selected
+  if (activeTab.value === 'tenant' && newTenants.length > 0) {
+    timelineFilters.loadTenantInstitutions(newTenants);
+  }
+}, { deep: true });
+
+// Load on mount if already on tenant tab
+onMounted(() => {
+  if (activeTab.value === 'tenant' && props.availableTenants.length > 0) {
+    timelineFilters.loadTenantInstitutions();
+  }
+});
 
 // Helper functions for Gantt data formatting
 const formatInstitutionsForUser = computed(() => {
@@ -477,6 +508,6 @@ const tenantInstitutionHasPublicMeetings = computed(() => {
 });
 
 const tenantInstitutionPeriodicity = computed(() => {
-  return ganttData.getInstitutionPeriodicity(ganttData.tenantInstitutions.value);
+  return ganttData.getInstitutionPeriodicity(ganttData.tenantInstitutions.value as unknown as AtstovavimosInstitution[]);
 });
 </script>
