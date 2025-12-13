@@ -8,6 +8,8 @@ use App\Http\Requests\UpdateFormSettingsRequest;
 use App\Http\Requests\UpdateMeetingSettingsRequest;
 use App\Http\Requests\UpdateSettingsAuthorizationRequest;
 use App\Models\Form;
+use App\Models\PublicInstitution;
+use App\Models\PublicMeeting;
 use App\Models\Role;
 use App\Models\Type;
 use App\Settings\AtstovavimasSettings;
@@ -99,6 +101,13 @@ class SettingsController extends AdminController
         $meetingSettings->setPublicMeetingInstitutionTypeIds($request->input('type_ids', []));
         $meetingSettings->setExcludedInstitutionTypeIds($request->input('excluded_type_ids', []));
         $meetingSettings->save();
+
+        // Reindex public meetings and institutions since visibility criteria changed
+        // This updates which meetings/institutions appear in public search
+        dispatch(function () {
+            PublicMeeting::makeAllSearchable();
+            PublicInstitution::makeAllSearchable();
+        })->afterResponse();
 
         return $this->redirectBackWithSuccess(__('settings.messages.updated'));
     }
