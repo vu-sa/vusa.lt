@@ -254,7 +254,8 @@ const tourSteps = computed(() => {
 // Setup product tour
 const { startTour, startTourIfNew } = useProductTour({
   tourId: 'admin-home-v1',
-  steps: tourSteps.value,
+  // Use function to defer translation evaluation until tour starts
+  steps: () => tourSteps.value,
 });
 
 // Register tour with the layout's help button

@@ -14,10 +14,10 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string $id
  * @property string $name
  * @property string|null $description
- * @property string|null $due_date
+ * @property \Illuminate\Support\Carbon|null $due_date
  * @property string $taskable_type
  * @property string $taskable_id
- * @property string|null $completed_at
+ * @property \Illuminate\Support\Carbon|null $completed_at
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at

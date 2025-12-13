@@ -25,7 +25,7 @@ use Spatie\Sitemap\Tags\Url;
  * @property int $content_id
  * @property int|null $category_id
  * @property bool $is_active
- * @property array|null $highlights
+ * @property array $highlights
  * @property string $layout
  * @property string|null $featured_image
  * @property string|null $meta_description
@@ -37,8 +37,8 @@ use Spatie\Sitemap\Tags\Url;
  * @property Carbon|null $deleted_at
  * @property-read \App\Models\Category|null $category
  * @property-read \App\Models\Content $content
- * @property-read \App\Models\Tenant $tenant
  * @property-read Page|null $otherLanguagePage
+ * @property-read \App\Models\Tenant $tenant
  *
  * @method static \Database\Factories\PageFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Page newModelQuery()

@@ -41,9 +41,11 @@ export interface ProductTourOptions {
   tourId: string;
   
   /**
-   * Tour steps configuration for Driver.js
+   * Tour steps configuration for Driver.js.
+   * Can be an array of steps or a function that returns steps.
+   * Using a function allows lazy evaluation of translations.
    */
-  steps: DriveStep[];
+  steps: DriveStep[] | (() => DriveStep[]);
   
   /**
    * Additional Driver.js configuration options
@@ -63,7 +65,12 @@ export interface ProductTourOptions {
 }
 
 export function useProductTour(options: ProductTourOptions) {
-  const { tourId, steps, driverConfig = {}, onComplete } = options;
+  const { tourId, steps: stepsOrFn, driverConfig = {}, onComplete } = options;
+  
+  // Resolve steps lazily - allows translations to load before evaluation
+  const resolveSteps = (): DriveStep[] => {
+    return typeof stepsOrFn === 'function' ? stepsOrFn() : stepsOrFn;
+  };
   
   const isActive = ref(false);
   const currentStep = ref(0);
@@ -127,6 +134,9 @@ export function useProductTour(options: ProductTourOptions) {
    * @param isVoluntary - If true, allows user to close/skip at any time without penalty
    */
   function startTour(isVoluntary = false): void {
+    // Resolve steps at tour start time (lazy evaluation for translations)
+    const steps = resolveSteps();
+    
     if (isActive.value || steps.length === 0) return;
     
     isVoluntaryTour.value = isVoluntary;

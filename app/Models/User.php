@@ -37,7 +37,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string|null $email_verified_at
  * @property string|null $remember_token
  * @property \Illuminate\Support\Carbon|null $last_action
- * @property array|null $tutorial_progress
+ * @property array<array-key, mixed>|null $tutorial_progress
  * @property string|null $microsoft_token
  * @property \Illuminate\Support\Carbon $updated_at
  * @property \Illuminate\Support\Carbon $created_at

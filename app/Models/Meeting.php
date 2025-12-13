@@ -27,18 +27,18 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
- * @property-read \Illuminate\Database\Eloquent\Collection<int, AgendaItem> $agendaItems
+ * @property-read Collection<int, \Spatie\Activitylog\Models\Activity> $activities
+ * @property-read Collection<int, AgendaItem> $agendaItems
  * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $commentable
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Comment> $comments
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\SharepointFile> $files
+ * @property-read Collection<int, \App\Models\Comment> $comments
+ * @property-read Collection<int, \App\Models\SharepointFile> $files
  * @property-read string $completion_status
  * @property-read bool $is_public
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Institution> $institutions
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Task> $tasks
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Tenant> $tenants
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Type> $types
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $users
+ * @property-read Collection<int, \App\Models\Institution> $institutions
+ * @property-read Collection<int, \App\Models\Task> $tasks
+ * @property-read Collection<int, \App\Models\Tenant> $tenants
+ * @property-read Collection<int, \App\Models\Type> $types
+ * @property-read Collection<int, \App\Models\User> $users
  *
  * @method static \Database\Factories\MeetingFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Meeting newModelQuery()

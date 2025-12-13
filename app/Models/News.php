@@ -31,7 +31,7 @@ use Spatie\Sitemap\Tags\Url;
  * @property int $tenant_id
  * @property Carbon|null $publish_time
  * @property string|null $main_points
- * @property array|null $highlights
+ * @property array $highlights
  * @property string $layout
  * @property string|null $read_more
  * @property int|null $draft
@@ -87,7 +87,7 @@ class News extends Model implements Feedable, Sitemapable
             if (is_array($news->highlights) && count($news->highlights) > 3) {
                 $news->highlights = array_slice($news->highlights, 0, 3);
             }
-            
+
             // Validate layout
             if (! in_array($news->layout, self::LAYOUTS)) {
                 $news->layout = 'modern';
@@ -111,7 +111,7 @@ class News extends Model implements Feedable, Sitemapable
     public function getHighlightsAttribute($value): array
     {
         $highlights = is_string($value) ? json_decode($value, true) : $value;
-        
+
         if (! is_array($highlights)) {
             return [];
         }

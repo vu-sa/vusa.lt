@@ -118,79 +118,6 @@ declare global {
       parts_exists: boolean
     }
 
-    export interface ContentPart {
-      // columns
-      id: number
-      content_id: number
-      type: string
-      json_content: Array<unknown>
-      options?: Array<unknown> | null
-      order: number
-      created_at: string
-      updated_at: string
-      // mutators
-      html: unknown
-      // relations
-      content?: Content
-      // counts
-      // exists
-      content_exists: boolean
-    }
-
-    export interface Duty {
-      // columns
-      id: string
-      name?: Array<unknown> | null
-      description?: Array<unknown> | null
-      institution_id: string
-      order: number
-      email?: string | null
-      contacts_grouping: string
-      places_to_occupy?: number | null
-      created_at: string
-      updated_at: string
-      deleted_at?: string | null
-      // mutators
-      translations: unknown
-      // relations
-      dutiables?: Dutiable[]
-      users?: User[]
-      current_users?: User[]
-      previous_users?: User[]
-      types?: Type[]
-      institution?: Institution
-      institutions?: Institution
-      available_trainings?: Training[]
-      roles?: Role[]
-      permissions?: Permission[]
-      activities?: Activity[]
-      notifications?: DatabaseNotification[]
-      // counts
-      dutiables_count: number
-      users_count: number
-      current_users_count: number
-      previous_users_count: number
-      types_count: number
-      available_trainings_count: number
-      roles_count: number
-      permissions_count: number
-      activities_count: number
-      notifications_count: number
-      // exists
-      dutiables_exists: boolean
-      users_exists: boolean
-      current_users_exists: boolean
-      previous_users_exists: boolean
-      types_exists: boolean
-      institution_exists: boolean
-      institutions_exists: boolean
-      available_trainings_exists: boolean
-      roles_exists: boolean
-      permissions_exists: boolean
-      activities_exists: boolean
-      notifications_exists: boolean
-    }
-
     export interface FieldResponse {
       // columns
       id: number
@@ -317,78 +244,6 @@ declare global {
       user_exists: boolean
     }
 
-    export interface News {
-      // columns
-      id: number
-      title: string
-      category_id?: number | null
-      permalink?: string | null
-      short: string
-      lang: string
-      other_lang_id?: number | null
-      content_id: number
-      image?: unknown | null
-      image_author?: string | null
-      important: boolean
-      tenant_id: number
-      publish_time?: string | null
-      main_points?: string | null
-      highlights?: string[] | null
-      layout: 'modern' | 'classic' | 'immersive'
-      read_more?: string | null
-      draft?: boolean | null
-      created_at: string
-      updated_at: string
-      last_edited_at?: string | null
-      deleted_at?: string | null
-      // relations
-      user?: User
-      tenant?: Tenant
-      other_language_news?: News
-      tags?: Tag[]
-      content?: Content
-      // counts
-      tags_count: number
-      // exists
-      user_exists: boolean
-      tenant_exists: boolean
-      other_language_news_exists: boolean
-      tags_exists: boolean
-      content_exists: boolean
-    }
-
-    export interface Page {
-      // columns
-      id: number
-      title: string
-      permalink?: string | null
-      lang: string
-      other_lang_id?: number | null
-      content_id: number
-      category_id?: number | null
-      is_active: boolean
-      highlights?: string[] | null
-      layout: 'default' | 'wide' | 'focused'
-      featured_image?: string | null
-      meta_description?: string | null
-      publish_time?: string | null
-      tenant_id: number
-      created_at: string
-      updated_at: string
-      last_edited_at?: string | null
-      deleted_at?: string | null
-      // relations
-      tenant?: Tenant
-      category?: Category
-      content?: Content
-      other_language_page?: Page
-      // counts
-      // exists
-      tenant_exists: boolean
-      category_exists: boolean
-      content_exists: boolean
-    }
-
     export interface Permission {
       // columns
       id: string
@@ -485,6 +340,7 @@ declare global {
       relationshipable_type: string
       relationshipable_id: string
       related_model_id: string
+      scope: string
       created_at: string
       updated_at: string
       // relations
@@ -523,25 +379,6 @@ declare global {
       reservation_exists: boolean
       resource_exists: boolean
       comments_exists: boolean
-    }
-
-    export interface SharepointFileable {
-      // columns
-      sharepoint_file_id: string
-      fileable_type: string
-      fileable_id: string
-      created_at: string
-      updated_at: string
-      // relations
-      fileable?: SharepointFileable
-      meeting?: Meeting
-      institution?: Institution
-      type?: Type
-      // counts
-      // exists
-      meeting_exists: boolean
-      institution_exists: boolean
-      type_exists: boolean
     }
 
     export interface Trainable {
@@ -592,6 +429,25 @@ declare global {
       // exists
       meeting_exists: boolean
       activities_exists: boolean
+    }
+
+    export interface SharepointFileable {
+      // columns
+      sharepoint_file_id: string
+      fileable_type: string
+      fileable_id: string
+      created_at: string
+      updated_at: string
+      // relations
+      fileable?: SharepointFileable
+      meeting?: Meeting
+      institution?: Institution
+      type?: Type
+      // counts
+      // exists
+      meeting_exists: boolean
+      institution_exists: boolean
+      type_exists: boolean
     }
 
     export interface Programme {
@@ -955,27 +811,6 @@ declare global {
       news_exists: boolean
     }
 
-    export interface Task {
-      // columns
-      id: string
-      name: string
-      description?: string | null
-      due_date?: string | null
-      taskable_type: string
-      taskable_id: string
-      completed_at?: string | null
-      created_at: string
-      updated_at: string
-      deleted_at?: string | null
-      // relations
-      taskable?: Task
-      users?: User[]
-      // counts
-      users_count: number
-      // exists
-      users_exists: boolean
-    }
-
     export interface Training {
       // columns
       id: string
@@ -1039,56 +874,6 @@ declare global {
       training_exists: boolean
     }
 
-    export interface Type {
-      // columns
-      id: number
-      parent_id?: number | null
-      title?: Array<unknown> | null
-      description?: Array<unknown> | null
-      model_type?: string | null
-      slug?: string | null
-      extra_attributes?: { meeting_periodicity_days?: number | null } | null
-      created_at: string
-      updated_at: string
-      deleted_at?: string | null
-      // mutators
-      translations: unknown
-      // relations
-      institutions?: Institution[]
-      duties?: Duty[]
-      meetings?: Meeting[]
-      roles?: Role[]
-      descendants?: Type[]
-      parent?: Type
-      recursive_parent?: Type
-      outgoing_relationships?: Relationship[]
-      incoming_relationships?: Relationship[]
-      files?: SharepointFile[]
-      activities?: Activity[]
-      // counts
-      institutions_count: number
-      duties_count: number
-      meetings_count: number
-      roles_count: number
-      descendants_count: number
-      outgoing_relationships_count: number
-      incoming_relationships_count: number
-      files_count: number
-      activities_count: number
-      // exists
-      institutions_exists: boolean
-      duties_exists: boolean
-      meetings_exists: boolean
-      roles_exists: boolean
-      descendants_exists: boolean
-      parent_exists: boolean
-      recursive_parent_exists: boolean
-      outgoing_relationships_exists: boolean
-      incoming_relationships_exists: boolean
-      files_exists: boolean
-      activities_exists: boolean
-    }
-
     export interface Typeable {
       // relations
       type?: Type
@@ -1096,74 +881,6 @@ declare global {
       // counts
       // exists
       type_exists: boolean
-    }
-
-    export interface User {
-      // columns
-      id: string
-      email: string
-      phone?: string | null
-      facebook_url?: string | null
-      name: string
-      pronouns?: Array<unknown> | null
-      show_pronouns: boolean
-      password?: string | null
-      is_active: boolean
-      email_verified_at?: string | null
-      remember_token?: string | null
-      last_action?: string | null
-      tutorial_progress?: Record<string, string> | null
-      microsoft_token?: string | null
-      updated_at: string
-      created_at: string
-      profile_photo_path?: string | null
-      deleted_at?: string | null
-      name_was_changed?: boolean
-      // mutators
-      has_password: unknown
-      translations: unknown
-      // relations
-      duties?: Duty[]
-      previous_duties?: Duty[]
-      current_duties?: Duty[]
-      dutiables?: Dutiable[]
-      tasks?: Task[]
-      reservations?: Reservation[]
-      memberships?: Membership[]
-      trainings?: Training[]
-      available_trainings_through_user?: Training[]
-      roles?: Role[]
-      permissions?: Permission[]
-      activities?: Activity[]
-      notifications?: DatabaseNotification[]
-      // counts
-      duties_count: number
-      previous_duties_count: number
-      current_duties_count: number
-      dutiables_count: number
-      tasks_count: number
-      reservations_count: number
-      memberships_count: number
-      trainings_count: number
-      available_trainings_through_user_count: number
-      roles_count: number
-      permissions_count: number
-      activities_count: number
-      notifications_count: number
-      // exists
-      duties_exists: boolean
-      previous_duties_exists: boolean
-      current_duties_exists: boolean
-      dutiables_exists: boolean
-      tasks_exists: boolean
-      reservations_exists: boolean
-      memberships_exists: boolean
-      trainings_exists: boolean
-      available_trainings_through_user_exists: boolean
-      roles_exists: boolean
-      permissions_exists: boolean
-      activities_exists: boolean
-      notifications_exists: boolean
     }
 
     export interface Tenant {
@@ -1239,6 +956,113 @@ declare global {
       activities_exists: boolean
     }
 
+    export interface Document {
+      // columns
+      id: number
+      name: string
+      title: string
+      sharepoint_id?: string
+      e_tag?: string | null
+      document_date?: string | null
+      institution_id?: string | null
+      content_type?: string | null
+      language?: string | null
+      summary?: string | null
+      anonymous_url?: string | null
+      is_active: boolean
+      sharepoint_site_id?: string
+      sharepoint_list_id?: string
+      created_at?: string
+      checked_at?: string | null
+      sync_status: string
+      sync_error_message?: string | null
+      sync_attempts: boolean
+      last_sync_attempt_at?: string | null
+      updated_at?: string
+      effective_date?: string | null
+      expiration_date?: string | null
+      // mutators
+      is_in_effect: boolean
+      // relations
+      institution?: Institution
+      // counts
+      // exists
+      institution_exists: boolean
+    }
+
+    export interface ContentPart {
+      // columns
+      id: number
+      content_id: number
+      type: string
+      json_content: Record<string, unknown>
+      options?: Record<string, unknown> | null
+      order: number
+      created_at: string
+      updated_at: string
+      // mutators
+      html: unknown
+      // relations
+      content?: Content
+      // counts
+      // exists
+      content_exists: boolean
+    }
+
+    export interface Duty {
+      // columns
+      id: string
+      name?: Array<unknown> | null
+      description?: Array<unknown> | null
+      institution_id: string
+      order: number
+      email?: string | null
+      contacts_grouping: string
+      places_to_occupy?: number | null
+      created_at: string
+      updated_at: string
+      deleted_at?: string | null
+      // mutators
+      translations: unknown
+      // relations
+      dutiables?: Dutiable[]
+      users?: User[]
+      current_users?: User[]
+      previous_users?: User[]
+      types?: Type[]
+      institution?: Institution
+      institutions?: Institution
+      available_trainings?: Training[]
+      roles?: Role[]
+      permissions?: Permission[]
+      activities?: Activity[]
+      notifications?: DatabaseNotification[]
+      // counts
+      dutiables_count: number
+      users_count: number
+      current_users_count: number
+      previous_users_count: number
+      types_count: number
+      available_trainings_count: number
+      roles_count: number
+      permissions_count: number
+      activities_count: number
+      notifications_count: number
+      // exists
+      dutiables_exists: boolean
+      users_exists: boolean
+      current_users_exists: boolean
+      previous_users_exists: boolean
+      types_exists: boolean
+      institution_exists: boolean
+      institutions_exists: boolean
+      available_trainings_exists: boolean
+      roles_exists: boolean
+      permissions_exists: boolean
+      activities_exists: boolean
+      notifications_exists: boolean
+    }
+
     export interface Institution {
       // columns
       id: string
@@ -1265,7 +1089,6 @@ declare global {
       related_institutions: unknown
       maybe_short_name: unknown
       has_public_meetings: boolean
-      meeting_periodicity_days: number
       translations: unknown
       // relations
       duties?: Duty[]
@@ -1349,78 +1172,77 @@ declare global {
       activities_exists: boolean
     }
 
-    export interface Document {
+    export interface News {
       // columns
       id: number
-      name: string
       title: string
-      sharepoint_id?: string
-      e_tag?: string | null
-      document_date?: string | null
-      institution_id?: string | null
-      content_type?: string | null
-      language?: string | null
-      summary?: string | null
-      anonymous_url?: string | null
-      is_active: boolean
-      sharepoint_site_id?: string
-      sharepoint_list_id?: string
-      created_at?: string
-      checked_at?: string | null
-      sync_status: string
-      sync_error_message?: string | null
-      sync_attempts: boolean
-      last_sync_attempt_at?: string | null
-      updated_at?: string
-      effective_date?: string | null
-      expiration_date?: string | null
-      // mutators
-      is_in_effect: boolean
-      // relations
-      institution?: Institution
-      // counts
-      // exists
-      institution_exists: boolean
-    }
-
-    export interface PublicMeeting {
-      // columns
-      id: string
-      title: string
-      description?: string | null
-      start_time: string
-      end_time?: string | null
+      category_id?: number | null
+      permalink?: string | null
+      short: string
+      lang: string
+      other_lang_id?: number | null
+      content_id: number
+      image?: unknown | null
+      image_author?: string | null
+      important: boolean
+      tenant_id: number
+      publish_time?: string | null
+      main_points?: string | null
+      highlights?: Array<unknown> | null
+      layout: string
+      read_more?: string | null
+      draft?: boolean | null
       created_at: string
       updated_at: string
+      last_edited_at?: string | null
       deleted_at?: string | null
-      // mutators
-      is_public: boolean
-      completion_status: string
       // relations
-      institutions?: Institution[]
-      types?: Type[]
-      agenda_items?: AgendaItem[]
-      comments?: Comment[]
-      commentable?: PublicMeeting
-      files?: SharepointFile[]
-      tasks?: Task[]
-      activities?: Activity[]
+      user?: User
+      tenant?: Tenant
+      other_language_news?: News
+      tags?: Tag[]
+      content?: Content
       // counts
-      institutions_count: number
-      types_count: number
-      agenda_items_count: number
-      comments_count: number
-      files_count: number
-      tasks_count: number
-      activities_count: number
+      tags_count: number
       // exists
-      institutions_exists: boolean
-      types_exists: boolean
-      agenda_items_exists: boolean
-      comments_exists: boolean
-      files_exists: boolean
-      tasks_exists: boolean
-      activities_exists: boolean
+      user_exists: boolean
+      tenant_exists: boolean
+      other_language_news_exists: boolean
+      tags_exists: boolean
+      content_exists: boolean
+    }
+
+    export interface Page {
+      // columns
+      id: number
+      title: string
+      permalink?: string | null
+      lang: string
+      other_lang_id?: number | null
+      content_id: number
+      category_id?: number | null
+      is_active: boolean
+      highlights?: Array<unknown> | null
+      layout: string
+      featured_image?: string | null
+      meta_description?: string | null
+      publish_time?: string | null
+      tenant_id: number
+      created_at: string
+      updated_at: string
+      last_edited_at?: string | null
+      deleted_at?: string | null
+      // relations
+      tenant?: Tenant
+      other_language_page?: Page
+      category?: Category
+      content?: Content
+      // counts
+      // exists
+      tenant_exists: boolean
+      other_language_page_exists: boolean
+      category_exists: boolean
+      content_exists: boolean
     }
 
     export interface PublicInstitution {
@@ -1440,6 +1262,7 @@ declare global {
       instagram_url?: string | null
       tenant_id?: number | null
       is_active: boolean
+      meeting_periodicity_days?: number | null
       contacts_layout: string
       created_at: string
       updated_at: string
@@ -1489,6 +1312,185 @@ declare global {
       incoming_relationships_exists: boolean
       files_exists: boolean
       activities_exists: boolean
+    }
+
+    export interface PublicMeeting {
+      // columns
+      id: string
+      title: string
+      description?: string | null
+      start_time: string
+      end_time?: string | null
+      created_at: string
+      updated_at: string
+      deleted_at?: string | null
+      // mutators
+      is_public: boolean
+      completion_status: string
+      // relations
+      institutions?: Institution[]
+      types?: Type[]
+      agenda_items?: AgendaItem[]
+      comments?: Comment[]
+      commentable?: PublicMeeting
+      files?: SharepointFile[]
+      tasks?: Task[]
+      activities?: Activity[]
+      // counts
+      institutions_count: number
+      types_count: number
+      agenda_items_count: number
+      comments_count: number
+      files_count: number
+      tasks_count: number
+      activities_count: number
+      // exists
+      institutions_exists: boolean
+      types_exists: boolean
+      agenda_items_exists: boolean
+      comments_exists: boolean
+      files_exists: boolean
+      tasks_exists: boolean
+      activities_exists: boolean
+    }
+
+    export interface Task {
+      // columns
+      id: string
+      name: string
+      description?: string | null
+      due_date?: string | null
+      taskable_type: string
+      taskable_id: string
+      completed_at?: string | null
+      created_at: string
+      updated_at: string
+      deleted_at?: string | null
+      // relations
+      taskable?: Task
+      users?: User[]
+      // counts
+      users_count: number
+      // exists
+      users_exists: boolean
+    }
+
+    export interface Type {
+      // columns
+      id: number
+      parent_id?: number | null
+      title?: Array<unknown> | null
+      description?: Array<unknown> | null
+      model_type?: string | null
+      slug?: string | null
+      extra_attributes?: Array<unknown> | null
+      created_at: string
+      updated_at: string
+      deleted_at?: string | null
+      // mutators
+      translations: unknown
+      // relations
+      institutions?: Institution[]
+      duties?: Duty[]
+      meetings?: Meeting[]
+      roles?: Role[]
+      descendants?: Type[]
+      parent?: Type
+      recursive_parent?: Type
+      outgoing_relationships?: Relationship[]
+      incoming_relationships?: Relationship[]
+      files?: SharepointFile[]
+      activities?: Activity[]
+      // counts
+      institutions_count: number
+      duties_count: number
+      meetings_count: number
+      roles_count: number
+      descendants_count: number
+      outgoing_relationships_count: number
+      incoming_relationships_count: number
+      files_count: number
+      activities_count: number
+      // exists
+      institutions_exists: boolean
+      duties_exists: boolean
+      meetings_exists: boolean
+      roles_exists: boolean
+      descendants_exists: boolean
+      parent_exists: boolean
+      recursive_parent_exists: boolean
+      outgoing_relationships_exists: boolean
+      incoming_relationships_exists: boolean
+      files_exists: boolean
+      activities_exists: boolean
+    }
+
+    export interface User {
+      // columns
+      id: string
+      email: string
+      phone?: string | null
+      facebook_url?: string | null
+      name: string
+      pronouns?: Array<unknown> | null
+      show_pronouns: boolean
+      password?: string | null
+      is_active: boolean
+      email_verified_at?: string | null
+      remember_token?: string | null
+      last_action?: string | null
+      tutorial_progress?: Array<unknown> | null
+      microsoft_token?: string | null
+      updated_at: string
+      created_at: string
+      profile_photo_path?: string | null
+      deleted_at?: string | null
+      name_was_changed?: boolean
+      // mutators
+      has_password: unknown
+      translations: unknown
+      // relations
+      duties?: Duty[]
+      previous_duties?: Duty[]
+      current_duties?: Duty[]
+      dutiables?: Dutiable[]
+      tasks?: Task[]
+      reservations?: Reservation[]
+      memberships?: Membership[]
+      trainings?: Training[]
+      available_trainings_through_user?: Training[]
+      roles?: Role[]
+      permissions?: Permission[]
+      activities?: Activity[]
+      notifications?: DatabaseNotification[]
+      // counts
+      duties_count: number
+      previous_duties_count: number
+      current_duties_count: number
+      dutiables_count: number
+      tasks_count: number
+      reservations_count: number
+      memberships_count: number
+      trainings_count: number
+      available_trainings_through_user_count: number
+      roles_count: number
+      permissions_count: number
+      activities_count: number
+      notifications_count: number
+      // exists
+      duties_exists: boolean
+      previous_duties_exists: boolean
+      current_duties_exists: boolean
+      dutiables_exists: boolean
+      tasks_exists: boolean
+      reservations_exists: boolean
+      memberships_exists: boolean
+      trainings_exists: boolean
+      available_trainings_through_user_exists: boolean
+      roles_exists: boolean
+      permissions_exists: boolean
+      activities_exists: boolean
+      notifications_exists: boolean
     }
 
   }

@@ -22,6 +22,7 @@ export enum ContentPartEnum {
   "TIPTAP" = "tiptap",
   "HERO" = "hero",
   "SPOTIFY_EMBED" = "spotify-embed",
+  "SOCIAL_EMBED" = "social-embed",
   "FLOW_GRAPH" = "flow-graph",
   "NUMBER_STAT_SECTION" = "number-stat-section",
   "NEWS" = "news",
@@ -75,6 +76,17 @@ export enum ModelEnum {
   "TYPE" = "type",
   "USER" = "user",
 }
+export enum NewsLayoutEnum {
+  "MODERN" = "modern",
+  "CLASSIC" = "classic",
+  "IMMERSIVE" = "immersive",
+  "HEADLINE" = "headline",
+}
+export enum PageLayoutEnum {
+  "DEFAULT" = "default",
+  "WIDE" = "wide",
+  "FOCUSED" = "focused",
+}
 export enum PermissionScopeEnum {
   "OWN" = "own",
   "PADALINYS" = "padalinys",
@@ -85,6 +97,8 @@ export enum SearchableModelEnum {
   "PAGE" = "page",
   "DOCUMENT" = "document",
   "CALENDAR" = "calendar",
+  "PUBLIC_INSTITUTION" = "public_institution",
+  "PUBLIC_MEETING" = "public_meeting",
 }
 export enum SharepointConfigEnum {
   "API_BASE_URL" = "https://graph.microsoft.com/v1.0/",

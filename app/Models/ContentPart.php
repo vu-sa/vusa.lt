@@ -11,8 +11,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $id
  * @property int $content_id
  * @property string $type
- * @property array<array-key, mixed> $json_content
- * @property array<array-key, mixed>|null $options
+ * @property \Illuminate\Database\Eloquent\Casts\ArrayObject<array-key, mixed> $json_content
+ * @property \Illuminate\Database\Eloquent\Casts\ArrayObject<array-key, mixed>|null $options
  * @property int $order
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
@@ -32,7 +32,7 @@ class ContentPart extends Model
 
     /**
      * Get the attributes that should be cast.
-     * 
+     *
      * Using AsArrayObject for json_content to preserve JSON object structure.
      * This prevents empty objects {} from becoming empty arrays [] in the database,
      * which would break content types like Hero that expect object properties.

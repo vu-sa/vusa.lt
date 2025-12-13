@@ -21,6 +21,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property array|string|null $description
  * @property string|null $model_type
  * @property string|null $slug
+ * @property array<array-key, mixed>|null $extra_attributes
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
@@ -39,6 +40,9 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read mixed $translations
  *
  * @method static \Database\Factories\TypeFactory factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Type forDuties()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Type forInstitutions()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Type forMeetings()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Type newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Type newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Type onlyTrashed()

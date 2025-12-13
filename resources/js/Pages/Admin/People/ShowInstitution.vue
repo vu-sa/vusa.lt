@@ -31,7 +31,6 @@
       </TabsList>
 
       <TabsContent value="overview" class="space-y-6">
-        <LastMeetingCard v-if="institution?.lastMeeting" :last-meeting="institution.lastMeeting" :institution />
         <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
           <!-- Main Content -->
           <div class="xl:col-span-2 space-y-6">
