@@ -112,7 +112,10 @@ const navMainItems = computed(() => {
       title: "ViSAK",
       url: route('dashboard.atstovavimas'),
       icon: GraduationCap,
-      isActive: route().current('dashboard.atstovavimas*'),
+      isActive: route().current('dashboard.atstovavimas') ||
+                route().current('meetings.show') ||
+                route().current('institutions.show') ||
+                route().current('duties.show'),
       dataTour: 'nav-visak',
     })
   }
@@ -123,7 +126,7 @@ const navMainItems = computed(() => {
       title: $t("Svetainė"),
       url: route('dashboard.svetaine'),
       icon: Globe,
-      isActive: route().current('dashboard.svetaine*'),
+      isActive: false,
     })
   }
 
@@ -132,7 +135,9 @@ const navMainItems = computed(() => {
     title: $t('Rezervacijos'),
     url: route('dashboard.reservations'),
     icon: Bookmark,
-    isActive: route().current('dashboard.reservations*'),
+    isActive: route().current('dashboard.reservations*') ||
+              route().current('reservations.create') ||
+              route().current('reservations.show'),
   })
 
   // Settings/Admin (Administravimas) - only show if user can access administration

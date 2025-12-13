@@ -45,7 +45,7 @@ const sectionTitle = $t('Funkcijos')
     <SidebarMenu>
       <Collapsible v-for="item in items" :key="item.title" as-child :default-open="item.isActive">
         <SidebarMenuItem :data-tour="item.dataTour">
-          <SidebarMenuButton as-child :tooltip="item.title">
+          <SidebarMenuButton as-child :tooltip="item.title" :is-active="item.isActive">
             <Link :href="item.url">
               <component :is="item.icon" />
               <span>{{ item.title }}</span>
