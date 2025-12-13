@@ -27,6 +27,8 @@ use Illuminate\Database\Eloquent\Relations\MorphPivot;
 class Relationshipable extends MorphPivot
 {
     // Scope constants for relationship resolution
+    // Note: 'within-type' sibling relationships are computed dynamically
+    // based on Type.extra_attributes.enable_sibling_relationships, not stored here
     public const SCOPE_WITHIN_TENANT = 'within-tenant';
 
     public const SCOPE_CROSS_TENANT = 'cross-tenant';

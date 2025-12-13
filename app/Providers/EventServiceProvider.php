@@ -9,6 +9,7 @@ use App\Models\Meeting;
 use App\Models\Pivots\Relationshipable;
 use App\Models\Role;
 use App\Models\RoleType;
+use App\Models\Type;
 use App\Models\Typeable;
 use App\Models\User;
 use App\Observers\CalendarObserver;
@@ -17,6 +18,7 @@ use App\Observers\RelationshipableObserver;
 use App\Observers\RoleTypeObserver;
 use App\Observers\MeetingObserver;
 use App\Observers\TypeableObserver;
+use App\Observers\TypeObserver;
 use App\Observers\UserPermissionObserver;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use Spatie\Permission\Models\Permission;
@@ -65,6 +67,7 @@ class EventServiceProvider extends ServiceProvider
     {
         Calendar::observe(CalendarObserver::class);
         RoleType::observe(RoleTypeObserver::class);
+        Type::observe(TypeObserver::class);
         Typeable::observe(TypeableObserver::class);
         Institution::observe(InstitutionObserver::class);
         Relationshipable::observe(RelationshipableObserver::class);

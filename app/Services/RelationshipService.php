@@ -192,6 +192,31 @@ class RelationshipService
             }
         }
 
+        // Within-type sibling relationships (same type + same tenant)
+        // Only for types that have enable_sibling_relationships flag set in extra_attributes
+        foreach ($institution->types as $type) {
+            if (! $type->hasSiblingRelationshipsEnabled()) {
+                continue;
+            }
+
+            // Get sibling institutions: same type, same tenant, different institution
+            $siblingInstitutions = Institution::query()
+                ->where('tenant_id', $institution->tenant_id)
+                ->where('id', '!=', $sourceId)
+                ->whereHas('types', fn ($q) => $q->where('types.id', $type->id))
+                ->with('tenant')
+                ->get();
+
+            foreach ($siblingInstitutions as $siblingInstitution) {
+                $result->push([
+                    'institution' => $siblingInstitution,
+                    'direction' => 'sibling',
+                    'type' => 'within-type',
+                    'source_institution_id' => $sourceId,
+                ]);
+            }
+        }
+
         // Return unique institutions (keep first occurrence with its metadata)
         return $result->unique(fn ($item) => $item['institution']->id);
     }
@@ -381,9 +406,50 @@ class RelationshipService
             return self::getGivenModelsFromModelType(Institution::class, $relationshipable);
         })->flatten(1);
 
-        $institutionRelationships = $institutionRelationshipables->merge($typeRelationshipables);
+        // Within-type sibling relationships (institutions with same type + same tenant)
+        $withinTypeRelationships = self::getWithinTypeSiblingRelationships();
+
+        $institutionRelationships = $institutionRelationshipables->merge($typeRelationshipables)->merge($withinTypeRelationships);
 
         return $institutionRelationships;
+    }
+
+    /**
+     * Get all sibling relationships for types that have enable_sibling_relationships enabled.
+     * Returns pairs of institutions that share the same type and tenant.
+     */
+    protected static function getWithinTypeSiblingRelationships(): \Illuminate\Support\Collection
+    {
+        $relationships = collect();
+
+        // Find types that have sibling relationships enabled
+        $typesWithSiblings = Type::forInstitutions()
+            ->whereJsonContains('extra_attributes->enable_sibling_relationships', true)
+            ->with(['institutions' => fn ($q) => $q->select('institutions.id', 'institutions.tenant_id')])
+            ->get();
+
+        foreach ($typesWithSiblings as $type) {
+            // Group institutions by tenant
+            $institutionsByTenant = $type->institutions->groupBy('tenant_id');
+
+            foreach ($institutionsByTenant as $tenantId => $institutions) {
+                // Create relationships between all pairs within the same tenant
+                $institutionIds = $institutions->pluck('id')->values();
+                $count = $institutionIds->count();
+
+                for ($i = 0; $i < $count; $i++) {
+                    for ($j = $i + 1; $j < $count; $j++) {
+                        // Add both directions for the graph
+                        $relationships->push([
+                            'relationshipable_id' => $institutionIds[$i],
+                            'related_model_id' => $institutionIds[$j],
+                        ]);
+                    }
+                }
+            }
+        }
+
+        return $relationships->unique(fn ($r) => $r['relationshipable_id'].'_'.$r['related_model_id']);
     }
 
     /**

@@ -193,4 +193,14 @@ class Type extends Model implements SharepointFileableContract
     {
         return $query->where('model_type', Meeting::class);
     }
+
+    /**
+     * Check if sibling relationships are enabled for this type.
+     * When enabled, institutions with this type in the same tenant
+     * will automatically be related as siblings.
+     */
+    public function hasSiblingRelationshipsEnabled(): bool
+    {
+        return (bool) ($this->extra_attributes['enable_sibling_relationships'] ?? false);
+    }
 }

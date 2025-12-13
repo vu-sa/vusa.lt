@@ -101,6 +101,15 @@
         <NInputNumber v-model:value="extraAttributesPeriodicityDays" :min="1" :max="365" clearable
           placeholder="30" />
       </NFormItem>
+      <NFormItem>
+        <template #label>
+          <span class="inline-flex items-center gap-1">
+            Rodyti susijusias institucijas pagal tipą
+            <InfoPopover>Įjungus, institucijos su šiuo tipu tame pačiame padalinyje bus matomos kaip susijusios viena kitai (pvz., atstovavimo skydelyje).</InfoPopover>
+          </span>
+        </template>
+        <NSwitch v-model:value="enableSiblingRelationships" />
+      </NFormItem>
     </FormElement>
     <FormElement no-divider>
       <template #title>
@@ -172,6 +181,20 @@ const extraAttributesPeriodicityDays = computed({
     form.extra_attributes = {
       ...form.extra_attributes,
       meeting_periodicity_days: value,
+    };
+  },
+});
+
+// Computed property to handle extra_attributes.enable_sibling_relationships
+const enableSiblingRelationships = computed({
+  get: () => form.extra_attributes?.enable_sibling_relationships ?? false,
+  set: (value) => {
+    if (!form.extra_attributes) {
+      form.extra_attributes = {};
+    }
+    form.extra_attributes = {
+      ...form.extra_attributes,
+      enable_sibling_relationships: value,
     };
   },
 });
