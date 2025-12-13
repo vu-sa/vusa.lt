@@ -23,7 +23,7 @@ export interface GanttSettings {
   detailsExpanded: Ref<boolean>;
   /** Whether to show duty members on the timeline - default: true */
   showDutyMembers: Ref<boolean>;
-  /** Whether to show tenant section headers in the timeline - default: false */
+  /** Whether to show tenant section headers in the timeline - default: true */
   showTenantHeaders: Ref<boolean>;
   /** Center date timestamp to restore on page load (null = today) */
   centerDateTimestamp: Ref<number | null>;
@@ -93,7 +93,7 @@ export function provideGanttSettings(): GanttSettings {
   const labelWidth = ref<number>(stored.labelWidth ?? DEFAULT_LABEL_WIDTH);
   const detailsExpanded = ref<boolean>(stored.detailsExpanded ?? false);
   const showDutyMembers = ref<boolean>(stored.showDutyMembers ?? true);
-  const showTenantHeaders = ref<boolean>(stored.showTenantHeaders ?? false);
+  const showTenantHeaders = ref<boolean>(stored.showTenantHeaders ?? true);
   const centerDateTimestamp = ref<number | null>(stored.centerDateTimestamp ?? null);
   const verticalScrollPosition = ref<number | null>(stored.verticalScrollPosition ?? null);
 
