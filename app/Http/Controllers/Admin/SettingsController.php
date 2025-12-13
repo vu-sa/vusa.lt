@@ -103,9 +103,12 @@ class SettingsController extends AdminController
         $meetingSettings->save();
 
         // Reindex public meetings and institutions since visibility criteria changed
-        // This updates which meetings/institutions appear in public search
+        // Flush first to remove meetings/institutions that no longer match, then reimport
         dispatch(function () {
+            PublicMeeting::removeAllFromSearch();
             PublicMeeting::makeAllSearchable();
+            
+            PublicInstitution::removeAllFromSearch();
             PublicInstitution::makeAllSearchable();
         })->afterResponse();
 
