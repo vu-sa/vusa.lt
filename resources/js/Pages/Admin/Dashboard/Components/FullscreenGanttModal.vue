@@ -61,7 +61,7 @@
         <div v-if="ganttType === 'user' && userInstitutions.length > 0" class="h-full">
           <TimelineGanttChart
             :institutions="mergedUserInstitutions"
-            :meetings="userMeetings"
+            :meetings="mergedUserMeetings"
             :gaps="userGaps"
             :tenant-filter="filters.userTenantFilter.value"
             :show-only-with-activity="filters.showOnlyWithActivityUser.value"
@@ -135,7 +135,8 @@ import type {
   AtstovavimosGap,
   AtstovavimosTenant,
   GanttDutyMember,
-  InactivePeriod 
+  InactivePeriod,
+  AtstovavimosInstitution 
 } from '../types';
 
 interface Props {
@@ -154,6 +155,8 @@ interface Props {
   userDutyMembers?: GanttDutyMember[];
   userInactivePeriods?: InactivePeriod[];
   userRelatedInstitutions?: GanttInstitution[];
+  // Full related institutions data with meetings (for extracting agenda_items)
+  userRelatedInstitutionsFull?: AtstovavimosInstitution[];
   // Flag to show related institutions filter even when data is lazy-loaded
   mayHaveRelatedInstitutions?: boolean;
   
@@ -197,6 +200,39 @@ const mergedUserInstitutions = computed(() => {
     return props.userInstitutions;
   }
   return [...props.userInstitutions, ...props.userRelatedInstitutions];
+});
+
+// Computed: merged meetings including related institution meetings
+const mergedUserMeetings = computed(() => {
+  if (!filters.showRelatedInstitutionsUser.value || !props.userRelatedInstitutionsFull?.length) {
+    return props.userMeetings;
+  }
+
+  // Add meetings from related institutions (same logic as UserTimelineSection)
+  const relatedMeetings: GanttMeeting[] = props.userRelatedInstitutionsFull.flatMap(inst => 
+    (inst.meetings ?? []).map((m: any) => {
+      // Extract agenda items for tooltip (limit to first 4)
+      const agendaItems = (m.agenda_items ?? []).slice(0, 4).map((item: any) => ({
+        id: String(item.id),
+        title: String(item.title ?? ''),
+        student_vote: item.student_vote ?? null,
+        decision: item.decision ?? null,
+      }));
+      const totalAgendaCount = (m.agenda_items ?? []).length;
+
+      return {
+        id: m.id,
+        start_time: new Date(m.start_time),
+        institution_id: inst.id,
+        institution: String((inst as any)?.name?.lt ?? (inst as any)?.name?.en ?? (inst as any)?.name ?? inst.id),
+        completion_status: m.completion_status,
+        agenda_items: agendaItems,
+        agenda_items_count: totalAgendaCount,
+      };
+    })
+  );
+
+  return [...props.userMeetings, ...relatedMeetings];
 });
 
 // Computed: merged institution names including related

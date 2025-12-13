@@ -90,6 +90,7 @@
       :user-institution-names :user-institution-tenant :user-institution-has-public-meetings
       :user-institution-periodicity :user-duty-members :user-inactive-periods
       :user-related-institutions="formatRelatedInstitutions"
+      :user-related-institutions-full="relatedInstitutions"
       :may-have-related-institutions="props.mayHaveRelatedInstitutions"
       :tenant-institutions="ganttData.formattedTenantInstitutions.value"
       :tenant-meetings="ganttData.tenantMeetings.value" :tenant-gaps="ganttData.tenantGaps.value"

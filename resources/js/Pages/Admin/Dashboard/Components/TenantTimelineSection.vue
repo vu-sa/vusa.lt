@@ -30,8 +30,8 @@
     <!-- Deferred Gantt chart rendering for better initial load performance -->
     <!-- Show skeleton while loading tenant institutions -->
     <TimelineGanttSkeleton v-if="!isReady || isHidden || filters.tenantInstitutionsLoading.value" />
-    <!-- Show empty state if loaded but no institutions -->
-    <div v-else-if="!filters.tenantInstitutionsLoaded.value" class="text-center py-12 text-muted-foreground">
+    <!-- Show empty state if not loaded yet (but not if data was loaded and exists) -->
+    <div v-else-if="!filters.tenantInstitutionsLoaded.value && !hasData" class="text-center py-12 text-muted-foreground">
       {{ $t('Pasirinkite padalinį norėdami matyti institucijų laiko juostą') }}
     </div>
     <div v-else-if="!isHidden" data-tour="gantt-chart">
@@ -49,7 +49,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted } from 'vue';
+import { computed, ref, onMounted, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import type {
@@ -100,6 +100,24 @@ onMounted(() => {
 const ganttSettings = useGanttSettings();
 // Get shared filter state
 const filters = useTimelineFilters();
+
+// Check if we actually have data (not just the loaded flag)
+// This handles the case where an Inertia request resets the lazy-loaded props
+const hasData = computed(() => props.tenantInstitutions?.length > 0);
+
+// Watch for data being reset (e.g., by Inertia request) and trigger reload
+watch(
+  () => props.tenantInstitutions,
+  (newValue) => {
+    // If we thought data was loaded but now it's empty/undefined, reload
+    if (filters.tenantInstitutionsLoaded.value && (!newValue || newValue.length === 0)) {
+      // Reset the loaded flag so we can reload
+      filters.tenantInstitutionsLoaded.value = false;
+      // Trigger reload
+      filters.loadTenantInstitutions();
+    }
+  }
+);
 
 const emit = defineEmits<{
   'create-meeting': [payload: { institution_id: string | number, suggestedAt: Date }];

@@ -154,13 +154,26 @@ const allMeetings = computed(() => {
 
   // Add meetings from related institutions
   const relatedMeetings: GanttMeeting[] = props.relatedInstitutions.flatMap(inst => 
-    (inst.meetings ?? []).map((m: any) => ({
-      id: m.id,
-      start_time: new Date(m.start_time),
-      institution_id: inst.id,
-      institution: String((inst as any)?.name?.lt ?? (inst as any)?.name?.en ?? (inst as any)?.name ?? inst.id),
-      completion_status: m.completion_status
-    }))
+    (inst.meetings ?? []).map((m: any) => {
+      // Extract agenda items for tooltip (limit to first 4) - same as useAtstovavimasData
+      const agendaItems = (m.agenda_items ?? []).slice(0, 4).map((item: any) => ({
+        id: String(item.id),
+        title: String(item.title ?? ''),
+        student_vote: item.student_vote ?? null,
+        decision: item.decision ?? null,
+      }));
+      const totalAgendaCount = (m.agenda_items ?? []).length;
+
+      return {
+        id: m.id,
+        start_time: new Date(m.start_time),
+        institution_id: inst.id,
+        institution: String((inst as any)?.name?.lt ?? (inst as any)?.name?.en ?? (inst as any)?.name ?? inst.id),
+        completion_status: m.completion_status,
+        agenda_items: agendaItems,
+        agenda_items_count: totalAgendaCount,
+      };
+    })
   );
 
   return [...props.meetings, ...relatedMeetings];
