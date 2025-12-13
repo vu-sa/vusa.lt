@@ -61,9 +61,19 @@ export interface TypesenseNode {
   port: number
 }
 
+export interface TypesenseCollections {
+  news: string
+  pages: string
+  documents: string
+  calendar: string
+  public_institutions: string
+  public_meetings: string
+}
+
 export interface TypesenseConfig {
   apiKey: string
   nodes: TypesenseNode[]
+  collections?: TypesenseCollections
 }
 
 // Date range filter - shared between Document and Meeting search

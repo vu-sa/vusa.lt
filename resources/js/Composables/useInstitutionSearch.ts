@@ -189,6 +189,21 @@ export const useInstitutionSearch = (): InstitutionSearchController => {
     }
 
     try {
+      // Get collection name from config (with staging prefix if applicable)
+      const collectionName = typesenseConfig.collections?.public_institutions || 'public_institutions'
+      
+      // Build collection-specific search parameters with dynamic collection name
+      const collectionSpecificSearchParameters: Record<string, any> = {}
+      collectionSpecificSearchParameters[collectionName] = {
+        query_by: 'name_lt,name_en,short_name_lt,short_name_en,alias',
+        facet_by: [
+          'tenant_shortname',
+          'type_slugs',
+          'has_contacts'
+        ].join(','),
+        per_page: 24,
+      }
+
       // Create InstantSearch adapter (for compatibility)
       const adapter = new TypesenseInstantSearchAdapter({
         server: {
@@ -211,17 +226,7 @@ export const useInstitutionSearch = (): InstitutionSearchController => {
           max_facet_values: 50,
           sort_by: 'duties_count:desc,updated_at:desc'
         },
-        collectionSpecificSearchParameters: {
-          public_institutions: {
-            query_by: 'name_lt,name_en,short_name_lt,short_name_en,alias',
-            facet_by: [
-              'tenant_shortname',
-              'type_slugs',
-              'has_contacts'
-            ].join(','),
-            per_page: 24,
-          }
-        }
+        collectionSpecificSearchParameters
       })
 
       searchClient.value = adapter.searchClient
@@ -259,8 +264,9 @@ export const useInstitutionSearch = (): InstitutionSearchController => {
         }
       }
 
-      // Initialize search service
-      searchService.value = new InstitutionSearchService(typesenseClient.value)
+      // Initialize search service with collection name from config
+      const collectionName = typesenseConfig.collections?.public_institutions || 'public_institutions'
+      searchService.value = new InstitutionSearchService(typesenseClient.value, collectionName)
 
       // Load initial facets after client initialization
       if (typesenseClient.value) {

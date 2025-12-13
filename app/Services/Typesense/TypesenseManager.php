@@ -18,6 +18,8 @@ class TypesenseManager
         $typesenseConfig = Config::get('scout.typesense.client-settings');
         $nodes = $typesenseConfig['nodes'] ?? [];
 
+        $prefix = config('scout.prefix', '');
+
         return [
             'apiKey' => config('scout.typesense.client-settings.search_only_key', $typesenseConfig['api_key']),
             'nodes' => array_map(function ($node) {
@@ -30,6 +32,15 @@ class TypesenseManager
                     'protocol' => $node['protocol'],
                 ];
             }, $nodes),
+            // Collection names with environment prefix (e.g., staging_)
+            'collections' => [
+                'news' => $prefix.'news',
+                'pages' => $prefix.'pages',
+                'documents' => $prefix.'documents',
+                'calendar' => $prefix.'calendar',
+                'public_institutions' => $prefix.'public_institutions',
+                'public_meetings' => $prefix.'public_meetings',
+            ],
         ];
     }
 

@@ -8,10 +8,11 @@ import { usePage } from '@inertiajs/vue3'
 export class MeetingSearchService {
   private abortController: AbortController | null = null
   private searchClient: any
-  private collection = 'public_meetings'
+  private collection: string
 
-  constructor(searchClient: any) {
+  constructor(searchClient: any, collectionName?: string) {
     this.searchClient = searchClient
+    this.collection = collectionName || 'public_meetings'
   }
 
   /**

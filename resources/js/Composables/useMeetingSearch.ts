@@ -148,6 +148,22 @@ export const useMeetingSearch = (): MeetingSearchController => {
       const locale = page.props.app.locale || 'lt'
       const institutionNameField = `institution_name_${locale}`
 
+      // Get collection name from config (with staging prefix if applicable)
+      const collectionName = typesenseConfig.collections?.public_meetings || 'public_meetings'
+      
+      // Build collection-specific search parameters with dynamic collection name
+      const collectionSpecificSearchParameters: Record<string, any> = {}
+      collectionSpecificSearchParameters[collectionName] = {
+        query_by: `title,description,${institutionNameField}`,
+        facet_by: [
+          'year',
+          'month',
+          'tenant_shortname',
+          'completion_status'
+        ].join(','),
+        per_page: 24,
+      }
+
       // Create InstantSearch adapter (for compatibility)
       const adapter = new TypesenseInstantSearchAdapter({
         server: {
@@ -171,18 +187,7 @@ export const useMeetingSearch = (): MeetingSearchController => {
           max_facet_values: 50,
           sort_by: 'start_time:desc'
         },
-        collectionSpecificSearchParameters: {
-          publicMeetings: {
-            query_by: `title,description,${institutionNameField}`,
-            facet_by: [
-              'year',
-              'month',
-              'tenant_shortname',
-              'completion_status'
-            ].join(','),
-            per_page: 24,
-          }
-        }
+        collectionSpecificSearchParameters
       })
 
       searchClient.value = adapter.searchClient
@@ -220,8 +225,9 @@ export const useMeetingSearch = (): MeetingSearchController => {
         }
       }
 
-      // Initialize search service
-      searchService.value = new MeetingSearchService(typesenseClient.value)
+      // Initialize search service with collection name from config
+      const collectionName = typesenseConfig.collections?.public_meetings || 'public_meetings'
+      searchService.value = new MeetingSearchService(typesenseClient.value, collectionName)
 
       // Load initial facets after client initialization
       if (typesenseClient.value) {
