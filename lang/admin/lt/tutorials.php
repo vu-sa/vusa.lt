@@ -141,4 +141,10 @@ return [
             'description' => 'Turi pastebėjimų ar pasiūlymų? <strong>Parašyk mums!</strong> Nuolat tobuliname platformą pagal jūsų atsiliepimus. Sėkmės! ✨',
         ],
     ],
+
+    // Help Button Spotlight
+    'help_button_spotlight' => [
+        'title' => 'Reikia pagalbos?',
+        'description' => 'Spauskite šį mygtuką, kad pradėtumėte interaktyvų puslapio vadovą ir sužinotumėte, kaip naudotis funkcijomis.',
+    ],
 ];

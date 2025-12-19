@@ -77,6 +77,10 @@ export function useProductTour(options: ProductTourOptions) {
   const isVoluntaryTour = ref(false);
   let driverInstance: Driver | null = null;
   
+  // Track if we've already marked this tour session as complete
+  // Prevents double-saving when both onDestroyStarted and onUnmounted fire
+  let hasMarkedComplete = false;
+  
   // Check if tour has been completed
   const hasCompleted = computed(() => {
     return !!globalProgress.value[tourId];
@@ -140,6 +144,7 @@ export function useProductTour(options: ProductTourOptions) {
     if (isActive.value || steps.length === 0) return;
     
     isVoluntaryTour.value = isVoluntary;
+    hasMarkedComplete = false; // Reset for new tour session
     
     // Create driver instance with merged config
     driverInstance = driver({
@@ -201,17 +206,25 @@ export function useProductTour(options: ProductTourOptions) {
         driverConfig?.onHighlightStarted?.(element, step, opts);
       },
       
-      onDestroyed: (element, step, opts) => {
-        const wasLastStep = currentStep.value === steps.length - 1;
-        isActive.value = false;
-        
-        // For voluntary tours: always mark complete when closed (user chose to open it)
-        // For involuntary tours: only mark complete if user finished the last step
-        if (isVoluntaryTour.value || wasLastStep) {
+      // Use onDestroyStarted to save completion BEFORE the driver cleans up
+      // This ensures the API call is made even if user navigates away quickly
+      onDestroyStarted: (element, step, opts) => {
+        // Always mark as complete when tour is dismissed (any reason: escape, close, overlay, or finish)
+        // Users don't want to see tours again if they've dismissed them
+        if (!hasMarkedComplete) {
+          hasMarkedComplete = true;
           markCompleted();
           onComplete?.();
         }
         
+        driverConfig?.onDestroyStarted?.(element, step, opts);
+        
+        // Always proceed with destroy
+        opts.driver.destroy();
+      },
+      
+      onDestroyed: (element, step, opts) => {
+        isActive.value = false;
         isVoluntaryTour.value = false;
         driverInstance = null;
         driverConfig?.onDestroyed?.(element, step, opts);
@@ -246,7 +259,14 @@ export function useProductTour(options: ProductTourOptions) {
    */
   onUnmounted(() => {
     if (driverInstance) {
-      // Force destroy without triggering completion
+      // Mark as complete before destroying if tour was active
+      // This handles the case where user navigates away mid-tour
+      if (isActive.value && !hasMarkedComplete) {
+        hasMarkedComplete = true;
+        markCompleted();
+        onComplete?.();
+      }
+      
       isActive.value = false;
       driverInstance.destroy();
       driverInstance = null;

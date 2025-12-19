@@ -141,4 +141,10 @@ return [
             'description' => 'Have observations or suggestions? <strong>Write to us!</strong> We constantly improve the platform based on your feedback. Good luck! ✨',
         ],
     ],
+
+    // Help Button Spotlight
+    'help_button_spotlight' => [
+        'title' => 'Need help?',
+        'description' => 'Click this button to start an interactive page tour and learn how to use the features.',
+    ],
 ];

@@ -18,23 +18,32 @@
 
           <div class="flex items-center gap-2">
             <slot name="headerActions" />
-            <TooltipProvider v-if="hasTour">
-              <Tooltip>
-                <TooltipTrigger as-child>
-                  <Button 
-                    variant="outline" 
-                    size="icon" 
-                    class="rounded-full" 
-                    data-tour="help-button"
-                    @click="startTour"
-                  >
-                    <HelpCircle class="h-4 w-4" />
-                    <span class="sr-only">{{ $t('Kaip veikia?') }}</span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>{{ $t('Pradėti interaktyvų vadovą') }}</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <SpotlightPopover
+              v-if="hasTour"
+              :title="$t('tutorials.help_button_spotlight.title')"
+              :description="$t('tutorials.help_button_spotlight.description')"
+              :is-dismissed="helpButtonSpotlight.isDismissed.value"
+              position="bottom"
+              @dismiss="helpButtonSpotlight.dismiss"
+            >
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger as-child>
+                    <Button 
+                      variant="outline" 
+                      size="icon" 
+                      class="rounded-full" 
+                      data-tour="help-button"
+                      @click="handleHelpClick"
+                    >
+                      <HelpCircle class="h-4 w-4" />
+                      <span class="sr-only">{{ $t('Kaip veikia?') }}</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>{{ $t('Pradėti interaktyvų vadovą') }}</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </SpotlightPopover>
             <TasksIndicator />
             <NotificationsIndicator />
           </div>
@@ -121,6 +130,8 @@ import UnifiedBreadcrumbs from '@/Components/UnifiedBreadcrumbs.vue';
 import { createBreadcrumbState } from '@/Composables/useBreadcrumbsUnified';
 import type { BreadcrumbItem } from '@/Composables/useBreadcrumbsUnified';
 import { createTourProvider } from '@/Composables/useTourProvider';
+import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
+import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 import { Toaster } from "@/Components/ui/sonner";
 
@@ -140,7 +151,16 @@ const systemMessage = computed(() => usePage().props.app?.systemMessage || null)
 const breadcrumbState = createBreadcrumbState('admin');
 
 // Initialize tour provider - pages can register their tours via provideTour()
-const { hasTour, startTour, clearTour } = createTourProvider();
+const { hasTour, startTour: startPageTour, clearTour } = createTourProvider();
+
+// Spotlight for help button - shows once to draw attention to the help feature
+const helpButtonSpotlight = useFeatureSpotlight('help-button-v1');
+
+// Handle help button click: dismiss spotlight and start tour
+function handleHelpClick() {
+  helpButtonSpotlight.dismiss();
+  startPageTour(true); // true = voluntary tour
+}
 
 // Track the current page component to detect navigation
 const currentComponent = ref(usePage().component);
