@@ -258,7 +258,8 @@ beforeEach(() => {
 
 ---
 
-**See [README.md](README.md) for**:
+**See [README.md](./README.md) for**:
+
 - Complete configuration details
 - Story writing guide
 - Testing integration setup

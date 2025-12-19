@@ -31,14 +31,17 @@ use Laravel\Scout\Searchable;
  * @property \Illuminate\Support\Carbon $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
+ * @property-read \App\Models\Pivots\Relationshipable|\App\Models\Pivots\Trainable|null $pivot
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Training> $availableTrainings
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\InstitutionCheckIn> $checkIns
  * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $commentable
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Comment> $comments
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Document> $documents
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Duty> $duties
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\SharepointFile> $files
  * @property-read bool $has_public_meetings
  * @property-read mixed $maybe_short_name
  * @property-read mixed $related_institutions
- * @property-read \App\Models\Pivots\Relationshipable|null $pivot
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Relationship> $incomingRelationships
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Meeting> $meetings
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Relationship> $outgoingRelationships
