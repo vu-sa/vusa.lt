@@ -16,6 +16,7 @@ export interface GanttColors {
   meetingComplete: string;
   meetingIncomplete: string;
   meetingNoItems: string;
+  meetingUnauthorized: string;
   
   // Gap/Check-in lines
   gap: string;
@@ -79,6 +80,7 @@ export const lightModeColors: GanttColors = {
   meetingComplete: 'oklch(0.21 0.006 285.885)', // zinc-900
   meetingIncomplete: 'oklch(0.637 0.237 25.331)', // red-500
   meetingNoItems: 'oklch(0.637 0.237 25.331)', // red-500 (stroke only)
+  meetingUnauthorized: 'oklch(0.552 0.016 285.938)', // zinc-500 - grey for unauthorized
   
   // Gap lines - amber for attention without alarm
   gap: 'oklch(0.769 0.188 70.08 / 90%)', // amber-500/90%
@@ -142,6 +144,7 @@ export const darkModeColors: GanttColors = {
   meetingComplete: 'oklch(0.985 0 0)', // white
   meetingIncomplete: 'oklch(0.712 0.194 13.428)', // rose-400
   meetingNoItems: 'oklch(0.712 0.194 13.428)', // rose-400 (stroke only)
+  meetingUnauthorized: 'oklch(0.705 0.015 286.067)', // zinc-400 - grey for unauthorized
   
   // Gap lines - subtle amber
   gap: 'oklch(0.75 0.14 84.429 / 70%)', // amber-400 dimmed/70%

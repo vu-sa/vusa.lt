@@ -90,17 +90,29 @@ class RelationshipService
      * This is a cleaner alternative to getRelatedInstitutionRelations that returns
      * institutions directly with relationship context.
      *
+     * The 'authorized' property indicates whether the source institution has data access
+     * to the related institution:
+     * - outgoing: true (source can see target's data)
+     * - sibling: true (mutual visibility)
+     * - incoming: false (target can see source, but source cannot see target)
+     *
      * @return \Illuminate\Support\Collection<int, array{
      *   institution: Institution,
-     *   direction: 'outgoing'|'incoming',
-     *   type: 'direct'|'type-based',
-     *   source_institution_id: string
+     *   direction: 'outgoing'|'incoming'|'sibling',
+     *   type: 'direct'|'type-based'|'within-type',
+     *   source_institution_id: string,
+     *   authorized: bool
      * }>
      */
     public static function getRelatedInstitutionsFlat(Institution $institution): \Illuminate\Support\Collection
     {
         $result = collect();
         $sourceId = $institution->id;
+
+        // Ensure source institution has tenant loaded for scope matching
+        if (! $institution->relationLoaded('tenant')) {
+            $institution->load('tenant');
+        }
 
         // Direct outgoing relationships
         $outgoingDirect = $institution->load('outgoingRelationships.pivot.related_model')
@@ -114,6 +126,7 @@ class RelationshipService
                     'direction' => 'outgoing',
                     'type' => 'direct',
                     'source_institution_id' => $sourceId,
+                    'authorized' => true,
                 ]);
             }
         }
@@ -125,11 +138,15 @@ class RelationshipService
         foreach ($incomingDirect as $relationship) {
             $relatedInstitution = $relationship->pivot->relationshipable;
             if ($relatedInstitution && $relatedInstitution->id !== $sourceId) {
+                // Check if the relationship is bidirectional - if so, incoming also gets authorization
+                $isBidirectional = $relationship->pivot->bidirectional ?? false;
+                
                 $result->push([
                     'institution' => $relatedInstitution,
                     'direction' => 'incoming',
                     'type' => 'direct',
                     'source_institution_id' => $sourceId,
+                    'authorized' => $isBidirectional,
                 ]);
             }
         }
@@ -156,6 +173,7 @@ class RelationshipService
                                 'direction' => 'outgoing',
                                 'type' => 'type-based',
                                 'source_institution_id' => $sourceId,
+                                'authorized' => true,
                             ]);
                         }
                     }
@@ -171,6 +189,7 @@ class RelationshipService
             foreach ($type->incomingRelationships as $relationship) {
                 $sourceType = $relationship->pivot->relationshipable;
                 $scope = $relationship->pivot->scope ?? Relationshipable::SCOPE_WITHIN_TENANT;
+                $isBidirectional = $relationship->pivot->bidirectional ?? false;
 
                 if ($sourceType && $sourceType->institutions) {
                     foreach ($sourceType->institutions as $relatedInstitution) {
@@ -185,6 +204,7 @@ class RelationshipService
                                 'direction' => 'incoming',
                                 'type' => 'type-based',
                                 'source_institution_id' => $sourceId,
+                                'authorized' => $isBidirectional,
                             ]);
                         }
                     }
@@ -213,6 +233,7 @@ class RelationshipService
                     'direction' => 'sibling',
                     'type' => 'within-type',
                     'source_institution_id' => $sourceId,
+                    'authorized' => true,
                 ]);
             }
         }
@@ -242,11 +263,11 @@ class RelationshipService
             $sourceTenant = $sourceInstitution->tenant;
             $targetTenant = $targetInstitution->tenant;
 
-            // Load tenant if not loaded
-            if (! $sourceTenant) {
+            // Load tenant if not loaded or if loaded with incomplete data (missing type field)
+            if (! $sourceTenant || $sourceTenant->type === null || $sourceTenant->type === '') {
                 $sourceTenant = Tenant::find($sourceInstitution->tenant_id);
             }
-            if (! $targetTenant) {
+            if (! $targetTenant || $targetTenant->type === null || $targetTenant->type === '') {
                 $targetTenant = Tenant::find($targetInstitution->tenant_id);
             }
 
@@ -268,6 +289,9 @@ class RelationshipService
      * Get related institutions for multiple institutions efficiently.
      * Used for dashboard view where we need related institutions for all user's institutions.
      *
+     * Only authorized relationships (outgoing/sibling) get full data with meetings;
+     * unauthorized relationships (incoming) only get basic institution info for display.
+     *
      * @param  Collection<int, Institution>  $institutions
      * @return Collection<int, Institution> Unique related institutions with metadata appended
      */
@@ -287,9 +311,20 @@ class RelationshipService
                     continue;
                 }
 
-                // Skip if we already have this institution
-                if ($allRelated->contains('id', $relatedInst->id)) {
-                    continue;
+                // Skip if we already have this institution with authorized access
+                // (keep the one with highest access level)
+                $existing = $allRelated->firstWhere('id', $relatedInst->id);
+                if ($existing) {
+                    // If existing is already authorized, skip this one
+                    if ($existing->authorized) {
+                        continue;
+                    }
+                    // If new one is authorized, replace the existing
+                    if ($item['authorized']) {
+                        $allRelated = $allRelated->reject(fn ($inst) => $inst->id === $relatedInst->id);
+                    } else {
+                        continue;
+                    }
                 }
 
                 // Add metadata to the institution for frontend use
@@ -297,31 +332,52 @@ class RelationshipService
                 $relatedInst->relationship_direction = $item['direction'];
                 $relatedInst->relationship_type = $item['type'];
                 $relatedInst->source_institution_id = $item['source_institution_id'];
+                $relatedInst->authorized = $item['authorized'];
 
                 $allRelated->push($relatedInst);
             }
         }
 
-        // Convert to Eloquent collection and load meetings for Gantt display
+        // Convert to Eloquent collection and load data
         if ($allRelated->isEmpty()) {
             return new Collection();
         }
 
-        // Get IDs and fetch fresh with eager loading
-        // Include same relations as DutyService::getInstitutionsForDashboard for Gantt display
-        $relatedIds = $allRelated->pluck('id')->toArray();
-        $loadedInstitutions = Institution::whereIn('id', $relatedIds)
-            ->with([
-                'types', // explicit since not auto-loaded
-                'meetings:id,title,start_time',
-                'meetings.agendaItems:id,meeting_id,title,student_vote,decision,student_benefit',
-                'tenant:id,shortname',
-                // Load all users (including historical) for Gantt timeline display
-                'duties.users',
-                'duties.types:id,title,slug',
-                'checkIns',
-            ])
-            ->get();
+        // Separate authorized and unauthorized institution IDs
+        $authorizedIds = $allRelated->filter(fn ($inst) => $inst->authorized)->pluck('id')->toArray();
+        $unauthorizedIds = $allRelated->reject(fn ($inst) => $inst->authorized)->pluck('id')->toArray();
+
+        $loadedInstitutions = new Collection();
+
+        // Load authorized institutions with full data for Gantt display
+        if (! empty($authorizedIds)) {
+            $authorizedInstitutions = Institution::whereIn('id', $authorizedIds)
+                ->with([
+                    'types',
+                    'meetings:id,title,start_time',
+                    'meetings.agendaItems:id,meeting_id,title,student_vote,decision,student_benefit',
+                    'tenant:id,shortname',
+                    'duties.users:id,name,email,profile_photo_path',
+                    'duties.types:id,title,slug',
+                    'checkIns',
+                ])
+                ->get();
+            $loadedInstitutions = $loadedInstitutions->merge($authorizedInstitutions);
+        }
+
+        // Load unauthorized institutions with minimal data (meetings without agenda items, but still show duty users)
+        if (! empty($unauthorizedIds)) {
+            $unauthorizedInstitutions = Institution::whereIn('id', $unauthorizedIds)
+                ->with([
+                    'types',
+                    'meetings:id,title,start_time', // Meetings for Gantt display, but no agenda items
+                    'tenant:id,shortname',
+                    'duties.users:id,name,email,profile_photo_path',
+                    'duties.types:id,title,slug',
+                ])
+                ->get();
+            $loadedInstitutions = $loadedInstitutions->merge($unauthorizedInstitutions);
+        }
 
         // Merge back the metadata
         $metaMap = $allRelated->keyBy('id');
@@ -332,6 +388,7 @@ class RelationshipService
                 $inst->relationship_direction = $meta->relationship_direction;
                 $inst->relationship_type = $meta->relationship_type;
                 $inst->source_institution_id = $meta->source_institution_id;
+                $inst->authorized = $meta->authorized;
             }
         });
 
@@ -384,17 +441,25 @@ class RelationshipService
         ];
     }
 
-    public static function getRelatedInstitutions(Institution $institution)
+    /**
+     * Get related institutions for a single institution.
+     * 
+     * This method now uses getRelatedInstitutionsFlat internally for consistency,
+     * which includes sibling relationships (same type + same tenant).
+     *
+     * @param  Institution  $institution
+     * @param  bool  $authorizedOnly  If true, only returns institutions where the source has access (outgoing/sibling)
+     * @return Collection<int, Institution>
+     */
+    public static function getRelatedInstitutions(Institution $institution, bool $authorizedOnly = false): Collection
     {
-        $relationships = self::getRelatedInstitutionRelations($institution);
+        $flat = self::getRelatedInstitutionsFlat($institution);
 
-        $outgoingDirect = $relationships['outgoingDirect']->pluck('pivot.related_model');
-        $incomingDirect = $relationships['incomingDirect']->pluck('pivot.relationshipable');
-        $outgoingDirectByType = $relationships['outgoingByType']->pluck('pivot.related_model.institutions')->flatten(1);
-        $incomingDirectByType = $relationships['incomingByType']->pluck('pivot.relationshipable.institutions')->flatten(1);
+        if ($authorizedOnly) {
+            $flat = $flat->filter(fn ($item) => $item['authorized'] === true);
+        }
 
-        // return eloquent collection of institutions unique
-        return $outgoingDirect->merge($incomingDirect)->merge((new Collection($outgoingDirectByType))->load('meetings'))->merge((new Collection($incomingDirectByType))->load('meetings'))->unique('id');
+        return new Collection($flat->pluck('institution')->unique('id')->values()->all());
     }
 
     public static function getAllRelatedInstitutions()

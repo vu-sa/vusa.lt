@@ -6,6 +6,8 @@
  */
 import * as d3 from 'd3'
 import { router } from '@inertiajs/vue3'
+import { toast } from 'vue-sonner'
+import { trans as $t } from 'laravel-vue-i18n'
 import type { GanttColors } from '../ganttColors'
 import type { GanttTooltipManager } from './GanttTooltip'
 import { buildMeetingTooltipContent } from './GanttTooltip'
@@ -17,6 +19,8 @@ interface ParsedMeeting {
   title?: string
   institution?: string
   completion_status?: 'complete' | 'incomplete' | 'no_items'
+  // Whether the user has authorization for this meeting's institution
+  authorized?: boolean
 }
 
 export interface MeetingRenderContext {
@@ -105,16 +109,31 @@ export function renderMeetings(ctx: MeetingRenderContext): void {
     .style('cursor', interactive ? 'pointer' : 'default')
     .on('click', (event: MouseEvent, d: any) => {
       if (!interactive) return
+      
+      // For unauthorized meetings, show info toast instead of navigating
+      // This prevents page refresh flicker and provides clear feedback
+      if (d.authorized === false) {
+        toast.info($t('Neturite prieigos prie šio posėdžio duomenų'))
+        return
+      }
+      
       const routeFn = (window as any)?.route
       const url = routeFn ? routeFn('meetings.show', d.id) : `/admin/meetings/${d.id}`
       if (event.ctrlKey || event.metaKey || event.button === 1) {
         window.open(url, '_blank')
       } else {
-        router.visit(url)
+        router.visit(url, { preserveScroll: true })
       }
     })
     .on('auxclick', (event: MouseEvent, d: any) => {
       if (!interactive || event.button !== 1) return
+      
+      // For unauthorized meetings, show info toast instead of navigating
+      if (d.authorized === false) {
+        toast.info($t('Neturite prieigos prie šio posėdžio duomenų'))
+        return
+      }
+      
       event.preventDefault()
       const routeFn = (window as any)?.route
       const url = routeFn ? routeFn('meetings.show', d.id) : `/admin/meetings/${d.id}`
@@ -123,9 +142,15 @@ export function renderMeetings(ctx: MeetingRenderContext): void {
     .on('keydown', (event: KeyboardEvent, d: any) => {
       if (!interactive) return
       if (event.key === 'Enter' || event.key === ' ') {
+        // For unauthorized meetings, show info toast instead of navigating
+        if (d.authorized === false) {
+          toast.info($t('Neturite prieigos prie šio posėdžio duomenų'))
+          return
+        }
+        
         const routeFn = (window as any)?.route
         const url = routeFn ? routeFn('meetings.show', d.id) : `/admin/meetings/${d.id}`
-        router.visit(url)
+        router.visit(url, { preserveScroll: true })
       }
     })
 
@@ -139,9 +164,21 @@ export function renderMeetings(ctx: MeetingRenderContext): void {
   // Add icon path (centered within hit area)
   const iconOffset = (HIT_AREA_SIZE - ICON_SIZE) / 2
   dots.append('path')
-    .attr('d', (d: any) => d.completion_status === 'no_items' ? MEETING_ICON_REGULAR : MEETING_ICON_FILLED)
+    .attr('d', (d: any) => {
+      // Unauthorized meetings always use filled icon (grey)
+      if (d.authorized === false) {
+        return MEETING_ICON_FILLED
+      }
+      // Regular meetings: empty icon for no_items, filled for complete/incomplete
+      return d.completion_status === 'no_items' ? MEETING_ICON_REGULAR : MEETING_ICON_FILLED
+    })
     .attr('transform', `translate(${iconOffset}, ${iconOffset}) scale(${ICON_SIZE / 20})`)
     .attr('fill', (d: any) => {
+      // Unauthorized meetings get grey color
+      if (d.authorized === false) {
+        return colors.meetingUnauthorized
+      }
+      // Regular meetings use status-based colors
       if (d.completion_status === 'complete') {
         return colors.meetingComplete
       } else if (d.completion_status === 'no_items') {
@@ -155,7 +192,9 @@ export function renderMeetings(ctx: MeetingRenderContext): void {
   if (!tooltipManager) {
     dots.append('title').text((d: any) => {
       let status = ''
-      if (d.completion_status === 'complete') {
+      if (d.authorized === false) {
+        status = ' (unauthorized)'
+      } else if (d.completion_status === 'complete') {
         status = ' ✓'
       } else if (d.completion_status === 'no_items') {
         status = ' (no agenda items)'

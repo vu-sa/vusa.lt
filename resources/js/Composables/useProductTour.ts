@@ -98,7 +98,8 @@ export function useProductTour(options: ProductTourOptions) {
     // Update shared state and localStorage
     updateProgress(tourId, new Date().toISOString());
     
-    // Sync to backend (async: true hides progress indicator)
+    // Sync to backend without affecting page state
+    // Using only: [] prevents Inertia from updating any props
     try {
       await router.post(route('tutorials.complete'), {
         tour_id: tourId,
@@ -106,6 +107,7 @@ export function useProductTour(options: ProductTourOptions) {
         async: true,
         preserveState: true,
         preserveScroll: true,
+        only: [],
       });
     } catch (error) {
       console.warn('Failed to sync tour completion to server:', error);
@@ -119,7 +121,8 @@ export function useProductTour(options: ProductTourOptions) {
     // Update shared state and localStorage
     removeProgress(tourId);
     
-    // Sync to backend (async: true hides progress indicator)
+    // Sync to backend without affecting page state
+    // Using only: [] prevents Inertia from updating any props
     try {
       await router.post(route('tutorials.reset'), {
         tour_id: tourId,
@@ -127,6 +130,7 @@ export function useProductTour(options: ProductTourOptions) {
         async: true,
         preserveState: true,
         preserveScroll: true,
+        only: [],
       });
     } catch (error) {
       console.warn('Failed to sync tour reset to server:', error);

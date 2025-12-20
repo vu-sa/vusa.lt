@@ -341,11 +341,12 @@ declare global {
       relationshipable_id: string
       related_model_id: string
       scope: string
+      bidirectional: boolean
       created_at: string
       updated_at: string
       // relations
-      relationshipable?: Relationshipable
-      related_model?: Relationshipable
+      relationshipable?: { id: string; name?: string; title?: string }
+      related_model?: { id: string; name?: string; title?: string }
       relationship?: Relationship
       // counts
       // exists

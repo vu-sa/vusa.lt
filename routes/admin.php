@@ -146,6 +146,7 @@ Route::resource('registrations', RegistrationController::class)->only('show');
 Route::resource('types', TypeController::class);
 Route::resource('relationships', RelationshipController::class);
 Route::post('relationships/{relationship}/storeModelRelationship', [RelationshipController::class, 'storeModelRelationship'])->name('relationships.storeModelRelationship');
+Route::patch('relationships/relationshipables/{relationshipable}', [RelationshipController::class, 'updateModelRelationship'])->name('relationships.updateModelRelationship');
 Route::delete('relationships/relationshipables/{relationshipable}', [RelationshipController::class, 'deleteModelRelationship'])->name('relationships.deleteModelRelationship');
 Route::resource('roles', RoleController::class);
 Route::patch('roles/{role}/attach/{model}/permissions', [RoleController::class, 'syncPermissionGroup'])->name('roles.syncPermissionGroup');

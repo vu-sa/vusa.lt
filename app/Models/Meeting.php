@@ -185,14 +185,19 @@ class Meeting extends Model implements SharepointFileableContract
 
     /**
      * Check if all agenda items have completion fields filled.
+     * 
+     * Note: This method does NOT auto-load agendaItems to prevent leaking
+     * agenda data for unauthorized institutions. If agenda items are not
+     * already loaded, it returns 'no_items'.
      *
      * @return string 'complete'|'incomplete'|'no_items'
      */
     public function getCompletionStatusAttribute(): string
     {
-        // Load agenda items if not already loaded
+        // Don't auto-load agenda items - this would leak data for unauthorized institutions
+        // If agenda items aren't loaded, treat as no_items (caller should ensure proper loading)
         if (! $this->relationLoaded('agendaItems')) {
-            $this->load('agendaItems');
+            return 'no_items';
         }
 
         $agendaItems = $this->agendaItems;

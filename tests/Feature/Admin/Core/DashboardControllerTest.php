@@ -806,3 +806,266 @@ describe('tenant isolation', function () {
             );
     });
 });
+
+describe('atstovavimas related institutions', function () {
+    beforeEach(function () {
+        // Create a relationship type
+        $this->relationship = new \App\Models\Relationship([
+            'name' => 'Test Relationship',
+            'slug' => 'test-relationship-'.uniqid(),
+            'description' => 'Test relationship for dashboard',
+        ]);
+        $this->relationship->save();
+        
+        // Get user's institution
+        $this->userInstitution = $this->user->current_duties->first()->institution;
+        
+        // Create a related institution in the same tenant
+        $this->relatedInstitution = \App\Models\Institution::factory()->for($this->tenant)->create([
+            'name' => ['lt' => 'Susijusi institucija', 'en' => 'Related Institution'],
+        ]);
+    });
+
+    test('atstovavimas returns mayHaveRelatedInstitutions flag', function () {
+        asUser($this->user)
+            ->get(route('dashboard.atstovavimas'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Dashboard/ShowAtstovavimas')
+                ->has('mayHaveRelatedInstitutions')
+            );
+    });
+
+    test('relatedInstitutions lazy load returns institutions with outgoing relationship', function () {
+        // Create outgoing relationship (user's institution -> related)
+        $relationshipable = new \App\Models\Pivots\Relationshipable([
+            'relationship_id' => $this->relationship->id,
+            'relationshipable_type' => \App\Models\Institution::class,
+            'relationshipable_id' => $this->userInstitution->id,
+            'related_model_id' => $this->relatedInstitution->id,
+            'bidirectional' => false,
+        ]);
+        $relationshipable->save();
+
+        // Clear cache
+        \App\Services\RelationshipService::clearRelatedInstitutionsCache($this->userInstitution->id);
+
+        // Use reloadOnly to test the lazy-loaded relatedInstitutions prop
+        asUser($this->user)
+            ->get(route('dashboard.atstovavimas'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Dashboard/ShowAtstovavimas')
+                ->missing('relatedInstitutions') // Lazy props are not in initial response
+                ->reloadOnly('relatedInstitutions', fn (Assert $reload) => $reload
+                    ->has('relatedInstitutions')
+                    ->where('relatedInstitutions', function ($institutions) {
+                        $collection = collect($institutions);
+                        if ($collection->isEmpty()) return false;
+                        
+                        // Should have the related institution
+                        $found = $collection->firstWhere('id', $this->relatedInstitution->id);
+                        if (!$found) return false;
+                        
+                        // Should be marked as related with correct metadata
+                        return $found['is_related'] === true && 
+                               $found['authorized'] === true &&
+                               $found['relationship_direction'] === 'outgoing';
+                    })
+                )
+            );
+    });
+
+    test('relatedInstitutions returns incoming relationships with authorized = false when not bidirectional', function () {
+        // Create incoming relationship (related -> user's institution, NOT bidirectional)
+        $relationshipable = new \App\Models\Pivots\Relationshipable([
+            'relationship_id' => $this->relationship->id,
+            'relationshipable_type' => \App\Models\Institution::class,
+            'relationshipable_id' => $this->relatedInstitution->id,
+            'related_model_id' => $this->userInstitution->id,
+            'bidirectional' => false,
+        ]);
+        $relationshipable->save();
+
+        // Clear cache
+        \App\Services\RelationshipService::clearRelatedInstitutionsCache($this->userInstitution->id);
+
+        // Use reloadOnly to test the lazy-loaded relatedInstitutions prop
+        asUser($this->user)
+            ->get(route('dashboard.atstovavimas'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Dashboard/ShowAtstovavimas')
+                ->missing('relatedInstitutions')
+                ->reloadOnly('relatedInstitutions', fn (Assert $reload) => $reload
+                    ->has('relatedInstitutions')
+                    ->where('relatedInstitutions', function ($institutions) {
+                        $collection = collect($institutions);
+                        if ($collection->isEmpty()) return false;
+                        
+                        // Should have the related institution
+                        $found = $collection->firstWhere('id', $this->relatedInstitution->id);
+                        if (!$found) return false;
+                        
+                        // Should be marked as incoming with authorized = false
+                        return $found['is_related'] === true && 
+                               $found['authorized'] === false &&
+                               $found['relationship_direction'] === 'incoming';
+                    })
+                )
+            );
+    });
+
+    test('relatedInstitutions returns incoming relationships with authorized = true when bidirectional', function () {
+        // Create incoming relationship (related -> user's institution, IS bidirectional)
+        $relationshipable = new \App\Models\Pivots\Relationshipable([
+            'relationship_id' => $this->relationship->id,
+            'relationshipable_type' => \App\Models\Institution::class,
+            'relationshipable_id' => $this->relatedInstitution->id,
+            'related_model_id' => $this->userInstitution->id,
+            'bidirectional' => true,
+        ]);
+        $relationshipable->save();
+
+        // Clear cache
+        \App\Services\RelationshipService::clearRelatedInstitutionsCache($this->userInstitution->id);
+
+        // Use reloadOnly to test the lazy-loaded relatedInstitutions prop
+        asUser($this->user)
+            ->get(route('dashboard.atstovavimas'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Dashboard/ShowAtstovavimas')
+                ->missing('relatedInstitutions')
+                ->reloadOnly('relatedInstitutions', fn (Assert $reload) => $reload
+                    ->has('relatedInstitutions')
+                    ->where('relatedInstitutions', function ($institutions) {
+                        $collection = collect($institutions);
+                        if ($collection->isEmpty()) return false;
+                        
+                        // Should have the related institution
+                        $found = $collection->firstWhere('id', $this->relatedInstitution->id);
+                        if (!$found) return false;
+                        
+                        // Should be marked as incoming with authorized = true (bidirectional!)
+                        return $found['is_related'] === true && 
+                               $found['authorized'] === true &&
+                               $found['relationship_direction'] === 'incoming';
+                    })
+                )
+            );
+    });
+
+    test('authorized related institutions include meetings with agenda items', function () {
+        // Create outgoing relationship (authorized)
+        $relationshipable = new \App\Models\Pivots\Relationshipable([
+            'relationship_id' => $this->relationship->id,
+            'relationshipable_type' => \App\Models\Institution::class,
+            'relationshipable_id' => $this->userInstitution->id,
+            'related_model_id' => $this->relatedInstitution->id,
+            'bidirectional' => false,
+        ]);
+        $relationshipable->save();
+
+        // Create meeting with agenda item
+        $meeting = \App\Models\Meeting::factory()->create(['start_time' => now()]);
+        $meeting->institutions()->attach($this->relatedInstitution->id);
+        $agendaItem = \App\Models\Pivots\AgendaItem::factory()->create([
+            'meeting_id' => $meeting->id,
+            'title' => 'Test Agenda Item',
+        ]);
+
+        // Clear cache
+        \App\Services\RelationshipService::clearRelatedInstitutionsCache($this->userInstitution->id);
+
+        // Use reloadOnly to test the lazy-loaded relatedInstitutions prop
+        asUser($this->user)
+            ->get(route('dashboard.atstovavimas'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Dashboard/ShowAtstovavimas')
+                ->missing('relatedInstitutions')
+                ->reloadOnly('relatedInstitutions', fn (Assert $reload) => $reload
+                    ->has('relatedInstitutions')
+                    ->where('relatedInstitutions', function ($institutions) {
+                        $collection = collect($institutions);
+                        $found = $collection->firstWhere('id', $this->relatedInstitution->id);
+                        if (!$found) return false;
+                        
+                        // Authorized institution should have meetings with agenda items
+                        $meetings = collect($found['meetings'] ?? []);
+                        if ($meetings->isEmpty()) return false;
+                        
+                        $firstMeeting = $meetings->first();
+                        $agendaItems = collect($firstMeeting['agenda_items'] ?? []);
+                        
+                        return $agendaItems->isNotEmpty();
+                    })
+                )
+            );
+    });
+
+    test('unauthorized related institutions include meetings but no agenda items', function () {
+        // Create incoming relationship (NOT authorized because NOT bidirectional)
+        $relationshipable = new \App\Models\Pivots\Relationshipable([
+            'relationship_id' => $this->relationship->id,
+            'relationshipable_type' => \App\Models\Institution::class,
+            'relationshipable_id' => $this->relatedInstitution->id,
+            'related_model_id' => $this->userInstitution->id,
+            'bidirectional' => false,
+        ]);
+        $relationshipable->save();
+
+        // Create meeting and attach to related institution
+        $meeting = \App\Models\Meeting::factory()->create(['start_time' => now()]);
+        $meeting->institutions()->attach($this->relatedInstitution->id);
+        
+        // Create agenda item for this meeting (should NOT be loaded for unauthorized)
+        $agendaItem = \App\Models\Pivots\AgendaItem::factory()->create([
+            'meeting_id' => $meeting->id,
+            'title' => 'Test Agenda Item',
+        ]);
+
+        // Clear cache
+        \App\Services\RelationshipService::clearRelatedInstitutionsCache($this->userInstitution->id);
+
+        // Use reloadOnly to test the lazy-loaded relatedInstitutions prop
+        asUser($this->user)
+            ->get(route('dashboard.atstovavimas'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Dashboard/ShowAtstovavimas')
+                ->missing('relatedInstitutions')
+                ->reloadOnly('relatedInstitutions', fn (Assert $reload) => $reload
+                    ->has('relatedInstitutions')
+                    ->where('relatedInstitutions', function ($institutions) {
+                        $collection = collect($institutions);
+                        $found = $collection->firstWhere('id', $this->relatedInstitution->id);
+                        
+                        if (!$found) {
+                            return false;
+                        }
+                        
+                        // Institution should be unauthorized
+                        if ($found['authorized'] !== false) {
+                            return false;
+                        }
+                        
+                        // Should have meetings
+                        $meetings = collect($found['meetings'] ?? []);
+                        if ($meetings->isEmpty()) {
+                            return false;
+                        }
+                        
+                        $firstMeeting = $meetings->first();
+                        
+                        // For unauthorized institutions, agenda_items should NOT be loaded
+                        // Since Laravel doesn't eager load them, the key should be missing or empty
+                        $hasAgendaItems = isset($firstMeeting['agenda_items']) && !empty($firstMeeting['agenda_items']);
+                        
+                        return !$hasAgendaItems;
+                    })
+                )
+            );
+    });
+});

@@ -113,6 +113,7 @@ export function buildMeetingTooltipContent(
     institution_id: string | number; 
     title?: string; 
     completion_status?: string;
+    authorized?: boolean;
     agenda_items?: Array<{
       id: string;
       title: string;
@@ -126,7 +127,11 @@ export function buildMeetingTooltipContent(
 ): TooltipContent {
   const name = labelFor(meeting.institution_id)
   let statusBadge = ''
-  if (meeting.completion_status === 'complete') {
+  
+  // Unauthorized meetings show a special badge
+  if (meeting.authorized === false) {
+    statusBadge = '<span class="text-zinc-500 dark:text-zinc-400">(unauthorized)</span>'
+  } else if (meeting.completion_status === 'complete') {
     statusBadge = '<span class="inline-flex items-center gap-1 text-green-600 dark:text-green-400"><svg class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg></span>'
   } else if (meeting.completion_status === 'no_items') {
     statusBadge = '<span class="text-zinc-500">(no agenda items)</span>'
@@ -134,9 +139,9 @@ export function buildMeetingTooltipContent(
     statusBadge = '<span class="text-amber-600 dark:text-amber-400">(incomplete)</span>'
   }
 
-  // Build agenda items section if available
+  // Build agenda items section if available (only for authorized meetings)
   let agendaHtml = ''
-  if (meeting.agenda_items && meeting.agenda_items.length > 0) {
+  if (meeting.authorized !== false && meeting.agenda_items && meeting.agenda_items.length > 0) {
     const totalCount = meeting.agenda_items_count ?? meeting.agenda_items.length
     const itemsToShow = meeting.agenda_items.slice(0, 4)
     

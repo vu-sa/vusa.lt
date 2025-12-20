@@ -148,9 +148,13 @@ class InstitutionController extends AdminController
                 // Provide both formats for backwards compatibility during transition
                 'relatedInstitutions' => $institution->related_institution_relationshipables(),
                 'relatedInstitutionsFlat' => $relatedInstitutionsFlat->map(fn ($item) => [
-                    ...$item['institution']->load('meetings', 'tenant')->toArray(),
+                    // Only load meetings for authorized relationships
+                    ...($item['authorized'] 
+                        ? $item['institution']->load('meetings', 'tenant')->toArray()
+                        : $item['institution']->load('tenant')->toArray()),
                     'direction' => $item['direction'],
                     'type' => $item['type'],
+                    'authorized' => $item['authorized'],
                 ])->values(),
                 'sharepointPath' => $institution->tenant ? $institution->sharepoint_path() : null,
                 'lastMeeting' => $institution->lastMeeting(),

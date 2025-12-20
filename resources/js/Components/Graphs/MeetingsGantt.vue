@@ -154,22 +154,28 @@
               class="px-3 py-1 text-sm border-b flex items-start gap-2 truncate"
               :class="[
                 idx % 2 === 0 ? 'bg-zinc-50/40 dark:bg-zinc-800/30' : '',
-                row.isRelated 
+                row.isRelated && row.authorized !== false
                   ? 'text-zinc-500 dark:text-zinc-400 border-zinc-100 dark:border-zinc-800 border-dashed bg-blue-50/30 dark:bg-blue-900/10' 
-                  : 'text-zinc-700 dark:text-zinc-300 border-zinc-100 dark:border-zinc-800'
+                  : row.isRelated && row.authorized === false
+                    ? 'text-zinc-400 dark:text-zinc-500 border-zinc-100 dark:border-zinc-800 border-dashed bg-amber-50/30 dark:bg-amber-900/10'
+                    : 'text-zinc-700 dark:text-zinc-300 border-zinc-100 dark:border-zinc-800'
               ]" 
               :title="labelFor(row.institutionId!)">
               <div class="flex-1 min-w-0">
                 <div class="flex items-center justify-between gap-2">
                   <div class="flex items-center gap-1.5 min-w-0">
-                    <!-- Related institution indicator -->
-                    <svg v-if="row.isRelated" 
-                      class="h-3 w-3 text-blue-500 dark:text-blue-400 shrink-0" 
-                      viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                      :aria-label="$t('Susijusi institucija')">
-                      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
-                      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
-                    </svg>
+                    <!-- Related institution indicator - authorized (blue) or unauthorized (amber) -->
+                    <div v-if="row.isRelated" 
+                      class="relative group shrink-0"
+                      :title="getRelationshipTooltip(row)">
+                      <svg 
+                        :class="['h-3 w-3', row.authorized !== false ? 'text-blue-500 dark:text-blue-400' : 'text-amber-500 dark:text-amber-400']" 
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        :aria-label="row.authorized !== false ? $t('Susijusi institucija') : $t('relationships.not_authorized')">
+                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                      </svg>
+                    </div>
                     <button type="button"
                       :data-tour="idx === 1 ? 'gantt-institution-row' : undefined"
                       class="truncate text-left hover:underline cursor-pointer focus:underline focus:outline-none"
@@ -275,7 +281,7 @@ import {
 const props = withDefaults(defineProps<{
   meetings: Array<{ id: string | number, start_time: string | Date, institution_id: string | number, title?: string, institution?: string }>
   gaps: Array<{ institution_id: string | number, from: string | Date, until: string | Date, mode?: 'heads_up' | 'no_meetings', note?: string }>
-  institutions?: Array<{ id: string | number, name?: string, tenant_id?: string | number, is_related?: boolean, relationship_direction?: 'outgoing' | 'incoming', source_institution_id?: string }>
+  institutions?: Array<{ id: string | number, name?: string, tenant_id?: string | number, is_related?: boolean, relationship_direction?: 'outgoing' | 'incoming' | 'sibling', relationship_type?: 'direct' | 'type-based' | 'within-type', source_institution_id?: string, authorized?: boolean }>
   daysBefore?: number
   daysAfter?: number
   dayWidth?: number
@@ -405,7 +411,7 @@ const visitInstitution = (id: string | number, event?: MouseEvent | KeyboardEven
   if (event && (event.ctrlKey || event.metaKey || (event instanceof MouseEvent && event.button === 1))) {
     window.open(url, '_blank')
   } else {
-    router.visit(url)
+    router.visit(url, { preserveScroll: true })
   }
 }
 
@@ -567,13 +573,26 @@ const tenantLabelFor = (id: string | number) => {
   return mergedTenantNames.value[t as any]
 }
 
-type Row = { type: 'tenant'; key: string; tenantId: string | number } | { type: 'institution'; key: string | number; institutionId: string | number; isRelated?: boolean; relationshipDirection?: 'outgoing' | 'incoming' }
+// Generate tooltip text for related institution link icon
+const getRelationshipTooltip = (row: LayoutRow): string => {
+  if (!row.isRelated) return ''
+  
+  const sourceName = row.sourceInstitutionId ? labelFor(row.sourceInstitutionId) : $t('Nežinoma institucija')
+  
+  const accessText = row.authorized !== false 
+    ? $t('relationships.tooltip_authorized')
+    : $t('relationships.tooltip_not_authorized')
+  
+  return `${$t('relationships.tooltip_via')} ${sourceName}\n${accessText}`
+}
+
+type Row = { type: 'tenant'; key: string; tenantId: string | number } | { type: 'institution'; key: string | number; institutionId: string | number; isRelated?: boolean; relationshipDirection?: 'outgoing' | 'incoming' | 'sibling'; authorized?: boolean; sourceInstitutionId?: string }
 const rows = computed<Row[]>(() => {
   const ids = institutions.value
   // Create a map for quick lookup of institution metadata
-  const institutionMeta = new Map<string | number, { is_related?: boolean; relationship_direction?: 'outgoing' | 'incoming' }>()
+  const institutionMeta = new Map<string | number, { is_related?: boolean; relationship_direction?: 'outgoing' | 'incoming' | 'sibling'; authorized?: boolean; source_institution_id?: string }>()
   props.institutions?.forEach(i => {
-    institutionMeta.set(i.id, { is_related: i.is_related, relationship_direction: i.relationship_direction })
+    institutionMeta.set(i.id, { is_related: i.is_related, relationship_direction: i.relationship_direction, authorized: i.authorized, source_institution_id: i.source_institution_id })
   })
   
   // Only show tenant headers if the setting is enabled and we have tenant data
@@ -591,19 +610,19 @@ const rows = computed<Row[]>(() => {
       out.push({ type: 'tenant', key: `__tenant__:${t}`, tenantId: t })
       for (const iid of byTenant.get(t) ?? []) {
         const meta = institutionMeta.get(iid)
-        out.push({ type: 'institution', key: iid, institutionId: iid, isRelated: meta?.is_related, relationshipDirection: meta?.relationship_direction })
+        out.push({ type: 'institution', key: iid, institutionId: iid, isRelated: meta?.is_related, relationshipDirection: meta?.relationship_direction, authorized: meta?.authorized, sourceInstitutionId: meta?.source_institution_id })
       }
     }
     return out
   }
   return ids.map(iid => {
     const meta = institutionMeta.get(iid)
-    return { type: 'institution', key: iid, institutionId: iid, isRelated: meta?.is_related, relationshipDirection: meta?.relationship_direction } as Row
+    return { type: 'institution', key: iid, institutionId: iid, isRelated: meta?.is_related, relationshipDirection: meta?.relationship_direction, authorized: meta?.authorized, sourceInstitutionId: meta?.source_institution_id } as Row
   })
 })
 
 // Layout with variable row heights (supports one expanded institution row)
-interface LayoutRow { key: string | number; type: Row['type']; tenantId?: string | number; institutionId?: string | number; isRelated?: boolean; relationshipDirection?: 'outgoing' | 'incoming'; top: number; height: number }
+interface LayoutRow { key: string | number; type: Row['type']; tenantId?: string | number; institutionId?: string | number; isRelated?: boolean; relationshipDirection?: 'outgoing' | 'incoming' | 'sibling'; authorized?: boolean; sourceInstitutionId?: string; top: number; height: number }
 const layoutRows = computed<LayoutRow[]>(() => {
   const out: LayoutRow[] = []
   let y = 0
@@ -619,6 +638,8 @@ const layoutRows = computed<LayoutRow[]>(() => {
       institutionId: (r as any).institutionId, 
       isRelated: (r as any).isRelated,
       relationshipDirection: (r as any).relationshipDirection,
+      authorized: (r as any).authorized,
+      sourceInstitutionId: (r as any).sourceInstitutionId,
       top: y, 
       height: h 
     })

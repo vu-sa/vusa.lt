@@ -211,14 +211,17 @@ const mergedUserMeetings = computed(() => {
   // Add meetings from related institutions (same logic as UserTimelineSection)
   const relatedMeetings: GanttMeeting[] = props.userRelatedInstitutionsFull.flatMap(inst => 
     (inst.meetings ?? []).map((m: any) => {
-      // Extract agenda items for tooltip (limit to first 4)
-      const agendaItems = (m.agenda_items ?? []).slice(0, 4).map((item: any) => ({
-        id: String(item.id),
-        title: String(item.title ?? ''),
-        student_vote: item.student_vote ?? null,
-        decision: item.decision ?? null,
-      }));
-      const totalAgendaCount = (m.agenda_items ?? []).length;
+      // Extract agenda items for tooltip (limit to first 4) - only if authorized
+      const isAuthorized = (inst as any).authorized !== false
+      const agendaItems = isAuthorized 
+        ? (m.agenda_items ?? []).slice(0, 4).map((item: any) => ({
+            id: String(item.id),
+            title: String(item.title ?? ''),
+            student_vote: item.student_vote ?? null,
+            decision: item.decision ?? null,
+          }))
+        : []
+      const totalAgendaCount = isAuthorized ? (m.agenda_items ?? []).length : 0
 
       return {
         id: m.id,
@@ -228,6 +231,7 @@ const mergedUserMeetings = computed(() => {
         completion_status: m.completion_status,
         agenda_items: agendaItems,
         agenda_items_count: totalAgendaCount,
+        authorized: isAuthorized,
       };
     })
   );

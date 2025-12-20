@@ -4,23 +4,30 @@
       v-for="relatedInst in flatRelatedInstitutions"
       :key="relatedInst.id" 
       :institution="relatedInst"
+      :class="{ 'opacity-60': relatedInst.authorized === false }"
       @click="handleClick(relatedInst)"
     >
       <template #header-extra>
-        <!-- Direction indicator: outgoing (→) or incoming (←) -->
+        <!-- Direction indicator: outgoing (→), incoming (←), or sibling (↔) -->
         <component 
-          :is="relatedInst.direction === 'outgoing' ? IFluentArrowExportLtr24Regular : IFluentArrowImportLtr24Regular"
+          :is="getDirectionIcon(relatedInst.direction)"
           class="h-4 w-4"
-          :class="relatedInst.direction === 'outgoing' ? 'text-blue-500' : 'text-green-500'"
-          :title="relatedInst.direction === 'outgoing' ? $t('Išeinantis ryšys') : $t('Įeinantis ryšys')"
+          :class="getDirectionClass(relatedInst.direction)"
+          :title="getDirectionTitle(relatedInst.direction)"
         />
-        <!-- Type indicator: direct connection or through type -->
+        <!-- Authorization indicator for incoming (no access) -->
+        <IFluentLockClosed24Regular
+          v-if="relatedInst.authorized === false"
+          class="h-3.5 w-3.5 text-amber-500"
+          :title="$t('relationships.not_authorized')"
+        />
+        <!-- Type indicator: direct connection, through type, or within-type -->
         <span 
-          v-if="relatedInst.type === 'type-based'" 
+          v-if="relatedInst.type === 'type-based' || relatedInst.type === 'within-type'" 
           class="text-[10px] text-zinc-400 px-1 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800"
-          :title="$t('Ryšys per institucijos tipą')"
+          :title="relatedInst.type === 'within-type' ? $t('Ryšys tarp to paties tipo institucijų') : $t('Ryšys per institucijos tipą')"
         >
-          {{ $t('Tipas') }}
+          {{ relatedInst.type === 'within-type' ? $t('Tipas ↔') : $t('Tipas') }}
         </span>
       </template>
     </InstitutionCard>
@@ -40,11 +47,14 @@ import { trans as $t } from "laravel-vue-i18n";
 import InstitutionCard from "../Cards/InstitutionCard.vue";
 import IFluentArrowExportLtr24Regular from '~icons/fluent/arrow-export-ltr-24-regular';
 import IFluentArrowImportLtr24Regular from '~icons/fluent/arrow-import-24-regular';
+import IFluentArrowSwap24Regular from '~icons/fluent/arrow-swap-24-regular';
 import IFluentLink24Regular from '~icons/fluent/link-24-regular';
+import IFluentLockClosed24Regular from '~icons/fluent/lock-closed-24-regular';
 
 interface RelatedInstitution extends App.Entities.Institution {
-  direction: 'outgoing' | 'incoming';
-  type: 'direct' | 'type-based';
+  direction: 'outgoing' | 'incoming' | 'sibling';
+  type: 'direct' | 'type-based' | 'within-type';
+  authorized?: boolean;
 }
 
 const props = defineProps<{
@@ -52,6 +62,34 @@ const props = defineProps<{
     relatedInstitutionsFlat?: RelatedInstitution[];
   };
 }>();
+
+// Helper functions for direction-based styling
+const getDirectionIcon = (direction: RelatedInstitution['direction']) => {
+  switch (direction) {
+    case 'outgoing': return IFluentArrowExportLtr24Regular;
+    case 'incoming': return IFluentArrowImportLtr24Regular;
+    case 'sibling': return IFluentArrowSwap24Regular;
+    default: return IFluentLink24Regular;
+  }
+};
+
+const getDirectionClass = (direction: RelatedInstitution['direction']) => {
+  switch (direction) {
+    case 'outgoing': return 'text-blue-500';
+    case 'incoming': return 'text-amber-500';
+    case 'sibling': return 'text-purple-500';
+    default: return 'text-zinc-500';
+  }
+};
+
+const getDirectionTitle = (direction: RelatedInstitution['direction']) => {
+  switch (direction) {
+    case 'outgoing': return $t('relationships.direction_outgoing');
+    case 'incoming': return $t('relationships.direction_incoming');
+    case 'sibling': return $t('relationships.direction_sibling');
+    default: return '';
+  }
+};
 
 // Use the flat format if available, otherwise compute from legacy format
 const flatRelatedInstitutions = computed<RelatedInstitution[]>(() => {

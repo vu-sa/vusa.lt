@@ -99,7 +99,8 @@ const formattedInstitutions = computed(() => {
     tenant_id: i.tenant_id,
     is_related: i.is_related,
     relationship_direction: i.relationship_direction,
-    source_institution_id: i.source_institution_id
+    source_institution_id: i.source_institution_id,
+    authorized: i.authorized
   }));
 
   // Filter to show only institutions with meetings if showOnlyWithActivity is true

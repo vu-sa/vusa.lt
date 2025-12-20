@@ -96,7 +96,7 @@ class DutyService
                 'meetings:id,title,start_time',
                 'meetings.agendaItems:id,meeting_id,title,student_vote,decision,student_benefit',
                 // Load all users (including historical) for Gantt timeline display
-                'duties.users',
+                'duties.users:id,name,email,profile_photo_path',
                 'duties.types:id,title,slug',
                 'checkIns'
             ])
@@ -190,12 +190,12 @@ class DutyService
                 $query->where('type', '!=', 'pkp');
             })
             ->with([
-                'tenant:id,shortname',
+                'tenant:id,shortname,type', // type is needed for cross-tenant scope matching in RelationshipService
                 'types', // explicit since not auto-loaded
                 'meetings:id,title,start_time',
                 'meetings.agendaItems:id,meeting_id,title,student_vote,decision,student_benefit',
                 // Load all users (including historical) for Gantt timeline display
-                'duties.users',
+                'duties.users:id,name,email,profile_photo_path',
                 'duties.types:id,title,slug',
                 'checkIns'
             ])

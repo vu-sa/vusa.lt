@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\MorphPivot;
  * @property string $relationshipable_id
  * @property string $related_model_id
  * @property string $scope
+ * @property bool $bidirectional
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
  * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $related_model
@@ -35,10 +36,19 @@ class Relationshipable extends MorphPivot
 
     protected $table = 'relationshipables';
 
+    protected $primaryKey = 'id';
+
+    public $incrementing = true;
+
     protected $guarded = [];
 
     protected $attributes = [
         'scope' => self::SCOPE_WITHIN_TENANT,
+        'bidirectional' => false,
+    ];
+
+    protected $casts = [
+        'bidirectional' => 'boolean',
     ];
 
     public function relationshipable()

@@ -120,7 +120,11 @@ export function useGanttChartData(
     return institutions.map(i => ({
       id: i.id,
       name: String((i as any)?.name?.lt ?? (i as any)?.name?.en ?? (i as any)?.name ?? (i as any)?.shortname ?? i.id),
-      tenant_id: i.tenant?.id
+      tenant_id: i.tenant?.id,
+      is_related: i.is_related,
+      relationship_direction: i.relationship_direction,
+      source_institution_id: i.source_institution_id,
+      authorized: i.authorized
     }));
   };
 

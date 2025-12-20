@@ -733,5 +733,6 @@
   "Naujas susitikimas": "New meeting",
   "Nauja naujiena": "New news",
   "Nauja rezervacija": "New reservation",
-  "Pranešimai": "Notifications"
+  "Pranešimai": "Notifications",
+  "Neturite prieigos prie šio posėdžio duomenų": "You don't have access to this meeting's data"
 }

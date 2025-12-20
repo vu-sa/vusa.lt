@@ -393,7 +393,7 @@ class DashboardController extends AdminController
         } else {
             $providedTenant = Tenant::query()->where('id', $selectedTenant['id'])->with('reservations.resources', 'resources')->first();
 
-            $tenantResourceReservations = $providedTenant->resources->load('reservations.users')->pluck('reservations')->flatten()->unique('id')->values();
+            $tenantResourceReservations = $providedTenant->resources->load('reservations.users:id,name,email,profile_photo_path')->pluck('reservations')->flatten()->unique('id')->values();
 
             $tenantResourceReservations = new Collection($tenantResourceReservations);
         }
@@ -407,7 +407,7 @@ class DashboardController extends AdminController
             'tenants' => $tenants,
             'providedTenant' => $providedTenant ? [
                 ...$providedTenant->toArray(),
-                'reservations' => $providedTenant->reservations->load('resources.tenant', 'users')->append('isCompleted')->unique('id')->values(),
+                'reservations' => $providedTenant->reservations->load('resources.tenant', 'users:id,name,email,profile_photo_path')->append('isCompleted')->unique('id')->values(),
                 'activeReservations' => $tenantResourceReservations->append('isCompleted'),
             ] : null,
         ]);
@@ -456,11 +456,11 @@ class DashboardController extends AdminController
     {
         $user = User::find(Auth::id());
 
-        $tasks = $user->tasks->load('taskable', 'users');
+        $tasks = $user->tasks->load('taskable', 'users:id,name,email,profile_photo_path');
 
         return $this->inertiaResponse('Admin/ShowTasks', [
             'tasks' => $tasks,
-            'taskableInstitutions' => Inertia::lazy(fn () => Institution::select('id', 'name')->withWhereHas('users:users.id,users.name,profile_photo_path,phone')->get()),
+            'taskableInstitutions' => Inertia::lazy(fn () => Institution::select('id', 'name')->withWhereHas('users:users.id,users.name,users.email,users.profile_photo_path')->get()),
         ]);
     }
 

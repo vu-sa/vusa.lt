@@ -20,9 +20,12 @@ export interface AtstovavimosInstitution {
   has_public_meetings?: boolean;
   // Related institution metadata (only present for related institutions)
   is_related?: boolean;
-  relationship_direction?: 'outgoing' | 'incoming';
-  relationship_type?: 'direct' | 'type-based';
+  relationship_direction?: 'outgoing' | 'incoming' | 'sibling';
+  relationship_type?: 'direct' | 'type-based' | 'within-type';
   source_institution_id?: string;
+  // Whether the current user has authorization to access this institution's data
+  // true for outgoing and sibling directions, false for incoming
+  authorized?: boolean;
 }
 
 export interface InstitutionCheckIn {
@@ -87,6 +90,8 @@ export interface GanttMeeting {
   // Agenda items for tooltip display (limited to first 4)
   agenda_items?: GanttAgendaItem[];
   agenda_items_count?: number;
+  // Whether the user has authorization for this meeting's institution
+  authorized?: boolean;
 }
 
 export interface GanttInstitution {
@@ -96,8 +101,11 @@ export interface GanttInstitution {
   has_public_meetings?: boolean;
   // Related institution metadata
   is_related?: boolean;
-  relationship_direction?: 'outgoing' | 'incoming';
+  relationship_direction?: 'outgoing' | 'incoming' | 'sibling';
+  relationship_type?: 'direct' | 'type-based' | 'within-type';
   source_institution_id?: string;
+  // Whether the current user has authorization to access this institution's data
+  authorized?: boolean;
 }
 
 // Duty member for Gantt chart display

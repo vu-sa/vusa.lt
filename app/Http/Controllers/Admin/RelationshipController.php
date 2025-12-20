@@ -143,10 +143,12 @@ class RelationshipController extends AdminController
             'model_type' => 'required',
             'related_model_id' => 'required',
             'scope' => 'nullable|in:within-tenant,cross-tenant',
+            'bidirectional' => 'nullable|boolean',
         ]);
 
         $pivotData = [
             'related_model_id' => $request->related_model_id,
+            'bidirectional' => $request->boolean('bidirectional', false),
         ];
 
         // Only add scope for Type-based relationships
@@ -158,6 +160,29 @@ class RelationshipController extends AdminController
 
         return redirect()->route('relationships.edit', $relationship)
             ->with('success', 'Ryšys sukurtas sėkmingai.');
+    }
+
+    public function updateModelRelationship(Request $request, Relationshipable $relationshipable)
+    {
+        $this->handleAuthorization('update', $relationshipable);
+
+        $request->validate([
+            'scope' => 'nullable|in:within-tenant,cross-tenant',
+            'bidirectional' => 'nullable|boolean',
+        ]);
+
+        $updateData = [
+            'bidirectional' => $request->boolean('bidirectional', false),
+        ];
+
+        // Only update scope for Type-based relationships
+        if ($relationshipable->relationshipable_type === \App\Models\Type::class && $request->has('scope')) {
+            $updateData['scope'] = $request->scope;
+        }
+
+        $relationshipable->update($updateData);
+
+        return back()->with('success', 'Ryšys atnaujintas sėkmingai.');
     }
 
     public function deleteModelRelationship(Relationshipable $relationshipable)
