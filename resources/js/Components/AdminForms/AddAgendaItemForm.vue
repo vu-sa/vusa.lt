@@ -39,6 +39,23 @@
       </FormItem>
     </FormField>
 
+    <FormField name="brought_by_students" v-slot="{ field, handleChange }">
+      <FormItem class="flex flex-row items-center justify-between rounded-lg border p-3">
+        <div class="space-y-0.5">
+          <FormLabel class="text-sm">{{ $t('Studentų atneštas klausimas') }}</FormLabel>
+          <p class="text-xs text-muted-foreground">
+            {{ $t('Pažymėkite, jei klausimą į posėdį atnešė studentai') }}
+          </p>
+        </div>
+        <FormControl>
+          <Switch 
+            :checked="field.value" 
+            @update:checked="handleChange"
+          />
+        </FormControl>
+      </FormItem>
+    </FormField>
+
     <div class="flex justify-end gap-2 pt-2">
       <Button type="submit" :disabled="loading">
         <Plus class="h-4 w-4 mr-2" />
@@ -58,6 +75,7 @@ import { Plus } from "lucide-vue-next";
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
 import { Textarea } from "@/Components/ui/textarea";
+import { Switch } from "@/Components/ui/switch";
 import {
   FormControl,
   FormField,
@@ -72,26 +90,29 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  (e: "submit", data: { meeting_id: string; title: string; description?: string }): void;
+  (e: "submit", data: { meeting_id: string; title: string; description?: string; brought_by_students?: boolean }): void;
 }>();
 
 const formSchema = toTypedSchema(
   z.object({
     title: z.string().min(1, $t("validation.required", { attribute: $t("Klausimo pavadinimas") })),
     description: z.string().optional().nullable(),
+    brought_by_students: z.boolean().optional().default(false),
   })
 );
 
 const initialValues = {
   title: "",
   description: "",
+  brought_by_students: false,
 };
 
-const handleSubmit = (values: { title: string; description?: string | null }) => {
+const handleSubmit = (values: { title: string; description?: string | null; brought_by_students?: boolean }) => {
   emit("submit", {
     meeting_id: props.meetingId,
     title: values.title,
     description: values.description || undefined,
+    brought_by_students: values.brought_by_students || false,
   });
 };
 </script>

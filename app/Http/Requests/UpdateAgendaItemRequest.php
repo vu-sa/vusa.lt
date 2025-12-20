@@ -27,6 +27,7 @@ class UpdateAgendaItemRequest extends FormRequest
             'title' => 'sometimes|string',
             'description' => 'nullable|string',
             'order' => 'sometimes|integer|min:1',
+            'brought_by_students' => 'nullable|boolean',
             'decision' => 'nullable|string|in:positive,negative,neutral',
             'student_vote' => 'nullable|string|in:positive,negative,neutral',
             'student_benefit' => 'nullable|string|in:positive,negative,neutral',

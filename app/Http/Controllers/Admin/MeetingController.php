@@ -167,6 +167,7 @@ class MeetingController extends AdminController
                         'title' => $agendaItemData['title'],
                         'description' => $agendaItemData['description'] ?? null,
                         'order' => $agendaItemData['order'],
+                        'brought_by_students' => $agendaItemData['brought_by_students'] ?? false,
                         'meeting_id' => $meeting->id,
                     ]);
                 }

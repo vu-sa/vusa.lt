@@ -15,6 +15,10 @@ export const badgeVariants = cva(
         destructive:
           'border-transparent bg-red-500 text-zinc-50 hover:bg-red-500/80 dark:bg-red-900 dark:text-zinc-50 dark:hover:bg-red-900/80',
         outline: 'text-zinc-950 dark:text-zinc-50',
+        success:
+          'border-transparent bg-green-500 text-white hover:bg-green-500/80 dark:bg-green-600 dark:text-white dark:hover:bg-green-600/80',
+        warning:
+          'border-transparent bg-amber-500 text-white hover:bg-amber-500/80 dark:bg-amber-600 dark:text-white dark:hover:bg-amber-600/80',
       },
     },
     defaultVariants: {

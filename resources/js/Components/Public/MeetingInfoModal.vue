@@ -53,6 +53,19 @@
                 {{ $t('VU SA įvertinimas, ar sprendimas naudingas studentams') }}
               </dd>
             </div>
+
+            <!-- Brought by students -->
+            <div class="flex flex-col sm:flex-row sm:gap-4">
+              <dt class="font-medium mb-1 sm:mb-0 sm:min-w-[140px] flex items-center gap-2">
+                <span class="inline-flex items-center gap-1 rounded-full bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 text-xs font-medium text-zinc-600 dark:text-zinc-400 ring-1 ring-zinc-200 dark:ring-zinc-700">
+                  <UsersIcon class="h-3 w-3" />
+                </span>
+                <span>{{ $t('Įtraukta studentų') }}</span>
+              </dt>
+              <dd class="text-sm text-muted-foreground">
+                {{ $t('Klausimas, kurį į posėdžio darbotvarkę įtraukė studentų atstovai') }}
+              </dd>
+            </div>
           </dl>
         </section>
 
@@ -100,6 +113,7 @@
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
+import { Users as UsersIcon } from 'lucide-vue-next';
 import {
   Dialog,
   DialogContent,

@@ -83,9 +83,18 @@
           class="overflow-hidden rounded-xl bg-white dark:bg-zinc-900 p-5 ring-1 ring-zinc-200 dark:ring-zinc-800 shadow-sm"
         >
           <!-- Item title -->
-          <h3 class="text-base font-semibold text-zinc-900 dark:text-zinc-50">
-            <span class="text-zinc-400 dark:text-zinc-500 font-normal">{{ item.order }}.</span> {{ item.title }}
-          </h3>
+          <div class="flex items-center gap-2">
+            <h3 class="text-base font-semibold text-zinc-900 dark:text-zinc-50 flex-1">
+              <span class="text-zinc-400 dark:text-zinc-500 font-normal">{{ item.order }}.</span> {{ item.title }}
+            </h3>
+            <span 
+              v-if="item.brought_by_students" 
+              class="shrink-0 inline-flex items-center gap-1 rounded-full bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 text-xs font-medium text-zinc-600 dark:text-zinc-400 ring-1 ring-zinc-200 dark:ring-zinc-700"
+            >
+              <UsersIcon class="h-3 w-3" />
+              {{ $t('Įtraukta studentų') }}
+            </span>
+          </div>
 
           <!-- Item description (ShowMeeting-specific) -->
           <p v-if="item.description" class="text-zinc-600 dark:text-zinc-400 mt-2 text-sm leading-relaxed">
@@ -173,7 +182,7 @@
 import { ref, computed } from 'vue';
 import { usePage, Link as InertiaLink } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { InfoIcon, CheckCircleIcon, AlertCircleIcon, ChevronLeft, ChevronRight, Building2 } from 'lucide-vue-next';
+import { InfoIcon, CheckCircleIcon, AlertCircleIcon, ChevronLeft, ChevronRight, Building2, Users as UsersIcon } from 'lucide-vue-next';
 
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import MeetingInfoModal from '@/Components/Public/MeetingInfoModal.vue';

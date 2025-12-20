@@ -25,12 +25,16 @@ class AgendaItemController extends AdminController
             // Get the highest order for this meeting
             $maxOrder = AgendaItem::where('meeting_id', $validatedData['meeting_id'])
                 ->max('order') ?? 0;
+            
+            // Get broughtByStudentsFlags array (defaults to empty array)
+            $broughtByStudentsFlags = $request->input('broughtByStudentsFlags', []);
                 
             foreach ($validatedData['agendaItemTitles'] as $index => $agendaItemTitle) {
                 AgendaItem::create([
                     'meeting_id' => $validatedData['meeting_id'],
                     'title' => $agendaItemTitle,
                     'order' => $maxOrder + $index + 1,
+                    'brought_by_students' => $broughtByStudentsFlags[$index] ?? false,
                 ]);
             }
 

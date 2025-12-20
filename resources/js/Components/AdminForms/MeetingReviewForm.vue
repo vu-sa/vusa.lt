@@ -114,7 +114,10 @@
             <div class="flex-shrink-0 w-5 h-5 bg-muted rounded-full flex items-center justify-center">
               <span class="text-xs font-medium">{{ index + 1 }}</span>
             </div>
-            <span>{{ item.title }}</span>
+            <span class="flex-1">{{ item.title }}</span>
+            <Badge v-if="item.brought_by_students" variant="default" class="bg-vusa-red hover:bg-vusa-red/90 shrink-0 text-[10px] px-1.5 py-0">
+              {{ $t('Studentų') }}
+            </Badge>
           </div>
           
           <Button

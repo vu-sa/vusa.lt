@@ -96,6 +96,12 @@
     "Studentų pozicija nesutampa su sprendimu": "Studentų pozicija nesutampa su sprendimu",
     "Darbotvarkė nenurodyta": "Darbotvarkė nenurodyta",
     "Studentų balsas": "Studentų balsas",
+    "Studentų": "Studentų",
+    "Įtraukta studentų": "Įtraukta studentų",
+    "Klausimas, kurį į posėdžio darbotvarkę įtraukė studentų atstovai": "Klausimas, kurį į posėdžio darbotvarkę įtraukė studentų atstovai",
+    "Studentų atneštas klausimas": "Studentų atneštas klausimas",
+    "Pažymėti kaip studentų atnešta": "Pažymėti kaip studentų atnešta",
+    "Pažymėkite, jei klausimą į posėdį atnešė studentai": "Pažymėkite, jei klausimą į posėdį atnešė studentai",
     "Nauda studentams": "Nauda studentams",
     "Posėdžiai": "Posėdžiai",
     "Paslėpti": "Paslėpti",
@@ -246,6 +252,7 @@
     "Renginys įvyko": "Renginys įvyko",
     "Renginys įvyks": "Renginys įvyks",
     "Vyksta dabar": "Vyksta dabar",
-    "Dalyvauk dabar": "Dalyvauk dabar"
+    "Dalyvauk dabar": "Dalyvauk dabar",
+    "Mano VU SA" : "My VU SR"
 }
 

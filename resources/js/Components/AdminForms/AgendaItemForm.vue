@@ -39,6 +39,24 @@
       </FormItem>
     </FormField>
 
+    <!-- Brought by Students Toggle -->
+    <FormField name="brought_by_students" v-slot="{ field, handleChange }">
+      <FormItem class="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+        <div class="space-y-0.5">
+          <FormLabel>{{ $t('Studentų atneštas klausimas') }}</FormLabel>
+          <p class="text-xs text-muted-foreground">
+            {{ $t('Pažymėkite, jei klausimą į posėdį atnešė studentai') }}
+          </p>
+        </div>
+        <FormControl>
+          <Switch 
+            :checked="field.value" 
+            @update:checked="handleChange"
+          />
+        </FormControl>
+      </FormItem>
+    </FormField>
+
     <!-- Voting Fields Section -->
     <div class="space-y-4 rounded-lg border border-zinc-200 dark:border-zinc-700 p-4">
       <div class="flex items-center gap-2">
@@ -215,6 +233,7 @@ import { Button } from "@/Components/ui/button";
 import { ButtonGroup } from "@/Components/ui/button-group";
 import { Input } from "@/Components/ui/input";
 import { Textarea } from "@/Components/ui/textarea";
+import { Switch } from "@/Components/ui/switch";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/Components/ui/form";
 import FieldTooltip from "@/Components/ui/FieldTooltip.vue";
 import VotingInfoButton from "@/Components/AgendaItems/VotingInfoButton.vue";
@@ -230,6 +249,7 @@ const props = defineProps<{
 const formSchema = toTypedSchema(z.object({
   title: z.string().min(1, { message: $t('Klausimo pavadinimas yra privalomas') }),
   description: z.string().optional().nullable(),
+  brought_by_students: z.boolean().optional().default(false),
   decision: z.enum(['positive', 'negative', 'neutral']).optional().nullable(),
   student_vote: z.enum(['positive', 'negative', 'neutral']).optional().nullable(),
   student_benefit: z.enum(['positive', 'negative', 'neutral']).optional().nullable(),
@@ -238,6 +258,7 @@ const formSchema = toTypedSchema(z.object({
 const initialValues = {
   title: props.agendaItem.title || '',
   description: props.agendaItem.description || '',
+  brought_by_students: props.agendaItem.brought_by_students || false,
   decision: props.agendaItem.decision || null,
   student_vote: props.agendaItem.student_vote || null,
   student_benefit: props.agendaItem.student_benefit || null,

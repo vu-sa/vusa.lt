@@ -18,11 +18,14 @@
         <div class="flex-1 min-w-0">
           <!-- Title Row with Compact Indicators -->
           <div class="flex items-center justify-between gap-2">
-            <button type="button" class="text-left flex-1 min-w-0" @click="showDetailed = !showDetailed">
+            <button type="button" class="text-left flex-1 min-w-0 flex items-center gap-2" @click="showDetailed = !showDetailed">
               <h3
                 class="text-sm font-semibold text-zinc-800 dark:text-zinc-100 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors leading-snug">
                 {{ item.title }}
               </h3>
+              <Badge v-if="item.brought_by_students" variant="default" class="bg-vusa-red hover:bg-vusa-red/90 shrink-0 text-[10px] px-1.5 py-0">
+                {{ $t('Studentų') }}
+              </Badge>
             </button>
 
             <!-- Right side: Compact indicators + Menu -->
@@ -133,6 +136,7 @@ import InlineVoteControl from './InlineVoteControl.vue'
 
 import { Card, CardContent } from '@/Components/ui/card'
 import { Button } from '@/Components/ui/button'
+import { Badge } from '@/Components/ui/badge'
 import { Collapsible, CollapsibleContent } from '@/Components/ui/collapsible'
 import {
   DropdownMenu,
@@ -149,6 +153,7 @@ interface AgendaItem {
   title: string
   description?: string | null
   order: number
+  brought_by_students?: boolean
   decision?: string | null
   student_vote?: string | null
   student_benefit?: string | null

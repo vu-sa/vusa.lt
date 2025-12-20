@@ -13,6 +13,7 @@ export interface AgendaItemFormData {
   title: string
   description?: string
   order: number
+  brought_by_students?: boolean
 }
 
 export interface MeetingCreationState {

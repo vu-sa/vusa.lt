@@ -308,13 +308,14 @@ const handleAgendaItemUpdate = (formValues: Record<string, any>) => {
   });
 };
 
-const handleSingleAgendaItemSubmit = (data: { meeting_id: string; title: string; description?: string }) => {
+const handleSingleAgendaItemSubmit = (data: { meeting_id: string; title: string; description?: string; brought_by_students?: boolean }) => {
   loading.value = true;
 
   router.post(route("agendaItems.store"), {
     meeting_id: data.meeting_id,
     agendaItemTitles: [data.title],
     agendaItemDescriptions: data.description ? [data.description] : [],
+    broughtByStudentsFlags: [data.brought_by_students || false],
   }, {
     onSuccess: () => {
       showSingleAgendaItemModal.value = false;

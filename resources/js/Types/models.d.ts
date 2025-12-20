@@ -417,6 +417,7 @@ declare global {
       updated_at: string
       title: string
       order: number
+      brought_by_students: boolean
       description?: string | null
       student_vote?: string | null
       decision?: string | null

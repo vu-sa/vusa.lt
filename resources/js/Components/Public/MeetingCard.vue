@@ -60,9 +60,18 @@
             :key="item.id"
             class="text-xs"
           >
-            <p class="font-medium text-zinc-900 dark:text-zinc-100 mb-1">
-              {{ item.order }}. {{ item.title }}
-            </p>
+            <div class="flex items-center gap-2 mb-1">
+              <p class="font-medium text-zinc-900 dark:text-zinc-100 flex-1">
+                {{ item.order }}. {{ item.title }}
+              </p>
+              <span 
+                v-if="item.brought_by_students" 
+                class="shrink-0 inline-flex items-center gap-0.5 rounded-full bg-zinc-200 dark:bg-zinc-700 px-1.5 py-0 text-[10px] font-medium text-zinc-600 dark:text-zinc-300"
+              >
+                <UsersIcon class="h-2.5 w-2.5" />
+                {{ $t('Įtraukta studentų') }}
+              </span>
+            </div>
             <!-- Vote details only when at least one value exists -->
             <div v-if="hasDecisionData(item)" class="flex gap-4 text-zinc-500 dark:text-zinc-400">
               <span class="flex items-center gap-1">
@@ -89,7 +98,7 @@ import { computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Badge } from '@/Components/ui/badge';
-import { ArrowRightIcon } from 'lucide-vue-next';
+import { ArrowRightIcon, Users as UsersIcon } from 'lucide-vue-next';
 import AgendaOutcomeIndicators from './AgendaOutcomeIndicators.vue';
 import VoteIndicator from './VoteIndicator.vue';
 import SmartLink from './SmartLink.vue';

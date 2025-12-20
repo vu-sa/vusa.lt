@@ -377,10 +377,14 @@ const handleMeetingFormSubmit = (meetingData: any) => {
 };
 
 const handleAgendaItemsFormSubmit = (agendaData: any) => {
-  const agendaItems = (agendaData.agendaItemTitles || []).map((title: string, index: number) => ({
+  const titles = agendaData.agendaItemTitles || [];
+  const broughtByStudentsFlags = agendaData.broughtByStudentsFlags || [];
+  
+  const agendaItems = titles.map((title: string, index: number) => ({
     title,
     description: '',
-    order: index + 1
+    order: index + 1,
+    brought_by_students: broughtByStudentsFlags[index] || false,
   }));
 
   meetingCreation.updateAgendaItems(agendaItems);

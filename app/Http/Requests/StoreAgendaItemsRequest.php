@@ -28,6 +28,8 @@ class StoreAgendaItemsRequest extends FormRequest
             'agendaItemTitles' => 'required|array',
             'agendaItemTitles.*' => 'required|string',
             'meeting_id' => 'required|ulid|exists:meetings,id',
+            'broughtByStudentsFlags' => 'nullable|array',
+            'broughtByStudentsFlags.*' => 'nullable|boolean',
         ];
     }
 

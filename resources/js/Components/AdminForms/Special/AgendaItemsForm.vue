@@ -75,6 +75,25 @@
                         </FormControl>
                       </div>
                       <div class="flex items-center gap-1 mt-2">
+                        <!-- Brought by students toggle -->
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger as-child>
+                              <Button 
+                                type="button" 
+                                :variant="broughtByStudentsFlags[index] ? 'default' : 'ghost'" 
+                                size="icon" 
+                                class="h-6 w-6"
+                                :class="broughtByStudentsFlags[index] ? 'bg-vusa-red hover:bg-vusa-red/90' : 'opacity-50 hover:opacity-100'"
+                                @click="broughtByStudentsFlags[index] = !broughtByStudentsFlags[index]">
+                                <UsersIcon class="h-3 w-3" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              {{ broughtByStudentsFlags[index] ? $t('Studentų atneštas klausimas') : $t('Pažymėti kaip studentų atnešta') }}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                         <Button type="button" variant="ghost" size="icon" class="h-6 w-6 opacity-50 hover:opacity-100"
                           @click="duplicateItem(index, (field as any).value, push)">
                           <Copy class="h-3 w-3" />
@@ -295,6 +314,7 @@ import {
   Trash2,
   CheckCircle,
   Loader2,
+  Users as UsersIcon,
 } from "lucide-vue-next";
 
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
@@ -360,6 +380,8 @@ const questionInputInTextArea = ref("");
 const draggedIndex = ref<number | null>(null);
 const agendaInputMode = ref<'previous' | 'one-by-one' | 'text' | null>(null);
 const showPreviousMeetingList = ref(false);
+// Track brought_by_students flag for each item by index
+const broughtByStudentsFlags = ref<Record<number, boolean>>({});
 
 // Computed properties
 const recentTemplates = computed(() =>
@@ -469,6 +491,7 @@ const skipAgenda = () => {
   // Submit with empty agenda
   const formData = {
     agendaItemTitles: [],
+    broughtByStudentsFlags: [],
   };
 
   emit("submit", formData);
@@ -500,8 +523,15 @@ const loadFromPreviousMeeting = (meetingId: string) => {
 
 // Submit form handler
 const onSubmit = (values: any) => {
+  const filteredItems = values.agendaItemTitles
+    .map((title: string, index: number) => ({ title, index }))
+    .filter((item: { title: string }) => item.title.trim() !== '');
+  
   const formData = {
-    agendaItemTitles: values.agendaItemTitles.filter((item: string) => item.trim() !== ''),
+    agendaItemTitles: filteredItems.map((item: { title: string; index: number }) => item.title),
+    broughtByStudentsFlags: filteredItems.map((item: { title: string; index: number }) => 
+      broughtByStudentsFlags.value[item.index] || false
+    ),
   };
 
   emit("submit", formData);
