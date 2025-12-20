@@ -1,6 +1,5 @@
 <template>
   <div class="wrapper-wide">
-
     <!-- Main Content -->
     <div class="py-6 lg:py-10">
       <!-- Event Header Card -->
@@ -323,17 +322,16 @@
 
 <script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
-import { computed } from "vue";
+import { computed, onMounted } from "vue";
 import { usePage, Link } from "@inertiajs/vue3";
 import { format } from "date-fns";
 import { lt, enUS } from "date-fns/locale";
 
-import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
+import PublicBreadcrumb from "@/Components/Public/PublicBreadcrumb.vue";
 import UpcomingEventsCompact from "@/Components/Calendar/UpcomingEventsCompact.vue";
 import EventImageGallery from "@/Components/Calendar/EventImageGallery.vue";
 import Button from "@/Components/ui/button/Button.vue";
-
-import IFluentCalendar16Regular from '~icons/fluent/calendar-16-regular';
+import { useBreadcrumbs } from "@/Composables/useBreadcrumbsUnified";
 
 const props = defineProps<{
   event: App.Entities.Calendar;
@@ -345,29 +343,19 @@ const page = usePage()
 const locale = computed(() => page.props.app.locale)
 const dateLocale = computed(() => locale.value === 'lt' ? lt : enUS)
 
-// Set breadcrumbs for calendar event page
-usePageBreadcrumbs(() => {
-  const items = [];
+// Set up breadcrumbs
+const { set, getHomeBreadcrumb, createRouteBreadcrumb, createBreadcrumbItem } = useBreadcrumbs();
+
+onMounted(() => {
+  const eventTitle = Array.isArray(props.event.title) 
+    ? props.event.title.join(' ') 
+    : (props.event.title || '');
   
-  // Calendar list link
-  items.push(
-    BreadcrumbHelpers.createRouteBreadcrumb(
-      'Kalendorius',
-      'calendar.list',
-      { lang: locale.value },
-      IFluentCalendar16Regular
-    )
-  );
-  
-  // Current event title
-  const title = typeof props.event.title === 'string' 
-    ? props.event.title 
-    : (Array.isArray(props.event.title) ? props.event.title.join(' ') : String(props.event.title));
-  items.push(
-    BreadcrumbHelpers.createBreadcrumbItem(title)
-  );
-  
-  return BreadcrumbHelpers.publicContent(items);
+  set([
+    getHomeBreadcrumb(),
+    createRouteBreadcrumb('Kalendorius', 'calendar.list', { lang: locale.value }),
+    createBreadcrumbItem(eventTitle),
+  ]);
 });
 
 // Event status helpers

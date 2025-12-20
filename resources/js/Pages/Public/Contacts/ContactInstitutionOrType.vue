@@ -111,6 +111,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 import { ChevronDownIcon, InfoIcon } from 'lucide-vue-next';
 import { Button } from '@/Components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Components/ui/collapsible';
@@ -119,6 +120,8 @@ import InstitutionContacts from "@/Components/Public/InstitutionContacts.vue";
 import MeetingCard from "@/Components/Public/MeetingCard.vue";
 import MeetingInfoModal from "@/Components/Public/MeetingInfoModal.vue";
 import MeetingTimelineItem from "@/Components/Public/MeetingTimelineItem.vue";
+import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
+import { UserIcon, InstitutionIcon, TypeIcon } from '@/Components/icons';
 
 interface ContactGroup {
   name: string;
@@ -138,7 +141,9 @@ interface AcademicYearGroup {
   meetings: Array<App.Entities.Meeting>;
 }
 
-defineProps<{
+const $page = usePage();
+
+const props = defineProps<{
   contacts?: Array<App.Entities.User>;
   contactSections?: Array<ContactSection>;
   hasMixedGrouping?: boolean;
@@ -147,6 +152,52 @@ defineProps<{
   previousYearsMeetings?: Array<AcademicYearGroup>;
   hasMeetings?: boolean;
 }>();
+
+// Set breadcrumbs for institution contact page
+usePageBreadcrumbs(() => {
+  const items = [];
+  
+  // Main contacts link
+  items.push(
+    BreadcrumbHelpers.createRouteBreadcrumb(
+      'Kontaktai',
+      'contacts',
+      {
+        subdomain: 'www',
+        lang: $page.props.app.locale
+      },
+      UserIcon
+    )
+  );
+  
+  // Add institution type as intermediate breadcrumb if available
+  const institutionType = props.institution.types?.[0];
+  if (institutionType) {
+    items.push(
+      BreadcrumbHelpers.createRouteBreadcrumb(
+        String(institutionType.title ?? institutionType.slug),
+        'contacts.category',
+        {
+          subdomain: 'www',
+          lang: $page.props.app.locale,
+          type: institutionType.slug
+        },
+        TypeIcon
+      )
+    );
+  }
+  
+  // Current institution
+  items.push(
+    BreadcrumbHelpers.createBreadcrumbItem(
+      String(props.institution.name ?? props.institution.alias),
+      undefined,
+      InstitutionIcon
+    )
+  );
+  
+  return BreadcrumbHelpers.publicContent(items);
+});
 
 const showMeetings = ref(true);  // Expanded by default
 const showPreviousYears = ref(false);

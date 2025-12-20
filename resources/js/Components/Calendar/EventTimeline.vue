@@ -1,5 +1,5 @@
 <template>
-  <div class="event-timeline-container overflow-hidden">
+  <div class="event-timeline-container overflow-hidden px-4">
     <!-- Header with navigation and date range -->
     <div class="flex items-center justify-between mb-3 px-2">
       <!-- Left navigation -->
@@ -39,9 +39,9 @@
     </div>
 
     <!-- Timeline container with proper overflow handling -->
-    <div class="relative rounded-xl bg-gradient-to-b from-zinc-50 to-zinc-100 dark:from-zinc-800 dark:to-zinc-900 border border-zinc-200 dark:border-zinc-700 p-4 overflow-hidden">
+    <div class="relative rounded-xl bg-white dark:bg-zinc-800/90 border border-zinc-200 dark:border-zinc-700 p-4 overflow-hidden">
       <!-- Decorative background pattern -->
-      <div class="absolute inset-0 opacity-[0.03] dark:opacity-[0.05]" aria-hidden="true">
+      <div class="absolute inset-0 opacity-[0.015] dark:opacity-[0.025]" aria-hidden="true">
         <div class="absolute inset-0" style="background-image: url('data:image/svg+xml,%3Csvg width=&quot;60&quot; height=&quot;60&quot; viewBox=&quot;0 0 60 60&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot;%3E%3Cg fill=&quot;none&quot; fill-rule=&quot;evenodd&quot;%3E%3Cg fill=&quot;%23bd1b21&quot; fill-opacity=&quot;1&quot;%3E%3Cpath d=&quot;M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z&quot;/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');"></div>
       </div>
 
@@ -59,7 +59,7 @@
       </div>
 
       <!-- Timeline track with events -->
-      <div class="relative h-32 sm:h-36">
+      <div class="relative h-36 sm:h-40">
         <!-- Horizontal axis line -->
         <div class="absolute left-0 right-0 bottom-6 h-px bg-gradient-to-r from-transparent via-zinc-300 dark:via-zinc-600 to-transparent" />
 
@@ -109,13 +109,13 @@
                     class="event-thumbnail relative transition-all duration-200"
                     :class="[
                       group.isNextUpcoming && eventIndex === 0 
-                        ? 'ring-2 ring-vusa-red ring-offset-2 dark:ring-offset-zinc-900 scale-110 z-20' 
-                        : 'hover:scale-110 hover:z-20',
-                      !isUpcoming(event) ? 'opacity-60 grayscale-[30%] hover:opacity-100 hover:grayscale-0' : ''
+                        ? 'ring-2 ring-vusa-red ring-offset-2 dark:ring-offset-zinc-800 scale-105 z-20' 
+                        : 'hover:scale-105 hover:z-20',
+                      !isUpcoming(event) ? 'opacity-75 grayscale-[15%] hover:opacity-100 hover:grayscale-0' : ''
                     ]"
                     @click="navigateToEvent(event)"
                   >
-                    <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-lg overflow-hidden shadow-md border-2 border-white dark:border-zinc-800">
+                    <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-lg overflow-hidden shadow-lg border-2 border-white dark:border-zinc-700 bg-white dark:bg-zinc-700">
                       <img 
                         v-if="getEventImage(event)"
                         :src="getEventImage(event)!"
@@ -397,6 +397,13 @@ const nextUpcomingEvents = computed(() => {
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
     .slice(0, 2);
 });
+
+// Count of all future events (for indicator)
+const futureEventsCount = computed(() => {
+  return props.events.filter(e => !isBefore(new Date(e.date), today.value)).length;
+});
+
+console.log('futureEventsCount', futureEventsCount.value);
 
 // Helper functions
 const getEventImage = (event: App.Entities.Calendar): string | null => {

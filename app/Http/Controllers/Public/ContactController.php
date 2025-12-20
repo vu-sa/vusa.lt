@@ -48,6 +48,9 @@ class ContactController extends PublicController
 
         Inertia::share('otherLangURL', route('contacts.institution', ['subdomain' => $this->subdomain, 'lang' => $this->getOtherLang(), 'institution' => $institution->id]));
 
+        // Load types for breadcrumb navigation
+        $institution->load('types');
+
         $duties = $institution->load('duties.current_users.current_duties')->duties->sortBy(function ($duty) {
             return $duty->order;
         });
@@ -99,6 +102,9 @@ class ContactController extends PublicController
         } else {
             $institution = Institution::where('alias', '=', $this->tenant->alias)->firstOrFail();
         }
+
+        // Load types for breadcrumb navigation
+        $institution->load('types');
 
         // load duties whereHas types
         $duties = $institution->load(['duties' => function ($query) use ($types) {

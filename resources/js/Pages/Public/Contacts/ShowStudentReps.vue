@@ -308,6 +308,8 @@ import { pluralizeLithuanian } from "@/Utils/String";
 import { Label } from "@/Components/ui/label";
 import { Input } from "@/Components/ui/input";
 import { Button } from "@/Components/ui/button";
+import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
+import { UserIcon, TypeIcon } from '@/Components/icons';
 
 import { router } from "@inertiajs/vue3";
 
@@ -320,6 +322,35 @@ const props = defineProps<{
 }>();
 
 const search = ref<string>("");
+
+// Set breadcrumbs for student representatives / category pages
+usePageBreadcrumbs(() => {
+  const items = [];
+  
+  // Main contacts link
+  items.push(
+    BreadcrumbHelpers.createRouteBreadcrumb(
+      'Kontaktai',
+      'contacts',
+      {
+        subdomain: 'www',
+        lang: $page.props.app.locale
+      },
+      UserIcon
+    )
+  );
+  
+  // Current page - category title or default "Studentų atstovai"
+  items.push(
+    BreadcrumbHelpers.createBreadcrumbItem(
+      props.categoryType?.title || 'Studentų atstovai',
+      undefined,
+      TypeIcon
+    )
+  );
+  
+  return BreadcrumbHelpers.publicContent(items);
+});
 
 // Check if this is the student representatives page (showing multiple categories)
 const isStudentRepsPage = computed(() => !props.categoryType);

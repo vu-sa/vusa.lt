@@ -230,19 +230,10 @@ const contentWrapperClass = computed(() => {
 });
 
 const breadcrumbWrapperClass = computed(() => {
-  const width = layoutWidth.value;
   const baseClasses = 'pt-6 md:pt-16 lg:pt-16';
   
-  switch (width) {
-    case 'wide':
-      return `wrapper-wide ${baseClasses}`;
-    case 'full':
-      return `wrapper-full ${baseClasses}`;
-    case 'content':
-      return `wrapper-content ${baseClasses}`;
-    default:
-      return `wrapper ${baseClasses}`;
-  }
+  // Breadcrumbs always use standard wrapper width for consistency
+  return `wrapper ${baseClasses}`;
 });
 
 // Clear breadcrumbs when on home page

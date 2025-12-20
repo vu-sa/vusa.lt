@@ -59,6 +59,8 @@ import InstitutionFigure from "@/Components/Public/InstitutionFigure.vue";
 import SmartLink from "@/Components/Public/SmartLink.vue";
 import Button from "@/Components/ui/button/Button.vue";
 import StaggeredTransitionGroup from "@/Components/Transitions/StaggeredTransitionGroup.vue";
+import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
+import { UserIcon, TypeIcon } from '@/Components/icons';
 
 const $page = usePage();
 
@@ -66,6 +68,35 @@ const props = defineProps<{
   institutions: App.Entities.Institution[];
   type: App.Entities.Type;
 }>();
+
+// Set breadcrumbs for contact category page
+usePageBreadcrumbs(() => {
+  const items = [];
+  
+  // Main contacts link
+  items.push(
+    BreadcrumbHelpers.createRouteBreadcrumb(
+      'Kontaktai',
+      'contacts',
+      {
+        subdomain: 'www',
+        lang: $page.props.app.locale
+      },
+      UserIcon
+    )
+  );
+  
+  // Current category type
+  items.push(
+    BreadcrumbHelpers.createBreadcrumbItem(
+      String(props.type.title ?? props.type.slug),
+      undefined,
+      TypeIcon
+    )
+  );
+  
+  return BreadcrumbHelpers.publicContent(items);
+});
 
 // Filter institutions that have meaningful content to display
 const institutionsWithContent = computed(() => {
