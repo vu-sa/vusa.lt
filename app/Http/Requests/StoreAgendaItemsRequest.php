@@ -26,7 +26,7 @@ class StoreAgendaItemsRequest extends FormRequest
     {
         return [
             'agendaItemTitles' => 'required|array',
-            'agendaItemTitles.*' => 'required|string|max:255',
+            'agendaItemTitles.*' => 'required|string',
             'meeting_id' => 'required|ulid|exists:meetings,id',
         ];
     }

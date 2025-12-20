@@ -24,7 +24,7 @@ class UpdateAgendaItemRequest extends FormRequest
     public function rules()
     {
         return [
-            'title' => 'sometimes|string|max:255',
+            'title' => 'sometimes|string',
             'description' => 'nullable|string',
             'order' => 'sometimes|integer|min:1',
             'decision' => 'nullable|string|in:positive,negative,neutral',
