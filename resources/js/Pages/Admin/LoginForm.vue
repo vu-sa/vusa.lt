@@ -51,6 +51,28 @@
           <FadeTransition mode="out-in">
             <!-- Microsoft Login -->
             <div v-if="!useSimpleRegistration" class="w-full space-y-4">
+              <!-- Error Message -->
+              <Alert v-if="Object.keys(errors).length > 0 && !errorDismissed" variant="destructive" class="relative">
+                <IFluentErrorCircle16Regular class="size-4" />
+                <AlertTitle>
+                  {{ $page.props.app.locale === 'en' ? 'Login failed' : 'Prisijungimas nepavyko' }}
+                </AlertTitle>
+                <AlertDescription>
+                  <ul class="space-y-1">
+                    <li v-for="(error, key) in errors" :key="key">
+                      {{ error }}
+                    </li>
+                  </ul>
+                </AlertDescription>
+                <button 
+                  type="button"
+                  class="absolute top-3 right-3 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors"
+                  @click="errorDismissed = true"
+                >
+                  <IFluentDismiss16Regular class="size-4" />
+                </button>
+              </Alert>
+              
               <MicrosoftButton class="w-full" />
               <p class="text-center text-xs text-zinc-500 dark:text-zinc-400">
                 {{ $page.props.app.locale === 'en' ? 'Quick access with your university account' : 'Greitas priėjimas su universiteto paskyra' }}
@@ -93,22 +115,33 @@
               </div>
               
               <!-- Status Messages -->
-              <div v-if="Object.keys(errors).length > 0" class="p-4 rounded-lg bg-red-50 border border-red-200 dark:bg-red-950/20 dark:border-red-900/30">
-                <div class="font-medium text-red-800 dark:text-red-200 text-sm">
+              <Alert v-if="Object.keys(errors).length > 0 && !errorDismissed" variant="destructive" class="relative">
+                <IFluentErrorCircle16Regular class="size-4" />
+                <AlertTitle>
                   {{ $page.props.app.locale === 'en' ? 'Something went wrong' : 'Kažkas ne taip' }}...
-                </div>
-                <ul class="mt-2 text-sm text-red-700 dark:text-red-300 space-y-1">
-                  <li v-for="(error, key) in errors" :key="key">
-                    {{ error }}
-                  </li>
-                </ul>
-              </div>
+                </AlertTitle>
+                <AlertDescription>
+                  <ul class="space-y-1">
+                    <li v-for="(error, key) in errors" :key="key">
+                      {{ error }}
+                    </li>
+                  </ul>
+                </AlertDescription>
+                <button 
+                  type="button"
+                  class="absolute top-3 right-3 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors"
+                  @click="errorDismissed = true"
+                >
+                  <IFluentDismiss16Regular class="size-4" />
+                </button>
+              </Alert>
 
-              <div v-if="status" class="p-4 rounded-lg bg-green-50 border border-green-200 dark:bg-green-950/20 dark:border-green-900/30">
-                <div class="text-sm font-medium text-green-800 dark:text-green-200">
+              <Alert v-if="status" class="bg-green-50 border-green-200 text-green-800 dark:bg-green-950/20 dark:border-green-900/30 dark:text-green-200">
+                <IFluentCheckmarkCircle16Regular class="size-4" />
+                <AlertDescription>
                   {{ status }}
-                </div>
-              </div>
+                </AlertDescription>
+              </Alert>
 
               <!-- Login Form -->
               <Form v-slot="{ errors: validationErrors }" :validation-schema="validationSchema" @submit="handleSubmit">
@@ -216,19 +249,31 @@ import {
   FormLabel,
   FormMessage,
 } from "@/Components/ui/form";
+import { Alert, AlertDescription, AlertTitle } from "@/Components/ui/alert";
 
 // Icons
 import IFluentKey24Filled from "~icons/fluent/key-24-filled";
 import IFluentArrowHookUpLeft24Regular from "~icons/fluent/arrow-hook-up-left-24-regular";
+import IFluentErrorCircle16Regular from "~icons/fluent/error-circle-16-regular";
+import IFluentDismiss16Regular from "~icons/fluent/dismiss-16-regular";
+import IFluentCheckmarkCircle16Regular from "~icons/fluent/checkmark-circle-16-regular";
 
 defineProps<{
   status?: string;
 }>();
 
 const useSimpleRegistration = ref(false);
+const errorDismissed = ref(false);
 
-// Get errors from Inertia page props
-const errors = computed(() => usePage().props.errors || {});
+// Get errors from Inertia page props - reset dismissed state when errors change
+const errors = computed(() => {
+  const pageErrors = usePage().props.errors || {};
+  // Reset dismissed state when new errors come in
+  if (Object.keys(pageErrors).length > 0) {
+    errorDismissed.value = false;
+  }
+  return pageErrors;
+});
 
 // Inertia form for submission
 const form = useForm({

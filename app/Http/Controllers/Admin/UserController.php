@@ -378,7 +378,14 @@ class UserController extends AdminController
             return redirect()->intended(RouteServiceProvider::HOME);
         }
 
-        return redirect()->route('home', ['subdomain' => 'www', 'lang' => app()->getLocale()]);
+        // No user or duty found with this email - redirect to login with error
+        $message = app()->getLocale() === 'en'
+            ? 'No account or duty was found with this email address. Please contact a VU SR student representative coordinator or administrator to get access.'
+            : 'Su šiuo el. pašto adresu nerastas nei vartotojas, nei pareigybė. Susisiekite su VU SA padalinio studentų atstovų koordinatoriumi ar administratoriumi, kad gautumėte prieigą.';
+
+        return redirect()->route('login')->withErrors([
+            'email' => $message,
+        ]);
     }
 
     public function authenticate(Request $request)
