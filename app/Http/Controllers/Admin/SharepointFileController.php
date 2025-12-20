@@ -185,11 +185,40 @@ class SharepointFileController extends AdminController
     {
         $sharepointService = new SharepointGraphService(driveId: config('filesystems.sharepoint.vusa_drive_id'));
 
-        $permission = $sharepointService->createPublicPermission(
-            siteId: $sharepointService->siteId, driveItemId: $driveItemId);
+        try {
+            $permission = $sharepointService->createPublicPermission(
+                siteId: $sharepointService->siteId,
+                driveItemId: $driveItemId,
+                datetime: false  // Consistent with Document sync behavior - no expiration
+            );
 
-        $link = $permission->getLink()->getWebUrl();
+            return response()->json([
+                'success' => true,
+                'permission' => $permission,
+                'url' => $permission->getLink()->getWebUrl(),
+            ]);
+        } catch (\InvalidArgumentException $e) {
+            \Log::warning('Public permission creation rejected', [
+                'drive_item_id' => $driveItemId,
+                'reason' => $e->getMessage(),
+                'user_id' => auth()->id(),
+            ]);
 
-        return response()->json($link);
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+            ], 400);
+        } catch (\Exception $e) {
+            \Log::error('Public permission creation failed', [
+                'drive_item_id' => $driveItemId,
+                'error' => $e->getMessage(),
+                'user_id' => auth()->id(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'error' => 'Failed to create public permission',
+            ], 500);
+        }
     }
 }

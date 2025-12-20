@@ -6,6 +6,7 @@ use App\Services\SharepointGraphService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Laravel\Scout\Searchable;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
@@ -255,6 +256,31 @@ class Document extends Model
         return $this->calculateIsInEffect();
     }
 
+    /**
+     * Mask URL for safe logging (only first/last 4 chars of file ID)
+     *
+     * SharePoint anonymous links are bearer tokens - anyone with the URL can access the file.
+     * This method masks the unique file identifier to prevent URL leakage in logs.
+     */
+    private function maskUrl(?string $url): ?string
+    {
+        if (! $url) {
+            return null;
+        }
+
+        $segments = explode('/', $url);
+        $fileId = end($segments);
+
+        if (strlen($fileId) > 12) {
+            $masked = substr($fileId, 0, 4).'...'.substr($fileId, -4);
+            $segments[count($segments) - 1] = $masked;
+
+            return implode('/', $segments);
+        }
+
+        return 'masked';
+    }
+
     // Also used in SharepointGraphService::batchProcessDocuments
     public function refreshFromSharepoint()
     {
@@ -274,12 +300,31 @@ class Document extends Model
 
             $additionalData = $graph->getListItem($this->sharepoint_site_id, $this->sharepoint_list_id, $this->sharepoint_id)->getAdditionalData();
 
-            if ($this->eTag === $additionalData['@odata.etag']) {
+            $eTagMatches = $this->eTag === $additionalData['@odata.etag'];
+            $hasInvalidUrl = str_contains($this->anonymous_url ?? '', ':f:');
+
+            Log::info('Document sync eTag check', [
+                'document_id' => $this->id,
+                'etag_matches' => $eTagMatches,
+                'url_masked' => $this->maskUrl($this->anonymous_url),
+                'has_folder_url' => $hasInvalidUrl,
+                'will_skip_permission_check' => $eTagMatches && ! $hasInvalidUrl,
+            ]);
+
+            if ($eTagMatches && ! $hasInvalidUrl) {
+                Log::info('SharePoint document was already up to date', ['document_id' => $this->id]);
                 $this->checked_at = Carbon::now();
                 $this->sync_status = 'success';
                 $this->save();
 
                 return null;
+            }
+
+            if ($hasInvalidUrl) {
+                Log::warning('Document has folder URL - forcing full sync despite eTag match', [
+                    'document_id' => $this->id,
+                    'url_masked' => $this->maskUrl($this->anonymous_url),
+                ]);
             }
 
             $this->document_date = isset($additionalData['Date']) ? Carbon::parseFromLocale(time: $additionalData['Date'], timezone: 'UTC')->setTimezone('Europe/Vilnius') : $this->document_date;
@@ -302,6 +347,17 @@ class Document extends Model
             // Get drive item
             $driveItem = $graph->getDriveItemByListItem($this->sharepoint_site_id, $this->sharepoint_list_id, $this->sharepoint_id);
 
+            // Validate we got a file, not a folder
+            if ($driveItem->getFolder() !== null) {
+                Log::error('SharePoint returned folder instead of file for list item', [
+                    'document_id' => $this->id,
+                    'list_item_id' => $this->sharepoint_id,
+                    'drive_item_id' => $driveItem->getId(),
+                    'drive_item_name' => $driveItem->getName(),
+                ]);
+                throw new \Exception("SharePoint returned folder '{$driveItem->getName()}' instead of file for list item {$this->sharepoint_id}");
+            }
+
             // Add thumbnails
             /* collect($driveItem->getThumbnails())->each(function ($thumbnailSet) { */
             /*    $this->thumbnail_url = $thumbnailSet->getLarge()->getUrl(); */
@@ -309,14 +365,47 @@ class Document extends Model
 
             $anonymous_permission = $graph->getDriveItemPublicLink($driveItem->getId());
 
+            Log::info('Permission lookup result', [
+                'document_id' => $this->id,
+                'drive_item_id' => $driveItem->getId(),
+                'permission_found' => $anonymous_permission !== null,
+                'current_url_masked' => $this->maskUrl($this->anonymous_url),
+            ]);
+
             if ($anonymous_permission === null) {
+                Log::info('Creating new permission for document', [
+                    'document_id' => $this->id,
+                    'reason' => 'No valid permission found',
+                ]);
+
                 $anonymous_permission = $graph->createPublicPermission(siteId: $this->sharepoint_site_id, driveItemId: $driveItem->getId(), datetime: false);
 
-                $this->anonymous_url = $anonymous_permission->getLink()->getWebUrl();
+                $newUrl = $anonymous_permission->getLink()->getWebUrl();
+                Log::info('New permission created', [
+                    'document_id' => $this->id,
+                    'url_changed' => $this->anonymous_url !== $newUrl,
+                ]);
+
+                $this->anonymous_url = $newUrl;
 
                 /* $this->anonymous_url_expiration_date = Carbon::parse($anonymous_permission->getExpirationDateTime()); */
             } else {
-                $this->anonymous_url = $anonymous_permission->getLink()->getWebUrl();
+                $newUrl = $anonymous_permission->getLink()->getWebUrl();
+                $urlChanged = $this->anonymous_url !== $newUrl;
+
+                Log::info('Using existing permission', [
+                    'document_id' => $this->id,
+                    'url_changed' => $urlChanged,
+                ]);
+
+                if ($urlChanged) {
+                    Log::warning('Permission URL changed', [
+                        'document_id' => $this->id,
+                        'had_previous_url' => ! empty($this->anonymous_url),
+                    ]);
+                }
+
+                $this->anonymous_url = $newUrl;
                 /* $this->anonymous_url_expiration_date = Carbon::parse($anonymous_permission->getExpirationDateTime()); */
             }
 
@@ -327,15 +416,62 @@ class Document extends Model
             $this->refresh();
 
             return $this;
+        } catch (\InvalidArgumentException $e) {
+            // Folder validation errors from validateItemIsFile()
+            if (str_contains($e->getMessage(), 'Cannot create public permission for folders')) {
+                Log::warning('Document points to folder instead of file', [
+                    'document_id' => $this->id,
+                    'sharepoint_id' => $this->sharepoint_id,
+                    'title' => $this->title,
+                ]);
+
+                $this->sync_status = 'failed';
+                $this->sync_error_message = 'Document references a folder (folders not supported)';
+                $this->save();
+
+                return null; // Don't crash sync
+            }
+
+            // Re-throw other InvalidArgumentExceptions
+            throw $e;
+        } catch (\RuntimeException $e) {
+            // Check if item is missing from SharePoint
+            if (str_contains($e->getMessage(), 'not found or inaccessible')) {
+                Log::warning('Document references missing SharePoint item', [
+                    'document_id' => $this->id,
+                    'sharepoint_id' => $this->sharepoint_id,
+                    'title' => $this->title,
+                ]);
+
+                // Mark as failed with specific error
+                $this->sync_status = 'failed';
+                $this->sync_error_message = 'SharePoint item not found (may have been deleted)';
+                $this->save();
+
+                // Don't re-throw - allow sync to continue for other documents
+                return null;
+            }
+
+            // Re-throw other runtime exceptions
+            throw $e;
         } catch (\Exception $e) {
             // Log the error with context
-            \Log::error('SharePoint document sync failed', [
+            Log::error('SharePoint document sync failed', [
                 'document_id' => $this->id,
                 'sharepoint_id' => $this->sharepoint_id,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
                 'sync_attempt' => $this->sync_attempts,
             ]);
+
+            // Clear stale anonymous_url on permission creation failure
+            if ($this->anonymous_url && str_contains($e->getMessage(), 'createLink')) {
+                Log::warning('Clearing stale anonymous_url due to permission creation failure', [
+                    'document_id' => $this->id,
+                    'had_url' => true,
+                ]);
+                $this->anonymous_url = null;
+            }
 
             // Update sync status with error
             $this->sync_status = 'failed';
