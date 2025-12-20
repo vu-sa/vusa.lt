@@ -7,7 +7,7 @@ return [
     'done' => 'Done',
     'skip' => 'Skip',
     'step_of' => '{{current}} of {{total}}',
-    
+
     // Atstovavimas Overview Tour
     'atstovavimas_overview' => [
         'welcome' => [

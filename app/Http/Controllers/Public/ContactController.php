@@ -11,9 +11,9 @@ use App\Models\User;
 use App\Settings\MeetingSettings;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
-use Illuminate\Support\Carbon;
 
 class ContactController extends PublicController
 {
@@ -31,7 +31,7 @@ class ContactController extends PublicController
         $institutionTypes = Type::whereHas('institutions')
             ->get()
             ->mapWithKeys(fn ($type) => [
-                $type->slug => $type->getTranslation('title', app()->getLocale())
+                $type->slug => $type->getTranslation('title', app()->getLocale()),
             ])
             ->toArray();
 
@@ -365,7 +365,7 @@ class ContactController extends PublicController
                 ->orderBy('name');
 
             // Only filter by tenant if not showing all
-            if (!$showAllTenants) {
+            if (! $showAllTenants) {
                 $query->where('tenant_id', '=', $this->tenant->id);
             }
         }]);

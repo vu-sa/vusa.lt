@@ -16,7 +16,6 @@ use App\Settings\AtstovavimasSettings;
 use App\Settings\FormSettings;
 use App\Settings\MeetingSettings;
 use App\Settings\SettingsSettings;
-use Illuminate\Http\Request;
 
 class SettingsController extends AdminController
 {
@@ -107,7 +106,7 @@ class SettingsController extends AdminController
         dispatch(function () {
             PublicMeeting::removeAllFromSearch();
             PublicMeeting::makeAllSearchable();
-            
+
             PublicInstitution::removeAllFromSearch();
             PublicInstitution::makeAllSearchable();
         })->afterResponse();

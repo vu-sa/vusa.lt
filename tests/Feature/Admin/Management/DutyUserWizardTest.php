@@ -69,10 +69,10 @@ describe('wizard page access', function () {
         // We can verify lazy loading works by making a request with partial reload
         // The framework handles this - we just verify the controller is set up correctly
         // by checking that the props are closures (optional) in the response
-        
+
         // First, verify initial load doesn't have the lazy data
         $response = asUser($this->dutyManager)->get(route('duties.updateUsersWizard'));
-        
+
         $response->assertInertia(fn (Assert $page) => $page
             ->component('Admin/People/DutyUserUpdateWizard')
             ->missing('users')
@@ -83,7 +83,7 @@ describe('wizard page access', function () {
     test('wizard lazy loads duty types when requested', function () {
         // Verify initial load doesn't have duty types
         $response = asUser($this->dutyManager)->get(route('duties.updateUsersWizard'));
-        
+
         $response->assertInertia(fn (Assert $page) => $page
             ->component('Admin/People/DutyUserUpdateWizard')
             ->missing('dutyTypes')

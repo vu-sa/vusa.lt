@@ -21,7 +21,7 @@ class TypeObserver
 
             $oldSiblings = $oldAttributes['enable_sibling_relationships'] ?? false;
             $newSiblings = $newAttributes['enable_sibling_relationships'] ?? false;
-            
+
             $oldCrossTenantSiblings = $oldAttributes['enable_cross_tenant_sibling_relationships'] ?? false;
             $newCrossTenantSiblings = $newAttributes['enable_cross_tenant_sibling_relationships'] ?? false;
 

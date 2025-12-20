@@ -36,7 +36,7 @@ class StagingReadOnlyMode
     /**
      * SharePoint-related routes that should be blocked when SHAREPOINT_READ_ONLY=true
      * Only routes that WRITE to SharePoint are blocked
-     * 
+     *
      * Note: documents.update, documents.destroy, documents.refresh, documents.bulk-sync
      * are ALLOWED because they only modify local database or READ from SharePoint
      */
@@ -83,7 +83,7 @@ class StagingReadOnlyMode
         // Check file storage read-only mode
         if (config('app.files_read_only') && $this->isFileRoute($routeName)) {
             return $this->readOnlyResponse(
-                'File modifications are disabled in staging environment. ' .
+                'File modifications are disabled in staging environment. '.
                 'Files are shared with production.'
             );
         }
@@ -91,7 +91,7 @@ class StagingReadOnlyMode
         // Check SharePoint read-only mode
         if (config('app.sharepoint_read_only') && $this->isSharepointWriteRoute($routeName)) {
             return $this->readOnlyResponse(
-                'SharePoint modifications are disabled in staging environment. ' .
+                'SharePoint modifications are disabled in staging environment. '.
                 'SharePoint is shared with production.'
             );
         }

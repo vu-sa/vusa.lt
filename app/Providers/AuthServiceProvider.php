@@ -15,8 +15,8 @@ class AuthServiceProvider extends ServiceProvider
      * @var array<class-string, class-string>
      */
     protected $policies = [
-    // explicit policies that are not inferred from model names
-    \App\Models\InstitutionCheckIn::class => \App\Policies\InstitutionCheckInPolicy::class,
+        // explicit policies that are not inferred from model names
+        \App\Models\InstitutionCheckIn::class => \App\Policies\InstitutionCheckInPolicy::class,
     ];
 
     /**

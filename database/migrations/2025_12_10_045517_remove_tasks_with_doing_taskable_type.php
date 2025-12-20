@@ -7,7 +7,7 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
-     * 
+     *
      * Remove tasks that reference the old App\Models\Doing model which no longer exists.
      * This model was likely renamed to Duty or removed entirely.
      */
@@ -30,7 +30,7 @@ return new class extends Migration
 
     /**
      * Reverse the migrations.
-     * 
+     *
      * Cannot restore deleted tasks - this is a one-way migration.
      */
     public function down(): void

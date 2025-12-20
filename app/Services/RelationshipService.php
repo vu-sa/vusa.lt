@@ -145,7 +145,7 @@ class RelationshipService
             if ($relatedInstitution && $relatedInstitution->id !== $sourceId) {
                 // Check if the relationship is bidirectional - if so, incoming also gets authorization
                 $isBidirectional = $relationship->pivot->bidirectional ?? false;
-                
+
                 $result->push([
                     'institution' => $relatedInstitution,
                     'direction' => 'incoming',
@@ -400,14 +400,14 @@ class RelationshipService
 
         // Convert to Eloquent collection and load data
         if ($allRelated->isEmpty()) {
-            return new Collection();
+            return new Collection;
         }
 
         // Separate authorized and unauthorized institution IDs
         $authorizedIds = $allRelated->filter(fn ($inst) => $inst->authorized)->pluck('id')->toArray();
         $unauthorizedIds = $allRelated->reject(fn ($inst) => $inst->authorized)->pluck('id')->toArray();
 
-        $loadedInstitutions = new Collection();
+        $loadedInstitutions = new Collection;
 
         // Load authorized institutions with full data for Gantt display
         if (! empty($authorizedIds)) {
@@ -454,6 +454,7 @@ class RelationshipService
 
         return $loadedInstitutions;
     }
+
     public static function getModelsByClass(string $modelClass)
     {
         if (! class_exists($modelClass)) {
@@ -503,11 +504,10 @@ class RelationshipService
 
     /**
      * Get related institutions for a single institution.
-     * 
+     *
      * This method now uses getRelatedInstitutionsFlat internally for consistency,
      * which includes sibling relationships (same type + same tenant).
      *
-     * @param  Institution  $institution
      * @param  bool  $authorizedOnly  If true, only returns institutions where the source has access (outgoing/sibling)
      * @return Collection<int, Institution>
      */

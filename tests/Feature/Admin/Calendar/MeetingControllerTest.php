@@ -360,7 +360,7 @@ describe('relationship-based meeting access', function () {
         // Create a relationship between them
         $relationship = \App\Models\Relationship::create([
             'name' => 'Test Advisory Relationship',
-            'slug' => 'test-advisory-' . uniqid(),
+            'slug' => 'test-advisory-'.uniqid(),
         ]);
         \App\Models\Pivots\Relationshipable::create([
             'relationship_id' => $relationship->id,
@@ -400,7 +400,7 @@ describe('relationship-based meeting access', function () {
         // But NOT bidirectional, so target is NOT authorized to see source's meetings
         $relationship = \App\Models\Relationship::create([
             'name' => 'Test Advisory Relationship',
-            'slug' => 'test-advisory-' . uniqid(),
+            'slug' => 'test-advisory-'.uniqid(),
         ]);
         \App\Models\Pivots\Relationshipable::create([
             'relationship_id' => $relationship->id,
@@ -439,7 +439,7 @@ describe('relationship-based meeting access', function () {
         // Create a bidirectional relationship
         $relationship = \App\Models\Relationship::create([
             'name' => 'Test Advisory Relationship',
-            'slug' => 'test-advisory-' . uniqid(),
+            'slug' => 'test-advisory-'.uniqid(),
         ]);
         \App\Models\Pivots\Relationshipable::create([
             'relationship_id' => $relationship->id,

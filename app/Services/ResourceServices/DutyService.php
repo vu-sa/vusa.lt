@@ -80,7 +80,7 @@ class DutyService
                     // Show: all institutions from coordinator tenants + directly assigned institutions from other tenants
                     $query->where(function ($q) use ($coordinatorTenantIds, $userInstitutionIds) {
                         $q->whereIn('tenant_id', $coordinatorTenantIds)
-                          ->orWhereIn('id', $userInstitutionIds);
+                            ->orWhereIn('id', $userInstitutionIds);
                     });
                 } else {
                     // Regular users see only their directly assigned institutions
@@ -98,12 +98,12 @@ class DutyService
                 // Load all users (including historical) for Gantt timeline display
                 'duties.users:id,name,email,profile_photo_path',
                 'duties.types:id,title,slug',
-                'checkIns'
+                'checkIns',
             ])
             ->withCount([
                 'meetings as upcoming_meetings_count' => function ($query) {
                     $query->where('start_time', '>', now());
-                }
+                },
             ])
             ->addSelect([
                 'last_meeting_date' => Meeting::select('start_time')
@@ -148,8 +148,8 @@ class DutyService
      * This is used for lazy-loading tenant timeline data when the tenant tab
      * is opened or when the tenant filter changes.
      *
-     * @param Collection|array $tenantIds The tenant IDs to load institutions for
-     * @param ModelAuthorizer $authorizer The authorizer to check access permissions
+     * @param  Collection|array  $tenantIds  The tenant IDs to load institutions for
+     * @param  ModelAuthorizer  $authorizer  The authorizer to check access permissions
      */
     public static function getInstitutionsForTenants($tenantIds, ModelAuthorizer $authorizer)
     {
@@ -197,12 +197,12 @@ class DutyService
                 // Load all users (including historical) for Gantt timeline display
                 'duties.users:id,name,email,profile_photo_path',
                 'duties.types:id,title,slug',
-                'checkIns'
+                'checkIns',
             ])
             ->withCount([
                 'meetings as upcoming_meetings_count' => function ($query) {
                     $query->where('start_time', '>', now());
-                }
+                },
             ])
             ->addSelect([
                 'last_meeting_date' => Meeting::select('start_time')

@@ -99,7 +99,7 @@ class ReindexSearchCommand extends Command
 
         // Import will recreate the collection with the current schema
         Artisan::call('scout:import', ['model' => $model]);
-        
+
         // Verify collection was created
         try {
             $client = new Client(config('scout.typesense.client-settings'));

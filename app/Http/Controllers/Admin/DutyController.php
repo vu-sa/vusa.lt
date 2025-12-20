@@ -6,21 +6,20 @@ use App\Actions\GetAttachableTypesForDuty;
 use App\Actions\GetTenantsForUpserts;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\StoreDutyRequest;
-use Inertia\Inertia;
 use App\Models\Duty;
+use App\Models\Institution;
 use App\Models\Role;
+use App\Models\StudyProgram;
 use App\Models\Type;
 use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ModelIndexer;
 use App\Services\ResourceServices\DutyService;
-use App\Models\Institution;
-use App\Models\Pivots\Dutiable;
-use App\Models\StudyProgram;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
 
 class DutyController extends AdminController
 {
@@ -226,7 +225,7 @@ class DutyController extends AdminController
             ->load(['duties' => function ($query) {
                 $query->with(['current_users' => function ($q) {
                     $q->select('users.id', 'name', 'email', 'profile_photo_path')
-                      ->withPivot('start_date', 'end_date');
+                        ->withPivot('start_date', 'end_date');
                 }]);
             }, 'tenant:id,shortname']);
 
@@ -275,7 +274,7 @@ class DutyController extends AdminController
 
         DB::transaction(function () use ($validated, $duty, &$createdUsers) {
             // Create new users if any
-            if (!empty($validated['new_users'])) {
+            if (! empty($validated['new_users'])) {
                 foreach ($validated['new_users'] as $newUserData) {
                     $user = User::create([
                         'name' => $newUserData['name'],
@@ -289,15 +288,15 @@ class DutyController extends AdminController
             // Process user changes
             foreach ($validated['user_changes'] as $change) {
                 $userId = $change['user_id'];
-                
+
                 // Skip temporary IDs (new users) - they'll be handled by matching name/email
                 if (str_starts_with($userId, 'new-')) {
                     // Find the created user by matching against new_users data
-                    $matchingNewUser = collect($createdUsers)->first(function ($user) use ($validated, $change) {
+                    $matchingNewUser = collect($createdUsers)->first(function ($user) {
                         // Try to match by position or by the order of creation
                         return true; // We'll attach all created users
                     });
-                    
+
                     if ($matchingNewUser) {
                         $duty->users()->attach($matchingNewUser->id, [
                             'start_date' => $change['start_date'] ?? now(),
@@ -305,13 +304,14 @@ class DutyController extends AdminController
                             'study_program_id' => $change['study_program_id'] ?? null,
                         ]);
                     }
+
                     continue;
                 }
 
                 if ($change['action'] === 'add') {
                     // Check if user is already attached
                     $existingPivot = $duty->dutiables()->where('dutiable_id', $userId)->first();
-                    
+
                     if ($existingPivot) {
                         // Update existing pivot
                         $existingPivot->update([

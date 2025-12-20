@@ -235,7 +235,7 @@ describe('dashboard calendar and news', function () {
     test('draft calendar events are not included', function () {
         // Clear existing calendar events
         Calendar::query()->delete();
-        
+
         // Create a draft calendar event
         Calendar::factory()->for($this->tenant)->create([
             'title' => ['lt' => 'Draft Event', 'en' => 'Draft Event'],
@@ -255,7 +255,7 @@ describe('dashboard calendar and news', function () {
     test('past calendar events are not included', function () {
         // Clear existing calendar events
         Calendar::query()->delete();
-        
+
         // Create a past calendar event
         Calendar::factory()->for($this->tenant)->create([
             'title' => ['lt' => 'Past Event', 'en' => 'Past Event'],
@@ -293,7 +293,7 @@ describe('dashboard calendar and news', function () {
     test('draft news items are not included', function () {
         // Delete any existing news first
         News::query()->delete();
-        
+
         // Create draft news
         News::factory()->for($this->tenant)->create([
             'title' => 'Draft News',
@@ -314,7 +314,7 @@ describe('dashboard calendar and news', function () {
     test('future news items are not included', function () {
         // Delete any existing news first
         News::query()->delete();
-        
+
         // Create future news (scheduled)
         News::factory()->for($this->tenant)->create([
             'title' => 'Future News',
@@ -381,7 +381,7 @@ describe('atstovavimas dashboard', function () {
         }
 
         $response = asUser($this->admin)->get(route('dashboard.atstovavimas'));
-        
+
         $response->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Dashboard/ShowAtstovavimas')
@@ -390,9 +390,9 @@ describe('atstovavimas dashboard', function () {
                 ->where('availableTenants', function ($tenants) {
                     // Convert to collection if it's an array, or keep as collection
                     $collection = collect($tenants);
-                    
+
                     // Should have at least one tenant and not include PKP type
-                    return $collection->count() > 0 && 
+                    return $collection->count() > 0 &&
                            $collection->every(fn ($tenant) => $tenant['type'] !== 'pkp');
                 })
             );
@@ -419,6 +419,7 @@ describe('atstovavimas dashboard authorization', function () {
                 ->has('userInstitutions')
                 ->where('userInstitutions', function ($institutions) use ($userInstitutionId) {
                     $collection = collect($institutions);
+
                     // Should only contain the user's assigned institution
                     return $collection->count() >= 1 &&
                            $collection->contains(fn ($inst) => $inst['id'] == $userInstitutionId);
@@ -435,6 +436,7 @@ describe('atstovavimas dashboard authorization', function () {
                 ->component('Admin/Dashboard/ShowAtstovavimas')
                 ->where('availableTenants', function ($tenants) {
                     $collection = collect($tenants);
+
                     // Regular users should have empty availableTenants
                     return $collection->isEmpty();
                 })
@@ -444,25 +446,25 @@ describe('atstovavimas dashboard authorization', function () {
     test('user with coordinator role sees tenant-wide institutions', function () {
         // First, configure a coordinator role in settings
         $coordinatorRole = \App\Models\Role::where('name', 'Communication Coordinator')->first();
-        
+
         expect($coordinatorRole)->not->toBeNull('Communication Coordinator role should exist');
-        
+
         // Verify admin has this role through their duty
         $adminDuties = $this->admin->current_duties()->with('roles')->get();
         $adminDutyRoles = $adminDuties->pluck('roles')->flatten()->pluck('name')->toArray();
-        
+
         // Debug: check duty relationships
         expect($adminDuties)->not->toBeEmpty('Admin should have current duties');
         expect($adminDutyRoles)->toContain('Communication Coordinator');
-        
+
         // Get a fresh settings instance and update it
         $settings = app(\App\Settings\AtstovavimasSettings::class);
         $settings->coordinator_role_ids = [$coordinatorRole->id];
         $settings->save();
-        
+
         // Clear the cached settings instance so the controller gets fresh values
         app()->forgetInstance(\App\Settings\AtstovavimasSettings::class);
-        
+
         // Verify settings were saved correctly
         $freshSettings = app(\App\Settings\AtstovavimasSettings::class);
         expect($freshSettings->coordinator_role_ids)->toBe([$coordinatorRole->id]);
@@ -477,6 +479,7 @@ describe('atstovavimas dashboard authorization', function () {
                 ->has('userInstitutions')
                 ->where('availableTenants', function ($tenants) {
                     $collection = collect($tenants);
+
                     // Coordinator should have available tenants for the tenant tab
                     return $collection->isNotEmpty();
                 })
@@ -504,6 +507,7 @@ describe('atstovavimas dashboard authorization', function () {
                 ->has('userInstitutions')
                 ->where('availableTenants', function ($tenants) use ($otherTenant) {
                     $collection = collect($tenants);
+
                     // Super admin should see all non-PKP tenants including the other tenant
                     return $collection->isNotEmpty() &&
                            $collection->contains(fn ($t) => $t['id'] == $otherTenant->id);
@@ -765,7 +769,7 @@ describe('tenant isolation', function () {
     beforeEach(function () {
         $this->otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->first();
         $this->otherAdmin = makeTenantUserWithRole('Communication Coordinator', $this->otherTenant);
-        
+
         // Configure coordinator role so Communication Coordinators can see tenant data
         $coordinatorRole = \App\Models\Role::where('name', 'Communication Coordinator')->first();
         if ($coordinatorRole) {
@@ -816,10 +820,10 @@ describe('atstovavimas related institutions', function () {
             'description' => 'Test relationship for dashboard',
         ]);
         $this->relationship->save();
-        
+
         // Get user's institution
         $this->userInstitution = $this->user->current_duties->first()->institution;
-        
+
         // Create a related institution in the same tenant
         $this->relatedInstitution = \App\Models\Institution::factory()->for($this->tenant)->create([
             'name' => ['lt' => 'Susijusi institucija', 'en' => 'Related Institution'],
@@ -861,14 +865,18 @@ describe('atstovavimas related institutions', function () {
                     ->has('relatedInstitutions')
                     ->where('relatedInstitutions', function ($institutions) {
                         $collection = collect($institutions);
-                        if ($collection->isEmpty()) return false;
-                        
+                        if ($collection->isEmpty()) {
+                            return false;
+                        }
+
                         // Should have the related institution
                         $found = $collection->firstWhere('id', $this->relatedInstitution->id);
-                        if (!$found) return false;
-                        
+                        if (! $found) {
+                            return false;
+                        }
+
                         // Should be marked as related with correct metadata
-                        return $found['is_related'] === true && 
+                        return $found['is_related'] === true &&
                                $found['authorized'] === true &&
                                $found['relationship_direction'] === 'outgoing';
                     })
@@ -901,14 +909,18 @@ describe('atstovavimas related institutions', function () {
                     ->has('relatedInstitutions')
                     ->where('relatedInstitutions', function ($institutions) {
                         $collection = collect($institutions);
-                        if ($collection->isEmpty()) return false;
-                        
+                        if ($collection->isEmpty()) {
+                            return false;
+                        }
+
                         // Should have the related institution
                         $found = $collection->firstWhere('id', $this->relatedInstitution->id);
-                        if (!$found) return false;
-                        
+                        if (! $found) {
+                            return false;
+                        }
+
                         // Should be marked as incoming with authorized = false
-                        return $found['is_related'] === true && 
+                        return $found['is_related'] === true &&
                                $found['authorized'] === false &&
                                $found['relationship_direction'] === 'incoming';
                     })
@@ -941,14 +953,18 @@ describe('atstovavimas related institutions', function () {
                     ->has('relatedInstitutions')
                     ->where('relatedInstitutions', function ($institutions) {
                         $collection = collect($institutions);
-                        if ($collection->isEmpty()) return false;
-                        
+                        if ($collection->isEmpty()) {
+                            return false;
+                        }
+
                         // Should have the related institution
                         $found = $collection->firstWhere('id', $this->relatedInstitution->id);
-                        if (!$found) return false;
-                        
+                        if (! $found) {
+                            return false;
+                        }
+
                         // Should be marked as incoming with authorized = true (bidirectional!)
-                        return $found['is_related'] === true && 
+                        return $found['is_related'] === true &&
                                $found['authorized'] === true &&
                                $found['relationship_direction'] === 'incoming';
                     })
@@ -990,15 +1006,19 @@ describe('atstovavimas related institutions', function () {
                     ->where('relatedInstitutions', function ($institutions) {
                         $collection = collect($institutions);
                         $found = $collection->firstWhere('id', $this->relatedInstitution->id);
-                        if (!$found) return false;
-                        
+                        if (! $found) {
+                            return false;
+                        }
+
                         // Authorized institution should have meetings with agenda items
                         $meetings = collect($found['meetings'] ?? []);
-                        if ($meetings->isEmpty()) return false;
-                        
+                        if ($meetings->isEmpty()) {
+                            return false;
+                        }
+
                         $firstMeeting = $meetings->first();
                         $agendaItems = collect($firstMeeting['agenda_items'] ?? []);
-                        
+
                         return $agendaItems->isNotEmpty();
                     })
                 )
@@ -1019,7 +1039,7 @@ describe('atstovavimas related institutions', function () {
         // Create meeting and attach to related institution
         $meeting = \App\Models\Meeting::factory()->create(['start_time' => now()]);
         $meeting->institutions()->attach($this->relatedInstitution->id);
-        
+
         // Create agenda item for this meeting (should NOT be loaded for unauthorized)
         $agendaItem = \App\Models\Pivots\AgendaItem::factory()->create([
             'meeting_id' => $meeting->id,
@@ -1041,29 +1061,29 @@ describe('atstovavimas related institutions', function () {
                     ->where('relatedInstitutions', function ($institutions) {
                         $collection = collect($institutions);
                         $found = $collection->firstWhere('id', $this->relatedInstitution->id);
-                        
-                        if (!$found) {
+
+                        if (! $found) {
                             return false;
                         }
-                        
+
                         // Institution should be unauthorized
                         if ($found['authorized'] !== false) {
                             return false;
                         }
-                        
+
                         // Should have meetings
                         $meetings = collect($found['meetings'] ?? []);
                         if ($meetings->isEmpty()) {
                             return false;
                         }
-                        
+
                         $firstMeeting = $meetings->first();
-                        
+
                         // For unauthorized institutions, agenda_items should NOT be loaded
                         // Since Laravel doesn't eager load them, the key should be missing or empty
-                        $hasAgendaItems = isset($firstMeeting['agenda_items']) && !empty($firstMeeting['agenda_items']);
-                        
-                        return !$hasAgendaItems;
+                        $hasAgendaItems = isset($firstMeeting['agenda_items']) && ! empty($firstMeeting['agenda_items']);
+
+                        return ! $hasAgendaItems;
                     })
                 )
             );

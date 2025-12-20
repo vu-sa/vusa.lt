@@ -79,7 +79,7 @@ class MeetingPolicy extends ModelPolicy
 
     /**
      * Check if user has access to view meeting via authorized institution relationships.
-     * 
+     *
      * This allows users who have authorized outgoing relationships to institutions
      * that own the meeting to view those meetings.
      */
@@ -99,7 +99,7 @@ class MeetingPolicy extends ModelPolicy
 
         // Get the meeting's institutions
         $meetingInstitutionIds = $meeting->institutions->pluck('id')->toArray();
-        
+
         if (empty($meetingInstitutionIds)) {
             return false;
         }
@@ -108,7 +108,7 @@ class MeetingPolicy extends ModelPolicy
         // are in the authorized related institutions
         foreach ($userInstitutions as $userInstitution) {
             $relatedInstitutions = RelationshipService::getRelatedInstitutions($userInstitution, authorizedOnly: true);
-            
+
             if ($relatedInstitutions->pluck('id')->intersect($meetingInstitutionIds)->isNotEmpty()) {
                 return true;
             }

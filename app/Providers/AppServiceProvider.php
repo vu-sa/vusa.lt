@@ -82,12 +82,12 @@ class AppServiceProvider extends ServiceProvider
 
     /**
      * Load translations from the split directory structure.
-     * 
+     *
      * Translations are organized in:
      * - lang/shared/{locale}/ - Shared between admin and public
      * - lang/admin/{locale}/ - Admin-only translations
      * - lang/public/{locale}/ - Public-only translations
-     * 
+     *
      * All are loaded for Laravel backend (which needs all translations).
      * The Vite plugin handles splitting for frontend bundles.
      */
@@ -95,13 +95,13 @@ class AppServiceProvider extends ServiceProvider
     {
         $langPath = lang_path();
         $directories = ['shared', 'admin', 'public'];
-        
+
         // Get the file loader from the translator
         $loader = $this->app['translation.loader'];
-        
+
         foreach ($directories as $dir) {
-            $path = $langPath . '/' . $dir;
-            
+            $path = $langPath.'/'.$dir;
+
             if (is_dir($path)) {
                 // Add this path as an additional translation path
                 // The loader will look here for translations

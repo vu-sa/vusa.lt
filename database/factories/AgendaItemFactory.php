@@ -31,7 +31,7 @@ class AgendaItemFactory extends Factory
     public function sequentialOrder(int $startOrder = 1): static
     {
         return $this->sequence(fn ($sequence) => [
-            'order' => $startOrder + $sequence->index
+            'order' => $startOrder + $sequence->index,
         ]);
     }
 }

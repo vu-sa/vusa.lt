@@ -11,6 +11,7 @@ class StoreInstitutionCheckInRequest extends FormRequest
     public function authorize(): bool
     {
         $institution = $this->route('institution');
+
         return $this->user()?->can('create', [InstitutionCheckIn::class, $institution]) ?? false;
     }
 

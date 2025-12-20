@@ -31,6 +31,7 @@ class CalendarController extends Controller
                     ->get()
                     ->map(function ($event) {
                         $event->images = $event->getMedia('images');
+
                         return $event;
                     });
             });
@@ -44,6 +45,7 @@ class CalendarController extends Controller
                     ->get()
                     ->map(function ($event) {
                         $event->images = $event->getMedia('images');
+
                         return $event;
                     });
             });

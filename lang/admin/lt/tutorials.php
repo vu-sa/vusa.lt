@@ -7,7 +7,7 @@ return [
     'done' => 'Baigti',
     'skip' => 'Praleisti',
     'step_of' => '{{current}} iš {{total}}',
-    
+
     // Atstovavimas Overview Tour
     'atstovavimas_overview' => [
         'welcome' => [

@@ -7,7 +7,6 @@ use App\Services\ResourceServices\SharepointFileService;
 use Carbon\Carbon;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Log;
-use Microsoft\Graph\Generated\Models\ODataErrors\ODataError;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class UpdateSharepointFolder implements ShouldQueue

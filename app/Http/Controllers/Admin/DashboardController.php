@@ -71,7 +71,7 @@ class DashboardController extends AdminController
 
         // Get user's institutions and upcoming meetings
         $userInstitutionIds = $user->current_duties->pluck('institution_id')->filter()->unique();
-        
+
         $upcomingMeetings = Meeting::query()
             ->whereHas('institutions', fn ($q) => $q->whereIn('institutions.id', $userInstitutionIds))
             ->where('start_time', '>', now())
@@ -90,7 +90,7 @@ class DashboardController extends AdminController
         // Get institutions needing attention (overdue meetings based on periodicity)
         $meetingSettings = app(MeetingSettings::class);
         $excludedTypeIds = $meetingSettings->getExcludedInstitutionTypeIds();
-        
+
         $userInstitutions = Institution::query()
             ->whereIn('id', $userInstitutionIds)
             ->with(['meetings' => fn ($q) => $q->orderByDesc('start_time')->take(1), 'types'])
@@ -100,6 +100,7 @@ class DashboardController extends AdminController
                 if ($excludedTypeIds->isNotEmpty()) {
                     return $institution->types->pluck('id')->intersect($excludedTypeIds)->isEmpty();
                 }
+
                 return true;
             });
 
@@ -107,8 +108,8 @@ class DashboardController extends AdminController
             ->map(function ($institution) {
                 $lastMeeting = $institution->meetings->first();
                 $periodicity = $institution->meeting_periodicity_days ?? 30;
-                
-                if (!$lastMeeting) {
+
+                if (! $lastMeeting) {
                     return [
                         'id' => $institution->id,
                         'name' => $institution->name,
@@ -120,9 +121,9 @@ class DashboardController extends AdminController
 
                 $daysSinceLastMeeting = (int) now()->diffInDays($lastMeeting->start_time);
                 $isOverdue = $daysSinceLastMeeting > $periodicity;
-                $isApproaching = !$isOverdue && $daysSinceLastMeeting >= ($periodicity * 0.8);
+                $isApproaching = ! $isOverdue && $daysSinceLastMeeting >= ($periodicity * 0.8);
 
-                if (!$isOverdue && !$isApproaching) {
+                if (! $isOverdue && ! $isApproaching) {
                     return null;
                 }
 

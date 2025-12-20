@@ -39,6 +39,7 @@ class InstitutionCheckInPolicy
     {
         // Uses configured permission that indicates institution managers
         $perm = config('permission.institution_managership_indicating_permission');
+
         return $user->can($perm);
     }
 }

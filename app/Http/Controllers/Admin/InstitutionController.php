@@ -149,7 +149,7 @@ class InstitutionController extends AdminController
                 'relatedInstitutions' => $institution->related_institution_relationshipables(),
                 'relatedInstitutionsFlat' => $relatedInstitutionsFlat->map(fn ($item) => [
                     // Only load meetings for authorized relationships
-                    ...($item['authorized'] 
+                    ...($item['authorized']
                         ? $item['institution']->load('meetings', 'tenant')->toArray()
                         : $item['institution']->load('tenant')->toArray()),
                     'direction' => $item['direction'],

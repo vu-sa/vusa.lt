@@ -6,16 +6,15 @@ use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexMeetingRequest;
 use App\Http\Requests\StoreMeetingRequest;
 use App\Http\Traits\HasTanstackTables;
-use App\Models\Pivots\AgendaItem;
 use App\Models\Institution;
 use App\Models\Meeting;
+use App\Models\Pivots\AgendaItem;
 use App\Services\CheckInService;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ResourceServices\SharepointFileService;
 use App\Services\TanstackTableService;
-use Illuminate\Support\Carbon;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
@@ -63,11 +62,11 @@ class MeetingController extends AdminController
 
         // Apply manual completion status filter if provided
         $filters = $request->getFilters();
-        if (isset($filters['completion_status']) && !empty($filters['completion_status'])) {
-            $completionStatuses = is_array($filters['completion_status']) 
-                ? $filters['completion_status'] 
+        if (isset($filters['completion_status']) && ! empty($filters['completion_status'])) {
+            $completionStatuses = is_array($filters['completion_status'])
+                ? $filters['completion_status']
                 : [$filters['completion_status']];
-            
+
             // Filter by completion status (calculated from agenda items)
             $query->where(function ($q) use ($completionStatuses) {
                 foreach ($completionStatuses as $status) {
@@ -78,7 +77,7 @@ class MeetingController extends AdminController
                                 ->whereNotNull('decision')
                                 ->whereNotNull('student_benefit');
                         }, '=', DB::raw('(SELECT COUNT(*) FROM agenda_items WHERE agenda_items.meeting_id = meetings.id)'))
-                        ->whereHas('agendaItems'); // Must have at least one
+                            ->whereHas('agendaItems'); // Must have at least one
                     } elseif ($status === 'incomplete') {
                         // Has agenda items but not all are complete
                         $q->orWhere(function ($innerQ) {
@@ -136,7 +135,7 @@ class MeetingController extends AdminController
         $validatedData = $request->safe();
 
         DB::beginTransaction();
-        
+
         try {
             // generate title for meeting - YYYY-mm-dd HH.mm posėdis
             $title = Carbon::parse($validatedData['start_time'])->locale('lt-LT')->isoFormat('YYYY MMMM DD [d.] HH.mm [val.]').' posėdis';
@@ -159,7 +158,7 @@ class MeetingController extends AdminController
             if (isset($validatedData['type_id']) && $validatedData['type_id']) {
                 $meeting->types()->attach($validatedData['type_id']);
             }
-            
+
             // Create agenda items if provided
             if (isset($validatedData['agendaItems']) && is_array($validatedData['agendaItems'])) {
                 foreach ($validatedData['agendaItems'] as $agendaItemData) {
@@ -177,10 +176,10 @@ class MeetingController extends AdminController
 
             // For Inertia requests (from modal), redirect to meeting show page
             return redirect()->route('meetings.show', $meeting)->with(['success' => 'Posėdis sukurtas sėkmingai!']);
-            
+
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             return back()->withErrors(['general' => $e->getMessage()])->with(['error' => 'Nepavyko sukurti posėdžio.']);
         }
     }
@@ -198,7 +197,7 @@ class MeetingController extends AdminController
             },
             'agendaItems' => function ($query) {
                 $query->orderBy('order');
-            }
+            },
         ]);
 
         // Append is_public now that institutions.types are loaded (avoids N+1)

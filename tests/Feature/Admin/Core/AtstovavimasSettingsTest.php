@@ -16,7 +16,7 @@ beforeEach(function () {
     $this->tenant = Tenant::query()->inRandomOrder()->first();
     $this->user = makeUser($this->tenant);
     $this->admin = makeAdminUser($this->tenant);
-    
+
     // Clear any cached settings
     app()->forgetInstance(AtstovavimasSettings::class);
 });
@@ -51,7 +51,7 @@ describe('atstovavimas settings page access', function () {
 describe('atstovavimas settings update', function () {
     test('super admin can update coordinator roles', function () {
         $role = Role::first();
-        
+
         asUser($this->admin)
             ->post(route('settings.atstovavimas.update'), [
                 'coordinator_role_ids' => [$role->id],
@@ -61,13 +61,13 @@ describe('atstovavimas settings update', function () {
         // Verify settings were updated
         app()->forgetInstance(AtstovavimasSettings::class);
         $settings = app(AtstovavimasSettings::class);
-        
+
         expect($settings->getCoordinatorRoleIds()->toArray())->toBe([$role->id]);
     });
 
     test('regular user cannot update coordinator roles', function () {
         $role = Role::first();
-        
+
         asUser($this->user)
             ->post(route('settings.atstovavimas.update'), [
                 'coordinator_role_ids' => [$role->id],
@@ -92,7 +92,7 @@ describe('atstovavimas settings update', function () {
 
         app()->forgetInstance(AtstovavimasSettings::class);
         $settings = app(AtstovavimasSettings::class);
-        
+
         expect($settings->getCoordinatorRoleIds()->toArray())->toBe([]);
     });
 
@@ -122,7 +122,7 @@ describe('coordinator tenant visibility', function () {
 
         // Create user with coordinator role
         $coordinator = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
-        
+
         // Clear any cached coordinator tenant IDs
         AtstovavimasSettings::clearCoordinatorCache($coordinator->id);
 
@@ -135,6 +135,7 @@ describe('coordinator tenant visibility', function () {
                 ->has('userInstitutions')
                 ->where('availableTenants', function ($tenants) {
                     $collection = collect($tenants);
+
                     // Coordinator should have available tenants (access to tenant tab)
                     return $collection->isNotEmpty() &&
                            $collection->contains(fn ($t) => $t['id'] == $this->tenant->id);
@@ -168,6 +169,7 @@ describe('coordinator tenant visibility', function () {
                 ->component('Admin/Dashboard/ShowAtstovavimas')
                 ->where('availableTenants', function ($tenants) {
                     $collection = collect($tenants);
+
                     // Coordinator should have available tenants
                     return $collection->isNotEmpty() &&
                            $collection->contains(fn ($t) => $t['id'] == $this->tenant->id);
@@ -196,6 +198,7 @@ describe('coordinator tenant visibility', function () {
                 ->component('Admin/Dashboard/ShowAtstovavimas')
                 ->where('userInstitutions', function ($institutions) use ($userInstitutionId, $extraInstitution) {
                     $collection = collect($institutions);
+
                     // Regular user should NOT see the extra institution
                     return $collection->doesntContain(fn ($inst) => $inst['id'] == $extraInstitution->id) &&
                            $collection->contains(fn ($inst) => $inst['id'] == $userInstitutionId);
@@ -229,11 +232,13 @@ describe('coordinator tenant visibility', function () {
                 ->component('Admin/Dashboard/ShowAtstovavimas')
                 ->where('userInstitutions', function ($institutions) use ($otherInstitution) {
                     $collection = collect($institutions);
+
                     // Coordinator should NOT see institutions from other tenant
                     return $collection->doesntContain(fn ($inst) => $inst['id'] == $otherInstitution->id);
                 })
                 ->where('availableTenants', function ($tenants) use ($otherTenant) {
                     $collection = collect($tenants);
+
                     // Should not include the other tenant
                     return $collection->doesntContain(fn ($t) => $t['id'] == $otherTenant->id);
                 })
@@ -250,21 +255,21 @@ describe('coordinator cache management', function () {
         app()->forgetInstance(AtstovavimasSettings::class);
 
         $coordinator = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
-        
+
         // Clear cache first
         AtstovavimasSettings::clearCoordinatorCache($coordinator->id);
-        
+
         // Get coordinator tenant IDs (this should cache them)
         $settings = app(AtstovavimasSettings::class);
         $tenantIds1 = $settings->getCoordinatorTenantIds($coordinator);
-        
+
         // Verify cache key exists
         $cacheKey = AtstovavimasSettings::getCoordinatorCacheKey($coordinator->id);
         expect(Cache::has($cacheKey))->toBeTrue();
-        
+
         // Get again (should use cache)
         $tenantIds2 = $settings->getCoordinatorTenantIds($coordinator);
-        
+
         expect($tenantIds1->toArray())->toBe($tenantIds2->toArray());
     });
 
@@ -276,17 +281,17 @@ describe('coordinator cache management', function () {
         app()->forgetInstance(AtstovavimasSettings::class);
 
         $coordinator = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
-        
+
         // Get coordinator tenant IDs to cache them
         $settings = app(AtstovavimasSettings::class);
         $settings->getCoordinatorTenantIds($coordinator);
-        
+
         $cacheKey = AtstovavimasSettings::getCoordinatorCacheKey($coordinator->id);
         expect(Cache::has($cacheKey))->toBeTrue();
-        
+
         // Clear coordinator cache manually (simulating what observer does)
         AtstovavimasSettings::clearCoordinatorCache($coordinator->id);
-        
+
         expect(Cache::has($cacheKey))->toBeFalse();
     });
 
@@ -299,9 +304,9 @@ describe('coordinator cache management', function () {
 
         $settings = app(AtstovavimasSettings::class);
         $tenantIds = $settings->getCoordinatorTenantIds($this->user);
-        
+
         expect($tenantIds->isEmpty())->toBeTrue();
-        
+
         // Should not have created a cache entry since we returned early
         $cacheKey = AtstovavimasSettings::getCoordinatorCacheKey($this->user->id);
         expect(Cache::has($cacheKey))->toBeFalse();
@@ -343,7 +348,7 @@ describe('settings helper methods', function () {
 
         $settings = app(AtstovavimasSettings::class);
         $names = $settings->getCoordinatorRoleNames();
-        
+
         expect($names->toArray())->toContain('Communication Coordinator');
     });
 });
