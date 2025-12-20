@@ -137,26 +137,16 @@ class PublicMeeting extends Meeting
             'institution_type_id' => $this->institutions->first()?->types->first()?->id,
             'institution_type_title' => $this->institutions->first()?->types->first()?->title,
 
-            // Meeting status
-            'completion_status' => $this->completion_status,
-            'agenda_items_count' => $this->agendaItems->count(), // Total agenda items count
+            // Agenda items count (basic info)
+            'agenda_items_count' => $this->agendaItems->count(),
 
-            // Vote statistics (aggregated from agenda items)
-            'total_agenda_items' => $voteStats['total'],
-            'items_with_decisions' => $voteStats['items_with_decisions'],
-            'completed_items' => $voteStats['completed'],
-            'student_success_rate' => $voteStats['student_success_rate'],
-            'positive_outcomes' => $voteStats['positive_outcomes'],
-            'negative_outcomes' => $voteStats['negative_outcomes'],
-            'neutral_outcomes' => $voteStats['neutral_outcomes'],
-
-            // Vote alignment (whether student position was accepted)
+            // Vote alignment (whether student position was accepted) - for public display
             'vote_matches' => $voteStats['vote_matches'],
             'vote_mismatches' => $voteStats['vote_mismatches'],
             'incomplete_vote_data' => $voteStats['incomplete_vote_data'],
+            'vote_alignment_status' => $this->calculateVoteAlignmentStatus($voteStats),
 
             // For filtering
-            'has_completed_items' => $voteStats['completed'] > 0,
             'is_recent' => $this->start_time->isAfter(now()->subMonths(6)),
 
             'created_at' => $this->created_at->timestamp,
@@ -231,6 +221,36 @@ class PublicMeeting extends Meeting
             'vote_mismatches' => $voteMismatches,
             'incomplete_vote_data' => $incompleteVoteData,
         ];
+    }
+
+    /**
+     * Calculate vote alignment status for colored dot display
+     *
+     * @return string 'all_match' (green), 'mixed' (amber), 'all_mismatch' (red), 'neutral' (grey)
+     */
+    protected function calculateVoteAlignmentStatus(array $voteStats): string
+    {
+        $matches = $voteStats['vote_matches'];
+        $mismatches = $voteStats['vote_mismatches'];
+        $total = $matches + $mismatches;
+
+        // No vote data available
+        if ($total === 0) {
+            return 'neutral';
+        }
+
+        // All matches (green)
+        if ($mismatches === 0) {
+            return 'all_match';
+        }
+
+        // All mismatches (red)
+        if ($matches === 0) {
+            return 'all_mismatch';
+        }
+
+        // Mixed (amber)
+        return 'mixed';
     }
 
     /**

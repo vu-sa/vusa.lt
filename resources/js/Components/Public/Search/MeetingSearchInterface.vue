@@ -44,7 +44,6 @@
             <MeetingFacetSidebar :facets="searchController.facets.value" :filters="searchController.filters.value"
               :is-loading="searchController.isLoadingFacets.value" :active-filter-count
               @update:tenant="searchController.toggleTenant" @update:institution-type="searchController.toggleInstitutionType"
-              @update:completion-status="searchController.toggleCompletionStatus"
               @update:year="searchController.toggleYear" @update:success-rate="searchController.toggleSuccessRate"
               @update:date-range="searchController.setDateRange" @clear-filters="searchController.clearFilters" />
           </div>
@@ -105,18 +104,6 @@
                   </Button>
                 </Badge>
 
-                <!-- Completion status filters -->
-                <Badge v-for="status in searchController.filters.value.completionStatus"
-                  :key="`status-${status}`" variant="secondary" class="gap-1 text-xs px-1.5 py-1 max-w-32">
-                  <FileCheck class="w-3 h-3 flex-shrink-0" />
-                  <span class="truncate">{{ status }}</span>
-                  <Button variant="ghost" size="sm"
-                    class="h-3 w-3 p-0 hover:bg-destructive hover:text-destructive-foreground ml-0.5"
-                    @click="searchController.toggleCompletionStatus(status)">
-                    <X class="w-2.5 h-2.5" />
-                  </Button>
-                </Badge>
-
                 <!-- Year filters -->
                 <Badge v-for="year in searchController.filters.value.years" :key="`year-${year}`"
                   variant="secondary" class="gap-1 text-xs px-1.5 py-1 flex-shrink-0">
@@ -171,7 +158,6 @@ import { trans as $t } from 'laravel-vue-i18n'
 import {
   Search,
   Building2,
-  FileCheck,
   CalendarDays,
   TrendingUp,
   X,
@@ -214,7 +200,6 @@ const activeFilterCount = computed(() => {
   const filters = searchController.filters.value
   let count = 0
   if (filters.tenants.length > 0) count++
-  if (filters.completionStatus.length > 0) count++
   if (filters.years.length > 0) count++
   if (filters.successRateRanges.length > 0) count++
   if ((filters.dateRange.preset && filters.dateRange.preset !== 'recent') || filters.dateRange.from || filters.dateRange.to) count++

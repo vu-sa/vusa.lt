@@ -43,7 +43,7 @@
                 </div>
 
                 <!-- Main Filters -->
-                <Accordion type="multiple" :default-value="['tenants', 'completion', 'years', 'dates']" class="w-full">
+                <Accordion type="multiple" :default-value="['tenants', 'years', 'dates']" class="w-full">
                   <!-- Tenant Filter -->
                   <AccordionItem value="tenants">
                     <AccordionTrigger class="text-sm font-medium">
@@ -86,38 +86,6 @@
                             </span>
                             <Badge variant="outline" class="ml-auto text-xs">
                               {{ formatCount(type.count) }}
-                            </Badge>
-                          </div>
-                        </label>
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
-
-                  <!-- Completion Status Filter -->
-                  <AccordionItem value="completion">
-                    <AccordionTrigger class="text-sm font-medium">
-                      <div class="flex items-center gap-2">
-                        <FileCheck class="w-4 h-4 text-muted-foreground" />
-                        <span>{{ $t('search.completion_status') }}</span>
-                        <Badge v-if="filters.completionStatus.length > 0" variant="secondary" class="ml-auto mr-2">
-                          {{ filters.completionStatus.length }}
-                        </Badge>
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent class="pt-2">
-                      <div class="space-y-2">
-                        <label v-for="status in completionStatusFacet?.values || []" :key="status.value" :class="[
-                          'flex items-center gap-2.5 p-2 rounded-lg border cursor-pointer transition-colors hover:bg-accent',
-                          filters.completionStatus.includes(status.value) ? 'bg-accent' : ''
-                        ]">
-                          <Checkbox :model-value="filters.completionStatus.includes(status.value)"
-                            @update:model-value="emit('update:completionStatus', status.value)" />
-                          <div class="flex items-center gap-2 flex-1">
-                            <span class="text-sm font-medium">
-                              {{ status.label }}
-                            </span>
-                            <Badge variant="outline" class="ml-auto text-xs">
-                              {{ formatCount(status.count) }}
                             </Badge>
                           </div>
                         </label>
@@ -233,7 +201,7 @@
         </div>
 
         <!-- Main Filters -->
-        <Accordion type="multiple" :default-value="['tenants', 'completion', 'years', 'dates']" class="w-full space-y-3">
+        <Accordion type="multiple" :default-value="['tenants', 'years', 'dates']" class="w-full space-y-3">
           <!-- Tenant Filter - Primary Focus -->
           <AccordionItem value="tenants"
             class="border border-border/60 rounded-xl bg-card/50 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-200">
@@ -293,47 +261,6 @@
                     </span>
                     <Badge variant="outline" class="text-xs font-medium">
                       {{ formatCount(type.count) }}
-                    </Badge>
-                  </div>
-                </label>
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-
-          <!-- Completion Status Filter -->
-          <AccordionItem value="completion"
-            class="border border-border/60 rounded-xl bg-card/50 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-200">
-            <AccordionTrigger class="px-5 py-4 hover:no-underline group">
-              <div class="flex items-center gap-3 flex-1">
-                <div class="p-1.5 rounded-lg bg-blue-500/10 text-blue-600 group-hover:bg-blue-500/15 transition-colors">
-                  <FileCheck class="w-4 h-4" />
-                </div>
-                <div class="flex-1 text-left">
-                  <span class="font-semibold text-foreground text-base">{{ $t('search.completion_status') }}</span>
-                </div>
-                <Badge v-if="filters.completionStatus.length > 0" variant="default" class="font-medium text-xs px-2 py-1">
-                  {{ filters.completionStatus.length }}
-                </Badge>
-              </div>
-            </AccordionTrigger>
-            <AccordionContent class="px-5 pb-4 pt-1">
-              <div v-if="isLoading" class="space-y-1">
-                <div v-for="i in 3" :key="i" class="h-6 w-full bg-muted animate-pulse rounded" />
-              </div>
-              <div v-else class="space-y-2">
-                <label v-for="status in completionStatusFacet?.values || []" :key="status.value" :class="[
-                  'flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all duration-200 hover:bg-accent/50 hover:border-accent-foreground/20',
-                  filters.completionStatus.includes(status.value) ? 'bg-accent border-accent-foreground/20 shadow-sm' : 'hover:shadow-sm'
-                ]">
-                  <Checkbox :model-value="filters.completionStatus.includes(status.value)"
-                    class="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-                    @update:model-value="emit('update:completionStatus', status.value)" />
-                  <div class="flex items-center justify-between flex-1">
-                    <span class="font-medium text-sm text-foreground">
-                      {{ status.label }}
-                    </span>
-                    <Badge variant="outline" class="text-xs font-medium">
-                      {{ formatCount(status.count) }}
                     </Badge>
                   </div>
                 </label>
@@ -477,7 +404,6 @@ import {
   Filter,
   Building2,
   Layers,
-  FileCheck,
   Calendar,
   CalendarDays,
   TrendingUp,
@@ -502,7 +428,6 @@ interface Props {
 interface Emits {
   (e: 'update:tenant', tenant: string): void
   (e: 'update:institutionType', type: string): void
-  (e: 'update:completionStatus', status: string): void
   (e: 'update:year', year: number): void
   (e: 'update:successRate', range: string): void
   (e: 'update:dateRange', range: MeetingSearchFilters['dateRange']): void
@@ -592,10 +517,6 @@ const tenantFacet = computed(() => {
 
 const institutionTypeFacet = computed(() => {
   return props.facets.find(f => f.field === 'institution_type_title')
-})
-
-const completionStatusFacet = computed(() => {
-  return props.facets.find(f => f.field === 'completion_status')
 })
 
 const yearFacet = computed(() => {

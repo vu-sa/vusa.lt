@@ -39,7 +39,7 @@ export class MeetingSearchService {
       q: filters.query.trim() || '*',
       query_by: `title,description,${institutionNameField}`,
       query_by_weights: '10,5,3',
-      facet_by: 'year,month,tenant_shortname,completion_status,institution_type_title',
+      facet_by: 'year,month,tenant_shortname,institution_type_title',
       max_facet_values: 50,
       per_page: perPage,
       page: isLoadMore ? currentPage + 1 : 1,
@@ -85,7 +85,7 @@ export class MeetingSearchService {
     const searchParams: any = {
       q: '*',
       query_by: `title,description,${institutionNameField}`,
-      facet_by: 'year,month,tenant_shortname,completion_status,institution_type_title',
+      facet_by: 'year,month,tenant_shortname,institution_type_title',
       max_facet_values: 50,
       per_page: 1, // We only need facets, not results
     }
@@ -120,12 +120,6 @@ export class MeetingSearchService {
     if (filters.institutionTypes.length > 0) {
       const typeConditions = filters.institutionTypes.map(t => `institution_type_title:="${t}"`)
       conditions.push(`(${typeConditions.join(' || ')})`)
-    }
-
-    // Completion status filter
-    if (filters.completionStatus.length > 0) {
-      const statusConditions = filters.completionStatus.map(s => `completion_status:="${s}"`)
-      conditions.push(`(${statusConditions.join(' || ')})`)
     }
 
     // Year filter
@@ -197,8 +191,6 @@ export class MeetingSearchService {
       let label = field
       if (field === 'tenant_shortname') {
         label = 'Dariniai' // Organizations
-      } else if (field === 'completion_status') {
-        label = 'Užpildymo būsena' // Completion status
       } else if (field === 'year') {
         label = 'Metai' // Year
       } else if (field === 'month') {
@@ -226,15 +218,6 @@ export class MeetingSearchService {
    * Format facet label based on field type
    */
   private formatFacetLabel(field: string, value: any, locale: string): string {
-    if (field === 'completion_status') {
-      const statusLabels: Record<string, Record<string, string>> = {
-        'complete': { lt: 'Užpildyti', en: 'Complete' },
-        'incomplete': { lt: 'Dalinai užpildyti', en: 'Partially complete' },
-        'no_items': { lt: 'Be darbotvarkės', en: 'No agenda' }
-      }
-      return statusLabels[value]?.[locale] || value
-    }
-
     if (field === 'month') {
       const monthLabels: Record<string, Record<string, string>> = {
         '1': { lt: 'Sausis', en: 'January' },

@@ -345,8 +345,8 @@ declare global {
       created_at: string
       updated_at: string
       // relations
-      relationshipable?: { id: string; name?: string; title?: string }
-      related_model?: { id: string; name?: string; title?: string }
+      relationshipable?: Relationshipable
+      related_model?: Relationshipable
       relationship?: Relationship
       // counts
       // exists

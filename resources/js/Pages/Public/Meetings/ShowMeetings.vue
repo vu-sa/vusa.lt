@@ -39,7 +39,7 @@ const initialFilters = computed(() => {
   const params = getUrlParams();
   const filters: Record<string, any> = {};
 
-  // Parse array parameters (tenants, completionStatus, years, successRateRanges)
+  // Parse array parameters (tenants, years, successRateRanges)
   const parseArrayParam = (paramName: string, maxItems = 29) => {
     const items = [];
     for (let i = 0; i < maxItems; i++) {
@@ -72,7 +72,6 @@ const initialFilters = computed(() => {
 
   // Extract filter parameters
   filters.tenants = parseArrayParam('tenants');
-  filters.completionStatus = parseArrayParam('completionStatus');
   filters.years = parseNumberArrayParam('years', 10); // Limited to 10 years
   filters.successRateRanges = parseArrayParam('successRateRanges', 3); // Max 3 ranges
 

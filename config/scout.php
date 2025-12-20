@@ -272,22 +272,12 @@ return [
                         ['name' => 'institution_type_id', 'type' => 'int32', 'facet' => true, 'optional' => true],
                         ['name' => 'institution_type_title', 'type' => 'string', 'facet' => true, 'optional' => true],
 
-                        ['name' => 'completion_status', 'type' => 'string', 'facet' => true],
                         ['name' => 'agenda_items_count', 'type' => 'int32', 'sort' => true],
-
-                        ['name' => 'total_agenda_items', 'type' => 'int32'],
-                        ['name' => 'items_with_decisions', 'type' => 'int32'],
-                        ['name' => 'completed_items', 'type' => 'int32', 'facet' => true],
-                        ['name' => 'student_success_rate', 'type' => 'int32', 'sort' => true],
-                        ['name' => 'positive_outcomes', 'type' => 'int32'],
-                        ['name' => 'negative_outcomes', 'type' => 'int32'],
-                        ['name' => 'neutral_outcomes', 'type' => 'int32'],
 
                         ['name' => 'vote_matches', 'type' => 'int32'],
                         ['name' => 'vote_mismatches', 'type' => 'int32'],
                         ['name' => 'incomplete_vote_data', 'type' => 'int32'],
-
-                        ['name' => 'has_completed_items', 'type' => 'bool', 'facet' => true],
+                        ['name' => 'vote_alignment_status', 'type' => 'string', 'facet' => true],
                         ['name' => 'is_recent', 'type' => 'bool', 'facet' => true],
 
                         ['name' => 'created_at', 'type' => 'int64'],

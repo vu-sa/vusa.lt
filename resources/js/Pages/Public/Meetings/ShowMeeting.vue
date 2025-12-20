@@ -42,9 +42,6 @@
 
           <!-- Meeting summary - cleaner layout -->
           <div class="flex flex-wrap items-center gap-3 mb-5">
-            <Badge :variant="getCompletionVariant(meeting.completion_status)">
-              {{ getCompletionLabel(meeting.completion_status) }}
-            </Badge>
             <span class="text-sm text-zinc-500 dark:text-zinc-400">
               {{ allAgendaItems.length }}
               {{ allAgendaItems.length === 1 ? $t('klausimas') : $t('klausimai') }}
@@ -179,7 +176,6 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { InfoIcon, CheckCircleIcon, AlertCircleIcon, ChevronLeft, ChevronRight, Building2 } from 'lucide-vue-next';
 
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
-import { useMeetingStatus } from '@/Composables/useMeetingStatus';
 import MeetingInfoModal from '@/Components/Public/MeetingInfoModal.vue';
 import VoteIndicator from '@/Components/Public/VoteIndicator.vue';
 import AgendaOutcomeIndicators from '@/Components/Public/AgendaOutcomeIndicators.vue';
@@ -255,10 +251,6 @@ const formatMeetingDate = (date: string) => {
     minute: '2-digit',
   });
 };
-
-// Use shared meeting status utilities (with verbose labels for detail page)
-const { getCompletionVariant, getCompletionLabel: getCompletionLabelBase } = useMeetingStatus();
-const getCompletionLabel = (status: string) => getCompletionLabelBase(status, true);
 
 const showVoteComparison = (item: App.Entities.AgendaItem) => {
   return item.student_vote && item.decision;

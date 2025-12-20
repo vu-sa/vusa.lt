@@ -3,73 +3,76 @@
     class="group transition-all duration-200 border border-border/50 rounded-md bg-card hover:shadow-lg hover:bg-accent/20 hover:border-primary/30 cursor-pointer"
     @click="navigateToMeeting"
   >
-    <div class="block sm:flex sm:items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2">
+    <div class="block sm:flex sm:items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3">
       <!-- Mobile Layout: Stacked -->
-      <div class="sm:hidden space-y-2">
-        <!-- Title Row -->
-        <div class="flex items-center gap-2">
-          <!-- Status Dot -->
-          <div
-            :class="getStatusDotColor(meeting.completion_status)"
-            class="w-2 h-2 rounded-full flex-shrink-0"
-          />
-          <!-- Date -->
-          <div class="flex-1 min-w-0">
-            <time class="text-xs font-medium text-card-foreground group-hover:text-primary transition-colors">
+      <div class="sm:hidden space-y-1.5">
+        <!-- Date Row -->
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <!-- Alignment Status Dot -->
+            <span
+              v-if="meeting.vote_alignment_status"
+              class="w-2.5 h-2.5 rounded-full flex-shrink-0"
+              :class="alignmentDotClass"
+              :title="alignmentDotTitle"
+            />
+            <time class="text-sm font-semibold text-card-foreground group-hover:text-primary transition-colors">
               {{ formatCompactDate() }}
             </time>
           </div>
           <!-- Arrow -->
-          <ArrowRightIcon class="w-3 h-3 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0" />
+          <ArrowRightIcon class="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0" />
         </div>
 
-        <!-- Metadata Row -->
-        <div class="flex items-center gap-2 text-xs text-muted-foreground">
-          <!-- Completion Status Badge -->
-          <Badge
-            :variant="getCompletionVariant(meeting.completion_status)"
-            class="text-[10px] font-medium px-1.5 py-0 flex-shrink-0"
-          >
-            {{ getCompletionLabel(meeting.completion_status) }}
-          </Badge>
-
-          <!-- Institution (clickable link) -->
+        <!-- Institution Row -->
+        <div class="text-sm text-muted-foreground">
           <Link
             v-if="institutionName && meeting.institution_id"
             :href="getInstitutionUrl()"
-            class="max-w-24 truncate flex-shrink-0 font-medium hover:text-primary hover:underline transition-colors"
-            :title="institutionName"
+            class="font-medium hover:text-primary hover:underline transition-colors"
             @click.stop
           >
             {{ institutionName }}
           </Link>
-          <span
-            v-else-if="institutionName"
-            class="max-w-24 truncate flex-shrink-0 font-medium"
-            :title="institutionName"
-          >
+          <span v-else-if="institutionName" class="font-medium">
             {{ institutionName }}
           </span>
+        </div>
 
+        <!-- Metadata Row -->
+        <div class="flex items-center gap-3 text-xs text-muted-foreground">
           <!-- Agenda Count -->
-          <span class="whitespace-nowrap flex-shrink-0">
-            {{ agendaItemsCount }} {{ agendaItemsCount === 1 ? $t('kl.') : $t('kl.') }}
+          <span class="whitespace-nowrap">
+            {{ agendaItemsCount }} {{ agendaItemsCount === 1 ? $t('klausimas') : $t('klausimai') }}
           </span>
+
+          <!-- Outcome Indicators (vote alignment) -->
+          <MeetingOutcomeIndicators
+            v-if="hasOutcomes"
+            :matches="meeting.vote_matches || 0"
+            :mismatches="meeting.vote_mismatches || 0"
+            :incomplete="meeting.incomplete_vote_data || 0"
+          />
         </div>
       </div>
 
       <!-- Desktop Layout: Horizontal -->
-      <div class="hidden sm:flex sm:items-center sm:gap-3 sm:w-full">
-        <!-- Status Dot -->
-        <div
-          :class="getStatusDotColor(meeting.completion_status)"
-          class="w-2 h-2 rounded-full flex-shrink-0"
+      <div class="hidden sm:flex sm:items-center sm:gap-4 sm:w-full">
+        <!-- Alignment Status Dot -->
+        <span
+          v-if="meeting.vote_alignment_status"
+          class="w-2.5 h-2.5 rounded-full flex-shrink-0"
+          :class="alignmentDotClass"
+          :title="alignmentDotTitle"
         />
 
         <!-- Date -->
-        <time class="text-sm font-medium text-card-foreground group-hover:text-primary transition-colors whitespace-nowrap flex-shrink-0 w-40">
+        <time class="text-sm font-semibold text-card-foreground group-hover:text-primary transition-colors whitespace-nowrap flex-shrink-0 min-w-[200px]">
           {{ formatCompactDate() }}
         </time>
+
+        <!-- Separator -->
+        <span class="text-border">|</span>
 
         <!-- Institution Name (clickable link) -->
         <div class="flex-1 min-w-0">
@@ -92,13 +95,13 @@
         </div>
 
         <!-- Compact Metadata -->
-        <div class="flex items-center gap-2 flex-shrink-0 min-w-0">
+        <div class="flex items-center gap-3 flex-shrink-0">
           <!-- Agenda Count -->
           <span class="text-xs text-muted-foreground whitespace-nowrap">
             {{ agendaItemsCount }} {{ agendaItemsCount === 1 ? $t('klausimas') : $t('klausimai') }}
           </span>
 
-          <!-- Outcome Indicators -->
+          <!-- Outcome Indicators (vote alignment) -->
           <MeetingOutcomeIndicators
             v-if="hasOutcomes"
             :matches="meeting.vote_matches || 0"
@@ -106,16 +109,8 @@
             :incomplete="meeting.incomplete_vote_data || 0"
           />
 
-          <!-- Completion Status Badge -->
-          <Badge
-            :variant="getCompletionVariant(meeting.completion_status)"
-            class="text-xs font-medium px-1.5 py-0.5 flex-shrink-0"
-          >
-            {{ getCompletionLabel(meeting.completion_status) }}
-          </Badge>
-
           <!-- Arrow -->
-          <ArrowRightIcon class="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0" />
+          <ArrowRightIcon class="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0" />
         </div>
       </div>
     </div>
@@ -126,11 +121,9 @@
 import { computed } from 'vue';
 import { Link, usePage, router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Badge } from '@/Components/ui/badge';
 import { ArrowRightIcon } from 'lucide-vue-next';
 import MeetingOutcomeIndicators from './MeetingOutcomeIndicators.vue';
 import { formatStaticTime } from '@/Utils/IntlTime';
-import { useMeetingStatus } from '@/Composables/useMeetingStatus';
 
 // Typesense search result document structure
 interface MeetingSearchDocument {
@@ -145,19 +138,12 @@ interface MeetingSearchDocument {
   institution_name_lt?: string;
   institution_name_en?: string;
   tenant_shortname?: string;
-  completion_status: string;
   agenda_items_count?: number;
-  total_agenda_items?: number;
-  completed_items?: number;
-  student_success_rate?: number;
-  positive_outcomes?: number;
-  negative_outcomes?: number;
-  neutral_outcomes?: number;
   // Vote alignment fields
   vote_matches?: number;
   vote_mismatches?: number;
   incomplete_vote_data?: number;
-  has_completed_items?: boolean;
+  vote_alignment_status?: 'all_match' | 'mixed' | 'all_mismatch' | 'neutral';
   is_recent?: boolean;
   [key: string]: any;
 }
@@ -169,9 +155,6 @@ const props = defineProps<{
 const page = usePage();
 const locale = computed(() => page.props.app?.locale || 'lt');
 
-// Use shared meeting status utilities
-const { getCompletionVariant, getCompletionLabel, getStatusDotColor } = useMeetingStatus();
-
 // Get institution name based on current locale
 const institutionName = computed(() => {
   if (locale.value === 'en' && props.meeting.institution_name_en) {
@@ -182,7 +165,7 @@ const institutionName = computed(() => {
 
 // Get agenda items count from Typesense indexed field
 const agendaItemsCount = computed(() => {
-  return props.meeting.agenda_items_count ?? props.meeting.total_agenda_items ?? 0;
+  return props.meeting.agenda_items_count ?? 0;
 });
 
 // Check if meeting has vote alignment data
@@ -192,17 +175,47 @@ const hasOutcomes = computed(() => {
     (props.meeting.incomplete_vote_data ?? 0) > 0;
 });
 
+// Alignment dot class based on vote_alignment_status
+const alignmentDotClass = computed(() => {
+  switch (props.meeting.vote_alignment_status) {
+    case 'all_match':
+      return 'bg-green-500';
+    case 'mixed':
+      return 'bg-amber-500';
+    case 'all_mismatch':
+      return 'bg-red-700';
+    case 'neutral':
+    default:
+      return 'bg-zinc-400';
+  }
+});
+
+// Alignment dot tooltip
+const alignmentDotTitle = computed(() => {
+  switch (props.meeting.vote_alignment_status) {
+    case 'all_match':
+      return $t('Visi studentų balsavimai sutampa su sprendimais');
+    case 'mixed':
+      return $t('Dalis studentų balsavimų sutampa su sprendimais');
+    case 'all_mismatch':
+      return $t('Studentų balsavimai nesutampa su sprendimais');
+    case 'neutral':
+    default:
+      return $t('Nėra balsavimo duomenų');
+  }
+});
+
 // Format compact date from Unix timestamp (seconds)
 const formatCompactDate = () => {
   // start_time is Unix timestamp in seconds, multiply by 1000 for JS Date
   const date = new Date(props.meeting.start_time * 1000);
   return formatStaticTime(date, {
     year: 'numeric',
-    month: 'short',
+    month: 'long',
     day: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
-  });
+  }, locale.value as 'lt' | 'en');
 };
 
 // Build meeting detail URL

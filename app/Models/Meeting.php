@@ -185,7 +185,7 @@ class Meeting extends Model implements SharepointFileableContract
 
     /**
      * Check if all agenda items have completion fields filled.
-     * 
+     *
      * Note: This method does NOT auto-load agendaItems to prevent leaking
      * agenda data for unauthorized institutions. If agenda items are not
      * already loaded, it returns 'no_items'.

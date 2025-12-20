@@ -5,7 +5,6 @@ export interface MeetingSearchFilters {
   query: string
   tenants: string[]
   institutionTypes: string[]
-  completionStatus: string[]
   years: number[]
   successRateRanges: string[] // 'high', 'medium', 'low'
   dateRange: {
@@ -78,7 +77,6 @@ export interface MeetingSearchController {
   setFilter: <K extends keyof MeetingSearchFilters>(key: K, value: MeetingSearchFilters[K]) => void
   toggleTenant: (tenantShortname: string) => void
   toggleInstitutionType: (type: string) => void
-  toggleCompletionStatus: (status: string) => void
   toggleYear: (year: number) => void
   toggleSuccessRate: (range: string) => void
   setDateRange: (dateRange: any) => void
@@ -110,16 +108,9 @@ export const MEETING_SEARCH_CONSTANTS = {
 export const MEETING_FACET_FIELD_LABELS: Record<string, string> = {
   'tenant_shortname': 'Organization',
   'institution_type_title': 'Institution Type',
-  'completion_status': 'Completion Status',
   'year': 'Year',
   'month': 'Month',
   'student_success_rate': 'Success Rate'
-} as const
-
-export const COMPLETION_STATUS_LABELS: Record<string, string> = {
-  'complete': 'Complete',
-  'incomplete': 'Partially complete',
-  'no_items': 'No agenda'
 } as const
 
 export const SUCCESS_RATE_RANGES: Record<string, { label: string; min?: number; max?: number }> = {

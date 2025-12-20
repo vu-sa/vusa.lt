@@ -178,7 +178,7 @@
   }
 
   .font-public {
-    font-family: 'Atkinson Hyperlegible', ui-sans-serif, system-ui, sans-serif;
+    font-family: 'Atkinson Hyperlegible Next', ui-sans-serif, system-ui, sans-serif;
   }
 
   .font-admin {
@@ -491,7 +491,7 @@ html.dark-mode-init {
 @theme inline {
   /* Font Families */
   --font-heading: 'Playfair Display', Georgia, 'Times New Roman', serif;
-  --font-public: 'Atkinson Hyperlegible', ui-sans-serif, system-ui, sans-serif;
+  --font-public: 'Atkinson Hyperlegible Next', ui-sans-serif, system-ui, sans-serif;
   --font-admin: 'Inter', ui-sans-serif, system-ui, sans-serif;
 
   /* VU SA Brand Colors - converted to OKLCH */

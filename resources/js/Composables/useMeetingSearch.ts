@@ -65,7 +65,6 @@ export const useMeetingSearch = (): MeetingSearchController => {
     query: '',
     tenants: [],
     institutionTypes: [],
-    completionStatus: [],
     years: [],
     successRateRanges: [],
     dateRange: {}
@@ -86,7 +85,6 @@ export const useMeetingSearch = (): MeetingSearchController => {
       currentCount: facets.value.length,
       filters: {
         tenants: filters.value.tenants.slice().sort(),
-        completionStatus: filters.value.completionStatus.slice().sort(),
         years: filters.value.years.slice().sort(),
         successRateRanges: filters.value.successRateRanges.slice().sort()
       }
@@ -158,8 +156,7 @@ export const useMeetingSearch = (): MeetingSearchController => {
         facet_by: [
           'year',
           'month',
-          'tenant_shortname',
-          'completion_status'
+          'tenant_shortname'
         ].join(','),
         per_page: 24,
       }
@@ -181,8 +178,7 @@ export const useMeetingSearch = (): MeetingSearchController => {
           facet_by: [
             'year',
             'month',
-            'tenant_shortname',
-            'completion_status'
+            'tenant_shortname'
           ].join(','),
           max_facet_values: 50,
           sort_by: 'start_time:desc'
@@ -438,20 +434,6 @@ export const useMeetingSearch = (): MeetingSearchController => {
     debouncedSearch()
   }
 
-  const toggleCompletionStatus = (status: string) => {
-    const current = [...filters.value.completionStatus]
-    const index = current.indexOf(status)
-
-    if (index >= 0) {
-      current.splice(index, 1)
-    } else {
-      current.push(status)
-    }
-
-    filters.value.completionStatus = current
-    debouncedSearch()
-  }
-
   const toggleYear = (year: number) => {
     const current = [...filters.value.years]
     const index = current.indexOf(year)
@@ -497,7 +479,7 @@ export const useMeetingSearch = (): MeetingSearchController => {
     filters.value = {
       query: filters.value.query,
       tenants: [],
-      completionStatus: [],
+      institutionTypes: [],
       years: [],
       successRateRanges: [],
       dateRange: {}
@@ -607,7 +589,6 @@ export const useMeetingSearch = (): MeetingSearchController => {
     setFilter,
     toggleTenant,
     toggleInstitutionType,
-    toggleCompletionStatus,
     toggleYear,
     toggleSuccessRate,
     setDateRange,

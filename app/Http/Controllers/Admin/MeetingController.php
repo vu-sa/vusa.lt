@@ -3,14 +3,16 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\AdminController;
+use App\Http\Requests\IndexMeetingRequest;
 use App\Http\Requests\StoreMeetingRequest;
+use App\Http\Traits\HasTanstackTables;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Services\CheckInService;
 use App\Services\ModelAuthorizer as Authorizer;
-use App\Services\ModelIndexer;
 use App\Services\ResourceServices\SharepointFileService;
+use App\Services\TanstackTableService;
 use Illuminate\Support\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -19,25 +21,110 @@ use Inertia\Inertia;
 
 class MeetingController extends AdminController
 {
-    public function __construct(public Authorizer $authorizer, private CheckInService $checkInService) {}
+    use HasTanstackTables;
+
+    public function __construct(
+        public Authorizer $authorizer,
+        private CheckInService $checkInService,
+        private TanstackTableService $tableService
+    ) {}
 
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(IndexMeetingRequest $request)
     {
         $this->handleAuthorization('viewAny', Meeting::class);
 
-        $indexer = new ModelIndexer(new Meeting);
+        // Build base query with eager loading
+        $query = Meeting::query()->with(['institutions.tenant', 'agendaItems']);
 
-        $meetings = $indexer
-            ->setEloquentQuery([fn (Builder $query) => $query->with(['institutions', 'agendaItems'])])
-            ->filterAllColumns()
-            ->sortAllColumns(['start_time' => 'descend'])
-            ->builder->paginate(20);
+        // Apply permission filtering based on user's permissible tenants
+        $query = $this->tableService->applyPermissionFiltering(
+            $query,
+            'tenants',
+            'meetings.read.padalinys',
+            $this->authorizer
+        );
 
+        // Define searchable columns
+        $searchableColumns = ['title', 'description'];
+
+        // Apply Tanstack Table filters
+        $query = $this->applyTanstackFilters(
+            $query,
+            $request,
+            $this->tableService,
+            $searchableColumns,
+            [
+                'applySortBeforePagination' => true,
+            ]
+        );
+
+        // Apply manual completion status filter if provided
+        $filters = $request->getFilters();
+        if (isset($filters['completion_status']) && !empty($filters['completion_status'])) {
+            $completionStatuses = is_array($filters['completion_status']) 
+                ? $filters['completion_status'] 
+                : [$filters['completion_status']];
+            
+            // Filter by completion status (calculated from agenda items)
+            $query->where(function ($q) use ($completionStatuses) {
+                foreach ($completionStatuses as $status) {
+                    if ($status === 'complete') {
+                        // All agenda items have all three fields filled
+                        $q->orWhereHas('agendaItems', function ($subQ) {
+                            $subQ->whereNotNull('student_vote')
+                                ->whereNotNull('decision')
+                                ->whereNotNull('student_benefit');
+                        }, '=', DB::raw('(SELECT COUNT(*) FROM agenda_items WHERE agenda_items.meeting_id = meetings.id)'))
+                        ->whereHas('agendaItems'); // Must have at least one
+                    } elseif ($status === 'incomplete') {
+                        // Has agenda items but not all are complete
+                        $q->orWhere(function ($innerQ) {
+                            $innerQ->whereHas('agendaItems')
+                                ->whereHas('agendaItems', function ($subQ) {
+                                    $subQ->where(function ($itemQ) {
+                                        $itemQ->whereNull('student_vote')
+                                            ->orWhereNull('decision')
+                                            ->orWhereNull('student_benefit');
+                                    });
+                                });
+                        });
+                    } elseif ($status === 'no_items') {
+                        // No agenda items
+                        $q->orWhereDoesntHave('agendaItems');
+                    }
+                }
+            });
+        }
+
+        // Apply default sorting if no sorting provided
+        if (empty($request->getSorting())) {
+            $query->orderBy('start_time', 'desc');
+        }
+
+        // Paginate results
+        $meetings = $query->paginate($request->input('per_page', 20))
+            ->withQueryString();
+
+        // Get the sorting state
+        $sorting = $request->getSorting();
+
+        // Return response with all necessary data
         return $this->inertiaResponse('Admin/Representation/IndexMeeting', [
-            'meetings' => $meetings,
+            'data' => $meetings->items(),
+            'meta' => [
+                'total' => $meetings->total(),
+                'per_page' => $meetings->perPage(),
+                'current_page' => $meetings->currentPage(),
+                'last_page' => $meetings->lastPage(),
+                'from' => $meetings->firstItem(),
+                'to' => $meetings->lastItem(),
+            ],
+            'filters' => $request->getFilters(),
+            'sorting' => $sorting,
+            'showDeleted' => $request->boolean('showDeleted', false),
         ]);
     }
 

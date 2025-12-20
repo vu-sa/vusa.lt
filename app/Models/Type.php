@@ -208,7 +208,7 @@ class Type extends Model implements SharepointFileableContract
      * Check if cross-tenant sibling relationships are enabled for this type.
      * When enabled, institutions of this type can see institutions of the same type
      * across tenant boundaries (pagrindinis <-> padalinys).
-     * 
+     *
      * Authorization is one-directional:
      * - Pagrindinis sees padalinys siblings with authorized: true (full data access)
      * - Padalinys sees pagrindinis sibling with authorized: false (visible but no agenda items)
