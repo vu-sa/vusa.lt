@@ -27,7 +27,7 @@
           'text-4xl font-bold',
           upcomingMeetings.length > 0 ? 'text-zinc-800 dark:text-zinc-100' : 'text-zinc-700 dark:text-zinc-300'
         ]" :aria-label="$t('Susitikimų skaičius') + ': ' + upcomingMeetings.length">
-          <NNumberAnimation :from="0" :to="upcomingMeetings.length" />
+          {{ upcomingMeetings.length }}
         </span>
         <div :class="[
           'px-2 py-1 rounded-full text-xs font-medium mb-2',
