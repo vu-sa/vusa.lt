@@ -202,6 +202,16 @@ html.dark-mode-init {
 
 .typography {
 
+  /* Ensure images are responsive and don't overflow */
+  img {
+    @apply max-w-full h-auto;
+  }
+
+  /* Allow long URLs to wrap at any character */
+  a {
+    @apply underline break-all;
+  }
+
   /* Rich content typography with proper spacing and enhanced styling */
   h1 {
     @apply scroll-mt-32 text-4xl font-bold tracking-tight lg:text-5xl mb-6 mt-0 first:mt-0;
@@ -237,10 +247,6 @@ html.dark-mode-init {
 
   p {
     @apply not-first:mt-6 mt-4 mb-5 tracking-normal
-  }
-
-  a {
-    @apply underline
   }
 
   ul,

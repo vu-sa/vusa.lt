@@ -1,5 +1,5 @@
 <template>
-  <div v-if="loading" class="my-6 py-6 px-4 md:px-8 lg:px-12">
+  <div v-if="loading" class="mt-6 py-6 px-4 md:px-8 lg:px-12">
     <div class="w-full max-w-7xl mx-auto">
       <div class="grid gap-6 lg:gap-8 grid-cols-1 lg:grid-cols-[2fr_1fr]">
         <div class="space-y-4">

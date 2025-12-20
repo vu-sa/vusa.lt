@@ -107,11 +107,11 @@
         class="flex-1 flex flex-col text-zinc-800 antialiased dark:text-zinc-300 container px-0 @container/main">
         <MainNavigation :is-theme-dark="isDark" />
 
-        <main id="main-content" class="pb-8 pt-12 mt-16">
+        <main id="main-content" class="pb-8 mt-16">
           <!-- Centralized breadcrumb display -->
-          <nav v-if="breadcrumbState.breadcrumbs.value.length > 0" :class="breadcrumbWrapperClass" aria-label="Breadcrumb">
-            <UnifiedBreadcrumbs class="mb-4 md:mb-6" />
-          </nav>
+          <div v-if="breadcrumbState.breadcrumbs.value.length > 0" :class="breadcrumbWrapperClass">
+            <PublicBreadcrumb />
+          </div>
           
           <!-- <Suspense> -->
           <div>
@@ -171,7 +171,7 @@ import { useDark, useStorage } from "@vueuse/core";
 
 import { Head, usePage, router } from "@inertiajs/vue3";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
-import UnifiedBreadcrumbs from "@/Components/UnifiedBreadcrumbs.vue";
+import PublicBreadcrumb from "@/Components/Public/PublicBreadcrumb.vue";
 import { createBreadcrumbState } from '@/Composables/useBreadcrumbsUnified';
 import { Toaster } from "@/Components/ui/sonner";
 import { useToasts } from '@/Composables/useToasts';
@@ -231,7 +231,7 @@ const contentWrapperClass = computed(() => {
 
 const breadcrumbWrapperClass = computed(() => {
   const width = layoutWidth.value;
-  const baseClasses = 'pt-4 md:pt-6 lg:pt-8';
+  const baseClasses = 'pt-6 md:pt-16 lg:pt-16';
   
   switch (width) {
     case 'wide':

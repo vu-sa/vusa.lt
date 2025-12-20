@@ -1,21 +1,21 @@
 <template>
-  <header class="relative overflow-hidden bg-gradient-to-br from-zinc-900 to-zinc-800 text-white"
+  <!-- Desktop Hero (lg+) - Full overlay design -->
+  <header class="hidden lg:block relative overflow-hidden bg-gradient-to-br from-zinc-900 to-zinc-800 text-white"
     :class="heroContainerClasses" :style="backgroundStyle">
-    <!-- Background Image Overlay -->
-    <div class="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/80"
-      :class="{ 'bg-gradient-to-br from-zinc-900/80 to-zinc-800/80': !hasImage }" />
+    <!-- Background Image Overlay - stronger gradient for text readability -->
+    <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/30" />
 
     <!-- Decorative Pattern for No Image State -->
     <div v-if="!hasImage" class="absolute inset-0 opacity-10">
       <svg class="h-full w-full" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
         <defs>
-          <pattern id="calendar-pattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+          <pattern id="calendar-pattern-desktop" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
             <circle cx="10" cy="10" r="1.5" fill="currentColor" opacity="0.3" />
             <rect x="5" y="5" width="10" height="10" fill="none" stroke="currentColor" opacity="0.2"
               stroke-width="0.5" />
           </pattern>
         </defs>
-        <rect width="100%" height="100%" fill="url(#calendar-pattern)" />
+        <rect width="100%" height="100%" fill="url(#calendar-pattern-desktop)" />
       </svg>
     </div>
 
@@ -42,8 +42,8 @@
         <div class="mx-auto max-w-7xl px-4 pb-8 sm:px-6 lg:px-8">
           <div class="max-w-4xl space-y-4">
             <!-- Event Title -->
-            <h1 class="text-3xl font-extrabold leading-tight text-white sm:text-4xl lg:text-5xl xl:text-6xl">
-              <span class="drop-shadow-2xl">{{ event.title }}</span>
+            <h1 class="text-4xl font-extrabold leading-tight text-white lg:text-5xl xl:text-6xl drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+              {{ event.title }}
             </h1>
 
             <!-- Event Status Badge -->
@@ -56,24 +56,17 @@
             </div>
 
             <!-- Event Metadata -->
-            <div class="flex flex-wrap gap-2 lg:gap-6 text-white/90">
-              <!-- Date and Time -->
+            <div class="flex flex-wrap gap-6 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
               <div class="flex items-center gap-2 min-w-0">
-                <IFluentCalendarLtr20Regular class="flex-shrink-0 text-red-400" />
-                <span class="font-medium">
-                  {{ formattedDateTime }}
-                </span>
+                <IFluentCalendarLtr20Regular class="flex-shrink-0 text-red-300" />
+                <span class="font-medium">{{ formattedDateTime }}</span>
               </div>
-
-              <!-- Location -->
               <div v-if="event.location" class="flex items-center gap-2 min-w-0">
-                <IFluentLocation20Regular class="flex-shrink-0 text-red-400" />
+                <IFluentLocation20Regular class="flex-shrink-0 text-red-300" />
                 <span class="truncate">{{ event.location }}</span>
               </div>
-
-              <!-- Organizer -->
               <div class="flex items-center gap-2 min-w-0">
-                <IFluentPeopleTeam20Regular class="flex-shrink-0 text-red-400" />
+                <IFluentPeopleTeam20Regular class="flex-shrink-0 text-red-300" />
                 <span class="truncate">{{ event.organizer || event.tenant?.shortname }}</span>
               </div>
             </div>
@@ -81,13 +74,81 @@
         </div>
       </div>
     </div>
-
-    <!-- Image Attribution (if applicable) -->
-    <div v-if="hasImage && (event as any).images?.[0]?.attribution"
-      class="absolute bottom-2 right-2 z-20 text-xs text-white/60 bg-black/30 backdrop-blur-sm px-2 py-1 rounded">
-      {{ (event as any).images[0].attribution }}
-    </div>
   </header>
+
+  <!-- Mobile Hero (< lg) - Stacked design with image on top -->
+  <div class="lg:hidden">
+    <!-- Breadcrumb Navigation -->
+    <nav class="bg-zinc-100 dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700">
+      <div class="px-4 py-3">
+        <div class="flex items-center gap-2 text-sm font-medium text-zinc-600 dark:text-zinc-400">
+          <Link :href="route('home', { lang: locale, subdomain: 'www' })" class="hover:text-vusa-red transition-colors">
+            {{ $t("Pradžia") }}
+          </Link>
+          <IFluentChevronRight16Regular class="text-zinc-400" />
+          <Link :href="route('calendar.list', { lang: locale })" class="hover:text-vusa-red transition-colors">
+            {{ $t("Kalendorius") }}
+          </Link>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Image (if available) -->
+    <div v-if="hasImage" class="relative aspect-video bg-zinc-200 dark:bg-zinc-800">
+      <img 
+        :src="heroImageUrl" 
+        :alt="String(event.title)"
+        class="w-full h-full object-cover"
+      >
+    </div>
+    
+    <!-- Decorative header for no image -->
+    <div v-else class="relative h-32 bg-gradient-to-br from-vusa-red to-rose-600">
+      <div class="absolute inset-0 opacity-20">
+        <svg class="h-full w-full" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="calendar-pattern-mobile" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+              <circle cx="10" cy="10" r="1.5" fill="white" opacity="0.3" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#calendar-pattern-mobile)" />
+        </svg>
+      </div>
+    </div>
+
+    <!-- Content below image -->
+    <div class="px-4 py-6 bg-white dark:bg-zinc-900">
+      <!-- Event Status Badge -->
+      <div v-if="eventStatus" class="mb-3">
+        <span class="inline-flex items-center gap-1 rounded-full px-3 py-1 text-sm font-medium"
+          :class="mobileStatusBadgeClasses">
+          <Icon :icon="statusIcon" class="h-4 w-4" />
+          {{ eventStatus }}
+        </span>
+      </div>
+
+      <!-- Event Title -->
+      <h1 class="text-2xl sm:text-3xl font-extrabold leading-tight text-zinc-900 dark:text-zinc-100 mb-4">
+        {{ event.title }}
+      </h1>
+
+      <!-- Event Metadata -->
+      <div class="space-y-2 text-sm text-zinc-600 dark:text-zinc-400">
+        <div class="flex items-center gap-2">
+          <IFluentCalendarLtr20Regular class="flex-shrink-0 text-vusa-red w-5 h-5" />
+          <span class="font-medium">{{ formattedDateTime }}</span>
+        </div>
+        <div v-if="event.location" class="flex items-center gap-2">
+          <IFluentLocation20Regular class="flex-shrink-0 text-vusa-red w-5 h-5" />
+          <span>{{ event.location }}</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <IFluentPeopleTeam20Regular class="flex-shrink-0 text-vusa-red w-5 h-5" />
+          <span>{{ event.organizer || event.tenant?.shortname }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -110,24 +171,36 @@ const locale = computed(() => page.props.app.locale)
 const hasImage = computed(() => {
   // Handle both array and object types temporarily until types are fixed
   const { images } = (props.event as any)
-  return images && (Array.isArray(images) ? images.length > 0 : true)
+  return images && (Array.isArray(images) ? images.length > 0 : Object.keys(images).length > 0)
 })
 
-// Background style computation
+// Get hero image URL for mobile img tag
+const heroImageUrl = computed(() => {
+  const { images } = (props.event as any)
+  if (!images) return null
+  
+  // Handle object with UUID keys (from API)
+  if (!Array.isArray(images) && typeof images === 'object') {
+    const firstImage = Object.values(images)[0] as any
+    return firstImage?.original_url || null
+  }
+  
+  // Handle array format
+  if (Array.isArray(images) && images.length > 0) {
+    return images[0].original_url
+  }
+  
+  return null
+})
+
+// Background style computation (for desktop hero)
 const backgroundStyle = computed(() => {
-  if (!hasImage.value) {
+  if (!hasImage.value || !heroImageUrl.value) {
     return {}
   }
 
-  const { images } = (props.event as any)
-  const imageUrl = Array.isArray(images) && images.length > 0
-    ? images[0].original_url
-    : images?.original_url
-
-  if (!imageUrl) return {}
-
   return {
-    backgroundImage: `url(${imageUrl})`,
+    backgroundImage: `url(${heroImageUrl.value})`,
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     backgroundRepeat: 'no-repeat',
@@ -190,6 +263,21 @@ const statusBadgeClasses = computed(() => {
     return 'bg-green-500/80 text-white'
   } else {
     return 'bg-red-500/80 text-white'
+  }
+})
+
+// Mobile status badge classes (solid colors, no backdrop blur)
+const mobileStatusBadgeClasses = computed(() => {
+  const now = new Date()
+  const eventDate = new Date(props.event.date)
+  const endDate = props.event.end_date ? new Date(props.event.end_date) : eventDate
+
+  if (endDate < now) {
+    return 'bg-zinc-200 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300'
+  } else if (eventDate <= now && endDate >= now) {
+    return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+  } else {
+    return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
   }
 })
 

@@ -35,7 +35,7 @@ export function useCalendarFetch() {
     tenant: page.props.tenant?.alias,
   });
 
-  const { data, error, isFetching } = useFetch(endpoint).json();
+  const { data, error, isFetching, execute } = useFetch(endpoint, { immediate: true }).json();
   
   // Make sure we're always returning an array even if the API returns null or undefined
   const calendar = computed(() => Array.isArray(data.value) ? data.value : []);
@@ -43,7 +43,8 @@ export function useCalendarFetch() {
   return {
     calendar,
     loading: isFetching,
-    error
+    error,
+    refresh: execute,
   };
 }
 

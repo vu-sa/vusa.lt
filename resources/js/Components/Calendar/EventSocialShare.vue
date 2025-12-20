@@ -133,7 +133,7 @@ const shareDescription = computed(() => {
 
 // Copy button state
 const copyIcon = computed(() => {
-  if (isCopying.value) return 'IFluentSpinner20Regular'
+  if (isCopying.value) return 'IFluentArrowSync20Regular'
   if (copySuccess.value) return 'IFluentCheckmark20Regular'
   return 'IFluentCopy20Regular'
 })
@@ -264,7 +264,7 @@ const openShareWindow = (url: string, platform: string) => {
 }
 
 /* Custom spinner animation */
-.IFluentSpinner20Regular {
+.IFluentArrowSync20Regular {
   animation: spin 1s linear infinite;
 }
 

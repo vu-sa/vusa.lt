@@ -22,12 +22,30 @@ class CalendarController extends Controller
     {
         if (app()->getLocale() === 'en') {
             return Cache::remember('calendar_en', 60 * 30, function () {
-                return Calendar::query()->with('category')->where('is_international', true)->where('is_draft', false)
-                    ->orderBy('date', 'desc')->take(100)->get(['id', 'date', 'end_date', 'title', 'category']);
+                return Calendar::query()
+                    ->with(['category', 'media'])
+                    ->where('is_international', true)
+                    ->where('is_draft', false)
+                    ->orderBy('date', 'desc')
+                    ->take(100)
+                    ->get()
+                    ->map(function ($event) {
+                        $event->images = $event->getMedia('images');
+                        return $event;
+                    });
             });
         } else {
             return Cache::remember('calendar_lt', 60 * 30, function () {
-                return Calendar::query()->with('category')->where('is_draft', false)->orderBy('date', 'desc')->take(100)->get();
+                return Calendar::query()
+                    ->with(['category', 'media', 'tenant:id,shortname'])
+                    ->where('is_draft', false)
+                    ->orderBy('date', 'desc')
+                    ->take(100)
+                    ->get()
+                    ->map(function ($event) {
+                        $event->images = $event->getMedia('images');
+                        return $event;
+                    });
             });
         }
     }

@@ -24,8 +24,11 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue';
 import { usePage, Head } from '@inertiajs/vue3';
+import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import InstitutionSearchInterface from '@/Components/Public/Search/InstitutionSearchInterface.vue';
 import SmartLink from '@/Components/Public/SmartLink.vue';
+
+import IFluentPeople16Regular from '~icons/fluent/people-16-regular';
 
 interface Props {
   institutionTypes?: Record<string, string>
@@ -39,6 +42,17 @@ const $page = usePage();
 
 // Expose type labels for the search interface
 const institutionTypes = computed(() => props.institutionTypes)
+
+// Set breadcrumbs for contacts page
+usePageBreadcrumbs(() => {
+  return BreadcrumbHelpers.publicContent([
+    BreadcrumbHelpers.createBreadcrumbItem(
+      'Kontaktai',
+      undefined,
+      IFluentPeople16Regular
+    )
+  ]);
+});
 
 // Set wider layout for contacts search page
 onMounted(() => {

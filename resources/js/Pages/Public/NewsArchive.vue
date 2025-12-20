@@ -163,11 +163,11 @@
 </template>
 
 <script setup lang="ts">
-import { router } from "@inertiajs/vue3";
+import { router, usePage } from "@inertiajs/vue3";
 import { trans as $t } from "laravel-vue-i18n";
-// onMounted/onUnmounted no longer needed - usePageBreadcrumbs handles lifecycle
-import { usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
+import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import { XIcon, ChevronLeftIcon, ChevronRightIcon } from "lucide-vue-next";
+import IFluentNews24Regular from "~icons/fluent/news-24-regular";
 
 import { Button } from "@/Components/ui/button";
 import NewsCard from "@/Components/Public/News/NewsCard.vue";
@@ -243,6 +243,21 @@ const getPagesAfter = () => {
   return pages;
 };
 
-// Clear breadcrumbs for news archive page (no specific breadcrumbs needed)
-usePageBreadcrumbs([]);
+const page = usePage();
+
+// Set breadcrumbs for news archive page
+usePageBreadcrumbs(() => {
+  const items = [];
+  
+  // News archive link (current page, no href)
+  items.push(
+    BreadcrumbHelpers.createBreadcrumbItem(
+      'Naujienų archyvas',
+      undefined,
+      IFluentNews24Regular
+    )
+  );
+  
+  return BreadcrumbHelpers.publicContent(items);
+});
 </script>

@@ -107,12 +107,28 @@
 import { trans as $t } from "laravel-vue-i18n";
 import { ref, computed } from "vue";
 import { router, usePage } from "@inertiajs/vue3";
+import { format, addDays, subDays, startOfDay, differenceInDays, isSameDay, parseISO } from "date-fns";
+import { lt, enUS } from "date-fns/locale";
 
+import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import { Button } from "@/Components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
 import CalendarSyncModal from "@/Components/Modals/CalendarSyncModal.vue";
 import EventListContent from "@/Components/Calendar/EventListContent.vue";
+
+import IFluentCalendar16Regular from '~icons/fluent/calendar-16-regular';
+
+// Set breadcrumbs for calendar list page
+usePageBreadcrumbs(() => {
+  return BreadcrumbHelpers.publicContent([
+    BreadcrumbHelpers.createBreadcrumbItem(
+      'Kalendorius',
+      undefined,
+      IFluentCalendar16Regular
+    )
+  ]);
+});
 
 const props = defineProps<{
   events: {
@@ -294,5 +310,57 @@ const resetFilters = () => {
   };
   applyFilters();
 };
+
+// ===== Event Density Visualization =====
+const dateLocale = computed(() => page.props.app.locale === 'lt' ? lt : enUS);
+const today = computed(() => startOfDay(new Date()));
+
+const densityBars = computed(() => {
+  const bars: Array<{
+    date: string;
+    dateLabel: string;
+    count: number;
+    height: number;
+    isToday: boolean;
+  }> = [];
+
+  const startDate = subDays(today.value, DENSITY_DAYS_PAST);
+
+  // Count events per day
+  const eventCounts = new Map<string, number>();
+  props.events.data.forEach(event => {
+    const eventDate = startOfDay(parseISO(event.date));
+    const dateKey = format(eventDate, 'yyyy-MM-dd');
+    eventCounts.set(dateKey, (eventCounts.get(dateKey) || 0) + 1);
+  });
+
+  // Find max count for scaling
+  let maxCount = 0;
+  eventCounts.forEach(count => {
+    if (count > maxCount) maxCount = count;
+  });
+
+  // Create bars for each day
+  for (let i = 0; i < DENSITY_DAYS; i++) {
+    const date = addDays(startDate, i);
+    const dateKey = format(date, 'yyyy-MM-dd');
+    const count = eventCounts.get(dateKey) || 0;
+    const height = maxCount > 0 ? (count / maxCount) * 100 : 0;
+
+    bars.push({
+      date: dateKey,
+      dateLabel: format(date, 'd MMM', { locale: dateLocale.value }),
+      count,
+      height: Math.max(height, count > 0 ? 15 : 5), // Minimum height for visibility
+      isToday: isSameDay(date, today.value),
+    });
+  }
+
+  return bars;
+});
+
+const todayBarIndex = computed(() => {
+  return densityBars.value.findIndex(bar => bar.isToday);
+});
 
 </script>

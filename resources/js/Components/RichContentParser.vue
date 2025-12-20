@@ -80,7 +80,7 @@ function getSpacingClass(type: string, index: number): string {
     'spotify-embed': 'mb-10', // 2.5rem bottom
     'social-embed': 'mb-10', // 2.5rem bottom
     'number-stat-section': 'mb-12', // 3rem bottom
-    'news': 'mb-12', // 3rem bottom
+    'news': 'mb-6', // 1.5rem bottom
     'calendar': 'mb-12', // 3rem bottom
     'flow-graph': 'mb-10', // 2.5rem bottom
     'content-grid': 'mb-10', // 2.5rem bottom
