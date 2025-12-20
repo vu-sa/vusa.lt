@@ -64,4 +64,7 @@ return [
     'bidirectional_no' => 'Unidirectional',
     'access_bidirectional_note' => '↔ Both sides will be able to see each other\'s data.',
     'access_unidirectional_note' => '→ Only source will see target\'s data. Target will see the relationship but not the data.',
+    
+    // Validation
+    'same_type_error' => 'Source and target cannot be the same type. Same-type sibling relationships are configured in the Type edit form using the "Show related institutions by type" setting.',
 ];

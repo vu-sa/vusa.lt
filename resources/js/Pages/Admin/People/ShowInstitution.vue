@@ -235,6 +235,11 @@ usePageBreadcrumbs(
 
 // Computed properties
 const relatedInstitutionCount = computed(() => {
+  // Use the flat format which includes all relationship types (direct, type-based, sibling)
+  if (props.institution.relatedInstitutionsFlat?.length) {
+    return props.institution.relatedInstitutionsFlat.length;
+  }
+  // Fallback to legacy format
   return Object.values(props.institution.relatedInstitutions || {}).reduce(
     (acc, val) => acc + (val?.length || 0),
     0

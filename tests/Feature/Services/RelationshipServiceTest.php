@@ -636,6 +636,248 @@ describe('sibling relationships', function () {
     });
 });
 
+describe('cross-tenant sibling relationships', function () {
+    test('pagrindinis institution can see padalinys siblings with cross-tenant sibling enabled', function () {
+        // Create pagrindinis tenant
+        $pagrindinissTenant = Tenant::factory()->create([
+            'type' => 'pagrindinis',
+            'shortname' => 'Pagrindinis Tenant ' . uniqid(),
+        ]);
+        
+        // Create padalinys tenant
+        $padalinysTenant = Tenant::factory()->create([
+            'type' => 'padalinys',
+            'shortname' => 'Padalinys Tenant ' . uniqid(),
+        ]);
+        
+        // Create institutions in each tenant
+        $pagrindinisInstitution = Institution::factory()->for($pagrindinissTenant)->create([
+            'name' => ['lt' => 'Centrinė AEK', 'en' => 'Central AEK'],
+        ]);
+        
+        $padalinysInstitution = Institution::factory()->for($padalinysTenant)->create([
+            'name' => ['lt' => 'Padalinio AEK', 'en' => 'Faculty AEK'],
+        ]);
+        
+        // Create a type with cross-tenant sibling relationships enabled
+        $type = \App\Models\Type::factory()->create([
+            'model_type' => Institution::class,
+            'title' => ['lt' => 'AEK Type', 'en' => 'AEK Type'],
+            'extra_attributes' => ['enable_cross_tenant_sibling_relationships' => true],
+        ]);
+        
+        // Attach both institutions to the same type
+        $pagrindinisInstitution->types()->attach($type->id);
+        $padalinysInstitution->types()->attach($type->id);
+        
+        RelationshipService::clearRelatedInstitutionsCache($pagrindinisInstitution->id);
+        
+        $result = RelationshipService::getRelatedInstitutionsFlat($pagrindinisInstitution);
+        
+        expect($result)->toHaveCount(1);
+        $item = $result->first();
+        expect($item['direction'])->toBe('sibling');
+        expect($item['type'])->toBe('cross-tenant-sibling');
+        expect($item['authorized'])->toBeTrue();
+        expect($item['institution']->id)->toBe($padalinysInstitution->id);
+    });
+    
+    test('padalinys institution can see pagrindinis sibling but without authorization', function () {
+        // Create pagrindinis tenant
+        $pagrindinissTenant = Tenant::factory()->create([
+            'type' => 'pagrindinis',
+            'shortname' => 'Pagrindinis Tenant ' . uniqid(),
+        ]);
+        
+        // Create padalinys tenant
+        $padalinysTenant = Tenant::factory()->create([
+            'type' => 'padalinys',
+            'shortname' => 'Padalinys Tenant ' . uniqid(),
+        ]);
+        
+        // Create institutions in each tenant
+        $pagrindinisInstitution = Institution::factory()->for($pagrindinissTenant)->create([
+            'name' => ['lt' => 'Centrinė AEK', 'en' => 'Central AEK'],
+        ]);
+        
+        $padalinysInstitution = Institution::factory()->for($padalinysTenant)->create([
+            'name' => ['lt' => 'Padalinio AEK', 'en' => 'Faculty AEK'],
+        ]);
+        
+        // Create a type with cross-tenant sibling relationships enabled
+        $type = \App\Models\Type::factory()->create([
+            'model_type' => Institution::class,
+            'title' => ['lt' => 'AEK Type', 'en' => 'AEK Type'],
+            'extra_attributes' => ['enable_cross_tenant_sibling_relationships' => true],
+        ]);
+        
+        // Attach both institutions to the same type
+        $pagrindinisInstitution->types()->attach($type->id);
+        $padalinysInstitution->types()->attach($type->id);
+        
+        RelationshipService::clearRelatedInstitutionsCache($padalinysInstitution->id);
+        
+        // Query from padalinys perspective - should see pagrindinis but NOT authorized
+        $result = RelationshipService::getRelatedInstitutionsFlat($padalinysInstitution);
+        
+        expect($result)->toHaveCount(1);
+        $item = $result->first();
+        expect($item['direction'])->toBe('sibling');
+        expect($item['type'])->toBe('cross-tenant-sibling');
+        expect($item['authorized'])->toBeFalse(); // Can see but no data access
+        expect($item['institution']->id)->toBe($pagrindinisInstitution->id);
+    });
+    
+    test('cross-tenant siblings authorization is one-directional', function () {
+        // Create pagrindinis tenant
+        $pagrindinissTenant = Tenant::factory()->create([
+            'type' => 'pagrindinis',
+            'shortname' => 'Pagrindinis Tenant ' . uniqid(),
+        ]);
+        
+        // Create padalinys tenant
+        $padalinysTenant = Tenant::factory()->create([
+            'type' => 'padalinys',
+            'shortname' => 'Padalinys Tenant ' . uniqid(),
+        ]);
+        
+        // Create institutions in each tenant
+        $pagrindinisInstitution = Institution::factory()->for($pagrindinissTenant)->create([
+            'name' => ['lt' => 'Centrinė AEK', 'en' => 'Central AEK'],
+        ]);
+        
+        $padalinysInstitution = Institution::factory()->for($padalinysTenant)->create([
+            'name' => ['lt' => 'Padalinio AEK', 'en' => 'Faculty AEK'],
+        ]);
+        
+        // Create a type with cross-tenant sibling relationships enabled
+        $type = \App\Models\Type::factory()->create([
+            'model_type' => Institution::class,
+            'title' => ['lt' => 'AEK Type', 'en' => 'AEK Type'],
+            'extra_attributes' => ['enable_cross_tenant_sibling_relationships' => true],
+        ]);
+        
+        // Attach both institutions to the same type
+        $pagrindinisInstitution->types()->attach($type->id);
+        $padalinysInstitution->types()->attach($type->id);
+        
+        RelationshipService::clearRelatedInstitutionsCache($pagrindinisInstitution->id);
+        RelationshipService::clearRelatedInstitutionsCache($padalinysInstitution->id);
+        
+        // Pagrindinis with authorizedOnly = true should see padalinys
+        $authorizedFromPagrindinis = RelationshipService::getRelatedInstitutions($pagrindinisInstitution, authorizedOnly: true);
+        expect($authorizedFromPagrindinis)->toHaveCount(1);
+        expect($authorizedFromPagrindinis->first()->id)->toBe($padalinysInstitution->id);
+        
+        // Padalinys with authorizedOnly = true should NOT see pagrindinis (unauthorized)
+        $authorizedFromPadalinys = RelationshipService::getRelatedInstitutions($padalinysInstitution, authorizedOnly: true);
+        expect($authorizedFromPadalinys)->toHaveCount(0);
+        
+        // Padalinys with authorizedOnly = false should see pagrindinis
+        $allFromPadalinys = RelationshipService::getRelatedInstitutions($padalinysInstitution, authorizedOnly: false);
+        expect($allFromPadalinys)->toHaveCount(1);
+        expect($allFromPadalinys->first()->id)->toBe($pagrindinisInstitution->id);
+    });
+    
+    test('regular sibling flag does not enable cross-tenant siblings', function () {
+        // Create pagrindinis tenant
+        $pagrindinissTenant = Tenant::factory()->create([
+            'type' => 'pagrindinis',
+            'shortname' => 'Pagrindinis Tenant ' . uniqid(),
+        ]);
+        
+        // Create padalinys tenant
+        $padalinysTenant = Tenant::factory()->create([
+            'type' => 'padalinys',
+            'shortname' => 'Padalinys Tenant ' . uniqid(),
+        ]);
+        
+        // Create institutions in each tenant
+        $pagrindinisInstitution = Institution::factory()->for($pagrindinissTenant)->create([
+            'name' => ['lt' => 'Centrinė AEK', 'en' => 'Central AEK'],
+        ]);
+        
+        $padalinysInstitution = Institution::factory()->for($padalinysTenant)->create([
+            'name' => ['lt' => 'Padalinio AEK', 'en' => 'Faculty AEK'],
+        ]);
+        
+        // Create a type with REGULAR sibling relationships enabled (not cross-tenant)
+        $type = \App\Models\Type::factory()->create([
+            'model_type' => Institution::class,
+            'title' => ['lt' => 'AEK Type', 'en' => 'AEK Type'],
+            'extra_attributes' => ['enable_sibling_relationships' => true],
+        ]);
+        
+        // Attach both institutions to the same type
+        $pagrindinisInstitution->types()->attach($type->id);
+        $padalinysInstitution->types()->attach($type->id);
+        
+        RelationshipService::clearRelatedInstitutionsCache($pagrindinisInstitution->id);
+        
+        $result = RelationshipService::getRelatedInstitutionsFlat($pagrindinisInstitution);
+        
+        // Should be empty - regular sibling flag only works within same tenant
+        expect($result)->toHaveCount(0);
+    });
+    
+    test('pagrindinis can see multiple padalinys siblings', function () {
+        // Create pagrindinis tenant
+        $pagrindinissTenant = Tenant::factory()->create([
+            'type' => 'pagrindinis',
+            'shortname' => 'Pagrindinis Tenant ' . uniqid(),
+        ]);
+        
+        // Create multiple padalinys tenants
+        $padalinysTenant1 = Tenant::factory()->create([
+            'type' => 'padalinys',
+            'shortname' => 'Padalinys1 ' . uniqid(),
+        ]);
+        $padalinysTenant2 = Tenant::factory()->create([
+            'type' => 'padalinys',
+            'shortname' => 'Padalinys2 ' . uniqid(),
+        ]);
+        
+        // Create institutions in each tenant
+        $pagrindinisInstitution = Institution::factory()->for($pagrindinissTenant)->create([
+            'name' => ['lt' => 'Centrinė AEK', 'en' => 'Central AEK'],
+        ]);
+        
+        $padalinysInstitution1 = Institution::factory()->for($padalinysTenant1)->create([
+            'name' => ['lt' => 'Padalinio 1 AEK', 'en' => 'Faculty 1 AEK'],
+        ]);
+        
+        $padalinysInstitution2 = Institution::factory()->for($padalinysTenant2)->create([
+            'name' => ['lt' => 'Padalinio 2 AEK', 'en' => 'Faculty 2 AEK'],
+        ]);
+        
+        // Create a type with cross-tenant sibling relationships enabled
+        $type = \App\Models\Type::factory()->create([
+            'model_type' => Institution::class,
+            'title' => ['lt' => 'AEK Type', 'en' => 'AEK Type'],
+            'extra_attributes' => ['enable_cross_tenant_sibling_relationships' => true],
+        ]);
+        
+        // Attach all institutions to the same type
+        $pagrindinisInstitution->types()->attach($type->id);
+        $padalinysInstitution1->types()->attach($type->id);
+        $padalinysInstitution2->types()->attach($type->id);
+        
+        RelationshipService::clearRelatedInstitutionsCache($pagrindinisInstitution->id);
+        
+        $result = RelationshipService::getRelatedInstitutionsFlat($pagrindinisInstitution);
+        
+        expect($result)->toHaveCount(2);
+        
+        $institutionIds = $result->pluck('institution.id')->toArray();
+        expect($institutionIds)->toContain($padalinysInstitution1->id);
+        expect($institutionIds)->toContain($padalinysInstitution2->id);
+        
+        // All should be authorized
+        expect($result->every(fn ($item) => $item['authorized'] === true))->toBeTrue();
+        expect($result->every(fn ($item) => $item['type'] === 'cross-tenant-sibling'))->toBeTrue();
+    });
+});
+
 describe('bidirectional relationships', function () {
     test('unidirectional incoming relationship has authorized = false', function () {
         // Create a one-way relationship: related -> source (source is the target)

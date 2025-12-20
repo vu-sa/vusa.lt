@@ -64,4 +64,7 @@ return [
     'bidirectional_no' => 'Vienkryptis',
     'access_bidirectional_note' => '↔ Abi pusės galės matyti viena kitos duomenis.',
     'access_unidirectional_note' => '→ Tik šaltinis galės matyti tikslo duomenis. Tikslas matys ryšį, bet ne duomenis.',
+    
+    // Validation
+    'same_type_error' => 'Šaltinis ir tikslas negali būti tas pats tipas. To paties tipo institucijų ryšiai (sibling) konfigūruojami tipo redagavimo formoje, naudojant "Rodyti susijusias institucijas pagal tipą" nustatymą.',
 ];

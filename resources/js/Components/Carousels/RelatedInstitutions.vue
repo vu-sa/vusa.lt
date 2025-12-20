@@ -21,13 +21,13 @@
           class="h-3.5 w-3.5 text-amber-500"
           :title="$t('relationships.not_authorized')"
         />
-        <!-- Type indicator: direct connection, through type, or within-type -->
+        <!-- Type indicator: direct connection, through type, within-type, or cross-tenant -->
         <span 
-          v-if="relatedInst.type === 'type-based' || relatedInst.type === 'within-type'" 
+          v-if="relatedInst.type === 'type-based' || relatedInst.type === 'within-type' || relatedInst.type === 'cross-tenant-sibling'" 
           class="text-[10px] text-zinc-400 px-1 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800"
-          :title="relatedInst.type === 'within-type' ? $t('Ryšys tarp to paties tipo institucijų') : $t('Ryšys per institucijos tipą')"
+          :title="getTypeTitle(relatedInst.type)"
         >
-          {{ relatedInst.type === 'within-type' ? $t('Tipas ↔') : $t('Tipas') }}
+          {{ getTypeLabel(relatedInst.type) }}
         </span>
       </template>
     </InstitutionCard>
@@ -53,7 +53,7 @@ import IFluentLockClosed24Regular from '~icons/fluent/lock-closed-24-regular';
 
 interface RelatedInstitution extends App.Entities.Institution {
   direction: 'outgoing' | 'incoming' | 'sibling';
-  type: 'direct' | 'type-based' | 'within-type';
+  type: 'direct' | 'type-based' | 'within-type' | 'cross-tenant-sibling';
   authorized?: boolean;
 }
 
@@ -87,6 +87,24 @@ const getDirectionTitle = (direction: RelatedInstitution['direction']) => {
     case 'outgoing': return $t('relationships.direction_outgoing');
     case 'incoming': return $t('relationships.direction_incoming');
     case 'sibling': return $t('relationships.direction_sibling');
+    default: return '';
+  }
+};
+
+const getTypeLabel = (type: RelatedInstitution['type']) => {
+  switch (type) {
+    case 'within-type': return $t('Tipas ↔');
+    case 'cross-tenant-sibling': return $t('Centrinis');
+    case 'type-based': return $t('Tipas');
+    default: return '';
+  }
+};
+
+const getTypeTitle = (type: RelatedInstitution['type']) => {
+  switch (type) {
+    case 'within-type': return $t('Ryšys tarp to paties tipo institucijų');
+    case 'cross-tenant-sibling': return $t('Ryšys su centriniu padaliniu');
+    case 'type-based': return $t('Ryšys per institucijos tipą');
     default: return '';
   }
 };

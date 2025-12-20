@@ -10,17 +10,23 @@ class TypeObserver
     /**
      * Handle the Type "updated" event.
      * Clears relationship cache for all institutions with this type
-     * when enable_sibling_relationships setting changes.
+     * when sibling relationship settings change.
      */
     public function updated(Type $type): void
     {
-        // Check if extra_attributes changed (specifically enable_sibling_relationships)
+        // Check if extra_attributes changed (sibling relationship settings)
         if ($type->wasChanged('extra_attributes')) {
-            $oldValue = $type->getOriginal('extra_attributes')['enable_sibling_relationships'] ?? false;
-            $newValue = $type->extra_attributes['enable_sibling_relationships'] ?? false;
+            $oldAttributes = $type->getOriginal('extra_attributes') ?? [];
+            $newAttributes = $type->extra_attributes ?? [];
 
-            // Only clear cache if the sibling relationships setting changed
-            if ($oldValue !== $newValue) {
+            $oldSiblings = $oldAttributes['enable_sibling_relationships'] ?? false;
+            $newSiblings = $newAttributes['enable_sibling_relationships'] ?? false;
+            
+            $oldCrossTenantSiblings = $oldAttributes['enable_cross_tenant_sibling_relationships'] ?? false;
+            $newCrossTenantSiblings = $newAttributes['enable_cross_tenant_sibling_relationships'] ?? false;
+
+            // Clear cache if any sibling relationship setting changed
+            if ($oldSiblings !== $newSiblings || $oldCrossTenantSiblings !== $newCrossTenantSiblings) {
                 $this->clearCacheForTypeInstitutions($type);
             }
         }

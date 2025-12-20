@@ -110,6 +110,15 @@
         </template>
         <NSwitch v-model:value="enableSiblingRelationships" />
       </NFormItem>
+      <NFormItem>
+        <template #label>
+          <span class="inline-flex items-center gap-1">
+            Rodyti padalinių institucijas iš pagrindinio
+            <InfoPopover>Įjungus, pagrindinio padalinio institucija su šiuo tipu matys visas kitų padalinių institucijas su tuo pačiu tipu. Vienkryptis: padalinių institucijos nematys pagrindinės.</InfoPopover>
+          </span>
+        </template>
+        <NSwitch v-model:value="enableCrossTenantSiblingRelationships" />
+      </NFormItem>
     </FormElement>
     <FormElement no-divider>
       <template #title>
@@ -195,6 +204,20 @@ const enableSiblingRelationships = computed({
     form.extra_attributes = {
       ...form.extra_attributes,
       enable_sibling_relationships: value,
+    };
+  },
+});
+
+// Computed property to handle extra_attributes.enable_cross_tenant_sibling_relationships
+const enableCrossTenantSiblingRelationships = computed({
+  get: () => form.extra_attributes?.enable_cross_tenant_sibling_relationships ?? false,
+  set: (value) => {
+    if (!form.extra_attributes) {
+      form.extra_attributes = {};
+    }
+    form.extra_attributes = {
+      ...form.extra_attributes,
+      enable_cross_tenant_sibling_relationships: value,
     };
   },
 });

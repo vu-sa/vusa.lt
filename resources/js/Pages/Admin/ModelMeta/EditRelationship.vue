@@ -208,6 +208,14 @@
             </Popover>
           </div>
 
+          <!-- Same type error message -->
+          <div v-if="sameTypeError" class="p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+            <p class="text-sm text-amber-700 dark:text-amber-400 flex items-start gap-2">
+              <InfoIcon class="h-4 w-4 mt-0.5 shrink-0" />
+              <span>{{ sameTypeError }}</span>
+            </p>
+          </div>
+
           <!-- Edit mode: Show source and target as read-only -->
           <div v-if="isEditing" class="space-y-4">
             <div class="flex items-center gap-4 p-4 rounded-lg bg-muted/50">
@@ -418,7 +426,26 @@ const options = computed(() => {
 
 const canSubmit = computed(() => {
   if (isEditing.value) return true;
-  return relationForm.model_type && relationForm.model_id && relationForm.related_model_id;
+  if (!relationForm.model_type || !relationForm.model_id || !relationForm.related_model_id) return false;
+  
+  // For type-based relationships, source and target must be different
+  // Same-type sibling relationships should be configured in the Type form instead
+  if (isTypeBasedRelationship.value && relationForm.model_id === relationForm.related_model_id) {
+    return false;
+  }
+  
+  return true;
+});
+
+// Validation message for same-type selection
+const sameTypeError = computed(() => {
+  if (isTypeBasedRelationship.value && 
+      relationForm.model_id && 
+      relationForm.related_model_id && 
+      relationForm.model_id === relationForm.related_model_id) {
+    return $t('relationships.same_type_error');
+  }
+  return null;
 });
 
 const modelTypeOptions = modelTypes.relationshipable.map((relationshipable) => ({

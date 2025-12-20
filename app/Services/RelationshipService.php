@@ -114,6 +114,11 @@ class RelationshipService
             $institution->load('tenant');
         }
 
+        // Ensure types are loaded for sibling relationship checks
+        if (! $institution->relationLoaded('types')) {
+            $institution->load('types');
+        }
+
         // Direct outgoing relationships
         $outgoingDirect = $institution->load('outgoingRelationships.pivot.related_model')
             ->outgoingRelationships;
@@ -235,6 +240,61 @@ class RelationshipService
                     'source_institution_id' => $sourceId,
                     'authorized' => true,
                 ]);
+            }
+        }
+
+        // Cross-tenant sibling relationships (pagrindinis <-> padalinys)
+        // Only for types that have enable_cross_tenant_sibling_relationships flag set in extra_attributes
+        // Authorization is one-directional:
+        // - pagrindinis institutions see padalinys siblings with authorized: true
+        // - padalinys institutions see pagrindinis sibling with authorized: false (visible but no data access)
+        $institutionTenant = $institution->tenant;
+        if (! $institutionTenant || $institutionTenant->type === null || $institutionTenant->type === '') {
+            $institutionTenant = Tenant::find($institution->tenant_id);
+        }
+
+        foreach ($institution->types as $type) {
+            if (! $type->hasCrossTenantSiblingRelationshipsEnabled()) {
+                continue;
+            }
+
+            if ($institutionTenant?->type === 'pagrindinis') {
+                // Pagrindinis institution sees padalinys siblings with full authorization
+                $crossTenantSiblings = Institution::query()
+                    ->where('id', '!=', $sourceId)
+                    ->whereHas('tenant', fn ($q) => $q->where('type', 'padalinys'))
+                    ->whereHas('types', fn ($q) => $q->where('types.id', $type->id))
+                    ->with('tenant')
+                    ->get();
+
+                foreach ($crossTenantSiblings as $siblingInstitution) {
+                    $result->push([
+                        'institution' => $siblingInstitution,
+                        'direction' => 'sibling',
+                        'type' => 'cross-tenant-sibling',
+                        'source_institution_id' => $sourceId,
+                        'authorized' => true,
+                    ]);
+                }
+            } elseif ($institutionTenant?->type === 'padalinys') {
+                // Padalinys institution sees pagrindinis sibling but without authorization
+                // (can see meetings exist, but no agenda items access)
+                $crossTenantSiblings = Institution::query()
+                    ->where('id', '!=', $sourceId)
+                    ->whereHas('tenant', fn ($q) => $q->where('type', 'pagrindinis'))
+                    ->whereHas('types', fn ($q) => $q->where('types.id', $type->id))
+                    ->with('tenant')
+                    ->get();
+
+                foreach ($crossTenantSiblings as $siblingInstitution) {
+                    $result->push([
+                        'institution' => $siblingInstitution,
+                        'direction' => 'sibling',
+                        'type' => 'cross-tenant-sibling',
+                        'source_institution_id' => $sourceId,
+                        'authorized' => false,
+                    ]);
+                }
             }
         }
 
