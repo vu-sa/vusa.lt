@@ -7,6 +7,13 @@
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Upcoming meetings card -->
+      <UpcomingMeetingsCard 
+        :upcoming-meetings 
+        :institutions-insights 
+        @show-all-meetings="$emit('show-all-meetings')"
+        @create-meeting="$emit('create-meeting')" />
+
       <!-- Institution check-in card -->
       <InstitutionCheckInCard 
         :institutions 
@@ -19,12 +26,6 @@
         @schedule-meeting="$emit('schedule-meeting', $event)"
         @show-institution-details="$emit('show-institution-details', $event)" />
 
-      <!-- Upcoming meetings card -->
-      <UpcomingMeetingsCard 
-        :upcoming-meetings 
-        :institutions-insights 
-        @show-all-meetings="$emit('show-all-meetings')"
-        @create-meeting="$emit('create-meeting')" />
     </div>
   </section>
 </template>

@@ -12,7 +12,7 @@
       <template v-for="(item, index) in visibleItems" :key="index">
         <BreadcrumbItem>
           <template v-if="item.href && index < visibleItems.length - 1">
-            <BreadcrumbLink :href="item.href">
+            <BreadcrumbLink :href="item.href" :prefetch="item.prefetch ?? true">
               <div class="flex items-center gap-1.5">
                 <component :is="item.icon" v-if="item.icon" class="h-3.5 w-3.5 flex-shrink-0" />
                 <span class="truncate max-w-32 sm:max-w-48">{{ $t(item.label) }}</span>

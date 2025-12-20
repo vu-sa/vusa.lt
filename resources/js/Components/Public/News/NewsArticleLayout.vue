@@ -13,7 +13,8 @@
             <img 
               :src="(article.image as string) || '/images/icons/naujienu_foto.png'" 
               :alt="article.title"
-              class="aspect-[4/3] w-full object-cover"
+              class="aspect-[4/3] w-full object-cover rounded-xl"
+              :style="{ viewTransitionName: `news-image-${article.id}` }"
             >
           </div>
           <div v-if="article.image_author" class="mt-2 text-right text-xs text-muted-foreground">
@@ -92,7 +93,8 @@
           <img
             :src="(article.image as string) || '/images/icons/naujienu_foto.png'"
             :alt="article.title"
-            class="h-full w-full object-cover"
+            class="h-full w-full object-cover rounded-xl"
+            :style="{ viewTransitionName: `news-image-${article.id}` }"
           />
           <!-- Gradient overlay - stronger at bottom below title -->
           <div class="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
@@ -179,7 +181,8 @@
         <img 
           :src="(article.image as string) || '/images/icons/naujienu_foto.png'" 
           :alt="article.title"
-          class="max-h-[500px] w-full object-cover object-center"
+          class="max-h-[500px] w-full object-cover object-center rounded-xl"
+          :style="{ viewTransitionName: `news-image-${article.id}` }"
         >
         <div v-if="article.image_author" class="absolute bottom-3 right-3 rounded-full bg-black/40 px-3 py-1 text-xs text-white backdrop-blur-sm">
           {{ article.image_author }}
@@ -286,7 +289,8 @@
         <img 
           :src="(article.image as string) || '/images/icons/naujienu_foto.png'" 
           :alt="article.title"
-          class="aspect-video w-full object-cover object-center"
+          class="aspect-video w-full object-cover object-center rounded-xl"
+          :style="{ viewTransitionName: `news-image-${article.id}` }"
         >
         <div v-if="article.image_author" class="absolute bottom-3 right-3 rounded-full bg-black/40 px-3 py-1 text-xs text-white backdrop-blur-sm">
           {{ article.image_author }}

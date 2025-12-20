@@ -394,12 +394,6 @@ class PublicPageController extends PublicController
         $this->getTenantLinks();
         $this->shareOtherLangURL('calendar.list');
 
-        // Disable page transition on filter changes
-        if (request()->has(['search']) || request()->has(['category']) ||
-            request()->has(['tenant']) || request()->has(['tab']) || request()->has(['page'])) {
-            Inertia::share('disablePageTransition', true);
-        }
-
         $now = Carbon::now();
         $perPage = 20; // Number of events per page
         $tab = request()->get('tab', 'upcoming'); // Default tab is upcoming

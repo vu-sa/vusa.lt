@@ -5,28 +5,20 @@
     <!-- Hero section with ViSAK branding -->
     <PageHero :subtitle="$t('Susitikimų, tikslų ir atstovavimo veiklų stebėjimas')">
       <h1 class="text-3xl font-bold tracking-tight sm:text-4xl text-foreground flex items-center gap-3">
-        <span 
+        <span
           class="font-black tracking-tight bg-gradient-to-r from-zinc-900 via-zinc-800 to-vusa-red dark:from-zinc-100 dark:via-zinc-200 dark:to-vusa-red bg-clip-text text-transparent transition-all duration-1000"
-          :class="{ 'drop-shadow-[0_0_8px_rgba(189,24,48,0.3)]': showGlow }"
-        >
+          :class="{ 'drop-shadow-[0_0_8px_rgba(189,24,48,0.3)]': showGlow }">
           ViSAK
         </span>
-        <button 
-          @click="showVisakInfo = true"
-          class="text-muted-foreground hover:text-foreground transition-colors"
-          :aria-label="$t('Kas yra ViSAK?')"
-        >
+        <button class="text-muted-foreground hover:text-foreground transition-colors" :aria-label="$t('Kas yra ViSAK?')"
+          @click="showVisakInfo = true">
           <Info class="h-5 w-5" />
         </button>
       </h1>
     </PageHero>
 
     <!-- ViSAK Info Modal -->
-    <VisakInfoModal 
-      :open="showVisakInfo" 
-      @close="showVisakInfo = false"
-      @start-tour="startContextTour"
-    />
+    <VisakInfoModal :open="showVisakInfo" @close="showVisakInfo = false" @start-tour="startContextTour" />
 
     <Tabs v-model="activeTab" class="mt-6 mb-32">
       <TabsList class="gap-2">
@@ -57,48 +49,53 @@
           @create-meeting="actions.showMeetingModal.value = true" @schedule-meeting="actions.handleScheduleMeeting"
           @show-institution-details="actions.handleShowInstitutionDetails" @refresh="actions.handleRefresh" />
 
-        <!-- User timeline section -->
-        <UserTimelineSection :institutions="atstovavimosData.institutions.value"
+        <!-- User timeline section - deferred to prevent view transition lag -->
+        <UserTimelineSection v-if="deferredContentReady" :institutions="atstovavimosData.institutions.value"
           :meetings="atstovavimosData.allUserMeetings.value" :gaps="atstovavimosData.userGaps.value"
           :institution-names="userInstitutionNames" :tenant-names :institution-tenant="userInstitutionTenant"
           :institution-has-public-meetings="userInstitutionHasPublicMeetings"
           :institution-periodicity="userInstitutionPeriodicity" :duty-members="userDutyMembers"
-          :inactive-periods="userInactivePeriods"
-          :related-institutions
-          :may-have-related-institutions="props.mayHaveRelatedInstitutions"
-          @create-meeting="actions.onGapCreateMeeting" @fullscreen="actions.onGanttFullscreen('user')" />
+          :inactive-periods="userInactivePeriods" :related-institutions
+          :may-have-related-institutions="props.mayHaveRelatedInstitutions" @create-meeting="actions.onGapCreateMeeting"
+          @fullscreen="actions.onGanttFullscreen('user')" />
+        <!-- Timeline loading skeleton -->
+        <div v-else class="space-y-4">
+          <Skeleton class="h-8 w-48" />
+          <Skeleton class="h-64 w-full rounded-lg" />
+        </div>
       </TabsContent>
 
       <TabsContent value="tenant" class="mt-6">
-        <TenantTimelineSection :available-tenants="props.availableTenants"
+        <TenantTimelineSection v-if="deferredContentReady" :available-tenants="props.availableTenants"
           :tenant-institutions="ganttData.formattedTenantInstitutions.value" :meetings="ganttData.tenantMeetings.value"
-          :gaps="ganttData.tenantGaps.value"
-          :institution-names="tenantInstitutionNames" :tenant-names :institution-tenant="tenantInstitutionTenant"
+          :gaps="ganttData.tenantGaps.value" :institution-names="tenantInstitutionNames" :tenant-names
+          :institution-tenant="tenantInstitutionTenant"
           :institution-has-public-meetings="tenantInstitutionHasPublicMeetings"
           :institution-periodicity="tenantInstitutionPeriodicity" :duty-members="ganttData.tenantDutyMembers.value"
-          :inactive-periods="ganttData.tenantInactivePeriods.value"
-          :is-hidden="actions.showFullscreenGantt.value"
+          :inactive-periods="ganttData.tenantInactivePeriods.value" :is-hidden="actions.showFullscreenGantt.value"
           @create-meeting="actions.onGapCreateMeeting" @fullscreen="actions.onGanttFullscreen('tenant')" />
+        <!-- Timeline loading skeleton -->
+        <div v-else class="space-y-4">
+          <Skeleton class="h-8 w-48" />
+          <Skeleton class="h-64 w-full rounded-lg" />
+        </div>
       </TabsContent>
     </Tabs>
 
     <!-- Modals - FullscreenGanttModal first so modals opened from within it appear on top -->
     <FullscreenGanttModal :is-open="actions.showFullscreenGantt.value" :gantt-type="actions.fullscreenGanttType.value"
-      :available-tenants="props.availableTenants"
-      :user-institutions="formatInstitutionsForUser" :user-meetings="atstovavimosData.allUserMeetings.value"
-      :user-gaps="atstovavimosData.userGaps.value"
+      :available-tenants="props.availableTenants" :user-institutions="formatInstitutionsForUser"
+      :user-meetings="atstovavimosData.allUserMeetings.value" :user-gaps="atstovavimosData.userGaps.value"
       :user-institution-names :user-institution-tenant :user-institution-has-public-meetings
       :user-institution-periodicity :user-duty-members :user-inactive-periods
-      :user-related-institutions="formatRelatedInstitutions"
-      :user-related-institutions-full="relatedInstitutions"
+      :user-related-institutions="formatRelatedInstitutions" :user-related-institutions-full="relatedInstitutions"
       :may-have-related-institutions="props.mayHaveRelatedInstitutions"
       :tenant-institutions="ganttData.formattedTenantInstitutions.value"
       :tenant-meetings="ganttData.tenantMeetings.value" :tenant-gaps="ganttData.tenantGaps.value"
       :tenant-institution-names :tenant-institution-tenant :tenant-institution-has-public-meetings
       :tenant-institution-periodicity :tenant-duty-members="ganttData.tenantDutyMembers.value"
       :tenant-inactive-periods="ganttData.tenantInactivePeriods.value" :tenant-names
-      @update:is-open="actions.showFullscreenGantt.value = $event"
-      @create-meeting="actions.onGapCreateMeeting" />
+      @update:is-open="actions.showFullscreenGantt.value = $event" @create-meeting="actions.onGapCreateMeeting" />
 
     <!-- These modals can be opened from FullscreenGanttModal, so they must come after it in DOM order -->
     <NewMeetingModal :show-modal="actions.showMeetingModal.value" :institution="actions.selectedInstitution.value"
@@ -123,6 +120,20 @@ import { Head as InertiaHead, router } from "@inertiajs/vue3";
 import { computed, ref, watch, onMounted } from 'vue';
 import { trans as $t } from "laravel-vue-i18n";
 
+// Deferred rendering for heavy timeline sections
+// This prevents lag during view transitions by rendering timelines after transition completes
+const deferredContentReady = ref(false);
+
+onMounted(() => {
+  // Wait for view transition to complete before rendering heavy content
+  // Using requestAnimationFrame + setTimeout ensures we're past the transition
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      deferredContentReady.value = true;
+    }, 100);
+  });
+});
+
 // Layout and base components
 
 // UI components
@@ -136,7 +147,7 @@ import TenantTimelineSection from './Components/TenantTimelineSection.vue';
 import InstitutionDataTable from './Components/InstitutionDataTable.vue';
 import MeetingDataTable from './Components/MeetingDataTable.vue';
 import FullscreenGanttModal from './Components/FullscreenGanttModal.vue';
-import VisakInfoModal from '@/Components/Modals/VisakInfoModal.vue';
+
 // Composables
 import { useAtstovavimosData } from './Composables/useAtstovavimasData';
 import { provideTimelineFilters } from './Composables/useTimelineFilters';
@@ -145,6 +156,7 @@ import { useGanttChartData } from './Composables/useGanttChartData';
 import { provideGanttSettings } from './Composables/useGanttSettings';
 import type { AtstovavimosUser, AtstovavimosTenant, AtstovavimosInstitution } from './types';
 
+import VisakInfoModal from '@/Components/Modals/VisakInfoModal.vue';
 import { useProductTour } from '@/Composables/useProductTour';
 import { provideTour } from '@/Composables/useTourProvider';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
@@ -158,6 +170,7 @@ import TabsContent from '@/Components/ui/tabs/TabsContent.vue'
 import TabsTrigger from '@/Components/ui/tabs/TabsTrigger.vue'
 import TabsList from '@/Components/ui/tabs/TabsList.vue'
 import Tabs from '@/Components/ui/tabs/Tabs.vue'
+import { Skeleton } from '@/Components/ui/skeleton'
 import AddCheckInDialog from "@/Components/CheckIns/AddCheckInDialog.vue";
 import NewMeetingModal from '@/Components/Modals/NewMeetingModal.vue';
 import PageHero from '@/Components/Hero/PageHero.vue';

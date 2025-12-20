@@ -37,18 +37,19 @@
           <CarouselContent>
             <CarouselItem v-for="item in news" :key="item.id">
               <div class="flex flex-col">
-                <SmartLink :href="getNewsRoute(item)">
-                  <div class="overflow-hidden rounded-lg aspect-video">
+                <SmartLink :href="getNewsRoute(item)" prefetch>
+                  <div class="overflow-hidden rounded-xl aspect-video group/img">
                     <img :src="item.image" :alt="item.title"
-                      class="w-full h-full object-cover hover:scale-105 transition-transform duration-300" width="800"
-                      height="450">
+                      class="w-full h-full object-cover rounded-xl transition-all duration-300 group-hover/img:brightness-105 group-hover/img:contrast-[1.02]" width="800"
+                      height="450"
+                      :style="currentSlide === news.indexOf(item) ? { viewTransitionName: `news-image-${item.id}` } : {}">
                   </div>
                 </SmartLink>
                 <p v-if="item.publish_time" class="text-zinc-500 dark:text-zinc-400 mt-3 text-sm sm:text-base">
                   {{ formatStaticTime(new Date(item.publish_time), { year: "numeric", month: "long", day: "numeric" },
                     $page.props.app.locale) }}
                 </p>
-                <SmartLink :href="getNewsRoute(item)">
+                <SmartLink :href="getNewsRoute(item)" prefetch>
                   <h2
                     class="font-heading mt-2 font-bold text-lg sm:text-xl lg:text-2xl leading-tight text-zinc-800 line-clamp-2 dark:text-zinc-50 hover:text-vusa-red transition-colors">
                     {{ item.title }}
@@ -126,7 +127,7 @@
           subdomain: $page.props.tenant?.subdomain ?? 'www',
           lang: $page.props.app.locale === 'lt' ? 'lt' : 'en',
           newsString: $page.props.app.locale === 'lt' ? 'naujienos' : 'news',
-        })" class="inline-flex items-center gap-1.5 font-bold mt-2 text-zinc-900 dark:text-zinc-100 hover:text-vusa-red transition-colors">
+        })" prefetch class="inline-flex items-center gap-1.5 font-bold mt-2 text-zinc-900 dark:text-zinc-100 hover:text-vusa-red transition-colors">
           <span>{{ $t("Žiūrėti visas") }}</span>
           <IFluentArrowRight16Regular />
         </SmartLink>

@@ -115,12 +115,7 @@
           
           <!-- <Suspense> -->
           <div>
-            <FadeTransition v-if="!$page.props.disablePageTransition" appear>
-              <div :key="$page.url" :class="contentWrapperClass">
-                <slot />
-              </div>
-            </FadeTransition>
-            <div v-else :class="contentWrapperClass">
+            <div :class="contentWrapperClass">
               <slot />
             </div>
             <div v-if="

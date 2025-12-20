@@ -663,3 +663,47 @@ html.dark-mode-init {
     @apply bg-background text-foreground;
   }
 }
+
+/* View Transitions API - Smoother animations */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 200ms;
+  animation-timing-function: ease-out;
+}
+
+/* News image transitions - smoother morph with no flash */
+[style*="view-transition-name: news-image"] {
+  /* Reset any transforms before transition starts */
+  transform: scale(1) !important;
+}
+
+/* During the transition, ensure smooth animation */
+::view-transition-group(*) {
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  animation-duration: 250ms;
+}
+
+::view-transition-old(*),
+::view-transition-new(*) {
+  /* Prevent flash by matching animation timing */
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  mix-blend-mode: normal;
+}
+
+/* Respect user's reduced motion preference - disable all view transitions */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+    animation-duration: 0s !important;
+  }
+}
+
+/* Also respect in-app reduce motion setting via class */
+.reduce-motion ::view-transition-group(*),
+.reduce-motion ::view-transition-old(*),
+.reduce-motion ::view-transition-new(*) {
+  animation: none !important;
+  animation-duration: 0s !important;
+}

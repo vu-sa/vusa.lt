@@ -11,7 +11,7 @@
 
       <div class="flex gap-4">
         <Button as-child>
-          <Link :href="route('calendar.list', { lang: $page.props.app.locale })">
+          <Link :href="route('calendar.list', { lang: $page.props.app.locale })" prefetch>
             <IFluentCalendarLtr20Regular class="w-4 h-4 mr-2" />
             {{ $t("Visi renginiai") }}
           </Link>

@@ -1,5 +1,6 @@
 <template>
   <component :is="useInertiaRouter ? Link : 'a'" v-if="href" :href :prefetch="useInertiaRouter ? prefetch : false"
+    :cache-for="useInertiaRouter ? cacheFor : undefined"
     :target="target ?? useInertiaRouter ? undefined : '_blank'">
     <slot />
   </component>
@@ -15,7 +16,8 @@ import { computed } from "vue";
 const props = defineProps<{
   href?: string | null;
   target?: string;
-  prefetch?: boolean
+  prefetch?: boolean;
+  cacheFor?: string | number;
 }>();
 
 const getSubdomainFromHrefOrPath = (href: string) => {

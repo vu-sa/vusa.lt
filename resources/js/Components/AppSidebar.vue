@@ -262,7 +262,7 @@ const handleLogout = () => {
       <div class="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent dark:from-primary/3 pointer-events-none" />
       <SidebarMenu class="relative">
         <SidebarMenuItem>
-          <Link :href="route('dashboard')">
+          <Link :href="route('dashboard')" prefetch>
             <SidebarMenuButton size="lg"
               class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground hover:bg-sidebar-accent/50 transition-colors">
               <div
@@ -353,9 +353,11 @@ const handleLogout = () => {
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
-                <DropdownMenuItem @click="router.visit(route('profile'))">
-                  <UserIcon class="mr-2 h-4 w-4" />
-                  <span>{{ $t('Nustatymai') }}</span>
+                <DropdownMenuItem as-child>
+                  <Link :href="route('profile')" prefetch class="flex items-center w-full cursor-pointer">
+                    <UserIcon class="mr-2 h-4 w-4" />
+                    <span>{{ $t('Nustatymai') }}</span>
+                  </Link>
                 </DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />

@@ -29,9 +29,20 @@ const metaTitle =
 const pageTitle = metaTitle.replace(" - VU SA", "");
 
 
+// Check if user has disabled view transitions in settings
+const isReduceMotionEnabled = () => {
+  if (typeof window === 'undefined') return false;
+  return localStorage.getItem('vusa-reduce-motion') === 'true';
+};
+
 createInertiaApp({
   title: (title) => {
     return title ? `${title} - VU SA` : pageTitle;
+  },
+  defaults: {
+    visitOptions: (href, options) => {
+      return { viewTransition: !isReduceMotionEnabled() };
+    },
   },
   resolve: (name) => {
     const page = resolvePageComponent(

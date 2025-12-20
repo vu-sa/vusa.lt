@@ -235,7 +235,7 @@ const applyFilters = () => {
     tab: filters.value.tab,
     page: 1 // Reset to first page when applying new filters
   }), {
-    only: ['events', 'activeTab', 'disablePageTransition', 'allCategories', 'allTenants'],
+    only: ['events', 'activeTab', 'allCategories', 'allTenants'],
     preserveState: true,
     preserveScroll: true,
     onSuccess: () => {

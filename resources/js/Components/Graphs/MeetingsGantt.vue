@@ -411,7 +411,7 @@ const visitInstitution = (id: string | number, event?: MouseEvent | KeyboardEven
   if (event && (event.ctrlKey || event.metaKey || (event instanceof MouseEvent && event.button === 1))) {
     window.open(url, '_blank')
   } else {
-    router.visit(url, { preserveScroll: true })
+    router.visit(url)
   }
 }
 

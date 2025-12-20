@@ -113,6 +113,29 @@
             </div>
           </FormElement>
 
+          <!-- Accessibility Settings Section -->
+          <FormElement>
+            <template #title>
+              {{ $t("Prieinamumas") }}
+            </template>
+            <template #description>
+              {{ $t("Nustatymai, padedantys pritaikyti sistemą pagal jūsų poreikius.") }}
+            </template>
+            <NFormItem :label="$t('Išjungti puslapių perėjimo animacijas')">
+              <NSwitch v-model:value="reduceMotion" @update:value="handleReduceMotionChange">
+                <template #checked>
+                  <span>{{ $t('Animacijos išjungtos') }}</span>
+                </template>
+                <template #unchecked>
+                  <span>{{ $t('Animacijos įjungtos') }}</span>
+                </template>
+              </NSwitch>
+            </NFormItem>
+            <p class="text-sm text-muted-foreground">
+              {{ $t('Šį nustatymą taip pat galima valdyti operacinės sistemos prieinamumo nustatymuose ("Reduce motion").') }}
+            </p>
+          </FormElement>
+
           <h2>{{ $t("Tavo rolės") }}</h2>
           <ul class="list-inside">
             <li v-for="(role, index) in user.roles" :key="role.id">
@@ -168,6 +191,29 @@ const loading = ref(false);
 const passwordLoading = ref(false);
 const tutorialResetLoading = ref(false);
 const tutorialResetSuccess = ref(false);
+
+// View transitions / reduced motion preference
+const REDUCE_MOTION_KEY = 'vusa-reduce-motion';
+const reduceMotion = ref(
+  typeof window !== 'undefined' 
+    ? localStorage.getItem(REDUCE_MOTION_KEY) === 'true'
+    : false
+);
+
+const handleReduceMotionChange = (value: boolean) => {
+  localStorage.setItem(REDUCE_MOTION_KEY, String(value));
+  // Also toggle a class on documentElement for CSS-based disabling
+  if (value) {
+    document.documentElement.classList.add('reduce-motion');
+  } else {
+    document.documentElement.classList.remove('reduce-motion');
+  }
+};
+
+// Initialize class on mount
+if (typeof window !== 'undefined' && reduceMotion.value) {
+  document.documentElement.classList.add('reduce-motion');
+}
 
 const form = useForm({
   name: props.user.name,

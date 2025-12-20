@@ -122,7 +122,7 @@ export function renderMeetings(ctx: MeetingRenderContext): void {
       if (event.ctrlKey || event.metaKey || event.button === 1) {
         window.open(url, '_blank')
       } else {
-        router.visit(url, { preserveScroll: true })
+        router.visit(url, { preserveScroll: false })
       }
     })
     .on('auxclick', (event: MouseEvent, d: any) => {
@@ -150,7 +150,7 @@ export function renderMeetings(ctx: MeetingRenderContext): void {
         
         const routeFn = (window as any)?.route
         const url = routeFn ? routeFn('meetings.show', d.id) : `/admin/meetings/${d.id}`
-        router.visit(url, { preserveScroll: true })
+        router.visit(url, { preserveScroll: false })
       }
     })
 

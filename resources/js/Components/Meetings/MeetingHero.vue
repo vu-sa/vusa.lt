@@ -2,7 +2,9 @@
   <div class="space-y-6">
     <!-- Hero Card -->
     <Card
-      class="relative overflow-hidden border-0 shadow-sm bg-gradient-to-br from-white to-zinc-50 dark:from-zinc-900 dark:to-zinc-800">
+      class="relative overflow-hidden border-0 shadow-sm bg-gradient-to-br from-white to-zinc-50 dark:from-zinc-900 dark:to-zinc-800"
+      :style="{ viewTransitionName: `meeting-card-${meeting.id}` }"
+    >
       <CardContent class="p-6">
         <!-- Header Row -->
         <div class="flex items-start justify-between mb-4">

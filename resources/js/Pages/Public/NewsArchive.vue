@@ -49,6 +49,7 @@
         v-for="item in news.data" 
         :key="item.id" 
         class="plain"
+        prefetch
         :href="route('news', {
           lang: item.lang,
           news: item.permalink ?? '',

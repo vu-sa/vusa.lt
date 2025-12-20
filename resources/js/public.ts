@@ -54,6 +54,15 @@ createInertiaApp({
 
     return page;
   },
+  defaults: {
+    visitOptions: (href, options) => {
+      return { viewTransition: true }
+    },
+    // Cache prefetched pages for 5 minutes for smoother navigation
+    prefetch: {
+      cacheFor: 5 * 60 * 1000, // 5 minutes in milliseconds
+    },
+  },
   setup({ App, props, el, plugin }) {
     // https://github.com/inertiajs/inertia/discussions/372#discussioncomment-6052940
     const application = createApp({ render: () => h(App, props) })
@@ -65,14 +74,14 @@ createInertiaApp({
           const jsonLangs = import.meta.glob("../../lang/*.json");
           // Load public-specific PHP translations (shared + public combined)
           const phpLangs = import.meta.glob("../../lang/php_public_*.json");
-          
+
           const jsonPath = `../../lang/${lang}.json`;
           const phpPath = `../../lang/php_public_${lang}.json`;
-          
+
           // Load both translation sources
           const jsonModule = jsonLangs[jsonPath] ? await jsonLangs[jsonPath]() : { default: {} };
           const phpModule = phpLangs[phpPath] ? await phpLangs[phpPath]() : { default: {} };
-          
+
           // Merge translations: JSON base + PHP compiled
           // Return in { default: {...} } format expected by laravel-vue-i18n
           return {
