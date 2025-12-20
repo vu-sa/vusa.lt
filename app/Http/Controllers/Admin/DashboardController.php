@@ -288,7 +288,7 @@ class DashboardController extends AdminController
             // Quick flag to show/hide related institutions filter (lazy data may not be loaded yet)
             'mayHaveRelatedInstitutions' => $mayHaveRelatedInstitutions,
             // Lazy load relatedInstitutions - only fetched when explicitly requested via Inertia reload
-            'relatedInstitutions' => Inertia::lazy(function () use ($userInstitutions) {
+            'relatedInstitutions' => Inertia::optional(function () use ($userInstitutions) {
                 $relatedInstitutions = RelationshipService::getRelatedInstitutionsForMultiple(
                     new Collection($userInstitutions->values()->all())
                 );
@@ -301,7 +301,7 @@ class DashboardController extends AdminController
                 });
 
                 return $relatedInstitutions->values();
-            }),
+            })->once(),
             // Lazy load tenant institutions - only fetched when tenant tab is opened
             // Expects 'tenantIds' parameter in the reload request
             'tenantInstitutions' => Inertia::lazy(function () use ($excludedTypeIds, $appendInstitutionAttributes) {
