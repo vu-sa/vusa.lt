@@ -29,15 +29,6 @@
               <AgendaOutcomeIndicators :agenda-items="itemsWithDecisions" />
             </div>
           </div>
-
-          <!-- Completion status -->
-          <Badge
-            :variant="getCompletionVariant(meeting.completion_status)"
-            size="sm"
-            class="shrink-0"
-          >
-            {{ getCompletionLabel(meeting.completion_status) }}
-          </Badge>
         </div>
 
         <!-- View action indicator -->
@@ -140,7 +131,4 @@ const formatMeetingDate = (date: string) => {
     minute: '2-digit',
   });
 };
-
-// Use shared meeting status utilities
-const { getCompletionVariant, getCompletionLabel } = useMeetingStatus();
 </script>
