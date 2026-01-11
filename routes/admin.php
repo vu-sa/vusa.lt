@@ -184,4 +184,4 @@ Route::post('settings/atstovavimas', [SettingsController::class, 'updateAtstovav
 Route::get('settings/authorization', [SettingsController::class, 'editAuthorization'])->name('settings.authorization.edit');
 Route::post('settings/authorization', [SettingsController::class, 'updateAuthorization'])->name('settings.authorization.update');
 
-Route::post('/logout', [UserController::class, 'logout'])->name('logout');
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');

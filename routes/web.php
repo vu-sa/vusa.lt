@@ -24,10 +24,10 @@ Route::get('/auth/redirect', function () {
     return Socialite::driver('microsoft')->stateless()->with(['prompt' => 'select_account'])->redirect();
 })->name('microsoft.redirect');
 
-Route::get('/auth/microsoft/callback', [Admin\UserController::class, 'storeFromMicrosoft'])->name('microsoft.callback');
+Route::get('/auth/microsoft/callback', [Admin\AuthController::class, 'storeFromMicrosoft'])->name('microsoft.callback');
 
 Route::inertia('login', 'Admin/LoginForm')->middleware('guest')->name('login');
-Route::post('login', [Admin\UserController::class, 'authenticate'])->middleware('guest');
+Route::post('login', [Admin\AuthController::class, 'authenticate'])->middleware('guest');
 
 Route::post('feedback', [Public\MainController::class, 'sendFeedback'])->name('feedback.send');
 
