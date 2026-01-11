@@ -253,8 +253,15 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/Components/ui/tooltip'
 import { getGanttColors, isDarkModeActive, type GanttColors } from './ganttColors'
 import { useGanttSettings } from '@/Pages/Admin/Dashboard/Composables/useGanttSettings'
-import { useGanttInteractions } from './composables/useGanttInteractions'
-import { useGanttViewport } from './composables/useGanttViewport'
+import {
+  useGanttInteractions,
+  useGanttViewport,
+  useGanttLayout,
+  useGanttFiltering,
+  useGanttLabels,
+  useColumnResize,
+  type LayoutRow,
+} from './composables'
 
 import {
   setupDefs,
@@ -363,37 +370,11 @@ const setCenterDate = ganttSettings.setCenterDate
 const verticalScrollPosition = ganttSettings.verticalScrollPosition
 const setVerticalScrollPosition = ganttSettings.setVerticalScrollPosition
 
-// Resize handle state for label column
-const isResizing = ref(false)
-const resizeStartX = ref(0)
-const resizeStartWidth = ref(0)
-
-function startLabelResize(event: MouseEvent) {
-  isResizing.value = true
-  resizeStartX.value = event.clientX
-  resizeStartWidth.value = labelWidthPx.value
-  
-  document.addEventListener('mousemove', handleLabelResize)
-  document.addEventListener('mouseup', stopLabelResize)
-  // Prevent text selection during resize
-  document.body.style.userSelect = 'none'
-  document.body.style.cursor = 'col-resize'
-}
-
-function handleLabelResize(event: MouseEvent) {
-  if (!isResizing.value) return
-  const delta = event.clientX - resizeStartX.value
-  const newWidth = resizeStartWidth.value + delta
-  setLabelWidth(newWidth)
-}
-
-function stopLabelResize() {
-  isResizing.value = false
-  document.removeEventListener('mousemove', handleLabelResize)
-  document.removeEventListener('mouseup', stopLabelResize)
-  document.body.style.userSelect = ''
-  document.body.style.cursor = ''
-}
+// Column resize composable for label column
+const { isResizing, startResize: startLabelResize } = useColumnResize(
+  setLabelWidth,
+  () => labelWidthPx.value
+)
 
 const emit = defineEmits<{
   (e: 'create-meeting', payload: { institution_id: string | number, suggestedAt: Date }): void
@@ -415,298 +396,77 @@ const visitInstitution = (id: string | number, event?: MouseEvent | KeyboardEven
   }
 }
 
+// Parse data props into Date objects
 const parsedMeetings = computed(() => props.meetings.map(m => ({ ...m, date: new Date(m.start_time) })))
 const parsedGaps = computed(() => props.gaps.map(g => ({ ...g, fromDate: new Date(g.from), untilDate: new Date(g.until) })))
-
-// Parsed duty members with Date objects
 const parsedDutyMembers = computed(() => (props.dutyMembers ?? []).map(m => ({
   ...m,
   startDate: new Date(m.start_date),
   endDate: m.end_date ? new Date(m.end_date) : null
 })))
-
-// Parsed inactive periods with Date objects
 const parsedInactivePeriods = computed(() => (props.inactivePeriods ?? []).map(p => ({
   ...p,
   fromDate: new Date(p.from),
   untilDate: new Date(p.until)
 })))
 
-// Active institution ids referenced by data
-const activeInstitutionIds = computed(() => {
-  const s = new Set<string | number>()
-  parsedMeetings.value.forEach(m => s.add(m.institution_id))
-  parsedGaps.value.forEach(g => s.add(g.institution_id))
-  return s
-})
-
-// Base institution ids: explicit institutions prop + those referenced by data
-const baseInstitutionIds = computed(() => {
-  const ids = new Set<string | number>()
-  if (props.institutions) props.institutions.forEach(i => ids.add(i.id))
-  activeInstitutionIds.value.forEach(i => ids.add(i))
-  return Array.from(ids)
-})
-
-// Final list of institution ids after filters and sorting
-const institutions = computed(() => {
-  const ids = new Set<string | number>()
-  baseInstitutionIds.value.forEach(id => ids.add(id))
-  let arr = Array.from(ids)
-  // Filter by tenant if requested
-  if (props.tenantFilter && props.tenantFilter.length && props.institutionTenant) {
-    const filterSet = new Set(props.tenantFilter.map(v => String(v)))
-    arr = arr.filter(id => filterSet.has(String((props.institutionTenant as any)[id as any])))
+// Filtering composable: institutions, filtered collections, grouping
+const filtering = useGanttFiltering(
+  {
+    tenantFilter: () => props.tenantFilter,
+    institutionTenant: () => props.institutionTenant,
+    showOnlyWithActivity: () => props.showOnlyWithActivity,
+    showOnlyWithPublicMeetings: () => props.showOnlyWithPublicMeetings,
+    institutionHasPublicMeetings: () => props.institutionHasPublicMeetings,
+    institutionsOrder: () => props.institutionsOrder,
+    showDutyMembers: () => props.showDutyMembers,
+  },
+  {
+    parsedMeetings,
+    parsedGaps,
+    parsedDutyMembers,
+    parsedInactivePeriods,
+    institutions: () => props.institutions,
+    institutionNames: () => props.institutionNames,
   }
-  // Filter only those with activity if requested
-  if (props.showOnlyWithActivity) {
-    const act = activeInstitutionIds.value
-    arr = arr.filter(id => act.has(id))
-  }
-  // Filter only those with public meetings if requested
-  if (props.showOnlyWithPublicMeetings && props.institutionHasPublicMeetings) {
-    const pubMap = props.institutionHasPublicMeetings
-    arr = arr.filter(id => pubMap[id] || pubMap[String(id)])
-  }
-  if (props.institutionsOrder?.length) {
-    const orderMap = new Map(props.institutionsOrder.map((id, idx) => [String(id), idx]))
-    arr = arr.sort((a, b) => (orderMap.get(String(a)) ?? 1e9) - (orderMap.get(String(b)) ?? 1e9))
-  } else {
-    // Default: sort by institution name (fallback to id)
-    const getName = (id: string | number) => {
-      const fromProp = (props.institutionNames as any)?.[id as any]
-      if (fromProp) return String(fromProp)
-      const fromList = props.institutions?.find(i => i.id === id)?.name
-      if (fromList) return String(fromList)
-      const m = parsedMeetings.value.find(mm => mm.institution_id === id)
-      return String(m?.institution ?? id)
-    }
-    arr = arr.sort((a, b) => getName(a).localeCompare(getName(b)))
-  }
-  return arr
-})
+)
+const { institutions, filteredMeetings, filteredGaps, filteredDutyMembers, filteredInactivePeriods, groupedDutyMembers } = filtering
 
-// Filtered meetings based on currently visible institutions
-const filteredMeetings = computed(() => {
-  const visibleIds = new Set(institutions.value)
-  return parsedMeetings.value.filter(m => visibleIds.has(m.institution_id))
-})
-
-// Filtered gaps based on currently visible institutions
-const filteredGaps = computed(() => {
-  const visibleIds = new Set(institutions.value)
-  return parsedGaps.value.filter(g => visibleIds.has(g.institution_id))
-})
-
-// Filtered duty members based on currently visible institutions (when showDutyMembers is true)
-const filteredDutyMembers = computed(() => {
-  if (!props.showDutyMembers) return []
-  const visibleIds = new Set(institutions.value.map(String))
-  return parsedDutyMembers.value.filter(m => visibleIds.has(String(m.institution_id)))
-})
-
-// Filtered inactive periods based on currently visible institutions (when showDutyMembers is true)
-const filteredInactivePeriods = computed(() => {
-  if (!props.showDutyMembers) return []
-  const visibleIds = new Set(institutions.value.map(String))
-  return parsedInactivePeriods.value.filter(p => visibleIds.has(String(p.institution_id)))
-})
-
-// Group duty members by institution and start date for avatar stacking
-const groupedDutyMembers = computed(() => {
-  const groups = new Map<string, typeof filteredDutyMembers.value>()
-  for (const member of filteredDutyMembers.value) {
-    // Group by institution + day (same day = same group)
-    const dayKey = `${member.institution_id}:${member.startDate.toDateString()}`
-    const arr = groups.get(dayKey) ?? []
-    arr.push(member)
-    groups.set(dayKey, arr)
+// Labels composable: name lookups, formatting, tooltips
+const labels = useGanttLabels(
+  {
+    institutionNames: () => props.institutionNames,
+    tenantNames: () => props.tenantNames,
+    institutionTenant: () => props.institutionTenant,
+  },
+  {
+    institutions: () => props.institutions,
+    meetings: () => props.meetings,
+    filteredMeetings,
   }
-  return groups
-})
+)
+const { mergedTenantNames, labelFor, tenantFor, lastMeetingByInstitution, fmtDate, fmtDateWithYear, labelLast, getRelationshipTooltip } = labels
 
-const nameLookup = computed(() => {
-  const map = new Map<string | number, string>()
-  // prefer explicitly provided names
-  if (props.institutionNames) {
-    for (const [k, v] of Object.entries(props.institutionNames)) map.set(k, v)
+// Layout composable: rows, positions, heights
+const layout = useGanttLayout(
+  {
+    rowHeight: () => props.rowHeight,
+    expandedRowHeight: () => props.expandedRowHeight,
+    detailsExpanded: () => props.detailsExpanded,
+    height: () => props.height,
+    showTenantHeaders,
+  },
+  {
+    institutions,
+    institutionsMeta: () => props.institutions,
+    institutionTenant: () => props.institutionTenant,
+    mergedTenantNames,
   }
-  // from explicit institutions list
-  for (const i of (props.institutions ?? [])) {
-    if (!map.has(i.id) && i.name) map.set(i.id, String(i.name))
-  }
-  // fallback from meetings payloads
-  for (const m of props.meetings) {
-    if (m.institution_id != null && m.institution && !map.has(m.institution_id)) {
-      map.set(m.institution_id, m.institution)
-    }
-  }
-  return map
-})
+)
+const { layoutRows, rowTop, rowHeightFor, rowCenter, containerHeight } = layout
 
-// Merge tenant names from props with global page.props.tenants as fallback
+// Page props for locale access
 const page = usePage()
-const mergedTenantNames = computed<Record<string | number, string>>(() => {
-  const result: Record<string | number, string> = {}
-  // First, add from global tenants (as base)
-  const globalTenants = (page.props.tenants as any[]) ?? []
-  for (const tenant of globalTenants) {
-    if (tenant?.id && tenant?.shortname) {
-      result[tenant.id] = tenant.shortname
-      result[String(tenant.id)] = tenant.shortname
-    }
-  }
-  // Then, override with props.tenantNames (if provided)
-  if (props.tenantNames) {
-    for (const [k, v] of Object.entries(props.tenantNames)) {
-      result[k] = v
-    }
-  }
-  return result
-})
-
-const labelFor = (id: string | number) => nameLookup.value.get(id) ?? String(id)
-const tenantFor = (id: string | number) => (props.institutionTenant as any)?.[id as any]
-const tenantLabelFor = (id: string | number) => {
-  const t = tenantFor(id)
-  if (t == null) return undefined
-  return mergedTenantNames.value[t as any]
-}
-
-// Generate tooltip text for related institution link icon
-const getRelationshipTooltip = (row: LayoutRow): string => {
-  if (!row.isRelated) return ''
-  
-  const sourceName = row.sourceInstitutionId ? labelFor(row.sourceInstitutionId) : $t('Nežinoma institucija')
-  
-  const accessText = row.authorized !== false 
-    ? $t('relationships.tooltip_authorized')
-    : $t('relationships.tooltip_not_authorized')
-  
-  return `${$t('relationships.tooltip_via')} ${sourceName}\n${accessText}`
-}
-
-type Row = { type: 'tenant'; key: string; tenantId: string | number } | { type: 'institution'; key: string | number; institutionId: string | number; isRelated?: boolean; relationshipDirection?: 'outgoing' | 'incoming' | 'sibling'; authorized?: boolean; sourceInstitutionId?: string }
-const rows = computed<Row[]>(() => {
-  const ids = institutions.value
-  // Create a map for quick lookup of institution metadata
-  const institutionMeta = new Map<string | number, { is_related?: boolean; relationship_direction?: 'outgoing' | 'incoming' | 'sibling'; authorized?: boolean; source_institution_id?: string }>()
-  props.institutions?.forEach(i => {
-    institutionMeta.set(i.id, { is_related: i.is_related, relationship_direction: i.relationship_direction, authorized: i.authorized, source_institution_id: i.source_institution_id })
-  })
-  
-  // Only show tenant headers if the setting is enabled and we have tenant data
-  if (showTenantHeaders.value && props.institutionTenant && Object.keys(mergedTenantNames.value).length > 0) {
-    const byTenant = new Map<string | number, Array<string | number>>()
-    for (const id of ids) {
-      const t = tenantFor(id) ?? 'unknown'
-      const arr = byTenant.get(t) ?? []
-      arr.push(id)
-      byTenant.set(t, arr)
-    }
-    const tenantOrder = Array.from(byTenant.keys()).sort((a, b) => String(mergedTenantNames.value[a as any] ?? a).localeCompare(String(mergedTenantNames.value[b as any] ?? b)))
-    const out: Row[] = []
-    for (const t of tenantOrder) {
-      out.push({ type: 'tenant', key: `__tenant__:${t}`, tenantId: t })
-      for (const iid of byTenant.get(t) ?? []) {
-        const meta = institutionMeta.get(iid)
-        out.push({ type: 'institution', key: iid, institutionId: iid, isRelated: meta?.is_related, relationshipDirection: meta?.relationship_direction, authorized: meta?.authorized, sourceInstitutionId: meta?.source_institution_id })
-      }
-    }
-    return out
-  }
-  return ids.map(iid => {
-    const meta = institutionMeta.get(iid)
-    return { type: 'institution', key: iid, institutionId: iid, isRelated: meta?.is_related, relationshipDirection: meta?.relationship_direction, authorized: meta?.authorized, sourceInstitutionId: meta?.source_institution_id } as Row
-  })
-})
-
-// Layout with variable row heights (supports one expanded institution row)
-interface LayoutRow { key: string | number; type: Row['type']; tenantId?: string | number; institutionId?: string | number; isRelated?: boolean; relationshipDirection?: 'outgoing' | 'incoming' | 'sibling'; authorized?: boolean; sourceInstitutionId?: string; top: number; height: number }
-const layoutRows = computed<LayoutRow[]>(() => {
-  const out: LayoutRow[] = []
-  let y = 0
-  for (const r of rows.value) {
-    const isInst = r.type === 'institution'
-    const h = isInst
-      ? (props.detailsExpanded ? (props.expandedRowHeight || props.rowHeight) : props.rowHeight)
-      : props.rowHeight
-    out.push({ 
-      key: r.key, 
-      type: r.type, 
-      tenantId: (r as any).tenantId, 
-      institutionId: (r as any).institutionId, 
-      isRelated: (r as any).isRelated,
-      relationshipDirection: (r as any).relationshipDirection,
-      authorized: (r as any).authorized,
-      sourceInstitutionId: (r as any).sourceInstitutionId,
-      top: y, 
-      height: h 
-    })
-    y += h
-  }
-  return out
-})
-
-const heightByKey = computed(() => {
-  const m = new Map<string | number, number>()
-  for (const r of layoutRows.value) m.set(r.key, r.height)
-  return m
-})
-
-const topByKey = computed(() => {
-  const m = new Map<string | number, number>()
-  for (const r of layoutRows.value) m.set(r.key, r.top)
-  return m
-})
-
-const rowTop = (key: string | number) => topByKey.value.get(key) ?? 0
-const rowHeightFor = (key: string | number) => heightByKey.value.get(key) ?? props.rowHeight
-const rowCenter = (key: string | number) => rowTop(key) + rowHeightFor(key) / 2
-
-// Container height should be larger than content to prevent overflow
-const containerHeight = computed(() => {
-  // For fullscreen mode with 100% height, don't set an explicit height
-  // Let the h-full class and flex layout handle it
-  if (props.height === '100%') {
-    return undefined
-  }
-
-  // If height prop is provided (e.g., other specific values), use it
-  if (props.height) {
-    return props.height
-  }
-
-  // Otherwise calculate based on content
-  const rowsH = layoutRows.value.reduce((acc, r) => acc + r.height, 0)
-  const contentHeight = rowsH + 22 // header height
-  // Add extra padding to prevent overflow when horizontal scrollbar appears
-  const paddedHeight = contentHeight + 20
-  return `${Math.max(200, paddedHeight)}px` // Ensure minimum height
-})
-
-// last meeting per institution (for label meta) - based on filtered meetings
-const lastMeetingByInstitution = computed(() => {
-  const m = new Map<string | number, Date>()
-  for (const it of filteredMeetings.value) {
-    const cur = m.get(it.institution_id)
-    if (!cur || it.date > cur) m.set(it.institution_id, it.date)
-  }
-  return m
-})
-
-const fmtDate = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' })
-const fmtDateWithYear = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
-const labelLast = (d: Date) => {
-  const now = today()
-  return d.getFullYear() === now.getFullYear() ? fmtDate.format(d) : fmtDateWithYear.format(d)
-}
-
-const today = () => {
-  const d = new Date()
-  d.setHours(0, 0, 0, 0)
-  return d
-}
 
 // Import vacation configuration
 import { getVacationPeriods } from '@/Pages/Admin/Dashboard/Components/vacationConfig';
@@ -1112,7 +872,7 @@ onMounted(() => {
   })
 })
 
-watch([parsedMeetings, parsedGaps, parsedDutyMembers, parsedInactivePeriods, institutions, rows, () => props.daysBefore, () => props.daysAfter, () => props.startDate, () => props.tenantFilter, () => props.showOnlyWithActivity, () => props.showOnlyWithPublicMeetings, () => props.showDutyMembers, () => props.detailsExpanded, extraBefore, extraAfter, dayWidthPx], () => render())
+watch([parsedMeetings, parsedGaps, parsedDutyMembers, parsedInactivePeriods, institutions, layoutRows, () => props.daysBefore, () => props.daysAfter, () => props.startDate, () => props.tenantFilter, () => props.showOnlyWithActivity, () => props.showOnlyWithPublicMeetings, () => props.showDutyMembers, () => props.detailsExpanded, extraBefore, extraAfter, dayWidthPx], () => render())
 </script>
 
 <style scoped>
