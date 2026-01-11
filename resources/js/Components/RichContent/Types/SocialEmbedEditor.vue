@@ -90,23 +90,24 @@ const options = defineModel<SocialEmbed['options']>('options');
 // - https://www.facebook.com/photo/?fbid=...
 // - https://www.facebook.com/permalink.php?story_fbid=...
 // - https://fb.watch/...
+// All patterns are anchored at start (^) with scheme (https?://) and domain to prevent injection attacks
 const FACEBOOK_PATTERNS = [
-  /facebook\.com\/[\w.-]+\/posts\/[\w]+/i,  // username/posts/id or pfbid
-  /facebook\.com\/photo\/?\?fbid=/i,  // photo?fbid=
-  /facebook\.com\/[\w.-]+\/photos\//i, // username/photos/
-  /facebook\.com\/[\w.-]+\/videos\//i, // username/videos/
-  /facebook\.com\/permalink\.php/i, // permalink.php
-  /facebook\.com\/watch\//i, // watch/
-  /facebook\.com\/reel\//i, // reel/
-  /facebook\.com\/share\//i, // share/
-  /fb\.watch\/[\w]+/i, // fb.watch short URLs
+  /^https?:\/\/(?:www\.)?facebook\.com\/[\w.-]+\/posts\/[\w]+/i,  // username/posts/id or pfbid
+  /^https?:\/\/(?:www\.)?facebook\.com\/photo\/?\?fbid=/i,  // photo?fbid=
+  /^https?:\/\/(?:www\.)?facebook\.com\/[\w.-]+\/photos\//i, // username/photos/
+  /^https?:\/\/(?:www\.)?facebook\.com\/[\w.-]+\/videos\//i, // username/videos/
+  /^https?:\/\/(?:www\.)?facebook\.com\/permalink\.php/i, // permalink.php
+  /^https?:\/\/(?:www\.)?facebook\.com\/watch\//i, // watch/
+  /^https?:\/\/(?:www\.)?facebook\.com\/reel\//i, // reel/
+  /^https?:\/\/(?:www\.)?facebook\.com\/share\//i, // share/
+  /^https?:\/\/fb\.watch\/[\w]+/i, // fb.watch short URLs
 ];
 
 const INSTAGRAM_PATTERNS = [
-  /instagram\.com\/p\/[\w-]+/i,  // posts
-  /instagram\.com\/reel\/[\w-]+/i, // reels
-  /instagram\.com\/tv\/[\w-]+/i, // IGTV
-  /instagr\.am\/p\/[\w-]+/i, // short URL posts
+  /^https?:\/\/(?:www\.)?instagram\.com\/p\/[\w-]+/i,  // posts
+  /^https?:\/\/(?:www\.)?instagram\.com\/reel\/[\w-]+/i, // reels
+  /^https?:\/\/(?:www\.)?instagram\.com\/tv\/[\w-]+/i, // IGTV
+  /^https?:\/\/instagr\.am\/p\/[\w-]+/i, // short URL posts
 ];
 
 // Detect platform from URL
@@ -115,16 +116,13 @@ const detectedPlatform = computed(() => {
   
   const url = modelValue.value.url;
   
-  // Simple domain check first for broader matching
-  if (/facebook\.com|fb\.watch/i.test(url)) {
-    // Verify it looks like a post URL (not just the homepage)
-    if (FACEBOOK_PATTERNS.some(pattern => pattern.test(url))) {
-      return 'facebook';
-    }
-    // Also accept any facebook.com URL with a path longer than just /
-    if (/facebook\.com\/\S+/.test(url)) {
-      return 'facebook';
-    }
+  // Check Facebook patterns (all anchored at start with scheme)
+  if (FACEBOOK_PATTERNS.some(pattern => pattern.test(url))) {
+    return 'facebook';
+  }
+  // Also accept any facebook.com URL with a path longer than just /
+  if (/^https?:\/\/(?:www\.)?facebook\.com\/\S+/.test(url)) {
+    return 'facebook';
   }
   
   if (INSTAGRAM_PATTERNS.some(pattern => pattern.test(url))) {
