@@ -110,7 +110,7 @@
         <main id="main-content" class="pb-8 mt-16">
           <!-- Centralized breadcrumb display -->
           <div v-if="breadcrumbState.breadcrumbs.value.length > 0" :class="breadcrumbWrapperClass">
-            <PublicBreadcrumb />
+            <PublicBreadcrumbs />
           </div>
           
           <!-- <Suspense> -->
@@ -171,7 +171,7 @@ import { useDark, useStorage } from "@vueuse/core";
 
 import { Head, usePage, router } from "@inertiajs/vue3";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
-import PublicBreadcrumb from "@/Components/Public/PublicBreadcrumb.vue";
+import PublicBreadcrumbs from "@/Components/Public/PublicBreadcrumbs.vue";
 import { createBreadcrumbState } from '@/Composables/useBreadcrumbsUnified';
 import { Toaster } from "@/Components/ui/sonner";
 import { useToasts } from '@/Composables/useToasts';

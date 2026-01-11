@@ -13,7 +13,7 @@
           <div class="flex items-center flex-1 gap-3">
             <SidebarTrigger class="-ml-1" />
             <Separator orientation="vertical" class="mr-2 h-4" />
-            <UnifiedBreadcrumbs />
+            <AdminBreadcrumbs />
           </div>
 
           <div class="flex items-center gap-2">
@@ -126,7 +126,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from '@/Components/ui/sidebar'
-import UnifiedBreadcrumbs from '@/Components/UnifiedBreadcrumbs.vue';
+import AdminBreadcrumbs from '@/Components/AdminBreadcrumbs.vue';
 import { createBreadcrumbState } from '@/Composables/useBreadcrumbsUnified';
 import type { BreadcrumbItem } from '@/Composables/useBreadcrumbsUnified';
 import { createTourProvider } from '@/Composables/useTourProvider';

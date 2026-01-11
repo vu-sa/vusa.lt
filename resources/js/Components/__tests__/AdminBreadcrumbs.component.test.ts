@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
-import UnifiedBreadcrumbs from '../UnifiedBreadcrumbs.vue'
+import AdminBreadcrumbs from '../AdminBreadcrumbs.vue'
 
 // Mock the import.meta.env for development mode
 vi.stubGlobal('import', {
@@ -11,13 +11,13 @@ vi.stubGlobal('import', {
   }
 })
 
-describe('UnifiedBreadcrumbs Fallback Mode', () => {
+describe('AdminBreadcrumbs Fallback Mode', () => {
   it('displays warning in development when no breadcrumb state is provided', () => {
     // Spy on console.warn to check if the warning is logged
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
     
     // Mount component without providing breadcrumb state
-    const wrapper = mount(UnifiedBreadcrumbs)
+    const wrapper = mount(AdminBreadcrumbs)
     
     // Should show the development warning banner
     expect(wrapper.find('[data-testid="fallback-warning"]').exists()).toBe(true)
@@ -36,7 +36,7 @@ describe('UnifiedBreadcrumbs Fallback Mode', () => {
     
     // This should not throw an error even without state provider
     expect(() => {
-      mount(UnifiedBreadcrumbs)
+      mount(AdminBreadcrumbs)
     }).not.toThrow()
     
     warnSpy.mockRestore()

@@ -92,7 +92,7 @@ const breakpoints = useBreakpoints(breakpointsTailwind);
 const isMobile = breakpoints.smaller('sm');
 
 const maxMobileItems = 2;
-const maxDesktopItems = 4;
+const maxDesktopItems = 5;
 
 const visibleItems = computed(() => {
   const items = breadcrumbs.value;

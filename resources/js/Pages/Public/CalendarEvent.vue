@@ -322,16 +322,16 @@
 
 <script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
-import { computed, onMounted } from "vue";
+import { computed } from "vue";
 import { usePage, Link } from "@inertiajs/vue3";
 import { format } from "date-fns";
 import { lt, enUS } from "date-fns/locale";
 
-import PublicBreadcrumb from "@/Components/Public/PublicBreadcrumb.vue";
+import PublicBreadcrumbs from "@/Components/Public/PublicBreadcrumbs.vue";
 import UpcomingEventsCompact from "@/Components/Calendar/UpcomingEventsCompact.vue";
 import EventImageGallery from "@/Components/Calendar/EventImageGallery.vue";
 import Button from "@/Components/ui/button/Button.vue";
-import { useBreadcrumbs } from "@/Composables/useBreadcrumbsUnified";
+import { usePageBreadcrumbs, BreadcrumbHelpers } from "@/Composables/useBreadcrumbsUnified";
 
 const props = defineProps<{
   event: App.Entities.Calendar;
@@ -343,18 +343,15 @@ const page = usePage()
 const locale = computed(() => page.props.app.locale)
 const dateLocale = computed(() => locale.value === 'lt' ? lt : enUS)
 
-// Set up breadcrumbs
-const { set, getHomeBreadcrumb, createRouteBreadcrumb, createBreadcrumbItem } = useBreadcrumbs();
-
-onMounted(() => {
+// Set up breadcrumbs using the recommended API with proper lifecycle management
+usePageBreadcrumbs(() => {
   const eventTitle = Array.isArray(props.event.title) 
     ? props.event.title.join(' ') 
     : (props.event.title || '');
   
-  set([
-    getHomeBreadcrumb(),
-    createRouteBreadcrumb('Kalendorius', 'calendar.list', { lang: locale.value }),
-    createBreadcrumbItem(eventTitle),
+  return BreadcrumbHelpers.publicContent([
+    { label: 'Kalendorius', href: route('calendar.list', { lang: locale.value }) },
+    { label: eventTitle },
   ]);
 });
 
