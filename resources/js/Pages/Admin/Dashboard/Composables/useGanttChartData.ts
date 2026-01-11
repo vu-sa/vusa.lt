@@ -37,6 +37,8 @@ export function useGanttChartData(
           completion_status: meeting.completion_status,
           agenda_items: agendaItems,
           agenda_items_count: totalAgendaCount,
+          has_report: meeting.has_report,
+          has_protocol: meeting.has_protocol,
         };
       });
     });

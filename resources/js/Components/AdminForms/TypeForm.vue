@@ -144,7 +144,7 @@ import Edit16Filled from "~icons/fluent/edit16-filled"
 
 import { Button } from "@/Components/ui/button";
 import { modelTypes } from "@/Types/formOptions";
-import FileManager from "@/Features/Admin/SharepointFileManager/Viewer/FileManager.vue";
+import FileManager from "@/Features/Admin/SharepointFileManager/SharepointFileManager.vue";
 import FormElement from "./FormElement.vue";
 import Icons from "@/Types/Icons/filled";
 import InfoPopover from "../Buttons/InfoPopover.vue";

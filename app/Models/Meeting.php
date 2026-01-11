@@ -29,10 +29,14 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property-read Collection<int, \Spatie\Activitylog\Models\Activity> $activities
  * @property-read Collection<int, AgendaItem> $agendaItems
+ * @property-read Collection<int, \App\Models\FileableFile> $availableFiles
  * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $commentable
  * @property-read Collection<int, \App\Models\Comment> $comments
+ * @property-read Collection<int, \App\Models\FileableFile> $fileableFiles
  * @property-read Collection<int, \App\Models\SharepointFile> $files
  * @property-read string $completion_status
+ * @property-read bool $has_report
+ * @property-read bool $has_protocol
  * @property-read bool $is_public
  * @property-read Collection<int, \App\Models\Institution> $institutions
  * @property-read Collection<int, \App\Models\Task> $tasks
@@ -186,18 +190,13 @@ class Meeting extends Model implements SharepointFileableContract
     /**
      * Check if all agenda items have completion fields filled.
      *
-     * Note: This method does NOT auto-load agendaItems to prevent leaking
-     * agenda data for unauthorized institutions. If agenda items are not
-     * already loaded, it returns 'no_items'.
-     *
      * @return string 'complete'|'incomplete'|'no_items'
      */
     public function getCompletionStatusAttribute(): string
     {
-        // Don't auto-load agenda items - this would leak data for unauthorized institutions
-        // If agenda items aren't loaded, treat as no_items (caller should ensure proper loading)
+        // Load agenda items if not already loaded
         if (! $this->relationLoaded('agendaItems')) {
-            return 'no_items';
+            $this->load('agendaItems');
         }
 
         $agendaItems = $this->agendaItems;
@@ -219,10 +218,9 @@ class Meeting extends Model implements SharepointFileableContract
 
     protected static function booted()
     {
-        static::saved(function (Meeting $meeting) {
-            // check if institution name $institution->getChanges()['name'] has changed
-            if (array_key_exists('start_time', $meeting->getChanges())) {
-                // dispatch event FileableNameUpdated
+        static::saving(function (Meeting $meeting) {
+            // Dispatch event when start_time is about to change - SharePoint must succeed first
+            if ($meeting->isDirty('start_time')) {
                 FileableNameUpdated::dispatch($meeting);
             }
         });

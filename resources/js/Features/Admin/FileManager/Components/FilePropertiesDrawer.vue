@@ -1,5 +1,5 @@
 <template>
-  <Sheet :open="!!selectedFile" @update:open="handleClose">
+  <Sheet :open="isOpen" @update:open="handleClose">
     <SheetContent side="bottom" class="max-h-[80vh] overflow-y-auto p-0">
       <div class="p-4 pb-6">
         <SheetHeader class="pb-4">
@@ -7,7 +7,7 @@
             {{ fileName }}
           </SheetTitle>
           <SheetDescription class="text-sm text-muted-foreground">
-            File properties and actions
+            {{ source === 'sharepoint' ? 'SharePoint file properties' : 'File properties and actions' }}
           </SheetDescription>
         </SheetHeader>
 
@@ -105,33 +105,74 @@
 
             <!-- Action buttons -->
             <div class="flex flex-wrap gap-2 mb-6">
-              <Button size="sm" class="flex-1 sm:flex-none" @click="$emit('preview')">
+              <!-- SharePoint: Public link section -->
+              <template v-if="source === 'sharepoint'">
+                <div v-if="publicWebUrl" class="flex gap-2">
+                  <Button size="sm" as="a" target="_blank" :href="publicWebUrl">
+                    <IFluentOpen24Regular class="h-4 w-4 mr-2" />
+                    Atidaryti
+                  </Button>
+                  <CopyToClipboardButton show-icon :text-to-copy="publicWebUrl">
+                    Kopijuoti
+                  </CopyToClipboardButton>
+                </div>
+                <Button v-else-if="!loadingPublicPermission" size="sm" variant="outline" :disabled="loadingPublicPermission" @click="createPublicPermission">
+                  <IFluentLink24Regular class="h-4 w-4 mr-2" />
+                  Sukurti viešą nuorodą
+                </Button>
+                <Spinner v-if="loadingPublicPermission" size="sm" />
+              </template>
+
+              <!-- Local: Preview -->
+              <Button v-if="source === 'local'" size="sm" class="flex-1 sm:flex-none" @click="$emit('preview')">
                 <IFluentOpen24Regular class="h-4 w-4 mr-2" />
                 Preview
               </Button>
-              <Button :loading="scanningUsage" size="sm" class="flex-1 sm:flex-none" variant="outline"
+
+              <!-- Local: Scan Usage -->
+              <Button v-if="source === 'local'" :loading="scanningUsage" size="sm" class="flex-1 sm:flex-none" variant="outline"
                 @click="scanFileUsage">
                 <IFluentSearch24Regular class="h-4 w-4 mr-2" />
                 {{ scanningUsage ? 'Scanning...' : 'Scan Usage' }}
               </Button>
-              <Button v-if="showCompress" :loading="compressing" size="sm" variant="secondary"
+
+              <!-- Local: Optimize (large images) -->
+              <Button v-if="source === 'local' && showCompress" :loading="compressing" size="sm" variant="secondary"
                 class="flex-1 sm:flex-none" :title="compressTitle" @click="confirmAndCompress">
                 <IFluentImage24Regular class="h-4 w-4 mr-2" />
                 {{ compressing ? 'Optimizing...' : 'Optimize' }}
               </Button>
-              <Button :disabled="!usageData || (!usageData.is_safe_to_delete)" variant="destructive" size="sm"
+
+              <!-- Delete button (both sources) -->
+              <Button 
+                v-if="source === 'sharepoint'"
+                :loading="loadingDelete"
+                variant="destructive" 
+                size="sm"
+                class="flex-1 sm:flex-none"
+                @click="handleDelete"
+              >
+                <IFluentDelete24Filled class="h-4 w-4 mr-2" />
+                Delete
+              </Button>
+              <Button 
+                v-else
+                :disabled="!usageData || (!usageData.is_safe_to_delete)" 
+                variant="destructive" 
+                size="sm"
                 class="flex-1 sm:flex-none"
                 :title="!usageData
                   ? 'Scan usage first before deleting'
                   : (!usageData.is_safe_to_delete
                     ? 'File in use – cannot delete'
                     : 'Delete file')"
-                @click="handleDelete">
+                @click="handleDelete"
+              >
                 <IFluentDelete24Filled class="h-4 w-4 mr-2" />
                 {{ !usageData ? 'Delete (Scan First)' : 'Delete' }}
               </Button>
             </div>
-            <div v-if="showCompress"
+            <div v-if="source === 'local' && showCompress"
               class="mb-6 text-xs bg-amber-50 border border-amber-200 rounded p-3 text-amber-800 flex items-start gap-2">
               <IFluentInformation16Regular class="h-4 w-4 mt-0.5 shrink-0" />
               <p>
@@ -140,8 +181,27 @@
               </p>
             </div>
 
-            <!-- Usage scan results -->
-            <div v-if="usageData" class="border rounded-lg p-4 bg-muted/20">
+            <!-- SharePoint Metadata -->
+            <div v-if="source === 'sharepoint' && sharepointFile?.listItem?.fields" class="border rounded-lg p-4 bg-muted/20 mb-6">
+              <h4 class="text-sm font-medium mb-3">Dokumento informacija</h4>
+              <div class="space-y-2 text-sm">
+                <div v-if="sharepointFile.listItem.fields.Date" class="flex gap-2">
+                  <span class="text-muted-foreground shrink-0">Failo data:</span>
+                  <span class="font-medium">{{ formatStaticTime(sharepointFile.listItem.fields.Date) }}</span>
+                </div>
+                <div v-if="sharepointFile.listItem.fields.Type" class="flex gap-2">
+                  <span class="text-muted-foreground shrink-0">Tipas:</span>
+                  <Badge variant="secondary" class="text-xs">{{ sharepointFile.listItem.fields.Type }}</Badge>
+                </div>
+                <div v-if="sharepointFile.listItem.fields.Description0" class="flex gap-2">
+                  <span class="text-muted-foreground shrink-0">Aprašymas:</span>
+                  <span>{{ sharepointFile.listItem.fields.Description0 }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Usage scan results (local only) -->
+            <div v-if="source === 'local' && usageData" class="border rounded-lg p-4 bg-muted/20">
               <div class="flex items-center gap-3 mb-4">
                 <div class="flex items-center gap-2">
                   <IFluentShieldTask24Regular class="h-5 w-5"
@@ -221,8 +281,8 @@
               </div>
             </div>
 
-            <!-- Usage scan error -->
-            <div v-if="usageError" class="border border-red-200 rounded-lg p-4 bg-red-50">
+            <!-- Usage scan error (local only) -->
+            <div v-if="source === 'local' && usageError" class="border border-red-200 rounded-lg p-4 bg-red-50">
               <div class="flex items-center gap-2 mb-2">
                 <IFluentErrorCircle24Regular class="h-5 w-5 text-red-600" />
                 <h3 class="font-medium text-sm text-red-800">
@@ -242,12 +302,17 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
+import { useFetch } from '@vueuse/core';
+import { toast } from 'vue-sonner';
 
+import { formatStaticTime } from '@/Utils/IntlTime';
+import CopyToClipboardButton from '@/Components/Buttons/CopyToClipboardButton.vue';
 import SmartLink from '@/Components/Public/SmartLink.vue';
 import { Button } from '@/Components/ui/button';
 import { Badge } from '@/Components/ui/badge';
+import { Spinner } from '@/Components/ui/spinner';
 import {
   Sheet,
   SheetContent,
@@ -256,16 +321,20 @@ import {
   SheetDescription
 } from '@/Components/ui/sheet';
 import { useToasts } from '@/Composables/useToasts';
+
 // Icons used inside script-added template changes
 import IFluentEdit16Regular from '~icons/fluent/edit-16-regular';
 import IFluentInformation16Regular from '~icons/fluent/info-16-regular';
+import IFluentLink24Regular from '~icons/fluent/link-24-regular';
+
+type FileSource = 'local' | 'sharepoint';
 
 interface FileEntry { path: string; size?: number; modified?: number; }
 interface UsageDetail {
   id: number | string;
   model_type: string;
   title: string;
-  edit_url?: string; // use undefined instead of null
+  edit_url?: string;
   url?: string;
 }
 interface UsageData {
@@ -275,10 +344,20 @@ interface UsageData {
   scanned_at: string;
 }
 
-const props = defineProps<{
-  selectedFile: string | null;
-  files: FileEntry[];
-}>();
+const props = withDefaults(defineProps<{
+  // Source discriminator
+  source?: FileSource;
+  // Local file props
+  selectedFile?: string | null;
+  files?: FileEntry[];
+  // SharePoint file props
+  sharepointFile?: MyDriveItem | null;
+}>(), {
+  source: 'local',
+  selectedFile: null,
+  files: () => [],
+  sharepointFile: null,
+});
 
 const emit = defineEmits<{
   'preview': [];
@@ -286,51 +365,97 @@ const emit = defineEmits<{
   'close': [];
 }>();
 
-// File usage scanning state
+// Unified open state
+const isOpen = computed(() => {
+  if (props.source === 'sharepoint') {
+    return !!props.sharepointFile;
+  }
+  return !!props.selectedFile;
+});
+
+// File usage scanning state (local only)
 const scanningUsage = ref(false);
 const usageData = ref<UsageData | null>(null);
 const usageError = ref<string | null>(null);
 const toasts = useToasts();
 const compressing = ref(false);
 
+// SharePoint-specific state
+const loadingPublicPermission = ref(false);
+const publicWebUrl = ref<string | null>(null);
+const loadingDelete = ref(false);
+
+// Unified computed: file name
 const fileName = computed(() => {
+  if (props.source === 'sharepoint') {
+    return props.sharepointFile?.name ?? 'Unknown file';
+  }
   if (!props.selectedFile) return '';
   return props.selectedFile.split('/').pop() || 'Unknown file';
 });
 
+// Unified computed: file extension
 const fileExtension = computed(() => {
-  if (!props.selectedFile) return '';
-  const fn = props.selectedFile.split('/').pop() || '';
-  const extension = fn.split('.').pop()?.toLowerCase();
+  const name = props.source === 'sharepoint' 
+    ? props.sharepointFile?.name 
+    : props.selectedFile?.split('/').pop();
+  
+  if (!name) return '';
+  const extension = name.split('.').pop()?.toLowerCase();
   return extension ? extension.toUpperCase() : 'File';
 });
 
+// Unified computed: file size
 const fileSize = computed(() => {
+  if (props.source === 'sharepoint') {
+    const size = props.sharepointFile?.size;
+    if (!size) return 'Unknown';
+    return formatBytes(size);
+  }
+  
   if (!props.selectedFile) return 'Unknown';
-  const fileInfo = props.files.find((file) => file.path === props.selectedFile);
+  const fileInfo = props.files?.find((file) => file.path === props.selectedFile);
   if (fileInfo?.size) {
-    const bytes = fileInfo.size;
-    if (bytes === 0) return '0 B';
-    const k = 1024;
-    const sizes: string[] = ['B', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
+    return formatBytes(fileInfo.size);
   }
   return 'Unknown';
 });
 
+function formatBytes(bytes: number): string {
+  if (bytes === 0) return '0 B';
+  const k = 1024;
+  const sizes: string[] = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
+}
+
+// Unified computed: file date
 const fileDate = computed(() => {
+  if (props.source === 'sharepoint') {
+    const dateStr = props.sharepointFile?.lastModifiedDateTime;
+    if (!dateStr) return 'Unknown';
+    return new Date(dateStr).toLocaleDateString('lt-LT');
+  }
+  
   if (!props.selectedFile) return 'Unknown';
-  const fileInfo = props.files.find((file: FileEntry) => file.path === props.selectedFile);
+  const fileInfo = props.files?.find((file: FileEntry) => file.path === props.selectedFile);
   if (fileInfo?.modified) {
     return new Date(fileInfo.modified * 1000).toLocaleDateString('lt-LT');
   }
   return 'Unknown';
 });
 
+// Unified computed: relative path / location
 const relativePath = computed(() => {
+  if (props.source === 'sharepoint') {
+    const parentPath = props.sharepointFile?.parentReference?.path;
+    if (!parentPath) return '/';
+    // Extract folder name from path like "root:/Sites/..."
+    const parts = parentPath.split('/');
+    return parts[parts.length - 1] || '/';
+  }
+  
   if (!props.selectedFile) return '/';
-  // Remove public/files prefix and filename to show just the directory
   const pathWithoutPublicFiles = props.selectedFile.replace('public/files/', '');
   const directory = pathWithoutPublicFiles.substring(0, pathWithoutPublicFiles.lastIndexOf('/'));
   return directory || '/';
@@ -344,24 +469,87 @@ function handleClose(open: boolean) {
 }
 
 // Clear usage data when file changes
-watch(() => props.selectedFile, () => {
+watch([() => props.selectedFile, () => props.sharepointFile], () => {
   usageData.value = null;
   usageError.value = null;
+  publicWebUrl.value = null;
+  
+  // Fetch public link for SharePoint files
+  if (props.source === 'sharepoint' && props.sharepointFile?.id && !props.sharepointFile?.folder) {
+    fetchPublicLink();
+  }
 });
 
-// Handle delete confirmation
+// SharePoint: Fetch existing public link
+async function fetchPublicLink() {
+  if (!props.sharepointFile?.id) return;
+  
+  loadingPublicPermission.value = true;
+  try {
+    const { data } = await useFetch(
+      route('sharepoint.getDriveItemPublicLink', props.sharepointFile.id)
+    ).json();
+    
+    if (data.value && Object.keys(data.value).length > 0) {
+      publicWebUrl.value = data.value;
+    } else {
+      publicWebUrl.value = null;
+    }
+  } finally {
+    loadingPublicPermission.value = false;
+  }
+}
+
+// SharePoint: Create public permission
+async function createPublicPermission() {
+  if (!props.sharepointFile?.id) {
+    toast.error('No file selected');
+    return;
+  }
+  
+  if (props.sharepointFile?.folder) {
+    toast.error('Cannot create public link for folders. Please select a file.');
+    return;
+  }
+  
+  loadingPublicPermission.value = true;
+  
+  const { data, error } = await useFetch(
+    route('sharepoint.createPublicPermission', props.sharepointFile.id),
+    {
+      headers: {
+        'X-CSRF-TOKEN': usePage().props.csrf_token,
+        'Content-Type': 'application/json',
+      }
+    }
+  ).post().json();
+  
+  loadingPublicPermission.value = false;
+  
+  if (error.value || !data.value?.success) {
+    toast.error(data.value?.error || 'Failed to create public link');
+    return;
+  }
+  
+  publicWebUrl.value = data.value.url;
+  toast.success('Public link created successfully');
+}
+
+// Handle delete - unified, emits for parent to handle
 function handleDelete() {
-  if (!props.selectedFile) return;
-  
-  // Simply emit delete to let parent handle the confirmation
-  emit('delete');
-  
-  // Close the drawer since deletion will be handled by parent
+  if (props.source === 'sharepoint') {
+    if (!props.sharepointFile) return;
+    emit('delete');
+  } else {
+    if (!props.selectedFile) return;
+    emit('delete');
+  }
   emit('close');
 }
 
-// File usage scanning
+// File usage scanning (local only)
 function scanFileUsage() {
+  if (props.source !== 'local') return;
   if (!props.selectedFile || scanningUsage.value) return;
 
   scanningUsage.value = true;
@@ -402,13 +590,14 @@ function scanFileUsage() {
   });
 }
 
-// Image compression state
+// Image compression state (local only)
 const eligibleExtensions = ['JPG', 'JPEG', 'PNG'];
 
 const showCompress = computed(() => {
+  if (props.source !== 'local') return false;
   if (!props.selectedFile) return false;
   if (!eligibleExtensions.includes(fileExtension.value.toUpperCase())) return false;
-  const fileInfo = props.files.find((f) => f.path === props.selectedFile);
+  const fileInfo = props.files?.find((f) => f.path === props.selectedFile);
   return !!(fileInfo?.size && fileInfo.size > 500 * 1024);
 });
 

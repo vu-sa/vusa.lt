@@ -159,10 +159,16 @@ Route::get('tasks/indicator', [TaskController::class, 'userTasksForIndicator'])-
 
 Route::resource('sharepointFiles', SharepointFileController::class)->except('create', 'show', 'edit', 'update');
 
+// FileableFiles - new local metadata-based file management
+Route::get('fileableFiles/{type}/{id}', [SharepointFileController::class, 'getFileableFiles'])->name('fileableFiles.index');
+Route::get('fileableFiles/{type}/{id}/inherited', [SharepointFileController::class, 'getTypeInheritedFiles'])->name('fileableFiles.inherited');
+Route::delete('fileableFiles/{fileableFile}', [SharepointFileController::class, 'destroyFileableFile'])->name('fileableFiles.destroy');
+
 // Route::post('sharepoint/addFile', [SharepointController::class, 'addFile'])->name('sharepoint.addFile');
 // Route::post('sharepoint/getFiles', [SharepointController::class, 'getFilesFromDocumentIds'])->name('sharepoint.getFiles');
 Route::get('sharepoint/getPotentialFileables', [SharepointFileController::class, 'getPotentialFileables'])->name('sharepoint.getPotentialFileables');
 Route::get('sharepoint/getDriveItems', [SharepointFileController::class, 'getDriveItems'])->name('sharepoint.getDriveItems');
+Route::post('sharepoint/createFolder', [SharepointFileController::class, 'createFolder'])->name('sharepoint.createFolder');
 Route::get('sharepoint/{id}/permissions', [SharepointFileController::class, 'getDriveItemPublicLink'])->name('sharepoint.getDriveItemPublicLink');
 Route::get('sharepoint/{type}/{id}', [SharepointFileController::class, 'getTypesDriveItems'])->name('sharepoint.getTypesDriveItems');
 Route::post('sharepoint/{id}/permissions/createPublic', [SharepointFileController::class, 'createPublicPermission'])->name('sharepoint.createPublicPermission');

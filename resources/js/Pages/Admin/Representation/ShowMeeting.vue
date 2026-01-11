@@ -38,7 +38,7 @@
 
         <!-- Files Tab -->
         <TabsContent value="files">
-          <FileManager :starting-path="meeting.sharepointPath" :fileable="{ ...meeting, type: 'Meeting' }" />
+          <FileManager :starting-path="meeting.sharepointPath" :fileable="{ id: meeting.id, type: 'Meeting' }" />
         </TabsContent>
 
         <!-- Tasks Tab -->
@@ -196,12 +196,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
 // Custom Components
 import MeetingHero from "@/Components/Meetings/MeetingHero.vue";
 import SortableCardContainer from "@/Components/AgendaItems/SortableCardContainer.vue";
-import SecondaryContentSection from "@/Components/Meetings/SecondaryContentSection.vue";
 import AgendaItemForm from "@/Components/AdminForms/AgendaItemForm.vue";
 import AddAgendaItemForm from "@/Components/AdminForms/AddAgendaItemForm.vue";
 import AgendaItemsForm from "@/Components/AdminForms/Special/AgendaItemsForm.vue";
 import MeetingForm from "@/Components/AdminForms/MeetingForm.vue";
-import FileManager from "@/Features/Admin/SharepointFileManager/Viewer/FileManager.vue";
+import FileManager from "@/Features/Admin/SharepointFileManager/SharepointFileManager.vue";
 import TaskManager from "@/Features/Admin/TaskManager/TaskManager.vue";
 
 // Icons

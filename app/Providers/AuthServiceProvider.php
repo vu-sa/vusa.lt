@@ -17,6 +17,7 @@ class AuthServiceProvider extends ServiceProvider
     protected $policies = [
         // explicit policies that are not inferred from model names
         \App\Models\InstitutionCheckIn::class => \App\Policies\InstitutionCheckInPolicy::class,
+        \App\Models\FileableFile::class => \App\Policies\FileableFilePolicy::class,
     ];
 
     /**

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Contracts\SharepointFileableContract;
+use App\Events\FileableNameUpdated;
 use App\Models\Traits\HasContentRelationships;
 use App\Models\Traits\HasSharepointFiles;
 use App\Models\Traits\HasTranslations;
@@ -26,9 +27,13 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property \Illuminate\Support\Carbon $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property-read Collection<int, \Spatie\Activitylog\Models\Activity> $activities
+ * @property-read Collection<int, \App\Models\FileableFile> $availableFiles
  * @property-read Collection<int, Type> $descendants
  * @property-read Collection<int, \App\Models\Duty> $duties
+ * @property-read Collection<int, \App\Models\FileableFile> $fileableFiles
  * @property-read Collection<int, \App\Models\SharepointFile> $files
+ * @property-read bool $has_report
+ * @property-read bool $has_protocol
  * @property-read \App\Models\RoleType|\App\Models\Pivots\Relationshipable|null $pivot
  * @property-read Collection<int, \App\Models\Relationship> $incomingRelationships
  * @property-read Collection<int, \App\Models\Institution> $institutions
@@ -73,6 +78,16 @@ class Type extends Model implements SharepointFileableContract
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()->logUnguarded()->logOnlyDirty();
+    }
+
+    protected static function booted()
+    {
+        static::saving(function (Type $type) {
+            // Dispatch event when title is about to change - SharePoint must succeed first
+            if ($type->isDirty('title')) {
+                FileableNameUpdated::dispatch($type);
+            }
+        });
     }
 
     public function institutions()

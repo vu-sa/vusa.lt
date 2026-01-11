@@ -66,7 +66,7 @@ const emit = defineEmits<{
 
 const props = defineProps<{
   // fileable is used for name generation
-  fileable?: Record<string, any>;
+  fileable?: FileableFormData | null;
   loading: boolean;
 }>();
 

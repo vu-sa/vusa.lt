@@ -36,7 +36,7 @@ class MeetingController extends AdminController
         $this->handleAuthorization('viewAny', Meeting::class);
 
         // Build base query with eager loading
-        $query = Meeting::query()->with(['institutions.tenant', 'agendaItems']);
+        $query = Meeting::query()->with(['institutions.tenant', 'agendaItems', 'fileableFiles']);
 
         // Apply permission filtering based on user's permissible tenants
         $query = $this->tableService->applyPermissionFiltering(
@@ -106,6 +106,9 @@ class MeetingController extends AdminController
         // Paginate results
         $meetings = $query->paginate($request->input('per_page', 20))
             ->withQueryString();
+
+        // Append file status attributes for badge display
+        $meetings->getCollection()->each(fn ($meeting) => $meeting->append(['has_protocol', 'has_report']));
 
         // Get the sorting state
         $sorting = $request->getSorting();
@@ -191,7 +194,7 @@ class MeetingController extends AdminController
     {
         $this->handleAuthorization('view', $meeting);
 
-        $meeting->load('institutions.types', 'activities.causer', 'files', 'comments', 'types')->load([
+        $meeting->load('institutions.types', 'activities.causer', 'files', 'fileableFiles', 'comments', 'types')->load([
             'tasks' => function ($query) {
                 $query->with('users', 'taskable');
             },
@@ -200,8 +203,8 @@ class MeetingController extends AdminController
             },
         ]);
 
-        // Append is_public now that institutions.types are loaded (avoids N+1)
-        $meeting->append('is_public');
+        // Append is_public and file status now that relations are loaded (avoids N+1)
+        $meeting->append(['is_public', 'has_protocol', 'has_report']);
 
         // Get representatives who were active at meeting time
         $representatives = $meeting->getRepresentativesActiveAt();

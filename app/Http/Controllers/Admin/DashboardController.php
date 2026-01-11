@@ -196,7 +196,7 @@ class DashboardController extends AdminController
         // Helper function to append computed attributes to institutions
         $appendInstitutionAttributes = function ($institutions) {
             $institutions->each(function ($institution) {
-                $institution->meetings?->each->append('completion_status');
+                $institution->meetings?->each->append(['completion_status', 'has_report', 'has_protocol']);
                 // Add active_check_in from already-loaded checkIns
                 $institution->active_check_in = $institution->checkIns
                     ?->where('end_date', '>=', now())
@@ -293,9 +293,18 @@ class DashboardController extends AdminController
                     new Collection($userInstitutions->values()->all())
                 );
 
-                // Append completion_status to related institution meetings and other computed attributes
+                // Append computed attributes to related institution meetings
+                // Note: For unauthorized institutions, we skip completion_status as it triggers N+1 agendaItems load
                 $relatedInstitutions->each(function ($institution) {
-                    $institution->meetings?->each->append('completion_status');
+                    $isAuthorized = $institution->authorized !== false;
+                    $institution->meetings?->each(function ($meeting) use ($isAuthorized) {
+                        // Only append completion_status for authorized institutions (it lazy-loads agendaItems)
+                        if ($isAuthorized) {
+                            $meeting->append(['completion_status', 'has_report', 'has_protocol']);
+                        } else {
+                            $meeting->append(['has_report', 'has_protocol']);
+                        }
+                    });
                     $institution->append('has_public_meetings');
                     $institution->append('meeting_periodicity_days');
                 });

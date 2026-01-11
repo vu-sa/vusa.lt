@@ -1,6 +1,6 @@
 <template>
-  <CardModal :show :title="$t('Įkelti naują failą')" @close="$emit('close')">
-    <NSteps class="my-2 py-2" :current="(current as number)" :status="'process'">
+  <CardModal :show :title="modalTitle" @close="$emit('close')">
+    <NSteps v-if="!props.fileable" class="my-2 py-2" :current="(current as number)" :status="'process'">
       <NStep :title="$t('Į ką kelsi failą?')">
         <template #icon>
           <IFluentDocumentTableSearch24Regular />
@@ -22,36 +22,81 @@
 </template>
 
 <script setup lang="ts">
-import { inject, ref } from "vue";
+import { computed, inject, ref, watch } from "vue";
 import { useForm } from "@inertiajs/vue3";
 import { useStorage } from "@vueuse/core";
+import { trans as $t } from "laravel-vue-i18n";
 
 import CardModal from "@/Components/Modals/CardModal.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import FileForm from "./FileForm.vue";
 import FileableForm from "@/Components/AdminForms/Special/FileableForm.vue";
 import ModalHelperButton from "@/Components/Buttons/ModalHelperButton.vue";
+import IFluentDocumentTableSearch24Regular from '~icons/fluent/document-table-search-24-regular';
+import { NStep, NSteps } from 'naive-ui';
 
 const emit = defineEmits(["close"]);
 
 const props = defineProps<{
-  fileable?: Record<string, any>;
-  show: boolean; // yes
+  fileable?: FileableFormData;
+  show: boolean;
 }>();
 
-const current = ref(1);
+// Fileable type display names
+const typeDisplayNames: Record<string, string> = {
+  'Meeting': 'Posėdis',
+  'Institution': 'Institucija', 
+  'Duty': 'Pareigos',
+  'Type': 'Tipas',
+};
+
+// Modal title with context when fileable is provided
+const modalTitle = computed(() => {
+  if (!props.fileable) {
+    return $t('Įkelti naują failą');
+  }
+  
+  const typeName = typeDisplayNames[props.fileable.type] || props.fileable.type;
+  const fileableName = (props.fileable as any).fileable_name;
+  
+  if (fileableName) {
+    return `${$t('Įkelti failą')}: ${fileableName}`;
+  }
+  
+  return `${$t('Įkelti failą')} (${typeName})`;
+});
+
+// Ensure we only use id and type to prevent serialization issues with forceFormData
+const sanitizedFileable = computed<FileableFormData | null>(() => {
+  if (!props.fileable) return null;
+  return { id: props.fileable.id, type: props.fileable.type };
+});
+
+// Determine initial step based on whether fileable is provided
+const current = ref(props.fileable ? 2 : 1);
 const loading = ref(false);
 const showAlert = useStorage("new-file-button-alert", true);
 
-const keepFileable = inject<boolean>("keepFileable");
+const keepFileable = inject<boolean>("keepFileable", false);
 
-const fileForm = useForm<Record<string, any>>({
-  fileable: null,
+const fileForm = useForm<{ fileable: FileableFormData | null; file: any }>({
+  fileable: sanitizedFileable.value,
   file: null,
 });
 
-const handleFileableSubmit = (model: App.Entities.SharepointFileable) => {
-  fileForm.fileable = model;
+// Reset state when modal closes, so next open starts fresh
+watch(() => props.show, (isShowing) => {
+  if (!isShowing) {
+    // Modal closed - reset for next open
+    current.value = props.fileable ? 2 : 1;
+    fileForm.fileable = sanitizedFileable.value;
+    fileForm.file = null;
+  }
+});
+
+const handleFileableSubmit = (model: { id: string; fileable_name: string; type: string }) => {
+  // FileableForm returns id as string, include fileable_name for name generation
+  fileForm.fileable = { id: model.id, type: model.type, fileable_name: model.fileable_name };
   current.value = 2;
 };
 
@@ -63,6 +108,7 @@ const handleFileSubmit = (file: any) => {
 const submitFullForm = () => {
   loading.value = true;
   fileForm.post(route("sharepointFiles.store"), {
+    forceFormData: true, // Ensure FormData is used for file uploads
     onSuccess: () => {
       emit("close");
       if (!keepFileable) {
@@ -78,8 +124,4 @@ const submitFullForm = () => {
     },
   });
 };
-
-if (props.fileable) {
-  handleFileableSubmit(props.fileable);
-}
 </script>

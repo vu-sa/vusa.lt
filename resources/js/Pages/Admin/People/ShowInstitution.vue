@@ -152,7 +152,7 @@
             </div>
           </template>
         </Suspense>
-        <FileManager :starting-path="institution.sharepointPath" :fileable="{ ...institution, type: 'Institution' }" />
+        <FileManager :starting-path="institution.sharepointPath" :fileable="{ id: institution.id, type: 'Institution' }" />
       </TabsContent>
 
       <TabsContent value="related">
@@ -214,7 +214,7 @@ const showAddMemberModal = ref(false);
 
 // Async Components
 const FileManager = defineAsyncComponent(
-  () => import("@/Features/Admin/SharepointFileManager/Viewer/FileManager.vue")
+  () => import("@/Features/Admin/SharepointFileManager/SharepointFileManager.vue")
 );
 
 const RelatedInstitutions = defineAsyncComponent(

@@ -76,6 +76,7 @@ declare namespace App.Entities {
       | "cancelled";
     comments?: Array<models.Comment> | [];
   }
+  export type FileableFile = models.FileableFile;
   export type Role = models.Role;
   export type SharepointFile = models.SharepointFile;
   export type SharepointFileable = models.SharepointFileable;

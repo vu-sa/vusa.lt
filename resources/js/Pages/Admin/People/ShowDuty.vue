@@ -10,28 +10,39 @@
       </template>
     </DutyHero>
 
-    <!-- Main Content -->
-    <template v-if="hasFiles">
-      <Tabs v-model="currentTab" class="space-y-6">
-        <TabsList class="gap-2">
-          <TabsTrigger value="members">
-            {{ $t('Nariai') }}
-          </TabsTrigger>
-          <TabsTrigger value="files">
-            {{ $t('Failai') }}
-          </TabsTrigger>
-        </TabsList>
+    <!-- Main Content with Tabs -->
+    <Tabs v-model="currentTab" class="space-y-6">
+      <TabsList class="gap-2">
+        <TabsTrigger value="members">
+          {{ $t('Nariai') }}
+        </TabsTrigger>
+        <TabsTrigger value="files">
+          {{ $t('Failai') }}
+        </TabsTrigger>
+      </TabsList>
 
-        <TabsContent value="members">
-          <MemberHistory 
-            :members="allMembers" 
-            :show-contact="true" 
-            :can-edit="canManageDuty"
-            @edit-period="handleEditDutyPeriod" 
-          />
-        </TabsContent>
+      <TabsContent value="members">
+        <MemberHistory 
+          :members="allMembers" 
+          :show-contact="true" 
+          :can-edit="canManageDuty"
+          @edit-period="handleEditDutyPeriod" 
+        />
+      </TabsContent>
 
-        <TabsContent value="files">
+      <TabsContent value="files" class="space-y-6">
+        <!-- Direct Duty Files (with upload capability) -->
+        <div v-if="duty.sharepointPath">
+          <h3 class="text-lg font-medium mb-4">{{ $t('Pareigybės failai') }}</h3>
+          <FileManager :starting-path="duty.sharepointPath" :fileable="{ id: duty.id, type: 'Duty' }" />
+        </div>
+
+        <!-- Type-inherited Files (read-only, from associated Types) -->
+        <div v-if="hasTypeFiles">
+          <h3 class="text-lg font-medium mb-4">{{ $t('Susiję failai pagal tipą') }}</h3>
+          <p class="text-sm text-zinc-500 dark:text-zinc-400 mb-4">
+            {{ $t('Šie failai yra susiję su pareigybės tipais ir yra bendrinami tarp visų tos kategorijos pareigybių.') }}
+          </p>
           <Suspense>
             <SimpleFileViewer :fileable="{ id: duty.id, type: 'Duty' }" />
             <template #fallback>
@@ -40,19 +51,16 @@
               </div>
             </template>
           </Suspense>
-        </TabsContent>
-      </Tabs>
-    </template>
+        </div>
 
-    <!-- No tabs when no files - just show members -->
-    <template v-else>
-      <MemberHistory 
-        :members="allMembers" 
-        :show-contact="true" 
-        :can-edit="canManageDuty"
-        @edit-period="handleEditDutyPeriod" 
-      />
-    </template>
+        <!-- No files state -->
+        <div v-if="!duty.sharepointPath && !hasTypeFiles" class="text-center py-8">
+          <p class="text-zinc-500 dark:text-zinc-400">
+            {{ $t('Pareigybė neturi failų ir nėra priskirta tipams su failais.') }}
+          </p>
+        </div>
+      </TabsContent>
+    </Tabs>
 
     <!-- Modals -->
     <Dialog v-model:open="showAssignMemberModal">
@@ -81,6 +89,7 @@ import AdminContentPage from "@/Components/Layouts/AdminContentPage.vue";
 import DutyHero from "@/Components/Duties/DutyHero.vue";
 import MemberHistory from "@/Components/Members/MemberHistory.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
+import FileManager from "@/Features/Admin/SharepointFileManager/SharepointFileManager.vue";
 import SimpleFileViewer from "@/Features/Admin/SharepointFileManager/Viewer/SimpleFileViewer.vue";
 
 // UI Components
@@ -92,7 +101,7 @@ import Icons from "@/Types/Icons/filled";
 import { BreadcrumbHelpers, usePageBreadcrumbs } from "@/Composables/useBreadcrumbsUnified";
 
 const props = defineProps<{
-  duty: App.Entities.Duty;
+  duty: App.Entities.Duty & { sharepointPath?: string };
 }>();
 
 // State
@@ -130,7 +139,7 @@ const allMembers = computed(() => {
   return [...filteredUsers.value.currentUsers, ...filteredUsers.value.oldUsers];
 });
 
-const hasFiles = computed(() => {
+const hasTypeFiles = computed(() => {
   return props.duty.types && props.duty.types.length > 0;
 });
 

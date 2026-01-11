@@ -62,6 +62,8 @@ export function useAtstovavimosData(
           completion_status: m.completion_status,
           agenda_items: agendaItems,
           agenda_items_count: totalAgendaCount,
+          has_report: m.has_report,
+          has_protocol: m.has_protocol,
         };
       });
     }).flat();

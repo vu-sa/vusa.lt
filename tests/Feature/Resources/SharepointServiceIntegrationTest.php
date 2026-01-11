@@ -102,17 +102,8 @@ describe('SharepointService Integration', function () {
     });
 
     describe('file path generation', function () {
-        test('generates correct paths for different model types', function () {
-            $fileService = new SharepointFileService;
-
-            $institutionPath = SharepointFileService::pathForFileableDriveItem($this->institution);
-            expect($institutionPath)->toContain('General/Padaliniai');
-            expect($institutionPath)->toContain($this->tenant->shortname);
-        });
-
-        test('path generation uses enum constants', function () {
+        test('generates human-readable paths', function () {
             $institution = Institution::factory()->for($this->tenant)->create(['name' => 'Test Institution']);
-            $fileService = new SharepointFileService;
 
             $path = SharepointFileService::pathForFileableDriveItem($institution);
 
@@ -121,7 +112,7 @@ describe('SharepointService Integration', function () {
             expect($path)->toContain('Test Institution');
         });
 
-        test('handles special characters in path generation', function () {
+        test('path handles special characters', function () {
             $institution = Institution::factory()->for($this->tenant)->create([
                 'name' => 'Institution & Partners (2023)',
             ]);
@@ -240,7 +231,7 @@ describe('SharepointService Integration', function () {
     describe('model trait integration', function () {
         test('models with HasSharepointFiles trait work correctly', function () {
             expect(in_array(\App\Models\Traits\HasSharepointFiles::class, class_uses($this->institution)))->toBeTrue();
-            expect($this->institution->files())->toBeInstanceOf(\Illuminate\Database\Eloquent\Relations\MorphToMany::class);
+            expect($this->institution->fileableFiles())->toBeInstanceOf(\Illuminate\Database\Eloquent\Relations\MorphMany::class);
         });
 
         test('path generation works with trait models', function () {
@@ -302,7 +293,7 @@ describe('SharepointService Integration', function () {
             expect($mockDocument['permissions'][0]['link']['scope'])->toBe(SharepointScopeEnum::ANONYMOUS()->label);
         });
 
-        test('handles multilingual content correctly', function () {
+        test('path handles multilingual content correctly', function () {
             $institution = Institution::factory()->for($this->tenant)->create([
                 'name' => 'Daugiakalbė institucija ąčęėįšųūž',
             ]);

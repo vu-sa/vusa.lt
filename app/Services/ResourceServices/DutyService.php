@@ -194,6 +194,8 @@ class DutyService
                 'types', // explicit since not auto-loaded
                 'meetings:id,title,start_time',
                 'meetings.agendaItems:id,meeting_id,title,student_vote,decision,student_benefit',
+                // Load fileableFiles for has_report and has_protocol accessors (prevents N+1)
+                'meetings.fileableFiles:id,fileable_id,fileable_type,file_type,deleted_externally_at',
                 // Load all users (including historical) for Gantt timeline display
                 'duties.users:id,name,email,profile_photo_path',
                 'duties.types:id,title,slug',

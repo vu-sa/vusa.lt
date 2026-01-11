@@ -2,6 +2,7 @@
 
 namespace App\Console;
 
+use App\Jobs\SyncFileableFilesJob;
 use App\Jobs\SyncStaleDocumentsJob;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
@@ -29,6 +30,12 @@ class Kernel extends ConsoleKernel
             ->dailyAt('02:00')
             ->name('sync-stale-documents')
             ->withoutOverlapping(30); // Prevent overlapping runs, timeout after 30 minutes
+
+        // Weekly sync of FileableFiles to detect externally deleted files
+        $schedule->job(new SyncFileableFilesJob)
+            ->weeklyOn(1, '03:00') // Monday at 3 AM
+            ->name('sync-fileable-files')
+            ->withoutOverlapping(60);
 
         // $schedule->call(function () {
         //     \App\Actions\Schedulable\TaskNotifier::notifyDaysLeft(3);

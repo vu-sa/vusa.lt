@@ -21,7 +21,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property \Illuminate\Support\Carbon $updated_at
  * @property string $title
  * @property int $order
- * @property bool $brought_by_students
+ * @property int $brought_by_students
  * @property string|null $description
  * @property string|null $student_vote
  * @property string|null $decision

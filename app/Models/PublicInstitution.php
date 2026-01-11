@@ -31,6 +31,7 @@ use Laravel\Scout\Searchable;
  * @property \Illuminate\Support\Carbon $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\FileableFile> $availableFiles
  * @property-read \App\Models\Pivots\Relationshipable|\App\Models\Pivots\Trainable|null $pivot
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Training> $availableTrainings
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\InstitutionCheckIn> $checkIns
@@ -38,7 +39,10 @@ use Laravel\Scout\Searchable;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Comment> $comments
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Document> $documents
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Duty> $duties
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\FileableFile> $fileableFiles
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\SharepointFile> $files
+ * @property-read bool $has_report
+ * @property-read bool $has_protocol
  * @property-read bool $has_public_meetings
  * @property-read mixed $maybe_short_name
  * @property-read mixed $related_institutions

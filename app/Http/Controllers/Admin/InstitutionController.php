@@ -127,13 +127,13 @@ class InstitutionController extends AdminController
 
         // TODO: only show current_users
         $institution->load('tenant', 'duties.current_users')->load(['meetings' => function ($query) {
-            $query->with('tasks', 'comments', 'files', 'institutions.types')->orderBy('start_time', 'asc');
+            $query->with('tasks', 'comments', 'files', 'institutions.types', 'fileableFiles')->orderBy('start_time', 'asc');
         }])->load('activities.causer');
 
         // Append public visibility flags now that types are loaded (avoids N+1)
         $institution->append('has_public_meetings');
         $institution->append('meeting_periodicity_days');
-        $institution->meetings->each->append('is_public');
+        $institution->meetings->each->append(['is_public', 'has_report', 'has_protocol']);
 
         // Get related institutions as flat list with metadata (cached)
         $relatedInstitutionsFlat = \App\Services\RelationshipService::getRelatedInstitutionsCached($institution);

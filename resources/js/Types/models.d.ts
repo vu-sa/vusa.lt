@@ -135,6 +135,31 @@ declare global {
       form_field_exists: boolean
     }
 
+    export interface FileableFile {
+      // columns
+      id: string
+      fileable_type: string
+      fileable_id: string
+      sharepoint_id: string
+      sharepoint_path?: string | null
+      name: string
+      file_type?: 'protocol' | 'report' | 'agenda' | 'methodology' | 'other' | null
+      mime_type?: string | null
+      size_bytes?: number | null
+      file_date?: string | null
+      description?: string | null
+      public_link?: string | null
+      public_link_expires_at?: string | null
+      last_synced_at?: string | null
+      deleted_externally_at?: string | null
+      created_at: string
+      updated_at: string
+      deleted_at?: string | null
+      // mutators
+      formatted_size?: string | null
+      file_type_label?: string | null
+    }
+
     export interface File {
     }
 
@@ -333,26 +358,6 @@ declare global {
       blocks_exists: boolean
     }
 
-    export interface Relationshipable {
-      // columns
-      id: number
-      relationship_id: number
-      relationshipable_type: string
-      relationshipable_id: string
-      related_model_id: string
-      scope: string
-      bidirectional: boolean
-      created_at: string
-      updated_at: string
-      // relations
-      relationshipable?: Relationshipable
-      related_model?: Relationshipable
-      relationship?: Relationship
-      // counts
-      // exists
-      relationship_exists: boolean
-    }
-
     export interface ReservationResource {
       // columns
       id: number
@@ -406,6 +411,26 @@ declare global {
       institution_exists: boolean
       membership_exists: boolean
       tenant_exists: boolean
+    }
+
+    export interface Relationshipable {
+      // columns
+      id: number
+      relationship_id: number
+      relationshipable_type: string
+      relationshipable_id: string
+      related_model_id: string
+      scope: string
+      bidirectional: boolean
+      created_at: string
+      updated_at: string
+      // relations
+      relationshipable?: Relationshipable
+      related_model?: Relationshipable
+      relationship?: Relationship
+      // counts
+      // exists
+      relationship_exists: boolean
     }
 
     export interface AgendaItem {
@@ -885,6 +910,144 @@ declare global {
       type_exists: boolean
     }
 
+    export interface ContentPart {
+      // columns
+      id: number
+      content_id: number
+      type: string
+      json_content: Record<string, unknown>
+      options?: Record<string, unknown> | null
+      order: number
+      created_at: string
+      updated_at: string
+      // mutators
+      html: unknown
+      // relations
+      content?: Content
+      // counts
+      // exists
+      content_exists: boolean
+    }
+
+    export interface InstitutionCheckIn {
+      // columns
+      id: string
+      tenant_id?: number | null
+      institution_id: string
+      user_id: string
+      start_date: string
+      end_date: string
+      note?: string | null
+      created_at?: string | null
+      updated_at?: string | null
+      // relations
+      institution?: Institution
+      user?: User
+      tenant?: Tenant
+      activities?: Activity[]
+      // counts
+      activities_count: number
+      // exists
+      institution_exists: boolean
+      user_exists: boolean
+      tenant_exists: boolean
+      activities_exists: boolean
+    }
+
+    export interface News {
+      // columns
+      id: number
+      title: string
+      category_id?: number | null
+      permalink?: string | null
+      short: string
+      lang: string
+      other_lang_id?: number | null
+      content_id: number
+      image?: unknown | null
+      image_author?: string | null
+      important: boolean
+      tenant_id: number
+      publish_time?: string | null
+      main_points?: string | null
+      highlights?: Array<unknown> | null
+      layout: string
+      read_more?: string | null
+      draft?: boolean | null
+      created_at: string
+      updated_at: string
+      last_edited_at?: string | null
+      deleted_at?: string | null
+      // relations
+      user?: User
+      tenant?: Tenant
+      other_language_news?: News
+      tags?: Tag[]
+      content?: Content
+      // counts
+      tags_count: number
+      // exists
+      user_exists: boolean
+      tenant_exists: boolean
+      other_language_news_exists: boolean
+      tags_exists: boolean
+      content_exists: boolean
+    }
+
+    export interface Page {
+      // columns
+      id: number
+      title: string
+      permalink?: string | null
+      lang: string
+      other_lang_id?: number | null
+      content_id: number
+      category_id?: number | null
+      is_active: boolean
+      highlights?: Array<unknown> | null
+      layout: string
+      featured_image?: string | null
+      meta_description?: string | null
+      publish_time?: string | null
+      tenant_id: number
+      created_at: string
+      updated_at: string
+      last_edited_at?: string | null
+      deleted_at?: string | null
+      // relations
+      tenant?: Tenant
+      other_language_page?: Page
+      category?: Category
+      content?: Content
+      // counts
+      // exists
+      tenant_exists: boolean
+      other_language_page_exists: boolean
+      category_exists: boolean
+      content_exists: boolean
+    }
+
+    export interface Task {
+      // columns
+      id: string
+      name: string
+      description?: string | null
+      due_date?: string | null
+      taskable_type: string
+      taskable_id: string
+      completed_at?: string | null
+      created_at: string
+      updated_at: string
+      deleted_at?: string | null
+      // relations
+      taskable?: Task
+      users?: User[]
+      // counts
+      users_count: number
+      // exists
+      users_exists: boolean
+    }
+
     export interface Tenant {
       // columns
       id: number
@@ -933,29 +1096,72 @@ declare global {
       content_exists: boolean
     }
 
-    export interface InstitutionCheckIn {
+    export interface User {
       // columns
       id: string
-      tenant_id?: number | null
-      institution_id: string
-      user_id: string
-      start_date: string
-      end_date: string
-      note?: string | null
-      created_at?: string | null
-      updated_at?: string | null
+      email: string
+      phone?: string | null
+      facebook_url?: string | null
+      name: string
+      pronouns?: Array<unknown> | null
+      show_pronouns: boolean
+      password?: string | null
+      is_active: boolean
+      email_verified_at?: string | null
+      remember_token?: string | null
+      last_action?: string | null
+      tutorial_progress?: Array<unknown> | null
+      microsoft_token?: string | null
+      updated_at: string
+      created_at: string
+      profile_photo_path?: string | null
+      deleted_at?: string | null
+      name_was_changed?: boolean
+      // mutators
+      has_password: unknown
+      translations: unknown
       // relations
-      institution?: Institution
-      user?: User
-      tenant?: Tenant
+      duties?: Duty[]
+      previous_duties?: Duty[]
+      current_duties?: Duty[]
+      dutiables?: Dutiable[]
+      tasks?: Task[]
+      reservations?: Reservation[]
+      memberships?: Membership[]
+      trainings?: Training[]
+      available_trainings_through_user?: Training[]
+      roles?: Role[]
+      permissions?: Permission[]
       activities?: Activity[]
+      notifications?: DatabaseNotification[]
       // counts
+      duties_count: number
+      previous_duties_count: number
+      current_duties_count: number
+      dutiables_count: number
+      tasks_count: number
+      reservations_count: number
+      memberships_count: number
+      trainings_count: number
+      available_trainings_through_user_count: number
+      roles_count: number
+      permissions_count: number
       activities_count: number
+      notifications_count: number
       // exists
-      institution_exists: boolean
-      user_exists: boolean
-      tenant_exists: boolean
+      duties_exists: boolean
+      previous_duties_exists: boolean
+      current_duties_exists: boolean
+      dutiables_exists: boolean
+      tasks_exists: boolean
+      reservations_exists: boolean
+      memberships_exists: boolean
+      trainings_exists: boolean
+      available_trainings_through_user_exists: boolean
+      roles_exists: boolean
+      permissions_exists: boolean
       activities_exists: boolean
+      notifications_exists: boolean
     }
 
     export interface Document {
@@ -990,25 +1196,6 @@ declare global {
       // counts
       // exists
       institution_exists: boolean
-    }
-
-    export interface ContentPart {
-      // columns
-      id: number
-      content_id: number
-      type: string
-      json_content: Record<string, unknown>
-      options?: Record<string, unknown> | null
-      order: number
-      created_at: string
-      updated_at: string
-      // mutators
-      html: unknown
-      // relations
-      content?: Content
-      // counts
-      // exists
-      content_exists: boolean
     }
 
     export interface Duty {
@@ -1147,6 +1334,8 @@ declare global {
       // mutators
       is_public: boolean
       completion_status: string
+      has_protocol: boolean
+      has_report: boolean
       // relations
       agenda_items?: AgendaItem[]
       institutions?: Institution[]
@@ -1154,6 +1343,7 @@ declare global {
       types?: Type[]
       commentable?: Meeting
       files?: SharepointFile[]
+      fileable_files?: FileableFile[]
       tasks?: Task[]
       activities?: Activity[]
       // counts
@@ -1172,79 +1362,6 @@ declare global {
       files_exists: boolean
       tasks_exists: boolean
       activities_exists: boolean
-    }
-
-    export interface News {
-      // columns
-      id: number
-      title: string
-      category_id?: number | null
-      permalink?: string | null
-      short: string
-      lang: string
-      other_lang_id?: number | null
-      content_id: number
-      image?: unknown | null
-      image_author?: string | null
-      important: boolean
-      tenant_id: number
-      publish_time?: string | null
-      main_points?: string | null
-      highlights?: Array<unknown> | null
-      layout: string
-      read_more?: string | null
-      draft?: boolean | null
-      created_at: string
-      updated_at: string
-      last_edited_at?: string | null
-      deleted_at?: string | null
-      // relations
-      user?: User
-      tenant?: Tenant
-      other_language_news?: News
-      tags?: Tag[]
-      content?: Content
-      // counts
-      tags_count: number
-      // exists
-      user_exists: boolean
-      tenant_exists: boolean
-      other_language_news_exists: boolean
-      tags_exists: boolean
-      content_exists: boolean
-    }
-
-    export interface Page {
-      // columns
-      id: number
-      title: string
-      permalink?: string | null
-      lang: string
-      other_lang_id?: number | null
-      content_id: number
-      category_id?: number | null
-      is_active: boolean
-      highlights?: Array<unknown> | null
-      layout: string
-      featured_image?: string | null
-      meta_description?: string | null
-      publish_time?: string | null
-      tenant_id: number
-      created_at: string
-      updated_at: string
-      last_edited_at?: string | null
-      deleted_at?: string | null
-      // relations
-      tenant?: Tenant
-      other_language_page?: Page
-      category?: Category
-      content?: Content
-      // counts
-      // exists
-      tenant_exists: boolean
-      other_language_page_exists: boolean
-      category_exists: boolean
-      content_exists: boolean
     }
 
     export interface PublicInstitution {
@@ -1356,27 +1473,6 @@ declare global {
       activities_exists: boolean
     }
 
-    export interface Task {
-      // columns
-      id: string
-      name: string
-      description?: string | null
-      due_date?: string | null
-      taskable_type: string
-      taskable_id: string
-      completed_at?: string | null
-      created_at: string
-      updated_at: string
-      deleted_at?: string | null
-      // relations
-      taskable?: Task
-      users?: User[]
-      // counts
-      users_count: number
-      // exists
-      users_exists: boolean
-    }
-
     export interface Type {
       // columns
       id: number
@@ -1425,74 +1521,6 @@ declare global {
       incoming_relationships_exists: boolean
       files_exists: boolean
       activities_exists: boolean
-    }
-
-    export interface User {
-      // columns
-      id: string
-      email: string
-      phone?: string | null
-      facebook_url?: string | null
-      name: string
-      pronouns?: Array<unknown> | null
-      show_pronouns: boolean
-      password?: string | null
-      is_active: boolean
-      email_verified_at?: string | null
-      remember_token?: string | null
-      last_action?: string | null
-      tutorial_progress?: Array<unknown> | null
-      microsoft_token?: string | null
-      updated_at: string
-      created_at: string
-      profile_photo_path?: string | null
-      deleted_at?: string | null
-      name_was_changed?: boolean
-      // mutators
-      has_password: unknown
-      translations: unknown
-      // relations
-      duties?: Duty[]
-      previous_duties?: Duty[]
-      current_duties?: Duty[]
-      dutiables?: Dutiable[]
-      tasks?: Task[]
-      reservations?: Reservation[]
-      memberships?: Membership[]
-      trainings?: Training[]
-      available_trainings_through_user?: Training[]
-      roles?: Role[]
-      permissions?: Permission[]
-      activities?: Activity[]
-      notifications?: DatabaseNotification[]
-      // counts
-      duties_count: number
-      previous_duties_count: number
-      current_duties_count: number
-      dutiables_count: number
-      tasks_count: number
-      reservations_count: number
-      memberships_count: number
-      trainings_count: number
-      available_trainings_through_user_count: number
-      roles_count: number
-      permissions_count: number
-      activities_count: number
-      notifications_count: number
-      // exists
-      duties_exists: boolean
-      previous_duties_exists: boolean
-      current_duties_exists: boolean
-      dutiables_exists: boolean
-      tasks_exists: boolean
-      reservations_exists: boolean
-      memberships_exists: boolean
-      trainings_exists: boolean
-      available_trainings_through_user_exists: boolean
-      roles_exists: boolean
-      permissions_exists: boolean
-      activities_exists: boolean
-      notifications_exists: boolean
     }
 
   }

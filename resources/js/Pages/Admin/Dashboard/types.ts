@@ -92,6 +92,9 @@ export interface GanttMeeting {
   agenda_items_count?: number;
   // Whether the user has authorization for this meeting's institution
   authorized?: boolean;
+  // File status indicators for tooltip display
+  has_report?: boolean;
+  has_protocol?: boolean;
 }
 
 export interface GanttInstitution {

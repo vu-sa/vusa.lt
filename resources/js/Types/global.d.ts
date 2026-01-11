@@ -9,6 +9,19 @@ declare global {
   /* eslint-disable no-var */
   var route: typeof ziggyRoute;
 
+  /**
+   * Minimal structure required for file upload form data.
+   * Used when passing fileable to FileManager/FileUploader components.
+   * Only id and type are required for backend validation.
+   * fileable_name is optional but used for auto-generating file names.
+   */
+  interface FileableFormData {
+    id: number | string;
+    type: string;
+    /** Optional - used by generateNameForFile for auto-naming */
+    fileable_name?: string;
+  }
+
   interface PaginatedModels<T> {
     current_page: number;
     data: Array<T> | [];

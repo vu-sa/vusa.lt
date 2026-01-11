@@ -23,10 +23,14 @@ use Laravel\Scout\Searchable;
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
  * @property-read \Illuminate\Database\Eloquent\Collection<int, AgendaItem> $agendaItems
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\FileableFile> $availableFiles
  * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $commentable
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Comment> $comments
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\FileableFile> $fileableFiles
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\SharepointFile> $files
  * @property-read string $completion_status
+ * @property-read bool $has_report
+ * @property-read bool $has_protocol
  * @property-read bool $is_public
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Institution> $institutions
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Task> $tasks

@@ -103,6 +103,42 @@
           </Badge>
         </div>
 
+        <!-- File Status Badges -->
+        <div class="flex flex-wrap items-center gap-2">
+          <Badge 
+            v-if="meeting.has_protocol" 
+            variant="outline" 
+            class="text-xs gap-1 text-green-600 border-green-300 dark:text-green-400 dark:border-green-700"
+          >
+            <ScrollText class="h-3 w-3" />
+            {{ $t('Protokolas įkeltas') }}
+          </Badge>
+          <Badge 
+            v-else 
+            variant="outline" 
+            class="text-xs gap-1 text-amber-600 border-amber-300 dark:text-amber-400 dark:border-amber-700"
+          >
+            <Scroll class="h-3 w-3" />
+            {{ $t('Nėra protokolo') }}
+          </Badge>
+          <Badge 
+            v-if="meeting.has_report" 
+            variant="outline" 
+            class="text-xs gap-1 text-green-600 border-green-300 dark:text-green-400 dark:border-green-700"
+          >
+            <FileBarChart class="h-3 w-3" />
+            {{ $t('Ataskaita įkelta') }}
+          </Badge>
+          <Badge 
+            v-else 
+            variant="outline" 
+            class="text-xs gap-1 text-amber-600 border-amber-300 dark:text-amber-400 dark:border-amber-700"
+          >
+            <FileBarChart2 class="h-3 w-3" />
+            {{ $t('Nėra ataskaitos') }}
+          </Badge>
+        </div>
+
       </CardContent>
     </Card>
   </div>
@@ -122,7 +158,11 @@ import {
   GraduationCap,
   Users,
   Globe,
-  Video
+  Video,
+  ScrollText,
+  Scroll,
+  FileBarChart,
+  FileBarChart2
 } from 'lucide-vue-next'
 
 import { formatStaticTime } from '@/Utils/IntlTime'

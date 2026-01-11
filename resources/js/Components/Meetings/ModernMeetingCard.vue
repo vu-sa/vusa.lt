@@ -33,18 +33,38 @@
           <FileText class="h-3 w-3" />
           <span>{{ meeting.agenda_items?.length || 0 }} {{ $t('klausimai') }}</span>
         </div>
-        <div class="flex items-center gap-1">
-          <File class="h-3 w-3" />
-          <span>{{ meeting.files?.length || 0 }} {{ $t('failai') }}</span>
-        </div>
-        <div class="flex items-center gap-1">
-          <MessageSquare class="h-3 w-3" />
-          <span>{{ meeting.comments?.length || 0 }}</span>
-        </div>
         <div v-if="meeting.tasks?.length" class="flex items-center gap-1">
           <CheckSquare class="h-3 w-3" />
           <span>{{ completedTasks }}/{{ meeting.tasks.length }} {{ $t('užduotys') }}</span>
         </div>
+      </div>
+
+      <!-- File Status Badges -->
+      <div class="flex items-center gap-2 mt-3">
+        <Badge 
+          v-if="meeting.has_protocol" 
+          variant="outline" 
+          class="text-xs gap-1 text-green-600 border-green-300 dark:text-green-400 dark:border-green-700"
+        >
+          <FileCheck class="h-3 w-3" />
+          {{ $t('Protokolas') }}
+        </Badge>
+        <Badge 
+          v-else 
+          variant="outline" 
+          class="text-xs gap-1 text-zinc-400 border-zinc-200 dark:text-zinc-500 dark:border-zinc-700"
+        >
+          <File class="h-3 w-3" />
+          {{ $t('Nėra protokolo') }}
+        </Badge>
+        <Badge 
+          v-if="meeting.has_report" 
+          variant="outline" 
+          class="text-xs gap-1 text-blue-600 border-blue-300 dark:text-blue-400 dark:border-blue-700"
+        >
+          <ClipboardCheck class="h-3 w-3" />
+          {{ $t('Ataskaita') }}
+        </Badge>
       </div>
 
       <!-- Institution Badge (if provided) -->
@@ -74,7 +94,8 @@ import {
   ChevronRight,
   FileText,
   File,
-  MessageSquare,
+  FileCheck,
+  ClipboardCheck,
   CheckSquare,
   Trash2,
   Globe

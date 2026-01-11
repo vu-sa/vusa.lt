@@ -126,6 +126,35 @@ class SharepointGraphService
         return $this->parseDriveItems($driveItems);
     }
 
+    /**
+     * Get a DriveItem object by path (not parsed into collection).
+     * Returns the actual Microsoft Graph DriveItem model.
+     */
+    public function getDriveItemObjectByPath(string $path): ?Models\DriveItem
+    {
+        try {
+            $sharepointPathFinal = $this->graphApiBaseUrl.'drives/'.$this->driveId.'/root:'."/{$path}?\$expand=listItem";
+
+            $driveItem = $this->graph->drives()->byDriveId($this->driveId)->withUrl($sharepointPathFinal)->get()->wait();
+
+            return $driveItem;
+        } catch (ODataError $e) {
+            Log::warning('Failed to get drive item by path', [
+                'path' => $path,
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        } catch (\Exception $e) {
+            Log::warning('Failed to get drive item by path', [
+                'path' => $path,
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
+    }
+
     /* public function getDriveItemByIdWithListItem(string $driveItemId): Models\DriveItem */
     /* { */
     /*    $requestConfiguration = new DriveItemItemRequestBuilderGetRequestConfiguration(); */
@@ -139,6 +168,32 @@ class SharepointGraphService
     /**/
     /*    return $driveItem; */
     /* } */
+
+    /**
+     * Get a drive item by its ID with list item metadata.
+     */
+    public function getDriveItemById(string $driveItemId): ?Models\DriveItem
+    {
+        try {
+            $requestConfiguration = new DriveItemItemRequestBuilderGetRequestConfiguration;
+            $queryParameters = DriveItemItemRequestBuilderGetRequestConfiguration::createQueryParameters();
+
+            $queryParameters->expand = ['listItem'];
+
+            $requestConfiguration->queryParameters = $queryParameters;
+
+            $driveItem = $this->graph->drives()->byDriveId($this->driveId)->items()->byDriveItemId($driveItemId)->get($requestConfiguration)->wait();
+
+            return $driveItem;
+        } catch (\Exception $e) {
+            \Log::warning('Failed to get drive item by ID', [
+                'driveItemId' => $driveItemId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
+    }
 
     public function getDriveItemByListItem(string $siteId, string $listId, string $listItemId): Models\DriveItem
     {
@@ -209,16 +264,27 @@ class SharepointGraphService
 
     public function updateListItem(string $listId, string $listItemId, array $fields): Models\FieldValueSet
     {
-        /* dd($fields, $this->siteId, $listId, $listItemId); */
+        try {
+            $requestConfiguration = new FieldsRequestBuilderPatchRequestConfiguration;
+            $fieldValueSet = new FieldValueSet;
 
-        $requestConfiguration = new FieldsRequestBuilderPatchRequestConfiguration;
-        $fieldValueSet = new FieldValueSet;
+            $fieldValueSet->setAdditionalData($fields);
 
-        $fieldValueSet->setAdditionalData($fields);
+            $updatedListItem = $this->graph->sites()->bySiteId($this->siteId)->lists()->byListId($listId)->items()->byListItemId($listItemId)->fields()->patch($fieldValueSet, $requestConfiguration)->wait();
 
-        $updatedListItem = $this->graph->sites()->bySiteId($this->siteId)->lists()->byListId($listId)->items()->byListItemId($listItemId)->fields()->patch($fieldValueSet, $requestConfiguration)->wait();
+            return $updatedListItem;
+        } catch (ODataError $e) {
+            $this->logError('Failed to update SharePoint list item', [
+                'list_id' => $listId,
+                'list_item_id' => $listItemId,
+                'fields' => $fields,
+                'error_message' => $e->getMessage() ?: 'Unknown error',
+                'error_code' => $e->getError()?->getCode(),
+                'error_details' => $e->getError()?->getMessage(),
+            ]);
 
-        return $updatedListItem;
+            throw $e;
+        }
     }
 
     // Since every institution can have types and with them associated documents, we need to
@@ -341,8 +407,8 @@ class SharepointGraphService
 
             $sharepointPathFinal = "{$this->graphApiBaseUrl}sites/{$siteId}/drive/items/{$driveItemId}/createLink";
 
-            // This is the wrong chain, but it should work
-            $permission = $this->graph->drives()->byDriveId($driveItemId)->items()->byDriveItemId($driveItemId)->createLink()->withUrl($sharepointPathFinal)->post($requestBody)->wait();
+            // Use driveId (not driveItemId) for byDriveId, then driveItemId for byDriveItemId
+            $permission = $this->graph->drives()->byDriveId($this->driveId)->items()->byDriveItemId($driveItemId)->createLink()->withUrl($sharepointPathFinal)->post($requestBody)->wait();
 
             // Enhanced logging
             $this->logInfo('Public permission created', [
@@ -399,6 +465,62 @@ class SharepointGraphService
     public function deleteDriveItem(string $driveItemId): void
     {
         $this->graph->drives()->byDriveId($this->driveId)->items()->byDriveItemId($driveItemId)->delete()->wait();
+    }
+
+    /**
+     * Create a folder in SharePoint.
+     * Creates parent folders recursively if they don't exist.
+     *
+     * @param  string  $folderPath  The full path for the folder (e.g., "General/Padaliniai/NewFolder")
+     */
+    public function createFolder(string $folderPath): Models\DriveItem
+    {
+        $pathParts = explode('/', trim($folderPath, '/'));
+        $folderName = array_pop($pathParts);
+        $parentPath = implode('/', $pathParts);
+
+        // Build the parent item path
+        $parentUrl = $this->graphApiBaseUrl.'drives/'.$this->driveId.'/root';
+        if (! empty($parentPath)) {
+            $parentUrl .= ':/'.$parentPath.':';
+        }
+
+        $requestBody = new Models\DriveItem;
+        $requestBody->setName($folderName);
+        $requestBody->setFolder(new Models\Folder);
+        $requestBody->setAdditionalData([
+            '@microsoft.graph.conflictBehavior' => 'fail',
+        ]);
+
+        $createdFolder = $this->graph->drives()->byDriveId($this->driveId)->root()->withUrl($parentUrl.'/children')->post($requestBody)->wait();
+
+        $this->logInfo('Folder created', [
+            'path' => $folderPath,
+            'folder_id' => $createdFolder->getId(),
+        ]);
+
+        return $createdFolder;
+    }
+
+    /**
+     * Upload a .url shortcut file to SharePoint.
+     * Creates necessary parent folders if they don't exist.
+     *
+     * @param  string  $filePath  The full path including filename (e.g., "Folder/Subfolder/shortcut.url")
+     * @param  string  $content  The .url file content
+     */
+    public function uploadUrlShortcut(string $filePath, string $content): Models\DriveItem
+    {
+        $factory = new Psr17Factory;
+
+        $stream = $factory->createStream($content);
+
+        // Use fail conflict behavior since we don't want to overwrite existing shortcuts
+        $sharepointPathFinal = $this->graphApiBaseUrl.'drives/'.$this->driveId.'/root:'."/{$filePath}:/content?\$expand=listItem&@microsoft.graph.conflictBehavior=fail";
+
+        $uploadedDriveItem = $this->graph->drives()->byDriveId($this->driveId)->root()->withUrl($sharepointPathFinal)->content()->put($stream)->wait();
+
+        return $uploadedDriveItem;
     }
 
     /**
@@ -662,11 +784,34 @@ class SharepointGraphService
 
                 return $result;
             } catch (\Exception $e) {
+                // Extract more details from the exception
+                $errorMessage = $e->getMessage();
+                $errorDetails = [];
+
+                // Try to get more details from Microsoft Graph exceptions
+                if (method_exists($e, 'getResponse')) {
+                    $response = $e->getResponse();
+                    if ($response) {
+                        $errorDetails['status_code'] = $response->getStatusCode();
+                        $errorDetails['body'] = (string) $response->getBody();
+                    }
+                }
+
+                // Check for ODataError which has more details
+                if ($e instanceof \Microsoft\Graph\Generated\Models\ODataErrors\ODataError) {
+                    $errorDetails['odata_error'] = $e->getError()?->getMessage() ?? 'No OData error message';
+                    $errorDetails['odata_code'] = $e->getError()?->getCode() ?? 'No code';
+                }
+
+                // Log the exception class for debugging
+                $errorDetails['exception_class'] = get_class($e);
+
                 if ($attempt > $maxRetries) {
                     $this->logError('Operation failed after all retries', [
                         'operation' => $operationName,
                         'attempts' => $attempt,
-                        'error' => $e->getMessage(),
+                        'error' => $errorMessage ?: 'Empty message',
+                        'details' => $errorDetails,
                     ]);
                     throw $e;
                 }
@@ -674,7 +819,8 @@ class SharepointGraphService
                 $this->logInfo('Operation failed, retrying', [
                     'operation' => $operationName,
                     'attempt' => $attempt,
-                    'error' => $e->getMessage(),
+                    'error' => $errorMessage ?: 'Empty message',
+                    'details' => $errorDetails,
                 ]);
 
                 // Exponential backoff

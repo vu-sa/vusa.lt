@@ -6,14 +6,9 @@ type Form = {
   typeValue: string;
 };
 
-type Fileable = {
-  fileable_id: string;
-  fileable_name: string;
-  fileable_type: string;
-};
-
-export const generateNameForFile = (form: Form, fileable: Fileable) => {
-  if (fileable.fileable_type === "Meeting") {
+export const generateNameForFile = (form: Form, fileable?: FileableFormData) => {
+  // Meeting files get auto-generated names if fileable_name is available
+  if (fileable?.type === "Meeting" && fileable.fileable_name) {
     return {
       fileName: `${genitivize(fileable.fileable_name)} protokolas`,
       isFileNameEditDisabled: true,

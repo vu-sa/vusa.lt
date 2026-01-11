@@ -114,6 +114,8 @@ export function buildMeetingTooltipContent(
     title?: string; 
     completion_status?: string;
     authorized?: boolean;
+    has_report?: boolean;
+    has_protocol?: boolean;
     agenda_items?: Array<{
       id: string;
       title: string;
@@ -162,12 +164,16 @@ export function buildMeetingTooltipContent(
     `
   }
 
+  // Build file status section (protocol and report indicators)
+  const fileStatusHtml = buildFileStatusHtml(meeting.has_protocol, meeting.has_report)
+
   const html = `
     <div class="font-medium text-[12px] leading-tight flex items-center gap-1">
       ${meeting.title ?? name} ${statusBadge}
     </div>
     <div class="opacity-80">${fmt.format(meeting.date)}</div>
     ${meeting.title ? `<div class="opacity-70">${name}</div>` : ''}
+    ${fileStatusHtml}
     ${agendaHtml}
   `
 
@@ -213,6 +219,39 @@ function escapeHtml(text: string): string {
   const div = document.createElement('div')
   div.textContent = text
   return div.innerHTML
+}
+
+/**
+ * Build file status HTML for protocol and report indicators
+ * Uses ScrollText for protocol and FileBarChart for report icons
+ * Green = has file, Amber = missing file
+ */
+function buildFileStatusHtml(hasProtocol?: boolean, hasReport?: boolean): string {
+  // Only show if we have any file status info
+  if (hasProtocol === undefined && hasReport === undefined) {
+    return ''
+  }
+
+  // Protocol icon (ScrollText from lucide-vue-next)
+  const protocolIcon = hasProtocol
+    ? '<svg class="w-3.5 h-3.5 text-green-600 dark:text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h12a2 2 0 0 0 2-2v-2H10v2a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v3h4"/><path d="M19 17V5a2 2 0 0 0-2-2H4"/><path d="M15 8h-5"/><path d="M15 12h-5"/></svg>'
+    : '<svg class="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17V5a2 2 0 0 0-2-2H4"/><path d="M8 21h12a2 2 0 0 0 2-2v-2H10v2a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v3h4"/></svg>'
+
+  // Report icon (FileBarChart from lucide-vue-next)
+  const reportIcon = hasReport
+    ? '<svg class="w-3.5 h-3.5 text-green-600 dark:text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M8 18v-2"/><path d="M12 18v-4"/><path d="M16 18v-6"/></svg>'
+    : '<svg class="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>'
+
+  return `
+    <div class="flex items-center gap-2 mt-1.5 pt-1.5 border-t border-current/20">
+      <div class="flex items-center gap-1" title="${hasProtocol ? 'Protokolas įkeltas' : 'Nėra protokolo'}">
+        ${protocolIcon}
+      </div>
+      <div class="flex items-center gap-1" title="${hasReport ? 'Ataskaita įkelta' : 'Nėra ataskaitos'}">
+        ${reportIcon}
+      </div>
+    </div>
+  `
 }
 
 /**

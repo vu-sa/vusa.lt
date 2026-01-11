@@ -2,8 +2,11 @@
 
 namespace App\Models;
 
+use App\Contracts\SharepointFileableContract;
+use App\Events\FileableNameUpdated;
 use App\Models\Pivots\Dutiable;
 use App\Models\Pivots\Trainable;
+use App\Models\Traits\HasSharepointFiles;
 use App\Models\Traits\HasTranslations;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -32,10 +35,15 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Pivots\AgendaItem> $agendaItems
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\FileableFile> $availableFiles
  * @property-read \App\Models\Typeable|Dutiable|Trainable|null $pivot
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Training> $availableTrainings
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $current_users
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Dutiable> $dutiables
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\FileableFile> $fileableFiles
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\SharepointFile> $files
+ * @property-read bool $has_report
+ * @property-read bool $has_protocol
  * @property-read \App\Models\Institution|null $institution
  * @property-read \App\Models\Institution|null $institutions
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Meeting> $meetings
@@ -69,9 +77,9 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  *
  * @mixin \Eloquent
  */
-class Duty extends Model implements AuthorizableContract
+class Duty extends Model implements AuthorizableContract, SharepointFileableContract
 {
-    use Authorizable, HasFactory, HasRelationships, HasRoles, HasTranslations, HasUlids, LogsActivity, Notifiable, Searchable, SoftDeletes;
+    use Authorizable, HasFactory, HasRelationships, HasRoles, HasSharepointFiles, HasTranslations, HasUlids, LogsActivity, Notifiable, Searchable, SoftDeletes;
 
     protected $guarded = [];
 
@@ -183,5 +191,15 @@ class Duty extends Model implements AuthorizableContract
     public function availableTrainings()
     {
         return $this->morphToMany(Training::class, 'trainable')->using(Trainable::class);
+    }
+
+    protected static function booted()
+    {
+        static::saving(function (Duty $duty) {
+            // Dispatch event when name is about to change - SharePoint must succeed first
+            if ($duty->isDirty('name')) {
+                FileableNameUpdated::dispatch($duty);
+            }
+        });
     }
 }

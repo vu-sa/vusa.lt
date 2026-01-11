@@ -416,6 +416,7 @@ class RelationshipService
                     'types',
                     'meetings:id,title,start_time',
                     'meetings.agendaItems:id,meeting_id,title,student_vote,decision,student_benefit',
+                    'meetings.fileableFiles:id,fileable_id,fileable_type,file_type,deleted_externally_at',
                     'tenant:id,shortname',
                     'duties.users:id,name,email,profile_photo_path',
                     'duties.types:id,title,slug',
@@ -431,6 +432,7 @@ class RelationshipService
                 ->with([
                     'types',
                     'meetings:id,title,start_time', // Meetings for Gantt display, but no agenda items
+                    'meetings.fileableFiles:id,fileable_id,fileable_type,file_type,deleted_externally_at',
                     'tenant:id,shortname',
                     'duties.users:id,name,email,profile_photo_path',
                     'duties.types:id,title,slug',

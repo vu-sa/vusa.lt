@@ -96,8 +96,12 @@ class DutyController extends AdminController
     {
         $this->handleAuthorization('view', $duty);
 
+        $duty->load('institution.tenant', 'users', 'activities.causer', 'types');
+
         return $this->inertiaResponse('Admin/People/ShowDuty', [
-            'duty' => $duty->load('institution', 'users', 'activities.causer'),
+            'duty' => array_merge($duty->toArray(), [
+                'sharepointPath' => $duty->institution?->tenant ? $duty->sharepoint_path() : null,
+            ]),
         ]);
     }
 
