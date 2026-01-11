@@ -9,6 +9,7 @@ use App\Http\Requests\StoreFormRequest;
 use App\Http\Requests\UpdateFormRequest;
 use App\Models\Form;
 use App\Models\FormField;
+use App\Models\Institution;
 use App\Models\Tenant;
 use App\Models\Training;
 use App\Services\ModelAuthorizer as Authorizer;
@@ -41,10 +42,17 @@ class FormController extends AdminController
         $canAccessMemberForm = $memberFormId &&
             ! GetTenantsForUpserts::execute('forms.read.padalinys', $this->authorizer)->isEmpty();
 
+        // Check student rep registration form access
+        $studentRepFormId = app(FormSettings::class)->student_rep_registration_form_id;
+        $canAccessStudentRepForm = $studentRepFormId &&
+            ! GetTenantsForUpserts::execute('forms.read.padalinys', $this->authorizer)->isEmpty();
+
         return $this->inertiaResponse('Admin/Forms/IndexForm', [
             'forms' => $forms,
             'memberFormId' => $memberFormId,
             'canAccessMemberForm' => $canAccessMemberForm,
+            'studentRepFormId' => $studentRepFormId,
+            'canAccessStudentRepForm' => $canAccessStudentRepForm,
         ]);
     }
 
@@ -131,9 +139,31 @@ class FormController extends AdminController
             });
         }
 
+        // If form is student rep registration form, pass institutions for display
+        $institutions = collect();
+        if (app(FormSettings::class)->student_rep_registration_form_id === $form->id) {
+            // Get all institutions that are referenced in the registrations
+            $institutionField = $form->formFields->first(function ($field) {
+                return $field->use_model_options && $field->options_model === Institution::class;
+            });
+
+            if ($institutionField) {
+                $institutionIds = $registrations->flatMap(function ($registration) use ($institutionField) {
+                    $response = $registration->fieldResponses->first(function ($fieldResponse) use ($institutionField) {
+                        return $fieldResponse->formField->id === $institutionField->id;
+                    });
+
+                    return $response?->response['value'] ? [$response->response['value']] : [];
+                })->unique();
+
+                $institutions = Institution::whereIn('id', $institutionIds)->get(['id', 'name']);
+            }
+        }
+
         return $this->inertiaResponse('Admin/Forms/ShowForm', [
             'form' => $form,
             'registrations' => $registrations->values(),
+            'institutions' => $institutions,
         ]);
     }
 

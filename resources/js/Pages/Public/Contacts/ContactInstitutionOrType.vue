@@ -6,6 +6,7 @@
       :contact-sections="contactSections"
       :has-mixed-grouping="hasMixedGrouping"
       :institution="institution"
+      :student-rep-form-info="studentRepFormInfo"
     />
 
     <!-- Meetings Section (expanded by default, collapsible) -->
@@ -141,6 +142,12 @@ interface AcademicYearGroup {
   meetings: Array<App.Entities.Meeting>;
 }
 
+interface StudentRepFormInfo {
+  formPath: string;
+  institutionId: string;
+  institutionName: string;
+}
+
 const $page = usePage();
 
 const props = defineProps<{
@@ -151,6 +158,7 @@ const props = defineProps<{
   currentYearMeetings?: AcademicYearGroup;
   previousYearsMeetings?: Array<AcademicYearGroup>;
   hasMeetings?: boolean;
+  studentRepFormInfo?: StudentRepFormInfo | null;
 }>();
 
 // Set breadcrumbs for institution contact page

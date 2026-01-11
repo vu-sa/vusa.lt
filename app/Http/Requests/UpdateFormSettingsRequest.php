@@ -24,6 +24,9 @@ class UpdateFormSettingsRequest extends FormRequest
     {
         return [
             'member_registration_form_id' => 'required|ulid|exists:forms,id',
+            'student_rep_registration_form_id' => 'nullable|ulid|exists:forms,id',
+            'student_rep_institution_type_ids' => 'nullable|array',
+            'student_rep_institution_type_ids.*' => 'integer|exists:types,id',
         ];
     }
 }

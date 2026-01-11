@@ -21,12 +21,12 @@
       </div>
     </div>
   </div>
-  <div v-else-if="error" class="my-6 py-6 px-4 md:px-8 lg:px-12 text-red-500" role="alert">
+  <div v-else-if="error" class="mt-6 py-6 px-4 md:px-8 lg:px-12 text-red-500" role="alert">
     <div class="max-w-7xl mx-auto">
       {{ $t("Nepavyko užkrauti naujienų") }}
     </div>
   </div>
-  <section v-else-if="news && news.length > 0" class="my-6 py-6 px-4 md:px-8 lg:px-12" aria-labelledby="news-section-heading">
+  <section v-else-if="news && news.length > 0" class="mt-6 py-6 px-4 md:px-8 lg:px-12" aria-labelledby="news-section-heading">
     <h2 id="news-section-heading" class="sr-only">{{ $t("accessibility.news_and_announcements") }}</h2>
     <div class="max-w-7xl mx-auto grid gap-6 lg:gap-8 grid-cols-1 lg:grid-cols-[2fr_1fr]">
       <!-- Main Carousel -->

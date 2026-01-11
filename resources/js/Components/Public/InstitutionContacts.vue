@@ -1,6 +1,23 @@
 <template>
+  <!-- Empty state when no contacts -->
+  <div v-if="!hasAnyContacts">
+    <div v-if="institution.contacts_layout === 'below'" class="flex flex-col gap-8">
+      <InstitutionFigure only-vertical :institution />
+      <EmptyContactsState :student-rep-form-info="studentRepFormInfo" :institution-name="String(institution.name)" />
+    </div>
+    <div v-else class="gap-12 md:grid md:grid-cols-[auto__250px] xl:grid-cols-[5fr__3fr]">
+      <div class="h-fit md:sticky md:top-36">
+        <InstitutionFigure only-vertical :institution />
+      </div>
+      <h2 v-if="isMobile" class="mb-4 mt-0">
+        {{ $t('Kontaktai') }}
+      </h2>
+      <EmptyContactsState :student-rep-form-info="studentRepFormInfo" :institution-name="String(institution.name)" />
+    </div>
+  </div>
+
   <!-- Mixed contact sections (some grouped, some flat) -->
-  <div v-if="hasMixedGrouping">
+  <div v-else-if="hasMixedGrouping">
     <div v-if="institution.contacts_layout === 'below'" class="flex flex-col gap-8">
       <InstitutionFigure only-vertical :institution />
       <div v-for="section in contactSections" :key="section.dutyName" class="mb-8">
@@ -69,9 +86,11 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from "vue";
 import { breakpointsTailwind, useBreakpoints } from "@vueuse/core";
 
 import ContactCard from "@/Components/Public/ContactWithPhoto.vue";
+import EmptyContactsState from "./EmptyContactsState.vue";
 import InstitutionFigure from "./InstitutionFigure.vue";
 
 interface ContactGroup {
@@ -86,13 +105,33 @@ interface ContactSection {
   contacts?: Array<App.Entities.User>;
 }
 
+interface StudentRepFormInfo {
+  formPath: string;
+  institutionId: string;
+  institutionName: string;
+}
+
 const props = defineProps<{
   contacts?: Array<App.Entities.User>;
   contactSections?: Array<ContactSection>;
   hasMixedGrouping?: boolean;
   institution: App.Entities.Institution;
+  studentRepFormInfo?: StudentRepFormInfo | null;
 }>();
 
 const breakpoints = useBreakpoints(breakpointsTailwind);
 const isMobile = breakpoints.smallerOrEqual("md");
+
+const hasAnyContacts = computed(() => {
+  if (props.hasMixedGrouping) {
+    // Check if any contact section has contacts
+    return (props.contactSections?.length ?? 0) > 0 && props.contactSections?.some(section => {
+      if (section.type === 'grouped_duty') {
+        return section.groups?.some(group => (group.contacts?.length ?? 0) > 0);
+      }
+      return (section.contacts?.length ?? 0) > 0;
+    });
+  }
+  return (props.contacts?.length ?? 0) > 0;
+});
 </script>

@@ -47,6 +47,14 @@ return [
         'form_placeholder' => 'Pasirinkti formą',
         'role_label' => 'Pranešimo rolė',
         'role_placeholder' => 'Pasirinkti rolę',
+        'student_rep_title' => 'Studentų atstovų registracijos forma',
+        'student_rep_description' => 'Pasirinkti, kuri forma bus naudojama studentų atstovų registracijai. Kai institucija neturi aktyvių atstovų, bus rodomas mygtukas užsiregistruoti.',
+        'student_rep_form_label' => 'Studentų atstovų forma',
+        'student_rep_types_label' => 'Institucijų tipai',
+        'student_rep_types_description' => 'Pasirinkite, kuriuose institucijų tipuose bus rodomas registracijos mygtukas, kai nėra aktyvių atstovų.',
+        'student_rep_types_placeholder' => 'Pasirinkite institucijų tipus',
+        'no_types_found' => 'Tipų nerasta',
+        'no_form_selected' => 'Nepasirinkta (išjungta)',
     ],
 
     // Meeting settings page

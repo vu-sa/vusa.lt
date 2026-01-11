@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Events\MemberRegistrationCreated;
+use App\Events\StudentRepRegistrationCreated;
 use App\Http\Requests\StoreRegistrationRequest;
 use App\Models\Form;
 use App\Models\FormField;
+use App\Models\Institution;
 use App\Models\Registration;
 use App\Settings\FormSettings;
 use Illuminate\Database\Eloquent\Collection;
@@ -81,6 +83,9 @@ class RegistrationController extends Controller
                 // Dispatch event if needed
                 MemberRegistrationCreated::dispatchIf($form->id === app(FormSettings::class)->member_registration_form_id, $registration);
 
+                // Dispatch student rep registration event if applicable
+                $this->dispatchStudentRepRegistrationEvent($form, $registration, $fieldResponses);
+
                 Log::info('Registration saved successfully', [
                     'registration_id' => $registration->id,
                     'form_id' => $form->id,
@@ -102,5 +107,64 @@ class RegistrationController extends Controller
 
             return back()->with('error', 'Įvyko nenumatyta klaida. Bandykite dar kartą.');
         }
+    }
+
+    /**
+     * Dispatch the student rep registration event if the form matches the setting.
+     */
+    private function dispatchStudentRepRegistrationEvent(Form $form, Registration $registration, Collection $fieldResponses): void
+    {
+        $formSettings = app(FormSettings::class);
+
+        if ($form->id !== $formSettings->student_rep_registration_form_id) {
+            return;
+        }
+
+        // Find the institution field in the form
+        $institutionField = $form->formFields->first(function ($field) {
+            return $field->use_model_options && $field->options_model === Institution::class;
+        });
+
+        if (! $institutionField) {
+            Log::warning('Student rep registration form missing institution field', [
+                'form_id' => $form->id,
+            ]);
+
+            return;
+        }
+
+        // Find the institution from field responses
+        $institutionResponse = $fieldResponses->first(function ($fieldResponse) use ($institutionField) {
+            return $fieldResponse->formField->id === $institutionField->id;
+        });
+
+        if (! $institutionResponse) {
+            Log::warning('Student rep registration missing institution response', [
+                'form_id' => $form->id,
+                'registration_id' => $registration->id,
+            ]);
+
+            return;
+        }
+
+        $institutionId = null;
+
+        if (is_array($institutionResponse->response) && array_key_exists('value', $institutionResponse->response)) {
+            $institutionId = $institutionResponse->response['value'];
+        }
+
+        $institution = Institution::find($institutionId);
+
+        if (! $institution) {
+            Log::warning('Student rep registration institution not found', [
+                'form_id' => $form->id,
+                'registration_id' => $registration->id,
+                'institution_id' => $institutionId,
+            ]);
+
+            return;
+        }
+
+        StudentRepRegistrationCreated::dispatch($registration, $institution);
     }
 }

@@ -122,6 +122,7 @@ import { createIdColumn, createTimestampColumn, createTextColumn } from "@/Utils
 const props = defineProps<{
   form: App.Entities.Form;
   registrations: App.Entities.Registration[];
+  institutions?: { id: string; name: string }[];
 }>();
 
 const showModal = ref(false);
@@ -149,6 +150,15 @@ const getFieldOptions = (field: any) => {
     return tenants.map((tenant: any) => ({
       value: tenant.id,
       label: tenant.shortname
+    }));
+  }
+
+  // Handle institution model options
+  if (formField.use_model_options && formField.options_model === "App\\Models\\Institution") {
+    const institutions = props.institutions || [];
+    return institutions.map((institution: any) => ({
+      value: institution.id,
+      label: institution.name
     }));
   }
 
@@ -244,6 +254,13 @@ const formatFieldValue = (field: any, value: any) => {
       // Handle both string and number value types for tenant ID comparison
       const tenant = tenants.find((tenant: any) => String(tenant.id) === String(value) || tenant.id === value);
       return tenant ? `${tenant.shortname} (ID: ${value})` : `ID: ${value}`;
+    }
+
+    // Handle institution model options
+    if (formField.use_model_options && formField.options_model === "App\\Models\\Institution") {
+      const institutions = props.institutions || [];
+      const institution = institutions.find((inst: any) => String(inst.id) === String(value) || inst.id === value);
+      return institution ? institution.name : `ID: ${value}`;
     }
     
     // Handle regular options - show both label and value

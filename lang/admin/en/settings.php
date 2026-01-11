@@ -47,6 +47,14 @@ return [
         'form_placeholder' => 'Select a form',
         'role_label' => 'Notification Role',
         'role_placeholder' => 'Select a role',
+        'student_rep_title' => 'Student Representative Registration Form',
+        'student_rep_description' => 'Select which form will be used for student representative registration. When an institution has no active representatives, a registration button will be displayed.',
+        'student_rep_form_label' => 'Student Representative Form',
+        'student_rep_types_label' => 'Institution Types',
+        'student_rep_types_description' => 'Select which institution types will show the registration button when there are no active representatives.',
+        'student_rep_types_placeholder' => 'Select institution types',
+        'no_types_found' => 'No types found',
+        'no_form_selected' => 'Not selected (disabled)',
     ],
 
     // Meeting settings page

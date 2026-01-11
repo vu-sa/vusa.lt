@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\PublicController;
+use App\Models\Form;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Tenant;
 use App\Models\Type;
 use App\Models\User;
+use App\Settings\FormSettings;
 use App\Settings\MeetingSettings;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -220,6 +222,7 @@ class ContactController extends PublicController
             'currentYearMeetings' => $groupedMeetings['current'] ?? null,
             'previousYearsMeetings' => $groupedMeetings['previous'] ?? [],
             'hasMeetings' => ! empty($groupedMeetings),
+            'studentRepFormInfo' => $this->getStudentRepFormInfo($institution),
         ])->withViewData(
             ['SEOData' => $seo]
         );
@@ -584,6 +587,7 @@ class ContactController extends PublicController
             'currentYearMeetings' => $groupedMeetings['current'] ?? null,
             'previousYearsMeetings' => $groupedMeetings['previous'] ?? [],
             'hasMeetings' => ! empty($groupedMeetings),
+            'studentRepFormInfo' => $this->getStudentRepFormInfo($institution),
         ])->withViewData(
             ['SEOData' => $seo]
         );
@@ -719,5 +723,58 @@ class ContactController extends PublicController
         $startYear = $carbon->month >= 9 ? $carbon->year : $carbon->year - 1;
 
         return "{$startYear}-".($startYear + 1);
+    }
+
+    /**
+     * Get student representative registration form info for an institution.
+     *
+     * Returns null if:
+     * - No student rep form is configured
+     * - The institution type is not in the allowed types
+     *
+     * @return array{formPath: string, institutionId: string}|null
+     */
+    protected function getStudentRepFormInfo(Institution $institution): ?array
+    {
+        $formSettings = app(FormSettings::class);
+
+        // Check if a form is configured
+        if (! $formSettings->student_rep_registration_form_id) {
+            return null;
+        }
+
+        // Check if institution type is in allowed types
+        $allowedTypeIds = $formSettings->getStudentRepInstitutionTypeIds();
+
+        if ($allowedTypeIds->isNotEmpty()) {
+            // Load types if not already loaded
+            if (! $institution->relationLoaded('types')) {
+                $institution->load('types');
+            }
+
+            $institutionTypeIds = $institution->types->pluck('id');
+            $hasAllowedType = $institutionTypeIds->intersect($allowedTypeIds)->isNotEmpty();
+
+            if (! $hasAllowedType) {
+                return null;
+            }
+        }
+
+        // Get the form path
+        $form = Form::find($formSettings->student_rep_registration_form_id);
+
+        if (! $form) {
+            return null;
+        }
+
+        return [
+            'formPath' => route('registrationPage', [
+                'registrationString' => app()->getLocale() === 'lt' ? 'registracija' : 'registration',
+                'registrationForm' => $form->path,
+                'lang' => app()->getLocale(),
+            ]),
+            'institutionId' => $institution->id,
+            'institutionName' => $institution->name,
+        ];
     }
 }

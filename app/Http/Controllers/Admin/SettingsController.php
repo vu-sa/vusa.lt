@@ -53,8 +53,14 @@ class SettingsController extends AdminController
         return $this->inertiaResponse('Admin/Settings/EditFormSettings', [
             'member_registration_form_id' => $formSettings->member_registration_form_id,
             'member_registration_notification_recipient_role_id' => $formSettings->member_registration_notification_recipient_role_id,
+            'student_rep_registration_form_id' => $formSettings->student_rep_registration_form_id,
+            'student_rep_institution_type_ids' => $formSettings->getStudentRepInstitutionTypeIds()->toArray(),
             'forms' => Form::all(['id', 'name']),
             'roles' => Role::all(['id', 'name']),
+            'institution_types' => Type::query()
+                ->where('model_type', 'App\\Models\\Institution')
+                ->get(['id', 'title', 'slug'])
+                ->map->toArray(),
         ]);
     }
 
@@ -67,6 +73,8 @@ class SettingsController extends AdminController
 
         $formSettings->member_registration_form_id = $request->member_registration_form_id;
         $formSettings->member_registration_notification_recipient_role_id = $request->member_registration_notification_recipient_role_id;
+        $formSettings->student_rep_registration_form_id = $request->student_rep_registration_form_id;
+        $formSettings->setStudentRepInstitutionTypeIds($request->input('student_rep_institution_type_ids', []));
 
         $formSettings->save();
 

@@ -51,6 +51,9 @@ class EventServiceProvider extends ServiceProvider
         \App\Events\MemberRegistrationCreated::class => [
             \App\Listeners\SendMemberRegistrationNotification::class,
         ],
+        \App\Events\StudentRepRegistrationCreated::class => [
+            \App\Listeners\SendStudentRepRegistrationNotification::class,
+        ],
         /* \App\Events\TaskCreated::class => [ */
         /*    \App\Listeners\HandleTaskCreated::class, */
         /* ], */

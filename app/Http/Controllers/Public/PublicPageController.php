@@ -13,6 +13,7 @@ use App\Models\Page;
 use App\Models\Tenant;
 use App\Models\Type;
 use App\Services\ResourceServices\InstitutionService;
+use App\Settings\FormSettings;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -623,19 +624,36 @@ class PublicPageController extends PublicController
             title: $form->name.' - '.$this->tenant->shortname,
         );
 
+        // Check if this is the student rep registration form
+        $formSettings = app(FormSettings::class);
+        $isStudentRepForm = $form->id === $formSettings->student_rep_registration_form_id;
+
+        // Get pre-selected institution from query param (for autofill)
+        $preselectedInstitutionId = request()->query('institution');
+
         return Inertia::render('Public/RegistrationPage', [
             'form' => [
                 ...$form->toArray(),
-                'form_fields' => $form->formFields->map(function ($field) {
+                'form_fields' => $form->formFields->map(function ($field) use ($isStudentRepForm, $formSettings, $preselectedInstitutionId) {
                     $options = $field->options;
 
                     if ($field->use_model_options) {
-                        $options = $field->options_model::all()->map(function ($model) use ($field) {
-                            return [
-                                'value' => $model->id,
-                                'label' => $model->{$field->options_model_field},
-                            ];
-                        });
+                        // Special handling for Institution model on student rep form
+                        if ($isStudentRepForm && $field->options_model === Institution::class) {
+                            $options = $this->getInstitutionsWithoutActiveReps($formSettings, $preselectedInstitutionId)->map(function ($model) use ($field) {
+                                return [
+                                    'value' => $model->id,
+                                    'label' => $model->{$field->options_model_field},
+                                ];
+                            });
+                        } else {
+                            $options = $field->options_model::all()->map(function ($model) use ($field) {
+                                return [
+                                    'value' => $model->id,
+                                    'label' => $model->{$field->options_model_field},
+                                ];
+                            });
+                        }
                     }
 
                     return [
@@ -647,6 +665,37 @@ class PublicPageController extends PublicController
         ])->withViewData([
             'SEOData' => $seo,
         ]);
+    }
+
+    /**
+     * Get institutions that have duties with no active members (for student rep registration).
+     * Always includes the preselected institution if provided.
+     */
+    protected function getInstitutionsWithoutActiveReps(FormSettings $formSettings, ?string $preselectedInstitutionId = null): \Illuminate\Database\Eloquent\Collection
+    {
+        $allowedTypeIds = $formSettings->getStudentRepInstitutionTypeIds();
+
+        $query = Institution::query()
+            ->where(function ($q) use ($preselectedInstitutionId) {
+                // Include institutions that do not have duties with active users.
+                // Here `duties` is the Institution -> Duty relationship and `current_users` is a nested
+                // relationship/scope on Duty that returns only the members currently active in that duty.
+                $q->whereDoesntHave('duties.current_users');
+
+                // Always include the preselected institution
+                if ($preselectedInstitutionId) {
+                    $q->orWhere('id', $preselectedInstitutionId);
+                }
+            });
+
+        // Filter by allowed institution types if configured
+        if ($allowedTypeIds->isNotEmpty()) {
+            $query->whereHas('types', function ($q) use ($allowedTypeIds) {
+                $q->whereIn('types.id', $allowedTypeIds);
+            });
+        }
+
+        return $query->get();
     }
 
     /**
