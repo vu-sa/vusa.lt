@@ -1,4 +1,6 @@
 import "../css/app.css";
+import "../css/admin.css";
+import "../css/driver-tour.css";
 
 import { type DefineComponent, createApp, h } from "vue";
 import { ZiggyVue } from 'ziggy-js'
