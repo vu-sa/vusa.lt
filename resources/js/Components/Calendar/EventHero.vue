@@ -167,31 +167,13 @@ const props = defineProps<Props>()
 const page = usePage()
 const locale = computed(() => page.props.app.locale)
 
-// Check if event has hero image
-const hasImage = computed(() => {
-  // Handle both array and object types temporarily until types are fixed
-  const { images } = (props.event as any)
-  return images && (Array.isArray(images) ? images.length > 0 : Object.keys(images).length > 0)
+// Get hero image URL - uses main_image_url accessor with fallback
+const heroImageUrl = computed(() => {
+  return (props.event as any).main_image_url || null
 })
 
-// Get hero image URL for mobile img tag
-const heroImageUrl = computed(() => {
-  const { images } = (props.event as any)
-  if (!images) return null
-  
-  // Handle object with UUID keys (from API)
-  if (!Array.isArray(images) && typeof images === 'object') {
-    const firstImage = Object.values(images)[0] as any
-    return firstImage?.original_url || null
-  }
-  
-  // Handle array format
-  if (Array.isArray(images) && images.length > 0) {
-    return images[0].original_url
-  }
-  
-  return null
-})
+// Check if event has hero image
+const hasImage = computed(() => !!heroImageUrl.value)
 
 // Background style computation (for desktop hero)
 const backgroundStyle = computed(() => {

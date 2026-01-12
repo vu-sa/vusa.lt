@@ -11,6 +11,7 @@ use Laravel\Scout\Searchable;
 use Spatie\CalendarLinks\Link;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 /**
  * @property int $id
@@ -21,6 +22,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
  * @property array|string|null $cto_url URL for Call To Action
  * @property string|null $facebook_url
  * @property string|null $video_url
+ * @property string|null $main_image
  * @property bool $is_draft
  * @property int $is_all_day
  * @property int $is_international
@@ -31,6 +33,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property int|null $registration_form_id
+ * @property-read string|null $main_image_url
  * @property-read \App\Models\Category|null $category
  * @property-read \Spatie\MediaLibrary\MediaCollections\Models\Collections\MediaCollection<int, \Spatie\MediaLibrary\MediaCollections\Models\Media> $media
  * @property-read \App\Models\Tenant $tenant
@@ -72,6 +75,30 @@ class Calendar extends Model implements HasMedia
         'cto_url',
     ];
 
+    protected $appends = ['main_image_url'];
+
+    /**
+     * Get the main image URL from Spatie Media collection with fallback to legacy URL field.
+     */
+    public function getMainImageUrlAttribute(): ?string
+    {
+        // First try Spatie Media collection
+        $mainImageMedia = $this->getFirstMedia('main_image');
+        if ($mainImageMedia) {
+            return $mainImageMedia->getUrl();
+        }
+
+        // Fallback to legacy main_image URL field (for backwards compatibility)
+        if ($this->main_image) {
+            return $this->main_image;
+        }
+
+        // Final fallback to first gallery image
+        $firstMedia = $this->getFirstMedia('images');
+
+        return $firstMedia?->getUrl();
+    }
+
     protected static function booted()
     {
         static::saved(function ($calendar) {
@@ -98,10 +125,30 @@ class Calendar extends Model implements HasMedia
     public function registerMediaCollections(): void
     {
         $this
-            ->addMediaCollection('images')
-            ->acceptsMimeTypes(['image/jpeg', 'image/jpg', 'image/png'])
+            ->addMediaCollection('main_image')
+            ->singleFile()
+            ->acceptsMimeTypes(['image/jpeg', 'image/jpg', 'image/png', 'image/webp'])
             ->useDisk('spatieMediaLibrary')
             ->withResponsiveImages();
+
+        $this
+            ->addMediaCollection('images')
+            ->acceptsMimeTypes(['image/jpeg', 'image/jpg', 'image/png', 'image/webp'])
+            ->useDisk('spatieMediaLibrary')
+            ->withResponsiveImages();
+    }
+
+    /**
+     * Register media conversions for WebP optimization.
+     */
+    public function registerMediaConversions(?Media $media = null): void
+    {
+        $this->addMediaConversion('webp')
+            ->format('webp')
+            ->quality(80)
+            ->width(1600)
+            ->performOnCollections('main_image', 'images')
+            ->nonQueued(); // Run synchronously for immediate availability
     }
 
     public function toSearchableArray()

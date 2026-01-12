@@ -7,9 +7,16 @@
       <template #card-header>
         <span>Puslapio informacija</span>
       </template>
-      <PageForm :categories :page :other-lang-pages enable-delete
+      <PageForm
+        :categories
+        :page
+        :other-lang-pages
+        :submit-url="route('pages.update', page.id)"
+        submit-method="patch"
+        enable-delete
         @submit:form="(form) => form.patch(route('pages.update', page.id), { preserveScroll: true })"
-        @delete="() => router.delete(route('pages.destroy', page.id))" />
+        @delete="() => router.delete(route('pages.destroy', page.id))"
+      />
     </UpsertModelLayout>
   </PageContent>
 </template>

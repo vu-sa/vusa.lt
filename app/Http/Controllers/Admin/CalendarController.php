@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\DuplicateCalendarAction;
 use App\Actions\GetTenantsForUpserts;
+use App\Actions\HandleModelMediaUploads;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\StoreCalendarRequest;
 use App\Http\Requests\UpdateCalendarRequest;
@@ -59,18 +60,16 @@ class CalendarController extends AdminController
     {
         $calendar = new Calendar;
 
-        $calendar = $calendar->fill($request->except('images'));
+        $calendar = $calendar->fill($request->except(['images', 'main_image']));
         $calendar->category_id = $request->input('category_id');
 
         $calendar->save();
 
-        $images = $request->file('images');
-
-        if ($images) {
-            foreach ($images as $image) {
-                $calendar->addMedia($image['file'])->toMediaCollection('images');
-            }
-        }
+        // Handle media uploads using centralized action
+        HandleModelMediaUploads::execute($calendar, $request, [
+            'main_image' => ['collection' => 'main_image', 'single' => true],
+            'images' => ['collection' => 'images', 'single' => false],
+        ]);
 
         return redirect()->route('calendar.index')->with('success', 'Kalendoriaus įvykis sėkmingai sukurtas!');
     }
@@ -118,24 +117,17 @@ class CalendarController extends AdminController
     public function update(UpdateCalendarRequest $request, Calendar $calendar)
     {
         DB::transaction(function () use ($request, $calendar) {
-            $calendar->fill($request->validated());
+            // Exclude file fields from fill
+            $calendar->fill($request->safe()->except(['images', 'main_image']));
             $calendar->category_id = $request->input('category_id');
 
             $calendar->save();
 
-            // if request has files
-            $images = $request->file('images');
-
-            if ($images) {
-                foreach ($images as $image) {
-                    $calendar->addMedia($image['file'])
-                        ->usingName($image['file']->getClientOriginalName())
-                        ->withCustomProperties(['alt' => ''])
-                        ->toMediaCollection('images');
-                }
-            }
-
-            $calendar->save();
+            // Handle media uploads using centralized action
+            HandleModelMediaUploads::execute($calendar, $request, [
+                'main_image' => ['collection' => 'main_image', 'single' => true],
+                'images' => ['collection' => 'images', 'single' => false],
+            ]);
         });
 
         return back()->with('success', 'Kalendoriaus įvykis sėkmingai atnaujintas!');

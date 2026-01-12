@@ -9,10 +9,10 @@
           <!-- Two-column header on desktop, stacked on mobile -->
           <div class="flex flex-col lg:flex-row">
             <!-- Image Section (accent, not full-bleed) -->
-            <div v-if="hasImages" class="lg:w-2/5 relative">
+            <div v-if="hasMainImage" class="lg:w-2/5 relative">
               <div class="aspect-[4/3] lg:aspect-auto lg:h-full">
                 <img 
-                  :src="(normalizedImages[0] as any).original_url"
+                  :src="mainImageUrl"
                   :alt="String(event.title)"
                   class="w-full h-full object-cover"
                 >
@@ -27,7 +27,7 @@
             </div>
 
             <!-- Content Section -->
-            <div class="flex-1 p-5 sm:p-6 lg:p-8" :class="{ 'lg:w-3/5': hasImages }">
+            <div class="flex-1 p-5 sm:p-6 lg:p-8" :class="{ 'lg:w-3/5': hasMainImage }">
               <!-- Status Badge -->
               <div v-if="eventStatus" class="mb-3">
                 <span 
@@ -428,7 +428,15 @@ const formattedTime = computed(() => {
   return startTime
 })
 
-// Check if event has images and normalize them
+// Check if event has main image (from main_image_url accessor)
+const mainImageUrl = computed(() => {
+  // Use the main_image_url accessor which handles fallback to first gallery image
+  return (props.event as any).main_image_url || null;
+});
+
+const hasMainImage = computed(() => !!mainImageUrl.value);
+
+// Check if event has gallery images
 const hasImages = computed(() => {
   const images = (props.event as any).images;
   if (!images) return false;

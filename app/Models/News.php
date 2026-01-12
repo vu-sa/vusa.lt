@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Casts\NewsImage;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
@@ -66,7 +65,6 @@ class News extends Model implements Feedable, Sitemapable
     public $fallback_image = '/images/icons/naujienu_foto.png';
 
     protected $casts = [
-        'image' => NewsImage::class,
         'updated_at' => 'datetime:Y-m-d H:i:s',
         'created_at' => 'datetime:Y-m-d H:i:s',
         'last_edited_at' => 'datetime:Y-m-d H:i:s',
@@ -167,13 +165,28 @@ class News extends Model implements Feedable, Sitemapable
             ->authorName($this->tenant->shortname);
     }
 
-    public function getImageUrl()
+    /**
+     * Get the public-facing image URL with fallback for missing images.
+     *
+     * Use this method for public display (news pages, feeds, sitemaps, schema).
+     * For admin forms, use $news->image directly (raw value without fallback).
+     */
+    public function getImageUrl(): string
     {
-        if (substr($this->image, 0, 4) === 'http') {
-            return $this->image;
-        } else {
-            return Storage::get(str_replace('uploads', 'public', $this->image)) === null ? '/images/icons/naujienu_foto.png' : $this->image;
+        $image = $this->image;
+
+        // External URLs pass through
+        if ($image && str_starts_with($image, 'http')) {
+            return $image;
         }
+
+        // Check if local file exists
+        if ($image && Storage::disk('public')->exists(str_replace('uploads/', '', $image))) {
+            return $image;
+        }
+
+        // Return fallback image
+        return $this->fallback_image;
     }
 
     public function toNewsArticleSchema()

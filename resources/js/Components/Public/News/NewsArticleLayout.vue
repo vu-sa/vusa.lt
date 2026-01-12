@@ -11,7 +11,7 @@
         <div class="order-2 md:order-1 md:col-span-2">
           <div class="overflow-hidden rounded-xl">
             <img 
-              :src="(article.image as string) || '/images/icons/naujienu_foto.png'" 
+              :src="article.image as string" 
               :alt="article.title"
               class="aspect-[4/3] w-full object-cover rounded-xl"
               :style="{ viewTransitionName: `news-image-${article.id}` }"
@@ -91,7 +91,7 @@
       <div class="relative mb-10 overflow-hidden rounded-2xl">
         <div class="relative h-[35vh] md:h-[40vh] lg:h-[45vh]">
           <img
-            :src="(article.image as string) || '/images/icons/naujienu_foto.png'"
+            :src="article.image as string"
             :alt="article.title"
             class="h-full w-full object-cover rounded-xl"
             :style="{ viewTransitionName: `news-image-${article.id}` }"
@@ -179,7 +179,7 @@
       <!-- Cover image -->
       <div class="relative mb-8 overflow-hidden rounded-xl">
         <img 
-          :src="(article.image as string) || '/images/icons/naujienu_foto.png'" 
+          :src="article.image as string" 
           :alt="article.title"
           class="max-h-[500px] w-full object-cover object-center rounded-xl"
           :style="{ viewTransitionName: `news-image-${article.id}` }"
@@ -287,7 +287,7 @@
       <!-- Cover image -->
       <div class="relative mb-6 overflow-hidden rounded-xl">
         <img 
-          :src="(article.image as string) || '/images/icons/naujienu_foto.png'" 
+          :src="article.image as string" 
           :alt="article.title"
           class="aspect-video w-full object-cover object-center rounded-xl"
           :style="{ viewTransitionName: `news-image-${article.id}` }"

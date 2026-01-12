@@ -43,6 +43,8 @@ declare global {
       registration_form_id?: number | null
       // mutators
       translations: unknown
+      // accessors
+      main_image_url?: string | null
       // relations
       tenant?: Tenant
       category?: Category

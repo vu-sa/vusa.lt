@@ -362,23 +362,8 @@ const shouldShowTodayMarkerAtEnd = computed(() => {
 
 // Helper functions
 const getEventImage = (event: App.Entities.Calendar): string | null => {
-  const images = (event as any).images;
-  if (!images) return null;
-  
-  // Handle both array and object structures
-  if (Array.isArray(images) && images.length > 0) {
-    return images[0].original_url;
-  }
-  
-  // If it's an object (keyed by UUID), get the first value
-  if (typeof images === 'object') {
-    const values = Object.values(images) as any[];
-    if (values.length > 0 && values[0]?.original_url) {
-      return values[0].original_url;
-    }
-  }
-  
-  return null;
+  // Use main_image_url accessor which handles fallback to first gallery image
+  return (event as any).main_image_url || null;
 };
 
 const getEventTitle = (event: App.Entities.Calendar): string => {

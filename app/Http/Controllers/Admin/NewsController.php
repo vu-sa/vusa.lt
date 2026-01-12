@@ -130,6 +130,7 @@ class NewsController extends AdminController
                 'tenant' => $news->tenant,
                 'draft' => $news->draft,
                 'short' => $news->short,
+                // Raw image value for admin form (no fallback applied)
                 'image' => $news->image,
                 'tags' => $news->tags->pluck('id')->toArray(),
                 'image_author' => $news->image_author,

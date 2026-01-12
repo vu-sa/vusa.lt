@@ -1,8 +1,16 @@
 <template>
   <PageContent :title="calendar.title.lt" :back-url="route('calendar.index')" :heading-icon="Icons.CALENDAR">
     <UpsertModelLayout>
-      <CalendarForm enable-delete :calendar :categories :assignable-tenants @submit:form="handleUpdateCalendar"
-        @delete="() => router.delete(route('calendar.destroy', calendar.id))" />
+      <CalendarForm 
+        enable-delete 
+        :calendar 
+        :categories 
+        :assignable-tenants 
+        :submit-url="route('calendar.update', calendar.id)"
+        submit-method="patch"
+        @submit:form="handleUpdateCalendar"
+        @delete="() => router.delete(route('calendar.destroy', calendar.id))" 
+      />
     </UpsertModelLayout>
   </PageContent>
 </template>

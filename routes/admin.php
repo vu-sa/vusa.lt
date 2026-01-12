@@ -37,9 +37,11 @@ Route::patch('reservations/{reservation}/restore', [ReservationController::class
 Route::patch('resources/{resource}/restore', [ResourceController::class, 'restore'])->name('resources.restore')->withTrashed();
 Route::patch('types/{type}/restore', [TypeController::class, 'restore'])->name('types.restore')->withTrashed();
 
-// Resources
-Route::resource('pages', PageController::class)->except(['show']);
-Route::resource('news', NewsController::class)->except(['show']);
+// Resources with Precognition (live validation)
+Route::resource('pages', PageController::class)->except(['show'])
+    ->middleware(\Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests::class);
+Route::resource('news', NewsController::class)->except(['show'])
+    ->middleware(\Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests::class);
 Route::resource('categories', CategoryController::class)->except(['show']);
 Route::resource('tags', TagController::class)->except(['show']);
 Route::get('tags/merge', [TagController::class, 'mergeTags'])->name('tags.merge');
@@ -89,7 +91,8 @@ Route::resource('programmeSections', ProgrammeSectionController::class)->only(['
 Route::post('programmeSections/{programmeSection}/attach', [ProgrammeSectionController::class, 'attach'])->name('programmeSections.attach');
 Route::post('programmeSections/{programmeSection}/detach', [ProgrammeSectionController::class, 'detach'])->name('programmeSections.detach');
 
-Route::resource('calendar', CalendarController::class);
+Route::resource('calendar', CalendarController::class)
+    ->middleware(\Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests::class);
 Route::post('calendar/{calendar}/media/{media}', [CalendarController::class, 'destroyMedia'])->name('calendar.destroyMedia');
 Route::post('calendar/{calendar}/duplicate', [CalendarController::class, 'duplicate'])->name('calendar.duplicate');
 Route::resource('agendaItems', AgendaItemController::class)->except(['index', 'create']);

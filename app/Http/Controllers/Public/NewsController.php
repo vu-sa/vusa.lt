@@ -14,8 +14,6 @@ class NewsController extends PublicController
         $this->getBanners();
         $this->getTenantLinks();
 
-        $image = $news->getImageUrl();
-
         $other_lang_page = $news->other_language_news;
 
         Inertia::share('otherLangURL', $other_lang_page ? route(
@@ -33,7 +31,7 @@ class NewsController extends PublicController
             title: $news->title.' - '.$this->tenant->shortname,
             description: ContentHelper::getDescriptionForSeo($news),
             author: $news->tenant->shortname,
-            image: $news->image,
+            image: $news->getImageUrl(),
             published_time: $news->publish_time,
             modified_time: $news->updated_at,
         );
@@ -79,7 +77,8 @@ class NewsController extends PublicController
                 /*        ]; */
                 /*    }), */
                 /* ], */
-                'image' => $image,
+                // Use getImageUrl() for public display with fallback for missing images
+                'image' => $news->getImageUrl(),
                 'tenant' => $news->tenant->shortname,
             ],
             'relatedArticles' => $relatedArticles,

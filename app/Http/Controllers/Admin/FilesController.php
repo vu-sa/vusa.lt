@@ -6,15 +6,18 @@ use App\Http\Controllers\AdminController;
 use App\Http\Requests\StoreFilesRequest;
 use App\Models\File;
 use App\Services\FileUsageScanner;
+use App\Services\ImageUploadService;
 use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use Intervention\Image\Laravel\Facades\Image;
 
 class FilesController extends AdminController
 {
-    public function __construct(public Authorizer $authorizer) {}
+    public function __construct(
+        public Authorizer $authorizer,
+        protected ImageUploadService $imageUploadService
+    ) {}
 
     /**
      * Safely validate and normalize file path
@@ -404,130 +407,47 @@ class FilesController extends AdminController
                 return response()->json(['error' => 'Nepateiktas failo pavadinimas.'], 400);
             }
 
-            // Get original file size for compression statistics
-            $originalSize = $file ? $file->getSize() : strlen($data);
-
-            // Process image
-            $startingImage = Image::read($data);
-            $image = $startingImage->scaleDown(width: 1600)->toWebp(75);
-
             $path = (string) $request->input('path');
 
-            // Determine upload type based on path structure
-            $isTipTapUpload = str_starts_with($path, 'content/');
-            $isUploadImageWithCropperUpload = ! str_contains($path, '/') && ! str_starts_with($path, 'public/') && ! str_starts_with($path, 'content/');
+            // Determine upload directory based on path structure
+            $directory = $this->resolveUploadDirectory($path, $request->user());
 
-            if ($isTipTapUpload) {
-                // TipTap uploads: use tenant-based content directory logic
-                if ($request->user()->hasRole(config('permission.super_admin_role_name'))) {
-                    // Super admins always upload to global content directory
-                    $path = 'files/content/'.date('Y/m');
-                } elseif ($this->authorizer->getTenants()->count() > 0) {
-                    $tenant = $this->authorizer->getTenants()->first();
-
-                    // Check if this is the main tenant (type 'pagrindinis')
-                    if ($tenant->type === 'pagrindinis') {
-                        // Main tenant uploads to root content directory
-                        $path = 'files/content/'.date('Y/m');
-                    } else {
-                        // Other tenants upload to their specific directory
-                        $path = "files/padaliniai/vusa{$tenant->alias}/content/".date('Y/m');
-                    }
-                } else {
-                    // Fallback for users with no tenant (shouldn't happen)
-                    $path = 'files/content/'.date('Y/m');
-                }
-            } elseif ($isUploadImageWithCropperUpload) {
-                // UploadImageWithCropper uploads: use direct folder path (without 'files' prefix)
-                // Examples: 'banners' -> 'banners/', 'institutions' -> 'institutions/'
-                $path = $path; // Keep as-is (just the folder name)
-            } else {
-                // FileManager uploads: use the provided path directly, but validate permissions
-                try {
-                    $path = $this->validateAndNormalizePath($path);
-                } catch (\InvalidArgumentException $e) {
-                    return response()->json(['error' => 'Neteisingas katalogo kelias.'], 400);
-                }
-
-                // Check if user has permission to upload to this directory
-                if (! $request->user()->can('viewDirectory', [File::class, $path])) {
+            // Check permissions for FileManager uploads
+            if ($this->isFileManagerUpload($path)) {
+                $validatedPath = $this->validateAndNormalizePath($path);
+                if (! $request->user()->can('viewDirectory', [File::class, $validatedPath])) {
                     return response()->json(['error' => 'Neturite teisių įkelti failų į šį aplanką.'], 403);
                 }
             }
 
-            // Get file name without extension and add .webp
-            $processedName = pathinfo($originalName, PATHINFO_FILENAME).'.webp';
+            // Use ImageUploadService for processing and saving
+            $result = $this->imageUploadService->processAndSave($data, $directory, $originalName);
 
-            // Create organized directory structure based on upload type
-            if ($isUploadImageWithCropperUpload) {
-                // UploadImageWithCropper: direct folder path
-                $fullDirectoryPath = 'public/'.$path;
-            } elseif ($isTipTapUpload) {
-                // TipTap: path already has 'files/' prefix
-                $fullDirectoryPath = 'public/'.$path;
-            } else {
-                // FileManager: path already includes 'public/' so don't double-prefix
-                $fullDirectoryPath = $path;
-            }
-            if (! Storage::exists($fullDirectoryPath)) {
-                Storage::makeDirectory($fullDirectoryPath);
-            }
-
-            // Check if image exists and rename if needed
-            if (Storage::exists($fullDirectoryPath.'/'.$processedName)) {
-                $processedName = time().'_'.$processedName;
-            }
-
-            $fullPath = storage_path('app/'.$fullDirectoryPath.'/'.$processedName);
-
-            // Save the compressed image
-            $image->save($fullPath);
-
-            // Get compressed file size for statistics
-            $compressedSize = filesize($fullPath);
-            $compressionRatio = $originalSize > 0 ? round((1 - $compressedSize / $originalSize) * 100) : 0;
-            $compressedSizeKB = round($compressedSize / 1024, 1);
-            $originalSizeKB = round($originalSize / 1024, 1);
-
-            Log::info('Image uploaded and processed', [
+            // Log upload
+            Log::info('Image uploaded via FilesController', [
                 'original_name' => $originalName,
-                'processed_name' => $processedName,
-                'path' => $fullDirectoryPath,
-                'original_size' => $originalSize,
-                'compressed_size' => $compressedSize,
-                'compression_ratio' => $compressionRatio,
+                'processed_name' => $result['name'],
+                'directory' => $directory,
+                'original_size' => $result['originalSize'],
+                'compressed_size' => $result['compressedSize'],
+                'compression_ratio' => $result['compressionRatio'],
                 'user_id' => $request->user()->id,
             ]);
 
-            // Create a shortened name with ellipsis for long filenames using original name
-            $originalExtension = pathinfo($originalName, PATHINFO_EXTENSION);
-            $originalNameWithoutExt = pathinfo($originalName, PATHINFO_FILENAME);
-            $shortOriginalName = strlen($originalNameWithoutExt) > 20
-                ? substr($originalNameWithoutExt, 0, 20).'...'.'.'.$originalExtension
-                : $originalName;
+            // Create success message
+            $shortOriginalName = ImageUploadService::shortenFilename($originalName);
+            $originalSizeKB = round($result['originalSize'] / 1024, 1);
+            $compressedSizeKB = round($result['compressedSize'] / 1024, 1);
 
             $successMessage = "{$shortOriginalName} optimized and converted to WebP";
-            $detailMessage = "Compressed from {$originalSizeKB} KB to {$compressedSizeKB} KB ({$compressionRatio}% saved)";
-
-            // Generate correct URL based on upload type
-            if ($isUploadImageWithCropperUpload) {
-                // UploadImageWithCropper: /uploads/{folder}/file.webp
-                $uploadUrl = '/uploads/'.$path.'/'.$processedName;
-            } elseif ($isTipTapUpload) {
-                // TipTap: /uploads/files/content/.../file.webp
-                $uploadUrl = '/uploads/'.$path.'/'.$processedName;
-            } else {
-                // FileManager: path is 'public/files/...' so strip 'public/' for URL
-                $urlPath = str_replace('public/', '', $path);
-                $uploadUrl = '/uploads/'.$urlPath.'/'.$processedName;
-            }
+            $detailMessage = "Compressed from {$originalSizeKB} KB to {$compressedSizeKB} KB ({$result['compressionRatio']}% saved)";
 
             $uploadResult = [
-                'url' => $uploadUrl,
-                'name' => $processedName,
-                'originalSize' => $originalSize,
-                'compressedSize' => $compressedSize,
-                'compressionRatio' => $compressionRatio,
+                'url' => $result['url'],
+                'name' => $result['name'],
+                'originalSize' => $result['originalSize'],
+                'compressedSize' => $result['compressedSize'],
+                'compressionRatio' => $result['compressionRatio'],
                 'message' => $successMessage,
             ];
 
@@ -558,6 +478,57 @@ class FilesController extends AdminController
                 'error' => $errorMessage,
             ], 500);
         }
+    }
+
+    /**
+     * Resolve the upload directory based on path and user context.
+     */
+    protected function resolveUploadDirectory(string $path, $user): string
+    {
+        // TipTap uploads: use tenant-based content directory logic
+        if (str_starts_with($path, 'content/')) {
+            return $this->resolveTipTapDirectory($user);
+        }
+
+        // Simple folder name (e.g., 'banners', 'news', 'calendar')
+        if (! str_contains($path, '/') && ! str_starts_with($path, 'public/')) {
+            return $path;
+        }
+
+        // FileManager uploads: use the provided path directly
+        return str_replace('public/', '', $path);
+    }
+
+    /**
+     * Resolve TipTap content directory based on user's tenant.
+     */
+    protected function resolveTipTapDirectory($user): string
+    {
+        if ($user->hasRole(config('permission.super_admin_role_name'))) {
+            return 'files/content/'.date('Y/m');
+        }
+
+        if ($this->authorizer->getTenants()->count() > 0) {
+            $tenant = $this->authorizer->getTenants()->first();
+
+            // Main tenant uploads to root content directory
+            if ($tenant->type === 'pagrindinis') {
+                return 'files/content/'.date('Y/m');
+            }
+
+            // Other tenants upload to their specific directory
+            return "files/padaliniai/vusa{$tenant->alias}/content/".date('Y/m');
+        }
+
+        return 'files/content/'.date('Y/m');
+    }
+
+    /**
+     * Check if this is a FileManager upload (has full path structure).
+     */
+    protected function isFileManagerUpload(string $path): bool
+    {
+        return str_starts_with($path, 'public/files') || str_contains($path, '/files/');
     }
 
     public function compressImage(Request $request)

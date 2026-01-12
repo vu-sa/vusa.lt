@@ -1,81 +1,97 @@
 <template>
   <AdminForm :model="form" label-placement="top" @submit:form="$emit('submit:form', form)" @delete="$emit('delete')">
-    <FormElement>
+    <!-- Section 1: Main Info -->
+    <FormElement :section-number="1" :is-complete="mainInfoComplete" required>
       <template #title>
         {{ $t("forms.context.main_info") }}
       </template>
-      
-      <!-- Title -->
-      <div class="space-y-2">
-        <Label for="title">{{ $t('forms.fields.title') }}</Label>
-        <Input
+      <template #subtitle>
+        {{ $t('Pagrindiniai puslapio nustatymai') }}
+      </template>
+
+      <div class="space-y-4">
+        <!-- Title with character counter -->
+        <FormFieldWrapper
           id="title"
-          v-model="form.title"
-          type="text"
-          placeholder="Įrašyti pavadinimą..."
-        />
-      </div>
-
-      <!-- Permalink and Category -->
-      <div class="grid gap-4 lg:grid-cols-2">
-        <div class="space-y-2">
-          <Label for="permalink">Nuoroda</Label>
+          :label="$t('forms.fields.title')"
+          required
+          :hint="$t('Pavadinimas bus rodomas naršyklės skirtuke ir paieškos rezultatuose')"
+          :char-count="form.title?.length || 0"
+          :max-length="60"
+          :error="form.errors.title"
+          :validating="form.validating"
+          :valid="form.valid('title')"
+          :invalid="form.invalid('title')"
+        >
           <Input
-            id="permalink"
-            :model-value="form.permalink"
-            disabled
+            id="title"
+            v-model="form.title"
             type="text"
-            placeholder="Sugeneruojama nuoroda..."
-            class="bg-muted"
+            :placeholder="$t('Įrašyti pavadinimą...')"
+            @change="form.validate('title')"
           />
-        </div>
-        <div class="space-y-2">
-          <Label for="category">Kategorija</Label>
-          <Select v-model="form.category_id">
-            <SelectTrigger id="category">
-              <SelectValue placeholder="Pasirinkti kategoriją..." />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem
-                v-for="category in categories"
-                :key="category.id"
-                :value="category.id"
-              >
-                {{ category.name }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
+        </FormFieldWrapper>
 
-      <!-- Language and Other Language Page -->
-      <div class="grid gap-4 lg:grid-cols-2">
-        <div class="space-y-2">
-          <Label for="lang">Kalba</Label>
-          <Select v-model="form.lang">
-            <SelectTrigger id="lang">
-              <SelectValue placeholder="Pasirinkti kalbą..." />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem
-                v-for="lang in languageOptions"
-                :key="lang.value"
-                :value="lang.value"
-              >
-                {{ lang.label }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
+        <!-- Permalink with copy/open buttons -->
+        <PermalinkField
+          :permalink="form.permalink"
+          :base-url="pageBaseUrl"
+          :disabled="!isCreate"
+          :view-url="!isCreate ? fullPageUrl : undefined"
+          :explanation="isCreate ? $t('Nuoroda generuojama automatiškai pagal pavadinimą') : $t('Nuoroda negali būti keičiama esamam puslapiui')"
+          @update:permalink="form.permalink = $event"
+        />
+
+        <!-- Category and Language -->
+        <div class="grid gap-4 lg:grid-cols-2">
+          <FormFieldWrapper id="category" :label="$t('Kategorija')" required :error="form.errors.category_id" :valid="form.valid('category_id')" :invalid="form.invalid('category_id')">
+            <Select v-model="form.category_id" @update:model-value="form.validate('category_id')">
+              <SelectTrigger id="category">
+                <SelectValue :placeholder="$t('Pasirinkti kategoriją...')" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem
+                  v-for="category in categories"
+                  :key="category.id"
+                  :value="category.id"
+                >
+                  {{ category.name }}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </FormFieldWrapper>
+
+          <FormFieldWrapper id="lang" :label="$t('Kalba')" required :error="form.errors.lang" :valid="form.valid('lang')" :invalid="form.invalid('lang')">
+            <Select v-model="form.lang" @update:model-value="form.validate('lang')">
+              <SelectTrigger id="lang">
+                <SelectValue :placeholder="$t('Pasirinkti kalbą...')" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem
+                  v-for="lang in languageOptions"
+                  :key="lang.value"
+                  :value="lang.value"
+                >
+                  {{ lang.label }}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </FormFieldWrapper>
         </div>
-        <div class="space-y-2">
-          <Label for="other_lang">Kitos kalbos puslapis</Label>
-          <Select v-model="form.other_lang_id" :disabled="rememberKey === 'CreatePage'">
+
+        <!-- Other Language Page -->
+        <FormFieldWrapper
+          id="other_lang"
+          :label="$t('Kitos kalbos puslapis')"
+          :hint="$t('Susieti su to paties turinio puslapiu kita kalba')"
+        >
+          <Select v-model="form.other_lang_id" :disabled="isCreate">
             <SelectTrigger id="other_lang">
-              <SelectValue placeholder="Pasirinkti kitos kalbos puslapį..." />
+              <SelectValue :placeholder="$t('Pasirinkti kitos kalbos puslapį...')" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="__none__">
-                -- Nepasirinkta --
+                -- {{ $t('Nepasirinkta') }} --
               </SelectItem>
               <SelectItem
                 v-for="page in otherPageOptions"
@@ -86,136 +102,203 @@
               </SelectItem>
             </SelectContent>
           </Select>
-        </div>
-      </div>
+        </FormFieldWrapper>
 
-      <!-- Active Status -->
-      <div class="flex items-center space-x-2">
-        <Switch
-          id="is_active"
-          :checked="form.is_active"
-          @update:checked="form.is_active = $event"
-        />
-        <Label for="is_active">Aktyvus</Label>
+        <!-- Active Status -->
+        <div class="flex items-center gap-3 rounded-lg border bg-muted/30 p-4">
+          <Switch
+            id="is_active"
+            v-model="form.is_active"
+          />
+          <div>
+            <Label for="is_active" class="font-medium">{{ $t('Aktyvus puslapis') }}</Label>
+            <p class="text-xs text-muted-foreground">
+              {{ form.is_active ? $t('Puslapis matomas lankytojams') : $t('Puslapis paslėptas nuo lankytojų') }}
+            </p>
+          </div>
+        </div>
       </div>
     </FormElement>
 
-    <!-- Layout Selection -->
-    <FormElement>
+    <!-- Section 2: Layout Selection -->
+    <FormElement :section-number="2" :is-complete="!!form.layout">
       <template #title>
-        Išdėstymas
+        {{ $t('Išdėstymas') }}
       </template>
-      <div class="grid gap-4 md:grid-cols-3">
-        <div
+      <template #subtitle>
+        {{ $t('Pasirinkite puslapio struktūrą') }}
+      </template>
+
+      <div class="grid gap-4 overflow-visible pt-3 md:grid-cols-3">
+        <button
           v-for="layoutOption in layoutOptions"
           :key="layoutOption.value"
+          type="button"
+          class="group relative overflow-visible rounded-xl border-2 p-4 text-left transition-all duration-200"
           :class="[
-            'cursor-pointer rounded-lg border-2 p-4 transition-all hover:border-primary/50',
             form.layout === layoutOption.value
-              ? 'border-primary bg-primary/5'
-              : 'border-border'
+              ? 'border-vusa-red bg-red-50/50 ring-2 ring-vusa-red/20 dark:bg-red-950/20'
+              : 'border-border hover:border-zinc-300 dark:hover:border-zinc-600'
           ]"
           @click="form.layout = layoutOption.value"
         >
-          <div class="mb-2 flex items-center justify-between">
-            <span class="font-medium">{{ layoutOption.label }}</span>
-            <div
-              :class="[
-                'h-4 w-4 rounded-full border-2',
-                form.layout === layoutOption.value
-                  ? 'border-primary bg-primary'
-                  : 'border-muted-foreground'
-              ]"
-            />
+          <!-- Selected indicator -->
+          <div
+            class="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-vusa-red text-white shadow-md transition-all"
+            :class="form.layout === layoutOption.value ? 'scale-100 opacity-100' : 'scale-75 opacity-0'"
+          >
+            <IFluentCheckmark12Regular class="h-3 w-3" />
           </div>
-          <p class="text-sm text-muted-foreground">{{ layoutOption.description }}</p>
-          <!-- Visual representation -->
-          <div class="mt-3 flex justify-center">
-            <component :is="layoutOption.icon" class="h-16 w-24 text-muted-foreground/50" />
+
+          <!-- Layout preview -->
+          <div
+            class="mb-3 flex justify-center transition-opacity"
+            :class="form.layout === layoutOption.value ? 'opacity-100' : 'opacity-50 group-hover:opacity-75'"
+          >
+            <component :is="layoutOption.icon" class="h-20 w-32" />
           </div>
-        </div>
+
+          <div class="text-center">
+            <span class="text-sm font-medium">{{ layoutOption.label }}</span>
+            <p class="mt-1 text-xs text-muted-foreground">{{ layoutOption.description }}</p>
+          </div>
+        </button>
       </div>
     </FormElement>
 
-    <!-- Highlights Section -->
-    <FormElement>
+    <!-- Section 3: Highlights -->
+    <FormElement :section-number="3" :is-complete="form.highlights.length > 0">
       <template #title>
-        Svarbiausi punktai
+        {{ $t('Svarbiausi punktai') }}
       </template>
-      <p class="mb-4 text-sm text-muted-foreground">
-        Pridėkite iki 3 svarbiausių punktų, kurie bus rodomi puslapyje.
-      </p>
+      <template #description>
+        <p>{{ $t('Iki 3 pagrindinių minčių, kurios bus išskirtos puslapyje.') }}</p>
+      </template>
+
       <div class="space-y-3">
+        <!-- Empty state -->
         <div
-          v-for="(_, index) in form.highlights"
-          :key="index"
-          class="flex items-start gap-2"
+          v-if="form.highlights.length === 0"
+          class="flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-8 text-center"
         >
-          <div class="flex h-9 w-6 items-center justify-center text-muted-foreground">
-            {{ index + 1 }}.
-          </div>
-          <Textarea
-            v-model="form.highlights[index]"
-            placeholder="Įveskite svarbų punktą..."
-            class="min-h-9 flex-1 resize-none"
-            rows="1"
-          />
+          <IFluentTextBulletListLtr24Regular class="mb-2 h-8 w-8 text-muted-foreground/50" />
+          <p class="text-sm text-muted-foreground">{{ $t('Dar nepridėta jokių punktų') }}</p>
           <Button
             type="button"
-            variant="ghost"
-            size="icon"
-            @click="removeHighlight(index)"
+            variant="outline"
+            size="sm"
+            class="mt-3"
+            @click="addHighlight"
           >
-            <XIcon class="h-4 w-4" />
+            <IFluentAdd24Regular class="mr-2 h-4 w-4" />
+            {{ $t('Pridėti pirmą punktą') }}
           </Button>
         </div>
-        <Button
-          v-if="form.highlights.length < 3"
-          type="button"
-          variant="outline"
-          size="sm"
-          @click="addHighlight"
-        >
-          <PlusIcon class="mr-2 h-4 w-4" />
-          Pridėti punktą
-        </Button>
+
+        <!-- Highlight items -->
+        <template v-else>
+          <div
+            v-for="(_, index) in form.highlights"
+            :key="index"
+            class="flex items-start gap-3"
+          >
+            <div class="flex h-9 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-sm font-medium text-muted-foreground">
+              {{ index + 1 }}
+            </div>
+            <Textarea
+              v-model="form.highlights[index]"
+              :placeholder="$t('Įveskite svarbų punktą...')"
+              class="min-h-9 flex-1 resize-none"
+              rows="1"
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              class="shrink-0 text-muted-foreground hover:text-red-600"
+              @click="removeHighlight(index)"
+            >
+              <IFluentDelete24Regular class="h-4 w-4" />
+            </Button>
+          </div>
+
+          <Button
+            v-if="form.highlights.length < 3"
+            type="button"
+            variant="outline"
+            size="sm"
+            @click="addHighlight"
+          >
+            <IFluentAdd24Regular class="mr-2 h-4 w-4" />
+            {{ $t('Pridėti punktą') }}
+          </Button>
+        </template>
       </div>
     </FormElement>
 
-    <!-- SEO & Metadata -->
-    <FormElement>
+    <!-- Section 4: SEO & Metadata -->
+    <FormElement :section-number="4" :is-complete="seoComplete">
       <template #title>
-        SEO ir metaduomenys
+        {{ $t('SEO ir metaduomenys') }}
       </template>
-      <div class="space-y-4">
-        <div class="space-y-2">
-          <Label for="meta_description">Meta aprašymas</Label>
+      <template #subtitle>
+        {{ $t('Optimizuokite puslapį paieškos sistemoms') }}
+      </template>
+
+      <div class="space-y-6">
+        <!-- SEO Preview -->
+        <SEOPreview
+          :title="form.title"
+          :description="form.meta_description"
+          :url="form.permalink"
+          :base-url="seoBaseUrl"
+        />
+
+        <!-- Meta description -->
+        <FormFieldWrapper
+          id="meta_description"
+          :label="$t('Meta aprašymas')"
+          :hint="$t('Trumpas puslapio aprašymas, rodomas paieškos rezultatuose')"
+          :char-count="form.meta_description?.length || 0"
+          :max-length="160"
+        >
           <Textarea
             id="meta_description"
             v-model="form.meta_description"
-            placeholder="Trumpas puslapio aprašymas paieškos rezultatams (iki 160 simbolių)..."
+            :placeholder="$t('Trumpas puslapio aprašymas paieškos rezultatams...')"
             rows="3"
+            :class="metaDescriptionClass"
           />
-          <p class="text-xs text-muted-foreground">
-            {{ (form.meta_description?.length || 0) }}/160 simbolių
-          </p>
-        </div>
+        </FormFieldWrapper>
+
+        <!-- Featured image and publish time -->
         <div class="grid gap-4 lg:grid-cols-2">
-          <div class="space-y-2">
-            <Label for="featured_image">Pagrindinė nuotrauka</Label>
-            <Input
-              id="featured_image"
-              v-model="form.featured_image"
-              type="text"
-              placeholder="Nuotraukos URL (naudojamas socialiniuose tinkluose)..."
+          <FormFieldWrapper
+            id="featured_image"
+            :label="$t('Pagrindinė nuotrauka')"
+            :hint="$t('Nuotrauka naudojama dalinantis socialiniuose tinkluose')"
+          >
+            <ImageUpload
+              v-model:url="form.featured_image"
+              mode="immediate"
+              folder="pages"
+              cropper
+              :existing-url="page.featured_image"
             />
-          </div>
-          <div class="space-y-2">
-            <Label>Paskelbimo laikas</Label>
-            <DateTimePicker v-model="publishTimeDate" placeholder="Pasirinkite paskelbimo laiką..." />
-          </div>
+          </FormFieldWrapper>
+
+          <FormFieldWrapper id="publish_time" :label="$t('Paskelbimo laikas')">
+            <DateTimePicker v-model="publishTimeDate" :placeholder="$t('Pasirinkite paskelbimo laiką...')" />
+          </FormFieldWrapper>
         </div>
       </div>
+    </FormElement>
+
+    <!-- Section 5: Content -->
+    <FormElement :section-number="5" no-sider>
+      <template #title>
+        {{ $t('Turinys') }}
+      </template>
     </FormElement>
 
     <RichContentFormElement v-model="form.content.parts" />
@@ -226,7 +309,6 @@
 import { computed, watch, h } from "vue";
 import { useForm, usePage } from "@inertiajs/vue3";
 import latinize from "latinize";
-import { PlusIcon, XIcon } from "lucide-vue-next";
 
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
@@ -237,14 +319,20 @@ import { Textarea } from "@/Components/ui/textarea";
 import { DateTimePicker } from "@/Components/ui/date-picker";
 
 import FormElement from "./FormElement.vue";
+import FormFieldWrapper from "./FormFieldWrapper.vue";
+import PermalinkField from "./PermalinkField.vue";
+import SEOPreview from "./SEOPreview.vue";
 import RichContentFormElement from "../RichContentFormElement.vue";
 import AdminForm from "./AdminForm.vue";
+import { ImageUpload } from "@/Components/ui/upload";
 
 const props = defineProps<{
   categories: App.Entities.Category[];
   page: App.Entities.Page;
   otherLangPages?: App.Entities.Page[];
-  rememberKey?: "CreatePage"
+  rememberKey?: "CreatePage";
+  submitUrl: string;
+  submitMethod: 'post' | 'patch';
 }>();
 
 defineEmits<{
@@ -252,15 +340,64 @@ defineEmits<{
   (event: "delete"): void;
 }>();
 
+const isCreate = computed(() => props.rememberKey === "CreatePage");
+
 // Initialize form with page data
+const formData = {
+  ...props.page,
+  layout: props.page.layout || 'default',
+  highlights: props.page.highlights || [],
+  meta_description: props.page.meta_description || '',
+  featured_image: props.page.featured_image || '',
+  publish_time: props.page.publish_time || null
+} as any;
+
 const form = props.rememberKey
-  ? useForm(props.rememberKey, { ...props.page, layout: props.page.layout || 'default', highlights: props.page.highlights || [], meta_description: props.page.meta_description || '', featured_image: props.page.featured_image || '', publish_time: props.page.publish_time || null } as any)
-  : useForm({ ...props.page, layout: props.page.layout || 'default', highlights: props.page.highlights || [], meta_description: props.page.meta_description || '', featured_image: props.page.featured_image || '', publish_time: props.page.publish_time || null } as any);
+  ? useForm(props.rememberKey, formData).withPrecognition(props.submitMethod, props.submitUrl)
+  : useForm(formData).withPrecognition(props.submitMethod, props.submitUrl);
+
+// Set validation timeout to 500ms for faster feedback
+form.setValidationTimeout(500);
 
 // Ensure highlights is always an array
 if (!Array.isArray(form.highlights)) {
   form.highlights = [];
 }
+
+// URL helpers
+const pageBaseUrl = computed(() => {
+  const page = usePage();
+  const tenant = page.props.auth?.user?.current_duties?.[0]?.institution?.tenant;
+  if (tenant?.alias) {
+    return `${tenant.alias}.vusa.lt`;
+  }
+  return 'vusa.lt';
+});
+
+const seoBaseUrl = computed(() => pageBaseUrl.value);
+
+const fullPageUrl = computed(() => {
+  if (!form.permalink) return undefined;
+  return `https://${pageBaseUrl.value}/${form.permalink}`;
+});
+
+// Section completion states
+const mainInfoComplete = computed(() =>
+  (form.title?.length || 0) >= 3 && form.category_id && form.lang
+);
+
+const seoComplete = computed(() => {
+  const descLen = form.meta_description?.length || 0;
+  return descLen >= 50 && descLen <= 160;
+});
+
+// Meta description styling based on length
+const metaDescriptionClass = computed(() => {
+  const len = form.meta_description?.length || 0;
+  if (len > 160) return 'border-red-300 dark:border-red-700 focus:border-red-500';
+  if (len >= 120 && len <= 160) return 'border-green-300 dark:border-green-700 focus:border-green-500';
+  return '';
+});
 
 // Layout icons as simple SVG representations
 const DefaultLayoutIcon = () => h('svg', { viewBox: '0 0 96 64', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }, [
@@ -301,7 +438,7 @@ const layoutOptions = [
 ];
 
 const otherPageOptions = computed(() => {
-  if (props.rememberKey === "CreatePage") {
+  if (isCreate.value) {
     return [];
   }
 
@@ -341,16 +478,12 @@ function removeHighlight(index: number) {
   form.highlights.splice(index, 1);
 }
 
-function updateContents() {
-  form.content = usePage().props.flash.data?.content;
-}
-
 // Watch form.title and update form.permalink for new pages
-if (props.rememberKey == "CreatePage") {
+if (isCreate.value) {
   watch(
     () => form.title,
     (title) => {
-      let latinizedTitle = latinize(title);
+      let latinizedTitle = latinize(String(title || ''));
       form.permalink = latinizedTitle
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")

@@ -1,4 +1,10 @@
 <template>
+  <!--
+    @deprecated This component is deprecated. Use ImageCropper from @/Components/ui/cropper instead.
+    Example:
+    import { ImageCropper } from "@/Components/ui/cropper";
+    <ImageCropper :src="imageUrl" @crop="handleCrop" @cancel="handleCancel" />
+  -->
   <div class="mb-4 flex items-center gap-2">
     <div class="flex">
       <Button variant="outline" size="sm" class="rounded-r-none" @click="zoomImage(0.1)">
@@ -45,6 +51,18 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @deprecated Use ImageCropper from @/Components/ui/cropper instead.
+ * This component is kept for backward compatibility only.
+ *
+ * @example
+ * // Instead of:
+ * // <VCropper v-model:src="imageUrl" :path="folder" @finish="handleFinish" />
+ *
+ * // Use:
+ * // import { ImageCropper } from "@/Components/ui/cropper";
+ * // <ImageCropper :src="imageUrl" @crop="handleCrop" @cancel="handleCancel" />
+ */
 import "cropperjs";
 import { computed, useTemplateRef } from "vue";
 import type { CropperCanvas, CropperImage, CropperSelection } from "cropperjs";
