@@ -170,7 +170,11 @@ class InstitutionController extends AdminController
         $this->handleAuthorization('update', $institution);
 
         $institution->load('types')->load(['duties' => function ($query) {
-            $query->with('current_users')->orderBy('order', 'asc');
+            $query->with([
+                'current_users',
+                // Load the most recent previous user for duties without current users
+                'previous_users' => fn ($q) => $q->orderByPivot('end_date', 'desc')->limit(1),
+            ])->orderBy('order', 'asc');
         }]);
 
         Inertia::share('seo.title', $institution->name);

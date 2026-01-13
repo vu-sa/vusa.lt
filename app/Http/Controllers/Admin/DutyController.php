@@ -48,7 +48,7 @@ class DutyController extends AdminController
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Request $request)
     {
         $this->handleAuthorization('create', Duty::class);
 
@@ -57,6 +57,7 @@ class DutyController extends AdminController
             'roles' => Role::all(),
             'assignableInstitutions' => DutyService::getInstitutionsForUpserts($this->authorizer),
             'assignableUsers' => User::select('id', 'name', 'profile_photo_path')->orderBy('name')->get(),
+            'prefillInstitutionId' => $request->query('institution_id'),
         ]);
     }
 

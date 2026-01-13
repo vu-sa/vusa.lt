@@ -14,18 +14,19 @@ import Icons from "@/Types/Icons/regular";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 
-defineProps<{
+const props = defineProps<{
   dutyTypes: App.Entities.Type[];
   assignableInstitutions: App.Entities.Institution[];
   assignableUsers: App.Entities.User[];
   roles: App.Entities.Role[];
+  prefillInstitutionId?: string | null;
 }>();
 
 const duty = {
   name: { lt: "", en: "" },
   description: { lt: "", en: "" },
   email: null,
-  institution_id: null,
+  institution_id: props.prefillInstitutionId ?? null,
   places_to_occupy: null,
   contacts_grouping: 'none',
   types: [],

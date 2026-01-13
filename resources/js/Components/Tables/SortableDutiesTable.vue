@@ -1,12 +1,14 @@
 <template>
   <!-- Implemented in InstitutionForm.vue -->
-  <TransitionGroup ref="el" tag="div">
+  <TransitionGroup ref="el" tag="div" class="divide-y divide-border rounded-lg border bg-card">
     <div v-for="model in contents" :key="model?.id || model?.name"
-      class="relative grid w-full grid-cols-[24px__1fr] gap-4 border border-b-0 border-zinc-300 p-1 first:rounded-t-lg last:rounded-b-lg last:border-b dark:border-zinc-700/40 dark:bg-zinc-800/5">
-      <Button class="handle" style="height: 100%;" variant="ghost" size="sm">
-        <IFluentReOrderDotsVertical24Regular />
-      </Button>
-      <slot :model="model" />
+      class="group/row flex items-start gap-2 px-3 hover:bg-muted/30 transition-colors">
+      <button type="button" class="handle mt-3 cursor-grab opacity-30 hover:opacity-100 transition-opacity active:cursor-grabbing">
+        <IFluentReOrderDotsVertical24Regular class="h-4 w-4 text-muted-foreground" />
+      </button>
+      <div class="flex-1 min-w-0">
+        <slot :model="model" />
+      </div>
     </div>
   </TransitionGroup>
 </template>
@@ -15,8 +17,6 @@
 import { ref } from 'vue';
 import { useSortable } from "@vueuse/integrations/useSortable";
 import { watch } from 'vue';
-
-import { Button } from '@/Components/ui/button';
 
 const contents = defineModel<Record<string, any>[]>();
 
