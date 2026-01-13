@@ -31,7 +31,6 @@ import {
 } from 'lucide-vue-next';
 
 import { formatStaticTime } from "@/Utils/IntlTime";
-import PreviewModelButton from "@/Components/Buttons/PreviewModelButton.vue";
 import DataTableFilter from "@/Components/ui/data-table/DataTableFilter.vue";
 import { Badge } from "@/Components/ui/badge";
 import IndexTablePage from "@/Components/Layouts/IndexTablePage.vue";
@@ -125,27 +124,6 @@ const columns = computed<ColumnDef<App.Entities.Institution, any>[]>(() => [
       );
     }
   }),
-  {
-    accessorKey: "alias",
-    header: () => '',
-    cell: ({ row }) => {
-      const alias = row.original.alias;
-      if (!alias) return null;
-
-      return (
-        <PreviewModelButton
-          publicRoute="contacts.alias"
-          routeProps={{
-            institution: alias,
-            lang: "lt",
-            subdomain: "www",
-          }}
-        />
-      );
-    },
-    size: 60,
-    enableSorting: false,
-  },
   createTenantColumn({
     enableSorting: false,
     cell: ({ row }) => {

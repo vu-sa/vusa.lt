@@ -12,7 +12,6 @@ import { formatStaticTime } from "@/Utils/IntlTime";
 import { langColumn, tenantColumn } from "@/Composables/dataTableColumns";
 import Icons from "@/Types/Icons/regular";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
-import PreviewModelButton from "@/Components/Buttons/PreviewModelButton.vue";
 
 defineProps<{
   news: PaginatedModels<App.Entities.News>;
@@ -55,27 +54,6 @@ const columns = computed<DataTableColumns<App.Entities.News>>(() => [
     minWidth: 150,
     width: 200,
     resizable: true,
-  },
-  {
-    // title: "Nuoroda",
-    key: "permalink",
-    // ellipsis: true,
-    width: 55,
-    render(row) {
-      return row.permalink ? (
-        <PreviewModelButton
-          publicRoute="news"
-          routeProps={{
-            lang: row.lang,
-            news: row.permalink,
-            newsString: "naujiena",
-            subdomain: row.tenant?.alias ?? "www",
-          }}
-        />
-      ) : (
-        ""
-      );
-    },
   },
   {
     ...langColumn(filters),

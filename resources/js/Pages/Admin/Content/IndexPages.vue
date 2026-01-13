@@ -21,7 +21,6 @@ import type { DataTableColumns, DataTableSortState } from "naive-ui";
 import { langColumn, tenantColumn } from "@/Composables/dataTableColumns";
 import Icons from "@/Types/Icons/regular";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
-import PreviewModelButton from "@/Components/Buttons/PreviewModelButton.vue";
 import ThemeProvider from "@/Components/Providers/ThemeProvider.vue";
 import { Button } from "@/Components/ui/button";
 
@@ -65,26 +64,6 @@ const columns = computed<DataTableColumns<App.Entities.Page>>(() => [
     minWidth: 150,
     width: 200,
     resizable: true,
-  },
-  {
-    // title: "Nuoroda",
-    key: "permalink",
-    // ellipsis: true,
-    width: 55,
-    render(row) {
-      return row.permalink ? (
-        <PreviewModelButton
-          publicRoute="page"
-          routeProps={{
-            lang: row.lang,
-            subdomain: row.tenant?.alias ?? "www",
-            permalink: row.permalink,
-          }}
-        />
-      ) : (
-        ""
-      );
-    },
   },
   {
     ...langColumn(filters),
