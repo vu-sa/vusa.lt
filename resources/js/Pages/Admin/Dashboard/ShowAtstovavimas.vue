@@ -84,11 +84,11 @@
 
     <!-- Modals - FullscreenGanttModal first so modals opened from within it appear on top -->
     <FullscreenGanttModal :is-open="actions.showFullscreenGantt.value" :gantt-type="actions.fullscreenGanttType.value"
-      :available-tenants="props.availableTenants" :user-institutions="formatInstitutionsForUser"
+      :available-tenants="props.availableTenants" :user-institutions="atstovavimosData.institutions.value"
       :user-meetings="atstovavimosData.allUserMeetings.value" :user-gaps="atstovavimosData.userGaps.value"
       :user-institution-names :user-institution-tenant :user-institution-has-public-meetings
       :user-institution-periodicity :user-duty-members :user-inactive-periods
-      :user-related-institutions="formatRelatedInstitutions" :user-related-institutions-full="relatedInstitutions"
+      :user-related-institutions="relatedInstitutions"
       :may-have-related-institutions="props.mayHaveRelatedInstitutions"
       :tenant-institutions="ganttData.formattedTenantInstitutions.value"
       :tenant-meetings="ganttData.tenantMeetings.value" :tenant-gaps="ganttData.tenantGaps.value"
@@ -452,14 +452,6 @@ onMounted(() => {
 });
 
 // Helper functions for Gantt data formatting
-const formatInstitutionsForUser = computed(() => {
-  return ganttData.formatInstitutionsForGantt(atstovavimosData.institutions.value);
-});
-
-const formatRelatedInstitutions = computed(() => {
-  return ganttData.formatInstitutionsForGantt(relatedInstitutions.value);
-});
-
 const userInstitutionNames = computed(() => {
   return ganttData.getInstitutionNames(atstovavimosData.institutions.value);
 });

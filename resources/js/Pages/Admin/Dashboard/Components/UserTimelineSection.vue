@@ -40,14 +40,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted, watch } from 'vue';
+import { computed, ref, onMounted, watch, toRef } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import type {
   AtstovavimosInstitution,
   GanttMeeting,
   AtstovavimosGap,
-  AtstovavimosTenant,
   GanttDutyMember,
   InactivePeriod
 } from '../types';
@@ -57,6 +56,7 @@ import TimelineGanttSkeleton from './TimelineGanttSkeleton.vue';
 import GanttFilterDropdown from './GanttFilterDropdown.vue';
 import { useGanttSettings } from '../Composables/useGanttSettings';
 import { useTimelineFilters } from '../Composables/useTimelineFilters';
+import { useUserTimelineData } from '../Composables/useUserTimelineData';
 
 
 interface Props {
@@ -121,205 +121,36 @@ watch(() => filters.showRelatedInstitutionsUser.value, (newValue) => {
   }
 });
 
-// Format institutions for Gantt component - merge with related when enabled
-const formattedInstitutions = computed(() => {
-  const userInstitutions = props.institutions.map(i => ({
-    id: i.id,
-    name: String((i as any)?.name?.lt ?? (i as any)?.name?.en ?? (i as any)?.name ?? (i as any)?.shortname ?? i.id),
-    tenant_id: i.tenant?.id,
-    is_related: false
-  }));
+// Use composable for merged timeline data (handles related institutions merging)
+const relatedInstitutionsRef = computed(() => props.relatedInstitutions ?? []);
+const institutionsRef = toRef(props, 'institutions');
+const meetingsRef = toRef(props, 'meetings');
+const baseDutyMembersRef = computed(() => props.dutyMembers ?? []);
+const baseInactivePeriodsRef = computed(() => props.inactivePeriods ?? []);
+const baseInstitutionNamesRef = toRef(props, 'institutionNames');
+const baseInstitutionTenantRef = toRef(props, 'institutionTenant');
+const baseInstitutionHasPublicMeetingsRef = computed(() => props.institutionHasPublicMeetings ?? {});
+const baseInstitutionPeriodicityRef = computed(() => props.institutionPeriodicity ?? {});
 
-  // Add related institutions if filter is enabled
-  if (filters.showRelatedInstitutionsUser.value && props.relatedInstitutions?.length) {
-    const relatedFormatted = props.relatedInstitutions.map(i => ({
-      id: i.id,
-      name: String((i as any)?.name?.lt ?? (i as any)?.name?.en ?? (i as any)?.name ?? (i as any)?.shortname ?? i.id),
-      tenant_id: i.tenant?.id,
-      is_related: true,
-      relationship_direction: i.relationship_direction,
-      source_institution_id: i.source_institution_id,
-      authorized: i.authorized
-    }));
-    return [...userInstitutions, ...relatedFormatted];
-  }
-
-  return userInstitutions;
-});
-
-// All meetings including related institutions
-const allMeetings = computed(() => {
-  if (!filters.showRelatedInstitutionsUser.value || !props.relatedInstitutions?.length) {
-    return props.meetings;
-  }
-
-  // Add meetings from related institutions
-  const relatedMeetings: GanttMeeting[] = props.relatedInstitutions.flatMap(inst => 
-    (inst.meetings ?? []).map((m: any) => {
-      // Extract agenda items for tooltip (limit to first 4) - only if authorized
-      const isAuthorized = (inst as any).authorized !== false
-      const agendaItems = isAuthorized 
-        ? (m.agenda_items ?? []).slice(0, 4).map((item: any) => ({
-            id: String(item.id),
-            title: String(item.title ?? ''),
-            student_vote: item.student_vote ?? null,
-            decision: item.decision ?? null,
-          }))
-        : []
-      const totalAgendaCount = isAuthorized ? (m.agenda_items ?? []).length : 0
-
-      return {
-        id: m.id,
-        start_time: new Date(m.start_time),
-        institution_id: inst.id,
-        institution: String((inst as any)?.name?.lt ?? (inst as any)?.name?.en ?? (inst as any)?.name ?? inst.id),
-        completion_status: m.completion_status,
-        agenda_items: agendaItems,
-        agenda_items_count: totalAgendaCount,
-        authorized: isAuthorized,
-      };
-    })
-  );
-
-  return [...props.meetings, ...relatedMeetings];
-});
-
-// Extract duty members from related institutions (same logic as useGanttChartData)
-const extractDutyMembers = (institutions: AtstovavimosInstitution[]): GanttDutyMember[] => {
-  const members: GanttDutyMember[] = [];
-  
-  for (const institution of institutions) {
-    const inst = institution as any;
-    for (const duty of (inst.duties ?? [])) {
-      // Use users (all members including historical) for Gantt timeline display
-      for (const user of (duty.users ?? [])) {
-        const pivot = user.pivot ?? {};
-        if (!pivot.start_date) continue;
-        
-        members.push({
-          institution_id: String(institution.id),
-          duty_id: String(duty.id),
-          user: {
-            id: String(user.id),
-            name: String(user.name ?? ''),
-            profile_photo_path: user.profile_photo_path ?? null
-          },
-          start_date: new Date(pivot.start_date),
-          end_date: pivot.end_date ? new Date(pivot.end_date) : null
-        });
-      }
-    }
-  }
-  
-  return members;
-};
-
-// Calculate inactive periods from institutions (same logic as useGanttChartData)
-const calculateInactivePeriods = (institutions: AtstovavimosInstitution[], members: GanttDutyMember[]): InactivePeriod[] => {
-  const periods: InactivePeriod[] = [];
-  
-  for (const institution of institutions) {
-    const instId = String(institution.id);
-    const instMembers = members.filter(m => m.institution_id === instId);
-    
-    if (instMembers.length === 0) continue;
-    
-    const sortedMembers = [...instMembers].sort((a, b) => 
-      a.start_date.getTime() - b.start_date.getTime()
-    );
-    
-    const activePeriods: Array<{ from: Date; until: Date }> = [];
-    
-    for (const member of sortedMembers) {
-      const from = member.start_date;
-      const until = member.end_date ?? new Date();
-      
-      if (activePeriods.length === 0) {
-        activePeriods.push({ from, until });
-      } else {
-        const last = activePeriods[activePeriods.length - 1]!;
-        if (from <= last.until) {
-          if (until > last.until) {
-            last.until = until;
-          }
-        } else {
-          periods.push({
-            institution_id: instId,
-            from: last.until,
-            until: from
-          });
-          activePeriods.push({ from, until });
-        }
-      }
-    }
-  }
-  
-  return periods;
-};
-
-// Merge duty members with related institutions
-const dutyMembers = computed(() => {
-  const baseDutyMembers = props.dutyMembers ?? [];
-  
-  if (!filters.showRelatedInstitutionsUser.value || !props.relatedInstitutions?.length) {
-    return baseDutyMembers;
-  }
-  
-  const relatedDutyMembers = extractDutyMembers(props.relatedInstitutions);
-  return [...baseDutyMembers, ...relatedDutyMembers];
-});
-
-// Merge inactive periods with related institutions
-const inactivePeriods = computed(() => {
-  const baseInactivePeriods = props.inactivePeriods ?? [];
-  
-  if (!filters.showRelatedInstitutionsUser.value || !props.relatedInstitutions?.length) {
-    return baseInactivePeriods;
-  }
-  
-  const relatedDutyMembers = extractDutyMembers(props.relatedInstitutions);
-  const relatedInactivePeriods = calculateInactivePeriods(props.relatedInstitutions, relatedDutyMembers);
-  return [...baseInactivePeriods, ...relatedInactivePeriods];
-});
-
-// Merge institution lookup maps with related institutions
-const allInstitutionNames = computed(() => {
-  const names = { ...props.institutionNames };
-  if (filters.showRelatedInstitutionsUser.value && props.relatedInstitutions?.length) {
-    for (const inst of props.relatedInstitutions) {
-      names[inst.id] = String((inst as any)?.name?.lt ?? (inst as any)?.name?.en ?? (inst as any)?.name ?? inst.id);
-    }
-  }
-  return names;
-});
-
-const allInstitutionTenant = computed(() => {
-  const tenants = { ...props.institutionTenant };
-  if (filters.showRelatedInstitutionsUser.value && props.relatedInstitutions?.length) {
-    for (const inst of props.relatedInstitutions) {
-      tenants[inst.id] = String(inst.tenant?.id ?? '');
-    }
-  }
-  return tenants;
-});
-
-const allInstitutionHasPublicMeetings = computed(() => {
-  const map = { ...props.institutionHasPublicMeetings };
-  if (filters.showRelatedInstitutionsUser.value && props.relatedInstitutions?.length) {
-    for (const inst of props.relatedInstitutions) {
-      map[inst.id] = Boolean(inst.has_public_meetings);
-    }
-  }
-  return map;
-});
-
-const allInstitutionPeriodicity = computed(() => {
-  const map = { ...props.institutionPeriodicity };
-  if (filters.showRelatedInstitutionsUser.value && props.relatedInstitutions?.length) {
-    for (const inst of props.relatedInstitutions) {
-      map[inst.id] = (inst as any).meeting_periodicity_days ?? 30;
-    }
-  }
-  return map;
+const {
+  mergedInstitutions: formattedInstitutions,
+  mergedMeetings: allMeetings,
+  mergedDutyMembers: dutyMembers,
+  mergedInactivePeriods: inactivePeriods,
+  mergedInstitutionNames: allInstitutionNames,
+  mergedInstitutionTenant: allInstitutionTenant,
+  mergedInstitutionHasPublicMeetings: allInstitutionHasPublicMeetings,
+  mergedInstitutionPeriodicity: allInstitutionPeriodicity,
+} = useUserTimelineData({
+  institutions: institutionsRef,
+  meetings: meetingsRef,
+  relatedInstitutions: relatedInstitutionsRef,
+  showRelatedInstitutions: filters.showRelatedInstitutionsUser,
+  baseDutyMembers: baseDutyMembersRef,
+  baseInactivePeriods: baseInactivePeriodsRef,
+  baseInstitutionNames: baseInstitutionNamesRef,
+  baseInstitutionTenant: baseInstitutionTenantRef,
+  baseInstitutionHasPublicMeetings: baseInstitutionHasPublicMeetingsRef,
+  baseInstitutionPeriodicity: baseInstitutionPeriodicityRef,
 });
 </script>

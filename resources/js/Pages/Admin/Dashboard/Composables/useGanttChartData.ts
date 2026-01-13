@@ -8,6 +8,15 @@ import type {
   GanttDutyMember,
   InactivePeriod 
 } from '../types';
+import {
+  extractDutyMembers,
+  calculateInactivePeriods,
+  formatInstitutionsForGantt as formatInstitutionsForGanttHelper,
+  buildInstitutionNamesMap,
+  buildInstitutionTenantMap,
+  buildInstitutionPublicMeetingsMap,
+  buildInstitutionPeriodicityMap,
+} from '../utils/ganttHelpers';
 
 export function useGanttChartData(
   tenantInstitutionsRef: Ref<App.Entities.Institution[]>, // Lazy loaded tenant institutions
@@ -86,14 +95,9 @@ export function useGanttChartData(
     return Object.fromEntries((availableTenants ?? []).map(t => [t.id, t.shortname]));
   });
 
-  // Institution name mappings for Gantt charts
+  // Institution name mappings for Gantt charts - use shared helpers
   const getInstitutionNames = (institutions: AtstovavimosInstitution[]) => {
-    return Object.fromEntries(
-      (institutions ?? []).map(i => [
-        i.id, 
-        String((i as any)?.name?.lt ?? (i as any)?.name?.en ?? (i as any)?.name ?? (i as any)?.shortname ?? i.id)
-      ])
-    );
+    return buildInstitutionNamesMap(institutions);
   };
 
   const getTenantNames = () => {
@@ -101,33 +105,22 @@ export function useGanttChartData(
   };
 
   const getInstitutionTenant = (institutions: AtstovavimosInstitution[]) => {
-    return Object.fromEntries((institutions ?? []).map(i => [i.id, String(i.tenant?.id ?? '')]));
+    return buildInstitutionTenantMap(institutions);
   };
 
   // Get public meetings lookup for institutions
   const getInstitutionHasPublicMeetings = (institutions: AtstovavimosInstitution[]) => {
-    return Object.fromEntries((institutions ?? []).map(i => [String(i.id), Boolean(i.has_public_meetings)]));
+    return buildInstitutionPublicMeetingsMap(institutions);
   };
 
   // Get meeting periodicity lookup for institutions (days between expected meetings)
   const getInstitutionPeriodicity = (institutions: AtstovavimosInstitution[]) => {
-    return Object.fromEntries((institutions ?? []).map(i => [
-      String(i.id), 
-      (i as any).meeting_periodicity_days ?? 30
-    ]));
+    return buildInstitutionPeriodicityMap(institutions);
   };
 
-  // Format institutions for Gantt component
+  // Format institutions for Gantt component - use shared helper
   const formatInstitutionsForGantt = (institutions: AtstovavimosInstitution[]): GanttInstitution[] => {
-    return institutions.map(i => ({
-      id: i.id,
-      name: String((i as any)?.name?.lt ?? (i as any)?.name?.en ?? (i as any)?.name ?? (i as any)?.shortname ?? i.id),
-      tenant_id: i.tenant?.id,
-      is_related: i.is_related,
-      relationship_direction: i.relationship_direction,
-      source_institution_id: i.source_institution_id,
-      authorized: i.authorized
-    }));
+    return formatInstitutionsForGanttHelper(institutions);
   };
 
   // Format tenant institutions for Gantt
@@ -193,159 +186,28 @@ export function useGanttChartData(
       .slice(0, 2);
   });
 
-  // Extract duty members from tenant institutions for Gantt display
+  // Extract duty members from tenant institutions for Gantt display - use shared helper
   const tenantDutyMembers = computed<GanttDutyMember[]>(() => {
-    const members: GanttDutyMember[] = [];
-    
-    for (const institution of tenantInstitutions.value) {
-      const inst = institution as any;
-      for (const duty of (inst.duties ?? [])) {
-        // Use users (all members including historical) for Gantt timeline display
-        for (const user of (duty.users ?? [])) {
-          // Access pivot data for start_date and end_date
-          const pivot = user.pivot ?? {};
-          if (!pivot.start_date) continue;
-          
-          members.push({
-            institution_id: String(institution.id),
-            duty_id: String(duty.id),
-            user: {
-              id: String(user.id),
-              name: String(user.name ?? ''),
-              profile_photo_path: user.profile_photo_path ?? null
-            },
-            start_date: new Date(pivot.start_date),
-            end_date: pivot.end_date ? new Date(pivot.end_date) : null
-          });
-        }
-      }
-    }
-    
-    return members;
+    return extractDutyMembers(tenantInstitutions.value as unknown as AtstovavimosInstitution[]);
   });
 
-  // Calculate inactive periods for tenant institutions (when no duty members were active)
+  // Calculate inactive periods for tenant institutions - use shared helper
   const tenantInactivePeriods = computed<InactivePeriod[]>(() => {
-    const periods: InactivePeriod[] = [];
-    
-    for (const institution of tenantInstitutions.value) {
-      const instId = String(institution.id);
-      const instMembers = tenantDutyMembers.value.filter(m => m.institution_id === instId);
-      
-      if (instMembers.length === 0) continue;
-      
-      // Sort members by start_date
-      const sortedMembers = [...instMembers].sort((a, b) => 
-        a.start_date.getTime() - b.start_date.getTime()
-      );
-      
-      // Find gaps where no member was active
-      // Build a timeline of active periods
-      const activePeriods: Array<{ from: Date; until: Date }> = [];
-      
-      for (const member of sortedMembers) {
-        const from = member.start_date;
-        const until = member.end_date ?? new Date(); // If no end_date, assume still active
-        
-        // Merge overlapping periods
-        if (activePeriods.length === 0) {
-          activePeriods.push({ from, until });
-        } else {
-          const last = activePeriods[activePeriods.length - 1]!;
-          if (from <= last.until) {
-            // Overlapping - extend the last period if needed
-            if (until > last.until) {
-              last.until = until;
-            }
-          } else {
-            // Gap found - this is an inactive period
-            periods.push({
-              institution_id: instId,
-              from: last.until,
-              until: from
-            });
-            activePeriods.push({ from, until });
-          }
-        }
-      }
-    }
-    
-    return periods;
+    return calculateInactivePeriods(
+      tenantInstitutions.value as unknown as AtstovavimosInstitution[],
+      tenantDutyMembers.value
+    );
   });
 
-  // Helper to extract duty members from user's institutions (for user tab)
-  // Uses users which includes all members (current and historical) for timeline display
+  // Helper to extract duty members from user's institutions - use shared helper
   const getDutyMembersFromInstitutions = (institutions: AtstovavimosInstitution[]): GanttDutyMember[] => {
-    const members: GanttDutyMember[] = [];
-    
-    for (const institution of institutions) {
-      const inst = institution as any;
-      for (const duty of (inst.duties ?? [])) {
-        // Use users (all members including historical) for Gantt timeline display
-        for (const user of (duty.users ?? [])) {
-          const pivot = user.pivot ?? {};
-          if (!pivot.start_date) continue;
-          
-          members.push({
-            institution_id: String(institution.id),
-            duty_id: String(duty.id),
-            user: {
-              id: String(user.id),
-              name: String(user.name ?? ''),
-              profile_photo_path: user.profile_photo_path ?? null
-            },
-            start_date: new Date(pivot.start_date),
-            end_date: pivot.end_date ? new Date(pivot.end_date) : null
-          });
-        }
-      }
-    }
-    
-    return members;
+    return extractDutyMembers(institutions);
   };
 
-  // Helper to calculate inactive periods from institutions
+  // Helper to calculate inactive periods from institutions - use shared helper
   const getInactivePeriodsFromInstitutions = (institutions: AtstovavimosInstitution[]): InactivePeriod[] => {
-    const dutyMembers = getDutyMembersFromInstitutions(institutions);
-    const periods: InactivePeriod[] = [];
-    
-    for (const institution of institutions) {
-      const instId = String(institution.id);
-      const instMembers = dutyMembers.filter(m => m.institution_id === instId);
-      
-      if (instMembers.length === 0) continue;
-      
-      const sortedMembers = [...instMembers].sort((a, b) => 
-        a.start_date.getTime() - b.start_date.getTime()
-      );
-      
-      const activePeriods: Array<{ from: Date; until: Date }> = [];
-      
-      for (const member of sortedMembers) {
-        const from = member.start_date;
-        const until = member.end_date ?? new Date();
-        
-        if (activePeriods.length === 0) {
-          activePeriods.push({ from, until });
-        } else {
-          const last = activePeriods[activePeriods.length - 1]!;
-          if (from <= last.until) {
-            if (until > last.until) {
-              last.until = until;
-            }
-          } else {
-            periods.push({
-              institution_id: instId,
-              from: last.until,
-              until: from
-            });
-            activePeriods.push({ from, until });
-          }
-        }
-      }
-    }
-    
-    return periods;
+    const dutyMembers = extractDutyMembers(institutions);
+    return calculateInactivePeriods(institutions, dutyMembers);
   };
 
   return {

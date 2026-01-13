@@ -67,57 +67,6 @@
           <Slider :min="3" :max="36" :step="1" :model-value="[dayWidthPx || dayWidth]"
             @update:model-value="onScaleChange" />
         </div>
-        <!-- Current year badge with navigation dropdown -->
-        <DropdownMenu v-if="currentYear">
-          <DropdownMenuTrigger as-child>
-            <button type="button"
-              data-tour="gantt-date"
-              class="px-2 py-0.5 rounded border text-xs text-zinc-700 dark:text-zinc-300 bg-white/70 dark:bg-zinc-800/70 backdrop-blur border-zinc-200 dark:border-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-700 cursor-pointer transition-colors flex items-center gap-1">
-              {{ currentYear }}
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 opacity-60" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-              </svg>
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" class="min-w-[160px]">
-            <DropdownMenuLabel class="text-xs">{{ $t('Eiti į metus') }}</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem @click="navigateYears(-3)" class="cursor-pointer">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M15.707 15.707a1 1 0 01-1.414 0l-5-5a1 1 0 010-1.414l5-5a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
-                <path fill-rule="evenodd" d="M9.707 15.707a1 1 0 01-1.414 0l-5-5a1 1 0 010-1.414l5-5a1 1 0 111.414 1.414L5.414 10l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
-              </svg>
-              <span>-3 {{ $t('metai') }}</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem @click="navigateYears(-1)" class="cursor-pointer">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
-              </svg>
-              <span>-1 {{ $t('metai') }}</span>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem @click="setCenterDate(null); navigateToToday()" class="cursor-pointer">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                <circle cx="10" cy="10" r="3" />
-              </svg>
-              <span>{{ $t('Šiandien') }}</span>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem @click="navigateYears(1)" class="cursor-pointer">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
-              </svg>
-              <span>+1 {{ $t('metai') }}</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem @click="navigateYears(3)" class="cursor-pointer">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M4.293 15.707a1 1 0 010-1.414L8.586 10 4.293 5.707a1 1 0 111.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z" clip-rule="evenodd" />
-                <path fill-rule="evenodd" d="M10.293 15.707a1 1 0 010-1.414L14.586 10l-4.293-4.293a1 1 0 111.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z" clip-rule="evenodd" />
-              </svg>
-              <span>+3 {{ $t('metai') }}</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
         <!-- Fullscreen button - icon with tooltip -->
         <Tooltip v-if="!hideFullscreenButton">
           <TooltipTrigger as-child>
@@ -138,8 +87,7 @@
       :style="containerHeight ? { height: containerHeight } : {}" :class="{ 'flex-1 min-h-0 h-full': props.height === '100%' }"
       style="min-width: 0;">
       <!-- Left: sticky labels -->
-      <div ref="leftLabels" class="shrink-0 bg-white dark:bg-zinc-900 z-[35]"
-        :class="props.height === '100%' ? 'overflow-y-auto overflow-x-hidden' : 'overflow-hidden'"
+      <div ref="leftLabels" class="shrink-0 bg-white dark:bg-zinc-900 z-[35] overflow-hidden"
         :style="{ width: `${labelWidthPx}px` }"
         style="isolation: isolate;">
         <div class="grid" :style="{ gridTemplateRows: `22px ${layoutRows.map(r => r.height + 'px').join(' ')}` }">
@@ -242,14 +190,6 @@ import { trans as $t } from 'laravel-vue-i18n'
 import * as d3 from 'd3'
 
 import { Slider } from '@/Components/ui/slider'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/Components/ui/dropdown-menu'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/Components/ui/tooltip'
 import { getGanttColors, isDarkModeActive, type GanttColors } from './ganttColors'
 import { useGanttSettings } from '@/Pages/Admin/Dashboard/Composables/useGanttSettings'
@@ -609,6 +549,7 @@ const render = () => {
       marginLeft: margin.left,
       axisHeight,
       locale: currentLocale,
+      isDarkMode: isDarkModeActive(),
       onNavigateToToday: () => {
         // Clear stored center date and navigate to today
         setCenterDate(null)

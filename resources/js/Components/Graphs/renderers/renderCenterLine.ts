@@ -22,6 +22,8 @@ export interface CenterLineRenderContext {
   axisHeight: number
   /** Locale for date formatting */
   locale?: string
+  /** Whether dark mode is active */
+  isDarkMode?: boolean
   /** Callback to navigate to today */
   onNavigateToToday?: () => void
 }
@@ -37,7 +39,7 @@ export interface CenterLineManager {
  * Create and render the center line with date indicator
  */
 export function createCenterLine(ctx: CenterLineRenderContext): CenterLineManager {
-  const { container, rightScroll, x, colors, marginLeft, axisHeight, locale = 'lt', onNavigateToToday } = ctx
+  const { container, rightScroll, x, colors, marginLeft, axisHeight, locale = 'lt', isDarkMode = false, onNavigateToToday } = ctx
 
   // Remove existing center line elements
   container.querySelectorAll('.gantt-center-line, .gantt-center-date').forEach(el => el.remove())
@@ -63,13 +65,37 @@ export function createCenterLine(ctx: CenterLineRenderContext): CenterLineManage
   `
   container.appendChild(lineEl)
 
-  // Create the date badge container (positioned at the top, fixed to viewport center)
-  const dateBadge = document.createElement('div')
-  dateBadge.className = 'gantt-center-date'
-  dateBadge.style.cssText = `
+  // Create the outer wrapper (contains week offset label + date badge)
+  const outerWrapper = document.createElement('div')
+  outerWrapper.className = 'gantt-center-date'
+  outerWrapper.style.cssText = `
     position: absolute;
-    top: 2px;
+    top: -6px;
     transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 45;
+    pointer-events: none;
+  `
+  container.appendChild(outerWrapper)
+
+  // Create the week offset label (above the date badge)
+  const weekOffsetSpan = document.createElement('span')
+  weekOffsetSpan.style.cssText = `
+    font-size: 9px;
+    font-weight: 500;
+    color: ${colors.centerDateText};
+    opacity: 0.6;
+    line-height: 0.7;
+    height: 10px;
+    white-space: nowrap;
+  `
+  outerWrapper.appendChild(weekOffsetSpan)
+
+  // Create the date badge container
+  const dateBadge = document.createElement('div')
+  dateBadge.style.cssText = `
     display: flex;
     align-items: center;
     gap: 4px;
@@ -81,43 +107,57 @@ export function createCenterLine(ctx: CenterLineRenderContext): CenterLineManage
     border: 1px solid ${colors.centerDateBorder};
     border-radius: 4px;
     white-space: nowrap;
-    z-index: 45;
     backdrop-filter: blur(4px);
+    pointer-events: auto;
   `
-  container.appendChild(dateBadge)
+  outerWrapper.appendChild(dateBadge)
 
   // Create the date text span
   const dateTextSpan = document.createElement('span')
   dateBadge.appendChild(dateTextSpan)
 
-  // Create the reset button (hidden initially)
+  // Create the reset button (always visible when not at today, with subtle background)
   const resetBtn = document.createElement('button')
   resetBtn.className = 'gantt-center-reset'
   resetBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 20 20" fill="currentColor">
     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
   </svg>`
+  // Compute hover background (slightly darker/lighter than base)
+  const btnBaseBg = colors.centerDateBorder
+  const btnHoverBg = isDarkMode 
+    ? 'oklch(0.985 0 0 / 25%)' // lighter for dark mode
+    : 'oklch(0.21 0.006 285.885 / 25%)' // darker for light mode
   resetBtn.style.cssText = `
     display: none;
     align-items: center;
     justify-content: center;
-    padding: 2px;
-    margin: -2px -4px -2px 0;
-    background: transparent;
+    padding: 3px;
+    margin: -2px -4px -2px 2px;
+    background: ${btnBaseBg};
     border: none;
-    border-radius: 2px;
+    border-radius: 3px;
     cursor: pointer;
-    opacity: 0.6;
-    transition: opacity 0.15s;
+    opacity: 0.8;
+    transition: opacity 0.15s, background 0.15s;
     color: inherit;
   `
   resetBtn.title = locale === 'lt' ? 'Eiti į šiandien' : 'Go to today'
-  resetBtn.addEventListener('mouseenter', () => { resetBtn.style.opacity = '1' })
-  resetBtn.addEventListener('mouseleave', () => { resetBtn.style.opacity = '0.6' })
+  resetBtn.addEventListener('mouseenter', () => { 
+    resetBtn.style.opacity = '1'
+    resetBtn.style.background = btnHoverBg
+  })
+  resetBtn.addEventListener('mouseleave', () => { 
+    resetBtn.style.opacity = '0.8'
+    resetBtn.style.background = btnBaseBg
+  })
   resetBtn.addEventListener('click', (e) => {
     e.stopPropagation()
     onNavigateToToday?.()
   })
   dateBadge.appendChild(resetBtn)
+
+  // Week abbreviation based on locale
+  const weekAbbr = locale === 'lt' ? 'sav.' : 'wk'
 
   // Date formatter
   const fmtDate = new Intl.DateTimeFormat(locale, { 
@@ -165,10 +205,27 @@ export function createCenterLine(ctx: CenterLineRenderContext): CenterLineManage
     const clampedLineLeft = Math.max(minLeft + 10, Math.min(maxLeft - 10, lineLeft))
     
     lineEl.style.left = `${clampedLineLeft}px`
-    dateBadge.style.left = `${clampedLineLeft}px`
+    outerWrapper.style.left = `${clampedLineLeft}px`
     
     // Update the date text
     dateTextSpan.textContent = fmtDate.format(centerDate)
+    
+    // Calculate week offset from today
+    const today = new Date()
+    const diffMs = centerDate.getTime() - today.getTime()
+    const diffDays = diffMs / (1000 * 60 * 60 * 24)
+    const diffWeeks = Math.round(diffDays / 7)
+    
+    // Update week offset display (shown above the date badge)
+    // Use visibility instead of display to maintain consistent positioning
+    if (diffWeeks === 0) {
+      weekOffsetSpan.textContent = '\u00A0' // non-breaking space to maintain height
+      weekOffsetSpan.style.visibility = 'hidden'
+    } else {
+      const sign = diffWeeks > 0 ? '+' : ''
+      weekOffsetSpan.textContent = `${sign}${diffWeeks} ${weekAbbr}`
+      weekOffsetSpan.style.visibility = 'visible'
+    }
     
     // Show/hide reset button based on whether we're at today
     if (onNavigateToToday && !isToday(centerDate)) {
@@ -187,7 +244,7 @@ export function createCenterLine(ctx: CenterLineRenderContext): CenterLineManage
     update,
     destroy: () => {
       lineEl.remove()
-      dateBadge.remove()
+      outerWrapper.remove()
     }
   }
 }

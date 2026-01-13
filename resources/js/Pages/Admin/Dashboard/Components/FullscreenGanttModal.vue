@@ -1,6 +1,6 @@
 <template>
   <Dialog :open="isOpen" @update:open="emit('update:isOpen', $event)">
-    <DialogContent class="sm:max-w-[95vw] w-full h-[95vh] !flex flex-col">
+    <DialogContent class="sm:max-w-[95vw] w-full h-[95vh] !flex flex-col overflow-hidden">
       <DialogHeader class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <DialogTitle class="flex items-center gap-2">
@@ -69,10 +69,10 @@
             :institution-names="mergedUserInstitutionNames"
             :tenant-names="tenantNames"
             :institution-tenant="mergedUserInstitutionTenant"
-            :institution-has-public-meetings="userInstitutionHasPublicMeetings"
-            :institution-periodicity="userInstitutionPeriodicity"
-            :duty-members="userDutyMembers"
-            :inactive-periods="userInactivePeriods"
+            :institution-has-public-meetings="mergedUserInstitutionHasPublicMeetings"
+            :institution-periodicity="mergedUserInstitutionPeriodicity"
+            :duty-members="mergedUserDutyMembers"
+            :inactive-periods="mergedUserInactivePeriods"
             :show-duty-members="filters.showDutyMembersUser.value"
             :empty-message="$t('Neturi tiesiogiai priskirtų institucijų')"
             height="100%"
@@ -113,7 +113,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, toRef } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import {
@@ -129,6 +129,7 @@ import GanttFilterDropdown from './GanttFilterDropdown.vue';
 import TimelineGanttChart from './TimelineGanttChart.vue';
 import { useGanttSettings } from '../Composables/useGanttSettings';
 import { useTimelineFilters } from '../Composables/useTimelineFilters';
+import { useUserTimelineData } from '../Composables/useUserTimelineData';
 import type { 
   GanttMeeting, 
   GanttInstitution, 
@@ -144,8 +145,8 @@ interface Props {
   ganttType: 'user' | 'tenant';
   availableTenants: AtstovavimosTenant[];
   
-  // User data
-  userInstitutions: GanttInstitution[];
+  // User data (base data from user's direct institutions)
+  userInstitutions: AtstovavimosInstitution[];
   userMeetings: GanttMeeting[];
   userGaps: AtstovavimosGap[];
   userInstitutionNames: Record<string, string>;
@@ -154,13 +155,12 @@ interface Props {
   userInstitutionPeriodicity?: Record<string | number, number>;
   userDutyMembers?: GanttDutyMember[];
   userInactivePeriods?: InactivePeriod[];
-  userRelatedInstitutions?: GanttInstitution[];
-  // Full related institutions data with meetings (for extracting agenda_items)
-  userRelatedInstitutionsFull?: AtstovavimosInstitution[];
+  // Related institutions (lazy-loaded)
+  userRelatedInstitutions?: AtstovavimosInstitution[];
   // Flag to show related institutions filter even when data is lazy-loaded
   mayHaveRelatedInstitutions?: boolean;
   
-  // Tenant data
+  // Tenant data (already computed in parent)
   tenantInstitutions: GanttInstitution[];
   tenantMeetings: GanttMeeting[];
   tenantGaps: AtstovavimosGap[];
@@ -194,74 +194,36 @@ const hasRelatedInstitutions = computed(() => {
 // Computed: current tenant for display
 const currentTenant = computed(() => filters.currentTenant.value);
 
-// Computed: merged institutions including related when filter is enabled
-const mergedUserInstitutions = computed(() => {
-  if (!filters.showRelatedInstitutionsUser.value || !props.userRelatedInstitutions?.length) {
-    return props.userInstitutions;
-  }
-  return [...props.userInstitutions, ...props.userRelatedInstitutions];
-});
+// Use composable for merged user timeline data (same as UserTimelineSection)
+const relatedInstitutionsRef = computed(() => props.userRelatedInstitutions ?? []);
+const institutionsRef = toRef(props, 'userInstitutions');
+const meetingsRef = toRef(props, 'userMeetings');
+const baseDutyMembersRef = computed(() => props.userDutyMembers ?? []);
+const baseInactivePeriodsRef = computed(() => props.userInactivePeriods ?? []);
+const baseInstitutionNamesRef = toRef(props, 'userInstitutionNames');
+const baseInstitutionTenantRef = toRef(props, 'userInstitutionTenant');
+const baseInstitutionHasPublicMeetingsRef = computed(() => props.userInstitutionHasPublicMeetings ?? {});
+const baseInstitutionPeriodicityRef = computed(() => props.userInstitutionPeriodicity ?? {});
 
-// Computed: merged meetings including related institution meetings
-const mergedUserMeetings = computed(() => {
-  if (!filters.showRelatedInstitutionsUser.value || !props.userRelatedInstitutionsFull?.length) {
-    return props.userMeetings;
-  }
-
-  // Add meetings from related institutions (same logic as UserTimelineSection)
-  const relatedMeetings: GanttMeeting[] = props.userRelatedInstitutionsFull.flatMap(inst => 
-    (inst.meetings ?? []).map((m: any) => {
-      // Extract agenda items for tooltip (limit to first 4) - only if authorized
-      const isAuthorized = (inst as any).authorized !== false
-      const agendaItems = isAuthorized 
-        ? (m.agenda_items ?? []).slice(0, 4).map((item: any) => ({
-            id: String(item.id),
-            title: String(item.title ?? ''),
-            student_vote: item.student_vote ?? null,
-            decision: item.decision ?? null,
-          }))
-        : []
-      const totalAgendaCount = isAuthorized ? (m.agenda_items ?? []).length : 0
-
-      return {
-        id: m.id,
-        start_time: new Date(m.start_time),
-        institution_id: inst.id,
-        institution: String((inst as any)?.name?.lt ?? (inst as any)?.name?.en ?? (inst as any)?.name ?? inst.id),
-        completion_status: m.completion_status,
-        agenda_items: agendaItems,
-        agenda_items_count: totalAgendaCount,
-        authorized: isAuthorized,
-      };
-    })
-  );
-
-  return [...props.userMeetings, ...relatedMeetings];
-});
-
-// Computed: merged institution names including related
-const mergedUserInstitutionNames = computed(() => {
-  if (!filters.showRelatedInstitutionsUser.value || !props.userRelatedInstitutions?.length) {
-    return props.userInstitutionNames;
-  }
-  const result = { ...props.userInstitutionNames };
-  props.userRelatedInstitutions.forEach(inst => {
-    result[String(inst.id)] = inst.name;
-  });
-  return result;
-});
-
-// Computed: merged institution tenant mapping
-const mergedUserInstitutionTenant = computed(() => {
-  if (!filters.showRelatedInstitutionsUser.value || !props.userRelatedInstitutions?.length) {
-    return props.userInstitutionTenant;
-  }
-  const result = { ...props.userInstitutionTenant };
-  props.userRelatedInstitutions.forEach(inst => {
-    if (inst.tenant_id) {
-      result[String(inst.id)] = String(inst.tenant_id);
-    }
-  });
-  return result;
+const {
+  mergedInstitutions: mergedUserInstitutions,
+  mergedMeetings: mergedUserMeetings,
+  mergedDutyMembers: mergedUserDutyMembers,
+  mergedInactivePeriods: mergedUserInactivePeriods,
+  mergedInstitutionNames: mergedUserInstitutionNames,
+  mergedInstitutionTenant: mergedUserInstitutionTenant,
+  mergedInstitutionHasPublicMeetings: mergedUserInstitutionHasPublicMeetings,
+  mergedInstitutionPeriodicity: mergedUserInstitutionPeriodicity,
+} = useUserTimelineData({
+  institutions: institutionsRef,
+  meetings: meetingsRef,
+  relatedInstitutions: relatedInstitutionsRef,
+  showRelatedInstitutions: filters.showRelatedInstitutionsUser,
+  baseDutyMembers: baseDutyMembersRef,
+  baseInactivePeriods: baseInactivePeriodsRef,
+  baseInstitutionNames: baseInstitutionNamesRef,
+  baseInstitutionTenant: baseInstitutionTenantRef,
+  baseInstitutionHasPublicMeetings: baseInstitutionHasPublicMeetingsRef,
+  baseInstitutionPeriodicity: baseInstitutionPeriodicityRef,
 });
 </script>
