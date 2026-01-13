@@ -1,37 +1,34 @@
 <template>
   <AdminForm :model="form" label-placement="top" @submit:form="$emit('submit:form', form)" @delete="$emit('delete')">
-    <!-- Section 1: Main Info -->
-    <FormElement :section-number="1" :is-complete="mainInfoComplete" required>
+    <!-- Status Header -->
+    <template #status-header>
+      <FormStatusHeader :is-published="!form.draft" :server-is-published="props.news ? !props.news.draft : undefined"
+        :publish-time="publishTimeDate" :links="statusLinks" :is-create show-publish-time
+        @update:is-published="form.draft = !$event" @update:publish-time="handlePublishTimeUpdate" />
+    </template>
+
+    <!-- Section 1: Title (Essential - the identity of the news) -->
+    <FormElement :section-number="1" :is-complete="titleComplete" required>
       <template #title>
-        {{ $t("forms.context.main_info") }}
+        {{ $t('forms.fields.title') }}
       </template>
       <template #subtitle>
-        {{ $t('Pagrindiniai naujienos nustatymai') }}
-      </template>
-      <template #description>
-        <p><strong>{{ $t('Nuoroda') }}</strong> {{ $t('susiformuoja automatiškai pagal pavadinimą.') }}</p>
+        {{ $t('Naujienos antraštė') }}
       </template>
 
       <div class="space-y-4">
-        <!-- Title with character counter -->
-        <FormFieldWrapper
-          id="title"
-          :label="$t('forms.fields.title')"
-          required
+        <FormFieldWrapper id="title" :label="$t('forms.fields.title')" required
           :hint="$t('Pavadinimas bus rodomas naršyklės skirtuke ir paieškos rezultatuose')"
-          :char-count="form.title?.length || 0"
-          :max-length="60"
-          :error="form.errors.title"
-          :validating="form.validating"
-          :valid="form.valid('title')"
-          :invalid="form.invalid('title')"
-        >
-          <Input id="title" v-model="form.title" type="text" :placeholder="$t('Įrašyti pavadinimą...')" @change="form.validate('title')" />
+          :char-count="form.title?.length || 0" :max-length="60" :error="form.errors.title"
+          :validating="form.validating" :valid="form.valid('title')" :invalid="form.invalid('title')">
+          <Input id="title" v-model="form.title" type="text" :placeholder="$t('Įrašyti pavadinimą...')" class="text-lg"
+            @change="form.validate('title')" />
         </FormFieldWrapper>
 
-        <!-- Language, Publish time, Draft status -->
-        <div class="grid gap-4 lg:grid-cols-3">
-          <FormFieldWrapper id="lang" :label="$t('Kalba')" required :error="form.errors.lang" :valid="form.valid('lang')" :invalid="form.invalid('lang')">
+        <!-- Language selector inline with title -->
+        <div class="grid gap-4 sm:grid-cols-2">
+          <FormFieldWrapper id="lang" :label="$t('Kalba')" required :error="form.errors.lang"
+            :valid="form.valid('lang')" :invalid="form.invalid('lang')">
             <Select v-model="form.lang" @update:model-value="form.validate('lang')">
               <SelectTrigger id="lang">
                 <SelectValue :placeholder="$t('Pasirinkti kalbą...')" />
@@ -44,204 +41,16 @@
             </Select>
           </FormFieldWrapper>
 
-          <FormFieldWrapper id="publish_time" :label="$t('Paskelbimo laikas')" required :error="form.errors.publish_time" :valid="form.valid('publish_time')" :invalid="form.invalid('publish_time')">
-            <DateTimePicker v-model="publishTimeDate" @update:model-value="form.validate('publish_time')" />
+          <FormFieldWrapper id="tags" :label="$t('Žymos')" :hint="$t('Pasirinkite temas')">
+            <MultiSelect v-model="selectedTags" :options="tagOptions" value-field="value"
+              :placeholder="$t('Pasirinkite žymas...')" />
           </FormFieldWrapper>
-
-          <!-- Draft status -->
-          <div class="flex items-end pb-2">
-            <div
-              class="flex w-full items-center gap-3 rounded-lg border p-3 transition-colors"
-              :class="form.draft ? 'border-amber-200 bg-amber-50/50 dark:border-amber-800 dark:bg-amber-950/30' : 'border-green-200 bg-green-50/50 dark:border-green-800 dark:bg-green-950/30'"
-            >
-              <Switch
-                id="draft"
-                v-model="form.draft"
-              />
-              <div class="flex-1">
-                <Label for="draft" class="font-medium">
-                  {{ form.draft ? $t('Juodraštis') : $t('Paskelbta') }}
-                </Label>
-                <p class="text-xs" :class="form.draft ? 'text-amber-700 dark:text-amber-400' : 'text-green-700 dark:text-green-400'">
-                  {{ form.draft ? $t('Naujiena nerodoma viešai') : $t('Naujiena matoma visiems') }}
-                </p>
-              </div>
-              <span
-                class="shrink-0 rounded-full px-2 py-0.5 text-xs font-medium"
-                :class="form.draft ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-400' : 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-400'"
-              >
-                {{ form.draft ? $t('Juodraštis') : $t('Aktyvus') }}
-              </span>
-            </div>
-          </div>
         </div>
-
-        <!-- Tags -->
-        <FormFieldWrapper id="tags" :label="$t('Žymos')" :hint="$t('Pasirinkite temas, susijusias su naujiena')">
-          <MultiSelect
-            v-model="selectedTags"
-            :options="tagOptions"
-            value-field="value"
-            :placeholder="$t('Pasirinkite žymas...')"
-          />
-        </FormFieldWrapper>
-
-        <!-- Other Language News -->
-        <FormFieldWrapper
-          id="other_lang"
-          :label="$t('Kitos kalbos naujiena')"
-          :hint="$t('Susieti su ta pačia naujiena kita kalba')"
-        >
-          <Select v-model="otherLangIdString" :disabled="isCreate">
-            <SelectTrigger id="other_lang">
-              <SelectValue :placeholder="$t('Pasirinkti kitos kalbos naujieną...')" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="__none__">-- {{ $t('Nepasirinkta') }} --</SelectItem>
-              <SelectItem v-for="opt in otherLangNewsOptions" :key="opt.value" :value="String(opt.value)">
-                {{ opt.label }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </FormFieldWrapper>
-
-        <!-- Permalink -->
-        <FormFieldWrapper
-          id="permalink"
-          :label="$t('Nuoroda')"
-          :helper-text="$t('Atsargiai: pakeitus nuorodą, sena nuoroda nebeveiks!')"
-          :error="form.errors.permalink"
-          :valid="form.valid('permalink')"
-          :invalid="form.invalid('permalink')"
-        >
-          <div class="flex items-center gap-2">
-            <IFluentLink24Regular class="h-4 w-4 shrink-0 text-muted-foreground" />
-            <Input id="permalink" v-model="form.permalink" type="text" :placeholder="$t('Sugeneruojama nuoroda')" @change="form.validate('permalink')" />
-          </div>
-        </FormFieldWrapper>
       </div>
     </FormElement>
 
-    <!-- Section 2: Layout Selection -->
-    <FormElement :section-number="2" :is-complete="!!form.layout">
-      <template #title>
-        {{ $t('Išdėstymas') }}
-      </template>
-      <template #subtitle>
-        {{ $t('Pasirinkite naujienos vaizdą') }}
-      </template>
-      <template #description>
-        <p>{{ $t('Pasirinkite, kaip naujiena bus rodoma viešoje svetainėje.') }}</p>
-      </template>
-
-      <div class="grid grid-cols-2 gap-4 overflow-visible pt-3 md:grid-cols-4">
-        <button
-          v-for="layout in layoutOptions"
-          :key="layout.value"
-          type="button"
-          class="group relative overflow-visible rounded-xl border-2 p-4 text-left transition-all duration-200"
-          :class="[
-            form.layout === layout.value
-              ? 'border-vusa-red bg-red-50/50 ring-2 ring-vusa-red/20 dark:bg-red-950/20'
-              : 'border-border hover:border-zinc-300 dark:hover:border-zinc-600'
-          ]"
-          @click="form.layout = layout.value"
-        >
-          <!-- Selected indicator -->
-          <div
-            class="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-vusa-red text-white shadow-md transition-all"
-            :class="form.layout === layout.value ? 'scale-100 opacity-100' : 'scale-75 opacity-0'"
-          >
-            <IFluentCheckmark12Regular class="h-3 w-3" />
-          </div>
-
-          <!-- Layout preview -->
-          <div
-            class="mb-3 flex justify-center transition-opacity"
-            :class="form.layout === layout.value ? 'opacity-100' : 'opacity-50 group-hover:opacity-75'"
-          >
-            <component :is="layout.icon" class="h-12 w-20" />
-          </div>
-
-          <div class="text-center">
-            <span class="text-sm font-medium">{{ layout.label }}</span>
-            <p class="mt-1 text-xs text-muted-foreground">{{ layout.description }}</p>
-          </div>
-        </button>
-      </div>
-    </FormElement>
-
-    <!-- Section 3: Highlights -->
-    <FormElement :section-number="3" :is-complete="form.highlights.length > 0">
-      <template #title>
-        {{ $t('Akcentai') }}
-      </template>
-      <template #description>
-        <p>{{ $t('Iki 3 pagrindinių minčių, kurios bus išskirtos naujienos puslapyje.') }}</p>
-      </template>
-
-      <div class="space-y-3">
-        <!-- Empty state -->
-        <div
-          v-if="form.highlights.length === 0"
-          class="flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-8 text-center"
-        >
-          <IFluentTextBulletListLtr24Regular class="mb-2 h-8 w-8 text-muted-foreground/50" />
-          <p class="text-sm text-muted-foreground">{{ $t('Dar nepridėta jokių akcentų') }}</p>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            class="mt-3"
-            @click="addHighlight"
-          >
-            <IFluentAdd24Regular class="mr-2 h-4 w-4" />
-            {{ $t('Pridėti pirmą akcentą') }}
-          </Button>
-        </div>
-
-        <!-- Highlight items -->
-        <template v-else>
-          <div
-            v-for="(_, index) in form.highlights"
-            :key="index"
-            class="flex items-start gap-3"
-          >
-            <div class="flex h-9 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-sm font-medium text-muted-foreground">
-              {{ index + 1 }}
-            </div>
-            <Input
-              v-model="form.highlights[index]"
-              :placeholder="$t('Akcentas') + ` ${index + 1}...`"
-              class="flex-1"
-            />
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              class="shrink-0 text-muted-foreground hover:text-red-600"
-              @click="removeHighlight(index)"
-            >
-              <IFluentDelete24Regular class="h-4 w-4" />
-            </Button>
-          </div>
-
-          <Button
-            v-if="form.highlights.length < 3"
-            type="button"
-            variant="outline"
-            size="sm"
-            @click="addHighlight"
-          >
-            <IFluentAdd24Regular class="mr-2 h-4 w-4" />
-            {{ $t('Pridėti akcentą') }}
-          </Button>
-        </template>
-      </div>
-    </FormElement>
-
-    <!-- Section 4: Image -->
-    <FormElement :section-number="4" :is-complete="!!form.image" required>
+    <!-- Section 2: Image (Visual identity) -->
+    <FormElement :section-number="2" :is-complete="!!form.image" required>
       <template #title>
         {{ $t('Nuotrauka') }}
       </template>
@@ -250,30 +59,44 @@
       </template>
 
       <div class="space-y-4">
-        <FormFieldWrapper id="image" :label="$t('Nuotrauka')" required :error="form.errors.image" :valid="form.valid('image')" :invalid="form.invalid('image')">
-          <ImageUpload
-            v-model:url="form.image"
-            mode="immediate"
-            folder="news"
-            cropper
-            :existing-url="news?.image"
-            @update:url="form.validate('image')"
-          />
+        <FormFieldWrapper id="image" :label="$t('Nuotrauka')" required :error="form.errors.image"
+          :valid="form.valid('image')" :invalid="form.invalid('image')">
+          <ImageUpload v-model:url="form.image" mode="immediate" folder="news" cropper :existing-url="news?.image"
+            @update:url="form.validate('image')" />
         </FormFieldWrapper>
 
-        <FormFieldWrapper
-          id="image_author"
-          :label="$t('Nuotraukos autorius')"
-          :hint="$t('Žmogus arba organizacija, kurie sukūrė nuotrauką')"
-        >
-          <Input
-            id="image_author"
-            v-model="form.image_author"
-            type="text"
-            :placeholder="$t('Žmogus arba organizacija...')"
-          />
+        <FormFieldWrapper id="image_author" :label="$t('Nuotraukos autorius')"
+          :hint="$t('Žmogus arba organizacija, kurie sukūrė nuotrauką')">
+          <Input id="image_author" v-model="form.image_author" type="text"
+            :placeholder="$t('Žmogus arba organizacija...')" />
         </FormFieldWrapper>
       </div>
+    </FormElement>
+
+    <!-- Section 3: Content (Main editing area) -->
+    <FormElement :section-number="3" no-sider>
+      <template #title>
+        {{ $t('Turinys') }}
+      </template>
+      <template #subtitle>
+        {{ $t('Pagrindinė naujienos informacija') }}
+      </template>
+    </FormElement>
+
+    <RichContentFormElement v-model="form.content.parts" />
+
+    <!-- Section 4: Highlights (Optional but prominent) -->
+    <FormElement :section-number="4" :is-complete="form.highlights.length > 0">
+      <template #title>
+        {{ $t('Akcentai') }}
+      </template>
+      <template #description>
+        <p>{{ $t('Iki 3 pagrindinių minčių, kurios bus išskirtos naujienos puslapyje.') }}</p>
+      </template>
+
+      <OrderedListInput v-model="form.highlights" :max="3" :placeholder="$t('Akcentas') + ' {n}...'"
+        :empty-text="$t('Dar nepridėta jokių akcentų')" :add-first-text="$t('Pridėti pirmą akcentą')"
+        :add-text="$t('Pridėti akcentą')" />
     </FormElement>
 
     <!-- Section 5: Short description -->
@@ -288,36 +111,108 @@
       <TipTap v-model="form.short" disable-tables :max-characters="200" html />
     </FormElement>
 
-    <!-- Section 6: Content -->
-    <FormElement :section-number="6" no-sider>
+    <!-- Section 6: Advanced Settings (Collapsible) -->
+    <FormElement :section-number="6">
       <template #title>
-        {{ $t('Turinys') }}
+        {{ $t('Papildomi nustatymai') }}
       </template>
-    </FormElement>
 
-    <RichContentFormElement v-model="form.content.parts" />
+      <Collapsible v-model:open="advancedSettingsOpen" class="w-full">
+        <CollapsibleTrigger as-child>
+          <Button variant="ghost" class="w-full justify-between p-0 h-auto hover:bg-transparent">
+            <span class="text-sm text-muted-foreground">
+              {{ advancedSettingsOpen ? $t('Slėpti papildomus nustatymus') : $t('Rodyti papildomus nustatymus') }}
+            </span>
+            <IFluentChevronDown24Regular class="h-4 w-4 text-muted-foreground transition-transform duration-200"
+              :class="{ 'rotate-180': advancedSettingsOpen }" />
+          </Button>
+        </CollapsibleTrigger>
+
+        <CollapsibleContent class="pt-4">
+          <div class="space-y-4">
+            <!-- Layout Selection -->
+            <div>
+              <Label class="mb-3 block text-sm font-medium">{{ $t('Išdėstymas') }}</Label>
+              <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
+                <button v-for="layout in layoutOptions" :key="layout.value" type="button"
+                  class="group relative overflow-visible rounded-lg border-2 p-3 text-left transition-all duration-200"
+                  :class="[
+                    form.layout === layout.value
+                      ? 'border-vusa-red bg-red-50/50 ring-2 ring-vusa-red/20 dark:bg-red-950/20'
+                      : 'border-border hover:border-zinc-300 dark:hover:border-zinc-600'
+                  ]" @click="form.layout = layout.value">
+                  <div
+                    class="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-vusa-red text-white shadow-md transition-all"
+                    :class="form.layout === layout.value ? 'scale-100 opacity-100' : 'scale-75 opacity-0'">
+                    <IFluentCheckmark12Regular class="h-2.5 w-2.5" />
+                  </div>
+                  <div class="mb-2 flex justify-center transition-opacity"
+                    :class="form.layout === layout.value ? 'opacity-100' : 'opacity-50 group-hover:opacity-75'">
+                    <component :is="layout.icon" class="h-10 w-16" />
+                  </div>
+                  <div class="text-center">
+                    <span class="text-xs font-medium">{{ layout.label }}</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            <!-- Other Language News -->
+            <FormFieldWrapper id="other_lang" :label="$t('Kitos kalbos naujiena')"
+              :hint="$t('Susieti su ta pačia naujiena kita kalba')">
+              <Select v-model="otherLangIdString" :disabled="isCreate">
+                <SelectTrigger id="other_lang">
+                  <SelectValue :placeholder="$t('Pasirinkti kitos kalbos naujieną...')" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">
+                    -- {{ $t('Nepasirinkta') }} --
+                  </SelectItem>
+                  <SelectItem v-for="opt in otherLangNewsOptions" :key="opt.value" :value="String(opt.value)">
+                    {{ opt.label }}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </FormFieldWrapper>
+
+            <!-- Permalink -->
+            <FormFieldWrapper id="permalink" :label="$t('Nuoroda')"
+              :helper-text="$t('Atsargiai: pakeitus nuorodą, sena nuoroda nebeveiks!')" :error="form.errors.permalink"
+              :valid="form.valid('permalink')" :invalid="form.invalid('permalink')">
+              <div class="flex items-center gap-2">
+                <IFluentLink24Regular class="h-4 w-4 shrink-0 text-muted-foreground" />
+                <Input id="permalink" v-model="form.permalink" type="text" :placeholder="$t('Sugeneruojama nuoroda')"
+                  @change="form.validate('permalink')" />
+              </div>
+            </FormFieldWrapper>
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
+    </FormElement>
   </AdminForm>
 </template>
 
 <script setup lang="ts">
-import { computed, watch, h } from "vue";
+import { computed, ref, watch, h } from "vue";
 import { useForm } from "@inertiajs/vue3";
 import latinize from "latinize";
 
-import { Button } from "@/Components/ui/button";
-import { Input } from "@/Components/ui/input";
-import { Label } from "@/Components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
-import { Switch } from "@/Components/ui/switch";
-import { MultiSelect } from "@/Components/ui/multi-select";
-import DateTimePicker from "@/Components/ui/date-picker/DateTimePicker.vue";
+import RichContentFormElement from "../RichContentFormElement.vue";
 
+import AdminForm from "./AdminForm.vue";
 import FormElement from "./FormElement.vue";
 import FormFieldWrapper from "./FormFieldWrapper.vue";
-import RichContentFormElement from "../RichContentFormElement.vue";
-import TipTap from "@/Components/TipTap/OriginalTipTap.vue";
-import AdminForm from "./AdminForm.vue";
+import FormStatusHeader from "./FormStatusHeader.vue";
+
+import { Button } from "@/Components/ui/button";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/Components/ui/collapsible";
+import { Input } from "@/Components/ui/input";
+import { Label } from "@/Components/ui/label";
+import { MultiSelect } from "@/Components/ui/multi-select";
+import { OrderedListInput } from "@/Components/ui/ordered-list-input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
 import { ImageUpload } from "@/Components/ui/upload";
+import TipTap from "@/Components/TipTap/OriginalTipTap.vue";
 import { newsTemplate } from "@/Types/formTemplates";
 
 // Layout preview icons as simple SVG components
@@ -374,7 +269,15 @@ const props = defineProps<{
   submitMethod: 'post' | 'patch';
 }>();
 
+defineEmits<{
+  (event: "submit:form", form: unknown): void;
+  (event: "delete"): void;
+}>();
+
 const isCreate = computed(() => props.rememberKey === 'CreateNews');
+
+// Advanced settings collapsed by default
+const advancedSettingsOpen = ref(false);
 
 const formData = { ...newsTemplate, ...props.news, layout: props.news?.layout || 'modern', highlights: props.news?.highlights || [] } as any;
 
@@ -390,15 +293,24 @@ if (!Array.isArray(form.highlights)) {
   form.highlights = [];
 }
 
-defineEmits<{
-  (event: "submit:form", form: unknown): void;
-  (event: "delete"): void;
-}>();
-
 // Section completion states
-const mainInfoComplete = computed(() =>
-  (form.title?.length || 0) >= 3 && form.lang && form.publish_time
-);
+const titleComplete = computed(() => (form.title?.length || 0) >= 3 && form.lang);
+
+// Status header links
+const statusLinks = computed(() => {
+  // Need permalink and tenant to construct a valid public URL
+  if (!form.permalink || !props.news?.tenant) return [];
+
+  const newsLang = form.lang ?? 'lt';
+  const url = route('news', {
+    subdomain: props.news.tenant.alias ?? 'www',
+    lang: newsLang,
+    newsString: newsLang === 'lt' ? 'naujiena' : 'news',
+    news: form.permalink,
+  });
+
+  return [{ url, label: 'Public' }];
+});
 
 // Date picker compatibility - convert string to Date
 const publishTimeDate = computed({
@@ -407,6 +319,14 @@ const publishTimeDate = computed({
     form.publish_time = val ? val.toISOString() : null;
   }
 });
+
+// Handle publish time update from status header
+function handlePublishTimeUpdate(val: Date | null) {
+  form.publish_time = val ? val.toISOString() : null;
+  if (val) {
+    form.validate('publish_time');
+  }
+}
 
 // Handle other_lang_id as string for Select component
 const otherLangIdString = computed({
@@ -457,7 +377,6 @@ const tagOptionsMap = computed(() => {
 // Computed to handle tag selection - converts between objects and IDs
 const selectedTags = computed({
   get: () => {
-    // Convert form.tags (array of IDs) to array of option objects using Map for efficient lookup
     const tagIds = Array.isArray(form.tags) ? form.tags : [];
     const map = tagOptionsMap.value;
 
@@ -466,7 +385,6 @@ const selectedTags = computed({
       .filter((option): option is { label: string; value: number } => Boolean(option));
   },
   set: (items: { label: string; value: number }[]) => {
-    // Convert selected objects to array of IDs
     form.tags = items.map(item => item.value);
   }
 });
@@ -480,45 +398,31 @@ const layoutOptions = [
   {
     value: 'modern',
     label: 'Modernus',
-    description: 'Švarus, didelis šriftas, fokusuotas į skaitomumą',
     icon: ModernLayoutIcon,
   },
   {
     value: 'classic',
     label: 'Klasikinis',
-    description: 'Tradicinis naujienų straipsnio vaizdas',
     icon: ClassicLayoutIcon,
   },
   {
     value: 'immersive',
     label: 'Įtraukiantis',
-    description: 'Žurnalo stilius su dideliu vaizdu',
     icon: ImmersiveLayoutIcon,
   },
   {
     value: 'headline',
     label: 'Antraštinis',
-    description: 'Pavadinimas virš nuotraukos',
     icon: HeadlineLayoutIcon,
   },
 ];
 
-// Highlights management
-const addHighlight = () => {
-  if (form.highlights.length < 3) {
-    form.highlights.push('');
-  }
-};
-
-const removeHighlight = (index: number) => {
-  form.highlights.splice(index, 1);
-};
-
+// Auto-generate permalink from title for new news
 if (isCreate.value) {
   watch(
     () => form.title,
     (title) => {
-      let latinizedTitle = latinize(String(title || ''));
+      const latinizedTitle = latinize(String(title || ''));
       form.permalink = latinizedTitle
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")

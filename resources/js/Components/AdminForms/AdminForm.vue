@@ -2,24 +2,31 @@
   <ThemeProvider>
     <NForm v-bind="$attrs">
       <div class="flex flex-col pb-20">
+        <!-- Status header slot (for publish status, preview buttons) -->
+        <slot name="status-header" />
+
         <slot />
       </div>
 
       <!-- Sticky Bottom Action Bar -->
-      <div class="fixed bottom-0 left-0 right-0 z-50 border-t bg-white/95 backdrop-blur-sm px-4 py-3 dark:bg-zinc-900/95 dark:border-zinc-800 md:left-[var(--sidebar-width,16rem)]">
+      <div
+        class="fixed bottom-0 left-0 right-0 z-50 border-t bg-white/95 backdrop-blur-sm px-4 py-3 dark:bg-zinc-900/95 dark:border-zinc-800 md:left-(--sidebar-width,16rem)">
         <div class="mx-auto flex max-w-5xl items-center justify-between gap-4">
           <!-- Left side: Status indicators -->
           <div class="flex items-center gap-3 text-sm">
             <Transition name="fade" mode="out-in">
               <div v-if="isSaving" key="saving" class="flex items-center gap-2 text-muted-foreground">
-                <div class="h-3 w-3 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-600 dark:border-zinc-600 dark:border-t-zinc-300" />
+                <div
+                  class="h-3 w-3 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-600 dark:border-zinc-600 dark:border-t-zinc-300" />
                 <span class="hidden sm:inline">{{ $t('Išsaugoma...') }}</span>
               </div>
-              <div v-else-if="recentlySaved" key="saved" class="flex items-center gap-2 text-green-600 dark:text-green-400">
+              <div v-else-if="recentlySaved" key="saved"
+                class="flex items-center gap-2 text-green-600 dark:text-green-400">
                 <IFluentCheckmarkCircle16Filled class="h-4 w-4" />
                 <span class="hidden sm:inline">{{ $t('Išsaugota') }}</span>
               </div>
-              <div v-else-if="props.model.isDirty" key="unsaved" class="flex items-center gap-2 text-amber-600 dark:text-amber-400">
+              <div v-else-if="props.model.isDirty" key="unsaved"
+                class="flex items-center gap-2 text-amber-600 dark:text-amber-400">
                 <div class="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
                 <span class="hidden sm:inline">{{ $t('Neišsaugoti pakeitimai') }}</span>
               </div>
@@ -30,10 +37,7 @@
           <div class="flex items-center gap-2 sm:gap-3">
             <!-- Autosave toggle -->
             <div class="hidden items-center gap-2 sm:flex">
-              <Switch
-                id="autosave"
-                v-model="autosaveEnabled"
-              />
+              <Switch id="autosave" v-model="autosaveEnabled" />
               <Label for="autosave" class="cursor-pointer text-xs text-muted-foreground">
                 {{ $t('Automatinis išsaugojimas') }}
               </Label>
@@ -42,17 +46,13 @@
             <Separator orientation="vertical" class="hidden h-6 sm:block" />
 
             <slot name="buttons">
-              <Button
-                v-if="enableDelete"
-                variant="ghost"
-                size="icon"
+              <Button v-if="enableDelete" variant="ghost" size="icon"
                 class="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30 sm:size-auto sm:px-4"
-                @click="showDeleteDialog = true"
-              >
+                @click="showDeleteDialog = true">
                 <IFluentDelete24Filled class="h-4 w-4" />
                 <span class="hidden sm:inline ml-2">{{ $t('Ištrinti') }}</span>
               </Button>
-              <Button @click="handleSubmit" :disabled="isSaving">
+              <Button :disabled="isSaving" @click="handleSubmit">
                 <IFluentSave24Filled class="h-4 w-4" />
                 <span class="hidden sm:inline ml-2">{{ $t('Išsaugoti') }}</span>
               </Button>
@@ -64,14 +64,14 @@
   </ThemeProvider>
 
   <Dialog :open="showDeleteDialog" @update:open="showDeleteDialog = $event">
-    <DialogContent class="sm:max-w-[425px]">
+    <DialogContent class="sm:max-w-106.25">
       <DialogHeader>
         <DialogTitle>{{ $t('Ištrinti įrašą') }}</DialogTitle>
         <DialogDescription>
           {{ $t('Ar tikrai norite ištrinti šį įrašą?') }}
         </DialogDescription>
       </DialogHeader>
-      
+
       <DialogFooter>
         <Button variant="outline" @click="showDeleteDialog = false">
           {{ $t('Atšaukti') }}
@@ -89,6 +89,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { watch, ref, onMounted, onUnmounted } from 'vue';
 import { useDebounceFn, useTimeoutFn } from '@vueuse/core';
 import { router } from '@inertiajs/vue3';
+
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { Button } from '@/Components/ui/button';
 import { Switch } from '@/Components/ui/switch';
@@ -148,7 +149,7 @@ onMounted(() => {
     if (event.detail.visit.prefetch) {
       return true;
     }
-    
+
     if (props.model.isDirty && !isSaving.value) {
       // Use native browser confirm dialog
       return confirm($t('Turite neišsaugotų pakeitimų. Ar tikrai norite išeiti?'));

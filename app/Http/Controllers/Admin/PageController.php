@@ -95,6 +95,8 @@ class PageController extends AdminController
     {
         $this->handleAuthorization('update', $page);
 
+        $page->load('tenant:id,alias,shortname');
+
         $other_lang_pages = Page::with('tenant:id,shortname')->when(! request()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) use ($page) {
             $query->where('tenant_id', $page->tenant_id);
         })->where('lang', '!=', $page->lang)->select('id', 'title', 'tenant_id')->get();
@@ -102,6 +104,7 @@ class PageController extends AdminController
         return $this->inertiaResponse('Admin/Content/EditPage', [
             'page' => [
                 ...$page->only('id', 'title', 'content', 'permalink', 'text', 'lang', 'category_id', 'tenant_id', 'is_active', 'aside', 'layout'),
+                'tenant' => $page->tenant?->only('id', 'alias', 'shortname'),
                 'other_lang_id' => $page->getOtherLanguage()?->only('id')['id'],
             ],
             'otherLangPages' => $other_lang_pages,

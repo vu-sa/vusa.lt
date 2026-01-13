@@ -1,5 +1,11 @@
 <template>
   <AdminForm :model="form" label-placement="top" @submit:form="$emit('submit:form', form)" @delete="$emit('delete')">
+    <!-- Status Header -->
+    <template #status-header>
+      <FormStatusHeader :is-published="!form.is_draft" :server-is-published="!props.calendar.is_draft"
+        :links="statusLinks" :is-create @update:is-published="form.is_draft = !$event" />
+    </template>
+
     <!-- Section 1: Main Info -->
     <FormElement :section-number="1" :is-complete="mainInfoComplete" required>
       <template #title>
@@ -10,56 +16,40 @@
       </template>
       <template #description>
         <p><strong>{{ $t('Kategorija') }}</strong> {{ $t('keičia spalvą renginių kalendoriuje.') }}</p>
-        <p><strong>{{ $t('Organizatorius') }}</strong>, {{ $t('jeigu neįrašytas, bus') }} <strong>{{ defaultOrganizer }}</strong></p>
+        <p><strong>{{ $t('Organizatorius') }}</strong>, {{ $t('jeigu neįrašytas, bus') }} <strong>{{ defaultOrganizer
+            }}</strong></p>
       </template>
 
       <div class="space-y-4">
         <!-- Title -->
-        <FormFieldWrapper
-          id="title"
-          :label="$t('forms.fields.title')"
-          required
-          :hint="$t('Renginio pavadinimas abiem kalbom')"
-          :error="form.errors['title.lt']"
-          :validating="form.validating"
-          :valid="form.valid('title.lt')"
-          :invalid="form.invalid('title.lt')"
-        >
+        <FormFieldWrapper id="title" :label="$t('forms.fields.title')" required
+          :hint="$t('Renginio pavadinimas abiem kalbom')" :error="form.errors['title.lt']" :validating="form.validating"
+          :valid="form.valid('title.lt')" :invalid="form.invalid('title.lt')">
           <MultiLocaleInput v-model:input="form.title" @blur="form.validate('title.lt')" />
         </FormFieldWrapper>
 
         <!-- Organizer & Location -->
         <div class="grid gap-4 lg:grid-cols-2">
-          <FormFieldWrapper
-            id="organizer"
-            :label="$t('Organizatorius')"
-            :hint="$t('Kas organizuoja renginį')"
-          >
+          <FormFieldWrapper id="organizer" :label="$t('Organizatorius')" :hint="$t('Kas organizuoja renginį')">
             <MultiLocaleInput v-model:input="form.organizer" />
           </FormFieldWrapper>
 
-          <FormFieldWrapper
-            id="location"
-            :label="$t('Renginio vieta')"
-            :hint="$t('Fizinė arba virtuali vieta')"
-          >
+          <FormFieldWrapper id="location" :label="$t('Renginio vieta')" :hint="$t('Fizinė arba virtuali vieta')">
             <MultiLocaleInput v-model:input="form.location" />
           </FormFieldWrapper>
         </div>
 
         <!-- Category & Tenant -->
         <div class="grid gap-4 lg:grid-cols-2">
-          <FormFieldWrapper
-            id="category"
-            :label="$t('Kategorija')"
-            :hint="$t('Kategorija keičia spalvą kalendoriuje')"
-          >
+          <FormFieldWrapper id="category" :label="$t('Kategorija')" :hint="$t('Kategorija keičia spalvą kalendoriuje')">
             <Select v-model="categoryIdString">
               <SelectTrigger id="category">
                 <SelectValue :placeholder="$t('Pasirinkti kategoriją...')" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="__none__">-- {{ $t('Be kategorijos') }} --</SelectItem>
+                <SelectItem value="__none__">
+                  -- {{ $t('Be kategorijos') }} --
+                </SelectItem>
                 <SelectItem v-for="cat in categories" :key="cat.id" :value="String(cat.id)">
                   {{ cat.name }}
                 </SelectItem>
@@ -67,14 +57,8 @@
             </Select>
           </FormFieldWrapper>
 
-          <FormFieldWrapper
-            id="tenant"
-            :label="$t('Padalinys')"
-            required
-            :error="form.errors.tenant_id"
-            :valid="form.valid('tenant_id')"
-            :invalid="form.invalid('tenant_id')"
-          >
+          <FormFieldWrapper id="tenant" :label="$t('Padalinys')" required :error="form.errors.tenant_id"
+            :valid="form.valid('tenant_id')" :invalid="form.invalid('tenant_id')">
             <Select v-model="tenantIdString" @update:model-value="form.validate('tenant_id')">
               <SelectTrigger id="tenant">
                 <SelectValue :placeholder="$t('VU SA ...')" />
@@ -88,62 +72,21 @@
           </FormFieldWrapper>
         </div>
 
-        <!-- Audience & Draft toggles -->
-        <div class="grid gap-4 lg:grid-cols-2">
-          <!-- International audience toggle -->
-          <FormFieldWrapper
-            id="audience"
-            :label="$t('Viešinimo auditorija')"
-            :hint="$t('Ar renginys skirtas tarptautiniams studentams')"
-          >
-            <div class="flex gap-2">
-              <Button
-                type="button"
-                :variant="form.is_international ? 'default' : 'outline'"
-                class="flex-1 gap-2"
-                @click="form.is_international = true"
-              >
-                <IFluentGlobe20Regular class="h-4 w-4" />
-                {{ $t('Visi studentai') }}
-              </Button>
-              <Button
-                type="button"
-                :variant="form.is_international ? 'outline' : 'default'"
-                class="flex-1"
-                @click="form.is_international = false"
-              >
-                {{ $t('Tik LT') }}
-              </Button>
-            </div>
-          </FormFieldWrapper>
-
-          <!-- Draft status -->
-          <div class="flex items-end pb-2">
-            <div
-              class="flex w-full items-center gap-3 rounded-lg border p-3 transition-colors"
-              :class="form.is_draft ? 'border-amber-200 bg-amber-50/50 dark:border-amber-800 dark:bg-amber-950/30' : 'border-green-200 bg-green-50/50 dark:border-green-800 dark:bg-green-950/30'"
-            >
-              <Switch
-                id="is_draft"
-                v-model="form.is_draft"
-              />
-              <div class="flex-1">
-                <Label for="is_draft" class="font-medium">
-                  {{ form.is_draft ? $t('Juodraštis') : $t('Paskelbta') }}
-                </Label>
-                <p class="text-xs" :class="form.is_draft ? 'text-amber-700 dark:text-amber-400' : 'text-green-700 dark:text-green-400'">
-                  {{ form.is_draft ? $t('Renginys nerodomas viešai') : $t('Renginys matomas visiems') }}
-                </p>
-              </div>
-              <span
-                class="shrink-0 rounded-full px-2 py-0.5 text-xs font-medium"
-                :class="form.is_draft ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-400' : 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-400'"
-              >
-                {{ form.is_draft ? $t('Juodraštis') : $t('Aktyvus') }}
-              </span>
-            </div>
+        <!-- Audience toggle -->
+        <FormFieldWrapper id="audience" :label="$t('Viešinimo auditorija')"
+          :hint="$t('Ar renginys skirtas tarptautiniams studentams')">
+          <div class="flex gap-2">
+            <Button type="button" :variant="form.is_international ? 'default' : 'outline'" class="flex-1 gap-2"
+              @click="form.is_international = true">
+              <IFluentGlobe20Regular class="h-4 w-4" />
+              {{ $t('Visi studentai') }}
+            </Button>
+            <Button type="button" :variant="form.is_international ? 'outline' : 'default'" class="flex-1"
+              @click="form.is_international = false">
+              {{ $t('Tik LT') }}
+            </Button>
           </div>
-        </div>
+        </FormFieldWrapper>
       </div>
     </FormElement>
 
@@ -160,31 +103,18 @@
       </template>
 
       <div class="grid gap-4 lg:grid-cols-3">
-        <FormFieldWrapper
-          id="date"
-          :label="$t('Renginio pradžia')"
-          required
-          :error="form.errors.date"
-          :valid="form.valid('date')"
-          :invalid="form.invalid('date')"
-        >
+        <FormFieldWrapper id="date" :label="$t('Renginio pradžia')" required :error="form.errors.date"
+          :valid="form.valid('date')" :invalid="form.invalid('date')">
           <DateTimePicker v-model="startDate" @update:model-value="form.validate('date')" />
         </FormFieldWrapper>
 
-        <FormFieldWrapper
-          id="end_date"
-          :label="$t('Renginio pabaiga')"
-          :error="form.errors.end_date"
-        >
+        <FormFieldWrapper id="end_date" :label="$t('Renginio pabaiga')" :error="form.errors.end_date">
           <DateTimePicker v-model="endDate" />
         </FormFieldWrapper>
 
         <div class="flex items-end pb-2">
           <div class="flex w-full items-center gap-3 rounded-lg border p-3">
-            <Switch
-              id="is_all_day"
-              v-model="form.is_all_day"
-            />
+            <Switch id="is_all_day" v-model="form.is_all_day" />
             <div class="flex-1">
               <Label for="is_all_day" class="flex items-center gap-2 font-medium">
                 {{ $t('Visos dienos renginys') }}
@@ -208,48 +138,26 @@
       </template>
 
       <div class="space-y-4">
-        <FormFieldWrapper
-          id="cto_url"
-          :label="$t('CTO nuoroda')"
-          :hint="$t('Nuoroda į pagrindinį renginio puslapį arba registracijos formą')"
-        >
+        <FormFieldWrapper id="cto_url" :label="$t('CTO nuoroda')"
+          :hint="$t('Nuoroda į pagrindinį renginio puslapį arba registracijos formą')">
           <MultiLocaleInput v-model:input="form.cto_url" />
         </FormFieldWrapper>
 
         <div class="grid gap-4 lg:grid-cols-2">
-          <FormFieldWrapper
-            id="facebook_url"
-            :label="$t('forms.fields.facebook_url')"
-            :error="form.errors.facebook_url"
-            :valid="form.valid('facebook_url')"
-            :invalid="form.invalid('facebook_url')"
-          >
+          <FormFieldWrapper id="facebook_url" :label="$t('forms.fields.facebook_url')" :error="form.errors.facebook_url"
+            :valid="form.valid('facebook_url')" :invalid="form.invalid('facebook_url')">
             <div class="flex items-center gap-2">
               <IMdiFacebook class="h-4 w-4 shrink-0 text-[#1877F2]" />
-              <Input
-                id="facebook_url"
-                v-model="form.facebook_url"
-                type="url"
-                placeholder="https://www.facebook.com/events/..."
-                @change="form.validate('facebook_url')"
-              />
+              <Input id="facebook_url" v-model="form.facebook_url" type="url"
+                placeholder="https://www.facebook.com/events/..." @change="form.validate('facebook_url')" />
             </div>
           </FormFieldWrapper>
 
-          <FormFieldWrapper
-            id="video_url"
-            :label="$t('Youtube video kodas')"
-            :hint="$t('Tik video kodas, ne pilna nuoroda')"
-          >
+          <FormFieldWrapper id="video_url" :label="$t('Youtube video kodas')"
+            :hint="$t('Tik video kodas, ne pilna nuoroda')">
             <div class="flex items-center gap-2">
               <span class="shrink-0 text-sm text-muted-foreground">youtube.com/embed/</span>
-              <Input
-                id="video_url"
-                v-model="form.video_url"
-                type="text"
-                placeholder="dQw4w9WgXcQ"
-                class="flex-1"
-              />
+              <Input id="video_url" v-model="form.video_url" type="text" placeholder="dQw4w9WgXcQ" class="flex-1" />
             </div>
           </FormFieldWrapper>
         </div>
@@ -265,20 +173,9 @@
         {{ $t('Rodoma renginio kortelėje ir viršuje') }}
       </template>
 
-      <FormFieldWrapper
-        id="main_image"
-        :label="$t('Pagrindinė nuotrauka')"
-        required
-        :error="form.errors.main_image"
-      >
-        <ImageUpload
-          :max="1"
-          :existing-url="existingMainImageUrl"
-          cropper
-          compress
-          folder="calendar"
-          @update:file="handleMainImageUpdate"
-        />
+      <FormFieldWrapper id="main_image" :label="$t('Pagrindinė nuotrauka')" required :error="form.errors.main_image">
+        <ImageUpload :max="1" :existing-url="existingMainImageUrl" cropper compress folder="calendar"
+          @update:file="handleMainImageUpdate" />
       </FormFieldWrapper>
     </FormElement>
 
@@ -292,18 +189,13 @@
       </template>
       <template #description>
         <p>{{ $t('Nuotraukos optimizuojamos automatiškai prieš įkėlimą.') }}</p>
-        <p class="text-amber-600 dark:text-amber-400">{{ $t('Naujos nuotraukos bus įkeltos išsaugojus formą.') }}</p>
+        <p class="text-amber-600 dark:text-amber-400">
+          {{ $t('Naujos nuotraukos bus įkeltos išsaugojus formą.') }}
+        </p>
       </template>
 
-      <ImageUpload
-        v-model:files="newGalleryImages"
-        :max="20"
-        :existing-urls="existingGalleryImages"
-        cropper
-        compress
-        folder="calendar"
-        @remove:existing="removeExistingImage"
-      />
+      <ImageUpload v-model:files="newGalleryImages" :max="20" :existing-urls="existingGalleryImages" cropper compress
+        folder="calendar" @remove:existing="removeExistingImage" />
     </FormElement>
 
     <!-- Section 6: Description -->
@@ -331,22 +223,27 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import { router, useForm, usePage } from "@inertiajs/vue3";
+import latinize from "latinize";
 
+import InfoPopover from "../Buttons/InfoPopover.vue";
+import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";
+import SimpleLocaleButton from "../Buttons/SimpleLocaleButton.vue";
+
+import FormElement from "./FormElement.vue";
+import FormFieldWrapper from "./FormFieldWrapper.vue";
+import FormStatusHeader from "./FormStatusHeader.vue";
+import AdminForm from "./AdminForm.vue";
+
+import { getCalendarEvent2Route } from "@/Utils/Route";
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
 import { Label } from "@/Components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
-import { Switch } from "@/Components/ui/switch";
 import { ImageUpload } from "@/Components/ui/upload";
 import DateTimePicker from "@/Components/ui/date-picker/DateTimePicker.vue";
-
-import FormElement from "./FormElement.vue";
-import FormFieldWrapper from "./FormFieldWrapper.vue";
-import InfoPopover from "../Buttons/InfoPopover.vue";
 import TipTap from "@/Components/TipTap/OriginalTipTap.vue";
-import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";
-import SimpleLocaleButton from "../Buttons/SimpleLocaleButton.vue";
-import AdminForm from "./AdminForm.vue";
+
+
 
 defineEmits<{
   (event: "submit:form", form: unknown): void;
@@ -362,6 +259,7 @@ const props = defineProps<{
   submitMethod: 'post' | 'patch';
 }>();
 
+const isCreate = computed(() => !!props.rememberKey);
 const locale = ref("lt");
 
 // Store existing main_image URL for display in MediaUpload
@@ -392,6 +290,20 @@ const hasMainImage = computed(() => !!form.main_image || !!existingMainImageUrl.
 const mainInfoComplete = computed(() =>
   (form.title?.lt?.length || 0) >= 3 && form.tenant_id
 );
+
+// Status header links
+const statusLinks = computed(() => {
+  // Need id, date, and title to construct a valid public URL
+  if (!props.calendar.id || !props.calendar.date || !form.title?.lt) return [];
+
+  const locale = usePage().props.app?.locale ?? 'lt';
+  const url = getCalendarEvent2Route(
+    { date: props.calendar.date, title: latinize(form.title.lt) },
+    locale
+  );
+
+  return [{ url, label: 'Public' }];
+});
 
 const defaultOrganizer = computed(() => {
   return (
