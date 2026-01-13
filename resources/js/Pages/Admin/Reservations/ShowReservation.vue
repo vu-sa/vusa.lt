@@ -125,8 +125,29 @@
           </DialogTitle>
         </DialogHeader>
         <div class="space-y-4">
-          <UserMultiSelect ref="userMultiSelectRef" v-model="selectedUsersList" :users="allUsers ?? []"
-            :label="$t('Naudotojai')" :placeholder="`${$t('Pasirinkite')}...`" :empty-text="$t('No users found.')" />
+          <div class="space-y-2">
+            <Label>{{ $t('Naudotojai') }}</Label>
+            <MultiSelect 
+              ref="userMultiSelectRef" 
+              v-model="selectedUsersList" 
+              :options="allUsers ?? []"
+              label-field="name"
+              value-field="id"
+              :placeholder="`${$t('Pasirinkite')}...`" 
+              :empty-text="$t('No users found.')"
+            >
+              <template #selected-item="{ item: user }">
+                <div class="flex items-center gap-1">
+                  <UserAvatar :user="(user as unknown as App.Entities.User)" :size="16" />
+                  <span class="max-w-[120px] truncate">{{ (user as unknown as App.Entities.User).name }}</span>
+                </div>
+              </template>
+              <template #option="{ item: user }">
+                <UserAvatar :user="(user as unknown as App.Entities.User)" :size="24" class="shrink-0" />
+                <span class="min-w-0 truncate">{{ (user as unknown as App.Entities.User).name }}</span>
+              </template>
+            </MultiSelect>
+          </div>
           <Button :disabled="selectedUsersList.length === 0 || reservationUserForm.processing"
             @click="handleSubmitUserForm">
             <IFluentCheckmark24Filled v-if="!reservationUserForm.processing" class="size-4" />
@@ -160,7 +181,9 @@ import Icons from "@/Types/Icons/filled";
 import MdSuspenseWrapper from "@/Features/MarkdownGetterFromDocs/MdSuspenseWrapper.vue";
 import ReservationResourceForm from "@/Components/AdminForms/ReservationResourceForm.vue";
 import ReservationResourceTable from "@/Components/Tables/ReservationResourceTable.vue";
-import UserMultiSelect from "@/Components/Forms/UserMultiSelect.vue";
+import UserAvatar from "@/Components/Avatars/UserAvatar.vue";
+import { MultiSelect } from "@/Components/ui/multi-select";
+import { Label } from "@/Components/ui/label";
 
 const props = defineProps<{
   reservation: App.Entities.Reservation;
@@ -203,11 +226,11 @@ const currentlyUsedCapacity = ref(0);
 
 // User form state
 const reservationUserForm = useForm({
-  users: null as number[] | null,
+  users: null as string[] | null,
 });
 
 const selectedUsersList = ref<App.Entities.User[]>([]);
-const userMultiSelectRef = ref<InstanceType<typeof UserMultiSelect> | null>(null);
+const userMultiSelectRef = ref<{ reset: () => void } | null>(null);
 
 // Watch selection changes to update form
 watch(selectedUsersList, (users) => {

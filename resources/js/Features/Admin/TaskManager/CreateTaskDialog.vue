@@ -31,10 +31,26 @@
 
         <div class="grid gap-2">
           <Label :for="'task-users'">{{ $t("forms.fields.responsible_people") }}</Label>
-          <MultiSelectUsers 
-            v-model="taskForm.user_ids" 
+          <MultiSelect 
+            v-model="selectedUsers" 
+            :options="props.users ?? []"
+            label-field="name"
+            value-field="id"
+            :placeholder="$t('forms.fields.select_users')"
+            :empty-text="$t('No users found.')"
             :class="{ 'border-destructive': errors.users }"
-          />
+          >
+            <template #selected-item="{ item: user }">
+              <div class="flex items-center gap-1">
+                <UserAvatar :user="(user as App.Entities.User)" :size="16" />
+                <span class="max-w-[120px] truncate">{{ (user as App.Entities.User).name }}</span>
+              </div>
+            </template>
+            <template #option="{ item: user }">
+              <UserAvatar :user="(user as App.Entities.User)" :size="24" class="shrink-0" />
+              <span class="min-w-0 truncate">{{ (user as App.Entities.User).name }}</span>
+            </template>
+          </MultiSelect>
           <p v-if="errors.users" class="text-sm text-destructive">{{ errors.users }}</p>
         </div>
 
@@ -56,7 +72,7 @@
 
 <script setup lang="tsx">
 import { trans as $t } from "laravel-vue-i18n";
-import { ref, reactive } from "vue";
+import { ref, reactive, watch } from "vue";
 import { router } from "@inertiajs/vue3";
 import { toast } from "vue-sonner";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
@@ -65,8 +81,9 @@ import { Input } from "@/Components/ui/input";
 import { DatePicker } from "@/Components/ui/date-picker";
 import { Checkbox } from "@/Components/ui/checkbox";
 import { Button } from "@/Components/ui/button";
+import { MultiSelect } from "@/Components/ui/multi-select";
+import UserAvatar from "@/Components/Avatars/UserAvatar.vue";
 import { CheckCircleIcon } from "lucide-vue-next";
-import MultiSelectUsers from "@/Components/Forms/MultiSelectUsers.vue";
 
 // Component props
 const props = defineProps<{
@@ -75,6 +92,7 @@ const props = defineProps<{
     id: string | number;
     type: string;
   };
+  users?: App.Entities.User[];
 }>();
 
 // Component events
@@ -85,6 +103,7 @@ const emit = defineEmits<{
 
 // Form state
 const isSubmitting = ref(false);
+const selectedUsers = ref<App.Entities.User[]>([]);
 const taskForm = reactive({
   name: "",
   due_date: undefined as Date | undefined, // Changed from null to undefined for DatePicker compatibility
@@ -98,6 +117,11 @@ const errors = reactive({
   due_date: '',
   users: ''
 });
+
+// Sync selected users to form user_ids
+watch(selectedUsers, (users) => {
+  taskForm.user_ids = users.map(u => u.id);
+}, { deep: true });
 
 /**
  * Validate form fields
@@ -195,6 +219,7 @@ const resetForm = () => {
   taskForm.due_date = undefined; // Changed from null to undefined for DatePicker compatibility
   taskForm.user_ids = [];
   taskForm.separate_tasks = false;
+  selectedUsers.value = [];
   
   // Reset errors
   errors.name = '';

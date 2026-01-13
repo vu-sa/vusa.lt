@@ -11,7 +11,9 @@
         variant="secondary"
         class="flex shrink-0 items-center gap-1 pr-1"
       >
-        <span class="max-w-[150px] truncate">{{ getItemLabel(item) }}</span>
+        <slot name="selected-item" :item="item">
+          <span class="max-w-[150px] truncate">{{ getItemLabel(item) }}</span>
+        </slot>
         <button
           v-if="!disabled"
           type="button"
@@ -38,24 +40,50 @@
     </ComboboxAnchor>
     
     <!-- Dropdown list using ComboboxList which wraps Portal + Content -->
-    <ComboboxList class="w-[--reka-combobox-trigger-width]">
-      <ComboboxViewport class="max-h-60 p-1">
+    <ComboboxList class="min-w-[var(--reka-popper-anchor-width)] w-full">
+      <ComboboxViewport class="max-h-60 overflow-y-auto p-1 w-full">
         <ComboboxEmpty class="flex flex-col items-center justify-center py-6 text-center text-sm text-muted-foreground">
           <p>{{ emptyText }}</p>
         </ComboboxEmpty>
-        <ComboboxItem
-          v-for="item in options"
-          :key="getItemValue(item)"
-          :value="item"
-          class="relative flex cursor-default select-none items-center rounded-sm py-2 pl-3 pr-8 text-sm outline-none data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
-        >
-          <slot name="option" :item="item">
-            {{ getItemLabel(item) }}
-          </slot>
-          <ComboboxItemIndicator class="absolute right-2 flex h-4 w-4 items-center justify-center">
-            <CheckIcon class="h-4 w-4" />
-          </ComboboxItemIndicator>
-        </ComboboxItem>
+        
+        <!-- Virtualized rendering for large lists -->
+        <template v-if="shouldVirtualize">
+          <ComboboxVirtualizer
+            v-slot="{ option }"
+            :options="options"
+            :estimate-size="estimateSize"
+            :text-content="(opt: T) => getItemLabel(opt)"
+          >
+            <ComboboxItem
+              :value="option"
+              class="w-full pr-8"
+            >
+              <slot name="option" :item="option">
+                {{ getItemLabel(option) }}
+              </slot>
+              <ComboboxItemIndicator class="absolute right-2">
+                <CheckIcon class="h-4 w-4" />
+              </ComboboxItemIndicator>
+            </ComboboxItem>
+          </ComboboxVirtualizer>
+        </template>
+        
+        <!-- Standard rendering for small lists -->
+        <template v-else>
+          <ComboboxItem
+            v-for="item in options"
+            :key="getItemValue(item)"
+            :value="item"
+            class="w-full pr-8"
+          >
+            <slot name="option" :item="item">
+              {{ getItemLabel(item) }}
+            </slot>
+            <ComboboxItemIndicator class="absolute right-2">
+              <CheckIcon class="h-4 w-4" />
+            </ComboboxItemIndicator>
+          </ComboboxItem>
+        </template>
       </ComboboxViewport>
     </ComboboxList>
   </Combobox>
@@ -65,7 +93,7 @@
 import { ref, watch, computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { XIcon, ChevronDownIcon, CheckIcon } from 'lucide-vue-next';
-import { ComboboxInput } from 'reka-ui';
+import { ComboboxInput, ComboboxVirtualizer } from 'reka-ui';
 import { 
   Combobox,
   ComboboxAnchor,
@@ -93,12 +121,18 @@ const props = withDefaults(defineProps<{
   emptyText?: string;
   /** Whether the component is disabled */
   disabled?: boolean;
+  /** Threshold for enabling virtualization (default: 50) */
+  virtualizationThreshold?: number;
+  /** Estimated size of each item for virtualization (default: 40) */
+  estimateSize?: number;
 }>(), {
   labelField: 'label',
   valueField: 'id',
   placeholder: 'Select items...',
   emptyText: 'No items found.',
   disabled: false,
+  virtualizationThreshold: 50,
+  estimateSize: 40,
 });
 
 const emit = defineEmits<{
@@ -107,6 +141,9 @@ const emit = defineEmits<{
 
 // Internal state for selected items
 const selectedItems = ref<T[]>([...props.modelValue]) as { value: T[] };
+
+// Determine if virtualization should be used
+const shouldVirtualize = computed(() => props.options.length > props.virtualizationThreshold);
 
 // Get the label of an item
 const getItemLabel = (item: T): string => {
@@ -134,6 +171,11 @@ const removeItem = (itemToRemove: T) => {
   );
 };
 
+// Reset the component state
+const reset = () => {
+  selectedItems.value = [];
+};
+
 // Sync internal state to parent
 watch(selectedItems, (newItems) => {
   emit('update:modelValue', newItems);
@@ -149,4 +191,7 @@ watch(() => props.modelValue, (newValue) => {
     selectedItems.value = [...newValue];
   }
 }, { deep: true });
+
+// Expose reset method
+defineExpose({ reset });
 </script>
