@@ -419,14 +419,32 @@ const tenantIdString = computed({
 const startDate = computed({
   get: () => form.date ? new Date(form.date) : undefined,
   set: (val: Date | undefined) => {
-    form.date = val ? val.toISOString().slice(0, 19).replace('T', ' ') : null;
+    if (!val) {
+      form.date = null;
+      return;
+    }
+    // Format in local timezone to avoid UTC conversion
+    const localISOString = new Date(val.getTime() - (val.getTimezoneOffset() * 60000))
+      .toISOString()
+      .slice(0, 19)
+      .replace('T', ' ');
+    form.date = localISOString;
   }
 });
 
 const endDate = computed({
   get: () => form.end_date ? new Date(form.end_date) : undefined,
   set: (val: Date | undefined) => {
-    form.end_date = val ? val.toISOString().slice(0, 19).replace('T', ' ') : null;
+    if (!val) {
+      form.end_date = null;
+      return;
+    }
+    // Format in local timezone to avoid UTC conversion
+    const localISOString = new Date(val.getTime() - (val.getTimezoneOffset() * 60000))
+      .toISOString()
+      .slice(0, 19)
+      .replace('T', ' ');
+    form.end_date = localISOString;
   }
 });
 

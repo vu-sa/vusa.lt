@@ -2,38 +2,38 @@
 import { cn } from '@/Utils/Shadcn/utils'
 import { Button } from '@/Components/ui/button'
 import { Calendar } from '@/Components/ui/calendar'
-import { Input } from '@/Components/ui/input'
-import { Label } from '@/Components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover'
+import { TimePicker, type TimeValue } from '@/Components/ui/time-picker'
 import {
   DateFormatter,
   type DateValue,
   getLocalTimeZone,
-  today,
   CalendarDate,
 } from '@internationalized/date'
-import { Calendar as CalendarIcon, Clock as ClockIcon } from 'lucide-vue-next'
-import { ref, computed, watch, useAttrs } from 'vue'
+import { Calendar as CalendarIcon } from 'lucide-vue-next'
+import { ref, computed, watch } from 'vue'
 import { trans as $t } from 'laravel-vue-i18n'
 
 // Define component props
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   modelValue?: Date | string | null
   minDate?: DateValue
   maxDate?: DateValue
   placeholder?: string
   disabled?: boolean
-}>()
+  hourRange?: [number, number]
+  minuteStep?: number
+}>(), {
+  hourRange: () => [0, 23],
+  minuteStep: 5
+})
 
 // Define component events
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: Date | string | null): void
-  (e: 'change', value: Date | string | null): void
-  (e: 'blur'): void
+  (e: 'update:modelValue', value: Date | null): void
+  (e: 'change', value: Date | null): void
+  (e: 'blur', event?: Event): void
 }>()
-
-// Get any additional attributes for form field integration
-const attrs = useAttrs()
 
 // Format dates based on current locale
 const dateFormatter = new DateFormatter(document.documentElement.lang || 'lt', {
@@ -44,14 +44,13 @@ const timeFormatter = new DateFormatter(document.documentElement.lang || 'lt', {
   timeStyle: 'short',
 })
 
-// Internal state for hours and minutes
-const hours = ref('12')
-const minutes = ref('00')
+// Internal state for time
+const timeValue = ref<TimeValue>({ hour: 12, minute: 0 })
 
 // Parse the model value into date and time components
-const parseModelValue = (value: Date | string | null | undefined): { date: CalendarDate | undefined, hours: string, minutes: string } => {
+const parseModelValue = (value: Date | string | null | undefined): { date: CalendarDate | undefined, time: TimeValue } => {
   if (!value) {
-    return { date: undefined, hours: '12', minutes: '00' }
+    return { date: undefined, time: { hour: 12, minute: 0 } }
   }
   
   let dateObj: Date
@@ -60,10 +59,10 @@ const parseModelValue = (value: Date | string | null | undefined): { date: Calen
   } else if (typeof value === 'string') {
     dateObj = new Date(value)
     if (isNaN(dateObj.getTime())) {
-      return { date: undefined, hours: '12', minutes: '00' }
+      return { date: undefined, time: { hour: 12, minute: 0 } }
     }
   } else {
-    return { date: undefined, hours: '12', minutes: '00' }
+    return { date: undefined, time: { hour: 12, minute: 0 } }
   }
   
   return {
@@ -72,27 +71,25 @@ const parseModelValue = (value: Date | string | null | undefined): { date: Calen
       dateObj.getMonth() + 1,
       dateObj.getDate(),
     ),
-    hours: dateObj.getHours().toString().padStart(2, '0'),
-    minutes: dateObj.getMinutes().toString().padStart(2, '0'),
+    time: {
+      hour: dateObj.getHours(),
+      minute: dateObj.getMinutes()
+    },
   }
 }
 
 // Initialize from model value
 const initialParsed = parseModelValue(props.modelValue)
 const calendarValue = ref<CalendarDate | undefined>(initialParsed.date)
-hours.value = initialParsed.hours
-minutes.value = initialParsed.minutes
+timeValue.value = initialParsed.time
 
 // Build the combined Date from calendar + time inputs
 const buildDateTime = (): Date | null => {
   if (!calendarValue.value) return null
   
   const date = calendarValue.value.toDate(getLocalTimeZone())
-  const h = parseInt(hours.value) || 0
-  const m = parseInt(minutes.value) || 0
-  
-  date.setHours(Math.min(23, Math.max(0, h)))
-  date.setMinutes(Math.min(59, Math.max(0, m)))
+  date.setHours(timeValue.value.hour)
+  date.setMinutes(timeValue.value.minute)
   date.setSeconds(0)
   date.setMilliseconds(0)
   
@@ -102,10 +99,8 @@ const buildDateTime = (): Date | null => {
 // Emit combined value when calendar or time changes
 const emitValue = () => {
   const dateTime = buildDateTime()
-  if (dateTime) {
-    emit('update:modelValue', dateTime)
-    emit('change', dateTime)
-  }
+  emit('update:modelValue', dateTime)
+  emit('change', dateTime)
 }
 
 // Handle calendar value change
@@ -115,30 +110,20 @@ const onCalendarChange = (value: any) => {
   } else {
     calendarValue.value = undefined
   }
+  emitValue()
 }
 
-// Watch calendar value changes
-watch(calendarValue, () => {
+// Handle time change
+const onTimeChange = (value: TimeValue) => {
+  timeValue.value = value
   emitValue()
-})
-
-// Watch time input changes
-watch([hours, minutes], () => {
-  // Validate and clamp values
-  const h = parseInt(hours.value)
-  const m = parseInt(minutes.value)
-  
-  if (!isNaN(h) && !isNaN(m)) {
-    emitValue()
-  }
-})
+}
 
 // Watch for external model value changes
 watch(() => props.modelValue, (newValue) => {
   const parsed = parseModelValue(newValue)
   calendarValue.value = parsed.date
-  hours.value = parsed.hours
-  minutes.value = parsed.minutes
+  timeValue.value = parsed.time
 }, { immediate: false })
 
 // Display text for the button
@@ -156,29 +141,6 @@ const displayText = computed(() => {
 // Handle closing popover (for blur event)
 const onClose = () => {
   emit('blur')
-}
-
-// Handle time input changes with validation
-const onHoursChange = (e: Event) => {
-  const target = e.target as HTMLInputElement
-  let value = parseInt(target.value)
-  if (isNaN(value)) {
-    hours.value = '00'
-  } else {
-    value = Math.min(23, Math.max(0, value))
-    hours.value = value.toString().padStart(2, '0')
-  }
-}
-
-const onMinutesChange = (e: Event) => {
-  const target = e.target as HTMLInputElement
-  let value = parseInt(target.value)
-  if (isNaN(value)) {
-    minutes.value = '00'
-  } else {
-    value = Math.min(59, Math.max(0, value))
-    minutes.value = value.toString().padStart(2, '0')
-  }
 }
 </script>
 
@@ -206,31 +168,13 @@ const onMinutesChange = (e: Event) => {
         :max-date="maxDate"
       />
       <div class="border-t p-3">
-        <div class="flex items-center gap-2">
-          <ClockIcon class="h-4 w-4 text-muted-foreground" />
-          <Label class="text-sm text-muted-foreground">{{ $t('Time') }}</Label>
-        </div>
-        <div class="mt-2 flex items-center gap-1">
-          <Input
-            type="number"
-            :model-value="hours"
-            min="0"
-            max="23"
-            class="w-16 text-center"
-            @change="onHoursChange"
-            @blur="onHoursChange"
-          />
-          <span class="text-lg font-medium">:</span>
-          <Input
-            type="number"
-            :model-value="minutes"
-            min="0"
-            max="59"
-            class="w-16 text-center"
-            @change="onMinutesChange"
-            @blur="onMinutesChange"
-          />
-        </div>
+        <TimePicker
+          :model-value="timeValue"
+          :hour-range="hourRange"
+          :minute-step="minuteStep"
+          class="w-full"
+          @update:model-value="onTimeChange"
+        />
       </div>
     </PopoverContent>
   </Popover>

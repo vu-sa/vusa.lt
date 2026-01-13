@@ -1,39 +1,25 @@
 <template>
   <Form @submit="onSubmit" :validation-schema="schema" :initial-values="initialValues">
     <div class="space-y-4">
-      <div class="flex flex-wrap gap-4">
-        <FormField v-slot="{ componentField }" name="date" class="flex-1 min-w-[240px]">
-          <FormItem>
-            <FormLabel class="inline-flex items-center gap-1">
-              <component :is="Icons.DATE" class="h-4 w-4" />
-              {{ $t("forms.fields.date") }}
-            </FormLabel>
-            <FormControl>
-              <DatePicker
-                class="w-full"
-                v-bind="componentField"
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        </FormField>
-        
-        <FormField v-slot="{ componentField }" name="time" class="min-w-[120px]">
-          <FormItem>
-            <FormLabel class="inline-flex items-center gap-1">
-              {{ $t("forms.fields.time") }}
-            </FormLabel>
-            <FormControl>
-              <TimePicker 
-                v-bind="componentField"
-                :hour-range="[7, 22]"
-                :minute-step="5"
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        </FormField>
-      </div>
+      <FormField v-slot="{ componentField }" name="start_time" class="flex-1">
+        <FormItem>
+          <FormLabel class="inline-flex items-center gap-1">
+            <component :is="Icons.DATE" class="h-4 w-4" />
+            {{ $t("forms.fields.date") }} / {{ $t("forms.fields.time") }}
+          </FormLabel>
+          <FormControl>
+            <DateTimePicker
+              class="w-full"
+              :model-value="componentField.modelValue"
+              @update:model-value="componentField['onUpdate:modelValue']"
+              @blur="(e) => componentField.onBlur(e as Event)"
+              :hour-range="[7, 22]"
+              :minute-step="5"
+            />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      </FormField>
 
       <FormField v-slot="{ componentField }" name="type_id">
         <FormItem>
@@ -70,10 +56,6 @@ import { ref, computed, onMounted } from "vue";
 import { Form } from "vee-validate";
 import { toTypedSchema } from '@vee-validate/zod';
 import * as z from 'zod';
-import { 
-  getLocalTimeZone, 
-  today as todayFunction, 
-} from '@internationalized/date';
 
 import Icons from "@/Types/Icons/filled";
 
@@ -93,8 +75,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/Components/ui/select";
-import { DatePicker } from "../ui/date-picker";
-import { TimePicker, type TimeValue } from '@/Components/ui/time-picker'
+import { DateTimePicker } from "@/Components/ui/date-picker";
 
 const emit = defineEmits<{
   (event: "submit", form: any): void;
@@ -109,19 +90,11 @@ const props = withDefaults(defineProps<{
   submitLabel: undefined,
 });
 
-// Define schema using Zod with a single validation approach
+// Define schema using Zod - single datetime field
 const schema = toTypedSchema(
   z.object({
-    date: z.date({
+    start_time: z.date({
       required_error: $t("validation.required", { attribute: $t("forms.fields.date") }),
-    }),
-    time: z.object({
-      hour: z.number({ required_error: $t("validation.required", { attribute: $t("forms.fields.time") }) }),
-      minute: z.number({ required_error: $t("validation.required", { attribute: $t("forms.fields.time") }) })
-        .min(0, $t("validation.min.numeric", { attribute: $t("forms.fields.time"), min: 0 }))
-        .max(59, $t("validation.max.numeric", { attribute: $t("forms.fields.time"), max: 59 })),
-    }, { 
-      required_error: $t("validation.required", { attribute: $t("forms.fields.time") })
     }),
     type_id: z.number({
       required_error: $t("validation.required", { attribute: $tChoice("forms.fields.type", 0) }),
@@ -129,33 +102,17 @@ const schema = toTypedSchema(
   })
 );
 
-// Compute initial date from meeting's start_time
-const meetingDate = computed(() => {
-  if (props.meeting?.start_time) {
-    return new Date(props.meeting.start_time);
-  }
-  return undefined;
-});
-
 // Determine initial values from meeting prop
 const initialValues = computed(() => ({
-  date: meetingDate.value,
-  time: meetingDate.value ? {
-    hour: meetingDate.value.getHours(),
-    minute: meetingDate.value.getMinutes()
-  } : null,
-  type_id: props.meeting?.type_id
+  start_time: props.meeting?.start_time ? new Date(props.meeting.start_time) : undefined,
+  type_id: (props.meeting as any)?.type_id
 }));
 
-// Handle form submission with typed values
-const onSubmit = (values) => {
-  const dt = new Date(values.date);
-  
-  // Time is required so should always be present at this point
-  dt.setHours(values.time.hour, values.time.minute);
+// Handle form submission
+const onSubmit = (values: Record<string, any>) => {
+  const dt = values.start_time as Date;
   
   // Format date in local timezone without conversion to UTC
-  // This formats as YYYY-MM-DDTHH:mm:ss.sss in local timezone
   const localISOString = new Date(dt.getTime() - (dt.getTimezoneOffset() * 60000))
     .toISOString()
     .slice(0, 19)
@@ -163,7 +120,7 @@ const onSubmit = (values) => {
   
   const formData = {
     start_time: localISOString,
-    type_id: values.type_id,
+    type_id: values.type_id as number,
   };
   
   emit("submit", formData);
@@ -182,7 +139,7 @@ const fetchMeetingTypes = async () => {
   try {
     const response = await fetch(route("api.types.index"));
     const data = await response.json();
-    meetingTypes.value = data.filter((type) => type.model_type === "App\\Models\\Meeting");
+    meetingTypes.value = data.filter((type: { model_type: string }) => type.model_type === "App\\Models\\Meeting");
   } catch (error) {
     console.error('Failed to fetch meeting types:', error);
     meetingTypes.value = [];

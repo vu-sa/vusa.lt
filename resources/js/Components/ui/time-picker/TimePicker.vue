@@ -4,7 +4,7 @@ import { Button } from '@/Components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover'
 import { ScrollArea } from '@/Components/ui/scroll-area'
 import { Clock, ChevronDown } from 'lucide-vue-next'
-import { ref, computed, watch, type HTMLAttributes } from 'vue'
+import { ref, computed, watch, nextTick, useTemplateRef, type HTMLAttributes } from 'vue'
 import { trans as $t } from 'laravel-vue-i18n'
 
 interface TimeValue {
@@ -20,13 +20,17 @@ const props = withDefaults(defineProps<{
   disabled?: boolean
 }>(), {
   minuteStep: 5,
-  hourRange: [0, 23],
+  hourRange: () => [0, 23] as [number, number],
   disabled: false
 })
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: TimeValue): void
 }>()
+
+// Ref for scroll area to scroll to hour 12
+const hourScrollArea = useTemplateRef<InstanceType<typeof ScrollArea>>('hourScrollArea')
+const isOpen = ref(false)
 
 // Initialize with either provided value or defaults
 const selectedTime = ref<TimeValue>(props.modelValue || { hour: 12, minute: 0 })
@@ -84,10 +88,36 @@ const updateMinute = (minute: number) => {
   selectedTime.value = newTime
   updateAndEmit(newTime)
 }
+
+// Scroll to center on hour 12 when popover opens
+const scrollToCenter = () => {
+  nextTick(() => {
+    const scrollAreaEl = hourScrollArea.value?.$el
+    const viewport = scrollAreaEl?.querySelector('[data-slot="scroll-area-viewport"]') as HTMLElement | null
+    if (viewport) {
+      const buttonHeight = 36
+      const [minHour] = props.hourRange
+      const targetHour = Math.min(Math.max(12, minHour), props.hourRange[1])
+      const hourIndex = targetHour - minHour
+      
+      viewport.scrollTo({
+        top: Math.max(0, (hourIndex - 1) * buttonHeight),
+        behavior: 'instant'
+      })
+    }
+  })
+}
+
+const handleOpenChange = (open: boolean) => {
+  isOpen.value = open
+  if (open) {
+    scrollToCenter()
+  }
+}
 </script>
 
 <template>
-  <Popover>
+  <Popover @update:open="handleOpenChange">
     <PopoverTrigger :disabled="disabled" asChild>
       <Button 
         variant="outline" 
@@ -107,11 +137,11 @@ const updateMinute = (minute: number) => {
       <div class="flex p-2">
         <div class="flex flex-col pr-2 border-r border-zinc-200 dark:border-zinc-700">
           <div class="px-2 py-1.5 text-sm font-medium">{{ $t("forms.fields.hour") }}</div>
-          <ScrollArea className="h-40 w-16">
+          <ScrollArea ref="hourScrollArea" class="h-40 w-16">
             <div class="flex flex-col">
               <Button 
                 v-for="hour in hours" 
-                :key="hour" 
+                :key="hour"
                 variant="ghost" 
                 :class="selectedTime.hour === hour ? 'bg-zinc-100 dark:bg-zinc-800' : ''"
                 @click="updateHour(hour)"
@@ -123,7 +153,7 @@ const updateMinute = (minute: number) => {
         </div>
         <div class="flex flex-col pl-2">
           <div class="px-2 py-1.5 text-sm font-medium">{{ $t("forms.fields.minute") }}</div>
-          <ScrollArea className="h-40 w-16">
+          <ScrollArea class="h-40 w-16">
             <div class="flex flex-col">
               <Button 
                 v-for="minute in minutes" 

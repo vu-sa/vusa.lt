@@ -12,37 +12,30 @@
             </h4>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
-            <FormField v-slot="{ componentField }" name="date">
-              <FormItem>
-                <FormLabel>
-                  {{ $t("forms.fields.date") }} <span class="text-destructive">*</span>
-                </FormLabel>
-                <FormControl>
-                  <DatePicker class="w-full" v-bind="asAny(componentField)" :min-value="minDate" :max-value="maxDate" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            </FormField>
-
-            <FormField v-slot="{ componentField }" name="time">
-              <FormItem>
-                <FormLabel>
-                  {{ $t("forms.fields.time") }} <span class="text-destructive">*</span>
-                </FormLabel>
-                <FormControl>
-                  <TimePicker v-bind="asAny(componentField)" :hour-range="[7, 22]" :minute-step="5" />
-                </FormControl>
-                <FormDescription v-if="isWeekendTime(values.date, values.time)"
-                  class="text-amber-600 dark:text-amber-400">
-                  {{ $t('Pasirinktas savaitgalio laikas') }}
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            </FormField>
-          </div>
-
-          <!-- Planned info card removed to reduce noise in step 2 -->
+          <FormField v-slot="{ componentField, value }" name="start_time">
+            <FormItem>
+              <FormLabel>
+                {{ $t("forms.fields.date") }} / {{ $t("forms.fields.time") }} <span class="text-destructive">*</span>
+              </FormLabel>
+              <FormControl>
+                <DateTimePicker 
+                  class="w-full" 
+                  :model-value="componentField.modelValue"
+                  @update:model-value="componentField['onUpdate:modelValue']"
+                  @blur="(e) => componentField.onBlur(e as Event)"
+                  :min-date="minDate" 
+                  :max-date="maxDate"
+                  :hour-range="[7, 22]" 
+                  :minute-step="5" 
+                />
+              </FormControl>
+              <FormDescription v-if="isWeekendTime(value)"
+                class="text-amber-600 dark:text-amber-400">
+                {{ $t('Pasirinktas savaitgalio laikas') }}
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          </FormField>
         </div>
 
         <!-- Meeting Type (Radio Selection) -->
@@ -60,7 +53,12 @@
                 {{ $tChoice("forms.fields.type", 0) }} <span class="text-destructive">*</span>
               </FormLabel>
               <FormControl>
-                <RadioGroup v-bind="componentField" :disabled="!props.meetingTypes" class="space-y-2">
+                <RadioGroup 
+                  :model-value="componentField.modelValue != null ? String(componentField.modelValue) : undefined" 
+                  @update:model-value="(val) => componentField['onUpdate:modelValue']?.(Number(val))"
+                  :disabled="!props.meetingTypes" 
+                  class="space-y-2"
+                >
                   <!-- Recommended Types -->
                   <div v-if="recommendedTypes.length > 0" class="space-y-2">
                     <p class="text-sm font-medium text-muted-foreground">
@@ -187,12 +185,7 @@ import {
   RadioGroupItem,
 } from "@/Components/ui/radio-group";
 import { Label } from "@/Components/ui/label";
-import { DatePicker } from "@/Components/ui/date-picker";
-import { TimePicker, type TimeValue } from '@/Components/ui/time-picker';
-
-// Import Lucide icons
-
-const asAny = (v: unknown) => v as any;
+import { DateTimePicker } from "@/Components/ui/date-picker";
 
 const emit = defineEmits<(event: "submit", form: any) => void>();
 
@@ -236,27 +229,14 @@ const otherTypes = computed(() => {
 // Form schema
 const schema = toTypedSchema(
   z.object({
-    date: z.date({
+    start_time: z.date({
       required_error: $t("validation.required", { attribute: $t("forms.fields.date") }),
     }),
-    time: z.object({
-      hour: z.number(),
-      minute: z.number()
-    }, {
-      required_error: $t("validation.required", { attribute: $t("forms.fields.time") })
-    }),
-    type_id: z.string({
+    type_id: z.number({
       required_error: $t("validation.required", { attribute: $tChoice("forms.fields.type", 0) }),
-    }).transform((val) => parseInt(val, 10)),
+    }),
     description: z.string().optional(),
   })
-    .refine((data) => {
-      // Combined validation: ensure both date and time are provided
-      return data.date && data.time;
-    }, {
-      message: $t("Prašome pasirinkti ir datą, ir laiką"),
-      path: ["date"] // Show error on date field primarily
-    })
 );
 
 // Initial values
@@ -265,25 +245,20 @@ const initialValues = computed(() => {
   const seedDate = seed.start_time ? new Date(seed.start_time) : undefined
 
   return {
-    date: seedDate,
-    time: seedDate ? { hour: seedDate.getHours(), minute: seedDate.getMinutes() } : { hour: 12, minute: 0 },
-    type_id: String(seed.type_id || ''),
+    start_time: seedDate,
+    type_id: seed.type_id || undefined,
     description: seed.description || ''
   }
 });
 
-const isWeekendTime = (date: Date | undefined, time: TimeValue | null): boolean => {
+const isWeekendTime = (date: Date | undefined | null): boolean => {
   if (!date) return false;
   const day = date.getDay();
   return day === 0 || day === 6; // Sunday or Saturday
 };
 
-const onSubmit = (values: any) => {
-  const dt = new Date(values.date);
-
-  if (values.time) {
-    dt.setHours(values.time.hour, values.time.minute);
-  }
+const onSubmit = (values: Record<string, any>) => {
+  const dt = values.start_time as Date;
 
   // Format date in local timezone
   const localISOString = new Date(dt.getTime() - (dt.getTimezoneOffset() * 60000))
@@ -293,8 +268,8 @@ const onSubmit = (values: any) => {
 
   const formData = {
     start_time: localISOString,
-    type_id: values.type_id,
-    description: values.description,
+    type_id: values.type_id as number,
+    description: values.description as string | undefined,
   };
 
   emit("submit", formData);
@@ -307,9 +282,8 @@ watch(() => props.meeting, (newMeeting) => {
       const seedDate = newMeeting.start_time ? new Date(newMeeting.start_time) : undefined;
 
       meetingForm.value?.setValues({
-        date: seedDate,
-        time: seedDate ? { hour: seedDate.getHours(), minute: seedDate.getMinutes() } : { hour: 12, minute: 0 },
-        type_id: String(newMeeting.type_id || ''),
+        start_time: seedDate,
+        type_id: newMeeting.type_id || undefined,
         description: newMeeting.description || ''
       });
     });
