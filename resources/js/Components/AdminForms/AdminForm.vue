@@ -36,12 +36,21 @@
           <!-- Right side: Action buttons -->
           <div class="flex items-center gap-2 sm:gap-3">
             <!-- Autosave toggle -->
-            <div class="hidden items-center gap-2 sm:flex">
-              <Switch id="autosave" v-model="autosaveEnabled" />
-              <Label for="autosave" class="cursor-pointer text-xs text-muted-foreground">
-                {{ $t('Automatinis išsaugojimas') }}
-              </Label>
-            </div>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger as-child>
+                  <div class="hidden items-center gap-2 sm:flex" :class="{ 'opacity-50': isCreatePage }">
+                    <Switch id="autosave" v-model="autosaveEnabled" :disabled="isCreatePage" />
+                    <Label for="autosave" class="text-xs text-muted-foreground" :class="isCreatePage ? 'cursor-not-allowed' : 'cursor-pointer'">
+                      {{ $t('Automatinis išsaugojimas') }}
+                    </Label>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent v-if="isCreatePage">
+                  <p>{{ $t('Automatinis išsaugojimas galimas tik redaguojant esamą įrašą') }}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
 
             <Separator orientation="vertical" class="hidden h-6 sm:block" />
 
@@ -86,20 +95,22 @@
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
-import { watch, ref, onMounted, onUnmounted } from 'vue';
+import { watch, ref, computed, onMounted, onUnmounted } from 'vue';
 import { useDebounceFn, useTimeoutFn } from '@vueuse/core';
-import { router } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { Button } from '@/Components/ui/button';
 import { Switch } from '@/Components/ui/switch';
 import { Label } from '@/Components/ui/label';
 import { Separator } from '@/Components/ui/separator';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 import ThemeProvider from '@/Components/Providers/ThemeProvider.vue';
 
 const props = defineProps<{
   model: Record<string, any>;
   enableDelete?: boolean;
+  isCreateForm?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -107,10 +118,18 @@ const emit = defineEmits<{
   (event: 'delete'): void;
 }>();
 
+const page = usePage();
+
 const showDeleteDialog = ref(false);
 const isSaving = ref(false);
 const recentlySaved = ref(false);
 const autosaveEnabled = ref(false);
+
+// Auto-detect create page from URL path, with ability to override via prop
+const isCreatePage = computed(() => {
+  // Check if URL path ends with /create
+  return page.props.app?.path?.endsWith('/create') || props.isCreateForm === true;
+});
 
 // Clear "saved" indicator after 3 seconds
 const { start: startSavedTimeout } = useTimeoutFn(() => {
@@ -177,16 +196,16 @@ const handleBeforeUnload = (event: BeforeUnloadEvent) => {
   }
 };
 
-// Autosave on form dirty with debounce (only when user enables autosave)
+// Autosave on form dirty with debounce (only when user enables autosave and not a create form)
 const autosaveFn = useDebounceFn(() => {
-  if (props.model?.isDirty && autosaveEnabled.value && !isSaving.value) {
+  if (props.model?.isDirty && autosaveEnabled.value && !isSaving.value && !isCreatePage.value) {
     handleSubmit();
   }
 }, 5000);
 
 // Watch the model data for changes (deep watch to detect any field changes)
 watch(() => props.model.data(), () => {
-  if (props.model?.isDirty && autosaveEnabled.value) {
+  if (props.model?.isDirty && autosaveEnabled.value && !isCreatePage.value) {
     autosaveFn();
   }
 }, { deep: true });
