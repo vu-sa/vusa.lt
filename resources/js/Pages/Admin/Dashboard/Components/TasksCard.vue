@@ -1,27 +1,12 @@
 <template>
-  <Card :class="[
-    'flex flex-col relative overflow-hidden shadow-sm dark:shadow-zinc-950/50',
-    'border-zinc-200 dark:border-zinc-600 bg-gradient-to-br from-white to-zinc-50 dark:from-zinc-900 dark:to-zinc-950'
-  ]" role="region" :aria-label="$t('Tavo užduotys')">
+  <Card :class="dashboardCardClasses" role="region" :aria-label="$t('Tavo užduotys')">
     <!-- Status indicator - subtle amber accent when tasks exist -->
-    <div :class="[
-      'absolute top-0 right-0 w-12 h-12 -mr-6 -mt-6 rotate-45',
-      taskStats.overdue > 0 
-        ? 'bg-amber-400/50 dark:bg-amber-600/25' 
-        : taskStats.total > 0 
-          ? 'bg-amber-400/40 dark:bg-amber-600/20' 
-          : 'bg-zinc-200 dark:bg-zinc-700'
-    ]" aria-hidden="true" />
+    <div :class="statusIndicatorClasses" aria-hidden="true" />
 
     <CardHeader class="pb-2 relative z-10">
       <div class="flex items-center justify-between">
         <CardTitle class="flex items-center gap-2 text-base">
-          <ClipboardCheckIcon :class="[
-            'h-5 w-5',
-            taskStats.total > 0 
-              ? 'text-amber-600 dark:text-amber-400/80' 
-              : 'text-zinc-600 dark:text-zinc-400'
-          ]" aria-hidden="true" />
+          <ClipboardCheckIcon :class="iconClasses" aria-hidden="true" />
           {{ $t('Užduotys') }}
         </CardTitle>
         <!-- Compact stats -->
@@ -30,8 +15,8 @@
             {{ taskStats.total }}
           </span>
           <div v-if="taskStats.overdue > 0" class="flex items-center gap-1">
-            <span class="h-2 w-2 rounded-full bg-amber-500 dark:bg-amber-400" />
-            <span class="text-xs text-amber-600 dark:text-amber-400">{{ taskStats.overdue }}</span>
+            <span :class="['h-2 w-2 rounded-full', cardAccentColors.amber.dot]" />
+            <span :class="['text-xs', cardAccentColors.amber.text]">{{ taskStats.overdue }}</span>
           </div>
         </div>
       </div>
@@ -147,6 +132,7 @@ import {
   Trash as TrashIcon,
   Check as CheckIcon
 } from "lucide-vue-next";
+import { dashboardCardClasses, cardAccentColors } from '@/Composables/useDashboardCardStyles';
 
 interface TaskStats {
   total: number;
@@ -170,6 +156,22 @@ const props = defineProps<{
 
 // Track which task is being updated
 const isUpdating = ref<string | null>(null);
+
+// Computed classes based on task stats using shared accent colors
+const statusIndicatorClasses = computed(() => {
+  const base = 'absolute top-0 right-0 w-12 h-12 -mr-6 -mt-6 rotate-45'
+  if (props.taskStats.overdue > 0) {
+    return `${base} ${cardAccentColors.amber.statusIndicatorActive}`
+  }
+  if (props.taskStats.total > 0) {
+    return `${base} ${cardAccentColors.amber.statusIndicator}`
+  }
+  return `${base} bg-zinc-200 dark:bg-zinc-700`
+})
+
+const iconClasses = computed(() => {
+  return `h-5 w-5 ${props.taskStats.total > 0 ? cardAccentColors.amber.icon : cardAccentColors.amber.iconMuted}`
+})
 
 // Locale for date formatting
 const dateLocale = computed(() => usePage().props.app.locale === 'lt' ? lt : enUS);

@@ -1,21 +1,12 @@
 <template>
-    <Card data-tour="meetings-card" :class="[
-    'flex flex-col relative overflow-hidden shadow-sm dark:shadow-zinc-950/50',
-    'border-zinc-200 dark:border-zinc-600 bg-gradient-to-br from-white to-zinc-50 dark:from-zinc-900 dark:to-zinc-950'
-  ]" role="region" :aria-label="$t('Tavo artėjantys susitikimai')"
+    <Card data-tour="meetings-card" :class="dashboardCardClasses" role="region" :aria-label="$t('Tavo artėjantys susitikimai')"
   style="view-transition-name: upcoming-meetings-card">
     <!-- Status indicator - small amber accent when meetings exist -->
-    <div :class="[
-      'absolute top-0 right-0 w-12 h-12 -mr-6 -mt-6 rotate-45',
-      upcomingMeetings.length > 0 ? 'bg-amber-400/60 dark:bg-amber-700/35' : 'bg-zinc-200 dark:bg-zinc-700'
-    ]" aria-hidden="true" />
+    <div :class="statusIndicatorClasses" aria-hidden="true" />
 
     <CardHeader class="pb-3 relative z-10">
       <CardTitle class="flex items-center gap-2">
-        <component :is="Icons.MEETING" :class="[
-          'h-5 w-5',
-          upcomingMeetings.length > 0 ? 'text-amber-600 dark:text-amber-400/80' : 'text-zinc-600 dark:text-zinc-400'
-        ]" aria-hidden="true" />
+        <component :is="Icons.MEETING" :class="iconClasses" aria-hidden="true" />
         {{ $t('Tavo artėjantys susitikimai') }}
       </CardTitle>
     </CardHeader>
@@ -29,10 +20,7 @@
         ]" :aria-label="$t('Susitikimų skaičius') + ': ' + upcomingMeetings.length">
           {{ upcomingMeetings.length }}
         </span>
-        <div :class="[
-          'px-2 py-1 rounded-full text-xs font-medium mb-2',
-          upcomingMeetings.length > 0 ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400/80' : 'bg-zinc-200 text-zinc-700 dark:bg-zinc-700/50 dark:text-zinc-300'
-        ]" role="status" :aria-label="$t('Būsenos indikatorius')">
+        <div :class="['px-2 py-1 rounded-full text-xs font-medium mb-2', badgeClasses]" role="status" :aria-label="$t('Būsenos indikatorius')">
           {{ upcomingMeetings.length > 0 ? $t('Reikia dėmesio') : $t('Viskas tvarkoje') }}
         </div>
       </div>
@@ -148,7 +136,7 @@
       </div>
     </CardContent>
 
-    <CardFooter class="border-t border-zinc-200 dark:border-zinc-600 bg-zinc-50/60 dark:bg-zinc-800/60 p-4 relative z-10">
+    <CardFooter :class="[dashboardCardFooterClasses, 'p-4 relative z-10']">
       <!-- Meeting insights to encourage registration -->
       <div class="text-xs text-center w-full space-y-1">
         <div v-if="institutionsInsights.withoutMeetings.length > 0" class="text-zinc-600 dark:text-zinc-400">
@@ -203,6 +191,7 @@ import { Button } from "@/Components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
 import Icons from "@/Types/Icons/filled";
 import { formatStaticTime } from '@/Utils/IntlTime';
+import { dashboardCardClasses, dashboardCardFooterClasses, cardAccentColors } from '@/Composables/useDashboardCardStyles';
 
 
 interface Props {
@@ -211,6 +200,22 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+
+// Computed classes based on meeting count using shared accent colors
+const hasMeetings = computed(() => props.upcomingMeetings.length > 0)
+
+const statusIndicatorClasses = computed(() => {
+  const base = 'absolute top-0 right-0 w-12 h-12 -mr-6 -mt-6 rotate-45'
+  return `${base} ${hasMeetings.value ? cardAccentColors.amber.statusIndicatorActive : 'bg-zinc-200 dark:bg-zinc-700'}`
+})
+
+const iconClasses = computed(() => {
+  return `h-5 w-5 ${hasMeetings.value ? cardAccentColors.amber.icon : cardAccentColors.amber.iconMuted}`
+})
+
+const badgeClasses = computed(() => {
+  return hasMeetings.value ? cardAccentColors.amber.badge : 'bg-zinc-200 text-zinc-700 dark:bg-zinc-700/50 dark:text-zinc-300'
+})
 
 // Find the first overdue institution (where days since last meeting exceeds periodicity)
 const overdueInstitution = computed(() => {

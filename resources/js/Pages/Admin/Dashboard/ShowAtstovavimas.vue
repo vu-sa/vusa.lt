@@ -171,7 +171,7 @@ import TabsTrigger from '@/Components/ui/tabs/TabsTrigger.vue'
 import TabsList from '@/Components/ui/tabs/TabsList.vue'
 import Tabs from '@/Components/ui/tabs/Tabs.vue'
 import { Skeleton } from '@/Components/ui/skeleton'
-import AddCheckInDialog from "@/Components/CheckIns/AddCheckInDialog.vue";
+import AddCheckInDialog from "@/Components/Institutions/AddCheckInDialog.vue";
 import NewMeetingModal from '@/Components/Modals/NewMeetingModal.vue';
 import PageHero from '@/Components/Hero/PageHero.vue';
 import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';

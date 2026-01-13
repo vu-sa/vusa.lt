@@ -15,7 +15,7 @@
         @create-meeting="$emit('create-meeting')" />
 
       <!-- Institution check-in card -->
-      <InstitutionCheckInCard 
+      <InstitutionsOverviewCard 
         :institutions 
         :is-admin 
         :max-display-count="5" 
@@ -33,9 +33,8 @@
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
 
+import InstitutionsOverviewCard from './InstitutionsOverviewCard.vue';
 import UpcomingMeetingsCard from './UpcomingMeetingsCard.vue';
-
-import InstitutionCheckInCard from "@/Components/CheckIns/InstitutionCheckInCard.vue";
 
 interface Props {
   institutions: App.Entities.Institution[];

@@ -186,7 +186,7 @@ import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import ModernMeetingCard from "@/Components/Meetings/ModernMeetingCard.vue";
 import SimpleFileViewer from "@/Features/Admin/SharepointFileManager/Viewer/SimpleFileViewer.vue";
 import NewMeetingModal from "@/Components/Modals/NewMeetingModal.vue";
-import AddCheckInDialog from "@/Components/CheckIns/AddCheckInDialog.vue";
+import AddCheckInDialog from "@/Components/Institutions/AddCheckInDialog.vue";
 
 // UI Components
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";

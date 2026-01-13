@@ -65,7 +65,7 @@ const endDate = ref<Date>(new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)) // 14
 const note = ref('')
 
 function formatDate(date: Date): string {
-  return date.toISOString().split('T')[0]
+  return date.toISOString().split('T')[0] as string
 }
 
 function submit() {

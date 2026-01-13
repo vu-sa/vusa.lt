@@ -1,5 +1,5 @@
 <template>
-  <Card data-tour="institution-card" class="flex flex-col relative overflow-hidden border-zinc-200 dark:border-zinc-600 bg-gradient-to-br from-white to-zinc-50 dark:from-zinc-900 dark:to-zinc-950 shadow-sm dark:shadow-zinc-950/50" role="region" :aria-label="$t('Tavo institucijos')">
+  <Card data-tour="institution-card" :class="cardClasses" role="region" :aria-label="$t('Tavo institucijos')">
     <!-- Status indicator corner -->
     <div data-tour="institution-status" :class="statusIndicatorClasses" aria-hidden="true" />
 
@@ -25,7 +25,7 @@
 
     </CardContent>
 
-    <CardFooter class="border-t border-zinc-200 dark:border-zinc-600 bg-zinc-50/60 dark:bg-zinc-800/60 p-4 relative z-10">
+    <CardFooter :class="footerClasses" class="p-4 relative z-10">
       <div class="flex gap-3 w-full">
         <Button data-tour="all-institutions" size="sm" variant="outline" class="flex-1 font-medium" @click="$emit('show-all-modal')">
           <component :is="Icons.INSTITUTION" class="h-3.5 w-3.5 mr-2" />
@@ -54,26 +54,22 @@
 import { computed, ref, reactive } from 'vue'
 import { router } from '@inertiajs/vue3'
 import { trans as $t } from 'laravel-vue-i18n'
-import { NNumberAnimation } from 'naive-ui'
 
-import AddCheckInDialog from './AddCheckInDialog.vue'
+import type { AtstovavimosInstitution } from '../types'
+import AddCheckInDialog from '@/Components/Institutions/AddCheckInDialog.vue'
 import InstitutionCompactCard from '@/Components/Institutions/InstitutionCompactCard.vue'
 
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/Components/ui/card'
 import { Button } from '@/Components/ui/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip'
 import Icons from '@/Types/Icons/filled'
-import { formatStaticTime } from '@/Utils/IntlTime'
 import { 
-  dashboardCardClasses, 
-  dashboardCardFooterClasses,
   useDashboardCardStyles,
-  urgencyPalette,
   type UrgencyLevel 
 } from '@/Composables/useDashboardCardStyles'
 
 const props = defineProps<{
-  institutions: unknown[]
+  institutions: AtstovavimosInstitution[]
   isAdmin?: boolean
   maxDisplayCount?: number
   currentUserId?: string
@@ -87,7 +83,6 @@ const emit = defineEmits<{
   'create-meeting': []
 }>()
 
-const showAllInstitutions = ref(false)
 const showCreateCheckIn = ref<string | null>(null)
 const actionLoading = reactive<Record<string, boolean>>({})
 
@@ -106,17 +101,6 @@ const institutionsNeedingAttention = computed(() => {
     const hasUpcomingMeeting = Array.isArray(inst.meetings) && inst.meetings.some((meeting: any) => new Date(meeting.start_time) > new Date())
     return !hasCoverageCheckIn && !hasUpcomingMeeting
   })
-})
-
-const coveredInstitutionsCount = computed(() => institutionsWithCheckInsOrMeetings.value.length)
-
-// Calculate total upcoming items: upcoming meetings + active check-ins
-const upcomingMeetingsCount = computed(() => {
-  return props.institutions.reduce((total, inst) => {
-    const meetingCount = inst.upcoming_meetings_count || 0
-    const checkIn = inst.active_check_in ? 1 : 0
-    return total + meetingCount + checkIn
-  }, 0)
 })
 
 // Sort institutions by priority - attention needed institutions first
@@ -176,60 +160,11 @@ const urgencyLevel = computed((): UrgencyLevel => {
 
 // Use the composable for consistent styling
 const { 
+  cardClasses,
+  footerClasses,
   statusIndicatorClasses, 
   iconClasses,
-  borderClasses: summaryBorderClasses,
-  textClasses: summaryTextClasses,
-  subtextClasses: summarySubtextClasses,
-  backgroundClasses: progressBackgroundClasses,
-  foregroundClasses: progressBarClasses
 } = useDashboardCardStyles(urgencyLevel)
-
-// Additional insight text classes (slightly different shade)
-const insightTextClasses = computed(() => {
-  const classes: Record<UrgencyLevel, string> = {
-    success: 'text-emerald-500 dark:text-emerald-500/70',
-    warning: 'text-amber-500 dark:text-amber-500/70',
-    danger: 'text-zinc-500 dark:text-zinc-400',
-    neutral: 'text-zinc-500 dark:text-zinc-400'
-  }
-  return classes[urgencyLevel.value]
-})
-
-// Meetings-specific styling (prioritize meetings over check-ins)
-// Color logic uses only meetings, but a blackout check-in suppresses danger when no meetings exist.
-const upcomingMeetingsOnlyCount = computed(() => {
-  return props.institutions.reduce((total, inst) => total + (inst.upcoming_meetings_count || 0), 0)
-})
-
-const hasAnyCheckIn = computed(() => {
-  return props.institutions.some(inst => inst.active_check_in)
-})
-
-const meetingUrgencyLevel = computed((): UrgencyLevel => {
-  if (upcomingMeetingsOnlyCount.value === 0) {
-    return hasAnyCheckIn.value ? 'success' : 'neutral'
-  }
-  if (upcomingMeetingsOnlyCount.value >= 3) return 'success'
-  return 'warning'
-})
-
-// Helper: check if institution has active check-in
-const hasCheckIn = (inst: any): boolean => !!inst.active_check_in
-
-// Use palette for meeting-specific styling
-const meetingSummaryBorderClasses = computed(() => urgencyPalette.border[meetingUrgencyLevel.value])
-const meetingSummaryTextClasses = computed(() => urgencyPalette.text[meetingUrgencyLevel.value])
-const meetingSummarySubtextClasses = computed(() => urgencyPalette.subtext[meetingUrgencyLevel.value])
-
-// Action handlers with loading states
-// Row shading and segmented counts
-const hasUpcomingMeeting = (inst: any) => {
-  if (typeof inst.upcoming_meetings_count === 'number') return inst.upcoming_meetings_count > 0
-  if (!Array.isArray(inst.meetings)) return false
-  const now = new Date()
-  return inst.meetings.some((m: any) => new Date(m.start_time) > now)
-}
 
 // Action handlers with loading states
 const setLoading = (institutionId: string, loading: boolean) => {
@@ -238,13 +173,6 @@ const setLoading = (institutionId: string, loading: boolean) => {
 
 const handleAddCheckIn = (institutionId: string) => {
   showCreateCheckIn.value = institutionId
-}
-
-const handleAddCheckInForPriority = () => {
-  const priorityInstitution = institutionsNeedingAttention.value[0]
-  if (priorityInstitution) {
-    showCreateCheckIn.value = priorityInstitution.id
-  }
 }
 
 const handleCheckInCreated = () => {
