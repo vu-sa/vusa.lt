@@ -1,7 +1,6 @@
 <template>
   <IndexTablePage ref="indexTablePageRef" v-bind="tableConfig" @data-loaded="onDataLoaded"
-    @sorting-changed="handleSortingChange" @page-changed="handlePageChange" @filter-changed="handleFilterChange"
-    @update:row-selection="handleRowSelectionChange">
+    @sorting-changed="handleSortingChange" @page-changed="handlePageChange" @filter-changed="handleFilterChange">
     <template #filters>
       <DataTableFilter v-model:value="selectedCompletionStatuses" :options="completionStatusOptions" multiple
         @update:value="handleCompletionStatusFilterChange">
@@ -9,52 +8,21 @@
       </DataTableFilter>
     </template>
   </IndexTablePage>
-
-  <!-- Delete Confirmation Dialog -->
-  <Dialog v-model:open="showDeleteDialog">
-    <DialogContent>
-      <DialogHeader>
-        <DialogTitle>{{ $t('Are you sure?') }}</DialogTitle>
-        <DialogDescription>
-          {{ $t('This action cannot be undone. This will permanently delete the selected meetings.') }}
-        </DialogDescription>
-      </DialogHeader>
-      <DialogFooter>
-        <DialogClose as-child>
-          <Button variant="outline">{{ $t('Cancel') }}</Button>
-        </DialogClose>
-        <Button variant="destructive" @click="confirmDelete">
-          {{ $t('Delete') }}
-        </Button>
-      </DialogFooter>
-    </DialogContent>
-  </Dialog>
 </template>
 
 <script setup lang="tsx">
 import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
 import { type ColumnDef } from '@tanstack/vue-table';
 import { ref, computed, watch, capitalize } from "vue";
-import { router, usePage } from "@inertiajs/vue3";
+import { usePage } from "@inertiajs/vue3";
 import { CalendarIcon, CheckCircle2Icon, AlertCircleIcon, CircleSlashIcon } from 'lucide-vue-next';
-import { toast } from "vue-sonner";
 
 import { formatStaticTime } from "@/Utils/IntlTime";
 import DataTableFilter from "@/Components/ui/data-table/DataTableFilter.vue";
-import { Button } from "@/Components/ui/button";
 import { Badge } from "@/Components/ui/badge";
 import IndexTablePage from "@/Components/Layouts/IndexTablePage.vue";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
 import { createStandardActionsColumn } from "@/Composables/useTableActions";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogClose,
-} from "@/Components/ui/dialog";
 import {
   type IndexTablePageProps,
 } from "@/Types/TableConfigTypes";
@@ -84,17 +52,9 @@ const indexTablePageRef = ref<InstanceType<typeof IndexTablePage> | null>(null);
 
 // Permission checks
 const canCreate = computed(() => usePage().props.auth?.can?.create?.meeting || false);
-const canDelete = computed(() => usePage().props.auth?.can?.delete?.meeting || false);
 
 // Filter states
 const selectedCompletionStatuses = ref<string[]>(props.filters?.['completion_status'] || []);
-
-// Row selection
-const selectedRows = ref([]);
-
-// Delete dialog state
-const showDeleteDialog = ref(false);
-const itemsToDelete = ref([]);
 
 // Completion status options
 const completionStatusOptions = computed(() => [
@@ -277,11 +237,6 @@ const handleCompletionStatusFilterChange = (statuses: string[]) => {
   }
 };
 
-// Row selection handler
-const handleRowSelectionChange = (selection) => {
-  selectedRows.value = indexTablePageRef.value?.getSelectedRows() || [];
-};
-
 // Event handlers for IndexTablePage
 const handleFilterChange = (filterKey, value) => {
   if (filterKey === 'completion_status') {
@@ -299,25 +254,6 @@ const handlePageChange = (page) => {
 
 const onDataLoaded = (data) => {
   // Handle data loaded event if needed
-};
-
-// Delete confirmation functions
-const confirmDelete = () => {
-  if (itemsToDelete.value.length === 0) return;
-  
-  const ids = itemsToDelete.value.map(item => item.id);
-  
-  router.delete(route('meetings.destroy', { ids }), {
-    onSuccess: () => {
-      showDeleteDialog.value = false;
-      itemsToDelete.value = [];
-      toast.success($t('Meetings deleted successfully'));
-      indexTablePageRef.value?.reloadData();
-    },
-    onError: (errors) => {
-      toast.error($t('Failed to delete meetings'));
-    }
-  });
 };
 
 // Sync filter values when changed externally
