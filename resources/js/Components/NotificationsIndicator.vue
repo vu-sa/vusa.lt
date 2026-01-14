@@ -73,7 +73,37 @@
           </div>
         </div>
       </ScrollArea>
-      <div class="border-t p-2">
+      <div class="border-t p-2 space-y-2">
+        <!-- Push notification toggle -->
+        <div v-if="pushSupported" class="flex items-center justify-between px-2 py-1">
+          <div class="flex items-center gap-2 text-xs text-muted-foreground">
+            <SmartphoneIcon class="h-3.5 w-3.5" aria-hidden="true" />
+            <span>{{ $t('Push pranešimai') }}</span>
+          </div>
+          <Button 
+            v-if="!hasPushSubscription && canSubscribeToPush"
+            variant="ghost" 
+            size="sm" 
+            class="h-6 text-xs"
+            :disabled="isSubscribingToPush"
+            @click="handleSubscribeToPush"
+          >
+            <LoaderCircleIcon v-if="isSubscribingToPush" class="h-3 w-3 animate-spin mr-1" />
+            {{ $t('Įjungti') }}
+          </Button>
+          <Button 
+            v-else-if="hasPushSubscription"
+            variant="ghost" 
+            size="sm" 
+            class="h-6 text-xs text-destructive"
+            @click="handleUnsubscribeFromPush"
+          >
+            {{ $t('Išjungti') }}
+          </Button>
+          <span v-else-if="pushPermission === 'denied'" class="text-xs text-destructive">
+            {{ $t('Užblokuota') }}
+          </span>
+        </div>
         <Link :href="route('notifications.index')" class="block w-full rounded-sm p-2 text-center text-xs hover:bg-muted">
           {{ $t('View All Notifications') }}
         </Link>
@@ -93,8 +123,11 @@ import {
   CalendarIcon, 
   UserPlusIcon, 
   AlertCircleIcon,
-  CheckIcon
+  CheckIcon,
+  SmartphoneIcon,
+  LoaderCircleIcon,
 } from 'lucide-vue-next'
+import { usePWA } from '@/Composables/usePWA'
 
 import { 
   Popover, 
@@ -115,6 +148,25 @@ interface BaseNotification {
 // Get unread notifications from auth.user
 const page = usePage()
 const authUser = computed(() => page.props.auth?.user)
+
+// PWA push notification state
+const { 
+  pushSupported, 
+  pushPermission, 
+  canSubscribeToPush, 
+  hasPushSubscription, 
+  isSubscribingToPush,
+  subscribeToPush, 
+  unsubscribeFromPush 
+} = usePWA()
+
+const handleSubscribeToPush = async () => {
+  await subscribeToPush()
+}
+
+const handleUnsubscribeFromPush = async () => {
+  await unsubscribeFromPush()
+}
 
 // Cast the notification data from the backend to our interface
 const notifications = computed(() => {

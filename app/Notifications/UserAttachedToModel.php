@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Str;
+use NotificationChannels\WebPush\WebPushChannel;
+use NotificationChannels\WebPush\WebPushMessage;
 
 class UserAttachedToModel extends Notification implements ShouldQueue
 {
@@ -64,7 +66,7 @@ class UserAttachedToModel extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        return ['database', 'mail'];
+        return ['database', 'mail', WebPushChannel::class];
     }
 
     /**
@@ -92,5 +94,18 @@ class UserAttachedToModel extends Notification implements ShouldQueue
             'subject' => $this->subject,
             'object' => $this->object,
         ];
+    }
+
+    public function toWebPush($notifiable, $notification): WebPushMessage
+    {
+        $objectName = optional($this->model)->name ?: optional($this->model)->title ?: 'objekto';
+
+        return (new WebPushMessage)
+            ->title('🔗 '.__('Priskyrimas'))
+            ->icon('/images/icons/favicons/favicon-196x196.png')
+            ->body($this->attacher->name.' priskyrė jus prie '.$objectName)
+            ->action(__('Peržiūrėti'), 'view')
+            ->options(['TTL' => 1000])
+            ->data(['url' => $this->object['url'] ?? '/mano']);
     }
 }

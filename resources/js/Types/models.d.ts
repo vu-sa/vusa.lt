@@ -31,6 +31,7 @@ declare global {
       cto_url?: Array<unknown> | null
       facebook_url?: string | null
       video_url?: string | null
+      main_image?: string | null
       is_draft: boolean
       is_all_day: boolean
       is_international: boolean
@@ -42,9 +43,8 @@ declare global {
       updated_at: string
       registration_form_id?: number | null
       // mutators
+      main_image_url: string
       translations: unknown
-      // accessors
-      main_image_url?: string | null
       // relations
       tenant?: Tenant
       category?: Category
@@ -135,31 +135,6 @@ declare global {
       // exists
       registration_exists: boolean
       form_field_exists: boolean
-    }
-
-    export interface FileableFile {
-      // columns
-      id: string
-      fileable_type: string
-      fileable_id: string
-      sharepoint_id: string
-      sharepoint_path?: string | null
-      name: string
-      file_type?: 'protocol' | 'report' | 'agenda' | 'methodology' | 'other' | null
-      mime_type?: string | null
-      size_bytes?: number | null
-      file_date?: string | null
-      description?: string | null
-      public_link?: string | null
-      public_link_expires_at?: string | null
-      last_synced_at?: string | null
-      deleted_externally_at?: string | null
-      created_at: string
-      updated_at: string
-      deleted_at?: string | null
-      // mutators
-      formatted_size?: string | null
-      file_type_label?: string | null
     }
 
     export interface File {
@@ -469,11 +444,13 @@ declare global {
       updated_at: string
       // relations
       fileable?: SharepointFileable
+      sharepoint_file?: SharepointFile
       meeting?: Meeting
       institution?: Institution
       type?: Type
       // counts
       // exists
+      sharepoint_file_exists: boolean
       meeting_exists: boolean
       institution_exists: boolean
       type_exists: boolean
@@ -966,7 +943,7 @@ declare global {
       lang: string
       other_lang_id?: number | null
       content_id: number
-      image?: unknown | null
+      image?: string | null
       image_author?: string | null
       important: boolean
       tenant_id: number
@@ -1200,58 +1177,33 @@ declare global {
       institution_exists: boolean
     }
 
-    export interface Duty {
+    export interface FileableFile {
       // columns
       id: string
-      name?: Array<unknown> | null
-      description?: Array<unknown> | null
-      institution_id: string
-      order: number
-      email?: string | null
-      contacts_grouping: string
-      places_to_occupy?: number | null
-      created_at: string
-      updated_at: string
+      fileable_type: string
+      fileable_id: string
+      sharepoint_id: string
+      sharepoint_path?: string | null
+      name: string
+      file_type?: string | null
+      mime_type?: string | null
+      size_bytes?: number | null
+      file_date?: string | null
+      description?: string | null
+      public_link?: string | null
+      public_link_expires_at?: string | null
+      last_synced_at?: string | null
+      deleted_externally_at?: string | null
+      created_at?: string | null
+      updated_at?: string | null
       deleted_at?: string | null
       // mutators
-      translations: unknown
+      formatted_size: string
+      file_type_label: string
       // relations
-      dutiables?: Dutiable[]
-      users?: User[]
-      current_users?: User[]
-      previous_users?: User[]
-      types?: Type[]
-      institution?: Institution
-      institutions?: Institution
-      available_trainings?: Training[]
-      roles?: Role[]
-      permissions?: Permission[]
-      activities?: Activity[]
-      notifications?: DatabaseNotification[]
+      fileable?: FileableFile
       // counts
-      dutiables_count: number
-      users_count: number
-      current_users_count: number
-      previous_users_count: number
-      types_count: number
-      available_trainings_count: number
-      roles_count: number
-      permissions_count: number
-      activities_count: number
-      notifications_count: number
       // exists
-      dutiables_exists: boolean
-      users_exists: boolean
-      current_users_exists: boolean
-      previous_users_exists: boolean
-      types_exists: boolean
-      institution_exists: boolean
-      institutions_exists: boolean
-      available_trainings_exists: boolean
-      roles_exists: boolean
-      permissions_exists: boolean
-      activities_exists: boolean
-      notifications_exists: boolean
     }
 
     export interface Institution {
@@ -1280,6 +1232,8 @@ declare global {
       related_institutions: unknown
       maybe_short_name: unknown
       has_public_meetings: boolean
+      has_protocol: boolean
+      has_report: boolean
       translations: unknown
       // relations
       duties?: Duty[]
@@ -1295,6 +1249,8 @@ declare global {
       outgoing_relationships?: Relationship[]
       incoming_relationships?: Relationship[]
       files?: SharepointFile[]
+      fileable_files?: FileableFile[]
+      available_files?: FileableFile[]
       activities?: Activity[]
       // counts
       duties_count: number
@@ -1307,6 +1263,8 @@ declare global {
       outgoing_relationships_count: number
       incoming_relationships_count: number
       files_count: number
+      fileable_files_count: number
+      available_files_count: number
       activities_count: number
       // exists
       duties_exists: boolean
@@ -1320,6 +1278,8 @@ declare global {
       outgoing_relationships_exists: boolean
       incoming_relationships_exists: boolean
       files_exists: boolean
+      fileable_files_exists: boolean
+      available_files_exists: boolean
       activities_exists: boolean
     }
 
@@ -1346,6 +1306,7 @@ declare global {
       commentable?: Meeting
       files?: SharepointFile[]
       fileable_files?: FileableFile[]
+      available_files?: FileableFile[]
       tasks?: Task[]
       activities?: Activity[]
       // counts
@@ -1354,6 +1315,8 @@ declare global {
       comments_count: number
       types_count: number
       files_count: number
+      fileable_files_count: number
+      available_files_count: number
       tasks_count: number
       activities_count: number
       // exists
@@ -1362,6 +1325,8 @@ declare global {
       comments_exists: boolean
       types_exists: boolean
       files_exists: boolean
+      fileable_files_exists: boolean
+      available_files_exists: boolean
       tasks_exists: boolean
       activities_exists: boolean
     }
@@ -1392,6 +1357,8 @@ declare global {
       related_institutions: unknown
       maybe_short_name: unknown
       has_public_meetings: boolean
+      has_protocol: boolean
+      has_report: boolean
       translations: unknown
       // relations
       types?: Type[]
@@ -1407,6 +1374,8 @@ declare global {
       outgoing_relationships?: Relationship[]
       incoming_relationships?: Relationship[]
       files?: SharepointFile[]
+      fileable_files?: FileableFile[]
+      available_files?: FileableFile[]
       activities?: Activity[]
       // counts
       types_count: number
@@ -1419,6 +1388,8 @@ declare global {
       outgoing_relationships_count: number
       incoming_relationships_count: number
       files_count: number
+      fileable_files_count: number
+      available_files_count: number
       activities_count: number
       // exists
       types_exists: boolean
@@ -1432,6 +1403,8 @@ declare global {
       outgoing_relationships_exists: boolean
       incoming_relationships_exists: boolean
       files_exists: boolean
+      fileable_files_exists: boolean
+      available_files_exists: boolean
       activities_exists: boolean
     }
 
@@ -1448,6 +1421,8 @@ declare global {
       // mutators
       is_public: boolean
       completion_status: string
+      has_protocol: boolean
+      has_report: boolean
       // relations
       institutions?: Institution[]
       types?: Type[]
@@ -1455,6 +1430,8 @@ declare global {
       comments?: Comment[]
       commentable?: PublicMeeting
       files?: SharepointFile[]
+      fileable_files?: FileableFile[]
+      available_files?: FileableFile[]
       tasks?: Task[]
       activities?: Activity[]
       // counts
@@ -1463,6 +1440,8 @@ declare global {
       agenda_items_count: number
       comments_count: number
       files_count: number
+      fileable_files_count: number
+      available_files_count: number
       tasks_count: number
       activities_count: number
       // exists
@@ -1471,6 +1450,8 @@ declare global {
       agenda_items_exists: boolean
       comments_exists: boolean
       files_exists: boolean
+      fileable_files_exists: boolean
+      available_files_exists: boolean
       tasks_exists: boolean
       activities_exists: boolean
     }
@@ -1488,6 +1469,8 @@ declare global {
       updated_at: string
       deleted_at?: string | null
       // mutators
+      has_protocol: boolean
+      has_report: boolean
       translations: unknown
       // relations
       institutions?: Institution[]
@@ -1500,6 +1483,8 @@ declare global {
       outgoing_relationships?: Relationship[]
       incoming_relationships?: Relationship[]
       files?: SharepointFile[]
+      fileable_files?: FileableFile[]
+      available_files?: FileableFile[]
       activities?: Activity[]
       // counts
       institutions_count: number
@@ -1510,6 +1495,8 @@ declare global {
       outgoing_relationships_count: number
       incoming_relationships_count: number
       files_count: number
+      fileable_files_count: number
+      available_files_count: number
       activities_count: number
       // exists
       institutions_exists: boolean
@@ -1522,7 +1509,74 @@ declare global {
       outgoing_relationships_exists: boolean
       incoming_relationships_exists: boolean
       files_exists: boolean
+      fileable_files_exists: boolean
+      available_files_exists: boolean
       activities_exists: boolean
+    }
+
+    export interface Duty {
+      // columns
+      id: string
+      name?: Array<unknown> | null
+      description?: Array<unknown> | null
+      institution_id: string
+      order: number
+      email?: string | null
+      contacts_grouping: string
+      places_to_occupy?: number | null
+      created_at: string
+      updated_at: string
+      deleted_at?: string | null
+      // mutators
+      has_protocol: boolean
+      has_report: boolean
+      translations: unknown
+      // relations
+      dutiables?: Dutiable[]
+      users?: User[]
+      current_users?: User[]
+      previous_users?: User[]
+      types?: Type[]
+      institution?: Institution
+      institutions?: Institution
+      available_trainings?: Training[]
+      roles?: Role[]
+      permissions?: Permission[]
+      files?: SharepointFile[]
+      fileable_files?: FileableFile[]
+      available_files?: FileableFile[]
+      activities?: Activity[]
+      notifications?: DatabaseNotification[]
+      // counts
+      dutiables_count: number
+      users_count: number
+      current_users_count: number
+      previous_users_count: number
+      types_count: number
+      available_trainings_count: number
+      roles_count: number
+      permissions_count: number
+      files_count: number
+      fileable_files_count: number
+      available_files_count: number
+      activities_count: number
+      notifications_count: number
+      // exists
+      dutiables_exists: boolean
+      users_exists: boolean
+      current_users_exists: boolean
+      previous_users_exists: boolean
+      types_exists: boolean
+      institution_exists: boolean
+      institutions_exists: boolean
+      available_trainings_exists: boolean
+      roles_exists: boolean
+      permissions_exists: boolean
+      files_exists: boolean
+      fileable_files_exists: boolean
+      available_files_exists: boolean
+      activities_exists: boolean
+      notifications_exists: boolean
     }
 
   }

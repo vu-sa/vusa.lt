@@ -73,6 +73,11 @@ Route::get('notifications', [UserNotificationsController::class, 'index'])->name
 Route::post('notification/{id}/markAsRead', [UserNotificationsController::class, 'markAsRead'])->name('notifications.markAsRead');
 Route::post('notification/mark-all-as-read', [UserNotificationsController::class, 'markAllAsRead'])->name('notifications.mark-as-read.all');
 
+// Push notification subscriptions
+Route::post('push-subscription', [PushSubscriptionController::class, 'store'])->name('push-subscription.store');
+Route::delete('push-subscription', [PushSubscriptionController::class, 'destroy'])->name('push-subscription.destroy');
+Route::post('push-subscription/test', [PushSubscriptionController::class, 'sendTest'])->name('push-subscription.test');
+
 Route::resource('memberships', MembershipController::class);
 Route::post('memberships/{membership}/users/import', [MembershipController::class, 'importUsers'])->name('membershipUsers.import');
 

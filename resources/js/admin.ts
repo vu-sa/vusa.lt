@@ -3,6 +3,10 @@ import "../css/admin.css";
 import "../css/driver-tour.css";
 
 import { type DefineComponent, createApp, h } from "vue";
+import { initPWA } from "./Composables/usePWA";
+
+// Initialize PWA (service worker registration, install prompt handling)
+initPWA();
 import { ZiggyVue } from 'ziggy-js'
 import { createInertiaApp } from "@inertiajs/vue3";
 import { defineAsyncComponent } from "vue";
@@ -105,7 +109,8 @@ createInertiaApp({
 
     application.mount(el);
 
-    // Initialize tutorial progress from server data
+    // Initialize tutorial progress from server data after mounting
+    // Inertia props are only available after the app is mounted
     initProgress();
 
     delete el.dataset.page;

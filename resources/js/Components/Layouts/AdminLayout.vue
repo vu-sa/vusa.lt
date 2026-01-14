@@ -18,6 +18,7 @@
 
           <div class="flex items-center gap-2">
             <slot name="headerActions" />
+            <PWAStatusButton />
             <SpotlightPopover
               v-if="hasTour"
               :title="$t('tutorials.help_button_spotlight.title')"
@@ -96,6 +97,113 @@
 
     <!-- Toast notifications -->
     <Toaster rich-colors />
+
+    <!-- PWA Install Banner (smart trigger) -->
+    <InstallBanner />
+    
+    <!-- PWA Update Available Banner (only shown in PWA mode) -->
+    <UpdateBanner />
+    
+    <!-- PWA Bottom Navigation Bar (shown only when installed as PWA on mobile) -->
+    <nav 
+      v-if="isPWA && isMobile" 
+      class="fixed bottom-0 left-0 right-0 z-50 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80"
+      :style="{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }"
+    >
+      <div class="flex items-center justify-around h-16 px-2">
+        <Link 
+          :href="route('dashboard')" 
+          class="flex flex-col items-center justify-center flex-1 h-full gap-1 text-muted-foreground transition-colors"
+          :class="{ 'text-primary': isCurrentRoute('dashboard') }"
+        >
+          <HomeIcon class="h-5 w-5" />
+          <span class="text-[10px] font-medium">{{ $t('Pradžia') }}</span>
+        </Link>
+        
+        <Link 
+          :href="route('dashboard.atstovavimas')" 
+          class="flex flex-col items-center justify-center flex-1 h-full gap-1 text-muted-foreground transition-colors"
+          :class="{ 'text-primary': isCurrentRoute('dashboard.atstovavimas') }"
+        >
+          <GraduationCapIcon class="h-5 w-5" />
+          <span class="text-[10px] font-medium">ViSAK</span>
+        </Link>
+        
+        <button 
+          type="button"
+          class="flex flex-col items-center justify-center flex-1 h-full gap-1"
+          @click="showQuickCreate = true"
+        >
+          <div class="flex items-center justify-center w-12 h-12 -mt-4 rounded-full bg-primary text-primary-foreground shadow-lg">
+            <PlusIcon class="h-6 w-6" />
+          </div>
+        </button>
+        
+        <Link 
+          :href="route('notifications.index')" 
+          class="relative flex flex-col items-center justify-center flex-1 h-full gap-1 text-muted-foreground transition-colors"
+          :class="{ 'text-primary': isCurrentRoute('notifications.index') }"
+        >
+          <div class="relative">
+            <BellIcon class="h-5 w-5" />
+            <span 
+              v-if="unreadNotificationsCount > 0" 
+              class="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-medium text-destructive-foreground"
+            >
+              {{ unreadNotificationsCount > 9 ? '9+' : unreadNotificationsCount }}
+            </span>
+          </div>
+          <span class="text-[10px] font-medium">{{ $t('Pranešimai') }}</span>
+        </Link>
+        
+        <Link 
+          :href="route('profile')" 
+          class="flex flex-col items-center justify-center flex-1 h-full gap-1 text-muted-foreground transition-colors"
+          :class="{ 'text-primary': isCurrentRoute('profile') }"
+        >
+          <UserIcon class="h-5 w-5" />
+          <span class="text-[10px] font-medium">{{ $t('Profilis') }}</span>
+        </Link>
+      </div>
+    </nav>
+    
+    <!-- Quick Create Sheet (for PWA bottom nav) -->
+    <Sheet v-model:open="showQuickCreate">
+      <SheetContent side="bottom" class="rounded-t-xl">
+        <SheetHeader>
+          <SheetTitle>{{ $t('Sukurti naują') }}</SheetTitle>
+        </SheetHeader>
+        <div class="grid gap-2 py-4">
+          <Button 
+            v-if="can?.create?.meeting" 
+            variant="ghost" 
+            class="justify-start h-12" 
+            @click="navigateAndClose(route('meetings.create'))"
+          >
+            <CalendarPlusIcon class="h-5 w-5 mr-3" />
+            {{ $t('forms.meeting') }}
+          </Button>
+          <Button 
+            v-if="can?.create?.news" 
+            variant="ghost" 
+            class="justify-start h-12" 
+            @click="navigateAndClose(route('news.create'))"
+          >
+            <FileTextIcon class="h-5 w-5 mr-3" />
+            {{ $t('forms.news') }}
+          </Button>
+          <Button 
+            v-if="can?.create?.reservation" 
+            variant="ghost" 
+            class="justify-start h-12" 
+            @click="navigateAndClose(route('reservations.create'))"
+          >
+            <Building2Icon class="h-5 w-5 mr-3" />
+            {{ $t('forms.reservation') }}
+          </Button>
+        </div>
+      </SheetContent>
+    </Sheet>
   </div>
 </template>
 
@@ -109,7 +217,14 @@ import {
   PlusIcon,
   UserIcon,
   HelpCircle,
+  BellIcon,
+  GraduationCapIcon,
+  CalendarPlusIcon,
+  FileTextIcon,
+  Building2Icon,
 } from 'lucide-vue-next';
+import { usePWA } from '@/Composables/usePWA';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/Components/ui/sheet';
 import { trans as $t } from "laravel-vue-i18n";
 
 import { useToasts } from '@/Composables/useToasts';
@@ -117,6 +232,9 @@ import 'vue-sonner/style.css'
 
 import AppSidebar from '@/Components/AppSidebar.vue'
 import StagingBanner from '@/Components/StagingBanner.vue'
+import InstallBanner from '@/Components/PWA/InstallBanner.vue'
+import UpdateBanner from '@/Components/PWA/UpdateBanner.vue'
+import PWAStatusButton from '@/Components/PWA/StatusButton.vue'
 import TasksIndicator from '@/Components/TasksIndicator.vue'
 import NotificationsIndicator from '@/Components/NotificationsIndicator.vue'
 import { Separator } from '@/Components/ui/separator'
@@ -146,6 +264,34 @@ const props = withDefaults(defineProps<{
 
 // System message (announcements)
 const systemMessage = computed(() => usePage().props.app?.systemMessage || null);
+
+// PWA state
+const { isPWA } = usePWA();
+const showQuickCreate = ref(false);
+
+// Permissions for quick create
+const can = computed(() => usePage().props.auth?.can);
+
+// Unread notifications count
+const unreadNotificationsCount = computed(() => {
+  const notifications = usePage().props.auth?.user?.unreadNotifications;
+  return Array.isArray(notifications) ? notifications.length : 0;
+});
+
+// Check if current route matches
+function isCurrentRoute(routeName: string): boolean {
+  try {
+    return route().current(routeName);
+  } catch {
+    return false;
+  }
+}
+
+// Navigate and close quick create sheet
+function navigateAndClose(url: string) {
+  showQuickCreate.value = false;
+  router.visit(url);
+}
 
 // Initialize breadcrumb state for the entire admin application
 const breadcrumbState = createBreadcrumbState('admin');

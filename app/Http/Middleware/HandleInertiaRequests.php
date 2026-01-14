@@ -88,6 +88,10 @@ class HandleInertiaRequests extends Middleware
             // 'tenant.banners' property is shared in public pages from \App\Http\Controllers\PublicController.php
             'tenants' => fn () => $this->getTenantsForInertia(),
             'typesenseConfig' => fn () => TypesenseManager::getFrontendConfig(),
+            'pwa' => [
+                'vapidPublicKey' => fn () => config('webpush.vapid.public_key'),
+                'hasPushSubscription' => fn () => $user?->pushSubscriptions()->exists() ?? false,
+            ],
         ]);
     }
 

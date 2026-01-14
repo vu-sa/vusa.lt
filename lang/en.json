@@ -819,5 +819,14 @@
   "Redagavimas": "Edit",
   "Nėra priskirtų narių": "No assigned members",
   "Rašote lietuviškai": "Writing in Lithuanian",
-  "Writing in English": "Writing in English"
+  "Writing in English": "Writing in English",
+  "pwa.install_title": "Install VU SA Mano",
+  "pwa.install_description": "Faster access and notifications even when the browser is closed.",
+  "Vėliau": "Later",
+  "Įdiegti": "Install",
+  "Nauja versija prieinama": "New version available",
+  "Atnaujinti": "Update",
+  "Atnaujinti programėlę": "Update app",
+  "Įdiegti programėlę": "Install app",
+  "Atnaujinkite puslapį, kad galėtumėte naudotis naujausiomis funkcijomis ir pataisymais.": "Refresh the page to use the latest features and fixes."
 }

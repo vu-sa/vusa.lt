@@ -7,6 +7,8 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use NotificationChannels\WebPush\WebPushChannel;
+use NotificationChannels\WebPush\WebPushMessage;
 
 class ModelCommented extends Notification implements ShouldQueue
 {
@@ -38,9 +40,9 @@ class ModelCommented extends Notification implements ShouldQueue
      */
     public function via($notifiable)
     {
-        // if notifiable class is user, then send notification via database, broadcast and mail
+        // if notifiable class is user, then send notification via database, broadcast, mail, and webpush
         if (class_basename(get_class($notifiable)) === 'User') {
-            return ['database', 'broadcast', 'mail'];
+            return ['database', 'broadcast', 'mail', WebPushChannel::class];
         }
 
         // if notifiable class is duty, then send notification via mail
@@ -83,5 +85,16 @@ class ModelCommented extends Notification implements ShouldQueue
                 'object' => $this->objectArray,
                 'subject' => $this->subjectArray,
             ])->subject('💬 '.__('New Comment on').' '.$this->objectArray['name']);
+    }
+
+    public function toWebPush($notifiable, $notification)
+    {
+        return (new WebPushMessage)
+            ->title('💬 '.__('Naujas komentaras'))
+            ->icon('/images/icons/favicons/favicon-196x196.png')
+            ->body($this->text)
+            ->action(__('Peržiūrėti'), 'view')
+            ->options(['TTL' => 1000])
+            ->data(['url' => $this->objectArray['url'] ?? '/mano']);
     }
 }

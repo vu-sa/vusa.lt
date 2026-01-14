@@ -20,6 +20,11 @@ use Laravel\Socialite\Facades\Socialite;
 Route::feeds();
 
 Route::get('/auth/redirect', function () {
+    // Store popup flag in session for callback handling, validating as boolean
+    if (request()->has('popup') && request()->boolean('popup')) {
+        session(['oauth_popup' => true]);
+    }
+
     /** @phpstan-ignore-next-line */
     return Socialite::driver('microsoft')->stateless()->with(['prompt' => 'select_account'])->redirect();
 })->name('microsoft.redirect');

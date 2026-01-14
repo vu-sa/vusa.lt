@@ -31,7 +31,9 @@ import 'driver.js/dist/driver.css';
 import { 
   globalProgress, 
   updateProgress, 
-  removeProgress 
+  removeProgress,
+  initProgress,
+  isInitialized 
 } from './useTutorialProgress';
 
 export interface ProductTourOptions {
@@ -243,6 +245,12 @@ export function useProductTour(options: ProductTourOptions) {
    * Start tour only if user hasn't completed it yet
    */
   function startTourIfNew(): void {
+    // Defensive: ensure progress is initialized before checking completion
+    // This handles edge cases where initProgress wasn't called yet (e.g., PWA cold start)
+    if (!isInitialized()) {
+      initProgress();
+    }
+    
     if (!hasCompleted.value) {
       // Small delay to ensure DOM is ready
       requestAnimationFrame(() => {

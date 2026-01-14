@@ -136,6 +136,62 @@
             </p>
           </FormElement>
 
+          <!-- Push Notifications Settings Section -->
+          <FormElement>
+            <template #title>
+              {{ $t("Push pranešimai") }}
+            </template>
+            <template #description>
+              {{ $t("Gaukite pranešimus net kai naršyklė uždaryta. Veikia tik įdiegus programėlę (PWA).") }}
+            </template>
+            <div class="space-y-4">
+              <div class="flex items-center gap-4">
+                <template v-if="!hasPushSubscription && canSubscribeToPush">
+                  <Button 
+                    :disabled="isSubscribingToPush" 
+                    variant="outline" 
+                    @click="handleSubscribeToPush"
+                  >
+                    <IMdiBellPlus v-if="!isSubscribingToPush" />
+                    <IMdiLoading v-else class="animate-spin" />
+                    {{ $t("Įjungti push pranešimus") }}
+                  </Button>
+                </template>
+                <template v-else-if="hasPushSubscription">
+                  <Button 
+                    variant="outline" 
+                    @click="handleUnsubscribeFromPush"
+                  >
+                    <IMdiBellOff />
+                    {{ $t("Išjungti push pranešimus") }}
+                  </Button>
+                  <Button 
+                    :disabled="testNotificationLoading" 
+                    variant="secondary" 
+                    @click="handleSendTestNotification"
+                  >
+                    <IMdiBellRing v-if="!testNotificationLoading" />
+                    <IMdiLoading v-else class="animate-spin" />
+                    {{ $t("Siųsti bandomąjį pranešimą") }}
+                  </Button>
+                </template>
+                <template v-else-if="pushPermission === 'denied'">
+                  <p class="text-sm text-destructive">
+                    {{ $t("Push pranešimai užblokuoti naršyklės nustatymuose. Atblokuokite juos norėdami gauti pranešimus.") }}
+                  </p>
+                </template>
+                <template v-else-if="!pushSupported">
+                  <p class="text-sm text-muted-foreground">
+                    {{ $t("Jūsų naršyklė nepalaiko push pranešimų.") }}
+                  </p>
+                </template>
+              </div>
+              <p v-if="testNotificationSuccess" class="text-sm text-green-600 dark:text-green-400">
+                {{ $t("Bandomasis pranešimas išsiųstas!") }}
+              </p>
+            </div>
+          </FormElement>
+
           <h2>{{ $t("Tavo rolės") }}</h2>
           <ul class="list-inside">
             <li v-for="(role, index) in user.roles" :key="role.id">
@@ -167,7 +223,7 @@
 <script setup lang="tsx">
 import { trans as $t } from "laravel-vue-i18n";
 import { ref, computed } from "vue";
-import { router, useForm } from "@inertiajs/vue3";
+import { router, useForm, usePage } from "@inertiajs/vue3";
 
 import { Button } from "@/Components/ui/button";
 import FormElement from "@/Components/AdminForms/FormElement.vue";
@@ -182,6 +238,11 @@ import IMdiGithub from '~icons/mdi/github';
 import IMdiLock from '~icons/mdi/lock';
 import IMdiRefresh from '~icons/mdi/refresh';
 import IMdiSettings from '~icons/mdi/settings';
+import IMdiBellPlus from '~icons/mdi/bell-plus';
+import IMdiBellOff from '~icons/mdi/bell-off';
+import IMdiBellRing from '~icons/mdi/bell-ring';
+import IMdiLoading from '~icons/mdi/loading';
+import { usePWA } from '@/Composables/usePWA';
 
 const props = defineProps<{
   user: App.Entities.User;
@@ -191,6 +252,56 @@ const loading = ref(false);
 const passwordLoading = ref(false);
 const tutorialResetLoading = ref(false);
 const tutorialResetSuccess = ref(false);
+const testNotificationLoading = ref(false);
+const testNotificationSuccess = ref(false);
+
+// PWA push notification state
+const { 
+  pushSupported, 
+  pushPermission, 
+  canSubscribeToPush, 
+  hasPushSubscription, 
+  isSubscribingToPush,
+  subscribeToPush, 
+  unsubscribeFromPush 
+} = usePWA();
+
+const handleSubscribeToPush = async () => {
+  await subscribeToPush();
+};
+
+const handleUnsubscribeFromPush = async () => {
+  await unsubscribeFromPush();
+};
+
+const handleSendTestNotification = async () => {
+  testNotificationLoading.value = true;
+  testNotificationSuccess.value = false;
+  
+  try {
+    const page = usePage();
+    const csrfToken = (page.props.csrf_token as string) || '';
+    
+    const response = await fetch(route('push-subscription.test'), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': csrfToken,
+      },
+    });
+    
+    if (response.ok) {
+      testNotificationSuccess.value = true;
+      setTimeout(() => {
+        testNotificationSuccess.value = false;
+      }, 5000);
+    }
+  } catch (error) {
+    console.error('Failed to send test notification:', error);
+  } finally {
+    testNotificationLoading.value = false;
+  }
+};
 
 // View transitions / reduced motion preference
 const REDUCE_MOTION_KEY = 'vusa-reduce-motion';

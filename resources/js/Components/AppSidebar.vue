@@ -243,10 +243,7 @@ const handleSendFeedback = () => {
 const handleLogout = () => {
   router.post(route('logout'), {}, {
     onSuccess: () => {
-      window.location.href = route('home', {
-        lang: usePage().props.app.locale,
-        subdomain: usePage().props.tenant?.subdomain ?? 'www'
-      })
+      window.location.href = route('login')
     },
     onError: () => {
       console.error('Logout failed.')
