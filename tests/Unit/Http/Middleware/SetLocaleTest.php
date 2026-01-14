@@ -158,7 +158,7 @@ test('bypasses locale processing for admin routes', function () {
 });
 
 test('bypasses locale processing for auth routes', function () {
-    $bypassRoutes = ['mano', 'auth', 'feedback', 'login', 'telescope', '_impersonate', 'feed', 'livewire', 'registration'];
+    $bypassRoutes = ['mano', 'auth', 'feedback', 'login', 'telescope', '_impersonate', 'feed', 'livewire', 'registration', 'broadcasting'];
 
     foreach ($bypassRoutes as $route) {
         $request = Request::create("/{$route}/test");

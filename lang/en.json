@@ -828,5 +828,12 @@
   "Atnaujinti": "Update",
   "Atnaujinti programėlę": "Update app",
   "Įdiegti programėlę": "Install app",
-  "Atnaujinkite puslapį, kad galėtumėte naudotis naujausiomis funkcijomis ir pataisymais.": "Refresh the page to use the latest features and fixes."
+  "Atnaujinkite puslapį, kad galėtumėte naudotis naujausiomis funkcijomis ir pataisymais.": "Refresh the page to use the latest features and fixes.",
+  "Realaus laiko atnaujinimai": "Real-time updates",
+  "Aktyvus": "Active",
+  "Jungiamasi...": "Connecting...",
+  "View": "View",
+  "New Task": "New Task",
+  "Task Reminder": "Task Reminder",
+  "New Notification": "New Notification"
 }

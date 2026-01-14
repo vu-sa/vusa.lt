@@ -1,10 +1,27 @@
 <template>
   <Popover>
     <PopoverTrigger as-child>
-      <Button variant="outline" size="icon" class="rounded-full relative md:w-auto md:px-3 md:gap-2" data-tour="notifications-indicator">
-        <BellIcon class="h-4 w-4" />
-        <span class="hidden md:inline text-sm">{{ unreadNotificationsCount }}</span>
-        <span v-if="unreadNotificationsCount > 0" class="md:hidden absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground">
+      <Button
+        variant="outline"
+        size="icon"
+        class="relative rounded-full md:w-auto md:px-3 md:gap-2"
+        data-tour="notifications-indicator"
+      >
+        <BellIcon class="h-4 w-4" :class="{ 'animate-bell-swing': hasNewNotification }" />
+        <Transition name="count" mode="out-in">
+          <span
+            :key="`count-${unreadNotificationsCount}`"
+            class="hidden text-sm md:inline"
+            aria-live="polite"
+          >
+            {{ unreadNotificationsCount }}
+          </span>
+        </Transition>
+        <span
+          v-if="unreadNotificationsCount > 0"
+          class="md:hidden absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground"
+          aria-live="polite"
+        >
           {{ unreadNotificationsCount > 9 ? '9+' : unreadNotificationsCount }}
         </span>
         <span class="sr-only">{{ $t('Notifications') }}</span>
@@ -44,7 +61,6 @@
                 {{ getNotificationTitle(notification) }}
               </p>
               <div class="text-xs text-muted-foreground">
-                {{  }}
                 <div v-html="getNotificationMessage(notification)" />
               </div>
               <p class="mt-1 text-[11px] text-muted-foreground">
@@ -74,6 +90,21 @@
         </div>
       </ScrollArea>
       <div class="border-t p-2 space-y-2">
+        <!-- Real-time connection status -->
+        <div class="flex items-center justify-between px-2 py-1">
+          <div class="flex items-center gap-2 text-xs text-muted-foreground">
+            <WifiIcon v-if="isRealtimeConnected" class="h-3.5 w-3.5 text-green-500" aria-hidden="true" />
+            <LoaderCircleIcon v-else-if="isRealtimeConnecting" class="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
+            <WifiOffIcon v-else class="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
+            <span>{{ $t('Realaus laiko atnaujinimai') }}</span>
+          </div>
+          <span v-if="isRealtimeConnected" class="text-xs text-green-600 dark:text-green-400">
+            {{ $t('Aktyvus') }}
+          </span>
+          <span v-else-if="isRealtimeConnecting" class="text-xs text-muted-foreground">
+            {{ $t('Jungiamasi...') }}
+          </span>
+        </div>
         <!-- Push notification toggle -->
         <div v-if="pushSupported" class="flex items-center justify-between px-2 py-1">
           <div class="flex items-center gap-2 text-xs text-muted-foreground">
@@ -113,21 +144,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 import { Link, router, usePage } from '@inertiajs/vue3'
 import { trans as $t } from "laravel-vue-i18n"
-import { 
-  BellIcon, 
-  CircleIcon, 
-  MessageSquareIcon, 
-  CalendarIcon, 
-  UserPlusIcon, 
-  AlertCircleIcon,
-  CheckIcon,
+import {
+  BellIcon,
+  CircleIcon,
+  MessageSquareIcon,
+  UserPlusIcon,
   SmartphoneIcon,
   LoaderCircleIcon,
+  WifiIcon,
+  WifiOffIcon,
 } from 'lucide-vue-next'
 import { usePWA } from '@/Composables/usePWA'
+import { useRealtimeNotifications } from '@/Composables/useRealtimeNotifications'
 
 import { 
   Popover, 
@@ -159,6 +190,13 @@ const {
   subscribeToPush, 
   unsubscribeFromPush 
 } = usePWA()
+
+// Real-time notifications via Reverb
+const {
+  isConnected: isRealtimeConnected,
+  isConnecting: isRealtimeConnecting,
+  hasNewNotification,
+} = useRealtimeNotifications()
 
 const handleSubscribeToPush = async () => {
   await subscribeToPush()
@@ -303,3 +341,51 @@ const markAllAsRead = () => {
   })
 }
 </script>
+
+<style scoped>
+@keyframes bell-swing {
+  0% {
+    transform: rotate(0deg);
+  }
+  15% {
+    transform: rotate(12deg);
+  }
+  30% {
+    transform: rotate(-10deg);
+  }
+  45% {
+    transform: rotate(8deg);
+  }
+  60% {
+    transform: rotate(-6deg);
+  }
+  75% {
+    transform: rotate(4deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+.animate-bell-swing {
+  animation: bell-swing 0.8s ease;
+  transform-origin: top center;
+}
+
+.count-enter-from,
+.count-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+.count-enter-active,
+.count-leave-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.count-enter-to,
+.count-leave-from {
+  opacity: 1;
+  transform: translateY(0);
+}
+</style>
