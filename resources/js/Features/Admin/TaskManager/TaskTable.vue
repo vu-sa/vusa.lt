@@ -1,12 +1,22 @@
 <template>
-  <SimpleDataTable :columns :data="tasks" :row-class-name="rowClassName" :enable-pagination="true" :page-size="10"
-    :empty-message="$t('No tasks found.')" :empty-icon="CheckIcon">
+  <SimpleDataTable 
+    :columns 
+    :data="tasks" 
+    :row-class-name="rowClassName" 
+    :enable-pagination="true" 
+    :page-size="15"
+    :empty-message="$t('No tasks found.')" 
+    :empty-icon="CheckIcon"
+  >
     <template #empty>
-      <div class="flex flex-col items-center justify-center gap-2 text-zinc-400">
-        <div class="flex h-10 w-10 items-center justify-center rounded-full border border-dashed">
-          <CheckIcon class="h-5 w-5" />
+      <div class="flex flex-col items-center justify-center gap-3 py-8 text-zinc-400">
+        <div class="flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
+          <CheckCircleIcon class="h-6 w-6 text-zinc-500 dark:text-zinc-400" />
         </div>
-        <span>{{ $t('No tasks found.') }}</span>
+        <div class="text-center">
+          <p class="font-medium text-zinc-900 dark:text-zinc-100">{{ $t('Viskas atlikta!') }}</p>
+          <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ $t('No tasks found.') }}</p>
+        </div>
       </div>
     </template>
   </SimpleDataTable>
@@ -15,79 +25,179 @@
 <script setup lang="tsx">
 import { Link, router, usePage } from "@inertiajs/vue3";
 import { trans as $t } from "laravel-vue-i18n";
-import { computed, ref } from "vue";
-import { CheckIcon, CalendarIcon, MoreHorizontalIcon, TrashIcon } from "lucide-vue-next";
+import { ref } from "vue";
+import { 
+  CheckIcon, 
+  CalendarIcon, 
+  MoreHorizontalIcon, 
+  TrashIcon, 
+  CheckCircleIcon,
+  ShieldCheckIcon,
+  PackageIcon,
+  PackageCheckIcon,
+  ClipboardCheckIcon,
+  AlertCircleIcon,
+  RotateCwIcon,
+} from "lucide-vue-next";
 import { Badge } from "@/Components/ui/badge";
 import { Button } from "@/Components/ui/button";
 import { Checkbox } from "@/Components/ui/checkbox";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
 import { toast } from "vue-sonner";
-import { format } from "date-fns";
+import { format, formatDistanceToNow, parseISO, differenceInDays } from "date-fns";
+import { lt, enUS } from "date-fns/locale";
 import IconsFilled from "@/Types/Icons/filled";
 import SimpleDataTable from "@/Components/Tables/SimpleDataTable.vue";
 import UsersAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
+import { TaskActionType, type TaskProgress } from "@/Types/TaskTypes";
 
-// Define Task interface
-interface Task extends App.Entities.Task {
+// Enhanced Task interface with new backend fields
+interface Task {
   id: string;
   name: string;
+  description?: string | null;
   completed_at: string | null;
   due_date: string | null;
   taskable_type: string;
   taskable_id: string;
-  taskable: any;
+  taskable?: {
+    id: string;
+    name?: string;
+    type?: string;
+  } | null;
   users?: {
     id: string;
     name: string;
+    profile_photo_path?: string;
   }[];
+  // New backend computed fields
+  action_type?: TaskActionType | string | null;
+  progress?: TaskProgress | null;
+  is_overdue?: boolean;
+  can_be_manually_completed?: boolean;
+  icon?: string;
+  color?: string;
 }
 
 const props = defineProps<{
   tasks: Task[];
 }>();
 
-// Track loading state
-const isLoading = ref(false);
+// Track loading state per task
+const loadingTaskId = ref<string | null>(null);
+
+// Get locale for date formatting
+const getDateLocale = () => usePage().props.app?.locale === 'lt' ? lt : enUS;
 
 /**
- * Handle row styling based on task completion status
+ * Handle row styling based on task status
  */
 const rowClassName = (row: Task) => {
-  return row.completed_at !== null
-    ? "bg-zinc-100/50 opacity-50 dark:bg-zinc-900/50 dark:opacity-50"
-    : "";
+  if (row.completed_at !== null) {
+    return "opacity-60 bg-zinc-50/30 dark:bg-zinc-900/20";
+  }
+  if (row.is_overdue) {
+    return "bg-red-50/20 dark:bg-red-950/5";
+  }
+  return "";
 };
 
 /**
- * Handle sort changes
+ * Get action type icon component
  */
-const handleSortChange = (sorting) => {
-  // Additional sorting logic could be added here if needed
+const getActionTypeIcon = (actionType: TaskActionType | string | null | undefined) => {
+  switch (actionType) {
+    case TaskActionType.Approval:
+    case 'approval':
+      return ShieldCheckIcon;
+    case TaskActionType.Pickup:
+    case 'pickup':
+      return PackageIcon;
+    case TaskActionType.Return:
+    case 'return':
+      return PackageCheckIcon;
+    default:
+      return ClipboardCheckIcon;
+  }
 };
 
 /**
- * Format date
+ * Get action type color classes
  */
-const formatDate = (dateString: string) => {
-  if (!dateString) return '';
-  return format(new Date(dateString), 'yyyy-MM-dd');
+const getActionTypeClasses = (actionType: TaskActionType | string | null | undefined) => {
+  switch (actionType) {
+    case TaskActionType.Approval:
+    case 'approval':
+      return 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400';
+    case TaskActionType.Pickup:
+    case 'pickup':
+      return 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400';
+    case TaskActionType.Return:
+    case 'return':
+      return 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400';
+    default:
+      return 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400';
+  }
+};
+
+/**
+ * Format due date with relative display
+ */
+const formatDueDate = (dateString: string | null, isOverdue?: boolean) => {
+  if (!dateString) return null;
+  
+  const date = parseISO(dateString);
+  const daysUntil = differenceInDays(date, new Date());
+  
+  // For dates within a week, show relative
+  if (Math.abs(daysUntil) <= 7) {
+    return formatDistanceToNow(date, { 
+      addSuffix: true, 
+      locale: getDateLocale() 
+    });
+  }
+  
+  return format(date, 'yyyy-MM-dd');
+};
+
+/**
+ * Get due date badge variant and classes
+ */
+const getDueDateClasses = (task: Task) => {
+  if (task.is_overdue) {
+    return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
+  }
+  
+  if (task.due_date) {
+    const daysUntil = differenceInDays(parseISO(task.due_date), new Date());
+    if (daysUntil <= 3 && daysUntil >= 0) {
+      return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400';
+    }
+  }
+  
+  return '';
 };
 
 /**
  * Update task completion status
  */
 const updateTaskCompletion = (task: Task) => {
-  if (isLoading.value) return;
-  isLoading.value = true;
+  // Don't allow completing auto-completing tasks
+  if (task.can_be_manually_completed === false) {
+    toast.info($t("This task completes automatically"), {
+      description: $t("You cannot manually complete this task"),
+    });
+    return;
+  }
 
-  // Toggle completion status
+  if (loadingTaskId.value) return;
+  loadingTaskId.value = task.id;
+
   const newCompletionState = task.completed_at === null;
-
-  // Store current state for reverting if needed
   const previousState = task.completed_at;
 
-  // Optimistic update for better UX
+  // Optimistic update
   task.completed_at = newCompletionState ? new Date().toISOString() : null;
 
   router.post(
@@ -97,25 +207,16 @@ const updateTaskCompletion = (task: Task) => {
       preserveScroll: true,
       preserveState: true,
       onSuccess: () => {
-        isLoading.value = false;
-
-        // Show appropriate toast message
+        loadingTaskId.value = null;
         if (newCompletionState) {
-          toast.success($t("Task marked as completed"), {
-            description: task.name,
-            icon: <CheckIcon class="h-4 w-4" />
-          });
+          toast.success($t("Task marked as completed"), { description: task.name });
         } else {
-          toast.info($t("Task marked as incomplete"), {
-            description: task.name
-          });
+          toast.info($t("Task marked as incomplete"), { description: task.name });
         }
       },
       onError: () => {
-        // Revert optimistic update if server request fails
-        isLoading.value = false;
+        loadingTaskId.value = null;
         task.completed_at = previousState;
-
         toast.error($t("Failed to update task status"), {
           description: $t("Please try again")
         });
@@ -128,20 +229,18 @@ const updateTaskCompletion = (task: Task) => {
  * Delete a task
  */
 const handleDelete = (task: Task) => {
-  if (isLoading.value) return;
-  isLoading.value = true;
+  if (loadingTaskId.value) return;
+  loadingTaskId.value = task.id;
 
   router.delete(route("tasks.destroy", task.id), {
     preserveScroll: true,
     preserveState: true,
     onSuccess: () => {
-      isLoading.value = false;
-      toast.success($t("Task deleted successfully"), {
-        description: task.name
-      });
+      loadingTaskId.value = null;
+      toast.success($t("Task deleted successfully"), { description: task.name });
     },
-    onError: (errors) => {
-      isLoading.value = false;
+    onError: (errors: any) => {
+      loadingTaskId.value = null;
       toast.error($t("Failed to delete task"), {
         description: errors.message || $t("Please try again")
       });
@@ -153,10 +252,15 @@ const handleDelete = (task: Task) => {
  * Get taskable icon based on type
  */
 const getTaskableIcon = (taskableType: string) => {
-  switch (taskableType) {
-    case "App\\Models\\Meeting": return IconsFilled.MEETING;
-    case "App\\Models\\User": return IconsFilled.USER;
-    case "App\\Models\\Reservation": return IconsFilled.RESERVATION;
+  // Handle both full class path and short class name
+  const typeName = taskableType.includes('\\') 
+    ? taskableType.split('\\').pop() 
+    : taskableType;
+    
+  switch (typeName) {
+    case "Meeting": return IconsFilled.MEETING;
+    case "User": return IconsFilled.USER;
+    case "Reservation": return IconsFilled.RESERVATION;
     default: return IconsFilled.HOME;
   }
 };
@@ -165,109 +269,219 @@ const getTaskableIcon = (taskableType: string) => {
  * Get model route based on taskable type
  */
 const getModelRoute = (taskableType: string) => {
-  const modelType = taskableType.split("\\").pop() + "s";
-  return modelType.toLowerCase();
+  const typeName = taskableType.includes('\\') 
+    ? taskableType.split('\\').pop() 
+    : taskableType;
+  return (typeName + 's').toLowerCase();
 };
 
 /**
- * Table column definitions using Tanstack Table format
+ * Table column definitions
  */
 const columns = [
+  // Status column - checkbox or progress indicator
   {
-    id: "completion",
+    id: "status",
     header: "",
     cell: ({ row }) => {
       const task = row.original;
+      const isLoading = loadingTaskId.value === task.id;
       const canComplete = task.users?.find(
         (user) => user.id === usePage().props.auth?.user?.id
       );
+      const canManuallyComplete = task.can_be_manually_completed !== false;
 
+      // Loading state
+      if (isLoading) {
+        return (
+          <div class="flex justify-center">
+            <RotateCwIcon class="h-4 w-4 animate-spin text-zinc-400" />
+          </div>
+        );
+      }
+
+      // Progress indicator for auto-completing tasks
+      if (!canManuallyComplete && task.progress) {
+        return (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div class="relative flex h-6 w-6 items-center justify-center">
+                  <svg class="h-6 w-6 -rotate-90" viewBox="0 0 24 24">
+                    <circle
+                      cx="12" cy="12" r="10"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      class="text-zinc-200 dark:text-zinc-700"
+                    />
+                    <circle
+                      cx="12" cy="12" r="10"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-dasharray={`${(task.progress.percentage / 100) * 62.8} 62.8`}
+                      class={task.action_type === 'return' || task.action_type === TaskActionType.Return 
+                        ? 'text-emerald-500' 
+                        : task.action_type === 'pickup' || task.action_type === TaskActionType.Pickup
+                          ? 'text-amber-500'
+                          : 'text-blue-500'}
+                    />
+                  </svg>
+                  <span class="absolute inset-0 flex items-center justify-center text-[8px] font-bold text-zinc-600 dark:text-zinc-400">
+                    {task.progress.percentage}
+                  </span>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{task.progress.current}/{task.progress.total} {$t('completed')}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        );
+      }
+
+      // Icon for auto-completing tasks without progress
+      if (!canManuallyComplete) {
+        const ActionIcon = getActionTypeIcon(task.action_type);
+        return (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div class={`flex h-6 w-6 items-center justify-center rounded-md ${getActionTypeClasses(task.action_type)}`}>
+                  <ActionIcon class="h-3.5 w-3.5" />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{$t('This task completes automatically')}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        );
+      }
+
+      // Standard checkbox for manual tasks
       return (
         <div class="flex justify-center">
           <Checkbox
             modelValue={task.completed_at !== null}
-            disabled={!canComplete || isLoading.value}
+            disabled={!canComplete || isLoading}
             onUpdate:modelValue={() => updateTaskCompletion(task)}
             class="transition-all duration-200 hover:scale-110"
           />
         </div>
       );
     },
-    size: 40,
+    size: 48,
   },
+  // Task name with action type indicator
   {
     accessorKey: "name",
     header: () => $t("forms.fields.title"),
-    cell: ({ row }) => (
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div class="max-w-[200px] truncate font-medium">
-              {row.original.name}
-            </div>
-          </TooltipTrigger>
-          <TooltipContent side="top" align="start">
-            <p>{row.original.name}</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    ),
-    size: 200,
+    cell: ({ row }) => {
+      const task = row.original;
+      const isCompleted = task.completed_at !== null;
+      
+      return (
+        <div class="min-w-0 flex-1">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <p class={`truncate text-sm font-medium ${isCompleted ? 'line-through text-zinc-500' : 'text-zinc-900 dark:text-zinc-100'}`}>
+                  {task.name}
+                </p>
+              </TooltipTrigger>
+              <TooltipContent side="top" align="start" class="max-w-xs">
+                <p class="break-words">{task.name}</p>
+                {task.description && <p class="mt-1 text-xs text-zinc-400">{task.description}</p>}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+      );
+    },
+    size: 280,
   },
+  // Subject (taskable) with icon
   {
     accessorKey: "subject",
     header: () => $t("forms.fields.subject"),
     cell: ({ row }) => {
       const task = row.original;
+      if (!task.taskable) return <span class="text-zinc-400">—</span>;
+      
       const modelRoute = getModelRoute(task.taskable_type);
       const Icon = getTaskableIcon(task.taskable_type);
+      const displayName = task.taskable.name || task.taskable_type;
 
       return (
         <Link href={route(`${modelRoute}.show`, task.taskable_id)}>
-          <Badge variant="outline" class="flex items-center gap-1">
-            <Icon class="h-3 w-3" />
-            <span class="max-w-[120px] truncate">
-              {task.taskable?.title || task.taskable?.name || task.taskable?.start_time}
-            </span>
+          <Badge variant="outline" class="inline-flex max-w-[160px] items-center gap-1.5 font-normal hover:bg-zinc-100 dark:hover:bg-zinc-800">
+            <Icon class="h-3 w-3 shrink-0" />
+            <span class="truncate">{displayName}</span>
           </Badge>
         </Link>
       );
     },
-    size: 150,
+    size: 180,
   },
+  // Responsible users
   {
     accessorKey: "users",
     header: () => $t("forms.fields.responsible_people"),
     cell: ({ row }) => (
-      <UsersAvatarGroup size={32} users={row.original.users || []} />
+      <UsersAvatarGroup size={28} users={row.original.users || []} max={3} />
     ),
-    size: 150,
+    size: 120,
   },
+  // Due date with status badge
   {
     accessorKey: "due_date",
     header: () => $t("forms.fields.due_date"),
-    cell: ({ row }) => (
-      <div class="flex items-center gap-2">
-        <CalendarIcon class="h-4 w-4 text-zinc-500" />
-        <span>{formatDate(row.original.due_date || '')}</span>
-      </div>
-    ),
-    size: 150,
+    cell: ({ row }) => {
+      const task = row.original;
+      if (!task.due_date) return <span class="text-zinc-400">—</span>;
+      
+      const dueDateClasses = getDueDateClasses(task);
+      const formattedDate = formatDueDate(task.due_date, task.is_overdue);
+      
+      return (
+        <div class="flex items-center gap-2">
+          {task.is_overdue && <AlertCircleIcon class="h-3.5 w-3.5 shrink-0 text-red-500" />}
+          <Badge 
+            variant={task.is_overdue ? "destructive" : "secondary"}
+            class={`text-xs font-medium ${dueDateClasses}`}
+          >
+            {formattedDate}
+          </Badge>
+        </div>
+      );
+    },
+    size: 140,
   },
+  // Actions dropdown
   {
     id: "actions",
     cell: ({ row }) => {
       const task = row.original;
-      if (task.completed_at !== null) return null;
+      const canManuallyComplete = task.can_be_manually_completed !== false;
+      const isCompleted = task.completed_at !== null;
 
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" class="h-8 w-8 p-0">
+            <Button variant="ghost" size="icon" class="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 data-[state=open]:opacity-100">
               <MoreHorizontalIcon class="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
+            {canManuallyComplete && !isCompleted && (
+              <DropdownMenuItem onClick={() => updateTaskCompletion(task)}>
+                <CheckIcon class="mr-2 h-4 w-4" />
+                <span>{$t("Mark Complete")}</span>
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem onClick={() => handleDelete(task)} class="text-destructive focus:text-destructive">
               <TrashIcon class="mr-2 h-4 w-4" />
               <span>{$t("Delete")}</span>
@@ -276,7 +490,7 @@ const columns = [
         </DropdownMenu>
       );
     },
-    size: 60,
+    size: 50,
   },
 ];
 </script>

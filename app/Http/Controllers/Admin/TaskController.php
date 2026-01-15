@@ -112,6 +112,11 @@ class TaskController extends AdminController
     {
         $this->handleAuthorization('delete', $task);
 
+        // Prevent deletion of auto-completing tasks
+        if (! $task->canBeManuallyCompleted()) {
+            return back()->with('error', 'Ši užduotis užsibaigia automatiškai ir negali būti ištrinta');
+        }
+
         $task->delete();
 
         return back()->with('success', 'Užduotis sėkmingai ištrinta');
@@ -120,6 +125,11 @@ class TaskController extends AdminController
     public function updateCompletionStatus(Request $request, Task $task)
     {
         $this->handleAuthorization('update', $task);
+
+        // Prevent manual completion of auto-completing tasks
+        if (! $task->canBeManuallyCompleted()) {
+            return back()->with('error', 'Ši užduotis užsibaigia automatiškai ir negali būti pažymėta rankiniu būdu');
+        }
 
         if ($request->completed == true) {
             $task->completed_at = now();

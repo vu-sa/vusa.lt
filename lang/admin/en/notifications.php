@@ -50,6 +50,8 @@ return [
     'task_reminder_body' => ':days days left until task ":task" is due',
     'task_completed_title' => 'Task Completed',
     'task_completed_body' => ':user completed task ":task"',
+    'task_auto_completed_title' => 'Task Auto-Completed',
+    'task_auto_completed_body' => 'Task ":task" was automatically completed: :reason',
     'task_overdue_title' => '{1} You have :count overdue task|[2,*] You have :count overdue tasks',
     'task_overdue_body_single' => 'Task ":task" is overdue',
     'task_overdue_body_multiple' => 'You have :count overdue tasks: :tasks and more',

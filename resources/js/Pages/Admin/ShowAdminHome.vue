@@ -66,8 +66,7 @@ import { addressivize } from "@/Utils/String";
 import { useProductTour } from "@/Composables/useProductTour";
 import { provideTour } from "@/Composables/useTourProvider";
 import { useSidebar } from "@/Components/ui/sidebar/utils";
-
-// Icons
+import type { TaskProgress, TaskActionType } from "@/Types/TaskTypes";
 
 // Types
 interface TaskStats {
@@ -83,6 +82,9 @@ interface UpcomingTask {
   is_overdue: boolean;
   taskable_type: string;
   taskable_id: string;
+  action_type?: TaskActionType | string | null;
+  progress?: TaskProgress | null;
+  can_be_manually_completed?: boolean;
 }
 
 interface UpcomingMeeting {

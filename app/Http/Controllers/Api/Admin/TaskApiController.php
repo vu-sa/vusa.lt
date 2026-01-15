@@ -27,8 +27,36 @@ class TaskApiController extends ApiController
             ->orderBy('due_date', 'asc')
             ->orderBy('created_at', 'desc')
             ->limit($limit)
-            ->get();
+            ->get()
+            ->map(fn (Task $task) => $this->transformTaskForIndicator($task));
 
         return $this->jsonSuccess($tasks);
+    }
+
+    /**
+     * Transform task for indicator display with computed properties.
+     */
+    protected function transformTaskForIndicator(Task $task): array
+    {
+        return [
+            'id' => $task->id,
+            'name' => $task->name,
+            'description' => $task->description,
+            'due_date' => $task->due_date?->toDateString(),
+            'taskable_type' => $task->taskable_type,
+            'taskable_id' => $task->taskable_id,
+            'completed_at' => $task->completed_at?->toISOString(),
+            'action_type' => $task->action_type?->value,
+            'metadata' => $task->metadata,
+            'progress' => $task->getProgress(),
+            'is_overdue' => $task->isOverdue(),
+            'can_be_manually_completed' => $task->canBeManuallyCompleted(),
+            'icon' => $task->icon,
+            'color' => $task->color,
+            'taskable' => $task->taskable ? [
+                'id' => $task->taskable->getKey(),
+                'name' => $task->taskable->name ?? $task->taskable->title ?? null,
+            ] : null,
+        ];
     }
 }

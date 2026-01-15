@@ -64,9 +64,15 @@ class DashboardController extends AdminController
                 'id' => $task->id,
                 'name' => $task->name,
                 'due_date' => $task->due_date?->toISOString(),
-                'is_overdue' => $task->due_date && $task->due_date < now(),
+                'is_overdue' => $task->isOverdue(),
                 'taskable_type' => class_basename($task->taskable_type ?? ''),
                 'taskable_id' => $task->taskable_id,
+                'action_type' => $task->action_type?->value,
+                'metadata' => $task->metadata,
+                'progress' => $task->getProgress(),
+                'can_be_manually_completed' => $task->canBeManuallyCompleted(),
+                'icon' => $task->icon,
+                'color' => $task->color,
             ]);
 
         // Get user's institutions and upcoming meetings
@@ -495,11 +501,49 @@ class DashboardController extends AdminController
     {
         $user = User::find(Auth::id());
 
-        $tasks = $user->tasks->load('taskable', 'users:id,name,email,profile_photo_path');
+        $tasksQuery = $user->tasks()->with('taskable', 'users:id,name,email,profile_photo_path');
+
+        // Get task statistics
+        $taskStats = [
+            'total' => (clone $tasksQuery)->whereNull('completed_at')->count(),
+            'completed' => (clone $tasksQuery)->whereNotNull('completed_at')->count(),
+            'overdue' => (clone $tasksQuery)->whereNull('completed_at')->where('due_date', '<', now())->count(),
+            'autoCompleting' => (clone $tasksQuery)->whereNull('completed_at')->whereNotNull('action_type')->where('action_type', '!=', 'manual')->count(),
+        ];
+
+        // Transform tasks with computed properties
+        $tasks = $tasksQuery->get()->map(fn ($task) => [
+            'id' => $task->id,
+            'name' => $task->name,
+            'description' => $task->description,
+            'due_date' => $task->due_date?->toISOString(),
+            'completed_at' => $task->completed_at?->toISOString(),
+            'created_at' => $task->created_at?->toISOString(),
+            'action_type' => $task->action_type?->value,
+            'metadata' => $task->metadata,
+            'progress' => $task->getProgress(),
+            'is_overdue' => $task->isOverdue(),
+            'can_be_manually_completed' => $task->canBeManuallyCompleted(),
+            'icon' => $task->icon,
+            'color' => $task->color,
+            // Subject model - lightweight taskable info
+            'taskable' => $task->taskable ? [
+                'id' => $task->taskable->id,
+                'name' => $task->taskable->title ?? $task->taskable->name ?? null,
+                'type' => class_basename($task->taskable_type),
+            ] : null,
+            'taskable_type' => class_basename($task->taskable_type ?? ''),
+            'taskable_id' => $task->taskable_id,
+            'users' => $task->users->map(fn ($u) => [
+                'id' => $u->id,
+                'name' => $u->name,
+                'profile_photo_path' => $u->profile_photo_path,
+            ]),
+        ]);
 
         return $this->inertiaResponse('Admin/ShowTasks', [
             'tasks' => $tasks,
-            'taskableInstitutions' => Inertia::lazy(fn () => Institution::select('id', 'name')->withWhereHas('users:users.id,users.name,users.email,users.profile_photo_path')->get()),
+            'taskStats' => $taskStats,
         ]);
     }
 

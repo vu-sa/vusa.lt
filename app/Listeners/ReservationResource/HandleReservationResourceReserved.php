@@ -4,6 +4,7 @@ namespace App\Listeners\ReservationResource;
 
 use App\Services\TaskService;
 use App\States\ReservationResource\Reserved;
+use App\Tasks\Enums\ActionType;
 use Spatie\ModelStates\Events\StateChanged;
 
 class HandleReservationResourceReserved
@@ -17,13 +18,14 @@ class HandleReservationResourceReserved
         $reservationResource = $event->model;
         $reservation = $reservationResource->reservation;
 
-        // Create pickup task with action_type for potential auto-completion
-        TaskService::storeTask(
-            __('Atsiimti išteklių').' '.$reservationResource->resource->name,
+        // Find or create a pickup task with progress tracking
+        // One task per reservation that tracks all resources
+        TaskService::findOrCreateProgressTask(
+            __('Atsiimti rezervacijos išteklius'),
             $reservation,
             $reservation->users,
             $reservationResource->start_time,
-            'pickup'
+            ActionType::Pickup
         );
     }
 }

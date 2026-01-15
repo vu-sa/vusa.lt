@@ -4,6 +4,7 @@ namespace App\Listeners\ReservationResource;
 
 use App\Services\TaskService;
 use App\States\ReservationResource\Lent;
+use App\Tasks\Enums\ActionType;
 use Spatie\ModelStates\Events\StateChanged;
 
 class HandleReservationResourceLent
@@ -17,13 +18,14 @@ class HandleReservationResourceLent
         $reservationResource = $event->model;
         $reservation = $reservationResource->reservation;
 
-        // Create return task with action_type for potential auto-completion
-        TaskService::storeTask(
-            __('Grąžinti išteklių').' '.$reservationResource->resource->name.' '.__('iki').' '.$reservationResource->end_time,
+        // Find or create a return task with progress tracking
+        // One task per reservation that tracks all lent resources
+        TaskService::findOrCreateProgressTask(
+            __('Grąžinti rezervacijos išteklius'),
             $reservation,
             $reservation->users,
             $reservationResource->end_time,
-            'return'
+            ActionType::Return
         );
     }
 }

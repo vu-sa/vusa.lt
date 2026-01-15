@@ -1,106 +1,84 @@
 <template>
   <Card :class="dashboardCardClasses" role="region" :aria-label="$t('Tavo užduotys')">
-    <!-- Status indicator - subtle amber accent when tasks exist -->
+    <!-- Status indicator - accent based on urgency -->
     <div :class="statusIndicatorClasses" aria-hidden="true" />
 
-    <CardHeader class="pb-2 relative z-10">
+    <CardHeader class="relative z-10 pb-3">
       <div class="flex items-center justify-between">
-        <CardTitle class="flex items-center gap-2 text-base">
-          <ClipboardCheckIcon :class="iconClasses" aria-hidden="true" />
+        <CardTitle class="flex items-center gap-2 text-base font-semibold">
+          <div :class="['rounded-lg p-1.5', headerIconBgClass]">
+            <ClipboardCheckIcon :class="['h-4 w-4', headerIconClass]" aria-hidden="true" />
+          </div>
           {{ $t('Užduotys') }}
         </CardTitle>
-        <!-- Compact stats -->
+        
+        <!-- Stats badges -->
         <div class="flex items-center gap-2">
-          <span class="text-2xl font-bold text-zinc-800 dark:text-zinc-100">
+          <Badge 
+            variant="secondary" 
+            class="text-sm font-bold tabular-nums"
+          >
             {{ taskStats.total }}
-          </span>
-          <div v-if="taskStats.overdue > 0" class="flex items-center gap-1">
-            <span :class="['h-2 w-2 rounded-full', cardAccentColors.amber.dot]" />
-            <span :class="['text-xs', cardAccentColors.amber.text]">{{ taskStats.overdue }}</span>
-          </div>
+          </Badge>
+          <Badge 
+            v-if="taskStats.overdue > 0" 
+            variant="destructive"
+            class="text-xs font-medium tabular-nums"
+          >
+            {{ taskStats.overdue }} {{ $t('overdue') }}
+          </Badge>
+          <Badge 
+            v-else-if="taskStats.dueSoon > 0" 
+            class="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 text-xs font-medium tabular-nums"
+          >
+            {{ taskStats.dueSoon }} {{ $t('soon') }}
+          </Badge>
         </div>
       </div>
     </CardHeader>
 
-    <CardContent class="flex-1 relative z-10 pt-0">
-      <!-- Scrollable task list - show up to 10 tasks -->
-      <ScrollArea v-if="upcomingTasks.length > 0" class="max-h-[320px]">
-        <div class="space-y-0.5 pr-3">
-          <div
+    <CardContent class="relative z-10 flex-1 pt-0">
+      <!-- Task list -->
+      <ScrollArea v-if="displayedTasks.length > 0" class="max-h-[340px]">
+        <div class="space-y-1 pr-2">
+          <TaskItem
             v-for="task in displayedTasks"
             :key="task.id"
-            class="group flex items-center gap-2 py-2 px-2 -mx-2 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-700/50 transition-colors"
-          >
-            <!-- Checkbox for completion -->
-            <Checkbox
-              :model-value="false"
-              :disabled="isUpdating === task.id"
-              class="shrink-0 transition-all duration-200 hover:scale-110 dark:border-zinc-500"
-              @update:model-value="() => completeTask(task)"
-            />
-            
-            <!-- Task content - clickable to navigate -->
-            <div 
-              class="flex-1 min-w-0 cursor-pointer"
-              @click="navigateToTasks"
-            >
-              <span class="text-sm truncate block text-zinc-700 dark:text-zinc-300">
-                {{ task.name }}
-              </span>
-            </div>
-            
-            <!-- Due date - compact -->
-            <span :class="[
-              'text-xs shrink-0',
-              task.is_overdue 
-                ? 'text-amber-600 dark:text-amber-400 font-medium' 
-                : 'text-zinc-400 dark:text-zinc-500'
-            ]">
-              {{ formatTaskDate(task.due_date) }}
-            </span>
-
-            <!-- Actions dropdown -->
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  class="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
-                  :disabled="isUpdating === task.id"
-                >
-                  <MoreHorizontalIcon class="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem 
-                  class="text-destructive focus:text-destructive cursor-pointer"
-                  @click="deleteTask(task)"
-                >
-                  <TrashIcon class="mr-2 h-4 w-4" />
-                  <span>{{ $t('Delete') }}</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+            :id="task.id"
+            :name="task.name"
+            :due-date="task.due_date"
+            :is-overdue="task.is_overdue"
+            :action-type="task.action_type"
+            :progress="task.progress"
+            :can-be-manually-completed="task.can_be_manually_completed"
+            :is-updating="isUpdating === task.id"
+            @complete="completeTask(task)"
+            @delete="deleteTask(task)"
+          />
         </div>
       </ScrollArea>
 
-      <!-- Empty state -->
-      <div v-else class="text-center py-6">
-        <div class="text-2xl mb-2">✨</div>
-        <p class="text-sm text-zinc-600 dark:text-zinc-400">
+      <!-- Empty state - celebratory -->
+      <div v-else class="flex flex-col items-center justify-center py-8 text-center">
+        <div class="mb-3 rounded-full bg-zinc-100 p-3 dark:bg-zinc-800">
+          <CheckCircleIcon class="h-6 w-6 text-zinc-500 dark:text-zinc-400" />
+        </div>
+        <h3 class="text-sm font-medium text-zinc-900 dark:text-zinc-100">
           {{ $t('Viskas atlikta!') }}
+        </h3>
+        <p class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+          {{ $t('Šiuo metu neturite aktyvių užduočių') }}
         </p>
       </div>
 
       <!-- Footer with link -->
-      <div class="mt-3 pt-3 border-t border-zinc-200 dark:border-zinc-700">
+      <div class="mt-3 border-t border-zinc-200 pt-3 dark:border-zinc-700">
         <Link 
           :href="route('userTasks')" 
-          class="flex items-center justify-between text-sm text-zinc-600 dark:text-zinc-400 hover:text-primary transition-colors"
+          class="group flex items-center justify-between rounded-md px-2 py-1.5 text-sm text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
         >
           <span>{{ $t('Visos užduotys') }}</span>
-          <ChevronRightIcon class="h-4 w-4" />
+          <ChevronRightIcon class="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
         </Link>
       </div>
     </CardContent>
@@ -108,31 +86,22 @@
 </template>
 
 <script setup lang="ts">
-import { Link, router, usePage } from "@inertiajs/vue3";
+import { Link, router } from "@inertiajs/vue3";
 import { trans as $t } from "laravel-vue-i18n";
-import { formatDistanceToNow, parseISO, isToday, isTomorrow } from "date-fns";
-import { lt, enUS } from "date-fns/locale";
 import { computed, ref } from "vue";
 import { toast } from "vue-sonner";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
-import { Checkbox } from "@/Components/ui/checkbox";
-import { Button } from "@/Components/ui/button";
+import { Badge } from "@/Components/ui/badge";
 import { ScrollArea } from "@/Components/ui/scroll-area";
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger 
-} from "@/Components/ui/dropdown-menu";
 import { 
   ClipboardCheck as ClipboardCheckIcon, 
   ChevronRight as ChevronRightIcon,
-  MoreHorizontal as MoreHorizontalIcon,
-  Trash as TrashIcon,
-  Check as CheckIcon
+  CheckCircle as CheckCircleIcon,
 } from "lucide-vue-next";
 import { dashboardCardClasses, cardAccentColors } from '@/Composables/useDashboardCardStyles';
+import TaskItem from "@/Components/Tasks/TaskItem.vue";
+import type { TaskProgress, TaskActionType } from "@/Types/TaskTypes";
 
 interface TaskStats {
   total: number;
@@ -147,6 +116,9 @@ interface UpcomingTask {
   is_overdue: boolean;
   taskable_type: string;
   taskable_id: string;
+  action_type?: TaskActionType | string | null;
+  progress?: TaskProgress | null;
+  can_be_manually_completed?: boolean;
 }
 
 const props = defineProps<{
@@ -157,35 +129,54 @@ const props = defineProps<{
 // Track which task is being updated
 const isUpdating = ref<string | null>(null);
 
-// Computed classes based on task stats using shared accent colors
+// Computed classes based on task stats
 const statusIndicatorClasses = computed(() => {
   const base = 'absolute top-0 right-0 w-12 h-12 -mr-6 -mt-6 rotate-45'
   if (props.taskStats.overdue > 0) {
+    return `${base} bg-red-300/40 dark:bg-red-800/25`
+  }
+  if (props.taskStats.dueSoon > 0) {
     return `${base} ${cardAccentColors.amber.statusIndicatorActive}`
   }
   if (props.taskStats.total > 0) {
     return `${base} ${cardAccentColors.amber.statusIndicator}`
   }
-  return `${base} bg-zinc-200 dark:bg-zinc-700`
+  return `${base} bg-emerald-300/40 dark:bg-emerald-800/25`
 })
 
-const iconClasses = computed(() => {
-  return `h-5 w-5 ${props.taskStats.total > 0 ? cardAccentColors.amber.icon : cardAccentColors.amber.iconMuted}`
+const headerIconBgClass = computed(() => {
+  if (props.taskStats.overdue > 0) {
+    return 'bg-red-100 dark:bg-red-900/30'
+  }
+  if (props.taskStats.total > 0) {
+    return 'bg-amber-100 dark:bg-amber-900/30'
+  }
+  return 'bg-emerald-100 dark:bg-emerald-900/30'
 })
 
-// Locale for date formatting
-const dateLocale = computed(() => usePage().props.app.locale === 'lt' ? lt : enUS);
+const headerIconClass = computed(() => {
+  if (props.taskStats.overdue > 0) {
+    return 'text-red-600 dark:text-red-400'
+  }
+  if (props.taskStats.total > 0) {
+    return 'text-amber-600 dark:text-amber-400'
+  }
+  return 'text-emerald-600 dark:text-emerald-400'
+})
 
 // Display up to 10 tasks
 const displayedTasks = computed(() => props.upcomingTasks.slice(0, 10));
 
-// Navigate to tasks page
-const navigateToTasks = () => {
-  router.visit(route('userTasks'));
-};
-
 // Complete a task
 const completeTask = (task: UpcomingTask) => {
+  // Don't allow completing auto-completing tasks
+  if (task.can_be_manually_completed === false) {
+    toast.info($t("This task completes automatically"), {
+      description: $t("You cannot manually complete this task"),
+    });
+    return;
+  }
+
   if (isUpdating.value) return;
   isUpdating.value = task.id;
 
@@ -194,7 +185,7 @@ const completeTask = (task: UpcomingTask) => {
     { completed: true },
     {
       preserveScroll: true,
-      preserveState: false, // Refresh to update task list
+      preserveState: false,
       onSuccess: () => {
         isUpdating.value = null;
         toast.success($t("Task marked as completed"), {
@@ -218,7 +209,7 @@ const deleteTask = (task: UpcomingTask) => {
 
   router.delete(route("tasks.destroy", task.id), {
     preserveScroll: true,
-    preserveState: false, // Refresh to update task list
+    preserveState: false,
     onSuccess: () => {
       isUpdating.value = null;
       toast.success($t("Task deleted successfully"), {
@@ -232,18 +223,5 @@ const deleteTask = (task: UpcomingTask) => {
       });
     },
   });
-};
-
-// Format task due date - very compact
-const formatTaskDate = (dateStr: string | null) => {
-  if (!dateStr) return '';
-  try {
-    const date = parseISO(dateStr);
-    if (isToday(date)) return $t('Šiandien');
-    if (isTomorrow(date)) return $t('Rytoj');
-    return formatDistanceToNow(date, { addSuffix: false, locale: dateLocale.value });
-  } catch {
-    return '';
-  }
 };
 </script>

@@ -50,6 +50,8 @@ return [
     'task_reminder_body' => 'Liko :days d. iki užduoties „:task" termino',
     'task_completed_title' => 'Užduotis atlikta',
     'task_completed_body' => ':user atliko užduotį „:task"',
+    'task_auto_completed_title' => 'Užduotis automatiškai atlikta',
+    'task_auto_completed_body' => 'Užduotis „:task" buvo automatiškai atlikta: :reason',
     'task_overdue_title' => '{1} Turite :count vėluojančią užduotį|[2,9] Turite :count vėluojančias užduotis|[10,*] Turite :count vėluojančių užduočių',
     'task_overdue_body_single' => 'Užduotis „:task" yra vėluojanti',
     'task_overdue_body_multiple' => 'Turite :count vėluojančias užduotis: :tasks ir kt.',

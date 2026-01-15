@@ -4,15 +4,19 @@ namespace App\Listeners\ReservationResource;
 
 use App\Models\Pivots\ReservationResource;
 use App\Models\Task;
+use App\Notifications\TaskAutoCompletedNotification;
 use App\States\ReservationResource\Lent;
 use App\States\ReservationResource\Returned;
+use App\Tasks\Enums\ActionType;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Spatie\ModelStates\Events\StateChanged;
 
 /**
- * Auto-completes tasks when reservation resource state changes:
- * - Completes 'pickup' tasks when state changes to Lent
- * - Completes 'return' tasks when state changes to Returned
+ * Updates task progress when reservation resource state changes:
+ * - Increments 'pickup' task progress when state changes to Lent
+ * - Increments 'return' task progress when state changes to Returned
+ *
+ * Tasks auto-complete when all items are done.
  */
 class CompleteTasksOnStateChange implements ShouldQueue
 {
@@ -31,29 +35,55 @@ class CompleteTasksOnStateChange implements ShouldQueue
         }
 
         $finalState = get_class($event->finalState);
+        $resourceName = $model->resource->name ?? '';
 
-        // Complete pickup tasks when state changes to Lent
+        // Increment pickup task progress when state changes to Lent
         if ($finalState === Lent::class) {
-            $this->completeTasksByActionType($reservation, 'pickup', $model->resource->name);
+            $this->incrementTaskProgress(
+                $reservation,
+                ActionType::Pickup,
+                __('Resource ":resource" was picked up', ['resource' => $resourceName])
+            );
         }
 
-        // Complete return tasks when state changes to Returned
+        // Increment return task progress when state changes to Returned
         if ($finalState === Returned::class) {
-            $this->completeTasksByActionType($reservation, 'return', $model->resource->name);
+            $this->incrementTaskProgress(
+                $reservation,
+                ActionType::Return,
+                __('Resource ":resource" was returned', ['resource' => $resourceName])
+            );
         }
     }
 
     /**
-     * Complete tasks of a specific action type for a reservation.
+     * Increment progress on a task and notify users if task completes.
      */
-    protected function completeTasksByActionType($reservation, string $actionType, string $resourceName): void
+    protected function incrementTaskProgress($reservation, ActionType $actionType, string $reason): void
     {
-        Task::query()
+        $task = Task::query()
+            ->with('users')
             ->where('action_type', $actionType)
             ->whereNull('completed_at')
             ->where('taskable_type', get_class($reservation))
             ->where('taskable_id', $reservation->getKey())
-            ->where('name', 'like', '%'.$resourceName.'%')
-            ->update(['completed_at' => now()]);
+            ->first();
+
+        if (! $task) {
+            return;
+        }
+
+        // Increment progress - this will auto-complete if all items done
+        $completed = $task->incrementProgress();
+
+        // If task was completed, notify all assigned users
+        if ($completed) {
+            foreach ($task->users as $user) {
+                $user->notify(new TaskAutoCompletedNotification(
+                    $task,
+                    __('All items have been processed')
+                ));
+            }
+        }
     }
 }

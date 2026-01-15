@@ -6,6 +6,7 @@ use App\Contracts\Approvable;
 use App\Events\ApprovalRequested;
 use App\Events\TaskCreated;
 use App\Models\Task;
+use App\Tasks\Enums\ActionType;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\DB;
 
@@ -47,7 +48,7 @@ class CreateApprovalTask implements ShouldQueue
             'name' => __('Patvirtinti arba atmesti').': '.$displayName,
             'taskable_id' => $taskable->id,
             'taskable_type' => get_class($taskable),
-            'action_type' => 'approval',
+            'action_type' => ActionType::Approval,
             'due_date' => $dueDate,
         ]);
 

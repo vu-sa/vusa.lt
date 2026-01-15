@@ -4,6 +4,8 @@ namespace App\Listeners\Approval;
 
 use App\Events\ApprovalDecisionMade;
 use App\Models\Task;
+use App\Notifications\TaskAutoCompletedNotification;
+use App\Tasks\Enums\ActionType;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Str;
 
@@ -22,9 +24,10 @@ class CompleteTasksOnApproval implements ShouldQueue
         // Also check for snake_case version (e.g., 'reservation_resource')
         $snakeCaseClass = Str::snake(class_basename($approvable));
 
-        // Find tasks linked to this approvable with action_type='approval' and mark them completed
-        Task::query()
-            ->where('action_type', 'approval')
+        // Find tasks linked to this approvable with action_type='approval' and complete them
+        $tasks = Task::query()
+            ->with('users')
+            ->where('action_type', ActionType::Approval)
             ->whereNull('completed_at')
             ->where(function ($query) use ($approvable, $morphClass, $snakeCaseClass) {
                 $query->where(function ($q) use ($approvable, $morphClass) {
@@ -35,7 +38,9 @@ class CompleteTasksOnApproval implements ShouldQueue
                         ->where('taskable_id', $approvable->getKey());
                 });
             })
-            ->update(['completed_at' => now()]);
+            ->get();
+
+        $this->completeTasks($tasks, __('Approval decision was made'));
 
         // For ReservationResource, also check tasks on the Reservation
         if (method_exists($approvable, 'reservation')) {
@@ -45,8 +50,9 @@ class CompleteTasksOnApproval implements ShouldQueue
                 $reservationMorphClass = $reservation->getMorphClass();
                 $reservationSnakeCase = Str::snake(class_basename($reservation));
 
-                Task::query()
-                    ->where('action_type', 'approval')
+                $reservationTasks = Task::query()
+                    ->with('users')
+                    ->where('action_type', ActionType::Approval)
                     ->whereNull('completed_at')
                     ->where(function ($query) use ($reservation, $reservationMorphClass, $reservationSnakeCase) {
                         $query->where(function ($q) use ($reservation, $reservationMorphClass) {
@@ -57,7 +63,25 @@ class CompleteTasksOnApproval implements ShouldQueue
                                 ->where('taskable_id', $reservation->getKey());
                         });
                     })
-                    ->update(['completed_at' => now()]);
+                    ->get();
+
+                $this->completeTasks($reservationTasks, __('Approval decision was made'));
+            }
+        }
+    }
+
+    /**
+     * Complete tasks and notify assigned users.
+     */
+    protected function completeTasks($tasks, string $reason): void
+    {
+        foreach ($tasks as $task) {
+            $task->completed_at = now();
+            $task->save();
+
+            // Notify all assigned users
+            foreach ($task->users as $user) {
+                $user->notify(new TaskAutoCompletedNotification($task, $reason));
             }
         }
     }
