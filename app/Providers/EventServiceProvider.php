@@ -3,14 +3,11 @@
 namespace App\Providers;
 
 use App\Models\Calendar;
-use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Pivots\Relationshipable;
-use App\Models\Role;
 use App\Models\RoleType;
 use App\Models\Type;
 use App\Models\Typeable;
-use App\Models\User;
 use App\Observers\CalendarObserver;
 use App\Observers\InstitutionObserver;
 use App\Observers\RelationshipableObserver;
@@ -18,6 +15,8 @@ use App\Observers\RoleTypeObserver;
 use App\Observers\TypeableObserver;
 use App\Observers\TypeObserver;
 use App\Observers\UserPermissionObserver;
+use App\Tasks\Subscribers\ApprovalTaskSubscriber;
+use App\Tasks\Subscribers\ReservationTaskSubscriber;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use Spatie\Permission\Models\Permission;
 
@@ -39,10 +38,8 @@ class EventServiceProvider extends ServiceProvider
             \App\Listeners\UpdateSharepointFolder::class,
         ],
         \Spatie\ModelStates\Events\StateChanged::class => [
-            \App\Listeners\ReservationResource\HandleReservationResourceReserved::class,
-            \App\Listeners\ReservationResource\HandleReservationResourceLent::class,
+            // Note: Task-related handling moved to ReservationTaskSubscriber
             \App\Listeners\ReservationResource\HandleReservationResourceStateChanged::class,
-            \App\Listeners\ReservationResource\CompleteTasksOnStateChange::class,
         ],
         \App\Events\DutiableChanged::class => [
             \App\Listeners\HandleDutiableChange::class,
@@ -59,17 +56,21 @@ class EventServiceProvider extends ServiceProvider
         \App\Events\TaskCreated::class => [
             \App\Listeners\HandleTaskCreated::class,
         ],
-        // Approval events
-        \App\Events\ApprovalRequested::class => [
-            \App\Listeners\Approval\CreateApprovalTask::class,
-        ],
-        \App\Events\ApprovalDecisionMade::class => [
-            \App\Listeners\Approval\CompleteTasksOnApproval::class,
-        ],
+        // Note: Approval task handling moved to ApprovalTaskSubscriber
         // Notification digest queuing
         \Illuminate\Notifications\Events\NotificationSending::class => [
             \App\Listeners\QueueNotificationForDigest::class,
         ],
+    ];
+
+    /**
+     * The subscriber classes to register.
+     *
+     * @var array<int, class-string>
+     */
+    protected $subscribe = [
+        ReservationTaskSubscriber::class,
+        ApprovalTaskSubscriber::class,
     ];
 
     /**

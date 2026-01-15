@@ -2,16 +2,38 @@
 
 namespace App\Services;
 
-use App\Events\TaskCreated;
 use App\Models\Task;
+use App\Tasks\DTOs\CreateTaskData;
 use App\Tasks\Enums\ActionType;
+use App\Tasks\Handlers\ManualTaskHandler;
+use App\Tasks\Handlers\PickupTaskHandler;
+use App\Tasks\Handlers\ReturnTaskHandler;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 
+/**
+ * Service for creating and managing tasks.
+ *
+ * This service acts as a facade for the task handler classes, providing
+ * a simple API for creating tasks throughout the application.
+ *
+ * For specific task types (Approval, Pickup, Return), prefer using the
+ * dedicated handlers in App\Tasks\Handlers directly, as they provide
+ * additional functionality specific to each task type.
+ */
 class TaskService
 {
+    public function __construct(
+        protected ManualTaskHandler $manualHandler,
+        protected PickupTaskHandler $pickupHandler,
+        protected ReturnTaskHandler $returnHandler,
+    ) {}
+
     /**
+     * Create a task using the provided data.
+     *
+     * @deprecated Use specific handlers or CreateTaskData for type-safe task creation
+     *
      * @param  Model&object{id: int|string}  $model
      * @param  ActionType|string|null  $actionType  Optional action type for auto-completion
      * @param  array|null  $metadata  Optional metadata for progress tracking
@@ -23,33 +45,26 @@ class TaskService
         ?string $due_date = null,
         ActionType|string|null $actionType = null,
         ?array $metadata = null
-    ) {
-        $task = new Task;
+    ): Task {
+        $data = new CreateTaskData(
+            name: $name,
+            taskable: $model,
+            users: $users,
+            dueDate: $due_date,
+            actionType: $actionType instanceof ActionType ? $actionType : null,
+            metadata: $metadata,
+        );
 
-        $task = $task->fill([
-            'name' => $name,
-            'taskable_id' => $model->id,
-            'taskable_type' => $model::class,
-            'due_date' => $due_date,
-            'action_type' => $actionType,
-            'metadata' => $metadata,
-        ]);
+        $handler = new ManualTaskHandler;
 
-        DB::transaction(function () use ($task, $users) {
-            $task->save();
-            $task->users()->sync($users->pluck('id'));
-        });
-
-        $task->refresh();
-
-        event(new TaskCreated($task));
-
-        return $task;
+        return $handler->create($data);
     }
 
     /**
      * Find or create a task with progress tracking for a reservation.
      * If task exists, updates the total items count.
+     *
+     * @deprecated Use PickupTaskHandler or ReturnTaskHandler directly
      *
      * @param  Model&object{id: int|string}  $model
      */
@@ -61,41 +76,49 @@ class TaskService
         ActionType $actionType,
         int $totalItems = 1
     ): Task {
-        // Try to find existing incomplete task with same action type for this model
-        $existingTask = Task::query()
-            ->where('taskable_type', $model::class)
-            ->where('taskable_id', $model->id)
-            ->where('action_type', $actionType)
-            ->whereNull('completed_at')
-            ->first();
+        $handler = match ($actionType) {
+            ActionType::Pickup => new PickupTaskHandler,
+            ActionType::Return => new ReturnTaskHandler,
+            default => throw new \InvalidArgumentException('Progress tasks only support Pickup and Return action types'),
+        };
 
-        if ($existingTask) {
-            // Update total items count in metadata
-            $metadata = $existingTask->metadata ?? ['items_total' => 0, 'items_completed' => 0];
-            $metadata['items_total'] = ($metadata['items_total'] ?? 0) + 1;
-            $existingTask->metadata = $metadata;
-
-            // Update due date if provided date is later
-            if ($due_date && (! $existingTask->due_date || $due_date > $existingTask->due_date)) {
-                $existingTask->due_date = $due_date;
-            }
-
-            $existingTask->save();
-
-            return $existingTask;
-        }
-
-        // Create new task with progress metadata
-        return self::storeTask(
-            $name,
-            $model,
-            $users,
-            $due_date,
-            $actionType,
-            [
-                'items_total' => $totalItems,
-                'items_completed' => 0,
-            ]
+        return $handler->findOrCreate(
+            name: $name,
+            model: $model,
+            users: $users,
+            dueDate: $due_date,
         );
+    }
+
+    /**
+     * Create a manual task (non-static method for DI usage).
+     */
+    public function createManualTask(CreateTaskData $data): Task
+    {
+        return $this->manualHandler->create($data);
+    }
+
+    /**
+     * Create or find a pickup task with progress tracking.
+     */
+    public function createPickupTask(
+        string $name,
+        Model $model,
+        Collection $users,
+        ?string $dueDate = null
+    ): Task {
+        return $this->pickupHandler->findOrCreate($name, $model, $users, $dueDate);
+    }
+
+    /**
+     * Create or find a return task with progress tracking.
+     */
+    public function createReturnTask(
+        string $name,
+        Model $model,
+        Collection $users,
+        ?string $dueDate = null
+    ): Task {
+        return $this->returnHandler->findOrCreate($name, $model, $users, $dueDate);
     }
 }
