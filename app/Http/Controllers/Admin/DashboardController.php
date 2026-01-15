@@ -311,7 +311,7 @@ class DashboardController extends AdminController
                 return $institutions->values();
             }),
             'availableTenants' => $availableTenants,
-            // Note: recentMeetings is provided via shared Inertia data in HandleInertiaRequests middleware
+            // Note: recentMeetings is fetched via API endpoint: api.v1.admin.meetings.recent
         ]);
     }
 

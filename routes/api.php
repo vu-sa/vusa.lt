@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\Admin\FileApiController;
+use App\Http\Controllers\Api\Admin\MeetingApiController;
 use App\Http\Controllers\Api\Admin\SharepointApiController;
 use App\Http\Controllers\Api\Admin\TaskApiController;
 use App\Http\Controllers\Api\Admin\TutorialApiController;
@@ -52,9 +53,9 @@ Route::prefix('v1')->name('v1.')->group(function () {
     })->name('typesense.config');
 
     // Tenant-specific public content
-    Route::group(['prefix' => '{lang}', 'where' => ['lang' => 'lt|en']], function () {
-        Route::get('news/{tenant:alias}', [NewsController::class, 'getTenantNews'])->name('news.tenant');
-        Route::get('calendar/{tenant:alias}', [CalendarController::class, 'getTenantCalendar'])->name('calendar.tenant');
+    Route::prefix('tenants/{tenant:alias}')->name('tenants.')->group(function () {
+        Route::get('news', [NewsController::class, 'index'])->name('news.index');
+        Route::get('calendar', [CalendarController::class, 'index'])->name('calendar.index');
     });
 
     /*
@@ -79,6 +80,9 @@ Route::prefix('v1')->name('v1.')->group(function () {
     Route::prefix('admin')->name('admin.')->middleware(['web', 'auth'])->group(function () {
         // Tasks
         Route::get('tasks/indicator', [TaskApiController::class, 'indicator'])->name('tasks.indicator');
+
+        // Meetings
+        Route::get('meetings/recent', [MeetingApiController::class, 'recent'])->name('meetings.recent');
 
         // Files
         Route::get('files', [FileApiController::class, 'index'])->name('files.index');

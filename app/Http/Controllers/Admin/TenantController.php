@@ -10,6 +10,7 @@ use App\Models\Content;
 use App\Models\Institution;
 use App\Models\Tenant;
 use App\Services\ModelAuthorizer as Authorizer;
+use Illuminate\Support\Facades\Cache;
 
 class TenantController extends AdminController
 {
@@ -118,6 +119,9 @@ class TenantController extends AdminController
 
         // Use ContentService to efficiently update content parts
         app(\App\Services\ContentService::class)->updateContentParts($content, $validated['parts']);
+
+        // Clear homepage cache for this tenant (both locales)
+        Cache::tags(['homepage', "tenant_{$tenant->id}"])->flush();
 
         return redirect()->back()->with('success', 'Tenant updated.');
     }

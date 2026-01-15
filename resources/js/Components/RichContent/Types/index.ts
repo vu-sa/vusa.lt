@@ -88,6 +88,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     icon: CalendarIcon,
     description: "Kalendoriaus blokas",
     defaultContent: () => ({ title: "" }),
+    defaultOptions: () => ({ allTenants: false }),
   },
   "spotify-embed": {
     value: "spotify-embed",

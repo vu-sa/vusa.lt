@@ -227,7 +227,6 @@
                 :loading="meetingCreation.state.loading.submission"
                 :institution-id="meetingCreation.state.institution?.id"
                 :agenda-items="meetingCreation.state.agendaItems" 
-                :recent-meetings="recentMeetingsData"
                 :show-hint="false"
                 @submit="handleAgendaItemsFormSubmit" />
               <MeetingReviewForm v-else-if="meetingCreation.state.currentStep === 4"
@@ -292,12 +291,6 @@ const props = defineProps<{
 // Meeting types state
 const meetingTypes = ref<Array<{ id: number, title: string, model_type: string }>>([]);
 const isLoadingTypes = ref(true);
-
-// Get recentMeetings from shared Inertia data
-const recentMeetingsData = computed(() => {
-  const shared = usePage().props.recentMeetings as Array<{ id: string; title: string; start_time: string; institution_id: string; institution_name: string; agenda_items: { title: string }[] }> | null;
-  return shared ?? [];
-});
 
 // Initialize meeting creation composable
 const meetingCreation = useMeetingCreation({

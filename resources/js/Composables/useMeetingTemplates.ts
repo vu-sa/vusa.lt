@@ -1,4 +1,5 @@
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useFetch } from '@vueuse/core'
 
 import type { AgendaItemFormData } from './useMeetingCreation'
 
@@ -19,8 +20,44 @@ export interface RecentMeeting {
   agenda_items: { title: string }[]
 }
 
+interface RecentMeetingsApiResponse {
+  success: boolean
+  data: RecentMeeting[]
+}
+
+/**
+ * Composable for meeting templates based on recent meetings.
+ * Fetches recent meetings from API endpoint.
+ */
 export function useMeetingTemplates(providedRecentMeetings?: RecentMeeting[]) {
   const recentMeetings = ref<RecentMeeting[]>(providedRecentMeetings || [])
+  const isLoading = ref(false)
+
+  // Fetch recent meetings from API if not provided
+  const fetchRecentMeetings = async () => {
+    if (providedRecentMeetings && providedRecentMeetings.length > 0) {
+      return // Already provided, no need to fetch
+    }
+
+    isLoading.value = true
+    try {
+      const { data } = await useFetch(route('api.v1.admin.meetings.recent')).json<RecentMeetingsApiResponse>()
+      if (data.value?.success && Array.isArray(data.value.data)) {
+        recentMeetings.value = data.value.data
+      }
+    } catch (error) {
+      console.error('Failed to fetch recent meetings:', error)
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  // Auto-fetch on mount if not provided
+  onMounted(() => {
+    if (!providedRecentMeetings || providedRecentMeetings.length === 0) {
+      fetchRecentMeetings()
+    }
+  })
 
   // Convert recent meetings to templates
   const templates = computed<MeetingTemplate[]>(() => {
@@ -68,9 +105,11 @@ export function useMeetingTemplates(providedRecentMeetings?: RecentMeeting[]) {
     // State
     templates,
     recentMeetings: computed(() => recentMeetings.value),
+    isLoading: computed(() => isLoading.value),
 
     // Methods
     getTemplatesForInstitution,
     applyTemplate,
+    fetchRecentMeetings,
   }
 }

@@ -118,7 +118,9 @@ export type Calendar = {
   json_content: {
     title: string;
   }
-  options: null
+  options: {
+    allTenants?: boolean;
+  } | null
 };
 
 export type News = {

@@ -87,7 +87,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, computed } from "vue";
 
 import { Button } from "@/Components/ui/button";
 import CalendarSyncModal from "@/Components/Modals/CalendarSyncModal.vue";
@@ -96,11 +96,26 @@ import EventTimelineVertical from "@/Components/Calendar/EventTimelineVertical.v
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import Skeleton from "@/Components/ui/skeleton/Skeleton.vue";
 import { useCalendarFetch } from "@/Services/ContentService";
+import type { Calendar } from "@/Types/contentParts";
+
+const props = defineProps<{
+  element?: { json_content: Calendar['json_content']; options: Calendar['options'] };
+}>();
 
 const showModal = ref(false);
 
-// Use the ContentService to fetch calendar data
-const { calendar, loading, error, refresh } = useCalendarFetch();
+// Normalize allTenants to boolean (handles true, 1, "1", "true")
+const allTenants = computed(() => {
+  const val = props.element?.options?.allTenants;
+  return val === true || val === 1 || val === '1' || val === 'true';
+});
+
+console.log("EventCalendarElement allTenants:", props.element);
+
+// Use the ContentService to fetch calendar data with options from element
+const { calendar, loading, error, refresh } = useCalendarFetch({
+  allTenants: allTenants.value,
+});
 
 // Removed debug console.log for production code
 

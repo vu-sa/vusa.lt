@@ -101,9 +101,19 @@ const jsonContent = computed({
  * Writable computed for options - enables proper two-way binding
  * When child editors emit options updates, this triggers the content model update.
  * We mutate in place to avoid creating new object references.
+ * 
+ * If options is null/undefined, initialize it with the content type's default options
+ * or an empty object to ensure child components can bind to it.
  */
 const contentOptions = computed({
-  get: () => content.value?.options,
+  get: () => {
+    if (content.value && !content.value.options) {
+      // Initialize options if null - needed for existing content that was saved without options
+      const contentType = getContentType(content.value.type);
+      content.value.options = contentType.defaultOptions ? contentType.defaultOptions() : {};
+    }
+    return content.value?.options;
+  },
   set: (value) => {
     if (content.value) {
       // Mutate in place to preserve object identity and avoid re-renders
