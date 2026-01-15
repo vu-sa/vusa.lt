@@ -13,10 +13,16 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $user_id
  * @property string $notification_class
  * @property string $category
- * @property array $data
- * @property \Illuminate\Support\Carbon $created_at
- * @property \Illuminate\Support\Carbon $updated_at
- * @property-read User $user
+ * @property array<array-key, mixed> $data
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\User $user
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|NotificationDigestQueue newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|NotificationDigestQueue newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|NotificationDigestQueue query()
+ *
+ * @mixin \Eloquent
  */
 class NotificationDigestQueue extends Model
 {

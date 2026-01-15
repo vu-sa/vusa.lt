@@ -42,8 +42,8 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Dutiable> $dutiables
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\FileableFile> $fileableFiles
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\SharepointFile> $files
- * @property-read bool $has_report
  * @property-read bool $has_protocol
+ * @property-read bool $has_report
  * @property-read \App\Models\Institution|null $institution
  * @property-read \App\Models\Institution|null $institutions
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Meeting> $meetings
@@ -58,6 +58,12 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read mixed $translations
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Type> $types
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $users
+ * @property-read int|null $tenants_count
+ * @property-read int|null $meetings_count
+ * @property-read int|null $agenda_items_count
+ * @property-read int|null $tasks_count
+ * @property-read int|null $reservations_count
+ * @property-read int|null $resources_count
  *
  * @method static \Database\Factories\DutyFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty newModelQuery()

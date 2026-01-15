@@ -24,7 +24,7 @@ use Spatie\Sitemap\Tags\Url;
  * @property string $lang
  * @property int|null $other_lang_id
  * @property int $content_id
- * @property mixed|null $image
+ * @property string|null $image
  * @property string|null $image_author
  * @property int $important
  * @property int $tenant_id

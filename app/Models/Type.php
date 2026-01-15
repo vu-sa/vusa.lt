@@ -32,8 +32,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read Collection<int, \App\Models\Duty> $duties
  * @property-read Collection<int, \App\Models\FileableFile> $fileableFiles
  * @property-read Collection<int, \App\Models\SharepointFile> $files
- * @property-read bool $has_report
  * @property-read bool $has_protocol
+ * @property-read bool $has_report
  * @property-read \App\Models\RoleType|\App\Models\Pivots\Relationshipable|null $pivot
  * @property-read Collection<int, \App\Models\Relationship> $incomingRelationships
  * @property-read Collection<int, \App\Models\Institution> $institutions

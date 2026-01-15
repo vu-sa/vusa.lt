@@ -39,6 +39,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property-read string|null $formatted_size
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|FileableFile available()
+ * @method static \Database\Factories\FileableFileFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|FileableFile newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|FileableFile newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|FileableFile notDeletedExternally()

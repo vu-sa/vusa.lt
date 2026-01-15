@@ -19,20 +19,24 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property ApprovalDecision $decision
  * @property int $step
  * @property string|null $notes
- * @property \Illuminate\Support\Carbon $created_at
- * @property \Illuminate\Support\Carbon $updated_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
  * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $approvable
- * @property-read User $user
+ * @property-read \App\Models\User $user
  *
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Approval approved()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Approval cancelled()
  * @method static \Database\Factories\ApprovalFactory factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Approval forStep(int $step)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Approval newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Approval newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Approval onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Approval query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Approval forStep(int $step)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Approval approved()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Approval rejected()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Approval cancelled()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Approval withTrashed(bool $withTrashed = true)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Approval withoutTrashed()
  *
  * @mixin \Eloquent
  */

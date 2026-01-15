@@ -29,8 +29,8 @@ use Laravel\Scout\Searchable;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\FileableFile> $fileableFiles
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\SharepointFile> $files
  * @property-read string $completion_status
- * @property-read bool $has_report
  * @property-read bool $has_protocol
+ * @property-read bool $has_report
  * @property-read bool $is_public
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Institution> $institutions
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Task> $tasks

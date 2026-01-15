@@ -23,18 +23,19 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * @property string $name
  * @property string|null $flowable_type
  * @property string|null $flowable_id
- * @property array $steps
+ * @property array<array-key, mixed> $steps
  * @property bool $is_sequential
  * @property int|null $escalation_days
- * @property \Illuminate\Support\Carbon $created_at
- * @property \Illuminate\Support\Carbon $updated_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent|null $flowable
+ * @property-read int $total_steps
  *
  * @method static \Database\Factories\ApprovalFlowFactory factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ApprovalFlow global()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ApprovalFlow newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ApprovalFlow newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ApprovalFlow query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|ApprovalFlow global()
  *
  * @mixin \Eloquent
  */

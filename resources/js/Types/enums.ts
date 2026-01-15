@@ -1,3 +1,9 @@
+export enum ActionType {
+  Manual = "manual",
+  Approval = "approval",
+  Pickup = "pickup",
+  Return = "return",
+}
 export enum AllowedFileablesEnum {
   "DUTY" = "duty",
   "INSTITUTION" = "institution",
@@ -8,6 +14,11 @@ export enum AllowedFileablesEnum {
 export enum AllowedRelationshipablesEnum {
   "INSTITUTION" = "institution",
   "TYPE" = "type",
+}
+export enum ApprovalDecision {
+  Approved = "approved",
+  Rejected = "rejected",
+  Cancelled = "cancelled",
 }
 export enum CRUDEnum {
   "CREATE" = "create",
@@ -81,6 +92,21 @@ export enum NewsLayoutEnum {
   "CLASSIC" = "classic",
   "IMMERSIVE" = "immersive",
   "HEADLINE" = "headline",
+}
+export enum NotificationCategory {
+  Comment = "comment",
+  Task = "task",
+  Reservation = "reservation",
+  Meeting = "meeting",
+  Registration = "registration",
+  User = "user",
+  Duty = "duty",
+  System = "system",
+}
+export enum NotificationChannel {
+  InApp = "in_app",
+  Push = "push",
+  EmailDigest = "email_digest",
 }
 export enum PageLayoutEnum {
   "DEFAULT" = "default",

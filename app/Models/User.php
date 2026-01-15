@@ -40,6 +40,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string|null $remember_token
  * @property \Illuminate\Support\Carbon|null $last_action
  * @property array<array-key, mixed>|null $tutorial_progress
+ * @property array $notification_preferences
  * @property string|null $microsoft_token
  * @property \Illuminate\Support\Carbon $updated_at
  * @property \Illuminate\Support\Carbon $created_at
@@ -58,6 +59,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read \Illuminate\Notifications\DatabaseNotificationCollection<int, \Illuminate\Notifications\DatabaseNotification> $notifications
  * @property-read Collection<int, \App\Models\Permission> $permissions
  * @property-read Collection<int, \App\Models\Duty> $previous_duties
+ * @property-read Collection<int, \NotificationChannels\WebPush\PushSubscription> $pushSubscriptions
  * @property-read Collection<int, \App\Models\Reservation> $reservations
  * @property-read Collection<int, \App\Models\Role> $roles
  * @property-read Collection<int, \App\Models\Task> $tasks
