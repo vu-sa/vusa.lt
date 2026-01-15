@@ -2,24 +2,20 @@
 
 namespace App\Notifications;
 
+use App\Enums\NotificationCategory;
 use App\Models\Task;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
-use Illuminate\Notifications\Notification;
 
-class TaskReminderNotification extends Notification implements ShouldQueue
+/**
+ * Notification sent to remind users about upcoming task deadlines.
+ */
+class TaskReminderNotification extends BaseNotification
 {
-    use Queueable;
+    protected Task $task;
 
-    protected $task;
-
-    protected $daysLeft;
+    protected int $daysLeft;
 
     /**
      * Create a new notification instance.
-     *
-     * @return void
      */
     public function __construct(Task $task, int $daysLeft)
     {
@@ -27,46 +23,64 @@ class TaskReminderNotification extends Notification implements ShouldQueue
         $this->daysLeft = $daysLeft;
     }
 
-    /**
-     * Get the notification's delivery channels.
-     *
-     * @param  mixed  $notifiable
-     * @return array
-     */
-    public function via($notifiable)
+    public function category(): NotificationCategory
     {
-        return ['database', 'broadcast'];
+        return NotificationCategory::Task;
     }
 
-    /**
-     * Get the mail representation of the notification.
-     *
-     * @param  mixed  $notifiable
-     * @return \Illuminate\Notifications\Messages\MailMessage
-     */
-    public function toMail($notifiable)
+    public function title(object $notifiable): string
     {
-        return (new MailMessage)
-            ->line('The introduction to the notification.')
-            ->action('Notification Action', url('/'))
-            ->line('Thank you for using our application!');
+        return __('notifications.task_reminder_title', ['days' => $this->daysLeft]);
     }
 
-    /**
-     * Get the array representation of the notification.
-     *
-     * @param  mixed  $notifiable
-     * @return array
-     */
-    public function toArray($notifiable)
+    public function body(object $notifiable): string
+    {
+        return __('notifications.task_reminder_body', [
+            'days' => $this->daysLeft,
+            'task' => $this->task->name,
+        ]);
+    }
+
+    public function url(): string
+    {
+        return route('userTasks');
+    }
+
+    public function icon(): string
+    {
+        return $this->daysLeft <= 1 ? '⚠️' : '⏰';
+    }
+
+    public function modelClass(): ?string
+    {
+        return 'TASK';
+    }
+
+    public function object(): ?array
     {
         return [
-            'text' => "Liko <strong>{$this->daysLeft} d.</strong> iki užduoties <strong>„{$this->task->name}“</strong> termino",
-            'object' => [
-                'modelClass' => 'Task',
-                'name' => $this->task->name,
+            'modelClass' => 'Task',
+            'name' => $this->task->name,
+            'url' => route('userTasks'),
+            'id' => $this->task->id,
+        ];
+    }
+
+    public function actions(): array
+    {
+        return [
+            [
+                'label' => __('notifications.action_view_tasks'),
                 'url' => route('userTasks'),
             ],
         ];
+    }
+
+    /**
+     * Task reminders should not be batched - they are time-sensitive.
+     */
+    public function supportsEmailDigest(): bool
+    {
+        return false;
     }
 }

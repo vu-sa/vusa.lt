@@ -16,30 +16,26 @@
  * @see https://laravel.com/docs/notifications#broadcast-notifications
  */
 
-import { ref, computed, onUnmounted, watch } from 'vue';
+import { ref, computed, onUnmounted, watch, markRaw, h } from 'vue';
 import { usePage, router } from '@inertiajs/vue3';
 import { toast } from 'vue-sonner';
-import { trans as $t } from 'laravel-vue-i18n';
 import type Echo from 'laravel-echo';
+import type { Notification } from '@/Composables/useNotificationFormatting';
 
 // Types for broadcast notification events
-interface BroadcastNotificationData {
-  id: string;
-  type: string;
-  text?: string;
-  object?: {
-    name?: string;
-    url?: string;
-  };
-  subject?: {
-    name?: string;
-  };
-}
-
+// Laravel may broadcast fields flat (at root) or nested under 'data' property
 interface NotificationEvent {
   id: string;
   type: string;
-  data: BroadcastNotificationData;
+  data?: Record<string, any>;
+  // Flat fields (when not nested under 'data')
+  category?: string;
+  title?: string;
+  body?: string;
+  url?: string;
+  modelClass?: string;
+  modelId?: number;
+  [key: string]: unknown; // Allow other fields
 }
 
 // Global state - shared across all component instances
@@ -57,25 +53,18 @@ let echo: Echo<'reverb'> | null = null;
 let userChannel: any = null;
 
 /**
- * Get the notification title for toast display
+ * Extract notification data from broadcast event
+ * Laravel may broadcast fields flat (at root) or nested under 'data'
  */
-function getNotificationTitle(type: string): string {
-  const typeName = type.split('\\').pop() || 'Notification';
-  
-  switch (typeName) {
-    case 'ModelCommented':
-      return $t('New Comment');
-    case 'MemberRegistered':
-      return $t('New Member Registration');
-    case 'UserAttachedToModel':
-      return $t('Assignment Notification');
-    case 'TaskCreatedNotification':
-      return $t('New Task');
-    case 'TaskReminderNotification':
-      return $t('Task Reminder');
-    default:
-      return $t('New Notification');
+function extractNotificationData(event: NotificationEvent): Record<string, any> {
+  // If 'data' property exists and is an object, use it
+  if (event.data && typeof event.data === 'object' && Object.keys(event.data).length > 0) {
+    return event.data;
   }
+  
+  // Otherwise, extract data from flat structure (exclude id and type)
+  const { id, type, data, ...flatData } = event;
+  return flatData;
 }
 
 /**
@@ -186,22 +175,38 @@ export function useRealtimeNotifications() {
   /**
    * Show a toast notification for the incoming notification
    */
-  function showNotificationToast(notification: NotificationEvent) {
-    const data = notification.data || notification;
-    const title = getNotificationTitle(notification.type);
-    const message = data.text || data.object?.name || $t('You have a new notification');
-    const url = data.object?.url;
+  async function showNotificationToast(notification: NotificationEvent) {
+    // Extract data using helper that handles both flat and nested structures
+    const extractedData = extractNotificationData(notification);
+    
+    const notificationData: Notification = {
+      id: notification.id,
+      type: notification.type,
+      data: JSON.parse(JSON.stringify(extractedData)),
+      created_at: new Date().toISOString(),
+      read_at: null,
+    };
 
-    toast(title, {
-      description: message,
-      action: url ? {
-        label: $t('View'),
-        onClick: () => {
-          router.visit(url);
-        },
-      } : undefined,
-      duration: 5000,
-    });
+    try {
+      // Dynamically import the toast component to avoid circular dependencies
+      const { default: NotificationToast } = await import('@/Components/Notifications/NotificationToast.vue');
+      
+      // Use markRaw to prevent Vue from making the component reactive
+      toast(markRaw(h(NotificationToast, { notification: notificationData })), {
+        duration: 6000,
+        position: 'bottom-right',
+      });
+    } catch (error) {
+      // Fallback to simple toast if custom component fails
+      console.error('[Reverb] Failed to show custom toast:', error);
+      const fallbackData = extractNotificationData(notification);
+      const title = fallbackData.title || 'Naujas pranešimas';
+      toast.info(title, {
+        description: fallbackData.body,
+        duration: 6000,
+        position: 'bottom-right',
+      });
+    }
   }
 
   /**

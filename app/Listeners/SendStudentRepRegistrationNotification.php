@@ -7,7 +7,7 @@ use App\Events\StudentRepRegistrationCreated;
 use App\Helpers\AddressivizeHelper;
 use App\Mail\ConfirmStudentRepRegistration;
 use App\Models\FieldResponse;
-use App\Notifications\StudentRepRegistered;
+use App\Notifications\StudentRepRegistrationNotification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -85,7 +85,7 @@ class SendStudentRepRegistrationNotification implements ShouldQueue
 
         // Send notifications to all institution managers
         foreach ($managers as $manager) {
-            Notification::send($manager, new StudentRepRegistered(
+            Notification::send($manager, new StudentRepRegistrationNotification(
                 (string) $event->registration->id,
                 $nameResponse->getValue(),
                 $institution,

@@ -5,7 +5,6 @@
 
 // Handle push notifications
 self.addEventListener('push', (event) => {
-  console.log('[SW] Push received:', event);
   
   let data = {
     title: 'VU SA',
@@ -19,7 +18,6 @@ self.addEventListener('push', (event) => {
   if (event.data) {
     try {
       const payload = event.data.json();
-      console.log('[SW] Push payload:', payload);
       
       data = {
         title: payload.title || data.title,
@@ -53,7 +51,6 @@ self.addEventListener('push', (event) => {
 
 // Handle notification click
 self.addEventListener('notificationclick', (event) => {
-  console.log('[SW] Notification clicked:', event);
   
   event.notification.close();
 
@@ -77,5 +74,5 @@ self.addEventListener('notificationclick', (event) => {
 
 // Handle notification close
 self.addEventListener('notificationclose', (event) => {
-  console.log('[SW] Notification closed:', event);
+  // You can perform actions when the notification is dismissed if needed
 });

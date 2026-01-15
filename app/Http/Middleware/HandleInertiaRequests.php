@@ -91,6 +91,9 @@ class HandleInertiaRequests extends Middleware
             'pwa' => [
                 'vapidPublicKey' => fn () => config('webpush.vapid.public_key'),
                 'hasPushSubscription' => fn () => $user?->pushSubscriptions()->exists() ?? false,
+                'subscriptionEndpoints' => fn () => $user?->pushSubscriptions()
+                    ->pluck('endpoint')
+                    ->toArray() ?? [],
             ],
         ]);
     }

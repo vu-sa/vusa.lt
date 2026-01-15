@@ -137,60 +137,14 @@
           </FormElement>
 
           <!-- Push Notifications Settings Section -->
-          <FormElement>
-            <template #title>
-              {{ $t("Push pranešimai") }}
-            </template>
-            <template #description>
-              {{ $t("Gaukite pranešimus net kai naršyklė uždaryta. Veikia tik įdiegus programėlę (PWA).") }}
-            </template>
-            <div class="space-y-4">
-              <div class="flex items-center gap-4">
-                <template v-if="!hasPushSubscription && canSubscribeToPush">
-                  <Button 
-                    :disabled="isSubscribingToPush" 
-                    variant="outline" 
-                    @click="handleSubscribeToPush"
-                  >
-                    <IMdiBellPlus v-if="!isSubscribingToPush" />
-                    <IMdiLoading v-else class="animate-spin" />
-                    {{ $t("Įjungti push pranešimus") }}
-                  </Button>
-                </template>
-                <template v-else-if="hasPushSubscription">
-                  <Button 
-                    variant="outline" 
-                    @click="handleUnsubscribeFromPush"
-                  >
-                    <IMdiBellOff />
-                    {{ $t("Išjungti push pranešimus") }}
-                  </Button>
-                  <Button 
-                    :disabled="testNotificationLoading" 
-                    variant="secondary" 
-                    @click="handleSendTestNotification"
-                  >
-                    <IMdiBellRing v-if="!testNotificationLoading" />
-                    <IMdiLoading v-else class="animate-spin" />
-                    {{ $t("Siųsti bandomąjį pranešimą") }}
-                  </Button>
-                </template>
-                <template v-else-if="pushPermission === 'denied'">
-                  <p class="text-sm text-destructive">
-                    {{ $t("Push pranešimai užblokuoti naršyklės nustatymuose. Atblokuokite juos norėdami gauti pranešimus.") }}
-                  </p>
-                </template>
-                <template v-else-if="!pushSupported">
-                  <p class="text-sm text-muted-foreground">
-                    {{ $t("Jūsų naršyklė nepalaiko push pranešimų.") }}
-                  </p>
-                </template>
-              </div>
-              <p v-if="testNotificationSuccess" class="text-sm text-green-600 dark:text-green-400">
-                {{ $t("Bandomasis pranešimas išsiųstas!") }}
-              </p>
-            </div>
-          </FormElement>
+          <PushDeviceManagement />
+
+          <!-- Notification Preferences Section -->
+          <NotificationPreferences
+            :notification-preferences="notificationPreferences"
+            :notification-categories="notificationCategories"
+            :notification-channels="notificationChannels"
+          />
 
           <h2>{{ $t("Tavo rolės") }}</h2>
           <ul class="list-inside">
@@ -231,6 +185,8 @@ import MultiLocaleInput from "@/Components/FormItems/MultiLocaleInput.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import UploadImageWithCropper from "@/Components/Buttons/UploadImageWithCropper.vue";
 import InfoText from "@/Components/SmallElements/InfoText.vue";
+import NotificationPreferences from "@/Features/Admin/Notifications/NotificationPreferences.vue";
+import PushDeviceManagement from "@/Features/Admin/Notifications/PushDeviceManagement.vue";
 import { BreadcrumbHelpers, usePageBreadcrumbs } from "@/Composables/useBreadcrumbsUnified";
 import ThemeProvider from "@/Components/Providers/ThemeProvider.vue";
 import IMdiContentSave from '~icons/mdi/content-save';
@@ -238,70 +194,27 @@ import IMdiGithub from '~icons/mdi/github';
 import IMdiLock from '~icons/mdi/lock';
 import IMdiRefresh from '~icons/mdi/refresh';
 import IMdiSettings from '~icons/mdi/settings';
-import IMdiBellPlus from '~icons/mdi/bell-plus';
-import IMdiBellOff from '~icons/mdi/bell-off';
-import IMdiBellRing from '~icons/mdi/bell-ring';
-import IMdiLoading from '~icons/mdi/loading';
-import { usePWA } from '@/Composables/usePWA';
 
 const props = defineProps<{
   user: App.Entities.User;
+  notificationPreferences: {
+    channels: Record<string, Record<string, boolean>>;
+    digest_frequency_hours: number;
+    muted_until: string | null;
+    muted_threads: Record<string, string[]>;
+    reminder_settings: {
+      task_reminder_days: number[];
+      meeting_reminder_hours: number[];
+    };
+  };
+  notificationCategories: Record<string, { value: string; modelEnumKey: string; color: string }>;
+  notificationChannels: Record<string, { value: string; enabledByDefault: boolean }>;
 }>();
 
 const loading = ref(false);
 const passwordLoading = ref(false);
 const tutorialResetLoading = ref(false);
 const tutorialResetSuccess = ref(false);
-const testNotificationLoading = ref(false);
-const testNotificationSuccess = ref(false);
-
-// PWA push notification state
-const { 
-  pushSupported, 
-  pushPermission, 
-  canSubscribeToPush, 
-  hasPushSubscription, 
-  isSubscribingToPush,
-  subscribeToPush, 
-  unsubscribeFromPush 
-} = usePWA();
-
-const handleSubscribeToPush = async () => {
-  await subscribeToPush();
-};
-
-const handleUnsubscribeFromPush = async () => {
-  await unsubscribeFromPush();
-};
-
-const handleSendTestNotification = async () => {
-  testNotificationLoading.value = true;
-  testNotificationSuccess.value = false;
-  
-  try {
-    const page = usePage();
-    const csrfToken = (page.props.csrf_token as string) || '';
-    
-    const response = await fetch(route('push-subscription.test'), {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRF-TOKEN': csrfToken,
-      },
-    });
-    
-    if (response.ok) {
-      testNotificationSuccess.value = true;
-      setTimeout(() => {
-        testNotificationSuccess.value = false;
-      }, 5000);
-    }
-  } catch (error) {
-    console.error('Failed to send test notification:', error);
-  } finally {
-    testNotificationLoading.value = false;
-  }
-};
 
 // View transitions / reduced motion preference
 const REDUCE_MOTION_KEY = 'vusa-reduce-motion';

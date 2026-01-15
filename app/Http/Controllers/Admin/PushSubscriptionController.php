@@ -7,9 +7,37 @@ use App\Notifications\TestPushNotification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use NotificationChannels\WebPush\PushSubscription;
 
 class PushSubscriptionController extends Controller
 {
+    /**
+     * Get all push subscriptions for the authenticated user.
+     */
+    public function index(): JsonResponse
+    {
+        $user = Auth::user();
+
+        $subscriptions = $user->pushSubscriptions()
+            ->select(['id', 'endpoint', 'device_name', 'created_at', 'updated_at'])
+            ->orderByDesc('updated_at')
+            ->get()
+            ->map(function (PushSubscription $subscription) {
+                return [
+                    'id' => $subscription->id,
+                    'endpoint' => $subscription->endpoint,
+                    'device_name' => $subscription->device_name,
+                    'created_at' => $subscription->created_at?->toIso8601String(),
+                    'updated_at' => $subscription->updated_at?->toIso8601String(),
+                ];
+            });
+
+        return response()->json([
+            'success' => true,
+            'subscriptions' => $subscriptions,
+        ]);
+    }
+
     /**
      * Store a new push subscription for the authenticated user.
      */
@@ -20,6 +48,7 @@ class PushSubscriptionController extends Controller
             'keys.auth' => 'required|string',
             'keys.p256dh' => 'required|string',
             'contentEncoding' => 'nullable|string',
+            'deviceName' => 'nullable|string|max:255',
         ]);
 
         $user = Auth::user();
@@ -37,6 +66,13 @@ class PushSubscriptionController extends Controller
             $request->input('contentEncoding', 'aesgcm')
         );
 
+        // Update device name if provided
+        if ($request->filled('deviceName')) {
+            $user->pushSubscriptions()
+                ->where('endpoint', $request->endpoint)
+                ->update(['device_name' => $request->input('deviceName')]);
+        }
+
         return response()->json([
             'success' => true,
             'message' => __('Push notification subscription created successfully.'),
@@ -44,7 +80,7 @@ class PushSubscriptionController extends Controller
     }
 
     /**
-     * Remove a push subscription for the authenticated user.
+     * Remove a push subscription for the authenticated user by endpoint.
      */
     public function destroy(Request $request): JsonResponse
     {
@@ -54,13 +90,34 @@ class PushSubscriptionController extends Controller
 
         $user = Auth::user();
 
-        $user->pushSubscriptions()
+        $deleted = $user->pushSubscriptions()
             ->where('endpoint', $request->endpoint)
             ->delete();
 
         return response()->json([
-            'success' => true,
-            'message' => __('Push notification subscription removed successfully.'),
+            'success' => $deleted > 0,
+            'message' => $deleted > 0
+                ? __('Push notification subscription removed successfully.')
+                : __('Subscription not found.'),
+        ]);
+    }
+
+    /**
+     * Remove a push subscription for the authenticated user by ID.
+     */
+    public function destroyById(int $id): JsonResponse
+    {
+        $user = Auth::user();
+
+        $deleted = $user->pushSubscriptions()
+            ->where('id', $id)
+            ->delete();
+
+        return response()->json([
+            'success' => $deleted > 0,
+            'message' => $deleted > 0
+                ? __('Push notification subscription removed successfully.')
+                : __('Subscription not found.'),
         ]);
     }
 

@@ -435,6 +435,9 @@ class DashboardController extends AdminController
 
         return $this->inertiaResponse('Admin/ShowUserSettings', [
             'user' => $user->append('has_password')->toFullArray(),
+            'notificationPreferences' => $user->notification_preferences,
+            'notificationCategories' => \App\Enums\NotificationCategory::toOptions(),
+            'notificationChannels' => \App\Enums\NotificationChannel::toOptions(),
         ]);
     }
 
@@ -460,6 +463,50 @@ class DashboardController extends AdminController
         $user->save();
 
         return redirect()->back()->with('success', 'Slaptažodis sėkmingai pakeistas.');
+    }
+
+    public function updateNotificationPreferences(Request $request)
+    {
+        $user = User::find(Auth::id());
+
+        $validated = $request->validate([
+            'channels' => 'nullable|array',
+            'channels.*' => 'nullable|array',
+            'channels.*.*' => 'boolean',
+            'digest_frequency_hours' => 'nullable|integer|min:1|max:24',
+            'muted_until' => 'nullable|date',
+            'reminder_settings' => 'nullable|array',
+            'reminder_settings.task_reminder_days' => 'nullable|array',
+            'reminder_settings.task_reminder_days.*' => 'integer|min:1',
+            'reminder_settings.meeting_reminder_hours' => 'nullable|array',
+            'reminder_settings.meeting_reminder_hours.*' => 'integer|min:1',
+        ]);
+
+        $preferences = $user->notification_preferences;
+
+        if (isset($validated['channels'])) {
+            $preferences['channels'] = $validated['channels'];
+        }
+
+        if (isset($validated['digest_frequency_hours'])) {
+            $preferences['digest_frequency_hours'] = $validated['digest_frequency_hours'];
+        }
+
+        if (array_key_exists('muted_until', $validated)) {
+            $preferences['muted_until'] = $validated['muted_until'];
+        }
+
+        if (isset($validated['reminder_settings'])) {
+            $preferences['reminder_settings'] = array_merge(
+                $preferences['reminder_settings'] ?? [],
+                $validated['reminder_settings']
+            );
+        }
+
+        $user->notification_preferences = $preferences;
+        $user->save();
+
+        return $this->redirectBackWithSuccess('Pranešimų nustatymai išsaugoti.');
     }
 
     public function userTasks()

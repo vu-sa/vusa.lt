@@ -13,6 +13,7 @@ Route::get('dashboard/reservations', [DashboardController::class, 'reservations'
 
 Route::patch('profile', [DashboardController::class, 'updateUserSettings'])->name('profile.update');
 Route::patch('profile/password', [DashboardController::class, 'updatePassword'])->name('profile.updatePassword');
+Route::patch('profile/notification-preferences', [DashboardController::class, 'updateNotificationPreferences'])->name('profile.updateNotificationPreferences');
 Route::get('userTasks', [DashboardController::class, 'userTasks'])->name('userTasks');
 Route::get('institutionGraph', [DashboardController::class, 'institutionGraph'])->name('institutionGraph');
 
@@ -72,10 +73,14 @@ Route::resource('users.comments', CommentController::class)->only(['store', 'upd
 Route::get('notifications', [UserNotificationsController::class, 'index'])->name('notifications.index');
 Route::post('notification/{id}/markAsRead', [UserNotificationsController::class, 'markAsRead'])->name('notifications.markAsRead');
 Route::post('notification/mark-all-as-read', [UserNotificationsController::class, 'markAllAsRead'])->name('notifications.mark-as-read.all');
+Route::delete('notification/{id}', [UserNotificationsController::class, 'destroy'])->name('notifications.destroy');
+Route::delete('notifications', [UserNotificationsController::class, 'destroyAll'])->name('notifications.destroy-all');
 
 // Push notification subscriptions
+Route::get('push-subscription', [PushSubscriptionController::class, 'index'])->name('push-subscription.index');
 Route::post('push-subscription', [PushSubscriptionController::class, 'store'])->name('push-subscription.store');
 Route::delete('push-subscription', [PushSubscriptionController::class, 'destroy'])->name('push-subscription.destroy');
+Route::delete('push-subscription/{id}', [PushSubscriptionController::class, 'destroyById'])->name('push-subscription.destroyById');
 Route::post('push-subscription/test', [PushSubscriptionController::class, 'sendTest'])->name('push-subscription.test');
 
 Route::resource('memberships', MembershipController::class);

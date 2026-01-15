@@ -41,6 +41,7 @@ class EventServiceProvider extends ServiceProvider
         \Spatie\ModelStates\Events\StateChanged::class => [
             \App\Listeners\ReservationResource\HandleReservationResourceReserved::class,
             \App\Listeners\ReservationResource\HandleReservationResourceLent::class,
+            \App\Listeners\ReservationResource\HandleReservationResourceStateChanged::class,
         ],
         \App\Events\DutiableChanged::class => [
             \App\Listeners\HandleDutiableChange::class,
@@ -54,9 +55,13 @@ class EventServiceProvider extends ServiceProvider
         \App\Events\StudentRepRegistrationCreated::class => [
             \App\Listeners\SendStudentRepRegistrationNotification::class,
         ],
-        /* \App\Events\TaskCreated::class => [ */
-        /*    \App\Listeners\HandleTaskCreated::class, */
-        /* ], */
+        \App\Events\TaskCreated::class => [
+            \App\Listeners\HandleTaskCreated::class,
+        ],
+        // Notification digest queuing
+        \Illuminate\Notifications\Events\NotificationSending::class => [
+            \App\Listeners\QueueNotificationForDigest::class,
+        ],
     ];
 
     /**

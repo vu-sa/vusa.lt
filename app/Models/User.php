@@ -6,6 +6,7 @@ use App\Helpers\AddressivizeHelper;
 use App\Models\Pivots\Dutiable;
 use App\Models\Pivots\MembershipUser;
 use App\Models\Pivots\Trainable;
+use App\Models\Traits\HasNotificationPreferences;
 use App\Models\Traits\HasTranslations;
 use App\Models\Traits\HasUnitRelation;
 use Illuminate\Database\Eloquent\Collection;
@@ -84,7 +85,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  */
 class User extends Authenticatable
 {
-    use HasFactory, HasImpersonation, HasPushSubscriptions, HasRelationships, HasRoles, HasTranslations, HasUlids, HasUnitRelation, LogsActivity, Notifiable, Searchable, SoftDeletes;
+    use HasFactory, HasImpersonation, HasNotificationPreferences, HasPushSubscriptions, HasRelationships, HasRoles, HasTranslations, HasUlids, HasUnitRelation, LogsActivity, Notifiable, Searchable, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -93,6 +94,7 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name', 'email', 'facebook_url', 'password', 'phone', 'profile_photo_path', 'pronouns', 'show_pronouns',
+        'notification_preferences',
     ];
 
     public $translatable = [
@@ -109,6 +111,7 @@ class User extends Authenticatable
         'remember_token',
         'email_verified_at',
         'tutorial_progress',
+        'notification_preferences',
         'last_action',
         'microsoft_token',
         'name_was_changed',
@@ -119,6 +122,7 @@ class User extends Authenticatable
         'show_pronouns' => 'boolean',
         'name_was_changed' => 'boolean',
         'tutorial_progress' => 'array',
+        'notification_preferences' => 'array',
     ];
 
     public function getActivitylogOptions(): LogOptions

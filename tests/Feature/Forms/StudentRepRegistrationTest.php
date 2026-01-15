@@ -11,7 +11,7 @@ use App\Models\Registration;
 use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
-use App\Notifications\StudentRepRegistered;
+use App\Notifications\StudentRepRegistrationNotification;
 use App\Settings\FormSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
@@ -138,7 +138,7 @@ describe('SendStudentRepRegistrationNotification listener', function () {
             ],
         ]);
 
-        Notification::assertSentTo($manager, StudentRepRegistered::class);
+        Notification::assertSentTo($manager, StudentRepRegistrationNotification::class);
     });
 });
 

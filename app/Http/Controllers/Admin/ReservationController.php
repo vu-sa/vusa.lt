@@ -8,7 +8,7 @@ use App\Http\Requests\UpdateReservationRequest;
 use App\Models\Reservation;
 use App\Models\Resource;
 use App\Models\User;
-use App\Notifications\UserAttachedToModel;
+use App\Notifications\AssignedToResourceNotification;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ModelIndexer;
 use Illuminate\Database\Eloquent\Builder;
@@ -246,7 +246,7 @@ class ReservationController extends AdminController
 
         $reservation->users()->syncWithoutDetaching($request->input('users'));
 
-        Notification::send($reservation->refresh()->users->diff($old_users), new UserAttachedToModel($reservation, auth()->user()));
+        Notification::send($reservation->refresh()->users->diff($old_users), AssignedToResourceNotification::fromModel($reservation, auth()->user()));
 
         return back()->with('success', __('messages.users_attached_to_reservation'));
     }
