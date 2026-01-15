@@ -3,6 +3,7 @@
 namespace App\Settings;
 
 use App\Models\Role;
+use App\Models\Tenant;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Spatie\LaravelSettings\Settings;
@@ -39,9 +40,23 @@ class AtstovavimasSettings extends Settings
     protected const CACHE_TTL = 3600;
 
     /**
-     * Array of role IDs that grant tenant-wide institution visibility in Atstovavimas dashboard.
-     * Users with any of these roles can see all institutions in their tenant(s).
-     * Users without these roles can only see institutions they are directly assigned to via duties.
+     * Array of role IDs that grant global tenant visibility in Atstovavimas dashboard.
+     * Users with any of these roles can see all tenants in the tenant tab.
+     *
+     * @var string[]
+     */
+    public array $global_visibility_role_ids = [];
+
+    /**
+     * Array of role IDs that grant tenant visibility only for tenants where the
+     * user holds a current duty with one of these roles.
+     *
+     * @var string[]
+     */
+    public array $tenant_visibility_role_ids = [];
+
+    /**
+     * Deprecated: kept for migration mapping.
      *
      * @var string[]
      */
@@ -62,12 +77,42 @@ class AtstovavimasSettings extends Settings
             ->filter();
     }
 
+    public function getGlobalVisibilityRoleIds(): Collection
+    {
+        return collect($this->global_visibility_role_ids)
+            ->map(fn ($id) => (string) $id)
+            ->filter();
+    }
+
+    public function getTenantVisibilityRoleIds(): Collection
+    {
+        $tenantVisibilityRoleIds = collect($this->tenant_visibility_role_ids)
+            ->map(fn ($id) => (string) $id)
+            ->filter();
+
+        if ($tenantVisibilityRoleIds->isNotEmpty()) {
+            return $tenantVisibilityRoleIds;
+        }
+
+        return $this->getCoordinatorRoleIds();
+    }
+
     /**
      * Set coordinator role IDs from array
      */
     public function setCoordinatorRoleIds(array $ids): void
     {
         $this->coordinator_role_ids = array_map('strval', array_filter($ids));
+    }
+
+    public function setGlobalVisibilityRoleIds(array $ids): void
+    {
+        $this->global_visibility_role_ids = array_map('strval', array_filter($ids));
+    }
+
+    public function setTenantVisibilityRoleIds(array $ids): void
+    {
+        $this->tenant_visibility_role_ids = array_map('strval', array_filter($ids));
     }
 
     /**
@@ -87,13 +132,13 @@ class AtstovavimasSettings extends Settings
      */
     public function getCoordinatorTenantIds(\App\Models\User $user): Collection
     {
-        $coordinatorRoleIds = $this->getCoordinatorRoleIds();
+        $coordinatorRoleIds = $this->getTenantVisibilityRoleIds();
 
         if ($coordinatorRoleIds->isEmpty()) {
             return collect();
         }
 
-        $cacheKey = self::getCoordinatorCacheKey($user->id);
+        $cacheKey = self::getTenantVisibilityCacheKey($user->id);
 
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($user, $coordinatorRoleIds) {
             // Get duties that have coordinator roles, along with their institution's tenant
@@ -118,7 +163,12 @@ class AtstovavimasSettings extends Settings
      */
     public static function getCoordinatorCacheKey(string $userId): string
     {
-        return "atstovavimas:coordinator_tenants:{$userId}";
+        return self::getTenantVisibilityCacheKey($userId);
+    }
+
+    public static function getTenantVisibilityCacheKey(string $userId): string
+    {
+        return "atstovavimas:tenant_visibility_tenants:{$userId}";
     }
 
     /**
@@ -126,7 +176,7 @@ class AtstovavimasSettings extends Settings
      */
     public static function clearCoordinatorCache(string $userId): void
     {
-        Cache::forget(self::getCoordinatorCacheKey($userId));
+        Cache::forget(self::getTenantVisibilityCacheKey($userId));
     }
 
     /**
@@ -145,12 +195,50 @@ class AtstovavimasSettings extends Settings
      */
     public function getCoordinatorRoleNames(): Collection
     {
-        $roleIds = $this->getCoordinatorRoleIds();
+        $roleIds = $this->getTenantVisibilityRoleIds();
 
         if ($roleIds->isEmpty()) {
             return collect();
         }
 
         return Role::whereIn('id', $roleIds->toArray())->pluck('name');
+    }
+
+    public function userHasGlobalVisibilityRole(\App\Models\User $user): bool
+    {
+        $roleIds = $this->getGlobalVisibilityRoleIds();
+
+        if ($roleIds->isEmpty()) {
+            return false;
+        }
+
+        if ($user->roles()->whereIn('id', $roleIds)->exists()) {
+            return true;
+        }
+
+        return $user->current_duties()
+            ->whereHas('roles', function ($query) use ($roleIds) {
+                $query->whereIn('id', $roleIds);
+            })
+            ->exists();
+    }
+
+    public function getVisibleTenantIds(\App\Models\User $user): Collection
+    {
+        if ($user->isSuperAdmin() || $this->userHasGlobalVisibilityRole($user)) {
+            return Tenant::query()
+                ->where('type', '!=', 'pkp')
+                ->pluck('id');
+        }
+
+        $tenantRoleIds = $this->getTenantVisibilityRoleIds();
+
+        if ($tenantRoleIds->isEmpty()) {
+            return collect();
+        }
+
+        return $this->getCoordinatorTenantIds($user)
+            ->filter()
+            ->values();
     }
 }

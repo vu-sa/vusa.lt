@@ -24,6 +24,8 @@ beforeEach(function () {
 afterEach(function () {
     // Clean up settings after each test
     $settings = app(AtstovavimasSettings::class);
+    $settings->tenant_visibility_role_ids = [];
+    $settings->global_visibility_role_ids = [];
     $settings->coordinator_role_ids = [];
     $settings->save();
     app()->forgetInstance(AtstovavimasSettings::class);
@@ -37,7 +39,8 @@ describe('atstovavimas settings page access', function () {
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Settings/EditAtstovavimasSettings')
                 ->has('roles')
-                ->has('coordinator_role_ids')
+                ->has('global_visibility_role_ids')
+                ->has('tenant_visibility_role_ids')
             );
     });
 
@@ -49,12 +52,12 @@ describe('atstovavimas settings page access', function () {
 });
 
 describe('atstovavimas settings update', function () {
-    test('super admin can update coordinator roles', function () {
+    test('super admin can update tenant visibility roles', function () {
         $role = Role::first();
 
         asUser($this->admin)
             ->post(route('settings.atstovavimas.update'), [
-                'coordinator_role_ids' => [$role->id],
+                'tenant_visibility_role_ids' => [$role->id],
             ])
             ->assertRedirect();
 
@@ -62,46 +65,46 @@ describe('atstovavimas settings update', function () {
         app()->forgetInstance(AtstovavimasSettings::class);
         $settings = app(AtstovavimasSettings::class);
 
-        expect($settings->getCoordinatorRoleIds()->toArray())->toBe([$role->id]);
+        expect($settings->getTenantVisibilityRoleIds()->toArray())->toBe([$role->id]);
     });
 
-    test('regular user cannot update coordinator roles', function () {
+    test('regular user cannot update tenant visibility roles', function () {
         $role = Role::first();
 
         asUser($this->user)
             ->post(route('settings.atstovavimas.update'), [
-                'coordinator_role_ids' => [$role->id],
+                'tenant_visibility_role_ids' => [$role->id],
             ])
             ->assertStatus(403);
     });
 
-    test('coordinator roles can be cleared', function () {
+    test('tenant visibility roles can be cleared', function () {
         // First set some roles
         $role = Role::first();
         $settings = app(AtstovavimasSettings::class);
-        $settings->coordinator_role_ids = [$role->id];
+        $settings->tenant_visibility_role_ids = [$role->id];
         $settings->save();
         app()->forgetInstance(AtstovavimasSettings::class);
 
         // Then clear them
         asUser($this->admin)
             ->post(route('settings.atstovavimas.update'), [
-                'coordinator_role_ids' => [],
+                'tenant_visibility_role_ids' => [],
             ])
             ->assertRedirect();
 
         app()->forgetInstance(AtstovavimasSettings::class);
         $settings = app(AtstovavimasSettings::class);
 
-        expect($settings->getCoordinatorRoleIds()->toArray())->toBe([]);
+        expect($settings->getTenantVisibilityRoleIds()->toArray())->toBe([]);
     });
 
     test('invalid role ids are rejected', function () {
         asUser($this->admin)
             ->post(route('settings.atstovavimas.update'), [
-                'coordinator_role_ids' => ['invalid-ulid', 'another-invalid'],
+                'tenant_visibility_role_ids' => ['invalid-ulid', 'another-invalid'],
             ])
-            ->assertSessionHasErrors('coordinator_role_ids.0');
+            ->assertSessionHasErrors('tenant_visibility_role_ids.0');
     });
 });
 
@@ -116,7 +119,7 @@ describe('coordinator tenant visibility', function () {
 
         // Configure the coordinator role in settings
         $settings = app(AtstovavimasSettings::class);
-        $settings->coordinator_role_ids = [$coordinatorRole->id];
+        $settings->tenant_visibility_role_ids = [$coordinatorRole->id];
         $settings->save();
         app()->forgetInstance(AtstovavimasSettings::class);
 
@@ -153,7 +156,7 @@ describe('coordinator tenant visibility', function () {
 
         // Configure the coordinator role in settings
         $settings = app(AtstovavimasSettings::class);
-        $settings->coordinator_role_ids = [$coordinatorRole->id];
+        $settings->tenant_visibility_role_ids = [$coordinatorRole->id];
         $settings->save();
         app()->forgetInstance(AtstovavimasSettings::class);
 
@@ -181,7 +184,7 @@ describe('coordinator tenant visibility', function () {
         // Configure a coordinator role but don't give it to the user
         $coordinatorRole = Role::where('name', 'Communication Coordinator')->first();
         $settings = app(AtstovavimasSettings::class);
-        $settings->coordinator_role_ids = [$coordinatorRole->id];
+        $settings->tenant_visibility_role_ids = [$coordinatorRole->id];
         $settings->save();
         app()->forgetInstance(AtstovavimasSettings::class);
 
@@ -213,7 +216,7 @@ describe('coordinator tenant visibility', function () {
     test('coordinator in one tenant only sees that tenant institutions', function () {
         $coordinatorRole = Role::where('name', 'Communication Coordinator')->first();
         $settings = app(AtstovavimasSettings::class);
-        $settings->coordinator_role_ids = [$coordinatorRole->id];
+        $settings->tenant_visibility_role_ids = [$coordinatorRole->id];
         $settings->save();
         app()->forgetInstance(AtstovavimasSettings::class);
 
@@ -250,7 +253,7 @@ describe('coordinator cache management', function () {
     test('coordinator tenant ids are cached', function () {
         $coordinatorRole = Role::where('name', 'Communication Coordinator')->first();
         $settings = app(AtstovavimasSettings::class);
-        $settings->coordinator_role_ids = [$coordinatorRole->id];
+        $settings->tenant_visibility_role_ids = [$coordinatorRole->id];
         $settings->save();
         app()->forgetInstance(AtstovavimasSettings::class);
 
@@ -276,7 +279,7 @@ describe('coordinator cache management', function () {
     test('cache is cleared when duty role changes', function () {
         $coordinatorRole = Role::where('name', 'Communication Coordinator')->first();
         $settings = app(AtstovavimasSettings::class);
-        $settings->coordinator_role_ids = [$coordinatorRole->id];
+        $settings->tenant_visibility_role_ids = [$coordinatorRole->id];
         $settings->save();
         app()->forgetInstance(AtstovavimasSettings::class);
 
@@ -298,7 +301,7 @@ describe('coordinator cache management', function () {
     test('empty coordinator role ids returns empty collection without caching', function () {
         // Ensure no coordinator roles are configured
         $settings = app(AtstovavimasSettings::class);
-        $settings->coordinator_role_ids = [];
+        $settings->tenant_visibility_role_ids = [];
         $settings->save();
         app()->forgetInstance(AtstovavimasSettings::class);
 
@@ -317,7 +320,7 @@ describe('settings helper methods', function () {
     test('userHasCoordinatorRole returns true for coordinators', function () {
         $coordinatorRole = Role::where('name', 'Communication Coordinator')->first();
         $settings = app(AtstovavimasSettings::class);
-        $settings->coordinator_role_ids = [$coordinatorRole->id];
+        $settings->tenant_visibility_role_ids = [$coordinatorRole->id];
         $settings->save();
         app()->forgetInstance(AtstovavimasSettings::class);
 
@@ -331,7 +334,7 @@ describe('settings helper methods', function () {
     test('userHasCoordinatorRole returns false for non-coordinators', function () {
         $coordinatorRole = Role::where('name', 'Communication Coordinator')->first();
         $settings = app(AtstovavimasSettings::class);
-        $settings->coordinator_role_ids = [$coordinatorRole->id];
+        $settings->tenant_visibility_role_ids = [$coordinatorRole->id];
         $settings->save();
         app()->forgetInstance(AtstovavimasSettings::class);
 
@@ -342,7 +345,7 @@ describe('settings helper methods', function () {
     test('getCoordinatorRoleNames returns role names', function () {
         $coordinatorRole = Role::where('name', 'Communication Coordinator')->first();
         $settings = app(AtstovavimasSettings::class);
-        $settings->coordinator_role_ids = [$coordinatorRole->id];
+        $settings->tenant_visibility_role_ids = [$coordinatorRole->id];
         $settings->save();
         app()->forgetInstance(AtstovavimasSettings::class);
 

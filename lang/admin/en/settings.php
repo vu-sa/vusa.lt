@@ -72,12 +72,17 @@ return [
 
     // Atstovavimas settings page
     'atstovavimas_settings' => [
-        'coordinator_roles_title' => 'Tenant Representation Coordinator Roles',
-        'coordinator_roles_description' => 'Select roles that grant access to all tenant institutions in the representation dashboard. Users with these roles will see all institutions in their tenant(s), not just those they are directly assigned to.',
-        'coordinator_roles_label' => 'Coordinator Roles',
-        'coordinator_roles_placeholder' => 'Select roles',
+        'global_roles_title' => 'Global Tenant Visibility Roles',
+        'global_roles_description' => 'Select roles that grant access to all tenants in the representation dashboard.',
+        'global_roles_label' => 'Global Visibility Roles',
+        'global_roles_placeholder' => 'Select roles',
+        'global_roles_note' => 'Note: Super Admins always see all tenants regardless of this setting.',
+        'tenant_roles_title' => 'Tenant Visibility Roles',
+        'tenant_roles_description' => 'Select roles that grant access to the tenant tab only for tenants where the user holds a current duty with one of these roles.',
+        'tenant_roles_label' => 'Tenant Visibility Roles',
+        'tenant_roles_placeholder' => 'Select roles',
+        'tenant_roles_note' => 'Users without these roles will only see institutions they are assigned to through duties.',
         'no_roles_found' => 'No roles found.',
-        'coordinator_roles_note' => 'Note: Super Admins always see all institutions regardless of this setting. Users without these roles will only see institutions they are assigned to through duties.',
     ],
 
     // Messages

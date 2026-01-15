@@ -223,24 +223,11 @@ class DashboardController extends AdminController
         // Get available tenants for filtering - only for coordinators and admins
         // Regular users should not see the tenant tab (they only see their assigned institutions)
         $atstovavimasSettings = app(AtstovavimasSettings::class);
-        $hasGlobalAccess = $this->authorizer->forUser($user)->checkAllRoleables('duties.create.all');
-        $coordinatorTenantIds = $atstovavimasSettings->getCoordinatorTenantIds($user);
+        $visibleTenantIds = $atstovavimasSettings->getVisibleTenantIds($user);
 
-        if ($hasGlobalAccess) {
-            // Super admins see all tenants
+        if ($visibleTenantIds->isNotEmpty()) {
             $availableTenants = Tenant::query()
-                ->where('type', '!=', 'pkp')
-                ->orderBy('shortname_vu')
-                ->get(['id', 'shortname', 'type'])
-                ->map(fn ($tenant) => [
-                    'id' => $tenant->id,
-                    'shortname' => __($tenant->shortname),
-                    'type' => $tenant->type,
-                ]);
-        } elseif ($coordinatorTenantIds->isNotEmpty()) {
-            // Coordinators see only tenants where they have coordinator access
-            $availableTenants = Tenant::query()
-                ->whereIn('id', $coordinatorTenantIds)
+                ->whereIn('id', $visibleTenantIds)
                 ->where('type', '!=', 'pkp')
                 ->orderBy('shortname_vu')
                 ->get(['id', 'shortname', 'type'])
@@ -250,7 +237,6 @@ class DashboardController extends AdminController
                     'type' => $tenant->type,
                 ]);
         } else {
-            // Regular users don't see the tenant tab
             $availableTenants = collect();
         }
 

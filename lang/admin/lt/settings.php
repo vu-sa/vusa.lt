@@ -72,12 +72,17 @@ return [
 
     // Atstovavimas settings page
     'atstovavimas_settings' => [
-        'coordinator_roles_title' => 'Padalinio atstovavimo koordinatorių rolės',
-        'coordinator_roles_description' => 'Pasirinkite roles, kurios suteikia prieigą prie visų padalinio institucijų atstovavimo skydelyje. Naudotojai su šiomis rolėmis matys visas savo padalinio(-ių) institucijas, o ne tik tas, kurioms jie tiesiogiai priskirti.',
-        'coordinator_roles_label' => 'Koordinatoriaus rolės',
-        'coordinator_roles_placeholder' => 'Pasirinkti roles',
+        'global_roles_title' => 'Globalios padalinių matomumo rolės',
+        'global_roles_description' => 'Pasirinkite roles, kurios suteikia prieigą prie visų padalinių atstovavimo skydelyje.',
+        'global_roles_label' => 'Globalios matomumo rolės',
+        'global_roles_placeholder' => 'Pasirinkti roles',
+        'global_roles_note' => 'Pastaba: Super Administratoriai visada mato visus padalinius, nepaisant šio nustatymo.',
+        'tenant_roles_title' => 'Padalinio matomumo rolės',
+        'tenant_roles_description' => 'Pasirinkite roles, kurios suteikia prieigą prie padalinio kortelės tik tiems padaliniams, kur naudotojas turi aktyvias pareigas su šiomis rolėmis.',
+        'tenant_roles_label' => 'Padalinio matomumo rolės',
+        'tenant_roles_placeholder' => 'Pasirinkti roles',
+        'tenant_roles_note' => 'Naudotojai be šių rolių matys tik tas institucijas, kurioms jie priskirti per pareigas.',
         'no_roles_found' => 'Rolių nerasta.',
-        'coordinator_roles_note' => 'Pastaba: Super Administratoriai visada mato visas institucijas, nepaisant šio nustatymo. Naudotojai be šių rolių matys tik tas institucijas, kurioms jie priskirti per pareigas.',
     ],
 
     // Messages

@@ -49,6 +49,7 @@ class DutyService
      * rather than permission-based filtering. The logic is:
      *
      * - Super admins: See all institutions
+     * - Users with a global visibility role: See all institutions
      * - Users with coordinator role in a tenant: See all institutions in that tenant
      * - Regular users: See only institutions they are directly assigned to via duties
      *
@@ -61,31 +62,24 @@ class DutyService
     public static function getInstitutionsForDashboard(ModelAuthorizer $authorizer)
     {
         $user = request()->user();
-        $hasGlobalAccess = $authorizer->forUser($user)->checkAllRoleables('duties.create.all');
-
-        // Get tenant IDs where user has coordinator access
         $atstovavimasSettings = app(AtstovavimasSettings::class);
-        $coordinatorTenantIds = $atstovavimasSettings->getCoordinatorTenantIds($user);
+        $visibleTenantIds = $atstovavimasSettings->getVisibleTenantIds($user);
+        $userInstitutionIds = $user->current_duties()
+            ->pluck('institution_id')
+            ->filter()
+            ->unique();
 
         return Institution::select('id', 'name', 'alias', 'tenant_id')
-            ->when(! $hasGlobalAccess, function ($query) use ($user, $coordinatorTenantIds) {
-                // Get user's directly assigned institution IDs
-                $userInstitutionIds = $user->current_duties()
-                    ->pluck('institution_id')
-                    ->filter()
-                    ->unique();
+            ->when($visibleTenantIds->isNotEmpty(), function ($query) use ($visibleTenantIds, $userInstitutionIds) {
+                $query->where(function ($q) use ($visibleTenantIds, $userInstitutionIds) {
+                    $q->whereIn('tenant_id', $visibleTenantIds);
 
-                if ($coordinatorTenantIds->isNotEmpty()) {
-                    // User has coordinator access to some tenants
-                    // Show: all institutions from coordinator tenants + directly assigned institutions from other tenants
-                    $query->where(function ($q) use ($coordinatorTenantIds, $userInstitutionIds) {
-                        $q->whereIn('tenant_id', $coordinatorTenantIds)
-                            ->orWhereIn('id', $userInstitutionIds);
-                    });
-                } else {
-                    // Regular users see only their directly assigned institutions
-                    $query->whereIn('id', $userInstitutionIds);
-                }
+                    if ($userInstitutionIds->isNotEmpty()) {
+                        $q->orWhereIn('id', $userInstitutionIds);
+                    }
+                });
+            }, function ($query) use ($userInstitutionIds) {
+                $query->whereIn('id', $userInstitutionIds);
             })
             ->whereHas('tenant', function ($query) {
                 $query->where('type', '!=', 'pkp');
@@ -147,6 +141,7 @@ class DutyService
      *
      * This is used for lazy-loading tenant timeline data when the tenant tab
      * is opened or when the tenant filter changes.
+     * Users with global visibility roles are treated as global access.
      *
      * @param  Collection|array  $tenantIds  The tenant IDs to load institutions for
      * @param  ModelAuthorizer  $authorizer  The authorizer to check access permissions
@@ -160,16 +155,11 @@ class DutyService
         }
 
         $user = request()->user();
-        $hasGlobalAccess = $authorizer->forUser($user)->checkAllRoleables('duties.create.all');
-
-        // Get tenant IDs where user has coordinator access
         $atstovavimasSettings = app(AtstovavimasSettings::class);
-        $coordinatorTenantIds = $atstovavimasSettings->getCoordinatorTenantIds($user);
+        $visibleTenantIds = $atstovavimasSettings->getVisibleTenantIds($user);
 
         // Filter to only accessible tenants
-        $accessibleTenantIds = $hasGlobalAccess
-            ? $tenantIds
-            : $tenantIds->intersect($coordinatorTenantIds);
+        $accessibleTenantIds = $tenantIds->intersect($visibleTenantIds);
 
         if ($accessibleTenantIds->isEmpty()) {
             return collect();

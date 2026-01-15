@@ -375,7 +375,7 @@ describe('atstovavimas dashboard', function () {
         $coordinatorRole = \App\Models\Role::where('name', 'Communication Coordinator')->first();
         if ($coordinatorRole) {
             $settings = app(\App\Settings\AtstovavimasSettings::class);
-            $settings->coordinator_role_ids = [$coordinatorRole->id];
+            $settings->tenant_visibility_role_ids = [$coordinatorRole->id];
             $settings->save();
             app()->forgetInstance(\App\Settings\AtstovavimasSettings::class);
         }
@@ -400,7 +400,7 @@ describe('atstovavimas dashboard', function () {
         // Clean up
         if ($coordinatorRole) {
             $settings = app(\App\Settings\AtstovavimasSettings::class);
-            $settings->coordinator_role_ids = [];
+            $settings->tenant_visibility_role_ids = [];
             $settings->save();
         }
     });
@@ -443,6 +443,41 @@ describe('atstovavimas dashboard authorization', function () {
             );
     });
 
+    test('user with global visibility role sees all tenants', function () {
+        $mainTenant = Tenant::factory()->create(['type' => 'pagrindinis']);
+        $otherTenant = Tenant::factory()->create(['type' => 'padalinys']);
+
+        $globalRole = \App\Models\Role::firstOrCreate([
+            'name' => 'Globalus atstovavimo matomumas',
+        ], [
+            'guard_name' => 'web',
+        ]);
+
+        $mainTenantUser = makeTenantUserWithRole($globalRole->name, $mainTenant);
+
+        $settings = app(\App\Settings\AtstovavimasSettings::class);
+        $settings->global_visibility_role_ids = [$globalRole->id];
+        $settings->save();
+        app()->forgetInstance(\App\Settings\AtstovavimasSettings::class);
+
+        asUser($mainTenantUser)
+            ->get(route('dashboard.atstovavimas'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Dashboard/ShowAtstovavimas')
+                ->where('availableTenants', function ($tenants) use ($mainTenant, $otherTenant) {
+                    $collection = collect($tenants);
+
+                    return $collection->contains(fn ($tenant) => $tenant['id'] == $mainTenant->id)
+                        && $collection->contains(fn ($tenant) => $tenant['id'] == $otherTenant->id);
+                })
+            );
+
+        $settings = app(\App\Settings\AtstovavimasSettings::class);
+        $settings->global_visibility_role_ids = [];
+        $settings->save();
+    });
+
     test('user with coordinator role sees tenant-wide institutions', function () {
         // First, configure a coordinator role in settings
         $coordinatorRole = \App\Models\Role::where('name', 'Communication Coordinator')->first();
@@ -459,7 +494,7 @@ describe('atstovavimas dashboard authorization', function () {
 
         // Get a fresh settings instance and update it
         $settings = app(\App\Settings\AtstovavimasSettings::class);
-        $settings->coordinator_role_ids = [$coordinatorRole->id];
+        $settings->tenant_visibility_role_ids = [$coordinatorRole->id];
         $settings->save();
 
         // Clear the cached settings instance so the controller gets fresh values
@@ -467,7 +502,7 @@ describe('atstovavimas dashboard authorization', function () {
 
         // Verify settings were saved correctly
         $freshSettings = app(\App\Settings\AtstovavimasSettings::class);
-        expect($freshSettings->coordinator_role_ids)->toBe([$coordinatorRole->id]);
+        expect($freshSettings->tenant_visibility_role_ids)->toBe([$coordinatorRole->id]);
         expect($freshSettings->userHasCoordinatorRole($this->admin))->toBeTrue();
 
         // The admin (Communication Coordinator) should have available tenants
@@ -487,7 +522,7 @@ describe('atstovavimas dashboard authorization', function () {
 
         // Clean up settings
         $settings = app(\App\Settings\AtstovavimasSettings::class);
-        $settings->coordinator_role_ids = [];
+        $settings->tenant_visibility_role_ids = [];
         $settings->save();
     });
 
@@ -774,7 +809,7 @@ describe('tenant isolation', function () {
         $coordinatorRole = \App\Models\Role::where('name', 'Communication Coordinator')->first();
         if ($coordinatorRole) {
             $settings = app(\App\Settings\AtstovavimasSettings::class);
-            $settings->coordinator_role_ids = [$coordinatorRole->id];
+            $settings->tenant_visibility_role_ids = [$coordinatorRole->id];
             $settings->save();
             app()->forgetInstance(\App\Settings\AtstovavimasSettings::class);
         }

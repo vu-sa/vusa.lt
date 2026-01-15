@@ -4,29 +4,58 @@
       <AdminForm :model="form" @submit:form="handleFormSubmit">
         <FormElement>
           <template #title>
-            {{ $t('settings.atstovavimas_settings.coordinator_roles_title') }}
+            {{ $t('settings.atstovavimas_settings.global_roles_title') }}
           </template>
           <template #description>
-            {{ $t('settings.atstovavimas_settings.coordinator_roles_description') }}
+            {{ $t('settings.atstovavimas_settings.global_roles_description') }}
           </template>
           
           <div class="space-y-2">
             <Label class="inline-flex items-center gap-1">
               <component :is="Icons.ROLE" class="h-4 w-4" />
-              {{ $t('settings.atstovavimas_settings.coordinator_roles_label') }}
+              {{ $t('settings.atstovavimas_settings.global_roles_label') }}
             </Label>
             
             <MultiSelect
-              v-model="selectedRoles"
+              v-model="selectedGlobalRoles"
               :options="props.roles"
               label-field="name"
               value-field="id"
-              :placeholder="$t('settings.atstovavimas_settings.coordinator_roles_placeholder')"
+              :placeholder="$t('settings.atstovavimas_settings.global_roles_placeholder')"
               :empty-text="$t('settings.atstovavimas_settings.no_roles_found')"
             />
             
             <p class="text-sm text-muted-foreground">
-              {{ $t('settings.atstovavimas_settings.coordinator_roles_note') }}
+              {{ $t('settings.atstovavimas_settings.global_roles_note') }}
+            </p>
+          </div>
+        </FormElement>
+
+        <FormElement>
+          <template #title>
+            {{ $t('settings.atstovavimas_settings.tenant_roles_title') }}
+          </template>
+          <template #description>
+            {{ $t('settings.atstovavimas_settings.tenant_roles_description') }}
+          </template>
+
+          <div class="space-y-2">
+            <Label class="inline-flex items-center gap-1">
+              <component :is="Icons.ROLE" class="h-4 w-4" />
+              {{ $t('settings.atstovavimas_settings.tenant_roles_label') }}
+            </Label>
+
+            <MultiSelect
+              v-model="selectedTenantRoles"
+              :options="props.roles"
+              label-field="name"
+              value-field="id"
+              :placeholder="$t('settings.atstovavimas_settings.tenant_roles_placeholder')"
+              :empty-text="$t('settings.atstovavimas_settings.no_roles_found')"
+            />
+
+            <p class="text-sm text-muted-foreground">
+              {{ $t('settings.atstovavimas_settings.tenant_roles_note') }}
             </p>
           </div>
         </FormElement>
@@ -53,22 +82,30 @@ interface Role {
 }
 
 const props = defineProps<{
-  coordinator_role_ids: string[];
+  global_visibility_role_ids: string[];
+  tenant_visibility_role_ids: string[];
   roles: Role[];
 }>();
 
-// Initialize selected roles from props
-const selectedRoles = ref<Role[]>(
-  props.roles.filter(role => props.coordinator_role_ids.includes(role.id))
+const selectedGlobalRoles = ref<Role[]>(
+  props.roles.filter(role => props.global_visibility_role_ids.includes(role.id))
+);
+
+const selectedTenantRoles = ref<Role[]>(
+  props.roles.filter(role => props.tenant_visibility_role_ids.includes(role.id))
 );
 
 const form = useForm({
-  coordinator_role_ids: props.coordinator_role_ids
+  global_visibility_role_ids: props.global_visibility_role_ids,
+  tenant_visibility_role_ids: props.tenant_visibility_role_ids
 });
 
-// Sync selected roles to form
-watch(selectedRoles, (newRoles) => {
-  form.coordinator_role_ids = newRoles.map(role => role.id);
+watch(selectedGlobalRoles, (newRoles) => {
+  form.global_visibility_role_ids = newRoles.map(role => role.id);
+}, { deep: true });
+
+watch(selectedTenantRoles, (newRoles) => {
+  form.tenant_visibility_role_ids = newRoles.map(role => role.id);
 }, { deep: true });
 
 const handleFormSubmit = () => {

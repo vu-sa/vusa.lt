@@ -164,7 +164,8 @@ class SettingsController extends AdminController
         $this->authorizeSettingsAccess($settingsSettings);
 
         return $this->inertiaResponse('Admin/Settings/EditAtstovavimasSettings', [
-            'coordinator_role_ids' => $atstovavimasSettings->getCoordinatorRoleIds()->toArray(),
+            'global_visibility_role_ids' => $atstovavimasSettings->getGlobalVisibilityRoleIds()->toArray(),
+            'tenant_visibility_role_ids' => $atstovavimasSettings->getTenantVisibilityRoleIds()->toArray(),
             'roles' => Role::all(['id', 'name']),
         ]);
     }
@@ -176,7 +177,11 @@ class SettingsController extends AdminController
     {
         $this->authorizeSettingsAccess($settingsSettings);
 
-        $atstovavimasSettings->coordinator_role_ids = $request->input('coordinator_role_ids', []);
+        $tenantVisibilityRoleIds = $request->input('tenant_visibility_role_ids', []);
+
+        $atstovavimasSettings->tenant_visibility_role_ids = $tenantVisibilityRoleIds;
+        $atstovavimasSettings->global_visibility_role_ids = $request->input('global_visibility_role_ids', []);
+        $atstovavimasSettings->coordinator_role_ids = $tenantVisibilityRoleIds;
         $atstovavimasSettings->save();
 
         return $this->redirectBackWithSuccess(__('settings.messages.updated'));
