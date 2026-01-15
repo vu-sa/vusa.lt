@@ -344,7 +344,7 @@ const props = withDefaults(defineProps<{
   loading: boolean;
   institutionId?: string;
   agendaItems?: Array<{ title: string; description?: string; order: number }>;
-  recentMeetings?: Array<{ id: string; title: string; start_time: string; institution_name: string; agenda_items: { title: string }[] }>;
+  recentMeetings?: Array<{ id: string; title: string; start_time: string; institution_id: string; institution_name: string; agenda_items: { title: string }[] }>;
   /** 'create' shows template selection, 'add' starts directly in one-by-one mode */
   mode?: 'create' | 'add';
   /** Custom label for submit button */
@@ -360,12 +360,17 @@ const props = withDefaults(defineProps<{
   showHint: true,
 });
 
+// Debug logging
+console.log('[AgendaItemsForm] Props received:', {
+  institutionId: props.institutionId,
+  recentMeetings: props.recentMeetings,
+  mode: props.mode,
+})
+
 // Composables
 const {
   templates,
-  quickAgendaTemplates,
   getTemplatesForInstitution,
-  loadRecentMeetings,
   applyTemplate
 } = useMeetingTemplates(props.recentMeetings);
 
@@ -384,14 +389,9 @@ const showPreviousMeetingList = ref(false);
 const broughtByStudentsFlags = ref<Record<number, boolean>>({});
 
 // Computed properties
-const recentTemplates = computed(() =>
-  availableTemplates.value.filter(t => t.type === 'recent').slice(0, 5)
+const recentTemplates = computed(() => 
+  getTemplatesForInstitution(props.institutionId).slice(0, 5)
 );
-
-const availableTemplates = computed(() => {
-  if (!props.institutionId) return templates.value.filter(t => t.isDefault);
-  return getTemplatesForInstitution({ id: props.institutionId } as App.Entities.Institution);
-});
 
 const currentAgendaItems = computed(() =>
   props.agendaItems?.map(item => item.title) || []
@@ -511,11 +511,10 @@ const startOneByOne = () => {
   }
 };
 
-const loadFromPreviousMeeting = (meetingId: string) => {
-  const meeting = availableTemplates.value.find(t => t.id === meetingId);
-  if (meeting && agendaItemField.value) {
-    const items = meeting.agendaItems.map(item => typeof item === 'string' ? item : item.title);
-    agendaItemField.value.setValue(items);
+const loadFromPreviousMeeting = (templateId: string) => {
+  const template = templates.value.find(t => t.id === templateId);
+  if (template && agendaItemField.value) {
+    agendaItemField.value.setValue(template.agendaItems);
     showPreviousMeetingList.value = false;
     agendaInputMode.value = 'one-by-one'; // Switch to one-by-one view after loading
   }
@@ -565,12 +564,7 @@ watch(() => currentAgendaItems.value, (newItems) => {
 }, { immediate: true });
 
 // Lifecycle
-onMounted(async () => {
-  // Load recent meetings if institution is provided (only in create mode)
-  if (props.mode === 'create' && props.institutionId) {
-    await loadRecentMeetings(props.institutionId);
-  }
-  
+onMounted(() => {
   // In 'add' mode, start directly in one-by-one mode with an empty item
   if (props.mode === 'add' && currentAgendaItems.value.length === 0) {
     startOneByOne();

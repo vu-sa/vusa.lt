@@ -177,13 +177,10 @@ import {
   CheckCircle,
   Edit,
   Calendar,
-  AlertTriangle,
   FileText,
   MapPin,
   ChevronDown,
-  Lightbulb,
   ArrowLeft,
-  Clock,
   Loader2,
   Rocket,
 } from 'lucide-vue-next'
@@ -239,49 +236,6 @@ const displayedAgendaItems = computed(() => {
   return agendaItems.value.slice(0, maxDisplayedItems)
 })
 
-const estimatedDuration = computed(() => {
-  // Basic calculation: 30 min base + 15 min per agenda item
-  const baseTime = 30
-  const itemTime = agendaItems.value.length * 15
-  return baseTime + itemTime
-})
-
-const insights = computed(() => {
-  const suggestions: string[] = []
-  
-  // Time-based insights
-  if (meetingData.value.start_time) {
-    const date = new Date(meetingData.value.start_time)
-    const hour = date.getHours()
-    
-    if (hour < 9) {
-      suggestions.push($t('Ankstus susitikimo laikas - patikrinkite, ar visi dalyviai galės dalyvauti'))
-    }
-    
-    if (hour > 18) {
-      suggestions.push($t('Vėlyvas susitikimo laikas - apsvarstykite ankstesnį laiką'))
-    }
-    
-    if (isWeekend(meetingData.value.start_time)) {
-      suggestions.push($t('Susitikimas savaitgalį - patvirtinkite dalyvių galimybes'))
-    }
-  }
-  
-  // Agenda-based insights
-  if (agendaItems.value.length === 0) {
-    suggestions.push($t('Susitikimas be darbotvarkės - apsvarstykite pagrindinių klausimų pridėjimą'))
-  } else if (agendaItems.value.length > 10) {
-    suggestions.push($t('Daug darbotvarkės klausimų - apsvarstykite susitikimo padalijimą'))
-  }
-  
-  // Duration insights
-  if (estimatedDuration.value > 120) {
-    suggestions.push($t('Ilgas susitikimas - planuokite pertraukėles'))
-  }
-  
-  return suggestions
-})
-
 // Utility methods
 const formatDate = (dateString: string): string => {
   if (!dateString) return ''
@@ -301,13 +255,6 @@ const formatTime = (dateString: string): string => {
     hour: 'numeric',
     minute: '2-digit'
   })
-}
-
-const isWeekend = (dateString: string): boolean => {
-  if (!dateString) return false
-  const date = new Date(dateString)
-  const day = date.getDay()
-  return day === 0 || day === 6
 }
 
 const handleSubmit = () => {

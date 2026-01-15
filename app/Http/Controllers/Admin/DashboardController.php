@@ -248,25 +248,6 @@ class DashboardController extends AdminController
             $availableTenants = collect();
         }
 
-        // Derive recent meetings from user's institutions only (lightweight)
-        $sixMonthsAgo = now()->subMonths(6);
-        $recentMeetings = $userInstitutions
-            ->flatMap(function ($institution) use ($sixMonthsAgo) {
-                return $institution->meetings
-                    ?->filter(fn ($meeting) => $meeting->start_time >= $sixMonthsAgo)
-                    ->map(fn ($meeting) => [
-                        'id' => (string) $meeting->id,
-                        'title' => $meeting->title,
-                        'start_time' => $meeting->start_time?->toISOString(),
-                        'institution_name' => $institution->name ?? 'Unknown',
-                        'agenda_items' => $meeting->agendaItems->map(fn ($item) => ['title' => $item->title])->toArray(),
-                    ]) ?? collect();
-            })
-            ->sortByDesc('start_time')
-            ->unique('id')
-            ->take(10)
-            ->values();
-
         // Quick check if user might have related institutions (without loading them)
         // This enables the filter UI even when relatedInstitutions is lazy-loaded
         $mayHaveRelatedInstitutions = $userInstitutions->isNotEmpty();
@@ -330,7 +311,7 @@ class DashboardController extends AdminController
                 return $institutions->values();
             }),
             'availableTenants' => $availableTenants,
-            'recentMeetings' => $recentMeetings,
+            // Note: recentMeetings is provided via shared Inertia data in HandleInertiaRequests middleware
         ]);
     }
 

@@ -99,7 +99,7 @@
 
     <!-- These modals can be opened from FullscreenGanttModal, so they must come after it in DOM order -->
     <NewMeetingModal :show-modal="actions.showMeetingModal.value" :institution="actions.selectedInstitution.value"
-      :suggested-at="actions.selectedSuggestedAt.value" :recent-meetings="props.recentMeetings"
+      :suggested-at="actions.selectedSuggestedAt.value"
       @close="actions.onCloseMeetingModal" />
 
     <AddCheckInDialog v-if="actions.showCreateCheckIn.value" :open="!!actions.showCreateCheckIn.value"
@@ -349,7 +349,6 @@ const props = defineProps<{
   relatedInstitutions?: AtstovavimosInstitution[];
   mayHaveRelatedInstitutions?: boolean;
   availableTenants: AtstovavimosTenant[];
-  recentMeetings?: Array<{ id: string; title: string; start_time: string; institution_name: string; agenda_items: { title: string }[] }>;
 }>();
 
 // Reactive computed for tenant institutions (from lazy-loaded props)

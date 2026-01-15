@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use App\Enums\ModelEnum;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Services\ResourceServices\DutyService;
 use App\Services\Typesense\TypesenseManager;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
@@ -95,6 +96,8 @@ class HandleInertiaRequests extends Middleware
                     ->pluck('endpoint')
                     ->toArray() ?? [],
             ],
+            // Recent meetings for the NewMeetingModal (only on admin pages)
+            'recentMeetings' => fn () => $this->getRecentMeetingsForInertia($request, $user),
         ]);
     }
 
@@ -164,5 +167,45 @@ class HandleInertiaRequests extends Middleware
                     return [$model => $user->can('create', ['App\\Models\\'.ucfirst($model)])];
                 })->toArray();
         });
+    }
+
+    /**
+     * Get recent meetings for the NewMeetingModal shared data.
+     * Only loaded on admin pages (path starts with 'mano').
+     */
+    private function getRecentMeetingsForInertia(Request $request, ?User $user): ?array
+    {
+        // Only load for admin pages
+        if (! str_starts_with($request->path(), 'mano') || ! $user) {
+            return null;
+        }
+
+        // Get user's institutions with meetings
+        $userInstitutions = DutyService::getUserInstitutionsForDashboard();
+
+        if ($userInstitutions->isEmpty()) {
+            return [];
+        }
+
+        $sixMonthsAgo = now()->subMonths(6);
+
+        return $userInstitutions
+            ->flatMap(function ($institution) use ($sixMonthsAgo) {
+                return $institution->meetings
+                    ?->filter(fn ($meeting) => $meeting->start_time >= $sixMonthsAgo)
+                    ->map(fn ($meeting) => [
+                        'id' => (string) $meeting->id,
+                        'title' => $meeting->title,
+                        'start_time' => $meeting->start_time?->toISOString(),
+                        'institution_id' => (string) $institution->id,
+                        'institution_name' => $institution->name ?? 'Unknown',
+                        'agenda_items' => $meeting->agendaItems->map(fn ($item) => ['title' => $item->title])->toArray(),
+                    ]) ?? collect();
+            })
+            ->sortByDesc('start_time')
+            ->unique('id')
+            ->take(10)
+            ->values()
+            ->toArray();
     }
 }

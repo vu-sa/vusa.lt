@@ -29,10 +29,10 @@ const delegatedProps = computed(() => {
 
 const forwarded = useForwardPropsEmits(delegatedProps, emits)
 
-// Month names for the dropdown
+// Abbreviated month names for the dropdown (prevent overflow)
 const monthNames = [
-  'Sausis', 'Vasaris', 'Kovas', 'Balandis', 'Gegužė', 'Birželis',
-  'Liepa', 'Rugpjūtis', 'Rugsėjis', 'Spalis', 'Lapkritis', 'Gruodis'
+  'Sau', 'Vas', 'Kov', 'Bal', 'Geg', 'Bir',
+  'Lie', 'Rgp', 'Rgs', 'Spa', 'Lap', 'Grd'
 ]
 
 // Generate years array from range
@@ -100,11 +100,11 @@ const handleYearSelect = (year: string) => {
     v-bind="forwarded"
     @update:placeholder="handlePlaceholderChange"
   >
-    <CalendarHeader class="w-full justify-between">
-      <CalendarHeading>
+    <CalendarHeader class="w-full justify-between gap-2">
+      <CalendarHeading class="min-w-0 flex-1">
         <div class="flex items-center gap-1">
           <Select :model-value="String(currentPlaceholder.month)" @update:model-value="handleMonthSelect">
-            <SelectTrigger class="h-7 w-auto gap-0.5 border-none px-1.5 text-sm font-medium hover:bg-accent focus:ring-0 focus:ring-offset-0">
+            <SelectTrigger class="h-7 w-[4.5rem] gap-0.5 border-none px-1.5 text-sm font-medium hover:bg-accent focus:ring-0 focus:ring-offset-0">
               <SelectValue>
                 {{ monthNames[currentPlaceholder.month - 1] }}
               </SelectValue>
@@ -130,7 +130,7 @@ const handleYearSelect = (year: string) => {
         </div>
       </CalendarHeading>
 
-      <div class="flex items-center">
+      <div class="flex items-center gap-1">
         <CalendarPrevButton />
         <CalendarNextButton />
       </div>
