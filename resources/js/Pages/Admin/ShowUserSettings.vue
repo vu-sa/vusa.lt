@@ -177,8 +177,10 @@
 <script setup lang="tsx">
 import { trans as $t } from "laravel-vue-i18n";
 import { ref, computed } from "vue";
-import { router, useForm, usePage } from "@inertiajs/vue3";
+import { useForm, usePage } from "@inertiajs/vue3";
 
+import { useApiMutation } from "@/Composables/useApi";
+import { resetInitialization } from "@/Composables/useTutorialProgress";
 import { Button } from "@/Components/ui/button";
 import FormElement from "@/Components/AdminForms/FormElement.vue";
 import MultiLocaleInput from "@/Components/FormItems/MultiLocaleInput.vue";
@@ -284,18 +286,27 @@ const handlePasswordUpdate = () => {
   });
 };
 
-const handleResetTutorials = () => {
+const handleResetTutorials = async () => {
   tutorialResetLoading.value = true;
   tutorialResetSuccess.value = false;
   
-  router.post(route("tutorials.resetAll"), {}, {
-    preserveScroll: true,
-    preserveState: true,
-    onSuccess: () => {
-      tutorialResetLoading.value = false;
+  try {
+    const { execute, isSuccess } = useApiMutation(
+      route("api.v1.admin.tutorials.resetAll"),
+      'POST',
+      {},
+      { showSuccessToast: false, showErrorToast: true }
+    );
+    
+    await execute();
+    
+    if (isSuccess.value) {
       tutorialResetSuccess.value = true;
       
-      // Also clear localStorage
+      // Reset the shared tutorial progress state
+      resetInitialization();
+      
+      // Also clear localStorage (legacy)
       if (typeof window !== 'undefined') {
         localStorage.removeItem('vusa-tutorial-progress');
       }
@@ -304,10 +315,9 @@ const handleResetTutorials = () => {
       setTimeout(() => {
         tutorialResetSuccess.value = false;
       }, 3000);
-    },
-    onError: () => {
-      tutorialResetLoading.value = false;
-    },
-  });
+    }
+  } finally {
+    tutorialResetLoading.value = false;
+  }
 };
 </script>

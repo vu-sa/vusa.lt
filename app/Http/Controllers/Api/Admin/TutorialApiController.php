@@ -15,10 +15,78 @@ class TutorialApiController extends ApiController
     {
         $user = $this->requireAuth($request);
 
-        $completedTutorials = $user->completedTutorials ?? [];
+        return $this->jsonSuccess([
+            'progress' => $user->tutorial_progress ?? [],
+        ]);
+    }
+
+    /**
+     * Mark a tutorial/tour as completed for the current user.
+     *
+     * Stores the tour ID with completion timestamp in the user's tutorial_progress JSON column.
+     * Tour IDs should follow the format: {page}-{section}-v{version} (e.g., "atstovavimas-overview-v1")
+     * or spotlight-{feature}-v{version} for spotlights (e.g., "spotlight-tenant-tab-v1")
+     */
+    public function markComplete(Request $request): JsonResponse
+    {
+        $request->validate([
+            'tour_id' => 'required|string|max:100',
+        ]);
+
+        $user = $this->requireAuth($request);
+
+        $tourId = $request->input('tour_id');
+        $progress = $user->tutorial_progress ?? [];
+
+        // Only mark as completed if not already completed
+        if (! isset($progress[$tourId])) {
+            $progress[$tourId] = now()->toIso8601String();
+            $user->tutorial_progress = $progress;
+            $user->save();
+        }
 
         return $this->jsonSuccess([
-            'completedTutorials' => $completedTutorials,
+            'progress' => $progress,
+        ]);
+    }
+
+    /**
+     * Reset a specific tutorial for the current user (allows replay).
+     */
+    public function resetTour(Request $request): JsonResponse
+    {
+        $request->validate([
+            'tour_id' => 'required|string|max:100',
+        ]);
+
+        $user = $this->requireAuth($request);
+
+        $tourId = $request->input('tour_id');
+        $progress = $user->tutorial_progress ?? [];
+
+        if (isset($progress[$tourId])) {
+            unset($progress[$tourId]);
+            $user->tutorial_progress = $progress;
+            $user->save();
+        }
+
+        return $this->jsonSuccess([
+            'progress' => $progress,
+        ]);
+    }
+
+    /**
+     * Reset all tutorials for the current user.
+     */
+    public function resetAll(Request $request): JsonResponse
+    {
+        $user = $this->requireAuth($request);
+
+        $user->tutorial_progress = [];
+        $user->save();
+
+        return $this->jsonSuccess([
+            'progress' => [],
         ]);
     }
 }

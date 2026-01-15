@@ -55,26 +55,9 @@ class AtstovavimasSettings extends Settings
      */
     public array $tenant_visibility_role_ids = [];
 
-    /**
-     * Deprecated: kept for migration mapping.
-     *
-     * @var string[]
-     */
-    public array $coordinator_role_ids = [];
-
     public static function group(): string
     {
         return 'atstovavimas';
-    }
-
-    /**
-     * Get coordinator role IDs as Collection
-     */
-    public function getCoordinatorRoleIds(): Collection
-    {
-        return collect($this->coordinator_role_ids)
-            ->map(fn ($id) => (string) $id)
-            ->filter();
     }
 
     public function getGlobalVisibilityRoleIds(): Collection
@@ -90,19 +73,7 @@ class AtstovavimasSettings extends Settings
             ->map(fn ($id) => (string) $id)
             ->filter();
 
-        if ($tenantVisibilityRoleIds->isNotEmpty()) {
-            return $tenantVisibilityRoleIds;
-        }
-
-        return $this->getCoordinatorRoleIds();
-    }
-
-    /**
-     * Set coordinator role IDs from array
-     */
-    public function setCoordinatorRoleIds(array $ids): void
-    {
-        $this->coordinator_role_ids = array_map('strval', array_filter($ids));
+        return $tenantVisibilityRoleIds;
     }
 
     public function setGlobalVisibilityRoleIds(array $ids): void

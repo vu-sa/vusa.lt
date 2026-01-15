@@ -38,11 +38,6 @@ Route::patch('profile/notification-preferences', [DashboardController::class, 'u
 Route::get('userTasks', [DashboardController::class, 'userTasks'])->name('userTasks');
 Route::get('institutionGraph', [DashboardController::class, 'institutionGraph'])->name('institutionGraph');
 
-// Tutorial/Onboarding routes (mutations stay here, GET endpoints in API)
-Route::post('tutorials/complete', [TutorialController::class, 'markCompleted'])->name('tutorials.complete');
-Route::post('tutorials/reset', [TutorialController::class, 'resetTour'])->name('tutorials.reset');
-Route::post('tutorials/reset-all', [TutorialController::class, 'resetAll'])->name('tutorials.resetAll');
-
 // System Status
 Route::get('system-status', [SystemStatusController::class, 'index'])->name('systemStatus');
 

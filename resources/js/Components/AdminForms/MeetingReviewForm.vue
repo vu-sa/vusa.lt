@@ -257,6 +257,13 @@ const formatTime = (dateString: string): string => {
   })
 }
 
+const isWeekend = (dateString: string): boolean => {
+  if (!dateString) return false
+  const date = new Date(dateString)
+  const day = date.getDay()
+  return day === 0 || day === 6 // Sunday = 0, Saturday = 6
+}
+
 const handleSubmit = () => {
   emit('submit')
 }

@@ -181,7 +181,6 @@ class SettingsController extends AdminController
 
         $atstovavimasSettings->tenant_visibility_role_ids = $tenantVisibilityRoleIds;
         $atstovavimasSettings->global_visibility_role_ids = $request->input('global_visibility_role_ids', []);
-        $atstovavimasSettings->coordinator_role_ids = $tenantVisibilityRoleIds;
         $atstovavimasSettings->save();
 
         return $this->redirectBackWithSuccess(__('settings.messages.updated'));

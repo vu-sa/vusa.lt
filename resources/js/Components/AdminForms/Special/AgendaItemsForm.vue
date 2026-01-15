@@ -53,60 +53,115 @@
               <div class="flex flex-col gap-4">
                 <!-- Individual items input with drag and drop -->
                 <div v-if="!showQuestionInputInTextArea && fields.length > 0" class="space-y-2">
-                  <TransitionGroup name="list" tag="div">
-                    <div v-for="(field, index) in fields" :key="field.key"
-                      class="flex items-start gap-2 p-2 rounded-lg border border-dashed hover:border-solid hover:bg-muted/50 transition-all"
-                      :draggable="true" @dragstart="handleDragStart(index)" @dragover="handleDragOver"
-                      @drop="handleDrop(index, move)">
-                      <GripVertical class="h-4 w-4 mt-2 text-muted-foreground cursor-grab active:cursor-grabbing" />
+                  <div ref="sortableContainer">
+                    <div v-for="(field, index) in (updateFieldKeys(fields), fields)" :key="field.key"
+                      :data-key="field.key"
+                      class="group flex items-start gap-2 p-2 rounded-lg border border-dashed hover:border-solid hover:bg-muted/50 transition-all mb-2">
+                      <div class="drag-handle shrink-0 cursor-grab active:cursor-grabbing p-1 -ml-1 text-zinc-300 hover:text-zinc-500 dark:text-zinc-600 dark:hover:text-zinc-400 transition-all duration-150 opacity-0 group-hover:opacity-100">
+                        <GripVertical class="h-4 w-4" />
+                      </div>
                       <span class="w-7 flex-shrink-0 mt-2 text-sm font-medium text-muted-foreground">{{ `${index + 1}.`
                       }}</span>
                       <div class="flex-1 space-y-2">
                         <FormControl>
-                          <Input v-model="(field as any).value" :placeholder="`Darbotvarkės klausimas nr. ${index + 1}`"
-                            @keydown.enter.prevent="addNewItem(index + 1, push)"
-                            @keydown.backspace="handleBackspace(index, (field as any).value, remove)" />
+                          <Textarea 
+                            ref="questionTextareas"
+                            v-model="(field as any).value" 
+                            :placeholder="`Darbotvarkės klausimas nr. ${index + 1}`"
+                            class="min-h-9 resize-none overflow-hidden py-2"
+                            :rows="1"
+                            @keydown.enter.exact.prevent="handleEnterKey(index, fields.length, push)"
+                            @keydown.backspace="handleBackspace(index, (field as any).value, remove)"
+                            @input="autoResizeTextarea($event)" />
                         </FormControl>
-                        <!-- Optional description for agenda items -->
-                        <FormControl v-if="showDescriptions">
-                          <Textarea v-model="(field as any).description"
-                            :placeholder="$t('Papildomas aprašymas (neprivalomas)')" class="text-sm resize-none"
-                            :rows="2" />
-                        </FormControl>
+                        <!-- Optional description for agenda items (per-item toggle) -->
+                        <div v-if="itemDescriptionsVisible[field.key]" class="relative">
+                          <FormControl>
+                            <Textarea 
+                              v-model="itemDescriptions[field.key]"
+                              :placeholder="$t('Papildomas aprašymas (neprivalomas)')" 
+                              class="text-sm resize-none min-h-16 overflow-hidden"
+                              :rows="2"
+                              @input="autoResizeTextarea($event)" />
+                          </FormControl>
+                        </div>
                       </div>
-                      <div class="flex items-center gap-1 mt-2">
-                        <!-- Brought by students toggle -->
+                      <div class="flex items-center gap-1 mt-1">
+                        <!-- Per-item description toggle -->
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger as-child>
                               <Button 
                                 type="button" 
-                                :variant="broughtByStudentsFlags[index] ? 'default' : 'ghost'" 
+                                :variant="itemDescriptionsVisible[field.key] ? 'secondary' : 'ghost'" 
                                 size="icon" 
                                 class="h-6 w-6"
-                                :class="broughtByStudentsFlags[index] ? 'bg-vusa-red hover:bg-vusa-red/90' : 'opacity-50 hover:opacity-100'"
-                                @click="broughtByStudentsFlags[index] = !broughtByStudentsFlags[index]">
+                                :class="itemDescriptionsVisible[field.key] ? '' : 'opacity-50 hover:opacity-100'"
+                                @click="itemDescriptionsVisible[field.key] = !itemDescriptionsVisible[field.key]">
+                                <TextIcon class="h-3 w-3" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              {{ itemDescriptionsVisible[field.key] ? $t('Slėpti aprašymą') : $t('Pridėti aprašymą') }}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                        <!-- Brought by students toggle - with spotlight on first item only -->
+                        <SpotlightPopover
+                          v-if="index === 0"
+                          :title="$t('Studentų atnešti klausimai')"
+                          :description="$t('Pažymėkite klausimus, kuriuos į posėdį atnešė studentai. Tai padeda sekti studentų aktyvumą institucijose.')"
+                          position="left"
+                          :show-badge="studentBroughtSpotlight.isVisible.value"
+                          :is-dismissed="!studentBroughtSpotlight.isVisible.value"
+                          @dismiss="studentBroughtSpotlight.dismiss"
+                        >
+                          <Button 
+                            type="button" 
+                            :variant="broughtByStudentsFlags[field.key] ? 'default' : 'ghost'" 
+                            size="icon" 
+                            class="h-6 w-6"
+                            :class="broughtByStudentsFlags[field.key] ? 'bg-vusa-red hover:bg-vusa-red/90' : 'opacity-50 hover:opacity-100'"
+                            @click="broughtByStudentsFlags[field.key] = !broughtByStudentsFlags[field.key]">
+                            <UsersIcon class="h-3 w-3" />
+                          </Button>
+                        </SpotlightPopover>
+                        <TooltipProvider v-else>
+                          <Tooltip>
+                            <TooltipTrigger as-child>
+                              <Button 
+                                type="button" 
+                                :variant="broughtByStudentsFlags[field.key] ? 'default' : 'ghost'" 
+                                size="icon" 
+                                class="h-6 w-6"
+                                :class="broughtByStudentsFlags[field.key] ? 'bg-vusa-red hover:bg-vusa-red/90' : 'opacity-50 hover:opacity-100'"
+                                @click="broughtByStudentsFlags[field.key] = !broughtByStudentsFlags[field.key]">
                                 <UsersIcon class="h-3 w-3" />
                               </Button>
                             </TooltipTrigger>
                             <TooltipContent>
-                              {{ broughtByStudentsFlags[index] ? $t('Studentų atneštas klausimas') : $t('Pažymėti kaip studentų atnešta') }}
+                              {{ broughtByStudentsFlags[field.key] ? $t('Studentų atneštas klausimas') : $t('Pažymėti kaip studentų atnešta') }}
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
-                        <Button type="button" variant="ghost" size="icon" class="h-6 w-6 opacity-50 hover:opacity-100"
-                          @click="duplicateItem(index, (field as any).value, push)">
-                          <Copy class="h-3 w-3" />
-                        </Button>
-                        <Button type="button" variant="ghost" size="icon"
-                          class="h-6 w-6 opacity-50 hover:opacity-100 hover:text-destructive"
-                          :disabled="fields.length === 1"
-                          @click="remove(index)">
-                          <TrashIcon class="h-3 w-3" />
-                        </Button>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger as-child>
+                              <Button type="button" variant="ghost" size="icon"
+                                class="h-6 w-6 opacity-50 hover:opacity-100 hover:bg-destructive/10 hover:text-destructive"
+                                :disabled="fields.length === 1"
+                                @click="removeItem(field.key, index, remove)">
+                                <TrashIcon class="h-3 w-3" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              {{ $t('Pašalinti klausimą') }}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                       </div>
                     </div>
-                  </TransitionGroup>
+                  </div>
 
                   <!-- Action buttons - only when there are items -->
                   <div class="flex flex-wrap gap-2 pt-2">
@@ -126,19 +181,6 @@
                       <ArrowLeft class="mr-2 h-4 w-4" />
                       {{ $t('Grįžti') }}
                     </Button>
-                  </div>
-
-                  <!-- Descriptions Toggle -->
-                  <div class="flex items-center justify-between pt-3 pb-1 px-1">
-                    <div class="space-y-0.5">
-                      <Label class="text-sm font-medium">
-                        {{ $t('Aprašymai') }}
-                      </Label>
-                      <p class="text-xs text-muted-foreground">
-                        {{ $t('Pridėti papildomus aprašymus prie klausimų') }}
-                      </p>
-                    </div>
-                    <Switch v-model="showDescriptions" />
                   </div>
                 </div>
 
@@ -301,6 +343,7 @@ import { trans as $t } from "laravel-vue-i18n";
 import { Form, FieldArray } from "vee-validate";
 import { toTypedSchema } from '@vee-validate/zod';
 import * as z from 'zod';
+import { useSortable } from '@vueuse/integrations/useSortable';
 import {
   Trash as TrashIcon,
   Plus as PlusIcon,
@@ -308,13 +351,13 @@ import {
   ArrowRight,
   History,
   GripVertical,
-  Copy,
   ArrowLeft,
   Upload,
   Trash2,
   CheckCircle,
   Loader2,
   Users as UsersIcon,
+  Text as TextIcon,
 } from "lucide-vue-next";
 
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
@@ -322,10 +365,11 @@ import IconsFilled from "@/Types/Icons/filled";
 import IconsRegular from "@/Types/Icons/regular";
 import ModelChip from "@/Components/Tag/ModelChip.vue";
 import SuggestionAlert from "@/Components/Alerts/SuggestionAlert.vue";
+import SpotlightPopover from "@/Components/Onboarding/SpotlightPopover.vue";
 import { useMeetingTemplates } from "@/Composables/useMeetingTemplates";
+import { useFeatureSpotlight } from "@/Composables/useFeatureSpotlight";
 // Import Shadcn components
 import { Button } from "@/Components/ui/button";
-import { Input } from "@/Components/ui/input";
 import { Textarea } from "@/Components/ui/textarea";
 import {
   FormControl,
@@ -335,8 +379,6 @@ import {
   FormMessage,
 } from "@/Components/ui/form";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
-import { Switch } from "@/Components/ui/switch";
-import { Label } from "@/Components/ui/label";
 
 const emit = defineEmits<(e: "submit", data: Record<string, any>) => void>();
 
@@ -376,17 +418,28 @@ const {
 
 const agendaItemField = useTemplateRef<typeof FormField>("agendaItemField");
 const agendaForm = useTemplateRef<typeof Form>("agendaForm");
+const sortableContainer = ref<HTMLElement | null>(null);
+
+// Feature spotlight for student-brought toggle
+const studentBroughtSpotlight = useFeatureSpotlight('meeting-student-brought-v1', {
+  title: $t('Studentų atnešti klausimai'),
+  description: $t('Pažymėkite klausimus, kuriuos į posėdį atnešė studentai.'),
+});
 
 // Local state
 const showAlert = ref(true);
 const showQuestionInputInTextArea = ref(false);
-const showDescriptions = ref(false);
 const questionInputInTextArea = ref("");
-const draggedIndex = ref<number | null>(null);
 const agendaInputMode = ref<'previous' | 'one-by-one' | 'text' | null>(null);
 const showPreviousMeetingList = ref(false);
-// Track brought_by_students flag for each item by index
-const broughtByStudentsFlags = ref<Record<number, boolean>>({});
+// Track brought_by_students flag for each item by field.key (survives reordering)
+const broughtByStudentsFlags = ref<Record<string, boolean>>({});
+// Track per-item description visibility by field.key
+const itemDescriptionsVisible = ref<Record<string, boolean>>({});
+// Track per-item descriptions by field.key
+const itemDescriptions = ref<Record<string, string>>({});
+// Track current field keys in order (updated during render via v-for)
+const currentFieldKeys = ref<string[]>([]);
 
 // Computed properties
 const recentTemplates = computed(() => 
@@ -423,10 +476,25 @@ const addNewItem = (index: number, push: Function) => {
   push('');
   // Focus on the new item after it's added
   setTimeout(() => {
-    const inputs = document.querySelectorAll('input[placeholder*="Darbotvarkės klausimas"]');
-    const newInput = inputs[index] as HTMLInputElement;
-    newInput?.focus();
+    const textareas = document.querySelectorAll('textarea[placeholder*="Darbotvarkės klausimas"]');
+    const newTextarea = textareas[index] as HTMLTextAreaElement;
+    newTextarea?.focus();
   }, 100);
+};
+
+// Handle Enter key: focus next if not last, create new if last
+const handleEnterKey = (index: number, totalFields: number, push: Function) => {
+  const isLastItem = index === totalFields - 1;
+  
+  if (isLastItem) {
+    // On last item, create a new one
+    addNewItem(index + 1, push);
+  } else {
+    // Not last item, focus on next
+    const textareas = document.querySelectorAll('textarea[placeholder*="Darbotvarkės klausimas"]');
+    const nextTextarea = textareas[index + 1] as HTMLTextAreaElement;
+    nextTextarea?.focus();
+  }
 };
 
 const handleBackspace = (index: number, value: string, remove: Function) => {
@@ -434,38 +502,45 @@ const handleBackspace = (index: number, value: string, remove: Function) => {
     remove(index);
     // Focus on previous item
     setTimeout(() => {
-      const inputs = document.querySelectorAll('input[placeholder*="Darbotvarkės klausimas"]');
-      const prevInput = inputs[index - 1] as HTMLInputElement;
-      prevInput?.focus();
+      const textareas = document.querySelectorAll('textarea[placeholder*="Darbotvarkės klausimas"]');
+      const prevTextarea = textareas[index - 1] as HTMLTextAreaElement;
+      prevTextarea?.focus();
     }, 100);
   }
 };
 
-const duplicateItem = (index: number, value: string, push: Function) => {
-  push(value);
+const removeItem = (key: string, index: number, remove: Function) => {
+  // Clean up tracking data for this key
+  delete broughtByStudentsFlags.value[key];
+  delete itemDescriptionsVisible.value[key];
+  delete itemDescriptions.value[key];
+  remove(index);
+};
+
+// Auto-resize textarea to fit content
+const autoResizeTextarea = (event: Event) => {
+  const textarea = event.target as HTMLTextAreaElement;
+  if (textarea) {
+    textarea.style.height = 'auto';
+    textarea.style.height = `${textarea.scrollHeight}px`;
+  }
+};
+
+// Update field keys tracking during render
+const updateFieldKeys = (fields: Array<{ key: string }>) => {
+  currentFieldKeys.value = fields.map(f => f.key);
+  return fields;
 };
 
 const clearAllItems = () => {
   if (agendaItemField.value) {
     agendaItemField.value.setValue([]);
     agendaInputMode.value = null;
+    // Clear all tracking data
+    broughtByStudentsFlags.value = {};
+    itemDescriptionsVisible.value = {};
+    itemDescriptions.value = {};
   }
-};
-
-// Drag and drop methods
-const handleDragStart = (index: number) => {
-  draggedIndex.value = index;
-};
-
-const handleDragOver = (event: DragEvent) => {
-  event.preventDefault();
-};
-
-const handleDrop = (targetIndex: number, move: Function) => {
-  if (draggedIndex.value !== null && draggedIndex.value !== targetIndex) {
-    move(draggedIndex.value, targetIndex);
-  }
-  draggedIndex.value = null;
 };
 
 // Text area methods
@@ -522,14 +597,21 @@ const loadFromPreviousMeeting = (templateId: string) => {
 
 // Submit form handler
 const onSubmit = (values: any) => {
-  const filteredItems = values.agendaItemTitles
-    .map((title: string, index: number) => ({ title, index }))
+  // Build items with their keys for proper tracking
+  const itemsWithKeys = values.agendaItemTitles
+    .map((title: string, index: number) => ({
+      title,
+      key: currentFieldKeys.value[index],
+    }))
     .filter((item: { title: string }) => item.title.trim() !== '');
   
   const formData = {
-    agendaItemTitles: filteredItems.map((item: { title: string; index: number }) => item.title),
-    broughtByStudentsFlags: filteredItems.map((item: { title: string; index: number }) => 
-      broughtByStudentsFlags.value[item.index] || false
+    agendaItemTitles: itemsWithKeys.map((item: { title: string }) => item.title),
+    broughtByStudentsFlags: itemsWithKeys.map((item: { key: string }) => 
+      broughtByStudentsFlags.value[item.key] || false
+    ),
+    descriptions: itemsWithKeys.map((item: { key: string }) =>
+      itemDescriptions.value[item.key] || ''
     ),
   };
 
@@ -570,6 +652,19 @@ onMounted(() => {
     startOneByOne();
   }
 });
+
+// Initialize sortable when container is available
+watch(sortableContainer, (container) => {
+  if (container && agendaItemField.value) {
+    useSortable(container, agendaItemField.value.value, {
+      handle: '.drag-handle',
+      animation: 200,
+      ghostClass: 'opacity-50',
+      chosenClass: 'bg-muted',
+      dragClass: 'shadow-lg',
+    });
+  }
+}, { immediate: true });
 </script>
 
 <style scoped>

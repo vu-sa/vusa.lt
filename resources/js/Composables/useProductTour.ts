@@ -25,9 +25,9 @@
 
 import { ref, computed, onUnmounted } from 'vue';
 import { driver, type Driver, type DriveStep, type Config } from 'driver.js';
-import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import 'driver.js/dist/driver.css';
+import { useApiMutation } from './useApi';
 import { 
   globalProgress, 
   updateProgress, 
@@ -100,17 +100,15 @@ export function useProductTour(options: ProductTourOptions) {
     // Update shared state and localStorage
     updateProgress(tourId, new Date().toISOString());
     
-    // Sync to backend without affecting page state
-    // Using only: [] prevents Inertia from updating any props
+    // Sync to backend using useApiMutation (handles auth automatically)
     try {
-      await router.post(route('tutorials.complete'), {
-        tour_id: tourId,
-      }, {
-        async: true,
-        preserveState: true,
-        preserveScroll: true,
-        only: [],
-      });
+      const { execute } = useApiMutation(
+        route('api.v1.admin.tutorials.complete'),
+        'POST',
+        { tour_id: tourId },
+        { showSuccessToast: false, showErrorToast: false }
+      );
+      await execute();
     } catch (error) {
       console.warn('Failed to sync tour completion to server:', error);
     }
@@ -123,17 +121,15 @@ export function useProductTour(options: ProductTourOptions) {
     // Update shared state and localStorage
     removeProgress(tourId);
     
-    // Sync to backend without affecting page state
-    // Using only: [] prevents Inertia from updating any props
+    // Sync to backend using useApiMutation (handles auth automatically)
     try {
-      await router.post(route('tutorials.reset'), {
-        tour_id: tourId,
-      }, {
-        async: true,
-        preserveState: true,
-        preserveScroll: true,
-        only: [],
-      });
+      const { execute } = useApiMutation(
+        route('api.v1.admin.tutorials.reset'),
+        'POST',
+        { tour_id: tourId },
+        { showSuccessToast: false, showErrorToast: false }
+      );
+      await execute();
     } catch (error) {
       console.warn('Failed to sync tour reset to server:', error);
     }

@@ -17,7 +17,6 @@
       </span>
     </div>
     
-    <!-- Tooltip that expands on hover -->
     <Transition
       enter-active-class="transition-all duration-300 ease-out"
       enter-from-class="opacity-0 scale-95"
@@ -28,6 +27,7 @@
     >
       <div 
         v-if="isOpen"
+        @click.stop
         :class="[
           'absolute z-50 w-80 max-w-[calc(100vw-2rem)]',
           positionClasses,
@@ -47,7 +47,7 @@
           
           <!-- Action button -->
           <div class="flex justify-end">
-            <Button size="sm" @click="handleDismiss">
+            <Button size="sm" type="button" @click.stop="handleDismiss">
               {{ computedDismissText }}
             </Button>
           </div>

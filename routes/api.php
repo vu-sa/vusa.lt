@@ -96,5 +96,8 @@ Route::prefix('v1')->name('v1.')->group(function () {
 
         // Tutorials
         Route::get('tutorials/progress', [TutorialApiController::class, 'progress'])->name('tutorials.progress');
+        Route::post('tutorials/complete', [TutorialApiController::class, 'markComplete'])->name('tutorials.complete');
+        Route::post('tutorials/reset', [TutorialApiController::class, 'resetTour'])->name('tutorials.reset');
+        Route::post('tutorials/reset-all', [TutorialApiController::class, 'resetAll'])->name('tutorials.resetAll');
     });
 });

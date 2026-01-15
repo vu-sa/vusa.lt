@@ -4,7 +4,7 @@
  * Provides a simple way to draw attention to new UI elements without a full tour:
  * - Pulsing indicator/badge on the element
  * - Tooltip on hover/click with description
- * - Persisted dismissed state (localStorage + backend)
+ * - Persisted dismissed state (synced to backend via API)
  * 
  * Uses the same storage mechanism as useProductTour for consistency.
  * 
@@ -24,7 +24,7 @@
  */
 
 import { ref, computed } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { useApiMutation } from './useApi';
 import { 
   globalProgress, 
   updateProgress, 
@@ -98,15 +98,15 @@ export function useFeatureSpotlight(spotlightId: string, options: FeatureSpotlig
     // Callback
     onDismiss?.();
     
-    // Sync to backend (async: true hides progress indicator)
+    // Sync to backend using useApiMutation (handles auth automatically)
     try {
-      await router.post(route('tutorials.complete'), {
-        tour_id: internalId,
-      }, {
-        async: true,
-        preserveState: true,
-        preserveScroll: true,
-      });
+      const { execute } = useApiMutation(
+        route('api.v1.admin.tutorials.complete'),
+        'POST',
+        { tour_id: internalId },
+        { showSuccessToast: false, showErrorToast: false }
+      );
+      await execute();
     } catch (error) {
       console.warn('Failed to sync spotlight dismissal to server:', error);
     }
@@ -119,15 +119,15 @@ export function useFeatureSpotlight(spotlightId: string, options: FeatureSpotlig
     // Update shared state
     removeProgress(internalId);
     
-    // Sync to backend (async: true hides progress indicator)
+    // Sync to backend using useApiMutation (handles auth automatically)
     try {
-      await router.post(route('tutorials.reset'), {
-        tour_id: internalId,
-      }, {
-        async: true,
-        preserveState: true,
-        preserveScroll: true,
-      });
+      const { execute } = useApiMutation(
+        route('api.v1.admin.tutorials.reset'),
+        'POST',
+        { tour_id: internalId },
+        { showSuccessToast: false, showErrorToast: false }
+      );
+      await execute();
     } catch (error) {
       console.warn('Failed to sync spotlight reset to server:', error);
     }

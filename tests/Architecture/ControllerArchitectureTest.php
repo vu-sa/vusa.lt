@@ -36,15 +36,14 @@ arch('AdminController provides Inertia helpers')
 |--------------------------------------------------------------------------
 */
 
-// Note: Some admin controllers that only return JSON (TutorialController,
-// PushSubscriptionController) may extend Controller directly. AuthController
-// is also special. These are exceptions to the AdminController rule.
+// Note: Some admin controllers that only return JSON (PushSubscriptionController)
+// may extend Controller directly. AuthController is also special.
+// These are exceptions to the AdminController rule.
 arch('admin controllers extend AdminController')
     ->expect('App\Http\Controllers\Admin')
     ->classes()
     ->toExtend(AdminController::class)
     ->ignoring([
-        'App\Http\Controllers\Admin\TutorialController',
         'App\Http\Controllers\Admin\PushSubscriptionController',
         'App\Http\Controllers\Admin\AuthController',
     ]);

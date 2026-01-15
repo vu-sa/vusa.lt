@@ -41,6 +41,7 @@ import type {
   isApiSuccess,
   isApiError,
 } from '@/Types/api.d';
+import { usePage } from '@inertiajs/vue3';
 
 /**
  * Options for useApi composable
@@ -249,12 +250,16 @@ export function useApiMutation<T = unknown, B = unknown>(
     ...fetchOptions,
     immediate: false, // Mutations should be explicit
     beforeFetch({ options }) {
+      // Get CSRF token from meta tag (set by Laravel in the HTML head)
+      const csrfToken = usePage().props.csrf_token || '';
+      
       options.method = method;
       options.headers = {
         ...options.headers,
         Accept: 'application/json',
         'Content-Type': 'application/json',
         'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRF-TOKEN': csrfToken,
       };
       options.credentials = 'same-origin';
       if (body) {
