@@ -227,10 +227,14 @@ import { Button } from "@/Components/ui/button";
 const props = defineProps<{
   events: App.Entities.Calendar[];
   locale: string;
+  loadingPast?: boolean;
+  loadingFuture?: boolean;
 }>();
 
 const emit = defineEmits<{
   (e: 'openSyncModal'): void;
+  (e: 'loadPast'): void;
+  (e: 'loadFuture'): void;
 }>();
 
 // Configuration
@@ -241,8 +245,6 @@ const LOAD_MORE_DAYS = 14;
 // State
 const daysPast = ref(INITIAL_DAYS_PAST);
 const daysFuture = ref(INITIAL_DAYS_FUTURE);
-const loadingPast = ref(false);
-const loadingFuture = ref(false);
 
 // Computed values
 const dateLocale = computed(() => props.locale === 'lt' ? lt : enUS);
@@ -407,21 +409,15 @@ const formatEventTime = (dateStr: string): string => {
   }
 };
 
-// Load more actions
+// Load more actions - emit events to parent for API fetching
 const loadMorePast = () => {
-  loadingPast.value = true;
-  setTimeout(() => {
-    daysPast.value += LOAD_MORE_DAYS;
-    loadingPast.value = false;
-  }, 300);
+  daysPast.value += LOAD_MORE_DAYS;
+  emit('loadPast');
 };
 
 const loadMoreFuture = () => {
-  loadingFuture.value = true;
-  setTimeout(() => {
-    daysFuture.value += LOAD_MORE_DAYS;
-    loadingFuture.value = false;
-  }, 300);
+  daysFuture.value += LOAD_MORE_DAYS;
+  emit('loadFuture');
 };
 </script>
 

@@ -264,10 +264,14 @@ import EventHoverCard from "./EventHoverCard.vue";
 const props = defineProps<{
   events: App.Entities.Calendar[];
   locale: string;
+  loadingPast?: boolean;
+  loadingFuture?: boolean;
 }>();
 
 const emit = defineEmits<{
   (e: 'openSyncModal'): void;
+  (e: 'loadPast'): void;
+  (e: 'loadFuture'): void;
 }>();
 
 // Configuration
@@ -475,10 +479,14 @@ const formatEventDate = (dateStr: string): string => {
 // Navigation
 const navigatePast = () => {
   offsetWeeks.value -= 1;
+  // Emit event to trigger API fetch for more past events
+  emit('loadPast');
 };
 
 const navigateFuture = () => {
   offsetWeeks.value += 1;
+  // Emit event to trigger API fetch for more future events
+  emit('loadFuture');
 };
 
 const navigateToEvent = (event: App.Entities.Calendar) => {

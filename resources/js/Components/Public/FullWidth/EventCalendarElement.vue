@@ -69,7 +69,11 @@
           <EventTimeline 
             :events="calendar" 
             :locale="$page.props.app.locale"
+            :loading-past="loadingPast"
+            :loading-future="loadingFuture"
             @open-sync-modal="showModal = true"
+            @load-past="fetchPast"
+            @load-future="fetchFuture"
           />
         </div>
 
@@ -78,7 +82,11 @@
           <EventTimelineVertical 
             :events="calendar" 
             :locale="$page.props.app.locale"
+            :loading-past="loadingPast"
+            :loading-future="loadingFuture"
             @open-sync-modal="showModal = true"
+            @load-past="fetchPast"
+            @load-future="fetchFuture"
           />
         </div>
       </div>
@@ -110,13 +118,17 @@ const allTenants = computed(() => {
   return val === true || val === 1 || val === '1' || val === 'true';
 });
 
-console.log("EventCalendarElement allTenants:", props.element);
-
-// Use the ContentService to fetch calendar data with options from element
-const { calendar, loading, error, refresh } = useCalendarFetch({
+// Use the ContentService to fetch calendar data with date-based loading
+const { 
+  calendar, 
+  loading, 
+  loadingPast,
+  loadingFuture,
+  error, 
+  refresh,
+  fetchPast,
+  fetchFuture,
+} = useCalendarFetch({
   allTenants: allTenants.value,
 });
-
-// Removed debug console.log for production code
-
 </script>
