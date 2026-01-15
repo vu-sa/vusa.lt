@@ -40,4 +40,74 @@ return [
     'image_alt_placeholder' => 'Aprašykite, kas pavaizduota nuotraukoje',
     'image_title' => 'Pavadinimas (neprivalomas)',
     'image_title_placeholder' => 'Pavadinimas, rodomas užvedus pelę',
+    // Form fields
+    'title' => 'Pavadinimas',
+    'subtitle' => 'Paantraštė',
+    'content' => 'Turinys',
+    'enter_title' => 'Įveskite pavadinimą...',
+    'variant' => 'Variantas',
+    'color' => 'Spalva',
+    'select_color' => 'Pasirinkite spalvą',
+    'color_title' => 'Spalvinti pavadinimą',
+    'show_icon' => 'Rodyti ikoną',
+    'icon_description' => 'Ikona bus rodoma kairėje pusėje',
+    'icon_exclamation' => 'šauktukas',
+    'icon_question' => 'klaustukas',
+    'icon_info' => 'informacija',
+    // Variants
+    'variants' => [
+        'outline' => 'Kontūrinis',
+        'soft' => 'Minkštas',
+    ],
+    // Colors
+    'colors' => [
+        'gray' => 'Pilka',
+        'red' => 'Raudona',
+        'yellow' => 'Geltona',
+        'black' => 'Juoda',
+        'white' => 'Balta',
+    ],
+    // Hero section
+    'background_image' => 'Foninė nuotrauka',
+    'right_image' => 'Nuotrauka dešinėje',
+    'select_image' => 'Pasirinkti paveikslėlį',
+    'delete_image' => 'Ištrinti paveikslėlį',
+    'blur_background' => 'Tamsinti ir sulieti foninę nuotrauką',
+    'button_text' => 'Mygtuko tekstas',
+    'button_link' => 'Mygtuko nuoroda',
+    'button_color' => 'Mygtuko spalva',
+    'enter_button_text' => 'Įveskite mygtuko tekstą...',
+    // Calendar
+    'show_all_tenants' => 'Rodyti visų padalinių renginius',
+    'show_all_tenants_description' => 'Įjungti, jei norite rodyti visų VU SA padalinių renginius',
+    // Spotify
+    'spotify_url_hint' => 'Įklijuokite Spotify grojaraščio, albumo ar takelio nuorodą',
+    'preview' => 'Peržiūra',
+    'valid_url' => 'Nuoroda atpažinta',
+    // Flow graph
+    'flow_graph_preset' => 'Procesų schemos šablonas',
+    'presets' => [
+        'vusa_structure' => 'VU SA struktūra',
+        'vusa_structure_description' => 'Organizacinė VU SA struktūros schema',
+    ],
+    // Accordion
+    'no_accordion_items' => 'Nėra pridėta jokių punktų',
+    'add_first_accordion_item' => 'Pridėti pirmą punktą',
+    'add_accordion_item' => 'Pridėti punktą',
+    'enter_accordion_title' => 'Įveskite pavadinimą...',
+    // Image grid
+    'no_images' => 'Nėra pridėta nuotraukų',
+    'add_first_image' => 'Pridėti pirmą nuotrauką',
+    'add_image' => 'Pridėti nuotrauką',
+    'image_width' => 'Nuotraukos plotis',
+    'select_width' => 'Pasirinkite plotį',
+    'image' => 'Nuotrauka',
+    // Number stats
+    'enter_section_title' => 'Įveskite sekcijos pavadinimą...',
+    'no_stats' => 'Nėra pridėta statistikų',
+    'add_first_stat' => 'Pridėti pirmą statistiką',
+    'add_stat' => 'Pridėti statistiką',
+    'stat_label' => 'Prierašas',
+    'stat_number' => 'Skaičius',
+    'enter_stat_label' => 'Įveskite prierašą...',
 ];

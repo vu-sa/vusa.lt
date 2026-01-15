@@ -40,4 +40,74 @@ return [
     'image_alt_placeholder' => 'Describe what is shown in the image',
     'image_title' => 'Title (optional)',
     'image_title_placeholder' => 'Title shown on hover',
+    // Form fields
+    'title' => 'Title',
+    'subtitle' => 'Subtitle',
+    'content' => 'Content',
+    'enter_title' => 'Enter title...',
+    'variant' => 'Variant',
+    'color' => 'Color',
+    'select_color' => 'Select color',
+    'color_title' => 'Color the title',
+    'show_icon' => 'Show icon',
+    'icon_description' => 'Icon will be shown on the left side',
+    'icon_exclamation' => 'exclamation mark',
+    'icon_question' => 'question mark',
+    'icon_info' => 'info',
+    // Variants
+    'variants' => [
+        'outline' => 'Outline',
+        'soft' => 'Soft',
+    ],
+    // Colors
+    'colors' => [
+        'gray' => 'Gray',
+        'red' => 'Red',
+        'yellow' => 'Yellow',
+        'black' => 'Black',
+        'white' => 'White',
+    ],
+    // Hero section
+    'background_image' => 'Background image',
+    'right_image' => 'Right side image',
+    'select_image' => 'Select image',
+    'delete_image' => 'Delete image',
+    'blur_background' => 'Darken and blur background image',
+    'button_text' => 'Button text',
+    'button_link' => 'Button link',
+    'button_color' => 'Button color',
+    'enter_button_text' => 'Enter button text...',
+    // Calendar
+    'show_all_tenants' => 'Show events from all units',
+    'show_all_tenants_description' => 'Enable to show events from all VU SA units',
+    // Spotify
+    'spotify_url_hint' => 'Paste a Spotify playlist, album or track URL',
+    'preview' => 'Preview',
+    'valid_url' => 'URL recognized',
+    // Flow graph
+    'flow_graph_preset' => 'Flow graph preset',
+    'presets' => [
+        'vusa_structure' => 'VU SA Structure',
+        'vusa_structure_description' => 'Organizational structure diagram of VU SA',
+    ],
+    // Accordion
+    'no_accordion_items' => 'No accordion items added',
+    'add_first_accordion_item' => 'Add first item',
+    'add_accordion_item' => 'Add item',
+    'enter_accordion_title' => 'Enter title...',
+    // Image grid
+    'no_images' => 'No images added',
+    'add_first_image' => 'Add first image',
+    'add_image' => 'Add image',
+    'image_width' => 'Image width',
+    'select_width' => 'Select width',
+    'image' => 'Image',
+    // Number stats
+    'enter_section_title' => 'Enter section title...',
+    'no_stats' => 'No statistics added',
+    'add_first_stat' => 'Add first statistic',
+    'add_stat' => 'Add statistic',
+    'stat_label' => 'Label',
+    'stat_number' => 'Number',
+    'enter_stat_label' => 'Enter label...',
 ];

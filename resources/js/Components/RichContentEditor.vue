@@ -68,7 +68,7 @@
                 :key="type.value"
                 @click="insertContentAt(type.value, index)"
               >
-                <NIcon :component="type.icon" class="mr-2 h-4 w-4" />
+                <component :is="type.icon" class="mr-2 h-4 w-4" />
                 {{ type.label }}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
@@ -91,7 +91,7 @@
         <div class="rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900/50 overflow-hidden">
           <!-- Minimal header - only type indicator and controls -->
           <div class="flex items-center gap-2 px-3 py-1.5 border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/30">
-            <NIcon :component="getContentTypeInfo(content?.type).icon" class="h-3.5 w-3.5 text-zinc-500" />
+            <component :is="getContentTypeInfo(content?.type).icon" class="h-3.5 w-3.5 text-zinc-500" />
             <span class="text-xs font-medium text-zinc-500 dark:text-zinc-400">{{ getContentTypeInfo(content?.type).label }}</span>
             <span v-if="content?.id" class="text-[10px] text-zinc-400">#{{ content.id }}</span>
             <span v-else class="text-[10px] text-emerald-600 dark:text-emerald-400">{{ $t('New') }}</span>
@@ -149,7 +149,7 @@
           @click="handleElementCreate(type.value)"
           :disabled="isMaxContentReached"
           class="flex items-center gap-1.5 rounded-md border border-dashed border-zinc-300 px-2.5 py-1.5 text-xs font-medium text-zinc-600 transition-colors hover:border-zinc-400 hover:bg-zinc-50 disabled:opacity-50 disabled:cursor-not-allowed dark:border-zinc-600 dark:text-zinc-400 dark:hover:border-zinc-500 dark:hover:bg-zinc-800/50">
-          <NIcon :component="type.icon" class="h-3.5 w-3.5" />
+          <component :is="type.icon" class="h-3.5 w-3.5" />
           <span>{{ type.label }}</span>
         </button>
         
@@ -177,7 +177,7 @@
           <button v-for="type in contentTypes" :key="type.value"
             @click="handleInsertContentType(type.value)"
             class="flex flex-col items-center gap-2 rounded-lg border border-zinc-200 p-4 text-center transition-colors hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-700 dark:hover:border-zinc-600 dark:hover:bg-zinc-800/50">
-            <NIcon :component="type.icon" class="h-6 w-6 text-zinc-600 dark:text-zinc-400" />
+            <component :is="type.icon" class="h-6 w-6 text-zinc-600 dark:text-zinc-400" />
             <div class="text-sm font-medium text-zinc-900 dark:text-zinc-100">{{ type.label }}</div>
             <p v-if="type.description" class="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-2">
               {{ type.description }}
@@ -194,7 +194,6 @@
 import { moveArrayElement, useSortable } from "@vueuse/integrations/useSortable";
 import { computed, nextTick, ref, onUnmounted, onMounted, watch } from 'vue';
 import { useManualRefHistory } from '@vueuse/core';
-import { NIcon } from 'naive-ui';
 
 import FadeTransition from "./Transitions/FadeTransition.vue";
 import ContentEditorFactory from './RichContent/ContentEditorFactory.vue';
