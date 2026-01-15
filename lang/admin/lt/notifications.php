@@ -68,6 +68,18 @@ return [
     'reservation_task_hint_pickup' => '📋 Atsiimkite :resource iki :date.',
     'reservation_task_hint_return' => '📋 Grąžinkite :resource iki :date.',
 
+    // Approval notifications
+    'approval_requested_title' => 'Reikalingas patvirtinimas',
+    'approval_requested_body' => 'Jūsų patvirtinimas reikalingas: :item',
+    'approval_approved_title' => 'Patvirtinta',
+    'approval_approved_body' => ':user patvirtino :item',
+    'approval_rejected_title' => 'Atmesta',
+    'approval_rejected_body' => ':user atmetė :item',
+    'approval_cancelled_title' => 'Atšaukta',
+    'approval_cancelled_body' => ':user atšaukė :item',
+    'approval_escalation_title' => 'Patvirtinimas vėluoja',
+    'approval_escalation_body' => ':item patvirtinimas vėluoja ir reikalauja jūsų dėmesio',
+
     // Meeting notifications
     'meeting_reminder_title' => 'Artėjantis susitikimas',
     'meeting_reminder_soon_title' => 'Susitikimas netrukus!',
@@ -93,6 +105,8 @@ return [
     'action_view_meeting' => 'Peržiūrėti susitikimą',
     'action_view_duty' => 'Peržiūrėti pareigas',
     'action_explore_dashboard' => 'Naršyti valdymo skydą',
+    'action_view' => 'Peržiūrėti',
+    'action_review' => 'Peržiūrėti',
 
     // Preferences UI
     'preferences' => [

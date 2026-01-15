@@ -128,8 +128,8 @@ const selectionColumn = computed<ColumnDef<TData, any>>(() => {
     header: ({ table }) => (
       <div class="px-1">
         <Checkbox 
-          checked={table.getIsAllPageRowsSelected()}
-          onUpdate:checked={(value) => table.toggleAllPageRowsSelected(!!value)}
+          modelValue={table.getIsAllPageRowsSelected()}
+          onUpdate:modelValue={(value) => table.toggleAllPageRowsSelected(!!value)}
           aria-label={$t('Select all')}
           class="data-[state=checked]:bg-primary"
         />
@@ -138,8 +138,8 @@ const selectionColumn = computed<ColumnDef<TData, any>>(() => {
     cell: ({ row }) => (
       <div class="px-1">
         <Checkbox 
-          checked={row.getIsSelected()}
-          onUpdate:checked={(value) => row.toggleSelected(!!value)}
+          modelValue={row.getIsSelected()}
+          onUpdate:modelValue={(value) => row.toggleSelected(!!value)}
           aria-label={$t('Select row')}
           disabled={!row.getCanSelect()}
           class="data-[state=checked]:bg-primary"

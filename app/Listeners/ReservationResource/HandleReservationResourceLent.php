@@ -2,6 +2,7 @@
 
 namespace App\Listeners\ReservationResource;
 
+use App\Services\TaskService;
 use App\States\ReservationResource\Lent;
 use Spatie\ModelStates\Events\StateChanged;
 
@@ -14,7 +15,15 @@ class HandleReservationResourceLent
         }
 
         $reservationResource = $event->model;
+        $reservation = $reservationResource->reservation;
 
-        $reservationResource->reservation->storeTask(__('Grąžinti išteklių').' '.$reservationResource->resource->name.' '.__('iki').' '.$reservationResource->end_time, $reservationResource->reservation->users, $reservationResource->end_time);
+        // Create return task with action_type for potential auto-completion
+        TaskService::storeTask(
+            __('Grąžinti išteklių').' '.$reservationResource->resource->name.' '.__('iki').' '.$reservationResource->end_time,
+            $reservation,
+            $reservation->users,
+            $reservationResource->end_time,
+            'return'
+        );
     }
 }

@@ -18,15 +18,6 @@
               <div class="inline-flex flex-col">
                 <div>
                   <strong class="text-md">{{ comment.user.name }}</strong>
-                  <NTag
-                    v-if="comment.decision"
-                    size="small"
-                    :bordered="false"
-                    round
-                    :type="decisionType(comment.decision)"
-                    class="ml-4"
-                    >{{ comment.decision }}</NTag
-                  >
                 </div>
                 <span
                   :title="comment.created_at"
@@ -52,7 +43,6 @@
     </div>
     <CommentTipTap
       v-model:text="text"
-      :enable-approve="model?.approvable"
       :disabled="!model"
       :loading="loading"
       @submit:comment="submitComment"
@@ -61,7 +51,7 @@
 </template>
 
 <script setup lang="tsx">
-import { NScrollbar, NTag, type ScrollbarInst } from "naive-ui";
+import { NScrollbar } from "naive-ui";
 import { computed, onUpdated, ref } from "vue";
 import { formatRelativeTime } from "@/Utils/IntlTime";
 import { router, usePage } from "@inertiajs/vue3";
@@ -81,7 +71,7 @@ const props = defineProps<{
 const loading = ref(false);
 const text = ref<string | null>(null);
 const commentContainer = ref<HTMLElement | null>(null);
-const scrollContainer = ref<ScrollbarInst | null>(null);
+const scrollContainer = ref<(typeof NScrollbar)['$type'] | null>(null);
 
 const comments = computed(() => {
   if (props.comments) return props.comments;
@@ -89,7 +79,7 @@ const comments = computed(() => {
   return [];
 });
 
-const submitComment = (decision?: "approve" | "reject") => {
+const submitComment = () => {
   loading.value = true;
   router.post(
     route("users.comments.store", usePage().props.auth?.user.id),
@@ -97,7 +87,6 @@ const submitComment = (decision?: "approve" | "reject") => {
       commentable_type: props.commentable_type,
       commentable_id: props.model?.id,
       comment: text.value,
-      decision: decision ?? undefined,
     },
     {
       preserveScroll: true,
@@ -110,17 +99,6 @@ const submitComment = (decision?: "approve" | "reject") => {
       },
     }
   );
-};
-
-const decisionType = (decision: string) => {
-  switch (decision) {
-    case "approve":
-      return "success";
-    case "reject":
-      return "warning";
-    default:
-      return "info";
-  }
 };
 
 onUpdated(() => {

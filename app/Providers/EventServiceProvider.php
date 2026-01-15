@@ -58,6 +58,13 @@ class EventServiceProvider extends ServiceProvider
         \App\Events\TaskCreated::class => [
             \App\Listeners\HandleTaskCreated::class,
         ],
+        // Approval events
+        \App\Events\ApprovalRequested::class => [
+            \App\Listeners\Approval\CreateApprovalTask::class,
+        ],
+        \App\Events\ApprovalDecisionMade::class => [
+            \App\Listeners\Approval\CompleteTasksOnApproval::class,
+        ],
         // Notification digest queuing
         \Illuminate\Notifications\Events\NotificationSending::class => [
             \App\Listeners\QueueNotificationForDigest::class,

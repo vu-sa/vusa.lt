@@ -140,6 +140,11 @@ Route::put('reservations/{reservation}/add-users', [ReservationController::class
 Route::resource('reservations', ReservationController::class);
 Route::resource('reservationResources', ReservationResourceController::class)->except(['index', 'create', 'edit']);
 
+// Approval routes
+Route::post('approvals', [ApprovalController::class, 'store'])->name('approvals.store');
+Route::post('approvals/bulk', [ApprovalController::class, 'bulkStore'])->name('approvals.bulkStore');
+Route::get('approvals/history', [ApprovalController::class, 'history'])->name('approvals.history');
+
 // File management routes
 // GET endpoints moved to API: route('api.v1.admin.files.index'), route('api.v1.admin.files.allowedTypes')
 Route::post('files/createDirectory', [FilesController::class, 'createDirectory'])->name('files.createDirectory');

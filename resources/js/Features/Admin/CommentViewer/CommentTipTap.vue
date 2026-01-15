@@ -23,19 +23,7 @@
           </template>
         </TipTapButton>
       </div>
-      <div v-if="enableApprove" class="flex items-center gap-2">
-        <Button :disabled="loading" variant="outline" size="sm" @click="$emit('submit:comment', 'reject')">
-          <Spinner v-if="loading" />
-          <IFluentCommentError24Regular v-else class="text-destructive" />
-          {{ rejectText ?? `... ${$t("states.decision.reject")}` }}
-        </Button>
-        <Button :disabled="loading" variant="default" size="sm" @click="$emit('submit:comment', 'approve')">
-          <Spinner v-if="loading" />
-          <IFluentCommentCheckmark24Regular v-else />
-          {{ approveText ?? capitalize($t("states.decision.approve")) }}
-        </Button>
-      </div>
-      <Button v-else size="sm" :disabled="disabled || loading" @click="$emit('submit:comment')">
+      <Button size="sm" :disabled="disabled || loading" @click="$emit('submit:comment')">
         <Spinner v-if="loading" />
         <IFluentSend24Filled v-else />
         {{ submitText ?? $t("Pateikti") }}
@@ -46,7 +34,7 @@
 
 <script setup lang="ts">
 import { EditorContent, useEditor } from "@tiptap/vue-3";
-import { capitalize, onBeforeUnmount, ref } from "vue";
+import { onBeforeUnmount, ref } from "vue";
 import { StarterKit } from "@tiptap/starter-kit";
 
 import TipTapButton from "./TipTap/TipTapButton.vue";
@@ -61,10 +49,7 @@ const props = defineProps<{
   disabled: boolean;
   loading: boolean;
   roundedTop?: boolean;
-  enableApprove?: boolean;
   submitText?: string;
-  approveText?: string;
-  rejectText?: string;
 }>();
 
 const emit = defineEmits(["update:text", "submit:comment"]);

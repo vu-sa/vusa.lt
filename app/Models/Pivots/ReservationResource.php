@@ -2,15 +2,18 @@
 
 namespace App\Models\Pivots;
 
-use App\Models\Interfaces\Decidable;
+use App\Contracts\Approvable;
+use App\Enums\ApprovalDecision;
+use App\Models\ApprovalFlow;
 use App\Models\Reservation;
 use App\Models\Resource;
+use App\Models\Traits\HasApprovals;
 use App\Models\Traits\HasComments;
-use App\Models\Traits\MakesDecisions;
 use App\Services\ModelAuthorizer;
 use App\States\ReservationResource\ReservationResourceState;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\Pivot;
+use Illuminate\Support\Collection;
 
 /**
  * @property int $id
@@ -26,6 +29,7 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
  * @property string|null $deleted_at
  * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $commentable
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Comment> $comments
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Approval> $approvals
  * @property-read bool $approvable
  * @property-read mixed $state_properties
  * @property-read Reservation $reservation
@@ -37,13 +41,13 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
  *
  * @mixin \Eloquent
  */
-class ReservationResource extends Pivot implements Decidable
+class ReservationResource extends Pivot implements Approvable
 {
-    use HasComments, MakesDecisions;
+    use HasApprovals, HasComments;
 
     protected $guarded = [];
 
-    protected $with = ['comments'];
+    protected $with = ['comments', 'approvals'];
 
     protected $appends = ['state_properties'];
 
@@ -73,21 +77,16 @@ class ReservationResource extends Pivot implements Decidable
         return $this->reservation->users();
     }
 
-    public function approvable()
+    /**
+     * Check if the current user can approve this resource.
+     */
+    public function approvable(): bool
     {
-        // if user null, return false
         if (! auth()->user()) {
             return false;
         }
 
-        $authorizer = app(ModelAuthorizer::class);
-
-        if ($authorizer->forUser(auth()->user())->check(config('permission.resource_managership_indicating_permission'))) {
-            // check if authorizer->getTenants() contains $this->tenants
-            return $authorizer->getTenants()->contains($this->resource->tenant);
-        }
-
-        return false;
+        return $this->canBeApprovedBy(auth()->user());
     }
 
     public function getApprovableAttribute(): bool
@@ -97,46 +96,123 @@ class ReservationResource extends Pivot implements Decidable
 
     public function getStatePropertiesAttribute()
     {
+        if (! $this->state) {
+            return [
+                'tagType' => 'default',
+                'description' => '',
+            ];
+        }
+
         return [
             'tagType' => $this->state->tagType(),
             'description' => $this->state->description(),
         ];
     }
 
-    public function decisionToProgress()
+    // =========================================================================
+    // Approvable Contract Implementation
+    // =========================================================================
+
+    /**
+     * Handle approval completion - triggers state transitions.
+     */
+    public function onApprovalComplete(ApprovalDecision $decision, int $step): void
     {
-        abort(403, 'Negalima priimti tokio sprendimo.');
+        match ($decision) {
+            ApprovalDecision::Approved => $this->state->handleApprove(),
+            ApprovalDecision::Rejected => $this->state->handleReject(),
+            ApprovalDecision::Cancelled => $this->state->handleCancel(),
+        };
     }
 
-    public function decisionToApprove()
+    /**
+     * Get the users who can approve this resource at the given step.
+     */
+    public function getApproversForStep(int $step): Collection
     {
-        if (! $this->authorizer->forUser(auth()->user())->check(config('permission.resource_managership_indicating_permission'))) {
-            // throw authorization exception if user is not authorized
-            abort(403, 'Neturite teisių patvirtinti rezervacijos veiksmams.');
-        }
-
-        $this->state->handleApprove();
+        // For ReservationResource, approvers are the resource managers
+        return $this->resource->managers();
     }
 
-    public function decisionToReject()
+    /**
+     * Get the approval flow for this resource.
+     * Falls back to global flow for ReservationResource type.
+     */
+    public function getApprovalFlow(): ?ApprovalFlow
     {
-        if (! $this->authorizer->forUser(auth()->user())->check(config('permission.resource_managership_indicating_permission'))) {
-            // throw authorization exception if user is not authorized
-            abort(403, 'Neturite teisių atmesti rezervacijos veiksmams.');
-        }
-
-        $this->state->handleReject();
+        // Try to find a global flow for ReservationResource
+        return ApprovalFlow::query()
+            ->where('flowable_type', self::class)
+            ->whereNull('flowable_id')
+            ->first();
     }
 
-    public function decisionToCancel()
+    /**
+     * Get the display name for this approvable in notifications.
+     */
+    public function getApprovalDisplayName(): string
     {
-        if ($this->reservation->users()->where('users.id', auth()->id())->exists()) {
+        return $this->reservation->name.' - '.$this->resource->name;
+    }
 
-            $this->state->handleCancel();
+    /**
+     * Get the URL for viewing this approvable.
+     */
+    public function getApprovalUrl(): string
+    {
+        return route('reservations.show', $this->reservation_id);
+    }
 
-            return;
+    // =========================================================================
+    // Partial quantity approval
+    // =========================================================================
+
+    /**
+     * Update the quantity when a partial approval is made.
+     * This allows resource managers to approve less than the requested quantity.
+     */
+    public function updateApprovedQuantity(int $quantity): void
+    {
+        if ($quantity < 1) {
+            throw new \InvalidArgumentException('Quantity must be at least 1.');
         }
 
-        abort(403, 'Negalite atšaukti rezervacijos veiksmų.');
+        if ($quantity > $this->quantity) {
+            throw new \InvalidArgumentException('Approved quantity cannot exceed requested quantity.');
+        }
+
+        if ($quantity !== $this->quantity) {
+            $this->update(['quantity' => $quantity]);
+        }
+    }
+
+    // =========================================================================
+    // Override canBeApprovedBy to include cancel permission for owners
+    // =========================================================================
+
+    /**
+     * Check if a user can approve this model at the given step with the given decision.
+     * Resource managers can approve/reject, owners can only cancel.
+     *
+     * @param  \App\Enums\ApprovalDecision|null  $decision  The decision being made (used for owner cancel check)
+     */
+    public function canBeApprovedBy(\App\Models\User $user, ?int $step = null, $decision = null): bool
+    {
+        // Check if user has resource management permission for this tenant (can approve/reject)
+        $authorizer = app(ModelAuthorizer::class);
+
+        if ($authorizer->forUser($user)->check(config('permission.resource_managership_indicating_permission'))) {
+            if ($authorizer->getTenants()->contains($this->resource->tenant)) {
+                return true;
+            }
+        }
+
+        // Reservation owners can only cancel their own reservations
+        if ($this->reservation->users()->where('users.id', $user->id)->exists()) {
+            // Only allow if decision is cancel (or if decision not specified for compatibility)
+            return $decision === null || $decision === \App\Enums\ApprovalDecision::Cancelled;
+        }
+
+        return false;
     }
 }

@@ -68,6 +68,18 @@ return [
     'reservation_task_hint_pickup' => '📋 Pick up :resource by :date.',
     'reservation_task_hint_return' => '📋 Return :resource by :date.',
 
+    // Approval notifications
+    'approval_requested_title' => 'Approval Required',
+    'approval_requested_body' => 'Your approval is needed for: :item',
+    'approval_approved_title' => 'Approved',
+    'approval_approved_body' => ':user approved :item',
+    'approval_rejected_title' => 'Rejected',
+    'approval_rejected_body' => ':user rejected :item',
+    'approval_cancelled_title' => 'Cancelled',
+    'approval_cancelled_body' => ':user cancelled :item',
+    'approval_escalation_title' => 'Approval Overdue',
+    'approval_escalation_body' => 'Approval for :item is overdue and requires your attention',
+
     // Meeting notifications
     'meeting_reminder_title' => 'Upcoming Meeting',
     'meeting_reminder_soon_title' => 'Meeting Soon!',
@@ -93,6 +105,8 @@ return [
     'action_view_meeting' => 'View Meeting',
     'action_view_duty' => 'View Duty',
     'action_explore_dashboard' => 'Explore Dashboard',
+    'action_view' => 'View',
+    'action_review' => 'Review',
 
     // Preferences UI
     'preferences' => [
