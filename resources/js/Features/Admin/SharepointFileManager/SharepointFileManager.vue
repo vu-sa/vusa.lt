@@ -315,10 +315,12 @@ async function fetchFiles(path: string) {
   loading.value = true;
   try {
     const { data } = await useFetch(
-      route('sharepoint.getDriveItems', { path })
+      route('api.v1.admin.sharepoint.driveItems', { path })
     ).json();
     
-    files.value = data.value ?? [];
+    // Handle standardized API response format
+    const responseData = data.value?.success ? data.value.data : data.value;
+    files.value = responseData ?? [];
   } finally {
     loading.value = false;
   }

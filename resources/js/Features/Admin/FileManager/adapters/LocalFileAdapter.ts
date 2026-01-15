@@ -21,9 +21,12 @@ export class LocalFileAdapter implements FileSourceAdapter {
   }
 
   async fetchListing(path: string): Promise<FileListingResponse> {
-    const { data } = await useFetch(route('files.getFiles', { path })).get().json();
+    const { data } = await useFetch(route('api.v1.admin.files.index', { path })).get().json();
     
-    const files: UnifiedFile[] = (data.value?.files ?? []).map((file: {
+    // Handle standardized API response format
+    const responseData = data.value?.success ? data.value.data : data.value;
+    
+    const files: UnifiedFile[] = (responseData?.files ?? []).map((file: {
       path: string;
       name: string;
       size: number;
@@ -39,7 +42,7 @@ export class LocalFileAdapter implements FileSourceAdapter {
       modifiedAt: new Date(file.modified * 1000),
     }));
 
-    const directories: UnifiedDirectory[] = (data.value?.directories ?? []).map((dir: {
+    const directories: UnifiedDirectory[] = (responseData?.directories ?? []).map((dir: {
       path: string;
       name: string;
     }) => ({
@@ -52,8 +55,8 @@ export class LocalFileAdapter implements FileSourceAdapter {
     return {
       files,
       directories,
-      path: data.value?.path ?? path,
-      redirected: data.value?.redirected ?? false,
+      path: responseData?.path ?? path,
+      redirected: responseData?.redirected ?? false,
     };
   }
 

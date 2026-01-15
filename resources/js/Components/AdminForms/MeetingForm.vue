@@ -137,8 +137,10 @@ const isLoadingTypes = ref(!props.meetingTypes);
 
 const fetchMeetingTypes = async () => {
   try {
-    const response = await fetch(route("api.types.index"));
-    const data = await response.json();
+    const response = await fetch(route("api.v1.types.index"));
+    const json = await response.json();
+    // Handle standardized API response format
+    const data = json.success ? json.data : json;
     meetingTypes.value = data.filter((type: { model_type: string }) => type.model_type === "App\\Models\\Meeting");
   } catch (error) {
     console.error('Failed to fetch meeting types:', error);

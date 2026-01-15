@@ -4,6 +4,27 @@ namespace App\Http\Controllers\Admin;
 
 use Illuminate\Support\Facades\Route;
 
+/*
+|--------------------------------------------------------------------------
+| Admin Routes
+|--------------------------------------------------------------------------
+|
+| These routes are for the admin interface (/mano/*) and use Inertia.js
+| for page rendering. All routes require authentication via the 'auth'
+| middleware applied in the RouteServiceProvider.
+|
+| IMPORTANT: Routes that return JSON for fetch/AJAX calls should be defined
+| in routes/api.php under the /api/v1/admin/* prefix. Keep this file for
+| Inertia page routes and form submissions only.
+|
+| See routes/api.php for:
+| - /api/v1/admin/tasks/indicator (TasksIndicator component)
+| - /api/v1/admin/files (file browser AJAX)
+| - /api/v1/admin/fileables/* (SharePoint file management)
+| - /api/v1/admin/tutorials/progress (tutorial state)
+|
+*/
+
 Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 Route::get('profile', [DashboardController::class, 'userSettings'])->name('profile');
 Route::inertia('administration', 'Admin/ShowAdministration')->name('administration')->middleware('can:access-administration');
@@ -17,9 +38,8 @@ Route::patch('profile/notification-preferences', [DashboardController::class, 'u
 Route::get('userTasks', [DashboardController::class, 'userTasks'])->name('userTasks');
 Route::get('institutionGraph', [DashboardController::class, 'institutionGraph'])->name('institutionGraph');
 
-// Tutorial/Onboarding routes
+// Tutorial/Onboarding routes (mutations stay here, GET endpoints in API)
 Route::post('tutorials/complete', [TutorialController::class, 'markCompleted'])->name('tutorials.complete');
-Route::get('tutorials/progress', [TutorialController::class, 'getProgress'])->name('tutorials.progress');
 Route::post('tutorials/reset', [TutorialController::class, 'resetTour'])->name('tutorials.reset');
 Route::post('tutorials/reset-all', [TutorialController::class, 'resetAll'])->name('tutorials.resetAll');
 
@@ -120,8 +140,8 @@ Route::put('reservations/{reservation}/add-users', [ReservationController::class
 Route::resource('reservations', ReservationController::class);
 Route::resource('reservationResources', ReservationResourceController::class)->except(['index', 'create', 'edit']);
 
-Route::get('files/getFiles', [FilesController::class, 'getFiles'])->name('files.getFiles');
-Route::get('files/allowed-types', [FilesController::class, 'getAllowedFileTypes'])->name('files.allowedTypes');
+// File management routes
+// GET endpoints moved to API: route('api.v1.admin.files.index'), route('api.v1.admin.files.allowedTypes')
 Route::post('files/createDirectory', [FilesController::class, 'createDirectory'])->name('files.createDirectory');
 Route::delete('files/deleteDirectory', [FilesController::class, 'deleteDirectory'])->name('files.deleteDirectory');
 Route::post('files/upload-image', [FilesController::class, 'uploadImage'])->name('files.uploadImage');
@@ -168,19 +188,16 @@ Route::put('roles/{role}/sync/attachableTypes', [RoleController::class, 'syncAtt
 Route::resource('permissions', PermissionController::class)->only(['index']);
 Route::resource('tasks', TaskController::class)->except(['index', 'create', 'show', 'edit']);
 Route::post('tasks/{task}/updateCompletionStatus', [TaskController::class, 'updateCompletionStatus'])->name('tasks.updateCompletionStatus');
-Route::get('tasks/indicator', [TaskController::class, 'userTasksForIndicator'])->name('tasks.indicator');
+// GET tasks/indicator moved to API: route('api.v1.admin.tasks.indicator')
 
 Route::resource('sharepointFiles', SharepointFileController::class)->except('create', 'show', 'edit', 'update');
 
-// FileableFiles - new local metadata-based file management
-Route::get('fileableFiles/{type}/{id}', [SharepointFileController::class, 'getFileableFiles'])->name('fileableFiles.index');
-Route::get('fileableFiles/{type}/{id}/inherited', [SharepointFileController::class, 'getTypeInheritedFiles'])->name('fileableFiles.inherited');
+// FileableFiles - local metadata-based file management
+// GET endpoints moved to API: route('api.v1.admin.fileables.files'), route('api.v1.admin.fileables.inherited')
 Route::delete('fileableFiles/{fileableFile}', [SharepointFileController::class, 'destroyFileableFile'])->name('fileableFiles.destroy');
 
-// Route::post('sharepoint/addFile', [SharepointController::class, 'addFile'])->name('sharepoint.addFile');
-// Route::post('sharepoint/getFiles', [SharepointController::class, 'getFilesFromDocumentIds'])->name('sharepoint.getFiles');
-Route::get('sharepoint/getPotentialFileables', [SharepointFileController::class, 'getPotentialFileables'])->name('sharepoint.getPotentialFileables');
-Route::get('sharepoint/getDriveItems', [SharepointFileController::class, 'getDriveItems'])->name('sharepoint.getDriveItems');
+// SharePoint integration
+// GET endpoints moved to API: route('api.v1.admin.sharepoint.potentialFileables'), route('api.v1.admin.sharepoint.driveItems')
 Route::post('sharepoint/createFolder', [SharepointFileController::class, 'createFolder'])->name('sharepoint.createFolder');
 Route::get('sharepoint/{id}/permissions', [SharepointFileController::class, 'getDriveItemPublicLink'])->name('sharepoint.getDriveItemPublicLink');
 Route::get('sharepoint/{type}/{id}', [SharepointFileController::class, 'getTypesDriveItems'])->name('sharepoint.getTypesDriveItems');

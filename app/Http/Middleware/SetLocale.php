@@ -55,7 +55,7 @@ class SetLocale
 
     protected function shouldBypassLocale($segment)
     {
-        $bypassSegments = ['mano', 'auth', 'feedback', 'login', 'telescope', '_impersonate', 'feed', 'livewire', 'registration', 'vendor', 'broadcasting'];
+        $bypassSegments = ['api', 'mano', 'auth', 'feedback', 'login', 'telescope', '_impersonate', 'feed', 'livewire', 'registration', 'vendor', 'broadcasting'];
 
         // Bypass sitemap routes
         if (is_string($segment) && (str_starts_with($segment, 'sitemap') || str_ends_with($segment, '.xml'))) {

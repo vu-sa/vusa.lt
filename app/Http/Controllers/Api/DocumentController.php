@@ -2,16 +2,16 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
 use App\Models\Document;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-class DocumentController extends Controller
+class DocumentController extends ApiController
 {
     /**
-     * Display a listing of the resource.
+     * Search documents (public endpoint).
      */
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         $query = Document::query()->select(['id', 'title', 'anonymous_url']);
 
@@ -25,38 +25,6 @@ class DocumentController extends Controller
         $limit = min($request->get('limit', 20), 50); // Max 50 results
         $documents = $query->limit($limit)->get();
 
-        return response()->json($documents);
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Document $document)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Document $document)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Document $document)
-    {
-        //
+        return $this->jsonSuccess($documents);
     }
 }

@@ -23,10 +23,12 @@ export class SharepointFileAdapter implements FileSourceAdapter {
 
   async fetchListing(path: string): Promise<FileListingResponse> {
     const { data } = await useFetch(
-      route('sharepoint.getDriveItems', { path })
+      route('api.v1.admin.sharepoint.driveItems', { path })
     ).get().json();
 
-    const items: MyDriveItem[] = data.value ?? [];
+    // Handle standardized API response format
+    const responseData = data.value?.success ? data.value.data : data.value;
+    const items: MyDriveItem[] = responseData ?? [];
     
     const files: UnifiedFile[] = items
       .filter(item => !item.folder)

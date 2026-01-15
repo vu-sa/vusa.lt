@@ -62,6 +62,50 @@ All Laravel commands **MUST** be run using Laravel Sail:
 - Support both lt/en languages
 - Use `sail` for all Laravel commands
 
+### API Architecture
+
+**Route Organization**:
+- `/api/v1/*` - Public API endpoints (no auth required)
+- `/api/v1/admin/*` - Admin API endpoints (session auth required)
+- `/mano/*` - Inertia page routes (defined in `routes/admin.php`)
+
+**When to use API (fetch) vs Inertia props**:
+
+| Use API (`useApi` composable) | Use Inertia (`lazy`/`defer` props) |
+|-------------------------------|-------------------------------------|
+| Dynamic data refresh, polling | Page-bound data with history state |
+| On-demand loading (click/scroll) | Initial page render data |
+| Cross-component data sharing | Data included in browser back/forward |
+| Real-time updates | Partial page reloads (`router.reload`) |
+
+**Response Format** (standardized via `ApiResponses` trait):
+```php
+// Success
+{ "success": true, "data": mixed, "message"?: string, "meta"?: object }
+
+// Error
+{ "success": false, "message": string, "errors"?: object, "code"?: string }
+```
+
+**Frontend Usage**:
+```typescript
+import { useApi } from '@/Composables/useApi';
+import type { TaskIndicatorData } from '@/Types/api.d';
+
+const { data, isFetching, execute } = useApi<TaskIndicatorData[]>(
+  route('api.v1.admin.tasks.indicator')
+);
+
+// Route names follow pattern: api.v1.* (public) or api.v1.admin.* (authenticated)
+// Use Ziggy's route() helper - types are auto-generated via vite.config.mts
+```
+
+**Backend API Controllers**:
+- Extend `App\Http\Controllers\Api\ApiController`
+- Use `ApiResponses` trait for consistent responses
+- Public: `App\Http\Controllers\Api\*`
+- Admin: `App\Http\Controllers\Api\Admin\*`
+
 ### Icon System
 
 **Location**: `resources/js/Components/icons/` - Complete tree-shakable icon system

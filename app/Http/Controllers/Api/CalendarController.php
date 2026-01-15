@@ -2,20 +2,20 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
 use App\Models\Calendar;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
 
-class CalendarController extends Controller
+class CalendarController extends ApiController
 {
     /**
-     * Display a listing of the resource.
+     * Get calendar events for a tenant (public endpoint).
      */
-    public function getTenantCalendar()
+    public function getTenantCalendar(): JsonResponse
     {
         $calendar = $this->getEventsForCalendar();
 
-        return response()->json($calendar);
+        return $this->jsonSuccess($calendar);
     }
 
     protected function getEventsForCalendar()

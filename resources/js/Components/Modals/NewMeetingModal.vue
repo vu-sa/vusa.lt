@@ -441,11 +441,13 @@ const getMeetingTypeName = (): string => {
 const fetchMeetingTypes = async () => {
   try {
     isLoadingTypes.value = true;
-    const { data, error } = await useFetch(route("api.types.index"), { immediate: true }).get().json()
+    const { data, error } = await useFetch(route("api.v1.types.index"), { immediate: true }).get().json()
     if (error.value) throw error.value
 
+    // Handle standardized API response format
+    const responseData = data.value?.success ? data.value.data : data.value;
     // Ensure data is an array before filtering
-    const typesData = Array.isArray(data.value) ? data.value : [];
+    const typesData = Array.isArray(responseData) ? responseData : [];
     meetingTypes.value = typesData.filter((type: any) => type.model_type === "App\\Models\\Meeting");
   } catch (error) {
     console.error('Failed to fetch meeting types:', error);

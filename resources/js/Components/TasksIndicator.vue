@@ -137,9 +137,11 @@ onMounted(() => {
 async function fetchUserTasks() {
   isLoading.value = true
   try {
-    const response = await fetch(route('tasks.indicator'))
+    const response = await fetch(route('api.v1.admin.tasks.indicator'))
     if (response.ok) {
-      const data = await response.json()
+      const json = await response.json()
+      // Handle standardized API response format
+      const data = json.success ? json.data : json
       tasks.value = data.slice(0, maxTasksToDisplay)
     } else {
       console.error('Failed to fetch tasks')

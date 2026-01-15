@@ -71,7 +71,7 @@ const options = ref<TreeSelectOption[] | undefined>(undefined);
 
 // Use useFetch reactively - it returns refs that update when data arrives
 const { data: fileablesData, isFetching } = useFetch(
-  route("sharepoint.getPotentialFileables")
+  route("api.v1.admin.sharepoint.potentialFileables")
 ).json();
 
 // Watch for data to arrive and build options
