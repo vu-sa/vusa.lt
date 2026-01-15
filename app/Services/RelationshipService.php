@@ -164,6 +164,8 @@ class RelationshipService
             foreach ($type->outgoingRelationships as $relationship) {
                 $targetType = $relationship->pivot->related_model;
                 $scope = $relationship->pivot->scope ?? Relationshipable::SCOPE_WITHIN_TENANT;
+                $isBidirectional = $relationship->pivot->bidirectional ?? false;
+                $authorized = self::isTypeRelationshipAuthorized($institution, $scope, $isBidirectional, 'outgoing');
 
                 if ($targetType && $targetType->institutions) {
                     foreach ($targetType->institutions as $relatedInstitution) {
@@ -178,7 +180,7 @@ class RelationshipService
                                 'direction' => 'outgoing',
                                 'type' => 'type-based',
                                 'source_institution_id' => $sourceId,
-                                'authorized' => true,
+                                'authorized' => $authorized,
                             ]);
                         }
                     }
@@ -195,6 +197,7 @@ class RelationshipService
                 $sourceType = $relationship->pivot->relationshipable;
                 $scope = $relationship->pivot->scope ?? Relationshipable::SCOPE_WITHIN_TENANT;
                 $isBidirectional = $relationship->pivot->bidirectional ?? false;
+                $authorized = self::isTypeRelationshipAuthorized($institution, $scope, $isBidirectional, 'incoming');
 
                 if ($sourceType && $sourceType->institutions) {
                     foreach ($sourceType->institutions as $relatedInstitution) {
@@ -209,7 +212,7 @@ class RelationshipService
                                 'direction' => 'incoming',
                                 'type' => 'type-based',
                                 'source_institution_id' => $sourceId,
-                                'authorized' => $isBidirectional,
+                                'authorized' => $authorized,
                             ]);
                         }
                     }
@@ -320,22 +323,14 @@ class RelationshipService
             // Cross-tenant: The relationship connects pagrindinis tenant with padalinys-type tenants
             // Source institution should be in pagrindinis, target should be in a padalinys-type tenant
             // OR source is in padalinys-type and target is in pagrindinis
-            $sourceTenant = $sourceInstitution->tenant;
-            $targetTenant = $targetInstitution->tenant;
-
-            // Load tenant if not loaded or if loaded with incomplete data (missing type field)
-            if (! $sourceTenant || $sourceTenant->type === null || $sourceTenant->type === '') {
-                $sourceTenant = Tenant::find($sourceInstitution->tenant_id);
-            }
-            if (! $targetTenant || $targetTenant->type === null || $targetTenant->type === '') {
-                $targetTenant = Tenant::find($targetInstitution->tenant_id);
-            }
+            $sourceTenantType = self::getTenantType($sourceInstitution);
+            $targetTenantType = self::getTenantType($targetInstitution);
 
             // Allow if one is pagrindinis and the other is padalinys
-            $sourceIsPagrindinis = $sourceTenant?->type === 'pagrindinis';
-            $targetIsPagrindinis = $targetTenant?->type === 'pagrindinis';
-            $sourceIsPadalinys = $sourceTenant?->type === 'padalinys';
-            $targetIsPadalinys = $targetTenant?->type === 'padalinys';
+            $sourceIsPagrindinis = $sourceTenantType === 'pagrindinis';
+            $targetIsPagrindinis = $targetTenantType === 'pagrindinis';
+            $sourceIsPadalinys = $sourceTenantType === 'padalinys';
+            $targetIsPadalinys = $targetTenantType === 'padalinys';
 
             return ($sourceIsPagrindinis && $targetIsPadalinys)
                 || ($sourceIsPadalinys && $targetIsPagrindinis);
@@ -343,6 +338,38 @@ class RelationshipService
 
         // Unknown scope - default to within-tenant behavior
         return $sourceInstitution->tenant_id === $targetInstitution->tenant_id;
+    }
+
+    protected static function getTenantType(Institution $institution): ?string
+    {
+        $tenant = $institution->tenant;
+
+        if (! $tenant || $tenant->type === null || $tenant->type === '') {
+            $tenant = Tenant::find($institution->tenant_id);
+        }
+
+        return $tenant?->type;
+    }
+
+    protected static function isTypeRelationshipAuthorized(
+        Institution $sourceInstitution,
+        string $scope,
+        bool $isBidirectional,
+        string $direction
+    ): bool {
+        if ($scope === Relationshipable::SCOPE_CROSS_TENANT) {
+            if ($isBidirectional) {
+                return true;
+            }
+
+            return self::getTenantType($sourceInstitution) === 'pagrindinis';
+        }
+
+        if ($direction === 'outgoing') {
+            return true;
+        }
+
+        return $isBidirectional;
     }
 
     /**

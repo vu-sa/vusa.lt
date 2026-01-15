@@ -425,6 +425,98 @@ describe('relationship scope', function () {
     });
 });
 
+describe('type-based cross-tenant authorization', function () {
+    test('cross-tenant unidirectional authorizes pagrindinis even when incoming', function () {
+        $pagrindinisTenant = Tenant::factory()->create(['type' => 'pagrindinis']);
+        $padalinysTenant = Tenant::factory()->create(['type' => 'padalinys']);
+
+        $pagrindinisInstitution = Institution::factory()->for($pagrindinisTenant)->create([
+            'name' => ['lt' => 'Pagrindinė institucija', 'en' => 'Main Institution'],
+        ]);
+        $padalinysInstitution = Institution::factory()->for($padalinysTenant)->create([
+            'name' => ['lt' => 'Padalinio institucija', 'en' => 'Branch Institution'],
+        ]);
+
+        $sourceType = \App\Models\Type::factory()->create([
+            'title' => ['lt' => 'Šaltinio tipas', 'en' => 'Source Type'],
+            'model_type' => Institution::class,
+        ]);
+        $targetType = \App\Models\Type::factory()->create([
+            'title' => ['lt' => 'Tikslo tipas', 'en' => 'Target Type'],
+            'model_type' => Institution::class,
+        ]);
+
+        $padalinysInstitution->types()->attach($sourceType->id);
+        $pagrindinisInstitution->types()->attach($targetType->id);
+
+        $typeRelationshipable = new Relationshipable([
+            'relationship_id' => $this->relationship->id,
+            'relationshipable_type' => \App\Models\Type::class,
+            'relationshipable_id' => $sourceType->id,
+            'related_model_id' => $targetType->id,
+            'scope' => Relationshipable::SCOPE_CROSS_TENANT,
+            'bidirectional' => false,
+        ]);
+        $typeRelationshipable->save();
+
+        RelationshipService::clearRelatedInstitutionsCache($pagrindinisInstitution->id);
+
+        $result = RelationshipService::getRelatedInstitutionsFlat($pagrindinisInstitution);
+
+        expect($result)->toHaveCount(1);
+        $item = $result->first();
+        expect($item['direction'])->toBe('incoming');
+        expect($item['type'])->toBe('type-based');
+        expect($item['authorized'])->toBeTrue();
+        expect($item['institution']->id)->toBe($padalinysInstitution->id);
+    });
+
+    test('cross-tenant unidirectional does not authorize padalinys even when outgoing', function () {
+        $pagrindinisTenant = Tenant::factory()->create(['type' => 'pagrindinis']);
+        $padalinysTenant = Tenant::factory()->create(['type' => 'padalinys']);
+
+        $pagrindinisInstitution = Institution::factory()->for($pagrindinisTenant)->create([
+            'name' => ['lt' => 'Pagrindinė institucija', 'en' => 'Main Institution'],
+        ]);
+        $padalinysInstitution = Institution::factory()->for($padalinysTenant)->create([
+            'name' => ['lt' => 'Padalinio institucija', 'en' => 'Branch Institution'],
+        ]);
+
+        $sourceType = \App\Models\Type::factory()->create([
+            'title' => ['lt' => 'Šaltinio tipas', 'en' => 'Source Type'],
+            'model_type' => Institution::class,
+        ]);
+        $targetType = \App\Models\Type::factory()->create([
+            'title' => ['lt' => 'Tikslo tipas', 'en' => 'Target Type'],
+            'model_type' => Institution::class,
+        ]);
+
+        $padalinysInstitution->types()->attach($sourceType->id);
+        $pagrindinisInstitution->types()->attach($targetType->id);
+
+        $typeRelationshipable = new Relationshipable([
+            'relationship_id' => $this->relationship->id,
+            'relationshipable_type' => \App\Models\Type::class,
+            'relationshipable_id' => $sourceType->id,
+            'related_model_id' => $targetType->id,
+            'scope' => Relationshipable::SCOPE_CROSS_TENANT,
+            'bidirectional' => false,
+        ]);
+        $typeRelationshipable->save();
+
+        RelationshipService::clearRelatedInstitutionsCache($padalinysInstitution->id);
+
+        $result = RelationshipService::getRelatedInstitutionsFlat($padalinysInstitution);
+
+        expect($result)->toHaveCount(1);
+        $item = $result->first();
+        expect($item['direction'])->toBe('outgoing');
+        expect($item['type'])->toBe('type-based');
+        expect($item['authorized'])->toBeFalse();
+        expect($item['institution']->id)->toBe($pagrindinisInstitution->id);
+    });
+});
+
 describe('directional authorization', function () {
     test('outgoing relationships have authorized = true', function () {
         // Create outgoing relationship (source -> related)
