@@ -1,10 +1,10 @@
 <template>
-  <div class="relative" :class="containerClass">
+  <div class="relative inline-flex leading-none" :class="containerClass">
     <Avatar 
+      :size="avatarSize"
+      :interactive="interactive"
       :class="[
-        sizeClass, 
         'transition-all duration-200',
-        interactive ? 'hover:ring-2 hover:ring-primary/40 cursor-pointer' : '',
         border ? 'ring-1 ring-border' : ''
       ]"
     >
@@ -43,13 +43,13 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { Avatar, AvatarImage, AvatarFallback } from '@/Components/ui/avatar';
+import { Avatar, AvatarImage, AvatarFallback, mapPixelToSize, avatarTextSizes, type AvatarSize } from '@/Components/ui/avatar';
 
 type StatusType = 'online' | 'offline' | 'away' | 'busy' | null;
 
 const props = defineProps<{
   user?: App.Entities.User;
-  size?: number;
+  size?: number | AvatarSize;
   interactive?: boolean;
   border?: boolean;
   status?: StatusType;
@@ -58,25 +58,27 @@ const props = defineProps<{
 
 const containerClass = computed(() => props.class || '');
 
-const sizeClass = computed(() => {
-  const sizeValue = props.size || 40;
-  return `h-[${sizeValue}px] w-[${sizeValue}px]`;
+// Support both pixel values (backward compat) and size variant names
+const avatarSize = computed<AvatarSize>(() => {
+  if (typeof props.size === 'string') {
+    return props.size as AvatarSize;
+  }
+  return mapPixelToSize(props.size);
 });
 
 const textSizeClass = computed(() => {
-  const size = props.size || 40;
-  if (size < 24) return 'text-xs';
-  if (size < 32) return 'text-sm';
-  if (size < 48) return 'text-base';
-  return 'text-lg';
+  return avatarTextSizes[avatarSize.value];
 });
 
 const statusSizeClass = computed(() => {
-  const size = props.size || 40;
-  if (size < 24) return 'h-1.5 w-1.5';
-  if (size < 32) return 'h-2 w-2';
-  if (size < 48) return 'h-2.5 w-2.5';
-  return 'h-3 w-3';
+  const sizeMap: Record<AvatarSize, string> = {
+    xs: 'size-1.5',
+    sm: 'size-2',
+    default: 'size-2.5',
+    lg: 'size-3',
+    xl: 'size-3',
+  };
+  return sizeMap[avatarSize.value];
 });
 
 const userInitials = (name: string | null) => {

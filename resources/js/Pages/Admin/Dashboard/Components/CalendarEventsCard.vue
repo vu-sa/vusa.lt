@@ -1,8 +1,5 @@
 <template>
-  <Card :class="[
-    'flex flex-col relative overflow-hidden shadow-sm dark:shadow-zinc-950/50',
-    'border-zinc-200 dark:border-zinc-600 bg-gradient-to-br from-white to-zinc-50 dark:from-zinc-900 dark:to-zinc-950'
-  ]" role="region" :aria-label="$t('Artėjantys renginiai')">
+  <Card :class="dashboardCardClasses" role="region" :aria-label="$t('Artėjantys renginiai')">
     <!-- Decorative accent -->
     <div class="absolute top-0 right-0 w-12 h-12 -mr-6 -mt-6 rotate-45 bg-vusa-red/30 dark:bg-vusa-red/20"
       aria-hidden="true" />
@@ -119,6 +116,7 @@ import { lt, enUS } from "date-fns/locale";
 import { CalendarDays as CalendarDaysIcon, ChevronRight as ChevronRightIcon } from "lucide-vue-next";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
+import { dashboardCardClasses } from "@/Composables/useDashboardCardStyles";
 
 const props = defineProps<{
   eventsList: App.Entities.Calendar[];

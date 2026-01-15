@@ -1,9 +1,9 @@
 <template>
   <div class="inline-flex flex-row items-center p-1" role="group" aria-label="Group of users">
     <!-- Display avatars up to the maximum allowed -->
-    <div v-for="(user, index) in visibleUsers" :key="user.id || index" class="relative group/avatar"
-      :class="{ '-ml-2': index > 0 }" :style="{ zIndex: visibleUsers.length - index }">
-      <UserPopover :user :size>
+    <div v-for="(user, index) in visibleUsers" :key="user.id || index" class="relative flex items-center"
+      :class="[avatarWrapperClass, { '-ml-2': index > 0 }]" :style="{ zIndex: visibleUsers.length - index }">
+      <UserPopover :user :size="avatarSize">
         <template #additional-info>
           <slot name="user-additional-info" :user />
         </template>
@@ -11,28 +11,27 @@
     </div>
 
     <!-- If there are more users than the maximum, show a count avatar -->
-    <HoverCard v-if="hasMoreUsers">
-      <HoverCardTrigger>
-        <div class="-ml-2 relative group/more" :style="{ zIndex: 0 }">
-          <Avatar :class="[
-            avatarSizeClass,
-            'transition-transform duration-200 group-hover/more:scale-110 group-hover/more:ring-2 group-hover/more:ring-primary/40 cursor-pointer'
-          ]">
+    <div v-if="hasMoreUsers" class="-ml-2 relative flex items-center" :class="avatarWrapperClass" :style="{ zIndex: 0 }">
+      <HoverCard>
+        <HoverCardTrigger as-child>
+          <Avatar 
+            :size="avatarSize" 
+            :interactive="true"
+          >
             <AvatarFallback
-              class="text-foreground font-medium transition-colors"
+              class="text-foreground font-medium"
               :class="textSizeClass">
               +{{ remainingCount }}
             </AvatarFallback>
           </Avatar>
-        </div>
-      </HoverCardTrigger>
-      <HoverCardContent class="p-3 w-auto min-w-48 max-h-[280px] overflow-y-auto">
+        </HoverCardTrigger>
+        <HoverCardContent class="p-3 w-auto min-w-48 max-h-[280px] overflow-y-auto">
         <div class="space-y-3">
           <h4 class="text-sm font-medium text-muted-foreground">
             {{ $t('Other users') }}
           </h4>
           <div class="grid gap-2">
-            <UserPopover v-for="user in hiddenUsers" :key="user.id || user.name" show-name :size="avatarSizeForPopover"
+            <UserPopover v-for="user in hiddenUsers" :key="user.id || user.name" show-name :size="popoverAvatarSize"
               :user>
               <template #additional-info>
                 <slot name="user-additional-info" :user />
@@ -42,9 +41,7 @@
         </div>
       </HoverCardContent>
     </HoverCard>
-
-    <!-- Named slot for additional actions -->
-    <slot name="actions" />
+    </div>
   </div>
 </template>
 
@@ -53,13 +50,13 @@ import { computed } from "vue";
 
 import UserPopover from "./UserPopover.vue";
 
-import { Avatar, AvatarFallback } from "@/Components/ui/avatar";
+import { Avatar, AvatarFallback, avatarSizeClasses, mapPixelToSize, avatarTextSizes, type AvatarSize } from "@/Components/ui/avatar";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/Components/ui/hover-card";
 
 const props = defineProps<{
   users: App.Entities.User[];
   max?: number;
-  size?: number;
+  size?: number | AvatarSize;
   limitByScreen?: boolean;
 }>();
 
@@ -98,24 +95,28 @@ const remainingCount = computed(() => {
   return props.users.length - maxVisibleUsers.value;
 });
 
-// Avatar size class
-const avatarSizeClass = computed(() => {
-  const sizeValue = props.size ?? 40;
-  return `h-[${sizeValue}px] w-[${sizeValue}px]`;
+// Support both pixel values (backward compat) and size variant names
+const avatarSize = computed<AvatarSize>(() => {
+  if (typeof props.size === 'string') {
+    return props.size as AvatarSize;
+  }
+  return mapPixelToSize(props.size);
 });
 
 // Text size for the +X indicator
 const textSizeClass = computed(() => {
-  const size = props.size || 40;
-  if (size < 24) return 'text-xs';
-  if (size < 32) return 'text-sm';
-  if (size < 48) return 'text-base';
-  return 'text-lg';
+  return avatarTextSizes[avatarSize.value];
+});
+
+const avatarWrapperClass = computed(() => {
+  return avatarSizeClasses[avatarSize.value];
 });
 
 // Use a slightly smaller avatar size in the popup list for better UX
-const avatarSizeForPopover = computed(() => {
-  const size = props.size || 40;
-  return Math.max(24, size - 8);
+const popoverAvatarSize = computed<AvatarSize>(() => {
+  const sizeOrder: AvatarSize[] = ['xs', 'sm', 'default', 'lg', 'xl'];
+  const currentIndex = sizeOrder.indexOf(avatarSize.value);
+  // Go one size smaller, but don't go below 'xs'
+  return sizeOrder[Math.max(0, currentIndex - 1)];
 });
 </script>

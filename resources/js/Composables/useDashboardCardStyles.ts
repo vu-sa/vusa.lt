@@ -14,7 +14,7 @@ export type UrgencyLevel = 'success' | 'warning' | 'danger' | 'neutral'
  */
 export const dashboardCardClasses = [
   'flex flex-col relative overflow-hidden shadow-sm dark:shadow-zinc-950/50',
-  'border-zinc-200 dark:border-zinc-600',
+  'border-zinc-200 dark:border-zinc-800',
   'bg-gradient-to-br from-white to-zinc-50 dark:from-zinc-900 dark:to-zinc-950'
 ].join(' ')
 
@@ -22,7 +22,7 @@ export const dashboardCardClasses = [
  * Card footer classes
  */
 export const dashboardCardFooterClasses = 
-  'border-t border-zinc-200 dark:border-zinc-600 bg-zinc-50/60 dark:bg-zinc-800/60'
+  'border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-900/60'
 
 /**
  * Get urgency-based status indicator classes (corner accent)

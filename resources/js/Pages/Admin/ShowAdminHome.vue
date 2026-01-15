@@ -7,12 +7,12 @@
       <!-- Simple greeting -->
       <section
         data-tour="greeting-section"
-        class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/8 via-primary/4 to-background p-6 shadow-sm ring-1 ring-primary/10 dark:from-primary/12 dark:via-primary/6 dark:ring-primary/15">
-        <div class="absolute inset-0 bg-grid-pattern opacity-[0.03] dark:opacity-[0.02]" />
+        class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/8 via-primary/4 to-background border border-zinc-200 dark:border-zinc-800 p-6 shadow-sm dark:shadow-zinc-950/50 dark:from-primary/6 dark:via-primary/3">
+        <div class="absolute inset-0 bg-grid-pattern opacity-[0.03] dark:opacity-[0.015]" />
         <div class="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">
-              {{ greeting }}, <span class="text-primary dark:text-primary/90">{{ userNameAddress }}</span>!
+              {{ greeting }}, <span class="text-primary dark:text-primary/85">{{ userNameAddress }}</span>!
             </h1>
             <p class="mt-1 text-sm text-muted-foreground">
               {{ currentDate }}

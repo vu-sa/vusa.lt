@@ -2,16 +2,22 @@
 import type { HTMLAttributes } from 'vue'
 import { cn } from '@/Utils/Shadcn/utils'
 import { AvatarRoot } from 'reka-ui'
+import { avatarVariants, type AvatarSize } from '.'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   class?: HTMLAttributes['class']
-}>()
+  size?: AvatarSize
+  interactive?: boolean
+}>(), {
+  size: 'default',
+  interactive: false,
+})
 </script>
 
 <template>
   <AvatarRoot
     data-slot="avatar"
-    :class="cn('relative flex size-8 shrink-0 overflow-hidden rounded-full', props.class)"
+    :class="cn(avatarVariants({ size, interactive }), props.class)"
   >
     <slot />
   </AvatarRoot>
