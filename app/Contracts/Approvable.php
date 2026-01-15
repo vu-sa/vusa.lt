@@ -45,4 +45,12 @@ interface Approvable
      * Get the URL for viewing this approvable item.
      */
     public function getApprovalUrl(): string;
+
+    /**
+     * Check if a specific decision is allowed for the current state.
+     *
+     * This should return false if the state transition would not be valid.
+     * For example, a "lent" resource cannot be rejected.
+     */
+    public function isDecisionAllowed(ApprovalDecision $decision): bool;
 }

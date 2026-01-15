@@ -48,6 +48,11 @@ class ApprovalService
             throw new \InvalidArgumentException('User cannot approve this item at the given step.');
         }
 
+        // Validate that this decision is allowed for the current state
+        if (method_exists($approvable, 'isDecisionAllowed') && ! $approvable->isDecisionAllowed($decision)) {
+            throw new \InvalidArgumentException(__('Šis veiksmas negalimas dabartinėje būsenoje.'));
+        }
+
         $approval = DB::transaction(function () use ($approvable, $user, $decision, $notes, $step) {
             $approval = Approval::create([
                 'approvable_type' => get_class($approvable),
@@ -74,7 +79,7 @@ class ApprovalService
      * Bulk approve multiple models.
      *
      * @param  Collection<int, Model&HasApprovals&Approvable>  $approvables
-     * @return Collection<int, Approval>
+     * @return array{approvals: Collection<int, Approval>, errors: array<string>}
      */
     public function bulkApprove(
         Collection $approvables,
@@ -82,20 +87,20 @@ class ApprovalService
         ApprovalDecision $decision,
         ?string $notes = null,
         ?int $step = null
-    ): Collection {
+    ): array {
         $approvals = collect();
+        $errors = [];
 
         foreach ($approvables as $approvable) {
             try {
                 $approval = $this->approve($approvable, $user, $decision, $notes, $step);
                 $approvals->push($approval);
-            } catch (\InvalidArgumentException) {
-                // Skip items the user cannot approve
-                continue;
+            } catch (\InvalidArgumentException $e) {
+                $errors[] = $e->getMessage();
             }
         }
 
-        return $approvals;
+        return ['approvals' => $approvals, 'errors' => $errors];
     }
 
     /**

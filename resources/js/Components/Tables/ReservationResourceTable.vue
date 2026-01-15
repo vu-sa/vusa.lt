@@ -1,31 +1,89 @@
 <template>
-  <!-- Bulk actions inline bar - no layout shift -->
-  <div v-if="selectedRowIds.length > 0 && hasApprovableSelected" class="mb-2 inline-flex items-center gap-2 rounded-md border bg-muted/50 px-3 py-1.5 text-sm">
-    <span class="font-medium">{{ selectedRowIds.length }}</span>
-    <Button size="xs" variant="default" :disabled="bulkLoading" @click="showBulkApproveDialog = true">
-      <Checkmark24Regular class="mr-1 size-3" />
-      {{ $t('Patvirtinti') }}
-    </Button>
-    <Button size="xs" variant="destructive" :disabled="bulkLoading" @click="showBulkRejectDialog = true">
-      <DismissCircle24Regular class="mr-1 size-3" />
-      {{ $t('Atmesti') }}
-    </Button>
-    <Button size="xs" variant="ghost" @click="clearSelection">
-      {{ $t('Išvalyti') }}
-    </Button>
-  </div>
+  <div class="relative">
+    <!-- Floating Bulk Actions Bar - positioned absolutely to avoid layout shift -->
+    <Transition
+      enter-active-class="transition-all duration-200 ease-out"
+      enter-from-class="opacity-0 -translate-y-2 scale-95"
+      enter-to-class="opacity-100 translate-y-0 scale-100"
+      leave-active-class="transition-all duration-150 ease-in"
+      leave-from-class="opacity-100 translate-y-0 scale-100"
+      leave-to-class="opacity-0 -translate-y-2 scale-95"
+    >
+      <div 
+        v-if="!isMobile && selectedRowIds.length > 0 && hasApprovableSelected" 
+        class="absolute -top-12 left-0 z-20 inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-2 shadow-lg dark:border-zinc-700 dark:bg-zinc-800"
+      >
+        <div class="flex size-6 items-center justify-center rounded-full bg-zinc-900 text-xs font-bold text-white dark:bg-zinc-100 dark:text-zinc-900">
+          {{ selectedRowIds.length }}
+        </div>
+        <span class="text-sm font-medium text-zinc-600 dark:text-zinc-400">{{ $t('pasirinkta') }}</span>
+        <div class="mx-1 h-4 w-px bg-zinc-200 dark:bg-zinc-700" />
+        <Button size="sm" :disabled="bulkLoading" @click="showBulkApproveDialog = true">
+          <Checkmark24Regular class="size-4" />
+          {{ $t('Patvirtinti') }}
+        </Button>
+        <Button size="sm" variant="destructive" :disabled="bulkLoading" @click="showBulkRejectDialog = true">
+          <DismissCircle24Regular class="size-4" />
+          {{ $t('Atmesti') }}
+        </Button>
+        <Button size="icon-sm" variant="ghost" @click="clearSelection">
+          <Dismiss24Regular class="size-4" />
+        </Button>
+      </div>
+    </Transition>
 
-  <DataTable 
-    :columns 
-    :data="reservation?.resources ?? []" 
-    :pagination="false" 
-    :get-row-id="(row) => String(row.pivot?.id ?? row.id)"
-    :enable-row-selection="hasAnyApprovable"
-    :enable-multi-row-selection="true"
-    :enable-row-selection-column="hasAnyApprovable"
-    :row-selection-state="rowSelection"
-    @update:rowSelection="handleRowSelectionChange"
-  />
+    <!-- Mobile Card View -->
+    <ReservationResourceCard
+      v-if="isMobile"
+      :resources="reservationResources"
+      :selected-ids="selectedRowIds"
+      :has-approvable-selected="hasApprovableSelected"
+      @update:selected-ids="handleCardSelectionChange"
+      @approve="handleApprovalAction"
+      @comment="handleCommentAction"
+      @delete="handlePivotDelete"
+      @edit="handleEditClick"
+      @cancel="handleReservationResourceCancel"
+      @bulk-approve="showBulkApproveDialog = true"
+      @bulk-reject="showBulkRejectDialog = true"
+      @clear-selection="clearSelection"
+      @add-resource="$emit('add-resource')"
+    />
+
+    <!-- Desktop Table View -->
+    <DataTable 
+      v-else
+      :columns 
+      :data="reservationResources" 
+      :pagination="false" 
+      :get-row-id="(row) => String(row.pivot?.id ?? row.id)"
+      :enable-row-selection="canSelectRow"
+      :enable-multi-row-selection="true"
+      :enable-row-selection-column="hasAnyApprovable"
+      :row-selection-state="rowSelection"
+      :row-class-name="getRowClassName"
+      :show-selection-count="false"
+      @update:rowSelection="handleRowSelectionChange"
+    />
+
+    <!-- Empty state for desktop -->
+    <div 
+      v-if="!isMobile && (reservation?.resources?.length ?? 0) === 0" 
+      class="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-zinc-200 py-16 dark:border-zinc-700"
+    >
+      <div class="flex size-20 items-center justify-center rounded-full bg-gradient-to-br from-zinc-100 to-zinc-50 dark:from-zinc-800 dark:to-zinc-900">
+        <Box24Regular class="size-10 text-muted-foreground" />
+      </div>
+      <h3 class="mt-5 text-lg font-semibold">{{ $t('Nėra rezervuotų išteklių') }}</h3>
+      <p class="mt-1.5 max-w-sm text-center text-sm text-muted-foreground">
+        {{ $t('Pridėkite išteklius prie šios rezervacijos, kad galėtumėte juos valdyti.') }}
+      </p>
+      <Button class="mt-5" @click="$emit('add-resource')">
+        <Add24Filled class="size-4" />
+        {{ $t('Pridėti išteklių') }}
+      </Button>
+    </div>
+  </div>
 
   <!-- Comment modal (without approval actions) -->
   <Dialog v-model:open="showCommentModal">
@@ -170,15 +228,24 @@ import type { ColumnDef, RowSelectionState } from "@tanstack/vue-table";
 import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
 import { Link, router, usePage } from "@inertiajs/vue3";
 import { computed, ref } from "vue";
+import { useBreakpoints, breakpointsTailwind } from "@vueuse/core";
 
 import InfoText from "../SmallElements/InfoText.vue";
+import ReservationResourceCard from "./ReservationResourceCard.vue";
 import ReservationResourceStateTag from "../Tag/ReservationResourceStateTag.vue";
+import StateProgressIndicator from "../SmallElements/StateProgressIndicator.vue";
 import UsersAvatarGroup from "../Avatars/UsersAvatarGroup.vue";
 
+import Add24Filled from "~icons/fluent/add-24-filled";
+import Box24Regular from "~icons/fluent/box-24-regular";
 import Checkmark24Regular from "~icons/fluent/checkmark-24-regular";
 import Delete16Regular from "~icons/fluent/delete16-regular";
+import Dismiss24Regular from "~icons/fluent/dismiss-24-regular";
 import DismissCircle24Regular from "~icons/fluent/dismiss-circle24-regular";
 import InfoIcon from "~icons/fluent/info-24-regular";
+import Warning24Filled from "~icons/fluent/warning-24-filled";
+import { ApprovalActions } from "@/Features/Admin/Approvals";
+import { Badge } from "@/Components/ui/badge";
 import { Button } from "@/Components/ui/button";
 import { DataTable } from "@/Components/ui/data-table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
@@ -189,14 +256,14 @@ import { RESERVATION_DATE_TIME_FORMAT } from "@/Constants/DateTimeFormats";
 import { capitalize } from "@/Utils/String";
 import { formatStaticTime } from "@/Utils/IntlTime";
 import CommentTipTap from "@/Features/Admin/CommentViewer/CommentTipTap.vue";
-import { ApprovalActions } from "@/Features/Admin/Approvals";
 
 const props = defineProps<{
   reservation: App.Entities.Reservation & { approvable: boolean };
 }>();
 
 const emit = defineEmits<{
-  'edit:reservationResource': [reservationResource: App.Entities.ReservationResource]
+  'edit:reservationResource': [reservationResource: App.Entities.ReservationResource];
+  'add-resource': [];
 }>()
 
 const selectedReservationResource =
@@ -204,12 +271,19 @@ const selectedReservationResource =
     "selectedReservationResource"
   );
 
+// Mobile detection
+const breakpoints = useBreakpoints(breakpointsTailwind);
+const isMobile = breakpoints.smaller('md');
+
 // Modal states
 const showCommentModal = ref(false);
 const showApprovalModal = ref(false);
 const showBulkApproveDialog = ref(false);
 const showBulkRejectDialog = ref(false);
 const bulkNotes = ref("");
+
+// Resources - use directly from props (DataTable handles sorting)
+const reservationResources = computed(() => props.reservation?.resources ?? []);
 
 // Row selection for bulk actions
 const rowSelection = ref<RowSelectionState>({});
@@ -219,6 +293,13 @@ const selectedRowIds = computed(() => Object.keys(rowSelection.value).filter(key
 const hasAnyApprovable = computed(() => 
   props.reservation?.resources?.some(r => r.pivot?.approvable) ?? false
 );
+
+// Function-based row selection - disable for rejected/returned/cancelled rows
+const canSelectRow = (row: any) => {
+  const state = row.original?.pivot?.state;
+  // Only allow selection for rows that can still be acted upon
+  return ['created', 'reserved', 'lent'].includes(state) && row.original?.pivot?.approvable;
+};
 
 const hasApprovableSelected = computed(() => {
   const resources = props.reservation?.resources ?? [];
@@ -230,6 +311,37 @@ const hasApprovableSelected = computed(() => {
 
 const handleRowSelectionChange = (newSelection: RowSelectionState) => {
   rowSelection.value = newSelection;
+};
+
+const handleCardSelectionChange = (newIds: string[]) => {
+  const newSelection: RowSelectionState = {};
+  newIds.forEach(id => { newSelection[id] = true; });
+  rowSelection.value = newSelection;
+};
+
+// Row styling based on state - subtle left border indicator instead of full background
+const getRowClassName = (row: App.Entities.Resource) => {
+  const state = row.pivot?.state;
+  const isOverdue = state === 'lent' && new Date(row.pivot?.end_time ?? '') < new Date();
+  
+  // Using subtle left border instead of full background color
+  switch (state) {
+    case 'created':
+      return 'border-l-2 border-l-amber-400 dark:border-l-amber-500';
+    case 'reserved':
+      return 'border-l-2 border-l-blue-400 dark:border-l-blue-500';
+    case 'lent':
+      return isOverdue 
+        ? 'border-l-2 border-l-red-500 bg-red-50/20 dark:border-l-red-400 dark:bg-red-950/10'
+        : 'border-l-2 border-l-emerald-400 dark:border-l-emerald-500';
+    case 'returned':
+      return 'border-l-2 border-l-zinc-300 dark:border-l-zinc-600 opacity-60';
+    case 'rejected':
+    case 'cancelled':
+      return 'border-l-2 border-l-zinc-300 dark:border-l-zinc-600 opacity-50';
+    default:
+      return '';
+  }
 };
 
 const clearSelection = () => {
@@ -333,7 +445,7 @@ const columns = computed<ColumnDef<App.Entities.Resource>[]>(() => [
               <InfoIcon class="size-4 shrink-0 text-muted-foreground" />
             </div>
           </HoverCardTrigger>
-          <HoverCardContent class="w-80">
+          <HoverCardContent class="w-80 border-border/50 bg-card/95 shadow-lg backdrop-blur-sm">
             <div class="flex flex-col gap-3">
               {resource.media?.length > 0 && (
                 <div class="flex flex-wrap gap-2">
@@ -370,13 +482,15 @@ const columns = computed<ColumnDef<App.Entities.Resource>[]>(() => [
   {
     accessorKey: 'tenant.shortname',
     header: () => capitalize($tChoice("entities.tenant.model", 1)),
-    size: 150,
+    size: 180,
     cell: ({ row }) => (
-      <div class="inline-flex items-center gap-2">
-        <span class={row.original.pivot?.state === "created" ? "font-bold text-vusa-red" : ""}>
+      <div class="flex min-w-0 items-center gap-1.5">
+        <span class={["shrink-0", row.original.pivot?.state === "created" ? "font-semibold text-vusa-red" : ""].filter(Boolean).join(' ')}>
           {$t(row.original.tenant?.shortname ?? '')}
         </span>
-        <UsersAvatarGroup users={row.original.managers} class="ml-2" size={24} max={2} />
+        <div class="shrink-0">
+          <UsersAvatarGroup users={row.original.managers} size={20} max={2} />
+        </div>
       </div>
     ),
   },
@@ -384,40 +498,117 @@ const columns = computed<ColumnDef<App.Entities.Resource>[]>(() => [
     accessorKey: 'pivot.start_time',
     header: () => capitalize($t("entities.reservation.start_time")),
     size: 150,
-    cell: ({ row }) => (
-      <span class={row.original.pivot?.state === "reserved" ? "font-bold text-vusa-red" : ""}>
-        {formatStaticTime(
-          new Date(row.original.pivot?.start_time ?? ''),
-          RESERVATION_DATE_TIME_FORMAT,
-          usePage().props.app.locale
-        )}
-      </span>
-    ),
+    cell: ({ row }) => {
+      const resource = row.original;
+      const startDate = new Date(resource.pivot?.start_time ?? '');
+      const isPickupOverdue = resource.pivot?.state === "reserved" && startDate < new Date();
+      
+      return (
+        <div class="flex items-center gap-1.5">
+          <span class={isPickupOverdue ? "font-semibold text-amber-600 dark:text-amber-400" : ""}>
+            {formatStaticTime(startDate, RESERVATION_DATE_TIME_FORMAT, usePage().props.app.locale)}
+          </span>
+          {isPickupOverdue && (
+            <span class="text-xs text-amber-600 dark:text-amber-400" title={$t('Laukiama atsiėmimo')}>
+              ⏳
+            </span>
+          )}
+        </div>
+      );
+    },
   },
   {
     accessorKey: 'pivot.end_time',
     header: () => capitalize($t("entities.reservation.end_time")),
-    size: 150,
-    cell: ({ row }) => (
-      <span class={row.original.pivot?.state === "lent" ? "font-bold text-vusa-red" : ""}>
-        {formatStaticTime(
-          new Date(row.original.pivot?.end_time ?? ''),
-          RESERVATION_DATE_TIME_FORMAT,
-          usePage().props.app.locale
-        )}
-      </span>
-    ),
+    size: 170,
+    cell: ({ row }) => {
+      const resource = row.original;
+      const endDate = new Date(resource.pivot?.end_time ?? '');
+      const isOverdue = resource.pivot?.state === "lent" && endDate < new Date();
+      
+      return (
+        <div class="flex items-center gap-1.5">
+          <span class={isOverdue ? "font-semibold text-red-600 dark:text-red-400" : ""}>
+            {formatStaticTime(endDate, RESERVATION_DATE_TIME_FORMAT, usePage().props.app.locale)}
+          </span>
+          {isOverdue && (
+            <Badge variant="destructive" class="h-5 gap-0.5 px-1.5 text-[10px] font-medium">
+              <Warning24Filled class="size-3" />
+              {$t('Vėluojama')}
+            </Badge>
+          )}
+        </div>
+      );
+    },
   },
   {
     accessorKey: 'pivot.state',
     header: () => $t("forms.fields.state"),
-    size: 120,
-    cell: ({ row }) => (
-      <ReservationResourceStateTag
-        state={row.original.pivot?.state}
-        state_properties={row.original.pivot?.state_properties}
-      />
-    ),
+    size: 140,
+    cell: ({ row }) => {
+      const resource = row.original;
+      const stateDescription = resource.pivot?.state_properties?.description;
+      const approvals = (resource.pivot as any)?.approvals ?? [];
+      const hasApprovals = approvals.length > 0;
+      
+      return (
+        <HoverCard openDelay={200}>
+          <HoverCardTrigger asChild>
+            <div class="cursor-help">
+              <ReservationResourceStateTag
+                state={resource.pivot?.state ?? 'created'}
+                state_properties={resource.pivot?.state_properties}
+              />
+            </div>
+          </HoverCardTrigger>
+          <HoverCardContent class="w-80 border-border/50 bg-card/95 shadow-lg backdrop-blur-sm" side="left" align="start">
+            <div class="space-y-3">
+              {/* Progress indicator */}
+              <div class="space-y-1.5">
+                <p class="text-xs font-medium text-muted-foreground">{$t('Eiga')}</p>
+                <StateProgressIndicator currentState={resource.pivot?.state} />
+              </div>
+              
+              {/* Approval history */}
+              {hasApprovals && (
+                <div class="border-t pt-3 space-y-2">
+                  <p class="text-xs font-medium text-muted-foreground">{$t('Patvirtinimai')}</p>
+                  <div class="space-y-1.5 max-h-32 overflow-y-auto">
+                    {approvals.map((approval: any) => (
+                      <div key={approval.id} class="flex items-start gap-2 text-xs">
+                        <div class={[
+                          "mt-0.5 size-1.5 shrink-0 rounded-full",
+                          approval.decision === 'approved' ? 'bg-green-500' : 
+                          approval.decision === 'rejected' ? 'bg-red-500' : 'bg-amber-500'
+                        ].join(' ')} />
+                        <div class="min-w-0 flex-1">
+                          <div class="flex items-baseline justify-between gap-1">
+                            <span class="font-medium truncate">{approval.user?.name ?? $t('Nežinomas')}</span>
+                            <span class="shrink-0 text-muted-foreground text-[10px]">
+                              {formatStaticTime(new Date(approval.created_at), 'MM-dd HH:mm', usePage().props.app.locale)}
+                            </span>
+                          </div>
+                          {approval.notes && (
+                            <p class="text-muted-foreground mt-0.5 line-clamp-2">{approval.notes}</p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* State description */}
+              {stateDescription && (
+                <div class="border-t pt-3">
+                  <p class="text-xs text-muted-foreground">{stateDescription}</p>
+                </div>
+              )}
+            </div>
+          </HoverCardContent>
+        </HoverCard>
+      );
+    },
   },
   {
     id: 'actions',

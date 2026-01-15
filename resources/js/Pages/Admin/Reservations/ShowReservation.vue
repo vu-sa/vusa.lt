@@ -30,7 +30,8 @@
 
         <!-- Resources Tab -->
         <TabsContent value="resources" class="space-y-4">
-          <Card>
+          <!-- Show card header only when there are resources -->
+          <Card v-if="reservation.resources?.length">
             <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-4">
               <div>
                 <CardTitle class="text-base">
@@ -44,12 +45,23 @@
               </Button>
             </CardHeader>
             <CardContent class="pt-0">
-              <div class="overflow-x-auto">
-                <ReservationResourceTable v-model:selected-reservation-resource="selectedReservationResource"
-                  :reservation @edit:reservation-resource="editReservationResource" />
-              </div>
+              <ReservationResourceTable 
+                v-model:selected-reservation-resource="selectedReservationResource"
+                :reservation 
+                @edit:reservation-resource="editReservationResource"
+                @add-resource="handleAddResource" 
+              />
             </CardContent>
           </Card>
+          
+          <!-- Empty state handled by table component -->
+          <ReservationResourceTable 
+            v-else
+            v-model:selected-reservation-resource="selectedReservationResource"
+            :reservation 
+            @edit:reservation-resource="editReservationResource"
+            @add-resource="handleAddResource" 
+          />
         </TabsContent>
 
         <!-- Description Tab -->

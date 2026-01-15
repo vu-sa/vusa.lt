@@ -45,6 +45,22 @@ class ReservationResource extends Pivot implements Approvable
 {
     use HasApprovals, HasComments;
 
+    /**
+     * Indicates if the IDs are auto-incrementing.
+     * Required for Pivot models with custom id column.
+     */
+    public $incrementing = true;
+
+    /**
+     * The primary key for the model.
+     */
+    protected $primaryKey = 'id';
+
+    /**
+     * The table associated with the model.
+     */
+    protected $table = 'reservation_resource';
+
     protected $guarded = [];
 
     protected $with = ['comments', 'approvals'];
@@ -161,6 +177,46 @@ class ReservationResource extends Pivot implements Approvable
     public function getApprovalUrl(): string
     {
         return route('reservations.show', $this->reservation_id);
+    }
+
+    /**
+     * Check if a decision is allowed for the current state.
+     *
+     * This prevents saving approvals for invalid state transitions.
+     * Uses the state machine's transition configuration from ReservationResourceState.
+     */
+    public function isDecisionAllowed(ApprovalDecision $decision): bool
+    {
+        if (! $this->state) {
+            return false;
+        }
+
+        // Map decisions to their target states
+        $targetStateClass = match ($decision) {
+            ApprovalDecision::Approved => $this->getApproveTargetState(),
+            ApprovalDecision::Rejected => \App\States\ReservationResource\Rejected::class,
+            ApprovalDecision::Cancelled => \App\States\ReservationResource\Cancelled::class,
+        };
+
+        if ($targetStateClass === null) {
+            return false;
+        }
+
+        // Use Spatie's state machine to check if transition is allowed
+        return $this->state->canTransitionTo($targetStateClass);
+    }
+
+    /**
+     * Get the target state for an approve action based on current state.
+     */
+    protected function getApproveTargetState(): ?string
+    {
+        return match ($this->state?->getValue()) {
+            'created' => \App\States\ReservationResource\Reserved::class,
+            'reserved' => \App\States\ReservationResource\Lent::class,
+            'lent' => \App\States\ReservationResource\Returned::class,
+            default => null,
+        };
     }
 
     // =========================================================================

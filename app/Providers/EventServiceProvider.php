@@ -42,6 +42,7 @@ class EventServiceProvider extends ServiceProvider
             \App\Listeners\ReservationResource\HandleReservationResourceReserved::class,
             \App\Listeners\ReservationResource\HandleReservationResourceLent::class,
             \App\Listeners\ReservationResource\HandleReservationResourceStateChanged::class,
+            \App\Listeners\ReservationResource\CompleteTasksOnStateChange::class,
         ],
         \App\Events\DutiableChanged::class => [
             \App\Listeners\HandleDutiableChange::class,

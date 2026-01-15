@@ -23,11 +23,11 @@ class Lent extends ReservationResourceState
 
     public function handleReject(): void
     {
-        abort(403, 'Paskolintas daiktas negali būti atmestas.');
+        // This should never be called - validation in isDecisionAllowed prevents it
     }
 
     public function handleCancel(): void
     {
-        abort(403, 'Paskolintas daiktas negali būti atšauktas.');
+        // This should never be called - validation in isDecisionAllowed prevents it
     }
 }

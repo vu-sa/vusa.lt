@@ -96,15 +96,28 @@ class ApprovalController extends AdminController
             ->map(fn ($id) => $this->resolveApprovable($validated['approvable_type'], $id))
             ->filter();
 
-        $approvals = $this->approvalService->bulkApprove($approvables, $user, $decision, $notes, $step);
+        $result = $this->approvalService->bulkApprove($approvables, $user, $decision, $notes, $step);
+        $approvals = $result['approvals'];
+        $errors = $result['errors'];
 
         $count = $approvals->count();
+
+        // If no approvals succeeded and there are errors, show the first error
+        if ($count === 0 && ! empty($errors)) {
+            return back()->with('error', $errors[0]);
+        }
 
         $message = match ($decision) {
             ApprovalDecision::Approved => __(':count elementų patvirtinta.', ['count' => $count]),
             ApprovalDecision::Rejected => __(':count elementų atmesta.', ['count' => $count]),
             ApprovalDecision::Cancelled => __(':count elementų atšaukta.', ['count' => $count]),
         };
+
+        // If some succeeded but some failed, add warning about skipped items
+        if (! empty($errors)) {
+            $skipped = count($errors);
+            $message .= ' '.__(':skipped praleišta dėl klaidų.', ['skipped' => $skipped]);
+        }
 
         return back()->with('success', $message);
     }

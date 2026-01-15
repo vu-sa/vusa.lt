@@ -133,7 +133,7 @@ class ReservationController extends AdminController
             'reservation' => [
                 // load pivot relationship comments
                 ...$reservation->load('comments', 'activities.causer', 'users')->toArray(),
-                'resources' => $reservation->load('resources.media', 'resources.pivot.comments', 'resources.tenant')->resources->map(function ($resource) use ($reservation) {
+                'resources' => $reservation->load('resources.media', 'resources.pivot.comments', 'resources.pivot.approvals.user', 'resources.tenant')->resources->map(function ($resource) use ($reservation) {
 
                     // This is used to update the left capacity of resources already attached to the reservation
                     $capacityAtDateTimeRange = $resource->getCapacityAtDateTimeRange($reservation->start_time, $reservation->end_time);
