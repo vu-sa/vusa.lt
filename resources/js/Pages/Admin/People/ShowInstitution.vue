@@ -165,7 +165,7 @@
       @close="showMeetingModal = false" />
 
     <AddCheckInDialog v-if="showCheckInModal" :open="showCheckInModal" :institution-id="institution.id"
-      @close="showCheckInModal = false" @created="handleCheckInCreated" />
+      @close="showCheckInModal = false" />
   </AdminContentPage>
 </template>
 
@@ -287,11 +287,6 @@ const handleViewProfile = (member: App.Entities.User) => {
 
 const handleEditMember = (member: App.Entities.User) => {
   router.visit(route('users.edit', member.id));
-};
-
-const handleCheckInCreated = () => {
-  // Refresh the page or update the check-in status
-  router.reload();
 };
 
 const handleDeleteMeeting = (meeting: App.Entities.Meeting) => {

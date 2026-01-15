@@ -57,8 +57,11 @@ export function useAtstovavimosActions(
   };
 
   // Navigation and refresh
-  const handleRefresh = () => {
-    router.reload({ only: ['user'] });
+  const handleRefresh = (tenantIds: string[] = []) => {
+    router.reload({
+      only: ['user', 'userInstitutions', 'relatedInstitutions', 'tenantInstitutions', 'mayHaveRelatedInstitutions'],
+      data: { tenantIds },
+    });
   };
 
   const handleShowInstitutionDetails = (id: string) => {

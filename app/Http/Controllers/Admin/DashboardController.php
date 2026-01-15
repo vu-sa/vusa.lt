@@ -253,7 +253,8 @@ class DashboardController extends AdminController
         $mayHaveRelatedInstitutions = $userInstitutions->isNotEmpty();
 
         return $this->inertiaResponse('Admin/Dashboard/ShowAtstovavimas', [
-            'user' => [
+            // User with institutions - always included, even in partial reloads (ensures check-in data stays fresh)
+            'user' => Inertia::always(fn () => [
                 ...$user->toArray(),
                 'current_duties' => $user->current_duties->map(function ($duty) use ($userInstitutions) {
                     $institution = $userInstitutions->firstWhere('id', $duty->institution_id);
@@ -263,9 +264,9 @@ class DashboardController extends AdminController
                         'institution' => $institution,
                     ];
                 }),
-            ],
-            // User's own institutions - always loaded (lightweight)
-            'userInstitutions' => $userInstitutions->values(),
+            ]),
+            // User's own institutions - always included, even in partial reloads (ensures check-in data stays fresh)
+            'userInstitutions' => Inertia::always($userInstitutions->values()),
             // Quick flag to show/hide related institutions filter (lazy data may not be loaded yet)
             'mayHaveRelatedInstitutions' => $mayHaveRelatedInstitutions,
             // Lazy load relatedInstitutions - only fetched when explicitly requested via Inertia reload

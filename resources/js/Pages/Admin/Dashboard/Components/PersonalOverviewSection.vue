@@ -21,7 +21,6 @@
         :max-display-count="5" 
         :current-user-id="String(currentUserId)"
         @show-all-modal="$emit('show-all-institutions')" 
-        @refresh="$emit('refresh')"
         @create-meeting="$emit('create-meeting')"
         @schedule-meeting="$emit('schedule-meeting', $event)"
         @show-institution-details="$emit('show-institution-details', $event)" />
@@ -52,6 +51,5 @@ defineEmits<{
   'create-meeting': [];
   'schedule-meeting': [institutionId: string];
   'show-institution-details': [institutionId: string];
-  'refresh': [];
 }>();
 </script>

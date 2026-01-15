@@ -1,4 +1,4 @@
-import { computed } from 'vue';
+import { computed, type MaybeRefOrGetter, toValue } from 'vue';
 import type { 
   AtstovavimosUser, 
   AtstovavimosInstitution, 
@@ -9,10 +9,11 @@ import type {
 } from '../types';
 
 export function useAtstovavimosData(
-  user: AtstovavimosUser
+  userGetter: MaybeRefOrGetter<AtstovavimosUser>
 ) {
   // User's direct institutions (from current_duties)
   const institutions = computed<AtstovavimosInstitution[]>(() => {
+    const user = toValue(userGetter);
     return (user?.current_duties ?? [])
       .map((duty: any) => duty?.institution ?? null)
       .filter((i: any): i is AtstovavimosInstitution => !!i)

@@ -46,7 +46,7 @@
 
     <!-- Create Check-in Dialog -->
     <AddCheckInDialog v-if="showCreateCheckIn" :open="!!showCreateCheckIn" :institution-id="showCreateCheckIn"
-      @close="showCreateCheckIn = null" @created="handleCheckInCreated" />
+      :institution-name="checkInInstitutionName" :reload-props="['user', 'userInstitutions', 'tenantInstitutions']" @close="showCreateCheckIn = null" />
   </Card>
 </template>
 
@@ -77,7 +77,6 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   'show-all-modal': []
-  'refresh': []
   'schedule-meeting': [institutionId: string]
   'show-institution-details': [institutionId: string]
   'create-meeting': []
@@ -148,6 +147,13 @@ const limitedInstitutions = computed(() => {
   return sortedInstitutions.value.slice(0, props.maxDisplayCount)
 })
 
+const checkInInstitutionName = computed(() => {
+  const institutionId = showCreateCheckIn.value
+  if (!institutionId) return undefined
+
+  return props.institutions.find(inst => String(inst.id) === String(institutionId))?.name
+})
+
 // Determine overall urgency level for theming
 const urgencyLevel = computed((): UrgencyLevel => {
   const needingAttentionCount = institutionsNeedingAttention.value.length
@@ -175,19 +181,14 @@ const handleAddCheckIn = (institutionId: string) => {
   showCreateCheckIn.value = institutionId
 }
 
-const handleCheckInCreated = () => {
-  showCreateCheckIn.value = null
-  // Refresh data to update UI with new check-in
-  router.reload({ only: ['user', 'accessibleInstitutions'] })
-}
-
 const handleRemoveActiveCheckIn = (institutionId: string) => {
   setLoading(institutionId, true)
   router.delete(route('institutions.check-ins.destroyActive', institutionId), {
+    preserveScroll: true,
     onFinish: () => setLoading(institutionId, false),
     onSuccess: () => {
       // Refresh data to update UI after check-in deletion
-      router.reload({ only: ['user', 'accessibleInstitutions'] })
+      router.reload({ only: ['user', 'userInstitutions', 'tenantInstitutions'], preserveScroll: true })
     }
   })
 }

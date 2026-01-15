@@ -62,12 +62,15 @@ const props = defineProps<{
   institutionId: string
   open: boolean
   institutionName?: string
+  reloadTenantIds?: Array<string | number>
+  /** Inertia props to reload on success (e.g., ['userInstitutions', 'tenantInstitutions']) */
+  reloadProps?: string[]
   /** Optional initial start date (e.g., from drag selection) */
   initialStartDate?: Date
   /** Optional initial end date (e.g., from drag selection) */
   initialEndDate?: Date
 }>()
-const emit = defineEmits<{ (e: 'close'): void, (e: 'created'): void }>()
+const emit = defineEmits<{ (e: 'close'): void }>()
 
 const startDate = ref<Date>(props.initialStartDate ?? new Date(Date.now()))
 const endDate = ref<Date>(props.initialEndDate ?? new Date(Date.now() + 14 * 24 * 60 * 60 * 1000))
@@ -90,6 +93,20 @@ function submit() {
     start_date: formatDate(startDate.value),
     end_date: formatDate(endDate.value),
     note: note.value || undefined,
-  }, { onSuccess: () => { emit('created'); emit('close') }, preserveScroll: true })
+  }, {
+    onSuccess: () => {
+      emit('close')
+      // Build reload options with explicit props to refresh
+      const reloadOptions: { only?: string[]; data?: Record<string, unknown> } = {}
+      if (props.reloadProps && props.reloadProps.length > 0) {
+        reloadOptions.only = props.reloadProps
+      }
+      if (props.reloadTenantIds && props.reloadTenantIds.length > 0) {
+        reloadOptions.data = { tenantIds: props.reloadTenantIds }
+      }
+      router.reload(reloadOptions)
+    },
+    preserveScroll: true,
+  })
 }
 </script>

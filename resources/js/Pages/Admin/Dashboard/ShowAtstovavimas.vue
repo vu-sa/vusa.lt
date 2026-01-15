@@ -47,7 +47,7 @@
           :current-user-id="Number(props.user.id)" @show-all-institutions="actions.showAllInstitutionModal.value = true"
           @show-all-meetings="actions.showAllMeetingModal.value = true"
           @create-meeting="actions.showMeetingModal.value = true" @schedule-meeting="actions.handleScheduleMeeting"
-          @show-institution-details="actions.handleShowInstitutionDetails" @refresh="actions.handleRefresh" />
+          @show-institution-details="actions.handleShowInstitutionDetails" />
 
         <!-- User timeline section - deferred to prevent view transition lag -->
         <UserTimelineSection v-if="deferredContentReady" :institutions="atstovavimosData.institutions.value"
@@ -110,7 +110,9 @@
       :institution-name="checkInInstitutionName"
       :initial-start-date="actions.showCreateCheckIn.value.startDate"
       :initial-end-date="actions.showCreateCheckIn.value.endDate"
-      @close="actions.showCreateCheckIn.value = null" @created="actions.handleRefresh" />
+      :reload-tenant-ids="timelineFilters.selectedTenantForGantt.value"
+      :reload-props="['user', 'userInstitutions', 'tenantInstitutions']"
+      @close="actions.showCreateCheckIn.value = null" />
 
     <InstitutionDataTable :institutions="atstovavimosData.institutions.value"
       :is-open="actions.showAllInstitutionModal.value" :on-schedule-meeting="actions.handleScheduleMeeting"
@@ -425,8 +427,8 @@ const isAdmin = computed(() => {
     roles.includes('Resource Manager') || roles.includes('Communication Coordinator');
 });
 
-// Initialize composables
-const atstovavimosData = useAtstovavimosData(props.user);
+// Initialize composables - pass getter to maintain reactivity on Inertia prop updates
+const atstovavimosData = useAtstovavimosData(() => props.user);
 const timelineFilters = provideTimelineFilters(atstovavimosData.institutions.value, props.availableTenants);
 const actions = useAtstovavimosActions(props.userInstitutions);
 const ganttData = useGanttChartData(tenantInstitutionsData, props.availableTenants);
