@@ -1,8 +1,8 @@
 import { ref, computed, watch, onUnmounted, nextTick, shallowRef } from 'vue'
-import { useLocalStorage } from '@vueuse/core'
+import { useLocalStorage, useOnline } from '@vueuse/core'
 import { debounce } from 'lodash-es'
-import TypesenseInstantSearchAdapter from 'typesense-instantsearch-adapter'
 import { usePage } from '@inertiajs/vue3'
+import { createTypesenseClients } from './useSearchClient'
 
 // Import types and services
 import type {
@@ -14,8 +14,10 @@ import type {
 } from '../Types/InstitutionSearchTypes'
 import type { SearchError, SearchStatus, SearchState } from '../Types/DocumentSearchTypes'
 import { InstitutionSearchService } from '../Services/InstitutionSearchService'
+import { FacetMerger } from '../Services/FacetMerger'
 import {
   RecentSearchManager,
+  FilterUtils,
   ErrorUtils,
   QueryUtils
 } from '../Utils/SearchUtils'
@@ -45,7 +47,7 @@ export const useInstitutionSearch = (): InstitutionSearchController => {
 
   // Error handling state with user-friendly messages
   const searchError = ref<SearchError | null>(null)
-  const isOnline = ref(typeof navigator !== 'undefined' ? navigator.onLine : true)
+  const isOnline = useOnline()
   const retryCount = ref(0)
   const maxRetries = 3
 
@@ -90,63 +92,16 @@ export const useInstitutionSearch = (): InstitutionSearchController => {
 
   const mergedFacets = computed(() => {
     facetMergeKey.value // Touch the key for reactivity
-    
-    // Simple facet merging for institutions
-    if (initialFacets.value.length === 0) {
-      return facets.value
-    }
-    
-    return initialFacets.value.map(initialFacet => {
-      const currentFacet = facets.value.find(f => f.field === initialFacet.field)
-      
-      const currentValueMap = new Map<string, number>()
-      if (currentFacet) {
-        currentFacet.values.forEach(value => {
-          currentValueMap.set(value.value, value.count)
-        })
-      }
-      
-      // Get selected values for this facet field
-      const selectedValues = initialFacet.field === 'tenant_shortname' 
-        ? filters.value.tenants 
-        : initialFacet.field === 'type_slugs' 
-          ? filters.value.types 
-          : []
-      
-      const mergedValues = initialFacet.values.map(initialValue => ({
-        ...initialValue,
-        count: currentValueMap.get(initialValue.value) || 0,
-        isSelected: selectedValues.includes(initialValue.value)
-      }))
-      
-      // Add any new values from current search
-      if (currentFacet) {
-        currentFacet.values.forEach(currentValue => {
-          if (!initialFacet.values.some(iv => iv.value === currentValue.value)) {
-            mergedValues.push({
-              ...currentValue,
-              isSelected: selectedValues.includes(currentValue.value)
-            })
-          }
-        })
-      }
-      
-      // Sort: selected first, then by count, then alphabetically
-      mergedValues.sort((a, b) => {
-        if (a.isSelected && !b.isSelected) return -1
-        if (!a.isSelected && b.isSelected) return 1
-        if (a.count !== b.count) return b.count - a.count
-        return a.value.localeCompare(b.value)
-      })
-      
-      return { ...initialFacet, values: mergedValues }
-    })
-  })
 
-  // Network status monitoring
-  const updateOnlineStatus = () => {
-    isOnline.value = navigator.onLine
-  }
+    return FacetMerger.mergeFacetsWithSelectionMap(
+      initialFacets.value,
+      facets.value,
+      {
+        tenant_shortname: filters.value.tenants,
+        type_slugs: filters.value.types
+      }
+    )
+  })
 
   // Simplified error handling using utility
   const clearError = () => {
@@ -204,13 +159,7 @@ export const useInstitutionSearch = (): InstitutionSearchController => {
         per_page: 24,
       }
 
-      // Create InstantSearch adapter (for compatibility)
-      const adapter = new TypesenseInstantSearchAdapter({
-        server: {
-          apiKey: typesenseConfig.apiKey,
-          nodes: typesenseConfig.nodes,
-          connectionTimeoutSeconds: 10,
-        },
+      const clients = createTypesenseClients(typesenseConfig, {
         additionalSearchParameters: {
           query_by: 'name_lt,name_en,short_name_lt,short_name_en,alias',
           num_typos: 2,
@@ -229,40 +178,8 @@ export const useInstitutionSearch = (): InstitutionSearchController => {
         collectionSpecificSearchParameters
       })
 
-      searchClient.value = adapter.searchClient
-
-      // Create direct Typesense client for service usage
-      typesenseClient.value = {
-        apiKey: typesenseConfig.apiKey,
-        nodes: typesenseConfig.nodes,
-        search: async (collection: string, searchParams: any, abortSignal?: AbortSignal) => {
-          const node = typesenseConfig.nodes[0]
-          const baseUrl = `${node.protocol}://${node.host}:${node.port}`
-          const url = new URL(`${baseUrl}/collections/${collection}/documents/search`)
-
-          Object.entries(searchParams).forEach(([key, value]) => {
-            if (value !== undefined && value !== null && value !== '') {
-              url.searchParams.append(key, String(value))
-            }
-          })
-
-          const response = await fetch(url.toString(), {
-            method: 'GET',
-            headers: {
-              'X-TYPESENSE-API-KEY': typesenseConfig.apiKey,
-              'Content-Type': 'application/json',
-            },
-            signal: abortSignal
-          })
-
-          if (!response.ok) {
-            const errorText = await response.text()
-            throw new Error(`Typesense API error: ${response.status} - ${errorText}`)
-          }
-
-          return await response.json()
-        }
-      }
+      searchClient.value = clients.searchClient
+      typesenseClient.value = clients.typesenseClient
 
       // Initialize search service with collection name from config
       searchService.value = new InstitutionSearchService(typesenseClient.value, collectionName)
@@ -273,22 +190,11 @@ export const useInstitutionSearch = (): InstitutionSearchController => {
         await loadInitialFacets()
       }
 
-      return adapter.searchClient
+      return clients.searchClient
     } catch (error) {
       console.error('Failed to initialize Typesense clients:', error)
       return null
     }
-  }
-
-  // Check if search should be performed for institutions
-  const shouldPerformSearch = (): boolean => {
-    const hasActiveFilters = filters.value.tenants.length > 0 ||
-                            filters.value.types.length > 0 ||
-                            filters.value.hasContacts !== null
-    const query = filters.value.query
-    
-    // For institutions, always allow search (even empty query means "show all")
-    return query === '*' || query.trim().length >= 0 || hasActiveFilters
   }
 
   // Search function using service
@@ -342,7 +248,7 @@ export const useInstitutionSearch = (): InstitutionSearchController => {
       facets.value = result.facets
 
       // Add to recent searches
-      if (searchQuery.value && searchQuery.value !== '*' && searchQuery.value.trim().length > 0) {
+      if (QueryUtils.isValidQuery(searchQuery.value)) {
         preferences.value.recentSearches = RecentSearchManager.addToRecentSearches(
           preferences.value.recentSearches,
           searchQuery.value
@@ -435,30 +341,12 @@ export const useInstitutionSearch = (): InstitutionSearchController => {
   }
 
   const toggleTenant = (tenantShortname: string) => {
-    const current = [...filters.value.tenants]
-    const index = current.indexOf(tenantShortname)
-
-    if (index >= 0) {
-      current.splice(index, 1)
-    } else {
-      current.push(tenantShortname)
-    }
-
-    filters.value.tenants = current
+    filters.value.tenants = FilterUtils.toggleArrayValue(filters.value.tenants, tenantShortname)
     debouncedSearch()
   }
 
   const toggleType = (typeSlug: string) => {
-    const current = [...filters.value.types]
-    const index = current.indexOf(typeSlug)
-
-    if (index >= 0) {
-      current.splice(index, 1)
-    } else {
-      current.push(typeSlug)
-    }
-
-    filters.value.types = current
+    filters.value.types = FilterUtils.toggleArrayValue(filters.value.types, typeSlug)
     debouncedSearch()
   }
 
@@ -539,12 +427,6 @@ export const useInstitutionSearch = (): InstitutionSearchController => {
     }
   }
 
-  // Network monitoring setup
-  if (typeof window !== 'undefined') {
-    window.addEventListener('online', updateOnlineStatus)
-    window.addEventListener('offline', updateOnlineStatus)
-  }
-
   // Cleanup on unmount
   onUnmounted(() => {
     if (searchService.value) {
@@ -552,10 +434,6 @@ export const useInstitutionSearch = (): InstitutionSearchController => {
     }
     debouncedSearch.cancel()
 
-    if (typeof window !== 'undefined') {
-      window.removeEventListener('online', updateOnlineStatus)
-      window.removeEventListener('offline', updateOnlineStatus)
-    }
   })
 
   return {

@@ -1,8 +1,8 @@
 import { ref, computed, watch, onUnmounted, nextTick, shallowRef } from 'vue'
-import { useLocalStorage } from '@vueuse/core'
+import { useLocalStorage, useOnline } from '@vueuse/core'
 import { debounce } from 'lodash-es'
-import TypesenseInstantSearchAdapter from 'typesense-instantsearch-adapter'
 import { usePage } from '@inertiajs/vue3'
+import { createTypesenseClients } from './useSearchClient'
 
 // Import types and services
 import type { 
@@ -52,7 +52,7 @@ export const useDocumentSearch = (): DocumentSearchController => {
   
   // Error handling state with user-friendly messages
   const searchError = ref<SearchError | null>(null)
-  const isOnline = ref(navigator.onLine)
+  const isOnline = useOnline()
   const retryCount = ref(0)
   const maxRetries = 3
   
@@ -98,11 +98,6 @@ export const useDocumentSearch = (): DocumentSearchController => {
     return FacetMerger.mergeFacets(initialFacets.value, facets.value, filters.value)
   })
 
-  // Network status monitoring
-  const updateOnlineStatus = () => {
-    isOnline.value = navigator.onLine
-  }
-
   // Simplified error handling using utility
   const clearError = () => {
     searchError.value = null
@@ -144,13 +139,7 @@ export const useDocumentSearch = (): DocumentSearchController => {
     }
 
     try {
-      // Create InstantSearch adapter (for compatibility)
-      const adapter = new TypesenseInstantSearchAdapter({
-        server: {
-          apiKey: typesenseConfig.apiKey,
-          nodes: typesenseConfig.nodes,
-          connectionTimeoutSeconds: 10,
-        },
+      const clients = createTypesenseClients(typesenseConfig, {
         additionalSearchParameters: {
           query_by: 'title,summary',
           num_typos: 2,
@@ -160,7 +149,7 @@ export const useDocumentSearch = (): DocumentSearchController => {
           per_page: 20,
           facet_by: [
             'content_type',
-            'tenant_shortname', 
+            'tenant_shortname',
             'language',
             'document_date'
           ].join(','),
@@ -181,40 +170,8 @@ export const useDocumentSearch = (): DocumentSearchController => {
         }
       })
 
-      searchClient.value = adapter.searchClient
-
-      // Create direct Typesense client for service usage
-      typesenseClient.value = {
-        apiKey: typesenseConfig.apiKey,
-        nodes: typesenseConfig.nodes,
-        search: async (collection: string, searchParams: any, abortSignal?: AbortSignal) => {
-          const node = typesenseConfig.nodes[0]
-          const baseUrl = `${node.protocol}://${node.host}:${node.port}`
-          const url = new URL(`${baseUrl}/collections/${collection}/documents/search`)
-          
-          Object.entries(searchParams).forEach(([key, value]) => {
-            if (value !== undefined && value !== null && value !== '') {
-              url.searchParams.append(key, String(value))
-            }
-          })
-          
-          const response = await fetch(url.toString(), {
-            method: 'GET',
-            headers: {
-              'X-TYPESENSE-API-KEY': typesenseConfig.apiKey,
-              'Content-Type': 'application/json',
-            },
-            signal: abortSignal
-          })
-          
-          if (!response.ok) {
-            const errorText = await response.text()
-            throw new Error(`Typesense API error: ${response.status} - ${errorText}`)
-          }
-          
-          return await response.json()
-        }
-      }
+      searchClient.value = clients.searchClient
+      typesenseClient.value = clients.typesenseClient
 
       // Initialize search service
       searchService.value = new DocumentSearchService(typesenseClient.value)
@@ -226,7 +183,7 @@ export const useDocumentSearch = (): DocumentSearchController => {
         await loadInitialFacets()
       }
 
-      return adapter.searchClient
+      return clients.searchClient
     } catch (error) {
       console.error('Failed to initialize Typesense clients:', error)
       return null
@@ -402,44 +359,17 @@ export const useDocumentSearch = (): DocumentSearchController => {
   }
 
   const toggleTenant = (tenantShortname: string) => {
-    const current = [...filters.value.tenants]
-    const index = current.indexOf(tenantShortname)
-    
-    if (index >= 0) {
-      current.splice(index, 1)
-    } else {
-      current.push(tenantShortname)
-    }
-    
-    filters.value.tenants = current
+    filters.value.tenants = FilterUtils.toggleArrayValue(filters.value.tenants, tenantShortname)
     debouncedSearch()
   }
 
   const toggleContentType = (contentType: string) => {
-    const current = [...filters.value.contentTypes]
-    const index = current.indexOf(contentType)
-    
-    if (index >= 0) {
-      current.splice(index, 1)
-    } else {
-      current.push(contentType)
-    }
-    
-    filters.value.contentTypes = current
+    filters.value.contentTypes = FilterUtils.toggleArrayValue(filters.value.contentTypes, contentType)
     debouncedSearch()
   }
 
   const toggleLanguage = (language: string) => {
-    const current = [...filters.value.languages]
-    const index = current.indexOf(language)
-    
-    if (index >= 0) {
-      current.splice(index, 1)
-    } else {
-      current.push(language)
-    }
-    
-    filters.value.languages = current
+    filters.value.languages = FilterUtils.toggleArrayValue(filters.value.languages, language)
     debouncedSearch()
   }
 
@@ -515,12 +445,6 @@ export const useDocumentSearch = (): DocumentSearchController => {
     }
   }
 
-  // Network monitoring setup
-  if (typeof window !== 'undefined') {
-    window.addEventListener('online', updateOnlineStatus)
-    window.addEventListener('offline', updateOnlineStatus)
-  }
-
   // Cleanup on unmount
   onUnmounted(() => {
     // Cancel any ongoing searches through service
@@ -529,11 +453,6 @@ export const useDocumentSearch = (): DocumentSearchController => {
     }
     debouncedSearch.cancel()
     
-    // Clean up network listeners
-    if (typeof window !== 'undefined') {
-      window.removeEventListener('online', updateOnlineStatus)
-      window.removeEventListener('offline', updateOnlineStatus)
-    }
   })
 
   return {

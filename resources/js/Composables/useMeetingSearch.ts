@@ -1,8 +1,8 @@
 import { ref, computed, watch, onUnmounted, nextTick, shallowRef } from 'vue'
-import { useLocalStorage } from '@vueuse/core'
+import { useLocalStorage, useOnline } from '@vueuse/core'
 import { debounce } from 'lodash-es'
-import TypesenseInstantSearchAdapter from 'typesense-instantsearch-adapter'
 import { usePage } from '@inertiajs/vue3'
+import { createTypesenseClients } from './useSearchClient'
 
 // Import types and services
 import type {
@@ -51,7 +51,7 @@ export const useMeetingSearch = (): MeetingSearchController => {
 
   // Error handling state with user-friendly messages
   const searchError = ref<SearchError | null>(null)
-  const isOnline = ref(navigator.onLine)
+  const isOnline = useOnline()
   const retryCount = ref(0)
   const maxRetries = 3
 
@@ -96,11 +96,6 @@ export const useMeetingSearch = (): MeetingSearchController => {
     facetMergeKey.value // Touch the key for reactivity
     return FacetMerger.mergeFacets(initialFacets.value, facets.value, filters.value)
   })
-
-  // Network status monitoring
-  const updateOnlineStatus = () => {
-    isOnline.value = navigator.onLine
-  }
 
   // Simplified error handling using utility
   const clearError = () => {
@@ -161,13 +156,7 @@ export const useMeetingSearch = (): MeetingSearchController => {
         per_page: 24,
       }
 
-      // Create InstantSearch adapter (for compatibility)
-      const adapter = new TypesenseInstantSearchAdapter({
-        server: {
-          apiKey: typesenseConfig.apiKey,
-          nodes: typesenseConfig.nodes,
-          connectionTimeoutSeconds: 10,
-        },
+      const clients = createTypesenseClients(typesenseConfig, {
         additionalSearchParameters: {
           query_by: `title,description,${institutionNameField}`,
           num_typos: 2,
@@ -186,40 +175,8 @@ export const useMeetingSearch = (): MeetingSearchController => {
         collectionSpecificSearchParameters
       })
 
-      searchClient.value = adapter.searchClient
-
-      // Create direct Typesense client for service usage
-      typesenseClient.value = {
-        apiKey: typesenseConfig.apiKey,
-        nodes: typesenseConfig.nodes,
-        search: async (collection: string, searchParams: any, abortSignal?: AbortSignal) => {
-          const node = typesenseConfig.nodes[0]
-          const baseUrl = `${node.protocol}://${node.host}:${node.port}`
-          const url = new URL(`${baseUrl}/collections/${collection}/documents/search`)
-
-          Object.entries(searchParams).forEach(([key, value]) => {
-            if (value !== undefined && value !== null && value !== '') {
-              url.searchParams.append(key, String(value))
-            }
-          })
-
-          const response = await fetch(url.toString(), {
-            method: 'GET',
-            headers: {
-              'X-TYPESENSE-API-KEY': typesenseConfig.apiKey,
-              'Content-Type': 'application/json',
-            },
-            signal: abortSignal
-          })
-
-          if (!response.ok) {
-            const errorText = await response.text()
-            throw new Error(`Typesense API error: ${response.status} - ${errorText}`)
-          }
-
-          return await response.json()
-        }
-      }
+      searchClient.value = clients.searchClient
+      typesenseClient.value = clients.typesenseClient
 
       // Initialize search service with collection name from config
       searchService.value = new MeetingSearchService(typesenseClient.value, collectionName)
@@ -231,7 +188,7 @@ export const useMeetingSearch = (): MeetingSearchController => {
         await loadInitialFacets()
       }
 
-      return adapter.searchClient
+      return clients.searchClient
     } catch (error) {
       console.error('Failed to initialize Typesense clients:', error)
       return null
@@ -407,58 +364,22 @@ export const useMeetingSearch = (): MeetingSearchController => {
   }
 
   const toggleTenant = (tenantShortname: string) => {
-    const current = [...filters.value.tenants]
-    const index = current.indexOf(tenantShortname)
-
-    if (index >= 0) {
-      current.splice(index, 1)
-    } else {
-      current.push(tenantShortname)
-    }
-
-    filters.value.tenants = current
+    filters.value.tenants = FilterUtils.toggleArrayValue(filters.value.tenants, tenantShortname)
     debouncedSearch()
   }
 
   const toggleInstitutionType = (type: string) => {
-    const current = [...filters.value.institutionTypes]
-    const index = current.indexOf(type)
-
-    if (index >= 0) {
-      current.splice(index, 1)
-    } else {
-      current.push(type)
-    }
-
-    filters.value.institutionTypes = current
+    filters.value.institutionTypes = FilterUtils.toggleArrayValue(filters.value.institutionTypes, type)
     debouncedSearch()
   }
 
   const toggleYear = (year: number) => {
-    const current = [...filters.value.years]
-    const index = current.indexOf(year)
-
-    if (index >= 0) {
-      current.splice(index, 1)
-    } else {
-      current.push(year)
-    }
-
-    filters.value.years = current
+    filters.value.years = FilterUtils.toggleArrayValue(filters.value.years, year)
     debouncedSearch()
   }
 
   const toggleSuccessRate = (range: string) => {
-    const current = [...filters.value.successRateRanges]
-    const index = current.indexOf(range)
-
-    if (index >= 0) {
-      current.splice(index, 1)
-    } else {
-      current.push(range)
-    }
-
-    filters.value.successRateRanges = current
+    filters.value.successRateRanges = FilterUtils.toggleArrayValue(filters.value.successRateRanges, range)
     debouncedSearch()
   }
 
@@ -541,12 +462,6 @@ export const useMeetingSearch = (): MeetingSearchController => {
     }
   }
 
-  // Network monitoring setup
-  if (typeof window !== 'undefined') {
-    window.addEventListener('online', updateOnlineStatus)
-    window.addEventListener('offline', updateOnlineStatus)
-  }
-
   // Cleanup on unmount
   onUnmounted(() => {
     // Cancel any ongoing searches through service
@@ -555,11 +470,6 @@ export const useMeetingSearch = (): MeetingSearchController => {
     }
     debouncedSearch.cancel()
 
-    // Clean up network listeners
-    if (typeof window !== 'undefined') {
-      window.removeEventListener('online', updateOnlineStatus)
-      window.removeEventListener('offline', updateOnlineStatus)
-    }
   })
 
   return {
