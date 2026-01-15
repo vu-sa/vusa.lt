@@ -27,7 +27,12 @@ return [
     'digest_subject' => '{1} You have :count new notification|[2,*] You have :count new notifications',
     'digest_greeting' => 'Hello, :name!',
     'digest_intro' => 'Here is your notification digest (:count notifications):',
+    'digest_intro_short' => 'Here\'s your notification summary:',
     'digest_footer' => 'You can change notification settings in your profile.',
+    'digest_count_label' => '{1} notification|[2,*] notifications',
+    'digest_total' => 'total',
+    'digest_more_items' => '{1} :count more item|[2,*] :count more items',
+    'digest_view_all' => 'View all notifications',
 
     // Comment notifications
     'comment_posted_title' => 'New comment: :name',

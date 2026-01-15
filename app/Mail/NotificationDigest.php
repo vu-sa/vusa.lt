@@ -11,6 +11,11 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
+/**
+ * Maximum number of notification items to show per category in the digest.
+ */
+const DIGEST_MAX_ITEMS_PER_CATEGORY = 3;
+
 class NotificationDigest extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
@@ -42,12 +47,28 @@ class NotificationDigest extends Mailable implements ShouldQueue
      */
     public function content(): Content
     {
-        // Transform category keys to translated labels
+        // Transform category keys to translated labels, limit items, and track overflow
         $categorizedItems = [];
+        $remainingCounts = [];
+        $categoryColors = [];
+
         foreach ($this->groupedItems as $categoryValue => $items) {
             $category = NotificationCategory::tryFrom($categoryValue);
             $label = $category ? __($category->labelKey()) : $categoryValue;
-            $categorizedItems[$label] = $items;
+            $color = $category ? $category->color() : 'gray';
+
+            $itemsCollection = collect($items);
+            $totalInCategory = $itemsCollection->count();
+
+            // Limit to max items per category
+            $categorizedItems[$label] = $itemsCollection->take(DIGEST_MAX_ITEMS_PER_CATEGORY)->all();
+
+            // Track how many more items exist beyond the limit
+            $remaining = $totalInCategory - DIGEST_MAX_ITEMS_PER_CATEGORY;
+            $remainingCounts[$label] = $remaining > 0 ? $remaining : 0;
+
+            // Store color for styling
+            $categoryColors[$label] = $color;
         }
 
         return new Content(
@@ -55,7 +76,10 @@ class NotificationDigest extends Mailable implements ShouldQueue
             with: [
                 'user' => $this->user,
                 'categorizedItems' => $categorizedItems,
+                'remainingCounts' => $remainingCounts,
+                'categoryColors' => $categoryColors,
                 'totalCount' => collect($this->groupedItems)->flatten(1)->count(),
+                'dashboardUrl' => route('dashboard.notifications'),
             ],
         );
     }

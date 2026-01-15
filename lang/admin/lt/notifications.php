@@ -27,7 +27,12 @@ return [
     'digest_subject' => '{1} Turite :count naują pranešimą|[2,9] Turite :count naujus pranešimus|[10,*] Turite :count naujų pranešimų',
     'digest_greeting' => 'Sveiki, :name!',
     'digest_intro' => 'Štai jūsų pranešimų santrauka (:count pranešimai):',
+    'digest_intro_short' => 'Štai jūsų pranešimų santrauka:',
     'digest_footer' => 'Galite keisti pranešimų nustatymus savo profilyje.',
+    'digest_count_label' => '{1} pranešimas|[2,9] pranešimai|[10,*] pranešimų',
+    'digest_total' => 'iš viso',
+    'digest_more_items' => '{1} dar :count pranešimas|[2,9] dar :count pranešimai|[10,*] dar :count pranešimų',
+    'digest_view_all' => 'Peržiūrėti visus pranešimus',
 
     // Comment notifications
     'comment_posted_title' => 'Naujas komentaras: :name',
