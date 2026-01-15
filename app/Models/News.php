@@ -64,14 +64,17 @@ class News extends Model implements Feedable, Sitemapable
 
     public $fallback_image = '/images/icons/naujienu_foto.png';
 
-    protected $casts = [
-        'updated_at' => 'datetime:Y-m-d H:i:s',
-        'created_at' => 'datetime:Y-m-d H:i:s',
-        'last_edited_at' => 'datetime:Y-m-d H:i:s',
-        // TODO: convert to datetime in database
-        'publish_time' => 'datetime',
-        'highlights' => 'array',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'updated_at' => 'datetime:Y-m-d H:i:s',
+            'created_at' => 'datetime:Y-m-d H:i:s',
+            'last_edited_at' => 'datetime:Y-m-d H:i:s',
+            // TODO: convert to datetime in database
+            'publish_time' => 'datetime',
+            'highlights' => 'array',
+        ];
+    }
 
     /**
      * Available layout options for news articles.

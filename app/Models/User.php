@@ -117,13 +117,16 @@ class User extends Authenticatable
         'name_was_changed',
     ];
 
-    protected $casts = [
-        'last_action' => 'datetime',
-        'show_pronouns' => 'boolean',
-        'name_was_changed' => 'boolean',
-        'tutorial_progress' => 'array',
-        'notification_preferences' => 'array',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'last_action' => 'datetime',
+            'show_pronouns' => 'boolean',
+            'name_was_changed' => 'boolean',
+            'tutorial_progress' => 'array',
+            'notification_preferences' => 'array',
+        ];
+    }
 
     public function getActivitylogOptions(): LogOptions
     {

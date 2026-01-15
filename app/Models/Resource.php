@@ -64,13 +64,16 @@ class Resource extends Model implements HasMedia
         'tenant_id', 'resource_category_id', 'media',
     ];
 
-    protected $casts = [
-        'name' => 'array',
-        'description' => 'array',
-        'capacity' => 'integer',
-        'is_reservable' => 'boolean',
-        'deleted_at' => 'datetime',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'name' => 'array',
+            'description' => 'array',
+            'capacity' => 'integer',
+            'is_reservable' => 'boolean',
+            'deleted_at' => 'datetime',
+        ];
+    }
 
     public $translatable = ['name', 'description'];
 

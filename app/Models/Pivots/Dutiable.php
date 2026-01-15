@@ -61,11 +61,14 @@ class Dutiable extends MorphPivot
         'deleted' => \App\Events\DutiableChanged::class,
     ];
 
-    protected $casts = [
-        'start_date' => 'datetime',
-        'end_date' => 'datetime',
-        'use_original_duty_name' => 'boolean',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'start_date' => 'datetime',
+            'end_date' => 'datetime',
+            'use_original_duty_name' => 'boolean',
+        ];
+    }
 
     public $translatable = ['description'];
 

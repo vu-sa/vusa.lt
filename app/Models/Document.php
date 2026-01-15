@@ -53,14 +53,17 @@ class Document extends Model
 
     protected $hidden = ['sharepoint_id', 'eTag', 'public_url_created_at', 'sharepoint_site_id', 'sharepoint_list_id', 'created_at', 'updated_at'];
 
-    protected $casts = [
-        'is_active' => 'boolean',
-        'document_date' => 'datetime',
-        'effective_date' => 'datetime',
-        'expiration_date' => 'datetime',
-        'checked_at' => 'datetime',
-        'last_sync_attempt_at' => 'datetime',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'is_active' => 'boolean',
+            'document_date' => 'datetime',
+            'effective_date' => 'datetime',
+            'expiration_date' => 'datetime',
+            'checked_at' => 'datetime',
+            'last_sync_attempt_at' => 'datetime',
+        ];
+    }
 
     protected static function booted()
     {

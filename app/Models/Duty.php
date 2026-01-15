@@ -107,7 +107,7 @@ class Duty extends Model implements AuthorizableContract, SharepointFileableCont
         return LogOptions::defaults()->logUnguarded()->logOnlyDirty();
     }
 
-    public function dutiables()
+    public function dutiables(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Dutiable::class);
     }
@@ -140,7 +140,7 @@ class Duty extends Model implements AuthorizableContract, SharepointFileableCont
             ->withTimestamps();
     }
 
-    public function types()
+    public function types(): \Illuminate\Database\Eloquent\Relations\MorphToMany
     {
         return $this->morphToMany(Type::class, 'typeable')->using(Typeable::class)->withPivot(['typeable_type']);
     }
@@ -157,33 +157,33 @@ class Duty extends Model implements AuthorizableContract, SharepointFileableCont
     }
 
     // it has only one tenant all times, but it's better to have this method with this name
-    public function tenants()
+    public function tenants(): \Staudenmeir\EloquentHasManyDeep\HasManyDeep
     {
         return $this->hasManyDeepFromRelations($this->institution(), (new Institution)->tenant());
     }
 
-    public function meetings()
+    public function meetings(): \Staudenmeir\EloquentHasManyDeep\HasManyDeep
     {
         return $this->hasManyDeepFromRelations($this->institution(), (new Institution)->meetings());
     }
 
-    public function agendaItems()
+    public function agendaItems(): \Staudenmeir\EloquentHasManyDeep\HasManyDeep
     {
         return $this->hasManyDeepFromRelations($this->institution(), (new Institution)->meetings(), (new Meeting)->agendaItems());
     }
 
     // TODO: tasks should not be completable through duties, only by users
-    public function tasks()
+    public function tasks(): \Staudenmeir\EloquentHasManyDeep\HasManyDeep
     {
         return $this->hasManyDeepFromRelations($this->users(), (new User)->tasks());
     }
 
-    public function reservations()
+    public function reservations(): \Staudenmeir\EloquentHasManyDeep\HasManyDeep
     {
         return $this->hasManyDeepFromRelations($this->users(), (new User)->reservations());
     }
 
-    public function resources()
+    public function resources(): \Staudenmeir\EloquentHasManyDeep\HasManyDeep
     {
         return $this->hasManyDeepFromRelations($this->tenants(), (new Tenant)->resources());
     }

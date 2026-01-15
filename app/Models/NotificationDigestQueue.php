@@ -29,9 +29,12 @@ class NotificationDigestQueue extends Model
         'data',
     ];
 
-    protected $casts = [
-        'data' => 'array',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'data' => 'array',
+        ];
+    }
 
     /**
      * Get the user this digest item belongs to.

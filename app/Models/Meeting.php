@@ -60,9 +60,12 @@ class Meeting extends Model implements SharepointFileableContract
 
     protected $guarded = [];
 
-    protected $casts = [
-        'start_time' => 'datetime',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'start_time' => 'datetime',
+        ];
+    }
 
     // Note: is_public is NOT auto-appended due to performance (triggers N+1 queries).
     // Append it explicitly where needed: $meeting->append('is_public')

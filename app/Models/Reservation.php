@@ -51,10 +51,13 @@ class Reservation extends Model
 
     protected $guarded = [];
 
-    protected $casts = [
-        'start_time' => 'datetime',
-        'end_time' => 'datetime',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'start_time' => 'datetime',
+            'end_time' => 'datetime',
+        ];
+    }
 
     public function getActivitylogOptions(): LogOptions
     {

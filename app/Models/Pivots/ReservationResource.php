@@ -71,11 +71,14 @@ class ReservationResource extends Pivot implements Approvable
         'created' => \App\Events\ReservationResourceCreated::class,
     ];
 
-    protected $casts = [
-        'state' => ReservationResourceState::class,
-        'start_time' => 'datetime',
-        'end_time' => 'datetime',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'state' => ReservationResourceState::class,
+            'start_time' => 'datetime',
+            'end_time' => 'datetime',
+        ];
+    }
 
     public function reservation(): BelongsTo
     {

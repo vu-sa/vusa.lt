@@ -31,9 +31,12 @@ class FieldResponse extends Model
         'response',
     ];
 
-    protected $casts = [
-        'response' => 'array',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'response' => 'array',
+        ];
+    }
 
     /**
      * Get the actual value from the response structure.

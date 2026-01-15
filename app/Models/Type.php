@@ -69,11 +69,14 @@ class Type extends Model implements SharepointFileableContract
 
     protected $translatable = ['title', 'description'];
 
-    protected $casts = [
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-        'extra_attributes' => 'array',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
+            'extra_attributes' => 'array',
+        ];
+    }
 
     public function getActivitylogOptions(): LogOptions
     {

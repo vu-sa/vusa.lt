@@ -3,6 +3,9 @@
 namespace Database\Factories;
 
 use App\Models\Institution;
+use App\Models\Meeting;
+use App\Models\Reservation;
+use App\Tasks\Enums\ActionType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -56,6 +59,49 @@ class TaskFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'due_date' => now()->addDays($this->faker->numberBetween(1, 7)),
             'completed_at' => null,
+        ]);
+    }
+
+    /**
+     * Task with specific action type.
+     */
+    public function withActionType(ActionType $type): static
+    {
+        return $this->state(['action_type' => $type]);
+    }
+
+    /**
+     * Task with progress tracking metadata.
+     */
+    public function withProgress(int $completed, int $total): static
+    {
+        return $this->state([
+            'metadata' => [
+                'items_completed' => $completed,
+                'items_total' => $total,
+            ],
+        ]);
+    }
+
+    /**
+     * Task for a reservation.
+     */
+    public function forReservation(?Reservation $reservation = null): static
+    {
+        return $this->state([
+            'taskable_type' => Reservation::class,
+            'taskable_id' => $reservation?->id ?? Reservation::factory(),
+        ]);
+    }
+
+    /**
+     * Task for a meeting.
+     */
+    public function forMeeting(?Meeting $meeting = null): static
+    {
+        return $this->state([
+            'taskable_type' => Meeting::class,
+            'taskable_id' => $meeting?->id ?? Meeting::factory(),
         ]);
     }
 }

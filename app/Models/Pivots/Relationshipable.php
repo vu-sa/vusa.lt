@@ -47,9 +47,12 @@ class Relationshipable extends MorphPivot
         'bidirectional' => false,
     ];
 
-    protected $casts = [
-        'bidirectional' => 'boolean',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'bidirectional' => 'boolean',
+        ];
+    }
 
     public function relationshipable()
     {

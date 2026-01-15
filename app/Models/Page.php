@@ -61,14 +61,17 @@ class Page extends Model implements Feedable, Sitemapable
      */
     public const LAYOUTS = ['default', 'wide', 'focused'];
 
-    protected $casts = [
-        'updated_at' => 'datetime:Y-m-d H:i:s',
-        'created_at' => 'datetime:Y-m-d H:i:s',
-        'last_edited_at' => 'datetime:Y-m-d H:i:s',
-        'publish_time' => 'datetime',
-        'is_active' => 'boolean',
-        'highlights' => 'array',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'updated_at' => 'datetime:Y-m-d H:i:s',
+            'created_at' => 'datetime:Y-m-d H:i:s',
+            'last_edited_at' => 'datetime:Y-m-d H:i:s',
+            'publish_time' => 'datetime',
+            'is_active' => 'boolean',
+            'highlights' => 'array',
+        ];
+    }
 
     protected static function booted()
     {

@@ -56,13 +56,16 @@ class FileableFile extends Model
 
     protected $guarded = [];
 
-    protected $casts = [
-        'file_date' => 'datetime',
-        'public_link_expires_at' => 'datetime',
-        'last_synced_at' => 'datetime',
-        'deleted_externally_at' => 'datetime',
-        'size_bytes' => 'integer',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'file_date' => 'datetime',
+            'public_link_expires_at' => 'datetime',
+            'last_synced_at' => 'datetime',
+            'deleted_externally_at' => 'datetime',
+            'size_bytes' => 'integer',
+        ];
+    }
 
     /**
      * Semantic file types for meetings and other fileables.

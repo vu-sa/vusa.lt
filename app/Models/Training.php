@@ -69,10 +69,13 @@ class Training extends Model
 
     public $translatable = ['name', 'description'];
 
-    protected $casts = [
-        'start_time' => 'datetime',
-        'end_time' => 'datetime',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'start_time' => 'datetime',
+            'end_time' => 'datetime',
+        ];
+    }
 
     public function getActivitylogOptions(): LogOptions
     {
