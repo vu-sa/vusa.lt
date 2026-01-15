@@ -8,7 +8,7 @@ export function useAtstovavimosActions(
   const showMeetingModal = ref(false);
   const showAllMeetingModal = ref(false);
   const showAllInstitutionModal = ref(false);
-  const showCreateCheckIn = ref<{ open: boolean; institutionId?: string } | null>(null);
+  const showCreateCheckIn = ref<{ open: boolean; institutionId?: string; startDate?: Date; endDate?: Date } | null>(null);
   const showFullscreenGantt = ref(false);
   const fullscreenGanttType = ref<'user' | 'tenant'>('user');
   const selectedInstitution = ref<any | undefined>(undefined);
@@ -17,6 +17,16 @@ export function useAtstovavimosActions(
   // Check-in actions
   const handleAddCheckIn = (institutionId: string) => {
     showCreateCheckIn.value = { open: true, institutionId };
+  };
+
+  // Check-in creation from Gantt drag selection
+  const onGapCreateCheckIn = (payload: { institution_id: string | number; startDate: Date; endDate: Date }) => {
+    showCreateCheckIn.value = { 
+      open: true, 
+      institutionId: String(payload.institution_id),
+      startDate: payload.startDate,
+      endDate: payload.endDate,
+    };
   };
 
   // Meeting actions
@@ -68,6 +78,7 @@ export function useAtstovavimosActions(
 
     // Check-in actions
     handleAddCheckIn,
+    onGapCreateCheckIn,
 
     // Meeting actions
     handleScheduleMeeting,

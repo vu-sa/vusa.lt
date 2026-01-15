@@ -35,6 +35,7 @@
       :institution-periodicity="allInstitutionPeriodicity"
       :duty-members :inactive-periods :show-duty-members="filters.showDutyMembersUser.value" :day-width="dayWidthPx"
       :empty-message="$t('Neturi tiesiogiai priskirtų institucijų')" @create-meeting="$emit('create-meeting', $event)"
+      @create-check-in="$emit('create-check-in', $event)"
       @fullscreen="$emit('fullscreen')" @update:day-width="emit('update:dayWidth', $event)" />
   </section>
 </template>
@@ -103,6 +104,7 @@ onMounted(() => {
 
 const emit = defineEmits<{
   'create-meeting': [payload: { institution_id: string | number, suggestedAt: Date }];
+  'create-check-in': [payload: { institution_id: string | number, startDate: Date, endDate: Date }];
   'update:dayWidth': [value: number];
   'fullscreen': [];
 }>();

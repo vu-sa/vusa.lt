@@ -18,7 +18,7 @@ class StoreInstitutionCheckInRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'start_date' => ['required', 'date', 'after_or_equal:today'],
+            'start_date' => ['required', 'date'],
             'end_date' => ['required', 'date', 'after:start_date', Rule::date()->beforeOrEqual(today()->addMonths(3))],
             'note' => ['nullable', 'string', 'max:500'],
         ];

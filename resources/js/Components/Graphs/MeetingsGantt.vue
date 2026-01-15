@@ -200,6 +200,7 @@ import {
   useGanttFiltering,
   useGanttLabels,
   useColumnResize,
+  useDragSelection,
   type LayoutRow,
 } from './composables'
 
@@ -214,6 +215,8 @@ import {
   renderInactivePeriods,
   renderTodayLine,
   renderHoverEffects,
+  renderDragSelection,
+  setupDragSelectionPattern,
   createGanttTooltip,
   createCenterLine,
   type GanttTooltipManager,
@@ -318,6 +321,7 @@ const { isResizing, startResize: startLabelResize } = useColumnResize(
 
 const emit = defineEmits<{
   (e: 'create-meeting', payload: { institution_id: string | number, suggestedAt: Date }): void
+  (e: 'create-check-in', payload: { institution_id: string | number, startDate: Date, endDate: Date }): void
   (e: 'fullscreen', payload: boolean): void
   (e: 'update:detailsExpanded', payload: boolean): void
   (e: 'show-legend-modal'): void
@@ -464,6 +468,19 @@ const visibleMeetings = viewport.createVisibleMeetings(filteredMeetings)
 const visibleGaps = viewport.createVisibleGaps(filteredGaps)
 const visibleDutyMembers = viewport.createVisibleDutyMembers(filteredDutyMembers)
 
+// Initialize drag selection composable for Shift+drag check-in creation
+const dragSelection = useDragSelection(
+  rightScroll,
+  svgEl,
+  curXRef,
+  layoutRows,
+  {
+    onDragComplete: (payload) => {
+      emit('create-check-in', payload)
+    },
+  }
+)
+
 // Margins: top is 0 since x-axis is now in a separate sticky SVG.
 // Bottom set to 0 so SVG height matches the left grid height exactly.
 const margin = { top: 0, right: 8, bottom: 0, left: 8 }
@@ -488,7 +505,7 @@ const axisHeight = 22 // Height of the sticky x-axis header
 const render = () => {
   const container = wrap.value
   const svg = d3.select(svgEl.value)
-  const axisSvg = d3.select(axisEl.value)
+  const axisSvg = axisEl.value ? d3.select(axisEl.value) : null
   if (!container || svg.empty()) return
 
   // Get color palette based on current theme
@@ -512,7 +529,7 @@ const render = () => {
   svg.selectAll('*').remove()
   
   // Also set axis SVG width to match
-  if (!axisSvg.empty()) {
+  if (axisSvg && !axisSvg.empty()) {
     axisSvg.attr('width', innerW).attr('height', axisHeight)
     axisSvg.selectAll('*').remove()
   }
@@ -529,6 +546,8 @@ const render = () => {
     colors,
     isDarkMode: isDarkModeActive(),
   })
+  // Add drag selection pattern for Shift+drag check-in creation
+  setupDragSelectionPattern(defs, isDarkModeActive())
 
   // Create unified tooltip manager for all renderers
   // Remove old tooltip elements first to prevent duplicates
@@ -608,17 +627,19 @@ const render = () => {
 
   // Render sticky x-axis in separate SVG using extracted renderer
   const currentLocale = (page.props.app as any)?.locale ?? 'lt'
-  renderAxis({
-    axisSvg,
-    x,
-    marginLeft: margin.left,
-    axisHeight,
-    dayWidthPx: dayWidthPx.value || props.dayWidth,
-    minTime: minTime.value,
-    maxTime: maxTime.value,
-    colors,
-    locale: currentLocale,
-  })
+  if (axisSvg && !axisSvg.empty()) {
+    renderAxis({
+      axisSvg,
+      x,
+      marginLeft: margin.left,
+      axisHeight,
+      dayWidthPx: dayWidthPx.value || props.dayWidth,
+      minTime: minTime.value,
+      maxTime: maxTime.value,
+      colors,
+      locale: currentLocale,
+    })
+  }
 
   // gaps (check-ins) as stroked lines - using extracted renderer
   renderGaps({
@@ -737,6 +758,9 @@ onMounted(() => {
   // Attach keyboard navigation handler
   const cleanupKeyboard = attachKeyboardHandler(wrap.value)
 
+  // Attach Shift+drag handler for check-in creation (interactive only)
+  const cleanupDragSelection = props.interactive ? dragSelection.attachDragHandler() : () => {}
+
   // Setup center line scroll handler with debounced center date saving
   let saveCenterDateTimeout: ReturnType<typeof setTimeout> | null = null
   let saveVerticalScrollTimeout: ReturnType<typeof setTimeout> | null = null
@@ -802,6 +826,7 @@ onMounted(() => {
     cleanupScrollHandler?.()
     cleanupViewport?.()
     cleanupKeyboard?.()
+    cleanupDragSelection?.()
     centerLineManager?.destroy()
     rightScroll.value?.removeEventListener('scroll', handleCenterLineScroll)
     window.removeEventListener('beforeunload', handleBeforeUnload)
@@ -812,6 +837,25 @@ onMounted(() => {
     saveCurrentVerticalScroll()
   })
 })
+
+// Watch drag selection state to render selection rectangle in real-time
+watch(() => dragSelection.state.value, (state) => {
+  const svg = d3.select(svgEl.value)
+  if (svg.empty() || !curXRef.value) return
+  
+  const g = svg.select<SVGGElement>('g')
+  if (g.empty()) return
+  
+  const colors = getGanttColors(isDarkModeActive())
+  
+  renderDragSelection({
+    g,
+    x: curXRef.value,
+    dragState: state,
+    colors,
+    isDarkMode: isDarkModeActive(),
+  })
+}, { deep: true })
 
 watch([parsedMeetings, parsedGaps, parsedDutyMembers, parsedInactivePeriods, institutions, layoutRows, () => props.daysBefore, () => props.daysAfter, () => props.startDate, () => props.tenantFilter, () => props.showOnlyWithActivity, () => props.showOnlyWithPublicMeetings, () => props.showDutyMembers, () => props.detailsExpanded, extraBefore, extraAfter, dayWidthPx], () => render())
 </script>

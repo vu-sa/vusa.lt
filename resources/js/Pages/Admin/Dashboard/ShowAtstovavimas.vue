@@ -57,6 +57,7 @@
           :institution-periodicity="userInstitutionPeriodicity" :duty-members="userDutyMembers"
           :inactive-periods="userInactivePeriods" :related-institutions
           :may-have-related-institutions="props.mayHaveRelatedInstitutions" @create-meeting="actions.onGapCreateMeeting"
+          @create-check-in="actions.onGapCreateCheckIn"
           @fullscreen="actions.onGanttFullscreen('user')" />
         <!-- Timeline loading skeleton -->
         <div v-else class="space-y-4">
@@ -73,7 +74,8 @@
           :institution-has-public-meetings="tenantInstitutionHasPublicMeetings"
           :institution-periodicity="tenantInstitutionPeriodicity" :duty-members="ganttData.tenantDutyMembers.value"
           :inactive-periods="ganttData.tenantInactivePeriods.value" :is-hidden="actions.showFullscreenGantt.value"
-          @create-meeting="actions.onGapCreateMeeting" @fullscreen="actions.onGanttFullscreen('tenant')" />
+          @create-meeting="actions.onGapCreateMeeting" @create-check-in="actions.onGapCreateCheckIn"
+          @fullscreen="actions.onGanttFullscreen('tenant')" />
         <!-- Timeline loading skeleton -->
         <div v-else class="space-y-4">
           <Skeleton class="h-8 w-48" />
@@ -95,7 +97,8 @@
       :tenant-institution-names :tenant-institution-tenant :tenant-institution-has-public-meetings
       :tenant-institution-periodicity :tenant-duty-members="ganttData.tenantDutyMembers.value"
       :tenant-inactive-periods="ganttData.tenantInactivePeriods.value" :tenant-names
-      @update:is-open="actions.showFullscreenGantt.value = $event" @create-meeting="actions.onGapCreateMeeting" />
+      @update:is-open="actions.showFullscreenGantt.value = $event" @create-meeting="actions.onGapCreateMeeting"
+      @create-check-in="actions.onGapCreateCheckIn" />
 
     <!-- These modals can be opened from FullscreenGanttModal, so they must come after it in DOM order -->
     <NewMeetingModal :show-modal="actions.showMeetingModal.value" :institution="actions.selectedInstitution.value"
@@ -103,8 +106,11 @@
       @close="actions.onCloseMeetingModal" />
 
     <AddCheckInDialog v-if="actions.showCreateCheckIn.value" :open="!!actions.showCreateCheckIn.value"
-      :institution-id="actions.showCreateCheckIn.value.institutionId!" @close="actions.showCreateCheckIn.value = null"
-      @created="actions.handleRefresh" />
+      :institution-id="actions.showCreateCheckIn.value.institutionId!"
+      :institution-name="checkInInstitutionName"
+      :initial-start-date="actions.showCreateCheckIn.value.startDate"
+      :initial-end-date="actions.showCreateCheckIn.value.endDate"
+      @close="actions.showCreateCheckIn.value = null" @created="actions.handleRefresh" />
 
     <InstitutionDataTable :institutions="atstovavimosData.institutions.value"
       :is-open="actions.showAllInstitutionModal.value" :on-schedule-meeting="actions.handleScheduleMeeting"
@@ -514,5 +520,14 @@ const tenantInstitutionHasPublicMeetings = computed(() => {
 
 const tenantInstitutionPeriodicity = computed(() => {
   return ganttData.getInstitutionPeriodicity(ganttData.tenantInstitutions.value as unknown as AtstovavimosInstitution[]);
+});
+
+const checkInInstitutionName = computed(() => {
+  const institutionId = actions.showCreateCheckIn.value?.institutionId;
+  if (!institutionId) return undefined;
+
+  return userInstitutionNames.value?.[institutionId]
+    ?? tenantInstitutionNames.value?.[institutionId]
+    ?? undefined;
 });
 </script>

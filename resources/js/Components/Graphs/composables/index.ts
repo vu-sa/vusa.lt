@@ -11,3 +11,5 @@ export { useGanttLayout, type GanttRow, type LayoutRow, type GanttLayoutOptions,
 export { useGanttFiltering, type GanttFilteringOptions, type GanttFilteringData, type ParsedMeeting, type ParsedGap, type ParsedDutyMember, type ParsedInactivePeriod } from './useGanttFiltering'
 export { useGanttLabels, type GanttLabelsOptions, type GanttLabelsData } from './useGanttLabels'
 export { useColumnResize, type ColumnResizeOptions } from './useColumnResize'
+export { useDragSelection, type DragSelectionState, type DragSelectionOptions, type DragSelectionCallbacks } from './useDragSelection'
+

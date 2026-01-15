@@ -6,6 +6,10 @@
         <DialogDescription>
           {{ $t('Nurodykite laikotarpį, kada posėdžiai nėra planuojami. Tai padeda sekti atstovavimo organizavimą.') }}
         </DialogDescription>
+        <p v-if="props.institutionName" class="text-sm text-muted-foreground">
+          <span class="font-medium text-foreground/80">{{ $t('Institucija') }}:</span>
+          <span class="ml-1">{{ props.institutionName }}</span>
+        </p>
       </DialogHeader>
 
       <div class="space-y-4">
@@ -28,7 +32,7 @@
         </div>
 
         <p class="text-xs text-muted-foreground">
-          Galima pranešti apie posėdžių nebuvimą iki 3 mėnesių į priekį.
+          {{ $t('Pradžios data gali būti bet kuri praeityje. Pabaigos data gali būti iki 3 mėnesių į priekį.') }}
         </p>
       </div>
 
@@ -45,7 +49,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { router } from '@inertiajs/vue3'
 
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/Components/ui/dialog'
@@ -57,12 +61,25 @@ import { Textarea } from '@/Components/ui/textarea'
 const props = defineProps<{
   institutionId: string
   open: boolean
+  institutionName?: string
+  /** Optional initial start date (e.g., from drag selection) */
+  initialStartDate?: Date
+  /** Optional initial end date (e.g., from drag selection) */
+  initialEndDate?: Date
 }>()
 const emit = defineEmits<{ (e: 'close'): void, (e: 'created'): void }>()
 
-const startDate = ref<Date>(new Date(Date.now())) // 1 day from now
-const endDate = ref<Date>(new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)) // 14 days from now
+const startDate = ref<Date>(props.initialStartDate ?? new Date(Date.now()))
+const endDate = ref<Date>(props.initialEndDate ?? new Date(Date.now() + 14 * 24 * 60 * 60 * 1000))
 const note = ref('')
+
+// Update dates when props change (dialog opens with new values)
+watch(() => props.initialStartDate, (newVal) => {
+  if (newVal) startDate.value = newVal
+})
+watch(() => props.initialEndDate, (newVal) => {
+  if (newVal) endDate.value = newVal
+})
 
 function formatDate(date: Date): string {
   return date.toISOString().split('T')[0] as string

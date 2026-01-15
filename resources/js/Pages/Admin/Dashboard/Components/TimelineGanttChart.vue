@@ -27,6 +27,7 @@
         :height="effectiveHeight"
         :hide-fullscreen-button="hideFullscreenButton"
         @create-meeting="$emit('create-meeting', $event)"
+        @create-check-in="$emit('create-check-in', $event)"
         @fullscreen="$emit('fullscreen')"
         @show-legend-modal="showLegendModal = true"
       />
@@ -82,6 +83,7 @@ const props = defineProps<Props>();
 
 const emit = defineEmits<{
   'create-meeting': [payload: { institution_id: string | number, suggestedAt: Date }];
+  'create-check-in': [payload: { institution_id: string | number, startDate: Date, endDate: Date }];
   'fullscreen': [];
 }>();
 

@@ -239,6 +239,7 @@ export function renderHoverEffects(ctx: HoverEffectsRenderContext): void {
   // Click-to-create only when not clicking on dots or gaps
   g.on('click', function (event) {
     if (!interactive || !onCreateMeeting) return
+    if (event.shiftKey) return
 
     const target = event.target as Node
     // Select the meeting icons group created by renderMeetings

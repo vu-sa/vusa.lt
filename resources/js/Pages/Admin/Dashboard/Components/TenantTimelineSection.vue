@@ -43,6 +43,7 @@
         :institution-periodicity="institutionPeriodicity"
         :duty-members :inactive-periods :show-duty-members="filters.showDutyMembersTenant.value"
         :empty-message="$t('Šiame padalinyje nėra institucijų')" @create-meeting="$emit('create-meeting', $event)"
+        @create-check-in="$emit('create-check-in', $event)"
         @fullscreen="$emit('fullscreen')" />
     </div>
   </section>
@@ -121,6 +122,7 @@ watch(
 
 const emit = defineEmits<{
   'create-meeting': [payload: { institution_id: string | number, suggestedAt: Date }];
+  'create-check-in': [payload: { institution_id: string | number, startDate: Date, endDate: Date }];
   'fullscreen': [];
 }>();
 

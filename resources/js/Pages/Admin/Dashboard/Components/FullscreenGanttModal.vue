@@ -78,6 +78,7 @@
             height="100%"
             :hide-fullscreen-button="true"
             @create-meeting="$emit('create-meeting', $event)"
+            @create-check-in="$emit('create-check-in', $event)"
           />
         </div>
         
@@ -101,6 +102,7 @@
             height="100%"
             :hide-fullscreen-button="true"
             @create-meeting="$emit('create-meeting', $event)"
+            @create-check-in="$emit('create-check-in', $event)"
           />
         </div>
         
@@ -180,6 +182,7 @@ const props = defineProps<Props>();
 const emit = defineEmits<{
   'update:isOpen': [value: boolean];
   'create-meeting': [payload: { institution_id: string | number, suggestedAt: Date }];
+  'create-check-in': [payload: { institution_id: string | number, startDate: Date, endDate: Date }];
 }>();
 
 // Get shared settings and filter state from providers

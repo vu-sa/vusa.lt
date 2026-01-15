@@ -15,6 +15,7 @@ export { renderDutyMembers, type DutyMemberRenderContext } from './renderDutyMem
 export { renderInactivePeriods, type InactivePeriodsRenderContext } from './renderInactivePeriods'
 export { renderTodayLine, type TodayLineRenderContext } from './renderTodayLine'
 export { renderHoverEffects, type HoverEffectsRenderContext } from './renderHoverEffects'
+export { renderDragSelection, setupDragSelectionPattern, clearDragSelection, type DragSelectionRenderContext } from './renderDragSelection'
 export { setupDefs, type DefsContext } from './setupDefs'
 export { 
   createGanttTooltip, 
