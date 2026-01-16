@@ -1,298 +1,228 @@
 <template>
-  <div class="wrapper-wide">
-    <!-- Main Content -->
-    <div class="py-6 lg:py-10">
-      <!-- Event Header Card -->
-      <article class="bg-white dark:bg-zinc-900 rounded-2xl shadow-sm ring-1 ring-zinc-900/5 dark:ring-white/10 overflow-hidden">
-        <!-- Header Section with Optional Image -->
-        <header class="relative">
-          <!-- Two-column header on desktop, stacked on mobile -->
-          <div class="flex flex-col lg:flex-row">
-            <!-- Image Section (accent, not full-bleed) -->
-            <div v-if="hasMainImage" class="lg:w-2/5 relative">
-              <div class="aspect-[4/3] lg:aspect-auto lg:h-full">
-                <img 
-                  :src="mainImageUrl"
-                  :alt="String(event.title)"
-                  class="w-full h-full object-cover"
-                >
+  <div class="calendar-event-page min-h-screen bg-white dark:bg-zinc-900">
+    <!-- Hero Section - Full Bleed -->
+    <EventHero :event="event">
+      <template #actions>
+        <div class="flex flex-wrap gap-3">
+          <!-- Primary CTA -->
+          <Button 
+            v-if="(event as any).url && !isPast" 
+            size="lg"
+            class="gap-2.5 font-semibold px-6 shadow-lg shadow-black/20 hover:scale-[1.02] transition-transform"
+            :class="primaryButtonClasses"
+            as="a"
+            :href="(event as any).url" 
+            target="_blank"
+          >
+            <IFluentPersonAdd20Regular v-if="!isLive" class="w-5 h-5" />
+            <IFluentPlay20Filled v-else class="w-5 h-5" />
+            {{ primaryActionText }}
+          </Button>
+
+          <!-- Google Calendar - Desktop only in hero -->
+          <Button 
+            v-if="googleLink" 
+            variant="outline" 
+            size="lg"
+            class="hidden lg:inline-flex gap-2 bg-white/20 border-white/40 text-white hover:bg-white/30 hover:border-white/60 backdrop-blur-md transition-all"
+            as="a" 
+            :href="googleLink" 
+            target="_blank" 
+            rel="noopener noreferrer"
+          >
+            <IMdiGoogle class="w-5 h-5" />
+            {{ $t('Į kalendorių') }}
+          </Button>
+
+          <!-- Facebook Event - Desktop only in hero -->
+          <Button 
+            v-if="event.facebook_url" 
+            variant="outline" 
+            size="lg"
+            class="hidden lg:inline-flex gap-2 bg-white/20 border-white/40 text-white hover:bg-white/30 hover:border-white/60 backdrop-blur-md transition-all"
+            as="a" 
+            :href="event.facebook_url" 
+            target="_blank" 
+            rel="noopener noreferrer"
+          >
+            <IMdiFacebook class="w-5 h-5" />
+            Facebook
+          </Button>
+
+          <!-- Share Button - Desktop only in hero -->
+          <Button 
+            variant="outline" 
+            size="lg"
+            class="hidden lg:inline-flex gap-2 bg-white/20 border-white/40 text-white hover:bg-white/30 hover:border-white/60 backdrop-blur-md transition-all"
+            @click="handleShare"
+          >
+            <IFluentShare20Regular class="w-5 h-5" />
+            {{ $t('Dalinkis') }}
+          </Button>
+        </div>
+      </template>
+    </EventHero>
+
+    <!-- Main Content Area -->
+    <div class="wrapper">
+      <div class="py-10 lg:py-16">
+        <!-- Two Column Layout -->
+        <div class="grid lg:grid-cols-12 gap-10 lg:gap-16">
+          <!-- Main Content -->
+          <main class="lg:col-span-8 space-y-12">
+            <!-- Description Section -->
+            <section>
+              <div class="flex items-center gap-4 mb-6">
+                <div class="w-1.5 h-8 bg-vusa-red rounded-full" />
+                <h2 class="text-xl lg:text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+                  {{ $t("Apie renginį") }}
+                </h2>
               </div>
-              <!-- Category badge on image -->
               <div 
-                v-if="event.category"
-                class="absolute top-3 left-3 px-2.5 py-1 text-xs font-semibold rounded-full bg-white/95 dark:bg-zinc-900/95 text-zinc-700 dark:text-zinc-300 backdrop-blur-sm shadow-sm"
-              >
-                {{ event.category.name }}
+                class="prose prose-zinc max-w-none dark:prose-invert prose-lg prose-headings:font-bold prose-p:text-zinc-600 dark:prose-p:text-zinc-400 prose-a:text-vusa-red prose-a:no-underline hover:prose-a:underline"
+                v-html="event.description" 
+              />
+            </section>
+
+            <!-- Video Section -->
+            <section v-if="event.video_url">
+              <div class="flex items-center gap-4 mb-6">
+                <div class="w-1.5 h-8 bg-vusa-red rounded-full" />
+                <h2 class="text-xl lg:text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+                  {{ $t("Video") }}
+                </h2>
               </div>
-            </div>
-
-            <!-- Content Section -->
-            <div class="flex-1 p-5 sm:p-6 lg:p-8" :class="{ 'lg:w-3/5': hasMainImage }">
-              <!-- Status Badge -->
-              <div v-if="eventStatus" class="mb-3">
-                <span 
-                  class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-full"
-                  :class="statusBadgeClasses"
-                >
-                  <span class="w-1.5 h-1.5 rounded-full" :class="statusDotClasses" />
-                  {{ eventStatus }}
-                </span>
+              <div class="overflow-hidden rounded-2xl bg-zinc-100 dark:bg-zinc-800 ring-1 ring-zinc-900/5 dark:ring-white/10">
+                <iframe 
+                  class="aspect-video w-full" 
+                  :src="`https://www.youtube-nocookie.com/embed/${event.video_url}`" 
+                  title="YouTube video player"
+                  frameborder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowfullscreen 
+                />
               </div>
+            </section>
 
-              <!-- Title -->
-              <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-zinc-900 dark:text-zinc-100 leading-tight mb-4">
-                {{ event.title }}
-              </h1>
+            <!-- Image Gallery Section -->
+            <section v-if="hasImages && normalizedImages.length > 1">
+              <EventImageGallery :images="normalizedImages" :event-title="String(event.title)" />
+            </section>
+          </main>
 
-              <!-- Primary Metadata (non-redundant, single source of truth) -->
-              <div class="flex flex-wrap gap-x-5 gap-y-2 text-sm text-zinc-600 dark:text-zinc-400 mb-5">
-                <!-- Date & Time -->
-                <div class="flex items-center gap-2">
-                  <IFluentCalendarLtr16Regular class="w-4 h-4 text-vusa-red" />
-                  <span class="font-medium">{{ formattedDate }}</span>
-                </div>
-                
-                <!-- Time -->
-                <div class="flex items-center gap-2">
-                  <IFluentClock16Regular class="w-4 h-4 text-vusa-red" />
-                  <span>{{ formattedTime }}</span>
-                </div>
-
-                <!-- Location -->
-                <a 
-                  v-if="event.location" 
-                  :href="`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(String(event.location))}`"
-                  target="_blank"
-                  class="flex items-center gap-2 hover:text-vusa-red transition-colors"
-                >
-                  <IFluentLocation16Regular class="w-4 h-4 text-vusa-red" />
-                  <span class="underline-offset-2 hover:underline">{{ event.location }}</span>
-                </a>
-              </div>
-
-              <!-- Organizer Info -->
-              <div class="flex items-center gap-3 text-sm text-zinc-600 dark:text-zinc-400 pb-5 border-b border-zinc-200/60 dark:border-zinc-700/40">
-                <div v-if="event.organizer || event.tenant" class="flex items-center gap-2">
-                  <IFluentPeopleTeam16Regular class="w-4 h-4 text-vusa-red" />
-                  <span>{{ event.organizer || event.tenant?.shortname }}</span>
-                </div>
-                <div v-if="event.tenant && event.organizer" class="flex items-center gap-2">
-                  <span class="text-zinc-300 dark:text-zinc-700">•</span>
-                  <span>{{ event.tenant.shortname }}</span>
-                </div>
-              </div>
-
-              <!-- Action Buttons (inline, not separate bar) -->
-              <div class="flex flex-wrap gap-2 pt-5">
-                <!-- Primary CTA -->
-                <Button 
-                  v-if="(event as any).url" 
-                  size="default"
-                  class="gap-2 font-semibold"
-                  :class="primaryButtonClasses"
-                  as="a"
-                  :href="(event as any).url" 
-                  target="_blank"
-                >
-                  <component :is="primaryIcon" class="w-4 h-4" />
-                  {{ primaryActionText }}
-                </Button>
-
-                <!-- Google Calendar -->
+          <!-- Sidebar -->
+          <aside class="lg:col-span-4 space-y-8">
+            <!-- Mobile Action Buttons (shown above sidebar on mobile) -->
+            <div class="lg:hidden">
+              <div class="flex flex-wrap gap-2">
                 <Button 
                   v-if="googleLink" 
                   variant="outline" 
                   size="default"
-                  class="gap-2"
+                  class="flex-1 gap-2"
                   as="a" 
                   :href="googleLink" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
+                  target="_blank"
                 >
                   <IMdiGoogle class="w-4 h-4" />
-                  <span class="hidden sm:inline">{{ $t('Kalendorius') }}</span>
+                  {{ $t('Kalendorius') }}
                 </Button>
-
-                <!-- Facebook Event -->
                 <Button 
                   v-if="event.facebook_url" 
                   variant="outline" 
                   size="default"
-                  class="gap-2"
+                  class="flex-1 gap-2"
                   as="a" 
                   :href="event.facebook_url" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
+                  target="_blank"
                 >
                   <IMdiFacebook class="w-4 h-4" />
-                  <span class="hidden sm:inline">Facebook</span>
+                  Facebook
                 </Button>
-
-                <!-- Share Button -->
                 <Button 
                   variant="outline" 
                   size="default"
                   class="gap-2"
                   @click="handleShare"
                 >
-                  <IFluentShare16Regular class="w-4 h-4" />
-                  <span class="hidden sm:inline">{{ $t('Dalinkis') }}</span>
+                  <IFluentShare20Regular class="w-4 h-4" />
                 </Button>
               </div>
             </div>
-          </div>
-        </header>
 
-        <!-- Content Body -->
-        <div class="border-t border-zinc-200/60 dark:border-zinc-700/40">
-          <div class="grid lg:grid-cols-3 gap-0">
-            <!-- Main Content Area -->
-            <main class="lg:col-span-2 p-6 sm:p-8 lg:p-10 lg:border-r border-zinc-200/60 dark:border-zinc-700/40">
-              <!-- Description -->
-              <section class="prose prose-zinc max-w-none dark:prose-invert prose-headings:font-bold prose-p:text-zinc-600 dark:prose-p:text-zinc-400 prose-a:text-vusa-red">
-                <h2 class="text-xl font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-3 mb-4 !mt-0">
-                  <div class="w-1 h-6 bg-vusa-red rounded-full" />
-                  {{ $t("Apie renginį") }}
-                </h2>
-                <div v-html="event.description" />
-              </section>
-
-              <!-- Video Section -->
-              <section v-if="event.video_url" class="mt-10 pt-10 border-t border-zinc-200/60 dark:border-zinc-700/40">
-                <h3 class="text-lg font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-3 mb-5">
-                  <div class="w-1 h-5 bg-vusa-red rounded-full" />
-                  {{ $t("Video") }}
-                </h3>
-                <div class="overflow-hidden rounded-xl ring-1 ring-zinc-200/80 dark:ring-zinc-700/50">
-                  <iframe 
-                    class="aspect-video w-full" 
-                    :src="`https://www.youtube-nocookie.com/embed/${event.video_url}`" 
-                    title="YouTube video player"
-                    frameborder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowfullscreen 
-                  />
-                </div>
-              </section>
-
-              <!-- Image Gallery (if more than 1 image) -->
-              <section v-if="hasImages && normalizedImages.length > 1" class="mt-10 pt-10 border-t border-zinc-200/60 dark:border-zinc-700/40">
-                <h3 class="text-lg font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-3 mb-5">
-                  <div class="w-1 h-5 bg-vusa-red rounded-full" />
-                  {{ $t("Nuotraukos") }} ({{ normalizedImages.length }})
-                </h3>
-                <EventImageGallery :images="normalizedImages" :event-title="String(event.title)" />
-              </section>
-            </main>
-
-            <!-- Sidebar (Desktop only) -->
-            <aside class="hidden lg:block lg:sticky lg:top-8 lg:self-start p-6 space-y-8">
-              <!-- Quick Share Card -->
-              <div class="p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl">
-                <h4 class="text-sm font-semibold text-zinc-900 dark:text-zinc-100 mb-3 flex items-center gap-2">
-                  <IFluentShare16Regular class="w-4 h-4 text-vusa-red" />
-                  {{ $t("Dalinkis renginiu") }}
-                </h4>
-                <div class="flex gap-2">
-                  <Button 
-                    v-if="googleLink" 
-                    variant="outline" 
-                    size="sm"
-                    class="flex-1 gap-1.5 text-xs"
-                    as="a" 
-                    :href="googleLink" 
-                    target="_blank"
-                  >
-                    <IMdiGoogle class="w-3.5 h-3.5" />
-                    Google
-                  </Button>
-                  <Button 
-                    v-if="event.facebook_url" 
-                    variant="outline" 
-                    size="sm"
-                    class="flex-1 gap-1.5 text-xs"
-                    as="a" 
-                    :href="event.facebook_url" 
-                    target="_blank"
-                  >
-                    <IMdiFacebook class="w-3.5 h-3.5" />
-                    Facebook
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    class="gap-1.5 text-xs"
-                    @click="handleShare"
-                  >
-                    <IFluentShare16Regular class="w-3.5 h-3.5" />
-                  </Button>
-                </div>
+            <!-- Share Card - Desktop only -->
+            <div class="hidden lg:block p-5 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 ring-1 ring-zinc-900/5 dark:ring-white/5">
+              <h3 class="text-sm font-semibold text-zinc-900 dark:text-zinc-100 mb-4 flex items-center gap-2">
+                <IFluentShare20Regular class="w-4 h-4 text-vusa-red" />
+                {{ $t("Dalinkis renginiu") }}
+              </h3>
+              <div class="flex gap-2">
+                <Button 
+                  v-if="googleLink" 
+                  variant="outline" 
+                  size="sm"
+                  class="flex-1 gap-2 text-xs"
+                  as="a" 
+                  :href="googleLink" 
+                  target="_blank"
+                >
+                  <IMdiGoogle class="w-4 h-4" />
+                  Google
+                </Button>
+                <Button 
+                  v-if="event.facebook_url" 
+                  variant="outline" 
+                  size="sm"
+                  class="flex-1 gap-2 text-xs"
+                  as="a" 
+                  :href="event.facebook_url" 
+                  target="_blank"
+                >
+                  <IMdiFacebook class="w-4 h-4" />
+                  Facebook
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  class="gap-2 text-xs"
+                  @click="handleShare"
+                >
+                  <IFluentShare20Regular class="w-4 h-4" />
+                </Button>
               </div>
+            </div>
 
-              <!-- Upcoming Events (Desktop only - no duplicate) -->
+            <!-- Upcoming Events -->
+            <div class="lg:sticky lg:top-8">
               <UpcomingEventsCompact 
                 :events="calendar" 
                 :locale="$page.props.app.locale"
                 :exclude-event-id="event.id"
-                :max-visible="4"
+                :max-visible="5"
               />
-            </aside>
-          </div>
+            </div>
+          </aside>
         </div>
-      </article>
-
-      <!-- Mobile Upcoming Events (below the card, separate from sticky bar) -->
-      <section v-if="mobileUpcomingEvents.length > 0" class="lg:hidden mt-8 mb-20">
-        <div class="bg-white dark:bg-zinc-900 rounded-xl ring-1 ring-zinc-900/5 dark:ring-white/10 p-5 shadow-sm">
-          <h3 class="text-base font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2 mb-4">
-            <div class="w-1 h-5 bg-vusa-red rounded-full" />
-            {{ $t("Artėjantys renginiai") }}
-          </h3>
-          <div class="space-y-2">
-            <Link 
-              v-for="upcomingEvent in mobileUpcomingEvents" 
-              :key="upcomingEvent.id"
-              :href="route('calendar.event', { calendar: upcomingEvent.id, lang: $page.props.app.locale })"
-              class="flex items-center gap-3 p-2.5 -mx-1 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors group"
-            >
-              <!-- Compact Date Badge -->
-              <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-vusa-red text-white flex flex-col items-center justify-center text-center">
-                <span class="text-[10px] font-medium uppercase leading-tight">{{ formatMonth(upcomingEvent.date) }}</span>
-                <span class="text-sm font-bold leading-tight">{{ formatDay(upcomingEvent.date) }}</span>
-              </div>
-              <!-- Event Info -->
-              <div class="flex-1 min-w-0">
-                <h4 class="text-sm font-medium text-zinc-900 dark:text-zinc-100 group-hover:text-vusa-red transition-colors line-clamp-1">
-                  {{ upcomingEvent.title }}
-                </h4>
-                <p class="text-xs text-zinc-500 dark:text-zinc-400">
-                  {{ formatEventTime(upcomingEvent.date) }}
-                </p>
-              </div>
-              <IFluentChevronRight16Regular class="flex-shrink-0 text-zinc-400 group-hover:text-vusa-red transition-colors" />
-            </Link>
-          </div>
-        </div>
-      </section>
+      </div>
     </div>
 
     <!-- Mobile Sticky Action Bar -->
     <div 
-      v-if="(event as any).url || googleLink || event.facebook_url" 
+      v-if="(event as any).url && !isPast" 
       class="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/98 dark:bg-zinc-900/98 backdrop-blur-md border-t border-zinc-200/80 dark:border-zinc-700/60 p-4 pb-safe shadow-[0_-4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_-4px_20px_-4px_rgba(0,0,0,0.4)]"
     >
-      <div class="flex gap-2">
+      <div class="flex gap-3">
         <!-- Primary CTA -->
         <Button 
-          v-if="(event as any).url" 
-          size="default"
+          size="lg"
           class="flex-1 gap-2 font-semibold"
-          :class="primaryButtonClasses"
+          :class="mobilePrimaryButtonClasses"
           as="a"
           :href="(event as any).url" 
           target="_blank"
         >
-          <component :is="primaryIcon" class="w-4 h-4" />
+          <IFluentPersonAdd20Regular v-if="!isLive" class="w-5 h-5" />
+          <IFluentPlay20Filled v-else class="w-5 h-5" />
           {{ primaryActionText }}
         </Button>
         
@@ -300,34 +230,35 @@
         <Button 
           v-if="googleLink" 
           variant="outline" 
-          size="default"
+          size="lg"
           as="a" 
           :href="googleLink" 
           target="_blank"
         >
-          <IMdiGoogle class="w-4 h-4" />
+          <IMdiGoogle class="w-5 h-5" />
         </Button>
         
         <Button 
           variant="outline" 
-          size="default"
+          size="lg"
           @click="handleShare"
         >
-          <IFluentShare16Regular class="w-4 h-4" />
+          <IFluentShare20Regular class="w-5 h-5" />
         </Button>
       </div>
     </div>
+
+    <!-- Bottom spacer for mobile sticky bar -->
+    <div v-if="(event as any).url && !isPast" class="lg:hidden h-24" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
 import { computed } from "vue";
-import { usePage, Link } from "@inertiajs/vue3";
-import { format } from "date-fns";
-import { lt, enUS } from "date-fns/locale";
+import { usePage } from "@inertiajs/vue3";
 
-import PublicBreadcrumbs from "@/Components/Public/PublicBreadcrumbs.vue";
+import EventHero from "@/Components/Calendar/EventHero.vue";
 import UpcomingEventsCompact from "@/Components/Calendar/UpcomingEventsCompact.vue";
 import EventImageGallery from "@/Components/Calendar/EventImageGallery.vue";
 import Button from "@/Components/ui/button/Button.vue";
@@ -341,9 +272,8 @@ const props = defineProps<{
 
 const page = usePage()
 const locale = computed(() => page.props.app.locale)
-const dateLocale = computed(() => locale.value === 'lt' ? lt : enUS)
 
-// Set up breadcrumbs using the recommended API with proper lifecycle management
+// Set up breadcrumbs
 usePageBreadcrumbs(() => {
   const eventTitle = Array.isArray(props.event.title) 
     ? props.event.title.join(' ') 
@@ -356,85 +286,28 @@ usePageBreadcrumbs(() => {
 });
 
 // Event status helpers
-const isEventPast = computed(() => {
-  const now = new Date()
-  const eventEndDate = props.event.end_date ? new Date(props.event.end_date) : new Date(props.event.date)
-  return eventEndDate < now
-})
+const now = computed(() => new Date())
+const eventDate = computed(() => new Date(props.event.date))
+const endDate = computed(() => props.event.end_date ? new Date(props.event.end_date) : eventDate.value)
 
-const isEventActive = computed(() => {
-  const now = new Date()
-  const eventStartDate = new Date(props.event.date)
-  const eventEndDate = props.event.end_date ? new Date(props.event.end_date) : eventStartDate
-  return eventStartDate <= now && eventEndDate >= now
-})
-
-const eventStatus = computed(() => {
-  if (isEventPast.value) return $t('Renginys įvyko')
-  if (isEventActive.value) return $t('Vyksta dabar')
-  return $t('Renginys įvyks')
-})
-
-const statusBadgeClasses = computed(() => {
-  if (isEventPast.value) return 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400'
-  if (isEventActive.value) return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-  return 'bg-vusa-red/10 text-vusa-red dark:bg-vusa-red/20'
-})
-
-const statusDotClasses = computed(() => {
-  if (isEventPast.value) return 'bg-zinc-400'
-  if (isEventActive.value) return 'bg-green-500 animate-pulse'
-  return 'bg-vusa-red'
-})
+const isPast = computed(() => endDate.value < now.value)
+const isLive = computed(() => eventDate.value <= now.value && endDate.value >= now.value)
 
 // Primary action helpers
 const primaryActionText = computed(() => {
-  if (isEventPast.value) return $t('Renginys įvyko')
-  if (isEventActive.value) return $t('Dalyvauk dabar')
-  return $t('Dalyvauk')
-})
-
-const primaryIcon = computed(() => {
-  if (isEventPast.value) return 'IFluentCheckmarkCircle16Regular'
-  if (isEventActive.value) return 'IFluentPlay16Filled'
-  return 'IFluentPersonAdd16Regular'
+  if (isLive.value) return $t('Dalyvauk dabar')
+  return $t('Registruotis')
 })
 
 const primaryButtonClasses = computed(() => {
-  if (isEventPast.value) return 'opacity-60 cursor-not-allowed pointer-events-none bg-zinc-400 hover:bg-zinc-400'
-  if (isEventActive.value) return 'bg-green-600 hover:bg-green-700 text-white'
+  if (isLive.value) return 'bg-emerald-500 hover:bg-emerald-600 text-white border-0'
+  return 'bg-vusa-red hover:bg-red-700 text-white border-0'
+})
+
+const mobilePrimaryButtonClasses = computed(() => {
+  if (isLive.value) return 'bg-emerald-500 hover:bg-emerald-600 text-white'
   return ''
 })
-
-// Formatted date and time
-const formattedDate = computed(() => {
-  const startDate = new Date(props.event.date)
-  const endDate = props.event.end_date ? new Date(props.event.end_date) : null
-  
-  if (endDate && format(startDate, 'yyyy-MM-dd') !== format(endDate, 'yyyy-MM-dd')) {
-    // Multi-day event
-    return `${format(startDate, 'MMM d', { locale: dateLocale.value })} – ${format(endDate, 'MMM d, yyyy', { locale: dateLocale.value })}`
-  }
-  
-  return format(startDate, 'EEEE, MMMM d, yyyy', { locale: dateLocale.value })
-})
-
-const formattedTime = computed(() => {
-  const startTime = format(new Date(props.event.date), 'HH:mm', { locale: dateLocale.value })
-  if (props.event.end_date) {
-    const endTime = format(new Date(props.event.end_date), 'HH:mm', { locale: dateLocale.value })
-    return `${startTime} – ${endTime}`
-  }
-  return startTime
-})
-
-// Check if event has main image (from main_image_url accessor)
-const mainImageUrl = computed(() => {
-  // Use the main_image_url accessor which handles fallback to first gallery image
-  return (props.event as any).main_image_url || null;
-});
-
-const hasMainImage = computed(() => !!mainImageUrl.value);
 
 // Check if event has gallery images
 const hasImages = computed(() => {
@@ -454,55 +327,19 @@ const normalizedImages = computed(() => {
   return [];
 });
 
-// Get upcoming events (excluding current event)
-const upcomingEvents = computed(() => {
-  if (!props.calendar) return [];
-
-  const now = new Date();
-  return props.calendar
-    .filter(e => e.id !== props.event.id && new Date(e.date) >= now)
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-    .slice(0, 4);
-});
-
-// Mobile upcoming events (for the inline list without card wrapper)
-const mobileUpcomingEvents = computed(() => {
-  if (!props.calendar) return [];
-  
-  const now = new Date();
-  return props.calendar
-    .filter(e => e.id !== props.event.id && new Date(e.date) >= now)
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-    .slice(0, 5);
-});
-
-// Format helpers for mobile upcoming events
-const formatMonth = (dateStr: string) => {
-  return format(new Date(dateStr), 'MMM', { locale: dateLocale.value });
-};
-
-const formatDay = (dateStr: string) => {
-  return format(new Date(dateStr), 'd', { locale: dateLocale.value });
-};
-
-const formatEventTime = (dateStr: string) => {
-  return format(new Date(dateStr), 'HH:mm', { locale: dateLocale.value });
-};
-
 // Share handler with native share API fallback
 const handleShare = async () => {
   const eventTitle = Array.isArray(props.event.title) ? props.event.title.join(' ') : (props.event.title || '')
   const shareData = {
     title: eventTitle,
-    text: `${eventTitle} - ${formattedDate.value}`,
+    text: eventTitle,
     url: window.location.href
   }
 
   if (typeof navigator !== 'undefined' && 'share' in navigator) {
     try {
       await navigator.share(shareData)
-    } catch (error) {
-      // User cancelled or share failed, fallback to clipboard
+    } catch {
       await copyToClipboard()
     }
   } else {
@@ -513,7 +350,6 @@ const handleShare = async () => {
 const copyToClipboard = async () => {
   try {
     await navigator.clipboard.writeText(window.location.href)
-    // Could add a toast notification here
   } catch (error) {
     console.error('Failed to copy to clipboard:', error)
   }
@@ -523,13 +359,6 @@ const copyToClipboard = async () => {
 <style scoped>
 /* Mobile safe area for devices with notches/home indicators */
 .pb-safe {
-  padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
-}
-
-/* Respect reduced motion preferences */
-@media (prefers-reduced-motion: reduce) {
-  .animate-pulse {
-    animation: none;
-  }
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
 }
 </style>
