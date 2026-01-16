@@ -43,24 +43,27 @@
           </div>
 
           <!-- Actions -->
-          <DropdownMenu>
-            <DropdownMenuTrigger as-child>
-              <Button variant="outline" size="icon" class="h-10 w-10">
-                <MoreHorizontal class="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem @click="$emit('edit')">
-                <Edit class="h-4 w-4 mr-2" />
-                {{ $t('Redaguoti posėdį') }}
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem class="text-destructive focus:text-destructive" @click="$emit('showDeleteDialog')">
-                <Trash2 class="h-4 w-4 mr-2" />
-                {{ $t('Šalinti posėdį') }}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div class="flex items-center gap-2">
+            <slot name="actions" />
+            <DropdownMenu>
+              <DropdownMenuTrigger as-child>
+                <Button variant="outline" size="icon" class="h-10 w-10">
+                  <MoreHorizontal class="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem @click="$emit('edit')">
+                  <Edit class="h-4 w-4 mr-2" />
+                  {{ $t('Redaguoti posėdį') }}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem class="text-destructive focus:text-destructive" @click="$emit('showDeleteDialog')">
+                  <Trash2 class="h-4 w-4 mr-2" />
+                  {{ $t('Šalinti posėdį') }}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
 
         <!-- Meeting Info Row -->
@@ -101,42 +104,24 @@
             <Globe class="h-3 w-3" />
             {{ $t('Rodomas viešai') }}
           </Badge>
-        </div>
 
-        <!-- File Status Badges -->
-        <div class="flex flex-wrap items-center gap-2">
-          <Badge 
-            v-if="meeting.has_protocol" 
-            variant="outline" 
-            class="text-xs gap-1 text-green-600 border-green-300 dark:text-green-400 dark:border-green-700"
-          >
-            <ScrollText class="h-3 w-3" />
-            {{ $t('Protokolas įkeltas') }}
-          </Badge>
-          <Badge 
-            v-else 
-            variant="outline" 
-            class="text-xs gap-1 text-amber-600 border-amber-300 dark:text-amber-400 dark:border-amber-700"
-          >
-            <Scroll class="h-3 w-3" />
-            {{ $t('Nėra protokolo') }}
-          </Badge>
-          <Badge 
-            v-if="meeting.has_report" 
-            variant="outline" 
-            class="text-xs gap-1 text-green-600 border-green-300 dark:text-green-400 dark:border-green-700"
-          >
-            <FileBarChart class="h-3 w-3" />
-            {{ $t('Ataskaita įkelta') }}
-          </Badge>
-          <Badge 
-            v-else 
-            variant="outline" 
-            class="text-xs gap-1 text-amber-600 border-amber-300 dark:text-amber-400 dark:border-amber-700"
-          >
-            <FileBarChart2 class="h-3 w-3" />
-            {{ $t('Nėra ataskaitos') }}
-          </Badge>
+          <!-- Compact Document Status -->
+          <div class="flex items-center gap-1.5 ml-auto">
+            <div 
+              class="flex items-center gap-1 px-2 py-1 rounded-md text-xs"
+              :class="meeting.has_protocol ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400'"
+              :title="meeting.has_protocol ? $t('Protokolas įkeltas') : $t('Nėra protokolo')"
+            >
+              <ScrollText class="h-3 w-3" />
+            </div>
+            <div 
+              class="flex items-center gap-1 px-2 py-1 rounded-md text-xs"
+              :class="meeting.has_report ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400'"
+              :title="meeting.has_report ? $t('Ataskaita įkelta') : $t('Nėra ataskaitos')"
+            >
+              <FileBarChart class="h-3 w-3" />
+            </div>
+          </div>
         </div>
 
       </CardContent>
@@ -160,9 +145,7 @@ import {
   Globe,
   Video,
   ScrollText,
-  Scroll,
-  FileBarChart,
-  FileBarChart2
+  FileBarChart
 } from 'lucide-vue-next'
 
 import { formatStaticTime } from '@/Utils/IntlTime'

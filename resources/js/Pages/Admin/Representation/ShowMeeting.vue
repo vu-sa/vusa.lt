@@ -1,79 +1,124 @@
 <template>
-  <div class="min-h-screen bg-zinc-50 dark:bg-zinc-950">
-    <div class="container mx-auto px-4 py-6 space-y-8">
-      <!-- Meeting Hero Section -->
-      <MeetingHero :meeting :main-institution :agenda-items="meeting.agenda_items" :representatives @edit="showMeetingModal = true"
-        @show-delete-dialog="showDeleteDialog = true" />
+  <AdminContentPage>
+    <InertiaHead :title="meetingTitle" />
 
-      <!-- Tabs Navigation -->
-      <Tabs v-model="currentTab" class="space-y-6">
-        <TabsList class="gap-2">
-          <TabsTrigger value="agenda">
-            {{ $t('Darbotvarkė') }}
-            <span v-if="meeting.agenda_items?.length" class="ml-1.5 text-xs opacity-70">
-              ({{ meeting.agenda_items.length }})
-            </span>
-          </TabsTrigger>
-          <TabsTrigger value="files">
-            {{ $t('Failai') }}
-          </TabsTrigger>
-          <TabsTrigger value="tasks">
-            {{ $t('Užduotys') }}
-            <span v-if="meeting.tasks?.length" class="ml-1.5 text-xs opacity-70">
-              ({{ meeting.tasks.length }})
-            </span>
-          </TabsTrigger>
-        </TabsList>
+    <!-- Meeting Hero Section -->
+    <MeetingHero 
+      :meeting 
+      :main-institution 
+      :agenda-items="meeting.agenda_items ?? []" 
+      :representatives 
+      @edit="showMeetingModal = true"
+      @show-delete-dialog="showDeleteDialog = true" 
+    >
+      <template #actions>
+        <ActivityLogButton :activities="meeting.activities ?? []" />
+      </template>
+    </MeetingHero>
 
-        <!-- Agenda Tab -->
-        <TabsContent value="agenda" class="space-y-8">
-          <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
-            <!-- Agenda Items (Main Content) -->
-            <div class="xl:col-span-2">
-              <SortableCardContainer :items="meeting.agenda_items" :meeting-id="meeting.id"
-                @add="showSingleAgendaItemModal = true" @add-bulk="showAgendaItemStoreModal = true" @edit="handleAgendaClick" @delete="handleAgendaItemDelete" />
-            </div>
+    <!-- Tabs Navigation -->
+    <Tabs v-model="currentTab" class="space-y-6 mt-6">
+      <TabsList class="gap-2">
+        <TabsTrigger value="overview">
+          {{ $t('Apžvalga') }}
+        </TabsTrigger>
+        <TabsTrigger value="agenda" class="relative">
+          {{ $t('Darbotvarkė') }}
+          <span v-if="meeting.agenda_items?.length" class="ml-1.5 text-xs opacity-70">
+            ({{ meeting.agenda_items.length }})
+          </span>
+          <SpotlightBadge v-if="showAgendaSpotlight" />
+        </TabsTrigger>
+        <TabsTrigger value="files">
+          {{ $t('Failai') }}
+        </TabsTrigger>
+        <TabsTrigger value="tasks">
+          {{ $t('Užduotys') }}
+          <span v-if="meeting.tasks?.length" class="ml-1.5 text-xs opacity-70">
+            ({{ meeting.tasks.length }})
+          </span>
+        </TabsTrigger>
+      </TabsList>
+
+      <!-- Overview Tab -->
+      <TabsContent value="overview">
+        <MeetingOverview 
+          :meeting 
+          :representatives 
+          :activities="meeting.activities"
+          @go-to-agenda="navigateToTab('agenda')"
+          @go-to-files="navigateToTab('files')"
+          @go-to-tasks="navigateToTab('tasks')"
+          @edit="showMeetingModal = true"
+        />
+      </TabsContent>
+
+      <!-- Agenda Tab -->
+      <TabsContent value="agenda" class="space-y-8">
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+          <!-- Agenda Items (Main Content) -->
+          <div class="xl:col-span-2">
+            <SortableCardContainer 
+              :items="meeting.agenda_items ?? []" 
+              :meeting-id="meeting.id"
+              @add="showSingleAgendaItemModal = true" 
+              @add-bulk="showAgendaItemStoreModal = true" 
+              @edit="handleAgendaClick" 
+              @delete="handleAgendaItemDelete" 
+            />
           </div>
-        </TabsContent>
-
-        <!-- Files Tab -->
-        <TabsContent value="files">
-          <FileManager :starting-path="meeting.sharepointPath" :fileable="{ id: meeting.id, type: 'Meeting' }" />
-        </TabsContent>
-
-        <!-- Tasks Tab -->
-        <TabsContent value="tasks">
-          <TaskManager :taskable="{ id: meeting.id, type: 'App\\Models\\Meeting' }" :tasks="meeting.tasks" />
-        </TabsContent>
-      </Tabs>
-
-      <!-- Previous/Next Meeting Navigation -->
-      <div v-if="previousMeeting || nextMeeting" class="flex flex-col sm:flex-row justify-between gap-4 pt-4">
-        <Link
-          v-if="previousMeeting"
-          :href="route('meetings.show', previousMeeting.id)"
-          class="flex items-center gap-2 px-4 py-3 rounded-xl ring-1 ring-zinc-300 dark:ring-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors group"
-        >
-          <ChevronLeft class="h-5 w-5 text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-300 transition-colors" />
-          <div class="text-left">
-            <span class="text-xs text-zinc-500 dark:text-zinc-400">{{ $t('Ankstesnis posėdis') }}</span>
-            <p class="text-sm font-medium text-zinc-700 dark:text-zinc-300">{{ formatMeetingNavDate(previousMeeting.start_time) }}</p>
+          <!-- Sidebar -->
+          <div class="xl:col-span-1">
+            <MeetingAgendaSidebar 
+              :tasks="meeting.tasks"
+              :has-protocol="meeting.has_protocol"
+              :has-report="meeting.has_report"
+              :previous-meeting
+              :next-meeting
+              @go-to-files="navigateToTab('files')"
+              @go-to-tasks="navigateToTab('tasks')"
+            />
           </div>
-        </Link>
-        <div v-else />
+        </div>
+      </TabsContent>
 
-        <Link
-          v-if="nextMeeting"
-          :href="route('meetings.show', nextMeeting.id)"
-          class="flex items-center gap-2 px-4 py-3 rounded-xl ring-1 ring-zinc-300 dark:ring-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors group sm:ml-auto"
-        >
-          <div class="text-right">
-            <span class="text-xs text-zinc-500 dark:text-zinc-400">{{ $t('Kitas posėdis') }}</span>
-            <p class="text-sm font-medium text-zinc-700 dark:text-zinc-300">{{ formatMeetingNavDate(nextMeeting.start_time) }}</p>
-          </div>
-          <ChevronRight class="h-5 w-5 text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-300 transition-colors" />
-        </Link>
-      </div>
+      <!-- Files Tab -->
+      <TabsContent value="files">
+        <FileManager :starting-path="meeting.sharepointPath" :fileable="{ id: meeting.id, type: 'Meeting' }" />
+      </TabsContent>
+
+      <!-- Tasks Tab -->
+      <TabsContent value="tasks">
+        <TaskManager :taskable="{ id: meeting.id, type: 'App\\Models\\Meeting' }" :tasks="meeting.tasks" />
+      </TabsContent>
+    </Tabs>
+
+    <!-- Previous/Next Meeting Navigation (shown only on non-agenda tabs) -->
+    <div v-if="(previousMeeting || nextMeeting) && currentTab !== 'agenda'" class="flex flex-col sm:flex-row justify-between gap-4 pt-8">
+      <Link
+        v-if="previousMeeting"
+        :href="route('meetings.show', previousMeeting.id)"
+        class="flex items-center gap-2 px-4 py-3 rounded-xl ring-1 ring-zinc-300 dark:ring-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors group"
+      >
+        <ChevronLeft class="h-5 w-5 text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-300 transition-colors" />
+        <div class="text-left">
+          <span class="text-xs text-zinc-500 dark:text-zinc-400">{{ $t('Ankstesnis posėdis') }}</span>
+          <p class="text-sm font-medium text-zinc-700 dark:text-zinc-300">{{ formatMeetingNavDate(previousMeeting.start_time) }}</p>
+        </div>
+      </Link>
+      <div v-else />
+
+      <Link
+        v-if="nextMeeting"
+        :href="route('meetings.show', nextMeeting.id)"
+        class="flex items-center gap-2 px-4 py-3 rounded-xl ring-1 ring-zinc-300 dark:ring-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors group sm:ml-auto"
+      >
+        <div class="text-right">
+          <span class="text-xs text-zinc-500 dark:text-zinc-400">{{ $t('Kitas posėdis') }}</span>
+          <p class="text-sm font-medium text-zinc-700 dark:text-zinc-300">{{ formatMeetingNavDate(nextMeeting.start_time) }}</p>
+        </div>
+        <ChevronRight class="h-5 w-5 text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-300 transition-colors" />
+      </Link>
     </div>
 
     <!-- Modals -->
@@ -174,12 +219,12 @@
         </div>
       </DialogContent>
     </Dialog>
-  </div>
+  </AdminContentPage>
 </template>
 
 <script setup lang="tsx">
-import { ref, computed } from "vue";
-import { router, useForm, Link } from "@inertiajs/vue3";
+import { ref, computed, watch, onMounted } from "vue";
+import { router, useForm, Link, Head as InertiaHead } from "@inertiajs/vue3";
 import { useStorage } from "@vueuse/core";
 import { trans as $t } from "laravel-vue-i18n";
 import { AlertTriangle, Plus, Trash2, ChevronLeft, ChevronRight } from 'lucide-vue-next';
@@ -189,14 +234,18 @@ import { genitivizeEveryWord } from "@/Utils/String";
 import Icons from "@/Types/Icons/filled";
 import { BreadcrumbHelpers, usePageBreadcrumbs } from "@/Composables/useBreadcrumbsUnified";
 
+// Layout
+import AdminContentPage from "@/Components/Layouts/AdminContentPage.vue";
+
 // UI Components
 import { Button } from "@/Components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
-import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
 
 // Custom Components
 import MeetingHero from "@/Components/Meetings/MeetingHero.vue";
+import MeetingOverview from "@/Components/Meetings/MeetingOverview.vue";
+import MeetingAgendaSidebar from "@/Components/Meetings/MeetingAgendaSidebar.vue";
 import SortableCardContainer from "@/Components/AgendaItems/SortableCardContainer.vue";
 import AgendaItemForm from "@/Components/AdminForms/AgendaItemForm.vue";
 import AddAgendaItemForm from "@/Components/AdminForms/AddAgendaItemForm.vue";
@@ -204,8 +253,8 @@ import AgendaItemsForm from "@/Components/AdminForms/Special/AgendaItemsForm.vue
 import MeetingForm from "@/Components/AdminForms/MeetingForm.vue";
 import FileManager from "@/Features/Admin/SharepointFileManager/SharepointFileManager.vue";
 import TaskManager from "@/Features/Admin/TaskManager/TaskManager.vue";
-
-// Icons
+import ActivityLogButton from "@/Features/Admin/ActivityLogViewer/ActivityLogButton.vue";
+import SpotlightBadge from "@/Components/Onboarding/SpotlightBadge.vue";
 
 const props = defineProps<{
   meeting: App.Entities.Meeting;
@@ -220,8 +269,39 @@ const showAgendaItemStoreModal = ref(false);
 const showSingleAgendaItemModal = ref(false);
 const showAgendaItemUpdateModal = ref(false);
 const showDeleteDialog = ref(false);
-const currentTab = useStorage("show-meeting-tab", "agenda");
 const loading = ref(false);
+
+// Tab state with smart defaults
+const hasVisitedAgendaTab = useStorage("meeting-agenda-tab-visited", false);
+const storedTab = useStorage("show-meeting-tab", "overview");
+const currentTab = ref(storedTab.value);
+
+// Show spotlight on agenda tab for users who haven't visited it yet
+const showAgendaSpotlight = computed(() => {
+  return !hasVisitedAgendaTab.value && (props.meeting.agenda_items?.length ?? 0) > 0;
+});
+
+// Mark agenda tab as visited when user clicks on it
+watch(currentTab, (newTab) => {
+  storedTab.value = newTab;
+  if (newTab === 'agenda') {
+    hasVisitedAgendaTab.value = true;
+  }
+});
+
+// Reset to overview for new meeting visits
+onMounted(() => {
+  const lastVisitedMeetingId = useStorage("last-visited-meeting-id", "");
+  if (lastVisitedMeetingId.value !== props.meeting.id) {
+    currentTab.value = "overview";
+    lastVisitedMeetingId.value = props.meeting.id;
+  }
+});
+
+// Navigation helper
+const navigateToTab = (tab: string) => {
+  currentTab.value = tab;
+};
 
 // Form handling
 const meetingAgendaForm = useForm({
