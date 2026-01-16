@@ -34,13 +34,25 @@ enum ActionType: string
     case Return = 'return';
 
     /**
+     * Agenda creation task - auto-completes when first agenda item is created.
+     * Created when a meeting is created without agenda items.
+     */
+    case AgendaCreation = 'agenda_creation';
+
+    /**
+     * Agenda completion task - auto-completes when all agenda items are filled.
+     * Created when agenda items exist but need completion.
+     */
+    case AgendaCompletion = 'agenda_completion';
+
+    /**
      * Whether this task type can be manually completed by users.
      */
     public function canBeManuallyCompleted(): bool
     {
         return match ($this) {
             self::Manual => true,
-            self::Approval, self::Pickup, self::Return => false,
+            self::Approval, self::Pickup, self::Return, self::AgendaCreation, self::AgendaCompletion => false,
         };
     }
 
@@ -62,6 +74,8 @@ enum ActionType: string
             self::Approval => __('Approval'),
             self::Pickup => __('Pickup'),
             self::Return => __('Return'),
+            self::AgendaCreation => __('Agenda Creation'),
+            self::AgendaCompletion => __('Agenda Completion'),
         };
     }
 
@@ -75,6 +89,8 @@ enum ActionType: string
             self::Approval => 'shield-check',
             self::Pickup => 'package',
             self::Return => 'package-check',
+            self::AgendaCreation => 'list-plus',
+            self::AgendaCompletion => 'list-checks',
         };
     }
 
@@ -88,6 +104,8 @@ enum ActionType: string
             self::Approval => 'blue',
             self::Pickup => 'amber',
             self::Return => 'emerald',
+            self::AgendaCreation => 'indigo',
+            self::AgendaCompletion => 'violet',
         };
     }
 }

@@ -16,6 +16,7 @@ use App\Observers\TypeableObserver;
 use App\Observers\TypeObserver;
 use App\Observers\UserPermissionObserver;
 use App\Tasks\Subscribers\ApprovalTaskSubscriber;
+use App\Tasks\Subscribers\MeetingTaskSubscriber;
 use App\Tasks\Subscribers\ReservationTaskSubscriber;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use Spatie\Permission\Models\Permission;
@@ -71,6 +72,7 @@ class EventServiceProvider extends ServiceProvider
     protected $subscribe = [
         ReservationTaskSubscriber::class,
         ApprovalTaskSubscriber::class,
+        MeetingTaskSubscriber::class,
     ];
 
     /**

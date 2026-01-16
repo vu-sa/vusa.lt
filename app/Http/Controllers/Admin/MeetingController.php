@@ -177,6 +177,9 @@ class MeetingController extends AdminController
 
             DB::commit();
 
+            // Dispatch event after meeting is fully set up with all relationships
+            event(new \App\Events\MeetingFullyCreated($meeting));
+
             // For Inertia requests (from modal), redirect to meeting show page
             return redirect()->route('meetings.show', $meeting)->with(['success' => 'Posėdis sukurtas sėkmingai!']);
 

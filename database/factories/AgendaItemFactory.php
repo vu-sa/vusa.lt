@@ -34,4 +34,28 @@ class AgendaItemFactory extends Factory
             'order' => $startOrder + $sequence->index,
         ]);
     }
+
+    /**
+     * Mark agenda item as complete with all required fields filled.
+     */
+    public function complete(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'student_vote' => $this->faker->randomElement(['už', 'prieš', 'susilaikė']),
+            'decision' => $this->faker->sentence,
+            'student_benefit' => $this->faker->paragraph,
+        ]);
+    }
+
+    /**
+     * Mark agenda item as incomplete (missing required fields).
+     */
+    public function incomplete(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'student_vote' => null,
+            'decision' => null,
+            'student_benefit' => null,
+        ]);
+    }
 }

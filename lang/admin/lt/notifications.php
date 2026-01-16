@@ -92,6 +92,10 @@ return [
     'meeting_reminder_soon_title' => 'Susitikimas netrukus!',
     'meeting_reminder_body' => 'Po :hours val. vyks susitikimas: :meeting',
     'meeting_reminder_body_one_hour' => 'Po 1 valandos vyks susitikimas: :meeting',
+    'meeting_created_title' => 'Sukurtas naujas posėdis',
+    'meeting_created_body' => 'Sukurtas naujas :institution posėdis, vyks :date',
+    'meeting_agenda_completed_title' => 'Posėdžio darbotvarkė užpildyta',
+    'meeting_agenda_completed_body' => 'Visi :count :institution posėdžio darbotvarkės klausimai užpildyti',
 
     // Duty notifications
     'duty_expiring_title' => 'Pareigos baigiasi po :days d.',

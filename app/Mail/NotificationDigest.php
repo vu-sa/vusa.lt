@@ -79,7 +79,7 @@ class NotificationDigest extends Mailable implements ShouldQueue
                 'remainingCounts' => $remainingCounts,
                 'categoryColors' => $categoryColors,
                 'totalCount' => collect($this->groupedItems)->flatten(1)->count(),
-                'dashboardUrl' => route('dashboard.notifications'),
+                'dashboardUrl' => route('notifications.index'),
             ],
         );
     }

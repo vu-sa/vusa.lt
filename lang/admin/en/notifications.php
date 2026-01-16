@@ -92,6 +92,10 @@ return [
     'meeting_reminder_soon_title' => 'Meeting Soon!',
     'meeting_reminder_body' => 'Meeting ":meeting" starts in :hours hours',
     'meeting_reminder_body_one_hour' => 'Meeting ":meeting" starts in 1 hour',
+    'meeting_created_title' => 'New Meeting Created',
+    'meeting_created_body' => 'A new meeting for :institution has been created for :date',
+    'meeting_agenda_completed_title' => 'Meeting Agenda Completed',
+    'meeting_agenda_completed_body' => 'All :count agenda items for :institution meeting have been completed',
 
     // Duty notifications
     'duty_expiring_title' => 'Duty expires in :days days',
