@@ -2,6 +2,7 @@
 import NavMain from './NavMain.vue'
 import NavSecondary from './NavSecondary.vue'
 import NavQuickActions from './NavQuickActions.vue'
+import SidebarStartFM from './SidebarStartFM.vue'
 import AppLogo from './AppLogo.vue'
 import NewMeetingModal from '@/Components/Modals/NewMeetingModal.vue'
 
@@ -293,6 +294,11 @@ const handleLogout = () => {
       <div class="flex-1" />
 
       <SidebarSeparator class="my-2 group-data-[collapsible=icon]:hidden" />
+
+      <!-- START FM Radio -->
+      <div class="group-data-[collapsible=icon]:hidden">
+        <SidebarStartFM />
+      </div>
 
       <!-- Secondary navigation -->
       <div class="group-data-[collapsible=icon]:hidden">

@@ -1,99 +1,10 @@
-<template>
-  <!-- StartFM Button -->
-  <Popover>
-    <PopoverTrigger as-child>
-      <Button variant="ghost" size="sm" :disabled="loading" @click="toggleAudio">
-        <template v-if="loading">
-          <Loader2 class="w-4 h-4 mr-2 animate-spin" />
-        </template>
-        <template v-else-if="!isPaused && audioPlaying">
-          <Pause class="w-4 h-4 mr-2" />
-        </template>
-        <template v-else>
-          <Radio class="w-4 h-4 mr-2" />
-        </template>
-        <slot />
-        <audio v-show="false" ref="startFM" preload="none" @canplay="onCanPlay" @ended="onEnded" @play="onPlay" @pause="onPause">
-          <source src="https://eteris.startfm.lt/startfm.mp3" type="audio/mpeg">
-          <source src="https://eteris.startfm.lt/startfm.m4a" type="audio/mp4">
-        </audio>
-      </Button>
-    </PopoverTrigger>
-    <PopoverContent class="w-80">
-      <div class="text-sm">
-        {{ $t("Klausykis studentiško") }}
-        <a class="font-bold transition hover:text-vusa-red" href="https://startfm.lt" target="_blank">START FM</a>
-        {{ $t("radijo") }}!
-      </div>
-    </PopoverContent>
-  </Popover>
-
-  <!-- Draggable Audio Player Overlay -->
-  <Teleport to="body">
-    <div 
-      v-if="audioPlaying" 
-      ref="playerRef"
-      class="fixed z-50 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-lg p-3 flex items-center gap-3 min-w-[240px] select-none"
-      :class="{ 'cursor-grabbing': isDragging }"
-      :style="{ 
-        left: `${playerPosition.x}px`, 
-        top: `${playerPosition.y}px`,
-        transition: isDragging ? 'none' : 'box-shadow 0.2s'
-      }"
-    >
-      <!-- Drag handle -->
-      <div 
-        class="cursor-grab active:cursor-grabbing px-2 py-3 -ml-2 -my-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-l-lg transition-colors"
-        @mousedown="startDrag"
-        @touchstart="startDrag"
-      >
-        <GripVertical class="w-4 h-4 text-zinc-400" />
-      </div>
-
-      <div class="flex items-center gap-2">
-        <Button variant="ghost" size="sm" class="h-8 w-8 p-0" @click="toggleAudio">
-          <Play v-if="isPaused" class="w-4 h-4" />
-          <Pause v-else class="w-4 h-4" />
-        </Button>
-        <Button variant="ghost" size="sm" class="h-8 w-8 p-0" @click="stopAudio">
-          <Square class="w-4 h-4" />
-        </Button>
-      </div>
-      
-      <div class="flex-1 flex items-center gap-2">
-        <div class="text-sm font-medium text-zinc-900 dark:text-zinc-100">START FM</div>
-        <div class="flex items-center gap-1">
-          <Button variant="ghost" size="sm" class="h-6 w-6 p-0" @click="adjustVolume(-0.1)">
-            <Volume1 class="w-3 h-3" />
-          </Button>
-          <div 
-            class="w-16 h-1.5 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden cursor-pointer" 
-            @click="setVolumeFromClick"
-          >
-            <div 
-              class="h-full bg-vusa-red transition-all duration-200" 
-              :style="{ width: `${volume * 100}%` }"
-            />
-          </div>
-          <Button variant="ghost" size="sm" class="h-6 w-6 p-0" @click="adjustVolume(0.1)">
-            <Volume2 class="w-3 h-3" />
-          </Button>
-        </div>
-      </div>
-    </div>
-  </Teleport>
-</template>
-
 <script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
 import { ref, useTemplateRef, watch, onMounted, onUnmounted, nextTick } from "vue";
-import { Button } from "@/Components/ui/button";
+import { SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/Components/ui/sidebar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/Components/ui/popover";
-import { Radio, Play, Pause, Square, Volume1, Volume2, GripVertical, Loader2 } from "lucide-vue-next";
-
-defineProps<{
-  size?: 'sm' | 'default' | 'lg' | 'icon' | null;
-}>();
+import { Button } from "@/Components/ui/button";
+import { Radio, Play, Pause, Square, Volume1, Volume2, Loader2, GripVertical } from "lucide-vue-next";
 
 const startFM = useTemplateRef<HTMLAudioElement>('startFM');
 
@@ -126,7 +37,6 @@ const onPlay = () => {
 
 const onPause = () => {
   isPaused.value = true;
-  // Keep overlay visible when paused - don't set audioPlaying to false
 };
 
 const toggleAudio = () => {
@@ -234,7 +144,7 @@ watch(audioPlaying, (playing) => {
     // Position at bottom-right by default, with safe margin
     requestAnimationFrame(async () => {
       await nextTick();
-      const margin = 24;
+      const margin = 40;
       const playerWidth = playerRef.value?.offsetWidth ?? 260;
       const playerHeight = playerRef.value?.offsetHeight ?? 60;
       playerPosition.value = {
@@ -266,3 +176,97 @@ watch(volume, (newVolume) => {
   }
 }, { immediate: true });
 </script>
+
+<template>
+  <SidebarGroup>
+    <SidebarGroupContent>
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <Popover>
+            <PopoverTrigger as-child>
+              <SidebarMenuButton 
+                tooltip="START FM" 
+                :disabled="loading"
+                class="hover:bg-sidebar-accent/60 transition-all duration-200"
+                @click="toggleAudio"
+              >
+                <div class="flex items-center justify-center rounded-md p-1 bg-gradient-to-br from-rose-500/15 to-orange-500/15 hover:from-rose-500/25 hover:to-orange-500/25 dark:from-rose-400/10 dark:to-orange-400/10 dark:hover:from-rose-400/20 dark:hover:to-orange-400/20 transition-colors">
+                  <Loader2 v-if="loading" class="h-4 w-4 animate-spin" />
+                  <Pause v-else-if="!isPaused && audioPlaying" class="h-4 w-4" />
+                  <Radio v-else class="h-4 w-4" />
+                </div>
+                <span>START FM</span>
+                <audio v-show="false" ref="startFM" preload="none" @canplay="onCanPlay" @ended="onEnded" @play="onPlay" @pause="onPause">
+                  <source src="https://eteris.startfm.lt/startfm.mp3" type="audio/mpeg">
+                  <source src="https://eteris.startfm.lt/startfm.m4a" type="audio/mp4">
+                </audio>
+              </SidebarMenuButton>
+            </PopoverTrigger>
+            <PopoverContent side="right" class="w-72">
+              <div class="text-sm">
+                {{ $t("Klausykis studentiško") }}
+                <a class="font-bold transition hover:text-vusa-red" href="https://startfm.lt" target="_blank">START FM</a>
+                {{ $t("radijo") }}!
+              </div>
+            </PopoverContent>
+          </Popover>
+        </SidebarMenuItem>
+      </SidebarMenu>
+    </SidebarGroupContent>
+  </SidebarGroup>
+
+  <!-- Draggable Audio Player Overlay -->
+  <Teleport to="body">
+    <div 
+      v-if="audioPlaying" 
+      ref="playerRef"
+      class="fixed z-50 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-lg p-3 flex items-center gap-3 min-w-[240px] select-none"
+      :class="{ 'cursor-grabbing': isDragging }"
+      :style="{ 
+        left: `${playerPosition.x}px`, 
+        top: `${playerPosition.y}px`,
+        transition: isDragging ? 'none' : 'box-shadow 0.2s'
+      }"
+    >
+      <!-- Drag handle -->
+      <div 
+        class="cursor-grab active:cursor-grabbing px-2 py-3 -ml-2 -my-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-l-lg transition-colors"
+        @mousedown="startDrag"
+        @touchstart="startDrag"
+      >
+        <GripVertical class="w-4 h-4 text-zinc-400" />
+      </div>
+
+      <div class="flex items-center gap-2">
+        <Button variant="ghost" size="sm" class="h-8 w-8 p-0" @click="toggleAudio">
+          <Play v-if="isPaused" class="w-4 h-4" />
+          <Pause v-else class="w-4 h-4" />
+        </Button>
+        <Button variant="ghost" size="sm" class="h-8 w-8 p-0" @click="stopAudio">
+          <Square class="w-4 h-4" />
+        </Button>
+      </div>
+      
+      <div class="flex-1 flex items-center gap-2">
+        <div class="text-sm font-medium text-zinc-900 dark:text-zinc-100">START FM</div>
+        <div class="flex items-center gap-1">
+          <Button variant="ghost" size="sm" class="h-6 w-6 p-0" @click="adjustVolume(-0.1)">
+            <Volume1 class="w-3 h-3" />
+          </Button>
+          <div 
+            class="w-16 h-1.5 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden cursor-pointer" 
+            @click="setVolumeFromClick"
+          >
+            <div 
+              class="h-full bg-red-500 transition-all duration-200" 
+              :style="{ width: `${volume * 100}%` }"
+            />
+          </div>
+          <Button variant="ghost" size="sm" class="h-6 w-6 p-0" @click="adjustVolume(0.1)">
+            <Volume2 class="w-3 h-3" />
+          </Button>
+        </div>
+      </div>
+    </div>
+  </Teleport>
+</template>
