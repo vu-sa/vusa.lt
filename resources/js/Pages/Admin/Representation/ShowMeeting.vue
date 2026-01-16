@@ -3,21 +3,66 @@
     <InertiaHead :title="meetingTitle" />
 
     <!-- Meeting Hero Section -->
-    <MeetingHero 
-      :meeting 
-      :main-institution 
-      :agenda-items="meeting.agenda_items ?? []" 
-      :representatives 
-      @edit="showMeetingModal = true"
-      @show-delete-dialog="showDeleteDialog = true" 
+    <ShowPageHero
+      :title="meetingTitle"
+      :subtitle="heroSubtitle"
+      :badge="meetingBadge"
+      :view-transition-name="`meeting-card-${meeting.id}`"
     >
+      <template #icon>
+        <span class="text-lg font-medium text-zinc-600 dark:text-zinc-300">
+          {{ formatStaticTime(new Date(meeting.start_time), { day: "numeric" }) }}
+        </span>
+      </template>
+      <template #info>
+        <div class="flex items-center gap-4 text-sm">
+          <div class="flex items-center gap-1.5 text-zinc-600 dark:text-zinc-400">
+            <Clock class="h-4 w-4 text-green-500" />
+            <span>{{ formatStaticTime(new Date(meeting.start_time), { hour: "2-digit", minute: "2-digit" }) }}</span>
+          </div>
+          <div v-if="meeting.types && meeting.types.length > 0" class="flex flex-wrap gap-1.5">
+            <Badge v-for="type in meeting.types" :key="type.id" variant="secondary" class="text-xs">
+              {{ type.title }}
+            </Badge>
+          </div>
+          <Badge v-if="meeting.is_public" variant="outline" class="text-xs gap-1 text-green-600 border-green-300 dark:text-green-400 dark:border-green-700">
+            <Globe class="h-3 w-3" />
+            {{ $t('Rodomas viešai') }}
+          </Badge>
+        </div>
+        <div v-if="representatives && representatives.length > 0" class="flex items-center gap-2">
+          <span class="text-xs text-zinc-500 dark:text-zinc-400">{{ $t('Atstovai') }}:</span>
+          <UsersAvatarGroup :users="representatives" :max="5" :size="24" />
+        </div>
+      </template>
       <template #actions>
         <ActivityLogButton :activities="meeting.activities ?? []" />
+        <Button variant="outline" size="icon" class="h-9 w-9" @click="showMeetingModal = true">
+          <Edit class="h-4 w-4" />
+        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger as-child>
+            <Button variant="outline" size="icon" class="h-9 w-9">
+              <MoreHorizontal class="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem @click="showMeetingModal = true">
+              <Edit class="h-4 w-4 mr-2" />
+              {{ $t('Redaguoti posėdį') }}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem class="text-destructive focus:text-destructive" @click="showDeleteDialog = true">
+              <Trash2 class="h-4 w-4 mr-2" />
+              {{ $t('Šalinti posėdį') }}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </template>
-    </MeetingHero>
+    </ShowPageHero>
 
     <!-- Tabs Navigation -->
-    <Tabs v-model="currentTab" class="space-y-6 mt-6">
+    <Tabs v-model="currentTab" class="mt-6">
       <TabsList class="gap-2">
         <TabsTrigger value="overview">
           {{ $t('Apžvalga') }}
@@ -41,11 +86,13 @@
       </TabsList>
 
       <!-- Overview Tab -->
-      <TabsContent value="overview">
-        <MeetingOverview 
-          :meeting 
-          :representatives 
+      <TabsContent value="overview" class="space-y-6">
+        <MeetingOverview
+          :meeting
+          :representatives
           :activities="meeting.activities"
+          :previous-meeting
+          :next-meeting
           @go-to-agenda="navigateToTab('agenda')"
           @go-to-files="navigateToTab('files')"
           @go-to-tasks="navigateToTab('tasks')"
@@ -83,43 +130,15 @@
       </TabsContent>
 
       <!-- Files Tab -->
-      <TabsContent value="files">
+      <TabsContent value="files" class="space-y-6">
         <FileManager :starting-path="meeting.sharepointPath" :fileable="{ id: meeting.id, type: 'Meeting' }" />
       </TabsContent>
 
       <!-- Tasks Tab -->
-      <TabsContent value="tasks">
+      <TabsContent value="tasks" class="space-y-6">
         <TaskManager :taskable="{ id: meeting.id, type: 'App\\Models\\Meeting' }" :tasks="meeting.tasks" />
       </TabsContent>
     </Tabs>
-
-    <!-- Previous/Next Meeting Navigation (shown only on non-agenda tabs) -->
-    <div v-if="(previousMeeting || nextMeeting) && currentTab !== 'agenda'" class="flex flex-col sm:flex-row justify-between gap-4 pt-8">
-      <Link
-        v-if="previousMeeting"
-        :href="route('meetings.show', previousMeeting.id)"
-        class="flex items-center gap-2 px-4 py-3 rounded-xl ring-1 ring-zinc-300 dark:ring-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors group"
-      >
-        <ChevronLeft class="h-5 w-5 text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-300 transition-colors" />
-        <div class="text-left">
-          <span class="text-xs text-zinc-500 dark:text-zinc-400">{{ $t('Ankstesnis posėdis') }}</span>
-          <p class="text-sm font-medium text-zinc-700 dark:text-zinc-300">{{ formatMeetingNavDate(previousMeeting.start_time) }}</p>
-        </div>
-      </Link>
-      <div v-else />
-
-      <Link
-        v-if="nextMeeting"
-        :href="route('meetings.show', nextMeeting.id)"
-        class="flex items-center gap-2 px-4 py-3 rounded-xl ring-1 ring-zinc-300 dark:ring-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors group sm:ml-auto"
-      >
-        <div class="text-right">
-          <span class="text-xs text-zinc-500 dark:text-zinc-400">{{ $t('Kitas posėdis') }}</span>
-          <p class="text-sm font-medium text-zinc-700 dark:text-zinc-300">{{ formatMeetingNavDate(nextMeeting.start_time) }}</p>
-        </div>
-        <ChevronRight class="h-5 w-5 text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-300 transition-colors" />
-      </Link>
-    </div>
 
     <!-- Modals -->
     <Dialog v-model:open="showMeetingModal">
@@ -227,7 +246,7 @@ import { ref, computed, watch, onMounted } from "vue";
 import { router, useForm, Link, Head as InertiaHead } from "@inertiajs/vue3";
 import { useStorage } from "@vueuse/core";
 import { trans as $t } from "laravel-vue-i18n";
-import { AlertTriangle, Plus, Trash2, ChevronLeft, ChevronRight } from 'lucide-vue-next';
+import { AlertTriangle, Plus, Trash2, ChevronLeft, ChevronRight, Clock, Globe, Edit, MoreHorizontal, Video } from 'lucide-vue-next';
 
 import { formatStaticTime } from "@/Utils/IntlTime";
 import { genitivizeEveryWord } from "@/Utils/String";
@@ -239,11 +258,20 @@ import AdminContentPage from "@/Components/Layouts/AdminContentPage.vue";
 
 // UI Components
 import { Button } from "@/Components/ui/button";
+import { Badge } from "@/Components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from "@/Components/ui/dropdown-menu";
 
 // Custom Components
-import MeetingHero from "@/Components/Meetings/MeetingHero.vue";
+import ShowPageHero from "@/Components/Hero/ShowPageHero.vue";
+import UsersAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
 import MeetingOverview from "@/Components/Meetings/MeetingOverview.vue";
 import MeetingAgendaSidebar from "@/Components/Meetings/MeetingAgendaSidebar.vue";
 import SortableCardContainer from "@/Components/AgendaItems/SortableCardContainer.vue";
@@ -330,6 +358,21 @@ const meetingTitle = computed(() => {
     day: "numeric",
   })} ${genitivizeEveryWord(institutionName)} posėdis`;
 });
+
+// Hero subtitle - institution name with link
+const heroSubtitle = computed(() => {
+  if (typeof mainInstitution === 'string') {
+    return mainInstitution;
+  }
+  return mainInstitution.name;
+});
+
+// Badge for meeting type
+const meetingBadge = computed(() => ({
+  label: $t('Posėdis'),
+  variant: 'secondary' as const,
+  icon: Video
+}));
 
 // Format date for navigation buttons
 const formatMeetingNavDate = (date: string) => {

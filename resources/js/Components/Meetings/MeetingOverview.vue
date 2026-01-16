@@ -172,17 +172,56 @@
           </div>
         </CardContent>
       </Card>
+
+      <!-- Meeting Navigation -->
+      <Card v-if="previousMeeting || nextMeeting">
+        <CardHeader class="pb-3">
+          <CardTitle class="flex items-center gap-2 text-base">
+            <Navigation class="h-5 w-5 text-primary" />
+            {{ $t('Kiti posėdžiai') }}
+          </CardTitle>
+        </CardHeader>
+        <CardContent class="space-y-2">
+          <Link
+            v-if="previousMeeting"
+            :href="route('meetings.show', previousMeeting.id)"
+            class="flex items-center gap-3 p-3 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors group"
+          >
+            <ChevronLeft class="h-4 w-4 text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-300" />
+            <div class="flex-1 min-w-0">
+              <span class="text-xs text-zinc-500 dark:text-zinc-400">{{ $t('Ankstesnis') }}</span>
+              <p class="text-sm font-medium text-zinc-700 dark:text-zinc-300 truncate">
+                {{ formatNavDate(previousMeeting.start_time) }}
+              </p>
+            </div>
+          </Link>
+          <Link
+            v-if="nextMeeting"
+            :href="route('meetings.show', nextMeeting.id)"
+            class="flex items-center gap-3 p-3 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors group"
+          >
+            <div class="flex-1 min-w-0">
+              <span class="text-xs text-zinc-500 dark:text-zinc-400">{{ $t('Kitas') }}</span>
+              <p class="text-sm font-medium text-zinc-700 dark:text-zinc-300 truncate">
+                {{ formatNavDate(nextMeeting.start_time) }}
+              </p>
+            </div>
+            <ChevronRight class="h-4 w-4 text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-300" />
+          </Link>
+        </CardContent>
+      </Card>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { Link } from '@inertiajs/vue3'
 import { trans as $t } from 'laravel-vue-i18n'
-import { 
-  Activity, 
-  ClipboardList, 
-  FileText, 
+import {
+  Activity,
+  ClipboardList,
+  FileText,
   FileCheck,
   CheckCircle2,
   AlertCircle,
@@ -191,10 +230,13 @@ import {
   ListTodo,
   CheckSquare,
   Edit,
-  Users
+  Users,
+  Navigation,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-vue-next'
 
-import { formatRelativeTime } from '@/Utils/IntlTime'
+import { formatRelativeTime, formatStaticTime } from '@/Utils/IntlTime'
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card'
 import { Progress } from '@/Components/ui/progress'
 import { Badge } from '@/Components/ui/badge'
@@ -206,10 +248,17 @@ interface Activity {
   created_at: string
 }
 
+interface MeetingNav {
+  id: string
+  start_time: string
+}
+
 interface Props {
   meeting: App.Entities.Meeting
   representatives?: App.Entities.User[]
   activities?: Activity[]
+  previousMeeting?: MeetingNav | null
+  nextMeeting?: MeetingNav | null
 }
 
 const props = defineProps<Props>()
@@ -252,5 +301,17 @@ const getActivityColor = (activity: Activity) => {
   if (description.includes('updated') || description.includes('atnaujin')) return 'bg-blue-500'
   if (description.includes('deleted') || description.includes('pašalin')) return 'bg-red-500'
   return 'bg-zinc-400'
+}
+
+// Navigation props
+const previousMeeting = computed(() => props.previousMeeting)
+const nextMeeting = computed(() => props.nextMeeting)
+
+const formatNavDate = (date: string) => {
+  return formatStaticTime(new Date(date), {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  })
 }
 </script>

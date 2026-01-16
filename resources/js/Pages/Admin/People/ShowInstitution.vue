@@ -3,15 +3,42 @@
     <InertiaHead :title="institution.name" />
 
     <!-- Institution Hero -->
-    <InstitutionHero :institution :meetings="institution.meetings || []" :active-check-in :can-schedule-meeting
-      :can-add-check-in @schedule-meeting="showMeetingModal = true" @add-check-in="showCheckInModal = true">
+    <ShowPageHero
+      :title="institution.name"
+      :subtitle="institution.short_name"
+    >
+      <template #icon>
+        <span class="text-lg font-medium text-zinc-600 dark:text-zinc-300">
+          {{ getInitials(institution.name) }}
+        </span>
+      </template>
+      <template #badge>
+        <Badge v-if="institution.has_public_meetings" variant="outline" class="text-xs gap-1 text-green-600 border-green-300 dark:text-green-400 dark:border-green-700">
+          <Globe class="h-3 w-3" />
+          {{ $t('Vieši posėdžiai') }}
+        </Badge>
+      </template>
+      <template #info>
+        <div v-if="institution.managers?.length > 0" class="flex items-center gap-2">
+          <span class="text-xs text-zinc-500 dark:text-zinc-400">{{ $t('Vadovai') }}:</span>
+          <UsersAvatarGroup :users="institution.managers" :max="3" :size="24" />
+        </div>
+      </template>
       <template #actions>
+        <Button v-if="canScheduleMeeting" variant="default" size="sm" class="gap-2" @click="showMeetingModal = true">
+          <CalendarIcon class="h-4 w-4" />
+          {{ $t('Suplanuoti susitikimą') }}
+        </Button>
+        <Button v-if="canAddCheckIn" variant="outline" size="sm" class="gap-2" @click="showCheckInModal = true">
+          <Clock class="h-4 w-4" />
+          {{ $t('Pridėti pažymą') }}
+        </Button>
         <MoreOptionsButton edit @edit-click="router.visit(route('institutions.edit', institution.id))" />
       </template>
-    </InstitutionHero>
+    </ShowPageHero>
 
     <!-- Main Content -->
-    <Tabs v-model="currentTab" class="space-y-6">
+    <Tabs v-model="currentTab" class="mt-6">
       <TabsList class="gap-2">
         <TabsTrigger value="overview">
           {{ $t('Apžvalga') }}
@@ -31,6 +58,82 @@
       </TabsList>
 
       <TabsContent value="overview" class="space-y-6">
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <!-- Active Members -->
+          <Card>
+            <CardContent class="p-4">
+              <div class="flex items-center gap-2 mb-2">
+                <Users class="h-4 w-4 text-blue-500" />
+                <span class="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                  {{ $t('Aktyvūs nariai') }}
+                </span>
+              </div>
+              <div class="text-2xl font-semibold text-zinc-900 dark:text-zinc-100">
+                {{ institution.current_users?.length || 0 }}
+              </div>
+              <div class="text-xs text-zinc-500 dark:text-zinc-400">
+                {{ $t('iš') }} {{ totalPositions }} {{ $t('pozicijų') }}
+              </div>
+            </CardContent>
+          </Card>
+
+          <!-- Last Meeting -->
+          <Card>
+            <CardContent class="p-4">
+              <div class="flex items-center gap-2 mb-2">
+                <CalendarIcon class="h-4 w-4 text-green-500" />
+                <span class="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                  {{ $t('Paskutinis susitikimas') }}
+                </span>
+              </div>
+              <div v-if="lastMeeting" class="text-sm text-zinc-900 dark:text-zinc-100">
+                {{ formatRelativeTime(lastMeeting.start_time) }}
+              </div>
+              <div v-else class="text-sm text-zinc-500 dark:text-zinc-400">
+                {{ $t('Nėra duomenų') }}
+              </div>
+            </CardContent>
+          </Card>
+
+          <!-- Total Meetings -->
+          <Card>
+            <CardContent class="p-4">
+              <div class="flex items-center gap-2 mb-2">
+                <BarChart3 class="h-4 w-4 text-purple-500" />
+                <span class="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                  {{ $t('Susitikimų') }}
+                </span>
+              </div>
+              <div class="text-2xl font-semibold text-zinc-900 dark:text-zinc-100">
+                {{ institution.meetings?.length || 0 }}
+              </div>
+              <div class="text-xs text-zinc-500 dark:text-zinc-400">
+                {{ $t('šiais metais') }}
+              </div>
+            </CardContent>
+          </Card>
+
+          <!-- Meeting Periodicity Status -->
+          <Card>
+            <CardContent class="p-4">
+              <div class="flex items-center gap-2 mb-2">
+                <Repeat class="h-4 w-4" :class="periodicityStatusColor" />
+                <span class="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                  {{ $t('Periodiškumas') }}
+                </span>
+              </div>
+              <div class="text-sm" :class="periodicityStatusColor">
+                {{ $t('Kas') }} {{ institution.meeting_periodicity_days ?? 30 }} {{ $t('d.') }}
+              </div>
+              <div v-if="daysSinceLastMeeting !== null" class="text-xs" :class="isOverdue ? 'text-red-500 dark:text-red-400' : 'text-zinc-500 dark:text-zinc-400'">
+                {{ daysSinceLastMeeting }} {{ $t('d. nuo paskutinio') }}
+                <span v-if="isOverdue" class="font-medium">({{ $t('vėluoja') }})</span>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
         <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
           <!-- Main Content -->
           <div class="xl:col-span-2 space-y-6">
@@ -55,17 +158,44 @@
                   <div v-for="activity in recentActivity" :key="activity.id" class="flex items-center gap-3 text-sm">
                     <div class="w-2 h-2 rounded-full bg-blue-500" />
                     <span class="text-zinc-600 dark:text-zinc-400">{{ activity.description }}</span>
-                    <span class="text-zinc-400 dark:text-zinc-500 ml-auto">{{ formatRelativeTime(activity.created_at)
-                    }}</span>
+                    <span class="text-zinc-400 dark:text-zinc-500 ml-auto">{{ formatRelativeTime(activity.created_at) }}</span>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <!-- Sidebar -->
+          <div class="space-y-6">
+            <!-- Quick Actions -->
+            <Card>
+              <CardHeader class="pb-3">
+                <CardTitle class="flex items-center gap-2 text-base">
+                  <Zap class="h-5 w-5 text-primary" />
+                  {{ $t('Greiti veiksmai') }}
+                </CardTitle>
+              </CardHeader>
+              <CardContent class="space-y-2">
+                <Button v-if="canScheduleMeeting" variant="outline" size="sm" class="w-full justify-start" @click="showMeetingModal = true">
+                  <CalendarIcon class="h-4 w-4 mr-2" />
+                  {{ $t('Suplanuoti susitikimą') }}
+                </Button>
+                <Button variant="outline" size="sm" class="w-full justify-start" @click="currentTab = 'duties'">
+                  <UserCheck class="h-4 w-4 mr-2" />
+                  {{ $t('Peržiūrėti pareigas') }}
+                </Button>
+                <Button variant="outline" size="sm" class="w-full justify-start" @click="currentTab = 'meetings'">
+                  <CalendarIcon class="h-4 w-4 mr-2" />
+                  {{ $t('Peržiūrėti susitikimus') }}
+                </Button>
               </CardContent>
             </Card>
           </div>
         </div>
       </TabsContent>
 
-      <TabsContent value="duties">
+      <!-- Duties Tab -->
+      <TabsContent value="duties" class="space-y-6">
         <div class="space-y-4">
           <div v-if="institution.duties?.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Card v-for="duty in sortedDuties" :key="duty.id" class="hover:shadow-md transition-shadow cursor-pointer"
@@ -119,7 +249,8 @@
         </div>
       </TabsContent>
 
-      <TabsContent value="meetings">
+      <!-- Meetings Tab -->
+      <TabsContent value="meetings" class="space-y-6">
         <div v-if="institution.meetings?.length > 0" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           <ModernMeetingCard v-for="meeting in institution.meetings" :key="meeting.id" :meeting :institution
             :can-delete="canDeleteMeetings" @click="router.visit(route('meetings.show', meeting.id))"
@@ -128,7 +259,7 @@
         <div v-else class="text-center py-12">
           <div
             class="mx-auto h-16 w-16 bg-zinc-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mb-4">
-            <Calendar class="h-8 w-8 text-zinc-400" />
+            <CalendarIcon class="h-8 w-8 text-zinc-400" />
           </div>
           <h3 class="text-lg font-medium text-zinc-900 dark:text-zinc-100 mb-2">
             {{ $t('Nėra susitikimų') }}
@@ -137,13 +268,14 @@
             {{ $t('Šiai institucijai dar nėra suplanuota susitikimų.') }}
           </p>
           <Button class="gap-2" @click="showMeetingModal = true">
-            <Calendar class="h-4 w-4" />
+            <CalendarIcon class="h-4 w-4" />
             {{ $t('Suplanuoti susitikimą') }}
           </Button>
         </div>
       </TabsContent>
 
-      <TabsContent value="files">
+      <!-- Files Tab -->
+      <TabsContent value="files" class="space-y-6">
         <Suspense v-if="institution.types.length > 0">
           <SimpleFileViewer :fileable="{ id: institution.id, type: 'Institution' }" />
           <template #fallback>
@@ -155,7 +287,8 @@
         <FileManager :starting-path="institution.sharepointPath" :fileable="{ id: institution.id, type: 'Institution' }" />
       </TabsContent>
 
-      <TabsContent value="related">
+      <!-- Related Institutions Tab -->
+      <TabsContent value="related" class="space-y-6">
         <RelatedInstitutions :institution />
       </TabsContent>
     </Tabs>
@@ -175,32 +308,40 @@ import { router, Head as InertiaHead, usePage } from "@inertiajs/vue3";
 import { useStorage } from "@vueuse/core";
 import { trans as $t } from "laravel-vue-i18n";
 
-// Layout and Components
-import { Activity, Mail, Phone, ExternalLink, Calendar, Users, ChevronRight, UserCheck } from 'lucide-vue-next';
+// Icons
+import {
+  Activity,
+  Calendar as CalendarIcon,
+  Users,
+  ChevronRight,
+  UserCheck,
+  Globe,
+  Clock,
+  BarChart3,
+  Repeat,
+  Zap
+} from 'lucide-vue-next';
 
+// Layout and Components
 import AdminContentPage from "@/Components/Layouts/AdminContentPage.vue";
-import InstitutionHero from "@/Components/Institutions/InstitutionHero.vue";
+import ShowPageHero from "@/Components/Hero/ShowPageHero.vue";
 import MemberGrid from "@/Components/Members/MemberGrid.vue";
-import LastMeetingCard from "@/Components/Cards/QuickContentCards/LastMeetingCard.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import ModernMeetingCard from "@/Components/Meetings/ModernMeetingCard.vue";
 import SimpleFileViewer from "@/Features/Admin/SharepointFileManager/Viewer/SimpleFileViewer.vue";
 import NewMeetingModal from "@/Components/Modals/NewMeetingModal.vue";
 import AddCheckInDialog from "@/Components/Institutions/AddCheckInDialog.vue";
+import UsersAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
 
 // UI Components
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Button } from "@/Components/ui/button";
 import { Badge } from "@/Components/ui/badge";
-import UserPopover from "@/Components/Avatars/UserPopover.vue";
-
-// Icons
 
 // Utils
 import Icons from "@/Types/Icons/filled";
 import { BreadcrumbHelpers, usePageBreadcrumbs } from "@/Composables/useBreadcrumbsUnified";
-import UsersAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
 
 const props = defineProps<{
   institution: App.Entities.Institution;
@@ -251,6 +392,48 @@ const totalPositions = computed(() => {
     return sum + (duty.places_to_occupy || 0);
   }, 0) || 0;
 });
+
+// Stats computed values
+const lastMeeting = computed(() => {
+  const meetings = props.institution.meetings;
+  if (!meetings?.length) return null;
+  return [...meetings]
+    .sort((a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime())[0];
+});
+
+const daysSinceLastMeeting = computed(() => {
+  if (!lastMeeting.value) return null;
+  const date = new Date(lastMeeting.value.start_time);
+  const now = new Date();
+  return Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+});
+
+const isOverdue = computed(() => {
+  if (daysSinceLastMeeting.value === null) return false;
+  const periodicity = props.institution.meeting_periodicity_days ?? 30;
+  return daysSinceLastMeeting.value > periodicity;
+});
+
+const periodicityStatusColor = computed(() => {
+  if (daysSinceLastMeeting.value === null) return 'text-zinc-500';
+  const periodicity = props.institution.meeting_periodicity_days ?? 30;
+  const ratio = daysSinceLastMeeting.value / periodicity;
+  if (ratio > 1) return 'text-red-500 dark:text-red-400';
+  if (ratio > 0.8) return 'text-amber-500 dark:text-amber-400';
+  return 'text-green-500 dark:text-green-400';
+});
+
+const getInitials = (name?: string) => {
+  if (!name) return 'IN';
+  const words = name.split(' ').filter(word => word.length > 0);
+  if (words.length >= 2) {
+    return (words[0][0] + words[1][0]).toUpperCase();
+  }
+  if (words.length === 1) {
+    return words[0].substring(0, 2).toUpperCase();
+  }
+  return 'IN';
+};
 
 const activeCheckIn = computed(() => {
   // This would come from the backend - placeholder for now
