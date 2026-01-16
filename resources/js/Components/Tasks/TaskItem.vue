@@ -1,14 +1,17 @@
 <template>
-  <div
+  <component
+    :is="taskableLink ? Link : 'div'"
+    :href="taskableLink || undefined"
     :class="[
       'group relative flex items-start gap-3 rounded-lg p-3 transition-all duration-200',
+      taskableLink ? 'cursor-pointer' : '',
       'hover:bg-zinc-100/80 dark:hover:bg-zinc-800/50',
       isOverdue && 'bg-red-50/20 dark:bg-red-950/5',
       actionTypeStyles.bgHover
     ]"
   >
     <!-- Action indicator - left side -->
-    <div class="flex shrink-0 items-center justify-center">
+    <div class="flex shrink-0 items-center justify-center" @click.stop>
       <!-- Checkbox for manual tasks -->
       <Checkbox
         v-if="canBeManuallyCompleted"
@@ -69,7 +72,7 @@
         <div class="min-w-0 flex-1">
           <!-- Task name -->
           <p 
-            class="truncate text-sm font-medium text-zinc-900 dark:text-zinc-100"
+            class="truncate text-sm font-medium text-zinc-900 group-hover:text-primary dark:text-zinc-100 dark:group-hover:text-primary"
             :title="name"
           >
             {{ name }}
@@ -106,7 +109,7 @@
     </div>
 
     <!-- Actions menu (visible on hover, only for manual tasks) -->
-    <div v-if="canBeManuallyCompleted" class="shrink-0 opacity-0 transition-opacity group-hover:opacity-100">
+    <div v-if="canBeManuallyCompleted" class="shrink-0 opacity-0 transition-opacity group-hover:opacity-100" @click.stop>
       <DropdownMenu>
         <DropdownMenuTrigger as-child>
           <Button
@@ -133,13 +136,13 @@
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
-  </div>
+  </component>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
 import { trans as $t } from 'laravel-vue-i18n'
-import { usePage } from '@inertiajs/vue3'
+import { usePage, Link } from '@inertiajs/vue3'
 import { formatDistanceToNow, parseISO, isToday, isTomorrow, differenceInDays } from 'date-fns'
 import { lt, enUS } from 'date-fns/locale'
 
@@ -173,6 +176,8 @@ const props = defineProps<{
   progress?: TaskProgress | null
   canBeManuallyCompleted?: boolean
   isUpdating?: boolean
+  taskableType?: string | null
+  taskableId?: string | null
 }>()
 
 defineEmits<{
@@ -285,6 +290,23 @@ const isDueSoon = computed(() => {
     return days >= 0 && days <= 3
   } catch {
     return false
+  }
+})
+
+// Generate taskable link URL
+const taskableLink = computed(() => {
+  if (!props.taskableType || !props.taskableId) return null
+  
+  const typeName = props.taskableType.includes('\\') 
+    ? props.taskableType.split('\\').pop() 
+    : props.taskableType
+  
+  const modelRoute = (typeName + 's').toLowerCase()
+  
+  try {
+    return route(`${modelRoute}.show`, props.taskableId)
+  } catch {
+    return null
   }
 })
 

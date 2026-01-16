@@ -39,24 +39,24 @@
 
     <CardContent class="relative z-10 flex-1 pt-0">
       <!-- Task list -->
-      <ScrollArea v-if="displayedTasks.length > 0" class="max-h-[340px]">
-        <div class="space-y-1 pr-2">
-          <TaskItem
-            v-for="task in displayedTasks"
-            :key="task.id"
-            :id="task.id"
-            :name="task.name"
-            :due-date="task.due_date"
-            :is-overdue="task.is_overdue"
-            :action-type="task.action_type"
-            :progress="task.progress"
-            :can-be-manually-completed="task.can_be_manually_completed"
-            :is-updating="isUpdating === task.id"
-            @complete="completeTask(task)"
-            @delete="deleteTask(task)"
-          />
-        </div>
-      </ScrollArea>
+      <div v-if="displayedTasks.length > 0" class="space-y-1">
+        <TaskItem
+          v-for="task in displayedTasks"
+          :key="task.id"
+          :id="task.id"
+          :name="task.name"
+          :due-date="task.due_date"
+          :is-overdue="task.is_overdue"
+          :action-type="task.action_type"
+          :progress="task.progress"
+          :can-be-manually-completed="task.can_be_manually_completed"
+          :taskable-type="task.taskable_type"
+          :taskable-id="task.taskable_id"
+          :is-updating="isUpdating === task.id"
+          @complete="completeTask(task)"
+          @delete="deleteTask(task)"
+        />
+      </div>
 
       <!-- Empty state - celebratory -->
       <div v-else class="flex flex-col items-center justify-center py-8 text-center">
@@ -93,13 +93,13 @@ import { toast } from "vue-sonner";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Badge } from "@/Components/ui/badge";
-import { ScrollArea } from "@/Components/ui/scroll-area";
 import { 
   ClipboardCheck as ClipboardCheckIcon, 
   ChevronRight as ChevronRightIcon,
   CheckCircle as CheckCircleIcon,
 } from "lucide-vue-next";
 import { dashboardCardClasses, cardAccentColors } from '@/Composables/useDashboardCardStyles';
+import { useTaskUrgency } from '@/Composables/useTaskUrgency';
 import TaskItem from "@/Components/Tasks/TaskItem.vue";
 import type { TaskProgress, TaskActionType } from "@/Types/TaskTypes";
 
@@ -164,8 +164,11 @@ const headerIconClass = computed(() => {
   return 'text-emerald-600 dark:text-emerald-400'
 })
 
-// Display up to 10 tasks
-const displayedTasks = computed(() => props.upcomingTasks.slice(0, 10));
+// Display up to 5 most urgent tasks (overdue first, then by due date)
+const { urgentTasks: displayedTasks } = useTaskUrgency(
+  () => props.upcomingTasks,
+  { limit: 5, incompleteOnly: true }
+);
 
 // Complete a task
 const completeTask = (task: UpcomingTask) => {

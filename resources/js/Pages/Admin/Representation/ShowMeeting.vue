@@ -106,18 +106,20 @@
     </Dialog>
 
     <Dialog v-model:open="showAgendaItemStoreModal">
-      <DialogContent>
-        <DialogHeader>
+      <DialogContent class="max-h-[85vh] flex flex-col">
+        <DialogHeader class="flex-none">
           <DialogTitle>{{ $t("Pridėti darbotvarkės punktus") }}</DialogTitle>
         </DialogHeader>
-        <AgendaItemsForm 
-          class="w-full" 
-          :loading 
-          mode="add"
-          :submit-label="$t('Pridėti punktus')"
-          :show-skip-button="false"
-          @submit="handleAgendaItemsFormSubmit" 
-        />
+        <div class="flex-1 overflow-y-auto -mx-6 px-6">
+          <AgendaItemsForm 
+            class="w-full" 
+            :loading 
+            mode="add"
+            :submit-label="$t('Pridėti punktus')"
+            :show-skip-button="false"
+            @submit="handleAgendaItemsFormSubmit" 
+          />
+        </div>
       </DialogContent>
     </Dialog>
 

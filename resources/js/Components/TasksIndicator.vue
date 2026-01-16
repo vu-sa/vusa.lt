@@ -29,10 +29,10 @@
     
     <PopoverContent class="w-96 p-0" align="end">
       <!-- Header -->
-      <div class="flex items-center justify-between border-b bg-zinc-50/50 px-4 py-3 dark:bg-zinc-900/50">
+      <div class="flex items-center justify-between border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
         <div class="flex items-center gap-2">
           <ClipboardCheckIcon class="h-4 w-4 text-zinc-500" />
-          <h4 class="font-medium">{{ $t('Your Tasks') }}</h4>
+          <h4 class="font-semibold text-zinc-900 dark:text-zinc-100">{{ $t('Your Tasks') }}</h4>
         </div>
         <div class="flex items-center gap-2">
           <Badge v-if="hasOverdue" variant="destructive" class="text-xs">
@@ -45,7 +45,7 @@
       </div>
       
       <!-- Task list -->
-      <ScrollArea class="max-h-[360px]">
+      <ScrollArea class="h-[340px]">
         <div v-if="isLoading" class="flex items-center justify-center p-8">
           <LoaderCircleIcon class="h-6 w-6 animate-spin text-zinc-400" />
         </div>
@@ -173,9 +173,9 @@
         </div>
         
         <!-- Empty state -->
-        <div v-else class="flex flex-col items-center justify-center px-4 py-10 text-center">
-          <div class="mb-3 rounded-full bg-zinc-100 p-3 dark:bg-zinc-800">
-            <CheckCircleIcon class="h-6 w-6 text-zinc-500 dark:text-zinc-400" />
+        <div v-else class="flex h-full flex-col items-center justify-center p-8 text-center">
+          <div class="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
+            <CheckCircleIcon class="h-6 w-6 text-zinc-400 dark:text-zinc-500" />
           </div>
           <h3 class="text-sm font-medium text-zinc-900 dark:text-zinc-100">
             {{ $t('All caught up!') }}
@@ -187,13 +187,13 @@
       </ScrollArea>
       
       <!-- Footer -->
-      <div class="border-t bg-zinc-50/50 p-2 dark:bg-zinc-900/50">
+      <div class="border-t border-zinc-200 p-2 dark:border-zinc-800">
         <Link 
           :href="route('userTasks')" 
-          class="flex w-full items-center justify-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+          class="flex w-full items-center justify-center gap-1.5 rounded-md py-2 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
         >
           {{ $t('View All Tasks') }}
-          <ChevronRightIcon class="h-4 w-4" />
+          <ArrowRightIcon class="h-3 w-3" />
         </Link>
       </div>
     </PopoverContent>
@@ -211,7 +211,7 @@ import {
   CheckCircle as CheckCircleIcon,
   CheckIcon, 
   LoaderCircleIcon,
-  ChevronRight as ChevronRightIcon,
+  ArrowRight as ArrowRightIcon,
   ShieldCheck as ShieldCheckIcon,
   Package as PackageIcon,
   PackageCheck as PackageCheckIcon,

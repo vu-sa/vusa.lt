@@ -199,7 +199,7 @@ class MeetingController extends AdminController
 
         $meeting->load('institutions.types', 'activities.causer', 'files', 'fileableFiles', 'comments', 'types')->load([
             'tasks' => function ($query) {
-                $query->with('users', 'taskable');
+                $query->with('users:id,name,email,profile_photo_path', 'taskable');
             },
             'agendaItems' => function ($query) {
                 $query->orderBy('order');
@@ -208,6 +208,35 @@ class MeetingController extends AdminController
 
         // Append is_public and file status now that relations are loaded (avoids N+1)
         $meeting->append(['is_public', 'has_protocol', 'has_report']);
+
+        // Transform tasks with computed properties (same as userTasks method)
+        $transformedTasks = $meeting->tasks->map(fn ($task) => [
+            'id' => $task->id,
+            'name' => $task->name,
+            'description' => $task->description,
+            'due_date' => $task->due_date?->toISOString(),
+            'completed_at' => $task->completed_at?->toISOString(),
+            'created_at' => $task->created_at?->toISOString(),
+            'action_type' => $task->action_type?->value,
+            'metadata' => $task->metadata,
+            'progress' => $task->getProgress(),
+            'is_overdue' => $task->isOverdue(),
+            'can_be_manually_completed' => $task->canBeManuallyCompleted(),
+            'icon' => $task->icon,
+            'color' => $task->color,
+            'taskable' => $task->taskable ? [
+                'id' => $task->taskable->id,
+                'name' => $task->taskable->title ?? $task->taskable->name ?? null,
+                'type' => class_basename($task->taskable_type),
+            ] : null,
+            'taskable_type' => class_basename($task->taskable_type ?? ''),
+            'taskable_id' => $task->taskable_id,
+            'users' => $task->users->map(fn ($u) => [
+                'id' => $u->id,
+                'name' => $u->name,
+                'profile_photo_path' => $u->profile_photo_path,
+            ]),
+        ]);
 
         // Get representatives who were active at meeting time
         $representatives = $meeting->getRepresentativesActiveAt();
@@ -239,6 +268,7 @@ class MeetingController extends AdminController
         return $this->inertiaResponse('Admin/Representation/ShowMeeting', [
             'meeting' => [
                 ...$meeting->toArray(),
+                'tasks' => $transformedTasks,
                 'sharepointPath' => $meeting->institutions->isNotEmpty() ? SharepointFileService::pathForFileableDriveItem($meeting) : null,
             ],
             'representatives' => $representatives,

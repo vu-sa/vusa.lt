@@ -128,8 +128,8 @@ const filterOptions = [
   { label: $t('tasks.filters.incomplete'), value: FilterType.INCOMPLETE }
 ];
 
-// Task filtering
-const currentFilter = ref(FilterType.ALL);
+// Task filtering - default to incomplete tasks
+const currentFilter = ref(FilterType.INCOMPLETE);
 const filteredTasks = computed(() => {
   if (!props.tasks?.length) {
     return [];
