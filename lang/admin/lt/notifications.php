@@ -102,8 +102,8 @@ return [
     'duty_expiring_body' => 'Jūsų pareigos „:duty" baigiasi :date. Nepamirškite perduoti patirties!',
 
     // System notifications
-    'welcome_title' => 'Sveiki atvykę į VU SA Mano!',
-    'welcome_body' => 'Sveiki, :name! Džiaugiamės, kad prisijungėte.',
+    'welcome_title' => 'Sveiki atvykę į VU SA Mano! 🎉',
+    'welcome_body' => 'Puiku, :name! Sėkmingai baigėte pirmą pažintį su platforma. Smagaus naudojimosi!',
     'test_notification_title' => 'Bandomasis pranešimas',
     'test_notification_body' => 'Tai yra bandomasis pranešimas! Push pranešimai veikia.',
 

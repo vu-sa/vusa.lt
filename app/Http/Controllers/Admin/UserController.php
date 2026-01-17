@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Actions\DeleteUserPassword;
 use App\Actions\GenerateUserPassword;
 use App\Actions\MergeUsers;
-use App\Actions\SendWelcomeEmail;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\GenerateUserPasswordRequest;
 use App\Http\Requests\MergeUsersRequest;
@@ -18,7 +17,6 @@ use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ModelIndexer;
 use App\Services\ResourceServices\UserDutyService;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection as SupportCollection;
 use Illuminate\Support\Facades\Auth;
@@ -128,28 +126,6 @@ class UserController extends AdminController
             'tenantsWithDuties' => fn () => UserDutyService::getTenantsWithDutiesForForm($this->authorizer),
             'permissableTenants' => UserDutyService::getPermissableTenants($this->authorizer),
         ]);
-    }
-
-    /**
-     * Send welcome email to a user.
-     */
-    public function sendWelcomeEmail(User $user)
-    {
-        $this->handleAuthorization('update', $user);
-
-        SendWelcomeEmail::execute((new Collection)->push($user));
-
-        return $this->redirectBackWithSuccess('Laiškas sėkmingai išsiųstas!');
-    }
-
-    /**
-     * Render welcome email preview.
-     */
-    public function renderWelcomeEmail(User $user)
-    {
-        $this->handleAuthorization('update', $user);
-
-        return new \App\Mail\WelcomeEmail($user);
     }
 
     /**

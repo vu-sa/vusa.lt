@@ -79,8 +79,6 @@ Route::get('users/merge', [UserController::class, 'merge'])->name('users.merge')
 Route::post('users/merge', [UserController::class, 'mergeUsers'])->name('users.mergeUsers');
 Route::resource('users', UserController::class);
 
-Route::post('users/{user}/sendWelcomeEmail', [UserController::class, 'sendWelcomeEmail'])->name('users.sendWelcomeEmail');
-Route::get('users/{user}/renderWelcomeEmail', [UserController::class, 'renderWelcomeEmail'])->name('users.renderWelcomeEmail');
 Route::post('users/{user}/generate-password', [UserController::class, 'generatePassword'])->name('users.generatePassword');
 Route::delete('users/{user}/delete-password', [UserController::class, 'deletePassword'])->name('users.deletePassword');
 Route::resource('users.comments', CommentController::class)->only(['store', 'update', 'destroy']);

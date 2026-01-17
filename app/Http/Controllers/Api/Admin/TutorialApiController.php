@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Api\ApiController;
+use App\Notifications\WelcomeNotification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -40,9 +41,17 @@ class TutorialApiController extends ApiController
 
         // Only mark as completed if not already completed
         if (! isset($progress[$tourId])) {
+            // Check if this is the user's first tutorial completion
+            $isFirstTutorial = empty($progress);
+
             $progress[$tourId] = now()->toIso8601String();
             $user->tutorial_progress = $progress;
             $user->save();
+
+            // Send welcome notification on first tutorial completion
+            if ($isFirstTutorial) {
+                $user->notify(new WelcomeNotification);
+            }
         }
 
         return $this->jsonSuccess([

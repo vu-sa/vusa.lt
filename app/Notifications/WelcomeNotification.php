@@ -5,7 +5,10 @@ namespace App\Notifications;
 use App\Enums\NotificationCategory;
 
 /**
- * Welcome notification sent to users on their first login.
+ * Welcome notification sent to users after completing their first tutorial.
+ *
+ * This provides a warm greeting to new users who have just started exploring
+ * the platform. Sent only via database and broadcast channels (no email).
  */
 class WelcomeNotification extends BaseNotification
 {
@@ -33,21 +36,16 @@ class WelcomeNotification extends BaseNotification
 
     public function icon(): string
     {
-        return '👋';
+        return '🎉';
     }
 
     public function actions(): array
     {
-        return [
-            [
-                'label' => __('notifications.action_explore_dashboard'),
-                'url' => route('dashboard'),
-            ],
-        ];
+        return [];
     }
 
     /**
-     * Welcome notifications should not be digested.
+     * Welcome notifications should not be digested or emailed.
      */
     public function supportsEmailDigest(): bool
     {

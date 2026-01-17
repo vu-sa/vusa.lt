@@ -681,10 +681,10 @@ describe('WelcomeNotification', function () {
         expect($notification->url())->toBe(route('dashboard'));
     });
 
-    test('uses wave icon', function () {
+    test('uses celebration icon', function () {
         $notification = new WelcomeNotification;
 
-        expect($notification->icon())->toBe('👋');
+        expect($notification->icon())->toBe('🎉');
     });
 
     test('does not support email digest', function () {
@@ -693,12 +693,12 @@ describe('WelcomeNotification', function () {
         expect($notification->supportsEmailDigest())->toBeFalse();
     });
 
-    test('has action buttons', function () {
+    test('has empty actions', function () {
         $notification = new WelcomeNotification;
 
         $actions = $notification->actions();
         expect($actions)->toBeArray();
-        expect($actions)->not->toBeEmpty();
+        expect($actions)->toBeEmpty();
     });
 });
 

@@ -205,24 +205,6 @@
           </div>
         </div>
       </template>
-      <!-- <template v-else-if="modelRoute === 'users.update'">
-          <p class="mb-2">
-            Šis asmuo dar niekada neprisijungė prie sistemos.
-          </p>
-          <NPopconfirm style="max-width: 400px" @positive-click="sendWelcomeEmail">
-            <span>Bus išsiųstas atstovo rolę supažindinantis laiškas apie
-              mano.vusa.lt, paštu&nbsp;
-              <span class="underline">{{ user.email }}</span>
-            </span>
-            <template #trigger>
-              <Button variant="outline">Siųsti laišką</Button>
-            </template>
-          </NPopconfirm>
-          <Button variant="link" size="icon-xs" as="a" :href="route('users.renderWelcomeEmail', user.id)" target="_blank"
-            class="ml-2 align-middle">
-            <IFluentEye24Filled />
-          </Button>
-        </template> -->
     </FormElement>
   </AdminForm>
 </template>
@@ -466,17 +448,6 @@ const renderSourceList: TransferRenderSourceList = ({ onCheck, pattern }) => {
       onCheck(checkedKeys);
     },
   });
-};
-
-const sendWelcomeEmail = () => {
-  router.post(
-    route("users.sendWelcomeEmail", props.user.id as number),
-    {},
-    {
-      preserveState: true,
-      preserveScroll: true,
-    },
-  );
 };
 
 const hasPassword = computed(() => !!props.user.password);

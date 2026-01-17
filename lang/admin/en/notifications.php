@@ -102,8 +102,8 @@ return [
     'duty_expiring_body' => 'Your duty ":duty" ends on :date. Remember to transfer your experience!',
 
     // System notifications
-    'welcome_title' => 'Welcome to VU SA Mano!',
-    'welcome_body' => 'Hello, :name! We are glad you joined.',
+    'welcome_title' => 'Welcome to VU SA Mano! 🎉',
+    'welcome_body' => 'Great job, :name! You\'ve completed your first intro to the platform. Enjoy exploring!',
     'test_notification_title' => 'Test Notification',
     'test_notification_body' => 'This is a test notification! Push notifications are working.',
 
