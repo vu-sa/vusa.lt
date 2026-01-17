@@ -1,103 +1,120 @@
 <template>
   <figure
-    class="grid rounded-lg border border-zinc-200/50 bg-zinc-50 shadow-xs duration-200 hover:shadow-md dark:border-zinc-900/60 dark:bg-zinc-800"
-    :class="{
-      'gap-2 xl:grid-cols-[2fr__3fr]': imageUrl,
-    }">
-    <img v-if="imageUrl" :src="imageUrl" class="h-40 w-full object-cover max-xl:rounded-t-md xl:rounded-l-md"
-      loading="lazy" style="object-position: 50% 20%" :alt="contact?.name">
-    <div class="flex flex-col justify-between gap-4 p-4">
+    class="group relative flex flex-col overflow-hidden rounded-xl bg-gradient-to-br from-zinc-50 to-zinc-100/50 ring-1 ring-zinc-200/50 transition-all duration-300 hover:ring-zinc-300 hover:shadow-lg dark:from-zinc-800/80 dark:to-zinc-900 dark:ring-zinc-700/50 dark:hover:ring-zinc-600 sm:rounded-2xl"
+  >
+    <!-- Photo section -->
+    <div v-if="imageUrl" class="relative aspect-[4/3] w-full overflow-hidden">
+      <img 
+        :src="imageUrl" 
+        :alt="contact?.name"
+        class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+        loading="lazy" 
+        style="object-position: 50% 20%"
+      >
+      <!-- Subtle gradient overlay at bottom for text readability -->
+      <div class="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-black/20 to-transparent" />
+    </div>
+
+    <!-- Avatar fallback when no photo -->
+    <div v-else class="flex aspect-[4/3] w-full items-center justify-center bg-gradient-to-br from-zinc-100 to-zinc-200 dark:from-zinc-700 dark:to-zinc-800">
+      <span class="text-2xl font-bold text-zinc-400 dark:text-zinc-500 sm:text-3xl">
+        {{ getInitials(contact.name) }}
+      </span>
+    </div>
+    
+    <!-- Content section -->
+    <div class="flex flex-1 flex-col justify-between gap-2 p-3 sm:gap-3 sm:p-4">
       <div>
-        <div class="flex items-center">
-          <p class="text-lg font-bold leading-5 text-zinc-800 dark:text-zinc-50 xl:text-xl">
-            {{ contact.name }}
-            <template v-if="contact.show_pronouns">
-              <span class="text-xs text-zinc-400 dark:text-zinc-400">
-                ({{ contact.pronouns }})
-              </span>
-            </template>
+        <!-- Name -->
+        <h3 class="text-sm font-bold leading-tight text-zinc-900 dark:text-zinc-50 sm:text-base">
+          {{ contact.name }}
+          <span v-if="contact.show_pronouns" class="text-[10px] font-normal text-zinc-400 sm:text-xs">
+            ({{ contact.pronouns }})
+          </span>
+        </h3>
+        
+        <!-- Duties -->
+        <div v-if="duties" class="mt-1.5 space-y-0.5 sm:mt-2 sm:space-y-1">
+          <p 
+            v-for="duty in duties" 
+            :key="duty.id"
+            class="text-[11px] leading-relaxed text-zinc-600 dark:text-zinc-400 sm:text-xs"
+          >
+            {{ changeDutyNameEndings(contact, duty.name, $page.props.app.locale, contact.pronouns, duty.pivot?.use_original_duty_name) }}
+            <span v-if="showAdditionalInfo(duty)" class="text-zinc-400 dark:text-zinc-500">
+              {{ showAdditionalInfo(duty) }}
+            </span>
+            <InfoPopover 
+              v-if="duty.description && duty.description !== '<p></p>'" 
+              style="max-width: 400px" 
+              trigger="hover" 
+              color="gray"
+              class="ml-0.5 inline align-middle"
+            >
+              <span v-html="dutyDescription(duty)" />
+            </InfoPopover>
           </p>
         </div>
-        <div v-if="duties" class="w-fit text-xs text-zinc-600 dark:text-zinc-200">
-          <template v-for="duty in duties" :key="duty.id">
-            <p class="my-1">
-              {{ changeDutyNameEndings(contact, duty.name, $page.props.app.locale, contact.pronouns,
-                duty.pivot?.use_original_duty_name) }}
-              {{ showAdditionalInfo(duty) }}
-              <span v-if="duty.description && duty.description !== '<p></p>'" class="align-middle">
-                <InfoPopover style="max-width: 400px" trigger="hover" color="gray">
-                  <span v-html="dutyDescription(duty)" />
-                </InfoPopover>
-              </span>
-            </p>
-          </template>
-        </div>
       </div>
-      <div class="flex gap-2">
+      
+      <!-- Action buttons -->
+      <div class="flex items-center gap-1 pt-0.5 sm:gap-1.5 sm:pt-1">
         <TooltipProvider v-if="contact.phone">
           <Tooltip>
             <TooltipTrigger as-child>
               <a :href="`tel:${contact.phone}`">
-                <Button variant="ghost" size="icon-sm" class="rounded-full">
-                  <IFluentPhone20Regular />
+                <Button variant="ghost" size="icon-sm" class="size-7 rounded-full text-zinc-500 hover:bg-zinc-200/70 hover:text-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-700/70 dark:hover:text-zinc-200 sm:size-8">
+                  <IFluentPhone20Regular class="size-3.5 sm:size-4" />
                 </Button>
               </a>
             </TooltipTrigger>
-            <TooltipContent>
-              <CopyToClipboardButton size="small" circle text :text-to-copy="contact.phone"
-                success-text="Tel. nr. nukopijuotas!" error-text="Nepavyko nukopijuoti tel. nr...">
-                <div class="mt-1 inline-flex items-center gap-1 text-zinc-300 hover:text-vusa-red">
-                  <IFluentPhone20Regular />
-                  {{ contact.phone }}
-                </div>
-              </CopyToClipboardButton>
+            <TooltipContent side="bottom" class="px-3 py-1.5">
+              <span class="text-xs">{{ contact.phone }}</span>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
+        
         <a v-if="contact.facebook_url" :href="contact.facebook_url" target="_blank" rel="noopener noreferrer">
-          <Button variant="ghost" size="icon-sm" class="rounded-full">
-            <IMdiFacebook />
+          <Button variant="ghost" size="icon-sm" class="size-7 rounded-full text-zinc-500 hover:bg-blue-50 hover:text-blue-600 dark:text-zinc-400 dark:hover:bg-blue-900/30 dark:hover:text-blue-400 sm:size-8">
+            <IMdiFacebook class="size-3.5 sm:size-4" />
           </Button>
         </a>
+        
         <Popover v-if="shownContactEmail.length > 1">
           <PopoverTrigger as-child>
-            <Button variant="ghost" size="icon-sm" class="rounded-full">
-              <IFluentMail20Regular />
+            <Button variant="ghost" size="icon-sm" class="size-7 rounded-full text-zinc-500 hover:bg-zinc-200/70 hover:text-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-700/70 dark:hover:text-zinc-200 sm:size-8">
+              <IFluentMail20Regular class="size-3.5 sm:size-4" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent align="start" class="w-auto">
-            <div class="flex flex-col text-sm">
+          <PopoverContent align="start" class="w-auto max-w-xs p-3">
+            <div class="flex flex-col gap-2 text-sm">
               <template v-for="(email, index) in shownContactEmail" :key="email.email">
-                <span class="font-bold text-zinc-800 dark:text-zinc-100">{{ email.name }}</span>
-                <div class="inline-flex items-center">
-                  <CopyToClipboardButton size="small" circle text :text-to-copy="email.email"
-                    success-text="El. paštas nukopijuotas!" error-text="Nepavyko nukopijuoti el. pašto...">
-                    <IFluentMail20Regular />
-                    <span>{{ email.email }}</span>
-                  </CopyToClipboardButton>
+                <div>
+                  <span class="block text-xs font-medium text-zinc-500 dark:text-zinc-400">{{ email.name }}</span>
+                  <a 
+                    :href="`mailto:${email.email}`" 
+                    class="text-sm font-medium text-zinc-900 hover:text-vusa-red dark:text-zinc-100"
+                  >
+                    {{ email.email }}
+                  </a>
                 </div>
-                <hr v-if="index < shownContactEmail.length - 1" class="my-3 border border-zinc-300 dark:border-zinc-500">
+                <div v-if="index < shownContactEmail.length - 1" class="h-px bg-zinc-200 dark:bg-zinc-700" />
               </template>
             </div>
           </PopoverContent>
         </Popover>
+        
         <TooltipProvider v-else-if="shownContactEmail.length === 1">
           <Tooltip>
             <TooltipTrigger as-child>
-              <a :key="shownContactEmail[0].email" :href="`mailto:${shownContactEmail[0].email}`">
-                <Button variant="ghost" size="icon-sm" class="rounded-full">
-                  <IFluentMail20Regular />
+              <a :href="`mailto:${shownContactEmail[0].email}`">
+                <Button variant="ghost" size="icon-sm" class="size-7 rounded-full text-zinc-500 hover:bg-zinc-200/70 hover:text-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-700/70 dark:hover:text-zinc-200 sm:size-8">
+                  <IFluentMail20Regular class="size-3.5 sm:size-4" />
                 </Button>
               </a>
             </TooltipTrigger>
-            <TooltipContent>
-              <CopyToClipboardButton size="small" circle text :text-to-copy="shownContactEmail[0].email"
-                success-text="El. paštas nukopijuotas!" error-text="Nepavyko nukopijuoti el. pašto...">
-                <div class="mt-1 inline-flex items-center text-zinc-300 hover:text-vusa-red">
-                  <IFluentMail20Regular class="mr-2" />
-                  {{ shownContactEmail[0].email }}
-                </div>
-              </CopyToClipboardButton>
+            <TooltipContent side="bottom" class="px-3 py-1.5">
+              <span class="text-xs">{{ shownContactEmail[0].email }}</span>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -114,7 +131,6 @@ import { Button } from "@/Components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/Components/ui/popover";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
 import { changeDutyNameEndings } from "@/Utils/String";
-import CopyToClipboardButton from "../Buttons/CopyToClipboardButton.vue";
 import InfoPopover from "../Buttons/InfoPopover.vue";
 
 const props = defineProps<{
@@ -175,5 +191,14 @@ const imageUrl = computed(() => {
 
   return props.contact.profile_photo_path ?? "";
 });
+
+// Get initials from name for avatar fallback
+const getInitials = (name: string): string => {
+  const parts = name.split(' ').filter(Boolean);
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+  return parts[0]?.substring(0, 2).toUpperCase() ?? '?';
+};
 
 </script>

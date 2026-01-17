@@ -72,7 +72,7 @@ class ContactController extends PublicController
         if ($hasGroupedDuties) {
             $processedContacts = $this->processDutiesWithGrouping($duties);
 
-            return $this->showInstitutionWithMixedContacts($institution, $processedContacts, $institution->name.' | Kontaktai');
+            return $this->renderInstitutionPage($institution, $processedContacts, $institution->name.' | Kontaktai', hasMixedGrouping: true);
         }
 
         // Default behavior - flatten and deduplicate all duties
@@ -81,7 +81,7 @@ class ContactController extends PublicController
         // make eloquent collection from array
         $contacts = new Collection($contacts);
 
-        return $this->showInstitution($institution, $contacts, $institution->name.' | Kontaktai');
+        return $this->renderInstitutionPage($institution, $contacts, $institution->name.' | Kontaktai');
     }
 
     public function institutionDutyTypeContacts($subdomain, $lang, Type $type)
@@ -132,7 +132,7 @@ class ContactController extends PublicController
             // Filter processed contacts to only show duties related to the selected types
             $processedContacts = $this->filterProcessedContactsByTypes($processedContacts, $types);
 
-            return $this->showInstitutionWithMixedContacts($institution, $processedContacts, $institution->name.' | '.ucfirst($type->slug));
+            return $this->renderInstitutionPage($institution, $processedContacts, $institution->name.' | '.ucfirst($type->slug), hasMixedGrouping: true);
         }
 
         // Default behavior - flatten and deduplicate all duties
@@ -151,7 +151,7 @@ class ContactController extends PublicController
         // make eloquent collection from array
         $contacts = new Collection($contacts);
 
-        return $this->showInstitution($institution, $contacts, $institution->name.' | '.ucfirst($type->slug));
+        return $this->renderInstitutionPage($institution, $contacts, $institution->name.' | '.ucfirst($type->slug));
     }
 
     public function studentRepresentatives()
@@ -189,8 +189,15 @@ class ContactController extends PublicController
         ]);
     }
 
-    private function showInstitution(Institution $institution, Collection $contacts, string $title)
-    {
+    /**
+     * Render institution page with contacts (flat or grouped)
+     */
+    private function renderInstitutionPage(
+        Institution $institution,
+        Collection|array $contacts,
+        string $title,
+        bool $hasMixedGrouping = false
+    ) {
         // Load meetings and group by academic year
         $meetings = $this->getAllMeetingsForInstitution($institution);
         $groupedMeetings = $this->groupMeetingsByAcademicYear($meetings);
@@ -201,9 +208,21 @@ class ContactController extends PublicController
             image: $institution->image_url,
         );
 
-        return Inertia::render('Public/Contacts/ContactInstitutionOrType', [
+        $data = [
             'institution' => $institution,
-            'contacts' => $contacts->map(function ($contact) use ($institution) {
+            'currentYearMeetings' => $groupedMeetings['current'] ?? null,
+            'previousYearsMeetings' => $groupedMeetings['previous'] ?? [],
+            'hasMeetings' => ! empty($groupedMeetings),
+            'studentRepFormInfo' => $this->getStudentRepFormInfo($institution),
+        ];
+
+        if ($hasMixedGrouping) {
+            // Transform processed contacts for frontend
+            $data['contactSections'] = $this->transformContactSections($contacts);
+            $data['hasMixedGrouping'] = true;
+        } else {
+            // Map flat contacts
+            $data['contacts'] = $contacts->map(function ($contact) use ($institution) {
                 /** @var User $contact */
                 return [
                     'id' => $contact->id,
@@ -211,21 +230,73 @@ class ContactController extends PublicController
                     'email' => $contact->email,
                     'phone' => $contact->phone,
                     'facebook_url' => $contact->facebook_url,
-                    // Sometimes the duties may be filtered, e.g. curator duties are not shown in coordinator
-                    'duties' => isset($contact->filtered_current_duties) ? $contact->filtered_current_duties->where('institution_id', '=', $institution->id)->values() :
-                    $contact->current_duties->where('institution_id', '=', $institution->id)->values(),
+                    'duties' => isset($contact->filtered_current_duties)
+                        ? $contact->filtered_current_duties->where('institution_id', '=', $institution->id)->values()
+                        : $contact->current_duties->where('institution_id', '=', $institution->id)->values(),
                     'profile_photo_path' => $contact->profile_photo_path,
                     'pronouns' => $contact->pronouns,
                     'show_pronouns' => $contact->show_pronouns,
                 ];
-            }),
-            'currentYearMeetings' => $groupedMeetings['current'] ?? null,
-            'previousYearsMeetings' => $groupedMeetings['previous'] ?? [],
-            'hasMeetings' => ! empty($groupedMeetings),
-            'studentRepFormInfo' => $this->getStudentRepFormInfo($institution),
-        ])->withViewData(
+            })->values();
+        }
+
+        return Inertia::render('Public/Contacts/ShowInstitution', $data)->withViewData(
             ['SEOData' => $seo]
         );
+    }
+
+    /**
+     * Transform processed contact sections for frontend
+     */
+    private function transformContactSections(array $processedContacts): array
+    {
+        $transformedSections = [];
+
+        foreach ($processedContacts as $section) {
+            if ($section['type'] === 'grouped_duty') {
+                $transformedGroups = [];
+                foreach ($section['groups'] as $group) {
+                    $transformedGroups[] = [
+                        'name' => $group['name'],
+                        'contacts' => collect($group['contacts'])->map(fn ($item) => [
+                            'id' => $item['user']->id,
+                            'name' => $item['user']->name,
+                            'email' => $item['user']->email,
+                            'phone' => $item['user']->phone,
+                            'facebook_url' => $item['user']->facebook_url,
+                            'duties' => [$item['duty']->only(['id', 'name', 'description'])],
+                            'profile_photo_path' => $item['user']->profile_photo_path,
+                            'pronouns' => $item['user']->pronouns,
+                            'show_pronouns' => $item['user']->show_pronouns,
+                        ])->values()->toArray(),
+                    ];
+                }
+
+                $transformedSections[] = [
+                    'type' => 'grouped_duty',
+                    'dutyName' => $section['duty']->name,
+                    'groups' => $transformedGroups,
+                ];
+            } else {
+                $transformedSections[] = [
+                    'type' => 'flat_duty',
+                    'dutyName' => $section['duty']->name,
+                    'contacts' => collect($section['contacts'])->map(fn ($item) => [
+                        'id' => $item['user']->id,
+                        'name' => $item['user']->name,
+                        'email' => $item['user']->email,
+                        'phone' => $item['user']->phone,
+                        'facebook_url' => $item['user']->facebook_url,
+                        'duties' => [$item['duty']->only(['id', 'name', 'description'])],
+                        'profile_photo_path' => $item['user']->profile_photo_path,
+                        'pronouns' => $item['user']->pronouns,
+                        'show_pronouns' => $item['user']->show_pronouns,
+                    ])->values()->toArray(),
+                ];
+            }
+        }
+
+        return $transformedSections;
     }
 
     /**
@@ -511,86 +582,6 @@ class ContactController extends PublicController
             default:
                 return 'Other';
         }
-    }
-
-    /**
-     * Show institution with mixed grouped and flat contacts
-     */
-    private function showInstitutionWithMixedContacts(Institution $institution, array $processedContacts, string $title)
-    {
-        // Load meetings and group by academic year
-        $meetings = $this->getAllMeetingsForInstitution($institution);
-        $groupedMeetings = $this->groupMeetingsByAcademicYear($meetings);
-
-        $seo = $this->shareAndReturnSEOObject(
-            title: $title.' - '.$this->tenant->shortname,
-            description: Str::limit(strip_tags($institution->description), 160),
-            image: $institution->image_url,
-        );
-
-        // Transform processed contacts for frontend
-        $transformedSections = [];
-        foreach ($processedContacts as $section) {
-            if ($section['type'] === 'grouped_duty') {
-                // This is a duty with grouped contacts
-                $transformedGroups = [];
-                foreach ($section['groups'] as $group) {
-                    $transformedGroups[] = [
-                        'name' => $group['name'],
-                        'contacts' => collect($group['contacts'])->map(function ($item) {
-                            return [
-                                'id' => $item['user']->id,
-                                'name' => $item['user']->name,
-                                'email' => $item['user']->email,
-                                'phone' => $item['user']->phone,
-                                'facebook_url' => $item['user']->facebook_url,
-                                'duties' => [$item['duty']->only(['id', 'name', 'description'])],
-                                'profile_photo_path' => $item['user']->profile_photo_path,
-                                'pronouns' => $item['user']->pronouns,
-                                'show_pronouns' => $item['user']->show_pronouns,
-                            ];
-                        })->values()->toArray(),
-                    ];
-                }
-
-                $transformedSections[] = [
-                    'type' => 'grouped_duty',
-                    'dutyName' => $section['duty']->name, // Use the duty model directly for translation
-                    'groups' => $transformedGroups,
-                ];
-            } else {
-                // This is a flat duty
-                $transformedSections[] = [
-                    'type' => 'flat_duty',
-                    'dutyName' => $section['duty']->name, // Use the duty model directly for translation
-                    'contacts' => collect($section['contacts'])->map(function ($item) {
-                        return [
-                            'id' => $item['user']->id,
-                            'name' => $item['user']->name,
-                            'email' => $item['user']->email,
-                            'phone' => $item['user']->phone,
-                            'facebook_url' => $item['user']->facebook_url,
-                            'duties' => [$item['duty']->only(['id', 'name', 'description'])],
-                            'profile_photo_path' => $item['user']->profile_photo_path,
-                            'pronouns' => $item['user']->pronouns,
-                            'show_pronouns' => $item['user']->show_pronouns,
-                        ];
-                    })->values()->toArray(),
-                ];
-            }
-        }
-
-        return Inertia::render('Public/Contacts/ContactInstitutionOrType', [
-            'institution' => $institution,
-            'contactSections' => $transformedSections,
-            'hasMixedGrouping' => true,
-            'currentYearMeetings' => $groupedMeetings['current'] ?? null,
-            'previousYearsMeetings' => $groupedMeetings['previous'] ?? [],
-            'hasMeetings' => ! empty($groupedMeetings),
-            'studentRepFormInfo' => $this->getStudentRepFormInfo($institution),
-        ])->withViewData(
-            ['SEOData' => $seo]
-        );
     }
 
     /**
