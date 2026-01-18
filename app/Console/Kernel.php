@@ -79,13 +79,6 @@ class Kernel extends ConsoleKernel
             ->dailyAt('08:00')
             ->name('periodicity-gap-tasks')
             ->withoutOverlapping(15);
-
-        // Escalate overdue approvals - runs daily at 10 AM to notify managers
-        // about approval requests that have exceeded their deadline
-        $schedule->command('approvals:escalate-overdue')
-            ->dailyAt('10:00')
-            ->name('approval-escalation')
-            ->withoutOverlapping(10);
     }
 
     /**

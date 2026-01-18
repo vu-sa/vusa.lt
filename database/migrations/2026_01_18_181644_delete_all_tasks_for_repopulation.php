@@ -22,7 +22,14 @@ return new class extends Migration
     public function up(): void
     {
         // Disable foreign key checks to allow truncating referenced tables
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        // Use driver-agnostic approach for MySQL vs SQLite compatibility
+        $driver = DB::connection()->getDriverName();
+
+        if ($driver === 'mysql') {
+            DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        } elseif ($driver === 'sqlite') {
+            DB::statement('PRAGMA foreign_keys = OFF;');
+        }
 
         // Delete pivot table entries first
         DB::table('task_user')->truncate();
@@ -31,7 +38,11 @@ return new class extends Migration
         DB::table('tasks')->truncate();
 
         // Re-enable foreign key checks
-        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        if ($driver === 'mysql') {
+            DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        } elseif ($driver === 'sqlite') {
+            DB::statement('PRAGMA foreign_keys = ON;');
+        }
 
         // Increase name column length to accommodate longer institution names
         Schema::table('tasks', function (Blueprint $table) {
