@@ -71,15 +71,77 @@
         </div>
       </div>
 
+      <!-- Outcome Summary Card (when there are decisions) -->
+      <div
+        v-if="outcomeSummary.total > 0"
+        class="mb-8 overflow-hidden rounded-xl bg-white dark:bg-zinc-900 p-5 ring-1 ring-zinc-200 dark:ring-zinc-800 shadow-sm"
+      >
+        <h3 class="text-sm font-semibold text-zinc-900 dark:text-zinc-50 mb-4">
+          {{ $t('Sprendimų santrauka') }}
+        </h3>
+        <div class="grid grid-cols-3 gap-4">
+          <!-- Positive decisions -->
+          <div class="text-center p-3 rounded-lg bg-emerald-50 dark:bg-emerald-900/20">
+            <div class="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+              {{ outcomeSummary.positive }}
+            </div>
+            <div class="text-xs text-emerald-700 dark:text-emerald-300 mt-1">
+              {{ $t('Teigiami') }}
+            </div>
+          </div>
+          <!-- Neutral decisions -->
+          <div class="text-center p-3 rounded-lg bg-zinc-100 dark:bg-zinc-800">
+            <div class="text-2xl font-bold text-zinc-600 dark:text-zinc-400">
+              {{ outcomeSummary.neutral }}
+            </div>
+            <div class="text-xs text-zinc-600 dark:text-zinc-400 mt-1">
+              {{ $t('Neutralūs') }}
+            </div>
+          </div>
+          <!-- Negative decisions -->
+          <div class="text-center p-3 rounded-lg bg-red-50 dark:bg-red-900/20">
+            <div class="text-2xl font-bold text-red-600 dark:text-red-400">
+              {{ outcomeSummary.negative }}
+            </div>
+            <div class="text-xs text-red-700 dark:text-red-300 mt-1">
+              {{ $t('Neigiami') }}
+            </div>
+          </div>
+        </div>
+        <!-- Student alignment summary -->
+        <div v-if="outcomeSummary.alignedCount > 0" class="mt-4 pt-4 border-t border-zinc-100 dark:border-zinc-800">
+          <div class="flex items-center justify-between text-sm">
+            <span class="text-zinc-600 dark:text-zinc-400">
+              {{ $t('Studentų pozicijos atitiko sprendimą') }}:
+            </span>
+            <span
+              :class="[
+                'font-medium',
+                outcomeSummary.alignmentRate >= 70
+                  ? 'text-emerald-600 dark:text-emerald-400'
+                  : outcomeSummary.alignmentRate >= 50
+                    ? 'text-amber-600 dark:text-amber-400'
+                    : 'text-red-600 dark:text-red-400'
+              ]"
+            >
+              {{ outcomeSummary.alignedCount }} / {{ outcomeSummary.comparableCount }}
+              ({{ outcomeSummary.alignmentRate }}%)
+            </span>
+          </div>
+        </div>
+      </div>
+
       <!-- Agenda items section -->
       <div class="space-y-4">
         <h2 class="text-lg font-semibold text-zinc-900 dark:text-zinc-50 mb-4">
           {{ $t('Darbotvarkė') }}
         </h2>
 
-        <div
-          v-for="item in allAgendaItems"
-          :key="item.id"
+        <!-- Deferred rendering for long agendas -->
+        <template v-if="deferredContentReady || allAgendaItems.length <= 5">
+          <div
+            v-for="item in allAgendaItems"
+            :key="item.id"
           class="overflow-hidden rounded-xl bg-white dark:bg-zinc-900 p-5 ring-1 ring-zinc-200 dark:ring-zinc-800 shadow-sm"
         >
           <!-- Item title -->
@@ -133,6 +195,16 @@
             {{ $t('Balsavimo duomenys dar neįvesti') }}
           </p>
         </div>
+        </template>
+
+        <!-- Loading skeleton for deferred content -->
+        <template v-else>
+          <div v-for="i in Math.min(allAgendaItems.length, 5)" :key="i" class="overflow-hidden rounded-xl bg-white dark:bg-zinc-900 p-5 ring-1 ring-zinc-200 dark:ring-zinc-800 shadow-sm animate-pulse">
+            <div class="h-5 bg-zinc-200 dark:bg-zinc-700 rounded w-3/4 mb-3" />
+            <div class="h-4 bg-zinc-100 dark:bg-zinc-800 rounded w-1/2 mb-2" />
+            <div class="h-4 bg-zinc-100 dark:bg-zinc-800 rounded w-2/3" />
+          </div>
+        </template>
 
         <!-- No agenda items message -->
         <p v-if="allAgendaItems.length === 0" class="text-zinc-500 dark:text-zinc-400 italic text-center py-8">
@@ -179,7 +251,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { usePage, Link as InertiaLink } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { InfoIcon, CheckCircleIcon, AlertCircleIcon, ChevronLeft, ChevronRight, Building2, Users as UsersIcon } from 'lucide-vue-next';
@@ -207,9 +279,57 @@ const props = defineProps<{
 const page = usePage();
 const showInfoModal = ref(false);
 
+// Deferred rendering for long agendas
+const deferredContentReady = ref(false);
+onMounted(() => {
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      deferredContentReady.value = true;
+    }, 100);
+  });
+});
+
 // All agenda items (show all, not filtered)
 const allAgendaItems = computed(() => {
   return props.meeting.agenda_items || [];
+});
+
+// Outcome summary for the summary card
+const outcomeSummary = computed(() => {
+  const items = allAgendaItems.value;
+  let positive = 0;
+  let negative = 0;
+  let neutral = 0;
+  let alignedCount = 0;
+  let comparableCount = 0;
+
+  for (const item of items) {
+    // Count decisions
+    if (item.decision === 'positive') positive++;
+    else if (item.decision === 'negative') negative++;
+    else if (item.decision === 'neutral') neutral++;
+
+    // Count student vote alignment
+    if (item.student_vote && item.decision) {
+      comparableCount++;
+      if (item.student_vote === item.decision) {
+        alignedCount++;
+      }
+    }
+  }
+
+  const total = positive + negative + neutral;
+  const alignmentRate = comparableCount > 0 ? Math.round((alignedCount / comparableCount) * 100) : 0;
+
+  return {
+    total,
+    positive,
+    negative,
+    neutral,
+    alignedCount,
+    comparableCount,
+    alignmentRate
+  };
 });
 
 // Check if an agenda item has any decision data to show

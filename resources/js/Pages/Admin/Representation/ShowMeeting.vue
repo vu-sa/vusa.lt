@@ -29,6 +29,16 @@
             <Globe class="h-3 w-3" />
             {{ $t('Rodomas viešai') }}
           </Badge>
+          <!-- Urgency badge based on document status -->
+          <Badge
+            v-if="overallUrgency !== 'neutral' && overallUrgency !== 'success'"
+            :variant="overallUrgency === 'danger' ? 'destructive' : 'secondary'"
+            class="text-xs gap-1"
+          >
+            <AlertTriangle v-if="overallUrgency === 'danger'" class="h-3 w-3" />
+            <AlertCircle v-else class="h-3 w-3" />
+            {{ overallUrgency === 'danger' ? $t('Trūksta dokumentų') : $t('Laukia užduotys') }}
+          </Badge>
         </div>
         <div v-if="representatives && representatives.length > 0" class="flex items-center gap-2">
           <span class="text-xs text-zinc-500 dark:text-zinc-400">{{ $t('Atstovai') }}:</span>
@@ -87,7 +97,7 @@
 
       <!-- Overview Tab -->
       <TabsContent value="overview" class="space-y-6">
-        <MeetingOverview
+        <MeetingOverviewSection
           :meeting
           :representatives
           :activities="meeting.activities"
@@ -229,12 +239,13 @@ import { ref, computed, watch, onMounted } from "vue";
 import { router, useForm, Link, Head as InertiaHead } from "@inertiajs/vue3";
 import { useStorage } from "@vueuse/core";
 import { trans as $t } from "laravel-vue-i18n";
-import { AlertTriangle, Plus, Trash2, ChevronLeft, ChevronRight, Clock, Globe, Edit, MoreHorizontal, Video } from 'lucide-vue-next';
+import { AlertTriangle, AlertCircle, Plus, Trash2, ChevronLeft, ChevronRight, Clock, Globe, Edit, MoreHorizontal, Video } from 'lucide-vue-next';
 
 import { formatStaticTime } from "@/Utils/IntlTime";
 import { genitivizeEveryWord } from "@/Utils/String";
 import Icons from "@/Types/Icons/filled";
 import { BreadcrumbHelpers, usePageBreadcrumbs } from "@/Composables/useBreadcrumbsUnified";
+import { useMeetingUrgency } from "@/Composables/useMeetingUrgency";
 
 // Layout
 import AdminContentPage from "@/Components/Layouts/AdminContentPage.vue";
@@ -255,7 +266,7 @@ import {
 // Custom Components
 import ShowPageHero from "@/Components/Hero/ShowPageHero.vue";
 import UsersAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
-import MeetingOverview from "@/Components/Meetings/MeetingOverview.vue";
+import MeetingOverviewSection from "@/Components/Meetings/MeetingOverviewSection.vue";
 import SortableCardContainer from "@/Components/AgendaItems/SortableCardContainer.vue";
 import AgendaItemForm from "@/Components/AdminForms/AgendaItemForm.vue";
 import AddAgendaItemForm from "@/Components/AdminForms/AddAgendaItemForm.vue";
@@ -272,6 +283,9 @@ const props = defineProps<{
   previousMeeting?: { id: string; start_time: string } | null;
   nextMeeting?: { id: string; start_time: string } | null;
 }>();
+
+// Urgency calculations for hero badge
+const { overallUrgency } = useMeetingUrgency(() => props.meeting);
 
 // Component state
 const showMeetingModal = ref(false);

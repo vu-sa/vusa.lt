@@ -17,6 +17,16 @@
           <Globe class="h-3 w-3" />
           {{ $t('Vieši posėdžiai') }}
         </Badge>
+        <!-- Urgency badge based on overall institution status -->
+        <Badge
+          v-if="overallUrgency !== 'neutral' && overallUrgency !== 'success'"
+          :variant="overallUrgency === 'danger' ? 'destructive' : 'secondary'"
+          class="text-xs gap-1"
+        >
+          <AlertTriangle v-if="overallUrgency === 'danger'" class="h-3 w-3" />
+          <AlertCircle v-else class="h-3 w-3" />
+          {{ overallUrgency === 'danger' ? $t('Reikia dėmesio') : $t('Perspėjimas') }}
+        </Badge>
       </template>
       <template #info>
         <div v-if="institution.managers?.length > 0" class="flex items-center gap-2">
@@ -102,140 +112,17 @@
       </TabsList>
 
       <TabsContent value="overview" class="space-y-6">
-        <!-- Stats Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <!-- Active Members -->
-          <Card>
-            <CardContent class="p-4">
-              <div class="flex items-center gap-2 mb-2">
-                <Users class="h-4 w-4 text-blue-500" />
-                <span class="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                  {{ $t('Aktyvūs nariai') }}
-                </span>
-              </div>
-              <div class="text-2xl font-semibold text-zinc-900 dark:text-zinc-100">
-                {{ institution.current_users?.length || 0 }}
-              </div>
-              <div class="text-xs text-zinc-500 dark:text-zinc-400">
-                {{ $t('iš') }} {{ totalPositions }} {{ $t('pozicijų') }}
-              </div>
-            </CardContent>
-          </Card>
-
-          <!-- Last Meeting -->
-          <Card>
-            <CardContent class="p-4">
-              <div class="flex items-center gap-2 mb-2">
-                <CalendarIcon class="h-4 w-4 text-green-500" />
-                <span class="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                  {{ $t('Paskutinis susitikimas') }}
-                </span>
-              </div>
-              <div v-if="lastMeeting" class="text-sm text-zinc-900 dark:text-zinc-100">
-                {{ formatRelativeTime(lastMeeting.start_time) }}
-              </div>
-              <div v-else class="text-sm text-zinc-500 dark:text-zinc-400">
-                {{ $t('Nėra duomenų') }}
-              </div>
-            </CardContent>
-          </Card>
-
-          <!-- Total Meetings -->
-          <Card>
-            <CardContent class="p-4">
-              <div class="flex items-center gap-2 mb-2">
-                <BarChart3 class="h-4 w-4 text-purple-500" />
-                <span class="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                  {{ $t('Susitikimų') }}
-                </span>
-              </div>
-              <div class="text-2xl font-semibold text-zinc-900 dark:text-zinc-100">
-                {{ institution.meetings?.length || 0 }}
-              </div>
-              <div class="text-xs text-zinc-500 dark:text-zinc-400">
-                {{ $t('šiais metais') }}
-              </div>
-            </CardContent>
-          </Card>
-
-          <!-- Meeting Periodicity Status -->
-          <Card>
-            <CardContent class="p-4">
-              <div class="flex items-center gap-2 mb-2">
-                <Repeat class="h-4 w-4" :class="periodicityStatusColor" />
-                <span class="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                  {{ $t('Periodiškumas') }}
-                </span>
-              </div>
-              <div class="text-sm" :class="periodicityStatusColor">
-                {{ $t('Kas') }} {{ institution.meeting_periodicity_days ?? 30 }} {{ $t('d.') }}
-              </div>
-              <div v-if="daysSinceLastMeeting !== null" class="text-xs" :class="isOverdue ? 'text-red-500 dark:text-red-400' : 'text-zinc-500 dark:text-zinc-400'">
-                {{ daysSinceLastMeeting }} {{ $t('d. nuo paskutinio') }}
-                <span v-if="isOverdue" class="font-medium">({{ $t('vėluoja') }})</span>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-          <!-- Main Content -->
-          <div class="xl:col-span-2 space-y-6">
-            <!-- Current Members -->
-            <MemberGrid :title="$t('Dabartiniai nariai')"
-              :subtitle="`${institution.current_users?.length || 0} ${$t('aktyvūs nariai')}`"
-              :members="institution.current_users || []" :institution :max-positions="totalPositions"
-              :show-contact="true" :show-actions="true" :can-edit="canManageMembers" :can-add-member="canManageMembers"
-              @add-member="showAddMemberModal = true" @view-profile="handleViewProfile"
-              @edit-member="handleEditMember" />
-
-            <!-- Recent Activity -->
-            <Card v-if="recentActivity.length > 0">
-              <CardHeader>
-                <CardTitle class="flex items-center gap-2">
-                  <Activity class="h-5 w-5" />
-                  {{ $t('Paskutinė veikla') }}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div class="space-y-3">
-                  <div v-for="activity in recentActivity" :key="activity.id" class="flex items-center gap-3 text-sm">
-                    <div class="w-2 h-2 rounded-full bg-blue-500" />
-                    <span class="text-zinc-600 dark:text-zinc-400">{{ activity.description }}</span>
-                    <span class="text-zinc-400 dark:text-zinc-500 ml-auto">{{ formatRelativeTime(activity.created_at) }}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          <!-- Sidebar -->
-          <div class="xl:sticky xl:top-6 xl:self-start space-y-6">
-            <!-- Quick Actions -->
-            <Card>
-              <CardHeader class="pb-3">
-                <CardTitle class="flex items-center gap-2 text-base">
-                  <Zap class="h-5 w-5 text-primary" />
-                  {{ $t('Greiti veiksmai') }}
-                </CardTitle>
-              </CardHeader>
-              <CardContent class="space-y-2">
-                <Button v-if="canScheduleMeeting" variant="outline" size="sm" class="w-full justify-start" @click="showMeetingModal = true">
-                  <CalendarIcon class="h-4 w-4 mr-2" />
-                  {{ $t('Suplanuoti susitikimą') }}
-                </Button>
-                <Button variant="outline" size="sm" class="w-full justify-start" @click="currentTab = 'duties'">
-                  <UserCheck class="h-4 w-4 mr-2" />
-                  {{ $t('Peržiūrėti pareigas') }}
-                </Button>
-                <Button variant="outline" size="sm" class="w-full justify-start" @click="currentTab = 'meetings'">
-                  <CalendarIcon class="h-4 w-4 mr-2" />
-                  {{ $t('Peržiūrėti susitikimus') }}
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+        <InstitutionOverviewSection
+          :institution
+          :activities="recentActivity"
+          :can-edit-members="canManageMembers"
+          @navigate-tab="navigateToTab"
+          @schedule-meeting="showMeetingModal = true"
+          @add-member="showAddMemberModal = true"
+          @view-profile="handleViewProfile"
+          @edit-member="handleEditMember"
+          @view-meeting="(meeting) => router.visit(route('meetings.show', meeting.id))"
+        />
       </TabsContent>
 
       <!-- Duties Tab -->
@@ -349,38 +236,34 @@
 <script setup lang="tsx">
 import { computed, defineAsyncComponent, ref } from "vue";
 import { router, Head as InertiaHead, usePage } from "@inertiajs/vue3";
-import { useStorage } from "@vueuse/core";
 import { trans as $t } from "laravel-vue-i18n";
 
 // Icons
 import {
-  Activity,
   Calendar as CalendarIcon,
-  Users,
   ChevronRight,
   UserCheck,
   Globe,
   Clock,
-  BarChart3,
-  Repeat,
-  Zap,
   Eye,
   EyeOff,
   Bell,
   BellOff,
-  Loader2
+  Loader2,
+  AlertTriangle,
+  AlertCircle
 } from 'lucide-vue-next';
 
 // Layout and Components
 import AdminContentPage from "@/Components/Layouts/AdminContentPage.vue";
 import ShowPageHero from "@/Components/Hero/ShowPageHero.vue";
-import MemberGrid from "@/Components/Members/MemberGrid.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import ModernMeetingCard from "@/Components/Meetings/ModernMeetingCard.vue";
 import SimpleFileViewer from "@/Features/Admin/SharepointFileManager/Viewer/SimpleFileViewer.vue";
 import NewMeetingModal from "@/Components/Modals/NewMeetingModal.vue";
 import AddCheckInDialog from "@/Components/Institutions/AddCheckInDialog.vue";
 import UsersAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
+import InstitutionOverviewSection from "@/Components/Institutions/InstitutionOverviewSection.vue";
 
 // UI Components
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
@@ -388,11 +271,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Button } from "@/Components/ui/button";
 import { Badge } from "@/Components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
+import { Skeleton } from "@/Components/ui/skeleton";
 
 // Utils
 import Icons from "@/Types/Icons/filled";
 import { BreadcrumbHelpers, usePageBreadcrumbs } from "@/Composables/useBreadcrumbsUnified";
 import { useInstitutionSubscription } from "@/Pages/Admin/Dashboard/Composables/useInstitutionSubscription";
+import { useShowPageData } from "@/Composables/useShowPageData";
+import { useInstitutionUrgency } from "@/Composables/useInstitutionUrgency";
 
 const props = defineProps<{
   institution: App.Entities.Institution;
@@ -403,11 +289,19 @@ const props = defineProps<{
   } | null;
 }>();
 
-// State
-const currentTab = useStorage("show-institution-tab", "overview");
+// State - use shared composable for tab persistence and deferred rendering
+const { currentTab, deferredContentReady, navigateToTab } = useShowPageData({
+  tabKey: 'institution',
+  entityId: props.institution.id,
+  defaultTab: 'overview'
+});
+
 const showMeetingModal = ref(false);
 const showCheckInModal = ref(false);
 const showAddMemberModal = ref(false);
+
+// Urgency calculations for hero badge
+const { overallUrgency } = useInstitutionUrgency(() => props.institution);
 
 // Subscription state
 const isFollowed = ref(props.subscription?.is_followed ?? false);
@@ -478,41 +372,8 @@ const relatedInstitutionCount = computed(() => {
   );
 });
 
-const totalPositions = computed(() => {
-  return props.institution.duties?.reduce((sum, duty) => {
-    return sum + (duty.places_to_occupy || 0);
-  }, 0) || 0;
-});
-
-// Stats computed values
-const lastMeeting = computed(() => {
-  const meetings = props.institution.meetings;
-  if (!meetings?.length) return null;
-  return [...meetings]
-    .sort((a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime())[0];
-});
-
-const daysSinceLastMeeting = computed(() => {
-  if (!lastMeeting.value) return null;
-  const date = new Date(lastMeeting.value.start_time);
-  const now = new Date();
-  return Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
-});
-
-const isOverdue = computed(() => {
-  if (daysSinceLastMeeting.value === null) return false;
-  const periodicity = props.institution.meeting_periodicity_days ?? 30;
-  return daysSinceLastMeeting.value > periodicity;
-});
-
-const periodicityStatusColor = computed(() => {
-  if (daysSinceLastMeeting.value === null) return 'text-zinc-500';
-  const periodicity = props.institution.meeting_periodicity_days ?? 30;
-  const ratio = daysSinceLastMeeting.value / periodicity;
-  if (ratio > 1) return 'text-red-500 dark:text-red-400';
-  if (ratio > 0.8) return 'text-amber-500 dark:text-amber-400';
-  return 'text-green-500 dark:text-green-400';
-});
+// Note: totalPositions, lastMeeting, daysSinceLastMeeting, isOverdue, and periodicityStatusColor
+// are now calculated in useInstitutionUrgency composable and InstitutionOverviewSection
 
 const getInitials = (name?: string) => {
   if (!name) return 'IN';
@@ -525,11 +386,6 @@ const getInitials = (name?: string) => {
   }
   return 'IN';
 };
-
-const activeCheckIn = computed(() => {
-  // This would come from the backend - placeholder for now
-  return null;
-});
 
 const recentActivity = computed(() => {
   // This would come from the backend - placeholder for now
@@ -594,14 +450,4 @@ const getDutyStatusText = (duty: App.Entities.Duty) => {
   return $t('Viršija limitą');
 };
 
-const formatRelativeTime = (dateString: string) => {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffInDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
-
-  if (diffInDays === 0) return $t('Šiandien');
-  if (diffInDays === 1) return $t('Vakar');
-  if (diffInDays < 7) return `${$t('Prieš')} ${diffInDays} ${$t('dienas')}`;
-  return date.toLocaleDateString();
-};
 </script>
