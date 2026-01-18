@@ -100,6 +100,20 @@ class UpdateSharepointFolder
             driveId: config('filesystems.sharepoint.vusa_drive_id')
         );
 
+        // Check if folder exists before attempting rename
+        // Folder may not exist if no files have been uploaded yet
+        $existingFolder = $sharepointGraph->getDriveItemObjectByPath($oldPath);
+
+        if ($existingFolder === null) {
+            Log::info('SharePoint folder does not exist, skipping rename', [
+                'old_path' => $oldPath,
+                'fileable_type' => get_class($fileable),
+                'fileable_id' => $fileable->id ?? null,
+            ]);
+
+            return;
+        }
+
         $driveItem = $sharepointGraph->updateDriveItemByPath($oldPath, [
             'name' => $newName,
         ]);
