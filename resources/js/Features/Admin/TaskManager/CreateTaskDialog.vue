@@ -55,7 +55,7 @@
         </div>
 
         <div class="flex items-center space-x-2" v-if="taskForm.user_ids.length > 1">
-          <Checkbox id="separate-tasks" v-model:checked="taskForm.separate_tasks" />
+          <Checkbox id="separate-tasks" v-model="taskForm.separate_tasks" />
           <Label :for="'separate-tasks'">{{ $t("tasks.create_separate_tasks") }}</Label>
         </div>
       </div>

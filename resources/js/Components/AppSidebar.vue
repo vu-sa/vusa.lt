@@ -445,7 +445,7 @@ const handleLogout = () => {
             rows="4" />
         </div>
         <div class="flex items-center space-x-2">
-          <Checkbox id="anonymous" v-model:checked="feedbackForm.anonymous" />
+          <Checkbox id="anonymous" v-model="feedbackForm.anonymous" />
           <Label for="anonymous" class="text-sm">{{ $t("Siųsti anonimiškai") }}</Label>
         </div>
       </div>

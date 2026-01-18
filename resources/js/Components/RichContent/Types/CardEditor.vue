@@ -38,11 +38,11 @@
       <!-- Checkboxes -->
       <div class="flex flex-col gap-2 pt-6">
         <label class="flex items-center gap-2 text-sm">
-          <Checkbox v-model:checked="options.isTitleColored" />
+          <Checkbox v-model="options.isTitleColored" />
           <span class="text-zinc-700 dark:text-zinc-300">{{ $t('rich-content.color_title') }}</span>
         </label>
         <label class="flex items-center gap-2 text-sm">
-          <Checkbox v-model:checked="options.showIcon" />
+          <Checkbox v-model="options.showIcon" />
           <span class="text-zinc-700 dark:text-zinc-300">{{ $t('rich-content.show_icon') }}</span>
           <InfoPopover>
             <p>{{ $t('rich-content.icon_description') }}</p>
