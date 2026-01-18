@@ -1,6 +1,5 @@
 <template>
-    <Card data-tour="meetings-card" :class="dashboardCardClasses" role="region" :aria-label="$t('Tavo artėjantys susitikimai')"
-  style="view-transition-name: upcoming-meetings-card">
+    <Card data-tour="meetings-card" :class="dashboardCardClasses" role="region" :aria-label="$t('Tavo artėjantys susitikimai')">
     <!-- Status indicator - small amber accent when meetings exist -->
     <div :class="statusIndicatorClasses" aria-hidden="true" />
 
@@ -39,7 +38,6 @@
               :key="meeting.id"
               class="block p-3 bg-white/60 dark:bg-zinc-800/50 rounded-md border border-zinc-200 dark:border-zinc-700 hover:bg-white/80 dark:hover:bg-zinc-700/50 hover:border-amber-300 dark:hover:border-amber-700/50 transition-colors"
               :href="route('meetings.show', meeting.id)"
-              :style="{ viewTransitionName: `meeting-card-${meeting.id}` }"
               prefetch
             >
               <div class="flex items-start justify-between gap-2">

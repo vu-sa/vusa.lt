@@ -186,8 +186,39 @@ export default defineConfig(({ command }) => {
           },
         },
       ],
-      // Don't precache - let runtime caching handle it
-      globPatterns: [],
+      // Precache critical admin home assets for faster first load
+      // These patterns match the chunks needed for ShowAdminHome.vue
+      globPatterns: [
+        // Main entry points
+        'assets/app-*.js',
+        'assets/app-*.css',
+        'assets/admin-*.js',
+        'assets/admin-*.css',
+        // Vue core (shared by all pages)
+        'assets/index-*.js',
+        // Admin home page and layout
+        'assets/ShowAdminHome-*.js',
+        'assets/ShowAdminHome-*.css',
+        'assets/AdminContentPage*.js',
+        'assets/AdminLayout*.js',
+        // Dashboard components
+        'assets/TasksCard*.js',
+        'assets/UpcomingMeetingsCard*.js',
+        'assets/CalendarEventsCard*.js',
+        'assets/NewsListCard*.js',
+        // UI primitives heavily used by admin home
+        'assets/Card*.js',
+        'assets/Separator*.js',
+        // date-fns locales for greeting/date formatting
+        'assets/lt-*.js',
+        'assets/en-US-*.js',
+        'assets/format-*.js',
+        // Translation bundles
+        'assets/php_admin_lt-*.js',
+        'assets/php_admin_en-*.js',
+      ],
+      // Enable navigation preload for faster NetworkFirst responses
+      navigationPreload: true,
       // Disable navigateFallback - Laravel handles routing, not the service worker
       navigateFallback: null,
     },

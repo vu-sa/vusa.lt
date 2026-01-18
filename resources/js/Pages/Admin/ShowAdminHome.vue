@@ -52,14 +52,15 @@
 <script setup lang="ts">
 import { Head, router, usePage } from "@inertiajs/vue3";
 import { trans as $t } from "laravel-vue-i18n";
-import { computed, ref, onMounted } from "vue";
+import { computed, ref, onMounted, defineAsyncComponent } from "vue";
 import { format } from "date-fns";
 import { lt, enUS } from "date-fns/locale";
 
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import TasksCard from "@/Pages/Admin/Dashboard/Components/TasksCard.vue";
 import UpcomingMeetingsCard from "@/Pages/Admin/Dashboard/Components/UpcomingMeetingsCard.vue";
-import NewMeetingModal from "@/Components/Modals/NewMeetingModal.vue";
+// Lazy load modal - only needed when user clicks "Create meeting"
+const NewMeetingModal = defineAsyncComponent(() => import("@/Components/Modals/NewMeetingModal.vue"));
 import CalendarEventsCard from "@/Pages/Admin/Dashboard/Components/CalendarEventsCard.vue";
 import NewsListCard from "@/Pages/Admin/Dashboard/Components/NewsListCard.vue";
 import { addressivize } from "@/Utils/String";

@@ -41,49 +41,58 @@
       <!-- Status row -->
       <div class="flex items-center gap-2 ml-5">
         <!-- Active check-in badge -->
-        <span v-if="institution.active_check_in"
-          class="inline-flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-full border font-medium bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-300 dark:border-emerald-700/50">
-          <div class="w-2 h-2 rounded-full bg-current opacity-75" />
-          {{ $t('Pranešta apie nebuvimą') }}
-          <span v-if="institution.active_check_in?.end_date" class="opacity-75">
-            {{ $t('iki') }} {{ formatDate(institution.active_check_in.end_date) }}
-          </span>
-          <!-- Info icon with tooltip for check-in note -->
-          <TooltipProvider v-if="institution.active_check_in?.note">
-            <Tooltip>
-              <TooltipTrigger as-child>
-                <Info class="h-3.5 w-3.5 opacity-70 hover:opacity-100 cursor-help" />
-              </TooltipTrigger>
-              <TooltipContent side="top" class="max-w-xs">
-                <p class="text-sm">{{ institution.active_check_in.note }}</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </span>
-
-        <!-- Fallback status badges -->
-        <!-- Upcoming meeting badge -->
-        <span v-else-if="nextMeetingDate"
-          class="inline-flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-full border font-medium bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/40 dark:text-blue-300 dark:border-blue-700/50">
-          <div class="w-2 h-2 rounded-full bg-current opacity-75" />
-          {{ $t('Suplanuotas susitikimas') }}
-          <span class="opacity-75">
-            {{ formatDate(nextMeetingDate) }}
-          </span>
-        </span>
-        <!-- Needs meeting badge (only if no past AND no upcoming) -->
-        <span v-else-if="!lastMeetingDate && !nextMeetingDate"
-          class="text-xs px-2.5 py-1 rounded-full bg-zinc-100 text-zinc-700 border border-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700 shrink-0 font-medium">
-          {{ $t('Reikia susitikimo') }}
-        </span>
-        <span v-else-if="isOverdue"
-          class="text-xs px-2.5 py-1 rounded-full bg-orange-100 text-orange-700 border border-orange-200 dark:bg-orange-900/40 dark:text-orange-300 dark:border-orange-700/50 shrink-0 font-medium">
-          {{ $t('Senokas susitikimas') }}
-        </span>
-        <span v-else-if="isApproaching"
-          class="text-xs px-2.5 py-1 rounded-full bg-amber-100 text-amber-700 border border-amber-200 dark:bg-amber-900/40 dark:text-amber-300 dark:border-amber-700/50 shrink-0 font-medium">
-          {{ $t('Artėja susitikimo laikas') }}
-        </span>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger as-child>
+              <span v-if="institution.active_check_in"
+                class="inline-flex items-center gap-1 sm:gap-1.5 text-xs px-1.5 sm:px-2.5 py-1 sm:py-1.5 rounded-full border font-medium bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-300 dark:border-emerald-700/50">
+                <CalendarCheck class="h-3 w-3 sm:hidden shrink-0" />
+                <div class="hidden sm:block w-2 h-2 rounded-full bg-current opacity-75" />
+                <span class="hidden sm:inline">{{ $t('Pranešta apie nebuvimą') }}</span>
+                <span v-if="institution.active_check_in?.end_date" class="hidden sm:inline opacity-75">
+                  {{ $t('iki') }} {{ formatDate(institution.active_check_in.end_date) }}
+                </span>
+              </span>
+              <!-- Upcoming meeting badge -->
+              <span v-else-if="nextMeetingDate"
+                class="inline-flex items-center gap-1 sm:gap-1.5 text-xs px-1.5 sm:px-2.5 py-1 sm:py-1.5 rounded-full border font-medium bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/40 dark:text-blue-300 dark:border-blue-700/50">
+                <CalendarClock class="h-3 w-3 sm:hidden shrink-0" />
+                <div class="hidden sm:block w-2 h-2 rounded-full bg-current opacity-75" />
+                <span class="hidden sm:inline">{{ $t('Suplanuotas susitikimas') }}</span>
+                <span class="opacity-75">{{ formatDate(nextMeetingDate) }}</span>
+              </span>
+              <!-- Needs meeting badge -->
+              <span v-else-if="!lastMeetingDate && !nextMeetingDate"
+                class="inline-flex items-center gap-1 text-xs px-1.5 sm:px-2.5 py-1 rounded-full bg-zinc-100 text-zinc-700 border border-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700 shrink-0 font-medium">
+                <CalendarX class="h-3 w-3 sm:hidden shrink-0" />
+                <span class="hidden sm:inline">{{ $t('Reikia susitikimo') }}</span>
+              </span>
+              <!-- Overdue badge -->
+              <span v-else-if="isOverdue"
+                class="inline-flex items-center gap-1 text-xs px-1.5 sm:px-2.5 py-1 rounded-full bg-orange-100 text-orange-700 border border-orange-200 dark:bg-orange-900/40 dark:text-orange-300 dark:border-orange-700/50 shrink-0 font-medium">
+                <AlertTriangle class="h-3 w-3 sm:hidden shrink-0" />
+                <span class="hidden sm:inline">{{ $t('Senokas susitikimas') }}</span>
+              </span>
+              <!-- Approaching badge -->
+              <span v-else-if="isApproaching"
+                class="inline-flex items-center gap-1 text-xs px-1.5 sm:px-2.5 py-1 rounded-full bg-amber-100 text-amber-700 border border-amber-200 dark:bg-amber-900/40 dark:text-amber-300 dark:border-amber-700/50 shrink-0 font-medium">
+                <Clock class="h-3 w-3 sm:hidden shrink-0" />
+                <span class="hidden sm:inline">{{ $t('Artėja susitikimo laikas') }}</span>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent side="top" class="max-w-xs">
+              <template v-if="institution.active_check_in">
+                {{ $t('Pranešta apie nebuvimą') }}
+                <span v-if="institution.active_check_in.end_date"> {{ $t('iki') }} {{ formatDate(institution.active_check_in.end_date) }}</span>
+                <p v-if="institution.active_check_in.note" class="mt-1 text-xs opacity-80">{{ institution.active_check_in.note }}</p>
+              </template>
+              <template v-else-if="nextMeetingDate">{{ $t('Suplanuotas susitikimas') }} {{ formatDate(nextMeetingDate) }}</template>
+              <template v-else-if="!lastMeetingDate && !nextMeetingDate">{{ $t('Reikia susitikimo') }}</template>
+              <template v-else-if="isOverdue">{{ $t('Senokas susitikimas') }} ({{ daysSinceLast }} {{ $t('d.') }})</template>
+              <template v-else-if="isApproaching">{{ $t('Artėja susitikimo laikas') }}</template>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
 
         <!-- Last meeting info - only show when no upcoming meeting -->
         <span v-if="!institution.active_check_in && !nextMeetingDate && lastMeetingDate" class="text-xs text-zinc-500 dark:text-zinc-400">
@@ -197,7 +206,7 @@ import { Link as InertiaLink } from '@inertiajs/vue3'
 import { Button } from '@/Components/ui/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip'
 import Icons from '@/Types/Icons/filled'
-import { Globe, Info, Eye, EyeOff, Bell, BellOff, Loader2, CalendarOff } from 'lucide-vue-next'
+import { Globe, Info, Eye, EyeOff, Bell, BellOff, Loader2, CalendarOff, CalendarCheck, CalendarClock, CalendarX, AlertTriangle, Clock } from 'lucide-vue-next'
 import { formatStaticTime } from '@/Utils/IntlTime'
 import type { AtstovavimosInstitution } from '@/Pages/Admin/Dashboard/types'
 

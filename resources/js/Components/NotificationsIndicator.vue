@@ -178,6 +178,7 @@
         <Link 
           :href="route('notifications.index')" 
           class="flex items-center justify-center gap-1.5 w-full py-2 text-xs font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+          @click="isOpen = false"
         >
           {{ $t('Rodyti visus pranešimus') }}
           <ArrowRightIcon class="h-3 w-3" />

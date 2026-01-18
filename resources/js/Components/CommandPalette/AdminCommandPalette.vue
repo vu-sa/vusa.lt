@@ -13,7 +13,7 @@
         @keydown.down.prevent="focusFirstResult">
     </div>
 
-    <CommandList class="max-h-[60vh] scroll-py-2">
+    <CommandList class="max-h-[50vh] sm:max-h-[60vh] scroll-py-2">
       <!-- Loading skeleton -->
       <div v-if="isSearching && query" class="p-2 space-y-1">
         <div v-for="i in 3" :key="i" class="flex items-center gap-3 px-3 py-3 rounded-lg">
@@ -175,8 +175,8 @@
     </CommandList>
 
     <!-- Footer with keyboard hints -->
-    <div class="flex items-center justify-between border-t bg-muted/30 px-4 py-2.5">
-      <div class="flex items-center gap-5 text-xs text-muted-foreground">
+    <div class="flex items-center justify-between border-t bg-muted/30 px-3 sm:px-4 py-2 sm:py-2.5">
+      <div class="hidden sm:flex items-center gap-5 text-xs text-muted-foreground">
         <span class="flex items-center gap-1.5">
           <span class="flex gap-0.5">
             <kbd
@@ -204,6 +204,9 @@
           </kbd>
           <span class="text-muted-foreground/70">{{ $t('uždaryti') }}</span>
         </span>
+      </div>
+      <div class="sm:hidden text-xs text-muted-foreground">
+        {{ $t('Paspauskite, kad pasirinktumėte') }}
       </div>
       <div class="text-[10px] text-muted-foreground/50 font-medium tracking-wide uppercase">
         VU SA

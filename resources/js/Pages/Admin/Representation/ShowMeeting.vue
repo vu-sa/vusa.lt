@@ -7,17 +7,16 @@
       :title="meetingTitle"
       :subtitle="heroSubtitle"
       :badge="meetingBadge"
-      :view-transition-name="`meeting-card-${meeting.id}`"
     >
       <template #icon>
-        <span class="text-lg font-medium text-zinc-600 dark:text-zinc-300">
+        <span class="text-base sm:text-lg font-medium text-zinc-600 dark:text-zinc-300">
           {{ formatStaticTime(new Date(meeting.start_time), { day: "numeric" }) }}
         </span>
       </template>
       <template #info>
-        <div class="flex items-center gap-4 text-sm">
+        <div class="flex flex-wrap items-center gap-2 sm:gap-4 text-sm">
           <div class="flex items-center gap-1.5 text-zinc-600 dark:text-zinc-400">
-            <Clock class="h-4 w-4 text-green-500" />
+            <Clock class="h-4 w-4 text-green-500 shrink-0" />
             <span>{{ formatStaticTime(new Date(meeting.start_time), { hour: "2-digit", minute: "2-digit" }) }}</span>
           </div>
           <div v-if="meeting.types && meeting.types.length > 0" class="flex flex-wrap gap-1.5">
@@ -27,7 +26,8 @@
           </div>
           <Badge v-if="meeting.is_public" variant="outline" class="text-xs gap-1 text-green-600 border-green-300 dark:text-green-400 dark:border-green-700">
             <Globe class="h-3 w-3" />
-            {{ $t('Rodomas viešai') }}
+            <span class="hidden sm:inline">{{ $t('Rodomas viešai') }}</span>
+            <span class="sm:hidden">{{ $t('Viešas') }}</span>
           </Badge>
           <!-- Urgency badge based on document status -->
           <Badge
@@ -37,12 +37,13 @@
           >
             <AlertTriangle v-if="overallUrgency === 'danger'" class="h-3 w-3" />
             <AlertCircle v-else class="h-3 w-3" />
-            {{ overallUrgency === 'danger' ? $t('Trūksta dokumentų') : $t('Laukia užduotys') }}
+            <span class="hidden sm:inline">{{ overallUrgency === 'danger' ? $t('Trūksta dokumentų') : $t('Laukia užduotys') }}</span>
+            <span class="sm:hidden">!</span>
           </Badge>
         </div>
         <div v-if="representatives && representatives.length > 0" class="flex items-center gap-2">
-          <span class="text-xs text-zinc-500 dark:text-zinc-400">{{ $t('Atstovai') }}:</span>
-          <UsersAvatarGroup :users="representatives" :max="5" :size="24" />
+          <span class="text-xs text-zinc-500 dark:text-zinc-400 hidden sm:inline">{{ $t('Atstovai') }}:</span>
+          <UsersAvatarGroup :users="representatives" :max="3" :size="24" class="sm:[--max:5]" />
         </div>
       </template>
       <template #actions>

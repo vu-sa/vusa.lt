@@ -182,8 +182,11 @@ export const useDocumentSearch = (): DocumentSearchController => {
       searchClient.value = clients.searchClient
       typesenseClient.value = clients.typesenseClient
 
+      // Get collection name from config (includes Scout prefix)
+      const collectionName = typesenseConfig.collections?.documents || 'documents'
+
       // Create document service and adapter
-      documentService.value = new DocumentSearchService(typesenseClient.value)
+      documentService.value = new DocumentSearchService(typesenseClient.value, collectionName)
       const adapter = new DocumentSearchServiceAdapter(documentService.value)
 
       // Set the service on base search

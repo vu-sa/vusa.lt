@@ -1,10 +1,10 @@
 <template>
-  <div class="flex items-center justify-between gap-4 p-3 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/50 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
+  <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-3 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/50 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
     <!-- Institution info -->
     <Link :href="route('institutions.show', institution.id)" class="flex-1 min-w-0 flex items-center gap-3 group">
       <!-- Logo/Avatar -->
       <div class="relative shrink-0">
-        <Avatar class="h-10 w-10 border border-zinc-200 dark:border-zinc-700">
+        <Avatar class="h-9 w-9 sm:h-10 sm:w-10 border border-zinc-200 dark:border-zinc-700">
           <AvatarFallback class="bg-zinc-100 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 text-xs font-medium">
             {{ getInitials(institution.name) }}
           </AvatarFallback>
@@ -22,7 +22,7 @@
       
       <!-- Text content -->
       <div class="flex-1 min-w-0">
-        <p class="font-medium text-zinc-900 dark:text-zinc-100 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+        <p class="font-medium text-sm sm:text-base text-zinc-900 dark:text-zinc-100 line-clamp-2 sm:truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
           {{ institution.name }}
         </p>
         <div v-if="institution.tenant?.shortname" class="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
@@ -35,7 +35,7 @@
     </Link>
     
     <!-- Subscription actions -->
-    <div class="flex items-center gap-2 shrink-0">
+    <div class="flex items-center gap-1.5 sm:gap-2 shrink-0 self-end sm:self-center">
       <TooltipProvider>
         <!-- Follow/Unfollow button -->
         <Tooltip>

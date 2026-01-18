@@ -5,6 +5,8 @@
       // Base structure
       'relative flex flex-col overflow-hidden rounded-xl border',
       'transition-all duration-300',
+      // Mobile: minimum width for horizontal scroll
+      'min-w-[140px] sm:min-w-0 snap-start',
       // Gradient background
       'bg-gradient-to-br from-white to-zinc-50 dark:from-zinc-900 dark:to-zinc-950',
       // Shadow
@@ -33,22 +35,22 @@
     />
 
     <!-- Content -->
-    <div class="p-4 flex-1 relative z-10">
+    <div class="p-3 sm:p-4 flex-1 relative z-10">
       <!-- Header with icon and label -->
-      <div class="flex items-center gap-2.5 mb-3">
+      <div class="flex items-center gap-2 sm:gap-2.5 mb-2 sm:mb-3">
         <div
           :class="[
-            'flex items-center justify-center w-9 h-9 rounded-lg',
+            'flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-lg',
             'bg-zinc-100 dark:bg-zinc-800/60',
             'transition-colors duration-300',
           ]"
         >
           <component
             :is="icon"
-            :class="['h-4.5 w-4.5', urgencyIconClasses]"
+            :class="['h-4 w-4 sm:h-4.5 sm:w-4.5', urgencyIconClasses]"
           />
         </div>
-        <span class="text-sm font-medium text-zinc-600 dark:text-zinc-400 leading-tight">
+        <span class="text-xs sm:text-sm font-medium text-zinc-600 dark:text-zinc-400 leading-tight line-clamp-2">
           {{ label }}
         </span>
       </div>
@@ -56,7 +58,7 @@
       <!-- Value -->
       <div
         :class="[
-          'text-3xl font-bold tracking-tight',
+          'text-2xl sm:text-3xl font-bold tracking-tight',
           'transition-colors duration-300',
           urgencyValueClasses,
         ]"
@@ -68,7 +70,7 @@
       <div
         v-if="subtitle"
         :class="[
-          'text-xs mt-1.5',
+          'text-[10px] sm:text-xs mt-1 sm:mt-1.5 line-clamp-2',
           'transition-colors duration-300',
           urgencySubtitleClasses,
         ]"

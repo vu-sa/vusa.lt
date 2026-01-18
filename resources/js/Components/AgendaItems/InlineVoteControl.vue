@@ -1,43 +1,43 @@
 <template>
-  <div class="flex items-center gap-3">
-    <!-- Label with tooltip - fixed width for alignment -->
-    <div class="flex items-center gap-1 w-48 sm:w-56 shrink-0">
+  <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+    <!-- Label with tooltip - fixed width for alignment on desktop -->
+    <div class="flex items-center gap-1 sm:w-48 md:w-56 sm:shrink-0">
       <span class="text-xs text-zinc-600 dark:text-zinc-400 truncate">{{ label }}</span>
       <FieldTooltip v-if="tooltip" :text="tooltip" />
     </div>
     
     <!-- Button group using ShadcnVue -->
-    <ButtonGroup orientation="horizontal" class="shrink-0">
-      <Button
-        v-for="option in options"
-        :key="option.value"
-        type="button"
-        size="sm"
-        :variant="value === option.value ? 'default' : 'outline'"
-        :class="[
-          'h-7 px-2 text-xs gap-1',
-          value === option.value && getActiveClass(option.color)
-        ]"
-        @click="handleClick(option.value)"
+    <div class="flex items-center gap-2">
+      <ButtonGroup orientation="horizontal" class="shrink-0">
+        <Button
+          v-for="option in options"
+          :key="option.value"
+          type="button"
+          size="sm"
+          :variant="value === option.value ? 'default' : 'outline'"
+          :class="[
+            'h-7 px-2 text-xs gap-1',
+            value === option.value && getActiveClass(option.color)
+          ]"
+          @click="handleClick(option.value)"
+        >
+          <component :is="option.icon" class="h-3 w-3 shrink-0" />
+          <span class="hidden sm:inline">{{ option.label }}</span>
+        </Button>
+      </ButtonGroup>
+      
+      <!-- Clear button (only shown when value is set) -->
+      <Button 
+        v-if="value && showClear"
+        variant="ghost"
+        size="icon"
+        class="h-7 w-7 shrink-0 text-zinc-400 hover:text-zinc-600"
+        :title="$t('Išvalyti pasirinkimą')"
+        @click="$emit('update', null)"
       >
-        <component :is="option.icon" class="h-3 w-3 shrink-0" />
-        <span class="hidden sm:inline">{{ option.label }}</span>
+        <X class="h-3 w-3" />
       </Button>
-    </ButtonGroup>
-    
-    <!-- Clear button (only shown when value is set) -->
-    <Button 
-      v-if="value && showClear"
-      variant="ghost"
-      size="icon"
-      class="h-7 w-7 shrink-0 text-zinc-400 hover:text-zinc-600"
-      :title="$t('Išvalyti pasirinkimą')"
-      @click="$emit('update', null)"
-    >
-      <X class="h-3 w-3" />
-    </Button>
-    <!-- Spacer when no clear button to maintain alignment -->
-    <div v-else class="w-7 shrink-0" />
+    </div>
   </div>
 </template>
 

@@ -53,7 +53,7 @@
 
         <!-- Single scroll container -->
         <main class="flex-1 min-w-0 overflow-auto" style="scroll-behavior: smooth;">
-          <div class="min-h-full p-6">
+          <div class="min-h-full p-6" :class="{ 'pb-24': isPWA && isMobile }">
         <!-- System announcements banner -->
         <div v-if="systemMessage"
           class="mb-6 rounded-lg border p-4 bg-amber-50 text-amber-900 dark:bg-amber-950 dark:text-amber-50">
@@ -114,7 +114,7 @@
       <div class="flex items-center justify-around h-16 px-2">
         <Link 
           :href="route('dashboard')" 
-          class="flex flex-col items-center justify-center flex-1 h-full gap-1 text-muted-foreground transition-colors"
+          class="flex flex-col items-center justify-center flex-1 h-full gap-1 text-muted-foreground transition-colors active:scale-95 active:opacity-70"
           :class="{ 'text-primary': isCurrentRoute('dashboard') }"
         >
           <HomeIcon class="h-5 w-5" />
@@ -123,7 +123,7 @@
         
         <Link 
           :href="route('dashboard.atstovavimas')" 
-          class="flex flex-col items-center justify-center flex-1 h-full gap-1 text-muted-foreground transition-colors"
+          class="flex flex-col items-center justify-center flex-1 h-full gap-1 text-muted-foreground transition-colors active:scale-95 active:opacity-70"
           :class="{ 'text-primary': isCurrentRoute('dashboard.atstovavimas') }"
         >
           <GraduationCapIcon class="h-5 w-5" />
@@ -132,7 +132,7 @@
         
         <button 
           type="button"
-          class="flex flex-col items-center justify-center flex-1 h-full gap-1"
+          class="flex flex-col items-center justify-center flex-1 h-full gap-1 active:scale-90 transition-transform"
           @click="showQuickCreate = true"
         >
           <div class="flex items-center justify-center w-12 h-12 -mt-4 rounded-full bg-primary text-primary-foreground shadow-lg">
@@ -142,7 +142,7 @@
         
         <Link 
           :href="route('notifications.index')" 
-          class="relative flex flex-col items-center justify-center flex-1 h-full gap-1 text-muted-foreground transition-colors"
+          class="relative flex flex-col items-center justify-center flex-1 h-full gap-1 text-muted-foreground transition-colors active:scale-95 active:opacity-70"
           :class="{ 'text-primary': isCurrentRoute('notifications.index') }"
         >
           <div class="relative">
@@ -159,7 +159,7 @@
         
         <Link 
           :href="route('profile')" 
-          class="flex flex-col items-center justify-center flex-1 h-full gap-1 text-muted-foreground transition-colors"
+          class="flex flex-col items-center justify-center flex-1 h-full gap-1 text-muted-foreground transition-colors active:scale-95 active:opacity-70"
           :class="{ 'text-primary': isCurrentRoute('profile') }"
         >
           <UserIcon class="h-5 w-5" />
@@ -273,7 +273,7 @@ const props = withDefaults(defineProps<{
 const systemMessage = computed(() => usePage().props.app?.systemMessage || null);
 
 // PWA state
-const { isPWA } = usePWA();
+const { isPWA, setAppBadge } = usePWA();
 const showQuickCreate = ref(false);
 
 // Permissions for quick create
@@ -284,6 +284,11 @@ const unreadNotificationsCount = computed(() => {
   const notifications = usePage().props.auth?.user?.unreadNotifications;
   return Array.isArray(notifications) ? notifications.length : 0;
 });
+
+// Update PWA app badge when notification count changes
+watch(unreadNotificationsCount, (count) => {
+  setAppBadge(count);
+}, { immediate: true });
 
 // Check if current route matches
 function isCurrentRoute(routeName: string): boolean {

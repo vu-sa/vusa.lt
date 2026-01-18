@@ -39,9 +39,11 @@ interface SearchClient {
 export class DocumentSearchService {
   private typesenseClient: SearchClient | null = null
   private abortController: AbortController | null = null
+  private collectionName: string
 
-  constructor(typesenseClient: SearchClient | null) {
+  constructor(typesenseClient: SearchClient | null, collectionName: string = 'documents') {
     this.typesenseClient = typesenseClient
+    this.collectionName = collectionName
   }
 
   setClient(client: SearchClient | null) {
@@ -83,7 +85,7 @@ export class DocumentSearchService {
         setTimeout(() => reject(new Error('Search request timed out')), 10000)
       })
 
-      const searchPromise = this.typesenseClient.search('documents', searchParams)
+      const searchPromise = this.typesenseClient.search(this.collectionName, searchParams)
       const response = await Promise.race([searchPromise, timeoutPromise])
 
       if (this.abortController?.signal.aborted) {
@@ -301,7 +303,7 @@ export class DocumentSearchService {
         filter_by: 'is_active:=true'
       }
 
-      const response = await this.typesenseClient.search('documents', searchRequest)
+      const response = await this.typesenseClient.search(this.collectionName, searchRequest)
       
       return this.processFacets(response.facet_counts || [])
     } catch (error) {

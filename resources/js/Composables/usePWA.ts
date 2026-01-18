@@ -484,6 +484,46 @@ export function usePWA() {
     }
   };
 
+  /**
+   * Set the app badge count (shows on PWA icon)
+   * Uses the Badging API: https://developer.mozilla.org/en-US/docs/Web/API/Badging_API
+   */
+  const setAppBadge = async (count: number): Promise<boolean> => {
+    if (!('setAppBadge' in navigator)) {
+      return false;
+    }
+    
+    try {
+      if (count > 0) {
+        await (navigator as any).setAppBadge(count);
+      } else {
+        await (navigator as any).clearAppBadge();
+      }
+      return true;
+    } catch (error) {
+      // Badging API may fail silently on some platforms
+      console.warn('[PWA] Failed to set app badge:', error);
+      return false;
+    }
+  };
+
+  /**
+   * Clear the app badge
+   */
+  const clearAppBadge = async (): Promise<boolean> => {
+    if (!('clearAppBadge' in navigator)) {
+      return false;
+    }
+    
+    try {
+      await (navigator as any).clearAppBadge();
+      return true;
+    } catch (error) {
+      console.warn('[PWA] Failed to clear app badge:', error);
+      return false;
+    }
+  };
+
   return {
     isPWA,
     canInstall,
@@ -509,6 +549,9 @@ export function usePWA() {
     fetchPushSubscriptions,
     checkCurrentBrowserSubscription,
     refreshSubscriptionStatus,
+    // App badge
+    setAppBadge,
+    clearAppBadge,
   };
 }
 

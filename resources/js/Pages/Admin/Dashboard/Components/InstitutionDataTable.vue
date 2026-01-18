@@ -1,9 +1,9 @@
 <template>
   <Dialog :open="isOpen" @update:open="emit('update:isOpen', $event)">
-    <DialogContent class="sm:max-w-[95vw] w-full max-h-[85vh] overflow-y-auto">
-      <DialogHeader>
-        <DialogTitle>{{ $t('Visos institucijos') }}</DialogTitle>
-        <DialogDescription>
+    <DialogContent class="max-w-[95vw] sm:max-w-[90vw] w-full max-h-[90vh] sm:max-h-[85vh] overflow-y-auto p-4 sm:p-6">
+      <DialogHeader class="pb-3">
+        <DialogTitle class="text-lg sm:text-xl">{{ $t('Visos institucijos') }}</DialogTitle>
+        <DialogDescription class="text-sm">
           {{ $t('Peržiūrėkite visas savo institucijas ir jų aktyvumą') }}
         </DialogDescription>
       </DialogHeader>
@@ -11,11 +11,11 @@
       <div class="space-y-4">
         <!-- Tabs for My Institutions vs Related Institutions -->
         <Tabs v-if="relatedInstitutions.length > 0" v-model="activeTab" class="w-full">
-          <TabsList class="grid w-full grid-cols-2">
-            <TabsTrigger value="my">
+          <TabsList class="w-full overflow-x-auto scrollbar-none">
+            <TabsTrigger value="my" class="flex-1 whitespace-nowrap text-xs sm:text-sm">
               {{ $t('Mano institucijos') }} ({{ institutions.length }})
             </TabsTrigger>
-            <TabsTrigger value="related">
+            <TabsTrigger value="related" class="flex-1 whitespace-nowrap text-xs sm:text-sm">
               {{ $t('Susijusios institucijos') }} ({{ relatedInstitutions.length }})
             </TabsTrigger>
           </TabsList>
@@ -28,7 +28,7 @@
             </div>
 
             <!-- Compact institution list -->
-            <div class="space-y-2 max-h-[500px] overflow-y-auto">
+            <div class="space-y-2 max-h-[60vh] sm:max-h-[500px] overflow-y-auto">
               <InstitutionCompactCard
                 v-for="institution in filteredInstitutions"
                 :key="institution.id"
@@ -62,7 +62,7 @@
             </p>
 
             <!-- Related institution list with subscription actions -->
-            <div class="space-y-2 max-h-[500px] overflow-y-auto">
+            <div class="space-y-2 max-h-[60vh] sm:max-h-[500px] overflow-y-auto">
               <RelatedInstitutionCard
                 v-for="institution in filteredRelatedInstitutions"
                 :key="institution.id"
@@ -87,7 +87,7 @@
           </div>
 
           <!-- Compact institution list -->
-          <div class="space-y-2 max-h-[500px] overflow-y-auto">
+          <div class="space-y-2 max-h-[60vh] sm:max-h-[500px] overflow-y-auto">
             <InstitutionCompactCard
               v-for="institution in filteredInstitutions"
               :key="institution.id"

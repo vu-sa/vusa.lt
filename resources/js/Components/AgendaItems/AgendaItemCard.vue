@@ -83,8 +83,8 @@
                   :options="benefitOptions" @update="(val) => updateField('student_benefit', val)" />
 
                 <!-- Description row - unified display and edit -->
-                <div class="flex items-center gap-3">
-                  <div class="flex items-center gap-1 w-48 sm:w-56 shrink-0 pt-0.5">
+                <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                  <div class="flex items-center gap-1 sm:w-48 md:w-56 sm:shrink-0 pt-0.5">
                     <span class="text-xs text-zinc-600 dark:text-zinc-400 truncate">{{ $t('Aprašymas') }}</span>
                   </div>
                   <div class="flex-1 min-w-0">

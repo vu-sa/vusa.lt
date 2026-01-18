@@ -1,7 +1,7 @@
 <template>
   <section
     :class="cn(
-      'relative overflow-hidden rounded-lg px-6 py-5 shadow-sm',
+      'relative overflow-hidden rounded-lg px-4 sm:px-6 py-4 sm:py-5 shadow-sm',
       'bg-gradient-to-br from-primary/10 via-primary/5 to-background',
       'dark:from-zinc-800 dark:via-zinc-800/50 dark:to-zinc-900 dark:shadow-zinc-900/20',
       props.class
@@ -9,18 +9,18 @@
     :style="viewTransitionStyle"
     data-slot="show-page-hero"
   >
-    <div class="flex items-start justify-between gap-4">
+    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
       <!-- Left: Icon, Title, Subtitle -->
-      <div class="flex items-start gap-4 min-w-0">
+      <div class="flex items-start gap-3 sm:gap-4 min-w-0 flex-1">
         <!-- Icon -->
         <div
           v-if="icon || $slots.icon"
-          class="shrink-0 h-14 w-14 bg-gradient-to-br from-zinc-100 to-zinc-200 dark:from-zinc-700 dark:to-zinc-800 rounded-lg flex items-center justify-center border border-zinc-200 dark:border-zinc-600"
+          class="shrink-0 h-12 w-12 sm:h-14 sm:w-14 bg-gradient-to-br from-zinc-100 to-zinc-200 dark:from-zinc-700 dark:to-zinc-800 rounded-lg flex items-center justify-center border border-zinc-200 dark:border-zinc-600"
         >
           <slot name="icon">
             <component
               :is="icon"
-              class="h-7 w-7 text-zinc-600 dark:text-zinc-300"
+              class="h-6 w-6 sm:h-7 sm:w-7 text-zinc-600 dark:text-zinc-300"
             />
           </slot>
         </div>
@@ -37,26 +37,26 @@
           </div>
 
           <!-- Title -->
-          <h1 class="text-2xl md:text-3xl font-bold tracking-tight text-foreground truncate">
+          <h1 class="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-foreground line-clamp-2 sm:truncate">
             <slot name="title">{{ title }}</slot>
           </h1>
 
           <!-- Subtitle -->
           <div v-if="subtitle || $slots.subtitle" class="flex items-center gap-2 text-sm text-muted-foreground">
             <slot name="subtitle">
-              <span>{{ subtitle }}</span>
+              <span class="truncate">{{ subtitle }}</span>
             </slot>
           </div>
 
           <!-- Extra info row -->
-          <div v-if="$slots.info" class="flex items-center gap-3 pt-1">
+          <div v-if="$slots.info" class="flex flex-wrap items-center gap-2 sm:gap-3 pt-1">
             <slot name="info" />
           </div>
         </div>
       </div>
 
       <!-- Right: Actions -->
-      <div v-if="$slots.actions" class="shrink-0 flex items-center gap-2">
+      <div v-if="$slots.actions" class="shrink-0 flex items-center gap-2 self-end sm:self-start">
         <slot name="actions" />
       </div>
     </div>
