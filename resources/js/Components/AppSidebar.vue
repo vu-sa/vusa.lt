@@ -1,278 +1,9 @@
-<script setup lang="ts">
-import NavMain from './NavMain.vue'
-import NavSecondary from './NavSecondary.vue'
-import NavQuickActions from './NavQuickActions.vue'
-import FollowedInstitutionsHotbar from './Sidebar/FollowedInstitutionsHotbar.vue'
-import SidebarStartFM from './SidebarStartFM.vue'
-import AppLogo from './AppLogo.vue'
-import NewMeetingModal from '@/Components/Modals/NewMeetingModal.vue'
-
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarGroupLabel,
-  SidebarSeparator,
-  SidebarRail,
-  type SidebarProps,
-} from '@/Components/ui/sidebar'
-
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/Components/ui/dialog'
-
-import { Button } from '@/Components/ui/button'
-import { Input } from '@/Components/ui/input'
-import { Label } from '@/Components/ui/label'
-import { Checkbox } from '@/Components/ui/checkbox'
-import { Textarea } from '@/Components/ui/textarea'
-
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from '@/Components/ui/avatar'
-
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/Components/ui/dropdown-menu'
-
-import {
-  BookOpen,
-  GraduationCap,
-  Globe,
-  Bookmark,
-  Settings,
-  LifeBuoy,
-  MessageSquare,
-  Moon,
-  Sun,
-  ChevronsUpDown,
-  LogOut,
-  UserIcon,
-  Send,
-  Clock,
-  ExternalLink,
-  Bell,
-  Search,
-  type LucideIcon
-} from 'lucide-vue-next'
-
-import { Link, router, usePage, useForm } from '@inertiajs/vue3'
-import { loadLanguageAsync, trans as $t } from 'laravel-vue-i18n'
-import { capitalize } from '@/Utils/String'
-import { computed, markRaw, ref } from 'vue'
-import { useDark } from '@vueuse/core'
-
-const props = withDefaults(defineProps<SidebarProps>(), {
-  variant: 'inset',
-})
-
-const isDark = useDark()
-
-// Toggle dark mode function
-const toggleDarkMode = () => {
-  isDark.value = !isDark.value
-}
-
-// Change locale function
-const changeLocale = () => {
-  const toLocale = usePage().props.app.locale === "en" ? "lt" : "en"
-  router.reload({ data: { lang: toLocale }, onSuccess: () => loadLanguageAsync(toLocale) })
-}
-
-// Current user data
-const currentUser = computed(() => {
-  return usePage().props.auth?.user ?? {
-    name: '',
-    email: '',
-    profile_photo_path: '',
-  }
-})
-
-// Primary navigation items
-const navMainItems = computed(() => {
-  const items = []
-
-  // Representation (ViSAK - Virtualus Studentų Atstovų Koordinatorius)
-  if (usePage().props.auth?.can.create.meeting) {
-    items.push({
-      title: "ViSAK",
-      url: route('dashboard.atstovavimas'),
-      icon: markRaw(GraduationCap),
-      isActive: route().current('dashboard.atstovavimas') ||
-                route().current('meetings.show') ||
-                route().current('institutions.show') ||
-                route().current('duties.show'),
-      dataTour: 'nav-visak',
-    })
-
-    // Search (Paieška) - meetings and agenda items search pages
-    items.push({
-      title: $t('Paieška'),
-      url: route('search.meetings'),
-      icon: markRaw(Search),
-      isActive: route().current('search.*'),
-      items: [
-        { title: $t('Posėdžiai'), url: route('search.meetings') },
-        { title: $t('Darbotvarkės punktai'), url: route('search.agendaItems') },
-        { title: $t('Institucijos'), url: route('search.institutions') },
-      ],
-    })
-  }
-
-  // Website (Svetainė)
-  if (usePage().props.auth?.can.create.page) {
-    items.push({
-      title: $t("Svetainė"),
-      url: route('dashboard.svetaine'),
-      icon: markRaw(Globe),
-      isActive: false,
-    })
-  }
-
-  // Reservations
-  items.push({
-    title: $t('Rezervacijos'),
-    url: route('dashboard.reservations'),
-    icon: markRaw(Bookmark),
-    isActive: route().current('dashboard.reservations*') ||
-              route().current('reservations.create') ||
-              route().current('reservations.show'),
-  })
-
-  // Settings/Admin (Administravimas) - only show if user can access administration
-  if (usePage().props.auth?.can.accessAdministration) {
-    items.push({
-      title: $t('Administravimas'),
-      url: route('administration'),
-      icon: markRaw(Settings),
-      isActive: route().current('administration*'),
-      dataTour: 'nav-administravimas',
-    })
-  }
-
-  return items
-})
-
-// Secondary navigation items (bottom) - help section only
-const navSecondaryItems = computed(() => {
-  return [
-    {
-      title: $t('Dokumentacija'),
-      url: '/docs',
-      icon: markRaw(BookOpen),
-      dataTour: 'nav-dokumentacija',
-    },
-    {
-      title: $t('Palik atsiliepimą'),
-      url: '#feedback',
-      icon: markRaw(MessageSquare),
-      dataTour: 'nav-feedback',
-    },
-  ]
-})
-
-// Handle secondary nav clicks
-const handleSecondaryNavClick = (url: string) => {
-  if (url === '#feedback') {
-    showFeedbackDialog.value = true
-  } else if (url.startsWith('http')) {
-    window.open(url, '_blank')
-  } else {
-    router.visit(url)
-  }
-}
-
-// Meeting modal state
-const showMeetingModal = ref(false)
-
-// Handle quick actions
-const handleNewMeeting = () => {
-  showMeetingModal.value = true
-}
-
-const handleNewNews = () => {
-  router.visit(route('news.create'))
-}
-
-const handleNewReservation = () => {
-  router.visit(route('reservations.create'))
-}
-
-// Notification count
-const notificationCount = computed(() => {
-  return usePage().props.auth?.user?.unread_notifications_count || 0
-})
-
-// Public website URL
-const publicWebsiteUrl = computed(() => {
-  const page = usePage()
-  return route('home', {
-    lang: page.props.app.locale,
-    subdomain: page.props.tenant?.subdomain ?? 'www'
-  })
-})
-
-// Feedback dialog state and form
-const showFeedbackDialog = ref(false)
-const feedbackLoading = ref(false)
-
-const feedbackForm = useForm({
-  feedback: null as string | null,
-  anonymous: false,
-  href: typeof window !== 'undefined' ? window.location.href : '',
-  selectedText: null as string | null,
-})
-
-// Handle feedback submission
-const handleSendFeedback = () => {
-  feedbackLoading.value = true
-  feedbackForm.post(route('feedback.send'), {
-    onSuccess: () => {
-      showFeedbackDialog.value = false
-      feedbackLoading.value = false
-      feedbackForm.reset()
-    },
-    onError: () => {
-      feedbackLoading.value = false
-    }
-  })
-}
-
-// Handle logout
-const handleLogout = () => {
-  router.post(route('logout'), {}, {
-    onSuccess: () => {
-      window.location.href = route('login')
-    },
-    onError: () => {
-      console.error('Logout failed.')
-    }
-  });
-}
-</script>
-
 <template>
   <Sidebar v-bind="props">
     <SidebarHeader class="relative overflow-hidden">
       <!-- Subtle gradient accent -->
-      <div class="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent dark:from-primary/3 pointer-events-none" />
+      <div
+        class="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent dark:from-primary/3 pointer-events-none" />
       <SidebarMenu class="relative">
         <SidebarMenuItem>
           <Link :href="route('dashboard')" prefetch>
@@ -295,15 +26,12 @@ const handleLogout = () => {
     <SidebarContent class="flex flex-col">
       <!-- Main navigation -->
       <NavMain :items="navMainItems" />
-      
+
       <SidebarSeparator class="my-2" />
-      
+
       <!-- Quick actions -->
-      <NavQuickActions 
-        @new-meeting="handleNewMeeting"
-        @new-news="handleNewNews"
-        @new-reservation="handleNewReservation"
-      />
+      <NavQuickActions @new-meeting="handleNewMeeting" @new-news="handleNewNews"
+        @new-reservation="handleNewReservation" />
 
       <!-- Followed institutions -->
       <FollowedInstitutionsHotbar />
@@ -325,11 +53,8 @@ const handleLogout = () => {
     </SidebarContent>
     <SidebarFooter class="border-t border-sidebar-border/50">
       <!-- Back to website link -->
-      <a 
-        :href="publicWebsiteUrl" 
-        target="_blank"
-        class="flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-sidebar-accent/50 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-2"
-      >
+      <a :href="publicWebsiteUrl" target="_blank" rel="noopener noreferrer"
+        class="flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-sidebar-accent/50 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-2">
         <ExternalLink class="h-3.5 w-3.5 shrink-0" />
         <span class="group-data-[collapsible=icon]:hidden">{{ $t('Eiti į vusa.lt') }}</span>
       </a>
@@ -343,7 +68,8 @@ const handleLogout = () => {
                 <Avatar class="h-9 w-9 rounded-xl ring-2 ring-primary/10 shadow-sm">
                   <AvatarImage v-if="currentUser.profile_photo_path" :src="currentUser.profile_photo_path"
                     :alt="currentUser.name" />
-                  <AvatarFallback class="rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 text-primary font-semibold">
+                  <AvatarFallback
+                    class="rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 text-primary font-semibold">
                     {{ currentUser.name ? currentUser.name.substring(0, 2).toUpperCase() : 'VU' }}
                   </AvatarFallback>
                 </Avatar>
@@ -466,3 +192,269 @@ const handleLogout = () => {
   <!-- New Meeting Modal -->
   <NewMeetingModal :show-modal="showMeetingModal" @close="showMeetingModal = false" />
 </template>
+
+<script setup lang="ts">
+import {
+  BookOpen,
+  GraduationCap,
+  Globe,
+  Bookmark,
+  Settings,
+  LifeBuoy,
+  MessageSquare,
+  Moon,
+  Sun,
+  ChevronsUpDown,
+  LogOut,
+  UserIcon,
+  Send,
+  Clock,
+  ExternalLink,
+  Bell,
+  Search,
+  type LucideIcon
+} from 'lucide-vue-next'
+import { Link, router, usePage, useForm } from '@inertiajs/vue3'
+import { loadLanguageAsync, trans as $t } from 'laravel-vue-i18n'
+import { computed, markRaw, ref } from 'vue'
+import { useDark } from '@vueuse/core'
+
+import NavMain from './NavMain.vue'
+import NavSecondary from './NavSecondary.vue'
+import NavQuickActions from './NavQuickActions.vue'
+import FollowedInstitutionsHotbar from './Sidebar/FollowedInstitutionsHotbar.vue'
+import SidebarStartFM from './SidebarStartFM.vue'
+import AppLogo from './AppLogo.vue'
+
+import NewMeetingModal from '@/Components/Modals/NewMeetingModal.vue'
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarGroupLabel,
+  SidebarSeparator,
+  SidebarRail,
+  type SidebarProps,
+} from '@/Components/ui/sidebar'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/Components/ui/dialog'
+import { Button } from '@/Components/ui/button'
+import { Input } from '@/Components/ui/input'
+import { Label } from '@/Components/ui/label'
+import { Checkbox } from '@/Components/ui/checkbox'
+import { Textarea } from '@/Components/ui/textarea'
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from '@/Components/ui/avatar'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/Components/ui/dropdown-menu'
+import { capitalize } from '@/Utils/String'
+
+
+const props = withDefaults(defineProps<SidebarProps>(), {
+  variant: 'inset',
+})
+
+const isDark = useDark()
+
+// Toggle dark mode function
+const toggleDarkMode = () => {
+  isDark.value = !isDark.value
+}
+
+// Change locale function
+const changeLocale = () => {
+  const toLocale = usePage().props.app.locale === "en" ? "lt" : "en"
+  router.reload({ data: { lang: toLocale }, onSuccess: () => loadLanguageAsync(toLocale) })
+}
+
+// Current user data
+const currentUser = computed(() => {
+  return usePage().props.auth?.user ?? {
+    name: '',
+    email: '',
+    profile_photo_path: '',
+  }
+})
+
+// Primary navigation items
+const navMainItems = computed(() => {
+  const items = []
+
+  // Representation (ViSAK - Virtualus Studentų Atstovų Koordinatorius)
+  if (usePage().props.auth?.can.create.meeting) {
+    items.push({
+      title: "ViSAK",
+      url: route('dashboard.atstovavimas'),
+      icon: markRaw(GraduationCap),
+      isActive: route().current('dashboard.atstovavimas') ||
+        route().current('meetings.show') ||
+        route().current('institutions.show') ||
+        route().current('duties.show'),
+      dataTour: 'nav-visak',
+    })
+
+    // Search (Paieška) - meetings and agenda items search pages
+    // items.push({
+    //   title: $t('Paieška'),
+    //   url: route('search.meetings'),
+    //   icon: markRaw(Search),
+    //   isActive: route().current('search.*'),
+    //   items: [
+    //     { title: $t('Posėdžiai'), url: route('search.meetings') },
+    //     { title: $t('Darbotvarkės punktai'), url: route('search.agendaItems') },
+    //     { title: $t('Institucijos'), url: route('search.institutions') },
+    //   ],
+    // })
+  }
+
+  // Website (Svetainė)
+  if (usePage().props.auth?.can.create.page) {
+    items.push({
+      title: $t("Svetainė"),
+      url: route('dashboard.svetaine'),
+      icon: markRaw(Globe),
+      isActive: false,
+    })
+  }
+
+  // Reservations
+  items.push({
+    title: $t('Rezervacijos'),
+    url: route('dashboard.reservations'),
+    icon: markRaw(Bookmark),
+    isActive: route().current('dashboard.reservations*') ||
+      route().current('reservations.create') ||
+      route().current('reservations.show'),
+  })
+
+  // Settings/Admin (Administravimas) - only show if user can access administration
+  if (usePage().props.auth?.can.accessAdministration) {
+    items.push({
+      title: $t('Administravimas'),
+      url: route('administration'),
+      icon: markRaw(Settings),
+      isActive: route().current('administration*'),
+      dataTour: 'nav-administravimas',
+    })
+  }
+
+  return items
+})
+
+// Secondary navigation items (bottom) - help section only
+const navSecondaryItems = computed(() => {
+  return [
+    {
+      title: $t('Dokumentacija'),
+      url: '/docs',
+      icon: markRaw(BookOpen),
+      dataTour: 'nav-dokumentacija',
+    },
+    {
+      title: $t('Palik atsiliepimą'),
+      url: '#feedback',
+      icon: markRaw(MessageSquare),
+      dataTour: 'nav-feedback',
+    },
+  ]
+})
+
+// Handle secondary nav clicks
+const handleSecondaryNavClick = (url: string) => {
+  if (url === '#feedback') {
+    showFeedbackDialog.value = true
+  } else if (url.startsWith('http')) {
+    window.open(url, '_blank')
+  } else {
+    router.visit(url)
+  }
+}
+
+// Meeting modal state
+const showMeetingModal = ref(false)
+
+// Handle quick actions
+const handleNewMeeting = () => {
+  showMeetingModal.value = true
+}
+
+const handleNewNews = () => {
+  router.visit(route('news.create'))
+}
+
+const handleNewReservation = () => {
+  router.visit(route('reservations.create'))
+}
+
+// Notification count
+const notificationCount = computed(() => {
+  return usePage().props.auth?.user?.unread_notifications_count || 0
+})
+
+// Public website URL
+const publicWebsiteUrl = computed(() => {
+  const page = usePage()
+  return route('home', {
+    lang: page.props.app.locale,
+    subdomain: page.props.tenant?.subdomain ?? 'www'
+  })
+})
+
+// Feedback dialog state and form
+const showFeedbackDialog = ref(false)
+const feedbackLoading = ref(false)
+
+const feedbackForm = useForm({
+  feedback: null as string | null,
+  anonymous: false,
+  href: typeof window !== 'undefined' ? window.location.href : '',
+  selectedText: null as string | null,
+})
+
+// Handle feedback submission
+const handleSendFeedback = () => {
+  feedbackLoading.value = true
+  feedbackForm.post(route('feedback.send'), {
+    onSuccess: () => {
+      showFeedbackDialog.value = false
+      feedbackLoading.value = false
+      feedbackForm.reset()
+    },
+    onError: () => {
+      feedbackLoading.value = false
+    }
+  })
+}
+
+// Handle logout
+const handleLogout = () => {
+  router.post(route('logout'), {}, {
+    onSuccess: () => {
+      window.location.href = route('login')
+    },
+    onError: () => {
+      console.error('Logout failed.')
+    }
+  });
+}
+</script>
