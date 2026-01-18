@@ -11,18 +11,18 @@
         >
           {{ $t('Visi') }}
           <Badge v-if="taskStats" variant="secondary" class="ml-1.5 tabular-nums">
-            {{ taskStats.byType.meetings + taskStats.byType.reservations }}
+            {{ taskStats.byType.institutions + taskStats.byType.reservations }}
           </Badge>
         </Button>
         <Button
-          :variant="filters.taskable_type === 'App\\Models\\Meeting' ? 'default' : 'outline'"
+          :variant="filters.taskable_type === 'institutions' ? 'default' : 'outline'"
           size="sm"
-          @click="updateFilter('taskable_type', 'App\\Models\\Meeting')"
+          @click="updateFilter('taskable_type', 'institutions')"
         >
-          <CalendarIcon class="mr-1.5 h-4 w-4" />
-          {{ $t('Posėdžiai') }}
+          <BuildingIcon class="mr-1.5 h-4 w-4" />
+          {{ $t('Institucijos') }}
           <Badge v-if="taskStats?.byType" variant="secondary" class="ml-1.5 tabular-nums">
-            {{ taskStats.byType.meetings }}
+            {{ taskStats.byType.institutions }}
           </Badge>
         </Button>
         <Button
@@ -183,7 +183,7 @@ import {
   AlertCircle as AlertCircleIcon,
   RotateCw as RotateCwIcon,
   CheckCircle as CheckCircleIcon,
-  Calendar as CalendarIcon,
+  Building as BuildingIcon,
   Package as PackageIcon,
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon,
@@ -228,7 +228,7 @@ interface TaskStats {
   overdue: number;
   autoCompleting: number;
   byType: {
-    meetings: number;
+    institutions: number;
     reservations: number;
   };
 }

@@ -25,7 +25,7 @@
 <script setup lang="tsx">
 import { Link, router, usePage } from "@inertiajs/vue3";
 import { trans as $t } from "laravel-vue-i18n";
-import { ref } from "vue";
+import { ref, defineAsyncComponent } from "vue";
 import { 
   CheckIcon, 
   CalendarIcon, 
@@ -38,6 +38,10 @@ import {
   ClipboardCheckIcon,
   AlertCircleIcon,
   RotateCwIcon,
+  CalendarPlusIcon,
+  CalendarOffIcon,
+  ClockIcon,
+  InfoIcon,
 } from "lucide-vue-next";
 import { Badge } from "@/Components/ui/badge";
 import { Button } from "@/Components/ui/button";
@@ -51,6 +55,10 @@ import IconsFilled from "@/Types/Icons/filled";
 import SimpleDataTable from "@/Components/Tables/SimpleDataTable.vue";
 import UsersAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
 import { TaskActionType, type TaskProgress } from "@/Types/TaskTypes";
+
+// Lazy load modals
+const NewMeetingModal = defineAsyncComponent(() => import("@/Components/Modals/NewMeetingModal.vue"));
+const AddCheckInDialog = defineAsyncComponent(() => import("@/Components/Institutions/AddCheckInDialog.vue"));
 
 // Enhanced Task interface with new backend fields
 interface Task {
@@ -82,6 +90,12 @@ interface Task {
 
 const props = defineProps<{
   tasks: Task[];
+}>();
+
+const emit = defineEmits<{
+  (e: 'openMeetingModal', task: Task): void;
+  (e: 'openCheckInDialog', task: Task): void;
+  (e: 'openTaskDetail', task: Task): void;
 }>();
 
 // Track loading state per task
@@ -117,6 +131,9 @@ const getActionTypeIcon = (actionType: TaskActionType | string | null | undefine
     case TaskActionType.Return:
     case 'return':
       return PackageCheckIcon;
+    case TaskActionType.PeriodicityGap:
+    case 'periodicity_gap':
+      return ClockIcon;
     default:
       return ClipboardCheckIcon;
   }
@@ -136,9 +153,26 @@ const getActionTypeClasses = (actionType: TaskActionType | string | null | undef
     case TaskActionType.Return:
     case 'return':
       return 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400';
+    case TaskActionType.PeriodicityGap:
+    case 'periodicity_gap':
+      return 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400';
     default:
       return 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400';
   }
+};
+
+/**
+ * Check if task is a periodicity gap task
+ */
+const isPeriodicityGapTask = (task: Task): boolean => {
+  return task.action_type === TaskActionType.PeriodicityGap || task.action_type === 'periodicity_gap';
+};
+
+/**
+ * Check if task is institution-based (for periodicity gap actions)
+ */
+const isInstitutionTask = (task: Task): boolean => {
+  return task.taskable_type?.includes('Institution') ?? false;
 };
 
 /**
@@ -382,22 +416,22 @@ const columns = [
     cell: ({ row }) => {
       const task = row.original;
       const isCompleted = task.completed_at !== null;
+      const hasDescription = !!task.description;
       
       return (
         <div class="min-w-0 flex-1">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <p class={`truncate text-sm font-medium ${isCompleted ? 'line-through text-zinc-500' : 'text-zinc-900 dark:text-zinc-100'}`}>
-                  {task.name}
-                </p>
-              </TooltipTrigger>
-              <TooltipContent side="top" align="start" class="max-w-xs">
-                <p class="break-words">{task.name}</p>
-                {task.description && <p class="mt-1 text-xs text-zinc-400">{task.description}</p>}
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <button
+            type="button"
+            class={`group/name flex items-center gap-1.5 text-left ${isCompleted ? 'line-through text-zinc-500' : 'text-zinc-900 dark:text-zinc-100'}`}
+            onClick={() => emit('openTaskDetail', task)}
+          >
+            <span class="truncate text-sm font-medium group-hover/name:underline">
+              {task.name}
+            </span>
+            {hasDescription && (
+              <InfoIcon class="h-3.5 w-3.5 shrink-0 text-zinc-400 group-hover/name:text-zinc-600 dark:group-hover/name:text-zinc-300" />
+            )}
+          </button>
         </div>
       );
     },
@@ -459,6 +493,60 @@ const columns = [
       );
     },
     size: 140,
+  },
+  // Quick actions for periodicity gap tasks
+  {
+    id: "quick_actions",
+    header: "",
+    cell: ({ row }) => {
+      const task = row.original;
+      const isCompleted = task.completed_at !== null;
+      
+      // Only show quick actions for uncompleted periodicity gap tasks
+      if (!isPeriodicityGapTask(task) || isCompleted || !isInstitutionTask(task)) {
+        return null;
+      }
+
+      return (
+        <div class="flex items-center gap-1">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  class="h-7 w-7 text-zinc-600 hover:text-emerald-700 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-emerald-400 dark:hover:bg-zinc-800"
+                  onClick={() => emit('openMeetingModal', task)}
+                >
+                  <CalendarPlusIcon class="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{$t('tasks.periodicity_gap.action_schedule_meeting')}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  class="h-7 w-7 text-zinc-600 hover:text-amber-700 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-amber-400 dark:hover:bg-zinc-800"
+                  onClick={() => emit('openCheckInDialog', task)}
+                >
+                  <CalendarOffIcon class="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{$t('tasks.periodicity_gap.action_report_no_meeting')}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+      );
+    },
+    size: 80,
   },
   // Actions dropdown
   {

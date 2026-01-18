@@ -138,6 +138,14 @@ class InstitutionController extends AdminController
         // Get related institutions as flat list with metadata (cached)
         $relatedInstitutionsFlat = \App\Services\RelationshipService::getRelatedInstitutionsCached($institution);
 
+        // Get subscription status for the current user
+        $user = request()->user();
+        $subscriptionStatus = $user ? [
+            'is_followed' => $user->follows($institution),
+            'is_muted' => $user->isInstitutionMuted($institution),
+            'is_duty_based' => $user->hasInstitution($institution),
+        ] : null;
+
         // Inertia::share('layout.navBackground', $institution->image_url ?? null);
 
         return $this->inertiaResponse('Admin/People/ShowInstitution', [
@@ -158,6 +166,7 @@ class InstitutionController extends AdminController
                 ])->values(),
                 'sharepointPath' => $institution->tenant ? $institution->sharepoint_path() : null,
                 'lastMeeting' => $institution->lastMeeting(),
+                'subscription' => $subscriptionStatus,
             ],
         ]);
     }

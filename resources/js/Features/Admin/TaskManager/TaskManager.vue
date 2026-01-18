@@ -26,14 +26,16 @@
         </Badge>
         <Badge 
           v-if="taskStats.autoCompleting > 0" 
-          class="gap-1 bg-blue-100 text-xs text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+          variant="secondary"
+          class="gap-1 text-xs"
         >
           <RotateCwIcon class="h-3 w-3" />
           {{ taskStats.autoCompleting }} {{ $t('tasks.auto_completing') }}
         </Badge>
         <Badge 
           v-if="taskStats.completed > 0" 
-          class="gap-1 bg-emerald-100 text-xs text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+          variant="secondary"
+          class="gap-1 text-xs"
         >
           <CheckCircleIcon class="h-3 w-3" />
           {{ taskStats.completed }} {{ $t('completed') }}
@@ -42,7 +44,13 @@
     </div>
     
     <!-- Task table -->
-    <TaskTable :tasks="filteredTasks" :key="taskFilterKey" />
+    <TaskTable 
+      :tasks="filteredTasks" 
+      :key="taskFilterKey"
+      @open-meeting-modal="(task) => emit('openMeetingModal', task)"
+      @open-check-in-dialog="(task) => emit('openCheckInDialog', task)"
+      @open-task-detail="(task) => emit('openTaskDetail', task)"
+    />
 
     <!-- Create task dialog (async loaded) -->
     <CreateTaskDialog 
@@ -115,6 +123,12 @@ const props = defineProps<{
     id: string | number;
     type: string;
   };
+}>();
+
+const emit = defineEmits<{
+  (e: 'openMeetingModal', task: TaskWithDetails): void;
+  (e: 'openCheckInDialog', task: TaskWithDetails): void;
+  (e: 'openTaskDetail', task: TaskWithDetails): void;
 }>();
 
 // Component state

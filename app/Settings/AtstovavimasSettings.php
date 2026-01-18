@@ -214,4 +214,30 @@ class AtstovavimasSettings extends Settings
             Cache::forget("atstovavimas:manager_role:{$roleId}");
         }
     }
+
+    /**
+     * Get tenant visibility role IDs.
+     * These are roles that grant visibility to institutions within specific tenants.
+     *
+     * Currently returns empty collection - can be configured via settings if needed.
+     */
+    public function getTenantVisibilityRoleIds(): Collection
+    {
+        // Currently not configured - the institution manager role handles tenant visibility
+        // This could be extended to include additional visibility roles if needed
+        return collect();
+    }
+
+    /**
+     * Get global visibility role IDs.
+     * These are roles that grant visibility to all institutions globally.
+     *
+     * Currently returns empty collection - super admin check handles this case.
+     */
+    public function getGlobalVisibilityRoleIds(): Collection
+    {
+        // Currently not configured - super admin role handles global visibility
+        // This could be extended to include additional global visibility roles if needed
+        return collect();
+    }
 }

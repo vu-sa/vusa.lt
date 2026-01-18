@@ -87,7 +87,7 @@ class ReturnTaskHandler extends BaseTaskHandler
     /**
      * Find an existing incomplete return task for the model.
      */
-    protected function findExistingTask(Model $model): ?Task
+    public function findExistingTask(Model $model): ?Task
     {
         return Task::query()
             ->with('users')

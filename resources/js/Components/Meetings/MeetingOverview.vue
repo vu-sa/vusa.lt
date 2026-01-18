@@ -22,20 +22,29 @@
 
           <!-- Quick Stats Grid -->
           <div class="grid grid-cols-3 gap-4 pt-2">
-            <div class="text-center p-3 rounded-lg bg-zinc-50 dark:bg-zinc-800/50">
+            <button 
+              class="text-center p-3 rounded-lg bg-zinc-50 dark:bg-zinc-800/50 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+              @click="$emit('goToAgenda')"
+            >
               <div class="text-2xl font-bold text-zinc-900 dark:text-zinc-100">{{ agendaItemsCount }}</div>
               <div class="text-xs text-zinc-500 dark:text-zinc-400">{{ $t('Punktai') }}</div>
-            </div>
-            <div class="text-center p-3 rounded-lg bg-zinc-50 dark:bg-zinc-800/50">
+            </button>
+            <button 
+              class="text-center p-3 rounded-lg bg-zinc-50 dark:bg-zinc-800/50 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+              @click="$emit('goToTasks')"
+            >
               <div class="text-2xl font-bold" :class="pendingTasksCount > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-green-600 dark:text-green-400'">
                 {{ pendingTasksCount }}
               </div>
               <div class="text-xs text-zinc-500 dark:text-zinc-400">{{ $t('Laukia užduočių') }}</div>
-            </div>
-            <div class="text-center p-3 rounded-lg bg-zinc-50 dark:bg-zinc-800/50">
+            </button>
+            <button 
+              class="text-center p-3 rounded-lg bg-zinc-50 dark:bg-zinc-800/50 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+              @click="$emit('goToFiles')"
+            >
               <div class="text-2xl font-bold text-zinc-900 dark:text-zinc-100">{{ filesCount }}</div>
               <div class="text-xs text-zinc-500 dark:text-zinc-400">{{ $t('Failai') }}</div>
-            </div>
+            </button>
           </div>
         </CardContent>
       </Card>
@@ -78,7 +87,7 @@
     </div>
 
     <!-- Sidebar -->
-    <div class="space-y-6">
+    <div class="xl:sticky xl:top-6 xl:self-start space-y-6">
       <!-- Document Checklist -->
       <Card>
         <CardHeader class="pb-3">

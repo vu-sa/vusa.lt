@@ -20,6 +20,7 @@ readonly class CreateTaskData
      * @param  string|null  $dueDate  Due date for the task
      * @param  ActionType|null  $actionType  Type of action (Manual, Approval, Pickup, Return)
      * @param  array<string, mixed>|null  $metadata  Additional metadata (e.g., progress tracking)
+     * @param  string|null  $description  Instructions or description for the task
      */
     public function __construct(
         public string $name,
@@ -28,6 +29,7 @@ readonly class CreateTaskData
         public ?string $dueDate = null,
         public ?ActionType $actionType = null,
         public ?array $metadata = null,
+        public ?string $description = null,
     ) {}
 
     /**

@@ -187,6 +187,10 @@ class DashboardController extends AdminController
             ->with(['current_duties:id,name,institution_id'])
             ->first();
 
+        // Pre-load user's subscription data (followed and muted institution IDs)
+        $followedInstitutionIds = $user->followedInstitutions()->pluck('institutions.id');
+        $mutedInstitutionIds = $user->mutedInstitutions()->pluck('institutions.id');
+
         // Get only user's directly assigned institutions (lightweight, always loaded)
         $userInstitutions = DutyService::getUserInstitutionsForDashboard();
 
@@ -200,8 +204,8 @@ class DashboardController extends AdminController
         }
 
         // Helper function to append computed attributes to institutions
-        $appendInstitutionAttributes = function ($institutions) {
-            $institutions->each(function ($institution) {
+        $appendInstitutionAttributes = function ($institutions, $userInstitutionIds = null) use ($followedInstitutionIds, $mutedInstitutionIds) {
+            $institutions->each(function ($institution) use ($userInstitutionIds, $followedInstitutionIds, $mutedInstitutionIds) {
                 $institution->meetings?->each->append(['completion_status', 'has_report', 'has_protocol']);
                 // Add active_check_in from already-loaded checkIns
                 $institution->active_check_in = $institution->checkIns
@@ -212,13 +216,23 @@ class DashboardController extends AdminController
                 $institution->append('has_public_meetings');
                 // Append meeting_periodicity_days for overdue warnings (inherits from types, defaults to 30)
                 $institution->append('meeting_periodicity_days');
+
+                // Add subscription status for follow/mute UI
+                $institution->subscription = [
+                    'is_followed' => $followedInstitutionIds->contains($institution->id),
+                    'is_muted' => $mutedInstitutionIds->contains($institution->id),
+                    'is_duty_based' => $userInstitutionIds?->contains($institution->id) ?? false,
+                ];
             });
 
             return $institutions;
         };
 
-        // Append computed attributes to user institutions
-        $appendInstitutionAttributes($userInstitutions);
+        // Get user's duty-based institution IDs for subscription status
+        $userDutyInstitutionIds = $userInstitutions->pluck('id');
+
+        // Append computed attributes to user institutions (all duty-based for user's own institutions)
+        $appendInstitutionAttributes($userInstitutions, $userDutyInstitutionIds);
 
         // Get available tenants for filtering - only for coordinators and admins
         // Regular users should not see the tenant tab (they only see their assigned institutions)
@@ -262,14 +276,14 @@ class DashboardController extends AdminController
             // Quick flag to show/hide related institutions filter (lazy data may not be loaded yet)
             'mayHaveRelatedInstitutions' => $mayHaveRelatedInstitutions,
             // Lazy load relatedInstitutions - only fetched when explicitly requested via Inertia reload
-            'relatedInstitutions' => Inertia::optional(function () use ($userInstitutions) {
+            'relatedInstitutions' => Inertia::optional(function () use ($userInstitutions, $userDutyInstitutionIds, $followedInstitutionIds, $mutedInstitutionIds) {
                 $relatedInstitutions = RelationshipService::getRelatedInstitutionsForMultiple(
                     new Collection($userInstitutions->values()->all())
                 );
 
                 // Append computed attributes to related institution meetings
                 // Note: For unauthorized institutions, we skip completion_status as it triggers N+1 agendaItems load
-                $relatedInstitutions->each(function ($institution) {
+                $relatedInstitutions->each(function ($institution) use ($userDutyInstitutionIds, $followedInstitutionIds, $mutedInstitutionIds) {
                     $isAuthorized = $institution->authorized !== false;
                     $institution->meetings?->each(function ($meeting) use ($isAuthorized) {
                         // Only append completion_status for authorized institutions (it lazy-loads agendaItems)
@@ -281,13 +295,20 @@ class DashboardController extends AdminController
                     });
                     $institution->append('has_public_meetings');
                     $institution->append('meeting_periodicity_days');
+
+                    // Add subscription status for related institutions
+                    $institution->subscription = [
+                        'is_followed' => $followedInstitutionIds->contains($institution->id),
+                        'is_muted' => $mutedInstitutionIds->contains($institution->id),
+                        'is_duty_based' => $userDutyInstitutionIds->contains($institution->id),
+                    ];
                 });
 
                 return $relatedInstitutions->values();
             })->once(),
             // Lazy load tenant institutions - only fetched when tenant tab is opened
             // Expects 'tenantIds' parameter in the reload request
-            'tenantInstitutions' => Inertia::lazy(function () use ($excludedTypeIds, $appendInstitutionAttributes) {
+            'tenantInstitutions' => Inertia::lazy(function () use ($excludedTypeIds, $appendInstitutionAttributes, $userDutyInstitutionIds) {
                 $tenantIds = request()->input('tenantIds', []);
                 $institutions = DutyService::getInstitutionsForTenants($tenantIds, $this->authorizer);
 
@@ -298,8 +319,8 @@ class DashboardController extends AdminController
                     })->values();
                 }
 
-                // Append computed attributes
-                $appendInstitutionAttributes($institutions);
+                // Append computed attributes (pass userDutyInstitutionIds for subscription status)
+                $appendInstitutionAttributes($institutions, $userDutyInstitutionIds);
 
                 return $institutions->values();
             }),

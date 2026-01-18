@@ -1,3 +1,9 @@
+export interface InstitutionSubscription {
+  is_followed: boolean;
+  is_muted: boolean;
+  is_duty_based: boolean;
+}
+
 export interface AtstovavimosUser extends App.Entities.User {
   current_duties?: Array<{
     institution?: AtstovavimosInstitution;
@@ -18,6 +24,8 @@ export interface AtstovavimosInstitution {
   upcoming_meetings_count?: number;
   days_since_last_meeting?: number;
   has_public_meetings?: boolean;
+  // Subscription status for follow/mute UI
+  subscription?: InstitutionSubscription;
   // Related institution metadata (only present for related institutions)
   is_related?: boolean;
   relationship_direction?: 'outgoing' | 'incoming' | 'sibling';

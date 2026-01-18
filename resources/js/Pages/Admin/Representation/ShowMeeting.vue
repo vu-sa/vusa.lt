@@ -101,32 +101,15 @@
       </TabsContent>
 
       <!-- Agenda Tab -->
-      <TabsContent value="agenda" class="space-y-8">
-        <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
-          <!-- Agenda Items (Main Content) -->
-          <div class="xl:col-span-2">
-            <SortableCardContainer 
-              :items="meeting.agenda_items ?? []" 
-              :meeting-id="meeting.id"
-              @add="showSingleAgendaItemModal = true" 
-              @add-bulk="showAgendaItemStoreModal = true" 
-              @edit="handleAgendaClick" 
-              @delete="handleAgendaItemDelete" 
-            />
-          </div>
-          <!-- Sidebar -->
-          <div class="xl:col-span-1">
-            <MeetingAgendaSidebar 
-              :tasks="meeting.tasks"
-              :has-protocol="meeting.has_protocol"
-              :has-report="meeting.has_report"
-              :previous-meeting
-              :next-meeting
-              @go-to-files="navigateToTab('files')"
-              @go-to-tasks="navigateToTab('tasks')"
-            />
-          </div>
-        </div>
+      <TabsContent value="agenda">
+        <SortableCardContainer 
+          :items="meeting.agenda_items ?? []" 
+          :meeting-id="meeting.id"
+          @add="showSingleAgendaItemModal = true" 
+          @add-bulk="showAgendaItemStoreModal = true" 
+          @edit="handleAgendaClick" 
+          @delete="handleAgendaItemDelete" 
+        />
       </TabsContent>
 
       <!-- Files Tab -->
@@ -273,7 +256,6 @@ import {
 import ShowPageHero from "@/Components/Hero/ShowPageHero.vue";
 import UsersAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
 import MeetingOverview from "@/Components/Meetings/MeetingOverview.vue";
-import MeetingAgendaSidebar from "@/Components/Meetings/MeetingAgendaSidebar.vue";
 import SortableCardContainer from "@/Components/AgendaItems/SortableCardContainer.vue";
 import AgendaItemForm from "@/Components/AdminForms/AgendaItemForm.vue";
 import AddAgendaItemForm from "@/Components/AdminForms/AddAgendaItemForm.vue";

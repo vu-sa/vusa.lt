@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\GetInstitutionFollowersToNotify;
 use App\Actions\GetMeetingAdministrators;
 use App\Models\Duty;
 use App\Models\Institution;
@@ -329,6 +330,158 @@ describe('MeetingTaskSubscriber', function () {
 
             // User should only receive one notification despite having multiple qualifying roles
             Notification::assertSentToTimes($admin, MeetingCreatedNotification::class, 1);
+        });
+
+        test('notifies followers when meeting is created', function () {
+            $tenant = Tenant::query()->where('type', '!=', 'pkp')->first()
+                ?? Tenant::factory()->create(['type' => 'padalinys']);
+
+            $institution = Institution::factory()->for($tenant)->create();
+
+            // Create a follower who is not an admin
+            $follower = User::factory()->create();
+            $follower->followedInstitutions()->attach($institution);
+
+            // Create meeting
+            $meeting = Meeting::factory()
+                ->hasAttached($institution)
+                ->create(['start_time' => now()]);
+
+            // Dispatch the event
+            event(new \App\Events\MeetingFullyCreated($meeting));
+
+            Notification::assertSentTo($follower, MeetingCreatedNotification::class);
+        });
+
+        test('does not notify followers who have muted the institution', function () {
+            $tenant = Tenant::query()->where('type', '!=', 'pkp')->first()
+                ?? Tenant::factory()->create(['type' => 'padalinys']);
+
+            $institution = Institution::factory()->for($tenant)->create();
+
+            // Create a follower who has muted the institution
+            $mutedFollower = User::factory()->create();
+            $mutedFollower->followedInstitutions()->attach($institution);
+            $mutedFollower->mutedInstitutions()->attach($institution, ['muted_at' => now()]);
+
+            // Create meeting
+            $meeting = Meeting::factory()
+                ->hasAttached($institution)
+                ->create(['start_time' => now()]);
+
+            // Dispatch the event
+            event(new \App\Events\MeetingFullyCreated($meeting));
+
+            Notification::assertNotSentTo($mutedFollower, MeetingCreatedNotification::class);
+        });
+
+        test('follower only receives one notification even if they follow multiple meeting institutions', function () {
+            $tenant = Tenant::query()->where('type', '!=', 'pkp')->first()
+                ?? Tenant::factory()->create(['type' => 'padalinys']);
+
+            $institution1 = Institution::factory()->for($tenant)->create();
+            $institution2 = Institution::factory()->for($tenant)->create();
+
+            // Create a follower who follows both institutions
+            $follower = User::factory()->create();
+            $follower->followedInstitutions()->attach([$institution1->id, $institution2->id]);
+
+            // Create meeting attached to both institutions
+            $meeting = Meeting::factory()
+                ->hasAttached([$institution1, $institution2])
+                ->create(['start_time' => now()]);
+
+            // Dispatch the event
+            event(new \App\Events\MeetingFullyCreated($meeting));
+
+            Notification::assertSentToTimes($follower, MeetingCreatedNotification::class, 1);
+        });
+
+        test('user who is both institution manager and follower only receives one notification', function () {
+            $tenant = Tenant::query()->where('type', '!=', 'pkp')->first()
+                ?? Tenant::factory()->create(['type' => 'padalinys']);
+
+            $institution = Institution::factory()->for($tenant)->create();
+
+            // Create the institution-manager-role type for GetInstitutionManagers
+            $institutionManagerType = Type::query()->where('slug', 'institution-manager-role')->first()
+                ?? Type::factory()->create(['slug' => 'institution-manager-role', 'model_type' => Role::class]);
+
+            // Create a role attached to the institution manager type
+            $managerRole = Role::factory()->create(['guard_name' => 'web']);
+            $managerRole->types()->attach($institutionManagerType);
+
+            // Create duty with the manager role
+            $duty = Duty::factory()->for($institution)->create();
+            $duty->roles()->attach($managerRole);
+
+            $manager = User::factory()->create();
+            $manager->duties()->attach($duty, [
+                'start_date' => now()->subMonth(),
+                'end_date' => null,
+            ]);
+
+            // Manager also follows the institution
+            $manager->followedInstitutions()->attach($institution);
+
+            // Create meeting
+            $meeting = Meeting::factory()
+                ->hasAttached($institution)
+                ->create(['start_time' => now()]);
+
+            // Dispatch the event
+            event(new \App\Events\MeetingFullyCreated($meeting));
+
+            Notification::assertSentToTimes($manager, MeetingCreatedNotification::class, 1);
+        });
+    });
+
+    describe('GetInstitutionFollowersToNotify', function () {
+        test('returns followers who have not muted the institution', function () {
+            $tenant = Tenant::query()->where('type', '!=', 'pkp')->first()
+                ?? Tenant::factory()->create(['type' => 'padalinys']);
+
+            $institution = Institution::factory()->for($tenant)->create();
+
+            // Create a follower
+            $follower = User::factory()->create();
+            $follower->followedInstitutions()->attach($institution);
+
+            // Create a muted follower
+            $mutedFollower = User::factory()->create();
+            $mutedFollower->followedInstitutions()->attach($institution);
+            $mutedFollower->mutedInstitutions()->attach($institution, ['muted_at' => now()]);
+
+            $meeting = Meeting::factory()
+                ->hasAttached($institution)
+                ->create(['start_time' => now()]);
+
+            $followers = GetInstitutionFollowersToNotify::execute($meeting);
+
+            expect($followers)->toHaveCount(1)
+                ->and($followers->first()->id)->toBe($follower->id);
+        });
+
+        test('returns unique followers across multiple institutions', function () {
+            $tenant = Tenant::query()->where('type', '!=', 'pkp')->first()
+                ?? Tenant::factory()->create(['type' => 'padalinys']);
+
+            $institution1 = Institution::factory()->for($tenant)->create();
+            $institution2 = Institution::factory()->for($tenant)->create();
+
+            // Create a user who follows both institutions
+            $follower = User::factory()->create();
+            $follower->followedInstitutions()->attach([$institution1->id, $institution2->id]);
+
+            $meeting = Meeting::factory()
+                ->hasAttached([$institution1, $institution2])
+                ->create(['start_time' => now()]);
+
+            $followers = GetInstitutionFollowersToNotify::execute($meeting);
+
+            // Should only return the follower once (deduplicated)
+            expect($followers)->toHaveCount(1)
+                ->and($followers->first()->id)->toBe($follower->id);
         });
     });
 

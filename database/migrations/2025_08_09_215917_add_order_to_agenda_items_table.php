@@ -16,14 +16,17 @@ return new class extends Migration
         });
 
         // Update existing records to set proper order based on creation time
-        \App\Models\Pivots\AgendaItem::orderBy('created_at')
-            ->get()
-            ->groupBy('meeting_id')
-            ->each(function ($agendaItems) {
-                $agendaItems->each(function ($item, $index) {
-                    $item->update(['order' => $index + 1]);
+        // Use withoutEvents to prevent task handlers from querying columns that don't exist yet
+        \App\Models\Pivots\AgendaItem::withoutEvents(function () {
+            \App\Models\Pivots\AgendaItem::orderBy('created_at')
+                ->get()
+                ->groupBy('meeting_id')
+                ->each(function ($agendaItems) {
+                    $agendaItems->each(function ($item, $index) {
+                        $item->update(['order' => $index + 1]);
+                    });
                 });
-            });
+        });
     }
 
     /**

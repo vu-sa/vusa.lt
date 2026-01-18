@@ -3,6 +3,9 @@ export enum ActionType {
   Approval = "approval",
   Pickup = "pickup",
   Return = "return",
+  PeriodicityGap = "periodicity_gap",
+  AgendaCreation = "agenda_creation",
+  AgendaCompletion = "agenda_completion",
 }
 export enum AllowedFileablesEnum {
   "DUTY" = "duty",

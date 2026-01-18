@@ -135,7 +135,7 @@
           </div>
 
           <!-- Sidebar -->
-          <div class="space-y-6">
+          <div class="xl:sticky xl:top-6 xl:self-start space-y-6">
             <!-- Quick Actions -->
             <Card>
               <CardHeader class="pb-3">

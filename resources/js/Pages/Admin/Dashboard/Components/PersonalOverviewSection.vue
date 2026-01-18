@@ -4,6 +4,10 @@
       <h2 id="personal-overview-heading" class="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
         {{ $t('Personal Overview') }}
       </h2>
+      <Button variant="outline" size="sm" class="gap-2" @click="$emit('manage-subscriptions')">
+        <Settings2 class="h-4 w-4" />
+        {{ $t('visak.manage_subscriptions') }}
+      </Button>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -34,6 +38,8 @@ import { trans as $t } from 'laravel-vue-i18n';
 
 import InstitutionsOverviewCard from './InstitutionsOverviewCard.vue';
 import UpcomingMeetingsCard from './UpcomingMeetingsCard.vue';
+import { Button } from '@/Components/ui/button';
+import { Settings2 } from 'lucide-vue-next';
 
 interface Props {
   institutions: App.Entities.Institution[];
@@ -51,5 +57,6 @@ defineEmits<{
   'create-meeting': [];
   'schedule-meeting': [institutionId: string];
   'show-institution-details': [institutionId: string];
+  'manage-subscriptions': [];
 }>();
 </script>

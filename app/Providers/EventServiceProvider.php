@@ -11,6 +11,7 @@ use App\Models\RoleType;
 use App\Models\Type;
 use App\Models\Typeable;
 use App\Models\User;
+use App\Notifications\Subscribers\ApprovalNotificationSubscriber;
 use App\Observers\CalendarObserver;
 use App\Observers\InstitutionObserver;
 use App\Observers\RelationshipableObserver;
@@ -19,6 +20,7 @@ use App\Observers\TypeableObserver;
 use App\Observers\TypeObserver;
 use App\Observers\UserPermissionObserver;
 use App\Tasks\Subscribers\ApprovalTaskSubscriber;
+use App\Tasks\Subscribers\InstitutionCheckInTaskSubscriber;
 use App\Tasks\Subscribers\MeetingTaskSubscriber;
 use App\Tasks\Subscribers\ReservationTaskSubscriber;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -73,9 +75,13 @@ class EventServiceProvider extends ServiceProvider
      * @var array<int, class-string>
      */
     protected $subscribe = [
+        // Task subscribers
         ReservationTaskSubscriber::class,
         ApprovalTaskSubscriber::class,
         MeetingTaskSubscriber::class,
+        InstitutionCheckInTaskSubscriber::class,
+        // Notification subscribers
+        ApprovalNotificationSubscriber::class,
     ];
 
     /**

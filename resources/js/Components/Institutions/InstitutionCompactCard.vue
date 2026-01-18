@@ -22,6 +22,20 @@
             <TooltipContent>{{ $t('Vieši posėdžiai') }}</TooltipContent>
           </Tooltip>
         </TooltipProvider>
+        <!-- Muted indicator -->
+        <TooltipProvider v-if="isMuted">
+          <Tooltip>
+            <TooltipTrigger as-child>
+              <BellOff class="h-3.5 w-3.5 text-zinc-400 dark:text-zinc-500 shrink-0" />
+            </TooltipTrigger>
+            <TooltipContent>{{ $t('visak.notifications_muted') }}</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        <!-- Duty-based badge -->
+        <span v-if="isDutyBased && showSubscriptionActions"
+          class="text-xs px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 font-medium shrink-0">
+          {{ $t('visak.duty_based') }}
+        </span>
       </div>
 
       <!-- Status row -->
@@ -105,7 +119,7 @@
             <Button variant="ghost" size="sm"
               class="h-8 w-8 opacity-60 hover:opacity-100 hover:bg-amber-50 hover:text-amber-700 dark:hover:bg-amber-900/30 dark:hover:text-amber-400 transition-all"
               @click="emit('add-check-in', institution.id)">
-              <component :is="Icons.NOTIFICATION" class="h-3.5 w-3.5" />
+              <CalendarOff class="h-3.5 w-3.5" />
             </Button>
           </TooltipTrigger>
           <TooltipContent>{{ $t('Pranešti apie posėdžio nebuvimą') }}</TooltipContent>
@@ -125,6 +139,52 @@
           <TooltipContent>{{ $t('Pašalinti pranešimą apie posėdžio nebuvimą') }}</TooltipContent>
         </Tooltip>
       </TooltipProvider>
+
+      <!-- Subscription Actions (only for non-duty-based institutions) -->
+      <template v-if="canShowSubscriptionActions">
+        <!-- Divider -->
+        <div class="w-px h-6 bg-zinc-200 dark:bg-zinc-700 mx-1" />
+
+        <!-- Follow/Unfollow button -->
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger as-child>
+              <Button variant="ghost" size="sm"
+                class="h-8 w-8 opacity-60 hover:opacity-100 transition-all"
+                :class="isFollowed ? 'text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800'"
+                :disabled="followLoading"
+                @click="emit('toggle-follow', institution.id)">
+                <Loader2 v-if="followLoading" class="h-3.5 w-3.5 animate-spin" />
+                <Eye v-else-if="isFollowed" class="h-3.5 w-3.5" />
+                <EyeOff v-else class="h-3.5 w-3.5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              {{ isFollowed ? $t('visak.unfollow') : $t('visak.follow') }}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+
+        <!-- Mute/Unmute button (only show if followed) -->
+        <TooltipProvider v-if="isFollowed">
+          <Tooltip>
+            <TooltipTrigger as-child>
+              <Button variant="ghost" size="sm"
+                class="h-8 w-8 opacity-60 hover:opacity-100 transition-all"
+                :class="isMuted ? 'text-zinc-500 dark:text-zinc-400' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800'"
+                :disabled="muteLoading"
+                @click="emit('toggle-mute', institution.id)">
+                <Loader2 v-if="muteLoading" class="h-3.5 w-3.5 animate-spin" />
+                <BellOff v-else-if="isMuted" class="h-3.5 w-3.5" />
+                <Bell v-else class="h-3.5 w-3.5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              {{ isMuted ? $t('visak.unmute') : $t('visak.mute') }}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </template>
     </div>
   </div>
 </template>
@@ -137,21 +197,26 @@ import { Link as InertiaLink } from '@inertiajs/vue3'
 import { Button } from '@/Components/ui/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip'
 import Icons from '@/Types/Icons/filled'
-import { Globe, Info } from 'lucide-vue-next'
+import { Globe, Info, Eye, EyeOff, Bell, BellOff, Loader2, CalendarOff } from 'lucide-vue-next'
 import { formatStaticTime } from '@/Utils/IntlTime'
 import type { AtstovavimosInstitution } from '@/Pages/Admin/Dashboard/types'
 
 const props = defineProps<{
   institution: AtstovavimosInstitution
   showActions?: boolean
+  showSubscriptionActions?: boolean
   canScheduleMeeting?: boolean
   canAddCheckIn?: boolean
+  followLoading?: boolean
+  muteLoading?: boolean
 }>()
 
 const emit = defineEmits<{
   'schedule-meeting': [institutionId: string]
   'add-check-in': [institutionId: string]
   'remove-active-check-in': [institutionId: string]
+  'toggle-follow': [institutionId: string]
+  'toggle-mute': [institutionId: string]
 }>()
 
 // Helper functions
@@ -216,6 +281,17 @@ const statusDotClass = computed(() => {
     return 'bg-zinc-400'
   }
   return 'bg-zinc-400'
+})
+
+// Subscription status helpers
+const subscription = computed(() => props.institution.subscription)
+const isDutyBased = computed(() => subscription.value?.is_duty_based ?? false)
+const isFollowed = computed(() => subscription.value?.is_followed ?? false)
+const isMuted = computed(() => subscription.value?.is_muted ?? false)
+
+// Only show subscription actions for non-duty-based institutions (or when explicitly enabled)
+const canShowSubscriptionActions = computed(() => {
+  return props.showSubscriptionActions && !isDutyBased.value
 })
 
 function formatDate(date: Date | string): string {

@@ -2,6 +2,7 @@
 
 namespace App\Tasks\Subscribers;
 
+use App\Actions\GetInstitutionFollowersToNotify;
 use App\Actions\GetMeetingAdministrators;
 use App\Events\MeetingFullyCreated;
 use App\Models\Meeting;
@@ -10,6 +11,7 @@ use App\Notifications\MeetingAgendaCompletedNotification;
 use App\Notifications\MeetingCreatedNotification;
 use App\Tasks\Handlers\AgendaCompletionTaskHandler;
 use App\Tasks\Handlers\AgendaCreationTaskHandler;
+use App\Tasks\Handlers\PeriodicityGapTaskHandler;
 use Illuminate\Events\Dispatcher;
 use Illuminate\Support\Facades\Notification;
 
@@ -19,6 +21,7 @@ use Illuminate\Support\Facades\Notification;
  * Consolidates task creation and progress tracking for meetings:
  * - Creates Agenda Creation tasks when meetings are created (no agenda items yet)
  * - Creates Agenda Completion tasks when agenda items exist but need filling
+ * - Completes Periodicity Gap tasks when meetings are created for institutions
  * - Sends notifications to administrators on meeting creation and completion
  */
 class MeetingTaskSubscriber
@@ -26,6 +29,7 @@ class MeetingTaskSubscriber
     public function __construct(
         protected AgendaCreationTaskHandler $creationHandler,
         protected AgendaCompletionTaskHandler $completionHandler,
+        protected PeriodicityGapTaskHandler $periodicityGapHandler,
     ) {}
 
     /**
@@ -58,6 +62,7 @@ class MeetingTaskSubscriber
     /**
      * Handle meeting fully created event.
      * Creates an agenda creation task and notifies administrators.
+     * Also completes any pending periodicity gap tasks for the meeting's institutions.
      */
     public function handleMeetingCreated(MeetingFullyCreated $event): void
     {
@@ -89,11 +94,25 @@ class MeetingTaskSubscriber
             );
         }
 
+        // Complete any pending periodicity gap tasks for this meeting's institutions
+        foreach ($meeting->institutions as $institution) {
+            $this->periodicityGapHandler->completeForInstitution(
+                institution: $institution,
+                reason: __('tasks.periodicity_gap.completed_meeting_created'),
+            );
+        }
+
         // Notify administrators about the new meeting
         $administrators = GetMeetingAdministrators::execute($meeting);
 
-        if ($administrators->isNotEmpty()) {
-            Notification::send($administrators, new MeetingCreatedNotification($meeting));
+        // Also notify followers of the meeting's institutions (excluding muted users)
+        $followers = GetInstitutionFollowersToNotify::execute($meeting);
+
+        // Merge and deduplicate recipients
+        $recipients = $administrators->merge($followers)->unique('id')->values();
+
+        if ($recipients->isNotEmpty()) {
+            Notification::send($recipients, new MeetingCreatedNotification($meeting));
         }
     }
 

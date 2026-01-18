@@ -72,6 +72,20 @@ class Kernel extends ConsoleKernel
         $schedule->command('notifications:task-overdue-reminders')
             ->weeklyOn(1, '09:00')
             ->name('task-overdue-reminders');
+
+        // Periodicity gap tasks - runs daily at 8 AM to create tasks for
+        // institutions approaching their meeting periodicity threshold
+        $schedule->command('tasks:repopulate institution --force')
+            ->dailyAt('08:00')
+            ->name('periodicity-gap-tasks')
+            ->withoutOverlapping(15);
+
+        // Escalate overdue approvals - runs daily at 10 AM to notify managers
+        // about approval requests that have exceeded their deadline
+        $schedule->command('approvals:escalate-overdue')
+            ->dailyAt('10:00')
+            ->name('approval-escalation')
+            ->withoutOverlapping(10);
     }
 
     /**

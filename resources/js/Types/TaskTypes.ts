@@ -16,6 +16,9 @@ export enum TaskActionType {
   Approval = 'approval',
   Pickup = 'pickup',
   Return = 'return',
+  PeriodicityGap = 'periodicity_gap',
+  AgendaCreation = 'agenda_creation',
+  AgendaCompletion = 'agenda_completion',
 }
 
 /**
@@ -138,6 +141,30 @@ export function getActionTypeConfig(actionType: TaskActionType | null | undefine
         label: 'Return',
         icon: 'package-check',
         color: 'emerald',
+        canBeManuallyCompleted: false,
+      }
+    case TaskActionType.PeriodicityGap:
+      return {
+        type: TaskActionType.PeriodicityGap,
+        label: 'Periodicity Gap',
+        icon: 'calendar-clock',
+        color: 'orange',
+        canBeManuallyCompleted: true,
+      }
+    case TaskActionType.AgendaCreation:
+      return {
+        type: TaskActionType.AgendaCreation,
+        label: 'Agenda Creation',
+        icon: 'file-plus',
+        color: 'violet',
+        canBeManuallyCompleted: false,
+      }
+    case TaskActionType.AgendaCompletion:
+      return {
+        type: TaskActionType.AgendaCompletion,
+        label: 'Agenda Completion',
+        icon: 'file-check',
+        color: 'green',
         canBeManuallyCompleted: false,
       }
     case TaskActionType.Manual:

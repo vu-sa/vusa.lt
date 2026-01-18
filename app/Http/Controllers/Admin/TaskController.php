@@ -159,9 +159,10 @@ class TaskController extends AdminController
         // Get user's accessible tenants for tasks
         $taskPermissibleTenants = $this->authorizer->getTenants('tasks.read.padalinys');
 
-        // Get user's accessible tenants for meetings and reservations
+        // Get user's accessible tenants for meetings, reservations, and institutions
         $meetingPermissibleTenants = $this->authorizer->getTenants('meetings.read.padalinys');
         $reservationPermissibleTenants = $this->authorizer->getTenants('reservations.read.padalinys');
+        $institutionPermissibleTenants = $this->authorizer->getTenants('institutions.read.padalinys');
 
         // Build base query with compound authorization
         $baseQuery = Task::with(['users:id,name,email,profile_photo_path', 'taskable'])
@@ -170,7 +171,7 @@ class TaskController extends AdminController
             });
 
         // Apply compound authorization: only show tasks where user also has permission on taskable
-        $baseQuery->where(function ($q) use ($meetingPermissibleTenants, $reservationPermissibleTenants) {
+        $baseQuery->where(function ($q) use ($meetingPermissibleTenants, $reservationPermissibleTenants, $institutionPermissibleTenants) {
             // Meeting tasks - user must have meetings.read.padalinys
             if ($meetingPermissibleTenants->isNotEmpty()) {
                 $q->orWhere(function ($subQ) use ($meetingPermissibleTenants) {
@@ -190,6 +191,18 @@ class TaskController extends AdminController
                         ->whereHasMorph('taskable', [\App\Models\Reservation::class], function ($reservationQ) use ($reservationPermissibleTenants) {
                             $reservationQ->whereHas('tenants', function ($tenantQ) use ($reservationPermissibleTenants) {
                                 $tenantQ->whereIn('tenants.id', $reservationPermissibleTenants->pluck('id'));
+                            });
+                        });
+                });
+            }
+
+            // Institution tasks (e.g., PeriodicityGap) - user must have institutions.read.padalinys
+            if ($institutionPermissibleTenants->isNotEmpty()) {
+                $q->orWhere(function ($subQ) use ($institutionPermissibleTenants) {
+                    $subQ->where('taskable_type', \App\Models\Institution::class)
+                        ->whereHasMorph('taskable', [\App\Models\Institution::class], function ($institutionQ) use ($institutionPermissibleTenants) {
+                            $institutionQ->whereHas('tenant', function ($tenantQ) use ($institutionPermissibleTenants) {
+                                $tenantQ->whereIn('tenants.id', $institutionPermissibleTenants->pluck('id'));
                             });
                         });
                 });
@@ -215,14 +228,24 @@ class TaskController extends AdminController
             'overdue' => $allTasks->filter(fn ($t) => $t->isOverdue())->count(),
             'autoCompleting' => $allTasks->whereNull('completed_at')->filter(fn ($t) => $t->isAutoCompletable())->count(),
             'byType' => [
-                'meetings' => $allTasks->where('taskable_type', \App\Models\Meeting::class)->count(),
+                // Institutions group: Institution + Meeting taskables
+                'institutions' => $allTasks->whereIn('taskable_type', [
+                    \App\Models\Institution::class,
+                    \App\Models\Meeting::class,
+                ])->count(),
                 'reservations' => $allTasks->where('taskable_type', \App\Models\Reservation::class)->count(),
             ],
         ];
 
         // Now apply type filter for the paginated results
+        // Support 'institutions' group filter that includes both Institution and Meeting
         $taskableType = $request->input('taskable_type');
-        if ($taskableType) {
+        if ($taskableType === 'institutions') {
+            $baseQuery->whereIn('taskable_type', [
+                \App\Models\Institution::class,
+                \App\Models\Meeting::class,
+            ]);
+        } elseif ($taskableType) {
             $baseQuery->where('taskable_type', $taskableType);
         }
 

@@ -57,22 +57,25 @@
     </div>
 
     <!-- Sortable Container -->
-    <div ref="sortableContainer" class="space-y-2.5" :class="{ 'min-h-32': localItems.length === 0 }">
+    <div ref="sortableContainer" class="space-y-2.5">
       <AgendaItemCard v-for="(item, index) in localItems" :key="item.id" :item :order="index + 1" :show-vote-options
         :data-id="item.id" @edit="$emit('edit', $event)" @delete="$emit('delete', $event)" @update="handleItemUpdate" />
+
     </div>
 
     <!-- Empty State -->
     <div v-if="localItems.length === 0"
-      class="flex flex-col items-center justify-center py-12 text-center border-2 border-dashed border-zinc-300 dark:border-zinc-600 rounded-lg">
-      <FileText class="h-12 w-12 text-zinc-400 dark:text-zinc-500 mb-4" />
+      class="flex flex-col items-center justify-center py-16 text-center border-2 border-dashed border-zinc-200 dark:border-zinc-700 rounded-xl bg-zinc-50/50 dark:bg-zinc-800/30">
+      <div class="w-16 h-16 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-4">
+        <FileText class="h-8 w-8 text-zinc-400 dark:text-zinc-500" />
+      </div>
       <h3 class="text-lg font-medium text-zinc-900 dark:text-zinc-100 mb-2">
         {{ $t('Darbotvarkės punktų nėra') }}
       </h3>
-      <p class="text-sm text-zinc-600 dark:text-zinc-400 mb-4 max-w-sm">
+      <p class="text-sm text-zinc-500 dark:text-zinc-400 mb-6 max-w-sm">
         {{ $t('Sukurkite darbotvarkės punktus, kad galėtumėte pradėti posėdžio valdymą.') }}
       </p>
-      <Button variant="default" @click="$emit('add')">
+      <Button size="lg" @click="$emit('add')">
         <Plus class="h-4 w-4 mr-2" />
         {{ $t('Pridėti pirmą klausimą') }}
       </Button>

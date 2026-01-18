@@ -2,6 +2,7 @@
 import NavMain from './NavMain.vue'
 import NavSecondary from './NavSecondary.vue'
 import NavQuickActions from './NavQuickActions.vue'
+import FollowedInstitutionsHotbar from './Sidebar/FollowedInstitutionsHotbar.vue'
 import SidebarStartFM from './SidebarStartFM.vue'
 import AppLogo from './AppLogo.vue'
 import NewMeetingModal from '@/Components/Modals/NewMeetingModal.vue'
@@ -303,6 +304,9 @@ const handleLogout = () => {
         @new-news="handleNewNews"
         @new-reservation="handleNewReservation"
       />
+
+      <!-- Followed institutions -->
+      <FollowedInstitutionsHotbar />
 
       <!-- Spacer to push secondary nav to bottom -->
       <div class="flex-1" />

@@ -168,6 +168,16 @@ class Institution extends Model implements SharepointFileableContract
         return $this->hasManyDeepFromRelations($this->duties(), (new Duty)->users());
     }
 
+    /**
+     * Users who are explicitly following this institution.
+     */
+    public function followers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'institution_follows')
+            ->using(InstitutionFollow::class)
+            ->withTimestamps();
+    }
+
     public function managers()
     {
         return GetInstitutionManagers::execute($this);

@@ -46,13 +46,20 @@ enum ActionType: string
     case AgendaCompletion = 'agenda_completion';
 
     /**
+     * Periodicity gap task - auto-completes when a meeting or check-in is created.
+     * Created when an institution is approaching its meeting periodicity threshold with no scheduled meeting.
+     * Users can resolve by scheduling a meeting or reporting a check-in period.
+     */
+    case PeriodicityGap = 'periodicity_gap';
+
+    /**
      * Whether this task type can be manually completed by users.
      */
     public function canBeManuallyCompleted(): bool
     {
         return match ($this) {
             self::Manual => true,
-            self::Approval, self::Pickup, self::Return, self::AgendaCreation, self::AgendaCompletion => false,
+            self::Approval, self::Pickup, self::Return, self::AgendaCreation, self::AgendaCompletion, self::PeriodicityGap => false,
         };
     }
 
@@ -76,6 +83,7 @@ enum ActionType: string
             self::Return => __('Return'),
             self::AgendaCreation => __('Agenda Creation'),
             self::AgendaCompletion => __('Agenda Completion'),
+            self::PeriodicityGap => __('Periodicity Gap'),
         };
     }
 
@@ -91,6 +99,7 @@ enum ActionType: string
             self::Return => 'package-check',
             self::AgendaCreation => 'list-plus',
             self::AgendaCompletion => 'list-checks',
+            self::PeriodicityGap => 'calendar-clock',
         };
     }
 
@@ -106,6 +115,7 @@ enum ActionType: string
             self::Return => 'emerald',
             self::AgendaCreation => 'indigo',
             self::AgendaCompletion => 'violet',
+            self::PeriodicityGap => 'orange',
         };
     }
 }

@@ -2,15 +2,34 @@
   <Dialog :open @update:open="() => emit('close')">
     <DialogContent class="sm:max-w-[520px]">
       <DialogHeader>
-        <DialogTitle>{{ $t('Pranešti apie posėdžio nebuvimą') }}</DialogTitle>
+        <DialogTitle class="flex items-center gap-2">
+          <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900/30">
+            <CalendarOffIcon class="h-4 w-4 text-amber-600 dark:text-amber-400" />
+          </div>
+          {{ $t('Pranešti apie posėdžio nebuvimą') }}
+        </DialogTitle>
         <DialogDescription>
           {{ $t('Nurodykite laikotarpį, kada posėdžiai nėra planuojami. Tai padeda sekti atstovavimo organizavimą.') }}
         </DialogDescription>
-        <p v-if="props.institutionName" class="text-sm text-muted-foreground">
-          <span class="font-medium text-foreground/80">{{ $t('Institucija') }}:</span>
-          <span class="ml-1">{{ props.institutionName }}</span>
-        </p>
       </DialogHeader>
+
+      <!-- Info banner explaining what this does -->
+      <div class="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-900/50 dark:bg-amber-950/20">
+        <div class="flex gap-3">
+          <InfoIcon class="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+          <div class="text-sm text-amber-800 dark:text-amber-200">
+            <p class="font-medium">{{ $t('Ką tai reiškia?') }}</p>
+            <p class="mt-1 text-amber-700 dark:text-amber-300">
+              {{ $t('Jei žinote, kad nurodytu laikotarpiu posėdžių nebus (pvz., atostogos, egzaminų sesija), pranešimas padės išvengti nereikalingų priminimų.') }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div v-if="props.institutionName" class="flex items-center gap-2 rounded-md bg-zinc-100 px-3 py-2 dark:bg-zinc-800">
+        <BuildingIcon class="h-4 w-4 text-zinc-500" />
+        <span class="text-sm font-medium">{{ props.institutionName }}</span>
+      </div>
 
       <div class="space-y-4">
         <div class="grid grid-cols-2 gap-4">
@@ -40,7 +59,8 @@
         <Button variant="outline" @click="emit('close')">
           {{ $t('Atšaukti') }}
         </Button>
-        <Button @click="submit">
+        <Button class="bg-amber-600 hover:bg-amber-700 dark:bg-amber-600 dark:hover:bg-amber-700" @click="submit">
+          <CalendarOffIcon class="mr-2 h-4 w-4" />
           {{ $t('Išsaugoti pranešimą') }}
         </Button>
       </DialogFooter>
@@ -51,6 +71,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { router } from '@inertiajs/vue3'
+import { CalendarOff as CalendarOffIcon, Info as InfoIcon, Building as BuildingIcon } from 'lucide-vue-next'
 
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/Components/ui/dialog'
 import { Button } from '@/Components/ui/button'

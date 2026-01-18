@@ -245,6 +245,82 @@ class User extends Authenticatable
         return $this->hasManyDeepFromRelations($this->duties(), (new Duty)->institution());
     }
 
+    /**
+     * Institutions the user is explicitly following.
+     */
+    public function followedInstitutions(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Institution::class, 'institution_follows')
+            ->using(InstitutionFollow::class)
+            ->withTimestamps();
+    }
+
+    /**
+     * Institutions the user has muted notifications for.
+     */
+    public function mutedInstitutions(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Institution::class, 'institution_notification_mutes')
+            ->using(InstitutionNotificationMute::class)
+            ->withPivot('muted_at')
+            ->withTimestamps();
+    }
+
+    /**
+     * Check if the user is following a specific institution.
+     */
+    public function follows(Institution $institution): bool
+    {
+        return $this->followedInstitutions()->where('institution_id', $institution->id)->exists();
+    }
+
+    /**
+     * Check if the user has muted a specific institution.
+     */
+    public function isInstitutionMuted(Institution $institution): bool
+    {
+        return $this->mutedInstitutions()->where('institution_id', $institution->id)->exists();
+    }
+
+    /**
+     * Check if the user has a duty at a specific institution.
+     */
+    public function hasInstitution(Institution $institution): bool
+    {
+        return $this->institutions()->where('institutions.id', $institution->id)->exists();
+    }
+
+    /**
+     * Get all "interesting" institutions (duty + followed - muted).
+     *
+     * @return \Illuminate\Support\Collection<int, Institution>
+     */
+    public function interestingInstitutions(): \Illuminate\Support\Collection
+    {
+        $dutyInstitutions = $this->institutions()->get();
+        $followedInstitutions = $this->followedInstitutions()->get();
+        $mutedIds = $this->mutedInstitutions()->pluck('institutions.id');
+
+        return $dutyInstitutions->merge($followedInstitutions)
+            ->unique('id')
+            ->reject(fn ($institution) => $mutedIds->contains($institution->id))
+            ->values();
+    }
+
+    /**
+     * Check if the user should receive notifications for a specific institution.
+     */
+    public function shouldNotifyForInstitution(Institution $institution): bool
+    {
+        // Check if explicitly muted
+        if ($this->isInstitutionMuted($institution)) {
+            return false;
+        }
+
+        // Notify if: user has duty at institution OR user follows institution
+        return $this->hasInstitution($institution) || $this->follows($institution);
+    }
+
     public function reservations()
     {
         return $this->belongsToMany(Reservation::class)->withTimestamps();

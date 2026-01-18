@@ -33,6 +33,50 @@
           <Clock class="h-4 w-4" />
           {{ $t('Pridėti pažymą') }}
         </Button>
+        
+        <!-- Subscription buttons -->
+        <TooltipProvider v-if="subscription">
+          <Tooltip>
+            <TooltipTrigger as-child>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                class="gap-2"
+                :disabled="isDutyBased || isFollowLoading"
+                @click="toggleFollow"
+              >
+                <Loader2 v-if="isFollowLoading" class="h-4 w-4 animate-spin" />
+                <Eye v-else-if="!isFollowed" class="h-4 w-4" />
+                <EyeOff v-else class="h-4 w-4" />
+                {{ isFollowed ? $t('Nebesekti') : $t('Sekti') }}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent v-if="isDutyBased">
+              {{ $t('Negalima nustoti sekti institucijos, kurioje turite pareigų') }}
+            </TooltipContent>
+          </Tooltip>
+          
+          <Tooltip v-if="isFollowed">
+            <TooltipTrigger as-child>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                class="gap-2"
+                :disabled="isDutyBased || isMuteLoading"
+                @click="toggleMute"
+              >
+                <Loader2 v-if="isMuteLoading" class="h-4 w-4 animate-spin" />
+                <BellOff v-else-if="isMuted" class="h-4 w-4" />
+                <Bell v-else class="h-4 w-4" />
+                {{ isMuted ? $t('Įjungti pranešimus') : $t('Nutildyti') }}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent v-if="isDutyBased">
+              {{ $t('Negalima nutildyti institucijos, kurioje turite pareigų') }}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        
         <MoreOptionsButton edit @edit-click="router.visit(route('institutions.edit', institution.id))" />
       </template>
     </ShowPageHero>
@@ -166,7 +210,7 @@
           </div>
 
           <!-- Sidebar -->
-          <div class="space-y-6">
+          <div class="xl:sticky xl:top-6 xl:self-start space-y-6">
             <!-- Quick Actions -->
             <Card>
               <CardHeader class="pb-3">
@@ -319,7 +363,12 @@ import {
   Clock,
   BarChart3,
   Repeat,
-  Zap
+  Zap,
+  Eye,
+  EyeOff,
+  Bell,
+  BellOff,
+  Loader2
 } from 'lucide-vue-next';
 
 // Layout and Components
@@ -338,13 +387,20 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Button } from "@/Components/ui/button";
 import { Badge } from "@/Components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
 
 // Utils
 import Icons from "@/Types/Icons/filled";
 import { BreadcrumbHelpers, usePageBreadcrumbs } from "@/Composables/useBreadcrumbsUnified";
+import { useInstitutionSubscription } from "@/Pages/Admin/Dashboard/Composables/useInstitutionSubscription";
 
 const props = defineProps<{
   institution: App.Entities.Institution;
+  subscription?: {
+    is_followed: boolean;
+    is_muted: boolean;
+    is_duty_based: boolean;
+  } | null;
 }>();
 
 // State
@@ -352,6 +408,41 @@ const currentTab = useStorage("show-institution-tab", "overview");
 const showMeetingModal = ref(false);
 const showCheckInModal = ref(false);
 const showAddMemberModal = ref(false);
+
+// Subscription state
+const isFollowed = ref(props.subscription?.is_followed ?? false);
+const isMuted = ref(props.subscription?.is_muted ?? false);
+const isDutyBased = computed(() => props.subscription?.is_duty_based ?? false);
+
+const subscriptionState = computed(() => ({
+  is_followed: isFollowed.value,
+  is_muted: isMuted.value,
+  is_duty_based: isDutyBased.value,
+}));
+
+// Use the subscription composable
+const { toggleFollow: doToggleFollow, toggleMute: doToggleMute, followLoading, muteLoading } = useInstitutionSubscription();
+
+const isFollowLoading = computed(() => followLoading.value[String(props.institution.id)] ?? false);
+const isMuteLoading = computed(() => muteLoading.value[String(props.institution.id)] ?? false);
+
+const toggleFollow = async () => {
+  if (isDutyBased.value) return;
+  
+  const newState = await doToggleFollow(String(props.institution.id), subscriptionState.value);
+  isFollowed.value = newState;
+  // If unfollowed, also unmute locally
+  if (!newState) {
+    isMuted.value = false;
+  }
+};
+
+const toggleMute = async () => {
+  if (isDutyBased.value) return;
+  
+  const newState = await doToggleMute(String(props.institution.id), subscriptionState.value);
+  isMuted.value = newState;
+};
 
 // Async Components
 const FileManager = defineAsyncComponent(

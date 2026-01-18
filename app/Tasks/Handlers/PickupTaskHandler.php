@@ -87,7 +87,7 @@ class PickupTaskHandler extends BaseTaskHandler
     /**
      * Find an existing incomplete pickup task for the model.
      */
-    protected function findExistingTask(Model $model): ?Task
+    public function findExistingTask(Model $model): ?Task
     {
         return Task::query()
             ->with('users')

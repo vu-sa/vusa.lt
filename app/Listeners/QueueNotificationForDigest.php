@@ -18,10 +18,21 @@ use Illuminate\Notifications\Events\NotificationSending;
 class QueueNotificationForDigest
 {
     /**
+     * When true, notifications are not queued for digest.
+     * Used during bulk operations like task repopulation.
+     */
+    public static bool $skipDigest = false;
+
+    /**
      * Handle the event.
      */
     public function handle(NotificationSending $event): void
     {
+        // Skip digest queuing during bulk operations
+        if (self::$skipDigest) {
+            return;
+        }
+
         $notification = $event->notification;
         $notifiable = $event->notifiable;
 

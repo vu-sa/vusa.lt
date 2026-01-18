@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\Admin\FileApiController;
+use App\Http\Controllers\Api\Admin\InstitutionSubscriptionApiController;
 use App\Http\Controllers\Api\Admin\MeetingApiController;
 use App\Http\Controllers\Api\Admin\SharepointApiController;
 use App\Http\Controllers\Api\Admin\TaskApiController;
@@ -103,5 +104,18 @@ Route::prefix('v1')->name('v1.')->group(function () {
         // Typesense admin search configuration with scoped API keys
         Route::get('search/config', [\App\Http\Controllers\Api\Admin\SearchApiController::class, 'config'])->name('search.config');
         Route::post('search/refresh-key', [\App\Http\Controllers\Api\Admin\SearchApiController::class, 'refreshKey'])->name('search.refreshKey');
+
+        // Institution subscription (follow/mute) management
+        Route::prefix('institutions')->name('institutions.')->group(function () {
+            Route::get('followed', [InstitutionSubscriptionApiController::class, 'followed'])->name('followed');
+            Route::get('{institution}/subscription-status', [InstitutionSubscriptionApiController::class, 'status'])->name('subscription.status');
+            Route::post('{institution}/follow', [InstitutionSubscriptionApiController::class, 'follow'])->name('follow');
+            Route::delete('{institution}/follow', [InstitutionSubscriptionApiController::class, 'unfollow'])->name('unfollow');
+            Route::post('{institution}/mute', [InstitutionSubscriptionApiController::class, 'mute'])->name('mute');
+            Route::delete('{institution}/mute', [InstitutionSubscriptionApiController::class, 'unmute'])->name('unmute');
+        });
+
+        // Notification subscription preferences
+        Route::post('notification-subscriptions/reset', [InstitutionSubscriptionApiController::class, 'reset'])->name('subscriptions.reset');
     });
 });
