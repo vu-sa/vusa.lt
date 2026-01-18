@@ -331,6 +331,52 @@ describe('dashboard calendar and news', function () {
                 ->has('latestNews', 0)
             );
     });
+
+    test('news without image returns fallback image', function () {
+        // Delete any existing news first
+        News::query()->delete();
+
+        // Create news without an image
+        News::factory()->for($this->tenant)->create([
+            'title' => 'News Without Image',
+            'lang' => 'lt',
+            'image' => null,
+            'publish_time' => now()->subHours(1),
+            'draft' => false,
+        ]);
+
+        asUser($this->admin)
+            ->get(route('dashboard'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/ShowAdminHome')
+                ->has('latestNews', 1)
+                ->where('latestNews.0.image', '/images/icons/naujienu_foto.png')
+            );
+    });
+
+    test('news with external image returns actual image URL', function () {
+        // Delete any existing news first
+        News::query()->delete();
+
+        // Create news with an external image URL
+        News::factory()->for($this->tenant)->create([
+            'title' => 'News With External Image',
+            'lang' => 'lt',
+            'image' => 'https://example.com/news-image.jpg',
+            'publish_time' => now()->subHours(1),
+            'draft' => false,
+        ]);
+
+        asUser($this->admin)
+            ->get(route('dashboard'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/ShowAdminHome')
+                ->has('latestNews', 1)
+                ->where('latestNews.0.image', 'https://example.com/news-image.jpg')
+            );
+    });
 });
 
 describe('atstovavimas dashboard', function () {

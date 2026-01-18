@@ -32,11 +32,8 @@
           class="flex items-center gap-3 py-2 px-2 -mx-2 rounded-md transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-700/50">
           <!-- Image thumbnail -->
           <div class="overflow-hidden rounded-md aspect-4/3 shrink-0 bg-muted" style="width: 70px;">
-            <img v-if="news.image" :src="String(news.image)" :alt="news.title" loading="lazy"
+            <img :src="String(news.image)" :alt="news.title" loading="lazy"
               class="w-full h-full object-cover" width="70" height="53">
-            <div v-else class="w-full h-full flex items-center justify-center">
-              <NewspaperIcon class="h-5 w-5 text-muted-foreground" />
-            </div>
           </div>
           <!-- Content -->
           <div class="flex flex-col min-w-0 flex-1">

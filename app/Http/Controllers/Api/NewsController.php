@@ -27,7 +27,16 @@ class NewsController extends ApiController
             ->where('publish_time', '<=', now())
             ->orderByDesc('publish_time')
             ->take(5)
-            ->get(['id', 'title', 'lang', 'short', 'publish_time', 'permalink', 'image']);
+            ->get(['id', 'title', 'lang', 'short', 'publish_time', 'permalink', 'image'])
+            ->map(fn (News $item) => [
+                'id' => $item->id,
+                'title' => $item->title,
+                'lang' => $item->lang,
+                'short' => $item->short,
+                'publish_time' => $item->publish_time,
+                'permalink' => $item->permalink,
+                'image' => $item->getImageUrl(),
+            ]);
 
         return $this->jsonSuccess($news);
     }
