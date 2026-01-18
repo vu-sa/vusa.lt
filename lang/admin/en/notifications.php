@@ -11,6 +11,8 @@ return [
         'user' => 'User',
         'duty' => 'Duties',
         'system' => 'System',
+        'news' => 'News',
+        'calendar' => 'Events',
     ],
 
     // Channels
@@ -97,6 +99,17 @@ return [
     'meeting_agenda_completed_title' => 'Meeting Agenda Completed',
     'meeting_agenda_completed_body' => 'All :count agenda items for :institution meeting have been completed',
 
+    // News notifications
+    'news_published_title' => 'New Article',
+    'news_published_body' => ':tenant published a new article: :title',
+
+    // Calendar notifications
+    'calendar_reminder_title' => 'Upcoming Event',
+    'calendar_reminder_soon_title' => 'Event Soon!',
+    'calendar_reminder_body' => 'Event ":event" starts in approximately :hours hours',
+    'calendar_reminder_body_one_hour' => 'Event ":event" starts in approximately 1 hour',
+    'calendar_reminder_body_tomorrow' => 'Tomorrow\'s event: :event',
+
     // Duty notifications
     'duty_expiring_title' => 'Duty expires in :days days',
     'duty_expiring_body' => 'Your duty ":duty" ends on :date. Remember to transfer your experience!',
@@ -137,6 +150,8 @@ return [
         'task_reminder_days_description' => 'How many days before to remind about upcoming task deadlines',
         'meeting_reminder_hours' => 'Meeting Reminder Hours',
         'meeting_reminder_hours_description' => 'How many hours before to remind about upcoming meetings',
+        'calendar_reminder_hours' => 'Event Reminder Hours',
+        'calendar_reminder_hours_description' => 'How many hours before to remind about upcoming events',
     ],
 
     // Legacy compatibility

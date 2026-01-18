@@ -79,6 +79,20 @@ class Kernel extends ConsoleKernel
             ->dailyAt('08:00')
             ->name('periodicity-gap-tasks')
             ->withoutOverlapping(15);
+
+        // News notifications - runs every 15 minutes to check for newly published news
+        // Notifications are opt-in (disabled by default)
+        $schedule->command('notifications:send-news')
+            ->everyFifteenMinutes()
+            ->name('news-notifications')
+            ->withoutOverlapping(5);
+
+        // Calendar reminders - runs every 30 minutes to catch all reminder windows
+        // Notifications are opt-in (disabled by default)
+        $schedule->command('notifications:calendar-reminders')
+            ->everyThirtyMinutes()
+            ->name('calendar-reminders')
+            ->withoutOverlapping(5);
     }
 
     /**

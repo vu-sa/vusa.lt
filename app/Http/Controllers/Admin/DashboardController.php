@@ -163,10 +163,19 @@ class DashboardController extends AdminController
             ->whereNotNull('publish_time')
             ->where('publish_time', '<=', now())
             ->where('lang', $locale)
-            ->with(['tenant:id,shortname'])
+            ->with(['tenant:id,shortname,alias'])
             ->orderByDesc('publish_time')
             ->take(3)
-            ->get();
+            ->get()
+            ->map(fn (News $news) => [
+                'id' => $news->id,
+                'title' => $news->title,
+                'permalink' => $news->permalink,
+                'lang' => $news->lang,
+                'publish_time' => $news->publish_time,
+                'image' => $news->getImageUrl(),
+                'tenant' => $news->tenant,
+            ]);
 
         return $this->inertiaResponse('Admin/ShowAdminHome', [
             'unreadNotificationsCount' => $unreadNotificationsCount,
@@ -475,6 +484,8 @@ class DashboardController extends AdminController
             'reminder_settings.task_reminder_days.*' => 'integer|min:1',
             'reminder_settings.meeting_reminder_hours' => 'nullable|array',
             'reminder_settings.meeting_reminder_hours.*' => 'integer|min:1',
+            'reminder_settings.calendar_reminder_hours' => 'nullable|array',
+            'reminder_settings.calendar_reminder_hours.*' => 'integer|min:1',
         ]);
 
         $preferences = $user->notification_preferences;

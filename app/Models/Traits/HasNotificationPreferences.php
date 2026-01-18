@@ -20,16 +20,26 @@ trait HasNotificationPreferences
 {
     /**
      * Default notification preferences structure.
+     *
+     * Note: News and Calendar categories are disabled by default (opt-in).
      */
     protected function getDefaultNotificationPreferences(): array
     {
         $channels = [];
 
+        // Categories that are disabled by default (opt-in)
+        $disabledByDefault = [
+            NotificationCategory::News,
+            NotificationCategory::Calendar,
+        ];
+
         foreach (NotificationCategory::cases() as $category) {
+            $isEnabled = ! in_array($category, $disabledByDefault, true);
+
             $channels[$category->value] = [
-                NotificationChannel::InApp->value => true,
-                NotificationChannel::Push->value => true,
-                NotificationChannel::EmailDigest->value => true,
+                NotificationChannel::InApp->value => $isEnabled,
+                NotificationChannel::Push->value => $isEnabled,
+                NotificationChannel::EmailDigest->value => $isEnabled,
             ];
         }
 
@@ -41,6 +51,7 @@ trait HasNotificationPreferences
             'reminder_settings' => [
                 'task_reminder_days' => [7, 3, 1],
                 'meeting_reminder_hours' => [24, 1],
+                'calendar_reminder_hours' => [24],
             ],
         ];
     }
@@ -253,6 +264,29 @@ trait HasNotificationPreferences
     {
         $preferences = $this->notification_preferences;
         $preferences['reminder_settings']['meeting_reminder_hours'] = array_values(array_unique(array_filter($hours, fn ($h) => $h > 0)));
+
+        $this->update(['notification_preferences' => $preferences]);
+    }
+
+    /**
+     * Get custom calendar reminder hours or default.
+     *
+     * @return array<int>
+     */
+    public function getCalendarReminderHours(): array
+    {
+        return $this->notification_preferences['reminder_settings']['calendar_reminder_hours'] ?? [24];
+    }
+
+    /**
+     * Set custom calendar reminder hours.
+     *
+     * @param  array<int>  $hours
+     */
+    public function setCalendarReminderHours(array $hours): void
+    {
+        $preferences = $this->notification_preferences;
+        $preferences['reminder_settings']['calendar_reminder_hours'] = array_values(array_unique(array_filter($hours, fn ($h) => $h > 0)));
 
         $this->update(['notification_preferences' => $preferences]);
     }

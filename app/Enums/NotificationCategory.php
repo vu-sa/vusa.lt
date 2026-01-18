@@ -18,6 +18,8 @@ enum NotificationCategory: string
     case User = 'user';
     case Duty = 'duty';
     case System = 'system';
+    case News = 'news';
+    case Calendar = 'calendar';
 
     /**
      * Get the ModelEnum key for icon mapping on frontend.
@@ -33,6 +35,8 @@ enum NotificationCategory: string
             self::User => 'USER',
             self::Duty => 'DUTY',
             self::System => 'TENANT', // Using tenant icon for system-wide notifications
+            self::News => 'NEWS',
+            self::Calendar => 'CALENDAR',
         };
     }
 
@@ -50,6 +54,8 @@ enum NotificationCategory: string
             self::User => 'gray',
             self::Duty => 'amber',
             self::System => 'red',
+            self::News => 'indigo',
+            self::Calendar => 'teal',
         };
     }
 
