@@ -12,6 +12,7 @@ import type {
   CalendarSearchResult,
   InstitutionSearchResult,
   DocumentSearchResult,
+  ResourceSearchResult,
   MultiSearchResults
 } from '@/Shared/Search/types'
 
@@ -24,6 +25,7 @@ export type {
   CalendarSearchResult,
   InstitutionSearchResult,
   DocumentSearchResult,
+  ResourceSearchResult,
   MultiSearchResults
 } from '@/Shared/Search/types'
 
@@ -204,13 +206,17 @@ export const useAdminSearch = () => {
 
     // Try exact match first (e.g., 'meetings')
     if (config.value.collections[collection]) {
-      return config.value.collections[collection].key
+      const key = config.value.collections[collection].key
+
+      return key && key.trim().length > 0 ? key : null
     }
 
     // Try without prefix (collection name might include prefix from Typesense)
     for (const [key, collectionConfig] of Object.entries(config.value.collections)) {
       if (collectionConfig.name === collection) {
-        return collectionConfig.key
+        const apiKey = collectionConfig.key
+
+        return apiKey && apiKey.trim().length > 0 ? apiKey : null
       }
     }
 
@@ -811,11 +817,14 @@ export const useAdminSearch = () => {
     facetBy: string,
     options: {
       filterBy?: string  // Optional base filter (e.g., for tenant scoping)
+      queryBy?: string   // Fields to search (defaults to id)
+      _retryCount?: number // Internal retry counter
     } = {}
   ): Promise<Array<{
     field_name: string
     counts: Array<{ value: string; count: number }>
   }>> => {
+    const { _retryCount = 0 } = options
     // Check rate limit
     if (isRateLimited.value) {
       throw new Error('Too many requests. Please wait a moment.')
@@ -851,7 +860,7 @@ export const useAdminSearch = () => {
     // Build params for facet-only query
     const searchParams = new URLSearchParams({
       q: '*',
-      query_by: 'title', // Minimal query_by, we only need facets
+      query_by: options.queryBy || 'id', // Minimal query_by, we only need facets
       per_page: '0',     // Don't need actual results
       facet_by: facetBy,
       max_facet_values: '100'
@@ -874,11 +883,11 @@ export const useAdminSearch = () => {
       )
 
       if (!response.ok) {
-        if (response.status === 401) {
+        if (response.status === 401 && _retryCount < 1) {
           await refreshConfig()
-          // Retry once
-          if (config.value) {
-            return loadInitialFacets(collection, facetBy, options)
+          const refreshedKey = getCollectionApiKey(collection)
+          if (config.value && refreshedKey) {
+            return loadInitialFacets(collection, facetBy, { ...options, _retryCount: _retryCount + 1 })
           }
         }
 

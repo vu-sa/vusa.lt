@@ -177,6 +177,42 @@ export const INSTITUTION_FACET_CONFIG: CollectionFacetConfig = {
 }
 
 /**
+ * Resource collection facet configuration
+ */
+export const RESOURCE_FACET_CONFIG: CollectionFacetConfig = {
+  facetBy: 'category_name,tenant_shortname,is_reservable',
+  queryBy: 'name_lt,name_en,description_lt,description_en,location',
+  defaultSortBy: 'created_at:desc',
+  fields: [
+    {
+      field: 'category_name',
+      label: 'Kategorija',
+      type: 'checkbox',
+      icon: 'Tag',
+      defaultOpen: true,
+      sortBy: 'count',
+    },
+    {
+      field: 'tenant_shortname',
+      label: 'Padalinys',
+      type: 'checkbox',
+      icon: 'Users',
+      defaultOpen: false,
+      maxValues: 15,
+      sortBy: 'count',
+    },
+    {
+      field: 'is_reservable',
+      label: 'Ar skolinamas',
+      type: 'checkbox',
+      icon: 'CalendarCheck',
+      defaultOpen: false,
+      sortBy: 'count',
+    },
+  ],
+}
+
+/**
  * Get facet config for a collection
  */
 export function getCollectionFacetConfig(collection: string): CollectionFacetConfig | null {
@@ -189,6 +225,8 @@ export function getCollectionFacetConfig(collection: string): CollectionFacetCon
       return NEWS_FACET_CONFIG
     case 'institutions':
       return INSTITUTION_FACET_CONFIG
+    case 'resources':
+      return RESOURCE_FACET_CONFIG
     default:
       console.warn(`No facet config for collection: ${collection}`)
       return null
@@ -263,6 +301,10 @@ export const FACET_VALUE_LABELS: Record<string, Record<string, string>> = {
     false: 'Nepilnai užpildyta',
   },
   brought_by_students: {
+    true: 'Taip',
+    false: 'Ne',
+  },
+  is_reservable: {
     true: 'Taip',
     false: 'Ne',
   },

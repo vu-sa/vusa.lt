@@ -14,6 +14,11 @@
             </p>
           </div>
 
+          <!-- Header Actions (Create Button, etc.) -->
+          <div v-if="$slots['header-actions']" class="flex items-center gap-2">
+            <slot name="header-actions" />
+          </div>
+
           <!-- Search Input -->
           <div class="w-full lg:w-96">
             <div class="relative">

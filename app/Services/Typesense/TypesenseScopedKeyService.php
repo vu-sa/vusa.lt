@@ -177,13 +177,19 @@ class TypesenseScopedKeyService
                 // User has .padalinys permission - get their accessible tenants for this collection
                 $tenantIds = $this->getTenantIdsForPermission($permission);
 
-                // Also check for institution-based access that extends beyond tenant boundaries
-                // (relationships, coordinator access, direct duties in other tenants)
-                $isInstitutionsCollection = $collection === 'institutions';
-                $institutionIds = $this->getInstitutionIdsForOwnPermission($ownPermission ?? $permission, $user, $isInstitutionsCollection);
-                $directInstitutionIds = $this->institutionAccessService->getUserDutyInstitutionIds($user);
+                // Include institution-based access only when .own permission is defined for this collection
+                $institutionIds = collect();
+                $directInstitutionIds = collect();
 
-                // Build combined filter: tenant_ids OR institution_ids
+                if ($ownPermission) {
+                    // Also check for institution-based access that extends beyond tenant boundaries
+                    // (relationships, coordinator access, direct duties in other tenants)
+                    $isInstitutionsCollection = $collection === 'institutions';
+                    $institutionIds = $this->getInstitutionIdsForOwnPermission($ownPermission, $user, $isInstitutionsCollection);
+                    $directInstitutionIds = $this->institutionAccessService->getUserDutyInstitutionIds($user);
+                }
+
+                // Build combined filter: tenant_ids OR institution_ids (if present)
                 $filterBy = $this->buildCombinedFilterByClause($tenantIds, $institutionIds);
 
                 if (! $filterBy) {

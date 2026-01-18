@@ -532,6 +532,46 @@ return [
                     'prioritize_token_position' => true,
                 ],
             ],
+
+            // Resources - Reservable resources with tenant-based access
+            \App\Models\Resource::class => [
+                'collection-schema' => [
+                    'fields' => [
+                        ['name' => 'id', 'type' => 'string'],
+                        ['name' => 'name_lt', 'type' => 'string', 'infix' => true, 'sort' => true],
+                        ['name' => 'name_en', 'type' => 'string', 'infix' => true, 'sort' => true, 'optional' => true],
+                        ['name' => 'description_lt', 'type' => 'string', 'infix' => true, 'optional' => true],
+                        ['name' => 'description_en', 'type' => 'string', 'infix' => true, 'optional' => true],
+                        ['name' => 'location', 'type' => 'string', 'infix' => true, 'optional' => true],
+                        ['name' => 'capacity', 'type' => 'int32', 'sort' => true, 'optional' => true],
+                        ['name' => 'is_reservable', 'type' => 'bool', 'facet' => true],
+
+                        // Tenant filtering (CRITICAL for scoped API keys)
+                        ['name' => 'tenant_id', 'type' => 'int32', 'facet' => true, 'optional' => true],
+                        ['name' => 'tenant_ids', 'type' => 'int32[]', 'facet' => true],
+                        ['name' => 'tenant_shortname', 'type' => 'string', 'facet' => true, 'optional' => true],
+
+                        // Category info
+                        ['name' => 'category_id', 'type' => 'int32', 'facet' => true, 'optional' => true],
+                        ['name' => 'category_name', 'type' => 'string', 'facet' => true, 'optional' => true],
+
+                        // Media
+                        ['name' => 'image_url', 'type' => 'string', 'optional' => true],
+
+                        ['name' => 'created_at', 'type' => 'int64', 'sort' => true],
+                    ],
+                    'default_sorting_field' => 'created_at',
+                    'enable_nested_fields' => false,
+                ],
+                'search-parameters' => [
+                    'query_by' => 'name_lt,name_en,description_lt,description_en,location',
+                    'query_by_weights' => '10,10,5,5,3',
+                    'typo_tokens_threshold' => 1,
+                    'num_typos' => 2,
+                    'prioritize_exact_match' => true,
+                    'prioritize_token_position' => true,
+                ],
+            ],
         ],
     ],
 

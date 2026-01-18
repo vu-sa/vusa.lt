@@ -11,6 +11,7 @@ use App\Models\Page;
 use App\Models\Pivots\AgendaItem;
 use App\Models\PublicInstitution;
 use App\Models\PublicMeeting;
+use App\Models\Resource;
 use Illuminate\Support\Facades\Config;
 
 /**
@@ -110,6 +111,11 @@ class TypesenseCollectionConfig
             'permission' => null, // No permission required - documents are publicly accessible
             'description' => 'Documents searchable without tenant filtering (public access)',
             'skip_tenant_filter' => true, // Documents are publicly accessible, no tenant scoping
+        ],
+        'resources' => [
+            'model' => Resource::class,
+            'permission' => 'resources.read.padalinys',
+            'description' => 'Reservable resources with tenant-based access',
         ],
     ];
 

@@ -1,19 +1,44 @@
 <template>
   <AdminContentPage :breadcrumb-options>
-    <AdminSearchLayout :title="$t('Posėdžių paieška')"
-      :description="$t('Ieškokite posėdžių pagal pavadinimą, instituciją ar metą')"
-      :query="searchController.query.value" :search-placeholder="$t('Ieškoti posėdžių...')"
-      :total-hits="searchController.totalHits.value" :sort-by="searchController.sortBy.value"
-      :sort-options="searchController.sortOptions.value" :active-filter-count="searchController.activeFilterCount.value"
-      :has-more-results="searchController.hasMoreResults.value" :is-loading-more="searchController.isLoadingMore.value"
-      @update:query="handleQueryChange" @update:sort-by="searchController.setSortBy" @search="handleSearch"
-      @clear-filters="searchController.clearFilters" @load-more="searchController.loadMore">
+    <AdminSearchLayout
+      :title="capitalize($tChoice('entities.resource.model', 2))"
+      :description="$t('Ieškokite išteklių pagal pavadinimą, kategoriją ar padalinį')"
+      :query="searchController.query.value"
+      :search-placeholder="$t('Ieškoti išteklių...')"
+      :total-hits="searchController.totalHits.value"
+      :sort-by="searchController.sortBy.value"
+      :sort-options="searchController.sortOptions.value"
+      :active-filter-count="searchController.activeFilterCount.value"
+      :has-more-results="searchController.hasMoreResults.value"
+      :is-loading-more="searchController.isLoadingMore.value"
+      @update:query="handleQueryChange"
+      @update:sort-by="searchController.setSortBy"
+      @search="handleSearch"
+      @clear-filters="searchController.clearFilters"
+      @load-more="searchController.loadMore"
+    >
+      <!-- Header Actions (Create Button) -->
+      <template v-if="can?.create" #header-actions>
+        <Link :href="route('resources.create')">
+          <Button>
+            <Plus class="size-4 mr-2" />
+            {{ $t('Sukurti išteklių') }}
+          </Button>
+        </Link>
+      </template>
+
       <!-- Facet Sidebar -->
       <template #sidebar>
-        <AdminFacetSidebar :facets="searchController.facets.value" :filters="searchController.filters.value"
-          :facet-config="searchController.facetConfig" :is-loading="searchController.isLoadingFacets.value"
-          :active-filter-count="searchController.activeFilterCount.value" @toggle-filter="searchController.toggleFilter"
-          @set-filter="searchController.setFilter" @clear-filters="searchController.clearFilters" />
+        <AdminFacetSidebar
+          :facets="searchController.facets.value"
+          :filters="searchController.filters.value"
+          :facet-config="searchController.facetConfig"
+          :is-loading="searchController.isLoadingFacets.value"
+          :active-filter-count="searchController.activeFilterCount.value"
+          @toggle-filter="searchController.toggleFilter"
+          @set-filter="searchController.setFilter"
+          @clear-filters="searchController.clearFilters"
+        />
       </template>
 
       <!-- Active Filters Pills -->
@@ -28,12 +53,19 @@
 
       <!-- Results -->
       <template #results>
-        <AdminSearchResults :is-searching="searchController.isSearching.value"
-          :has-results="searchController.hasResults.value" :has-searched="hasSearched"
-          :has-active-filters="searchController.hasActiveFilters.value" :error="searchController.error.value"
-          :empty-message="$t('Nerasta posėdžių pagal jūsų paiešką')" layout="grid" :grid-cols="2"
-          @retry="searchController.refresh" @clear-filters="searchController.clearFilters">
-          <MeetingSearchCard v-for="meeting in typedResults" :key="meeting.id" :meeting />
+        <AdminSearchResults
+          :is-searching="searchController.isSearching.value"
+          :has-results="searchController.hasResults.value"
+          :has-searched="hasSearched"
+          :has-active-filters="searchController.hasActiveFilters.value"
+          :error="searchController.error.value"
+          :empty-message="$t('Nerasta išteklių pagal jūsų paiešką')"
+          layout="grid"
+          :grid-cols="2"
+          @retry="searchController.refresh"
+          @clear-filters="searchController.clearFilters"
+        >
+          <ResourceSearchCard v-for="resource in typedResults" :key="resource.id" :resource />
         </AdminSearchResults>
       </template>
     </AdminSearchLayout>
@@ -42,7 +74,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { trans as $t } from 'laravel-vue-i18n'
+import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n'
 import { Link } from '@inertiajs/vue3'
 import { X, Plus } from 'lucide-vue-next'
 
@@ -54,40 +86,40 @@ import { getFacetValueLabel } from '@/Features/Admin/AdminSearch/Config/collecti
 import AdminSearchLayout from '@/Features/Admin/AdminSearch/Components/AdminSearchLayout.vue'
 import AdminFacetSidebar from '@/Features/Admin/AdminSearch/Components/AdminFacetSidebar.vue'
 import AdminSearchResults from '@/Features/Admin/AdminSearch/Components/AdminSearchResults.vue'
-import MeetingSearchCard from '@/Features/Admin/AdminSearch/Components/Cards/MeetingSearchCard.vue'
-import type { MeetingSearchResult } from '@/Composables/useAdminSearch'
-import { MeetingIcon } from '@/Components/icons'
+import ResourceSearchCard from '@/Features/Admin/AdminSearch/Components/Cards/ResourceSearchCard.vue'
+import { capitalize } from '@/Utils/String'
+import Icons from '@/Types/Icons/regular'
+import type { ResourceSearchResult } from '@/Shared/Search/types'
 
 // Props from controller
 interface Props {
-  can?: {
-    create?: boolean
+  can: {
+    create: boolean
   }
 }
 
-const { can } = defineProps<Props>()
+defineProps<Props>()
 
 // Breadcrumbs
 const breadcrumbOptions = [
-  { label: $t('Paieška'), icon: MeetingIcon },
-  { label: $t('Posėdžiai') },
+  { label: $tChoice('entities.resource.model', 2), icon: Icons.RESOURCE },
 ]
 
 // Track if user has performed a search
 const hasSearched = ref(false)
 
-// Initialize search controller for meetings collection
+// Initialize search controller for resources collection
 const searchController = useAdminCollectionSearch({
-  collection: 'meetings',
+  collection: 'resources',
   loadFacetsOnMount: true,
   searchOnMount: true,
   syncToUrl: true,
   perPage: 24,
 })
 
-// Type the results as MeetingSearchResult[]
+// Type the results as ResourceSearchResult[]
 const typedResults = computed(() => {
-  return searchController.results.value as MeetingSearchResult[]
+  return searchController.results.value as ResourceSearchResult[]
 })
 
 // Compute active filter pills (excluding empty arrays and query)

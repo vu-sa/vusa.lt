@@ -437,6 +437,26 @@ export interface DocumentSearchResult {
 }
 
 /**
+ * Resource search result
+ */
+export interface ResourceSearchResult {
+  id: string
+  name_lt?: string
+  name_en?: string
+  description_lt?: string
+  description_en?: string
+  location?: string
+  capacity?: number
+  is_reservable: boolean
+  tenant_id?: number
+  tenant_shortname?: string
+  category_id?: number
+  category_name?: string
+  image_url?: string
+  created_at?: number
+}
+
+/**
  * Multi-search results container (admin search)
  */
 export interface MultiSearchResults {

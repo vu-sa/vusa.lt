@@ -17,6 +17,16 @@
       @clear-filters="searchController.clearFilters"
       @load-more="searchController.loadMore"
     >
+      <!-- Header Actions (Create Button) -->
+      <template v-if="can?.create" #header-actions>
+        <Link :href="route('institutions.create')">
+          <Button>
+            <Plus class="size-4 mr-2" />
+            {{ $t('Sukurti instituciją') }}
+          </Button>
+        </Link>
+      </template>
+
       <!-- Facet Sidebar -->
       <template #sidebar>
         <AdminFacetSidebar
@@ -78,9 +88,11 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { trans as $t } from 'laravel-vue-i18n'
-import { X } from 'lucide-vue-next'
+import { Link } from '@inertiajs/vue3'
+import { X, Plus } from 'lucide-vue-next'
 
 import { Badge } from '@/Components/ui/badge'
+import { Button } from '@/Components/ui/button'
 import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue'
 import { useAdminCollectionSearch } from '@/Features/Admin/AdminSearch/Composables/useAdminCollectionSearch'
 import { getFacetValueLabel } from '@/Features/Admin/AdminSearch/Config/collectionFacetConfig'
@@ -90,6 +102,15 @@ import AdminSearchResults from '@/Features/Admin/AdminSearch/Components/AdminSea
 import InstitutionSearchCard from '@/Features/Admin/AdminSearch/Components/Cards/InstitutionSearchCard.vue'
 import type { InstitutionSearchResult } from '@/Composables/useAdminSearch'
 import { InstitutionIcon } from '@/Components/icons'
+
+// Props from controller
+interface Props {
+  can?: {
+    create?: boolean
+  }
+}
+
+const { can } = defineProps<Props>()
 
 // Breadcrumbs
 const breadcrumbOptions = [

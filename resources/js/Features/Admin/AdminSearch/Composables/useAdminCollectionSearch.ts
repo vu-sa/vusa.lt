@@ -88,6 +88,7 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
   const facets = shallowRef<AdminFacet[]>([])
   const initialFacets = shallowRef<AdminFacet[]>([])
   const initialFacetsLoaded = ref(false)
+  const initialFacetsLoading = ref(false)
 
   // Error state
   const error = ref<AdminSearchError | null>(null)
@@ -124,15 +125,37 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
   }
 
   /**
+   * Validate collection access and API key
+   * @returns true if access is valid, false otherwise (sets error state)
+   */
+  const validateCollectionAccess = (): boolean => {
+    if (!adminSearch.hasCollectionAccess(collection) || !adminSearch.getCollectionApiKey(collection)) {
+      error.value = {
+        type: 'auth',
+        message: 'No access to this collection',
+        userMessage: 'Neturite prieigos prie šios paieškos.',
+        retryable: false,
+      }
+      return false
+    }
+    return true
+  }
+
+  /**
    * Load initial facets (all available filter options)
    */
   const loadInitialFacets = async () => {
-    if (initialFacetsLoaded.value) return
+    if (initialFacetsLoaded.value || initialFacetsLoading.value) return
+
+    if (!validateCollectionAccess()) return
 
     status.value = 'loading-facets'
+    initialFacetsLoading.value = true
 
     try {
-      const rawFacets = await adminSearch.loadInitialFacets(collection, facetConfig.facetBy)
+      const rawFacets = await adminSearch.loadInitialFacets(collection, facetConfig.facetBy, {
+        queryBy: facetConfig.queryBy,
+      })
 
       initialFacets.value = parseFacets(rawFacets, facetConfig, filters.value)
       initialFacetsLoaded.value = true
@@ -151,6 +174,7 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
       }
     } finally {
       status.value = 'idle'
+      initialFacetsLoading.value = false
     }
   }
 
@@ -367,6 +391,7 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
     () => adminSearch.config.value,
     (newConfig) => {
       if (newConfig && !initialFacetsLoaded.value) {
+        if (!validateCollectionAccess()) return
         loadInitialFacets()
       }
     }
@@ -376,6 +401,8 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
   onMounted(async () => {
     // Initialize admin search
     await adminSearch.initialize()
+
+    if (!validateCollectionAccess()) return
 
     // Load state from URL if enabled
     if (syncToUrl) {
