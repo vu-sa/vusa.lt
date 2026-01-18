@@ -18,7 +18,8 @@
           </span>
           <span
             v-if="institution.alias"
-            class="inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium ring-1 ring-inset bg-zinc-500/10 text-zinc-600 ring-zinc-500/20 dark:bg-zinc-500/20 dark:text-zinc-400"
+            class="inline-flex items-center max-w-40 truncate whitespace-nowrap rounded-full px-1.5 py-0.5 text-[10px] font-medium ring-1 ring-inset bg-zinc-500/10 text-zinc-600 ring-zinc-500/20 dark:bg-zinc-500/20 dark:text-zinc-400"
+            :title="institution.alias"
           >
             {{ institution.alias }}
           </span>

@@ -254,7 +254,7 @@ class TypesenseCollectionConfig
     }
 
     /**
-     * Get all model classes that are searchable
+     * Get all unique model classes that are searchable (for reindexing)
      *
      * @return array<class-string>
      */
@@ -263,7 +263,8 @@ class TypesenseCollectionConfig
         $publicModels = array_column(self::PUBLIC_COLLECTIONS, 'model');
         $adminModels = array_column(self::ADMIN_COLLECTIONS, 'model');
 
-        return array_merge($publicModels, $adminModels);
+        // Return unique models only (some models appear in both public and admin)
+        return array_values(array_unique(array_merge($publicModels, $adminModels)));
     }
 
     /**

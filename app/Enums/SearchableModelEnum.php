@@ -2,6 +2,7 @@
 
 namespace App\Enums;
 
+use App\Services\Typesense\TypesenseCollectionConfig;
 use Spatie\Enum\Laravel\Enum;
 
 /**
@@ -16,6 +17,7 @@ use Spatie\Enum\Laravel\Enum;
  * @method static self MEETING()
  * @method static self AGENDA_ITEM()
  * @method static self RESOURCE()
+ * @method static self INSTITUTION()
  */
 final class SearchableModelEnum extends Enum
 {
@@ -31,29 +33,25 @@ final class SearchableModelEnum extends Enum
             'MEETING' => 'meeting',
             'AGENDA_ITEM' => 'agenda_item',
             'RESOURCE' => 'resource',
+            'INSTITUTION' => 'institution',
         ];
     }
 
     /**
-     * Get all searchable model classes
+     * Get all searchable model classes.
+     * Delegates to TypesenseCollectionConfig as the single source of truth.
+     *
+     * @return array<class-string>
      */
     public static function getAllModelClasses(): array
     {
-        return [
-            \App\Models\News::class,
-            \App\Models\Page::class,
-            \App\Models\Document::class,
-            \App\Models\Calendar::class,
-            \App\Models\PublicInstitution::class,
-            \App\Models\PublicMeeting::class,
-            \App\Models\Meeting::class,
-            \App\Models\Pivots\AgendaItem::class,
-            \App\Models\Resource::class,
-        ];
+        return TypesenseCollectionConfig::getAllModelClasses();
     }
 
     /**
      * Get models that use Typesense (as opposed to database search)
+     *
+     * @return array<class-string>
      */
     public static function getTypesenseModelClasses(): array
     {
