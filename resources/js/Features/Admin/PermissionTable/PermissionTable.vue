@@ -1,27 +1,27 @@
 <template>
-  <Spinner :show="formDisabled">
-    <template #description>
-      <p>Netikėta klaida. Praneškite administratoriui.</p>
-    </template>
-    <table class="w-full table-auto">
-      <thead>
-        <tr>
-          <th />
-          <th>{{ padalinysHeaderText }}</th>
-          <th>{{ allHeaderText }}</th>
-        </tr>
-      </thead>
-      <tbody class="border-t-8 border-transparent">
-        <PermissionTableRow v-for="ability in abilities" :key="ability" :disabled="formDisabled"
-          :default-value="permissionData[ability]" :permissions="permissions" :icon="icon" :ability="ability"
-          :available-permissions="availablePermissions" @update="(value) => handlePermissionUpdate(ability, value)" />
-      </tbody>
-    </table>
-    <div class="mt-4 flex justify-end">
-      <Button :disabled="formDisabled || !isDirty" :class="{ 'opacity-50 cursor-not-allowed': formDisabled || !isDirty }"
-        variant="default" :data-loading="loading" @click="updatePermissionsForRole">Atnaujinti</Button>
-    </div>
+  <Spinner v-if="formDisabled">
+    <p>Netikėta klaida. Praneškite administratoriui.</p>
   </Spinner>
+  <table v-else class="w-full table-auto">
+    <thead>
+      <tr>
+        <th />
+        <th>{{ padalinysHeaderText }}</th>
+        <th>{{ allHeaderText }}</th>
+      </tr>
+    </thead>
+    <tbody class="border-t-8 border-transparent">
+      <PermissionTableRow v-for="ability in abilities" :key="ability" :disabled="formDisabled"
+        :default-value="permissionData[ability]" :permissions :icon :ability :available-permissions
+        @update="(value) => handlePermissionUpdate(ability, value)" />
+    </tbody>
+  </table>
+  <div class="mt-4 flex justify-end">
+    <Button :disabled="formDisabled || !isDirty" :class="{ 'opacity-50 cursor-not-allowed': formDisabled || !isDirty }"
+      variant="default" :data-loading="loading" @click="updatePermissionsForRole">
+      Atnaujinti
+    </Button>
+  </div>
 </template>
 
 <script setup lang="tsx">
@@ -48,7 +48,7 @@ const loading = ref(false);
 // Determine available scopes for this model type
 const availableScopes = computed(() => {
   const scopes = new Set<string>();
-  
+
   // Extract scopes from available permissions
   props.availablePermissions.forEach(permission => {
     const parts = permission.split('.');
@@ -56,7 +56,7 @@ const availableScopes = computed(() => {
       scopes.add(parts[2]);
     }
   });
-  
+
   return {
     hasOwn: scopes.has('own'),
     hasPadalinys: scopes.has('padalinys'),
@@ -128,7 +128,7 @@ const originalData = { ...formTemplate };
 
 // Check if form has changes
 const isDirty = computed(() => {
-  return Object.keys(permissionData).some(key => 
+  return Object.keys(permissionData).some(key =>
     permissionData[key as keyof typeof permissionData] !== originalData[key as keyof typeof originalData]
   );
 });
