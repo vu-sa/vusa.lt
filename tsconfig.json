@@ -42,7 +42,6 @@
     },
     "types": [
       "vite/client",
-      "unplugin-vue-define-options/macros-global",
       "@microsoft/microsoft-graph-types",
       "unplugin-icons/types/vue",
       "vite-plugin-ziggy/routes"

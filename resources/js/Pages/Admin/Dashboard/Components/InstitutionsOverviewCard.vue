@@ -19,7 +19,10 @@
       <div class="space-y-2">
         <InstitutionCompactCard v-for="inst in limitedInstitutions" :key="inst.id" :institution="inst"
           :show-actions="true" :can-schedule-meeting="true" :can-add-check-in="true"
-          @schedule-meeting="$emit('schedule-meeting', $event)" @add-check-in="handleAddCheckIn" @remove-active-check-in="handleRemoveActiveCheckIn" />
+          :follow-loading="followLoadingStates[String(inst.id)]"
+          :mute-loading="muteLoadingStates[String(inst.id)]"
+          @schedule-meeting="$emit('schedule-meeting', $event)" @add-check-in="handleAddCheckIn" @remove-active-check-in="handleRemoveActiveCheckIn"
+          @toggle-follow="handleToggleFollow" @toggle-mute="handleToggleMute" />
       </div>
 
 
@@ -58,6 +61,7 @@ import { trans as $t } from 'laravel-vue-i18n'
 import type { AtstovavimosInstitution } from '../types'
 import AddCheckInDialog from '@/Components/Institutions/AddCheckInDialog.vue'
 import InstitutionCompactCard from '@/Components/Institutions/InstitutionCompactCard.vue'
+import { useInstitutionSubscription } from '../Composables/useInstitutionSubscription'
 
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/Components/ui/card'
 import { Button } from '@/Components/ui/button'
@@ -191,5 +195,37 @@ const handleRemoveActiveCheckIn = (institutionId: string) => {
       router.reload({ only: ['user', 'userInstitutions', 'tenantInstitutions'], preserveScroll: true })
     }
   })
+}
+
+// Institution subscription handlers
+const { toggleFollow, toggleMute, followLoading, muteLoading } = useInstitutionSubscription()
+
+const followLoadingStates = computed(() => followLoading.value)
+const muteLoadingStates = computed(() => muteLoading.value)
+
+const handleToggleFollow = async (institutionId: string) => {
+  const institution = props.institutions.find(i => String(i.id) === String(institutionId))
+  if (!institution) return
+  
+  const currentState = institution.subscription ?? {
+    is_followed: false,
+    is_muted: false,
+    is_duty_based: false,
+  }
+  
+  await toggleFollow(institutionId, currentState, ['user', 'userInstitutions', 'tenantInstitutions'])
+}
+
+const handleToggleMute = async (institutionId: string) => {
+  const institution = props.institutions.find(i => String(i.id) === String(institutionId))
+  if (!institution) return
+  
+  const currentState = institution.subscription ?? {
+    is_followed: false,
+    is_muted: false,
+    is_duty_based: false,
+  }
+  
+  await toggleMute(institutionId, currentState, ['user', 'userInstitutions', 'tenantInstitutions'])
 }
 </script>

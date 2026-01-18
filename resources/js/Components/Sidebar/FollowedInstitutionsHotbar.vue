@@ -2,8 +2,8 @@
 import { useApi } from '@/Composables/useApi'
 import { trans as $t } from 'laravel-vue-i18n'
 import { Link } from '@inertiajs/vue3'
-import { computed, onMounted } from 'vue'
-import { Building2, Calendar, ChevronRight, BellOff } from 'lucide-vue-next'
+import { computed, onMounted, ref, defineAsyncComponent } from 'vue'
+import { Building2, Calendar, ChevronRight, BellOff, Settings2 } from 'lucide-vue-next'
 import { Skeleton } from '@/Components/ui/skeleton'
 import {
   SidebarGroup,
@@ -19,6 +19,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/Components/ui/tooltip'
+
+// Async load the modal to avoid circular dependency issues
+const ManageSubscriptionsModal = defineAsyncComponent(
+  () => import('@/Pages/Admin/Dashboard/Components/ManageSubscriptionsModal.vue')
+)
 
 interface FollowedInstitution {
   id: string
@@ -47,6 +52,9 @@ const institutions = computed(() => data.value ?? [])
 
 const hasInstitutions = computed(() => institutions.value.length > 0)
 
+// Modal state
+const showManageModal = ref(false)
+
 // Format date for display
 const formatDate = (dateString: string) => {
   const date = new Date(dateString)
@@ -61,8 +69,33 @@ onMounted(() => {
 
 <template>
   <SidebarGroup class="group-data-[collapsible=icon]:hidden">
-    <SidebarGroupLabel class="text-xs font-medium text-muted-foreground">
-      {{ $t('visak.followed_institutions') }}
+    <!-- Dynamic label: clickable when empty, with settings icon when has institutions -->
+    <SidebarGroupLabel class="text-xs font-medium text-muted-foreground flex items-center justify-between">
+      <button
+        v-if="!hasInstitutions && !isFetching"
+        class="hover:text-foreground transition-colors cursor-pointer text-left"
+        @click="showManageModal = true"
+      >
+        {{ $t('visak.follow_institutions_question') }}
+      </button>
+      <span v-else>{{ $t('visak.followed_institutions') }}</span>
+      
+      <!-- Settings icon when has institutions -->
+      <TooltipProvider v-if="hasInstitutions">
+        <Tooltip>
+          <TooltipTrigger as-child>
+            <button
+              class="p-0.5 rounded hover:bg-sidebar-accent/50 text-muted-foreground hover:text-foreground transition-colors"
+              @click="showManageModal = true"
+            >
+              <Settings2 class="h-3.5 w-3.5" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="right">
+            {{ $t('visak.manage_subscriptions') }}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     </SidebarGroupLabel>
     <SidebarGroupContent>
       <!-- Loading state -->
@@ -71,13 +104,8 @@ onMounted(() => {
         <Skeleton class="h-8 w-full" />
       </div>
 
-      <!-- Empty state -->
-      <div v-else-if="!hasInstitutions" class="px-2 py-2 text-xs text-muted-foreground">
-        {{ $t('Nėra stebimų institucijų') }}
-      </div>
-
-      <!-- Institutions list -->
-      <SidebarMenu v-else>
+      <!-- Institutions list (no empty state text - the label acts as CTA) -->
+      <SidebarMenu v-if="hasInstitutions">
         <SidebarMenuItem v-for="institution in institutions" :key="institution.id">
           <TooltipProvider>
             <Tooltip>
@@ -130,4 +158,10 @@ onMounted(() => {
       </SidebarMenu>
     </SidebarGroupContent>
   </SidebarGroup>
+
+  <!-- Manage Subscriptions Modal -->
+  <ManageSubscriptionsModal
+    :is-open="showManageModal"
+    @update:is-open="showManageModal = $event"
+  />
 </template>

@@ -27,6 +27,8 @@ return [
     'muted_institutions' => 'Nutildytos institucijos',
     'no_additional_follows' => 'Nėra papildomai stebimų institucijų',
     'no_muted_institutions' => 'Nėra nutildytų institucijų',
+    'follow_institutions_question' => 'Stebėti institucijas?',
+    'manage_subscriptions_description' => 'Stebėkite institucijas, kad gautumėte pranešimus apie jų posėdžius. Galite pradėti stebėti institucijas jų puslapiuose.',
     'reset_to_defaults' => 'Atstatyti numatytuosius',
     'reset_confirm' => 'Ar tikrai norite atstatyti nustatymus? Bus pašalintos visos nutildytos institucijos.',
     'related_institutions_info' => 'Susijusios institucijos yra tos, kurios yra susietos su jūsų atstovaujamomis institucijomis. Galite jas stebėti arba nutildyti pranešimus.',

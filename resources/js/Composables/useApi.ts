@@ -105,6 +105,11 @@ export interface UseApiReturn<T> {
 /**
  * Make type-safe API calls with consistent error handling
  *
+ * @typeParam T - The type of the inner `data` payload in ApiResponse.
+ *   This is NOT the full response wrapper - useApi automatically unwraps
+ *   `{success: true, data: T}` to just `T` in the returned `data` computed ref.
+ *   Use `isSuccess` to check if the request was successful.
+ *
  * @param url - API endpoint URL (use route() helper)
  * @param options - Fetch options
  */
@@ -121,7 +126,7 @@ export function useApi<T = unknown>(
     ...fetchOptions
   } = options;
 
-  const { toast } = useToasts();
+  const toasts = useToasts();
 
   // Use VueUse's useFetch
   const fetchReturn = useFetch<ApiResponse<T>>(url, {
@@ -159,6 +164,13 @@ export function useApi<T = unknown>(
             code: 'SERVER_ERROR',
           };
         }
+      } else if (!ctx.data) {
+        // Handle case where data is null/undefined on error
+        ctx.data = {
+          success: false,
+          message: ctx.error?.message || 'Network error',
+          code: 'SERVER_ERROR',
+        };
       }
       return ctx;
     },
@@ -167,7 +179,7 @@ export function useApi<T = unknown>(
   // Computed: unwrap data from successful response
   const data = computed<T | null>(() => {
     const rawData = unref(fetchReturn.data);
-    if (rawData && rawData.success === true && 'data' in rawData) {
+    if (rawData && typeof rawData === 'object' && 'success' in rawData && rawData.success === true && 'data' in rawData) {
       const responseData = rawData.data as T;
       return transform ? transform(responseData) : responseData;
     }
@@ -189,7 +201,7 @@ export function useApi<T = unknown>(
   // Computed: check if successful
   const isSuccess = computed<boolean>(() => {
     const rawData = unref(fetchReturn.data);
-    return rawData?.success === true;
+    return rawData !== null && rawData !== undefined && rawData?.success === true;
   });
 
   // Wrap execute to handle toasts
@@ -198,14 +210,22 @@ export function useApi<T = unknown>(
 
     const rawData = unref(fetchReturn.data);
 
-    if (rawData?.success === true && showSuccessToast) {
-      const message = successMessage || (rawData as ApiSuccessResponse<T>).message || 'Success';
-      toast.success(message);
+    // Safety check for undefined/null response
+    if (rawData === null || rawData === undefined) {
+      if (showErrorToast) {
+        toasts.error(errorMessage || 'No response from server');
+      }
+      return;
     }
 
-    if (rawData?.success === false && showErrorToast) {
+    if (rawData.success === true && showSuccessToast) {
+      const message = successMessage || (rawData as ApiSuccessResponse<T>).message || 'Success';
+      toasts.success(message);
+    }
+
+    if (rawData.success === false && showErrorToast) {
       const message = errorMessage || (rawData as ApiErrorResponse).message || 'An error occurred';
-      toast.error(message);
+      toasts.error(message);
     }
   };
 
@@ -223,6 +243,12 @@ export function useApi<T = unknown>(
 
 /**
  * Make a POST/PUT/PATCH/DELETE API call
+ *
+ * @typeParam T - The type of the inner `data` payload in ApiResponse.
+ *   This is NOT the full response wrapper - useApiMutation automatically unwraps
+ *   `{success: true, data: T}` to just `T` in the returned `data` computed ref.
+ *   Use `isSuccess` to check if the request was successful.
+ * @typeParam B - The type of the request body
  *
  * @param url - API endpoint URL
  * @param method - HTTP method
@@ -244,7 +270,7 @@ export function useApiMutation<T = unknown, B = unknown>(
     ...fetchOptions
   } = options;
 
-  const { toast } = useToasts();
+  const toasts = useToasts();
 
   const fetchReturn = useFetch<ApiResponse<T>>(url, {
     ...fetchOptions,
@@ -288,6 +314,13 @@ export function useApiMutation<T = unknown, B = unknown>(
             code: 'SERVER_ERROR',
           };
         }
+      } else if (!ctx.data) {
+        // Handle case where data is null/undefined on error
+        ctx.data = {
+          success: false,
+          message: ctx.error?.message || 'Network error',
+          code: 'SERVER_ERROR',
+        };
       }
       return ctx;
     },
@@ -295,7 +328,7 @@ export function useApiMutation<T = unknown, B = unknown>(
 
   const data = computed<T | null>(() => {
     const rawData = unref(fetchReturn.data);
-    if (rawData && rawData.success === true && 'data' in rawData) {
+    if (rawData && typeof rawData === 'object' && 'success' in rawData && rawData.success === true && 'data' in rawData) {
       const responseData = rawData.data as T;
       return transform ? transform(responseData) : responseData;
     }
@@ -315,7 +348,7 @@ export function useApiMutation<T = unknown, B = unknown>(
 
   const isSuccess = computed<boolean>(() => {
     const rawData = unref(fetchReturn.data);
-    return rawData?.success === true;
+    return rawData !== null && rawData !== undefined && rawData?.success === true;
   });
 
   const execute = async (): Promise<void> => {
@@ -323,14 +356,22 @@ export function useApiMutation<T = unknown, B = unknown>(
 
     const rawData = unref(fetchReturn.data);
 
-    if (rawData?.success === true && showSuccessToast) {
-      const message = successMessage || (rawData as ApiSuccessResponse<T>).message || 'Success';
-      toast.success(message);
+    // Safety check for undefined/null response
+    if (rawData === null || rawData === undefined) {
+      if (showErrorToast) {
+        toasts.error(errorMessage || 'No response from server');
+      }
+      return;
     }
 
-    if (rawData?.success === false && showErrorToast) {
+    if (rawData.success === true && showSuccessToast) {
+      const message = successMessage || (rawData as ApiSuccessResponse<T>).message || 'Success';
+      toasts.success(message);
+    }
+
+    if (rawData.success === false && showErrorToast) {
       const message = errorMessage || (rawData as ApiErrorResponse).message || 'An error occurred';
-      toast.error(message);
+      toasts.error(message);
     }
   };
 

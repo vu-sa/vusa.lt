@@ -6,8 +6,8 @@
           <Settings2 class="h-5 w-5" />
           {{ $t('visak.manage_subscriptions') }}
         </DialogTitle>
-        <DialogDescription>
-          {{ $t('Valdykite stebimas ir nutildytas institucijas') }}
+        <DialogDescription class="space-y-2">
+          <p>{{ $t('visak.manage_subscriptions_description') }}</p>
         </DialogDescription>
       </DialogHeader>
 

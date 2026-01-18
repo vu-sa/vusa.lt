@@ -10,12 +10,14 @@ interface SubscriptionState {
   is_duty_based: boolean;
 }
 
-interface ToggleResponse {
-  success: boolean;
-  data?: {
-    is_followed?: boolean;
-    is_muted?: boolean;
-  };
+/**
+ * Inner data payload from follow/mute API endpoints.
+ * Note: This represents the `data` property from the API response,
+ * NOT the full ApiResponse wrapper (which has success/data/message).
+ */
+interface ToggleResponseData {
+  is_followed?: boolean;
+  is_muted?: boolean;
   message?: string;
 }
 
@@ -55,7 +57,7 @@ export function useInstitutionSubscription() {
       ? 'api.v1.admin.institutions.unfollow' 
       : 'api.v1.admin.institutions.follow';
 
-    const { execute, isSuccess, data } = useApiMutation<ToggleResponse>(
+    const { execute, isSuccess } = useApiMutation<ToggleResponseData>(
       route(routeName, { institution: institutionId }),
       method,
       undefined,
@@ -108,7 +110,7 @@ export function useInstitutionSubscription() {
       ? 'api.v1.admin.institutions.unmute' 
       : 'api.v1.admin.institutions.mute';
 
-    const { execute, isSuccess } = useApiMutation<ToggleResponse>(
+    const { execute, isSuccess } = useApiMutation<ToggleResponseData>(
       route(routeName, { institution: institutionId }),
       method,
       undefined,

@@ -323,7 +323,7 @@ const isMuteLoading = computed(() => muteLoading.value[String(props.institution.
 const toggleFollow = async () => {
   if (isDutyBased.value) return;
   
-  const newState = await doToggleFollow(String(props.institution.id), subscriptionState.value);
+  const newState = await doToggleFollow(String(props.institution.id), subscriptionState.value, ['subscription']);
   isFollowed.value = newState;
   // If unfollowed, also unmute locally
   if (!newState) {
@@ -334,7 +334,7 @@ const toggleFollow = async () => {
 const toggleMute = async () => {
   if (isDutyBased.value) return;
   
-  const newState = await doToggleMute(String(props.institution.id), subscriptionState.value);
+  const newState = await doToggleMute(String(props.institution.id), subscriptionState.value, ['subscription']);
   isMuted.value = newState;
 };
 

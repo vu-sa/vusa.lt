@@ -27,6 +27,8 @@ return [
     'muted_institutions' => 'Muted institutions',
     'no_additional_follows' => 'No additionally followed institutions',
     'no_muted_institutions' => 'No muted institutions',
+    'follow_institutions_question' => 'Follow institutions?',
+    'manage_subscriptions_description' => 'Follow institutions to receive notifications about their meetings. You can start following institutions from their pages.',
     'reset_to_defaults' => 'Reset to defaults',
     'reset_confirm' => 'Are you sure you want to reset? This will unmute all institutions.',
     'related_institutions_info' => 'Related institutions are those connected to the institutions you represent. You can follow them or mute their notifications.',

@@ -47,8 +47,7 @@
           :current-user-id="Number(props.user.id)" @show-all-institutions="actions.showAllInstitutionModal.value = true"
           @show-all-meetings="actions.showAllMeetingModal.value = true"
           @create-meeting="actions.showMeetingModal.value = true" @schedule-meeting="actions.handleScheduleMeeting"
-          @show-institution-details="actions.handleShowInstitutionDetails"
-          @manage-subscriptions="showManageSubscriptionsModal = true" />
+          @show-institution-details="actions.handleShowInstitutionDetails" />
 
         <!-- User timeline section - deferred to prevent view transition lag -->
         <UserTimelineSection v-if="deferredContentReady" :institutions="atstovavimosData.institutions.value"
@@ -132,9 +131,6 @@
 
     <MeetingDataTable :meetings="atstovavimosData.sortedMeetings.value" :is-open="actions.showAllMeetingModal.value"
       @update:is-open="actions.showAllMeetingModal.value = $event" />
-
-    <ManageSubscriptionsModal :is-open="showManageSubscriptionsModal"
-      @update:is-open="showManageSubscriptionsModal = $event" />
   </AdminContentPage>
 </template>
 
@@ -170,7 +166,6 @@ import TenantTimelineSection from './Components/TenantTimelineSection.vue';
 import InstitutionDataTable from './Components/InstitutionDataTable.vue';
 import MeetingDataTable from './Components/MeetingDataTable.vue';
 import FullscreenGanttModal from './Components/FullscreenGanttModal.vue';
-import ManageSubscriptionsModal from './Components/ManageSubscriptionsModal.vue';
 
 // Composables
 import { useAtstovavimosData } from './Composables/useAtstovavimasData';
@@ -402,9 +397,6 @@ const activeTab = ref(getInitialTab());
 // ViSAK info modal and glow effect
 const showVisakInfo = ref(false);
 const showGlow = ref(false);
-
-// Manage subscriptions modal
-const showManageSubscriptionsModal = ref(false);
 
 // Subtle glow animation after 5 seconds
 onMounted(() => {

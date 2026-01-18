@@ -166,8 +166,8 @@ class InstitutionController extends AdminController
                 ])->values(),
                 'sharepointPath' => $institution->tenant ? $institution->sharepoint_path() : null,
                 'lastMeeting' => $institution->lastMeeting(),
-                'subscription' => $subscriptionStatus,
             ],
+            'subscription' => $subscriptionStatus,
         ]);
     }
 
