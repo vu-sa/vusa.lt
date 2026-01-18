@@ -9,7 +9,8 @@
       </div>
       <input ref="searchInputRef" v-model="query" type="text" :placeholder="$t('Ieškoti veiksmų, posėdžių...')"
         class="flex-1 h-12 bg-transparent text-sm outline-none placeholder:text-muted-foreground/50"
-        @keydown.escape="close">
+        @keydown.escape="close"
+        @keydown.down.prevent="focusFirstResult">
     </div>
 
     <CommandList class="max-h-[60vh] scroll-py-2">
@@ -53,6 +54,75 @@
           <ActionResult v-for="action in filteredActions" :key="action.id" :action />
         </CommandGroup>
 
+        <!-- Institutions (Typesense search) - Priority section -->
+        <CommandGroup v-if="searchResults.institutions.length > 0" class="px-2">
+          <template #heading>
+            <div class="flex items-center justify-between w-full">
+              <span>{{ $t('Institucijos') }}</span>
+              <button 
+                type="button" 
+                class="flex items-center gap-1 text-[10px] font-medium text-primary hover:text-primary/80 transition-colors"
+                @click.stop="navigateToSearch('institutions')"
+              >
+                {{ $t('Rodyti visus') }}
+                <ArrowRight class="size-3" />
+              </button>
+            </div>
+          </template>
+          <InstitutionResult v-for="institution in searchResults.institutions" :key="`institution-${institution.id}`" :institution />
+        </CommandGroup>
+
+        <!-- Meetings (Typesense search) - Priority section -->
+        <CommandGroup v-if="searchResults.meetings.length > 0" class="px-2">
+          <template #heading>
+            <div class="flex items-center justify-between w-full">
+              <span>{{ $t('Posėdžiai') }}</span>
+              <button 
+                type="button" 
+                class="flex items-center gap-1 text-[10px] font-medium text-primary hover:text-primary/80 transition-colors"
+                @click.stop="navigateToSearch('meetings')"
+              >
+                {{ $t('Rodyti visus') }}
+                <ArrowRight class="size-3" />
+              </button>
+            </div>
+          </template>
+          <MeetingResult 
+            v-for="meeting in searchResults.meetings" 
+            :key="`meeting-${meeting.id}`" 
+            :meeting 
+            :is-related="isFromRelatedInstitution('meetings', meeting.institution_ids)"
+          />
+        </CommandGroup>
+
+        <!-- Agenda Items (Typesense search) - Priority section -->
+        <CommandGroup v-if="searchResults.agendaItems.length > 0" class="px-2">
+          <template #heading>
+            <div class="flex items-center justify-between w-full">
+              <span>{{ $t('Darbotvarkės punktai') }}</span>
+              <button 
+                type="button" 
+                class="flex items-center gap-1 text-[10px] font-medium text-primary hover:text-primary/80 transition-colors"
+                @click.stop="navigateToSearch('agendaItems')"
+              >
+                {{ $t('Rodyti visus') }}
+                <ArrowRight class="size-3" />
+              </button>
+            </div>
+          </template>
+          <AgendaItemResult 
+            v-for="item in searchResults.agendaItems" 
+            :key="`agenda-${item.id}`" 
+            :item 
+            :is-related="isFromRelatedInstitution('agenda_items', item.institution_ids)"
+          />
+        </CommandGroup>
+
+        <!-- Documents (Typesense search) -->
+        <CommandGroup v-if="searchResults.documents.length > 0" :heading="$t('Dokumentai')" class="px-2">
+          <DocumentResult v-for="doc in searchResults.documents" :key="`document-${doc.id}`" :document="doc" />
+        </CommandGroup>
+
         <!-- News (Typesense search) -->
         <CommandGroup v-if="searchResults.news.length > 0" :heading="$t('Naujienos')" class="px-2">
           <NewsResult v-for="newsItem in searchResults.news" :key="`news-${newsItem.id}`" :news="newsItem" />
@@ -66,36 +136,6 @@
         <!-- Calendar (Typesense search) -->
         <CommandGroup v-if="searchResults.calendar.length > 0" :heading="$t('Kalendorius')" class="px-2">
           <CalendarResult v-for="event in searchResults.calendar" :key="`calendar-${event.id}`" :event />
-        </CommandGroup>
-
-        <!-- Institutions (Typesense search) -->
-        <CommandGroup v-if="searchResults.institutions.length > 0" :heading="$t('Institucijos')" class="px-2">
-          <InstitutionResult v-for="institution in searchResults.institutions" :key="`institution-${institution.id}`" :institution />
-        </CommandGroup>
-
-        <!-- Meetings (Typesense search) -->
-        <CommandGroup v-if="searchResults.meetings.length > 0" :heading="$t('Posėdžiai')" class="px-2">
-          <MeetingResult 
-            v-for="meeting in searchResults.meetings" 
-            :key="`meeting-${meeting.id}`" 
-            :meeting 
-            :is-related="isFromRelatedInstitution('meetings', meeting.institution_ids)"
-          />
-        </CommandGroup>
-
-        <!-- Agenda Items (Typesense search) -->
-        <CommandGroup v-if="searchResults.agendaItems.length > 0" :heading="$t('Darbotvarkės punktai')" class="px-2">
-          <AgendaItemResult 
-            v-for="item in searchResults.agendaItems" 
-            :key="`agenda-${item.id}`" 
-            :item 
-            :is-related="isFromRelatedInstitution('agenda_items', item.institution_ids)"
-          />
-        </CommandGroup>
-
-        <!-- Documents (Typesense search) -->
-        <CommandGroup v-if="searchResults.documents.length > 0" :heading="$t('Dokumentai')" class="px-2">
-          <DocumentResult v-for="doc in searchResults.documents" :key="`document-${doc.id}`" :document="doc" />
         </CommandGroup>
 
         <!-- Rate limit warning -->
@@ -184,7 +224,8 @@ import {
   ArrowDown,
   ChevronRight,
   SearchX,
-  Sparkles
+  Sparkles,
+  ArrowRight
 } from 'lucide-vue-next'
 
 
@@ -311,12 +352,35 @@ watch(isOpen, (opened) => {
       initializeSearch()
       searchInitialized = true
     }
-    // Focus the search input after dialog opens
+    // Focus the search input after dialog opens with fallback for animation delay
     nextTick(() => {
       searchInputRef.value?.focus()
+      // Fallback in case dialog animation delays rendering
+      setTimeout(() => {
+        searchInputRef.value?.focus()
+      }, 50)
     })
   }
 })
+
+// Focus the first result when pressing down arrow in the input
+const focusFirstResult = () => {
+  const firstItem = document.querySelector('[data-slot="command"] [role="option"]') as HTMLElement
+  if (firstItem) {
+    firstItem.focus()
+  }
+}
+
+// Navigate to dedicated search page
+const navigateToSearch = (type: 'institutions' | 'meetings' | 'agendaItems') => {
+  close()
+  const routes = {
+    institutions: route('search.institutions', { q: query.value }),
+    meetings: route('search.meetings', { q: query.value }),
+    agendaItems: route('search.agendaItems', { q: query.value })
+  }
+  router.visit(routes[type])
+}
 
 // Handle recent item selection
 const handleRecentSelect = (item: RecentItem) => {

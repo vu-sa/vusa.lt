@@ -10,14 +10,9 @@
         >
           <Search class="size-4 xl:mr-2" />
           <span class="hidden xl:inline-flex text-sm">{{ $t('Ieškoti...') }}</span>
-          <div class="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 hidden xl:flex items-center gap-0.5">
-            <kbd class="inline-flex h-5 items-center rounded border bg-muted/60 px-1.5 font-mono text-[10px] font-medium text-muted-foreground/70">
-              {{ isMac ? '⌘' : 'Ctrl' }}
-            </kbd>
-            <kbd class="inline-flex h-5 items-center rounded border bg-muted/60 px-1.5 font-mono text-[10px] font-medium text-muted-foreground/70">
-              K
-            </kbd>
-          </div>
+          <kbd class="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 hidden xl:inline-flex h-5 items-center rounded border bg-muted/60 px-1.5 font-mono text-[10px] font-medium text-muted-foreground/70">
+            {{ isMac ? '⌘K' : 'Ctrl+K' }}
+          </kbd>
         </Button>
       </TooltipTrigger>
       <TooltipContent side="bottom" class="xl:hidden">
