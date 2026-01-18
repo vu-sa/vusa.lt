@@ -1,10 +1,9 @@
 <?php
 
-use App\Models\Duty;
 use App\Models\Institution;
+use App\Models\Permission;
 use App\Models\Role;
 use App\Models\Tenant;
-use App\Models\User;
 use App\Settings\AtstovavimasSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
@@ -24,9 +23,7 @@ beforeEach(function () {
 afterEach(function () {
     // Clean up settings after each test
     $settings = app(AtstovavimasSettings::class);
-    $settings->tenant_visibility_role_ids = [];
-    $settings->global_visibility_role_ids = [];
-    $settings->coordinator_role_ids = [];
+    $settings->institution_manager_role_id = null;
     $settings->save();
     app()->forgetInstance(AtstovavimasSettings::class);
 });
@@ -39,8 +36,7 @@ describe('atstovavimas settings page access', function () {
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Settings/EditAtstovavimasSettings')
                 ->has('roles')
-                ->has('global_visibility_role_ids')
-                ->has('tenant_visibility_role_ids')
+                ->has('institution_manager_role_id')
             );
     });
 
@@ -52,12 +48,12 @@ describe('atstovavimas settings page access', function () {
 });
 
 describe('atstovavimas settings update', function () {
-    test('super admin can update tenant visibility roles', function () {
+    test('super admin can update institution manager role', function () {
         $role = Role::first();
 
         asUser($this->admin)
             ->post(route('settings.atstovavimas.update'), [
-                'tenant_visibility_role_ids' => [$role->id],
+                'institution_manager_role_id' => $role->id,
             ])
             ->assertRedirect();
 
@@ -65,129 +61,75 @@ describe('atstovavimas settings update', function () {
         app()->forgetInstance(AtstovavimasSettings::class);
         $settings = app(AtstovavimasSettings::class);
 
-        expect($settings->getTenantVisibilityRoleIds()->toArray())->toBe([$role->id]);
+        expect($settings->getInstitutionManagerRoleId())->toBe($role->id);
     });
 
-    test('regular user cannot update tenant visibility roles', function () {
+    test('regular user cannot update institution manager role', function () {
         $role = Role::first();
 
         asUser($this->user)
             ->post(route('settings.atstovavimas.update'), [
-                'tenant_visibility_role_ids' => [$role->id],
+                'institution_manager_role_id' => $role->id,
             ])
             ->assertStatus(403);
     });
 
-    test('tenant visibility roles can be cleared', function () {
-        // First set some roles
+    test('institution manager role can be cleared', function () {
+        // First set a role
         $role = Role::first();
         $settings = app(AtstovavimasSettings::class);
-        $settings->tenant_visibility_role_ids = [$role->id];
+        $settings->institution_manager_role_id = $role->id;
         $settings->save();
         app()->forgetInstance(AtstovavimasSettings::class);
 
-        // Then clear them
+        // Then clear it
         asUser($this->admin)
             ->post(route('settings.atstovavimas.update'), [
-                'tenant_visibility_role_ids' => [],
+                'institution_manager_role_id' => null,
             ])
             ->assertRedirect();
 
         app()->forgetInstance(AtstovavimasSettings::class);
         $settings = app(AtstovavimasSettings::class);
 
-        expect($settings->getTenantVisibilityRoleIds()->toArray())->toBe([]);
+        expect($settings->getInstitutionManagerRoleId())->toBeNull();
     });
 
-    test('invalid role ids are rejected', function () {
+    test('invalid role id is rejected', function () {
         asUser($this->admin)
             ->post(route('settings.atstovavimas.update'), [
-                'tenant_visibility_role_ids' => ['invalid-ulid', 'another-invalid'],
+                'institution_manager_role_id' => 'invalid-ulid',
             ])
-            ->assertSessionHasErrors('tenant_visibility_role_ids.0');
+            ->assertSessionHasErrors('institution_manager_role_id');
     });
 });
 
-describe('coordinator tenant visibility', function () {
-    test('user with coordinator role has access to tenant tab', function () {
-        // Create a coordinator role and assign it to user's duty
-        $coordinatorRole = Role::where('name', 'Communication Coordinator')->first();
-        expect($coordinatorRole)->not->toBeNull();
+describe('permission-based tenant visibility', function () {
+    test('user with institutions.read.padalinys permission sees tenant tab', function () {
+        // Give user the permission via their duty's role
+        $permission = Permission::firstOrCreate(['name' => 'institutions.read.padalinys', 'guard_name' => 'web']);
+        $duty = $this->user->current_duties->first();
+        $role = Role::firstOrCreate(['name' => 'Institution Reader Test', 'guard_name' => 'web']);
+        $role->givePermissionTo($permission);
+        $duty->assignRole($role);
 
-        // Create additional institution in the same tenant
-        $extraInstitution = Institution::factory()->for($this->tenant)->create();
-
-        // Configure the coordinator role in settings
-        $settings = app(AtstovavimasSettings::class);
-        $settings->tenant_visibility_role_ids = [$coordinatorRole->id];
-        $settings->save();
-        app()->forgetInstance(AtstovavimasSettings::class);
-
-        // Create user with coordinator role
-        $coordinator = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
-
-        // Clear any cached coordinator tenant IDs
-        AtstovavimasSettings::clearCoordinatorCache($coordinator->id);
-
-        asUser($coordinator)
+        asUser($this->user)
             ->get(route('dashboard.atstovavimas'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Dashboard/ShowAtstovavimas')
-                // userInstitutions only contains directly assigned institutions
                 ->has('userInstitutions')
                 ->where('availableTenants', function ($tenants) {
                     $collection = collect($tenants);
 
-                    // Coordinator should have available tenants (access to tenant tab)
+                    // User with permission should have available tenants
                     return $collection->isNotEmpty() &&
                            $collection->contains(fn ($t) => $t['id'] == $this->tenant->id);
                 })
             );
     });
 
-    test('coordinator can lazy load tenant institutions', function () {
-        // Create a coordinator role and assign it to user's duty
-        $coordinatorRole = Role::where('name', 'Communication Coordinator')->first();
-        expect($coordinatorRole)->not->toBeNull();
-
-        // Create additional institution in the same tenant
-        $extraInstitution = Institution::factory()->for($this->tenant)->create();
-
-        // Configure the coordinator role in settings
-        $settings = app(AtstovavimasSettings::class);
-        $settings->tenant_visibility_role_ids = [$coordinatorRole->id];
-        $settings->save();
-        app()->forgetInstance(AtstovavimasSettings::class);
-
-        // Create user with coordinator role
-        $coordinator = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
-        AtstovavimasSettings::clearCoordinatorCache($coordinator->id);
-
-        // Verify the coordinator has access to available tenants
-        asUser($coordinator)
-            ->get(route('dashboard.atstovavimas'))
-            ->assertStatus(200)
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Dashboard/ShowAtstovavimas')
-                ->where('availableTenants', function ($tenants) {
-                    $collection = collect($tenants);
-
-                    // Coordinator should have available tenants
-                    return $collection->isNotEmpty() &&
-                           $collection->contains(fn ($t) => $t['id'] == $this->tenant->id);
-                })
-            );
-    });
-
-    test('user without coordinator role only sees assigned institutions', function () {
-        // Configure a coordinator role but don't give it to the user
-        $coordinatorRole = Role::where('name', 'Communication Coordinator')->first();
-        $settings = app(AtstovavimasSettings::class);
-        $settings->tenant_visibility_role_ids = [$coordinatorRole->id];
-        $settings->save();
-        app()->forgetInstance(AtstovavimasSettings::class);
-
+    test('user without read permission only sees assigned institutions', function () {
         // Create additional institution in the same tenant
         $extraInstitution = Institution::factory()->for($this->tenant)->create();
 
@@ -202,7 +144,7 @@ describe('coordinator tenant visibility', function () {
                 ->where('userInstitutions', function ($institutions) use ($userInstitutionId, $extraInstitution) {
                     $collection = collect($institutions);
 
-                    // Regular user should NOT see the extra institution
+                    // Regular user should NOT see the extra institution (not assigned via duty)
                     return $collection->doesntContain(fn ($inst) => $inst['id'] == $extraInstitution->id) &&
                            $collection->contains(fn ($inst) => $inst['id'] == $userInstitutionId);
                 })
@@ -213,145 +155,178 @@ describe('coordinator tenant visibility', function () {
             );
     });
 
-    test('coordinator in one tenant only sees that tenant institutions', function () {
-        $coordinatorRole = Role::where('name', 'Communication Coordinator')->first();
-        $settings = app(AtstovavimasSettings::class);
-        $settings->tenant_visibility_role_ids = [$coordinatorRole->id];
-        $settings->save();
-        app()->forgetInstance(AtstovavimasSettings::class);
+    test('user with permission in one tenant only sees that tenant', function () {
+        // Give user the permission via their duty's role
+        $permission = Permission::firstOrCreate(['name' => 'institutions.read.padalinys', 'guard_name' => 'web']);
+        $duty = $this->user->current_duties->first();
+        $role = Role::firstOrCreate(['name' => 'Institution Reader Test', 'guard_name' => 'web']);
+        $role->givePermissionTo($permission);
+        $duty->assignRole($role);
 
         // Create a second tenant with an institution
         $otherTenant = Tenant::factory()->create(['type' => 'padalinys']);
         $otherInstitution = Institution::factory()->for($otherTenant)->create();
 
-        // Create user with coordinator role in first tenant only
-        $coordinator = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
-        AtstovavimasSettings::clearCoordinatorCache($coordinator->id);
-
-        asUser($coordinator)
+        asUser($this->user)
             ->get(route('dashboard.atstovavimas'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Dashboard/ShowAtstovavimas')
-                ->where('userInstitutions', function ($institutions) use ($otherInstitution) {
-                    $collection = collect($institutions);
-
-                    // Coordinator should NOT see institutions from other tenant
-                    return $collection->doesntContain(fn ($inst) => $inst['id'] == $otherInstitution->id);
-                })
                 ->where('availableTenants', function ($tenants) use ($otherTenant) {
                     $collection = collect($tenants);
 
                     // Should not include the other tenant
-                    return $collection->doesntContain(fn ($t) => $t['id'] == $otherTenant->id);
+                    return $collection->doesntContain(fn ($t) => $t['id'] == $otherTenant->id) &&
+                           $collection->contains(fn ($t) => $t['id'] == $this->tenant->id);
                 })
             );
     });
 });
 
-describe('coordinator cache management', function () {
-    test('coordinator tenant ids are cached', function () {
-        $coordinatorRole = Role::where('name', 'Communication Coordinator')->first();
+describe('institution manager role', function () {
+    test('userIsInstitutionManager returns true for users with manager role', function () {
+        $managerRole = Role::firstOrCreate(['name' => 'Student Rep Coordinator Test', 'guard_name' => 'web']);
+
         $settings = app(AtstovavimasSettings::class);
-        $settings->tenant_visibility_role_ids = [$coordinatorRole->id];
+        $settings->institution_manager_role_id = $managerRole->id;
         $settings->save();
         app()->forgetInstance(AtstovavimasSettings::class);
 
-        $coordinator = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+        // Assign the role to user's duty
+        $duty = $this->user->current_duties->first();
+        $duty->assignRole($managerRole);
+
+        AtstovavimasSettings::clearManagerCache($this->user->id);
+
+        $settings = app(AtstovavimasSettings::class);
+        expect($settings->userIsInstitutionManager($this->user))->toBeTrue();
+    });
+
+    test('userIsInstitutionManager returns false for non-managers', function () {
+        $managerRole = Role::firstOrCreate(['name' => 'Student Rep Coordinator Test', 'guard_name' => 'web']);
+
+        $settings = app(AtstovavimasSettings::class);
+        $settings->institution_manager_role_id = $managerRole->id;
+        $settings->save();
+        app()->forgetInstance(AtstovavimasSettings::class);
+
+        // Don't assign the role to user
+        $settings = app(AtstovavimasSettings::class);
+        expect($settings->userIsInstitutionManager($this->user))->toBeFalse();
+    });
+
+    test('getManagerTenantIds returns tenants where user has manager role', function () {
+        $managerRole = Role::firstOrCreate(['name' => 'Student Rep Coordinator Test', 'guard_name' => 'web']);
+
+        $settings = app(AtstovavimasSettings::class);
+        $settings->institution_manager_role_id = $managerRole->id;
+        $settings->save();
+        app()->forgetInstance(AtstovavimasSettings::class);
+
+        // Assign the role to user's duty
+        $duty = $this->user->current_duties->first();
+        $duty->assignRole($managerRole);
+
+        AtstovavimasSettings::clearManagerCache($this->user->id);
+
+        $settings = app(AtstovavimasSettings::class);
+        $tenantIds = $settings->getManagerTenantIds($this->user);
+
+        expect($tenantIds->toArray())->toContain($this->tenant->id);
+    });
+
+    test('getInstitutionManagerRoleName returns role name', function () {
+        $managerRole = Role::firstOrCreate(['name' => 'Student Rep Coordinator Test', 'guard_name' => 'web']);
+
+        $settings = app(AtstovavimasSettings::class);
+        $settings->institution_manager_role_id = $managerRole->id;
+        $settings->save();
+        app()->forgetInstance(AtstovavimasSettings::class);
+
+        $settings = app(AtstovavimasSettings::class);
+        expect($settings->getInstitutionManagerRoleName())->toBe('Student Rep Coordinator Test');
+    });
+
+    test('getInstitutionManagerRoleName returns null when no role configured', function () {
+        $settings = app(AtstovavimasSettings::class);
+        $settings->institution_manager_role_id = null;
+        $settings->save();
+        app()->forgetInstance(AtstovavimasSettings::class);
+
+        $settings = app(AtstovavimasSettings::class);
+        expect($settings->getInstitutionManagerRoleName())->toBeNull();
+    });
+});
+
+describe('manager cache management', function () {
+    test('manager tenant ids are cached', function () {
+        $managerRole = Role::firstOrCreate(['name' => 'Student Rep Coordinator Test', 'guard_name' => 'web']);
+
+        $settings = app(AtstovavimasSettings::class);
+        $settings->institution_manager_role_id = $managerRole->id;
+        $settings->save();
+        app()->forgetInstance(AtstovavimasSettings::class);
+
+        // Assign the role to user's duty
+        $duty = $this->user->current_duties->first();
+        $duty->assignRole($managerRole);
 
         // Clear cache first
-        AtstovavimasSettings::clearCoordinatorCache($coordinator->id);
+        AtstovavimasSettings::clearManagerCache($this->user->id);
 
-        // Get coordinator tenant IDs (this should cache them)
+        // Get manager tenant IDs (this should cache them)
         $settings = app(AtstovavimasSettings::class);
-        $tenantIds1 = $settings->getCoordinatorTenantIds($coordinator);
+        $tenantIds1 = $settings->getManagerTenantIds($this->user);
 
         // Verify cache key exists
-        $cacheKey = AtstovavimasSettings::getCoordinatorCacheKey($coordinator->id);
+        $cacheKey = AtstovavimasSettings::getManagerTenantsCacheKey($this->user->id);
         expect(Cache::has($cacheKey))->toBeTrue();
 
         // Get again (should use cache)
-        $tenantIds2 = $settings->getCoordinatorTenantIds($coordinator);
+        $tenantIds2 = $settings->getManagerTenantIds($this->user);
 
         expect($tenantIds1->toArray())->toBe($tenantIds2->toArray());
     });
 
-    test('cache is cleared when duty role changes', function () {
-        $coordinatorRole = Role::where('name', 'Communication Coordinator')->first();
+    test('cache is cleared when clearManagerCache is called', function () {
+        $managerRole = Role::firstOrCreate(['name' => 'Student Rep Coordinator Test', 'guard_name' => 'web']);
+
         $settings = app(AtstovavimasSettings::class);
-        $settings->tenant_visibility_role_ids = [$coordinatorRole->id];
+        $settings->institution_manager_role_id = $managerRole->id;
         $settings->save();
         app()->forgetInstance(AtstovavimasSettings::class);
 
-        $coordinator = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+        // Assign the role to user's duty
+        $duty = $this->user->current_duties->first();
+        $duty->assignRole($managerRole);
 
-        // Get coordinator tenant IDs to cache them
+        // Get manager tenant IDs to cache them
         $settings = app(AtstovavimasSettings::class);
-        $settings->getCoordinatorTenantIds($coordinator);
+        $settings->getManagerTenantIds($this->user);
 
-        $cacheKey = AtstovavimasSettings::getCoordinatorCacheKey($coordinator->id);
+        $cacheKey = AtstovavimasSettings::getManagerTenantsCacheKey($this->user->id);
         expect(Cache::has($cacheKey))->toBeTrue();
 
-        // Clear coordinator cache manually (simulating what observer does)
-        AtstovavimasSettings::clearCoordinatorCache($coordinator->id);
+        // Clear cache
+        AtstovavimasSettings::clearManagerCache($this->user->id);
 
         expect(Cache::has($cacheKey))->toBeFalse();
     });
 
-    test('empty coordinator role ids returns empty collection without caching', function () {
-        // Ensure no coordinator roles are configured
+    test('empty manager role id returns empty collection without caching', function () {
+        // Ensure no manager role is configured
         $settings = app(AtstovavimasSettings::class);
-        $settings->tenant_visibility_role_ids = [];
+        $settings->institution_manager_role_id = null;
         $settings->save();
         app()->forgetInstance(AtstovavimasSettings::class);
 
         $settings = app(AtstovavimasSettings::class);
-        $tenantIds = $settings->getCoordinatorTenantIds($this->user);
+        $tenantIds = $settings->getManagerTenantIds($this->user);
 
         expect($tenantIds->isEmpty())->toBeTrue();
 
         // Should not have created a cache entry since we returned early
-        $cacheKey = AtstovavimasSettings::getCoordinatorCacheKey($this->user->id);
+        $cacheKey = AtstovavimasSettings::getManagerTenantsCacheKey($this->user->id);
         expect(Cache::has($cacheKey))->toBeFalse();
-    });
-});
-
-describe('settings helper methods', function () {
-    test('userHasCoordinatorRole returns true for coordinators', function () {
-        $coordinatorRole = Role::where('name', 'Communication Coordinator')->first();
-        $settings = app(AtstovavimasSettings::class);
-        $settings->tenant_visibility_role_ids = [$coordinatorRole->id];
-        $settings->save();
-        app()->forgetInstance(AtstovavimasSettings::class);
-
-        $coordinator = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
-        AtstovavimasSettings::clearCoordinatorCache($coordinator->id);
-
-        $settings = app(AtstovavimasSettings::class);
-        expect($settings->userHasCoordinatorRole($coordinator))->toBeTrue();
-    });
-
-    test('userHasCoordinatorRole returns false for non-coordinators', function () {
-        $coordinatorRole = Role::where('name', 'Communication Coordinator')->first();
-        $settings = app(AtstovavimasSettings::class);
-        $settings->tenant_visibility_role_ids = [$coordinatorRole->id];
-        $settings->save();
-        app()->forgetInstance(AtstovavimasSettings::class);
-
-        $settings = app(AtstovavimasSettings::class);
-        expect($settings->userHasCoordinatorRole($this->user))->toBeFalse();
-    });
-
-    test('getCoordinatorRoleNames returns role names', function () {
-        $coordinatorRole = Role::where('name', 'Communication Coordinator')->first();
-        $settings = app(AtstovavimasSettings::class);
-        $settings->tenant_visibility_role_ids = [$coordinatorRole->id];
-        $settings->save();
-        app()->forgetInstance(AtstovavimasSettings::class);
-
-        $settings = app(AtstovavimasSettings::class);
-        $names = $settings->getCoordinatorRoleNames();
-
-        expect($names->toArray())->toContain('Communication Coordinator');
     });
 });

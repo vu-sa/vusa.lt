@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\Institution;
 use App\Models\User;
-use App\Settings\AtstovavimasSettings;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
@@ -19,7 +18,9 @@ use Illuminate\Support\Facades\Cache;
  * Access Types:
  * 1. **Direct duty access**: Institutions where user has an active duty
  * 2. **Relationship access**: Institutions related via authorized relationships (outgoing/sibling)
- * 3. **Coordinator access**: Institutions in tenants where user has a coordinator role (from AtstovavimasSettings)
+ *
+ * Note: Tenant-level access (institutions.read.padalinys) is handled separately via
+ * ModelAuthorizer and AtstovavimasSettings::getVisibleTenantIds().
  *
  * Cache Strategy:
  * - All access computations are cached per-user with TTL of 1 hour
@@ -28,7 +29,7 @@ use Illuminate\Support\Facades\Cache;
  *   - RelationshipableObserver (relationship changes) - triggers invalidation for affected institutions' users
  *
  * @see \App\Services\RelationshipService for institution relationship logic
- * @see \App\Settings\AtstovavimasSettings for coordinator role configuration
+ * @see \App\Settings\AtstovavimasSettings for institution manager role configuration
  */
 class InstitutionAccessService
 {
@@ -43,21 +44,21 @@ class InstitutionAccessService
      * This is the primary method for determining institution access and includes:
      * - User's direct duty institutions
      * - Institutions accessible via authorized relationships (if $includeRelated is true)
-     * - Institutions in coordinator-visible tenants (if $includeCoordinatorAccess is true)
+     *
+     * Note: Tenant-level access (institutions.read.padalinys) is NOT included here.
+     * Use AtstovavimasSettings::getVisibleTenantIds() for tenant-based filtering.
      *
      * @param  User  $user  The user to check access for
      * @param  bool  $includeRelated  Whether to include relationship-based access
-     * @param  bool  $includeCoordinatorAccess  Whether to include coordinator tenant access
      * @return Collection<int, string> Collection of institution IDs (ULIDs)
      */
     public function getAccessibleInstitutionIds(
         User $user,
         bool $includeRelated = true,
-        bool $includeCoordinatorAccess = true
     ): Collection {
-        $cacheKey = self::getAccessCacheKey($user->id, $includeRelated, $includeCoordinatorAccess);
+        $cacheKey = self::getAccessCacheKey($user->id, $includeRelated);
 
-        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($user, $includeRelated, $includeCoordinatorAccess) {
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($user, $includeRelated) {
             $institutionIds = collect();
 
             // 1. Direct duty institutions
@@ -68,15 +69,6 @@ class InstitutionAccessService
             if ($includeRelated && $directInstitutionIds->isNotEmpty()) {
                 $relatedInstitutionIds = $this->getRelatedInstitutionIds($user, $directInstitutionIds);
                 $institutionIds = $institutionIds->merge($relatedInstitutionIds);
-            }
-
-            // 3. Coordinator tenant access
-            // TODO: Consider if this should use permissions (institutions.read.padalinys) instead of
-            // AtstovavimasSettings roles. The current approach matches the dashboard behavior but
-            // creates a parallel authorization path that could be confusing.
-            if ($includeCoordinatorAccess) {
-                $coordinatorInstitutionIds = $this->getCoordinatorAccessibleInstitutionIds($user);
-                $institutionIds = $institutionIds->merge($coordinatorInstitutionIds);
             }
 
             return $institutionIds->unique()->values();
@@ -151,33 +143,6 @@ class InstitutionAccessService
     }
 
     /**
-     * Get institution IDs from coordinator-visible tenants.
-     *
-     * Users with coordinator roles (defined in AtstovavimasSettings) can see
-     * all institutions in their coordinator tenants. This matches the dashboard behavior.
-     *
-     * TODO: Consider unifying this with institutions.read.padalinys permission instead
-     * of using a separate settings-based role configuration.
-     *
-     * @return Collection<int, string> Collection of institution IDs (ULIDs)
-     */
-    protected function getCoordinatorAccessibleInstitutionIds(User $user): Collection
-    {
-        $settings = app(AtstovavimasSettings::class);
-
-        // Get tenants where user has coordinator visibility
-        $visibleTenantIds = $settings->getVisibleTenantIds($user);
-
-        if ($visibleTenantIds->isEmpty()) {
-            return collect();
-        }
-
-        // Get all institutions in those tenants
-        return Institution::whereIn('tenant_id', $visibleTenantIds)
-            ->pluck('id');
-    }
-
-    /**
      * Check if a user can access a specific institution.
      *
      * @param  User  $user  The user
@@ -218,9 +183,9 @@ class InstitutionAccessService
     /**
      * Get the cache key for a user's accessible institutions.
      */
-    public static function getAccessCacheKey(string $userId, bool $includeRelated = true, bool $includeCoordinator = true): string
+    public static function getAccessCacheKey(string $userId, bool $includeRelated = true): string
     {
-        $suffix = ($includeRelated ? 'r' : '').($includeCoordinator ? 'c' : '');
+        $suffix = $includeRelated ? 'r' : '';
 
         return "institution_access:{$userId}:{$suffix}";
     }
@@ -231,7 +196,7 @@ class InstitutionAccessService
     public static function invalidateForUser(string $userId): void
     {
         // Invalidate all variants of the cache
-        $variants = ['rc', 'r', 'c', ''];
+        $variants = ['r', ''];
         foreach ($variants as $variant) {
             Cache::forget("institution_access:{$userId}:{$variant}");
         }

@@ -6,7 +6,6 @@ use App\Models\Duty;
 use App\Models\Form;
 use App\Models\FormField;
 use App\Models\Institution;
-use App\Models\Permission;
 use App\Models\Registration;
 use App\Models\Role;
 use App\Models\Tenant;
@@ -246,18 +245,16 @@ function createStudentRepForm(Tenant $tenant, Institution $institution): Form
 // Helper function to create an institution manager
 function createInstitutionManager(Tenant $tenant, Institution $institution): User
 {
-    $permissionName = config('permission.institution_managership_indicating_permission');
-
-    // Ensure permission exists
-    $permission = Permission::firstOrCreate(
-        ['name' => $permissionName, 'guard_name' => 'web']
-    );
-
-    // Create role with the permission
+    // Create role for institution managers
     $role = Role::firstOrCreate(
         ['name' => 'Institution Manager Test', 'guard_name' => 'web']
     );
-    $role->givePermissionTo($permission);
+
+    // Configure this role as the institution manager role in settings
+    $settings = app(\App\Settings\AtstovavimasSettings::class);
+    $settings->institution_manager_role_id = $role->id;
+    $settings->save();
+    app()->forgetInstance(\App\Settings\AtstovavimasSettings::class);
 
     // Create user with duty in the institution
     $user = User::factory()->create();

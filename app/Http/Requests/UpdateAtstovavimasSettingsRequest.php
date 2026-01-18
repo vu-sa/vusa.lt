@@ -15,10 +15,7 @@ class UpdateAtstovavimasSettingsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'global_visibility_role_ids' => 'nullable|array',
-            'global_visibility_role_ids.*' => 'string|exists:roles,id',
-            'tenant_visibility_role_ids' => 'nullable|array',
-            'tenant_visibility_role_ids.*' => 'string|exists:roles,id',
+            'institution_manager_role_id' => 'nullable|string|exists:roles,id',
         ];
     }
 }

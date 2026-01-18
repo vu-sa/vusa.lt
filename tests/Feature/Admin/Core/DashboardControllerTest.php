@@ -371,13 +371,13 @@ describe('atstovavimas dashboard', function () {
     });
 
     test('atstovavimas provides accessible institutions and available tenants', function () {
-        // Configure coordinator role so the admin (Communication Coordinator) can see tenant data
-        $coordinatorRole = \App\Models\Role::where('name', 'Communication Coordinator')->first();
-        if ($coordinatorRole) {
-            $settings = app(\App\Settings\AtstovavimasSettings::class);
-            $settings->tenant_visibility_role_ids = [$coordinatorRole->id];
-            $settings->save();
-            app()->forgetInstance(\App\Settings\AtstovavimasSettings::class);
+        // Give the admin the institutions.read.padalinys permission so they can see tenant data
+        $permission = \App\Models\Permission::firstOrCreate(['name' => 'institutions.read.padalinys', 'guard_name' => 'web']);
+        $duty = $this->admin->current_duties->first();
+        if ($duty) {
+            $role = \App\Models\Role::firstOrCreate(['name' => 'Institution Reader Test', 'guard_name' => 'web']);
+            $role->givePermissionTo($permission);
+            $duty->assignRole($role);
         }
 
         $response = asUser($this->admin)->get(route('dashboard.atstovavimas'));
@@ -396,13 +396,6 @@ describe('atstovavimas dashboard', function () {
                            $collection->every(fn ($tenant) => $tenant['type'] !== 'pkp');
                 })
             );
-
-        // Clean up
-        if ($coordinatorRole) {
-            $settings = app(\App\Settings\AtstovavimasSettings::class);
-            $settings->tenant_visibility_role_ids = [];
-            $settings->save();
-        }
     });
 });
 
@@ -443,24 +436,21 @@ describe('atstovavimas dashboard authorization', function () {
             );
     });
 
-    test('user with global visibility role sees all tenants', function () {
+    test('user with global read permission sees all tenants', function () {
         $mainTenant = Tenant::factory()->create(['type' => 'pagrindinis']);
         $otherTenant = Tenant::factory()->create(['type' => 'padalinys']);
 
+        // Create a user with institutions.read.* permission (global access)
+        $globalPermission = \App\Models\Permission::firstOrCreate(['name' => 'institutions.read.*', 'guard_name' => 'web']);
         $globalRole = \App\Models\Role::firstOrCreate([
-            'name' => 'Globalus atstovavimo matomumas',
-        ], [
+            'name' => 'Global Institution Reader',
             'guard_name' => 'web',
         ]);
+        $globalRole->givePermissionTo($globalPermission);
 
-        $mainTenantUser = makeTenantUserWithRole($globalRole->name, $mainTenant);
+        $globalUser = makeTenantUserWithRole($globalRole->name, $mainTenant);
 
-        $settings = app(\App\Settings\AtstovavimasSettings::class);
-        $settings->global_visibility_role_ids = [$globalRole->id];
-        $settings->save();
-        app()->forgetInstance(\App\Settings\AtstovavimasSettings::class);
-
-        asUser($mainTenantUser)
+        asUser($globalUser)
             ->get(route('dashboard.atstovavimas'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -472,40 +462,19 @@ describe('atstovavimas dashboard authorization', function () {
                         && $collection->contains(fn ($tenant) => $tenant['id'] == $otherTenant->id);
                 })
             );
-
-        $settings = app(\App\Settings\AtstovavimasSettings::class);
-        $settings->global_visibility_role_ids = [];
-        $settings->save();
     });
 
-    test('user with coordinator role sees tenant-wide institutions', function () {
-        // First, configure a coordinator role in settings
-        $coordinatorRole = \App\Models\Role::where('name', 'Communication Coordinator')->first();
+    test('user with padalinys read permission sees their tenants', function () {
+        // Give the admin the institutions.read.padalinys permission
+        $permission = \App\Models\Permission::firstOrCreate(['name' => 'institutions.read.padalinys', 'guard_name' => 'web']);
+        $duty = $this->admin->current_duties->first();
+        if ($duty) {
+            $role = \App\Models\Role::firstOrCreate(['name' => 'Institution Reader Test', 'guard_name' => 'web']);
+            $role->givePermissionTo($permission);
+            $duty->assignRole($role);
+        }
 
-        expect($coordinatorRole)->not->toBeNull('Communication Coordinator role should exist');
-
-        // Verify admin has this role through their duty
-        $adminDuties = $this->admin->current_duties()->with('roles')->get();
-        $adminDutyRoles = $adminDuties->pluck('roles')->flatten()->pluck('name')->toArray();
-
-        // Debug: check duty relationships
-        expect($adminDuties)->not->toBeEmpty('Admin should have current duties');
-        expect($adminDutyRoles)->toContain('Communication Coordinator');
-
-        // Get a fresh settings instance and update it
-        $settings = app(\App\Settings\AtstovavimasSettings::class);
-        $settings->tenant_visibility_role_ids = [$coordinatorRole->id];
-        $settings->save();
-
-        // Clear the cached settings instance so the controller gets fresh values
-        app()->forgetInstance(\App\Settings\AtstovavimasSettings::class);
-
-        // Verify settings were saved correctly
-        $freshSettings = app(\App\Settings\AtstovavimasSettings::class);
-        expect($freshSettings->tenant_visibility_role_ids)->toBe([$coordinatorRole->id]);
-        expect($freshSettings->userHasCoordinatorRole($this->admin))->toBeTrue();
-
-        // The admin (Communication Coordinator) should have available tenants
+        // The admin should have available tenants for the tenant tab
         asUser($this->admin)
             ->get(route('dashboard.atstovavimas'))
             ->assertStatus(200)
@@ -515,15 +484,10 @@ describe('atstovavimas dashboard authorization', function () {
                 ->where('availableTenants', function ($tenants) {
                     $collection = collect($tenants);
 
-                    // Coordinator should have available tenants for the tenant tab
+                    // User with permission should have available tenants for the tenant tab
                     return $collection->isNotEmpty();
                 })
             );
-
-        // Clean up settings
-        $settings = app(\App\Settings\AtstovavimasSettings::class);
-        $settings->tenant_visibility_role_ids = [];
-        $settings->save();
     });
 
     test('super admin sees all institutions across tenants via tenant tab', function () {
@@ -805,13 +769,12 @@ describe('tenant isolation', function () {
         $this->otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->first();
         $this->otherAdmin = makeTenantUserWithRole('Communication Coordinator', $this->otherTenant);
 
-        // Configure coordinator role so Communication Coordinators can see tenant data
+        // Give Communication Coordinators the institutions.read.padalinys permission
+        // This replaces the old role-based visibility settings
+        $permission = \App\Models\Permission::firstOrCreate(['name' => 'institutions.read.padalinys', 'guard_name' => 'web']);
         $coordinatorRole = \App\Models\Role::where('name', 'Communication Coordinator')->first();
-        if ($coordinatorRole) {
-            $settings = app(\App\Settings\AtstovavimasSettings::class);
-            $settings->tenant_visibility_role_ids = [$coordinatorRole->id];
-            $settings->save();
-            app()->forgetInstance(\App\Settings\AtstovavimasSettings::class);
+        if ($coordinatorRole && ! $coordinatorRole->hasPermissionTo($permission)) {
+            $coordinatorRole->givePermissionTo($permission);
         }
     });
 

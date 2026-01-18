@@ -164,8 +164,7 @@ class SettingsController extends AdminController
         $this->authorizeSettingsAccess($settingsSettings);
 
         return $this->inertiaResponse('Admin/Settings/EditAtstovavimasSettings', [
-            'global_visibility_role_ids' => $atstovavimasSettings->getGlobalVisibilityRoleIds()->toArray(),
-            'tenant_visibility_role_ids' => $atstovavimasSettings->getTenantVisibilityRoleIds()->toArray(),
+            'institution_manager_role_id' => $atstovavimasSettings->getInstitutionManagerRoleId(),
             'roles' => Role::all(['id', 'name']),
         ]);
     }
@@ -177,11 +176,17 @@ class SettingsController extends AdminController
     {
         $this->authorizeSettingsAccess($settingsSettings);
 
-        $tenantVisibilityRoleIds = $request->input('tenant_visibility_role_ids', []);
+        $oldRoleId = $atstovavimasSettings->getInstitutionManagerRoleId();
+        $newRoleId = $request->input('institution_manager_role_id');
 
-        $atstovavimasSettings->tenant_visibility_role_ids = $tenantVisibilityRoleIds;
-        $atstovavimasSettings->global_visibility_role_ids = $request->input('global_visibility_role_ids', []);
+        $atstovavimasSettings->institution_manager_role_id = $newRoleId;
         $atstovavimasSettings->save();
+
+        // Clear cache if role changed
+        if ($oldRoleId !== $newRoleId) {
+            AtstovavimasSettings::clearManagerRoleCache($oldRoleId);
+            AtstovavimasSettings::clearManagerRoleCache($newRoleId);
+        }
 
         return $this->redirectBackWithSuccess(__('settings.messages.updated'));
     }

@@ -13,8 +13,8 @@ class DutyService
     /**
      * Get institutions available for duty creation/editing (upserts).
      *
-     * This uses permission-based filtering (duties.create.all) and coordinator roles
-     * to determine which institutions a user can manage duties for.
+     * This uses permission-based filtering (duties.create.padalinys) to determine
+     * which institutions a user can manage duties for.
      *
      * Note: This is intentionally different from getInstitutionsForDashboard() which
      * also includes institutions where the user is just a member (for viewing purposes).
@@ -24,16 +24,21 @@ class DutyService
     public static function getInstitutionsForUpserts(ModelAuthorizer $authorizer)
     {
         $user = request()->user();
-        $hasGlobalAccess = $authorizer->forUser($user)->checkAllRoleables('duties.create.all');
+        $authorizer = $authorizer->forUser($user);
 
-        // Get tenant IDs where user has coordinator access (can manage institutions)
-        $atstovavimasSettings = app(AtstovavimasSettings::class);
-        $coordinatorTenantIds = $atstovavimasSettings->getCoordinatorTenantIds($user);
+        // Check for global access
+        $hasGlobalAccess = $authorizer->check('duties.create.*');
+
+        // Get tenant IDs where user can create duties
+        $tenantIds = collect();
+        if (! $hasGlobalAccess && $authorizer->check('duties.create.padalinys')) {
+            $tenantIds = $authorizer->getTenants('duties.create.padalinys')->pluck('id');
+        }
 
         return Institution::select('id', 'name', 'alias', 'tenant_id')
-            ->when(! $hasGlobalAccess, function ($query) use ($coordinatorTenantIds) {
-                // Only show institutions from tenants where user has coordinator access
-                $query->whereIn('tenant_id', $coordinatorTenantIds);
+            ->when(! $hasGlobalAccess, function ($query) use ($tenantIds) {
+                // Only show institutions from tenants where user has permission
+                $query->whereIn('tenant_id', $tenantIds);
             })
             ->whereHas('tenant', function ($query) {
                 $query->where('type', '!=', 'pkp');
@@ -45,18 +50,16 @@ class DutyService
     /**
      * Get institutions for the Atstovavimas dashboard.
      *
-     * This uses coordinator role-based visibility (configurable via AtstovavimasSettings)
-     * rather than permission-based filtering. The logic is:
+     * This uses permission-based visibility via AtstovavimasSettings::getVisibleTenantIds():
      *
-     * - Super admins: See all institutions
-     * - Users with a global visibility role: See all institutions
-     * - Users with coordinator role in a tenant: See all institutions in that tenant
+     * - Super admins or users with institutions.read.*: See all institutions
+     * - Users with institutions.read.padalinys: See institutions in authorized tenants
      * - Regular users: See only institutions they are directly assigned to via duties
      *
      * Note: This is intentionally different from getInstitutionsForUpserts() which uses
-     * permission-based access for CRUD operations.
+     * duties.create.padalinys permission for CRUD operations.
      *
-     * @see AtstovavimasSettings for coordinator role configuration
+     * @see AtstovavimasSettings::getVisibleTenantIds() for visibility logic
      * @see getInstitutionsForUpserts() for duty creation/editing
      */
     public static function getInstitutionsForDashboard(ModelAuthorizer $authorizer)

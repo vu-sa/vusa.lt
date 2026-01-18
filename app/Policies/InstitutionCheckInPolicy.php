@@ -5,6 +5,7 @@ namespace App\Policies;
 use App\Models\Institution;
 use App\Models\InstitutionCheckIn;
 use App\Models\User;
+use App\Settings\AtstovavimasSettings;
 
 class InstitutionCheckInPolicy
 {
@@ -37,9 +38,9 @@ class InstitutionCheckInPolicy
 
     private function isAdmin(User $user): bool
     {
-        // Uses configured permission that indicates institution managers
-        $perm = config('permission.institution_managership_indicating_permission');
+        // Uses configured role that indicates institution managers
+        $settings = app(AtstovavimasSettings::class);
 
-        return $user->can($perm);
+        return $settings->userIsInstitutionManager($user);
     }
 }

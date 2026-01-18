@@ -276,7 +276,6 @@ class TypesenseScopedKeyService
      * For .own permissions, access is based on:
      * 1. User's direct duty institutions
      * 2. Institutions accessible via authorized relationships (outgoing/sibling)
-     * 3. Institutions in coordinator-visible tenants (from AtstovavimasSettings)
      *
      * This unified approach ensures search results match what users can see
      * in the dashboard and what policies allow them to view.
@@ -290,22 +289,10 @@ class TypesenseScopedKeyService
     protected function getInstitutionIdsForOwnPermission(string $ownPermission, User $user, bool $isInstitutionsCollection = false): Collection
     {
         if ($this->authorizer->check($ownPermission)) {
-            // For institutions collection, get ALL accessible institutions
-            // (includes direct duties, relationships, and coordinator access)
-            if ($isInstitutionsCollection) {
-                return $this->institutionAccessService->getAccessibleInstitutionIds(
-                    $user,
-                    includeRelated: true,
-                    includeCoordinatorAccess: true
-                );
-            }
-
-            // For other collections (meetings, agenda_items), use the same expanded access
-            // This ensures search results match what MeetingPolicy and InstitutionPolicy allow
+            // Get accessible institutions (direct duties + related institutions)
             return $this->institutionAccessService->getAccessibleInstitutionIds(
                 $user,
-                includeRelated: true,
-                includeCoordinatorAccess: true
+                includeRelated: true
             );
         }
 
