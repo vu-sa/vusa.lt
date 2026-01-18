@@ -193,6 +193,7 @@ Route::put('roles/{role}/sync/duties', [RoleController::class, 'syncDuties'])->n
 Route::put('roles/{role}/sync/attachableTypes', [RoleController::class, 'syncAttachableTypes'])->name('roles.syncAttachableTypes');
 Route::resource('permissions', PermissionController::class)->only(['index']);
 Route::resource('tasks', TaskController::class)->except(['index', 'create', 'show', 'edit']);
+Route::get('tasks/summary', [TaskController::class, 'summary'])->name('tasks.summary');
 Route::post('tasks/{task}/updateCompletionStatus', [TaskController::class, 'updateCompletionStatus'])->name('tasks.updateCompletionStatus');
 // GET tasks/indicator moved to API: route('api.v1.admin.tasks.indicator')
 

@@ -49,7 +49,7 @@ class RoleStudentRepresentativeCoordinatorSeeder extends Seeder
             'sharepointFiles.read.padalinys',
             'sharepointFiles.update.padalinys',
             'tasks.create.padalinys',
-            'tasks.read.own',
+            'tasks.read.padalinys',
             'tasks.update.own',
         ]);
 

@@ -78,17 +78,25 @@
     </ThemeProvider>
     <Separator v-if="tenants.length > 0" class="my-8" />
     <section v-if="tenants.length > 0" class="mt-8">
-      <div class="mb-8 inline-flex items-center gap-6">
-        <h3 class="mb-0">
-          Rezervacijos padalinyje
-        </h3>
-        <div>
-          <ThemeProvider>
-            <NSelect :value="providedTenant?.id" filterable
-              :options="tenants.map(tenant => ({ label: tenant.shortname, value: tenant.id }))"
-              @update:value="handleTenantUpdateValue" />
-          </ThemeProvider>
+      <div class="mb-8 flex flex-wrap items-center justify-between gap-4">
+        <div class="inline-flex items-center gap-6">
+          <h3 class="mb-0">
+            Rezervacijos padalinyje
+          </h3>
+          <div>
+            <ThemeProvider>
+              <NSelect :value="providedTenant?.id" filterable
+                :options="tenants.map(tenant => ({ label: tenant.shortname, value: tenant.id }))"
+                @update:value="handleTenantUpdateValue" />
+            </ThemeProvider>
+          </div>
         </div>
+        <Link :href="route('tasks.summary', { taskable_type: 'App\\Models\\Reservation' })">
+          <Button variant="outline" size="sm" class="gap-2">
+            <IFluentClipboardTask24Filled class="h-4 w-4" />
+            {{ $t('tasks.summary.view_reservation_tasks') }}
+          </Button>
+        </Link>
       </div>
       <ThemeProvider>
         <NCard :segmented="{
@@ -143,6 +151,10 @@
 
 <script setup lang="ts">
 //import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
+import { Link, router } from '@inertiajs/vue3';
+import { h, ref, computed } from 'vue';
+import { trans as $t } from "laravel-vue-i18n";
+
 import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
 import { Button } from '@/Components/ui/button';
 import CardModal from '@/Components/Modals/CardModal.vue';
@@ -150,12 +162,10 @@ import ReservationsWithUnitResources from '@/Components/Tables/ReservationsWithU
 import { Separator } from '@/Components/ui/separator';
 import Icons from "@/Types/Icons/filled";
 import { formatStaticTime } from '@/Utils/IntlTime';
-import { Link, router } from '@inertiajs/vue3';
-import { h, ref, computed } from 'vue';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
-import { trans as $t } from "laravel-vue-i18n";
 import IFluentBookmarkAdd24Filled from '~icons/fluent/bookmark-add-24-filled';
 import IFluentCube24Filled from '~icons/fluent/cube-24-filled';
+import IFluentClipboardTask24Filled from '~icons/fluent/clipboard-task-24-filled';
 import ThemeProvider from "@/Components/Providers/ThemeProvider.vue";
 
 const { reservations, tenants, providedTenant } = defineProps<{

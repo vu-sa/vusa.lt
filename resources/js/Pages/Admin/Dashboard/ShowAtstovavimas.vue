@@ -10,7 +10,7 @@
           :class="{ 'drop-shadow-[0_0_8px_rgba(189,24,48,0.3)]': showGlow }">
           ViSAK
         </span>
-        <button class="text-muted-foreground hover:text-foreground transition-colors" :aria-label="$t('Kas yra ViSAK?')"
+        <button type="button" class="text-muted-foreground hover:text-foreground transition-colors" :aria-label="$t('Kas yra ViSAK?')"
           @click="showVisakInfo = true">
           <Info class="h-5 w-5" />
         </button>
@@ -66,7 +66,17 @@
         </div>
       </TabsContent>
 
-      <TabsContent value="tenant" class="mt-6">
+      <TabsContent value="tenant" class="mt-6 space-y-6">
+        <!-- Quick actions for tenant view -->
+        <div class="flex flex-wrap items-center gap-3">
+          <Link :href="route('tasks.summary', { taskable_type: 'App\\Models\\Meeting' })">
+            <Button variant="outline" size="sm" class="gap-2">
+              <ClipboardList class="h-4 w-4" />
+              {{ $t('tasks.summary.view_meeting_tasks') }}
+            </Button>
+          </Link>
+        </div>
+
         <TenantTimelineSection v-if="deferredContentReady" :available-tenants="props.availableTenants"
           :tenant-institutions="ganttData.formattedTenantInstitutions.value" :meetings="ganttData.tenantMeetings.value"
           :gaps="ganttData.tenantGaps.value" :institution-names="tenantInstitutionNames" :tenant-names
@@ -124,7 +134,7 @@
 </template>
 
 <script setup lang="tsx">
-import { Head as InertiaHead, router } from "@inertiajs/vue3";
+import { Head as InertiaHead, Link, router } from "@inertiajs/vue3";
 import { computed, ref, watch, onMounted } from 'vue';
 import { trans as $t } from "laravel-vue-i18n";
 
@@ -147,7 +157,7 @@ onMounted(() => {
 // UI components
 
 // Extracted components
-import { Info } from 'lucide-vue-next';
+import { Info, ClipboardList } from 'lucide-vue-next';
 
 import PersonalOverviewSection from './Components/PersonalOverviewSection.vue';
 import UserTimelineSection from './Components/UserTimelineSection.vue';
@@ -179,6 +189,7 @@ import TabsTrigger from '@/Components/ui/tabs/TabsTrigger.vue'
 import TabsList from '@/Components/ui/tabs/TabsList.vue'
 import Tabs from '@/Components/ui/tabs/Tabs.vue'
 import { Skeleton } from '@/Components/ui/skeleton'
+import { Button } from '@/Components/ui/button'
 import AddCheckInDialog from "@/Components/Institutions/AddCheckInDialog.vue";
 import NewMeetingModal from '@/Components/Modals/NewMeetingModal.vue';
 import PageHero from '@/Components/Hero/PageHero.vue';

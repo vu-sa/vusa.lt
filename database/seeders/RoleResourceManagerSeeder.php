@@ -34,6 +34,7 @@ class RoleResourceManagerSeeder extends Seeder
             'documents.read.padalinys',
             'documents.update.padalinys',
             'documents.delete.padalinys',
+            'tasks.read.padalinys',
         ]);
     }
 }
