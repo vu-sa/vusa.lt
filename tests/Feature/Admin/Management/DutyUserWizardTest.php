@@ -14,9 +14,9 @@ uses(RefreshDatabase::class);
 beforeEach(function () {
     $this->tenant = Tenant::query()->inRandomOrder()->first();
 
-    // Create role if it doesn't exist and give it permissions
+    // Create role if it doesn't exist and sync permissions (replaces existing permissions)
     $role = Role::firstOrCreate(['name' => 'Communication Coordinator', 'guard_name' => 'web']);
-    $role->givePermissionTo([
+    $role->syncPermissions([
         'duties.read.padalinys',
         'duties.create.padalinys',
         'duties.update.padalinys',
@@ -309,11 +309,14 @@ describe('tenant isolation', function () {
 });
 
 describe('new user creation', function () {
-    test('can create new users through batch update', function () {
+    test('can create new users through batch update with temp_id', function () {
+        // Give the duty manager permission to create users
+        $this->dutyManagerDuty->givePermissionTo('users.create.padalinys');
+
         $response = asUser($this->dutyManager)->post(route('duties.batchUpdateUsers', $this->duty), [
             'user_changes' => [
                 [
-                    'user_id' => 'new-1',
+                    'user_id' => 'new-1234567890',
                     'action' => 'add',
                     'start_date' => now()->toDateString(),
                 ],
@@ -323,6 +326,7 @@ describe('new user creation', function () {
                     'name' => 'New Test User',
                     'email' => 'newuser@test.com',
                     'phone' => '+37060000000',
+                    'temp_id' => 'new-1234567890',
                 ],
             ],
         ]);
@@ -333,10 +337,39 @@ describe('new user creation', function () {
             'name' => 'New Test User',
             'email' => 'newuser@test.com',
         ]);
+
+        // Verify user is attached to duty
+        $newUser = User::where('email', 'newuser@test.com')->first();
+        expect($newUser)->not->toBeNull();
+        expect($this->duty->users()->where('dutiable_id', $newUser->id)->exists())->toBeTrue();
+    });
+
+    test('new user creation requires temp_id', function () {
+        $this->dutyManagerDuty->givePermissionTo('users.create.padalinys');
+
+        $response = asUser($this->dutyManager)->post(route('duties.batchUpdateUsers', $this->duty), [
+            'user_changes' => [
+                [
+                    'user_id' => 'new-123',
+                    'action' => 'add',
+                ],
+            ],
+            'new_users' => [
+                [
+                    'name' => 'New User Without Temp ID',
+                    'email' => 'notempid@test.com',
+                    // Missing temp_id
+                ],
+            ],
+        ]);
+
+        $response->assertStatus(302)
+            ->assertSessionHasErrors('new_users.0.temp_id');
     });
 
     test('new user email must be unique', function () {
         $existingUser = makeUser($this->tenant);
+        $this->dutyManagerDuty->givePermissionTo('users.create.padalinys');
 
         $response = asUser($this->dutyManager)->post(route('duties.batchUpdateUsers', $this->duty), [
             'user_changes' => [],
@@ -344,11 +377,96 @@ describe('new user creation', function () {
                 [
                     'name' => 'Duplicate User',
                     'email' => $existingUser->email,
+                    'temp_id' => 'new-duplicate',
                 ],
             ],
         ]);
 
         $response->assertStatus(302)
             ->assertSessionHasErrors('new_users.0.email');
+    });
+
+    test('cannot create new users without users.create.padalinys permission', function () {
+        // Don't give the permission - dutyManager only has duty permissions by default
+
+        $response = asUser($this->dutyManager)->post(route('duties.batchUpdateUsers', $this->duty), [
+            'user_changes' => [
+                [
+                    'user_id' => 'new-noperm',
+                    'action' => 'add',
+                ],
+            ],
+            'new_users' => [
+                [
+                    'name' => 'Unauthorized User',
+                    'email' => 'unauthorized@test.com',
+                    'temp_id' => 'new-noperm',
+                ],
+            ],
+        ]);
+
+        $response->assertForbidden();
+
+        $this->assertDatabaseMissing('users', [
+            'email' => 'unauthorized@test.com',
+        ]);
+    });
+});
+
+describe('security validations', function () {
+    test('rejects invalid user_id that does not exist in database', function () {
+        $fakeUserId = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee';
+
+        $response = asUser($this->dutyManager)->post(route('duties.batchUpdateUsers', $this->duty), [
+            'user_changes' => [
+                [
+                    'user_id' => $fakeUserId,
+                    'action' => 'add',
+                ],
+            ],
+        ]);
+
+        $response->assertStatus(302)
+            ->assertSessionHasErrors('user_changes.0.user_id');
+    });
+
+    test('accepts valid user_id that exists in database', function () {
+        $validUser = makeUser($this->tenant);
+
+        $response = asUser($this->dutyManager)->post(route('duties.batchUpdateUsers', $this->duty), [
+            'user_changes' => [
+                [
+                    'user_id' => $validUser->id,
+                    'action' => 'add',
+                    'start_date' => now()->toDateString(),
+                ],
+            ],
+        ]);
+
+        $response->assertRedirect();
+        expect($this->duty->users()->where('dutiable_id', $validUser->id)->exists())->toBeTrue();
+    });
+
+    test('allows new- prefixed user_id for new user creation flow', function () {
+        $this->dutyManagerDuty->givePermissionTo('users.create.padalinys');
+
+        $response = asUser($this->dutyManager)->post(route('duties.batchUpdateUsers', $this->duty), [
+            'user_changes' => [
+                [
+                    'user_id' => 'new-timestamp-12345',
+                    'action' => 'add',
+                    'start_date' => now()->toDateString(),
+                ],
+            ],
+            'new_users' => [
+                [
+                    'name' => 'Valid New User',
+                    'email' => 'validnew@test.com',
+                    'temp_id' => 'new-timestamp-12345',
+                ],
+            ],
+        ]);
+
+        $response->assertRedirect();
     });
 });

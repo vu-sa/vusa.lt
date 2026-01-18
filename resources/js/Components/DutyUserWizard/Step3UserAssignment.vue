@@ -174,10 +174,13 @@ const applyBatchEndDate = () => {
 const createNewUser = () => {
   if (!newUser.value.name || !newUser.value.email) return
   
-  wizard.addNewUserToCreate({ ...newUser.value })
-  
-  // Also add to userChanges with a temporary ID
+  // Generate temp_id first so it can be used in both places for proper correlation
   const tempId = `new-${Date.now()}`
+  
+  // Add to newUsersToCreate with temp_id for backend matching
+  wizard.addNewUserToCreate({ ...newUser.value, temp_id: tempId })
+  
+  // Also add to userChanges with the same temporary ID
   // Create temporary user object to pass to addUserToAdd
   const tempUser = {
     id: tempId,

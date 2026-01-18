@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Actions\GetAttachableTypesForDuty;
 use App\Actions\GetTenantsForUpserts;
 use App\Http\Controllers\AdminController;
+use App\Http\Requests\BatchUpdateDutyUsersRequest;
 use App\Http\Requests\StoreDutyRequest;
 use App\Models\Duty;
 use App\Models\Institution;
@@ -257,28 +258,14 @@ class DutyController extends AdminController
     /**
      * Batch update users for a duty.
      */
-    public function batchUpdateUsers(Request $request, Duty $duty)
+    public function batchUpdateUsers(BatchUpdateDutyUsersRequest $request, Duty $duty)
     {
-        $this->handleAuthorization('update', $duty);
-
-        $validated = $request->validate([
-            'user_changes' => 'required|array',
-            'user_changes.*.user_id' => 'required|string',
-            'user_changes.*.action' => 'required|in:add,remove',
-            'user_changes.*.start_date' => 'nullable|date',
-            'user_changes.*.end_date' => 'nullable|date',
-            'user_changes.*.study_program_id' => 'nullable|string|exists:study_programs,id',
-            'new_users' => 'nullable|array',
-            'new_users.*.name' => 'required|string',
-            'new_users.*.email' => 'required|email|unique:users,email',
-            'new_users.*.phone' => 'nullable|string',
-            'places_to_occupy' => 'nullable|integer|min:1',
-        ]);
+        $validated = $request->validated();
 
         $createdUsers = [];
 
         DB::transaction(function () use ($validated, $duty, &$createdUsers) {
-            // Create new users if any
+            // Create new users if any, tracking by temp_id for proper matching
             if (! empty($validated['new_users'])) {
                 foreach ($validated['new_users'] as $newUserData) {
                     $user = User::create([
@@ -286,7 +273,8 @@ class DutyController extends AdminController
                         'email' => $newUserData['email'],
                         'phone' => $newUserData['phone'] ?? null,
                     ]);
-                    $createdUsers[] = $user;
+                    // Store with temp_id for matching against user_changes
+                    $createdUsers[$newUserData['temp_id']] = $user;
                 }
             }
 
@@ -294,16 +282,10 @@ class DutyController extends AdminController
             foreach ($validated['user_changes'] as $change) {
                 $userId = $change['user_id'];
 
-                // Skip temporary IDs (new users) - they'll be handled by matching name/email
+                // Handle temporary IDs (new users) - match by temp_id
                 if (str_starts_with($userId, 'new-')) {
-                    // Find the created user by matching against new_users data
-                    $matchingNewUser = collect($createdUsers)->first(function ($user) {
-                        // Try to match by position or by the order of creation
-                        return true; // We'll attach all created users
-                    });
-
-                    if ($matchingNewUser) {
-                        $duty->users()->attach($matchingNewUser->id, [
+                    if (isset($createdUsers[$userId])) {
+                        $duty->users()->attach($createdUsers[$userId]->id, [
                             'start_date' => $change['start_date'] ?? now(),
                             'end_date' => $change['end_date'] ?? null,
                             'study_program_id' => $change['study_program_id'] ?? null,

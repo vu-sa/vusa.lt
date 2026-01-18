@@ -20,6 +20,7 @@ export interface NewUserData {
   email: string
   phone?: string
   profile_photo_path?: string | null
+  temp_id?: string // For backend correlation with user_changes
 }
 
 export interface DutyUserWizardState {
