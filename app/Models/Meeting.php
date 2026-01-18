@@ -91,11 +91,162 @@ class Meeting extends Model implements SharepointFileableContract
         return false;
     }
 
-    public function toSearchableArray()
+    /**
+     * Get the index name for the model.
+     * Uses 'meetings' for admin search (with scoped API keys for tenant filtering).
+     */
+    public function searchableAs(): string
     {
+        return config('scout.prefix').'meetings';
+    }
+
+    /**
+     * Get the engine used to index the model
+     */
+    public function searchableUsing()
+    {
+        return app(\Laravel\Scout\EngineManager::class)->engine('typesense');
+    }
+
+    /**
+     * Get searchable array for Typesense indexing.
+     * Includes tenant_ids for scoped API key filtering in admin search.
+     */
+    public function toSearchableArray(): array
+    {
+        // Load required relationships
+        $this->loadMissing([
+            'institutions.types',
+            'institutions.tenant',
+            'agendaItems',
+            'types',
+        ]);
+
+        // Get tenant IDs for filtering with scoped API keys
+        $tenantIds = $this->institutions
+            ->pluck('tenant.id')
+            ->filter()
+            ->unique()
+            ->map(fn ($id) => (int) $id)
+            ->values()
+            ->toArray();
+
+        // Get tenant shortnames for faceting/display
+        $tenantShortnames = $this->institutions
+            ->pluck('tenant.shortname')
+            ->filter()
+            ->unique()
+            ->values()
+            ->toArray();
+
+        // Aggregate vote statistics from agenda items
+        $voteStats = $this->calculateVoteStatistics();
+
         return [
+            'id' => $this->id,
             'title' => $this->title,
+            'description' => $this->description,
+            'start_time' => $this->start_time->timestamp,
+            'start_time_formatted' => $this->start_time->format('Y-m-d H:i'),
+            'year' => $this->start_time->year,
+            'month' => $this->start_time->month,
+
+            // Tenant filtering (CRITICAL for scoped API keys)
+            'tenant_ids' => $tenantIds,
+            'tenant_shortnames' => $tenantShortnames,
+
+            // Institution info (first institution for primary display)
+            'institution_id' => $this->institutions->first()?->id,
+            'institution_name_lt' => $this->institutions->first()?->getTranslation('name', 'lt'),
+            'institution_name_en' => $this->institutions->first()?->getTranslation('name', 'en'),
+
+            // All institutions (for multi-institution meetings and .own scope filtering)
+            // Institution IDs are ULIDs (strings)
+            'institution_ids' => $this->institutions->pluck('id')->toArray(),
+            'institution_names' => $this->institutions->map(fn ($i) => $i->getTranslation('name', 'lt'))->toArray(),
+
+            // Institution type (for faceting)
+            'institution_type_id' => $this->institutions->first()?->types->first()?->id,
+            'institution_type_title' => $this->institutions->first()?->types->first()?->title,
+
+            // Agenda items count
+            'agenda_items_count' => $this->agendaItems->count(),
+
+            // Vote alignment statistics
+            'vote_matches' => $voteStats['vote_matches'],
+            'vote_mismatches' => $voteStats['vote_mismatches'],
+            'incomplete_vote_data' => $voteStats['incomplete_vote_data'],
+            'vote_alignment_status' => $this->calculateVoteAlignmentStatus($voteStats),
+
+            // Completion status for filtering
+            'completion_status' => $this->completion_status,
+
+            // Visibility status
+            'is_public' => $this->is_public,
+            'is_recent' => $this->start_time->isAfter(now()->subMonths(6)),
+
+            'created_at' => $this->created_at->timestamp,
+            'updated_at' => $this->updated_at->timestamp,
         ];
+    }
+
+    /**
+     * Calculate vote statistics from agenda items
+     */
+    protected function calculateVoteStatistics(): array
+    {
+        $items = $this->agendaItems;
+
+        // Count vote alignment - items where both student_vote and decision exist
+        $itemsWithBothVotes = $items->filter(function ($item) {
+            return ! empty($item->student_vote) && ! empty($item->decision);
+        });
+
+        $voteMatches = $itemsWithBothVotes->filter(function ($item) {
+            return $item->student_vote === $item->decision;
+        })->count();
+
+        $voteMismatches = $itemsWithBothVotes->count() - $voteMatches;
+
+        // Items with incomplete vote data
+        $incompleteVoteData = $items->filter(function ($item) {
+            $hasStudentVote = ! empty($item->student_vote);
+            $hasDecision = ! empty($item->decision);
+
+            return $hasStudentVote ^ $hasDecision;
+        })->count();
+
+        return [
+            'vote_matches' => $voteMatches,
+            'vote_mismatches' => $voteMismatches,
+            'incomplete_vote_data' => $incompleteVoteData,
+        ];
+    }
+
+    /**
+     * Calculate vote alignment status for filtering
+     *
+     * @return string 'all_match', 'mixed', 'all_mismatch', 'neutral'
+     */
+    protected function calculateVoteAlignmentStatus(array $voteStats): string
+    {
+        $matches = $voteStats['vote_matches'];
+        $mismatches = $voteStats['vote_mismatches'];
+        $total = $matches + $mismatches;
+
+        if ($total === 0) {
+            return 'neutral';
+        }
+
+        if ($mismatches === 0) {
+            return 'all_match';
+        }
+
+        if ($matches === 0) {
+            return 'all_mismatch';
+        }
+
+        return 'mixed';
     }
 
     public function getActivitylogOptions(): LogOptions

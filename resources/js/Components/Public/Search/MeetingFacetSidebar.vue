@@ -1,421 +1,205 @@
 <template>
-  <div class="space-y-4">
-    <!-- Mobile Filter Button -->
-    <div class="lg:hidden mb-4">
-      <Sheet v-model:open="isMobileFiltersOpen">
-        <SheetTrigger as-child>
-          <Button variant="outline" class="w-full">
-            <Filter class="w-4 h-4 mr-2" />
-            {{ $t('search.filters') }}
-            <Badge v-if="activeFilterCount > 0" variant="secondary" class="ml-2">
-              {{ activeFilterCount }}
-            </Badge>
-          </Button>
-        </SheetTrigger>
-        <SheetContent side="left" class="w-[300px] sm:w-[350px] px-6">
-          <SheetHeader class="border-b border-border/20 pb-4 px-0">
-            <div class="text-left">
-              <SheetTitle class="text-xl font-bold text-foreground flex items-center gap-2">
-                <Filter class="h-5 w-5 text-primary" />
-                {{ $t('search.filter_meetings') }}
-              </SheetTitle>
-            </div>
-          </SheetHeader>
-          <ScrollArea class="h-full pr-4">
-            <div class="mt-8 pb-32">
-              <!-- Mobile filters content - same as desktop but in sheet -->
-              <div class="space-y-6">
-                <!-- Filter Header -->
-                <div class="flex items-center justify-between">
-                  <h3 class="text-lg font-semibold">
-                    {{ $t('search.filters') }}
-                  </h3>
-                  <Button variant="ghost" size="sm" :disabled="activeFilterCount === 0" class="text-xs"
-                    @click="emit('clearFilters')">
-                    <RotateCcw class="w-3 h-3 mr-1" />
-                    <template v-if="activeFilterCount > 0">
-                      {{ $t('search.clear_filters_count', { count: activeFilterCount }) }}
-                    </template>
-                    <template v-else>
-                      {{ $t('search.clear_filters') }}
-                    </template>
-                  </Button>
-                </div>
+  <FilterSidebar
+    :active-filter-count="activeFilterCount"
+    mobile-title="search.filter_meetings"
+    @clear-filters="emit('clearFilters')"
+  >
+    <template #mobile-filters>
+      <Accordion type="multiple" :default-value="['tenants', 'years', 'dates']" class="w-full">
+        <!-- Tenant Filter -->
+        <FilterAccordion
+          value="tenants"
+          :label="$t('search.tenants')"
+          :icon="Building2"
+          :badge-count="filters.tenants.length"
+          variant="mobile"
+        >
+          <TenantFilter
+            :tenant-hierarchy="processedTenantHierarchy"
+            :selected-tenants="filters.tenants"
+            @toggle-tenant="(tenant: string) => emit('update:tenant', tenant)"
+          />
+        </FilterAccordion>
 
-                <!-- Main Filters -->
-                <Accordion type="multiple" :default-value="['tenants', 'years', 'dates']" class="w-full">
-                  <!-- Tenant Filter -->
-                  <AccordionItem value="tenants">
-                    <AccordionTrigger class="text-sm font-medium">
-                      <div class="flex items-center gap-2">
-                        <Building2 class="w-4 h-4 text-muted-foreground" />
-                        <span>{{ $t('search.tenants') }}</span>
-                        <Badge v-if="filters.tenants.length > 0" variant="secondary" class="ml-auto mr-2">
-                          {{ filters.tenants.length }}
-                        </Badge>
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent class="pt-2">
-                      <TenantFilter :tenant-hierarchy="processedTenantHierarchy" :selected-tenants="filters.tenants"
-                        @toggle-tenant="(tenant: string) => emit('update:tenant', tenant)" />
-                    </AccordionContent>
-                  </AccordionItem>
+        <!-- Institution Type Filter (Mobile) -->
+        <FilterAccordion
+          v-if="institutionTypeFacet?.values?.length"
+          value="institution-types"
+          :label="$t('search.institution_type')"
+          :icon="Layers"
+          :badge-count="filters.institutionTypes.length"
+          variant="mobile"
+        >
+          <CheckboxFilter
+            :options="institutionTypeOptions"
+            :selected-values="filters.institutionTypes"
+            :max-visible="0"
+            @toggle="(value) => emit('update:institutionType', String(value))"
+          />
+        </FilterAccordion>
 
-                  <!-- Institution Type Filter (Mobile) -->
-                  <AccordionItem v-if="institutionTypeFacet?.values?.length" value="institution-types">
-                    <AccordionTrigger class="text-sm font-medium">
-                      <div class="flex items-center gap-2">
-                        <Layers class="w-4 h-4 text-muted-foreground" />
-                        <span>{{ $t('search.institution_type') }}</span>
-                        <Badge v-if="filters.institutionTypes.length > 0" variant="secondary" class="ml-auto mr-2">
-                          {{ filters.institutionTypes.length }}
-                        </Badge>
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent class="pt-2">
-                      <div class="space-y-2">
-                        <label v-for="type in institutionTypeFacet?.values || []" :key="type.value" :class="[
-                          'flex items-center gap-2.5 p-2 rounded-lg border cursor-pointer transition-colors hover:bg-accent',
-                          filters.institutionTypes.includes(type.value) ? 'bg-accent' : ''
-                        ]">
-                          <Checkbox :model-value="filters.institutionTypes.includes(type.value)"
-                            @update:model-value="emit('update:institutionType', type.value)" />
-                          <div class="flex items-center gap-2 flex-1">
-                            <span class="text-sm font-medium">
-                              {{ type.label }}
-                            </span>
-                            <Badge variant="outline" class="ml-auto text-xs">
-                              {{ formatCount(type.count) }}
-                            </Badge>
-                          </div>
-                        </label>
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
+        <!-- Years Filter (Mobile) -->
+        <FilterAccordion
+          value="years"
+          :label="$t('search.years')"
+          :icon="CalendarDays"
+          :badge-count="filters.years.length"
+          variant="mobile"
+        >
+          <YearFilter
+            :values="yearFacet?.values || []"
+            :selected-values="filters.years"
+            :max-visible="0"
+            @toggle="(year) => emit('update:year', year)"
+          />
+        </FilterAccordion>
 
-                  <!-- Years Filter -->
-                  <AccordionItem value="years">
-                    <AccordionTrigger class="text-sm font-medium">
-                      <div class="flex items-center gap-2">
-                        <CalendarDays class="w-4 h-4 text-muted-foreground" />
-                        <span>{{ $t('search.years') }}</span>
-                        <Badge v-if="filters.years.length > 0" variant="secondary" class="ml-auto mr-2">
-                          {{ filters.years.length }}
-                        </Badge>
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent class="pt-2">
-                      <div class="space-y-2">
-                        <label v-for="year in yearFacet?.values || []" :key="year.value" :class="[
-                          'flex items-center gap-2.5 p-2 rounded-lg border cursor-pointer transition-colors hover:bg-accent',
-                          filters.years.includes(Number(year.value)) ? 'bg-accent' : ''
-                        ]">
-                          <Checkbox :model-value="filters.years.includes(Number(year.value))"
-                            @update:model-value="emit('update:year', Number(year.value))" />
-                          <div class="flex items-center gap-2 flex-1">
-                            <span class="text-sm font-medium">
-                              {{ year.value }}
-                            </span>
-                            <Badge variant="outline" class="ml-auto text-xs">
-                              {{ formatCount(year.count) }}
-                            </Badge>
-                          </div>
-                        </label>
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
+        <!-- Success Rate Filter (Mobile) -->
+        <FilterAccordion
+          value="success-rate"
+          :label="$t('search.success_rate')"
+          :icon="TrendingUp"
+          :badge-count="filters.successRateRanges.length"
+          variant="mobile"
+        >
+          <CheckboxFilter
+            :options="successRateOptions"
+            :selected-values="filters.successRateRanges"
+            :show-counts="false"
+            :max-visible="0"
+            @toggle="(value) => emit('update:successRate', String(value))"
+          />
+        </FilterAccordion>
 
-                  <!-- Success Rate Filter -->
-                  <AccordionItem value="success-rate">
-                    <AccordionTrigger class="text-sm font-medium">
-                      <div class="flex items-center gap-2">
-                        <TrendingUp class="w-4 h-4 text-muted-foreground" />
-                        <span>{{ $t('search.success_rate') }}</span>
-                        <Badge v-if="filters.successRateRanges.length > 0" variant="secondary" class="ml-auto mr-2">
-                          {{ filters.successRateRanges.length }}
-                        </Badge>
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent class="pt-2">
-                      <div class="space-y-2">
-                        <label v-for="range in successRateOptions" :key="range.value" :class="[
-                          'flex items-center gap-2.5 p-2 rounded-lg border cursor-pointer transition-colors hover:bg-accent',
-                          filters.successRateRanges.includes(range.value) ? 'bg-accent' : ''
-                        ]">
-                          <Checkbox :model-value="filters.successRateRanges.includes(range.value)"
-                            @update:model-value="emit('update:successRate', range.value)" />
-                          <span class="text-sm font-medium">
-                            {{ range.label }}
-                          </span>
-                        </label>
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
+        <!-- Date Range Filter (Mobile) -->
+        <FilterAccordion
+          value="dates"
+          :label="$t('search.date')"
+          :icon="Calendar"
+          :badge-count="hasDateFilter ? 1 : 0"
+          variant="mobile"
+        >
+          <DateRangeFilter
+            :date-range="filters.dateRange"
+            @update:date-range="(range: any) => emit('update:dateRange', range)"
+          />
+        </FilterAccordion>
+      </Accordion>
+    </template>
 
-                  <!-- Date Range Filter -->
-                  <AccordionItem value="dates">
-                    <AccordionTrigger class="text-sm font-medium">
-                      <div class="flex items-center gap-2">
-                        <Calendar class="w-4 h-4 text-muted-foreground" />
-                        <span>{{ $t('search.date') }}</span>
-                        <Badge
-                          v-if="(filters.dateRange.preset && filters.dateRange.preset !== 'recent') || filters.dateRange.from || filters.dateRange.to"
-                          variant="secondary" class="ml-auto mr-2">
-                          1
-                        </Badge>
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent class="pt-2">
-                      <DateRangeFilter :date-range="filters.dateRange"
-                        @update:date-range="(range: any) => emit('update:dateRange', range)" />
-                    </AccordionContent>
-                  </AccordionItem>
-                </Accordion>
-              </div>
-            </div>
-          </ScrollArea>
-        </SheetContent>
-      </Sheet>
-    </div>
+    <template #desktop-filters>
+      <Accordion type="multiple" :default-value="['tenants', 'years', 'dates']" class="w-full space-y-3">
+        <!-- Tenant Filter -->
+        <FilterAccordion
+          value="tenants"
+          :label="$t('search.tenants')"
+          :icon="Building2"
+          :badge-count="filters.tenants.length"
+          :is-loading="isLoading"
+          icon-container-class="bg-primary/10 text-primary group-hover:bg-primary/15"
+        >
+          <TenantFilter
+            :tenant-hierarchy="processedTenantHierarchy"
+            :selected-tenants="filters.tenants"
+            @toggle-tenant="(tenant: string) => emit('update:tenant', tenant)"
+          />
+        </FilterAccordion>
 
-    <!-- Desktop Filters -->
-    <div class="hidden lg:block">
-      <div class="space-y-4">
-        <!-- Filter Header -->
-        <div class="flex items-start justify-between pt-3 pb-5">
-          <div>
-            <h3 class="text-xl font-bold text-foreground tracking-tight">
-              {{ $t('search.filters') }}
-            </h3>
-          </div>
-          <Button variant="ghost" size="sm" :disabled="activeFilterCount === 0"
-            class="text-xs font-medium shrink-0 ml-4" @click="emit('clearFilters')">
-            <RotateCcw class="w-3 h-3 mr-1.5" />
-            <template v-if="activeFilterCount > 0">
-              {{ $t('search.clear_filters_count', { count: activeFilterCount }) }}
-            </template>
-            <template v-else>
-              {{ $t('search.clear_filters') }}
-            </template>
-          </Button>
-        </div>
+        <!-- Institution Type Filter -->
+        <FilterAccordion
+          v-if="institutionTypeFacet?.values?.length"
+          value="institution-types"
+          :label="$t('search.institution_type')"
+          :icon="Layers"
+          :badge-count="filters.institutionTypes.length"
+          :is-loading="isLoading"
+          icon-container-class="bg-teal-500/10 text-teal-600 group-hover:bg-teal-500/15"
+        >
+          <CheckboxFilter
+            :options="institutionTypeOptions"
+            :selected-values="filters.institutionTypes"
+            :max-visible="0"
+            @toggle="(value) => emit('update:institutionType', String(value))"
+          />
+        </FilterAccordion>
 
-        <!-- Main Filters -->
-        <Accordion type="multiple" :default-value="['tenants', 'years', 'dates']" class="w-full space-y-3">
-          <!-- Tenant Filter - Primary Focus -->
-          <AccordionItem value="tenants"
-            class="border border-border/60 rounded-xl bg-card/50 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-200">
-            <AccordionTrigger class="px-5 py-4 hover:no-underline group">
-              <div class="flex items-center gap-3 flex-1">
-                <div class="p-1.5 rounded-lg bg-primary/10 text-primary group-hover:bg-primary/15 transition-colors">
-                  <Building2 class="w-4 h-4" />
-                </div>
-                <div class="flex-1 text-left">
-                  <span class="font-semibold text-foreground text-base">{{ $t('search.tenants') }}</span>
-                </div>
-                <Badge v-if="filters.tenants.length > 0" variant="default" class="font-medium text-xs px-2 py-1">
-                  {{ filters.tenants.length }}
-                </Badge>
-              </div>
-            </AccordionTrigger>
-            <AccordionContent class="px-5 pb-4 pt-1">
-              <div v-if="isLoading" class="space-y-1">
-                <div v-for="i in 3" :key="i" class="h-6 w-full bg-muted animate-pulse rounded" />
-              </div>
-              <TenantFilter v-else :tenant-hierarchy="processedTenantHierarchy" :selected-tenants="filters.tenants"
-                @toggle-tenant="(tenant: string) => emit('update:tenant', tenant)" />
-            </AccordionContent>
-          </AccordionItem>
+        <!-- Years Filter -->
+        <FilterAccordion
+          value="years"
+          :label="$t('search.years')"
+          :icon="CalendarDays"
+          :badge-count="filters.years.length"
+          :is-loading="isLoading"
+          icon-container-class="bg-emerald-500/10 text-emerald-600 group-hover:bg-emerald-500/15"
+        >
+          <YearFilter
+            :values="yearFacet?.values || []"
+            :selected-values="filters.years"
+            :max-visible="8"
+            @toggle="(year) => emit('update:year', year)"
+          />
+        </FilterAccordion>
 
-          <!-- Institution Type Filter -->
-          <AccordionItem v-if="institutionTypeFacet?.values?.length" value="institution-types"
-            class="border border-border/60 rounded-xl bg-card/50 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-200">
-            <AccordionTrigger class="px-5 py-4 hover:no-underline group">
-              <div class="flex items-center gap-3 flex-1">
-                <div class="p-1.5 rounded-lg bg-teal-500/10 text-teal-600 group-hover:bg-teal-500/15 transition-colors">
-                  <Layers class="w-4 h-4" />
-                </div>
-                <div class="flex-1 text-left">
-                  <span class="font-semibold text-foreground text-base">{{ $t('search.institution_type') }}</span>
-                </div>
-                <Badge v-if="filters.institutionTypes.length > 0" variant="default" class="font-medium text-xs px-2 py-1">
-                  {{ filters.institutionTypes.length }}
-                </Badge>
-              </div>
-            </AccordionTrigger>
-            <AccordionContent class="px-5 pb-4 pt-1">
-              <div v-if="isLoading" class="space-y-1">
-                <div v-for="i in 3" :key="i" class="h-6 w-full bg-muted animate-pulse rounded" />
-              </div>
-              <div v-else class="space-y-2">
-                <label v-for="type in institutionTypeFacet?.values || []" :key="type.value" :class="[
-                  'flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all duration-200 hover:bg-accent/50 hover:border-accent-foreground/20',
-                  filters.institutionTypes.includes(type.value) ? 'bg-accent border-accent-foreground/20 shadow-sm' : 'hover:shadow-sm'
-                ]">
-                  <Checkbox :model-value="filters.institutionTypes.includes(type.value)"
-                    class="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-                    @update:model-value="emit('update:institutionType', type.value)" />
-                  <div class="flex items-center justify-between flex-1">
-                    <span class="font-medium text-sm text-foreground">
-                      {{ type.label }}
-                    </span>
-                    <Badge variant="outline" class="text-xs font-medium">
-                      {{ formatCount(type.count) }}
-                    </Badge>
-                  </div>
-                </label>
-              </div>
-            </AccordionContent>
-          </AccordionItem>
+        <!-- Success Rate Filter -->
+        <FilterAccordion
+          value="success-rate"
+          :label="$t('search.success_rate')"
+          :icon="TrendingUp"
+          :badge-count="filters.successRateRanges.length"
+          icon-container-class="bg-violet-500/10 text-violet-600 group-hover:bg-violet-500/15"
+        >
+          <CheckboxFilter
+            :options="successRateOptions"
+            :selected-values="filters.successRateRanges"
+            :show-counts="false"
+            :max-visible="0"
+            @toggle="(value) => emit('update:successRate', String(value))"
+          />
+        </FilterAccordion>
 
-          <!-- Years Filter -->
-          <AccordionItem value="years"
-            class="border border-border/60 rounded-xl bg-card/50 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-200">
-            <AccordionTrigger class="px-5 py-4 hover:no-underline group">
-              <div class="flex items-center gap-3 flex-1">
-                <div
-                  class="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-600 group-hover:bg-emerald-500/15 transition-colors">
-                  <CalendarDays class="w-4 h-4" />
-                </div>
-                <div class="flex-1 text-left">
-                  <span class="font-semibold text-foreground text-base">{{ $t('search.years') }}</span>
-                </div>
-                <Badge v-if="filters.years.length > 0" variant="default" class="font-medium text-xs px-2 py-1">
-                  {{ filters.years.length }}
-                </Badge>
-              </div>
-            </AccordionTrigger>
-            <AccordionContent class="px-5 pb-4 pt-1">
-              <div v-if="isLoading" class="space-y-1">
-                <div v-for="i in 3" :key="i" class="h-6 w-full bg-muted animate-pulse rounded" />
-              </div>
-              <div v-else class="space-y-2">
-                <label v-for="year in yearFacet?.values || []" :key="year.value" :class="[
-                  'flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all duration-200 hover:bg-accent/50 hover:border-accent-foreground/20',
-                  filters.years.includes(Number(year.value)) ? 'bg-accent border-accent-foreground/20 shadow-sm' : 'hover:shadow-sm'
-                ]">
-                  <Checkbox :model-value="filters.years.includes(Number(year.value))"
-                    class="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-                    @update:model-value="emit('update:year', Number(year.value))" />
-                  <div class="flex items-center justify-between flex-1">
-                    <span class="font-medium text-sm text-foreground">
-                      {{ year.value }}
-                    </span>
-                    <Badge variant="outline" class="text-xs font-medium">
-                      {{ formatCount(year.count) }}
-                    </Badge>
-                  </div>
-                </label>
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-
-          <!-- Success Rate Filter -->
-          <AccordionItem value="success-rate"
-            class="border border-border/60 rounded-xl bg-card/50 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-200">
-            <AccordionTrigger class="px-5 py-4 hover:no-underline group">
-              <div class="flex items-center gap-3 flex-1">
-                <div
-                  class="p-1.5 rounded-lg bg-violet-500/10 text-violet-600 group-hover:bg-violet-500/15 transition-colors">
-                  <TrendingUp class="w-4 h-4" />
-                </div>
-                <div class="flex-1 text-left">
-                  <span class="font-semibold text-foreground text-base">{{ $t('search.success_rate') }}</span>
-                </div>
-                <Badge v-if="filters.successRateRanges.length > 0" variant="default" class="font-medium text-xs px-2 py-1">
-                  {{ filters.successRateRanges.length }}
-                </Badge>
-              </div>
-            </AccordionTrigger>
-            <AccordionContent class="px-5 pb-4 pt-1">
-              <div class="space-y-2">
-                <label v-for="range in successRateOptions" :key="range.value" :class="[
-                  'flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all duration-200 hover:bg-accent/50 hover:border-accent-foreground/20',
-                  filters.successRateRanges.includes(range.value) ? 'bg-accent border-accent-foreground/20 shadow-sm' : 'hover:shadow-sm'
-                ]">
-                  <Checkbox :model-value="filters.successRateRanges.includes(range.value)"
-                    class="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-                    @update:model-value="emit('update:successRate', range.value)" />
-                  <div class="flex items-center justify-between flex-1">
-                    <span class="font-medium text-sm text-foreground">
-                      {{ range.label }}
-                    </span>
-                  </div>
-                </label>
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-
-          <!-- Date Range Filter -->
-          <AccordionItem value="dates"
-            class="border border-border/60 rounded-xl bg-card/50 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-200">
-            <AccordionTrigger class="px-5 py-4 hover:no-underline group">
-              <div class="flex items-center gap-3 flex-1">
-                <div
-                  class="p-1.5 rounded-lg bg-amber-500/10 text-amber-600 group-hover:bg-amber-500/15 transition-colors">
-                  <Calendar class="w-4 h-4" />
-                </div>
-                <div class="flex-1 text-left">
-                  <span class="font-semibold text-foreground text-base">{{ $t('search.date') }}</span>
-                </div>
-                <Badge
-                  v-if="(filters.dateRange.preset && filters.dateRange.preset !== 'recent') || filters.dateRange.from || filters.dateRange.to"
-                  variant="default" class="font-medium text-xs px-2 py-1">
-                  1
-                </Badge>
-              </div>
-            </AccordionTrigger>
-            <AccordionContent class="px-5 pb-4 pt-1">
-              <DateRangeFilter :date-range="filters.dateRange"
-                @update:date-range="(range: any) => emit('update:dateRange', range)" />
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
-      </div>
-    </div>
-  </div>
+        <!-- Date Range Filter -->
+        <FilterAccordion
+          value="dates"
+          :label="$t('search.date')"
+          :icon="Calendar"
+          :badge-count="hasDateFilter ? 1 : 0"
+          icon-container-class="bg-amber-500/10 text-amber-600 group-hover:bg-amber-500/15"
+        >
+          <DateRangeFilter
+            :date-range="filters.dateRange"
+            @update:date-range="(range: any) => emit('update:dateRange', range)"
+          />
+        </FilterAccordion>
+      </Accordion>
+    </template>
+  </FilterSidebar>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 import { trans as $t } from 'laravel-vue-i18n'
 
+// Shared Search Components
+import { FilterSidebar, FilterAccordion, CheckboxFilter, YearFilter } from '@/Components/Shared/Search'
+
 // ShadcnVue components
-import { Button } from '@/Components/ui/button'
-import { Badge } from '@/Components/ui/badge'
-import {
-  Sheet,
-  SheetTrigger,
-  SheetContent,
-  SheetHeader,
-  SheetTitle
-} from '@/Components/ui/sheet'
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/Components/ui/accordion'
-import { Checkbox } from '@/Components/ui/checkbox'
-import { ScrollArea } from '@/Components/ui/scroll-area'
+import { Accordion } from '@/Components/ui/accordion'
 
 // Icons
 import {
-  Filter,
   Building2,
   Layers,
   Calendar,
   CalendarDays,
   TrendingUp,
-  RotateCcw
 } from 'lucide-vue-next'
 
 // Local components
 import TenantFilter from './TenantFilter.vue'
 import DateRangeFilter from './DateRangeFilter.vue'
 
-// Composables
-import type { MeetingFacet, MeetingSearchFilters } from '@/Composables/useMeetingSearch'
+// Types
+import type { MeetingFacet, MeetingSearchFilters } from '@/Types/MeetingSearchTypes'
 
 // Props interface
 interface Props {
@@ -442,9 +226,6 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<Emits>()
 
-// Local state
-const isMobileFiltersOpen = ref(false)
-
 // Success rate options
 const successRateOptions = [
   { value: 'high', label: $t('search.success_rate_high') },
@@ -452,17 +233,17 @@ const successRateOptions = [
   { value: 'low', label: $t('search.success_rate_low') }
 ]
 
-// Utility functions for facet processing
-const formatCount = (count: number): string => {
-  if (count >= 1000000) {
-    return (count / 1000000).toFixed(1) + 'M'
-  }
-  if (count >= 1000) {
-    return (count / 1000).toFixed(1) + 'K'
-  }
-  return count.toString()
-}
+// Access filters from props
+const filters = computed(() => props.filters)
 
+// Check if date filter is active
+const hasDateFilter = computed(() => {
+  return (filters.value.dateRange.preset && filters.value.dateRange.preset !== 'recent') ||
+    filters.value.dateRange.from ||
+    filters.value.dateRange.to
+})
+
+// Process tenant facet into hierarchy for TenantFilter
 const processTenantFacet = (facet: MeetingFacet | undefined) => {
   if (!facet?.values) {
     return { main: [], padaliniai: [], pkp: [] }
@@ -475,7 +256,6 @@ const processTenantFacet = (facet: MeetingFacet | undefined) => {
   facet.values.forEach(tenant => {
     const value = tenant.value
 
-    // Transform facet object to match TenantFilter expectations
     const transformedTenant = {
       shortname: value,
       name: value,
@@ -483,34 +263,25 @@ const processTenantFacet = (facet: MeetingFacet | undefined) => {
       count: tenant.count
     }
 
-    // VU SA main organization - ONLY the exact match
     if (value === 'VU SA') {
       main.push(transformedTenant)
-    }
-    // PKP (programs, clubs, projects) - check this first before padaliniai
-    else if (value.includes('PKP')) {
+    } else if (value.includes('PKP')) {
       pkp.push(transformedTenant)
-    }
-    // VU SA Padaliniai (faculty units) - all other VU SA units
-    else if (value.startsWith('VU SA ')) {
+    } else if (value.startsWith('VU SA ')) {
       padaliniai.push(transformedTenant)
-    }
-    // Other organizations (non VU SA) - everything else
-    else {
+    } else {
       main.push(transformedTenant)
     }
   })
 
-  const result = {
+  return {
     main: main.sort((a, b) => b.count - a.count),
     padaliniai: padaliniai.sort((a, b) => b.count - a.count),
     pkp: pkp.sort((a, b) => b.count - a.count)
   }
-
-  return result
 }
 
-// Computed properties
+// Computed facets
 const tenantFacet = computed(() => {
   return props.facets.find(f => f.field === 'tenant_shortname')
 })
@@ -519,9 +290,17 @@ const institutionTypeFacet = computed(() => {
   return props.facets.find(f => f.field === 'institution_type_title')
 })
 
+// Transform institution type facet to FilterOption format
+const institutionTypeOptions = computed(() => {
+  return (institutionTypeFacet.value?.values || []).map(v => ({
+    value: v.value,
+    label: v.label || v.value,
+    count: v.count
+  }))
+})
+
 const yearFacet = computed(() => {
   const facet = props.facets.find(f => f.field === 'year')
-  // Sort years in descending order (newest first)
   if (facet?.values) {
     return {
       ...facet,

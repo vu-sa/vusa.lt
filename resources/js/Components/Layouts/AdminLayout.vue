@@ -18,6 +18,7 @@
 
           <div class="flex items-center gap-2">
             <slot name="headerActions" />
+            <CommandPaletteTrigger />
             <PWAStatusButton />
             <SpotlightPopover
               v-if="hasTour"
@@ -167,6 +168,9 @@
       </div>
     </nav>
     
+    <!-- Command Palette (global Cmd+K / Ctrl+K search) -->
+    <AdminCommandPalette />
+
     <!-- Quick Create Sheet (for PWA bottom nav) -->
     <Sheet v-model:open="showQuickCreate">
       <SheetContent side="bottom" class="rounded-t-xl">
@@ -252,6 +256,9 @@ import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 import { Toaster } from "@/Components/ui/sonner";
+import { createCommandPaletteProvider } from '@/Composables/useCommandPalette';
+import AdminCommandPalette from '@/Components/CommandPalette/AdminCommandPalette.vue';
+import CommandPaletteTrigger from '@/Components/CommandPalette/CommandPaletteTrigger.vue';
 
 const props = withDefaults(defineProps<{
   title?: string;
@@ -298,6 +305,9 @@ const breadcrumbState = createBreadcrumbState('admin');
 
 // Initialize tour provider - pages can register their tours via provideTour()
 const { hasTour, startTour: startPageTour, clearTour } = createTourProvider();
+
+// Initialize command palette provider for global Cmd+K / Ctrl+K search
+createCommandPaletteProvider();
 
 // Spotlight for help button - shows once to draw attention to the help feature
 const helpButtonSpotlight = useFeatureSpotlight('help-button-v1');

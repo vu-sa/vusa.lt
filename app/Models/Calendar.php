@@ -164,6 +164,8 @@ class Calendar extends Model implements HasMedia
             'date' => $this->date->timestamp,
             'end_date' => $this->end_date ? $this->end_date->timestamp : null,
             'lang' => $this->lang ?? app()->getLocale(),
+            'tenant_id' => $this->tenant_id,
+            'tenant_ids' => [$this->tenant_id],
             'tenant_name' => $this->tenant->fullname,
             'created_at' => $this->created_at->timestamp,
         ];

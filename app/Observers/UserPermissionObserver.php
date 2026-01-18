@@ -6,6 +6,7 @@ use App\Facades\Permission;
 use App\Models\Duty;
 use App\Models\Role;
 use App\Models\User;
+use App\Services\Typesense\TypesenseScopedKeyService;
 use App\Settings\AtstovavimasSettings;
 
 /**
@@ -24,6 +25,7 @@ class UserPermissionObserver
 
         Permission::resetCache($userId);
         AtstovavimasSettings::clearCoordinatorCache($userId);
+        TypesenseScopedKeyService::invalidateForUser($userId);
     }
 
     /**

@@ -68,13 +68,14 @@ import {
   Clock,
   ExternalLink,
   Bell,
+  Search,
   type LucideIcon
 } from 'lucide-vue-next'
 
 import { Link, router, usePage, useForm } from '@inertiajs/vue3'
 import { loadLanguageAsync, trans as $t } from 'laravel-vue-i18n'
 import { capitalize } from '@/Utils/String'
-import { computed, ref } from 'vue'
+import { computed, markRaw, ref } from 'vue'
 import { useDark } from '@vueuse/core'
 
 const props = withDefaults(defineProps<SidebarProps>(), {
@@ -112,12 +113,25 @@ const navMainItems = computed(() => {
     items.push({
       title: "ViSAK",
       url: route('dashboard.atstovavimas'),
-      icon: GraduationCap,
+      icon: markRaw(GraduationCap),
       isActive: route().current('dashboard.atstovavimas') ||
                 route().current('meetings.show') ||
                 route().current('institutions.show') ||
                 route().current('duties.show'),
       dataTour: 'nav-visak',
+    })
+
+    // Search (Paieška) - meetings and agenda items search pages
+    items.push({
+      title: $t('Paieška'),
+      url: route('search.meetings'),
+      icon: markRaw(Search),
+      isActive: route().current('search.*'),
+      items: [
+        { title: $t('Posėdžiai'), url: route('search.meetings') },
+        { title: $t('Darbotvarkės punktai'), url: route('search.agendaItems') },
+        { title: $t('Institucijos'), url: route('search.institutions') },
+      ],
     })
   }
 
@@ -126,7 +140,7 @@ const navMainItems = computed(() => {
     items.push({
       title: $t("Svetainė"),
       url: route('dashboard.svetaine'),
-      icon: Globe,
+      icon: markRaw(Globe),
       isActive: false,
     })
   }
@@ -135,7 +149,7 @@ const navMainItems = computed(() => {
   items.push({
     title: $t('Rezervacijos'),
     url: route('dashboard.reservations'),
-    icon: Bookmark,
+    icon: markRaw(Bookmark),
     isActive: route().current('dashboard.reservations*') ||
               route().current('reservations.create') ||
               route().current('reservations.show'),
@@ -146,7 +160,7 @@ const navMainItems = computed(() => {
     items.push({
       title: $t('Administravimas'),
       url: route('administration'),
-      icon: Settings,
+      icon: markRaw(Settings),
       isActive: route().current('administration*'),
       dataTour: 'nav-administravimas',
     })
@@ -161,13 +175,13 @@ const navSecondaryItems = computed(() => {
     {
       title: $t('Dokumentacija'),
       url: '/docs',
-      icon: BookOpen,
+      icon: markRaw(BookOpen),
       dataTour: 'nav-dokumentacija',
     },
     {
       title: $t('Palik atsiliepimą'),
       url: '#feedback',
-      icon: MessageSquare,
+      icon: markRaw(MessageSquare),
       dataTour: 'nav-feedback',
     },
   ]

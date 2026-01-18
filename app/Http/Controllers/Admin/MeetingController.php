@@ -131,6 +131,20 @@ class MeetingController extends AdminController
     }
 
     /**
+     * Display the Typesense-powered search page for meetings and agenda items.
+     *
+     * This page uses scoped API keys for authorization - the search key
+     * has tenant filtering embedded, ensuring users can only see meetings
+     * they have permission to access.
+     */
+    public function search()
+    {
+        $this->handleAuthorization('viewAny', Meeting::class);
+
+        return Inertia::render('Admin/Representation/SearchMeetings');
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(StoreMeetingRequest $request)

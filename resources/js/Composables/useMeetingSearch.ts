@@ -1,133 +1,141 @@
-import { ref, computed, watch, onUnmounted, nextTick, shallowRef } from 'vue'
-import { useLocalStorage, useOnline } from '@vueuse/core'
-import { debounce } from 'lodash-es'
+/**
+ * Meeting Search Composable V2
+ *
+ * Refactored version using shared search infrastructure.
+ * This composable extends useBaseSearch with meeting-specific functionality.
+ */
+
+import { ref, computed, nextTick, type Ref } from 'vue'
+import { useLocalStorage } from '@vueuse/core'
 import { usePage } from '@inertiajs/vue3'
 import { createTypesenseClients } from './useSearchClient'
 
-// Import types and services
+import { useBaseSearch, type BaseSearchService } from '@/Shared/Search/composables/useBaseSearch'
+import { FilterUtils } from '@/Shared/Search/services/FilterUtils'
+import type { ProcessedSearchResult } from '@/Shared/Search/types'
+
 import type {
   MeetingSearchFilters,
   MeetingFacet,
-  SearchError,
-  SearchStatus,
-  SearchState,
   MeetingSearchPreferences,
   MeetingSearchController
 } from '../Types/MeetingSearchTypes'
 import { MeetingSearchService } from '../Services/MeetingSearchService'
-import { FacetMerger } from '../Services/FacetMerger'
-import {
-  RecentSearchManager,
-  FilterUtils,
-  ErrorUtils,
-  QueryUtils
-} from '../Utils/SearchUtils'
 
 // Re-export types for backward compatibility
 export type {
   MeetingSearchFilters,
-  MeetingFacet,
-  SearchError,
-  SearchStatus,
-  SearchState,
-  MeetingSearchPreferences
+  MeetingFacet
 }
 
+// ============================================================================
+// Types
+// ============================================================================
+
+/**
+ * Extended preferences for meeting search
+ */
+interface MeetingPreferences extends MeetingSearchPreferences {
+  viewMode: 'list' | 'compact'
+  recentSearches: string[]
+}
+
+// ============================================================================
+// Service Adapter
+// ============================================================================
+
+/**
+ * Adapter to make MeetingSearchService compatible with BaseSearchService interface
+ */
+class MeetingSearchServiceAdapter implements BaseSearchService<MeetingSearchFilters, MeetingFacet> {
+  private service: MeetingSearchService
+
+  constructor(service: MeetingSearchService) {
+    this.service = service
+  }
+
+  async performSearch(
+    filters: MeetingSearchFilters,
+    perPage: number,
+    isLoadMore: boolean,
+    currentPage: number
+  ): Promise<ProcessedSearchResult<MeetingFacet>> {
+    const result = await this.service.performSearch(filters, perPage, isLoadMore, currentPage)
+    return {
+      hits: result.hits,
+      totalHits: result.totalHits,
+      totalPages: result.totalPages,
+      currentPage: result.currentPage,
+      facets: result.facets
+    }
+  }
+
+  async loadInitialFacets(): Promise<MeetingFacet[]> {
+    return this.service.loadInitialFacets()
+  }
+
+  cancelCurrentSearch(): void {
+    this.service.cancelCurrentSearch()
+  }
+}
+
+// ============================================================================
+// Composable
+// ============================================================================
+
 export const useMeetingSearch = (): MeetingSearchController => {
-  // Persistent preferences
-  const preferences = useLocalStorage<MeetingSearchPreferences>('meeting-search-preferences', {
-    viewMode: 'list', // Default to list view
+  // Extended preferences for meeting search
+  const meetingPreferences = useLocalStorage<MeetingPreferences>('meeting-search-preferences', {
+    viewMode: 'list',
     recentSearches: []
   })
 
-  // Simplified state management with status - using shallowRef for performance with large arrays
-  const status = ref<SearchStatus>('idle')
-  const searchQuery = ref('') // This is what the user sees in the input
-  const internalQuery = ref('') // This is what we actually search for
-  const results = shallowRef<any[]>([]) // Performance: use shallowRef for large arrays
-  const totalHits = ref(0)
-  const facets = shallowRef<MeetingFacet[]>([]) // Performance: use shallowRef for facets
-  const initialFacets = shallowRef<MeetingFacet[]>([]) // Performance: use shallowRef for initial facets
+  // Search client refs (for initialization)
+  const searchClient = ref<any>(null)
+  const typesenseClient = ref<any>(null)
+  const meetingService = ref<MeetingSearchService | null>(null)
 
-  // Error handling state with user-friendly messages
-  const searchError = ref<SearchError | null>(null)
-  const isOnline = useOnline()
-  const retryCount = ref(0)
-  const maxRetries = 3
-
-  // Pagination state
-  const currentPage = ref(0)
-  const totalPages = ref(0)
-  const perPage = ref(24)
-
-  // Filter state - consolidated into single source of truth
-  const filters = ref<MeetingSearchFilters>({
+  // Default filters for meeting search
+  const defaultFilters: MeetingSearchFilters = {
     query: '',
     tenants: [],
     institutionTypes: [],
     years: [],
     successRateRanges: [],
     dateRange: {}
-  })
-
-  // Search clients
-  const searchClient = ref<any>(null) // InstantSearch adapter (for compatibility)
-  const typesenseClient = ref<any>(null) // Direct Typesense client
-
-  // Services
-  const searchService = ref<MeetingSearchService | null>(null)
-
-  // Computed properties for intelligent facet merging using service with memoization key
-  const facetMergeKey = computed(() => {
-    // Create a stable key for memoization based on facet data and filters
-    return JSON.stringify({
-      initialCount: initialFacets.value.length,
-      currentCount: facets.value.length,
-      filters: {
-        tenants: filters.value.tenants.slice().sort(),
-        years: filters.value.years.slice().sort(),
-        successRateRanges: filters.value.successRateRanges.slice().sort()
-      }
-    })
-  })
-
-  const mergedFacets = computed(() => {
-    // The key dependency ensures this only recalculates when necessary
-    facetMergeKey.value // Touch the key for reactivity
-    return FacetMerger.mergeFacets(initialFacets.value, facets.value, filters.value)
-  })
-
-  // Simplified error handling using utility
-  const clearError = () => {
-    searchError.value = null
-    retryCount.value = 0
-    status.value = 'idle'
   }
 
-  const handleSearchError = (error: unknown, context: string) => {
-    console.error(`Search error in ${context}:`, error)
-
-    const errorType = ErrorUtils.getErrorType(error)
-    const userMessage = ErrorUtils.getUserFriendlyMessage(error)
-    const message = error instanceof Error ? error.message : 'Unknown error'
-    const retryable = !ErrorUtils.isAbortError(error)
-
-    searchError.value = ErrorUtils.createSearchError(
-      errorType,
-      message,
-      userMessage,
-      errorType.toUpperCase(),
-      retryable
-    )
-
-    if (ErrorUtils.isAbortError(error)) {
-      return // Don't set error status for aborted requests
+  // Filter key mapper for meeting facets
+  const filterKeyMapper = (field: string, filters: MeetingSearchFilters): string[] => {
+    switch (field) {
+      case 'tenant_shortname':
+        return filters.tenants
+      case 'institution_type_title':
+        return filters.institutionTypes
+      case 'year':
+        return filters.years.map(String)
+      default:
+        return []
     }
-
-    status.value = 'error'
   }
 
-  // Initialize Typesense search client
+  // Initialize base search without service (will be set after client init)
+  const baseSearch = useBaseSearch<MeetingSearchFilters, MeetingFacet, any>({
+    defaultFilters,
+    searchService: null, // Will be set after initialization
+    filterKeyMapper,
+    localStorageKey: 'meeting-search-state',
+    perPage: 24,
+    debounceDelay: 300,
+    maxRetries: 3,
+    searchOnMount: false,
+    loadFacetsOnMount: false
+  })
+
+  // ============================================================================
+  // Client Initialization
+  // ============================================================================
+
   const initializeSearchClient = async () => {
     const page = usePage()
     const typesenseConfig = page.props.typesenseConfig as any
@@ -140,20 +148,14 @@ export const useMeetingSearch = (): MeetingSearchController => {
     try {
       const locale = page.props.app.locale || 'lt'
       const institutionNameField = `institution_name_${locale}`
-
-      // Get collection name from config (with staging prefix if applicable)
       const collectionName = typesenseConfig.collections?.public_meetings || 'public_meetings'
-      
-      // Build collection-specific search parameters with dynamic collection name
+
+      // Build collection-specific search parameters
       const collectionSpecificSearchParameters: Record<string, any> = {}
       collectionSpecificSearchParameters[collectionName] = {
         query_by: `title,description,${institutionNameField}`,
-        facet_by: [
-          'year',
-          'month',
-          'tenant_shortname'
-        ].join(','),
-        per_page: 24,
+        facet_by: ['year', 'month', 'tenant_shortname'].join(','),
+        per_page: 24
       }
 
       const clients = createTypesenseClients(typesenseConfig, {
@@ -164,11 +166,7 @@ export const useMeetingSearch = (): MeetingSearchController => {
           drop_tokens_threshold: 1,
           max_hits: 1000,
           per_page: 24,
-          facet_by: [
-            'year',
-            'month',
-            'tenant_shortname'
-          ].join(','),
+          facet_by: ['year', 'month', 'tenant_shortname'].join(','),
           max_facet_values: 50,
           sort_by: 'start_time:desc'
         },
@@ -178,15 +176,16 @@ export const useMeetingSearch = (): MeetingSearchController => {
       searchClient.value = clients.searchClient
       typesenseClient.value = clients.typesenseClient
 
-      // Initialize search service with collection name from config
-      searchService.value = new MeetingSearchService(typesenseClient.value, collectionName)
+      // Create meeting service and adapter
+      meetingService.value = new MeetingSearchService(typesenseClient.value, collectionName)
+      const adapter = new MeetingSearchServiceAdapter(meetingService.value)
 
-      // Load initial facets after client initialization
-      if (typesenseClient.value) {
-        // Use nextTick to ensure the client is fully set up
-        await nextTick()
-        await loadInitialFacets()
-      }
+      // Set the service on base search
+      baseSearch.setSearchService(adapter)
+
+      // Load initial facets
+      await nextTick()
+      await baseSearch.loadInitialFacets()
 
       return clients.searchClient
     } catch (error) {
@@ -195,308 +194,141 @@ export const useMeetingSearch = (): MeetingSearchController => {
     }
   }
 
-  // Search function using service - much cleaner!
-  const performSearch = async (isLoadMore = false, attempt = 1) => {
-    // Clear previous errors on new search attempts
-    if (!isLoadMore && attempt === 1) {
-      clearError()
-    }
-
-    if (!searchService.value) {
-      handleSearchError(new Error('Search service not initialized'), 'service initialization')
-      return
-    }
-
-    // Check network connectivity
-    if (!isOnline.value) {
-      searchError.value = ErrorUtils.createSearchError(
-        'network',
-        'No internet connection',
-        'Check your internet connection and try again',
-        'OFFLINE',
-        true
-      )
-      return
-    }
-
-    // Validate search using utility
-    const hasActiveFilters = FilterUtils.hasActiveFilters(filters.value)
-    const shouldSearch = QueryUtils.shouldSearch(filters.value.query, hasActiveFilters)
-
-    if (!shouldSearch) {
-      results.value = []
-      totalHits.value = 0
-      facets.value = []
-      currentPage.value = 0
-      totalPages.value = 0
-      status.value = 'idle'
-      return
-    }
-
-    // Set loading states
-    if (isLoadMore) {
-      status.value = 'loading-more'
-    } else {
-      status.value = 'searching'
-    }
-
-    try {
-      // Use service to perform search - all the complex logic is now encapsulated
-      const result = await searchService.value.performSearch(
-        filters.value,
-        perPage.value,
-        isLoadMore,
-        currentPage.value
-      )
-
-      // Update state with results
-      if (isLoadMore) {
-        results.value = [...results.value, ...result.hits]
-      } else {
-        results.value = result.hits
-      }
-
-      totalHits.value = result.totalHits
-      totalPages.value = result.totalPages
-      currentPage.value = result.currentPage
-      facets.value = result.facets
-
-      // Add to recent searches using utility - use the user's actual query, not internal query
-      if (QueryUtils.isValidQuery(searchQuery.value)) {
-        preferences.value.recentSearches = RecentSearchManager.addToRecentSearches(
-          preferences.value.recentSearches,
-          searchQuery.value
-        )
-      }
-
-      // Reset retry count on successful search
-      retryCount.value = 0
-
-    } catch (error) {
-      if (!ErrorUtils.isAbortError(error)) {
-        handleSearchError(error, `search attempt ${attempt}`)
-
-        // Retry logic for retryable errors
-        if (searchError.value?.retryable && attempt < maxRetries) {
-          console.log(`Retrying search, attempt ${attempt + 1}/${maxRetries}`)
-          retryCount.value = attempt
-
-          // Exponential backoff: 1s, 2s, 4s
-          const delay = Math.pow(2, attempt - 1) * 1000
-          setTimeout(() => {
-            performSearch(isLoadMore, attempt + 1)
-          }, delay)
-          return
-        }
-      }
-    } finally {
-      status.value = 'idle'
-    }
-  }
-
-  // Debounced search function (for new searches) with optimization
-  const debouncedSearch = debounce(() => {
-    // Only perform search if not already searching or loading
-    if (status.value === 'idle' || status.value === 'error') {
-      performSearch(false)
-    }
-  }, 300)
-
-  // Cache for initial facets to avoid unnecessary API calls
-  const initialFacetsLoaded = ref(false)
-
-  // Load initial facets using service with caching
-  const loadInitialFacets = async () => {
-    if (!searchService.value || initialFacetsLoaded.value) {
-      return // Already loaded, skip
-    }
-
-    status.value = 'loading-facets'
-
-    try {
-      const facetResults = await searchService.value.loadInitialFacets()
-
-      initialFacets.value = facetResults
-      initialFacetsLoaded.value = true // Mark as loaded
-
-      // If no current facets, use initial facets as default
-      if (facets.value.length === 0) {
-        facets.value = [...initialFacets.value]
-      }
-
-    } catch (error) {
-      console.error('Failed to load initial facets:', error)
-      initialFacets.value = []
-    } finally {
-      status.value = 'idle'
-    }
-  }
-
-  // Public API methods
-  const search = (query: string, immediate = false) => {
-    // If it's a wildcard search (for loading all meetings), don't show it in the input
-    if (query === '*') {
-      internalQuery.value = '*'
-      filters.value.query = '*'
-      // Keep searchQuery empty so input shows placeholder
-      searchQuery.value = ''
-    } else {
-      // Normal search - show in input and use for search
-      searchQuery.value = query
-      internalQuery.value = query
-      filters.value.query = query
-    }
-
-    // Use immediate search for initial load, debounced for user typing
-    if (immediate) {
-      performSearch(false)
-    } else {
-      debouncedSearch()
-    }
-  }
-
-  const setFilter = <K extends keyof MeetingSearchFilters>(
-    key: K,
-    value: MeetingSearchFilters[K]
-  ) => {
-    filters.value[key] = value
-    debouncedSearch()
-  }
+  // ============================================================================
+  // Meeting-Specific Methods
+  // ============================================================================
 
   const toggleTenant = (tenantShortname: string) => {
-    filters.value.tenants = FilterUtils.toggleArrayValue(filters.value.tenants, tenantShortname)
-    debouncedSearch()
+    const current = baseSearch.filters.value.tenants
+    baseSearch.filters.value = {
+      ...baseSearch.filters.value,
+      tenants: FilterUtils.toggleArrayValue(current, tenantShortname)
+    }
+    baseSearch.debouncedSearch()
   }
 
   const toggleInstitutionType = (type: string) => {
-    filters.value.institutionTypes = FilterUtils.toggleArrayValue(filters.value.institutionTypes, type)
-    debouncedSearch()
+    const current = baseSearch.filters.value.institutionTypes
+    baseSearch.filters.value = {
+      ...baseSearch.filters.value,
+      institutionTypes: FilterUtils.toggleArrayValue(current, type)
+    }
+    baseSearch.debouncedSearch()
   }
 
   const toggleYear = (year: number) => {
-    filters.value.years = FilterUtils.toggleArrayValue(filters.value.years, year)
-    debouncedSearch()
+    const current = baseSearch.filters.value.years
+    baseSearch.filters.value = {
+      ...baseSearch.filters.value,
+      years: FilterUtils.toggleArrayValue(current, year)
+    }
+    baseSearch.debouncedSearch()
   }
 
   const toggleSuccessRate = (range: string) => {
-    filters.value.successRateRanges = FilterUtils.toggleArrayValue(filters.value.successRateRanges, range)
-    debouncedSearch()
+    const current = baseSearch.filters.value.successRateRanges
+    baseSearch.filters.value = {
+      ...baseSearch.filters.value,
+      successRateRanges: FilterUtils.toggleArrayValue(current, range)
+    }
+    baseSearch.debouncedSearch()
   }
 
-  const setDateRange = (dateRange: any) => {
-    filters.value.dateRange = {
-      from: dateRange.from,
-      to: dateRange.to,
-      preset: dateRange.preset
+  const setDateRange = (dateRange: { from?: string; to?: string; preset?: string }) => {
+    baseSearch.filters.value = {
+      ...baseSearch.filters.value,
+      dateRange: {
+        from: dateRange.from,
+        to: dateRange.to,
+        preset: dateRange.preset
+      }
     }
-    debouncedSearch()
+    baseSearch.debouncedSearch()
   }
 
   const setViewMode = (mode: 'list' | 'compact') => {
-    preferences.value.viewMode = mode
+    meetingPreferences.value.viewMode = mode
   }
 
   const clearFilters = () => {
-    filters.value = {
-      query: filters.value.query,
+    baseSearch.filters.value = {
+      query: baseSearch.filters.value.query,
       tenants: [],
       institutionTypes: [],
       years: [],
       successRateRanges: [],
       dateRange: {}
     }
-    debouncedSearch()
+    baseSearch.debouncedSearch()
   }
 
+  // ============================================================================
+  // Recent Searches (using meeting preferences)
+  // ============================================================================
+
   const clearRecentSearches = () => {
-    preferences.value.recentSearches = RecentSearchManager.clearRecentSearches()
+    meetingPreferences.value.recentSearches = []
   }
 
   const removeRecentSearch = (searchToRemove: string) => {
-    preferences.value.recentSearches = RecentSearchManager.removeRecentSearch(
-      preferences.value.recentSearches,
-      searchToRemove
+    meetingPreferences.value.recentSearches = meetingPreferences.value.recentSearches.filter(
+      s => s !== searchToRemove
     )
   }
 
-  const loadMore = () => {
-    if (status.value !== 'loading-more' && currentPage.value < totalPages.value) {
-      performSearch(true)
-    }
-  }
+  // ============================================================================
+  // Search State
+  // ============================================================================
 
-  // Computed properties using utilities
-  const hasActiveFilters = computed(() => FilterUtils.hasActiveFilters(filters.value))
-
-  const hasResults = computed(() => results.value.length > 0)
-  const hasMoreResults = computed(() => currentPage.value < totalPages.value)
-
-  const searchState = computed<SearchState>(() => ({
-    isSearching: status.value === 'searching',
-    hasResults: hasResults.value,
-    totalHits: totalHits.value,
-    query: searchQuery.value, // Use display query, not internal query
-    filters: filters.value,
-    facets: facets.value,
-    results: results.value,
-    viewMode: preferences.value.viewMode,
-    error: searchError.value,
-    isOnline: isOnline.value,
-    status: status.value
+  const searchState = computed(() => ({
+    isSearching: baseSearch.status.value === 'searching',
+    hasResults: baseSearch.hasResults.value,
+    totalHits: baseSearch.totalHits.value,
+    query: baseSearch.displayQuery.value,
+    filters: baseSearch.filters.value,
+    facets: baseSearch.facets.value,
+    results: baseSearch.results.value,
+    viewMode: meetingPreferences.value.viewMode,
+    error: baseSearch.error.value,
+    isOnline: baseSearch.isOnline.value,
+    status: baseSearch.status.value
   }))
 
-  // Watch for query changes from external sources
-  watch(() => filters.value.query, (newQuery) => {
-    // Only update display query if it's not a wildcard
-    if (newQuery !== '*') {
-      searchQuery.value = newQuery
-    }
-    internalQuery.value = newQuery
-  })
-
-  // Retry functionality
-  const retrySearch = () => {
-    if (searchError.value?.retryable) {
-      clearError()
-      performSearch(false, 1)
-    }
-  }
-
-  // Cleanup on unmount
-  onUnmounted(() => {
-    // Cancel any ongoing searches through service
-    if (searchService.value) {
-      searchService.value.cancelCurrentSearch()
-    }
-    debouncedSearch.cancel()
-
-  })
+  // ============================================================================
+  // Return Controller
+  // ============================================================================
 
   return {
-    // State
+    // State from base
     searchState,
-    isSearching: computed(() => status.value === 'searching'),
-    isLoadingFacets: computed(() => status.value === 'loading-facets'),
-    isLoadingMore: computed(() => status.value === 'loading-more'),
-    hasResults,
-    hasActiveFilters,
-    hasMoreResults,
-    totalHits: computed(() => totalHits.value),
-    results: computed(() => results.value),
-    facets: computed(() => mergedFacets.value), // Use merged facets instead of raw facets
-    filters: computed(() => filters.value),
-    viewMode: computed(() => preferences.value.viewMode),
-    recentSearches: computed(() => preferences.value.recentSearches),
+    isSearching: baseSearch.isSearching,
+    isLoadingFacets: baseSearch.isLoadingFacets,
+    isLoadingMore: baseSearch.isLoadingMore,
+    hasResults: baseSearch.hasResults,
+    hasActiveFilters: baseSearch.hasActiveFilters,
+    hasMoreResults: baseSearch.hasMoreResults,
+    totalHits: baseSearch.totalHits,
+    results: baseSearch.results,
+    facets: baseSearch.mergedFacets, // Use merged facets
+    filters: baseSearch.filters as unknown as Ref<MeetingSearchFilters>,
+    viewMode: computed(() => meetingPreferences.value.viewMode),
+    recentSearches: computed(() => meetingPreferences.value.recentSearches),
 
     // Error handling
-    searchError: computed(() => searchError.value),
-    isOnline: computed(() => isOnline.value),
-    retryCount: computed(() => retryCount.value),
-    maxRetries,
+    searchError: baseSearch.error,
+    isOnline: baseSearch.isOnline,
+    retryCount: baseSearch.retryCount,
+    maxRetries: baseSearch.maxRetries,
 
-    // Actions
-    search,
-    setFilter,
+    // Actions from base
+    search: baseSearch.search,
+    setFilter: baseSearch.setFilter as <K extends keyof MeetingSearchFilters>(key: K, value: MeetingSearchFilters[K]) => void,
+    loadMore: baseSearch.loadMore,
+    retrySearch: baseSearch.retrySearch,
+    clearError: baseSearch.clearError,
+    loadInitialFacets: baseSearch.loadInitialFacets,
+
+    // Meeting-specific actions
     toggleTenant,
     toggleInstitutionType,
     toggleYear,
@@ -506,10 +338,6 @@ export const useMeetingSearch = (): MeetingSearchController => {
     clearFilters,
     clearRecentSearches,
     removeRecentSearch,
-    loadMore,
-    retrySearch,
-    clearError,
-    loadInitialFacets, // Expose for manual loading
 
     // Internal
     searchClient: computed(() => searchClient.value),

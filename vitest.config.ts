@@ -37,6 +37,11 @@ export default defineConfig({
     projects: [
       // Unit tests project - Services, Composables, Utils
       {
+        resolve: {
+          alias: {
+            "@": path.resolve(__dirname, 'resources/js')
+          }
+        },
         test: {
           name: 'unit',
           environment: 'jsdom',

@@ -251,6 +251,8 @@ class News extends Model implements Feedable, Sitemapable
             'image' => $this->image,
             'publish_time' => $this->publish_time ? $this->publish_time->timestamp : now()->timestamp,
             'lang' => $this->lang,
+            'tenant_id' => $this->tenant_id,
+            'tenant_ids' => [$this->tenant_id],
             'tenant_name' => $this->tenant->fullname,
             'created_at' => $this->created_at->timestamp,
         ];

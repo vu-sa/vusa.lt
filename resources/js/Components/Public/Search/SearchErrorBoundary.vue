@@ -164,7 +164,7 @@ import {
   RefreshCw, 
   X 
 } from 'lucide-vue-next'
-import type { SearchError } from '@/Composables/useDocumentSearch'
+import type { SearchError } from '@/Shared/Search/types'
 
 interface Props {
   error: SearchError | null

@@ -121,6 +121,14 @@ Route::post('calendar/{calendar}/duplicate', [CalendarController::class, 'duplic
 Route::resource('agendaItems', AgendaItemController::class)->except(['index', 'create']);
 Route::post('agendaItems/reorder', [AgendaItemController::class, 'reorder'])->name('agendaItems.reorder');
 Route::resource('meetings', MeetingController::class)->except(['create']);
+Route::get('meetings-search', [MeetingController::class, 'search'])->name('meetings.search');
+
+// Faceted search pages (uses scoped Typesense API keys for authorization)
+Route::prefix('search')->name('search.')->group(function () {
+    Route::get('meetings', [SearchController::class, 'meetings'])->name('meetings');
+    Route::get('agenda-items', [SearchController::class, 'agendaItems'])->name('agendaItems');
+    Route::get('institutions', [SearchController::class, 'institutions'])->name('institutions');
+});
 
 // Check-in actions for institutions
 Route::post('institutions/{institution}/check-ins', [InstitutionCheckInController::class, 'store'])->name('institutions.check-ins.store');

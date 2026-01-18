@@ -1147,7 +1147,7 @@ declare global {
       content_id: number
       category_id?: number | null
       is_active: boolean
-      highlights?: Array<unknown> | null
+      highlights?: Array<string> | null
       layout: string
       featured_image?: string | null
       meta_description?: string | null

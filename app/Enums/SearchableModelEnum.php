@@ -13,6 +13,8 @@ use Spatie\Enum\Laravel\Enum;
  * @method static self CALENDAR()
  * @method static self PUBLIC_INSTITUTION()
  * @method static self PUBLIC_MEETING()
+ * @method static self MEETING()
+ * @method static self AGENDA_ITEM()
  */
 final class SearchableModelEnum extends Enum
 {
@@ -25,6 +27,8 @@ final class SearchableModelEnum extends Enum
             'CALENDAR' => 'calendar',
             'PUBLIC_INSTITUTION' => 'public_institution',
             'PUBLIC_MEETING' => 'public_meeting',
+            'MEETING' => 'meeting',
+            'AGENDA_ITEM' => 'agenda_item',
         ];
     }
 
@@ -40,6 +44,8 @@ final class SearchableModelEnum extends Enum
             \App\Models\Calendar::class,
             \App\Models\PublicInstitution::class,
             \App\Models\PublicMeeting::class,
+            \App\Models\Meeting::class,
+            \App\Models\Pivots\AgendaItem::class,
         ];
     }
 

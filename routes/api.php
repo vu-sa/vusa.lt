@@ -99,5 +99,9 @@ Route::prefix('v1')->name('v1.')->group(function () {
         Route::post('tutorials/complete', [TutorialApiController::class, 'markComplete'])->name('tutorials.complete');
         Route::post('tutorials/reset', [TutorialApiController::class, 'resetTour'])->name('tutorials.reset');
         Route::post('tutorials/reset-all', [TutorialApiController::class, 'resetAll'])->name('tutorials.resetAll');
+
+        // Typesense admin search configuration with scoped API keys
+        Route::get('search/config', [\App\Http\Controllers\Api\Admin\SearchApiController::class, 'config'])->name('search.config');
+        Route::post('search/refresh-key', [\App\Http\Controllers\Api\Admin\SearchApiController::class, 'refreshKey'])->name('search.refreshKey');
     });
 });

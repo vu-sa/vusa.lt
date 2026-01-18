@@ -3,11 +3,14 @@
 namespace App\Providers;
 
 use App\Models\Calendar;
+use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Pivots\Relationshipable;
+use App\Models\Role;
 use App\Models\RoleType;
 use App\Models\Type;
 use App\Models\Typeable;
+use App\Models\User;
 use App\Observers\CalendarObserver;
 use App\Observers\InstitutionObserver;
 use App\Observers\RelationshipableObserver;
@@ -88,10 +91,11 @@ class EventServiceProvider extends ServiceProvider
         Typeable::observe(TypeableObserver::class);
         Institution::observe(InstitutionObserver::class);
         Relationshipable::observe(RelationshipableObserver::class);
-        // TODO: properly implement this and the PermissionService
-        // User::observe(UserPermissionObserver::class);
-        // Role::observe(UserPermissionObserver::class);
-        // Duty::observe(UserPermissionObserver::class);
+        // Permission cache invalidation for users, roles, duties
+        // Clears permission cache, Atstovavimas cache, and Typesense scoped keys
+        User::observe(UserPermissionObserver::class);
+        Role::observe(UserPermissionObserver::class);
+        Duty::observe(UserPermissionObserver::class);
         Permission::observe(UserPermissionObserver::class);
     }
 }

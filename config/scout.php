@@ -120,6 +120,9 @@ return [
         'client-settings' => [
             'api_key' => env('TYPESENSE_API_KEY'),
             'search_only_key' => env('TYPESENSE_SEARCH_ONLY_KEY'),
+            // Admin search key - used for generating scoped keys for admin collections
+            // Should NEVER be exposed directly to frontend
+            'admin_search_key' => env('TYPESENSE_ADMIN_SEARCH_KEY'),
             'nodes' => [
                 [
                     'host' => env('TYPESENSE_HOST', 'localhost'),
@@ -168,14 +171,21 @@ return [
                         ['name' => 'image', 'type' => 'string', 'optional' => true],
                         ['name' => 'publish_time', 'type' => 'int64'],
                         ['name' => 'lang', 'type' => 'string', 'facet' => true],
+                        ['name' => 'tenant_id', 'type' => 'int32', 'facet' => true],
+                        ['name' => 'tenant_ids', 'type' => 'int32[]', 'facet' => true],
                         ['name' => 'tenant_name', 'type' => 'string', 'facet' => true],
                         ['name' => 'created_at', 'type' => 'int64'],
                     ],
                     'default_sorting_field' => 'publish_time',
+                    'enable_nested_fields' => false,
                 ],
                 'search-parameters' => [
                     'query_by' => 'title,short',
                     'query_by_weights' => '10,4',
+                    'typo_tokens_threshold' => 1,
+                    'num_typos' => 2,
+                    'prioritize_exact_match' => true,
+                    'prioritize_token_position' => true,
                 ],
             ],
 
@@ -186,16 +196,24 @@ return [
                         ['name' => 'id', 'type' => 'string'],
                         ['name' => 'title', 'type' => 'string', 'infix' => true],
                         ['name' => 'permalink', 'type' => 'string'],
+                        ['name' => 'meta_description', 'type' => 'string', 'optional' => true, 'infix' => true],
                         ['name' => 'lang', 'type' => 'string', 'facet' => true],
+                        ['name' => 'tenant_id', 'type' => 'int32', 'facet' => true],
+                        ['name' => 'tenant_ids', 'type' => 'int32[]', 'facet' => true],
                         ['name' => 'tenant_name', 'type' => 'string', 'facet' => true],
                         ['name' => 'category_name', 'type' => 'string', 'facet' => true, 'optional' => true],
                         ['name' => 'created_at', 'type' => 'int64'],
                     ],
                     'default_sorting_field' => 'created_at',
+                    'enable_nested_fields' => false,
                 ],
                 'search-parameters' => [
-                    'query_by' => 'title',
-                    'query_by_weights' => '10',
+                    'query_by' => 'title,meta_description',
+                    'query_by_weights' => '10,4',
+                    'typo_tokens_threshold' => 1,
+                    'num_typos' => 2,
+                    'prioritize_exact_match' => true,
+                    'prioritize_token_position' => true,
                 ],
             ],
 
@@ -210,14 +228,21 @@ return [
                         ['name' => 'date', 'type' => 'int64', 'sort' => true],
                         ['name' => 'end_date', 'type' => 'int64', 'optional' => true],
                         ['name' => 'lang', 'type' => 'string', 'facet' => true],
+                        ['name' => 'tenant_id', 'type' => 'int32', 'facet' => true],
+                        ['name' => 'tenant_ids', 'type' => 'int32[]', 'facet' => true],
                         ['name' => 'tenant_name', 'type' => 'string', 'facet' => true],
                         ['name' => 'created_at', 'type' => 'int64'],
                     ],
                     'default_sorting_field' => 'date',
+                    'enable_nested_fields' => false,
                 ],
                 'search-parameters' => [
                     'query_by' => 'title,title_lt,title_en',
                     'query_by_weights' => '10,8,8',
+                    'typo_tokens_threshold' => 1,
+                    'num_typos' => 2,
+                    'prioritize_exact_match' => true,
+                    'prioritize_token_position' => true,
                 ],
             ],
 
@@ -245,10 +270,15 @@ return [
                         ['name' => 'created_at', 'type' => 'int64'],
                     ],
                     'default_sorting_field' => 'created_at',
+                    'enable_nested_fields' => false,
                 ],
                 'search-parameters' => [
                     'query_by' => 'title,summary,content_type,document_year,document_date_formatted',
                     'query_by_weights' => '10,3,2,6,4',
+                    'typo_tokens_threshold' => 1,
+                    'num_typos' => 2,
+                    'prioritize_exact_match' => true,
+                    'prioritize_token_position' => true,
                 ],
             ],
 
@@ -283,10 +313,15 @@ return [
                         ['name' => 'created_at', 'type' => 'int64'],
                     ],
                     'default_sorting_field' => 'start_time',
+                    'enable_nested_fields' => false,
                 ],
                 'search-parameters' => [
                     'query_by' => 'title,description,institution_name_lt,institution_name_en',
                     'query_by_weights' => '10,5,3,3',
+                    'typo_tokens_threshold' => 1,
+                    'num_typos' => 2,
+                    'prioritize_exact_match' => true,
+                    'prioritize_token_position' => true,
                 ],
             ],
 
@@ -335,6 +370,166 @@ return [
                 'search-parameters' => [
                     'query_by' => 'title,name_lt,name_en,short_name_lt,short_name_en,alias',
                     'query_by_weights' => '10,10,8,6,4,3',
+                    'typo_tokens_threshold' => 1,
+                    'num_typos' => 2,
+                    'prioritize_exact_match' => true,
+                    'prioritize_token_position' => true,
+                ],
+            ],
+
+            // Institution - Admin search with tenant-based access
+            \App\Models\Institution::class => [
+                'collection-schema' => [
+                    'fields' => [
+                        ['name' => 'id', 'type' => 'string'],
+                        ['name' => 'name_lt', 'type' => 'string', 'infix' => true, 'sort' => true],
+                        ['name' => 'name_en', 'type' => 'string', 'infix' => true, 'optional' => true],
+                        ['name' => 'short_name_lt', 'type' => 'string', 'infix' => true, 'optional' => true],
+                        ['name' => 'short_name_en', 'type' => 'string', 'infix' => true, 'optional' => true],
+                        ['name' => 'alias', 'type' => 'string', 'infix' => true, 'optional' => true],
+                        ['name' => 'email', 'type' => 'string', 'optional' => true],
+                        ['name' => 'tenant_id', 'type' => 'int32', 'facet' => true, 'optional' => true],
+                        ['name' => 'tenant_ids', 'type' => 'int32[]', 'facet' => true, 'optional' => true],
+                        ['name' => 'tenant_shortname', 'type' => 'string', 'facet' => true, 'optional' => true],
+                        // Self-referential institution_ids for .own permission filtering
+                        ['name' => 'institution_ids', 'type' => 'string[]', 'facet' => true],
+                        ['name' => 'created_at', 'type' => 'int64'],
+                    ],
+                    'default_sorting_field' => 'created_at',
+                    'enable_nested_fields' => false,
+                ],
+                'search-parameters' => [
+                    'query_by' => 'name_lt,name_en,short_name_lt,short_name_en,alias,email',
+                    'query_by_weights' => '10,8,6,4,3,2',
+                    'typo_tokens_threshold' => 1,
+                    'num_typos' => 2,
+                    'prioritize_exact_match' => true,
+                    'prioritize_token_position' => true,
+                ],
+            ],
+
+            /*
+            |--------------------------------------------------------------------------
+            | Admin Collections - Require scoped API keys for tenant-based access
+            |--------------------------------------------------------------------------
+            |
+            | These collections are indexed for admin search with tenant_ids field
+            | for filtering. Access is controlled via TypesenseScopedKeyService which
+            | generates API keys with embedded filter_by clauses based on user permissions.
+            |
+            */
+
+            // Meetings - All meetings for authorized admin users (scoped by tenant_ids)
+            \App\Models\Meeting::class => [
+                'collection-schema' => [
+                    'fields' => [
+                        ['name' => 'id', 'type' => 'string'],
+                        ['name' => 'title', 'type' => 'string', 'infix' => true, 'sort' => true],
+                        ['name' => 'description', 'type' => 'string', 'optional' => true, 'infix' => true],
+                        ['name' => 'start_time', 'type' => 'int64', 'sort' => true],
+                        ['name' => 'start_time_formatted', 'type' => 'string', 'optional' => true],
+                        ['name' => 'year', 'type' => 'int32', 'facet' => true],
+                        ['name' => 'month', 'type' => 'int32', 'facet' => true],
+
+                        // Tenant filtering (CRITICAL for scoped API keys)
+                        ['name' => 'tenant_ids', 'type' => 'int32[]', 'facet' => true],
+                        ['name' => 'tenant_shortnames', 'type' => 'string[]', 'facet' => true],
+
+                        // Institution info
+                        ['name' => 'institution_id', 'type' => 'string', 'optional' => true],
+                        ['name' => 'institution_name_lt', 'type' => 'string', 'facet' => true, 'optional' => true],
+                        ['name' => 'institution_name_en', 'type' => 'string', 'facet' => true, 'optional' => true],
+                        ['name' => 'institution_ids', 'type' => 'string[]', 'facet' => true], // ULIDs for .own scope filtering
+                        ['name' => 'institution_names', 'type' => 'string[]', 'optional' => true, 'infix' => true],
+
+                        // Institution type for faceting
+                        ['name' => 'institution_type_id', 'type' => 'int32', 'facet' => true, 'optional' => true],
+                        ['name' => 'institution_type_title', 'type' => 'string', 'facet' => true, 'optional' => true],
+
+                        // Agenda and vote statistics
+                        ['name' => 'agenda_items_count', 'type' => 'int32', 'sort' => true],
+                        ['name' => 'vote_matches', 'type' => 'int32'],
+                        ['name' => 'vote_mismatches', 'type' => 'int32'],
+                        ['name' => 'incomplete_vote_data', 'type' => 'int32'],
+                        ['name' => 'vote_alignment_status', 'type' => 'string', 'facet' => true],
+
+                        // Status fields
+                        ['name' => 'completion_status', 'type' => 'string', 'facet' => true],
+                        ['name' => 'is_public', 'type' => 'bool', 'facet' => true],
+                        ['name' => 'is_recent', 'type' => 'bool', 'facet' => true],
+
+                        ['name' => 'created_at', 'type' => 'int64'],
+                        ['name' => 'updated_at', 'type' => 'int64', 'sort' => true],
+                    ],
+                    'default_sorting_field' => 'start_time',
+                    'enable_nested_fields' => false,
+                ],
+                'search-parameters' => [
+                    'query_by' => 'title,description,institution_name_lt,institution_name_en,institution_names,tenant_shortnames',
+                    'query_by_weights' => '10,5,4,4,3,3',
+                    'typo_tokens_threshold' => 1,
+                    'num_typos' => 2,
+                    'prioritize_exact_match' => true,
+                    'prioritize_token_position' => true,
+                ],
+            ],
+
+            // Agenda Items - All agenda items for authorized admin users (scoped by tenant_ids)
+            \App\Models\Pivots\AgendaItem::class => [
+                'collection-schema' => [
+                    'fields' => [
+                        ['name' => 'id', 'type' => 'string'],
+                        ['name' => 'title', 'type' => 'string', 'infix' => true, 'sort' => true],
+                        ['name' => 'description', 'type' => 'string', 'optional' => true, 'infix' => true],
+                        ['name' => 'order', 'type' => 'int32', 'sort' => true],
+
+                        // Decision fields (searchable content)
+                        ['name' => 'student_vote', 'type' => 'string', 'optional' => true, 'facet' => true],
+                        ['name' => 'decision', 'type' => 'string', 'optional' => true, 'facet' => true],
+                        ['name' => 'student_benefit', 'type' => 'string', 'optional' => true, 'infix' => true],
+                        ['name' => 'brought_by_students', 'type' => 'bool', 'facet' => true],
+
+                        // Tenant filtering (CRITICAL for scoped API keys)
+                        ['name' => 'tenant_ids', 'type' => 'int32[]', 'facet' => true],
+                        ['name' => 'tenant_shortnames', 'type' => 'string[]', 'facet' => true],
+
+                        // Meeting context
+                        ['name' => 'meeting_id', 'type' => 'string'],
+                        ['name' => 'meeting_title', 'type' => 'string', 'optional' => true, 'infix' => true],
+                        ['name' => 'meeting_start_time', 'type' => 'int64', 'optional' => true, 'sort' => true],
+                        ['name' => 'meeting_start_time_formatted', 'type' => 'string', 'optional' => true],
+                        ['name' => 'meeting_year', 'type' => 'int32', 'facet' => true, 'optional' => true],
+                        ['name' => 'meeting_month', 'type' => 'int32', 'facet' => true, 'optional' => true],
+
+                        // Institution info
+                        ['name' => 'institution_id', 'type' => 'string', 'optional' => true],
+                        ['name' => 'institution_name_lt', 'type' => 'string', 'facet' => true, 'optional' => true],
+                        ['name' => 'institution_name_en', 'type' => 'string', 'facet' => true, 'optional' => true],
+                        ['name' => 'institution_ids', 'type' => 'string[]', 'facet' => true], // ULIDs for .own scope filtering
+
+                        // Completion indicators
+                        ['name' => 'has_student_vote', 'type' => 'bool', 'facet' => true],
+                        ['name' => 'has_decision', 'type' => 'bool', 'facet' => true],
+                        ['name' => 'has_student_benefit', 'type' => 'bool', 'facet' => true],
+                        ['name' => 'is_complete', 'type' => 'bool', 'facet' => true],
+
+                        // Vote alignment
+                        ['name' => 'vote_matches', 'type' => 'bool'],
+                        ['name' => 'vote_alignment_status', 'type' => 'string', 'facet' => true],
+
+                        ['name' => 'created_at', 'type' => 'int64'],
+                        ['name' => 'updated_at', 'type' => 'int64', 'sort' => true],
+                    ],
+                    'default_sorting_field' => 'created_at',
+                    'enable_nested_fields' => false,
+                ],
+                'search-parameters' => [
+                    'query_by' => 'title,description,student_benefit,meeting_title',
+                    'query_by_weights' => '10,6,5,4',
+                    'typo_tokens_threshold' => 1,
+                    'num_typos' => 2,
+                    'prioritize_exact_match' => true,
+                    'prioritize_token_position' => true,
                 ],
             ],
         ],

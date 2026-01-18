@@ -183,11 +183,38 @@ class Institution extends Model implements SharepointFileableContract
         return RelationshipService::getRelatedInstitutions($this);
     }
 
+    /**
+     * Get the name of the index for the model.
+     */
+    public function searchableAs(): string
+    {
+        return config('scout.prefix').'institutions';
+    }
+
+    /**
+     * Get the engine used to index the model.
+     */
+    public function searchableUsing()
+    {
+        return app(\Laravel\Scout\EngineManager::class)->engine('typesense');
+    }
+
     public function toSearchableArray()
     {
         return [
-            'name->'.app()->getLocale() => $this->getTranslation('name', app()->getLocale()),
-            'short_name->'.app()->getLocale() => $this->getTranslation('short_name', app()->getLocale()),
+            'id' => (string) $this->id,
+            'name_lt' => $this->getTranslation('name', 'lt'),
+            'name_en' => $this->getTranslation('name', 'en'),
+            'short_name_lt' => $this->getTranslation('short_name', 'lt'),
+            'short_name_en' => $this->getTranslation('short_name', 'en'),
+            'alias' => $this->alias,
+            'email' => $this->email,
+            'tenant_id' => $this->tenant_id,
+            'tenant_ids' => $this->tenant_id ? [$this->tenant_id] : [],
+            'tenant_shortname' => $this->tenant?->shortname,
+            // Self-referential institution_ids for .own permission filtering
+            'institution_ids' => [(string) $this->id],
+            'created_at' => $this->created_at->timestamp,
         ];
     }
 
