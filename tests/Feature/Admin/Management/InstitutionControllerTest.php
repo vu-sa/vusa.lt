@@ -62,6 +62,50 @@ describe('authorized access', function () {
         $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
     });
 
+    test('can show institution with tasks', function () {
+        $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
+
+        // Create a task associated with the institution
+        $institution->tasks()->create([
+            'name' => 'Test Task',
+            'due_date' => now()->addDays(7),
+        ]);
+
+        $response = asUser($this->admin)->get(route('institutions.show', $institution));
+
+        $response->assertStatus(200)
+            ->assertInertia(fn ($page) => $page
+                ->component('Admin/People/ShowInstitution')
+                ->has('institution')
+            );
+    });
+
+    test('can show institution with meeting tasks including subject', function () {
+        $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
+
+        // Create a meeting with a task
+        $meeting = \App\Models\Meeting::factory()->create([
+            'title' => 'Test Meeting Title',
+            'start_time' => now()->addDays(1),
+        ]);
+        $meeting->institutions()->attach($institution);
+
+        $meeting->tasks()->create([
+            'name' => 'Meeting Task',
+            'due_date' => now()->addDays(7),
+        ]);
+
+        $response = asUser($this->admin)->get(route('institutions.show', $institution));
+
+        $response->assertStatus(200)
+            ->assertInertia(fn ($page) => $page
+                ->component('Admin/People/ShowInstitution')
+                ->has('institution.allTasks', 1)
+                ->where('institution.allTasks.0.taskable.name', 'Test Meeting Title')
+                ->where('institution.allTasks.0.taskable.type', 'Meeting')
+            );
+    });
+
     test('can index institutions', function () {
         $response = asUser($this->admin)->get(route('institutions.index'));
 

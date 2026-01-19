@@ -9,6 +9,7 @@ use App\Models\Pivots\Trainable;
 use App\Models\Traits\HasComments;
 use App\Models\Traits\HasContentRelationships;
 use App\Models\Traits\HasSharepointFiles;
+use App\Models\Traits\HasTasks;
 use App\Models\Traits\HasTranslations;
 use App\Services\RelationshipService;
 use App\Settings\MeetingSettings;
@@ -85,7 +86,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  */
 class Institution extends Model implements SharepointFileableContract
 {
-    use HasComments, HasContentRelationships, HasFactory, HasRelationships, HasSharepointFiles, HasTranslations, HasUlids, LogsActivity, Searchable, SoftDeletes;
+    use HasComments, HasContentRelationships, HasFactory, HasRelationships, HasSharepointFiles, HasTasks, HasTranslations, HasUlids, LogsActivity, Searchable, SoftDeletes;
 
     protected $guarded = [];
 
@@ -144,6 +145,14 @@ class Institution extends Model implements SharepointFileableContract
     public function meetings(): BelongsToMany
     {
         return $this->belongsToMany(Meeting::class);
+    }
+
+    /**
+     * Get all tasks from meetings belonging to this institution.
+     */
+    public function tasksFromMeetings(): HasManyDeep
+    {
+        return $this->hasManyDeepFromRelations($this->meetings(), (new Meeting)->tasks());
     }
 
     public function lastMeeting(): ?Meeting

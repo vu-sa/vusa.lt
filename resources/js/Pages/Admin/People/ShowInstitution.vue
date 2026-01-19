@@ -106,6 +106,12 @@
         <TabsTrigger value="files">
           {{ $t('Failai') }}
         </TabsTrigger>
+        <TabsTrigger value="tasks">
+          {{ $t('Užduotys') }}
+          <span v-if="institution.allTasks?.length" class="ml-1.5 text-xs opacity-70">
+            ({{ institution.allTasks.length }})
+          </span>
+        </TabsTrigger>
         <TabsTrigger value="related" :disabled="relatedInstitutionCount === 0">
           {{ $t('Susijusios institucijos') }}
         </TabsTrigger>
@@ -218,6 +224,14 @@
         <FileManager :starting-path="institution.sharepointPath" :fileable="{ id: institution.id, type: 'Institution' }" />
       </TabsContent>
 
+      <!-- Tasks Tab -->
+      <TabsContent value="tasks" class="space-y-6">
+        <TaskManager
+          :tasks="institution.allTasks"
+          :taskable="{ id: institution.id, type: 'App\\Models\\Institution' }"
+        />
+      </TabsContent>
+
       <!-- Related Institutions Tab -->
       <TabsContent value="related" class="space-y-6">
         <RelatedInstitutions :institution />
@@ -264,6 +278,7 @@ import NewMeetingModal from "@/Components/Modals/NewMeetingModal.vue";
 import AddCheckInDialog from "@/Components/Institutions/AddCheckInDialog.vue";
 import UsersAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
 import InstitutionOverviewSection from "@/Components/Institutions/InstitutionOverviewSection.vue";
+import TaskManager from "@/Features/Admin/TaskManager/TaskManager.vue";
 
 // UI Components
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";

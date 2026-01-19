@@ -126,14 +126,59 @@ class InstitutionController extends AdminController
         $this->handleAuthorization('view', $institution);
 
         // TODO: only show current_users
-        $institution->load('tenant', 'duties.current_users')->load(['meetings' => function ($query) {
-            $query->with('tasks', 'comments', 'files', 'institutions.types', 'fileableFiles')->orderBy('start_time', 'asc');
-        }])->load('activities.causer');
+        $institution->load('tenant', 'duties.current_users')->load([
+            'tasks' => function ($query) {
+                $query->with('users:id,name,email,profile_photo_path', 'taskable');
+            },
+            'meetings' => function ($query) {
+                $query->with([
+                    'tasks' => fn ($q) => $q->with('users:id,name,email,profile_photo_path', 'taskable'),
+                    'comments',
+                    'files',
+                    'institutions.types',
+                    'fileableFiles',
+                ])->orderBy('start_time', 'asc');
+            },
+        ])->load('activities.causer');
 
         // Append public visibility flags now that types are loaded (avoids N+1)
         $institution->append('has_public_meetings');
         $institution->append('meeting_periodicity_days');
         $institution->meetings->each->append(['is_public', 'has_report', 'has_protocol']);
+
+        // Combine direct institution tasks + tasks from meetings into a flat list
+        // Transform tasks with computed properties (same as MeetingController)
+        $allTasks = $institution->tasks
+            ->merge($institution->meetings->pluck('tasks')->flatten())
+            ->sortByDesc('created_at')
+            ->values()
+            ->map(fn ($task) => [
+                'id' => $task->id,
+                'name' => $task->name,
+                'description' => $task->description,
+                'due_date' => $task->due_date?->toISOString(),
+                'completed_at' => $task->completed_at?->toISOString(),
+                'created_at' => $task->created_at?->toISOString(),
+                'action_type' => $task->action_type?->value,
+                'metadata' => $task->metadata,
+                'progress' => $task->getProgress(),
+                'is_overdue' => $task->isOverdue(),
+                'can_be_manually_completed' => $task->canBeManuallyCompleted(),
+                'icon' => $task->icon,
+                'color' => $task->color,
+                'taskable' => $task->taskable ? [
+                    'id' => $task->taskable->id,
+                    'name' => $task->taskable->title ?? $task->taskable->name ?? null,
+                    'type' => class_basename($task->taskable_type),
+                ] : null,
+                'taskable_type' => class_basename($task->taskable_type ?? ''),
+                'taskable_id' => $task->taskable_id,
+                'users' => $task->users->map(fn ($u) => [
+                    'id' => $u->id,
+                    'name' => $u->name,
+                    'profile_photo_path' => $u->profile_photo_path,
+                ]),
+            ]);
 
         // Get related institutions as flat list with metadata (cached)
         $relatedInstitutionsFlat = \App\Services\RelationshipService::getRelatedInstitutionsCached($institution);
@@ -166,6 +211,7 @@ class InstitutionController extends AdminController
                 ])->values(),
                 'sharepointPath' => $institution->tenant ? $institution->sharepoint_path() : null,
                 'lastMeeting' => $institution->lastMeeting(),
+                'allTasks' => $allTasks,
             ],
             'subscription' => $subscriptionStatus,
         ]);

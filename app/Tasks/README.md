@@ -99,12 +99,53 @@ Listens for approval events and:
 - Creates Approval tasks when `ApprovalRequested` is fired
 - Completes Approval tasks when `ApprovalDecisionMade` is fired
 
+## Testing
+
+Tests follow the source structure for discoverability:
+
+| Source | Test |
+|--------|------|
+| `app/Tasks/Handlers/PeriodicityGapTaskHandler.php` | `tests/Feature/Tasks/Handlers/PeriodicityGapTaskHandlerTest.php` |
+| `app/Tasks/Subscribers/MeetingTaskSubscriber.php` | `tests/Feature/Tasks/Subscribers/MeetingTaskSubscriberTest.php` |
+| `app/Tasks/Subscribers/ApprovalTaskSubscriber.php` | `tests/Feature/Tasks/Subscribers/ApprovalTaskSubscriberTest.php` |
+| `app/Tasks/Subscribers/ReservationTaskSubscriber.php` | `tests/Feature/Tasks/Subscribers/ReservationTaskSubscriberTest.php` |
+| `app/Tasks/Subscribers/InstitutionCheckInTaskSubscriber.php` | `tests/Feature/Tasks/Subscribers/InstitutionCheckInTaskSubscriberTest.php` |
+
+### Running Task Tests
+
+```bash
+# Run all task tests
+vendor/bin/sail artisan test --compact tests/Feature/Tasks/
+
+# Run only subscriber tests
+vendor/bin/sail artisan test --compact tests/Feature/Tasks/Subscribers/
+
+# Run only handler tests
+vendor/bin/sail artisan test --compact tests/Feature/Tasks/Handlers/
+```
+
+### Architecture Tests
+
+Task system conventions are enforced in `tests/Architecture/TasksArchitectureTest.php`:
+- Handlers must implement `TaskHandler` interface and extend `BaseTaskHandler`
+- Handlers must have `Handler` suffix
+- Subscribers must have `Subscriber` suffix
+- DTOs must be `final` and `readonly`
+- Enums must be PHP enums
+
+Run architecture tests:
+```bash
+vendor/bin/sail artisan test --compact tests/Architecture/TasksArchitectureTest.php
+```
+
 ## Adding a New Task Type
 
 1. Add a new case to `ActionType` enum
 2. Create a new handler class extending `BaseTaskHandler`
 3. If event-driven, create or update a subscriber in `Subscribers/`
 4. Register the subscriber in `EventServiceProvider`
+5. **Add a test file** in the corresponding `tests/Feature/Tasks/` subdirectory
+6. Run architecture tests to verify conventions
 
 ## Legacy Support
 

@@ -34,9 +34,10 @@ class RepopulateTasks extends Command
     protected $signature = 'tasks:repopulate
                             {model? : Model type to repopulate (institution, reservation, meeting)}
                             {--force : Force repopulation without confirmation (required for production)}
-                            {--dry-run : Show what would be done without creating tasks}';
+                            {--dry-run : Show what would be done without creating tasks}
+                            {--include-past : Include past meetings (useful for historical data entry)}';
 
-    protected $description = 'Repopulate autotasks for a model type or all types. Idempotent - skips existing tasks.';
+    protected $description = 'Repopulate autotasks for a model type or all types. Idempotent - skips existing tasks. Use --include-past for historical meetings.';
 
     /**
      * Model alias mapping to handler methods.
@@ -346,7 +347,11 @@ class RepopulateTasks extends Command
     }
 
     /**
-     * Repopulate agenda tasks for upcoming meetings.
+     * Repopulate agenda tasks for meetings.
+     *
+     * By default only processes future meetings. Use --include-past to process
+     * historical meetings as well. Tasks are assigned to representatives who
+     * were active at the meeting date.
      *
      * @return array{created: int, skipped: int}
      */
@@ -354,14 +359,25 @@ class RepopulateTasks extends Command
     {
         $created = 0;
         $skipped = 0;
+        $includePast = $this->option('include-past');
 
-        // Get future meetings
-        $meetings = Meeting::query()
-            ->where('start_time', '>=', now())
-            ->with(['institutions.tenant', 'agendaItems'])
-            ->get();
+        // Build query - include past meetings if flag is set
+        $query = Meeting::query()
+            ->with(['institutions.tenant', 'agendaItems']);
+
+        if (! $includePast) {
+            $query->where('start_time', '>=', now());
+        }
+
+        $meetings = $query->get();
+
+        if ($includePast) {
+            $this->info("    Processing {$meetings->count()} meetings (including historical)");
+        }
 
         foreach ($meetings as $meeting) {
+            // getRepresentativesActiveAt() uses the meeting's start_time
+            // to find users who were representatives at that date
             $representatives = $meeting->getRepresentativesActiveAt();
 
             if ($representatives->isEmpty()) {
