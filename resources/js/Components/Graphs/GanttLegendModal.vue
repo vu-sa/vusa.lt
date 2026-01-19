@@ -55,14 +55,26 @@
             </h4>
             <div class="grid gap-2 pl-6">
               <div class="flex items-center gap-3">
-                <span class="inline-block w-6 h-1 rounded-full bg-amber-500 shrink-0" />
+                <div class="flex items-center shrink-0">
+                  <CalendarOff class="w-3 h-3 text-amber-600 dark:text-amber-400" />
+                  <span class="w-4 h-3 relative overflow-hidden rounded-sm border border-amber-500/40">
+                    <svg class="absolute inset-0 w-full h-full" preserveAspectRatio="none">
+                      <pattern id="legend-checkin-stripes" patternUnits="userSpaceOnUse" width="3" height="3" patternTransform="rotate(-45)">
+                        <rect width="3" height="3" fill="transparent" />
+                        <line x1="0" y1="0" x2="0" y2="3" stroke="currentColor" stroke-width="1.5" class="text-amber-400/30 dark:text-amber-400/20" />
+                      </pattern>
+                      <rect width="100%" height="100%" fill="url(#legend-checkin-stripes)" />
+                    </svg>
+                  </span>
+                  <CalendarOff class="w-3 h-3 text-amber-600 dark:text-amber-400" />
+                </div>
                 <div>
                   <span class="text-sm font-medium">{{ $t('Pranešimas apie nebuvimą') }}</span>
                   <p class="text-xs text-muted-foreground">{{ $t('Laikotarpis, kai institucija neturi posėdžių ir buvo pranešta apie tai') }}</p>
                 </div>
               </div>
               <div class="flex items-center gap-3">
-                <div class="w-6 h-4 rounded shrink-0 bg-gradient-to-r from-transparent via-emerald-500/30 to-transparent" />
+                <div class="w-6 h-3 rounded shrink-0 bg-emerald-500/15 border border-emerald-500/35" />
                 <div>
                   <span class="text-sm font-medium">{{ $t('Saugumo zona') }}</span>
                   <p class="text-xs text-muted-foreground">{{ $t('±14 dienų periodas aplink susitikimą, kai atstovavimas laikomas padengtų') }}</p>
@@ -175,19 +187,19 @@
             </h4>
             <div class="grid gap-2 pl-6 sm:grid-cols-3">
               <div class="flex items-center gap-3">
-                <span class="inline-block w-6 h-4 rounded bg-amber-400/20 shrink-0" />
+                <span class="inline-block w-6 h-4 rounded bg-amber-400/20 border border-amber-400/25 shrink-0" />
                 <div>
                   <span class="text-sm font-medium">{{ $t('Vasara') }}</span>
                 </div>
               </div>
               <div class="flex items-center gap-3">
-                <span class="inline-block w-6 h-4 rounded bg-blue-300/20 shrink-0" />
+                <span class="inline-block w-6 h-4 rounded bg-blue-300/20 border border-blue-300/25 shrink-0" />
                 <div>
                   <span class="text-sm font-medium">{{ $t('Žiema') }}</span>
                 </div>
               </div>
               <div class="flex items-center gap-3">
-                <span class="inline-block w-6 h-4 rounded bg-violet-300/20 shrink-0" />
+                <span class="inline-block w-6 h-4 rounded bg-violet-300/20 border border-violet-300/25 shrink-0" />
                 <div>
                   <span class="text-sm font-medium">{{ $t('Velykos') }}</span>
                 </div>
@@ -236,6 +248,12 @@
               <kbd class="px-2 py-0.5 text-xs font-semibold bg-background border rounded">PgDn</kbd>
               <span class="text-muted-foreground">{{ $t('Slinkti 3 mėnesius') }}</span>
             </div>
+            <div class="flex items-center gap-2 text-sm">
+              <kbd class="px-2 py-0.5 text-xs font-semibold bg-background border rounded">Shift</kbd>
+              <span class="text-muted-foreground">+</span>
+              <span class="text-muted-foreground">{{ $t('vilkimas') }}</span>
+              <span class="text-muted-foreground">{{ $t('Sukurti pranešimą apie nebuvimą') }}</span>
+            </div>
           </div>
         </div>
 
@@ -262,6 +280,7 @@
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
+import { CalendarOff } from 'lucide-vue-next';
 
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { Button } from '@/Components/ui/button';

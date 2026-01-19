@@ -54,6 +54,11 @@ export interface AtstovavimosMeeting {
     name: string;
     has_public_meetings?: boolean;
   }>;
+  // Meeting types for icon differentiation
+  types?: Array<{
+    id: string | number;
+    slug: string;
+  }>;
 }
 
 export interface AtstovavimosGap {
@@ -103,6 +108,8 @@ export interface GanttMeeting {
   // File status indicators for tooltip display
   has_report?: boolean;
   has_protocol?: boolean;
+  // Meeting type slug for icon differentiation (in-person-meeting, remote-meeting, email-meeting)
+  type_slug?: string;
 }
 
 export interface GanttInstitution {

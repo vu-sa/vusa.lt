@@ -229,7 +229,7 @@ import {
  */
 
 const props = withDefaults(defineProps<{
-  meetings: Array<{ id: string | number, start_time: string | Date, institution_id: string | number, title?: string, institution?: string }>
+  meetings: Array<{ id: string | number, start_time: string | Date, institution_id: string | number, title?: string, institution?: string, type_slug?: string }>
   gaps: Array<{ institution_id: string | number, from: string | Date, until: string | Date, mode?: 'heads_up' | 'no_meetings', note?: string }>
   institutions?: Array<{ id: string | number, name?: string, tenant_id?: string | number, is_related?: boolean, relationship_direction?: 'outgoing' | 'incoming' | 'sibling', relationship_type?: 'direct' | 'type-based' | 'within-type', source_institution_id?: string, authorized?: boolean }>
   daysBefore?: number
@@ -641,13 +641,15 @@ const render = () => {
     })
   }
 
-  // gaps (check-ins) as stroked lines - using extracted renderer
+  // gaps (check-ins) as striped rectangles with CalendarOff icons - using extracted renderer
   renderGaps({
     g,
     x,
     gaps: filteredGaps.value,
     colors,
     rowCenter,
+    rowTop,
+    rowHeightFor,
     onCreateMeeting: (payload: { institution_id: string | number; suggestedAt: Date }) => emit('create-meeting', payload),
   })
 

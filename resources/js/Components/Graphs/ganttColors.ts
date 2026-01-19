@@ -18,15 +18,20 @@ export interface GanttColors {
   meetingNoItems: string;
   meetingUnauthorized: string;
   
-  // Gap/Check-in lines
+  // Check-in visualization
   gap: string;
   gapOpacity: number;
+  checkInFill: string;
+  checkInStroke: string;
+  checkInIcon: string;
+  checkInIconOpacity: number;
   
   // Safety bands around meetings
   safetyBandStart: string;
   safetyBandMid: string;
   safetyBandEnd: string;
   safetyBandFlat: string;
+  safetyBandStroke: string;
   
   // Today line
   todayLine: string;
@@ -41,6 +46,11 @@ export interface GanttColors {
   vacationWinter: string;
   vacationEaster: string;
   vacationDefault: string;
+  vacationSummerStroke: string;
+  vacationWinterStroke: string;
+  vacationEasterStroke: string;
+  vacationDefaultStroke: string;
+  vacationSolidBg: string;
   
   // Row backgrounds
   zebraEven: string;
@@ -82,15 +92,20 @@ export const lightModeColors: GanttColors = {
   meetingNoItems: 'oklch(0.637 0.237 25.331)', // red-500 (stroke only)
   meetingUnauthorized: 'oklch(0.552 0.016 285.938)', // zinc-500 - grey for unauthorized
   
-  // Gap lines - amber for attention without alarm
-  gap: 'oklch(0.769 0.188 70.08 / 90%)', // amber-500/90%
+  // Check-in visualization - amber theme
+  gap: 'oklch(0.769 0.188 70.08 / 90%)', // amber-500/90% (legacy, kept for compatibility)
   gapOpacity: 0.9,
+  checkInFill: 'oklch(0.828 0.189 84.429 / 12%)', // amber-400/12% - subtle fill for striped pattern
+  checkInStroke: 'oklch(0.769 0.188 70.08 / 40%)', // amber-500/40% - border stroke
+  checkInIcon: 'oklch(0.666 0.179 58.318)', // amber-600 - icon fill
+  checkInIconOpacity: 0.85,
   
-  // Safety bands - subtle emerald gradient
+  // Safety bands - subtle emerald with border
   safetyBandStart: 'oklch(0.696 0.17 162.48 / 0%)', // emerald-500/0%
   safetyBandMid: 'oklch(0.696 0.17 162.48 / 18%)', // emerald-500/18%
   safetyBandEnd: 'oklch(0.696 0.17 162.48 / 0%)', // emerald-500/0%
   safetyBandFlat: 'oklch(0.696 0.17 162.48 / 12%)', // emerald-500/12% - flat low-opacity green
+  safetyBandStroke: 'oklch(0.696 0.17 162.48 / 35%)', // emerald-500/35% - border stroke
   
   // Today line - prominent blue
   todayLine: 'oklch(0.623 0.214 259.815 / 80%)', // blue-500/80%
@@ -100,11 +115,16 @@ export const lightModeColors: GanttColors = {
   hoverCircle: 'oklch(0.623 0.214 259.815 / 90%)', // blue-500/90%
   rowHover: 'oklch(0.623 0.214 259.815 / 8%)', // blue-500/8%
   
-  // Vacation periods - very subtle overlays
+  // Vacation periods - subtle overlays with borders
   vacationSummer: 'oklch(0.828 0.189 84.429 / 8%)', // amber-400/8%
   vacationWinter: 'oklch(0.809 0.105 251.813 / 8%)', // blue-300/8%
   vacationEaster: 'oklch(0.811 0.111 293.571 / 8%)', // violet-300/8%
   vacationDefault: 'oklch(0.707 0.022 261.325 / 8%)', // gray-400/8%
+  vacationSummerStroke: 'oklch(0.828 0.189 84.429 / 25%)', // amber-400/25%
+  vacationWinterStroke: 'oklch(0.809 0.105 251.813 / 25%)', // blue-300/25%
+  vacationEasterStroke: 'oklch(0.811 0.111 293.571 / 25%)', // violet-300/25%
+  vacationDefaultStroke: 'oklch(0.707 0.022 261.325 / 25%)', // gray-400/25%
+  vacationSolidBg: 'oklch(1 0 0)', // white - solid background to cover weekends
   
   // Row backgrounds - very subtle to not compete with weekend bands
   zebraEven: 'oklch(0.21 0.006 285.885 / 1%)', // zinc-900/1%
@@ -146,15 +166,20 @@ export const darkModeColors: GanttColors = {
   meetingNoItems: 'oklch(0.712 0.194 13.428)', // rose-400 (stroke only)
   meetingUnauthorized: 'oklch(0.705 0.015 286.067)', // zinc-400 - grey for unauthorized
   
-  // Gap lines - subtle amber
-  gap: 'oklch(0.75 0.14 84.429 / 70%)', // amber-400 dimmed/70%
+  // Check-in visualization - amber theme (dimmed for dark mode)
+  gap: 'oklch(0.75 0.14 84.429 / 70%)', // amber-400 dimmed/70% (legacy, kept for compatibility)
   gapOpacity: 0.7,
+  checkInFill: 'oklch(0.75 0.14 84.429 / 8%)', // amber-400/8% - subtle fill for striped pattern
+  checkInStroke: 'oklch(0.75 0.14 84.429 / 30%)', // amber-400/30% - border stroke
+  checkInIcon: 'oklch(0.828 0.189 84.429)', // amber-400 - icon fill
+  checkInIconOpacity: 0.75,
   
-  // Safety bands - subtle emerald gradient (reduced brightness)
+  // Safety bands - subtle emerald with border (reduced brightness)
   safetyBandStart: 'oklch(0.65 0.12 163.223 / 0%)', // emerald dimmed/0%
   safetyBandMid: 'oklch(0.65 0.12 163.223 / 8%)', // emerald dimmed/8%
   safetyBandEnd: 'oklch(0.65 0.12 163.223 / 0%)', // emerald dimmed/0%
   safetyBandFlat: 'oklch(0.65 0.12 163.223 / 6%)', // emerald dimmed/6% - flat low-opacity green
+  safetyBandStroke: 'oklch(0.65 0.12 163.223 / 25%)', // emerald dimmed/25% - border stroke
   
   // Today line - subtle blue
   todayLine: 'oklch(0.65 0.12 254.624 / 60%)', // blue-400 dimmed/60%
@@ -164,11 +189,16 @@ export const darkModeColors: GanttColors = {
   hoverCircle: 'oklch(0.65 0.12 254.624 / 80%)', // blue-400 dimmed/80%
   rowHover: 'oklch(0.65 0.12 254.624 / 6%)', // blue-400 dimmed/6%
   
-  // Vacation periods - very subtle overlays (reduced brightness)
+  // Vacation periods - subtle overlays with borders (reduced brightness)
   vacationSummer: 'oklch(0.75 0.14 84.429 / 4%)', // amber-400 dimmed/4%
   vacationWinter: 'oklch(0.72 0.08 251.813 / 4%)', // blue-300 dimmed/4%
   vacationEaster: 'oklch(0.72 0.08 293.571 / 4%)', // violet-300 dimmed/4%
   vacationDefault: 'oklch(0.65 0.01 286.067 / 4%)', // zinc-400 dimmed/4%
+  vacationSummerStroke: 'oklch(0.75 0.14 84.429 / 18%)', // amber-400/18%
+  vacationWinterStroke: 'oklch(0.72 0.08 251.813 / 18%)', // blue-300/18%
+  vacationEasterStroke: 'oklch(0.72 0.08 293.571 / 18%)', // violet-300/18%
+  vacationDefaultStroke: 'oklch(0.65 0.01 286.067 / 18%)', // zinc-400/18%
+  vacationSolidBg: 'oklch(0.21 0.006 285.885)', // zinc-900 - solid background to cover weekends
   
   // Row backgrounds - very subtle to not compete with weekend bands
   zebraEven: 'oklch(0.985 0 0 / 1%)', // white/1%

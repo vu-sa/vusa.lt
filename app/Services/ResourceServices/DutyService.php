@@ -186,6 +186,7 @@ class DutyService
                 'tenant:id,shortname,type', // type is needed for cross-tenant scope matching in RelationshipService
                 'types', // explicit since not auto-loaded
                 'meetings:id,title,start_time',
+                'meetings.types:id,slug', // Load meeting types for icon differentiation (in-person, remote, email)
                 'meetings.agendaItems:id,meeting_id,title,student_vote,decision,student_benefit',
                 // Load fileableFiles for has_report and has_protocol accessors (prevents N+1)
                 'meetings.fileableFiles:id,fileable_id,fileable_type,file_type,deleted_externally_at',
