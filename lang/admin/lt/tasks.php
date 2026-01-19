@@ -28,4 +28,14 @@ return [
         'action_schedule_meeting' => 'Planuoti posėdį',
         'action_report_no_meeting' => 'Pranešti, kad nebus',
     ],
+    'agenda_creation' => [
+        'meeting_context' => 'Posėdis: :institution (:date).',
+        'assignee_context' => 'Jūs ir dar :count asmuo(-ų) turi šią užduotį.',
+        'first_item_created' => 'Pirmas darbotvarkės klausimas sukurtas',
+    ],
+    'agenda_completion' => [
+        'meeting_context' => 'Posėdis: :institution (:date).',
+        'assignee_context' => 'Jūs ir dar :count asmuo(-ų) turi šią užduotį.',
+        'all_items_completed' => 'Visi darbotvarkės klausimai užpildyti',
+    ],
 ];

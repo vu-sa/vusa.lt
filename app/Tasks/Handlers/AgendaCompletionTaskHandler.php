@@ -4,6 +4,7 @@ namespace App\Tasks\Handlers;
 
 use App\Models\Meeting;
 use App\Models\Task;
+use App\Models\User;
 use App\Tasks\DTOs\CreateTaskData;
 use App\Tasks\Enums\ActionType;
 use Illuminate\Support\Collection;
@@ -40,6 +41,9 @@ class AgendaCompletionTaskHandler extends BaseTaskHandler
         $totalItems = $meeting->agendaItems()->count();
         $completedItems = $this->countCompletedItems($meeting);
 
+        // Generate contextual description with assignee count and meeting context
+        $description = $this->generateDescription($meeting, $users);
+
         $data = CreateTaskData::withProgress(
             name: $name,
             taskable: $meeting,
@@ -47,6 +51,7 @@ class AgendaCompletionTaskHandler extends BaseTaskHandler
             dueDate: $dueDate,
             actionType: ActionType::AgendaCompletion,
             totalItems: $totalItems,
+            description: $description,
         );
 
         $task = $this->create($data);
@@ -60,7 +65,7 @@ class AgendaCompletionTaskHandler extends BaseTaskHandler
 
             // Auto-complete if all items are already done
             if ($totalItems > 0 && $completedItems >= $totalItems) {
-                $this->complete($task, __('Visi darbotvarkės klausimai užpildyti'));
+                $this->complete($task, __('tasks.agenda_completion.all_items_completed'));
             }
         }
 
@@ -68,12 +73,45 @@ class AgendaCompletionTaskHandler extends BaseTaskHandler
     }
 
     /**
+     * Generate a contextual description for the task.
+     *
+     * @param  Meeting  $meeting  The meeting model
+     * @param  Collection<int, \App\Models\User>  $users  Users assigned to the task
+     */
+    protected function generateDescription(Meeting $meeting, Collection $users): string
+    {
+        $meeting->loadMissing('institutions');
+
+        $institutionName = $meeting->institutions->first()?->name ?? __('Nežinoma institucija');
+        $meetingDate = $meeting->start_time?->format('Y-m-d');
+        $assigneeCount = $users->count();
+
+        $parts = [];
+
+        // Add meeting context
+        $parts[] = __('tasks.agenda_completion.meeting_context', [
+            'institution' => $institutionName,
+            'date' => $meetingDate,
+        ]);
+
+        // Add assignee context if there are multiple assignees
+        if ($assigneeCount > 1) {
+            $parts[] = __('tasks.agenda_completion.assignee_context', [
+                'count' => $assigneeCount - 1,
+            ]);
+        }
+
+        return implode(' ', $parts);
+    }
+
+    /**
      * Update the task when an agenda item changes.
      * Recalculates progress and auto-completes if all items are done.
      *
+     * @param  User|null  $completedBy  The user who triggered the update (excluded from notifications)
      * @return bool True if task was completed
      */
-    public function updateProgressForMeeting(Meeting $meeting): bool
+    public function updateProgressForMeeting(Meeting $meeting, ?User $completedBy = null): bool
     {
         $task = $this->findExistingTask($meeting);
 
@@ -92,7 +130,7 @@ class AgendaCompletionTaskHandler extends BaseTaskHandler
 
         // Auto-complete if all items are done
         if ($totalItems > 0 && $completedItems >= $totalItems) {
-            $this->complete($task, __('Visi darbotvarkės klausimai užpildyti'));
+            $this->complete($task, __('tasks.agenda_completion.all_items_completed'), $completedBy);
 
             return true;
         }

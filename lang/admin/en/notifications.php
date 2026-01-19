@@ -59,6 +59,7 @@ return [
     'task_completed_body' => ':user completed task ":task"',
     'task_auto_completed_title' => 'Task Auto-Completed',
     'task_auto_completed_body' => 'Task ":task" was automatically completed: :reason',
+    'task_auto_completed_body_with_user' => 'Task ":task" was automatically completed by :user: :reason',
     'task_overdue_title' => '{1} You have :count overdue task|[2,*] You have :count overdue tasks',
     'task_overdue_body_single' => 'Task ":task" is overdue',
     'task_overdue_body_multiple' => 'You have :count overdue tasks: :tasks and more',
@@ -98,6 +99,7 @@ return [
     'meeting_created_body' => 'A new meeting for :institution has been created for :date',
     'meeting_agenda_completed_title' => 'Meeting Agenda Completed',
     'meeting_agenda_completed_body' => 'All :count agenda items for :institution meeting have been completed',
+    'meeting_agenda_completed_body_with_user' => ':user completed all :count agenda items for :institution meeting',
 
     // News notifications
     'news_published_title' => 'New Article',

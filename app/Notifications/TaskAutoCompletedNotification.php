@@ -4,6 +4,7 @@ namespace App\Notifications;
 
 use App\Enums\NotificationCategory;
 use App\Models\Task;
+use App\Models\User;
 
 /**
  * Notification sent to task assignees when a task is auto-completed by the system.
@@ -18,15 +19,19 @@ class TaskAutoCompletedNotification extends BaseNotification
 
     protected string $completionReason;
 
+    protected ?User $completedBy;
+
     /**
      * Create a new notification instance.
      *
      * @param  string  $completionReason  Human-readable reason for completion
+     * @param  User|null  $completedBy  The user who triggered the auto-completion
      */
-    public function __construct(Task $task, string $completionReason)
+    public function __construct(Task $task, string $completionReason, ?User $completedBy = null)
     {
         $this->task = $task;
         $this->completionReason = $completionReason;
+        $this->completedBy = $completedBy;
     }
 
     public function category(): NotificationCategory
@@ -41,6 +46,14 @@ class TaskAutoCompletedNotification extends BaseNotification
 
     public function body(object $notifiable): string
     {
+        if ($this->completedBy) {
+            return __('notifications.task_auto_completed_body_with_user', [
+                'task' => $this->task->name,
+                'reason' => $this->completionReason,
+                'user' => $this->completedBy->name,
+            ]);
+        }
+
         return __('notifications.task_auto_completed_body', [
             'task' => $this->task->name,
             'reason' => $this->completionReason,
@@ -74,6 +87,14 @@ class TaskAutoCompletedNotification extends BaseNotification
 
     public function subject(): ?array
     {
+        if ($this->completedBy) {
+            return [
+                'modelClass' => 'User',
+                'name' => $this->completedBy->name,
+                'image' => $this->completedBy->profile_photo_path,
+            ];
+        }
+
         return [
             'modelClass' => 'System',
             'name' => __('System'),

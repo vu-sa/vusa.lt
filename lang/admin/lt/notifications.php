@@ -59,6 +59,7 @@ return [
     'task_completed_body' => ':user atliko užduotį „:task"',
     'task_auto_completed_title' => 'Užduotis automatiškai atlikta',
     'task_auto_completed_body' => 'Užduotis „:task" buvo automatiškai atlikta: :reason',
+    'task_auto_completed_body_with_user' => 'Užduotis „:task" buvo automatiškai atlikta (:user): :reason',
     'task_overdue_title' => '{1} Turite :count vėluojančią užduotį|[2,9] Turite :count vėluojančias užduotis|[10,*] Turite :count vėluojančių užduočių',
     'task_overdue_body_single' => 'Užduotis „:task" yra vėluojanti',
     'task_overdue_body_multiple' => 'Turite :count vėluojančias užduotis: :tasks ir kt.',
@@ -98,6 +99,7 @@ return [
     'meeting_created_body' => 'Sukurtas naujas :institution posėdis, vyks :date',
     'meeting_agenda_completed_title' => 'Posėdžio darbotvarkė užpildyta',
     'meeting_agenda_completed_body' => 'Visi :count :institution posėdžio darbotvarkės klausimai užpildyti',
+    'meeting_agenda_completed_body_with_user' => ':user užpildė visus :count :institution posėdžio darbotvarkės klausimus',
 
     // News notifications
     'news_published_title' => 'Naujas straipsnis',

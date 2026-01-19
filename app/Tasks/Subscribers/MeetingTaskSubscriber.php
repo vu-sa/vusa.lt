@@ -7,12 +7,14 @@ use App\Actions\GetMeetingAdministrators;
 use App\Events\MeetingFullyCreated;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
+use App\Models\User;
 use App\Notifications\MeetingAgendaCompletedNotification;
 use App\Notifications\MeetingCreatedNotification;
 use App\Tasks\Handlers\AgendaCompletionTaskHandler;
 use App\Tasks\Handlers\AgendaCreationTaskHandler;
 use App\Tasks\Handlers\PeriodicityGapTaskHandler;
 use Illuminate\Events\Dispatcher;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Notification;
 
 /**
@@ -131,11 +133,15 @@ class MeetingTaskSubscriber
         // Reload meeting with fresh agenda items data
         $meeting->load('agendaItems');
 
+        // Get the user who made the change
+        /** @var User|null $actor */
+        $actor = Auth::user();
+
         // Update progress and check if completed
-        $wasCompleted = $this->completionHandler->updateProgressForMeeting($meeting);
+        $wasCompleted = $this->completionHandler->updateProgressForMeeting($meeting, $actor);
 
         if ($wasCompleted) {
-            $this->notifyAdministratorsOfCompletion($meeting);
+            $this->notifyAdministratorsOfCompletion($meeting, $actor);
         }
     }
 
@@ -153,15 +159,19 @@ class MeetingTaskSubscriber
 
         $meeting->load('agendaItems');
 
+        // Get the user who made the change
+        /** @var User|null $actor */
+        $actor = Auth::user();
+
         // Complete the "create agenda items" task if it exists
-        $this->creationHandler->completeForMeeting($meeting);
+        $this->creationHandler->completeForMeeting($meeting, $actor);
 
         // Check if completion task exists
         $existingCompletionTask = $this->completionHandler->findExistingTask($meeting);
 
         if ($existingCompletionTask) {
             // Update total items count
-            $this->completionHandler->updateProgressForMeeting($meeting);
+            $this->completionHandler->updateProgressForMeeting($meeting, $actor);
         } else {
             // Create completion task for filling agenda item details
             $representatives = $meeting->getRepresentativesActiveAt();
@@ -191,24 +201,37 @@ class MeetingTaskSubscriber
 
         $meeting->load('agendaItems');
 
-        $wasCompleted = $this->completionHandler->updateProgressForMeeting($meeting);
+        // Get the user who made the change
+        /** @var User|null $actor */
+        $actor = Auth::user();
+
+        $wasCompleted = $this->completionHandler->updateProgressForMeeting($meeting, $actor);
 
         if ($wasCompleted) {
-            $this->notifyAdministratorsOfCompletion($meeting);
+            $this->notifyAdministratorsOfCompletion($meeting, $actor);
         }
     }
 
     /**
      * Notify administrators when all agenda items are completed.
+     * The completedBy user is included to show who triggered the completion.
+     *
+     * @param  User|null  $completedBy  The user who completed the agenda (shown in notification)
      */
-    protected function notifyAdministratorsOfCompletion(Meeting $meeting): void
+    protected function notifyAdministratorsOfCompletion(Meeting $meeting, ?User $completedBy = null): void
     {
         $meeting->load(['institutions.tenant']);
 
         $administrators = GetMeetingAdministrators::execute($meeting);
 
-        if ($administrators->isNotEmpty()) {
-            Notification::send($administrators, new MeetingAgendaCompletedNotification($meeting));
+        // Also notify followers of the meeting's institutions (excluding muted users)
+        $followers = GetInstitutionFollowersToNotify::execute($meeting);
+
+        // Merge and deduplicate recipients
+        $recipients = $administrators->merge($followers)->unique('id')->values();
+
+        if ($recipients->isNotEmpty()) {
+            Notification::send($recipients, new MeetingAgendaCompletedNotification($meeting, $completedBy));
         }
     }
 }

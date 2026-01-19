@@ -28,4 +28,14 @@ return [
         'action_schedule_meeting' => 'Schedule meeting',
         'action_report_no_meeting' => 'Report no meeting',
     ],
+    'agenda_creation' => [
+        'meeting_context' => 'Meeting: :institution (:date).',
+        'assignee_context' => 'You and :count other(s) have this task.',
+        'first_item_created' => 'First agenda item created',
+    ],
+    'agenda_completion' => [
+        'meeting_context' => 'Meeting: :institution (:date).',
+        'assignee_context' => 'You and :count other(s) have this task.',
+        'all_items_completed' => 'All agenda items completed',
+    ],
 ];

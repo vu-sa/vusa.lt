@@ -34,6 +34,8 @@ readonly class CreateTaskData
 
     /**
      * Create a new instance with progress tracking metadata.
+     *
+     * @param  string|null  $description  Optional task description with context
      */
     public static function withProgress(
         string $name,
@@ -41,7 +43,8 @@ readonly class CreateTaskData
         Collection $users,
         ?string $dueDate,
         ActionType $actionType,
-        int $totalItems = 1
+        int $totalItems = 1,
+        ?string $description = null
     ): self {
         return new self(
             name: $name,
@@ -53,6 +56,7 @@ readonly class CreateTaskData
                 'items_total' => $totalItems,
                 'items_completed' => 0,
             ],
+            description: $description,
         );
     }
 
