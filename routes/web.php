@@ -38,6 +38,11 @@ Route::post('feedback', [Public\MainController::class, 'sendFeedback'])->name('f
 
 Route::post('registration/{form}', [RegistrationController::class, 'store'])->name('registrations.store');
 
+// Short URL redirects for documents
+Route::get('/d/{code}', [Public\DocumentRedirectController::class, 'redirect'])
+    ->where('code', '[0-9A-Za-z]+')
+    ->name('document.short');
+
 // Sitemap routes (outside language group)
 Route::domain('{subdomain}.'.explode('.', config('app.url'), 2)[1])->group(function () {
     Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap.index');

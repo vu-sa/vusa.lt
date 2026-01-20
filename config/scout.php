@@ -264,6 +264,7 @@ return [
                         ['name' => 'document_date_formatted', 'type' => 'string', 'optional' => true, 'infix' => true],
                         ['name' => 'is_in_effect', 'type' => 'bool', 'facet' => true, 'optional' => true],
                         ['name' => 'anonymous_url', 'type' => 'string'],
+                        ['name' => 'share_url', 'type' => 'string', 'optional' => true],
                         ['name' => 'is_active', 'type' => 'bool'],
                         ['name' => 'sync_status', 'type' => 'string', 'sort' => true, 'optional' => true],
                         ['name' => 'checked_at', 'type' => 'int64', 'optional' => true, 'sort' => true],

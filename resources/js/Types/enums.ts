@@ -3,9 +3,9 @@ export enum ActionType {
   Approval = "approval",
   Pickup = "pickup",
   Return = "return",
-  PeriodicityGap = "periodicity_gap",
   AgendaCreation = "agenda_creation",
   AgendaCompletion = "agenda_completion",
+  PeriodicityGap = "periodicity_gap",
 }
 export enum AllowedFileablesEnum {
   "DUTY" = "duty",
@@ -105,6 +105,8 @@ export enum NotificationCategory {
   User = "user",
   Duty = "duty",
   System = "system",
+  News = "news",
+  Calendar = "calendar",
 }
 export enum NotificationChannel {
   InApp = "in_app",
@@ -128,6 +130,10 @@ export enum SearchableModelEnum {
   "CALENDAR" = "calendar",
   "PUBLIC_INSTITUTION" = "public_institution",
   "PUBLIC_MEETING" = "public_meeting",
+  "MEETING" = "meeting",
+  "AGENDA_ITEM" = "agenda_item",
+  "RESOURCE" = "resource",
+  "INSTITUTION" = "institution",
 }
 export enum SharepointConfigEnum {
   "API_BASE_URL" = "https://graph.microsoft.com/v1.0/",

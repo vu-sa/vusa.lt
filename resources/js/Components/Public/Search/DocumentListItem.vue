@@ -2,7 +2,7 @@
   <div
     class="group transition-all duration-200 border rounded-lg bg-card hover:shadow-lg hover:bg-accent/20">
     <!-- Main clickable content -->
-    <a :href="document.anonymous_url" target="_blank" rel="noopener noreferrer"
+    <a :href="documentUrl" target="_blank" rel="noopener noreferrer"
       class="block p-3 sm:p-4 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring rounded-lg"
       @click="trackDocumentClick">
       <div class="flex items-start gap-3 sm:gap-4">
@@ -104,6 +104,18 @@
                   {{ formatDocumentDate() }}
                 </Badge>
 
+                <!-- Copy Link Button (only if share_url available) -->
+                <Button
+                  v-if="document.share_url"
+                  variant="ghost"
+                  size="icon"
+                  class="h-7 w-7 text-muted-foreground hover:text-primary"
+                  :title="$t('copy_link')"
+                  @click.prevent.stop="copyShareUrl"
+                >
+                  <LinkIcon class="w-4 h-4" />
+                </Button>
+
                 <!-- External Link Icon -->
                 <ExternalLink class="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
               </div>
@@ -128,8 +140,11 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
+
 // ShadcnVue components
 import { Badge } from '@/Components/ui/badge'
+import { Button } from '@/Components/ui/button'
 
 // Icons
 import {
@@ -139,11 +154,14 @@ import {
   CheckCircle,
   Clock,
   FileText,
+  Link as LinkIcon,
 } from 'lucide-vue-next'
 import { Icon } from '@iconify/vue'
 
 // Composables
 import { useDocumentDisplay, type DocumentDisplayItem } from '@/Composables/useDocumentDisplay'
+import { useToasts } from '@/Composables/useToasts'
+import { trans as $t } from 'laravel-vue-i18n'
 
 // Props
 interface Props {
@@ -151,6 +169,7 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const toasts = useToasts()
 
 // Use shared document display logic - use simple date format for list view
 const {
@@ -164,6 +183,23 @@ const {
 
 // For list view, use simple date format
 const formatDocumentDate = formatDocumentDateSimple
+
+// Use share_url for linking, fallback to anonymous_url
+const documentUrl = computed(() => props.document.share_url || props.document.anonymous_url)
+
+// Copy share URL to clipboard
+const copyShareUrl = async () => {
+  if (!props.document.share_url) {
+    return
+  }
+  
+  try {
+    await navigator.clipboard.writeText(props.document.share_url)
+    toasts.success($t('copy_link_success'))
+  } catch {
+    toasts.error($t('copy_link_error'))
+  }
+}
 </script>
 
 <style scoped>

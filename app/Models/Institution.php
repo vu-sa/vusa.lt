@@ -47,7 +47,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\FileableFile> $availableFiles
- * @property-read \App\Models\Pivots\Relationshipable|Trainable|null $pivot
+ * @property-read \App\Models\Pivots\Relationshipable|\App\Models\InstitutionFollow|Trainable|null $pivot
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Training> $availableTrainings
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\InstitutionCheckIn> $checkIns
  * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $commentable
@@ -56,6 +56,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Duty> $duties
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\FileableFile> $fileableFiles
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\SharepointFile> $files
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $followers
  * @property-read bool $has_protocol
  * @property-read bool $has_public_meetings
  * @property-read bool $has_report
@@ -64,10 +65,13 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Relationship> $incomingRelationships
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Meeting> $meetings
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Relationship> $outgoingRelationships
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Task> $tasks
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Task> $tasksFromMeetings
  * @property-read \App\Models\Tenant|null $tenant
  * @property-read mixed $translations
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Type> $types
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $users
+ * @property-read int|null $tasks_from_meetings_count
  * @property-read int|null $users_count
  *
  * @method static \Database\Factories\InstitutionFactory factory($count = null, $state = [])

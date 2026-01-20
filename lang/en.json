@@ -38,6 +38,10 @@
   "Please try again": "Please try again",
   "Delete": "Delete",
   
+  "copy_link": "Copy link",
+  "copy_link_success": "Link copied to clipboard!",
+  "copy_link_error": "Failed to copy link",
+
   "Skaityti daugiau": "Read more",
   "Svarbiausia": "Key Highlights",
   "Trumpai": "In Brief",

@@ -48,14 +48,16 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property bool $name_was_changed
  * @property-read Collection<int, \Spatie\Activitylog\Models\Activity> $activities
- * @property-read MembershipUser|Dutiable|Trainable|null $pivot
+ * @property-read \App\Models\InstitutionNotificationMute|MembershipUser|\App\Models\InstitutionFollow|Dutiable|Trainable|null $pivot
  * @property-read Collection<int, \App\Models\Training> $availableTrainingsThroughUser
  * @property-read Collection<int, \App\Models\Duty> $current_duties
  * @property-read Collection<int, Dutiable> $dutiables
  * @property-read Collection<int, \App\Models\Duty> $duties
+ * @property-read Collection<int, \App\Models\Institution> $followedInstitutions
  * @property-read mixed $has_password
  * @property-read Collection<int, \App\Models\Institution> $institutions
  * @property-read Collection<int, \App\Models\Membership> $memberships
+ * @property-read Collection<int, \App\Models\Institution> $mutedInstitutions
  * @property-read \Illuminate\Notifications\DatabaseNotificationCollection<int, \Illuminate\Notifications\DatabaseNotification> $notifications
  * @property-read Collection<int, \App\Models\Permission> $permissions
  * @property-read Collection<int, \App\Models\Duty> $previous_duties

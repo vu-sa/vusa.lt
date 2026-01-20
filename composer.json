@@ -11,6 +11,7 @@
         "php": "^8.3",
         "ajcastro/eager-load-pivot-relations": "^0.3.0",
         "guzzlehttp/guzzle": "^7.2",
+        "hashids/hashids": "^5.0",
         "inertiajs/inertia-laravel": "^2.0",
         "intervention/image-laravel": "^1.2",
         "laravel-notification-channels/webpush": "^10.4",

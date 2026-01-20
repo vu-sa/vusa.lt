@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Helpers\ShortUrlHelper;
 use App\Services\SharepointGraphService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Carbon;
@@ -95,6 +96,7 @@ class Document extends Model
             'institution_name_en' => $this->institution ? $this->institution->getTranslation('name', 'en') : null,
             'tenant_shortname' => $this->institution && $this->institution->tenant ? $this->institution->tenant->shortname : null,
             'anonymous_url' => $this->anonymous_url,
+            'share_url' => $this->anonymous_url ? ShortUrlHelper::documentUrl($this->id) : null,
             'is_active' => $this->is_active,
             'sync_status' => $this->sync_status,
             'checked_at' => $this->checked_at ? $this->checked_at->timestamp : null,
