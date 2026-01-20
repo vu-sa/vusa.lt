@@ -257,3 +257,55 @@ export function slugify(str: string) {
            .replace(/-+/g, '-'); // remove consecutive hyphens
   return str;
 }
+
+/**
+ * Character map for transliterating Lithuanian diacritics to ASCII equivalents.
+ * Matches Laravel's Str::slug() behavior with 'lt' locale.
+ */
+const LITHUANIAN_CHAR_MAP: Record<string, string> = {
+  'Ą': 'A', 'ą': 'a',
+  'Č': 'C', 'č': 'c',
+  'Ę': 'E', 'ę': 'e',
+  'Ė': 'E', 'ė': 'e',
+  'Į': 'I', 'į': 'i',
+  'Š': 'S', 'š': 's',
+  'Ų': 'U', 'ų': 'u',
+  'Ū': 'U', 'ū': 'u',
+  'Ž': 'Z', 'ž': 'z',
+};
+
+/**
+ * Transliterate Lithuanian diacritical characters to their ASCII equivalents.
+ * 
+ * @param text - The string containing Lithuanian characters
+ * @returns The transliterated string with Lithuanian diacritics replaced
+ * 
+ * @example
+ * translitLithuanian('Žalioji ąžuolynas') // 'Zalioji azuolynas'
+ * translitLithuanian('Būti čia') // 'Buti cia'
+ */
+export function translitLithuanian(text: string): string {
+  return text.replace(/[ĄąČčĘęĖėĮįŠšŲųŪūŽž]/g, (char) => LITHUANIAN_CHAR_MAP[char] || char);
+}
+
+/**
+ * Generate a URL-safe ID from text by transliterating Lithuanian characters
+ * and converting to a lowercase slug format.
+ * 
+ * Used for generating anchor IDs for headings in TipTap editor.
+ * 
+ * @param text - The text to convert to an ID
+ * @param maxLength - Maximum length of the resulting ID (default: 100)
+ * @returns A URL-safe lowercase ID with hyphens
+ * 
+ * @example
+ * latinizeId('Įvadas į programavimą') // 'ivadas-i-programavima'
+ * latinizeId('Šiandien yra gera diena!') // 'siandien-yra-gera-diena'
+ */
+export function latinizeId(text: string, maxLength = 100): string {
+  return translitLithuanian(text)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '')
+    .substring(0, maxLength);
+}

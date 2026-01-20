@@ -223,7 +223,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import { router, useForm, usePage } from "@inertiajs/vue3";
-import latinize from "latinize";
+import { translitLithuanian } from "@/Utils/String";
 
 import InfoPopover from "../Buttons/InfoPopover.vue";
 import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";
@@ -298,7 +298,7 @@ const statusLinks = computed(() => {
 
   const locale = usePage().props.app?.locale ?? 'lt';
   const url = getCalendarEvent2Route(
-    { date: props.calendar.date, title: latinize(form.title.lt) },
+    { date: props.calendar.date, title: translitLithuanian(form.title.lt) },
     locale
   );
 

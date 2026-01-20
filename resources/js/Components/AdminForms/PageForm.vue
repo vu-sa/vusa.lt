@@ -194,7 +194,7 @@
 <script setup lang="ts">
 import { computed, ref, watch, h } from "vue";
 import { useForm, usePage } from "@inertiajs/vue3";
-import latinize from "latinize";
+import { translitLithuanian } from "@/Utils/String";
 
 import RichContentFormElement from "../RichContentFormElement.vue";
 
@@ -378,7 +378,7 @@ if (isCreate.value) {
   watch(
     () => form.title,
     (title) => {
-      const latinizedTitle = latinize(String(title || ''));
+      const latinizedTitle = translitLithuanian(String(title || ''));
       form.permalink = latinizedTitle
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")

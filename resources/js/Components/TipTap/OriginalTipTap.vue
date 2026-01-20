@@ -155,7 +155,7 @@ import TiptapImageButton from "./TiptapImageButton.vue";
 import TiptapLinkButton from "./TiptapLinkButton.vue";
 import TiptapVideoButton from "./TiptapVideoButton.vue";
 import TiptapYoutubeButton from "./TiptapYoutubeButton.vue";
-import latinize from "latinize";
+import { latinizeId } from "@/Utils/String";
 import { trans as $t } from "laravel-vue-i18n";
 import { Separator } from "../ui/separator";
 import { useToasts } from '@/Composables/useToasts';
@@ -527,14 +527,6 @@ function replacePlaceholderWithError(currentEditor: any, uploadId: string, error
 function handleUpdate() {
   const innerHeadings: { level: number; text: string; id: string }[] = []
   const transaction = editor.value?.state.tr
-
-  function latinizeId(text: string) {
-    return latinize(text)
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '')
-      .substring(0, 100) // Limit ID length for better compatibility
-  }
 
   editor.value?.state.doc.descendants((node, pos) => {
     if (node.type.name === 'heading') {

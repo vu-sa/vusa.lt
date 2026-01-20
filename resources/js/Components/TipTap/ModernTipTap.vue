@@ -338,7 +338,7 @@ import { TableKit } from '@tiptap/extension-table';
 import { Youtube } from "@tiptap/extension-youtube";
 import { Subscript } from '@tiptap/extension-subscript';
 import { Superscript } from '@tiptap/extension-superscript';
-import latinize from "latinize";
+import { latinizeId } from "@/Utils/String";
 import { trans as $t } from "laravel-vue-i18n";
 
 import { AccessibleImage } from "./AccessibleImage";
@@ -1095,14 +1095,6 @@ function replacePlaceholderWithError(currentEditor: any, uploadId: string, error
 function handleUpdate() {
   const innerHeadings: { level: number; text: string; id: string }[] = []
   const transaction = editor.value?.state.tr
-
-  function latinizeId(text: string) {
-    return latinize(text)
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '')
-      .substring(0, 100)
-  }
 
   editor.value?.state.doc.descendants((node, pos) => {
     if (node.type.name === 'heading') {
