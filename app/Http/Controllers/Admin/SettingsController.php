@@ -4,15 +4,18 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\UpdateAtstovavimasSettingsRequest;
+use App\Http\Requests\UpdateDocumentSettingsRequest;
 use App\Http\Requests\UpdateFormSettingsRequest;
 use App\Http\Requests\UpdateMeetingSettingsRequest;
 use App\Http\Requests\UpdateSettingsAuthorizationRequest;
+use App\Models\Document;
 use App\Models\Form;
 use App\Models\PublicInstitution;
 use App\Models\PublicMeeting;
 use App\Models\Role;
 use App\Models\Type;
 use App\Settings\AtstovavimasSettings;
+use App\Settings\DocumentSettings;
 use App\Settings\FormSettings;
 use App\Settings\MeetingSettings;
 use App\Settings\SettingsSettings;
@@ -187,6 +190,39 @@ class SettingsController extends AdminController
             AtstovavimasSettings::clearManagerRoleCache($oldRoleId);
             AtstovavimasSettings::clearManagerRoleCache($newRoleId);
         }
+
+        return $this->redirectBackWithSuccess(__('settings.messages.updated'));
+    }
+
+    /**
+     * Show document settings.
+     */
+    public function editDocumentSettings(DocumentSettings $documentSettings, SettingsSettings $settingsSettings)
+    {
+        $this->authorizeSettingsAccess($settingsSettings);
+
+        return $this->inertiaResponse('Admin/Settings/EditDocumentSettings', [
+            'selected_content_types' => $documentSettings->getImportantContentTypes()->toArray(),
+            'available_content_types' => Document::query()
+                ->select('content_type')
+                ->whereNotNull('content_type')
+                ->distinct()
+                ->orderBy('content_type')
+                ->pluck('content_type')
+                ->values()
+                ->toArray(),
+        ]);
+    }
+
+    /**
+     * Update document settings.
+     */
+    public function updateDocumentSettings(UpdateDocumentSettingsRequest $request, DocumentSettings $documentSettings, SettingsSettings $settingsSettings)
+    {
+        $this->authorizeSettingsAccess($settingsSettings);
+
+        $documentSettings->setImportantContentTypes($request->input('important_content_types', []));
+        $documentSettings->save();
 
         return $this->redirectBackWithSuccess(__('settings.messages.updated'));
     }

@@ -32,6 +32,7 @@
           <ContentTypeFilter
             :grouped-types="groupedContentTypes"
             :selected-types="filters.contentTypes"
+            :important-types="importantContentTypes"
             @toggle-type="(type: string) => emit('update:contentType', type)"
           />
         </FilterAccordion>
@@ -99,6 +100,7 @@
           <ContentTypeFilter
             :grouped-types="groupedContentTypes"
             :selected-types="filters.contentTypes"
+            :important-types="importantContentTypes"
             @toggle-type="(type: string) => emit('update:contentType', type)"
           />
         </FilterAccordion>
@@ -173,6 +175,7 @@ interface Props {
   filters: DocumentSearchFilters
   isLoading?: boolean
   activeFilterCount?: number
+  importantContentTypes?: string[]
 }
 
 interface Emits {
@@ -187,7 +190,8 @@ interface Emits {
 const props = withDefaults(defineProps<Props>(), {
   facets: () => [],
   isLoading: false,
-  activeFilterCount: 0
+  activeFilterCount: 0,
+  importantContentTypes: () => []
 })
 
 const emit = defineEmits<Emits>()

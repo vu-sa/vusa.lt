@@ -21,6 +21,10 @@ return [
             'title' => 'Meeting Display Settings',
             'description' => 'Configure which institution types have publicly visible meetings.',
         ],
+        'documents' => [
+            'title' => 'Document Settings',
+            'description' => 'Configure which document types appear first as most important.',
+        ],
         'atstovavimas' => [
             'title' => 'Representation Settings',
             'description' => 'Configure which roles grant access to tenant-wide institutions in the representation dashboard.',
@@ -85,6 +89,15 @@ return [
         'no_roles_found' => 'No roles found.',
     ],
 
+    // Document settings page
+    'document_settings' => [
+        'important_types_title' => 'Most Important Document Types',
+        'important_types_description' => 'Select which document types should appear first in the filter as "Most important".',
+        'important_types_label' => 'Document Types',
+        'important_types_placeholder' => 'Select document types',
+        'no_types_found' => 'No document types found.',
+    ],
+
     // Messages
     'messages' => [
         'updated' => 'Settings updated successfully.',
@@ -97,6 +110,7 @@ return [
         'index' => 'Settings',
         'forms' => 'Form Settings',
         'meetings' => 'Meeting Settings',
+        'documents' => 'Document Settings',
         'atstovavimas' => 'Representation Settings',
         'authorization' => 'Authorization',
     ],

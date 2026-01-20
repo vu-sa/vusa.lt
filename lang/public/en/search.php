@@ -186,6 +186,7 @@ return [
     'tenants_organizations' => 'Organizations',
     'units' => 'Units',
     'other_types' => 'Other',
+    'most_important' => 'Most important',
     'date_from' => 'From date',
     'date_to' => 'To date',
     'from_date' => 'From',

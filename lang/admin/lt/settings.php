@@ -21,6 +21,10 @@ return [
             'title' => 'Posėdžių rodymo nustatymai',
             'description' => 'Konfigūruokite, kurių institucijų tipų posėdžiai rodomi viešai.',
         ],
+        'documents' => [
+            'title' => 'Dokumentų nustatymai',
+            'description' => 'Konfigūruokite, kurie dokumentų tipai rodomi pirmiausia kaip svarbiausi.',
+        ],
         'atstovavimas' => [
             'title' => 'Atstovavimo nustatymai',
             'description' => 'Konfigūruokite, kurios rolės suteikia prieigą prie padalinio institucijų atstovavimo skydelyje.',
@@ -85,6 +89,15 @@ return [
         'no_roles_found' => 'Rolių nerasta.',
     ],
 
+    // Document settings page
+    'document_settings' => [
+        'important_types_title' => 'Svarbiausi dokumentų tipai',
+        'important_types_description' => 'Pasirinkite, kurie dokumentų tipai bus rodomi pirmi filtre kaip "Svarbiausi".',
+        'important_types_label' => 'Dokumentų tipai',
+        'important_types_placeholder' => 'Pasirinkti dokumentų tipus',
+        'no_types_found' => 'Dokumentų tipų nerasta.',
+    ],
+
     // Messages
     'messages' => [
         'updated' => 'Nustatymai atnaujinti sėkmingai.',
@@ -97,6 +110,7 @@ return [
         'index' => 'Nustatymai',
         'forms' => 'Formų nustatymai',
         'meetings' => 'Posėdžių nustatymai',
+        'documents' => 'Dokumentų nustatymai',
         'atstovavimas' => 'Atstovavimo nustatymai',
         'authorization' => 'Autorizacija',
     ],

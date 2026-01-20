@@ -5,8 +5,8 @@
  * This composable extends useBaseSearch with document-specific functionality.
  */
 
-import { ref, computed, nextTick, type Ref, type ComputedRef } from 'vue'
-import { useLocalStorage } from '@vueuse/core'
+import { ref, computed, nextTick, watch, type Ref, type ComputedRef } from 'vue'
+import { useLocalStorage, useUrlSearchParams } from '@vueuse/core'
 import { usePage } from '@inertiajs/vue3'
 import { createTypesenseClients } from './useSearchClient'
 
@@ -294,8 +294,175 @@ export const useDocumentSearch = (): DocumentSearchController => {
   }))
 
   // ============================================================================
+  // URL Sync - Using W3 HTML standard array notation (param[]=value)
+  // ============================================================================
+
+  /**
+   * Sync current filter state to URL using array notation for multi-value params
+   * Following HTML standard: tenants[]=value1&tenants[]=value2
+   */
+  const syncFiltersToUrl = () => {
+    const filters = baseSearch.filters.value
+    if (!filters) return
+    
+    const params = new URLSearchParams()
+
+    // Query
+    if (filters.query && filters.query !== '' && filters.query !== '*') {
+      params.set('q', filters.query)
+    }
+
+    // Tenants (array notation)
+    filters.tenants?.forEach(tenant => {
+      params.append('tenants[]', tenant)
+    })
+
+    // Content types (array notation)
+    filters.contentTypes?.forEach(type => {
+      params.append('contentTypes[]', type)
+    })
+
+    // Languages (array notation)
+    filters.languages?.forEach(lang => {
+      params.append('language[]', lang)
+    })
+
+    // Date range
+    if (filters.dateRange?.from) {
+      params.set('dateFrom', Math.floor(filters.dateRange.from.getTime() / 1000).toString())
+    }
+    if (filters.dateRange?.to) {
+      params.set('dateTo', Math.floor(filters.dateRange.to.getTime() / 1000).toString())
+    }
+    if (filters.dateRange?.preset && filters.dateRange.preset !== 'recent') {
+      params.set('datePreset', filters.dateRange.preset)
+    }
+
+    // Update URL without page reload
+    const newUrl = new URL(window.location.href)
+    newUrl.search = params.toString()
+    window.history.replaceState({}, '', newUrl.toString())
+  }
+
+  /**
+   * Load filter state from URL
+   */
+  const loadFiltersFromUrl = (): Partial<DocumentSearchFilters> => {
+    if (typeof window === 'undefined') return {}
+
+    const params = new URLSearchParams(window.location.search)
+    const filters: Partial<DocumentSearchFilters> = {}
+
+    // Query
+    const query = params.get('q')
+    if (query) {
+      filters.query = query
+    }
+
+    // Parse array params using HTML standard notation (param[]=value)
+    const parseArrayParam = (paramName: string): string[] => {
+      const values = params.getAll(`${paramName}[]`)
+      // Also support indexed notation for backwards compatibility
+      if (values.length === 0) {
+        const indexed: string[] = []
+        for (let i = 0; i < 50; i++) {
+          const value = params.get(`${paramName}[${i}]`)
+          if (value) {
+            indexed.push(value)
+          }
+        }
+        return indexed
+      }
+      return values
+    }
+
+    const tenants = parseArrayParam('tenants')
+    if (tenants.length > 0) filters.tenants = tenants
+
+    const contentTypes = parseArrayParam('contentTypes')
+    if (contentTypes.length > 0) filters.contentTypes = contentTypes
+
+    const languages = parseArrayParam('language')
+    if (languages.length > 0) filters.languages = languages
+
+    // Date range
+    const dateFrom = params.get('dateFrom')
+    const dateTo = params.get('dateTo')
+    const datePreset = params.get('datePreset')
+
+    if (dateFrom || dateTo || datePreset) {
+      filters.dateRange = {
+        from: dateFrom ? new Date(Number(dateFrom) * 1000) : undefined,
+        to: dateTo ? new Date(Number(dateTo) * 1000) : undefined,
+        preset: datePreset as DocumentSearchFilters['dateRange']['preset']
+      }
+    }
+
+    return filters
+  }
+
+  // Flag to prevent URL sync during initial load
+  let isInitialLoad = true
+
+  // Watch for filter changes and sync to URL (after initial load)
+  watch(
+    () => baseSearch.filters.value,
+    () => {
+      if (!isInitialLoad && baseSearch.status.value !== 'searching') {
+        syncFiltersToUrl()
+      }
+    },
+    { deep: true }
+  )
+
+  // Also sync after search completes
+  watch(
+    () => baseSearch.status.value,
+    (newStatus, oldStatus) => {
+      if (oldStatus === 'searching' && newStatus === 'idle' && !isInitialLoad) {
+        syncFiltersToUrl()
+      }
+    }
+  )
+
+  // ============================================================================
   // Return Controller (matching DocumentSearchController interface)
   // ============================================================================
+
+  // Wrap initializeSearchClient to load URL params first
+  const initializeWithUrlSync = async () => {
+    // Load filters from URL before initializing
+    const urlFilters = loadFiltersFromUrl()
+    
+    // Apply URL filters to base search (with null checks)
+    if (baseSearch.filters.value) {
+      if (urlFilters.tenants) {
+        baseSearch.filters.value.tenants = urlFilters.tenants
+      }
+      if (urlFilters.contentTypes) {
+        baseSearch.filters.value.contentTypes = urlFilters.contentTypes
+      }
+      if (urlFilters.languages) {
+        baseSearch.filters.value.languages = urlFilters.languages
+      }
+      if (urlFilters.dateRange) {
+        baseSearch.filters.value.dateRange = urlFilters.dateRange
+      }
+      if (urlFilters.query) {
+        baseSearch.filters.value.query = urlFilters.query
+      }
+    }
+
+    // Initialize search client
+    const result = await initializeSearchClient()
+    
+    // Mark initial load as complete after a short delay
+    setTimeout(() => {
+      isInitialLoad = false
+    }, 500)
+    
+    return result
+  }
 
   return {
     // State from base
@@ -339,6 +506,6 @@ export const useDocumentSearch = (): DocumentSearchController => {
 
     // Internal
     searchClient: computed(() => searchClient.value),
-    initializeSearchClient
+    initializeSearchClient: initializeWithUrlSync
   }
 }

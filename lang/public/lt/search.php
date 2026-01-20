@@ -190,6 +190,7 @@ return [
     'tenants_organizations' => 'Dariniai',
     'units' => 'Padaliniai',
     'other_types' => 'Kiti',
+    'most_important' => 'Svarbiausi',
     'date_from' => 'Nuo datos',
     'date_to' => 'Iki datos',
     'from_date' => 'Nuo',

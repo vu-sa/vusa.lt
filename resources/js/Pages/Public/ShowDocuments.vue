@@ -5,8 +5,7 @@
   </Head>
   
   <DocumentSearchInterface
-    :initial-query
-    :initial-filters
+    :important-content-types="importantContentTypes"
   />
 </template>
 
@@ -21,6 +20,7 @@ import IFluentDocument16Regular from '~icons/fluent/document-16-regular';
 // Props - now only used for static metadata
 const props = defineProps<{
   allContentTypes?: App.Entities.Document['content_type'][];
+  importantContentTypes?: string[];
 }>();
 
 // Set breadcrumbs for documents page
@@ -41,52 +41,9 @@ onMounted(() => {
   page.props.layoutWidth = 'content';
 });
 
-// Extract initial search parameters from URL
-const getUrlParams = () => {
-  if (typeof window === 'undefined') return new URLSearchParams();
-  return new URLSearchParams(window.location.search);
-};
+// Important content types from settings
+const importantContentTypes = computed(() => props.importantContentTypes ?? []);
 
-// Initial query from URL
-const initialQuery = computed(() => {
-  const params = getUrlParams();
-  return params.get('q') || '';
-});
-
-// Initial filters from URL parameters
-const initialFilters = computed(() => {
-  const params = getUrlParams();
-  const filters: Record<string, any> = {};
-
-  // Parse array parameters (tenants, contentTypes, language)
-  const parseArrayParam = (paramName: string, maxItems = 29) => {
-    const items = [];
-    for (let i = 0; i < maxItems; i++) {
-      const value = params.get(`${paramName}[${i}]`);
-      if (value) {
-        items.push(value);
-      } else {
-        break;
-      }
-    }
-    return items.length > 0 ? items : undefined;
-  };
-
-  // Extract filter parameters
-  filters.tenants = parseArrayParam('tenants');
-  filters.contentTypes = parseArrayParam('contentTypes');
-  filters.language = parseArrayParam('language', 2);
-  
-  // Date range filters
-  const dateFrom = params.get('dateFrom');
-  const dateTo = params.get('dateTo');
-  if (dateFrom || dateTo) {
-    filters.dateRange = {
-      from: dateFrom ? new Date(Number(dateFrom) * 1000) : undefined,
-      to: dateTo ? new Date(Number(dateTo) * 1000) : undefined
-    };
-  }
-
-  return filters;
-});
+// URL parameters are now handled by useDocumentSearch composable
+// which syncs filters to URL automatically. No need for manual parsing here.
 </script>

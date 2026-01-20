@@ -216,6 +216,8 @@ Route::get('settings/forms', [SettingsController::class, 'editFormSettings'])->n
 Route::post('settings/forms', [SettingsController::class, 'updateFormSettings'])->name('settings.forms.update');
 Route::get('settings/meetings', [SettingsController::class, 'editMeetingSettings'])->name('settings.meetings.edit');
 Route::post('settings/meetings', [SettingsController::class, 'updateMeetingSettings'])->name('settings.meetings.update');
+Route::get('settings/documents', [SettingsController::class, 'editDocumentSettings'])->name('settings.documents.edit');
+Route::post('settings/documents', [SettingsController::class, 'updateDocumentSettings'])->name('settings.documents.update');
 Route::get('settings/atstovavimas', [SettingsController::class, 'editAtstovavimasSettings'])->name('settings.atstovavimas.edit');
 Route::post('settings/atstovavimas', [SettingsController::class, 'updateAtstovavimasSettings'])->name('settings.atstovavimas.update');
 Route::get('settings/authorization', [SettingsController::class, 'editAuthorization'])->name('settings.authorization.edit');

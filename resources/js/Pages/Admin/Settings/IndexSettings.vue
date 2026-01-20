@@ -56,6 +56,21 @@
               </CardHeader>
             </Card>
           </Link>
+
+          <!-- Document Settings -->
+          <Link :href="route('settings.documents.edit')">
+            <Card class="h-full transition-all duration-200 hover:shadow-md hover:ring-1 hover:ring-primary/20">
+              <CardHeader>
+                <CardTitle class="flex items-center gap-2">
+                  <NIcon :component="Icons.DOCUMENT" />
+                  {{ $t('settings.pages.documents.title') }}
+                </CardTitle>
+                <CardDescription>
+                  {{ $t('settings.pages.documents.description') }}
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </Link>
         </div>
       </section>
 
