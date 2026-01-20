@@ -190,8 +190,8 @@ export function useProductTour(options: ProductTourOptions) {
       
       // Progress display
       showProgress: true,
-      // Use {{current}} and {{total}} placeholders as per Driver.js docs
-      progressText: $t('tutorials.step_of').replace('{{current}}', '{{current}}').replace('{{total}}', '{{total}}'),
+      // Driver.js replaces {{current}} and {{total}} placeholders automatically
+      progressText: $t('tutorials.step_of'),,
       
       // Button configuration
       showButtons: isVoluntary ? ['next', 'previous', 'close'] : ['next', 'previous'],

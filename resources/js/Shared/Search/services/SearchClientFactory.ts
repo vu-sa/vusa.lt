@@ -313,10 +313,12 @@ export class FilterBuilder {
 
   /**
    * Escape special characters in filter values
+   * Must escape backslashes first, then backticks, to prevent injection attacks
    */
   private escapeValue(value: string): string {
-    if (value.includes(',') || value.includes(':') || value.includes('`')) {
-      return `\`${value.replace(/`/g, '\\`')}\``
+    if (value.includes(',') || value.includes(':') || value.includes('`') || value.includes('\\')) {
+      // Escape backslashes first, then backticks
+      return `\`${value.replace(/\\/g, '\\\\').replace(/`/g, '\\`')}\``
     }
     return value
   }

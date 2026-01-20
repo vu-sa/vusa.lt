@@ -91,16 +91,17 @@ const typedResults = computed(() => {
 })
 
 // Compute active filter pills (excluding empty arrays and query)
+// Iterates over known facetConfig fields (whitelist) to avoid prototype pollution
 const activeFilterPills = computed(() => {
   const pills: Record<string, (string | number)[]> = {}
   const filters = searchController.filters.value
 
-  for (const [field, value] of Object.entries(filters)) {
-    if (field === 'query') continue
+  for (const fieldConfig of searchController.facetConfig.fields) {
+    const value = filters[fieldConfig.field]
     if (Array.isArray(value) && value.length > 0) {
-      pills[field] = value
+      pills[fieldConfig.field] = value
     } else if (typeof value === 'string' && value.length > 0) {
-      pills[field] = [value]
+      pills[fieldConfig.field] = [value]
     }
   }
 

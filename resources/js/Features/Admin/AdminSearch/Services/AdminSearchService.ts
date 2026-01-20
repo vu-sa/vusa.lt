@@ -61,11 +61,13 @@ export function buildFilterString(
 
 /**
  * Escape special characters in filter values
+ * Must escape backslashes first, then backticks, to prevent injection attacks
  */
-function escapeFilterValue(value: string): string {
+export function escapeFilterValue(value: string): string {
   // Typesense requires backtick escaping for special characters
-  if (value.includes(',') || value.includes(':') || value.includes('`')) {
-    return `\`${value.replace(/`/g, '\\`')}\``
+  if (value.includes(',') || value.includes(':') || value.includes('`') || value.includes('\\')) {
+    // Escape backslashes first, then backticks
+    return `\`${value.replace(/\\/g, '\\\\').replace(/`/g, '\\`')}\``
   }
   return value
 }

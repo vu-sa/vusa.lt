@@ -208,6 +208,36 @@ describe('FilterBuilder', () => {
 
       expect(filter).toContain('`Test, Value`')
     })
+
+    it('escapes backslashes in values', () => {
+      const filter = new FilterBuilder()
+        .anyOf('path', ['dir\\file'])
+        .build()
+
+      expect(filter).toContain('`dir\\\\file`')
+    })
+
+    it('escapes backslash followed by backtick correctly', () => {
+      // Security fix: backslashes must be escaped before backticks
+      const filter = new FilterBuilder()
+        .anyOf('value', ['test\\`injection'])
+        .build()
+
+      // Input: test\`injection
+      // After backslash escape: test\\`injection
+      // After backtick escape: test\\\`injection
+      // Wrapped: `test\\\`injection`
+      expect(filter).toContain('`test\\\\\\`injection`')
+    })
+
+    it('handles complex injection patterns', () => {
+      const filter = new FilterBuilder()
+        .anyOf('field', ['\\`end\\`'])
+        .build()
+
+      // Verifies proper escaping prevents filter injection
+      expect(filter).toContain('`\\\\\\`end\\\\\\``')
+    })
   })
 
   describe('range', () => {
