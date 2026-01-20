@@ -20,8 +20,11 @@
     "docs:preview": "vitepress preview docs --port 6006",
     "storybook": "STORYBOOK=true storybook dev -p 6006 --no-open",
     "storybook:build": "STORYBOOK=true storybook build",
-    "lint": "eslint resources/js --ext .vue,.ts,.js",
-    "lint:fix": "eslint resources/js --ext .vue,.ts,.js --fix",
+    "typecheck": "vue-tsc --noEmit",
+    "lint": "eslint resources/js",
+    "lint:fix": "eslint resources/js --fix",
+    "format": "eslint resources/js --fix",
+    "check": "npm run typecheck && npm run lint",
     "generate:pwa": "node dev/generate-pwa-assets.mjs"
   },
   "dependencies": {
@@ -93,6 +96,7 @@
     "@storybook/addon-docs": "^10.1.10",
     "@storybook/addon-vitest": "^10.1.10",
     "@storybook/vue3-vite": "^10.1.10",
+    "@stylistic/eslint-plugin": "^5.7.0",
     "@types/d3": "^7.4.0",
     "@types/latinize": "^0.2.18",
     "@types/node": "^25.0.3",
@@ -105,7 +109,6 @@
     "axe-core": "^4.10.3",
     "eslint": "^9.10.0",
     "eslint-plugin-import": "^2.32.0",
-    "eslint-plugin-no-secrets": "^2.1.0",
     "eslint-plugin-storybook": "^10.1.10",
     "eslint-plugin-vue": "^10.0.0",
     "eslint-plugin-vuejs-accessibility": "^2.4.1",
@@ -131,6 +134,7 @@
     "vitest": "^4.0.16",
     "vue": "^3.3.4",
     "vue-eslint-parser": "^10.1.1",
+    "vue-tsc": "^3.2.2",
     "workbox-window": "^7.4.0"
   },
   "eslintConfig": {
