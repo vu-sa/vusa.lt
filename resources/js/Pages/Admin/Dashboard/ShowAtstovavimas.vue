@@ -111,7 +111,7 @@
       @create-check-in="actions.onGapCreateCheckIn" />
 
     <!-- These modals can be opened from FullscreenGanttModal, so they must come after it in DOM order -->
-    <NewMeetingModal :show-modal="actions.showMeetingModal.value" :institution="actions.selectedInstitution.value"
+    <NewMeetingDialog :show-modal="actions.showMeetingModal.value" :institution="actions.selectedInstitution.value"
       :suggested-at="actions.selectedSuggestedAt.value"
       @close="actions.onCloseMeetingModal" />
 
@@ -192,7 +192,7 @@ import Tabs from '@/Components/ui/tabs/Tabs.vue'
 import { Skeleton } from '@/Components/ui/skeleton'
 import { Button } from '@/Components/ui/button'
 import AddCheckInDialog from "@/Components/Institutions/AddCheckInDialog.vue";
-import NewMeetingModal from '@/Components/Modals/NewMeetingModal.vue';
+import NewMeetingDialog from '@/Components/Dialogs/NewMeetingDialog.vue';
 import PageHero from '@/Components/Hero/PageHero.vue';
 import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
 

@@ -12,11 +12,10 @@
         </p>
         <p class="mt-4">
           {{ $t('Būtent') }}
-          <ModelChip>
-            <template #icon>
-              <Icons.MEETING />
-            </template>{{ $t('posėdžiai') }}
-          </ModelChip>
+          <Badge size="tiny" variant="secondary" class="mx-1">
+            <Icons.MEETING class="h-3 w-3" />
+            <strong>{{ $t('posėdžiai') }}</strong>
+          </Badge>
           <template v-if="$page.props.app.locale === 'lt'">
             ir jų informacija yra labai svarbi – kad galėtume atstovauti studentams geriausiai, kaip tik tai įmanoma!
           </template>
@@ -176,7 +175,6 @@ import {
 } from "lucide-vue-next";
 
 import Icons from "@/Types/Icons/filled";
-import ModelChip from "@/Components/Tag/ModelChip.vue";
 import SuggestionAlert from "@/Components/Alerts/SuggestionAlert.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 

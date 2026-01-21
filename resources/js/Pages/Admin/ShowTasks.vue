@@ -82,7 +82,7 @@
     </div>
 
     <!-- Meeting modal for periodicity gap tasks -->
-    <NewMeetingModal
+    <NewMeetingDialog
       v-if="selectedInstitution"
       :show-modal="showMeetingModal"
       :institution="selectedInstitution"
@@ -128,7 +128,7 @@ import {
 import type { TaskProgress, TaskActionType } from "@/Types/TaskTypes";
 
 // Lazy load modals
-const NewMeetingModal = defineAsyncComponent(() => import("@/Components/Modals/NewMeetingModal.vue"));
+const NewMeetingDialog = defineAsyncComponent(() => import("@/Components/Dialogs/NewMeetingDialog.vue"));
 const AddCheckInDialog = defineAsyncComponent(() => import("@/Components/Institutions/AddCheckInDialog.vue"));
 const TaskDetailDialog = defineAsyncComponent(() => import("@/Features/Admin/TaskManager/TaskDetailDialog.vue"));
 

@@ -57,7 +57,7 @@ import UsersAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
 import { TaskActionType, type TaskProgress } from "@/Types/TaskTypes";
 
 // Lazy load modals
-const NewMeetingModal = defineAsyncComponent(() => import("@/Components/Modals/NewMeetingModal.vue"));
+const NewMeetingDialog = defineAsyncComponent(() => import("@/Components/Dialogs/NewMeetingDialog.vue"));
 const AddCheckInDialog = defineAsyncComponent(() => import("@/Components/Institutions/AddCheckInDialog.vue"));
 
 // Enhanced Task interface with new backend fields

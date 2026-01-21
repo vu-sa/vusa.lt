@@ -45,7 +45,7 @@
     </div>
 
     <!-- New Meeting Modal -->
-    <NewMeetingModal :show-modal="showMeetingModal" @close="showMeetingModal = false" />
+    <NewMeetingDialog :show-modal="showMeetingModal" @close="showMeetingModal = false" />
   </PageContent>
 </template>
 
@@ -60,7 +60,7 @@ import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import TasksCard from "@/Pages/Admin/Dashboard/Components/TasksCard.vue";
 import UpcomingMeetingsCard from "@/Pages/Admin/Dashboard/Components/UpcomingMeetingsCard.vue";
 // Lazy load modal - only needed when user clicks "Create meeting"
-const NewMeetingModal = defineAsyncComponent(() => import("@/Components/Modals/NewMeetingModal.vue"));
+const NewMeetingDialog = defineAsyncComponent(() => import("@/Components/Dialogs/NewMeetingDialog.vue"));
 import CalendarEventsCard from "@/Pages/Admin/Dashboard/Components/CalendarEventsCard.vue";
 import NewsListCard from "@/Pages/Admin/Dashboard/Components/NewsListCard.vue";
 import { addressivize } from "@/Utils/String";

@@ -5,12 +5,10 @@
         <p>
           <span><strong>mano.vusa.lt</strong> platformoje failai yra
             laikomi</span>
-          <ModelChip>
-            <template #icon>
-              <IFluentDocumentTableSearch24Regular />
-            </template>
-            objektuose
-          </ModelChip><span>
+          <Badge size="tiny" variant="secondary" class="mx-1">
+            <IFluentDocumentTableSearch24Regular class="h-3 w-3" />
+            <strong>objektuose</strong>
+          </Badge><span>
             (institucijose, posėdžiuose, etc.), kad būtų išlaikyta failų
             struktūra.</span>
         </p>
@@ -44,8 +42,8 @@ import { ref, useTemplateRef, watch } from "vue";
 import { useFetch } from "@vueuse/core";
 
 import { Button } from "@/Components/ui/button";
+import { Badge } from "@/Components/ui/badge";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
-import ModelChip from "@/Components/Tag/ModelChip.vue";
 import SuggestionAlert from "@/Components/Alerts/SuggestionAlert.vue";
 import { Spinner } from "@/Components/ui/spinner";
 

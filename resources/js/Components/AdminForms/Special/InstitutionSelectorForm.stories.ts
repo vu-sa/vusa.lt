@@ -1,14 +1,83 @@
 import type { Meta, StoryObj } from "@storybook/vue3-vite";
-import { userEvent, within } from "storybook/test";
+import { userEvent, within, fn } from "storybook/test";
 import InstitutionSelectorForm from "./InstitutionSelectorForm.vue";
-import { usePage, router } from "@/mocks/inertia.mock";
-import { fn } from 'storybook/test';
+import { usePage, router } from "@/mocks/inertia.storybook";
 
 // Mock institution data
 const mockInstitutions = [
-  { institution: { id: 'inst1', name: 'Faculty of Science' } },
-  { institution: { id: 'inst2', name: 'Student Council' } },
-  { institution: { id: 'inst3', name: 'University Senate' } },
+  { 
+    institution: { 
+      id: 'inst1', 
+      name: 'Faculty of Science',
+      shortname: 'FS',
+      types: [{ title: 'Faculty' }],
+      last_meeting_date: '2024-01-15',
+      active_check_in: false,
+      meetings: []
+    } 
+  },
+  { 
+    institution: { 
+      id: 'inst2', 
+      name: 'Student Council',
+      shortname: 'SC',
+      types: [{ title: 'Council' }],
+      last_meeting_date: '2024-01-10',
+      active_check_in: false,
+      meetings: []
+    } 
+  },
+  { 
+    institution: { 
+      id: 'inst3', 
+      name: 'University Senate',
+      shortname: 'US',
+      types: [{ title: 'Senate' }],
+      last_meeting_date: null,
+      active_check_in: false,
+      meetings: []
+    } 
+  },
+];
+
+// Accessible institutions for admin search
+const accessibleInstitutions = [
+  { 
+    id: 'inst1', 
+    name: 'Faculty of Science',
+    shortname: 'FS',
+    tenant: { id: 'vusa', shortname: 'VU SA' },
+    last_meeting_date: '2024-01-15',
+    active_check_in: false,
+    meetings: []
+  },
+  { 
+    id: 'inst2', 
+    name: 'Student Council',
+    shortname: 'SC',
+    tenant: { id: 'vusa', shortname: 'VU SA' },
+    last_meeting_date: '2024-01-10',
+    active_check_in: false,
+    meetings: []
+  },
+  { 
+    id: 'inst3', 
+    name: 'University Senate',
+    shortname: 'US',
+    tenant: { id: 'vusa', shortname: 'VU SA' },
+    last_meeting_date: null,
+    active_check_in: false,
+    meetings: []
+  },
+  { 
+    id: 'inst4', 
+    name: 'Research Committee',
+    shortname: 'RC',
+    tenant: { id: 'vusa', shortname: 'VU SA' },
+    last_meeting_date: '2024-01-05',
+    active_check_in: false,
+    meetings: [{ id: 1 }]
+  },
 ];
 
 // Override usePage mock to include necessary auth data for this component
@@ -17,7 +86,8 @@ usePage.mockImplementation(() => ({
     app: {
       locale: 'lt',
       subdomain: 'www',
-      name: 'VU SA'
+      name: 'VU SA',
+      url: 'http://localhost'
     },
     auth: {
       user: {
@@ -27,20 +97,24 @@ usePage.mockImplementation(() => ({
       },
       can: {
         create: {
-          meeting: true
+          meeting: true,
+          document: true
         }
       }
     },
+    accessibleInstitutions,
     flash: {
       success: null,
-      error: null
+      error: null,
+      info: null,
+      warning: null
     }
   }
 }));
 
 // Component metadata
 const meta: Meta<typeof InstitutionSelectorForm> = {
-  title: 'AdminForms/Special/InstitutionSelectorForm',
+  title: 'Forms/AdminForms/Special/InstitutionSelectorForm',
   component: InstitutionSelectorForm,
   tags: ['autodocs'],
   argTypes: {
@@ -129,25 +203,17 @@ export const WithInteraction: Story = {
       }
     }
   }),
-  play: async ({ canvasElement, args }) => {
+  play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     
     // Wait for component to fully load
     await new Promise(resolve => setTimeout(resolve, 300));
     
-    // Find and click the institution selection dropdown
-    const selectTrigger = canvas.getByRole('combobox');
-    await userEvent.click(selectTrigger);
+    // Find and click a specific institution button (exact match to avoid multiple matches)
+    const institutionButton = await canvas.findByRole('button', { name: /VU SA Fakulteto taryba/i });
+    await userEvent.click(institutionButton);
     
-    // Find and select an institution option
-    const option = await canvas.findByText('Student Council');
-    await userEvent.click(option);
-    
-    // Submit the form
-    const submitButton = canvas.getByRole('button', { name: /Toliau/i });
-    await userEvent.click(submitButton);
-    
-    // Verify the onSubmit handler was called
+    // Wait for selection to be processed
     await new Promise(resolve => setTimeout(resolve, 300));
   },
 };

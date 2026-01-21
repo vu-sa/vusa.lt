@@ -16,8 +16,8 @@ For a quick overview and basic usage, see @README.md in this directory.
 ### JavaScript Testing Setup
 **Mocks Location**: Use `resources/js/mocks/` directory (NOT Storybook mocks):
 - `inertia.mock.ts` - for Inertia.js functionality (usePage, router, useForm)
-- `i18n.mock.ts` - for Laravel translations (trans, wTrans, $t)  
-- `route.mock.ts` - for route generation (route() function, Ziggy)
+- `i18n.ts` - for Laravel translations (trans, wTrans, $t) - uses actual generated translations
+- `route.ts` - for route generation (route() function) - returns predictable mock URLs
 
 **Test Locations**:
 - Composables: `resources/js/Composables/__tests__/`
@@ -359,8 +359,8 @@ describe('ComponentName', () => {
 ```typescript
 // Use existing mocks from resources/js/mocks/
 import { usePage } from '@/mocks/inertia.mock'
-import { trans } from '@/mocks/i18n.mock'
-import { route } from '@/mocks/route.mock'
+import { trans } from '@/mocks/i18n'
+import { route } from '@/mocks/route'
 ```
 
 ## Testing Best Practices

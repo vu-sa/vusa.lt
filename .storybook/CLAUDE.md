@@ -22,15 +22,13 @@ Quick reference for AI assistants working with Storybook in vusa.lt.
 **Location**: `resources/js/mocks/` (NOT `.storybook/mocks/`)
 
 - **`inertia.mock.ts`**: usePage, router, useForm
-- **`i18n.mock.ts`**: trans, transChoice, $t, $tChoice
-- **`route.mock.ts`**: route() function
+- **`i18n.ts`**: trans, transChoice, $t - uses actual translations from `lang/*.json`
+- **`route.ts`**: route() function - returns predictable mock URLs
 
 ### Using Mocks in Stories
 
 ```typescript
 import { usePage, router } from "@/mocks/inertia.mock";
-import { trans } from "@/mocks/i18n.mock";
-import { route } from "@/mocks/route.mock";
 
 // Override for specific test
 usePage.mockImplementation(() => ({
@@ -39,6 +37,9 @@ usePage.mockImplementation(() => ({
     flash: { success: 'Operation successful' }
   }
 }));
+
+// Note: $t() and route() are globally available via .storybook/preview.ts
+// They use real translations from lang/lt.json and lang/php_admin_lt.json
 ```
 
 ## Story Patterns

@@ -1,21 +1,16 @@
 import { fn } from 'storybook/test';
-import { vi } from 'vitest';
 import { defineComponent, h } from 'vue';
 
 /**
- * Centralized Inertia.js mock for Storybook and Vitest
- * Used across all stories and tests that need Inertia functionality
+ * Inertia.js mock specifically for Storybook
+ * This file does NOT import from vitest to avoid browser compatibility issues
+ * 
+ * Use this in .storybook/preview.ts and story files
+ * Use inertia.mock.ts for Vitest tests
  */
 
-// Detect if we're in a Vitest environment
-const isVitest = typeof vi !== 'undefined';
-
-// Use a unified mock function type to avoid TypeScript conflicts
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const mockFn = (isVitest ? vi.fn : fn) as <T extends (...args: any[]) => any>(impl?: T) => T;
-
 // Mock usePage() function returning commonly used page props
-export const usePage = mockFn(() => ({
+export const usePage = fn(() => ({
   props: {
     app: {
       locale: 'lt',
@@ -31,11 +26,27 @@ export const usePage = mockFn(() => ({
         current_duties: [
           { 
             institution: { 
-              id: 'vusa', 
-              name: 'VU SA', 
-              shortname: 'VU SA' 
+              id: 'inst1', 
+              name: 'VU SA Fakulteto taryba', 
+              shortname: 'VU SA FT',
+              types: [{ title: 'Taryba' }],
+              last_meeting_date: '2024-01-15',
+              active_check_in: false,
+              meetings: []
             },
             role: 'admin'
+          },
+          { 
+            institution: { 
+              id: 'inst2', 
+              name: 'VU SA Parlamentas', 
+              shortname: 'VU SA P',
+              types: [{ title: 'Parlamentas' }],
+              last_meeting_date: '2024-01-10',
+              active_check_in: false,
+              meetings: []
+            },
+            role: 'member'
           }
         ]
       },
@@ -46,6 +57,36 @@ export const usePage = mockFn(() => ({
         delete: { meeting: true, document: true }
       }
     },
+    // Accessible institutions for admin users (InstitutionSelectorForm uses this)
+    accessibleInstitutions: [
+      { 
+        id: 'inst1', 
+        name: 'VU SA Fakulteto taryba', 
+        shortname: 'VU SA FT',
+        tenant: { id: 'vusa', shortname: 'VU SA' },
+        last_meeting_date: '2024-01-15',
+        active_check_in: false,
+        meetings: [{ id: 1 }, { id: 2 }]
+      },
+      { 
+        id: 'inst2', 
+        name: 'VU SA Parlamentas', 
+        shortname: 'VU SA P',
+        tenant: { id: 'vusa', shortname: 'VU SA' },
+        last_meeting_date: '2024-01-10',
+        active_check_in: false,
+        meetings: [{ id: 3 }]
+      },
+      { 
+        id: 'inst3', 
+        name: 'VU Senatas', 
+        shortname: 'Senatas',
+        tenant: { id: 'vusa', shortname: 'VU SA' },
+        last_meeting_date: null,
+        active_check_in: false,
+        meetings: []
+      },
+    ],
     tenants: [
       { id: 'vusa', name: 'VU SA', shortname: 'VU SA' },
       { id: 'vuif', name: 'VU IF', shortname: 'VU IF' },
@@ -75,38 +116,38 @@ export const usePage = mockFn(() => ({
 
 // Mock router for Inertia
 export const router = {
-  visit: mockFn((url: string, options?: any) => {
+  visit: fn((url: string, options?: unknown) => {
     console.log('Inertia router visit:', url, options)
     return Promise.resolve()
   }),
-  get: mockFn((url: string, data?: any, options?: any) => {
+  get: fn((url: string, data?: unknown, options?: unknown) => {
     console.log('Inertia router get:', url, data, options)
     return Promise.resolve()
   }),
-  post: mockFn((url: string, data?: any, options?: any) => {
+  post: fn((url: string, data?: unknown, options?: unknown) => {
     console.log('Inertia router post:', url, data, options)
     return Promise.resolve()
   }),
-  put: mockFn((url: string, data?: any, options?: any) => {
+  put: fn((url: string, data?: unknown, options?: unknown) => {
     console.log('Inertia router put:', url, data, options)
     return Promise.resolve()
   }),
-  patch: mockFn((url: string, data?: any, options?: any) => {
+  patch: fn((url: string, data?: unknown, options?: unknown) => {
     console.log('Inertia router patch:', url, data, options)
     return Promise.resolve()
   }),
-  delete: mockFn((url: string, options?: any) => {
+  delete: fn((url: string, options?: unknown) => {
     console.log('Inertia router delete:', url, options)
     return Promise.resolve()
   }),
-  reload: mockFn((options?: any) => {
+  reload: fn((options?: unknown) => {
     console.log('Inertia router reload:', options)
     return Promise.resolve()
   })
 };
 
 // Mock useForm for Inertia forms
-export const useForm = mockFn((data: any = {}) => ({
+export const useForm = fn((data: Record<string, unknown> = {}) => ({
   data,
   errors: {},
   hasErrors: false,
@@ -114,18 +155,18 @@ export const useForm = mockFn((data: any = {}) => ({
   progress: null,
   wasSuccessful: false,
   recentlySuccessful: false,
-  transform: mockFn(),
-  defaults: mockFn(),
-  reset: mockFn(),
-  clearErrors: mockFn(),
-  setError: mockFn(),
-  submit: mockFn(),
-  get: mockFn(),
-  post: mockFn(),
-  put: mockFn(),
-  patch: mockFn(),
-  delete: mockFn(),
-  cancel: mockFn()
+  transform: fn(),
+  defaults: fn(),
+  reset: fn(),
+  clearErrors: fn(),
+  setError: fn(),
+  submit: fn(),
+  get: fn(),
+  post: fn(),
+  put: fn(),
+  patch: fn(),
+  delete: fn(),
+  cancel: fn()
 }));
 
 // Mock Head component for document meta

@@ -239,7 +239,7 @@
     </Tabs>
 
     <!-- Modals -->
-    <NewMeetingModal v-if="showMeetingModal" :show-modal="showMeetingModal" :institution
+    <NewMeetingDialog v-if="showMeetingModal" :show-modal="showMeetingModal" :institution
       @close="showMeetingModal = false" />
 
     <AddCheckInDialog v-if="showCheckInModal" :open="showCheckInModal" :institution-id="institution.id"
@@ -274,7 +274,7 @@ import ShowPageHero from "@/Components/Hero/ShowPageHero.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import ModernMeetingCard from "@/Components/Meetings/ModernMeetingCard.vue";
 import SimpleFileViewer from "@/Features/Admin/SharepointFileManager/Viewer/SimpleFileViewer.vue";
-import NewMeetingModal from "@/Components/Modals/NewMeetingModal.vue";
+import NewMeetingDialog from "@/Components/Dialogs/NewMeetingDialog.vue";
 import AddCheckInDialog from "@/Components/Institutions/AddCheckInDialog.vue";
 import UsersAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
 import InstitutionOverviewSection from "@/Components/Institutions/InstitutionOverviewSection.vue";

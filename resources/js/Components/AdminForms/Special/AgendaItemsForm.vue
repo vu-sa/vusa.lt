@@ -5,12 +5,10 @@
         <template v-if="$page.props.app.locale === 'lt'">
           <p class="mt-0">
             <span>Kiekvienas posėdis turi</span>
-            <ModelChip>
-              <template #icon>
-                <component :is="IconsRegular.AGENDA_ITEM" class="h-4 w-4" />
-              </template>
-              darbotvarkės klausimų
-            </ModelChip>
+            <Badge size="tiny" variant="secondary" class="mx-1">
+              <component :is="IconsRegular.AGENDA_ITEM" class="h-3 w-3" />
+              <strong>darbotvarkės klausimų</strong>
+            </Badge>
           </p>
           <p class="mb-4">
             Įrašyk arba įkopijuok visus klausimus, kurie šiuo metu yra numatomi
@@ -20,12 +18,10 @@
         <template v-else>
           <p class="mt-0">
             <span>Each meeting has</span>
-            <ModelChip>
-              <template #icon>
-                <component :is="IconsRegular.AGENDA_ITEM" class="h-4 w-4" />
-              </template>
-              agenda items
-            </ModelChip>
+            <Badge size="tiny" variant="secondary" class="mx-1">
+              <component :is="IconsRegular.AGENDA_ITEM" class="h-3 w-3" />
+              <strong>agenda items</strong>
+            </Badge>
           </p>
           <p class="mb-4">
             Enter or paste all the questions that are currently planned for the
@@ -363,7 +359,7 @@ import {
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import IconsFilled from "@/Types/Icons/filled";
 import IconsRegular from "@/Types/Icons/regular";
-import ModelChip from "@/Components/Tag/ModelChip.vue";
+import { Badge } from "@/Components/ui/badge";
 import SuggestionAlert from "@/Components/Alerts/SuggestionAlert.vue";
 import SpotlightPopover from "@/Components/Onboarding/SpotlightPopover.vue";
 import { useMeetingTemplates } from "@/Composables/useMeetingTemplates";

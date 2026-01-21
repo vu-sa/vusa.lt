@@ -190,7 +190,7 @@
   </Dialog>
 
   <!-- New Meeting Modal -->
-  <NewMeetingModal :show-modal="showMeetingModal" @close="showMeetingModal = false" />
+  <NewMeetingDialog :show-modal="showMeetingModal" @close="showMeetingModal = false" />
 </template>
 
 <script setup lang="ts">
@@ -226,7 +226,7 @@ import FollowedInstitutionsHotbar from './Sidebar/FollowedInstitutionsHotbar.vue
 import SidebarStartFM from './SidebarStartFM.vue'
 import AppLogo from './AppLogo.vue'
 
-import NewMeetingModal from '@/Components/Modals/NewMeetingModal.vue'
+import NewMeetingDialog from '@/Components/Dialogs/NewMeetingDialog.vue'
 import {
   Sidebar,
   SidebarContent,
