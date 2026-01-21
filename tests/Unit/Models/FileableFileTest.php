@@ -124,7 +124,8 @@ describe('FileableFile attributes and accessors', function () {
     test('fileTypeLabel returns localized label', function () {
         $file = FileableFile::factory()->for($this->institution, 'fileable')->protocol()->create();
 
-        expect($file->file_type_label)->toBe('Protocol');
+        // FileTypes are stored in Lithuanian (matching SharePoint metadata labels)
+        expect($file->file_type_label)->toBe(FileableFile::TYPE_PROTOCOL);
     });
 
     test('fileTypeLabel returns null when file_type is null', function () {

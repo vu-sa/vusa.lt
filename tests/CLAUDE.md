@@ -164,6 +164,58 @@ uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 - Use `test()` function for simple assertions
 - Use `it()` function for BDD-style tests
 
+### Domain Logic Tests (Tasks, Notifications)
+
+**Mirror Pattern**: Test directories mirror `app/` subdirectory structure exactly.
+
+| App Location | Test Location |
+|--------------|---------------|
+| `app/Tasks/Handlers/{Name}.php` | `tests/Feature/Tasks/Handlers/{Name}Test.php` |
+| `app/Tasks/Subscribers/{Name}.php` | `tests/Feature/Tasks/Subscribers/{Name}Test.php` |
+| `app/Notifications/{Name}.php` | Group in `tests/Feature/Notifications/{Behavior}Test.php` |
+| `app/Notifications/Subscribers/{Name}.php` | `tests/Feature/Notifications/Subscribers/{Name}Test.php` |
+
+**Task Handler Test Pattern**:
+```php
+<?php
+use App\Tasks\Handlers\{HandlerName};
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
+
+uses(RefreshDatabase::class);
+
+beforeEach(function () {
+    Notification::fake();
+    config(['queue.default' => 'sync']);
+});
+
+describe('{HandlerName}', function () {
+    test('creates task for valid scenario', function () {
+        // Arrange: Create required models
+        // Act: Invoke handler or trigger event
+        // Assert: Verify task created with correct properties
+    });
+});
+```
+
+**Notification Behavior Test Pattern** (grouped by behavior, not per-class):
+```php
+<?php
+use Tests\Feature\Notifications\NotificationTestHelpers;
+
+uses(RefreshDatabase::class, NotificationTestHelpers::class);
+
+describe('task notifications', function () {
+    test('TaskAssignedNotification fires on task creation', function () {
+        // Test notification firing
+    });
+});
+```
+
+**Helper Traits**: Place shared test utilities in `{Domain}TestHelpers.php`:
+- `tests/Feature/Tasks/MeetingTaskTestHelpers.php`
+- `tests/Feature/Notifications/NotificationTestHelpers.php`
+
 ## Common Test Patterns
 
 ### Route Testing

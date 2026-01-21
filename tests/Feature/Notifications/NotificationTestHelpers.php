@@ -133,15 +133,13 @@ trait NotificationTestHelpers
 
     protected function createCommentOnReservationResource(
         ReservationResource $reservationResource,
-        User $commenter,
-        bool $isDecision = false
+        User $commenter
     ): Comment {
         return Comment::factory()->create([
             'commentable_type' => ReservationResource::class,
             'commentable_id' => $reservationResource->id,
             'user_id' => $commenter->id,
             'comment' => 'Test comment content',
-            'decision' => $isDecision,
         ]);
     }
 

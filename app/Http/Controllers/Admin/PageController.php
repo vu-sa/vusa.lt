@@ -105,7 +105,7 @@ class PageController extends AdminController
             'page' => [
                 ...$page->only('id', 'title', 'content', 'permalink', 'text', 'lang', 'category_id', 'tenant_id', 'is_active', 'aside', 'layout'),
                 'tenant' => $page->tenant->only('id', 'alias', 'shortname'),
-                'other_lang_id' => $page->getOtherLanguage()->only('id')['id'] ?? null,
+                'other_lang_id' => $page->getOtherLanguage()?->only('id')['id'] ?? null,
             ],
             'otherLangPages' => $other_lang_pages,
             'categories' => Category::all(['id', 'name']),

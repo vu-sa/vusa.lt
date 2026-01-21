@@ -210,16 +210,17 @@ describe('MeetingTaskSubscriber', function () {
             $tenant = Tenant::query()->where('type', '!=', 'pkp')->first()
                 ?? Tenant::factory()->create(['type' => 'padalinys']);
 
-            // Set up global admin role
-            $globalRole = Role::factory()->create(['guard_name' => 'web']);
+            $institution = Institution::factory()->for($tenant)->create();
+
+            // Create and configure institution manager role via settings
+            $managerRole = Role::factory()->create(['guard_name' => 'web']);
             $settings = app(AtstovavimasSettings::class);
-            $settings->setGlobalVisibilityRoleIds([$globalRole->id]);
+            $settings->setInstitutionManagerRoleId($managerRole->id);
             $settings->save();
 
-            // Create admin with global visibility role
-            $institution = Institution::factory()->for($tenant)->create();
+            // Create admin with institution manager role
             $duty = Duty::factory()->for($institution)->create();
-            $duty->roles()->attach($globalRole);
+            $duty->roles()->attach($managerRole);
 
             $admin = User::factory()->create();
             $admin->duties()->attach($duty, [
@@ -242,16 +243,17 @@ describe('MeetingTaskSubscriber', function () {
             $tenant = Tenant::query()->where('type', '!=', 'pkp')->first()
                 ?? Tenant::factory()->create(['type' => 'padalinys']);
 
-            // Set up tenant visibility role
-            $tenantRole = Role::factory()->create(['guard_name' => 'web']);
+            $institution = Institution::factory()->for($tenant)->create();
+
+            // Create and configure institution manager role via settings
+            $managerRole = Role::factory()->create(['guard_name' => 'web']);
             $settings = app(AtstovavimasSettings::class);
-            $settings->setTenantVisibilityRoleIds([$tenantRole->id]);
+            $settings->setInstitutionManagerRoleId($managerRole->id);
             $settings->save();
 
-            // Create coordinator with tenant visibility role
-            $institution = Institution::factory()->for($tenant)->create();
+            // Create coordinator with institution manager role
             $coordinatorDuty = Duty::factory()->for($institution)->create();
-            $coordinatorDuty->roles()->attach($tenantRole);
+            $coordinatorDuty->roles()->attach($managerRole);
 
             $coordinator = User::factory()->create();
             $coordinator->duties()->attach($coordinatorDuty, [
@@ -300,29 +302,32 @@ describe('MeetingTaskSubscriber', function () {
             $tenant = Tenant::query()->where('type', '!=', 'pkp')->first()
                 ?? Tenant::factory()->create(['type' => 'padalinys']);
 
-            // Set up both global and tenant visibility roles
-            $globalRole = Role::factory()->create(['guard_name' => 'web']);
-            $tenantRole = Role::factory()->create(['guard_name' => 'web']);
+            // Create two institutions for the same tenant
+            $institution1 = Institution::factory()->for($tenant)->create();
+            $institution2 = Institution::factory()->for($tenant)->create();
 
+            // Create and configure institution manager role via settings
+            $managerRole = Role::factory()->create(['guard_name' => 'web']);
             $settings = app(AtstovavimasSettings::class);
-            $settings->setGlobalVisibilityRoleIds([$globalRole->id]);
-            $settings->setTenantVisibilityRoleIds([$tenantRole->id]);
+            $settings->setInstitutionManagerRoleId($managerRole->id);
             $settings->save();
 
-            // Create user with both roles
-            $institution = Institution::factory()->for($tenant)->create();
-            $duty = Duty::factory()->for($institution)->create();
-            $duty->roles()->attach([$globalRole->id, $tenantRole->id]);
+            // Create user with manager role in both institutions
+            $duty1 = Duty::factory()->for($institution1)->create();
+            $duty1->roles()->attach($managerRole);
+
+            $duty2 = Duty::factory()->for($institution2)->create();
+            $duty2->roles()->attach($managerRole);
 
             $admin = User::factory()->create();
-            $admin->duties()->attach($duty, [
+            $admin->duties()->attach([$duty1->id, $duty2->id], [
                 'start_date' => now()->subMonth(),
                 'end_date' => null,
             ]);
 
-            // Create meeting
+            // Create meeting attached to both institutions
             $meeting = Meeting::factory()
-                ->hasAttached($institution)
+                ->hasAttached([$institution1, $institution2])
                 ->create(['start_time' => now()]);
 
             // Dispatch the event (simulating what the controller does after full setup)
@@ -486,48 +491,46 @@ describe('MeetingTaskSubscriber', function () {
     });
 
     describe('GetMeetingAdministrators', function () {
-        test('returns unique administrators from all sources', function () {
+        test('returns unique administrators from institution managers', function () {
             $tenant = Tenant::query()->where('type', '!=', 'pkp')->first()
                 ?? Tenant::factory()->create(['type' => 'padalinys']);
 
-            $institution = Institution::factory()->for($tenant)->create();
+            $institution1 = Institution::factory()->for($tenant)->create();
+            $institution2 = Institution::factory()->for($tenant)->create();
 
-            // Set up roles
-            $globalRole = Role::factory()->create(['guard_name' => 'web']);
-            $tenantRole = Role::factory()->create(['guard_name' => 'web']);
-
+            // Create and configure institution manager role via settings
+            $managerRole = Role::factory()->create(['guard_name' => 'web']);
             $settings = app(AtstovavimasSettings::class);
-            $settings->setGlobalVisibilityRoleIds([$globalRole->id]);
-            $settings->setTenantVisibilityRoleIds([$tenantRole->id]);
+            $settings->setInstitutionManagerRoleId($managerRole->id);
             $settings->save();
 
-            // Create global admin
-            $globalDuty = Duty::factory()->for($institution)->create();
-            $globalDuty->roles()->attach($globalRole);
-            $globalAdmin = User::factory()->create();
-            $globalAdmin->duties()->attach($globalDuty, [
+            // Create manager for first institution
+            $duty1 = Duty::factory()->for($institution1)->create();
+            $duty1->roles()->attach($managerRole);
+            $manager1 = User::factory()->create();
+            $manager1->duties()->attach($duty1, [
                 'start_date' => now()->subMonth(),
                 'end_date' => null,
             ]);
 
-            // Create tenant coordinator
-            $tenantDuty = Duty::factory()->for($institution)->create();
-            $tenantDuty->roles()->attach($tenantRole);
-            $tenantCoordinator = User::factory()->create();
-            $tenantCoordinator->duties()->attach($tenantDuty, [
+            // Create manager for second institution
+            $duty2 = Duty::factory()->for($institution2)->create();
+            $duty2->roles()->attach($managerRole);
+            $manager2 = User::factory()->create();
+            $manager2->duties()->attach($duty2, [
                 'start_date' => now()->subMonth(),
                 'end_date' => null,
             ]);
 
-            // Create meeting
+            // Create meeting attached to both institutions
             $meeting = Meeting::factory()
-                ->hasAttached($institution)
+                ->hasAttached([$institution1, $institution2])
                 ->create(['start_time' => now()]);
 
             $administrators = GetMeetingAdministrators::execute($meeting);
 
             expect($administrators)->toHaveCount(2)
-                ->and($administrators->pluck('id'))->toContain($globalAdmin->id, $tenantCoordinator->id);
+                ->and($administrators->pluck('id'))->toContain($manager1->id, $manager2->id);
         });
     });
 

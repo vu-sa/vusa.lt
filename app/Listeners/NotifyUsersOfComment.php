@@ -23,11 +23,9 @@ class NotifyUsersOfComment implements ShouldQueue
             return;
         }
 
-        // Skip decision/status-change comments on ReservationResource
-        // These are already covered by ReservationStatusChangedNotification
-        if ($event->comment->decision && $commentable instanceof ReservationResource) {
-            return;
-        }
+        // Note: Previously, comments could have a 'decision' field for status changes.
+        // Decisions are now handled through the approvals table (see 2026_01_15_160000 migration).
+        // Comments are now purely for discussion/notes.
 
         // let's assume for now, that the subject will always be a user
         $user = $event->comment->user;
@@ -55,12 +53,8 @@ class NotifyUsersOfComment implements ShouldQueue
             'id' => $commentable->getKey(),
         ];
 
-        // Build the comment text based on whether it's a status change or regular comment
-        if ($event->comment->decision) {
-            $text = "<p><strong>{$user->name}</strong> ".__('notifications.changed_status_on')." <strong>{$objectName}</strong></p>";
-        } else {
-            $text = "<p><strong>{$user->name}</strong> ".__('notifications.left_comment_on')." <strong>{$objectName}</strong></p>";
-        }
+        // Build the comment text
+        $text = "<p><strong>{$user->name}</strong> ".__('notifications.left_comment_on')." <strong>{$objectName}</strong></p>";
 
         $notifiables = $commentable->users?->unique();
 

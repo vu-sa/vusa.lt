@@ -265,60 +265,10 @@ jobs:
       run: npm ci
     
     - name: TypeScript Typecheck
-      id: typecheck
-      run: |
-        echo "## TypeScript Typecheck Results" >> $GITHUB_STEP_SUMMARY
-        set +e
-        OUTPUT=$(npm run typecheck 2>&1)
-        EXIT_CODE=$?
-        set -e
-        
-        # Count errors
-        ERROR_COUNT=$(echo "$OUTPUT" | grep -c "error TS" || true)
-        
-        if [ $EXIT_CODE -eq 0 ]; then
-          echo "✅ No TypeScript errors found" >> $GITHUB_STEP_SUMMARY
-        else
-          echo "⚠️ Found **$ERROR_COUNT** TypeScript error(s)" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "<details><summary>View errors (first 50)</summary>" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          echo "$OUTPUT" | grep -A2 "error TS" | head -150 >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          echo "</details>" >> $GITHUB_STEP_SUMMARY
-        fi
-        
-        # Always exit 0 since this is non-blocking
-        exit 0
+      run: npm run typecheck
     
     - name: ESLint Check
-      id: eslint
-      run: |
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "## ESLint Results" >> $GITHUB_STEP_SUMMARY
-        set +e
-        OUTPUT=$(npm run lint 2>&1)
-        EXIT_CODE=$?
-        set -e
-        
-        if [ $EXIT_CODE -eq 0 ]; then
-          echo "✅ No ESLint errors found" >> $GITHUB_STEP_SUMMARY
-        else
-          # Count problems
-          PROBLEM_COUNT=$(echo "$OUTPUT" | grep -oP '\d+(?= problems?)' | tail -1 || echo "some")
-          echo "⚠️ Found **$PROBLEM_COUNT** ESLint problem(s)" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "<details><summary>View issues (first 50 lines)</summary>" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          echo "$OUTPUT" | head -50 >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          echo "</details>" >> $GITHUB_STEP_SUMMARY
-        fi
-        
-        # Always exit 0 since this is non-blocking
-        exit 0
+      run: npm run lint
 
   status-check:
     name: CI Status

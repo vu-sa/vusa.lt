@@ -86,6 +86,8 @@ class FileableFile extends Model
 
     public const TYPE_REGULATION = 'Veiklą reglamentuojantys dokumentai';
 
+    public const TYPE_OTHER = 'Kita';
+
     /**
      * Get all available file types.
      */
@@ -99,6 +101,7 @@ class FileableFile extends Model
             self::TYPE_PRESENTATION => 'Pristatymai',
             self::TYPE_TEMPLATE => 'Šablonai',
             self::TYPE_REGULATION => 'Veiklą reglamentuojantys dokumentai',
+            self::TYPE_OTHER => 'Kita',
         ];
     }
 

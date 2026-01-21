@@ -17,36 +17,9 @@ beforeEach(function () {
 });
 
 describe('reservation flow duplicate prevention', function () {
-    test('state change with decision comment sends at most 1 notification type per action', function () {
-        $user = $this->createUserWithPreferences();
-        $admin = $this->createUserWithPreferences();
-
-        ['reservationResource' => $reservationResource] = $this->createReservationWithResource($user);
-
-        // Simulate admin changing state and leaving a decision comment
-        $this->actingAs($admin);
-
-        // First: State change triggers ReservationStatusChangedNotification
-        $reservationResource->state->transitionTo(Reserved::class);
-
-        // Second: Decision comment is posted (this is what happens in the controller)
-        $comment = Comment::factory()->create([
-            'commentable_type' => ReservationResource::class,
-            'commentable_id' => $reservationResource->id,
-            'user_id' => $admin->id,
-            'comment' => 'Approved the reservation',
-            'decision' => true,
-        ]);
-
-        event(new CommentPosted($comment));
-
-        // User should receive ReservationStatusChangedNotification
-        Notification::assertSentTo($user, ReservationStatusChangedNotification::class);
-
-        // User should NOT receive CommentPostedNotification for decision comments on ReservationResource
-        // because the status change notification already covers this
-        Notification::assertNotSentTo($user, CommentPostedNotification::class);
-    });
+    // Note: Decision handling has been moved to the Approvals system (2026_01_15 migration).
+    // Comments on reservations are now purely informational, not status-change related.
+    // Status changes are handled by state transitions, not decision comments.
 
     test('state change without comment sends exactly 1 notification', function () {
         $user = $this->createUserWithPreferences();
@@ -70,13 +43,12 @@ describe('reservation flow duplicate prevention', function () {
 
         ['reservationResource' => $reservationResource] = $this->createReservationWithResource($user);
 
-        // Regular comment (not a decision)
+        // Regular comment
         $comment = Comment::factory()->create([
             'commentable_type' => ReservationResource::class,
             'commentable_id' => $reservationResource->id,
             'user_id' => $commenter->id,
             'comment' => 'Just a regular question',
-            'decision' => false,
         ]);
 
         event(new CommentPosted($comment));
@@ -102,34 +74,6 @@ describe('notification count limits', function () {
         Notification::assertSentToTimes($user2, ReservationStatusChangedNotification::class, 1);
     });
 
-    test('combined state change and decision comment never sends more than 2 notifications total per user', function () {
-        $user = $this->createUserWithPreferences();
-        $admin = $this->createUserWithPreferences();
-
-        ['reservationResource' => $reservationResource] = $this->createReservationWithResource($user);
-
-        $this->actingAs($admin);
-
-        // State change
-        $reservationResource->state->transitionTo(Reserved::class);
-
-        // Decision comment
-        $comment = Comment::factory()->create([
-            'commentable_type' => ReservationResource::class,
-            'commentable_id' => $reservationResource->id,
-            'user_id' => $admin->id,
-            'comment' => 'Approved',
-            'decision' => true,
-        ]);
-        event(new CommentPosted($comment));
-
-        // Total notifications for user should be at most 1 (status change)
-        // CommentPosted should not fire for decision on ReservationResource
-        // Count ReservationStatusChangedNotification sends
-        Notification::assertSentToTimes($user, ReservationStatusChangedNotification::class, 1);
-        Notification::assertNotSentTo($user, CommentPostedNotification::class);
-    });
-
     test('multiple comments on same resource send individual notifications', function () {
         $user = $this->createUserWithPreferences();
         $commenter = $this->createUserWithPreferences();
@@ -142,7 +86,6 @@ describe('notification count limits', function () {
             'commentable_id' => $reservationResource->id,
             'user_id' => $commenter->id,
             'comment' => 'First question',
-            'decision' => false,
         ]);
         event(new CommentPosted($comment1));
 
@@ -152,7 +95,6 @@ describe('notification count limits', function () {
             'commentable_id' => $reservationResource->id,
             'user_id' => $commenter->id,
             'comment' => 'Follow up question',
-            'decision' => false,
         ]);
         event(new CommentPosted($comment2));
 
@@ -177,7 +119,6 @@ describe('notification deduplication edge cases', function () {
             'commentable_id' => $reservationResource->id,
             'user_id' => $commenter->id,
             'comment' => 'Test',
-            'decision' => false,
         ]);
 
         event(new CommentPosted($comment));

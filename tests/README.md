@@ -118,17 +118,32 @@ tests/Feature/
 │   ├── Navigation/ # Navigation controller
 │   ├── Permissions/# Permission, Role controllers
 │   └── Resources/  # Document, Files, Reservation controllers
+├── Tasks/          # Mirrors app/Tasks/ structure
+│   ├── Handlers/   # {HandlerName}Test.php for each task handler
+│   └── Subscribers/# {SubscriberName}Test.php for each subscriber
+├── Notifications/  # Behavior-grouped notification tests
+│   └── Subscribers/# {SubscriberName}Test.php (if complex)
 ├── Auth/           # Authentication & Authorization
-├── Content/        # DEPRECATED: Legacy model relationship tests
 ├── Forms/          # Dynamic Forms & Registration workflows
-├── Management/     # DEPRECATED: Legacy management tests  
 ├── Public/         # Public-facing features
-├── Resources/      # DEPRECATED: Legacy resource tests
 ├── System/         # API, Permissions, Integration, Search
+├── Content/        # DEPRECATED: Legacy model relationship tests
+├── Management/     # DEPRECATED: Legacy management tests  
+├── Resources/      # DEPRECATED: Legacy resource tests
 └── Other/          # Legacy tests (to be cleaned up)
 ```
 
-**Note**: Admin/ directory contains the current comprehensive controller tests following proper patterns. Other directories contain legacy or specialized tests that may need deprecation.
+### Test Naming Patterns
+
+| Domain | Pattern | Example |
+|--------|---------|----------|
+| **Admin controllers** | `{Controller}Test.php` in `Admin/{Area}/` | `Admin/Content/PageControllerTest.php` |
+| **Task handlers** | `{ClassName}Test.php` mirrors `app/Tasks/Handlers/` | `Tasks/Handlers/PeriodicityGapTaskHandlerTest.php` |
+| **Task subscribers** | `{ClassName}Test.php` mirrors `app/Tasks/Subscribers/` | `Tasks/Subscribers/ApprovalTaskSubscriberTest.php` |
+| **Notifications** | Behavior-grouped: `{Behavior}Test.php` | `Notifications/NotificationFiringTest.php` |
+| **Helper traits** | `{Domain}TestHelpers.php` | `Notifications/NotificationTestHelpers.php` |
+
+**Note**: Admin/ directory contains the current comprehensive controller tests following proper patterns. Tasks/ and Notifications/ mirror the `app/` structure. Other directories contain legacy or specialized tests that may need deprecation.
 
 ## Frontend Testing
 

@@ -87,7 +87,6 @@ describe('comment notifications', function () {
             'commentable_id' => $reservationResource->id,
             'user_id' => $commenter->id,
             'comment' => 'Test comment',
-            'decision' => false,
         ]);
 
         event(new CommentPosted($comment));
@@ -95,26 +94,8 @@ describe('comment notifications', function () {
         Notification::assertSentTo($user, CommentPostedNotification::class);
     });
 
-    test('CommentPostedNotification skips when comment is decision on ReservationResource', function () {
-        $user = $this->createUserWithPreferences();
-        $commenter = $this->createUserWithPreferences();
-
-        ['reservationResource' => $reservationResource] = $this->createReservationWithResource($user);
-
-        $comment = Comment::factory()->create([
-            'commentable_type' => ReservationResource::class,
-            'commentable_id' => $reservationResource->id,
-            'user_id' => $commenter->id,
-            'comment' => 'Status changed',
-            'decision' => true, // This is a decision comment
-        ]);
-
-        event(new CommentPosted($comment));
-
-        // No CommentPostedNotification because decision comments on ReservationResource
-        // are handled by ReservationStatusChangedNotification
-        Notification::assertNotSentTo($user, CommentPostedNotification::class);
-    });
+    // Note: Decision/status-change comments are now handled through the Approvals system
+    // (see 2026_01_15_160000 migration). Comments are purely for discussion.
 });
 
 describe('reservation notifications', function () {
@@ -178,7 +159,6 @@ describe('notification not sent to commenter', function () {
             'commentable_id' => $reservationResource->id,
             'user_id' => $user->id, // Same user is the commenter
             'comment' => 'My own comment',
-            'decision' => false,
         ]);
 
         event(new CommentPosted($comment));
