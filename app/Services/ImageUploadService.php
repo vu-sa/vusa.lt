@@ -27,7 +27,7 @@ class ImageUploadService
      * Process an image file: scale down and convert to WebP
      *
      * @param  UploadedFile|string  $source  File upload or data URL/path
-     * @return array{image: \Intervention\Image\Image, originalSize: int}
+     * @return array{image: \Intervention\Image\Interfaces\ImageInterface|\Intervention\Image\Interfaces\EncodedImageInterface, originalSize: int}
      */
     public function processImage(UploadedFile|string $source, array $options = []): array
     {
@@ -35,7 +35,7 @@ class ImageUploadService
 
         // Get original size for compression statistics
         $originalSize = $source instanceof UploadedFile
-            ? $source->getSize()
+            ? ($source->getSize() ?: 0)
             : strlen($source);
 
         // Read and process image
@@ -181,7 +181,7 @@ class ImageUploadService
 
         $k = 1024;
         $sizes = ['B', 'KB', 'MB', 'GB'];
-        $i = floor(log($bytes) / log($k));
+        $i = (int) floor(log($bytes) / log($k));
 
         return round($bytes / pow($k, $i), 1).' '.$sizes[$i];
     }

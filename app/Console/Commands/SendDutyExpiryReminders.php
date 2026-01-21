@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Pivots\Dutiable;
+use App\Models\User;
 use App\Notifications\DutyExpiringNotification;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
@@ -40,6 +41,7 @@ class SendDutyExpiryReminders extends Command
         $sentCount = 0;
 
         foreach ($expiringDutiables as $dutiable) {
+            /** @var User|null $user */
             $user = $dutiable->dutiable;
             $duty = $dutiable->duty;
 

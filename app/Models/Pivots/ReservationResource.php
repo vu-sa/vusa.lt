@@ -214,7 +214,7 @@ class ReservationResource extends Pivot implements Approvable
      */
     protected function getApproveTargetState(): ?string
     {
-        return match ($this->state?->getValue()) {
+        return match ($this->state->getValue()) {
             'created' => \App\States\ReservationResource\Reserved::class,
             'reserved' => \App\States\ReservationResource\Lent::class,
             'lent' => \App\States\ReservationResource\Returned::class,

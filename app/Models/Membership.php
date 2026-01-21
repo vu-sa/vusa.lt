@@ -46,7 +46,7 @@ class Membership extends Model
         'tenant_id',
     ];
 
-    public function toSearchableArray()
+    public function toSearchableArray(): array
     {
         return [
             'name->'.app()->getLocale() => $this->getTranslation('name', app()->getLocale()),

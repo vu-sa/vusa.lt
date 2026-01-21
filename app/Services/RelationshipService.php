@@ -71,9 +71,10 @@ class RelationshipService
      *
      * @return \Illuminate\Support\Collection<int, array{
      *   institution: Institution,
-     *   direction: 'outgoing'|'incoming',
-     *   type: 'direct'|'type-based',
-     *   source_institution_id: string
+     *   direction: 'outgoing'|'incoming'|'sibling',
+     *   type: 'direct'|'type-based'|'within-type',
+     *   source_institution_id: string,
+     *   authorized: bool
      * }>
      */
     public static function getRelatedInstitutionsCached(Institution $institution): \Illuminate\Support\Collection
@@ -124,6 +125,7 @@ class RelationshipService
             ->outgoingRelationships;
 
         foreach ($outgoingDirect as $relationship) {
+            /** @var Institution|null $relatedInstitution */
             $relatedInstitution = $relationship->pivot->related_model;
             if ($relatedInstitution && $relatedInstitution->id !== $sourceId) {
                 $result->push([
@@ -141,6 +143,7 @@ class RelationshipService
             ->incomingRelationships;
 
         foreach ($incomingDirect as $relationship) {
+            /** @var Institution|null $relatedInstitution */
             $relatedInstitution = $relationship->pivot->relationshipable;
             if ($relatedInstitution && $relatedInstitution->id !== $sourceId) {
                 // Check if the relationship is bidirectional - if so, incoming also gets authorization
@@ -162,12 +165,13 @@ class RelationshipService
 
         foreach ($institution->types as $type) {
             foreach ($type->outgoingRelationships as $relationship) {
+                /** @var Type|null $targetType */
                 $targetType = $relationship->pivot->related_model;
                 $scope = $relationship->pivot->scope ?? Relationshipable::SCOPE_WITHIN_TENANT;
                 $isBidirectional = $relationship->pivot->bidirectional ?? false;
                 $authorized = self::isTypeRelationshipAuthorized($institution, $scope, $isBidirectional, 'outgoing');
 
-                if ($targetType && $targetType->institutions) {
+                if ($targetType && $targetType->institutions->isNotEmpty()) {
                     foreach ($targetType->institutions as $relatedInstitution) {
                         if ($relatedInstitution->id !== $sourceId) {
                             // Apply scope filtering
@@ -194,12 +198,13 @@ class RelationshipService
 
         foreach ($institution->types as $type) {
             foreach ($type->incomingRelationships as $relationship) {
+                /** @var Type|null $sourceType */
                 $sourceType = $relationship->pivot->relationshipable;
                 $scope = $relationship->pivot->scope ?? Relationshipable::SCOPE_WITHIN_TENANT;
                 $isBidirectional = $relationship->pivot->bidirectional ?? false;
                 $authorized = self::isTypeRelationshipAuthorized($institution, $scope, $isBidirectional, 'incoming');
 
-                if ($sourceType && $sourceType->institutions) {
+                if ($sourceType && $sourceType->institutions->isNotEmpty()) {
                     foreach ($sourceType->institutions as $relatedInstitution) {
                         if ($relatedInstitution->id !== $sourceId) {
                             // Apply scope filtering
@@ -548,7 +553,10 @@ class RelationshipService
             $flat = $flat->filter(fn ($item) => $item['authorized'] === true);
         }
 
-        return new Collection($flat->pluck('institution')->unique('id')->values()->all());
+        /** @var array<int, Institution> $institutions */
+        $institutions = $flat->pluck('institution')->unique('id')->values()->all();
+
+        return new Collection($institutions);
     }
 
     public static function getAllRelatedInstitutions()

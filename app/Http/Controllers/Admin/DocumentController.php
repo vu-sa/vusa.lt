@@ -61,7 +61,7 @@ class DocumentController extends AdminController
         }
 
         // Add permission filtering to Typesense options
-        if (! $this->authorizer->isAllScope && ! auth()->user()->isSuperAdmin()) {
+        if (! $this->authorizer->isAllScope && ! auth()->user()?->isSuperAdmin()) {
             $allowedTenants = $this->authorizer->getTenants('documents.read.padalinys');
             if ($allowedTenants->isNotEmpty()) {
                 $allowedShortnames = $allowedTenants->pluck('shortname')->toArray();
@@ -109,7 +109,7 @@ class DocumentController extends AdminController
         $baseQuery = Document::query();
 
         // Apply tenant permission filtering if needed
-        if (! $this->authorizer->isAllScope && ! auth()->user()->isSuperAdmin()) {
+        if (! $this->authorizer->isAllScope && ! auth()->user()?->isSuperAdmin()) {
             $allowedTenants = $this->authorizer->getTenants('documents.read.padalinys');
             if ($allowedTenants->isNotEmpty()) {
                 $allowedTenantIds = $allowedTenants->pluck('id')->toArray();

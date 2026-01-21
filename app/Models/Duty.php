@@ -100,7 +100,7 @@ class Duty extends Model implements AuthorizableContract, SharepointFileableCont
 
     public $translatable = ['name', 'description'];
 
-    public function toSearchableArray()
+    public function toSearchableArray(): array
     {
         return [
             'name->'.app()->getLocale() => $this->getTranslation('name', app()->getLocale()),

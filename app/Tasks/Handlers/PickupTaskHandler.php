@@ -108,8 +108,11 @@ class PickupTaskHandler extends BaseTaskHandler
         $task->metadata = $metadata;
 
         // Update due date if provided date is later
-        if ($dueDate && (! $task->due_date || $dueDate > $task->due_date)) {
-            $task->due_date = $dueDate;
+        if ($dueDate) {
+            $parsedDueDate = \Illuminate\Support\Carbon::parse($dueDate);
+            if (! $task->due_date || $parsedDueDate->greaterThan($task->due_date)) {
+                $task->due_date = $parsedDueDate;
+            }
         }
 
         $task->save();

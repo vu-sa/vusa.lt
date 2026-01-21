@@ -14,8 +14,10 @@ class GetInstitutionManagers
      *
      * Institution managers are identified by having a duty with the configured
      * institution_manager_role_id (from AtstovavimasSettings) in the same tenant.
+     *
+     * @return \Illuminate\Support\Collection<int, \App\Models\User>
      */
-    public static function execute(Institution $institution)
+    public static function execute(Institution $institution): \Illuminate\Support\Collection
     {
         $settings = app(AtstovavimasSettings::class);
         $managerRoleId = $settings->getInstitutionManagerRoleId();
@@ -30,6 +32,9 @@ class GetInstitutionManagers
             $query->where('id', $managerRoleId);
         })->with('current_users')->get()->pluck('current_users')->flatten()->unique('id')->values();
 
-        return $institutionManagers;
+        /** @var \Illuminate\Support\Collection<int, \App\Models\User> $result */
+        $result = $institutionManagers;
+
+        return $result;
     }
 }

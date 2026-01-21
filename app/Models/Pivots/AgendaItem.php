@@ -100,24 +100,24 @@ class AgendaItem extends Pivot
         $meeting = $this->meeting;
 
         // Get tenant IDs for filtering with scoped API keys
-        $tenantIds = $meeting?->institutions
+        $tenantIds = $meeting->institutions
             ->pluck('tenant.id')
             ->filter()
             ->unique()
             ->map(fn ($id) => (int) $id)
             ->values()
-            ->toArray() ?? [];
+            ->toArray();
 
         // Get tenant shortnames for faceting/display
-        $tenantShortnames = $meeting?->institutions
+        $tenantShortnames = $meeting->institutions
             ->pluck('tenant.shortname')
             ->filter()
             ->unique()
             ->values()
-            ->toArray() ?? [];
+            ->toArray();
 
         // Get institution info
-        $institution = $meeting?->institutions->first();
+        $institution = $meeting->institutions->first();
 
         return [
             'id' => $this->id,
@@ -137,11 +137,11 @@ class AgendaItem extends Pivot
 
             // Meeting info for context
             'meeting_id' => $this->meeting_id,
-            'meeting_title' => $meeting?->title,
-            'meeting_start_time' => $meeting?->start_time?->timestamp,
-            'meeting_start_time_formatted' => $meeting?->start_time?->format('Y-m-d H:i'),
-            'meeting_year' => $meeting?->start_time?->year,
-            'meeting_month' => $meeting?->start_time?->month,
+            'meeting_title' => $meeting->title,
+            'meeting_start_time' => $meeting->start_time->timestamp,
+            'meeting_start_time_formatted' => $meeting->start_time->format('Y-m-d H:i'),
+            'meeting_year' => $meeting->start_time->year,
+            'meeting_month' => $meeting->start_time->month,
 
             // Institution info
             'institution_id' => $institution?->id,
@@ -150,7 +150,7 @@ class AgendaItem extends Pivot
 
             // All institutions (for .own scope filtering)
             // Institution IDs are ULIDs (strings)
-            'institution_ids' => $meeting?->institutions->pluck('id')->toArray() ?? [],
+            'institution_ids' => $meeting->institutions->pluck('id')->toArray(),
 
             // Completion status indicators
             'has_student_vote' => ! empty($this->student_vote),

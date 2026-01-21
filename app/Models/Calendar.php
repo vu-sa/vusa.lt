@@ -154,7 +154,7 @@ class Calendar extends Model implements HasMedia
             ->nonQueued(); // Run synchronously for immediate availability
     }
 
-    public function toSearchableArray()
+    public function toSearchableArray(): array
     {
         return [
             'id' => (string) $this->id,

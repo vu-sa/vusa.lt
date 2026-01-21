@@ -93,7 +93,10 @@ class Type extends Model implements SharepointFileableContract
         });
     }
 
-    public function institutions()
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\MorphToMany<\App\Models\Institution, $this>
+     */
+    public function institutions(): \Illuminate\Database\Eloquent\Relations\MorphToMany
     {
         return $this->morphedByMany(Institution::class, 'typeable');
     }

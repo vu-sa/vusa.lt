@@ -53,6 +53,8 @@ class SendMeetingReminders extends Command
 
     /**
      * Get meetings that start within a specific time window.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection<int, \App\Models\Meeting>
      */
     protected function getMeetingsInTimeWindow(int $hoursAhead): \Illuminate\Database\Eloquent\Collection
     {
@@ -80,7 +82,7 @@ class SendMeetingReminders extends Command
             $institutionUsers = $institution->duties()
                 ->with('users')
                 ->get()
-                ->flatMap(fn ($duty) => $duty->users);
+                ->flatMap(fn (\App\Models\Duty $duty) => $duty->users);
 
             $users = $users->merge($institutionUsers);
         }

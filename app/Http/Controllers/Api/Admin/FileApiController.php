@@ -66,7 +66,7 @@ class FileApiController extends ApiController
         if (! $user->can('viewDirectory', [File::class, $path])) {
             // Try to redirect to user's allowed directory for root requests
             if (in_array($requestedPath, [null, '', 'public/files'], true) && $this->authorizer->getTenants()->count() > 0) {
-                $allowedPath = 'public/files/padaliniai/vusa'.$this->authorizer->getTenants()->first()->alias;
+                $allowedPath = 'public/files/padaliniai/vusa'.($this->authorizer->getTenants()->first()->alias ?? '');
 
                 if ($user->can('viewDirectory', [File::class, $allowedPath])) {
                     [$files, $directories] = $this->getFilesFromStorage($allowedPath);

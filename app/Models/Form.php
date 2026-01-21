@@ -59,7 +59,7 @@ class Form extends Model
         'path',
     ];
 
-    public function toSearchableArray()
+    public function toSearchableArray(): array
     {
         return [
             'name->'.app()->getLocale() => $this->getTranslation('name', app()->getLocale()),

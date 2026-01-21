@@ -70,7 +70,7 @@ class TypesenseCollectionConfig
      * records where their duties have a direct relationship to the model via institution.
      * This requires the searchable array to include 'institution_ids' field.
      *
-     * @var array<string, array{model: class-string, permission: string, description: string, skip_tenant_filter?: bool, own_permission?: string}>
+     * @var array<string, array{model: class-string, permission: string|null, description: string, skip_tenant_filter?: bool, own_permission?: string}>
      */
     protected const ADMIN_COLLECTIONS = [
         'meetings' => [
@@ -197,7 +197,7 @@ class TypesenseCollectionConfig
     /**
      * Get full admin collection config
      *
-     * @return array<string, array{model: class-string, permission: string, description: string, skip_tenant_filter?: bool}>
+     * @return array<string, array{model: class-string, permission: string|null, description: string, skip_tenant_filter?: bool, own_permission?: string}>
      */
     public static function getAdminCollections(): array
     {

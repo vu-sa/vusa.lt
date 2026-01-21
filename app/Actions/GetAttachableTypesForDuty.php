@@ -18,11 +18,15 @@ class GetAttachableTypesForDuty
         // get all attachable types for the current user
         $types = [];
 
-        if (auth()->user()->hasRole(config('permission.super_admin_role_name'))) {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
+        if ($user->hasRole(config('permission.super_admin_role_name'))) {
             $types = Type::all();
         } else {
-            $types = User::query()->with('duties.roles.attachable_types')->find(auth()->user()->id)->duties
-                ->flatten()->pluck('roles')->flatten()->pluck('attachable_types')->flatten()->unique('id')->values();
+            $userWithDuties = User::query()->with('duties.roles.attachable_types')->find($user->id);
+            $types = $userWithDuties?->duties
+                ->flatten()->pluck('roles')->flatten()->pluck('attachable_types')->flatten()->unique('id')->values() ?? collect();
         }
 
         // filter types where model_type is App\Models\Duty

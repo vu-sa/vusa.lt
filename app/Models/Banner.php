@@ -43,7 +43,7 @@ class Banner extends Model
         });
     }
 
-    public function toSearchableArray()
+    public function toSearchableArray(): array
     {
         return [
             'title' => $this->title,

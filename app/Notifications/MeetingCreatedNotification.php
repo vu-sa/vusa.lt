@@ -32,8 +32,8 @@ class MeetingCreatedNotification extends BaseNotification
 
     public function body(object $notifiable): string
     {
-        $institutionName = $this->meeting->institutions->first()?->name ?? __('Nežinoma institucija');
-        $meetingDate = $this->meeting->start_time?->format('Y-m-d H:i') ?? '';
+        $institutionName = $this->meeting->institutions->first()->name ?? __('Nežinoma institucija');
+        $meetingDate = $this->meeting->start_time->format('Y-m-d H:i');
 
         return __('notifications.meeting_created_body', [
             'institution' => $institutionName,
@@ -60,7 +60,7 @@ class MeetingCreatedNotification extends BaseNotification
     {
         return [
             'modelClass' => 'Meeting',
-            'name' => $this->meeting->institutions->first()?->name ?? __('Susitikimas'),
+            'name' => $this->meeting->institutions->first()->name ?? __('Susitikimas'),
             'url' => $this->url(),
             'id' => $this->meeting->id,
         ];

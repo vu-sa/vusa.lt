@@ -68,7 +68,7 @@ class PublicPageController extends PublicController
         $content = Cache::tags(['homepage', "tenant_{$this->tenant->id}", "locale_{$locale}"])
             ->remember($cacheKey, 3600, function () {
                 return $this->tenant->content ??
-                    Tenant::query()->where('type', 'pagrindinis')->first()->content;
+                    Tenant::query()->where('type', 'pagrindinis')->first()?->content;
             });
 
         $seo = $this->shareAndReturnSEOObject(title: __('Pagrindinis puslapis').' - '.$this->tenant->shortname);

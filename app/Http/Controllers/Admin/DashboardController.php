@@ -30,7 +30,7 @@ class DashboardController extends AdminController
     public function index(Request $request)
     {
         $user = User::query()->find(Auth::id()) ?? abort(404);
-        $userTenantId = $user->current_duties->first()->institution->tenant_id ?? null;
+        $userTenantId = $user->current_duties->first()?->institution?->tenant_id;
 
         // TODO: for some reasoning, the chaining doesn't work
         $this->authorizer = $this->authorizer->forUser($user);
@@ -89,7 +89,7 @@ class DashboardController extends AdminController
             ->map(fn ($meeting) => [
                 'id' => $meeting->id,
                 'title' => $meeting->title,
-                'start_time' => $meeting->start_time?->toISOString(),
+                'start_time' => $meeting->start_time->toISOString(),
                 'institution_name' => $meeting->institutions->first()?->name,
             ]);
 
@@ -286,15 +286,17 @@ class DashboardController extends AdminController
             'mayHaveRelatedInstitutions' => $mayHaveRelatedInstitutions,
             // Lazy load relatedInstitutions - only fetched when explicitly requested via Inertia reload
             'relatedInstitutions' => Inertia::optional(function () use ($userInstitutions, $userDutyInstitutionIds, $followedInstitutionIds, $mutedInstitutionIds) {
+                /** @var Collection<int, Institution> $institutionCollection */
+                $institutionCollection = new Collection($userInstitutions->values()->all());
                 $relatedInstitutions = RelationshipService::getRelatedInstitutionsForMultiple(
-                    new Collection($userInstitutions->values()->all())
+                    $institutionCollection
                 );
 
                 // Append computed attributes to related institution meetings
                 // Note: For unauthorized institutions, we skip completion_status as it triggers N+1 agendaItems load
                 $relatedInstitutions->each(function ($institution) use ($userDutyInstitutionIds, $followedInstitutionIds, $mutedInstitutionIds) {
                     $isAuthorized = $institution->authorized !== false;
-                    $institution->meetings?->each(function ($meeting) use ($isAuthorized) {
+                    $institution->meetings->each(function ($meeting) use ($isAuthorized) {
                         // Only append completion_status for authorized institutions (it lazy-loads agendaItems)
                         if ($isAuthorized) {
                             $meeting->append(['completion_status', 'has_report', 'has_protocol']);

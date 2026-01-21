@@ -82,7 +82,7 @@ class Training extends Model
         return LogOptions::defaults()->logUnguarded()->logOnlyDirty();
     }
 
-    public function toSearchableArray()
+    public function toSearchableArray(): array
     {
         return [
             'name->'.app()->getLocale() => $this->getTranslation('name', app()->getLocale()),

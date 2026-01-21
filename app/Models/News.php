@@ -241,7 +241,7 @@ class News extends Model implements Feedable, Sitemapable
         return News::query()->where('draft', false)->orderByDesc('publish_time')->take(15)->get();
     }
 
-    public function toSearchableArray()
+    public function toSearchableArray(): array
     {
         return [
             'id' => (string) $this->id,

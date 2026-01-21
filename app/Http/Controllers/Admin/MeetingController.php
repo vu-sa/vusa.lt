@@ -224,13 +224,13 @@ class MeetingController extends AdminController
         $meeting->append(['is_public', 'has_protocol', 'has_report']);
 
         // Transform tasks with computed properties (same as userTasks method)
-        $transformedTasks = $meeting->tasks->map(fn ($task) => [
+        $transformedTasks = $meeting->tasks->map(fn (\App\Models\Task $task, int $key) => [
             'id' => $task->id,
             'name' => $task->name,
             'description' => $task->description,
             'due_date' => $task->due_date?->toISOString(),
             'completed_at' => $task->completed_at?->toISOString(),
-            'created_at' => $task->created_at?->toISOString(),
+            'created_at' => $task->created_at->toISOString(),
             'action_type' => $task->action_type?->value,
             'metadata' => $task->metadata,
             'progress' => $task->getProgress(),
@@ -245,11 +245,11 @@ class MeetingController extends AdminController
             ] : null,
             'taskable_type' => class_basename($task->taskable_type ?? ''),
             'taskable_id' => $task->taskable_id,
-            'users' => $task->users->map(fn ($u) => [
+            'users' => $task->users->map(fn (\App\Models\User $u) => [
                 'id' => $u->id,
                 'name' => $u->name,
                 'profile_photo_path' => $u->profile_photo_path,
-            ]),
+            ])->all(),
         ]);
 
         // Get representatives who were active at meeting time

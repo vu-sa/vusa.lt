@@ -79,7 +79,11 @@ class HandleModelMediaUploads
         }
 
         // Handle both array of files and array of ['file' => File] structures
-        foreach ($files as $fileData) {
+        /** @var array<int|string, \Illuminate\Http\UploadedFile|array<string, mixed>> $filesArray */
+        $filesArray = is_array($files) ? $files : [$files];
+
+        foreach ($filesArray as $fileData) {
+            /** @var \Illuminate\Http\UploadedFile|array<string, mixed>|null $file */
             $file = is_array($fileData) ? ($fileData['file'] ?? $fileData) : $fileData;
 
             if (! $file instanceof \Illuminate\Http\UploadedFile) {

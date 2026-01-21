@@ -26,7 +26,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property bool $use_original_duty_name
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
- * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $dutiable
+ * @property-read \Illuminate\Database\Eloquent\Model $dutiable
  * @property-read Duty $duty
  * @property-read StudyProgram|null $study_program
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Tenant> $tenants
@@ -72,17 +72,26 @@ class Dutiable extends MorphPivot
 
     public $translatable = ['description'];
 
-    public function dutiable()
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\MorphTo<\Illuminate\Database\Eloquent\Model, $this>
+     */
+    public function dutiable(): \Illuminate\Database\Eloquent\Relations\MorphTo
     {
         return $this->morphTo();
     }
 
-    public function duty()
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<Duty, $this>
+     */
+    public function duty(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Duty::class);
     }
 
-    public function study_program()
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<StudyProgram, $this>
+     */
+    public function study_program(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(StudyProgram::class);
     }

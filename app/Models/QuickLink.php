@@ -44,7 +44,7 @@ class QuickLink extends Model
         });
     }
 
-    public function toSearchableArray()
+    public function toSearchableArray(): array
     {
         return [
             'text' => $this->text,

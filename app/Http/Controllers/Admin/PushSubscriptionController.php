@@ -22,13 +22,13 @@ class PushSubscriptionController extends Controller
             ->select(['id', 'endpoint', 'device_name', 'created_at', 'updated_at'])
             ->orderByDesc('updated_at')
             ->get()
-            ->map(function (PushSubscription $subscription) {
+            ->map(function (PushSubscription $subscription, int $key) {
                 return [
                     'id' => $subscription->id,
                     'endpoint' => $subscription->endpoint,
-                    'device_name' => $subscription->device_name,
-                    'created_at' => $subscription->created_at?->toIso8601String(),
-                    'updated_at' => $subscription->updated_at?->toIso8601String(),
+                    'device_name' => $subscription->device_name, // @phpstan-ignore property.notFound
+                    'created_at' => $subscription->created_at?->toIso8601String(), // @phpstan-ignore property.notFound
+                    'updated_at' => $subscription->updated_at?->toIso8601String(), // @phpstan-ignore property.notFound
                 ];
             });
 

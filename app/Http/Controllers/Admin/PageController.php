@@ -62,9 +62,9 @@ class PageController extends AdminController
 
         // check if super admin, else set tenant_id
         if (request()->user()->hasRole(config('permission.super_admin_role_name'))) {
-            $tenant_id = Tenant::where('type', 'pagrindinis')->first()->id;
+            $tenant_id = Tenant::where('type', 'pagrindinis')->first()?->id;
         } else {
-            $tenant_id = $this->authorizer->permissableDuties->first()->tenants->first()->id;
+            $tenant_id = $this->authorizer->permissableDuties->first()?->tenants->first()?->id;
         }
 
         $content = new Content;
@@ -104,8 +104,8 @@ class PageController extends AdminController
         return $this->inertiaResponse('Admin/Content/EditPage', [
             'page' => [
                 ...$page->only('id', 'title', 'content', 'permalink', 'text', 'lang', 'category_id', 'tenant_id', 'is_active', 'aside', 'layout'),
-                'tenant' => $page->tenant?->only('id', 'alias', 'shortname'),
-                'other_lang_id' => $page->getOtherLanguage()?->only('id')['id'],
+                'tenant' => $page->tenant->only('id', 'alias', 'shortname'),
+                'other_lang_id' => $page->getOtherLanguage()->only('id')['id'] ?? null,
             ],
             'otherLangPages' => $other_lang_pages,
             'categories' => Category::all(['id', 'name']),

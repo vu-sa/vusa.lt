@@ -21,7 +21,7 @@ trait HasComments
     {
         $comment = $this->comments()->create([
             'comment' => $body,
-            'user_id' => auth()->user()->id,
+            'user_id' => auth()->id(),
             // get id and class type of the current object
             'commentable_id' => $this->id,
             'commentable_type' => get_class($this),

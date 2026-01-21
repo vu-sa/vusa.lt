@@ -43,7 +43,7 @@ class TaskOverdueNotification extends BaseNotification
     {
         if ($this->tasks->count() === 1) {
             return __('notifications.task_overdue_body_single', [
-                'task' => $this->tasks->first()->name,
+                'task' => $this->tasks->first()->name ?? '',
             ]);
         }
 

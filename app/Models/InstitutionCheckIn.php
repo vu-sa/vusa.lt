@@ -84,13 +84,13 @@ class InstitutionCheckIn extends Model
         return $this->end_date < Carbon::today();
     }
 
-    public function toSearchableArray()
+    public function toSearchableArray(): array
     {
         return [
             'institution_id' => $this->institution_id,
             'user_id' => $this->user_id,
-            'start_date' => $this->start_date?->toDateString(),
-            'end_date' => $this->end_date?->toDateString(),
+            'start_date' => $this->start_date->toDateString(),
+            'end_date' => $this->end_date->toDateString(),
         ];
     }
 }

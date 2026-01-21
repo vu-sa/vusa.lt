@@ -83,7 +83,7 @@ class TypesenseManager
      * specific tenants for meetings).
      *
      * @param  User  $user  The authenticated user
-     * @return array{collections: array<string, array{key: string, name: string, tenantIds: int[], hasAccess: bool}>, expiresAt: int, isSuperAdmin: bool, nodes: array}
+     * @return array{collections: array<string, array{key: string, name: string, tenantIds: array<int>, institutionIds?: array<int>, directInstitutionIds?: array<int>, scope?: string, hasAccess: bool}>, headerKey?: string, expiresAt: int, isSuperAdmin: bool, nodes: array}|array{}
      */
     public static function getAdminFrontendConfig(User $user): array
     {

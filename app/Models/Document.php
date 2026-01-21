@@ -77,7 +77,7 @@ class Document extends Model
         });
     }
 
-    public function toSearchableArray()
+    public function toSearchableArray(): array
     {
         // Load the tenant relationship if not already loaded
         if (! $this->relationLoaded('institution') || ($this->institution && ! $this->institution->relationLoaded('tenant'))) {

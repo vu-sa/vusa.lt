@@ -97,7 +97,7 @@ class FilesController extends AdminController
         if (! $request->user()->can('viewDirectory', [File::class, $path])) {
             // Try to redirect to user's allowed directory
             if ($this->authorizer->getTenants()->count() > 0) {
-                $allowedPath = 'public/files/padaliniai/vusa'.$this->authorizer->getTenants()->first()->alias;
+                $allowedPath = 'public/files/padaliniai/vusa'.($this->authorizer->getTenants()->first()->alias ?? '');
 
                 // Check if user can access their tenant directory
                 if ($request->user()->can('viewDirectory', [File::class, $allowedPath])) {
@@ -137,7 +137,7 @@ class FilesController extends AdminController
         if (! $request->user()->can('viewDirectory', [File::class, $path])) {
             // Mirror index() behaviour but only for root directory requests
             if (in_array($requestedPath, [null, '', 'public/files'], true) && $this->authorizer->getTenants()->count() > 0) {
-                $allowedPath = 'public/files/padaliniai/vusa'.$this->authorizer->getTenants()->first()->alias;
+                $allowedPath = 'public/files/padaliniai/vusa'.($this->authorizer->getTenants()->first()->alias ?? '');
 
                 if ($request->user()->can('viewDirectory', [File::class, $allowedPath])) {
                     try {

@@ -74,6 +74,8 @@ class SendCalendarReminders extends Command
 
     /**
      * Get calendar events that start within a specific time window.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection<int, \App\Models\Calendar>
      */
     protected function getEventsInTimeWindow(int $hoursAhead): \Illuminate\Database\Eloquent\Collection
     {

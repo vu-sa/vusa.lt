@@ -8,21 +8,23 @@ use App\Events\ApprovalDecisionMade;
 use App\Events\ApprovalFlowCompleted;
 use App\Events\ApprovalRequested;
 use App\Models\Approval;
-use App\Models\Traits\HasApprovals;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * @phpstan-type ApprovableModel = \Illuminate\Database\Eloquent\Model&\App\Contracts\Approvable
+ */
 class ApprovalService
 {
     /**
      * Request approval for a model.
      * Dispatches ApprovalRequested event which triggers task creation and notifications.
      *
-     * @param  Model&HasApprovals&Approvable  $approvable
+     * @param  ApprovableModel  $approvable
      */
-    public function requestApproval(Model $approvable): void
+    public function requestApproval(Model&Approvable $approvable): void
     {
         event(new ApprovalRequested($approvable));
     }
@@ -30,12 +32,12 @@ class ApprovalService
     /**
      * Create an approval decision for a model.
      *
-     * @param  Model&HasApprovals&Approvable  $approvable
+     * @param  ApprovableModel  $approvable
      *
      * @throws \InvalidArgumentException If user cannot approve at the given step
      */
     public function approve(
-        Model $approvable,
+        Model&Approvable $approvable,
         User $user,
         ApprovalDecision $decision,
         ?string $notes = null,
@@ -78,7 +80,7 @@ class ApprovalService
     /**
      * Bulk approve multiple models.
      *
-     * @param  Collection<int, Model&HasApprovals&Approvable>  $approvables
+     * @param  Collection<int, ApprovableModel>  $approvables
      * @return array{approvals: Collection<int, Approval>, errors: array<string>}
      */
     public function bulkApprove(
@@ -106,9 +108,9 @@ class ApprovalService
     /**
      * Handle logic after a decision is made.
      *
-     * @param  Model&HasApprovals&Approvable  $approvable
+     * @param  ApprovableModel  $approvable
      */
-    protected function handlePostDecision(Model $approvable, ApprovalDecision $decision, int $step): void
+    protected function handlePostDecision(Model&Approvable $approvable, ApprovalDecision $decision, int $step): void
     {
         // Refresh to get updated approval counts
         $approvable->refresh();
@@ -148,9 +150,9 @@ class ApprovalService
     /**
      * Complete the approval flow.
      *
-     * @param  Model&HasApprovals&Approvable  $approvable
+     * @param  ApprovableModel  $approvable
      */
-    protected function completeFlow(Model $approvable, ApprovalDecision $decision, int $step): void
+    protected function completeFlow(Model&Approvable $approvable, ApprovalDecision $decision, int $step): void
     {
         // Call the model's completion hook
         $approvable->onApprovalComplete($decision, $step);
@@ -162,7 +164,7 @@ class ApprovalService
     /**
      * Get pending approvals for a user across all approvable types.
      *
-     * @return Collection<int, Model&HasApprovals>
+     * @return Collection<int, \Illuminate\Database\Eloquent\Model>
      */
     public function getPendingApprovalsForUser(User $user, ?string $approvableType = null): Collection
     {

@@ -183,6 +183,8 @@ class Institution extends Model implements SharepointFileableContract
 
     /**
      * Users who are explicitly following this institution.
+     *
+     * @return BelongsToMany<User, $this>
      */
     public function followers(): BelongsToMany
     {
@@ -222,7 +224,7 @@ class Institution extends Model implements SharepointFileableContract
         return app(\Laravel\Scout\EngineManager::class)->engine('typesense');
     }
 
-    public function toSearchableArray()
+    public function toSearchableArray(): array
     {
         return [
             'id' => (string) $this->id,

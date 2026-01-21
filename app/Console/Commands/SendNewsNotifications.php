@@ -59,6 +59,8 @@ class SendNewsNotifications extends Command
 
     /**
      * Get news articles published in the last 15 minutes.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection<int, \App\Models\News>
      */
     protected function getRecentlyPublishedNews(): \Illuminate\Database\Eloquent\Collection
     {

@@ -67,9 +67,9 @@ class QuickLinkController extends AdminController
         ]);
 
         if (request()->user()->hasRole(config('permission.super_admin_role_name'))) {
-            $tenant_id = Tenant::where('type', 'pagrindinis')->first()->id;
+            $tenant_id = Tenant::where('type', 'pagrindinis')->first()?->id;
         } else {
-            $tenant_id = $this->authorizer->permissableDuties->first()->tenants->first()->id;
+            $tenant_id = $this->authorizer->permissableDuties->first()?->tenants->first()?->id;
         }
 
         DB::transaction(function () use ($request, $tenant_id) {

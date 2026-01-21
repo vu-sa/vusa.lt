@@ -62,7 +62,7 @@ class TypesenseScopedKeyService
      * rather than returning a key that would return empty results.
      *
      * @param  User  $user  The user to generate keys for
-     * @return array{collections: array<string, array{key: string, tenant_ids: int[], has_access: bool}>, expires_at: int, is_super_admin: bool}
+     * @return array{collections: array<string, array{key: string, tenant_ids: array<int>, institution_ids?: array<int>, direct_institution_ids?: array<int>, scope?: string, has_access: bool}>, expires_at: int, is_super_admin: bool, header_key?: string}
      */
     public function generateScopedKeysForUser(User $user): array
     {
@@ -107,7 +107,7 @@ class TypesenseScopedKeyService
      * Some collections (marked with skip_tenant_filter) are accessible without
      * tenant restrictions (e.g., documents are publicly searchable).
      *
-     * @return array{collections: array<string, array{key: string, tenant_ids: int[], has_access: bool}>, expires_at: int, is_super_admin: bool}
+     * @return array{collections: array<string, array{key: string, tenant_ids: array<int>, institution_ids?: array<int>, direct_institution_ids?: array<int>, scope?: string, has_access: bool}>, expires_at: int, is_super_admin: bool, header_key?: string}
      */
     protected function buildScopedKeys(User $user): array
     {

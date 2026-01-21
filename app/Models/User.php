@@ -137,7 +137,7 @@ class User extends Authenticatable
         return LogOptions::defaults()->logFillable()->logOnlyDirty();
     }
 
-    public function toSearchableArray()
+    public function toSearchableArray(): array
     {
         return [
             'name' => $this->name,

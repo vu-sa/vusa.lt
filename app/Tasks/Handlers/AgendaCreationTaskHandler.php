@@ -22,13 +22,13 @@ class AgendaCreationTaskHandler extends BaseTaskHandler
      *
      * @param  string  $name  The task name
      * @param  Meeting  $meeting  The meeting model
-     * @param  Collection<int, \App\Models\User>  $users  Users assigned to the task
+     * @param  \Illuminate\Database\Eloquent\Collection<int, \App\Models\User>|\Illuminate\Support\Collection<int, \App\Models\User>  $users  Users assigned to the task
      * @param  string|null  $dueDate  Due date for the task
      */
     public function findOrCreate(
         string $name,
         Meeting $meeting,
-        Collection $users,
+        \Illuminate\Database\Eloquent\Collection|\Illuminate\Support\Collection $users,
         ?string $dueDate = null
     ): Task {
         $existingTask = $this->findExistingTask($meeting);
@@ -62,8 +62,8 @@ class AgendaCreationTaskHandler extends BaseTaskHandler
     {
         $meeting->loadMissing('institutions');
 
-        $institutionName = $meeting->institutions->first()?->name ?? __('Nežinoma institucija');
-        $meetingDate = $meeting->start_time?->format('Y-m-d');
+        $institutionName = $meeting->institutions->first()->name ?? __('Nežinoma institucija');
+        $meetingDate = $meeting->start_time->format('Y-m-d');
         $assigneeCount = $users->count();
 
         $parts = [];

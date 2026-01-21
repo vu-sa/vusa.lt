@@ -127,7 +127,7 @@ class TrainingController extends AdminController
                 }),
             ],
             'userIsRegistered' => $training->form?->registrations->contains('user_id', auth()->id()),
-            'userCanRegister' => auth()->user()->allAvailableTrainings()->contains('id', $training->id),
+            'userCanRegister' => auth()->user()?->allAvailableTrainings()->contains('id', $training->id) ?? false,
             'registeredUserCount' => $training->form?->registrations->count(),
         ]);
     }

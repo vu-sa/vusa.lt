@@ -6,7 +6,10 @@ use Illuminate\Support\Facades\Request;
 
 class GetAliasSubdomainForPublic
 {
-    public static function execute()
+    /**
+     * @return array{0: string, 1: string}
+     */
+    public static function execute(): array
     {
         // Get subdomain if exists
         $host = Request::server('HTTP_HOST');

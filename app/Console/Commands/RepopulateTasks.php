@@ -231,7 +231,7 @@ class RepopulateTasks extends Command
             ->groupBy('reservation_id');
 
         foreach ($reservationResources as $reservationId => $resources) {
-            $reservation = $resources->first()->reservation;
+            $reservation = $resources->first()?->reservation;
 
             if (! $reservation) {
                 continue;
@@ -405,7 +405,7 @@ class RepopulateTasks extends Command
                     name: __('Sukurti posėdžio darbotvarkės klausimus'),
                     meeting: $meeting,
                     users: $representatives,
-                    dueDate: $meeting->start_time?->addDays(3)->toDateString(),
+                    dueDate: $meeting->start_time->addDays(3)->toDateString(),
                 );
 
                 $this->line("    ✓ Created agenda creation task for meeting #{$meeting->id}");
@@ -431,7 +431,7 @@ class RepopulateTasks extends Command
                     name: __('Užpildyti darbotvarkės klausimų informaciją'),
                     meeting: $meeting,
                     users: $representatives,
-                    dueDate: $meeting->start_time?->toDateString(),
+                    dueDate: $meeting->start_time->toDateString(),
                 );
 
                 $this->line("    ✓ Created agenda completion task for meeting #{$meeting->id}");

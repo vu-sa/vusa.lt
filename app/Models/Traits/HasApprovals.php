@@ -18,6 +18,8 @@ trait HasApprovals
 {
     /**
      * Get all approvals for this model.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\MorphMany<\App\Models\Approval, $this>
      */
     public function approvals(): MorphMany
     {
@@ -29,6 +31,7 @@ trait HasApprovals
      */
     public function latestApproval(): ?Approval
     {
+        /** @var \App\Models\Approval|null */
         return $this->approvals()->latest()->first();
     }
 
@@ -39,6 +42,7 @@ trait HasApprovals
      */
     public function approvalsForStep(int $step)
     {
+        /** @phpstan-ignore method.notFound */
         return $this->approvals()->forStep($step)->get();
     }
 

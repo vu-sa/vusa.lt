@@ -53,4 +53,24 @@ interface Approvable
      * For example, a "lent" resource cannot be rejected.
      */
     public function isDecisionAllowed(ApprovalDecision $decision): bool;
+
+    /**
+     * Get the current approval step.
+     */
+    public function currentApprovalStep(): int;
+
+    /**
+     * Check if a user can approve at the given step with the given decision.
+     */
+    public function canBeApprovedBy(\App\Models\User $user, ?int $step = null, ?ApprovalDecision $decision = null): bool;
+
+    /**
+     * Check if a specific step is complete.
+     */
+    public function isStepComplete(int $step): bool;
+
+    /**
+     * Check if the model is fully approved.
+     */
+    public function isFullyApproved(): bool;
 }

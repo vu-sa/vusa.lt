@@ -64,7 +64,7 @@ class Reservation extends Model
         return LogOptions::defaults()->logUnguarded()->logOnlyDirty();
     }
 
-    public function toSearchableArray()
+    public function toSearchableArray(): array
     {
         return [
             'name' => $this->name,

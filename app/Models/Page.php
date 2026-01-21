@@ -238,7 +238,7 @@ class Page extends Model implements Feedable, Sitemapable
             ->get();
     }
 
-    public function toSearchableArray()
+    public function toSearchableArray(): array
     {
         return [
             'id' => (string) $this->id,

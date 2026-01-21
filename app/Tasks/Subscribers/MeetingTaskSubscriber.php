@@ -82,7 +82,7 @@ class MeetingTaskSubscriber
                 name: __('Sukurti posėdžio darbotvarkės klausimus'),
                 meeting: $meeting,
                 users: $representatives,
-                dueDate: $meeting->start_time?->addDays(3)->toDateString(),
+                dueDate: $meeting->start_time->addDays(3)->toDateString(),
             );
         }
 
@@ -92,7 +92,7 @@ class MeetingTaskSubscriber
                 name: __('Užpildyti darbotvarkės klausimų informaciją'),
                 meeting: $meeting,
                 users: $representatives,
-                dueDate: $meeting->start_time?->toDateString(),
+                dueDate: $meeting->start_time->toDateString(),
             );
         }
 
@@ -181,7 +181,7 @@ class MeetingTaskSubscriber
                     name: __('Užpildyti darbotvarkės klausimų informaciją'),
                     meeting: $meeting,
                     users: $representatives,
-                    dueDate: $meeting->start_time?->addDays(7)->toDateString(),
+                    dueDate: $meeting->start_time->addDays(7)->toDateString(),
                 );
             }
         }

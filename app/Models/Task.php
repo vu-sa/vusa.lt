@@ -29,6 +29,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Model|\Eloquent $taskable
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Tenant> $tenants
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $users
+ * @property-read int|null $tenants_count
  *
  * @method static \Database\Factories\TaskFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Task newModelQuery()
@@ -66,7 +67,7 @@ class Task extends Model
         return $this->belongsToMany(User::class);
     }
 
-    public function tenants()
+    public function tenants(): \Staudenmeir\EloquentHasManyDeep\HasManyDeep
     {
         return $this->hasManyDeepFromRelations($this->users(), (new User)->tenants());
     }

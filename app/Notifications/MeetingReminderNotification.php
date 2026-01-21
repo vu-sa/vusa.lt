@@ -39,7 +39,7 @@ class MeetingReminderNotification extends BaseNotification
 
     public function body(object $notifiable): string
     {
-        $meetingName = $this->meeting->institutions->first()?->name ?? __('Susitikimas');
+        $meetingName = $this->meeting->institutions->first()->name ?? __('Susitikimas');
 
         if ($this->hoursUntil <= 1) {
             return __('notifications.meeting_reminder_body_one_hour', [
@@ -72,7 +72,7 @@ class MeetingReminderNotification extends BaseNotification
     {
         return [
             'modelClass' => 'Meeting',
-            'name' => $this->meeting->institutions->first()?->name ?? __('Susitikimas'),
+            'name' => $this->meeting->institutions->first()->name ?? __('Susitikimas'),
             'url' => $this->url(),
             'id' => $this->meeting->id,
         ];

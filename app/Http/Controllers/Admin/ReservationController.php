@@ -110,7 +110,7 @@ class ReservationController extends AdminController
             );
         }
 
-        $reservation->users()->attach(auth()->user()->id);
+        $reservation->users()->attach(auth()->id());
 
         return redirect()->route('reservations.show', $reservation->id)->with('success', trans_choice('messages.created', 0, ['model' => trans_choice('entities.reservation.model', 1)]));
     }

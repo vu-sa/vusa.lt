@@ -645,6 +645,7 @@ declare global {
       // relations
       taskable?: Task
       users?: User[]
+      tenants?: Tenant
       // counts
       users_count: number
       // exists

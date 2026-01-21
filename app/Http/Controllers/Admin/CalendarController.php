@@ -159,7 +159,7 @@ class CalendarController extends AdminController
     {
         $this->handleAuthorization('update', $calendar);
 
-        $calendar->getMedia('images')->where('id', '=', $media->id)->first()->delete();
+        $calendar->getMedia('images')->where('id', '=', $media->id)->first()?->delete();
 
         return back()->with('info', 'Nuotrauka ištrinta!');
     }
