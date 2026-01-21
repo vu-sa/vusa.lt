@@ -16,6 +16,7 @@ use Laravel\Scout\Searchable;
  * @property string $id
  * @property string $title
  * @property string|null $description
+ * @property \App\Enums\MeetingType|null $type
  * @property \Illuminate\Support\Carbon $start_time
  * @property string|null $end_time
  * @property \Illuminate\Support\Carbon $created_at
@@ -32,6 +33,8 @@ use Laravel\Scout\Searchable;
  * @property-read bool $has_protocol
  * @property-read bool $has_report
  * @property-read bool $is_public
+ * @property-read string|null $type_label
+ * @property-read string|null $type_slug
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Institution> $institutions
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Task> $tasks
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Tenant> $tenants

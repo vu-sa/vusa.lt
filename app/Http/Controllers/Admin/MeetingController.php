@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\MeetingType;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexMeetingRequest;
 use App\Http\Requests\StoreMeetingRequest;
@@ -161,6 +162,7 @@ class MeetingController extends AdminController
                 'start_time' => $validatedData['start_time'],
                 'title' => $title,
                 'description' => $validatedData['description'] ?? null,
+                'type' => $validatedData['type'] ?? null,
             ]);
 
             $meeting->institutions()->attach($validatedData['institution_id']);
@@ -170,10 +172,6 @@ class MeetingController extends AdminController
             if ($institution) {
                 $meetingDate = Carbon::parse($validatedData['start_time']);
                 $this->checkInService->adjustForMeeting($institution, $meetingDate);
-            }
-
-            if (isset($validatedData['type_id']) && $validatedData['type_id']) {
-                $meeting->types()->attach($validatedData['type_id']);
             }
 
             // Create agenda items if provided
@@ -211,7 +209,7 @@ class MeetingController extends AdminController
     {
         $this->handleAuthorization('view', $meeting);
 
-        $meeting->load('institutions.types', 'activities.causer', 'files', 'fileableFiles', 'comments', 'types')->load([
+        $meeting->load('institutions.types', 'activities.causer', 'files', 'fileableFiles', 'comments')->load([
             'tasks' => function ($query) {
                 $query->with('users:id,name,email,profile_photo_path', 'taskable');
             },
@@ -319,14 +317,13 @@ class MeetingController extends AdminController
         $validated = $request->validate([
             // 'title' => 'required|string',
             'start_time' => 'required|date',
+            'type' => ['nullable', new \Illuminate\Validation\Rules\Enum(MeetingType::class)],
         ]);
 
         $validated['title'] = Carbon::parse($validated['start_time'])->locale('lt-LT')->isoFormat('YYYY MMMM DD [d.] HH.mm [val.]').' posėdis';
 
         $meeting->fill($validated);
         $meeting->save();
-
-        $meeting->types()->sync([$request->type_id]);
 
         return back()->with('success', 'Posėdis atnaujintas sėkmingai!');
     }

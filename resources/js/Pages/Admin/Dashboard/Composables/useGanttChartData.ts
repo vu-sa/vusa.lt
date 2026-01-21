@@ -48,8 +48,8 @@ export function useGanttChartData(
           agenda_items_count: totalAgendaCount,
           has_report: meeting.has_report,
           has_protocol: meeting.has_protocol,
-          // Extract first type slug for icon differentiation (in-person, remote, email)
-          type_slug: meeting.types?.[0]?.slug,
+          // Extract meeting type for icon differentiation (in-person, remote, email)
+          type_slug: meeting.type ?? meeting.type_slug,
         };
       });
     });

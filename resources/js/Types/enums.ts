@@ -55,6 +55,11 @@ export enum LocaleEnum {
   "LT" = "lt",
   "EN" = "en",
 }
+export enum MeetingType {
+  InPerson = "in-person",
+  Remote = "remote",
+  Email = "email",
+}
 export enum ModelEnum {
   "AGENDA_ITEM" = "agendaItem",
   "BANNER" = "banner",

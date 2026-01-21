@@ -454,7 +454,7 @@ class RelationshipService
             $authorizedInstitutions = Institution::whereIn('id', $authorizedIds)
                 ->with([
                     'types',
-                    'meetings:id,title,start_time',
+                    'meetings:id,title,start_time,type',
                     'meetings.agendaItems:id,meeting_id,title,student_vote,decision,student_benefit',
                     'meetings.fileableFiles:id,fileable_id,fileable_type,file_type,deleted_externally_at',
                     'tenant:id,shortname',
@@ -471,7 +471,7 @@ class RelationshipService
             $unauthorizedInstitutions = Institution::whereIn('id', $unauthorizedIds)
                 ->with([
                     'types',
-                    'meetings:id,title,start_time', // Meetings for Gantt display, but no agenda items
+                    'meetings:id,title,start_time,type', // Meetings for Gantt display, but no agenda items
                     'meetings.fileableFiles:id,fileable_id,fileable_type,file_type,deleted_externally_at',
                     'tenant:id,shortname',
                     'duties.users:id,name,email,profile_photo_path',

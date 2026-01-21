@@ -1,11 +1,12 @@
 import { ref, reactive, computed, watch, readonly } from 'vue'
 import { router, usePage } from '@inertiajs/vue3'
 import { trans as $t } from 'laravel-vue-i18n'
+import type { MeetingTypeValue } from '@/Types/MeetingType'
 
 export interface MeetingFormData {
   institution_id: string
   start_time: string
-  type_id: number
+  type: MeetingTypeValue
   description?: string
 }
 
@@ -56,7 +57,7 @@ export function useMeetingCreation(options: UseMeetingCreationOptions = {}) {
     meeting: {
       institution_id: options.preSelectedInstitution?.id || '',
       start_time: '',
-      type_id: 0,
+      type: null,
       description: ''
     },
     agendaItems: [],
@@ -148,10 +149,7 @@ export function useMeetingCreation(options: UseMeetingCreationOptions = {}) {
       isValid = false
     }
     
-    if (!meetingData.type_id) {
-      setStepError(2, 'type_id', [$t('Posėdžio tipas yra privalomas')])
-      isValid = false
-    }
+    // type is optional (null = Other), no validation needed
     
     // Check for scheduling conflicts
     if (meetingData.start_time && state.institution) {
@@ -191,7 +189,7 @@ export function useMeetingCreation(options: UseMeetingCreationOptions = {}) {
   const clearStepErrors = (step: number) => {
     const stepKeys = {
       1: ['institution_id'],
-      2: ['start_time', 'type_id', 'description'],
+      2: ['start_time', 'type', 'description'],
       3: ['agendaItems'],
       4: []
     }

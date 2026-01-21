@@ -789,6 +789,7 @@ declare global {
       id: string
       title: string
       description?: string | null
+      type?: MeetingType | null
       start_time: string
       end_time?: string | null
       created_at: string
@@ -796,6 +797,8 @@ declare global {
       deleted_at?: string | null
       // mutators
       is_public: boolean
+      type_label: string
+      type_slug: string
       completion_status: string
       has_protocol: boolean
       has_report: boolean
@@ -1113,7 +1116,6 @@ declare global {
       // relations
       institutions?: Institution[]
       duties?: Duty[]
-      meetings?: Meeting[]
       roles?: Role[]
       descendants?: Type[]
       parent?: Type
@@ -1127,7 +1129,6 @@ declare global {
       // counts
       institutions_count: number
       duties_count: number
-      meetings_count: number
       roles_count: number
       descendants_count: number
       outgoing_relationships_count: number
@@ -1139,7 +1140,6 @@ declare global {
       // exists
       institutions_exists: boolean
       duties_exists: boolean
-      meetings_exists: boolean
       roles_exists: boolean
       descendants_exists: boolean
       parent_exists: boolean
@@ -1470,6 +1470,7 @@ declare global {
       id: string
       title: string
       description?: string | null
+      type?: MeetingType | null
       start_time: string
       end_time?: string | null
       created_at: string
@@ -1477,6 +1478,8 @@ declare global {
       deleted_at?: string | null
       // mutators
       is_public: boolean
+      type_label: string
+      type_slug: string
       completion_status: string
       has_protocol: boolean
       has_report: boolean
@@ -1484,7 +1487,6 @@ declare global {
       agenda_items?: AgendaItem[]
       institutions?: Institution[]
       comments?: Comment[]
-      types?: Type[]
       commentable?: Meeting
       files?: SharepointFile[]
       fileable_files?: FileableFile[]
@@ -1495,7 +1497,6 @@ declare global {
       agenda_items_count: number
       institutions_count: number
       comments_count: number
-      types_count: number
       files_count: number
       fileable_files_count: number
       available_files_count: number
@@ -1505,7 +1506,6 @@ declare global {
       agenda_items_exists: boolean
       institutions_exists: boolean
       comments_exists: boolean
-      types_exists: boolean
       files_exists: boolean
       fileable_files_exists: boolean
       available_files_exists: boolean
@@ -1719,6 +1719,14 @@ declare global {
     } as const;
 
     export type ActionType = typeof ActionType[keyof typeof ActionType]
+
+    const MeetingType = {
+      InPerson: 'in-person',
+      Remote: 'remote',
+      Email: 'email',
+    } as const;
+
+    export type MeetingType = typeof MeetingType[keyof typeof MeetingType]
 
     const ApprovalDecision = {
       Approved: 'approved',

@@ -16,7 +16,6 @@
 
       <MeetingCreationWizard
         :meeting-creation="meetingCreation"
-        :meeting-types="meetingTypes"
         :loading="loading"
         :is-quick-mode="isQuickMode"
         :total-steps="totalSteps"
@@ -43,7 +42,6 @@
 
     <MeetingCreationWizard
       :meeting-creation="meetingCreation"
-      :meeting-types="meetingTypes"
       :loading="loading"
       :is-quick-mode="isQuickMode"
       :total-steps="totalSteps"
@@ -58,9 +56,8 @@
 
 <script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
-import { computed, watch, ref, onMounted } from "vue";
+import { computed, watch } from "vue";
 import { usePage } from "@inertiajs/vue3";
-import { useFetch } from "@vueuse/core";
 
 import { useMeetingCreation } from "@/Composables/useMeetingCreation";
 import MeetingCreationWizard from "@/Components/Meetings/MeetingCreationWizard.vue";
@@ -85,10 +82,6 @@ const props = withDefaults(defineProps<{
 }>(), {
   asDialog: true
 });
-
-// Meeting types state
-const meetingTypes = ref<Array<{ id: number, title: string, model_type: string }>>([]);
-const isLoadingTypes = ref(true);
 
 // Initialize meeting creation composable
 const meetingCreation = useMeetingCreation({
@@ -190,29 +183,4 @@ const handleAgendaItemsFormSubmit = (agendaData: any) => {
 const handleFinalSubmit = () => {
   meetingCreation.submitMeeting();
 };
-
-// Fetch meeting types
-const fetchMeetingTypes = async () => {
-  try {
-    isLoadingTypes.value = true;
-    const { data, error } = await useFetch(route("api.v1.types.index"), { immediate: true }).get().json()
-    if (error.value) throw error.value
-
-    // Handle standardized API response format
-    const responseData = data.value?.success ? data.value.data : data.value;
-    // Ensure data is an array before filtering
-    const typesData = Array.isArray(responseData) ? responseData : [];
-    meetingTypes.value = typesData.filter((type: any) => type.model_type === "App\\Models\\Meeting");
-  } catch (error) {
-    console.error('Failed to fetch meeting types:', error);
-    meetingTypes.value = [];
-  } finally {
-    isLoadingTypes.value = false;
-  }
-};
-
-// Lifecycle
-onMounted(() => {
-  fetchMeetingTypes();
-});
 </script>

@@ -21,7 +21,7 @@ interface ParsedMeeting {
   completion_status?: 'complete' | 'incomplete' | 'no_items'
   // Whether the user has authorization for this meeting's institution
   authorized?: boolean
-  // Meeting type slug for icon differentiation (in-person-meeting, remote-meeting, email-meeting)
+  // Meeting type for icon differentiation (in-person, remote, email)
   type_slug?: string
 }
 
@@ -82,7 +82,7 @@ const ICON_SIZE = 14
 
 /**
  * Get the appropriate icon path based on meeting type and completion status
- * @param typeSlug - The meeting type slug (in-person-meeting, remote-meeting, email-meeting)
+ * @param typeSlug - The meeting type (in-person, remote, email)
  * @param completionStatus - The completion status for filled/regular variant selection
  * @param authorized - Whether the user is authorized (unauthorized always uses filled)
  * @returns SVG path string for the icon
@@ -97,11 +97,11 @@ function getMeetingIconPath(
   const useFilled = authorized === false || completionStatus !== 'no_items'
   
   switch (typeSlug) {
-    case 'in-person-meeting':
+    case 'in-person':
       return useFilled ? ICON_IN_PERSON_FILLED : ICON_IN_PERSON_REGULAR
-    case 'remote-meeting':
+    case 'remote':
       return useFilled ? ICON_REMOTE_FILLED : ICON_REMOTE_REGULAR
-    case 'email-meeting':
+    case 'email':
       return useFilled ? ICON_EMAIL_FILLED : ICON_EMAIL_REGULAR
     default:
       // Fallback to calendar for unknown types

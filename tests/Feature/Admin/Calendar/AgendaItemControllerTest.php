@@ -1,11 +1,11 @@
 <?php
 
+use App\Enums\MeetingType;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Role;
 use App\Models\Tenant;
-use App\Models\Type;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -21,18 +21,15 @@ beforeEach(function () {
     // Create an institution for testing
     $this->institution = Institution::factory()->for($this->tenant)->create();
 
-    // Create a meeting type
-    $this->meetingType = Type::firstOrCreate(['title' => 'Test Meeting Type']);
-
     // Create a meeting for testing agenda items
     $startTime = Carbon::now()->addDays(1);
     $this->meeting = Meeting::create([
         'title' => $startTime->locale('lt-LT')->isoFormat('YYYY MMMM DD [d.] HH.mm [val.]').' posėdis',
         'start_time' => $startTime->format('Y-m-d H:i'),
+        'type' => MeetingType::InPerson,
     ]);
 
     $this->meeting->institutions()->attach($this->institution->id);
-    $this->meeting->types()->attach($this->meetingType->id);
 
     // Record initial counts
     $this->initialAgendaItemCount = AgendaItem::count();

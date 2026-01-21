@@ -124,8 +124,8 @@ export function extractMeetingsFromInstitutions(
         authorized: isAuthorized,
         has_report: m.has_report,
         has_protocol: m.has_protocol,
-        // Extract first type slug for icon differentiation (in-person, remote, email)
-        type_slug: m.types?.[0]?.slug,
+        // Extract meeting type for icon differentiation (in-person, remote, email)
+        type_slug: m.type ?? m.type_slug,
       };
     })
   );

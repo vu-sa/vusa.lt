@@ -37,7 +37,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read \App\Models\RoleType|\App\Models\Pivots\Relationshipable|null $pivot
  * @property-read Collection<int, \App\Models\Relationship> $incomingRelationships
  * @property-read Collection<int, \App\Models\Institution> $institutions
- * @property-read Collection<int, \App\Models\Meeting> $meetings
  * @property-read Collection<int, \App\Models\Relationship> $outgoingRelationships
  * @property-read Type|null $parent
  * @property-read Type|null $recursiveParent
@@ -47,7 +46,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Database\Factories\TypeFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Type forDuties()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Type forInstitutions()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Type forMeetings()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Type newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Type newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Type onlyTrashed()
@@ -104,11 +102,6 @@ class Type extends Model implements SharepointFileableContract
     public function duties()
     {
         return $this->morphedByMany(Duty::class, 'typeable');
-    }
-
-    public function meetings()
-    {
-        return $this->morphedByMany(Meeting::class, 'typeable');
     }
 
     public function roles()
@@ -186,9 +179,9 @@ class Type extends Model implements SharepointFileableContract
             return $this->model_type::select('id', 'name', 'tenant_id')->with('tenants')->orderBy('name')->get();
         } elseif (Str::contains($this->model_type, 'Duty')) {
             return $this->model_type::select('id', 'name', 'institution_id')->with('tenants')->orderBy('name')->get();
-        } elseif (Str::contains($this->model_type, 'Meeting')) {
-            return $this->model_type::select('id', 'title')->with('tenants')->orderBy('title')->get();
         }
+
+        return collect();
     }
 
     /**
@@ -205,14 +198,6 @@ class Type extends Model implements SharepointFileableContract
     public function scopeForDuties($query)
     {
         return $query->where('model_type', Duty::class);
-    }
-
-    /**
-     * Scope to filter types for Meetings only.
-     */
-    public function scopeForMeetings($query)
-    {
-        return $query->where('model_type', Meeting::class);
     }
 
     /**

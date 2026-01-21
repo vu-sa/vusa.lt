@@ -206,9 +206,11 @@
         <FadeTransition :key="meetingCreation.state.currentStep" mode="out-in">
           <InstitutionSelectorForm v-if="meetingCreation.state.currentStep === 1"
             :selected-institution="meetingCreation.state.institution" @submit="(id) => emit('institutionSelect', id)" />
-          <MeetingDetailsForm v-else-if="meetingCreation.state.currentStep === 2"
-            :meeting="meetingCreation.state.meeting" :institution-id="meetingCreation.state.institution?.id"
-            :loading="meetingCreation.state.loading.validation" :meeting-types @submit="(data) => emit('meetingFormSubmit', data)" />
+          <MeetingForm v-else-if="meetingCreation.state.currentStep === 2"
+            :meeting="meetingCreation.state.meeting" 
+            :loading="meetingCreation.state.loading.validation"
+            :submit-label="$t('Toliau')"
+            @submit="(data) => emit('meetingFormSubmit', data)" />
           <AgendaItemsForm v-else-if="meetingCreation.state.currentStep === 3"
             :loading="meetingCreation.state.loading.submission"
             :institution-id="meetingCreation.state.institution?.id"
@@ -231,12 +233,12 @@
 </template>
 
 <script setup lang="ts">
-import { trans as $t } from "laravel-vue-i18n";
+import { trans as $t, getActiveLanguage } from "laravel-vue-i18n";
 import { CheckCircle, Loader2 } from "lucide-vue-next";
 
-import { useMeetingCreation } from "@/Composables/useMeetingCreation";
+import type { useMeetingCreation } from "@/Composables/useMeetingCreation";
 import AgendaItemsForm from "@/Components/AdminForms/Special/AgendaItemsForm.vue";
-import MeetingDetailsForm from "@/Components/AdminForms/MeetingDetailsForm.vue";
+import MeetingForm from "@/Components/AdminForms/MeetingForm.vue";
 import MeetingReviewForm from "@/Components/AdminForms/MeetingReviewForm.vue";
 import InstitutionSelectorForm from "@/Components/AdminForms/Special/InstitutionSelectorForm.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue"
@@ -250,9 +252,10 @@ import {
   StepperSeparator,
 } from "@/Components/ui/stepper";
 
+import { getMeetingTypeOptions, type MeetingTypeValue } from "@/Types/MeetingType";
+
 const props = defineProps<{
   meetingCreation: ReturnType<typeof useMeetingCreation>;
-  meetingTypes: Array<{ id: number, title: string, model_type: string }>;
   loading: boolean;
   isQuickMode: boolean;
   totalSteps: number;
@@ -282,14 +285,13 @@ const formatMeetingTime = (): string => {
 };
 
 const getMeetingTypeName = (): string => {
-  const typeId = props.meetingCreation.state.meeting.type_id;
-  if (!typeId) return '';
+  const type = props.meetingCreation.state.meeting.type as MeetingTypeValue;
+  if (!type) return $t('Kita');
 
-  const type = props.meetingTypes.find((t) => t.id === typeId);
-  if (type) {
-    return type.title;
-  }
-
-  return `${$t('Tipas')}: #${typeId}`;
+  const locale = getActiveLanguage() === 'en' ? 'en' : 'lt';
+  const options = getMeetingTypeOptions(locale);
+  const option = options.find((o) => o.value === type);
+  
+  return option?.label || $t('Kita');
 };
 </script>

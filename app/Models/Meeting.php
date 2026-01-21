@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Contracts\SharepointFileableContract;
+use App\Enums\MeetingType;
 use App\Events\FileableNameUpdated;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Traits\HasComments;
@@ -22,6 +23,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string $id
  * @property string $title
  * @property string|null $description
+ * @property MeetingType|null $type
  * @property \Illuminate\Support\Carbon $start_time
  * @property string|null $end_time
  * @property \Illuminate\Support\Carbon $created_at
@@ -38,10 +40,11 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read bool $has_protocol
  * @property-read bool $has_report
  * @property-read bool $is_public
+ * @property-read string|null $type_label
+ * @property-read string|null $type_slug
  * @property-read Collection<int, \App\Models\Institution> $institutions
  * @property-read Collection<int, \App\Models\Task> $tasks
  * @property-read Collection<int, \App\Models\Tenant> $tenants
- * @property-read Collection<int, \App\Models\Type> $types
  * @property-read Collection<int, \App\Models\User> $users
  *
  * @method static \Database\Factories\MeetingFactory factory($count = null, $state = [])
@@ -64,6 +67,7 @@ class Meeting extends Model implements SharepointFileableContract
     {
         return [
             'start_time' => 'datetime',
+            'type' => MeetingType::class,
         ];
     }
 
@@ -119,7 +123,6 @@ class Meeting extends Model implements SharepointFileableContract
             'institutions.types',
             'institutions.tenant',
             'agendaItems',
-            'types',
         ]);
 
         // Get tenant IDs for filtering with scoped API keys
@@ -171,6 +174,12 @@ class Meeting extends Model implements SharepointFileableContract
 
             // Agenda items count
             'agenda_items_count' => $this->agendaItems->count(),
+
+            // Meeting type (enum)
+            'type' => $this->type?->value,
+            'type_slug' => $this->type_slug,
+            'type_label_lt' => $this->type?->label('lt'),
+            'type_label_en' => $this->type?->label('en'),
 
             // Vote alignment statistics
             'vote_matches' => $voteStats['vote_matches'],
@@ -336,9 +345,20 @@ class Meeting extends Model implements SharepointFileableContract
         return $this->hasManyDeepFromRelations($this->institutions(), (new Institution)->tenant());
     }
 
-    public function types()
+    /**
+     * Get the localized type label.
+     */
+    public function getTypeLabelAttribute(): ?string
     {
-        return $this->morphToMany(Type::class, 'typeable');
+        return $this->type?->label(app()->getLocale());
+    }
+
+    /**
+     * Get the type value (used for icon mapping etc).
+     */
+    public function getTypeSlugAttribute(): ?string
+    {
+        return $this->type?->value;
     }
 
     /**

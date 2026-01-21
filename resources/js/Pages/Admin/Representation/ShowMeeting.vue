@@ -19,11 +19,9 @@
             <Clock class="h-4 w-4 text-green-500 shrink-0" />
             <span>{{ formatStaticTime(new Date(meeting.start_time), { hour: "2-digit", minute: "2-digit" }) }}</span>
           </div>
-          <div v-if="meeting.types && meeting.types.length > 0" class="flex flex-wrap gap-1.5">
-            <Badge v-for="type in meeting.types" :key="type.id" variant="secondary" class="text-xs">
-              {{ type.title }}
-            </Badge>
-          </div>
+          <Badge v-if="meeting.type_label" variant="secondary" class="text-xs">
+            {{ meeting.type_label }}
+          </Badge>
           <Badge v-if="meeting.is_public" variant="outline" class="text-xs gap-1 text-green-600 border-green-300 dark:text-green-400 dark:border-green-700">
             <Globe class="h-3 w-3" />
             <span class="hidden sm:inline">{{ $t('Rodomas viešai') }}</span>

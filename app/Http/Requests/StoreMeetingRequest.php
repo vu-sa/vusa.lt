@@ -2,8 +2,10 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\MeetingType;
 use App\Models\Meeting;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Enum;
 
 class StoreMeetingRequest extends FormRequest
 {
@@ -27,7 +29,7 @@ class StoreMeetingRequest extends FormRequest
         return [
             'start_time' => 'required|date',
             'institution_id' => 'required|ulid',
-            'type_id' => 'nullable|integer',
+            'type' => ['nullable', new Enum(MeetingType::class)],
             'description' => 'nullable|string|max:1000',
             'agendaItems' => 'nullable|array',
             'agendaItems.*.title' => 'required|string|max:255',
