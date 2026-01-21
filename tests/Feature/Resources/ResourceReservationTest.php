@@ -29,8 +29,7 @@ describe('auth: simple user', function () {
         asUser($this->user)->get(route('resources.index'))
             ->assertStatus(200)
             ->assertInertia(fn ($page) => $page
-                ->component('Admin/Reservations/IndexResource')
-                ->has('resources.data')
+                ->component('Admin/Search/SearchResources')
             );
     });
 
@@ -269,8 +268,7 @@ describe('resource availability logic', function () {
 
         $response->assertStatus(200)
             ->assertInertia(fn ($page) => $page
-                ->component('Admin/Reservations/IndexResource')
-                ->has('resources.data')
+                ->component('Admin/Search/SearchResources')
             );
     });
 
