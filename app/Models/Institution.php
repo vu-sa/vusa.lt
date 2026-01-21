@@ -184,7 +184,7 @@ class Institution extends Model implements SharepointFileableContract
     /**
      * Users who are explicitly following this institution.
      *
-     * @return BelongsToMany<User, $this>
+     * @return BelongsToMany<User, $this, InstitutionFollow, 'pivot'>
      */
     public function followers(): BelongsToMany
     {

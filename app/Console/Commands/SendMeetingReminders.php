@@ -72,17 +72,23 @@ class SendMeetingReminders extends Command
 
     /**
      * Get users who should receive reminders for a meeting.
+     *
+     * @return \Illuminate\Support\Collection<int, \App\Models\User>
      */
     protected function getMeetingParticipants(Meeting $meeting): \Illuminate\Support\Collection
     {
         // Get users attached to the meeting's institutions
+        /** @var \Illuminate\Support\Collection<int, \App\Models\User> $users */
         $users = collect();
 
         foreach ($meeting->institutions as $institution) {
-            $institutionUsers = $institution->duties()
+            /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\Duty> $duties */
+            $duties = $institution->duties()
                 ->with('users')
-                ->get()
-                ->flatMap(fn (\App\Models\Duty $duty) => $duty->users);
+                ->get();
+
+            /** @var \Illuminate\Support\Collection<int, \App\Models\User> $institutionUsers */
+            $institutionUsers = $duties->flatMap(fn ($duty) => $duty->users);
 
             $users = $users->merge($institutionUsers);
         }

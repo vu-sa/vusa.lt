@@ -2,7 +2,6 @@
 
 namespace App\Tasks\Subscribers;
 
-use App\Contracts\Approvable;
 use App\Events\ApprovalDecisionMade;
 use App\Events\ApprovalRequested;
 use App\Tasks\DTOs\CreateTaskData;
@@ -47,12 +46,8 @@ class ApprovalTaskSubscriber
         $approvable = $event->approvable;
         $step = $event->step;
 
-        // Ensure the model implements Approvable
-        if (! $approvable instanceof Approvable) {
-            return;
-        }
-
         // Get approvers for this step
+        /** @var \App\Contracts\Approvable&\Illuminate\Database\Eloquent\Model $approvable */
         $approvers = $approvable->getApproversForStep($step);
 
         if ($approvers->isEmpty()) {
@@ -95,7 +90,7 @@ class ApprovalTaskSubscriber
 
         // For ReservationResource, also check tasks on the Reservation
         if (method_exists($approvable, 'reservation')) {
-            $reservation = $approvable->reservation;
+            $reservation = $approvable->reservation()->first();
 
             if ($reservation) {
                 $this->approvalHandler->completeForModel($reservation, $reason);
@@ -122,12 +117,14 @@ class ApprovalTaskSubscriber
     /**
      * Get the model that should own the task.
      * For pivot models like ReservationResource, return the parent.
+     *
+     * @param  \Illuminate\Database\Eloquent\Model&\App\Contracts\Approvable  $approvable
      */
     protected function getTaskableModel($approvable)
     {
         // ReservationResource tasks should be attached to Reservation
         if (method_exists($approvable, 'reservation')) {
-            return $approvable->reservation;
+            return $approvable->reservation()->first();
         }
 
         return $approvable;

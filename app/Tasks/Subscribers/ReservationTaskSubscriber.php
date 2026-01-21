@@ -50,9 +50,6 @@ class ReservationTaskSubscriber
         }
 
         $reservation = $model->reservation;
-        if (! $reservation) {
-            return;
-        }
 
         $finalState = get_class($event->finalState);
         $resourceName = $model->resource->name ?? '';

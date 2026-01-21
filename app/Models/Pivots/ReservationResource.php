@@ -115,13 +115,6 @@ class ReservationResource extends Pivot implements Approvable
 
     public function getStatePropertiesAttribute()
     {
-        if (! $this->state) {
-            return [
-                'tagType' => 'default',
-                'description' => '',
-            ];
-        }
-
         return [
             'tagType' => $this->state->tagType(),
             'description' => $this->state->description(),
@@ -190,10 +183,6 @@ class ReservationResource extends Pivot implements Approvable
      */
     public function isDecisionAllowed(ApprovalDecision $decision): bool
     {
-        if (! $this->state) {
-            return false;
-        }
-
         // Map decisions to their target states
         $targetStateClass = match ($decision) {
             ApprovalDecision::Approved => $this->getApproveTargetState(),

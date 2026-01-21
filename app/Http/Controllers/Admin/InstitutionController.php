@@ -152,33 +152,38 @@ class InstitutionController extends AdminController
             ->merge($institution->meetings->pluck('tasks')->flatten())
             ->sortByDesc('created_at')
             ->values()
-            ->map(fn ($task) => [
-                'id' => $task->id,
-                'name' => $task->name,
-                'description' => $task->description,
-                'due_date' => $task->due_date?->toISOString(),
-                'completed_at' => $task->completed_at?->toISOString(),
-                'created_at' => $task->created_at?->toISOString(),
-                'action_type' => $task->action_type?->value,
-                'metadata' => $task->metadata,
-                'progress' => $task->getProgress(),
-                'is_overdue' => $task->isOverdue(),
-                'can_be_manually_completed' => $task->canBeManuallyCompleted(),
-                'icon' => $task->icon,
-                'color' => $task->color,
-                'taskable' => $task->taskable ? [
-                    'id' => $task->taskable->id,
-                    'name' => $task->taskable->title ?? $task->taskable->name ?? null,
-                    'type' => class_basename($task->taskable_type),
-                ] : null,
-                'taskable_type' => class_basename($task->taskable_type ?? ''),
-                'taskable_id' => $task->taskable_id,
-                'users' => $task->users->map(fn ($u) => [
-                    'id' => $u->id,
-                    'name' => $u->name,
-                    'profile_photo_path' => $u->profile_photo_path,
-                ]),
-            ]);
+            ->map(function (\App\Models\Task $task) {
+                /** @var \Illuminate\Database\Eloquent\Model|null $taskable */
+                $taskable = $task->taskable;
+
+                return [
+                    'id' => $task->id,
+                    'name' => $task->name,
+                    'description' => $task->description,
+                    'due_date' => $task->due_date?->toISOString(),
+                    'completed_at' => $task->completed_at?->toISOString(),
+                    'created_at' => $task->created_at->toISOString(),
+                    'action_type' => $task->action_type?->value,
+                    'metadata' => $task->metadata,
+                    'progress' => $task->getProgress(),
+                    'is_overdue' => $task->isOverdue(),
+                    'can_be_manually_completed' => $task->canBeManuallyCompleted(),
+                    'icon' => $task->icon,
+                    'color' => $task->color,
+                    'taskable' => $taskable ? [
+                        'id' => $taskable->getKey(),
+                        'name' => $taskable->getAttribute('title') ?? $taskable->getAttribute('name') ?? null,
+                        'type' => class_basename($task->taskable_type),
+                    ] : null,
+                    'taskable_type' => class_basename($task->taskable_type ?? ''),
+                    'taskable_id' => $task->taskable_id,
+                    'users' => $task->users->map(fn (\App\Models\User $u) => [
+                        'id' => $u->id,
+                        'name' => $u->name,
+                        'profile_photo_path' => $u->profile_photo_path,
+                    ])->all(),
+                ];
+            });
 
         // Get related institutions as flat list with metadata (cached)
         $relatedInstitutionsFlat = \App\Services\RelationshipService::getRelatedInstitutionsCached($institution);

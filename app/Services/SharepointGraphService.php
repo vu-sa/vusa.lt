@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Log;
 use Microsoft\Graph\BatchRequestBuilder;
 use Microsoft\Graph\Core\Requests\BatchRequestContent;
 use Microsoft\Graph\Core\Requests\BatchRequestItem;
+use Microsoft\Graph\Generated\Drives\Item\Items\Item\Children\ChildrenRequestBuilder;
 use Microsoft\Graph\Generated\Drives\Item\Items\Item\CreateLink\CreateLinkPostRequestBody;
 use Microsoft\Graph\Generated\Drives\Item\Items\Item\DriveItemItemRequestBuilderGetRequestConfiguration;
 use Microsoft\Graph\Generated\Models;
@@ -135,7 +136,12 @@ class SharepointGraphService
         try {
             $sharepointPathFinal = $this->graphApiBaseUrl.'drives/'.$this->driveId.'/root:'."/{$path}?\$expand=listItem";
 
-            $driveItem = $this->graph->drives()->byDriveId($this->driveId)->withUrl($sharepointPathFinal)->get()->wait();
+            $driveItem = $this->graph->drives()
+                ->byDriveId($this->driveId)
+                ->root()
+                ->withUrl($sharepointPathFinal)
+                ->get()
+                ->wait();
 
             return $driveItem;
         } catch (ODataError $e) {
@@ -492,7 +498,12 @@ class SharepointGraphService
             '@microsoft.graph.conflictBehavior' => 'fail',
         ]);
 
-        $createdFolder = $this->graph->drives()->byDriveId($this->driveId)->root()->withUrl($parentUrl.'/children')->post($requestBody)->wait();
+        $childrenRequestBuilder = new ChildrenRequestBuilder(
+            $parentUrl.'/children',
+            $this->graph->getRequestAdapter()
+        );
+
+        $createdFolder = $childrenRequestBuilder->post($requestBody)->wait();
 
         $this->logInfo('Folder created', [
             'path' => $folderPath,

@@ -38,10 +38,6 @@ class InstitutionCheckInTaskSubscriber
     {
         $checkIn->load('institution');
 
-        if (! $checkIn->institution) {
-            return;
-        }
-
         $this->periodicityGapHandler->completeForInstitution(
             institution: $checkIn->institution,
             reason: __('tasks.periodicity_gap.completed_checkin_created'),

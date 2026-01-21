@@ -41,6 +41,8 @@ class TaskPolicy extends ModelPolicy
     /**
      * Determine whether the user can view the task.
      * Compound authorization: requires both task AND taskable permissions.
+     *
+     * @param  Task  $task
      */
     public function view(User $user, Model $task): bool
     {
@@ -55,7 +57,8 @@ class TaskPolicy extends ModelPolicy
         }
 
         // Get the taskable model
-        $taskable = $task->taskable;
+        /** @var Model|null $taskable */
+        $taskable = $task->taskable()->first();
         if (! $taskable) {
             return false;
         }

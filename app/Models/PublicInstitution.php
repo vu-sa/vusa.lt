@@ -30,15 +30,17 @@ use Laravel\Scout\Searchable;
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\InstitutionCheckIn> $activeCheckIns
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\FileableFile> $availableFiles
+ * @property-read \App\Models\Pivots\Relationshipable|\App\Models\InstitutionFollow|\App\Models\Pivots\Trainable|null $pivot
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Training> $availableTrainings
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\InstitutionCheckIn> $checkIns
  * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $commentable
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Comment> $comments
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Document> $documents
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Duty> $duties
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\FileableFile> $fileableFiles
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\SharepointFile> $files
- * @property-read \App\Models\Pivots\Relationshipable|\App\Models\InstitutionFollow|null $pivot
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $followers
  * @property-read bool $has_protocol
  * @property-read bool $has_public_meetings
@@ -123,7 +125,7 @@ class PublicInstitution extends Institution
      */
     public function shouldBeSearchable(): bool
     {
-        return $this->is_active === 1 || $this->is_active === true;
+        return $this->is_active === 1;
     }
 
     /**

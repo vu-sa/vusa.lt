@@ -213,7 +213,7 @@ class Meeting extends Model implements SharepointFileableContract
             $hasStudentVote = ! empty($item->student_vote);
             $hasDecision = ! empty($item->decision);
 
-            return $hasStudentVote ^ $hasDecision;
+            return $hasStudentVote xor $hasDecision;
         })->count();
 
         return [
@@ -278,7 +278,7 @@ class Meeting extends Model implements SharepointFileableContract
      * Get student representatives who were active at the time of this meeting.
      * Filters duties by 'studentu-atstovai' type and checks dutiables pivot dates.
      *
-     * @return Collection<User>
+     * @return \Illuminate\Database\Eloquent\Collection<int, User>
      */
     public function getRepresentativesActiveAt(): Collection
     {

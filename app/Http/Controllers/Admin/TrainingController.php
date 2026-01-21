@@ -9,6 +9,7 @@ use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Membership;
 use App\Models\Programme;
+use App\Models\ProgrammeBlock;
 use App\Models\ProgrammePart;
 use App\Models\ProgrammeSection;
 use App\Models\Training;
@@ -127,7 +128,7 @@ class TrainingController extends AdminController
                 }),
             ],
             'userIsRegistered' => $training->form?->registrations->contains('user_id', auth()->id()),
-            'userCanRegister' => auth()->user()?->allAvailableTrainings()->contains('id', $training->id) ?? false,
+            'userCanRegister' => ($user = auth()->user()) instanceof \App\Models\User && $user->allAvailableTrainings()->contains('id', $training->id),
             'registeredUserCount' => $training->form?->registrations->count(),
         ]);
     }
@@ -169,7 +170,7 @@ class TrainingController extends AdminController
                                         if ($elementable instanceof ProgrammeSection) {
                                             return [
                                                 ...$elementable->toFullArray(),
-                                                'blocks' => $elementable->blocks->map(function ($block) {
+                                                'blocks' => $elementable->blocks->map(function (ProgrammeBlock $block) {
                                                     return [
                                                         ...$block->toFullArray(),
                                                         'parts' => $block->parts->map(function ($part) {

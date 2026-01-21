@@ -91,7 +91,7 @@ class CommentPostedNotification extends BaseNotification
 
     public function url(): string
     {
-        return $this->commentedObject['url'] ?? route('dashboard');
+        return $this->commentedObject['url'];
     }
 
     public function modelClass(): ?string

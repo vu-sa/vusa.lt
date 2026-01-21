@@ -99,7 +99,7 @@ class ApprovalDecisionNotification extends BaseNotification
             'modelClass' => class_basename($this->approvable),
             'name' => $displayName,
             'url' => $this->url(),
-            'id' => $this->approvable->id,
+            'id' => $this->approvable->getKey(),
         ];
     }
 

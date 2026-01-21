@@ -146,6 +146,7 @@ class Calendar extends Model implements HasMedia
      */
     public function registerMediaConversions(?Media $media = null): void
     {
+        /** @phpstan-ignore method.notFound (Spatie Media Library dynamic method) */
         $this->addMediaConversion('webp')
             ->format('webp')
             ->quality(80)

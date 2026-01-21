@@ -154,16 +154,21 @@ class SharepointFileController extends AdminController
             return response()->json(['error' => 'Invalid fileable type'], 400);
         }
 
+        /** @var \Illuminate\Database\Eloquent\Model|null $fileable */
         $fileable = $fileable_class::find($id);
 
         if (! $fileable) {
             return response()->json(['error' => 'Fileable not found'], 404);
         }
 
+        if (! $fileable instanceof \App\Contracts\SharepointFileableContract) {
+            return response()->json(['error' => 'Invalid fileable type'], 400);
+        }
+
+        /** @var \App\Contracts\SharepointFileableContract $fileable */
         $this->authorize('view', $fileable);
 
-        $files = $fileable->fileableFiles()
-            ->available()
+        $files = $fileable->availableFiles()
             ->orderBy('file_date', 'desc')
             ->get();
 
@@ -196,9 +201,15 @@ class SharepointFileController extends AdminController
         }
 
         // Get all types including parents
-        $types = $fileable->types->map(function ($type) {
-            return $type->getParentsAndSelf();
-        })->flatten()->unique('id')->values();
+        /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\Type> $types */
+        $types = $fileable->types()
+            ->get()
+            ->map(function (Type $type) {
+                return $type->getParentsAndSelf();
+            })
+            ->flatten()
+            ->unique('id')
+            ->values();
 
         // Get FileableFile records for all these types
         $typeIds = $types->pluck('id');

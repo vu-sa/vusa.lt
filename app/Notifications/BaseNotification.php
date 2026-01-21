@@ -104,7 +104,7 @@ abstract class BaseNotification extends Notification implements ShouldQueue
     /**
      * Get the object (target) information.
      *
-     * @return array{modelClass: string, name: string, url: string}|null
+     * @return array{modelClass: string, name: string, url: string, id?: string|int}|null
      */
     public function object(): ?array
     {

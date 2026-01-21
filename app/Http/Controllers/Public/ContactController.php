@@ -160,6 +160,7 @@ class ContactController extends PublicController
         $this->shareOtherLangURL('contacts.studentRepresentatives', $this->subdomain);
 
         $type = Type::query()->where('slug', '=', 'studentu-atstovu-organas')->first();
+        /** @var \Illuminate\Database\Eloquent\Collection<int, Type> $descendants */
         $descendants = $type->getDescendantsAndSelf();
 
         $descendants->load(['institutions' => function ($query) {
@@ -446,6 +447,10 @@ class ContactController extends PublicController
 
         // Remove descendants without institutions
         $descendants = $descendants->filter(function ($descendant) {
+            if (! $descendant instanceof Type) {
+                return false;
+            }
+
             return $descendant->institutions->count() > 0;
         })->values();
 
@@ -664,6 +669,8 @@ class ContactController extends PublicController
 
     /**
      * Group meetings by academic year (Sept 1 - Aug 31)
+     *
+     * @param  Collection<int, Meeting>  $meetings
      */
     protected function groupMeetingsByAcademicYear(Collection $meetings): array
     {
@@ -671,7 +678,7 @@ class ContactController extends PublicController
             return [];
         }
 
-        $grouped = $meetings->groupBy(function ($meeting) {
+        $grouped = $meetings->groupBy(function (\App\Models\Meeting $meeting) {
             return $this->getAcademicYear($meeting->start_time);
         });
 

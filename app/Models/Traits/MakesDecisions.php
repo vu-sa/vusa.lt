@@ -5,6 +5,13 @@ namespace App\Models\Traits;
 use App\Services\ModelAuthorizer;
 use Illuminate\Support\Str;
 
+/**
+ * Trait for models that can make decisions.
+ *
+ * @deprecated This trait is currently unused and may be removed in a future version.
+ *
+ * @phpstan-ignore trait.unused
+ */
 trait MakesDecisions
 {
     private ModelAuthorizer $authorizer;

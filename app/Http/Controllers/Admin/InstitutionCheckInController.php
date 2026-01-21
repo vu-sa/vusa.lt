@@ -34,7 +34,7 @@ class InstitutionCheckInController extends AdminController
      */
     public function destroyActive(Institution $institution): RedirectResponse
     {
-        $checkIns = $institution->activeCheckIns;
+        $checkIns = $institution->activeCheckIns()->get();
 
         if ($checkIns->isEmpty()) {
             return back()->with('info', __('No active check-ins to delete.'));

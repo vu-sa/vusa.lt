@@ -224,33 +224,38 @@ class MeetingController extends AdminController
         $meeting->append(['is_public', 'has_protocol', 'has_report']);
 
         // Transform tasks with computed properties (same as userTasks method)
-        $transformedTasks = $meeting->tasks->map(fn (\App\Models\Task $task, int $key) => [
-            'id' => $task->id,
-            'name' => $task->name,
-            'description' => $task->description,
-            'due_date' => $task->due_date?->toISOString(),
-            'completed_at' => $task->completed_at?->toISOString(),
-            'created_at' => $task->created_at->toISOString(),
-            'action_type' => $task->action_type?->value,
-            'metadata' => $task->metadata,
-            'progress' => $task->getProgress(),
-            'is_overdue' => $task->isOverdue(),
-            'can_be_manually_completed' => $task->canBeManuallyCompleted(),
-            'icon' => $task->icon,
-            'color' => $task->color,
-            'taskable' => $task->taskable ? [
-                'id' => $task->taskable->id,
-                'name' => $task->taskable->title ?? $task->taskable->name ?? null,
-                'type' => class_basename($task->taskable_type),
-            ] : null,
-            'taskable_type' => class_basename($task->taskable_type ?? ''),
-            'taskable_id' => $task->taskable_id,
-            'users' => $task->users->map(fn (\App\Models\User $u) => [
-                'id' => $u->id,
-                'name' => $u->name,
-                'profile_photo_path' => $u->profile_photo_path,
-            ])->all(),
-        ]);
+        $transformedTasks = $meeting->tasks->map(function (\App\Models\Task $task, int $key) {
+            /** @var \Illuminate\Database\Eloquent\Model|null $taskable */
+            $taskable = $task->taskable;
+
+            return [
+                'id' => $task->id,
+                'name' => $task->name,
+                'description' => $task->description,
+                'due_date' => $task->due_date?->toISOString(),
+                'completed_at' => $task->completed_at?->toISOString(),
+                'created_at' => $task->created_at->toISOString(),
+                'action_type' => $task->action_type?->value,
+                'metadata' => $task->metadata,
+                'progress' => $task->getProgress(),
+                'is_overdue' => $task->isOverdue(),
+                'can_be_manually_completed' => $task->canBeManuallyCompleted(),
+                'icon' => $task->icon,
+                'color' => $task->color,
+                'taskable' => $taskable ? [
+                    'id' => $taskable->getKey(),
+                    'name' => $taskable->getAttribute('title') ?? $taskable->getAttribute('name') ?? null,
+                    'type' => class_basename($task->taskable_type),
+                ] : null,
+                'taskable_type' => class_basename($task->taskable_type ?? ''),
+                'taskable_id' => $task->taskable_id,
+                'users' => $task->users->map(fn (\App\Models\User $u) => [
+                    'id' => $u->id,
+                    'name' => $u->name,
+                    'profile_photo_path' => $u->profile_photo_path,
+                ])->all(),
+            ];
+        });
 
         // Get representatives who were active at meeting time
         $representatives = $meeting->getRepresentativesActiveAt();

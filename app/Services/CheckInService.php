@@ -34,7 +34,7 @@ class CheckInService
     public function deleteActive(Institution $institution): int
     {
         $count = 0;
-        foreach ($institution->activeCheckIns as $checkIn) {
+        foreach ($institution->activeCheckIns()->get() as $checkIn) {
             $checkIn->delete();
             $count++;
         }

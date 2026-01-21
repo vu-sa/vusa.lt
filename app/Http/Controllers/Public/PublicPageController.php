@@ -640,17 +640,24 @@ class PublicPageController extends PublicController
                     if ($field->use_model_options) {
                         // Special handling for Institution model on student rep form
                         if ($isStudentRepForm && $field->options_model === Institution::class) {
-                            $options = $this->getInstitutionsWithoutActiveReps($formSettings, $preselectedInstitutionId)->map(function ($model) use ($field) {
+                            $options = $this->getInstitutionsWithoutActiveReps($formSettings, $preselectedInstitutionId)->map(function (\Illuminate\Database\Eloquent\Model $model) use ($field) {
+                                if (! $model instanceof Institution) {
+                                    return [
+                                        'value' => null,
+                                        'label' => null,
+                                    ];
+                                }
+
                                 return [
-                                    'value' => $model->id,
-                                    'label' => $model->{$field->options_model_field},
+                                    'value' => $model->getKey(),
+                                    'label' => $model->getAttribute($field->options_model_field),
                                 ];
-                            });
+                            })->filter(fn (array $option) => $option['value'] !== null);
                         } else {
-                            $options = $field->options_model::all()->map(function ($model) use ($field) {
+                            $options = $field->options_model::all()->map(function (\Illuminate\Database\Eloquent\Model $model) use ($field) {
                                 return [
-                                    'value' => $model->id,
-                                    'label' => $model->{$field->options_model_field},
+                                    'value' => $model->getKey(),
+                                    'label' => $model->getAttribute($field->options_model_field),
                                 ];
                             });
                         }

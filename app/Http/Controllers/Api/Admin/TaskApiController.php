@@ -53,6 +53,7 @@ class TaskApiController extends ApiController
             'can_be_manually_completed' => $task->canBeManuallyCompleted(),
             'icon' => $task->icon,
             'color' => $task->color,
+            /** @phpstan-ignore ternary.alwaysTrue (taskable may be null if parent was deleted) */
             'taskable' => $task->taskable ? [
                 'id' => $task->taskable->getKey(),
                 'name' => $task->taskable->name ?? $task->taskable->title ?? null,

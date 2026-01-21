@@ -109,9 +109,13 @@ trait HasNotificationPreferences
         $mutedThreads = $this->notification_preferences['muted_threads'] ?? [];
 
         foreach ($mutedThreads as $thread) {
+            // Get values with array_key_exists check for optional fields
+            $objectModelClass = $object['modelClass'];
+            $objectId = array_key_exists('id', $object) ? $object['id'] : null;
+
             if (
-                $thread['model_class'] === ($object['modelClass'] ?? null) &&
-                $thread['model_id'] === ($object['id'] ?? null)
+                $thread['model_class'] === $objectModelClass &&
+                $thread['model_id'] === $objectId
             ) {
                 // Check if mute has expired
                 if (isset($thread['until']) && Carbon::parse($thread['until'])->isPast()) {

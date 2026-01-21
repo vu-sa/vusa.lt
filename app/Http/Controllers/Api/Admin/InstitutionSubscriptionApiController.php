@@ -21,6 +21,7 @@ class InstitutionSubscriptionApiController extends ApiController
     {
         $user = $this->requireAuth($request);
 
+        /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\Institution> $institutions */
         $institutions = $user->followedInstitutions()
             ->with(['types', 'meetings' => function ($query) {
                 $query->where('start_time', '>=', now())
@@ -28,7 +29,13 @@ class InstitutionSubscriptionApiController extends ApiController
                     ->limit(1);
             }])
             ->get()
-            ->map(fn ($institution) => $this->transformInstitution($institution, $user));
+            ->map(function (\Illuminate\Database\Eloquent\Model $institution) use ($user) {
+                if (! $institution instanceof Institution) {
+                    return [];
+                }
+
+                return $this->transformInstitution($institution, $user);
+            });
 
         return $this->jsonSuccess($institutions);
     }

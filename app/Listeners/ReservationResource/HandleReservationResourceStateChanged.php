@@ -35,6 +35,7 @@ class HandleReservationResourceStateChanged implements ShouldQueue
         }
 
         // Load the reservation with users
+        /** @var \App\Models\Reservation|null $reservation */
         $reservation = $model->reservation()->with('users')->first();
 
         if (! $reservation || $reservation->users->isEmpty()) {

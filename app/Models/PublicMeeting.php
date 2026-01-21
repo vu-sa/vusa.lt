@@ -204,7 +204,7 @@ class PublicMeeting extends Meeting
             $hasStudentVote = ! empty($item->student_vote);
             $hasDecision = ! empty($item->decision);
 
-            return $hasStudentVote ^ $hasDecision;
+            return $hasStudentVote xor $hasDecision;
         })->count();
 
         // Count outcomes by type (from decision field)

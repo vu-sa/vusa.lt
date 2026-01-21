@@ -16,21 +16,27 @@ class PushSubscriptionController extends Controller
      */
     public function index(): JsonResponse
     {
+        /** @var \App\Models\User $user */
         $user = Auth::user();
 
+        /** @var \Illuminate\Database\Eloquent\Collection<int, PushSubscription> $subscriptions */
         $subscriptions = $user->pushSubscriptions()
             ->select(['id', 'endpoint', 'device_name', 'created_at', 'updated_at'])
             ->orderByDesc('updated_at')
-            ->get()
-            ->map(function (PushSubscription $subscription, int $key) {
-                return [
-                    'id' => $subscription->id,
-                    'endpoint' => $subscription->endpoint,
-                    'device_name' => $subscription->device_name, // @phpstan-ignore property.notFound
-                    'created_at' => $subscription->created_at?->toIso8601String(), // @phpstan-ignore property.notFound
-                    'updated_at' => $subscription->updated_at?->toIso8601String(), // @phpstan-ignore property.notFound
-                ];
-            });
+            ->get();
+
+        $subscriptions = $subscriptions->map(function ($subscription) {
+            $createdAt = $subscription->getAttribute('created_at');
+            $updatedAt = $subscription->getAttribute('updated_at');
+
+            return [
+                'id' => $subscription->getKey(),
+                'endpoint' => $subscription->getAttribute('endpoint'),
+                'device_name' => $subscription->getAttribute('device_name'),
+                'created_at' => $createdAt?->toIso8601String(),
+                'updated_at' => $updatedAt?->toIso8601String(),
+            ];
+        });
 
         return response()->json([
             'success' => true,
@@ -51,6 +57,7 @@ class PushSubscriptionController extends Controller
             'deviceName' => 'nullable|string|max:255',
         ]);
 
+        /** @var \App\Models\User $user */
         $user = Auth::user();
 
         // Delete existing subscription for this endpoint to avoid duplicates
@@ -88,6 +95,7 @@ class PushSubscriptionController extends Controller
             'endpoint' => 'required|url',
         ]);
 
+        /** @var \App\Models\User $user */
         $user = Auth::user();
 
         $deleted = $user->pushSubscriptions()
@@ -107,6 +115,7 @@ class PushSubscriptionController extends Controller
      */
     public function destroyById(int $id): JsonResponse
     {
+        /** @var \App\Models\User $user */
         $user = Auth::user();
 
         $deleted = $user->pushSubscriptions()
@@ -126,6 +135,7 @@ class PushSubscriptionController extends Controller
      */
     public function sendTest(): JsonResponse
     {
+        /** @var \App\Models\User $user */
         $user = Auth::user();
 
         if (! $user->pushSubscriptions()->exists()) {

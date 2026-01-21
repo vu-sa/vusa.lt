@@ -14,6 +14,10 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
  *
  * Models using this trait should implement SharepointFileableContract
  * for proper type safety when working with file operations.
+ *
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, FileableFile> $fileableFiles
+ *
+ * @mixin \Eloquent
  */
 trait HasSharepointFiles
 {
@@ -41,7 +45,9 @@ trait HasSharepointFiles
      */
     public function availableFiles(): MorphMany
     {
-        return $this->fileableFiles()->available();
+        return $this->fileableFiles()
+            ->whereNull('deleted_externally_at')
+            ->whereNull('deleted_at');
     }
 
     /**
@@ -51,8 +57,8 @@ trait HasSharepointFiles
     public function hasFileOfType(string $type): bool
     {
         return $this->fileableFiles()
-            ->ofType($type)
-            ->notDeletedExternally()
+            ->where('file_type', $type)
+            ->whereNull('deleted_externally_at')
             ->exists();
     }
 
@@ -89,13 +95,18 @@ trait HasSharepointFiles
 
     /**
      * Get files of a specific type.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection<int, FileableFile>
      */
     public function filesOfType(string $type)
     {
-        return $this->fileableFiles()
-            ->ofType($type)
-            ->notDeletedExternally()
+        /** @var \Illuminate\Database\Eloquent\Collection<int, FileableFile> $files */
+        $files = $this->fileableFiles()
+            ->where('file_type', $type)
+            ->whereNull('deleted_externally_at')
             ->get();
+
+        return $files;
     }
 
     /**

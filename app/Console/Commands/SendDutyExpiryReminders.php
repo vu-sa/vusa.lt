@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Duty;
 use App\Models\Pivots\Dutiable;
 use App\Models\User;
 use App\Notifications\DutyExpiringNotification;
@@ -43,9 +44,10 @@ class SendDutyExpiryReminders extends Command
         foreach ($expiringDutiables as $dutiable) {
             /** @var User|null $user */
             $user = $dutiable->dutiable;
+            /** @var Duty|null $duty */
             $duty = $dutiable->duty;
 
-            if (! $user || ! $duty) {
+            if ($user === null || $duty === null) {
                 continue;
             }
 

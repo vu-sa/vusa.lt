@@ -295,7 +295,8 @@ class DashboardController extends AdminController
                 // Append computed attributes to related institution meetings
                 // Note: For unauthorized institutions, we skip completion_status as it triggers N+1 agendaItems load
                 $relatedInstitutions->each(function ($institution) use ($userDutyInstitutionIds, $followedInstitutionIds, $mutedInstitutionIds) {
-                    $isAuthorized = $institution->authorized !== false;
+                    /** @var Institution&object{authorized?: bool, subscription?: array<string, bool>} $institution */
+                    $isAuthorized = ($institution->authorized ?? true) !== false;
                     $institution->meetings->each(function ($meeting) use ($isAuthorized) {
                         // Only append completion_status for authorized institutions (it lazy-loads agendaItems)
                         if ($isAuthorized) {
@@ -308,6 +309,7 @@ class DashboardController extends AdminController
                     $institution->append('meeting_periodicity_days');
 
                     // Add subscription status for related institutions
+                    // @phpstan-ignore property.notFound
                     $institution->subscription = [
                         'is_followed' => $followedInstitutionIds->contains($institution->id),
                         'is_muted' => $mutedInstitutionIds->contains($institution->id),

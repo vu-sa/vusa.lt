@@ -120,7 +120,8 @@ class SyncFileableFilesJob implements ShouldQueue
 
         // Update metadata from SharePoint
         $listItem = $driveItem->getListItem();
-        $fields = $listItem?->getProperties()['fields'] ?? [];
+        /** @var array<string, mixed> $fields */
+        $fields = $listItem?->getFields()?->getAdditionalData() ?? [];
 
         $file->update([
             'name' => $driveItem->getName() ?? $file->name,

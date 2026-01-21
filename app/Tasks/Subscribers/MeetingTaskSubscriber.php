@@ -126,10 +126,6 @@ class MeetingTaskSubscriber
     {
         $meeting = $agendaItem->meeting;
 
-        if (! $meeting) {
-            return;
-        }
-
         // Reload meeting with fresh agenda items data
         $meeting->load('agendaItems');
 
@@ -152,10 +148,6 @@ class MeetingTaskSubscriber
     public function handleAgendaItemCreated(AgendaItem $agendaItem): void
     {
         $meeting = $agendaItem->meeting;
-
-        if (! $meeting) {
-            return;
-        }
 
         $meeting->load('agendaItems');
 
@@ -194,10 +186,6 @@ class MeetingTaskSubscriber
     public function handleAgendaItemDeleted(AgendaItem $agendaItem): void
     {
         $meeting = $agendaItem->meeting;
-
-        if (! $meeting) {
-            return;
-        }
 
         $meeting->load('agendaItems');
 

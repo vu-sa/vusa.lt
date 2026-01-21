@@ -10,7 +10,7 @@ use App\Models\FormField;
 use App\Models\Institution;
 use App\Models\Registration;
 use App\Settings\FormSettings;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -40,7 +40,8 @@ class RegistrationController extends Controller
                 }
 
                 $formData = $request->validated()['data'];
-                $fieldResponses = new Collection;
+                /** @var Collection<int, \App\Models\FieldResponse> $fieldResponses */
+                $fieldResponses = collect();
 
                 // Use foreach instead of collect()->each() so return statements work properly
                 foreach ($formData as $key => $fieldData) {
@@ -111,6 +112,8 @@ class RegistrationController extends Controller
 
     /**
      * Dispatch the student rep registration event if the form matches the setting.
+     *
+     * @param  \Illuminate\Support\Collection<int, \App\Models\FieldResponse>  $fieldResponses
      */
     private function dispatchStudentRepRegistrationEvent(Form $form, Registration $registration, Collection $fieldResponses): void
     {
@@ -134,7 +137,7 @@ class RegistrationController extends Controller
         }
 
         // Find the institution from field responses
-        $institutionResponse = $fieldResponses->first(function ($fieldResponse) use ($institutionField) {
+        $institutionResponse = $fieldResponses->first(function (\App\Models\FieldResponse $fieldResponse) use ($institutionField) {
             return $fieldResponse->formField->id === $institutionField->id;
         });
 
@@ -148,9 +151,10 @@ class RegistrationController extends Controller
         }
 
         $institutionId = null;
+        $response = $institutionResponse->getAttribute('response');
 
-        if (is_array($institutionResponse->response) && array_key_exists('value', $institutionResponse->response)) {
-            $institutionId = $institutionResponse->response['value'];
+        if (is_array($response) && array_key_exists('value', $response)) {
+            $institutionId = $response['value'];
         }
 
         $institution = Institution::find($institutionId);

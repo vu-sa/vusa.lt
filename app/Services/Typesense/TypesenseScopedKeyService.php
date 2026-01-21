@@ -159,7 +159,11 @@ class TypesenseScopedKeyService
                     'has_access' => true,
                     'scope' => 'public',
                 ];
-            } elseif ($skipTenantFilter && $permission && $this->authorizer->check($permission)) {
+            } elseif ($skipTenantFilter) {
+                if (! $this->authorizer->check($permission)) {
+                    continue;
+                }
+
                 // Collections that skip tenant filtering but require a base permission
                 $scopedKey = $this->client->getKeys()->generateScopedSearchKey($parentKey, [
                     'collection' => $prefixedCollectionName,
@@ -173,7 +177,11 @@ class TypesenseScopedKeyService
                     'has_access' => true,
                     'scope' => 'public',
                 ];
-            } elseif ($permission && $this->authorizer->check($permission)) {
+            } elseif ($permission) {
+                if (! $this->authorizer->check($permission)) {
+                    continue;
+                }
+
                 // User has .padalinys permission - get their accessible tenants for this collection
                 $tenantIds = $this->getTenantIdsForPermission($permission);
 

@@ -51,14 +51,14 @@ class ApprovalService
         }
 
         // Validate that this decision is allowed for the current state
-        if (method_exists($approvable, 'isDecisionAllowed') && ! $approvable->isDecisionAllowed($decision)) {
+        if (! $approvable->isDecisionAllowed($decision)) {
             throw new \InvalidArgumentException(__('Šis veiksmas negalimas dabartinėje būsenoje.'));
         }
 
         $approval = DB::transaction(function () use ($approvable, $user, $decision, $notes, $step) {
             $approval = Approval::create([
                 'approvable_type' => get_class($approvable),
-                'approvable_id' => $approvable->id,
+                'approvable_id' => $approvable->getKey(),
                 'user_id' => $user->id,
                 'decision' => $decision,
                 'step' => $step,

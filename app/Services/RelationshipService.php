@@ -125,8 +125,10 @@ class RelationshipService
             ->outgoingRelationships;
 
         foreach ($outgoingDirect as $relationship) {
+            /** @var Relationshipable $pivot */
+            $pivot = $relationship->getRelation('pivot');
             /** @var Institution|null $relatedInstitution */
-            $relatedInstitution = $relationship->pivot->related_model;
+            $relatedInstitution = $pivot->related_model;
             if ($relatedInstitution && $relatedInstitution->id !== $sourceId) {
                 $result->push([
                     'institution' => $relatedInstitution,
@@ -143,11 +145,13 @@ class RelationshipService
             ->incomingRelationships;
 
         foreach ($incomingDirect as $relationship) {
+            /** @var Relationshipable $pivot */
+            $pivot = $relationship->getRelation('pivot');
             /** @var Institution|null $relatedInstitution */
-            $relatedInstitution = $relationship->pivot->relationshipable;
+            $relatedInstitution = $pivot->relationshipable;
             if ($relatedInstitution && $relatedInstitution->id !== $sourceId) {
                 // Check if the relationship is bidirectional - if so, incoming also gets authorization
-                $isBidirectional = $relationship->pivot->bidirectional ?? false;
+                $isBidirectional = $pivot->bidirectional ?? false;
 
                 $result->push([
                     'institution' => $relatedInstitution,
@@ -165,10 +169,12 @@ class RelationshipService
 
         foreach ($institution->types as $type) {
             foreach ($type->outgoingRelationships as $relationship) {
+                /** @var Relationshipable $pivot */
+                $pivot = $relationship->getRelation('pivot');
                 /** @var Type|null $targetType */
-                $targetType = $relationship->pivot->related_model;
-                $scope = $relationship->pivot->scope ?? Relationshipable::SCOPE_WITHIN_TENANT;
-                $isBidirectional = $relationship->pivot->bidirectional ?? false;
+                $targetType = $pivot->related_model;
+                $scope = $pivot->scope ?? Relationshipable::SCOPE_WITHIN_TENANT;
+                $isBidirectional = $pivot->bidirectional ?? false;
                 $authorized = self::isTypeRelationshipAuthorized($institution, $scope, $isBidirectional, 'outgoing');
 
                 if ($targetType && $targetType->institutions->isNotEmpty()) {
@@ -198,10 +204,12 @@ class RelationshipService
 
         foreach ($institution->types as $type) {
             foreach ($type->incomingRelationships as $relationship) {
+                /** @var Relationshipable $pivot */
+                $pivot = $relationship->getRelation('pivot');
                 /** @var Type|null $sourceType */
-                $sourceType = $relationship->pivot->relationshipable;
-                $scope = $relationship->pivot->scope ?? Relationshipable::SCOPE_WITHIN_TENANT;
-                $isBidirectional = $relationship->pivot->bidirectional ?? false;
+                $sourceType = $pivot->relationshipable;
+                $scope = $pivot->scope ?? Relationshipable::SCOPE_WITHIN_TENANT;
+                $isBidirectional = $pivot->bidirectional ?? false;
                 $authorized = self::isTypeRelationshipAuthorized($institution, $scope, $isBidirectional, 'incoming');
 
                 if ($sourceType && $sourceType->institutions->isNotEmpty()) {
@@ -399,32 +407,32 @@ class RelationshipService
                 $relatedInst = $item['institution'];
 
                 // Skip if this institution is already in the user's direct institutions
-                if (in_array($relatedInst->id, $institutionIds)) {
+                if (in_array($relatedInst->getKey(), $institutionIds)) {
                     continue;
                 }
 
                 // Skip if we already have this institution with authorized access
                 // (keep the one with highest access level)
-                $existing = $allRelated->firstWhere('id', $relatedInst->id);
+                $existing = $allRelated->firstWhere('id', $relatedInst->getKey());
                 if ($existing) {
                     // If existing is already authorized, skip this one
-                    if ($existing->authorized) {
+                    if ($existing->getAttribute('authorized')) {
                         continue;
                     }
                     // If new one is authorized, replace the existing
                     if ($item['authorized']) {
-                        $allRelated = $allRelated->reject(fn ($inst) => $inst->id === $relatedInst->id);
+                        $allRelated = $allRelated->reject(fn ($inst) => $inst->getKey() === $relatedInst->getKey());
                     } else {
                         continue;
                     }
                 }
 
                 // Add metadata to the institution for frontend use
-                $relatedInst->is_related = true;
-                $relatedInst->relationship_direction = $item['direction'];
-                $relatedInst->relationship_type = $item['type'];
-                $relatedInst->source_institution_id = $item['source_institution_id'];
-                $relatedInst->authorized = $item['authorized'];
+                $relatedInst->setAttribute('is_related', true);
+                $relatedInst->setAttribute('relationship_direction', $item['direction']);
+                $relatedInst->setAttribute('relationship_type', $item['type']);
+                $relatedInst->setAttribute('source_institution_id', $item['source_institution_id']);
+                $relatedInst->setAttribute('authorized', $item['authorized']);
 
                 $allRelated->push($relatedInst);
             }
@@ -436,8 +444,8 @@ class RelationshipService
         }
 
         // Separate authorized and unauthorized institution IDs
-        $authorizedIds = $allRelated->filter(fn ($inst) => $inst->authorized)->pluck('id')->toArray();
-        $unauthorizedIds = $allRelated->reject(fn ($inst) => $inst->authorized)->pluck('id')->toArray();
+        $authorizedIds = $allRelated->filter(fn ($inst) => $inst->getAttribute('authorized'))->pluck('id')->toArray();
+        $unauthorizedIds = $allRelated->reject(fn ($inst) => $inst->getAttribute('authorized'))->pluck('id')->toArray();
 
         $loadedInstitutions = new Collection;
 
@@ -476,7 +484,7 @@ class RelationshipService
         // Merge back the metadata
         $metaMap = $allRelated->keyBy('id');
         $loadedInstitutions->each(function ($inst) use ($metaMap) {
-            $meta = $metaMap->get($inst->id);
+            $meta = $metaMap->get($inst->getKey());
             if ($meta) {
                 $inst->is_related = $meta->is_related;
                 $inst->relationship_direction = $meta->relationship_direction;
@@ -665,8 +673,8 @@ class RelationshipService
 
             $query->get()->each(function ($receiver) use ($giver, &$relationships) {
                 $relationships[] = [
-                    'relationshipable_id' => $giver->id,
-                    'related_model_id' => $receiver->id,
+                    'relationshipable_id' => $giver->getKey(),
+                    'related_model_id' => $receiver->getKey(),
                 ];
             });
         });

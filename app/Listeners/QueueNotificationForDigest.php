@@ -52,10 +52,6 @@ class QueueNotificationForDigest
         }
 
         // Check if user has email digest enabled for this category
-        if (! method_exists($notifiable, 'shouldReceiveNotification')) {
-            return;
-        }
-
         if (! $notifiable->shouldReceiveNotification($notification->category(), NotificationChannel::EmailDigest)) {
             return;
         }

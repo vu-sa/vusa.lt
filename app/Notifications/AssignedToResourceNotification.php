@@ -95,7 +95,7 @@ class AssignedToResourceNotification extends BaseNotification
 
     public function url(): string
     {
-        return $this->resource['url'] ?? route('dashboard');
+        return $this->resource['url'];
     }
 
     public function icon(): string

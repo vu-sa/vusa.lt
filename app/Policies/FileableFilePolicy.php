@@ -31,7 +31,8 @@ class FileableFilePolicy
      */
     public function view(User $user, FileableFile $fileableFile): bool
     {
-        $fileable = $fileableFile->fileable;
+        /** @var \Illuminate\Database\Eloquent\Model|null $fileable */
+        $fileable = $fileableFile->fileable()->first();
 
         if (! $fileable) {
             return false;
@@ -56,7 +57,8 @@ class FileableFilePolicy
      */
     public function update(User $user, FileableFile $fileableFile): bool
     {
-        $fileable = $fileableFile->fileable;
+        /** @var \Illuminate\Database\Eloquent\Model|null $fileable */
+        $fileable = $fileableFile->fileable()->first();
 
         if (! $fileable) {
             return false;
@@ -71,7 +73,8 @@ class FileableFilePolicy
      */
     public function delete(User $user, FileableFile $fileableFile): bool
     {
-        $fileable = $fileableFile->fileable;
+        /** @var \Illuminate\Database\Eloquent\Model|null $fileable */
+        $fileable = $fileableFile->fileable()->first();
 
         if (! $fileable) {
             return false;

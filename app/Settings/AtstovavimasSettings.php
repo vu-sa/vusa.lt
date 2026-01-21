@@ -2,6 +2,7 @@
 
 namespace App\Settings;
 
+use App\Models\Duty;
 use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
@@ -127,11 +128,14 @@ class AtstovavimasSettings extends Settings
         $cacheKey = self::getManagerTenantsCacheKey($user->id);
 
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($user, $roleId) {
-            return $user->current_duties()
+            /** @var \Illuminate\Database\Eloquent\Collection<int, Duty> $duties */
+            $duties = $user->current_duties()
                 ->with(['roles', 'institution'])
-                ->get()
-                ->filter(fn ($duty) => $duty->roles->pluck('id')->contains($roleId))
-                ->map(fn ($duty) => $duty->institution?->tenant_id)
+                ->get();
+
+            return $duties
+                ->filter(fn (Duty $duty) => $duty->roles->pluck('id')->contains($roleId))
+                ->map(fn (Duty $duty) => $duty->institution?->tenant_id)
                 ->filter()
                 ->unique()
                 ->values();

@@ -39,12 +39,11 @@ abstract class ApiController extends Controller
     /**
      * Safely get the authenticated user or return 401.
      *
-     * @return \App\Models\User
-     *
      * @throws \Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException
      */
-    protected function requireAuth(Request $request)
+    protected function requireAuth(Request $request): \App\Models\User
     {
+        /** @var \App\Models\User|null $user */
         $user = $request->user();
 
         if (! $user) {

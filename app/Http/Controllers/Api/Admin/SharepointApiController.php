@@ -26,16 +26,21 @@ class SharepointApiController extends ApiController
             return $this->jsonError('Invalid fileable type', 400, code: 'INVALID_TYPE');
         }
 
+        /** @var \Illuminate\Database\Eloquent\Model|null $fileable */
         $fileable = $fileable_class::find($id);
 
         if (! $fileable) {
             return $this->jsonNotFound('Fileable not found');
         }
 
+        if (! $fileable instanceof \App\Contracts\SharepointFileableContract) {
+            return $this->jsonError('Invalid fileable type', 400, code: 'INVALID_TYPE');
+        }
+
+        /** @var \App\Contracts\SharepointFileableContract $fileable */
         $this->authorizeApi('view', $fileable);
 
-        $files = $fileable->fileableFiles()
-            ->available()
+        $files = $fileable->availableFiles()
             ->orderBy('file_date', 'desc')
             ->get();
 
@@ -70,9 +75,15 @@ class SharepointApiController extends ApiController
         }
 
         // Get all types including parents
-        $types = $fileable->types->map(function ($type) {
-            return $type->getParentsAndSelf();
-        })->flatten()->unique('id')->values();
+        /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\Type> $types */
+        $types = $fileable->types()
+            ->get()
+            ->map(function (Type $type) {
+                return $type->getParentsAndSelf();
+            })
+            ->flatten()
+            ->unique('id')
+            ->values();
 
         $typeIds = $types->pluck('id');
 

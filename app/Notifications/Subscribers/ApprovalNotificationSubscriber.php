@@ -2,7 +2,6 @@
 
 namespace App\Notifications\Subscribers;
 
-use App\Contracts\Approvable;
 use App\Events\ApprovalDecisionMade;
 use App\Events\ApprovalRequested;
 use App\Notifications\ApprovalDecisionNotification;
@@ -45,12 +44,8 @@ class ApprovalNotificationSubscriber
         $approvable = $event->approvable;
         $step = $event->step;
 
-        // Ensure the model implements Approvable
-        if (! $approvable instanceof Approvable) {
-            return;
-        }
-
         // Get approvers for this step
+        /** @var \App\Contracts\Approvable&\Illuminate\Database\Eloquent\Model $approvable */
         $approvers = $approvable->getApproversForStep($step);
 
         if ($approvers->isEmpty()) {
@@ -72,19 +67,11 @@ class ApprovalNotificationSubscriber
         $approvable = $event->approvable;
         $approval = $event->approval;
 
-        // Ensure the model implements Approvable
-        if (! $approvable instanceof Approvable) {
-            return;
-        }
-
         // Get decision maker from approval record
         $decisionMaker = $approval->user;
 
-        if (! $decisionMaker) {
-            return;
-        }
-
         // Notify the requester (users who created/own the approvable)
+        /** @var \App\Contracts\Approvable&\Illuminate\Database\Eloquent\Model $approvable */
         $recipients = $this->getDecisionNotificationRecipients($approvable);
 
         if ($recipients->isEmpty()) {
@@ -101,24 +88,28 @@ class ApprovalNotificationSubscriber
      * Get users who should be notified of the decision.
      * Typically the users who created/own the approvable.
      *
-     * @param  \Illuminate\Database\Eloquent\Model&Approvable  $approvable
+     * @param  \Illuminate\Database\Eloquent\Model&\App\Contracts\Approvable  $approvable
      * @return \Illuminate\Support\Collection<int, \App\Models\User>
      */
     protected function getDecisionNotificationRecipients($approvable)
     {
         // For ReservationResource, notify the reservation's users
-        if (method_exists($approvable, 'reservation') && $approvable->reservation) {
-            return $approvable->reservation->users ?? collect();
+        if (method_exists($approvable, 'reservation')) {
+            $reservation = $approvable->reservation()->first();
+
+            return $reservation ? $reservation->users : collect();
         }
 
         // For models with users relationship
         if (method_exists($approvable, 'users')) {
-            return $approvable->users ?? collect();
+            return $approvable->users()->get();
         }
 
         // For models with a single user
-        if (method_exists($approvable, 'user') && $approvable->user) {
-            return collect([$approvable->user]);
+        if (method_exists($approvable, 'user')) {
+            $user = $approvable->user()->first();
+
+            return $user ? collect([$user]) : collect();
         }
 
         return collect();

@@ -80,6 +80,7 @@ class CalendarController extends ApiController
         }
 
         $events = $query->get()->map(function ($event) {
+            // @phpstan-ignore property.notFound
             $event->images = $event->getMedia('images');
 
             return $event;

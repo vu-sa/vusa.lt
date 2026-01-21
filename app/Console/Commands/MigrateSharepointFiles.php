@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\FileableFile;
 use App\Models\Pivots\SharepointFileable;
+use App\Models\SharepointFile;
 use App\Services\ResourceServices\SharepointFileService;
 use App\Services\SharepointGraphService;
 use Illuminate\Console\Command;
@@ -148,6 +149,7 @@ class MigrateSharepointFiles extends Command
 
     protected function migrateFileable(SharepointFileable $pivot): void
     {
+        /** @var SharepointFile|null $sharepointFile */
         $sharepointFile = $pivot->sharepointFile;
 
         if (! $sharepointFile) {
