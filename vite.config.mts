@@ -59,7 +59,9 @@ export default defineConfig(({ command }) => {
       'resources/css/app.css',
     ]),
     tailwindcss(),
-    ziggy(),
+    ziggy({
+      sail: true,
+    }),
     Markdown({
       markdownItOptions: {
         html: true,

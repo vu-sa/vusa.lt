@@ -22,6 +22,7 @@
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
+        <env name="BROADCAST_CONNECTION" value="null"/>
         <!-- Use database driver for general Scout operations, specific models use Typesense explicitly -->
         <env name="SCOUT_DRIVER" value="database"/>
     </php>

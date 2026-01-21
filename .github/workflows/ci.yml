@@ -266,6 +266,20 @@ jobs:
     - name: Install npm dependencies
       run: npm ci
     
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: 8.3
+        extensions: dom, curl, libxml, mbstring, zip, fileinfo
+
+    - name: Set up environment
+      run: |
+        cp .env.example .env
+        php artisan key:generate --force
+
+    - name: Generate Ziggy route types
+      run: php artisan ziggy:generate --types-only node_modules/vite-plugin-ziggy/routes --no-interaction
+
     - name: TypeScript Typecheck
       run: npm run typecheck
     

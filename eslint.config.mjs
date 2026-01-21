@@ -6,7 +6,8 @@ import importPlugin from 'eslint-plugin-import';
 import stylistic from '@stylistic/eslint-plugin';
 import globals from 'globals';
 
-export default tseslint.configs(
+// ESLint server doesn't support 'configs' yet...
+export default tseslint.config(
   eslint.configs.recommended,
   tseslint.configs.recommended,
   pluginVue.configs['flat/recommended'],
