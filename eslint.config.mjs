@@ -6,7 +6,7 @@ import importPlugin from 'eslint-plugin-import';
 import stylistic from '@stylistic/eslint-plugin';
 import globals from 'globals';
 
-export default tseslint.config(
+export default tseslint.configs(
   eslint.configs.recommended,
   tseslint.configs.recommended,
   pluginVue.configs['flat/recommended'],

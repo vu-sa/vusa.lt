@@ -10,13 +10,11 @@
     "resolveJsonModule": true,
     "moduleDetection": "force",
     "isolatedModules": true, // specified in vue.js docs
-
     // Strictness
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "noImplicitAny": true,
     "noImplicitOverride": true,
-
     // Transpiling
     "outDir": "dist",
     "module": "esnext",
@@ -26,11 +24,9 @@
       "DOM",
       "DOM.Iterable"
     ],
-
     // JSX
     "jsx": "preserve",
     "jsxImportSource": "vue",
-
     // Other
     "paths": {
       "@/*": [
@@ -55,13 +51,11 @@
     "noEmit": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    ///
     // Enforce using `import type` instead of `import` for types
     "allowImportingTsExtensions": true
   },
   "exclude": [
     "./node_modules/**/*",
-    "./public/**/*",
-    //"**/*.stories.ts"
+    "./public/**/*"
   ]
 }

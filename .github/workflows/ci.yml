@@ -239,9 +239,90 @@ jobs:
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
+  # JS Quality - TypeScript typecheck and ESLint (non-blocking)
+  js-quality:
+    needs: [changes, setup]
+    if: ${{ needs.changes.outputs.js == 'true' || github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    name: TypeScript & ESLint
+    steps:
+    - uses: actions/checkout@v5
+    
+    - name: Download build artifacts
+      uses: actions/download-artifact@v6
+      with:
+        name: build-assets
+        path: ./
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v6
+      with:
+        node-version: '20'
+        cache: 'npm'
+    
+    - name: Install npm dependencies
+      run: npm ci
+    
+    - name: TypeScript Typecheck
+      id: typecheck
+      run: |
+        echo "## TypeScript Typecheck Results" >> $GITHUB_STEP_SUMMARY
+        set +e
+        OUTPUT=$(npm run typecheck 2>&1)
+        EXIT_CODE=$?
+        set -e
+        
+        # Count errors
+        ERROR_COUNT=$(echo "$OUTPUT" | grep -c "error TS" || true)
+        
+        if [ $EXIT_CODE -eq 0 ]; then
+          echo "✅ No TypeScript errors found" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "⚠️ Found **$ERROR_COUNT** TypeScript error(s)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "<details><summary>View errors (first 50)</summary>" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "$OUTPUT" | grep -A2 "error TS" | head -150 >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "</details>" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        # Always exit 0 since this is non-blocking
+        exit 0
+    
+    - name: ESLint Check
+      id: eslint
+      run: |
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## ESLint Results" >> $GITHUB_STEP_SUMMARY
+        set +e
+        OUTPUT=$(npm run lint 2>&1)
+        EXIT_CODE=$?
+        set -e
+        
+        if [ $EXIT_CODE -eq 0 ]; then
+          echo "✅ No ESLint errors found" >> $GITHUB_STEP_SUMMARY
+        else
+          # Count problems
+          PROBLEM_COUNT=$(echo "$OUTPUT" | grep -oP '\d+(?= problems?)' | tail -1 || echo "some")
+          echo "⚠️ Found **$PROBLEM_COUNT** ESLint problem(s)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "<details><summary>View issues (first 50 lines)</summary>" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "$OUTPUT" | head -50 >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "</details>" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        # Always exit 0 since this is non-blocking
+        exit 0
+
   status-check:
     name: CI Status
-    needs: [changes, php-static-analysis, php-tests, js-tests]
+    needs: [changes, php-static-analysis, php-tests, js-tests, js-quality]
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -250,15 +331,21 @@ jobs:
           STATIC_ANALYSIS_RESULT="${{ needs.php-static-analysis.result }}"
           PHP_TESTS_RESULT="${{ needs.php-tests.result }}"
           JS_TESTS_RESULT="${{ needs.js-tests.result }}"
+          JS_QUALITY_RESULT="${{ needs.js-quality.result }}"
           
-          echo "Results: Static Analysis=$STATIC_ANALYSIS_RESULT, PHP Tests=$PHP_TESTS_RESULT, JS Tests=$JS_TESTS_RESULT"
+          echo "Results: Static Analysis=$STATIC_ANALYSIS_RESULT, PHP Tests=$PHP_TESTS_RESULT, JS Tests=$JS_TESTS_RESULT, JS Quality=$JS_QUALITY_RESULT"
           
-          # Check if any required job failed
+          # Check if any required job failed (js-quality is non-blocking)
           if [[ "$STATIC_ANALYSIS_RESULT" == "failure" ]] || [[ "$PHP_TESTS_RESULT" == "failure" ]] || [[ "$JS_TESTS_RESULT" == "failure" ]]; then
             echo "❌ Some checks failed"
             exit 1
           fi
           
-          # All jobs either succeeded or were skipped
-          echo "✅ All checks passed or were skipped"
+          # Report js-quality status (informational only)
+          if [[ "$JS_QUALITY_RESULT" == "failure" ]]; then
+            echo "⚠️ TypeScript/ESLint check has issues (non-blocking)"
+          fi
+          
+          # All required jobs either succeeded or were skipped
+          echo "✅ All required checks passed or were skipped"
           exit 0

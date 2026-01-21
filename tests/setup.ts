@@ -1,4 +1,5 @@
 import { vi } from 'vitest';
+import { config } from '@vue/test-utils';
 
 // Note: Icon auto-imports now handled by unplugin-icons in vitest.config.ts
 // No need to manually mock individual icons anymore
@@ -37,7 +38,6 @@ vi.mock('laravel-vue-i18n', () => ({
 }));
 
 // Add global properties to Vue component instances for testing
-import { config } from '@vue/test-utils';
 
 config.global.mocks = {
   // Mock $t template global property
@@ -53,7 +53,7 @@ config.global.mocks = {
         locale: 'lt',
         subdomain: 'www',
         name: 'VU SA',
-        url: 'http://www.vusa.test'
+        url: 'http://www.vusa.test',
       },
       auth: {
         user: {
@@ -61,37 +61,37 @@ config.global.mocks = {
           name: 'Test User',
           email: 'test@vusa.lt',
           current_duties: [
-            { 
-              institution: { 
-                id: 'vusa', 
-                name: 'VU SA', 
-                shortname: 'VU SA' 
+            {
+              institution: {
+                id: 'vusa',
+                name: 'VU SA',
+                shortname: 'VU SA',
               },
-              role: 'admin'
-            }
-          ]
+              role: 'admin',
+            },
+          ],
         },
         can: {
           create: { meeting: true, document: true },
           read: { meeting: true, document: true },
           update: { meeting: true, document: true },
-          delete: { meeting: true, document: true }
-        }
+          delete: { meeting: true, document: true },
+        },
       },
       tenants: [
         { id: 'vusa', name: 'VU SA', shortname: 'VU SA' },
         { id: 'vuif', name: 'VU IF', shortname: 'VU IF' },
-        { id: 'vumif', name: 'VU MIF', shortname: 'VU MIF' }
+        { id: 'vumif', name: 'VU MIF', shortname: 'VU MIF' },
       ],
       flash: {
         success: null,
         error: null,
         info: null,
-        warning: null
+        warning: null,
       },
-      errors: {}
-    }
-  }
+      errors: {},
+    },
+  },
 };
 
 // Enhanced TypesenseInstantSearchAdapter mock for comprehensive network mocking
@@ -109,19 +109,19 @@ vi.mock('typesense-instantsearch-adapter', () => {
             hitsPerPage: 24,
             exhaustiveNbHits: true,
             query: '',
-            params: ''
-          }]
+            params: '',
+          }],
         }),
         searchForFacetValues: vi.fn().mockResolvedValue([]),
         clearCache: vi.fn(),
         addAlgoliaAgent: vi.fn(),
         initIndex: vi.fn(() => ({
           search: vi.fn().mockResolvedValue({ hits: [], nbHits: 0 }),
-          searchForFacetValues: vi.fn().mockResolvedValue([])
-        }))
-      }
-    }))
-  }
+          searchForFacetValues: vi.fn().mockResolvedValue([]),
+        })),
+      },
+    })),
+  };
 });
 
 // Mock fetch for any remaining network calls
@@ -141,5 +141,5 @@ config.global.provide = {
   'app-config': {
     locale: 'lt',
     debug: false,
-  }
+  },
 };

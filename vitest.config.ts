@@ -1,13 +1,14 @@
-import { defineConfig, mergeConfig } from 'vitest/config'
-import vue from '@vitejs/plugin-vue'
-import vueJsx from '@vitejs/plugin-vue-jsx'
-import path from 'path'
-import { NaiveUiResolver, VueUseComponentsResolver } from 'unplugin-vue-components/resolvers'
-import Components from 'unplugin-vue-components/vite'
-import Icons from 'unplugin-icons/vite'
-import IconsResolver from 'unplugin-icons/resolver'
-import { storybookTest } from '@storybook/addon-vitest/vitest-plugin'
-import { playwright } from '@vitest/browser-playwright'
+import path from 'path';
+
+import { defineConfig } from 'vitest/config';
+import vue from '@vitejs/plugin-vue';
+import vueJsx from '@vitejs/plugin-vue-jsx';
+import { NaiveUiResolver, VueUseComponentsResolver } from 'unplugin-vue-components/resolvers';
+import Components from 'unplugin-vue-components/vite';
+import Icons from 'unplugin-icons/vite';
+import IconsResolver from 'unplugin-icons/resolver';
+import { storybookTest } from '@storybook/addon-vitest/vitest-plugin';
+import { playwright } from '@vitest/browser-playwright';
 
 export default defineConfig({
   plugins: [
@@ -17,7 +18,7 @@ export default defineConfig({
       resolvers: [
         IconsResolver(),
         NaiveUiResolver(),
-        VueUseComponentsResolver()
+        VueUseComponentsResolver(),
       ],
       dts: 'resources/js/Types/components.d.ts',
     }),
@@ -27,8 +28,8 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, 'resources/js')
-    }
+      '@': path.resolve(__dirname, 'resources/js'),
+    },
   },
   test: {
     globals: true,
@@ -39,8 +40,8 @@ export default defineConfig({
       {
         resolve: {
           alias: {
-            "@": path.resolve(__dirname, 'resources/js')
-          }
+            '@': path.resolve(__dirname, 'resources/js'),
+          },
         },
         test: {
           name: 'unit',
@@ -48,13 +49,13 @@ export default defineConfig({
           setupFiles: ['tests/setup.ts'],
           include: [
             'resources/js/**/__tests__/**/*.test.ts',
-            'resources/js/**/*.test.ts'
+            'resources/js/**/*.test.ts',
           ],
           exclude: [
             'resources/js/**/*.component.test.ts',
-            'resources/js/**/*.stories.ts'
-          ]
-        }
+            'resources/js/**/*.stories.ts',
+          ],
+        },
       },
       // Component tests project - Vue components
       {
@@ -65,7 +66,7 @@ export default defineConfig({
             resolvers: [
               IconsResolver(),
               NaiveUiResolver(),
-              VueUseComponentsResolver()
+              VueUseComponentsResolver(),
             ],
             dts: 'resources/js/Types/components.d.ts',
           }),
@@ -73,15 +74,15 @@ export default defineConfig({
         ],
         resolve: {
           alias: {
-            "@": path.resolve(__dirname, 'resources/js')
-          }
+            '@': path.resolve(__dirname, 'resources/js'),
+          },
         },
         test: {
           name: 'component',
           environment: 'jsdom',
           setupFiles: ['tests/setup.ts'],
-          include: ['resources/js/**/__tests__/**/*.component.test.ts']
-        }
+          include: ['resources/js/**/__tests__/**/*.component.test.ts'],
+        },
       },
       // Storybook tests project - Stories with browser testing
       {
@@ -92,7 +93,7 @@ export default defineConfig({
             resolvers: [
               IconsResolver(),
               NaiveUiResolver(),
-              VueUseComponentsResolver()
+              VueUseComponentsResolver(),
             ],
             dts: 'resources/js/Types/components.d.ts',
           }),
@@ -102,11 +103,11 @@ export default defineConfig({
         ],
         resolve: {
           alias: {
-            "@": path.resolve(__dirname, 'resources/js'),
-            "@/mocks/inertia": path.resolve(__dirname, 'resources/js/mocks/inertia.mock.ts'),
-            "@/mocks/i18n": path.resolve(__dirname, 'resources/js/mocks/i18n.mock.ts'), 
-            "@/mocks/route": path.resolve(__dirname, 'resources/js/mocks/route.mock.ts')
-          }
+            '@': path.resolve(__dirname, 'resources/js'),
+            '@/mocks/inertia': path.resolve(__dirname, 'resources/js/mocks/inertia.mock.ts'),
+            '@/mocks/i18n': path.resolve(__dirname, 'resources/js/mocks/i18n.mock.ts'),
+            '@/mocks/route': path.resolve(__dirname, 'resources/js/mocks/route.mock.ts'),
+          },
         },
         test: {
           name: 'storybook',
@@ -115,14 +116,14 @@ export default defineConfig({
             provider: playwright(),
             instances: [
               {
-                browser: 'chromium'
-              }
+                browser: 'chromium',
+              },
             ],
-            headless: true
+            headless: true,
           },
-          setupFiles: ['./.storybook/vitest.setup.ts']
-        }
-      }
+          setupFiles: ['./.storybook/vitest.setup.ts'],
+        },
+      },
     ],
     // Global coverage configuration
     coverage: {
@@ -130,25 +131,25 @@ export default defineConfig({
       reporter: ['text', 'json', 'html', 'lcov'],
       include: [
         'resources/js/Utils/**/*.ts',
-        'resources/js/Services/**/*.ts', 
+        'resources/js/Services/**/*.ts',
         'resources/js/Composables/**/*.ts',
         'resources/js/Components/**/*.vue',
-        'resources/js/components/**/*.vue'
+        'resources/js/components/**/*.vue',
       ],
       exclude: [
         '**/*.d.ts',
         '**/*.test.ts',
         '**/*.component.test.ts',
-        '**/*.stories.ts'
+        '**/*.stories.ts',
       ],
       thresholds: {
         global: {
           branches: 75,
           functions: 75,
           lines: 75,
-          statements: 75
-        }
-      }
-    }
-  }
-})
+          statements: 75,
+        },
+      },
+    },
+  },
+});
