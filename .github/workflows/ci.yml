@@ -47,6 +47,8 @@ jobs:
     uses: ./.github/workflows/setup.yml
     with:
       include-coverage: true
+    secrets:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
   # PHP Jobs - run in parallel where possible
   php-lint:

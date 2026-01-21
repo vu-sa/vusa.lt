@@ -13,10 +13,7 @@ import tailwindcss from '@tailwindcss/vite';
 import ziggy from 'vite-plugin-ziggy';
 import { VitePWA } from 'vite-plugin-pwa';
 
-// Load the CODECOV_TOKEN from the .env file
-// import { codecovVitePlugin } from "@codecov/vite-plugin";
-// import { loadEnv } from "vite";
-// const token = loadEnv('production', './', 'CODECOV').CODECOV_TOKEN;
+import { codecovVitePlugin } from "@codecov/vite-plugin";
 
 export default defineConfig(({ command }) => {
   // Define common plugins that will be used in both build and test
@@ -78,6 +75,17 @@ export default defineConfig(({ command }) => {
     ? [
         vueDevTools({
           appendTo: 'resources/js/app.ts',
+        }),
+      ]
+    : [];
+
+  // Codecov bundle analysis - only during CI builds with token
+  const codecovPlugins = command === 'build' && process.env.CODECOV_TOKEN
+    ? [
+        codecovVitePlugin({
+          enableBundleAnalysis: true,
+          bundleName: "vusa-frontend",
+          uploadToken: process.env.CODECOV_TOKEN,
         }),
       ]
     : [];
@@ -240,6 +248,7 @@ export default defineConfig(({ command }) => {
       ...commonPlugins,
       ...corePlugins,
       ...devPlugins,
+      ...codecovPlugins,
       pwaPlugin,
     ],
     resolve: {
