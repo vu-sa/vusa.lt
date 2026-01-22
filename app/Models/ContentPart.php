@@ -6,6 +6,7 @@ use App\Enums\ContentPartEnum;
 use App\Tiptap\TiptapEditor;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * @property int $id
@@ -17,7 +18,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
  * @property-read \App\Models\Content $content
- * @property mixed $html
+ * @property-read string $html
  *
  * @method static \Database\Factories\ContentPartFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ContentPart newModelQuery()
@@ -54,27 +55,60 @@ class ContentPart extends Model
         'order',
     ];
 
-    // Add property for HTML content
+    // Append pre-rendered HTML to JSON serialization
     protected $appends = ['html'];
-
-    // Add a default value for html attribute
-    protected $html = '';
 
     public function content(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Content::class);
     }
 
-    // Add getter for html attribute
-    public function getHtmlAttribute()
+    /**
+     * Get pre-rendered HTML for TipTap content types.
+     * Uses caching based on updated_at timestamp for automatic invalidation.
+     */
+    public function getHtmlAttribute(): ?string
     {
-        return $this->html ?? '';
+        // Only render HTML for tiptap-based content types
+        if (! in_array($this->type, ['tiptap', 'shadcn-card'])) {
+            return null;
+        }
+
+        // Use updated_at timestamp in cache key for automatic invalidation on edit
+        $cacheKey = "content_part_html_{$this->id}_{$this->updated_at?->timestamp}";
+
+        return Cache::remember($cacheKey, 86400, function () {
+            return $this->renderTiptapHtml();
+        });
     }
 
-    // Add setter for html attribute
-    public function setHtmlAttribute($value)
+    /**
+     * Render TipTap JSON content to HTML using the PHP TipTap editor.
+     */
+    protected function renderTiptapHtml(): string
     {
-        $this->html = $value;
+        try {
+            $editor = new TiptapEditor;
+
+            // Convert ArrayObject to plain array for TipTap PHP compatibility
+            $content = $this->json_content?->toArray() ?? [];
+
+            return $editor->setContent($content)->getHTML();
+        } catch (\Throwable $e) {
+            // Log error but don't break the page - frontend will fallback to JS rendering
+            \Log::warning("TipTap rendering failed for ContentPart {$this->id}: {$e->getMessage()}");
+
+            return '';
+        }
+    }
+
+    /**
+     * Clear the HTML cache for this content part.
+     */
+    public function clearHtmlCache(): void
+    {
+        $cacheKey = "content_part_html_{$this->id}_{$this->updated_at?->timestamp}";
+        Cache::forget($cacheKey);
     }
 
     /**
