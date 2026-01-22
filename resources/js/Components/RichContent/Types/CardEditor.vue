@@ -65,14 +65,14 @@
     <!-- Content -->
     <Field>
       <FieldLabel>{{ $t('rich-content.content') }}</FieldLabel>
-      <ModernTipTap v-model="content" />
+      <TiptapEditor v-model="content" preset="full" />
     </Field>
   </div>
 </template>
 
 <script setup lang="ts">
 import type { ShadcnCard } from '@/Types/contentParts';
-import ModernTipTap from '@/Components/TipTap/ModernTipTap.vue';
+import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import InfoPopover from '@/Components/Buttons/InfoPopover.vue';
 import { Field, FieldLabel } from '@/Components/ui/field';
 import { Input } from '@/Components/ui/input';

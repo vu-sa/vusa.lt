@@ -14,7 +14,7 @@
       </NFormItem>
 
       <NFormItem label="Paveikslėlis">
-        <UploadImageWithCropper v-model:url="form.image_url" folder="banners" />
+        <ImageUpload v-model:url="form.image_url" mode="immediate" folder="banners" cropper :existing-url="banner?.image_url" />
       </NFormItem>
     </FormElement>
   </AdminForm>
@@ -22,7 +22,7 @@
 
 <script setup lang="ts">
 import { useForm } from "@inertiajs/vue3";
-import UploadImageWithCropper from "../Buttons/UploadImageWithCropper.vue";
+import { ImageUpload } from "@/Components/ui/upload";
 import AdminForm from "./AdminForm.vue";
 import FormElement from "./FormElement.vue";
 

@@ -60,8 +60,8 @@
             <SimpleLocaleButton v-model:locale="locale" />
           </div>
         </template>
-        <TipTap v-if="locale === 'lt'" v-model="form.description.lt" html />
-        <TipTap v-else v-model="form.description.en" html />
+        <TiptapEditor v-if="locale === 'lt'" v-model="form.description.lt" preset="full" :html="true" />
+        <TiptapEditor v-else v-model="form.description.en" preset="full" :html="true" />
       </NFormItem>
     </FormElement>
     <FormElement>
@@ -170,7 +170,7 @@ import { Button } from "@/Components/ui/button";
 import { changeDutyNameEndings } from "@/Utils/String";
 import FormElement from "./FormElement.vue";
 import SimpleLocaleButton from "../Buttons/SimpleLocaleButton.vue";
-import TipTap from "@/Components/TipTap/OriginalTipTap.vue";
+import TiptapEditor from "@/Components/TipTap/TiptapEditor.vue";
 import UserAvatar from "../Avatars/UserAvatar.vue";
 import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";
 import AdminForm from "./AdminForm.vue";

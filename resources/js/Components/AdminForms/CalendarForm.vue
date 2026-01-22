@@ -213,8 +213,8 @@
           <SimpleLocaleButton v-model:locale="locale" />
         </div>
 
-        <TipTap v-if="locale === 'lt'" v-model="form.description.lt" html />
-        <TipTap v-else v-model="form.description.en" html />
+        <TiptapEditor v-if="locale === 'lt'" v-model="form.description.lt" preset="full" :html="true" />
+        <TiptapEditor v-else v-model="form.description.en" preset="full" :html="true" />
       </div>
     </FormElement>
   </AdminForm>
@@ -241,7 +241,7 @@ import { Label } from "@/Components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
 import { ImageUpload } from "@/Components/ui/upload";
 import DateTimePicker from "@/Components/ui/date-picker/DateTimePicker.vue";
-import TipTap from "@/Components/TipTap/OriginalTipTap.vue";
+import TiptapEditor from "@/Components/TipTap/TiptapEditor.vue";
 
 
 

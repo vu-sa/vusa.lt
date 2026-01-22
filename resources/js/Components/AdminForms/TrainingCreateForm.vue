@@ -29,8 +29,8 @@
             <SimpleLocaleButton v-model:locale="locale" />
           </div>
         </template>
-        <TipTap v-if="locale === 'lt'" v-model="form.description.lt" html />
-        <TipTap v-else v-model="form.description.en" html />
+        <TiptapEditor v-if="locale === 'lt'" v-model="form.description.lt" preset="full" :html="true" />
+        <TiptapEditor v-else v-model="form.description.en" preset="full" :html="true" />
       </NFormItem>
       <NFormItem required>
         <template #label>
@@ -64,7 +64,7 @@ import AdminForm from "./AdminForm.vue";
 import Icons from "@/Types/Icons/regular";
 import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";
 import SimpleLocaleButton from "../Buttons/SimpleLocaleButton.vue";
-import TipTap from "@/Components/TipTap/OriginalTipTap.vue";
+import TiptapEditor from "@/Components/TipTap/TiptapEditor.vue";
 
 const { training } = defineProps<{
   training: App.Entities.Membership;

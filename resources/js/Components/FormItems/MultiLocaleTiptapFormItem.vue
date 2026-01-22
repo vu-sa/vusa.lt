@@ -6,8 +6,8 @@
         <SimpleLocaleButton v-model:locale="inputLang" />
       </div>
     </template>
-    <TipTap v-if="inputLang === 'lt'" v-model="input.lt" html />
-    <TipTap v-else v-model="input.en" html />
+    <TiptapEditor v-if="inputLang === 'lt'" v-model="input.lt" preset="full" :html="true" />
+    <TiptapEditor v-else v-model="input.en" preset="full" :html="true" />
   </NFormItem>
 </template>
 
@@ -15,7 +15,7 @@
 import { ref } from "vue";
 import { usePage } from "@inertiajs/vue3";
 
-import TipTap from "../TipTap/OriginalTipTap.vue";
+import TiptapEditor from "../TipTap/TiptapEditor.vue";
 import SimpleLocaleButton from "../Buttons/SimpleLocaleButton.vue";
 
 defineProps<{

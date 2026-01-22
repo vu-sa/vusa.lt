@@ -3,13 +3,13 @@
     <!-- Title -->
     <Field>
       <FieldLabel>{{ $t('rich-content.title') }}</FieldLabel>
-      <OriginalTipTap v-model="json_content.title" html type="text" />
+      <TiptapEditor v-model="json_content.title" preset="compact" :html="true" />
     </Field>
 
     <!-- Subtitle -->
     <Field>
       <FieldLabel>{{ $t('rich-content.subtitle') }}</FieldLabel>
-      <OriginalTipTap v-model="json_content.subtitle" html type="text" />
+      <TiptapEditor v-model="json_content.subtitle" preset="compact" :html="true" />
     </Field>
 
     <!-- Background Image -->
@@ -82,7 +82,7 @@
 </template>
 
 <script setup lang="ts">
-import OriginalTipTap from '@/Components/TipTap/OriginalTipTap.vue';
+import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import TiptapImageButton from '@/Components/TipTap/TiptapImageButton.vue';
 import type { Hero } from '@/Types/contentParts';
 import { Button } from '@/Components/ui/button';

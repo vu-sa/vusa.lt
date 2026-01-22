@@ -29,7 +29,7 @@
               </NFormItem>
             </div>
             <NFormItem :label="$t('forms.fields.picture')">
-              <UploadImageWithCropper v-model:url="form.profile_photo_path" folder="contacts" />
+              <ImageUpload v-model:url="form.profile_photo_path" mode="immediate" folder="contacts" cropper :existing-url="user?.profile_photo_path" />
             </NFormItem>
 
             <div class="grid gap-4 lg:grid-cols-2">
@@ -185,7 +185,7 @@ import { Button } from "@/Components/ui/button";
 import FormElement from "@/Components/AdminForms/FormElement.vue";
 import MultiLocaleInput from "@/Components/FormItems/MultiLocaleInput.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import UploadImageWithCropper from "@/Components/Buttons/UploadImageWithCropper.vue";
+import { ImageUpload } from "@/Components/ui/upload";
 import InfoText from "@/Components/SmallElements/InfoText.vue";
 import NotificationPreferences from "@/Features/Admin/Notifications/NotificationPreferences.vue";
 import PushDeviceManagement from "@/Features/Admin/Notifications/PushDeviceManagement.vue";

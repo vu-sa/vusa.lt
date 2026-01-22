@@ -81,7 +81,7 @@
               <!-- Content editor based on content type -->
               <div class="mt-2 w-full">
                 <div v-if="column.content.type === 'tiptap'" class="w-full">
-                  <CompactTiptap v-model="column.content.value" :show-toolbar-toggle="true" />
+                  <TiptapEditor v-model="column.content.value" preset="compact" :show-toolbar-toggle="true" />
                 </div>
                 <div v-else-if="column.content.type === 'image'">
                   <NFormItem label="Nuotrauka" :show-feedback="false">
@@ -139,7 +139,7 @@
 
 <script setup lang="ts">
 import { defineModel, computed, onMounted, ref, watch } from 'vue';
-import CompactTiptap from '@/Components/TipTap/CompactTiptap.vue';
+import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import TiptapImageButton from '@/Components/TipTap/TiptapImageButton.vue';
 import type { ContentGrid } from '@/Types/contentParts';
 import { Button } from '@/Components/ui/button';

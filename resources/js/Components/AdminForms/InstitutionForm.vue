@@ -147,8 +147,8 @@
                   {{ locale === 'lt' ? $t('Rašote lietuviškai') : $t('Writing in English') }}
                 </span>
               </div>
-              <TipTap v-if="locale === 'lt'" v-model="form.description.lt" html />
-              <TipTap v-else v-model="form.description.en" html />
+              <TiptapEditor v-if="locale === 'lt'" v-model="form.description.lt" preset="full" :html="true" />
+              <TiptapEditor v-else v-model="form.description.en" preset="full" :html="true" />
             </div>
           </template>
         </FormFieldWrapper>
@@ -290,7 +290,7 @@ import FormElement from "./FormElement.vue";
 import FormFieldWrapper from "./FormFieldWrapper.vue";
 import FormStatusHeader from "./FormStatusHeader.vue";
 
-import TipTap from "@/Components/TipTap/OriginalTipTap.vue";
+import TiptapEditor from "@/Components/TipTap/TiptapEditor.vue";
 import { Button } from "@/Components/ui/button";
 import { Input, InputWithOverlappingLabel } from "@/Components/ui/input";
 import { Label } from "@/Components/ui/label";

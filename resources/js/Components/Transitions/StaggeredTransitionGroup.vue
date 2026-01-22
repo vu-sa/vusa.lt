@@ -1,22 +1,32 @@
 <template>
-  <TransitionGroup :css="false" @before-enter="onBeforeEnter" @enter="onEnter">
+  <TransitionGroup name="stagger" appear @before-enter="setStaggerIndex">
     <slot />
   </TransitionGroup>
 </template>
 
 <script setup lang="ts">
-import { gsap } from "gsap";
-
-function onBeforeEnter(el) {
-  el.style.opacity = 0;
-}
-
-function onEnter(el, done) {
-  gsap.to(el, {
-    opacity: 1,
-    // Accelerating stagger
-    delay: el.dataset.index * 0.3 / (el.dataset.index / 5 + 1),
-    onComplete: done
-  })
+function setStaggerIndex(el: Element) {
+  const index = (el as HTMLElement).dataset.index || '0';
+  (el as HTMLElement).style.setProperty('--stagger-index', index);
 }
 </script>
+
+<style>
+.stagger-enter-active {
+  transition: opacity 0.3s ease-out;
+  /* Accelerating stagger: delay = index * 0.3 / (index / 5 + 1) */
+  transition-delay: calc(var(--stagger-index, 0) * 300ms / (var(--stagger-index, 0) / 5 + 1));
+}
+
+.stagger-enter-from {
+  opacity: 0;
+}
+
+.stagger-leave-active {
+  transition: opacity 0.2s ease-in;
+}
+
+.stagger-leave-to {
+  opacity: 0;
+}
+</style>

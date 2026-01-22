@@ -108,7 +108,7 @@
         <p>{{ $t('Šiuo metu naudojamas') }} <strong>{{ $t('tik paieškos rezultatuose') }}</strong>. {{ $t('Maksimalus ženklų skaičius') }}: 200.</p>
       </template>
 
-      <TipTap v-model="form.short" disable-tables :max-characters="200" html />
+      <TiptapEditor v-model="form.short" preset="full" :disable-tables="true" :max-characters="200" :html="true" />
     </FormElement>
 
     <!-- Section 6: Advanced Settings (Collapsible) -->
@@ -212,7 +212,7 @@ import { MultiSelect } from "@/Components/ui/multi-select";
 import { OrderedListInput } from "@/Components/ui/ordered-list-input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
 import { ImageUpload } from "@/Components/ui/upload";
-import TipTap from "@/Components/TipTap/OriginalTipTap.vue";
+import TiptapEditor from "@/Components/TipTap/TiptapEditor.vue";
 import { newsTemplate } from "@/Types/formTemplates";
 
 // Layout preview icons as simple SVG components

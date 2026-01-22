@@ -50,7 +50,7 @@
       </div>
 
       <NFormItem :label="$t('forms.fields.picture')">
-        <UploadImageWithCropper v-model:url="form.profile_photo_path" folder="contacts" />
+        <ImageUpload v-model:url="form.profile_photo_path" mode="immediate" folder="contacts" cropper :existing-url="user?.profile_photo_path" />
       </NFormItem>
 
       <NFormItem v-if="$page.props.auth?.user?.isSuperAdmin" :label="$t('forms.fields.admin_role')">
@@ -230,7 +230,7 @@ import { formatStaticTime } from "@/Utils/IntlTime";
 import FormElement from "./FormElement.vue";
 import InfoPopover from "../Buttons/InfoPopover.vue";
 import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";
-import UploadImageWithCropper from "../Buttons/UploadImageWithCropper.vue";
+import { ImageUpload } from "@/Components/ui/upload";
 import AdminForm from "./AdminForm.vue";
 
 const props = defineProps<{

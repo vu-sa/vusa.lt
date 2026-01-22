@@ -153,7 +153,7 @@
               </div>
               <div>
                 <span class="font-medium">{{ $t('Prisijungę klientai') }}:</span>
-                <span data-redis-clients class="ml-2 font-mono tabular-nums">{{ status.redis.connected_clients }}</span>
+                <span class="ml-2 font-mono tabular-nums">{{ displayRedisClients }}</span>
               </div>
               <div>
                 <span class="font-medium">{{ $t('Pataikymai') }}:</span>
@@ -555,11 +555,11 @@
       <CardContent size="compact" class="pb-5">
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div class="text-center">
-            <div data-redis-hits class="text-2xl font-bold text-green-600 font-mono tabular-nums">{{ status.redis.keyspace_hits }}</div>
+            <div class="text-2xl font-bold text-green-600 font-mono tabular-nums">{{ displayRedisHits }}</div>
             <p class="text-sm text-muted-foreground">{{ $t('Pataikymai') }}</p>
           </div>
           <div class="text-center">
-            <div data-redis-misses class="text-2xl font-bold text-red-600 font-mono tabular-nums">{{ status.redis.keyspace_misses }}</div>
+            <div class="text-2xl font-bold text-red-600 font-mono tabular-nums">{{ displayRedisMisses }}</div>
             <p class="text-sm text-muted-foreground">{{ $t('Nepataikimai') }}</p>
           </div>
           <div class="text-center">
@@ -577,7 +577,7 @@ import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed, ref, onMounted, onUnmounted, nextTick, watch } from 'vue';
 import { router, usePoll } from '@inertiajs/vue3';
-import { gsap } from 'gsap';
+import { useTransition, TransitionPresets } from '@vueuse/core';
 
 // UI components
 import { Card, CardHeader, CardTitle, CardContent } from '@/Components/ui/card';
@@ -847,35 +847,40 @@ const animatePollingStart = () => {
 };
 
 const animateDataUpdate = () => {
-  // Just animate numbers on update
-  animateNumbers();
-  
   // Update previous data
   previousData.value = JSON.parse(JSON.stringify(props.status));
 };
 
-const animateNumbers = () => {
-  // Animate Redis stats with simple GSAP counters
-  animateCounter('[data-redis-hits]', parseFloat(props.status.redis?.keyspace_hits) || 0);
-  animateCounter('[data-redis-misses]', parseFloat(props.status.redis?.keyspace_misses) || 0);
-  animateCounter('[data-redis-clients]', props.status.redis?.connected_clients || 0);
-};
+// Reactive animated counters using useTransition
+const redisHitsSource = ref(0);
+const redisMissesSource = ref(0);
+const redisClientsSource = ref(0);
 
-const animateCounter = (selector: string, endValue: number) => {
-  const elements = document.querySelectorAll(selector);
-  elements.forEach(el => {
-    const startValue = parseFloat(el.textContent || '0') || 0;
-    
-    gsap.fromTo({ value: startValue }, {
-      value: endValue,
-      duration: 1.0,
-      ease: 'power2.out',
-      onUpdate: function() {
-        el.textContent = Math.round(this.targets()[0].value).toString();
-      }
-    });
-  });
-};
+const animatedRedisHits = useTransition(redisHitsSource, {
+  duration: 1000,
+  transition: TransitionPresets.easeOutCubic,
+});
+const animatedRedisMisses = useTransition(redisMissesSource, {
+  duration: 1000,
+  transition: TransitionPresets.easeOutCubic,
+});
+const animatedRedisClients = useTransition(redisClientsSource, {
+  duration: 1000,
+  transition: TransitionPresets.easeOutCubic,
+});
+
+const displayRedisHits = computed(() => Math.round(animatedRedisHits.value));
+const displayRedisMisses = computed(() => Math.round(animatedRedisMisses.value));
+const displayRedisClients = computed(() => Math.round(animatedRedisClients.value));
+
+// Update animated values when props change
+watch(() => props.status.redis, (redis) => {
+  if (redis) {
+    redisHitsSource.value = parseFloat(redis.keyspace_hits || '0') || 0;
+    redisMissesSource.value = parseFloat(redis.keyspace_misses || '0') || 0;
+    redisClientsSource.value = redis.connected_clients || 0;
+  }
+}, { immediate: true });
 
 const hasDataChanged = () => {
   return JSON.stringify(previousData.value) !== JSON.stringify(props.status);
@@ -894,11 +899,4 @@ usePageBreadcrumbs([
 ]);
 </script>
 
-<style scoped>
-/* Minimal styles for GSAP number counter animation */
-[data-redis-hits], 
-[data-redis-misses], 
-[data-redis-clients] {
-  display: inline-block;
-}
-</style>
+

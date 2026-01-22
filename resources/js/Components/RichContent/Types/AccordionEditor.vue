@@ -19,8 +19,9 @@
         </Field>
         <Field>
           <FieldLabel>{{ $t('rich-content.content') }}</FieldLabel>
-          <OriginalTipTap 
+          <TiptapEditor 
             :model-value="item.content" 
+            preset="full"
             @update:model-value="update({ ...item, content: $event })" 
           />
         </Field>
@@ -31,7 +32,7 @@
 
 <script setup lang="ts">
 import type { ShadcnAccordion } from '@/Types/contentParts';
-import OriginalTipTap from '@/Components/TipTap/OriginalTipTap.vue';
+import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import { DynamicListInput } from '@/Components/ui/dynamic-list-input';
 import { Field, FieldLabel } from '@/Components/ui/field';
 import { Input } from '@/Components/ui/input';

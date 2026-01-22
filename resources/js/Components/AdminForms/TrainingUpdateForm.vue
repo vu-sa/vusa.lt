@@ -28,8 +28,8 @@
             <SimpleLocaleButton v-model:locale="locale" />
           </div>
         </template>
-        <TipTap v-if="locale === 'lt'" v-model="form.description.lt" html />
-        <TipTap v-else v-model="form.description.en" html />
+        <TiptapEditor v-if="locale === 'lt'" v-model="form.description.lt" preset="full" :html="true" />
+        <TiptapEditor v-else v-model="form.description.en" preset="full" :html="true" />
       </NFormItem>
       <NFormItem required>
         <template #label>
@@ -71,7 +71,7 @@
         <NInput v-model:value="form.meeting_url" />
       </NFormItem>
       <NFormItem label="Nuotrauka">
-        <UploadImageWithCropper v-model:url="form.image" folder="trainings" />
+        <ImageUpload v-model:url="form.image" mode="immediate" folder="trainings" cropper :existing-url="training?.image" />
       </NFormItem>
       <NFormItem label="Dalyvių skaičius" required>
         <NInputNumber v-model:value="form.max_participants" clearable :min="0" />
@@ -165,8 +165,8 @@ import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";
 import { Button } from "@/Components/ui/button";
 import { ButtonGroup } from "@/Components/ui/button-group";
 import SimpleLocaleButton from "../Buttons/SimpleLocaleButton.vue";
-import TipTap from "@/Components/TipTap/OriginalTipTap.vue";
-import UploadImageWithCropper from "../Buttons/UploadImageWithCropper.vue";
+import TiptapEditor from "@/Components/TipTap/TiptapEditor.vue";
+import { ImageUpload } from "@/Components/ui/upload";
 import FormForm from "./FormForm.vue";
 import UserPopover from "../Avatars/UserPopover.vue";
 import ProgrammePlanner from "@/Features/Admin/ProgrammePlanner/ProgrammePlanner.vue";

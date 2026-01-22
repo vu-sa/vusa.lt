@@ -558,12 +558,12 @@ describe('Files Controller - Image Upload', function () {
         }
     });
 
-    test('UploadImageWithCropper uploads go to correct directory structure', function () {
+    test('ImageUpload uploads go to correct directory structure', function () {
         $image = UploadedFile::fake()->image('banner.jpg', 800, 600);
 
         $response = asUser($this->fileManager)->postJson(route('files.uploadImage'), [
             'file' => $image,
-            'path' => 'banners',  // Simple folder name = UploadImageWithCropper
+            'path' => 'banners',  // Simple folder name = ImageUpload
         ]);
 
         // Image processing may fail, so we accept both success and failure
@@ -639,7 +639,7 @@ describe('Files Controller - Image Upload', function () {
         }
     });
 
-    test('different UploadImageWithCropper folders work correctly', function () {
+    test('different ImageUpload folders work correctly', function () {
         $testCases = [
             'banners' => '/uploads/banners/',
             'news' => '/uploads/news/',

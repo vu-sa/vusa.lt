@@ -40,7 +40,7 @@
             </InfoPopover>
           </div>
         </template>
-        <UploadImageWithCropper v-model:url="form.additional_photo" folder="contacts" />
+<ImageUpload v-model:url="form.additional_photo" mode="immediate" folder="contacts" cropper :existing-url="dutiable?.additional_photo" />
       </NFormItem>
       <NFormItem>
         <template #label>
@@ -60,8 +60,8 @@
             <SimpleLocaleButton v-model:locale="locale" />
           </div>
         </template>
-        <TipTap v-if="locale === 'lt'" v-model="form.description.lt" html />
-        <TipTap v-else-if="locale === 'en'" v-model="form.description.en" html />
+        <TiptapEditor v-if="locale === 'lt'" v-model="form.description.lt" preset="full" :html="true" />
+        <TiptapEditor v-else-if="locale === 'en'" v-model="form.description.en" preset="full" :html="true" />
       </NFormItem>
     </FormElement>
     <FormElement>
@@ -110,13 +110,13 @@ import {
   type SelectOption,
 } from "naive-ui";
 import { computed, h, ref } from "vue";
-import TipTap from "@/Components/TipTap/OriginalTipTap.vue";
+import TiptapEditor from "@/Components/TipTap/TiptapEditor.vue";
 
 import { changeDutyNameEndings } from "@/Utils/String";
 import FormElement from "./FormElement.vue";
 import InfoPopover from "../Buttons/InfoPopover.vue";
 import SimpleLocaleButton from "../Buttons/SimpleLocaleButton.vue";
-import UploadImageWithCropper from "../Buttons/UploadImageWithCropper.vue";
+import { ImageUpload } from "@/Components/ui/upload";
 import AdminForm from "./AdminForm.vue";
 
 const props = defineProps<{

@@ -25,8 +25,8 @@
             <SimpleLocaleButton v-model:locale="locale" />
           </div>
         </template>
-        <TipTap v-if="locale === 'lt'" v-model="form.description.lt" html />
-        <TipTap v-else v-model="form.description.en" html />
+        <TiptapEditor v-if="locale === 'lt'" v-model="form.description.lt" preset="full" :html="true" />
+        <TiptapEditor v-else v-model="form.description.en" preset="full" :html="true" />
       </NFormItem>
     </FormElement>
     <FormElement>
@@ -150,7 +150,7 @@ import Icons from "@/Types/Icons/filled";
 import InfoPopover from "../Buttons/InfoPopover.vue";
 import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";
 import SimpleLocaleButton from "../Buttons/SimpleLocaleButton.vue";
-import TipTap from "../TipTap/OriginalTipTap.vue";
+import TiptapEditor from "../TipTap/TiptapEditor.vue";
 import AdminForm from "./AdminForm.vue";
 
 defineEmits<{
