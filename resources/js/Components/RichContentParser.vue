@@ -8,7 +8,9 @@
       <Suspense>
         <template #default>
           <component :is="getComponentForType(element.type)" :element="element" :html="html"
-            :is-first-element="index === 0" />
+            :is-first-element="index === 0"
+            :prefetched-news="element.type === 'news' ? news : undefined"
+            :prefetched-calendar="element.type === 'calendar' ? calendarEvents : undefined" />
         </template>
         <template #fallback>
           <component :is="getSkeletonComponent(element.type)" />
@@ -31,6 +33,7 @@
 
 <script setup lang="ts">
 import { computed, defineAsyncComponent, markRaw, shallowRef } from 'vue';
+import type { NewsItem } from '@/Types/contentParts';
 
 // Import commonly used components synchronously for better performance
 import TiptapDisplay from './RichContent/Types/TiptapDisplay.vue';
@@ -57,6 +60,9 @@ const props = defineProps<{
   content: models.ContentPart[];
   html?: boolean;
   class?: string;
+  // Prefetched data for performance optimization (eliminates API waterfall on home page)
+  news?: NewsItem[];
+  calendarEvents?: Array<Record<string, unknown>>;
 }>();
 
 // Get component for type with fallback

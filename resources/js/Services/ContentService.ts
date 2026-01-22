@@ -2,6 +2,7 @@ import { usePage } from "@inertiajs/vue3";
 import { useFetch } from "@vueuse/core";
 import { computed, ref } from "vue";
 import { format, subDays, addDays } from "date-fns";
+import type { NewsItem } from "@/Types/contentParts";
 
 interface ApiResponse<T> {
   success: boolean;
@@ -12,16 +13,6 @@ interface ApiResponse<T> {
     date_to?: string;
     max_range_days?: number;
   };
-}
-
-interface NewsItem {
-  id: number;
-  title: string;
-  lang: string;
-  short: string;
-  publish_time: string;
-  permalink: string;
-  image: string | null;
 }
 
 interface CalendarEvent {
@@ -82,8 +73,11 @@ const TIMELINE_DEFAULTS = {
  * - Fetches large chunks (6 months) at a time
  * - Only fetches when view approaches loaded boundaries
  * - Tracks loaded date range to avoid redundant requests
+ * 
+ * @param options.allTenants - Whether to fetch events from all tenants
+ * @param options.skipInitialFetch - Skip initial API fetch (use when prefetched data is available)
  */
-export function useCalendarFetch(options?: { allTenants?: boolean }) {
+export function useCalendarFetch(options?: { allTenants?: boolean; skipInitialFetch?: boolean }) {
   const page = usePage();
   
   // Track the full loaded date range (boundaries of all loaded data)
@@ -267,8 +261,21 @@ export function useCalendarFetch(options?: { allTenants?: boolean }) {
     await fetchInitial();
   };
   
-  // Execute initial fetch
-  fetchInitial();
+  /**
+   * Initialize with prefetched data from server (for LCP optimization)
+   * This allows skipping the initial API call when data is already available
+   */
+  const initializeWithData = (events: CalendarEvent[]): void => {
+    allEvents.value = events;
+    // Mark as loaded with a generous range since server data covers the initial view
+    loadedFromDate.value = subDays(today, TIMELINE_DEFAULTS.INITIAL_PAST_DAYS);
+    loadedToDate.value = addDays(today, TIMELINE_DEFAULTS.INITIAL_FUTURE_DAYS);
+  };
+  
+  // Execute initial fetch only if not skipping
+  if (!options?.skipInitialFetch) {
+    fetchInitial();
+  }
 
   return {
     // Events
@@ -288,6 +295,7 @@ export function useCalendarFetch(options?: { allTenants?: boolean }) {
     fetchPast,
     fetchFuture,
     refresh,
+    initializeWithData,
     
     // Configuration
     maxRangeDays,

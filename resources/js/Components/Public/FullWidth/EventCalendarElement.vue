@@ -95,7 +95,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 
 import { Button } from "@/Components/ui/button";
 import CalendarSyncModal from "@/Components/Modals/CalendarSyncModal.vue";
@@ -106,11 +106,25 @@ import Skeleton from "@/Components/ui/skeleton/Skeleton.vue";
 import { useCalendarFetch } from "@/Services/ContentService";
 import type { Calendar } from "@/Types/contentParts";
 
+// Calendar event type
+interface CalendarEvent {
+  id: number;
+  title: string;
+  date: string;
+  category: { id: number; name: string } | null;
+  images: Array<{ url: string }>;
+  [key: string]: unknown;
+}
+
 const props = defineProps<{
   element?: { json_content: Calendar['json_content']; options: Calendar['options'] };
+  prefetchedCalendar?: CalendarEvent[];
 }>();
 
 const showModal = ref(false);
+
+// Check if we have prefetched calendar data from server
+const hasPrefetchedCalendar = computed(() => props.prefetchedCalendar && props.prefetchedCalendar.length > 0);
 
 // Normalize allTenants to boolean (handles true, 1, "1", "true")
 const allTenants = computed(() => {
@@ -119,16 +133,34 @@ const allTenants = computed(() => {
 });
 
 // Use the ContentService to fetch calendar data with date-based loading
+// Only fetch from API if no prefetched data is available
 const { 
-  calendar, 
-  loading, 
+  calendar: apiCalendar, 
+  loading: apiLoading, 
   loadingPast,
   loadingFuture,
-  error, 
+  error: apiError, 
   refresh,
   fetchPast,
   fetchFuture,
+  initializeWithData,
 } = useCalendarFetch({
   allTenants: allTenants.value,
+  skipInitialFetch: hasPrefetchedCalendar.value,
 });
+
+// If we have prefetched data, initialize the calendar state with it
+if (hasPrefetchedCalendar.value && props.prefetchedCalendar) {
+  initializeWithData(props.prefetchedCalendar);
+}
+
+// Combine sources: prefer prefetched data for initial render, then use API data
+// Note: Type cast maintains compatibility with EventTimeline props
+const calendar = computed(() => apiCalendar.value ?? []);
+
+// Loading state: only show loading when using API fetch and it's loading
+const loading = computed(() => !hasPrefetchedCalendar.value && apiLoading.value);
+
+// Error state: only show error when using API fetch and there's an error
+const error = computed(() => !hasPrefetchedCalendar.value && apiError.value);
 </script>

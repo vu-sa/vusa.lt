@@ -107,7 +107,7 @@
         class="flex-1 flex flex-col text-zinc-800 antialiased dark:text-zinc-300 container px-0 @container/main">
         <MainNavigation :is-theme-dark="isDark" />
 
-        <main id="main-content" class="pb-8 mt-16">
+        <main id="main-content" class="pb-8" :class="mainContentMarginClass">
           <!-- Centralized breadcrumb display -->
           <div v-if="breadcrumbState.breadcrumbs.value.length > 0" :class="breadcrumbWrapperClass">
             <PublicBreadcrumbs />
@@ -175,6 +175,7 @@ import PublicBreadcrumbs from "@/Components/Public/PublicBreadcrumbs.vue";
 import { createBreadcrumbState } from '@/Composables/useBreadcrumbsUnified';
 import { Toaster } from "@/Components/ui/sonner";
 import { useToasts } from '@/Composables/useToasts';
+import { useSecondMenu } from "@/Composables/useSecondMenu";
 import 'vue-sonner/style.css'
 
 // Critical path components - load synchronously for faster initial render
@@ -201,6 +202,9 @@ const ConsentCard = defineAsyncComponent({
 });
 
 const isDark = useDark();
+
+// Use composable for navigation state
+const { hasSecondMenu } = useSecondMenu();
 
 // Initialize breadcrumb state for public pages
 const breadcrumbState = createBreadcrumbState('public');
@@ -229,8 +233,32 @@ const contentWrapperClass = computed(() => {
   }
 });
 
+// Main content margin - uses responsive classes since SecondMenu is hidden on mobile (max-md:hidden)
+// Mobile (max-md): SecondMenu never shown, so use smaller margins
+// Desktop (md+): SecondMenu shown when tenant has links, needs larger margin
+const mainContentMarginClass = computed(() => {
+  const hasBreadcrumbs = breadcrumbState.breadcrumbs.value.length > 0;
+  
+  if (hasBreadcrumbs) {
+    // With breadcrumbs: smaller margin since breadcrumb wrapper has its own padding
+    if (hasSecondMenu.value) {
+      // Mobile: no SecondMenu shown, Desktop: SecondMenu adds height
+      return 'mt-16 md:mt-24';
+    }
+    return 'mt-16';
+  }
+  
+  // Without breadcrumbs: larger margin for content spacing
+  if (hasSecondMenu.value) {
+    // Mobile: no SecondMenu shown (mt-20), Desktop: SecondMenu adds height (mt-32)
+    return 'mt-20 md:mt-32';
+  }
+  return 'mt-20';
+});
+
 const breadcrumbWrapperClass = computed(() => {
-  const baseClasses = 'pt-6 md:pt-16 lg:pt-16';
+  // Reduced padding since main already has margin
+  const baseClasses = 'pt-4 md:pt-6 lg:pt-8';
   
   // Breadcrumbs always use standard wrapper width for consistency
   return `wrapper ${baseClasses}`;

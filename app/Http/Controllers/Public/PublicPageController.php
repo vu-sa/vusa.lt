@@ -9,6 +9,7 @@ use App\Models\Category;
 use App\Models\Form;
 use App\Models\Institution;
 use App\Models\Navigation;
+use App\Models\News;
 use App\Models\Page;
 use App\Models\Tenant;
 use App\Models\Type;
@@ -71,10 +72,29 @@ class PublicPageController extends PublicController
                     Tenant::query()->where('type', 'pagrindinis')->first()?->content;
             });
 
+        // Fetch news for homepage to enable LCP image preloading (eliminates API waterfall)
+        $newsCacheKey = "homepage_news_{$this->tenant->id}_{$locale}";
+        $news = Cache::tags(['news', "tenant_{$this->tenant->id}", "locale_{$locale}"])
+            ->remember($newsCacheKey, 1800, function () use ($locale) {
+                return \App\Collections\NewsCollection::getPublishedForTenant(
+                    $this->tenant->id,
+                    $locale
+                )->toPublicArray();
+            });
+
+        // Fetch calendar events for homepage (reduces API calls)
+        $calendarEvents = $this->getEventsForCalendar();
+
         $seo = $this->shareAndReturnSEOObject(title: __('Pagrindinis puslapis').' - '.$this->tenant->shortname);
+
+        // Get first news image URL for LCP preload hint
+        $firstNewsImageUrl = $news->first()['image'] ?? null;
 
         return Inertia::render('Public/HomePage', [
             'content' => $content,
+            'news' => $news,
+            'calendarEvents' => $calendarEvents,
+            'firstNewsImageUrl' => $firstNewsImageUrl,
         ])->withViewData([
             'SEOData' => $seo,
         ]);
