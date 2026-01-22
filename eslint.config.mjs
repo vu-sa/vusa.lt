@@ -94,6 +94,18 @@ export default tseslint.config(
       'import/newline-after-import': 'warn',
       'import/no-duplicates': 'warn',
 
+      // Prevent full lodash imports (use lodash-es or @vueuse/core utilities)
+      'no-restricted-imports': ['error', {
+        paths: [{
+          name: 'lodash',
+          message: 'Import from "lodash-es" for tree-shaking, or use "@vueuse/core" utilities like useDebounceFn.',
+        }],
+        patterns: [{
+          group: ['lodash/*'],
+          message: 'Import from "lodash-es/*" for tree-shaking.',
+        }],
+      }],
+
       // TypeScript modern patterns
       '@typescript-eslint/prefer-as-const': 'warn',
       '@typescript-eslint/prefer-function-type': 'warn',

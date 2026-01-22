@@ -54,7 +54,7 @@ import { ref, watch, computed, onMounted } from 'vue';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import type { ColumnDef, SortingState, RowSelectionState } from '@tanstack/vue-table';
 import { router } from '@inertiajs/vue3';
-import { debounce } from 'lodash';
+import { useDebounceFn } from '@vueuse/core';
 import { PlusCircleIcon } from 'lucide-vue-next';
 import { Link } from '@inertiajs/vue3';
 
@@ -167,7 +167,7 @@ const serverPagination = computed(() => ({
 const dataTableProviderRef = ref<InstanceType<typeof DataTableProvider>>();
 
 // Debounce function for search
-const debouncedReload = debounce((resetPage = false) => {
+const debouncedReload = useDebounceFn((resetPage = false) => {
   if (resetPage) {
     pageIndex.value = 0;
   }
