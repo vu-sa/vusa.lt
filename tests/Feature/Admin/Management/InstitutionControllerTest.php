@@ -2,6 +2,7 @@
 
 use App\Models\Institution;
 use App\Models\Tenant;
+use App\Models\Type;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -314,5 +315,213 @@ describe('relationships', function () {
 
         // Regular tenant user should be forbidden from accessing other tenant's institutions
         $response->assertStatus(403);
+    });
+});
+
+describe('meeting_periodicity_days', function () {
+    beforeEach(function () {
+        $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+    });
+
+    test('can store institution with meeting_periodicity_days', function () {
+        $institutionData = [
+            'name' => ['lt' => 'Test Institution', 'en' => 'Test Institution EN'],
+            'short_name' => ['lt' => 'TI', 'en' => 'TI'],
+            'tenant_id' => $this->tenant->id,
+            'alias' => 'test-periodicity-institution',
+            'contacts_layout' => 'aside',
+            'meeting_periodicity_days' => 45,
+        ];
+
+        $response = asUser($this->admin)->post(route('institutions.store'), $institutionData);
+
+        $response->assertRedirect();
+
+        $this->assertDatabaseHas('institutions', [
+            'alias' => 'test-periodicity-institution',
+            'meeting_periodicity_days' => 45,
+        ]);
+    });
+
+    test('can update institution meeting_periodicity_days', function () {
+        // Use a unique alias to avoid conflicts with seeded data
+        $uniqueAlias = 'test-periodicity-update-'.uniqid();
+
+        $institution = Institution::factory()->create([
+            'tenant_id' => $this->tenant->id,
+            'meeting_periodicity_days' => null,
+            'alias' => $uniqueAlias,
+        ]);
+
+        $updateData = [
+            'name' => ['lt' => $institution->getTranslation('name', 'lt'), 'en' => ''],
+            'short_name' => ['lt' => '', 'en' => ''],
+            'tenant_id' => $this->tenant->id,
+            'alias' => $uniqueAlias,
+            'contacts_layout' => 'aside',
+            'meeting_periodicity_days' => 60,
+        ];
+
+        $response = asUser($this->admin)->put(route('institutions.update', $institution), $updateData);
+
+        $response->assertRedirect();
+        $response->assertSessionHasNoErrors();
+
+        $institution->refresh();
+        expect($institution->getRawOriginal('meeting_periodicity_days'))->toBe(60);
+    });
+
+    test('can set meeting_periodicity_days to null to revert to type inheritance', function () {
+        // Use a unique alias to avoid conflicts with seeded data
+        $uniqueAlias = 'test-periodicity-null-'.uniqid();
+
+        $institution = Institution::factory()->create([
+            'tenant_id' => $this->tenant->id,
+            'meeting_periodicity_days' => 45,
+            'alias' => $uniqueAlias,
+        ]);
+
+        $updateData = [
+            'name' => ['lt' => $institution->getTranslation('name', 'lt'), 'en' => ''],
+            'short_name' => ['lt' => '', 'en' => ''],
+            'tenant_id' => $this->tenant->id,
+            'alias' => $uniqueAlias,
+            'contacts_layout' => 'aside',
+            'meeting_periodicity_days' => null,
+        ];
+
+        $response = asUser($this->admin)->put(route('institutions.update', $institution), $updateData);
+
+        $response->assertRedirect();
+        $response->assertSessionHasNoErrors();
+
+        $institution->refresh();
+        expect($institution->getRawOriginal('meeting_periodicity_days'))->toBeNull();
+    });
+
+    test('accessor returns institution override when set', function () {
+        $institution = Institution::factory()->create([
+            'tenant_id' => $this->tenant->id,
+            'meeting_periodicity_days' => 90,
+        ]);
+
+        expect($institution->meeting_periodicity_days)->toBe(90);
+    });
+
+    test('accessor returns type periodicity when institution override is null', function () {
+        $type = Type::factory()->create([
+            'model_type' => Institution::class,
+            'extra_attributes' => ['meeting_periodicity_days' => 14],
+        ]);
+
+        $institution = Institution::factory()->create([
+            'tenant_id' => $this->tenant->id,
+            'meeting_periodicity_days' => null,
+        ]);
+        $institution->types()->attach($type);
+
+        expect($institution->meeting_periodicity_days)->toBe(14);
+    });
+
+    test('accessor returns minimum type periodicity when multiple types', function () {
+        $type1 = Type::factory()->create([
+            'model_type' => Institution::class,
+            'extra_attributes' => ['meeting_periodicity_days' => 30],
+        ]);
+        $type2 = Type::factory()->create([
+            'model_type' => Institution::class,
+            'extra_attributes' => ['meeting_periodicity_days' => 14],
+        ]);
+
+        $institution = Institution::factory()->create([
+            'tenant_id' => $this->tenant->id,
+            'meeting_periodicity_days' => null,
+        ]);
+        $institution->types()->attach([$type1->id, $type2->id]);
+
+        // Should return the minimum (14)
+        expect($institution->meeting_periodicity_days)->toBe(14);
+    });
+
+    test('accessor returns default 30 when no override and no type periodicity', function () {
+        $type = Type::factory()->create([
+            'model_type' => Institution::class,
+            'extra_attributes' => [], // No periodicity set
+        ]);
+
+        $institution = Institution::factory()->create([
+            'tenant_id' => $this->tenant->id,
+            'meeting_periodicity_days' => null,
+        ]);
+        $institution->types()->attach($type);
+
+        expect($institution->meeting_periodicity_days)->toBe(30);
+    });
+
+    test('accessor returns default 30 when no types attached', function () {
+        $institution = Institution::factory()->create([
+            'tenant_id' => $this->tenant->id,
+            'meeting_periodicity_days' => null,
+        ]);
+
+        expect($institution->meeting_periodicity_days)->toBe(30);
+    });
+
+    test('show endpoint includes meeting_periodicity_days in response', function () {
+        $institution = Institution::factory()->create([
+            'tenant_id' => $this->tenant->id,
+            'meeting_periodicity_days' => 21,
+        ]);
+
+        $response = asUser($this->admin)->get(route('institutions.show', $institution));
+
+        $response->assertStatus(200)
+            ->assertInertia(fn ($page) => $page
+                ->component('Admin/People/ShowInstitution')
+                ->where('institution.meeting_periodicity_days', 21)
+            );
+    });
+
+    test('show endpoint returns computed periodicity when override is null', function () {
+        $type = Type::factory()->create([
+            'model_type' => Institution::class,
+            'extra_attributes' => ['meeting_periodicity_days' => 7],
+        ]);
+
+        $institution = Institution::factory()->create([
+            'tenant_id' => $this->tenant->id,
+            'meeting_periodicity_days' => null,
+        ]);
+        $institution->types()->attach($type);
+
+        $response = asUser($this->admin)->get(route('institutions.show', $institution));
+
+        $response->assertStatus(200)
+            ->assertInertia(fn ($page) => $page
+                ->component('Admin/People/ShowInstitution')
+                ->where('institution.meeting_periodicity_days', 7)
+            );
+    });
+
+    test('validates meeting_periodicity_days is positive integer', function () {
+        $response = asUser($this->admin)->post(route('institutions.store'), [
+            'name' => ['lt' => 'Test Institution'],
+            'tenant_id' => $this->tenant->id,
+            'contacts_layout' => 'aside',
+            'meeting_periodicity_days' => -5,
+        ]);
+
+        $response->assertSessionHasErrors('meeting_periodicity_days');
+    });
+
+    test('validates meeting_periodicity_days max is 365', function () {
+        $response = asUser($this->admin)->post(route('institutions.store'), [
+            'name' => ['lt' => 'Test Institution'],
+            'tenant_id' => $this->tenant->id,
+            'contacts_layout' => 'aside',
+            'meeting_periodicity_days' => 500,
+        ]);
+
+        $response->assertSessionHasErrors('meeting_periodicity_days');
     });
 });

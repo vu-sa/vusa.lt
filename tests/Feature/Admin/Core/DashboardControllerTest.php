@@ -561,6 +561,105 @@ describe('atstovavimas dashboard authorization', function () {
     });
 });
 
+describe('atstovavimas dashboard periodicity', function () {
+    test('user institutions include meeting_periodicity_days', function () {
+        // Create a non-PKP tenant to ensure institution is not filtered out
+        $nonPkpTenant = Tenant::factory()->create(['type' => 'padalinys']);
+
+        // Create a user with an assigned institution that has custom periodicity
+        $institution = \App\Models\Institution::factory()->for($nonPkpTenant)->create([
+            'meeting_periodicity_days' => 21,
+            'alias' => 'periodicity-test-'.uniqid(),
+        ]);
+
+        // Create a duty and assign it to the user
+        $studentRepType = \App\Models\Type::query()->where('slug', 'studentu-atstovai')->first()
+            ?? \App\Models\Type::factory()->create(['slug' => 'studentu-atstovai', 'model_type' => \App\Models\Duty::class]);
+
+        $duty = \App\Models\Duty::factory()
+            ->for($institution)
+            ->hasAttached($studentRepType, [], 'types')
+            ->create();
+
+        // Create a fresh user for this test to avoid interference
+        $testUser = \App\Models\User::factory()->create();
+        $testUser->duties()->attach($duty, [
+            'start_date' => now()->subMonth(),
+            'end_date' => null,
+        ]);
+
+        asUser($testUser)
+            ->get(route('dashboard.atstovavimas'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Dashboard/ShowAtstovavimas')
+                ->has('userInstitutions')
+                ->where('userInstitutions', function ($institutions) use ($institution) {
+                    $collection = collect($institutions);
+
+                    // If no institutions found, the closure returns false which fails the test
+                    if ($collection->isEmpty()) {
+                        return false;
+                    }
+
+                    $testInstitution = $collection->firstWhere('id', $institution->id);
+
+                    // Institution should have meeting_periodicity_days appended
+                    return $testInstitution !== null &&
+                           isset($testInstitution['meeting_periodicity_days']) &&
+                           $testInstitution['meeting_periodicity_days'] === 21;
+                })
+            );
+    });
+
+    test('user institutions use type periodicity when no override', function () {
+        // Create a type with custom periodicity
+        $institutionType = \App\Models\Type::factory()->create([
+            'model_type' => \App\Models\Institution::class,
+            'extra_attributes' => ['meeting_periodicity_days' => 14],
+        ]);
+
+        // Create an institution with no override
+        $institution = \App\Models\Institution::factory()->for($this->tenant)->create([
+            'meeting_periodicity_days' => null,
+            'alias' => 'periodicity-type-test-'.uniqid(),
+        ]);
+        $institution->types()->attach($institutionType);
+
+        // Create a duty and assign it to the user
+        $studentRepType = \App\Models\Type::query()->where('slug', 'studentu-atstovai')->first()
+            ?? \App\Models\Type::factory()->create(['slug' => 'studentu-atstovai', 'model_type' => \App\Models\Duty::class]);
+
+        $duty = \App\Models\Duty::factory()
+            ->for($institution)
+            ->hasAttached($studentRepType, [], 'types')
+            ->create();
+
+        // Create a fresh user for this test to avoid interference
+        $testUser = \App\Models\User::factory()->create();
+        $testUser->duties()->attach($duty, [
+            'start_date' => now()->subMonth(),
+            'end_date' => null,
+        ]);
+
+        asUser($testUser)
+            ->get(route('dashboard.atstovavimas'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Dashboard/ShowAtstovavimas')
+                ->where('userInstitutions', function ($institutions) use ($institution) {
+                    $collection = collect($institutions);
+                    $testInstitution = $collection->firstWhere('id', $institution->id);
+
+                    // Institution should inherit type's periodicity
+                    return $testInstitution !== null &&
+                           isset($testInstitution['meeting_periodicity_days']) &&
+                           $testInstitution['meeting_periodicity_days'] === 14;
+                })
+            );
+    });
+});
+
 describe('svetaine dashboard', function () {
     test('admin can access svetaine dashboard', function () {
         asUser($this->admin)

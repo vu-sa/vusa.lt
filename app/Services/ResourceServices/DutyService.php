@@ -178,7 +178,7 @@ class DutyService
      */
     private static function buildInstitutionQuery()
     {
-        return Institution::select('id', 'name', 'alias', 'tenant_id')
+        return Institution::select('id', 'name', 'alias', 'tenant_id', 'meeting_periodicity_days')
             ->whereHas('tenant', function ($query) {
                 $query->where('type', '!=', 'pkp');
             })
