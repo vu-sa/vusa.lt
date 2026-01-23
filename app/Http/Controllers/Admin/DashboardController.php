@@ -519,13 +519,13 @@ class DashboardController extends AdminController
         return $this->redirectBackWithSuccess('Pranešimų nustatymai išsaugoti.');
     }
 
-    public function userTasks()
+    public function userTasks(Request $request)
     {
         $user = User::find(Auth::id());
 
         $tasksQuery = $user->tasks()->with('taskable', 'users:id,name,email,profile_photo_path');
 
-        // Get task statistics
+        // Get task statistics (before any filtering for accurate counts)
         $taskStats = [
             'total' => (clone $tasksQuery)->whereNull('completed_at')->count(),
             'completed' => (clone $tasksQuery)->whereNotNull('completed_at')->count(),
@@ -533,8 +533,37 @@ class DashboardController extends AdminController
             'autoCompleting' => (clone $tasksQuery)->whereNull('completed_at')->whereNotNull('action_type')->where('action_type', '!=', 'manual')->count(),
         ];
 
+        // Apply status filter
+        $status = $request->input('status', 'incomplete');
+
+        match ($status) {
+            'completed' => $tasksQuery->whereNotNull('completed_at'),
+            'incomplete' => $tasksQuery->whereNull('completed_at'),
+            default => null, // 'all' - no filter
+        };
+
+        // Apply ordering based on status filter
+        if ($status === 'completed') {
+            // Completed tasks: most recently completed first
+            $tasksQuery->latest('completed_at');
+        } else {
+            // Incomplete/all: overdue first, then by due date, then by creation date
+            $tasksQuery
+                ->when($status !== 'completed', function ($query) {
+                    // Put incomplete tasks first when showing all
+                    $query->orderByRaw('completed_at IS NOT NULL');
+                })
+                ->orderByRaw('CASE WHEN due_date IS NOT NULL AND due_date < ? THEN 0 ELSE 1 END', [now()])
+                ->orderBy('due_date')
+                ->latest('created_at');
+        }
+
+        // Paginate tasks
+        $perPage = $request->input('per_page', 20);
+        $paginatedTasks = $tasksQuery->paginate($perPage)->withQueryString();
+
         // Transform tasks with computed properties
-        $tasks = $tasksQuery->get()->map(fn ($task) => [
+        $tasks = $paginatedTasks->through(fn ($task) => [
             'id' => $task->id,
             'name' => $task->name,
             'description' => $task->description,
@@ -566,6 +595,7 @@ class DashboardController extends AdminController
         return $this->inertiaResponse('Admin/ShowTasks', [
             'tasks' => $tasks,
             'taskStats' => $taskStats,
+            'status' => $status,
         ]);
     }
 

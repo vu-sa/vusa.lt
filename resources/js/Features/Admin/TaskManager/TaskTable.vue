@@ -42,12 +42,16 @@ import {
   CalendarOffIcon,
   ClockIcon,
   InfoIcon,
+  FilePlus2Icon,
+  FileCheckIcon,
+  ExternalLinkIcon,
 } from "lucide-vue-next";
 import { Badge } from "@/Components/ui/badge";
 import { Button } from "@/Components/ui/button";
 import { Checkbox } from "@/Components/ui/checkbox";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/Components/ui/hover-card";
 import { toast } from "vue-sonner";
 import { format, formatDistanceToNow, parseISO, differenceInDays } from "date-fns";
 import { lt, enUS } from "date-fns/locale";
@@ -134,6 +138,12 @@ const getActionTypeIcon = (actionType: TaskActionType | string | null | undefine
     case TaskActionType.PeriodicityGap:
     case 'periodicity_gap':
       return ClockIcon;
+    case TaskActionType.AgendaCreation:
+    case 'agenda_creation':
+      return FilePlus2Icon;
+    case TaskActionType.AgendaCompletion:
+    case 'agenda_completion':
+      return FileCheckIcon;
     default:
       return ClipboardCheckIcon;
   }
@@ -156,6 +166,12 @@ const getActionTypeClasses = (actionType: TaskActionType | string | null | undef
     case TaskActionType.PeriodicityGap:
     case 'periodicity_gap':
       return 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400';
+    case TaskActionType.AgendaCreation:
+    case 'agenda_creation':
+      return 'bg-violet-100 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400';
+    case TaskActionType.AgendaCompletion:
+    case 'agenda_completion':
+      return 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400';
     default:
       return 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400';
   }
@@ -169,10 +185,45 @@ const isPeriodicityGapTask = (task: Task): boolean => {
 };
 
 /**
+ * Check if task is an agenda-related task
+ */
+const isAgendaTask = (task: Task): boolean => {
+  return task.action_type === TaskActionType.AgendaCreation || 
+         task.action_type === 'agenda_creation' ||
+         task.action_type === TaskActionType.AgendaCompletion || 
+         task.action_type === 'agenda_completion';
+};
+
+/**
+ * Check if task is an agenda creation task
+ */
+const isAgendaCreationTask = (task: Task): boolean => {
+  return task.action_type === TaskActionType.AgendaCreation || task.action_type === 'agenda_creation';
+};
+
+/**
+ * Check if task is a meeting-based task
+ */
+const isMeetingTask = (task: Task): boolean => {
+  return task.taskable_type?.includes('Meeting') ?? false;
+};
+
+/**
  * Check if task is institution-based (for periodicity gap actions)
  */
 const isInstitutionTask = (task: Task): boolean => {
   return task.taskable_type?.includes('Institution') ?? false;
+};
+
+/**
+ * Get URL for navigating to meeting agenda tab with optional add action
+ */
+const getMeetingAgendaUrl = (task: Task, action?: 'add'): string => {
+  if (!isMeetingTask(task) || !task.taskable_id) return '#';
+  const baseUrl = route('meetings.show', task.taskable_id);
+  const params = new URLSearchParams({ tab: 'agenda' });
+  if (action) params.set('action', action);
+  return `${baseUrl}?${params.toString()}`;
 };
 
 /**
@@ -418,20 +469,54 @@ const columns = [
       const isCompleted = task.completed_at !== null;
       const hasDescription = !!task.description;
       
+      // If task has description, wrap in HoverCard for preview
+      if (hasDescription) {
+        return (
+          <div class="min-w-0 flex-1">
+            <HoverCard openDelay={300}>
+              <HoverCardTrigger asChild>
+                <button
+                  type="button"
+                  class={`group/name flex max-w-full items-center gap-1.5 text-left ${isCompleted ? 'line-through text-zinc-500' : 'text-zinc-900 dark:text-zinc-100'}`}
+                  onClick={() => emit('openTaskDetail', task)}
+                >
+                  <span class="truncate text-sm font-medium group-hover/name:underline" title={task.name}>
+                    {task.name}
+                  </span>
+                </button>
+              </HoverCardTrigger>
+              <HoverCardContent class="w-80" side="top" align="start">
+                <div class="space-y-2">
+                  <p class="text-sm font-medium text-zinc-900 dark:text-zinc-100">{task.name}</p>
+                  <p class="text-sm text-zinc-600 dark:text-zinc-400 whitespace-pre-wrap">{task.description}</p>
+                </div>
+              </HoverCardContent>
+            </HoverCard>
+          </div>
+        );
+      }
+      
+      // No description - just show name with tooltip for overflow
       return (
         <div class="min-w-0 flex-1">
-          <button
-            type="button"
-            class={`group/name flex items-center gap-1.5 text-left ${isCompleted ? 'line-through text-zinc-500' : 'text-zinc-900 dark:text-zinc-100'}`}
-            onClick={() => emit('openTaskDetail', task)}
-          >
-            <span class="truncate text-sm font-medium group-hover/name:underline">
-              {task.name}
-            </span>
-            {hasDescription && (
-              <InfoIcon class="h-3.5 w-3.5 shrink-0 text-zinc-400 group-hover/name:text-zinc-600 dark:group-hover/name:text-zinc-300" />
-            )}
-          </button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  class={`group/name flex max-w-full items-center gap-1.5 text-left ${isCompleted ? 'line-through text-zinc-500' : 'text-zinc-900 dark:text-zinc-100'}`}
+                  onClick={() => emit('openTaskDetail', task)}
+                >
+                  <span class="truncate text-sm font-medium group-hover/name:underline">
+                    {task.name}
+                  </span>
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="top" align="start">
+                <p>{task.name}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       );
     },
@@ -494,7 +579,7 @@ const columns = [
     },
     size: 140,
   },
-  // Quick actions for periodicity gap tasks
+  // Quick actions for periodicity gap tasks and agenda tasks
   {
     id: "quick_actions",
     header: "",
@@ -502,49 +587,85 @@ const columns = [
       const task = row.original;
       const isCompleted = task.completed_at !== null;
       
-      // Only show quick actions for uncompleted periodicity gap tasks
-      if (!isPeriodicityGapTask(task) || isCompleted || !isInstitutionTask(task)) {
-        return null;
+      // Show quick actions for uncompleted periodicity gap tasks (institution-based)
+      if (isPeriodicityGapTask(task) && !isCompleted && isInstitutionTask(task)) {
+        return (
+          <div class="flex items-center gap-1">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    class="h-7 w-7 text-zinc-600 hover:text-emerald-700 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-emerald-400 dark:hover:bg-zinc-800"
+                    onClick={() => emit('openMeetingModal', task)}
+                  >
+                    <CalendarPlusIcon class="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{$t('tasks.periodicity_gap.action_schedule_meeting')}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    class="h-7 w-7 text-zinc-600 hover:text-amber-700 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-amber-400 dark:hover:bg-zinc-800"
+                    onClick={() => emit('openCheckInDialog', task)}
+                  >
+                    <CalendarOffIcon class="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{$t('tasks.periodicity_gap.action_report_no_meeting')}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+        );
       }
-
-      return (
-        <div class="flex items-center gap-1">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  class="h-7 w-7 text-zinc-600 hover:text-emerald-700 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-emerald-400 dark:hover:bg-zinc-800"
-                  onClick={() => emit('openMeetingModal', task)}
-                >
-                  <CalendarPlusIcon class="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{$t('tasks.periodicity_gap.action_schedule_meeting')}</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  class="h-7 w-7 text-zinc-600 hover:text-amber-700 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-amber-400 dark:hover:bg-zinc-800"
-                  onClick={() => emit('openCheckInDialog', task)}
-                >
-                  <CalendarOffIcon class="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{$t('tasks.periodicity_gap.action_report_no_meeting')}</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </div>
-      );
+      
+      // Show quick actions for uncompleted agenda tasks (meeting-based)
+      if (isAgendaTask(task) && !isCompleted && isMeetingTask(task)) {
+        const isCreation = isAgendaCreationTask(task);
+        const agendaUrl = getMeetingAgendaUrl(task, isCreation ? 'add' : undefined);
+        
+        return (
+          <div class="flex items-center gap-1">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Link href={agendaUrl}>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      class={`h-7 w-7 text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800 ${
+                        isCreation 
+                          ? 'hover:text-violet-700 dark:hover:text-violet-400' 
+                          : 'hover:text-green-700 dark:hover:text-green-400'
+                      }`}
+                    >
+                      {isCreation 
+                        ? <FilePlus2Icon class="h-4 w-4" /> 
+                        : <FileCheckIcon class="h-4 w-4" />
+                      }
+                    </Button>
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{isCreation ? $t('tasks.agenda.action_add_items') : $t('tasks.agenda.action_view_agenda')}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+        );
+      }
+      
+      return null;
     },
     size: 80,
   },
@@ -555,6 +676,7 @@ const columns = [
       const task = row.original;
       const canManuallyComplete = task.can_be_manually_completed !== false;
       const isCompleted = task.completed_at !== null;
+      const hasDescription = !!task.description;
 
       return (
         <DropdownMenu>
@@ -564,6 +686,11 @@ const columns = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => emit('openTaskDetail', task)}>
+              <InfoIcon class="mr-2 h-4 w-4" />
+              <span>{$t("View Details")}</span>
+            </DropdownMenuItem>
+            {(canManuallyComplete || hasDescription) && <DropdownMenuSeparator />}
             {canManuallyComplete && !isCompleted && (
               <DropdownMenuItem onClick={() => updateTaskCompletion(task)}>
                 <CheckIcon class="mr-2 h-4 w-4" />

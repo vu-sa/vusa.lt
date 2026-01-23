@@ -51,8 +51,8 @@
       </div>
     </div>
 
-    <!-- Stats overview cards -->
-    <div v-if="taskStats" class="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <!-- Stats overview cards (hidden on mobile) -->
+    <div v-if="taskStats" class="mb-6 hidden gap-4 sm:grid sm:grid-cols-2 lg:grid-cols-4">
       <!-- Total pending -->
       <div class="relative overflow-hidden rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
         <div class="flex items-center gap-3">

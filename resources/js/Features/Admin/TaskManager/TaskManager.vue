@@ -43,14 +43,38 @@
       </div>
     </div>
     
-    <!-- Task table -->
+    <!-- Task table (desktop) -->
     <TaskTable 
+      v-if="!isMobile"
       :tasks="filteredTasks" 
       :key="taskFilterKey"
       @open-meeting-modal="(task) => emit('openMeetingModal', task)"
       @open-check-in-dialog="(task) => emit('openCheckInDialog', task)"
       @open-task-detail="(task) => emit('openTaskDetail', task)"
     />
+
+    <!-- Task cards (mobile) -->
+    <div v-else class="space-y-3">
+      <div v-if="filteredTasks.length === 0" class="flex flex-col items-center justify-center gap-3 py-8 text-center">
+        <div class="flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
+          <CheckCircleIcon class="h-6 w-6 text-zinc-500 dark:text-zinc-400" />
+        </div>
+        <div>
+          <p class="font-medium text-zinc-900 dark:text-zinc-100">{{ $t('Viskas atlikta!') }}</p>
+          <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ $t('No tasks found.') }}</p>
+        </div>
+      </div>
+      <TaskCard
+        v-for="task in filteredTasks"
+        :key="task.id"
+        :task="task"
+        :is-loading="loadingTaskId === task.id"
+        @open-meeting-modal="(t) => emit('openMeetingModal', t)"
+        @open-check-in-dialog="(t) => emit('openCheckInDialog', t)"
+        @open-task-detail="(t) => emit('openTaskDetail', t)"
+        @update:completed="handleTaskCompletion"
+      />
+    </div>
 
     <!-- Create task dialog (async loaded) -->
     <CreateTaskDialog 
@@ -65,16 +89,24 @@
 <script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
 import { computed, ref, watch, defineAsyncComponent } from "vue";
+import { router } from "@inertiajs/vue3";
+import { useBreakpoints, breakpointsTailwind } from "@vueuse/core";
 import TaskFilter from "@/Components/Tasks/TaskFilter.vue";
 import TaskTable from "./TaskTable.vue";
+import TaskCard from "./TaskCard.vue";
 import { Badge } from "@/Components/ui/badge";
 import { AlertCircleIcon, RotateCwIcon, CheckCircleIcon } from "lucide-vue-next";
+import { toast } from "vue-sonner";
 import type { TaskProgress, TaskActionType } from "@/Types/TaskTypes";
 
 // Use async component for the dialog to improve initial load performance
 const CreateTaskDialog = defineAsyncComponent(() => 
   import('./CreateTaskDialog.vue')
 );
+
+// Mobile detection
+const breakpoints = useBreakpoints(breakpointsTailwind);
+const isMobile = breakpoints.smaller('md');
 
 // Task filtering states
 enum FilterType {
@@ -123,17 +155,22 @@ const props = defineProps<{
     id: string | number;
     type: string;
   };
+  // Server-side filtering support
+  serverSideFilter?: boolean;
+  currentFilter?: 'all' | 'completed' | 'incomplete';
 }>();
 
 const emit = defineEmits<{
   (e: 'openMeetingModal', task: TaskWithDetails): void;
   (e: 'openCheckInDialog', task: TaskWithDetails): void;
   (e: 'openTaskDetail', task: TaskWithDetails): void;
+  (e: 'filterChange', status: 'all' | 'completed' | 'incomplete'): void;
 }>();
 
 // Component state
 const showCreateTaskDialog = ref(false);
 const taskFilterKey = ref(0);
+const loadingTaskId = ref<string | null>(null);
 
 // Filter options
 const filterOptions = [
@@ -143,12 +180,26 @@ const filterOptions = [
 ];
 
 // Task filtering - default to incomplete tasks
-const currentFilter = ref(FilterType.INCOMPLETE);
+// Use props.currentFilter if server-side filtering is enabled
+const currentFilter = ref<FilterType>(
+  props.serverSideFilter && props.currentFilter 
+    ? props.currentFilter as FilterType 
+    : FilterType.INCOMPLETE
+);
+
+// When server-side filtering is enabled, use tasks directly (already filtered by backend)
+// Otherwise, filter client-side
 const filteredTasks = computed(() => {
   if (!props.tasks?.length) {
     return [];
   }
 
+  // Server-side filtering: backend already filtered, just return tasks
+  if (props.serverSideFilter) {
+    return props.tasks;
+  }
+
+  // Client-side filtering
   switch (currentFilter.value) {
     case FilterType.COMPLETED:
       return props.tasks.filter(task => task.completed_at !== null);
@@ -160,9 +211,50 @@ const filteredTasks = computed(() => {
 });
 
 // Force re-render of TaskTable when filter changes
-watch(currentFilter, () => {
+watch(currentFilter, (newFilter) => {
   taskFilterKey.value++;
+  
+  // Emit filter change for server-side filtering
+  if (props.serverSideFilter) {
+    emit('filterChange', newFilter as 'all' | 'completed' | 'incomplete');
+  }
 });
+
+/**
+ * Handle task completion from card component
+ */
+const handleTaskCompletion = (task: TaskWithDetails) => {
+  if (task.can_be_manually_completed === false) {
+    toast.info($t("This task completes automatically"));
+    return;
+  }
+
+  if (loadingTaskId.value) return;
+  loadingTaskId.value = task.id;
+
+  const newCompletionState = task.completed_at === null;
+
+  router.post(
+    route("tasks.updateCompletionStatus", task.id),
+    { completed: newCompletionState },
+    {
+      preserveScroll: true,
+      preserveState: true,
+      onSuccess: () => {
+        loadingTaskId.value = null;
+        if (newCompletionState) {
+          toast.success($t("Task marked as completed"), { description: task.name });
+        } else {
+          toast.info($t("Task marked as incomplete"), { description: task.name });
+        }
+      },
+      onError: () => {
+        loadingTaskId.value = null;
+        toast.error($t("Failed to update task status"));
+      },
+    }
+  );
+};
 
 /**
  * Handle successful task creation

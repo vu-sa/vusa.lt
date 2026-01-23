@@ -293,8 +293,8 @@
           </FieldArray>
         </FormField>
 
-        <!-- Action buttons -->
-        <div class="flex items-center justify-between pt-4 border-t">
+        <!-- Action buttons (conditionally hidden when hideActions is true) -->
+        <div v-if="!props.hideActions" class="flex items-center justify-between pt-4 border-t">
           <div class="flex items-center gap-2">
             <Button v-if="currentFieldCount > 1 || (currentFieldCount === 1 && hasNonEmptyItems)" type="button" variant="ghost" size="sm" @click="clearAllItems">
               <Trash2 class="mr-2 h-3 w-3" />
@@ -391,11 +391,14 @@ const props = withDefaults(defineProps<{
   showSkipButton?: boolean;
   /** Whether to show the hint/suggestion alert */
   showHint?: boolean;
+  /** Whether to hide the action buttons (for external button rendering) */
+  hideActions?: boolean;
 }>(), {
   mode: 'create',
   submitLabel: undefined,
   showSkipButton: true,
   showHint: true,
+  hideActions: false,
 });
 
 // Debug logging
@@ -661,6 +664,20 @@ watch(sortableContainer, (container) => {
     });
   }
 }, { immediate: true });
+
+// Submit form programmatically (for external button rendering)
+const submitFormFromOutside = () => {
+  agendaForm.value?.$el?.requestSubmit?.() ?? agendaForm.value?.$el?.submit();
+};
+
+// Expose methods and state for external button rendering
+defineExpose({
+  submitForm: submitFormFromOutside,
+  skipAgenda,
+  currentFieldCount,
+  hasNonEmptyItems,
+  clearAllItems,
+});
 </script>
 
 <style scoped>

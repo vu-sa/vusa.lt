@@ -220,20 +220,42 @@ class TaskController extends AdminController
         // Clone query for stats calculation BEFORE type filter is applied
         $statsQuery = clone $baseQuery;
 
-        // Calculate stats from unfiltered query (for byType counts that persist)
-        $allTasks = $statsQuery->get();
+        // Calculate stats using efficient database aggregations
+        $total = (clone $statsQuery)->whereNull('completed_at')->count();
+        $completed = (clone $statsQuery)->whereNotNull('completed_at')->count();
+
+        // For overdue count, we need a simpler approach - overdue = pending + has due_date in past
+        $overdue = (clone $statsQuery)
+            ->whereNull('completed_at')
+            ->where('due_date', '<', now())
+            ->count();
+
+        // Auto-completing: tasks with certain action types that auto-complete
+        $autoCompletable = (clone $statsQuery)
+            ->whereNull('completed_at')
+            ->whereIn('action_type', ['approval', 'pickup', 'return'])
+            ->count();
+
+        // Type counts using direct database queries
+        $institutionsCount = (clone $statsQuery)
+            ->whereIn('taskable_type', [
+                \App\Models\Institution::class,
+                \App\Models\Meeting::class,
+            ])
+            ->count();
+
+        $reservationsCount = (clone $statsQuery)
+            ->where('taskable_type', \App\Models\Reservation::class)
+            ->count();
+
         $taskStats = [
-            'total' => $allTasks->whereNull('completed_at')->count(),
-            'completed' => $allTasks->whereNotNull('completed_at')->count(),
-            'overdue' => $allTasks->filter(fn ($t) => $t->isOverdue())->count(),
-            'autoCompleting' => $allTasks->whereNull('completed_at')->filter(fn ($t) => $t->isAutoCompletable())->count(),
+            'total' => $total,
+            'completed' => $completed,
+            'overdue' => $overdue,
+            'autoCompleting' => $autoCompletable,
             'byType' => [
-                // Institutions group: Institution + Meeting taskables
-                'institutions' => $allTasks->whereIn('taskable_type', [
-                    \App\Models\Institution::class,
-                    \App\Models\Meeting::class,
-                ])->count(),
-                'reservations' => $allTasks->where('taskable_type', \App\Models\Reservation::class)->count(),
+                'institutions' => $institutionsCount,
+                'reservations' => $reservationsCount,
             ],
         ];
 

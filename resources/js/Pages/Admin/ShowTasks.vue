@@ -1,7 +1,7 @@
 <template>
   <AdminContentPage :title="$t('Užduotys')">
-    <!-- Stats overview cards -->
-    <div v-if="taskStats" class="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <!-- Stats overview cards (hidden on mobile) -->
+    <div v-if="taskStats" class="mb-6 hidden gap-4 sm:grid sm:grid-cols-2 lg:grid-cols-4">
       <!-- Total pending -->
       <div class="relative overflow-hidden rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
         <div class="flex items-center gap-3">
@@ -71,14 +71,47 @@
     </div>
 
     <!-- Task manager with table -->
-    <div class="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900 sm:p-6">
-      <TaskManager 
-        :tasks="tasks" 
-        :task-stats="taskStats"
-        @open-meeting-modal="handleOpenMeetingModal"
-        @open-check-in-dialog="handleOpenCheckInDialog"
-        @open-task-detail="handleOpenTaskDetail"
-      />
+    <div class="rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+      <div class="p-3 sm:p-6">
+        <TaskManager 
+          :tasks="tasks.data" 
+          :task-stats="taskStats"
+          :current-filter="currentStatus"
+          server-side-filter
+          @filter-change="handleFilterChange"
+          @open-meeting-modal="handleOpenMeetingModal"
+          @open-check-in-dialog="handleOpenCheckInDialog"
+          @open-task-detail="handleOpenTaskDetail"
+        />
+      </div>
+
+      <!-- Pagination -->
+      <div v-if="tasks.last_page > 1" class="flex items-center justify-between border-t border-zinc-200 px-4 py-3 dark:border-zinc-800 sm:px-6">
+        <div class="text-sm text-zinc-500 dark:text-zinc-400">
+          {{ tasks.from }} - {{ tasks.to }} / {{ tasks.total }}
+        </div>
+        <div class="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            :disabled="tasks.current_page === 1"
+            @click="goToPage(tasks.current_page - 1)"
+          >
+            <ChevronLeftIcon class="h-4 w-4" />
+          </Button>
+          <span class="text-sm tabular-nums text-zinc-600 dark:text-zinc-400">
+            {{ tasks.current_page }} / {{ tasks.last_page }}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            :disabled="tasks.current_page === tasks.last_page"
+            @click="goToPage(tasks.current_page + 1)"
+          >
+            <ChevronRightIcon class="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
     </div>
 
     <!-- Meeting modal for periodicity gap tasks -->
@@ -114,16 +147,20 @@
 
 <script setup lang="ts">
 import { ref, computed, defineAsyncComponent } from "vue";
+import { router } from "@inertiajs/vue3";
 import AdminContentPage from "@/Components/Layouts/AdminContentPage.vue";
 import { usePageBreadcrumbs } from "@/Composables/useBreadcrumbsUnified";
 import TaskManager from "@/Features/Admin/TaskManager/TaskManager.vue";
 import { trans as $t } from "laravel-vue-i18n";
 import Icons from "@/Types/Icons/regular";
+import { Button } from "@/Components/ui/button";
 import { 
   ClipboardList as ClipboardListIcon,
   AlertCircle as AlertCircleIcon,
   RotateCw as RotateCwIcon,
   CheckCircle as CheckCircleIcon,
+  ChevronLeft as ChevronLeftIcon,
+  ChevronRight as ChevronRightIcon,
 } from "lucide-vue-next";
 import type { TaskProgress, TaskActionType } from "@/Types/TaskTypes";
 
@@ -163,10 +200,46 @@ interface TaskStats {
   autoCompleting: number;
 }
 
-defineProps<{
-  tasks: TaskWithDetails[];
+interface PaginatedTasks {
+  data: TaskWithDetails[];
+  current_page: number;
+  last_page: number;
+  per_page: number;
+  total: number;
+  from: number | null;
+  to: number | null;
+}
+
+const props = defineProps<{
+  tasks: PaginatedTasks;
   taskStats?: TaskStats;
+  status?: 'all' | 'completed' | 'incomplete';
 }>();
+
+// Current filter status from URL/props
+const currentStatus = computed(() => props.status ?? 'incomplete');
+
+// Pagination - preserve status filter
+const goToPage = (page: number) => {
+  router.get(route('userTasks'), { 
+    page, 
+    status: currentStatus.value 
+  }, { 
+    preserveState: true, 
+    preserveScroll: true 
+  });
+};
+
+// Handle filter changes from TaskManager - reload with new status
+const handleFilterChange = (status: 'all' | 'completed' | 'incomplete') => {
+  router.get(route('userTasks'), { 
+    status,
+    page: 1  // Reset to first page on filter change
+  }, { 
+    preserveState: true, 
+    preserveScroll: true 
+  });
+};
 
 // Modal state
 const showMeetingModal = ref(false);

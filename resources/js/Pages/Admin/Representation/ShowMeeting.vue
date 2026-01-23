@@ -297,27 +297,73 @@ const loading = ref(false);
 // Tab state with smart defaults
 const hasVisitedAgendaTab = useStorage("meeting-agenda-tab-visited", false);
 const storedTab = useStorage("show-meeting-tab", "overview");
-const currentTab = ref(storedTab.value);
+
+// Check URL for tab parameter (priority over localStorage)
+const getInitialTab = () => {
+  if (typeof window !== 'undefined') {
+    const params = new URLSearchParams(window.location.search);
+    const urlTab = params.get('tab');
+    if (urlTab && ['overview', 'agenda', 'files', 'tasks'].includes(urlTab)) {
+      return urlTab;
+    }
+  }
+  return storedTab.value;
+};
+
+const currentTab = ref(getInitialTab());
 
 // Show spotlight on agenda tab for users who haven't visited it yet
 const showAgendaSpotlight = computed(() => {
   return !hasVisitedAgendaTab.value && (props.meeting.agenda_items?.length ?? 0) > 0;
 });
 
-// Mark agenda tab as visited when user clicks on it
+// Mark agenda tab as visited when user clicks on it, and sync to URL
 watch(currentTab, (newTab) => {
   storedTab.value = newTab;
   if (newTab === 'agenda') {
     hasVisitedAgendaTab.value = true;
   }
+  
+  // Sync tab state to URL without page reload
+  if (typeof window !== 'undefined') {
+    const url = new URL(window.location.href);
+    if (newTab === 'overview') {
+      url.searchParams.delete('tab');
+      url.searchParams.delete('action');
+    } else {
+      url.searchParams.set('tab', newTab);
+      // Clear action param when switching tabs normally
+      url.searchParams.delete('action');
+    }
+    window.history.replaceState({}, '', url.toString());
+  }
 });
 
-// Reset to overview for new meeting visits
+// Reset to overview for new meeting visits (unless URL specifies a tab)
 onMounted(() => {
   const lastVisitedMeetingId = useStorage("last-visited-meeting-id", "");
-  if (lastVisitedMeetingId.value !== props.meeting.id) {
+  const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+  const urlTab = params?.get('tab');
+  const urlAction = params?.get('action');
+  
+  // If no URL tab specified and it's a new meeting, reset to overview
+  if (!urlTab && lastVisitedMeetingId.value !== props.meeting.id) {
     currentTab.value = "overview";
-    lastVisitedMeetingId.value = props.meeting.id;
+  }
+  lastVisitedMeetingId.value = props.meeting.id;
+  
+  // Auto-open agenda add modal if action=add and on agenda tab
+  if (urlTab === 'agenda' && urlAction === 'add') {
+    // Small delay to ensure component is mounted
+    setTimeout(() => {
+      showSingleAgendaItemModal.value = true;
+      // Clear the action param from URL
+      if (typeof window !== 'undefined') {
+        const url = new URL(window.location.href);
+        url.searchParams.delete('action');
+        window.history.replaceState({}, '', url.toString());
+      }
+    }, 100);
   }
 });
 
