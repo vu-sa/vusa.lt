@@ -253,6 +253,8 @@ export function renderHoverEffects(ctx: HoverEffectsRenderContext): void {
     if (my < 0 || my > innerHeight || layoutRows.length === 0) return
 
     const day = d3.timeDay.floor(x.invert(mx))
+    // Set time to 12:00 noon (more reasonable default than midnight)
+    day.setHours(12, 0, 0, 0)
     const lr = findRowByY(my)
     if (!lr || lr.type !== 'institution') return
 

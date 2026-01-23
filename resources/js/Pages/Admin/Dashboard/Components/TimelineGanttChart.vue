@@ -82,7 +82,7 @@ interface Props {
 const props = defineProps<Props>();
 
 const emit = defineEmits<{
-  'create-meeting': [payload: { institution_id: string | number, suggestedAt: Date }];
+  'create-meeting': [payload: { institution_id: string | number, suggestedAt: Date, institutionName?: string }];
   'create-check-in': [payload: { institution_id: string | number, startDate: Date, endDate: Date }];
   'fullscreen': [];
 }>();

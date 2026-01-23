@@ -43,7 +43,7 @@
               </button>
             </StepperTrigger>
 
-            <div class="flex flex-col gap-0.5 pt-1">
+            <div class="flex flex-col gap-0.5 pt-1 min-w-0 max-w-[calc(100%-3rem)]">
               <StepperTitle
                 :class="[state === 'active' && 'text-primary']"
                 class="text-sm font-semibold leading-tight"
@@ -53,7 +53,7 @@
               <StepperDescription
                 v-if="meetingCreation.state.institution?.name"
                 :class="[state === 'active' && 'text-primary']"
-                class="text-xs text-muted-foreground truncate"
+                class="text-xs text-muted-foreground line-clamp-2"
               >
                 {{ meetingCreation.state.institution.name }}
               </StepperDescription>
@@ -141,7 +141,7 @@
               </button>
             </StepperTrigger>
 
-            <div class="flex flex-col gap-0.5 pt-1">
+            <div class="flex flex-col gap-0.5 pt-1 min-w-0 max-w-[calc(100%-3rem)]">
               <StepperTitle
                 :class="[state === 'active' && 'text-primary']"
                 class="text-sm font-semibold leading-tight"
@@ -154,6 +154,13 @@
                 class="text-xs text-muted-foreground truncate"
               >
                 {{ meetingCreation.state.agendaItems.length }} {{ $t('klausimai') }}
+              </StepperDescription>
+              <StepperDescription
+                v-else-if="meetingCreation.state.maxCompletedStep >= 3"
+                :class="[state === 'active' && 'text-primary']"
+                class="text-xs text-muted-foreground italic"
+              >
+                {{ $t('Darbotvarkė neužpildyta') }}
               </StepperDescription>
             </div>
           </StepperItem>
@@ -211,12 +218,55 @@
             :loading="meetingCreation.state.loading.validation"
             :submit-label="$t('Toliau')"
             @submit="(data) => emit('meetingFormSubmit', data)" />
-          <AgendaItemsForm v-else-if="meetingCreation.state.currentStep === 3"
-            :loading="meetingCreation.state.loading.submission"
-            :institution-id="meetingCreation.state.institution?.id"
-            :agenda-items="meetingCreation.state.agendaItems" 
-            :show-hint="false"
-            @submit="(data) => emit('agendaItemsSubmit', data)" />
+          <div v-else-if="meetingCreation.state.currentStep === 3" class="flex flex-col h-full">
+            <ScrollArea class="flex-1 -mx-1 px-1" style="max-height: calc(70vh - 250px);">
+              <AgendaItemsForm
+                ref="agendaFormRef"
+                :loading="meetingCreation.state.loading.submission"
+                :institution-id="meetingCreation.state.institution?.id"
+                :agenda-items="meetingCreation.state.agendaItems"
+                :show-hint="false"
+                :hide-actions="true"
+                @submit="(data) => emit('agendaItemsSubmit', data)"
+              />
+            </ScrollArea>
+            <!-- Action buttons rendered outside scroll area -->
+            <div class="flex items-center justify-between pt-4 border-t mt-4 flex-shrink-0">
+              <div class="flex items-center gap-2">
+                <Button v-if="agendaFormRef?.currentFieldCount > 1 || (agendaFormRef?.currentFieldCount === 1 && agendaFormRef?.hasNonEmptyItems)" 
+                  type="button" variant="ghost" size="sm" @click="agendaFormRef?.clearAllItems">
+                  <Trash2 class="mr-2 h-3 w-3" />
+                  {{ $t('Šalinti visus') }}
+                </Button>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <TooltipProvider v-if="agendaFormRef?.currentFieldCount === 0">
+                  <Tooltip>
+                    <TooltipTrigger as-child>
+                      <Button type="button" variant="outline" @click="agendaFormRef?.skipAgenda">
+                        {{ $t('Praleisti darbotvarkę') }}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {{ $t('Darbotvarkę galėsite pridėti vėliau') }}
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+
+                <Button :disabled="loading" @click="agendaFormRef?.submitForm">
+                  <span v-if="loading">
+                    <Loader2 class="mr-2 h-4 w-4 animate-spin" />
+                    {{ $t('Kuriama...') }}
+                  </span>
+                  <span class="inline-flex items-center" v-else>
+                    {{ $t('Toliau') }}
+                    <CheckCircle class="ml-2 h-4 w-4" />
+                  </span>
+                </Button>
+              </div>
+            </div>
+          </div>
           <MeetingReviewForm v-else-if="meetingCreation.state.currentStep === 4"
             :loading="meetingCreation.state.loading.submission" :meeting-state="meetingCreation.state"
             @edit-step="meetingCreation.goToStep" @back="meetingCreation.previousStep"
@@ -233,8 +283,9 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from "vue";
 import { trans as $t, getActiveLanguage } from "laravel-vue-i18n";
-import { CheckCircle, Loader2 } from "lucide-vue-next";
+import { CheckCircle, Loader2, Trash2 } from "lucide-vue-next";
 
 import type { useMeetingCreation } from "@/Composables/useMeetingCreation";
 import AgendaItemsForm from "@/Components/AdminForms/Special/AgendaItemsForm.vue";
@@ -243,6 +294,7 @@ import MeetingReviewForm from "@/Components/AdminForms/MeetingReviewForm.vue";
 import InstitutionSelectorForm from "@/Components/AdminForms/Special/InstitutionSelectorForm.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue"
 import Icons from "@/Types/Icons/filled";
+import { Button } from "@/Components/ui/button";
 import {
   Stepper,
   StepperItem,
@@ -251,6 +303,13 @@ import {
   StepperDescription,
   StepperSeparator,
 } from "@/Components/ui/stepper";
+import { ScrollArea } from "@/Components/ui/scroll-area";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/Components/ui/tooltip";
 
 import { getMeetingTypeOptions, type MeetingTypeValue } from "@/Types/MeetingType";
 
@@ -268,6 +327,9 @@ const emit = defineEmits<{
   (e: 'agendaItemsSubmit', data: any): void;
   (e: 'finalSubmit'): void;
 }>();
+
+// Template ref for agenda form (used to trigger submit from outside the ScrollArea)
+const agendaFormRef = ref<InstanceType<typeof AgendaItemsForm> | null>(null);
 
 // Helper methods for stepper display
 const formatMeetingTime = (): string => {

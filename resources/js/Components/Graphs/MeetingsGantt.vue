@@ -320,7 +320,7 @@ const { isResizing, startResize: startLabelResize } = useColumnResize(
 )
 
 const emit = defineEmits<{
-  (e: 'create-meeting', payload: { institution_id: string | number, suggestedAt: Date }): void
+  (e: 'create-meeting', payload: { institution_id: string | number, suggestedAt: Date, institutionName?: string }): void
   (e: 'create-check-in', payload: { institution_id: string | number, startDate: Date, endDate: Date }): void
   (e: 'fullscreen', payload: boolean): void
   (e: 'update:detailsExpanded', payload: boolean): void
@@ -650,7 +650,11 @@ const render = () => {
     rowCenter,
     rowTop,
     rowHeightFor,
-    onCreateMeeting: (payload: { institution_id: string | number; suggestedAt: Date }) => emit('create-meeting', payload),
+    onCreateMeeting: (payload: { institution_id: string | number; suggestedAt: Date }) => {
+      // Include institution name in the payload for external institutions
+      const name = labelFor(payload.institution_id)
+      emit('create-meeting', { ...payload, institutionName: name })
+    },
   })
 
   // Render meeting icons with safety bands and tooltips using extracted renderer
@@ -715,7 +719,11 @@ const render = () => {
     fmtDate,
     interactive: props.interactive,
     tooltipManager,
-    onCreateMeeting: (payload) => emit('create-meeting', payload),
+    onCreateMeeting: (payload) => {
+      // Include institution name in the payload for external institutions
+      const name = labelFor(payload.institution_id)
+      emit('create-meeting', { ...payload, institutionName: name })
+    },
   })
 
   // Apply initial scroll position using the composable's function

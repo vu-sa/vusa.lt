@@ -80,8 +80,9 @@ export function renderGaps(ctx: GapRenderContext): void {
     .style('cursor', onCreateMeeting ? 'pointer' : 'default')
     .on('click', (event, d: any) => {
       if (onCreateMeeting) {
-        // Suggest meeting at midpoint of check-in period
+        // Suggest meeting at midpoint of check-in period, with time set to 12:00 noon
         const midTime = new Date((d.fromDate.getTime() + d.untilDate.getTime()) / 2)
+        midTime.setHours(12, 0, 0, 0)
         onCreateMeeting({ institution_id: d.institution_id, suggestedAt: midTime })
       }
     })

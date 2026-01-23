@@ -37,9 +37,20 @@ export function useAtstovavimosActions(
   };
 
   // Gantt and meeting creation
-  const onGapCreateMeeting = (payload: { institution_id: string | number, suggestedAt: Date }) => {
+  // payload.institutionName is optional - provided when institution is external (not in user's accessible list)
+  const onGapCreateMeeting = (payload: { institution_id: string | number, suggestedAt: Date, institutionName?: string }) => {
     const tInstitutions = accessibleInstitutions;
-    const inst = tInstitutions.find((i: any) => i && i.id === payload.institution_id);
+    let inst = tInstitutions.find((i: any) => i && i.id === payload.institution_id);
+    
+    // If institution not found in accessible list, create a minimal external institution object
+    if (!inst && payload.institutionName) {
+      inst = {
+        id: String(payload.institution_id),
+        name: payload.institutionName,
+        isExternal: true, // Flag to indicate this is an external institution
+      } as any;
+    }
+    
     selectedInstitution.value = inst;
     selectedSuggestedAt.value = payload.suggestedAt;
     showMeetingModal.value = true;

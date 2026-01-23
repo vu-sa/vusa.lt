@@ -37,10 +37,16 @@
               <Calendar class="h-5 w-5 text-muted-foreground" />
               <div>
                 <p class="font-medium">{{ formatDate(meetingData.start_time) }}</p>
-                <div class="flex items-center gap-2">
+                <!-- Hide time for email meetings (isDateOnly) -->
+                <div v-if="!meetingType?.isDateOnly" class="flex items-center gap-2">
                   <span class="text-sm text-muted-foreground">{{ formatTime(meetingData.start_time) }}</span>
                   <Badge v-if="isWeekend(meetingData.start_time)" variant="secondary" class="text-xs">
                     {{ $t('Savaitgalis') }}
+                  </Badge>
+                </div>
+                <div v-else class="flex items-center gap-2">
+                  <Badge variant="outline" class="text-xs">
+                    {{ $t('Tik data') }}
                   </Badge>
                 </div>
               </div>
@@ -167,6 +173,7 @@ import { trans as $t } from 'laravel-vue-i18n'
 import { usePage } from '@inertiajs/vue3'
 
 import Icons from '@/Types/Icons/filled'
+import { getMeetingTypeOptions } from '@/Types/MeetingType'
 import { Card, CardHeader, CardTitle, CardContent } from '@/Components/ui/card'
 import { Button } from '@/Components/ui/button'
 import { Badge } from '@/Components/ui/badge'
@@ -208,21 +215,20 @@ const selectedInstitution = computed(() => {
 const meetingData = computed(() => props.meetingState?.meeting || {})
 
 const meetingType = computed(() => {
-  const typeId = meetingData.value.type_id;
-  if (!typeId) return null;
+  const typeSlug = meetingData.value.type;
+  if (!typeSlug) return null;
   
-  // Try to get type name from page props (if available)
-  const meetingTypes = (usePage().props as any)?.meetingTypes || [];
-  const type = meetingTypes.find((t: any) => t.id === typeId);
-
-  console.log('Meeting type:', typeId, type, meetingTypes);
+  // Get meeting type from MeetingType options
+  const locale = ((usePage().props as any)?.app?.locale || 'lt') as 'lt' | 'en';
+  const options = getMeetingTypeOptions(locale);
+  const option = options.find((o) => o.value === typeSlug);
   
-  if (type) {
-    return { id: type.id, title: type.title };
+  if (option) {
+    return { id: typeSlug, title: option.label, isDateOnly: option.isDateOnly };
   }
   
-  // Fallback to default
-  return { id: typeId, title: $t('Standartinis posėdis') };
+  // Fallback to 'Other'
+  return { id: typeSlug, title: $t('Kita'), isDateOnly: false };
 })
 
 const agendaItems = computed(() => {

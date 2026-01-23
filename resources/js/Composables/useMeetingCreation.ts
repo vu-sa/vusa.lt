@@ -57,7 +57,7 @@ export function useMeetingCreation(options: UseMeetingCreationOptions = {}) {
     meeting: {
       institution_id: options.preSelectedInstitution?.id || '',
       start_time: '',
-      type: null,
+      type: undefined, // Don't preselect any meeting type
       description: ''
     },
     agendaItems: [],

@@ -32,19 +32,76 @@
     <Form v-slot="{ errors }" class="flex flex-col gap-6" :initial-values="initialValues.value" @submit="onSubmit">
       <!-- Quick Institution Selection as mini cards/badges -->
       <div v-if="selectedInstitution==''" class="space-y-4">
-        <h3 class="text-sm font-medium text-muted-foreground">
-          {{ $t('Jūsų institucijos') }}
-        </h3>
+        <div class="flex items-center justify-between">
+          <h3 class="text-sm font-medium text-muted-foreground">
+            {{ $t('Jūsų institucijos') }}
+          </h3>
+          <Badge v-if="myInstitutions.length > 0" variant="outline" class="text-xs">
+            {{ myInstitutions.length }}
+          </Badge>
+        </div>
+        
+        <!-- Search input for many institutions (> 8) -->
+        <div v-if="myInstitutions.length > 8" class="relative">
+          <Search class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            v-model="myInstitutionsSearch"
+            :placeholder="$t('Filtruoti institucijas...')"
+            class="pl-9 h-9"
+          />
+        </div>
+
+        <!-- Institution cards with enhanced styling -->
         <div class="flex flex-wrap gap-2">
-          <Button v-for="inst in myInstitutions" :key="`mine-${inst.value}`" type="button" size="sm" variant="secondary"
-            class="h-8 max-w-full" @click="selectInstitution(inst.value)">
-            <component :is="Icons.INSTITUTION" class="mr-2 h-3 w-3 shrink-0" />
+          <button
+            v-for="inst in filteredMyInstitutions"
+            :key="`mine-${inst.value}`"
+            type="button"
+            class="group relative flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2
+              text-sm transition-all duration-200 hover:border-primary hover:bg-accent hover:shadow-sm
+              focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            @click="selectInstitution(inst.value)"
+          >
+            <component
+              :is="Icons.INSTITUTION"
+              class="h-4 w-4 shrink-0 text-muted-foreground group-hover:text-primary transition-colors"
+            />
             <span class="truncate max-w-48 sm:max-w-56 md:max-w-72" :title="inst.label">{{ inst.label }}</span>
-          </Button>
+          </button>
+        </div>
+        
+        <!-- Empty state for filtered results -->
+        <p v-if="myInstitutions.length > 8 && myInstitutionsSearch && filteredMyInstitutions.length === 0" class="text-sm text-muted-foreground text-center py-2">
+          {{ $t('Nerasta institucijų pagal paiešką') }}
+        </p>
+        
+        <!-- External institution notice if one was pre-selected -->
+        <div v-if="externalInstitution" class="mt-2 p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg">
+          <div class="flex items-start gap-3">
+            <AlertCircle class="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-amber-800 dark:text-amber-200">
+                {{ $t('Išorinė institucija') }}
+              </p>
+              <p class="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                {{ externalInstitution.name }}
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                class="mt-2 h-7 text-xs border-amber-300 hover:bg-amber-100
+                  dark:border-amber-700 dark:hover:bg-amber-900/50"
+                @click="selectExternalInstitution"
+              >
+                {{ $t('Pasirinkti šią instituciją') }}
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
 
-      <Separator />
+      <Separator v-if="selectedInstitution==''" />
 
       <!-- Admin search inside collapsible -->
       <!-- Only show search section if user has additional admin access -->
@@ -115,9 +172,14 @@
               <div class="flex items-start gap-3">
                 <component :is="Icons.INSTITUTION" class="h-5 w-5 mt-0.5 text-primary shrink-0" />
                 <div class="flex-1 min-w-0">
-                  <h4 class="font-medium truncate" :title="selectedInstitutionData.name">
-                    {{ selectedInstitutionData.name }}
-                  </h4>
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <h4 class="font-medium truncate" :title="selectedInstitutionData.name">
+                      {{ selectedInstitutionData.name }}
+                    </h4>
+                    <Badge v-if="selectedInstitutionData.isExternal" variant="outline" class="text-xs border-amber-300 text-amber-700 dark:border-amber-700 dark:text-amber-400">
+                      {{ $t('Išorinė') }}
+                    </Badge>
+                  </div>
                   <div class="mt-2 space-y-1 text-sm text-muted-foreground">
                     <div v-if="selectedInstitutionData.type" class="flex items-center gap-2">
                       <Badge variant="secondary" class="text-xs">
@@ -171,7 +233,8 @@ import {
   CheckCircle,
   X,
   ChevronDown,
-  ArrowRight
+  ArrowRight,
+  AlertCircle
 } from "lucide-vue-next";
 
 import Icons from "@/Types/Icons/filled";
@@ -202,10 +265,23 @@ const props = defineProps<{
 
 const showAlert = ref(true);
 const searchQuery = ref("");
+const myInstitutionsSearch = ref("");
 const showDropdown = ref(false);
 const selectedInstitution = ref<string>("");
 const showAllInstitutions = ref(false);
 const visibleInstitutionsLimit = 5;
+
+// External institution from props (e.g., from Gantt chart selection)
+const externalInstitution = computed(() => {
+  const inst = props.selectedInstitution;
+  if (!inst) return null;
+  
+  // Check if this institution is external (not in user's institutions)
+  const isExternal = (inst as any).isExternal === true;
+  if (!isExternal) return null;
+  
+  return inst;
+});
 
 // Institution will be initialized by the watcher
 
@@ -252,6 +328,16 @@ const myInstitutions = computed(() => {
   // Dedupe and sort
   const deduped = fromDuties.filter((value, index, self) => self.findIndex(t => t.value === value.value) === index)
   return deduped.sort((a, b) => a.label.localeCompare(b.label))
+})
+
+// Filtered my institutions based on search (for > 8 institutions)
+const filteredMyInstitutions = computed(() => {
+  const q = myInstitutionsSearch.value.trim().toLowerCase()
+  if (!q) return myInstitutions.value
+  return myInstitutions.value.filter((inst: any) =>
+    inst.label.toLowerCase().includes(q) ||
+    inst.context.toLowerCase().includes(q)
+  )
 })
 
 // Recent institutions based on meeting dates
@@ -301,6 +387,19 @@ const filteredInstitutions = computed(() => {
 const selectedInstitutionData = computed(() => {
   if (!selectedInstitution.value) return null;
 
+  // Check if it's an external institution from props
+  if (externalInstitution.value && String(externalInstitution.value.id) === selectedInstitution.value) {
+    return {
+      id: externalInstitution.value.id,
+      name: externalInstitution.value.name,
+      type: null,
+      lastMeeting: null,
+      activeCheckIn: false,
+      meetingCount: 0,
+      isExternal: true
+    };
+  }
+
   // Check both user institutions and admin institutions
   const allInstitutions = [...myInstitutions.value, ...adminOnlyInstitutions.value]
   const institution = allInstitutions.find((inst: any) => inst.value === selectedInstitution.value);
@@ -312,7 +411,8 @@ const selectedInstitutionData = computed(() => {
     type: institution.context,
     lastMeeting: institution.lastMeeting,
     activeCheckIn: institution.activeCheckIn,
-    meetingCount: institution.meetingCount
+    meetingCount: institution.meetingCount,
+    isExternal: false
   };
 });
 
@@ -320,18 +420,30 @@ const selectedInstitutionData = computed(() => {
 const selectInstitution = (institutionId: string) => {
   selectedInstitution.value = institutionId;
   searchQuery.value = "";
+  myInstitutionsSearch.value = "";
   showDropdown.value = false;
+};
+
+const selectExternalInstitution = () => {
+  if (externalInstitution.value) {
+    selectedInstitution.value = String(externalInstitution.value.id);
+    searchQuery.value = "";
+    myInstitutionsSearch.value = "";
+    showDropdown.value = false;
+  }
 };
 
 const selectInstitutionFromSearch = (institutionId: string, institutionName: string) => {
   selectedInstitution.value = institutionId;
   searchQuery.value = institutionName;
+  myInstitutionsSearch.value = "";
   showDropdown.value = false;
 };
 
 const clearSelection = () => {
   selectedInstitution.value = "";
   searchQuery.value = "";
+  myInstitutionsSearch.value = "";
 };
 
 const getInstitutionInfo = (institutionId: string): string => {
@@ -391,7 +503,8 @@ const handleClickOutside = (event: MouseEvent) => {
 // Watch for props changes to update selected institution
 watch(() => props.selectedInstitution, (newInstitution) => {
   if (newInstitution) {
-    selectedInstitution.value = newInstitution.id;
+    // Convert to string for consistent comparison
+    selectedInstitution.value = String(newInstitution.id);
   } else {
     selectedInstitution.value = '';
   }

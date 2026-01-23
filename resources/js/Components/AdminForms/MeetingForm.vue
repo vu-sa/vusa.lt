@@ -11,7 +11,7 @@
           </FormLabel>
           <FormControl>
             <RadioGroup 
-              :model-value="componentField.modelValue ?? '__null__'" 
+              :model-value="componentField.modelValue === null ? '__null__' : componentField.modelValue" 
               @update:model-value="(val) => setFieldValue('type', val === '__null__' ? null : val)"
               class="space-y-2 mt-2"
             >
