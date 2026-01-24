@@ -91,7 +91,8 @@ class DutyService
                 'tenant:id,shortname',
                 'types', // explicit since not auto-loaded
                 'meetings:id,title,start_time,type',
-                'meetings.agendaItems:id,meeting_id,title,student_vote,decision,student_benefit',
+                'meetings.agendaItems:id,meeting_id,title,type,brought_by_students',
+                'meetings.agendaItems.votes:id,agenda_item_id,title,decision,student_vote,student_benefit,is_main',
                 // Load all users (including historical) for Gantt timeline display
                 'duties.users:id,name,email,profile_photo_path',
                 'duties.types:id,title,slug',

@@ -455,7 +455,8 @@ class RelationshipService
                 ->with([
                     'types',
                     'meetings:id,title,start_time,type',
-                    'meetings.agendaItems:id,meeting_id,title,student_vote,decision,student_benefit',
+                    'meetings.agendaItems:id,meeting_id,title,type,brought_by_students',
+                    'meetings.agendaItems.votes:id,agenda_item_id,title,decision,student_vote,student_benefit,is_main',
                     'meetings.fileableFiles:id,fileable_id,fileable_type,file_type,deleted_externally_at',
                     'tenant:id,shortname',
                     'duties.users:id,name,email,profile_photo_path',
