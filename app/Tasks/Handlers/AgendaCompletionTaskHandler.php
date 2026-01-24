@@ -153,18 +153,116 @@ class AgendaCompletionTaskHandler extends BaseTaskHandler
     }
 
     /**
-     * Count how many agenda items are complete (have all required fields).
+     * Count how many agenda items are complete.
+     *
+     * An item is complete when:
+     * - Type is 'informational' or 'deferred' (no vote required), OR
+     * - Type is 'voting' AND has a main vote with all required fields (student_vote, decision, student_benefit)
+     *
+     * Items with null type are NOT counted as complete (user must select type first).
      */
     protected function countCompletedItems(Meeting $meeting): int
     {
-        return $meeting->agendaItems()
-            ->whereNotNull('student_vote')
-            ->where('student_vote', '!=', '')
-            ->whereNotNull('decision')
-            ->where('decision', '!=', '')
-            ->whereNotNull('student_benefit')
-            ->where('student_benefit', '!=', '')
-            ->count();
+        $agendaItems = $meeting->agendaItems()->with('votes')->get();
+
+        return $agendaItems->filter(function ($item) {
+            // Items without type selected are incomplete
+            if ($item->type === null) {
+                return false;
+            }
+
+            // Informational and deferred items are complete without votes
+            if ($item->type === 'informational' || $item->type === 'deferred') {
+                return true;
+            }
+
+            // For voting items, check if main vote has all required fields
+            $mainVote = $item->votes->firstWhere('is_main', true);
+
+            if (! $mainVote) {
+                return false;
+            }
+
+            return ! empty($mainVote->student_vote)
+                && ! empty($mainVote->decision)
+                && ! empty($mainVote->student_benefit);
+        })->count();
+    }
+
+    /**
+     * Get agenda item counts by type for use in notifications.
+     *
+     * @return array{voting: int, informational: int, deferred: int, unset: int}
+     */
+    public function getAgendaItemTypeCounts(Meeting $meeting): array
+    {
+        $agendaItems = $meeting->agendaItems()->get();
+
+        return [
+            'voting' => $agendaItems->where('type', 'voting')->count(),
+            'informational' => $agendaItems->where('type', 'informational')->count(),
+            'deferred' => $agendaItems->where('type', 'deferred')->count(),
+            'unset' => $agendaItems->whereNull('type')->count(),
+        ];
+    }
+
+    /**
+     * Check if a previously complete task should be reopened due to type change.
+     *
+     * This is called when an agenda item's type changes from informational/deferred
+     * to voting, and the voting item doesn't have a complete main vote.
+     */
+    public function shouldReopenTask(Meeting $meeting): bool
+    {
+        $agendaItems = $meeting->agendaItems()->with('votes')->get();
+
+        foreach ($agendaItems as $item) {
+            // Check if any voting item is incomplete
+            if ($item->type === 'voting') {
+                $mainVote = $item->votes->firstWhere('is_main', true);
+
+                if (! $mainVote) {
+                    return true;
+                }
+
+                if (empty($mainVote->student_vote) || empty($mainVote->decision) || empty($mainVote->student_benefit)) {
+                    return true;
+                }
+            }
+
+            // Items without type are incomplete
+            if ($item->type === null) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Reopen a completed task if conditions require it.
+     */
+    public function reopenIfNeeded(Meeting $meeting): void
+    {
+        // Find a completed task for this meeting
+        $completedTask = Task::query()
+            ->where('taskable_type', Meeting::class)
+            ->where('taskable_id', $meeting->getKey())
+            ->where('action_type', ActionType::AgendaCompletion)
+            ->whereNotNull('completed_at')
+            ->first();
+
+        if (! $completedTask) {
+            return;
+        }
+
+        if ($this->shouldReopenTask($meeting)) {
+            $completedTask->completed_at = null;
+            $completedTask->save();
+
+            // Update progress
+            $this->syncTotalItems($completedTask, $meeting);
+        }
     }
 
     /**

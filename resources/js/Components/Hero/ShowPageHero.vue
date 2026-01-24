@@ -42,7 +42,7 @@
           </h1>
 
           <!-- Subtitle -->
-          <div v-if="subtitle || $slots.subtitle" class="flex items-center gap-2 text-sm text-muted-foreground">
+          <div v-if="subtitle || $slots.subtitle" class="flex items-center gap-2 text-sm text-muted-foreground font-semibold">
             <slot name="subtitle">
               <span class="truncate">{{ subtitle }}</span>
             </slot>

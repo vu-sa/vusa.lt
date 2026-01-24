@@ -96,9 +96,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { router } from '@inertiajs/vue3'
-import { trans as $t } from 'laravel-vue-i18n'
+import { computed } from 'vue';
+import { router } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
 import {
   CalendarIcon,
   Building2,
@@ -106,65 +106,64 @@ import {
   Vote,
   Eye,
   Pencil,
-} from 'lucide-vue-next'
+} from 'lucide-vue-next';
 
-import { Card, CardContent, CardFooter } from '@/Components/ui/card'
-import { Badge } from '@/Components/ui/badge'
-import { Button } from '@/Components/ui/button'
-import { MeetingIcon } from '@/Components/icons'
-
-import type { MeetingSearchResult } from '@/Composables/useAdminSearch'
+import { Card, CardContent, CardFooter } from '@/Components/ui/card';
+import { Badge } from '@/Components/ui/badge';
+import { Button } from '@/Components/ui/button';
+import { MeetingIcon } from '@/Components/icons';
+import type { MeetingSearchResult } from '@/Composables/useAdminSearch';
 
 interface Props {
-  meeting: MeetingSearchResult
+  meeting: MeetingSearchResult;
 }
 
-const props = defineProps<Props>()
+const props = defineProps<Props>();
 
 // Format the start time
 const formattedDate = computed(() => {
-  if (!props.meeting.start_time) return null
-  const date = new Date(props.meeting.start_time * 1000)
+  if (!props.meeting.start_time) return null;
+  const date = new Date(props.meeting.start_time * 1000);
   return date.toLocaleDateString('lt-LT', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
-  })
-})
+  });
+});
 
 // Navigate to show page
 const navigateToShow = () => {
-  router.visit(route('meetings.show', props.meeting.id))
-}
+  router.visit(route('meetings.show', props.meeting.id));
+};
 
 // Navigate to edit page
 const navigateToEdit = () => {
-  router.visit(route('meetings.edit', props.meeting.id))
-}
+  router.visit(route('meetings.edit', props.meeting.id));
+};
 
 // Get vote alignment badge variant
 const getVoteAlignmentVariant = (status: string) => {
   switch (status) {
     case 'aligned':
-      return 'default'
+      return 'default';
     case 'misaligned':
-      return 'destructive'
+      return 'destructive';
     default:
-      return 'secondary'
+      return 'secondary';
   }
-}
+};
 
-// Get vote alignment label
+// Get vote alignment label (consistent with public-facing labels)
 const getVoteAlignmentLabel = (status: string) => {
   switch (status) {
     case 'aligned':
-      return $t('Balsai atitinka')
+      return $t('Pozicija priimta');
     case 'misaligned':
-      return $t('Balsai neatitinka')
+      return $t('Pozicija nepriimta');
     case 'incomplete':
-      return $t('Nepilna informacija')
+      return $t('Nepilna informacija');
     default:
-      return status
+      return status;
   }
-}
+};
 </script>

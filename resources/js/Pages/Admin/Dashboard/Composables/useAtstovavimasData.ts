@@ -47,12 +47,20 @@ export function useAtstovavimosData(
     return institutions.value.map((inst: AtstovavimosInstitution) => {
       return (inst.meetings ?? []).map((m: any) => {
         // Extract agenda items for tooltip (limit to first 4)
-        const agendaItems = (m.agenda_items ?? []).slice(0, 4).map((item: any) => ({
-          id: String(item.id),
-          title: String(item.title ?? ''),
-          student_vote: item.student_vote ?? null,
-          decision: item.decision ?? null,
-        }));
+        // Vote data comes from: main_vote relationship, or vote with is_main flag, or first vote
+        const agendaItems = (m.agenda_items ?? []).slice(0, 4).map((item: any) => {
+          const mainVote = item.main_vote 
+            ?? item.votes?.find((v: any) => v.is_main) 
+            ?? item.votes?.[0] 
+            ?? null;
+          return {
+            id: String(item.id),
+            title: String(item.title ?? ''),
+            type: item.type ?? null,
+            student_vote: mainVote?.student_vote ?? null,
+            decision: mainVote?.decision ?? null,
+          };
+        });
         const totalAgendaCount = (m.agenda_items ?? []).length;
 
         return {

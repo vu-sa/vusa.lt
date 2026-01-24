@@ -118,11 +118,11 @@ class PublicMeeting extends Meeting
         $this->loadMissing([
             'institutions.types',
             'institutions.tenant',
-            'agendaItems',
+            'agendaItems.votes',
             'types',
         ]);
 
-        // Aggregate vote statistics from agenda items
+        // Aggregate vote statistics from agenda items' votes
         $voteStats = $this->calculateVoteStatistics();
 
         return [
@@ -147,6 +147,9 @@ class PublicMeeting extends Meeting
             // Agenda items count (basic info)
             'agenda_items_count' => $this->agendaItems->count(),
 
+            // Total votes count
+            'votes_count' => $voteStats['total_votes'],
+
             // Vote alignment (whether student position was accepted) - for public display
             'vote_matches' => $voteStats['vote_matches'],
             'vote_mismatches' => $voteStats['vote_mismatches'],
@@ -161,69 +164,56 @@ class PublicMeeting extends Meeting
     }
 
     /**
-     * Calculate vote statistics from agenda items
+     * Calculate vote statistics from agenda items' votes.
+     * Aggregates statistics from all votes across all agenda items.
      */
     protected function calculateVoteStatistics(): array
     {
-        $items = $this->agendaItems;
-        $total = $items->count();
+        // Collect all votes from all agenda items
+        $allVotes = $this->agendaItems->flatMap(fn ($item) => $item->votes);
 
-        // Items with at least one decision field filled (for showing decision indicators)
-        $itemsWithDecisions = $items->filter(function ($item) {
-            return ! empty($item->student_vote)
-                || ! empty($item->decision)
-                || ! empty($item->student_benefit);
+        $totalVotes = $allVotes->count();
+
+        // Votes with all three fields filled
+        $completedVotes = $allVotes->filter(function ($vote) {
+            return ! empty($vote->student_vote)
+                && ! empty($vote->decision)
+                && ! empty($vote->student_benefit);
         })->count();
 
-        // Items with all three fields filled
-        $completed = $items->filter(function ($item) {
-            return ! empty($item->student_vote)
-                && ! empty($item->decision)
-                && ! empty($item->student_benefit);
-        })->count();
-
-        // Count where student vote matched decision (success)
-        $studentSuccess = $items->filter(function ($item) {
-            return ! empty($item->student_vote)
-                && ! empty($item->decision)
-                && $item->student_vote === $item->decision;
-        })->count();
-
-        // Count vote alignment - items where both student_vote and decision exist
-        $itemsWithBothVotes = $items->filter(function ($item) {
-            return ! empty($item->student_vote) && ! empty($item->decision);
+        // Votes with both student_vote and decision filled
+        $votesWithBoth = $allVotes->filter(function ($vote) {
+            return ! empty($vote->student_vote) && ! empty($vote->decision);
         });
 
         // Vote matches (student position accepted)
-        $voteMatches = $itemsWithBothVotes->filter(function ($item) {
-            return $item->student_vote === $item->decision;
+        $voteMatches = $votesWithBoth->filter(function ($vote) {
+            return $vote->student_vote === $vote->decision;
         })->count();
 
         // Vote mismatches (student position not accepted)
-        $voteMismatches = $itemsWithBothVotes->count() - $voteMatches;
+        $voteMismatches = $votesWithBoth->count() - $voteMatches;
 
-        // Items with incomplete vote data (only one of student_vote/decision filled)
-        $incompleteVoteData = $items->filter(function ($item) {
-            $hasStudentVote = ! empty($item->student_vote);
-            $hasDecision = ! empty($item->decision);
+        // Votes with incomplete data (only one of student_vote/decision filled)
+        $incompleteVoteData = $allVotes->filter(function ($vote) {
+            $hasStudentVote = ! empty($vote->student_vote);
+            $hasDecision = ! empty($vote->decision);
 
             return $hasStudentVote xor $hasDecision;
         })->count();
 
         // Count outcomes by type (from decision field)
-        $positive = $items->where('decision', 'positive')->count();
-        $negative = $items->where('decision', 'negative')->count();
-        $neutral = $items->where('decision', 'neutral')->count();
+        $positive = $allVotes->where('decision', 'positive')->count();
+        $negative = $allVotes->where('decision', 'negative')->count();
+        $neutral = $allVotes->where('decision', 'neutral')->count();
 
         return [
-            'total' => $total,
-            'items_with_decisions' => $itemsWithDecisions,
-            'completed' => $completed,
-            'student_success_rate' => $total > 0 ? round(($studentSuccess / $total) * 100) : 0,
+            'total_votes' => $totalVotes,
+            'completed_votes' => $completedVotes,
+            'student_success_rate' => $totalVotes > 0 ? round(($voteMatches / $totalVotes) * 100) : 0,
             'positive_outcomes' => $positive,
             'negative_outcomes' => $negative,
             'neutral_outcomes' => $neutral,
-            // Vote alignment statistics
             'vote_matches' => $voteMatches,
             'vote_mismatches' => $voteMismatches,
             'incomplete_vote_data' => $incompleteVoteData,

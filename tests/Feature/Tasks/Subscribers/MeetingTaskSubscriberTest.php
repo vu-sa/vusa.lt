@@ -11,6 +11,7 @@ use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\Type;
 use App\Models\User;
+use App\Models\Vote;
 use App\Notifications\MeetingAgendaCompletedNotification;
 use App\Notifications\MeetingCreatedNotification;
 use App\Settings\AtstovavimasSettings;
@@ -83,9 +84,8 @@ describe('MeetingTaskSubscriber', function () {
 
             expect($creationTask->completed_at)->toBeNull();
 
-            // Add first agenda item
+            // Add first agenda item (without votes, so naturally incomplete)
             AgendaItem::factory()
-                ->incomplete()
                 ->create(['meeting_id' => $meeting->id, 'order' => 1]);
 
             $creationTask->refresh();
@@ -96,9 +96,8 @@ describe('MeetingTaskSubscriber', function () {
         test('creates completion task when first agenda item is added', function () {
             [$meeting, $creationTask] = $this->createMeetingWithCreationTask();
 
-            // Add first agenda item
+            // Add first agenda item (without votes, so naturally incomplete)
             AgendaItem::factory()
-                ->incomplete()
                 ->create(['meeting_id' => $meeting->id, 'order' => 1]);
 
             // Check that completion task was created
@@ -141,13 +140,19 @@ describe('MeetingTaskSubscriber', function () {
 
             expect($completionTask->metadata['items_completed'])->toBe(0);
 
-            // Complete one agenda item
+            // Complete one agenda item by adding a vote with all required fields
             $agendaItem = $meeting->agendaItems->first();
-            $agendaItem->update([
-                'student_vote' => 'už',
-                'decision' => 'Approved',
-                'student_benefit' => 'Great benefit',
+            Vote::create([
+                'agenda_item_id' => $agendaItem->id,
+                'is_main' => true,
+                'student_vote' => 'positive',
+                'decision' => 'positive',
+                'student_benefit' => 'positive',
             ]);
+
+            // Trigger the handler to update progress
+            $handler = app(AgendaCompletionTaskHandler::class);
+            $handler->updateProgressForMeeting($meeting);
 
             $completionTask->refresh();
 
@@ -158,14 +163,20 @@ describe('MeetingTaskSubscriber', function () {
         test('auto-completes task when all agenda items are completed', function () {
             [$meeting, $completionTask] = $this->createMeetingWithCompletionTask(agendaItemCount: 2);
 
-            // Complete all agenda items
+            // Complete all agenda items by adding votes
             foreach ($meeting->agendaItems as $agendaItem) {
-                $agendaItem->update([
-                    'student_vote' => 'už',
-                    'decision' => 'Approved',
-                    'student_benefit' => 'Benefits students',
+                Vote::create([
+                    'agenda_item_id' => $agendaItem->id,
+                    'is_main' => true,
+                    'student_vote' => 'positive',
+                    'decision' => 'positive',
+                    'student_benefit' => 'positive',
                 ]);
             }
+
+            // Trigger the handler to update progress
+            $handler = app(AgendaCompletionTaskHandler::class);
+            $handler->updateProgressForMeeting($meeting);
 
             $completionTask->refresh();
 
@@ -178,9 +189,8 @@ describe('MeetingTaskSubscriber', function () {
 
             expect($completionTask->metadata['items_total'])->toBe(2);
 
-            // Add another agenda item
+            // Add another agenda item (without votes, so naturally incomplete)
             AgendaItem::factory()
-                ->incomplete()
                 ->create([
                     'meeting_id' => $meeting->id,
                     'order' => 3,
@@ -282,18 +292,25 @@ describe('MeetingTaskSubscriber', function () {
                 ->create(['start_time' => now()]);
 
             $agendaItem = AgendaItem::factory()
-                ->incomplete()
+                ->voting()
                 ->create(['meeting_id' => $meeting->id, 'order' => 1]);
 
             // Clear previous notifications (from meeting creation)
             Notification::fake();
 
-            // Complete the agenda item
-            $agendaItem->update([
-                'student_vote' => 'už',
-                'decision' => 'Passed',
-                'student_benefit' => 'Students benefit',
+            // Complete the agenda item by adding a vote with all required fields
+            Vote::create([
+                'agenda_item_id' => $agendaItem->id,
+                'is_main' => true,
+                'student_vote' => 'positive',
+                'decision' => 'positive',
+                'student_benefit' => 'positive',
             ]);
+
+            // Dispatch the model event to trigger the task handler
+            // (The observer on Vote model should handle this, but we can also manually trigger)
+            $handler = app(AgendaCompletionTaskHandler::class);
+            $handler->updateProgressForMeeting($meeting);
 
             Notification::assertSentTo($coordinator, MeetingAgendaCompletedNotification::class);
         });

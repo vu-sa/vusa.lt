@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Cache;
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
  * @property-read \App\Models\Content $content
- * @property-read string $html
+ * @property-read string|null $html
  *
  * @method static \Database\Factories\ContentPartFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ContentPart newModelQuery()

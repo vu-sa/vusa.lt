@@ -300,16 +300,22 @@ describe('end-to-end refactored meeting flow', function () {
         $response->assertSessionHas('success');
         $this->assertEquals(3, $meeting->fresh()->agendaItems()->count());
 
-        // 3. Update an agenda item
+        // 3. Update an agenda item with votes
         $agendaItem = $meeting->agendaItems()->first();
 
         $response = asUser($this->admin)
             ->patch(route('agendaItems.update', $agendaItem->id), [
                 'title' => 'Updated discussion',
                 'description' => 'This is an important discussion',
-                'decision' => 'positive',
-                'student_vote' => 'neutral',
-                'student_benefit' => 'positive',
+                'type' => 'voting',
+                'votes' => [
+                    [
+                        'is_main' => true,
+                        'decision' => 'positive',
+                        'student_vote' => 'neutral',
+                        'student_benefit' => 'positive',
+                    ],
+                ],
             ]);
 
         $response->assertSessionHas('success');
@@ -317,7 +323,11 @@ describe('end-to-end refactored meeting flow', function () {
         $agendaItem->refresh();
         $this->assertEquals('Updated discussion', $agendaItem->title);
         $this->assertEquals('This is an important discussion', $agendaItem->description);
-        $this->assertEquals('positive', $agendaItem->decision);
+
+        // Check the vote was created
+        $vote = $agendaItem->votes()->first();
+        $this->assertNotNull($vote);
+        $this->assertEquals('positive', $vote->decision);
 
         // 4. Delete an agenda item
         $agendaItemToDelete = $meeting->agendaItems()->skip(1)->first();

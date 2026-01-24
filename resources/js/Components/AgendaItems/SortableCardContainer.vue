@@ -13,26 +13,7 @@
 
       <div class="flex items-center gap-2">
         <!-- Help Button -->
-        <VotingInfoButton />
-        
-        <!-- Expand All Toggle (optional, for power users) -->
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger as-child>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                class="h-8 text-zinc-500"
-                @click="toggleExpandAll"
-              >
-                <component :is="showVoteOptions ? ChevronsUpDown : ChevronsDownUp" class="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              {{ showVoteOptions ? $t('Suskleisti visus') : $t('Išskleisti visus') }}
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <AdminVotingHelpButton />
 
         <!-- Add Button with Dropdown -->
         <DropdownMenu>
@@ -58,14 +39,24 @@
 
     <!-- Sortable Container -->
     <div ref="sortableContainer" class="space-y-2.5">
-      <AgendaItemCard v-for="(item, index) in localItems" :key="item.id" :item :order="index + 1" :show-vote-options
-        :data-id="item.id" @edit="$emit('edit', $event)" @delete="$emit('delete', $event)" @update="handleItemUpdate" />
-
+      <InlineAgendaItemCard
+        v-for="(item, index) in localItems"
+        :key="item.id"
+        :item
+        :order="index + 1"
+        :expanded="expandedItems.has(item.id)"
+        :data-id="item.id"
+        @delete="$emit('delete', $event)"
+        @update="handleItemUpdate"
+        @toggle-expand="handleToggleExpand"
+      />
     </div>
 
     <!-- Empty State -->
-    <div v-if="localItems.length === 0"
-      class="flex flex-col items-center justify-center py-16 text-center border-2 border-dashed border-zinc-200 dark:border-zinc-700 rounded-xl bg-zinc-50/50 dark:bg-zinc-800/30">
+    <div
+      v-if="localItems.length === 0"
+      class="flex flex-col items-center justify-center py-16 text-center border-2 border-dashed border-zinc-200 dark:border-zinc-700 rounded-xl bg-zinc-50/50 dark:bg-zinc-800/30"
+    >
       <div class="w-16 h-16 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-4">
         <FileText class="h-8 w-8 text-zinc-400 dark:text-zinc-500" />
       </div>
@@ -84,77 +75,99 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, nextTick } from 'vue'
-import { useSortable } from '@vueuse/integrations/useSortable'
-import { router } from '@inertiajs/vue3'
-import { trans as $t } from 'laravel-vue-i18n'
+import { ref, watch, nextTick } from 'vue';
+import { useSortable } from '@vueuse/integrations/useSortable';
+import { router } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
 
 // UI Components
-import { Plus, FileText, ChevronsUpDown, ChevronsDownUp, ListPlus } from 'lucide-vue-next'
+import { Plus, FileText, ListPlus } from 'lucide-vue-next';
 
-import AgendaItemCard from './AgendaItemCard.vue'
-import VotingInfoButton from './VotingInfoButton.vue'
+import InlineAgendaItemCard from './InlineAgendaItemCard.vue';
+import AdminVotingHelpButton from './AdminVotingHelpButton.vue';
 
-import { Button } from '@/Components/ui/button'
-import { Badge } from '@/Components/ui/badge'
-import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/Components/ui/tooltip'
+import { Button } from '@/Components/ui/button';
+import { Badge } from '@/Components/ui/badge';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/Components/ui/dropdown-menu'
+} from '@/Components/ui/dropdown-menu';
 
 // Custom Components
 
 // Icons
 
 interface AgendaItem {
-  id: string
-  title: string
-  description?: string | null
-  order: number
-  decision?: string | null
-  student_vote?: string | null
-  student_benefit?: string | null
+  id: string;
+  title: string;
+  description?: string | null;
+  order: number;
+  brought_by_students?: boolean;
+  type?: 'voting' | 'informational' | 'deferred' | null;
+  student_position?: string | null;
+  votes?: App.Entities.Vote[];
 }
 
 interface Props {
-  items: AgendaItem[]
-  meetingId: string
+  items: AgendaItem[];
+  meetingId: string;
 }
 
 interface Emits {
-  (e: 'add'): void
-  (e: 'add-bulk'): void
-  (e: 'edit', item: AgendaItem): void
-  (e: 'delete', item: AgendaItem): void
-  (e: 'update:showVoteOptions', value: boolean): void
+  (e: 'add'): void;
+  (e: 'add-bulk'): void;
+  (e: 'delete', item: AgendaItem): void;
 }
 
-const props = defineProps<Props>()
+const props = defineProps<Props>();
 
-const emit = defineEmits<Emits>()
+const emit = defineEmits<Emits>();
 
-const showVoteOptions = ref(false)
+// Track which items are expanded
+const expandedItems = ref<Set<string>>(new Set());
 
-const toggleExpandAll = () => {
-  showVoteOptions.value = !showVoteOptions.value
-}
+const handleToggleExpand = (id: string) => {
+  // Create a new Set to ensure reactivity
+  const newSet = new Set(expandedItems.value);
+  if (newSet.has(id)) {
+    newSet.delete(id);
+  }
+  else {
+    newSet.add(id);
+  }
+  expandedItems.value = newSet;
+};
+
+// Expose expandItem method for parent components
+const expandItem = (id: string) => {
+  // Create a new Set to ensure reactivity
+  const newSet = new Set(expandedItems.value);
+  newSet.add(id);
+  expandedItems.value = newSet;
+  // Scroll to the item after a short delay
+  nextTick(() => {
+    const element = document.querySelector(`[data-id="${id}"]`);
+    element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+};
+
+defineExpose({ expandItem });
 
 // Local reactive copy of items for drag and drop
-const localItems = ref<AgendaItem[]>([...props.items])
+const localItems = ref<AgendaItem[]>([...props.items]);
 
 // Keep local items in sync with props
 watch(
   () => props.items,
   (newItems) => {
-    localItems.value = [...newItems].sort((a, b) => a.order - b.order)
+    localItems.value = [...newItems].sort((a, b) => a.order - b.order);
   },
-  { immediate: true, deep: true }
-)
+  { immediate: true, deep: true },
+);
 
-const sortableContainer = ref<HTMLElement>()
+const sortableContainer = ref<HTMLElement>();
 
 // Setup sortable
 const sortable = useSortable(sortableContainer, localItems, {
@@ -166,41 +179,43 @@ const sortable = useSortable(sortableContainer, localItems, {
   fallbackOnBody: true,
   swapThreshold: 0.65,
   onEnd: async () => {
-    await nextTick()
-    await updateOrder()
-  }
-})
+    await nextTick();
+    await updateOrder();
+  },
+});
 
 const updateOrder = async () => {
   const reorderedItems = localItems.value.map((item, index) => ({
     id: item.id,
-    order: index + 1
-  }))
+    order: index + 1,
+  }));
 
   router.post(route('agendaItems.reorder'), {
     meeting_id: props.meetingId,
-    agenda_items: reorderedItems
+    agenda_items: reorderedItems,
   }, {
     preserveState: true,
     preserveScroll: true,
     onError: (errors) => {
-      console.error('Failed to reorder agenda items:', errors)
+      console.error('Failed to reorder agenda items:', errors);
       // Revert to original order on error
-      localItems.value = [...props.items].sort((a, b) => a.order - b.order)
-    }
-  })
-}
+      localItems.value = [...props.items].sort((a, b) => a.order - b.order);
+    },
+  });
+};
 
-const handleItemUpdate = (item: AgendaItem, field: string, value: any) => {
-  router.patch(route("agendaItems.update", item.id), {
-    [field]: value
-  }, {
-    preserveState: true,
-    preserveScroll: true
-  })
-}
+const handleItemUpdate = (item: AgendaItem) => {
+  // Updates are now handled directly by InlineAgendaItemCard
+  // This is kept for compatibility but the card handles its own saves
+};
 </script>
 
 <style scoped>
-/* Sortable styles are handled by individual cards */
+.sortable-ghost {
+  opacity: 0.4;
+}
+
+.sortable-chosen {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
 </style>

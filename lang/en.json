@@ -930,5 +930,13 @@
   "Atnaujinta": "Updated",
   "Turinys": "Contents",
   "Susiję": "Related",
-  "Iš susijusios institucijos": "From a related institution"
+  "Iš susijusios institucijos": "From a related institution",
+  "Išsakyta": "Stated",
+  "studentų pozicija": "student position",
+  "Pridėti studentų poziciją": "Add student position",
+  "Įveskite studentų poziciją...": "Enter student position...",
+  "Sprendimas yra palankus studentams": "The decision is favorable to students",
+  "Sprendimas nėra palankus studentams": "The decision is not favorable to students",
+  "Sprendimas neturi aiškaus poveikio studentams": "The decision has no clear impact on students",
+  "Palankumas studentams atnaujintas automatiškai": "Student benefit updated automatically"
 }

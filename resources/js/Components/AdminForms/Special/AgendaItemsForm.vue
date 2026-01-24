@@ -667,7 +667,16 @@ watch(sortableContainer, (container) => {
 
 // Submit form programmatically (for external button rendering)
 const submitFormFromOutside = () => {
-  agendaForm.value?.$el?.requestSubmit?.() ?? agendaForm.value?.$el?.submit();
+  // Trigger vee-validate's form validation and submission
+  agendaForm.value?.validate().then(({ valid }: { valid: boolean }) => {
+    if (valid) {
+      // Get the form values and call onSubmit directly
+      const values = agendaForm.value?.getValues();
+      if (values) {
+        onSubmit(values);
+      }
+    }
+  });
 };
 
 // Expose methods and state for external button rendering

@@ -6,6 +6,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Requests\StoreAgendaItemsRequest;
 use App\Http\Requests\UpdateAgendaItemRequest;
 use App\Models\Pivots\AgendaItem;
+use App\Models\Vote;
 use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -61,10 +62,64 @@ class AgendaItemController extends AdminController
      */
     public function update(UpdateAgendaItemRequest $request, AgendaItem $agendaItem)
     {
-        $agendaItem->fill($request->validated());
-        $agendaItem->save();
+        DB::transaction(function () use ($request, $agendaItem) {
+            // Update agenda item fields (excluding votes)
+            $agendaItem->fill($request->safe()->except('votes'));
+            $agendaItem->save();
+
+            // Handle votes if provided
+            if ($request->has('votes')) {
+                $this->syncVotes($agendaItem, $request->input('votes'));
+            }
+        });
 
         return back()->with('success', 'Darbotvarkės punktas atnaujintas sėkmingai!');
+    }
+
+    /**
+     * Sync votes for an agenda item.
+     */
+    protected function syncVotes(AgendaItem $agendaItem, array $votes): void
+    {
+        $existingVoteIds = $agendaItem->votes()->pluck('id')->toArray();
+        $updatedVoteIds = [];
+
+        foreach ($votes as $voteData) {
+            if (isset($voteData['id']) && $voteData['id'] !== null) {
+                // Update existing vote
+                $vote = Vote::find($voteData['id']);
+                if ($vote && $vote->agenda_item_id === $agendaItem->id) {
+                    $vote->update([
+                        'is_main' => $voteData['is_main'] ?? false,
+                        'title' => $voteData['title'] ?? null,
+                        'student_vote' => $voteData['student_vote'] ?? null,
+                        'decision' => $voteData['decision'] ?? null,
+                        'student_benefit' => $voteData['student_benefit'] ?? null,
+                        'note' => $voteData['note'] ?? null,
+                        'order' => $voteData['order'] ?? 0,
+                    ]);
+                    $updatedVoteIds[] = $vote->id;
+                }
+            } else {
+                // Create new vote
+                $vote = $agendaItem->votes()->create([
+                    'is_main' => $voteData['is_main'] ?? false,
+                    'title' => $voteData['title'] ?? null,
+                    'student_vote' => $voteData['student_vote'] ?? null,
+                    'decision' => $voteData['decision'] ?? null,
+                    'student_benefit' => $voteData['student_benefit'] ?? null,
+                    'note' => $voteData['note'] ?? null,
+                    'order' => $voteData['order'] ?? 0,
+                ]);
+                $updatedVoteIds[] = $vote->id;
+            }
+        }
+
+        // Delete votes that were removed
+        $votesToDelete = array_diff($existingVoteIds, $updatedVoteIds);
+        if (! empty($votesToDelete)) {
+            Vote::whereIn('id', $votesToDelete)->delete();
+        }
     }
 
     /**

@@ -28,7 +28,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read \App\Models\Content|null $content
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Duty> $duties
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Institution> $institutions
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\News> $news
+ * @property-read \App\Collections\NewsCollection<int, \App\Models\News> $news
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Page> $pages
  * @property-read \App\Models\Institution|null $primary_institution
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\QuickLink> $quickLinks

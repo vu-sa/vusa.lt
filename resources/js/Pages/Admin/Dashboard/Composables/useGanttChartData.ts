@@ -30,12 +30,20 @@ export function useGanttChartData(
     return tenantInstitutions.value.flatMap((institution: any) => {
       return (institution.meetings ?? []).map((meeting: any) => {
         // Extract agenda items for tooltip (limit to first 4)
-        const agendaItems = (meeting.agenda_items ?? []).slice(0, 4).map((item: any) => ({
-          id: String(item.id),
-          title: String(item.title ?? ''),
-          student_vote: item.student_vote ?? null,
-          decision: item.decision ?? null,
-        }));
+        const agendaItems = (meeting.agenda_items ?? []).slice(0, 4).map((item: any) => {
+          // Get main vote from: main_vote property, is_main flag in votes, or first vote
+          const mainVote = item.main_vote 
+            ?? item.votes?.find((v: any) => v.is_main) 
+            ?? item.votes?.[0] 
+            ?? null;
+          return {
+            id: String(item.id),
+            title: String(item.title ?? ''),
+            type: item.type ?? null,
+            student_vote: mainVote?.student_vote ?? null,
+            decision: mainVote?.decision ?? null,
+          };
+        });
         const totalAgendaCount = (meeting.agenda_items ?? []).length;
 
         return {

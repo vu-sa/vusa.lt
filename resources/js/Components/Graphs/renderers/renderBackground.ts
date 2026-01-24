@@ -74,22 +74,21 @@ export function renderBackground(ctx: BackgroundRenderContext): void {
       }
     })
 
-  // Monday grid lines (only for institution rows)
-  // At very low zoom (dayWidthPx < 6), only show for last week of each month
+  // Sunday grid lines (only for institution rows) - visual week separators
+  // At high zoom (dayWidthPx >= 14): show all Sundays
+  // At lower zoom: show only the last Sunday of each month for orientation
   const days = d3.timeDay.range(minTime, maxTime)
   const institutionRows = layoutRows.filter(r => r.type === 'institution')
-  const isVeryLowZoom = typeof dayWidthPx === 'number' && dayWidthPx < 6
+  const showAllSundays = typeof dayWidthPx === 'number' && dayWidthPx >= 14
 
   const dayBands: Array<{ day: Date; row: LayoutRow }> = []
   for (const day of days) {
-    if (day.getDay() === 1) { // Monday
-      // At very low zoom, only include Mondays in the last 7 days of the month
-      if (isVeryLowZoom) {
-        const daysInMonth = new Date(day.getFullYear(), day.getMonth() + 1, 0).getDate()
-        const dayOfMonth = day.getDate()
-        // Only include if in last week of month (last 7 days)
-        if (dayOfMonth < daysInMonth - 6) {
-          continue
+    if (day.getDay() === 0) { // Sunday
+      if (!showAllSundays) {
+        // At lower zoom, only include the last Sunday of the month
+        const nextSunday = d3.timeDay.offset(day, 7)
+        if (nextSunday.getMonth() === day.getMonth()) {
+          continue // Not the last Sunday of the month
         }
       }
       for (const row of institutionRows) {
@@ -99,7 +98,7 @@ export function renderBackground(ctx: BackgroundRenderContext): void {
   }
 
   g.append('g')
-    .attr('class', 'monday-grid')
+    .attr('class', 'sunday-grid')
     .selectAll('rect')
     .data(dayBands)
     .enter()
@@ -108,7 +107,7 @@ export function renderBackground(ctx: BackgroundRenderContext): void {
     .attr('y', d => rowTop(d.row.key))
     .attr('width', d => x(d3.timeDay.offset(d.day, 1)) - x(d.day))
     .attr('height', d => rowHeightFor(d.row.key))
-    .attr('fill', colors.gridLine)
+    .attr('fill', colors.sundayMark)
 
   // Year markers (vertical dashed lines at Jan 1)
   const yStart = d3.timeYear.floor(minTime)

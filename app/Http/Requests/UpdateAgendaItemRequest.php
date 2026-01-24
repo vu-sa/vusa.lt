@@ -28,9 +28,18 @@ class UpdateAgendaItemRequest extends FormRequest
             'description' => 'nullable|string',
             'order' => 'sometimes|integer|min:1',
             'brought_by_students' => 'nullable|boolean',
-            'decision' => 'nullable|string|in:positive,negative,neutral',
-            'student_vote' => 'nullable|string|in:positive,negative,neutral',
-            'student_benefit' => 'nullable|string|in:positive,negative,neutral',
+            'type' => 'nullable|string|in:voting,informational,deferred',
+            'student_position' => 'nullable|string|max:5000',
+            // Votes validation
+            'votes' => 'nullable|array',
+            'votes.*.id' => 'nullable|string',
+            'votes.*.is_main' => 'nullable|boolean',
+            'votes.*.title' => 'nullable|string|max:500',
+            'votes.*.student_vote' => 'nullable|string|in:positive,negative,neutral',
+            'votes.*.decision' => 'nullable|string|in:positive,negative,neutral',
+            'votes.*.student_benefit' => 'nullable|string|in:positive,negative,neutral',
+            'votes.*.note' => 'nullable|string|max:2000',
+            'votes.*.order' => 'nullable|integer|min:0',
         ];
     }
 
@@ -47,9 +56,8 @@ class UpdateAgendaItemRequest extends FormRequest
             'description.string' => 'Darbotvarkės klausimo aprašymas turi būti tekstas.',
             'order.integer' => 'Darbotvarkės klausimo tvarka turi būti skaičius.',
             'order.min' => 'Darbotvarkės klausimo tvarka turi būti bent 1.',
-            'decision.in' => 'Sprendimo reikšmė turi būti viena iš: positive, negative, neutral.',
-            'student_vote.in' => 'Studentų balsavimo reikšmė turi būti viena iš: positive, negative, neutral.',
-            'student_benefit.in' => 'Naudos studentams reikšmė turi būti viena iš: positive, negative, neutral.',
+            'type.in' => 'Punkto tipas turi būti vienas iš: voting, informational, deferred.',
+            'student_position.max' => 'Studentų pozicija negali būti ilgesnė nei 5000 simbolių.',
         ];
     }
 }

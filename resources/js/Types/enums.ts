@@ -7,6 +7,11 @@ export enum ActionType {
   AgendaCompletion = "agenda_completion",
   PeriodicityGap = "periodicity_gap",
 }
+export enum AgendaItemType {
+  Voting = "voting",
+  Informational = "informational",
+  Deferred = "deferred",
+}
 export enum AllowedFileablesEnum {
   "DUTY" = "duty",
   "INSTITUTION" = "institution",
@@ -173,4 +178,9 @@ export enum SharepointScopeEnum {
   "ANONYMOUS" = "anonymous",
   "ORGANIZATION" = "organization",
   "USERS" = "users",
+}
+export enum VoteValue {
+  Positive = "positive",
+  Negative = "negative",
+  Neutral = "neutral",
 }

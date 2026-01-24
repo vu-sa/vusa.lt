@@ -21,7 +21,7 @@
     <VisakInfoModal :open="showVisakInfo" @close="showVisakInfo = false" @start-tour="startContextTour" />
 
     <Tabs v-model="activeTab" class="mt-6 mb-32">
-      <TabsList class="gap-2">
+      <TabsList class="gap-2 overflow-visible">
         <TabsTrigger value="user">
           {{ props.user.name }}
         </TabsTrigger>

@@ -100,6 +100,10 @@ return [
     'meeting_agenda_completed_title' => 'Posėdžio darbotvarkė užpildyta',
     'meeting_agenda_completed_body' => 'Visi :count :institution posėdžio darbotvarkės klausimai užpildyti',
     'meeting_agenda_completed_body_with_user' => ':user užpildė visus :count :institution posėdžio darbotvarkės klausimus',
+    'meeting_agenda_type_voting' => ':count balsavimu',
+    'meeting_agenda_type_informational' => ':count informaciniu',
+    'meeting_agenda_type_deferred' => ':count atidėtu',
+    'meeting_agenda_additional_votes_note' => 'Jei buvo papildomų balsavimų, nepamirškite juos įtraukti.',
 
     // News notifications
     'news_published_title' => 'Naujas straipsnis',

@@ -28,16 +28,6 @@
             <span class="sm:hidden">{{ $t('Viešas') }}</span>
           </Badge>
           <!-- Urgency badge based on document status -->
-          <Badge
-            v-if="overallUrgency !== 'neutral' && overallUrgency !== 'success'"
-            :variant="overallUrgency === 'danger' ? 'destructive' : 'secondary'"
-            class="text-xs gap-1"
-          >
-            <AlertTriangle v-if="overallUrgency === 'danger'" class="h-3 w-3" />
-            <AlertCircle v-else class="h-3 w-3" />
-            <span class="hidden sm:inline">{{ overallUrgency === 'danger' ? $t('Trūksta dokumentų') : $t('Laukia užduotys') }}</span>
-            <span class="sm:hidden">!</span>
-          </Badge>
         </div>
         <div v-if="representatives && representatives.length > 0" class="flex items-center gap-2">
           <span class="text-xs text-zinc-500 dark:text-zinc-400 hidden sm:inline">{{ $t('Atstovai') }}:</span>
@@ -72,7 +62,7 @@
 
     <!-- Tabs Navigation -->
     <Tabs v-model="currentTab" class="mt-6">
-      <TabsList class="gap-2">
+      <TabsList class="gap-2 mb-4">
         <TabsTrigger value="overview">
           {{ $t('Apžvalga') }}
         </TabsTrigger>
@@ -98,26 +88,23 @@
       <TabsContent value="overview" class="space-y-6">
         <MeetingOverviewSection
           :meeting
-          :representatives
-          :activities="meeting.activities"
           :previous-meeting
           :next-meeting
           @go-to-agenda="navigateToTab('agenda')"
+          @go-to-agenda-item="navigateToAgendaItem"
           @go-to-files="navigateToTab('files')"
-          @go-to-tasks="navigateToTab('tasks')"
-          @edit="showMeetingModal = true"
         />
       </TabsContent>
 
       <!-- Agenda Tab -->
       <TabsContent value="agenda">
-        <SortableCardContainer 
-          :items="meeting.agenda_items ?? []" 
+        <SortableCardContainer
+          ref="sortableContainerRef"
+          :items="meeting.agenda_items ?? []"
           :meeting-id="meeting.id"
-          @add="showSingleAgendaItemModal = true" 
-          @add-bulk="showAgendaItemStoreModal = true" 
-          @edit="handleAgendaClick" 
-          @delete="handleAgendaItemDelete" 
+          @add="showSingleAgendaItemModal = true"
+          @add-bulk="showAgendaItemStoreModal = true"
+          @delete="handleAgendaItemDelete"
         />
       </TabsContent>
 
@@ -167,24 +154,15 @@
           <DialogTitle>{{ $t("Pridėti darbotvarkės punktus") }}</DialogTitle>
         </DialogHeader>
         <div class="flex-1 overflow-y-auto -mx-6 px-6">
-          <AgendaItemsForm 
-            class="w-full" 
-            :loading 
+          <AgendaItemsForm
+            class="w-full"
+            :loading
             mode="add"
             :submit-label="$t('Pridėti punktus')"
             :show-skip-button="false"
-            @submit="handleAgendaItemsFormSubmit" 
+            @submit="handleAgendaItemsFormSubmit"
           />
         </div>
-      </DialogContent>
-    </Dialog>
-
-    <Dialog v-model:open="showAgendaItemUpdateModal">
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{{ $t("Redaguoti darbotvarkės punktą") }}</DialogTitle>
-        </DialogHeader>
-        <AgendaItemForm v-if="selectedAgendaItem" :agenda-item="selectedAgendaItem" @submit="handleAgendaItemUpdate" />
       </DialogContent>
     </Dialog>
 
@@ -234,47 +212,46 @@
 </template>
 
 <script setup lang="tsx">
-import { ref, computed, watch, onMounted } from "vue";
-import { router, useForm, Link, Head as InertiaHead } from "@inertiajs/vue3";
-import { useStorage } from "@vueuse/core";
-import { trans as $t } from "laravel-vue-i18n";
+import { ref, computed, watch, onMounted, nextTick } from 'vue';
+import { router, useForm, Link, Head as InertiaHead } from '@inertiajs/vue3';
+import { useStorage } from '@vueuse/core';
+import { trans as $t } from 'laravel-vue-i18n';
 import { AlertTriangle, AlertCircle, Plus, Trash2, ChevronLeft, ChevronRight, Clock, Globe, Edit, MoreHorizontal, Video } from 'lucide-vue-next';
 
-import { formatStaticTime } from "@/Utils/IntlTime";
-import { genitivizeEveryWord } from "@/Utils/String";
-import Icons from "@/Types/Icons/filled";
-import { BreadcrumbHelpers, usePageBreadcrumbs } from "@/Composables/useBreadcrumbsUnified";
-import { useMeetingUrgency } from "@/Composables/useMeetingUrgency";
+import { formatStaticTime } from '@/Utils/IntlTime';
+import { genitivizeEveryWord } from '@/Utils/String';
+import Icons from '@/Types/Icons/filled';
+import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
+import { useMeetingUrgency } from '@/Composables/useMeetingUrgency';
 
 // Layout
-import AdminContentPage from "@/Components/Layouts/AdminContentPage.vue";
+import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
 
 // UI Components
-import { Button } from "@/Components/ui/button";
-import { Badge } from "@/Components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
+import { Button } from '@/Components/ui/button';
+import { Badge } from '@/Components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
-  DropdownMenuTrigger
-} from "@/Components/ui/dropdown-menu";
+  DropdownMenuTrigger,
+} from '@/Components/ui/dropdown-menu';
 
 // Custom Components
-import ShowPageHero from "@/Components/Hero/ShowPageHero.vue";
-import UsersAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
-import MeetingOverviewSection from "@/Components/Meetings/MeetingOverviewSection.vue";
-import SortableCardContainer from "@/Components/AgendaItems/SortableCardContainer.vue";
-import AgendaItemForm from "@/Components/AdminForms/AgendaItemForm.vue";
-import AddAgendaItemForm from "@/Components/AdminForms/AddAgendaItemForm.vue";
-import AgendaItemsForm from "@/Components/AdminForms/Special/AgendaItemsForm.vue";
-import MeetingForm from "@/Components/AdminForms/MeetingForm.vue";
-import FileManager from "@/Features/Admin/SharepointFileManager/SharepointFileManager.vue";
-import TaskManager from "@/Features/Admin/TaskManager/TaskManager.vue";
-import ActivityLogButton from "@/Features/Admin/ActivityLogViewer/ActivityLogButton.vue";
-import SpotlightBadge from "@/Components/Onboarding/SpotlightBadge.vue";
+import ShowPageHero from '@/Components/Hero/ShowPageHero.vue';
+import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
+import MeetingOverviewSection from '@/Components/Meetings/MeetingOverviewSection.vue';
+import SortableCardContainer from '@/Components/AgendaItems/SortableCardContainer.vue';
+import AddAgendaItemForm from '@/Components/AdminForms/AddAgendaItemForm.vue';
+import AgendaItemsForm from '@/Components/AdminForms/Special/AgendaItemsForm.vue';
+import MeetingForm from '@/Components/AdminForms/MeetingForm.vue';
+import FileManager from '@/Features/Admin/SharepointFileManager/SharepointFileManager.vue';
+import TaskManager from '@/Features/Admin/TaskManager/TaskManager.vue';
+import ActivityLogButton from '@/Features/Admin/ActivityLogViewer/ActivityLogButton.vue';
+import SpotlightBadge from '@/Components/Onboarding/SpotlightBadge.vue';
 
 const props = defineProps<{
   meeting: App.Entities.Meeting;
@@ -290,13 +267,12 @@ const { overallUrgency } = useMeetingUrgency(() => props.meeting);
 const showMeetingModal = ref(false);
 const showAgendaItemStoreModal = ref(false);
 const showSingleAgendaItemModal = ref(false);
-const showAgendaItemUpdateModal = ref(false);
 const showDeleteDialog = ref(false);
 const loading = ref(false);
 
 // Tab state with smart defaults
-const hasVisitedAgendaTab = useStorage("meeting-agenda-tab-visited", false);
-const storedTab = useStorage("show-meeting-tab", "overview");
+const hasVisitedAgendaTab = useStorage('meeting-agenda-tab-visited', false);
+const storedTab = useStorage('show-meeting-tab', 'overview');
 
 // Check URL for tab parameter (priority over localStorage)
 const getInitialTab = () => {
@@ -323,14 +299,15 @@ watch(currentTab, (newTab) => {
   if (newTab === 'agenda') {
     hasVisitedAgendaTab.value = true;
   }
-  
+
   // Sync tab state to URL without page reload
   if (typeof window !== 'undefined') {
     const url = new URL(window.location.href);
     if (newTab === 'overview') {
       url.searchParams.delete('tab');
       url.searchParams.delete('action');
-    } else {
+    }
+    else {
       url.searchParams.set('tab', newTab);
       // Clear action param when switching tabs normally
       url.searchParams.delete('action');
@@ -341,17 +318,17 @@ watch(currentTab, (newTab) => {
 
 // Reset to overview for new meeting visits (unless URL specifies a tab)
 onMounted(() => {
-  const lastVisitedMeetingId = useStorage("last-visited-meeting-id", "");
+  const lastVisitedMeetingId = useStorage('last-visited-meeting-id', '');
   const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
   const urlTab = params?.get('tab');
   const urlAction = params?.get('action');
-  
+
   // If no URL tab specified and it's a new meeting, reset to overview
   if (!urlTab && lastVisitedMeetingId.value !== props.meeting.id) {
-    currentTab.value = "overview";
+    currentTab.value = 'overview';
   }
   lastVisitedMeetingId.value = props.meeting.id;
-  
+
   // Auto-open agenda add modal if action=add and on agenda tab
   if (urlTab === 'agenda' && urlAction === 'add') {
     // Small delay to ensure component is mounted
@@ -372,20 +349,29 @@ const navigateToTab = (tab: string) => {
   currentTab.value = tab;
 };
 
+// Navigate to specific agenda item
+const sortableContainerRef = ref<InstanceType<typeof SortableCardContainer> | null>(null);
+
+const navigateToAgendaItem = (itemId: string) => {
+  currentTab.value = 'agenda';
+  // Use setTimeout to ensure the tab content is fully rendered before expanding
+  setTimeout(() => {
+    sortableContainerRef.value?.expandItem(itemId);
+  }, 100);
+};
+
 // Form handling
 const meetingAgendaForm = useForm({
   meeting: props.meeting.id,
   agendaItems: [],
 });
 
-const selectedAgendaItem = ref<App.Entities.AgendaItem | null>(null);
-
 // Computed values
-const mainInstitution: App.Entities.Institution | string =
-  props.meeting.institutions?.[0] ?? "Be institucijos";
+const mainInstitution: App.Entities.Institution | string
+  = props.meeting.institutions?.[0] ?? 'Be institucijos';
 
 const meetingTitle = computed(() => {
-  if (props.meeting.title && props.meeting.title !== "") {
+  if (props.meeting.title && props.meeting.title !== '') {
     return props.meeting.title;
   }
 
@@ -394,9 +380,9 @@ const meetingTitle = computed(() => {
     : mainInstitution.name;
 
   return `${formatStaticTime(new Date(props.meeting.start_time), {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
   })} ${genitivizeEveryWord(institutionName)} posėdis`;
 });
 
@@ -412,17 +398,17 @@ const heroSubtitle = computed(() => {
 const meetingBadge = computed(() => ({
   label: $t('Posėdis'),
   variant: 'secondary' as const,
-  icon: Video
+  icon: Video,
 }));
 
 // Format date for navigation buttons
 const formatMeetingNavDate = (date: string) => {
   return formatStaticTime(new Date(date), {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
   });
 };
 
@@ -431,52 +417,37 @@ usePageBreadcrumbs(() => {
   if (typeof mainInstitution === 'string') {
     return [
       { label: mainInstitution, icon: Icons.INSTITUTION },
-      { label: meetingTitle.value, icon: Icons.MEETING }
+      { label: meetingTitle.value, icon: Icons.MEETING },
     ];
   }
 
   return BreadcrumbHelpers.adminShow(
     mainInstitution.name,
-    "institutions.show",
+    'institutions.show',
     { institution: mainInstitution.id },
     meetingTitle.value,
     Icons.INSTITUTION,
-    Icons.MEETING
+    Icons.MEETING,
   );
 });
 
 // Event handlers
 const handleMeetingFormSubmit = (meeting: App.Entities.Meeting) => {
-  router.patch(route("meetings.update", props.meeting.id), meeting, {
+  router.patch(route('meetings.update', props.meeting.id), meeting, {
     onSuccess: () => {
       showMeetingModal.value = false;
     },
   });
 };
 
-const handleAgendaClick = (agendaItem: App.Entities.AgendaItem) => {
-  selectedAgendaItem.value = agendaItem;
-  showAgendaItemUpdateModal.value = true;
-};
-
 const handleAgendaItemDelete = (agendaItem: App.Entities.AgendaItem) => {
-  router.delete(route("agendaItems.destroy", agendaItem.id));
-};
-
-const handleAgendaItemUpdate = (formValues: Record<string, any>) => {
-  if (!selectedAgendaItem.value) return;
-  
-  router.patch(route("agendaItems.update", selectedAgendaItem.value.id), formValues, {
-    onSuccess: () => {
-      showAgendaItemUpdateModal.value = false;
-    },
-  });
+  router.delete(route('agendaItems.destroy', agendaItem.id));
 };
 
 const handleSingleAgendaItemSubmit = (data: { meeting_id: string; title: string; description?: string; brought_by_students?: boolean }) => {
   loading.value = true;
 
-  router.post(route("agendaItems.store"), {
+  router.post(route('agendaItems.store'), {
     meeting_id: data.meeting_id,
     agendaItemTitles: [data.title],
     agendaItemDescriptions: data.description ? [data.description] : [],
@@ -495,11 +466,11 @@ const handleAgendaItemsFormSubmit = (agendaItems: Record<string, any>) => {
   loading.value = true;
 
   meetingAgendaForm
-    .transform((data) => ({
+    .transform(data => ({
       meeting_id: props.meeting.id,
       ...agendaItems,
     }))
-    .post(route("agendaItems.store"), {
+    .post(route('agendaItems.store'), {
       onSuccess: () => {
         meetingAgendaForm.reset();
         showAgendaItemStoreModal.value = false;
@@ -515,11 +486,11 @@ const handleMeetingDelete = () => {
     ? route('admin.dashboard')
     : route('institutions.show', mainInstitution.id);
 
-  router.delete(route("meetings.destroy", props.meeting.id), {
+  router.delete(route('meetings.destroy', props.meeting.id), {
     data: { redirect_to: redirectTo },
     onSuccess: () => {
       showDeleteDialog.value = false;
-    }
+    },
   });
 };
 </script>

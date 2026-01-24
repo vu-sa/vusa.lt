@@ -17,4 +17,14 @@ return [
     'help_tip_2' => "Jei abejojate dėl naudos studentams – pasirinkite 'neutralu' ir aprašyme paaiškinkite",
     'help_tip_3' => 'Aprašyme paminėkite svarbius argumentus ar diskusijas',
     'help_contact' => 'Jei turi klausimų – kreipkis į savo studentų atstovų koordinatorių',
+
+    // Agenda item status explanations
+    'help_agenda_status_description' => 'Kiekvienas darbotvarkės klausimas viešai rodomas pagal jo tipą ir balsavimo rezultatą. Štai ką reiškia kiekviena būsena:',
+    'status_aligned_admin_help' => 'Galutinis sprendimas atitinka studentų atstovų balsą. Pažymėkite, kai organas pritarė tam, už ką balsavo studentai.',
+    'status_misaligned_admin_help' => 'Galutinis sprendimas skiriasi nuo studentų atstovų balso. Pažymėkite, kai organas nusprendė kitaip nei balsavo studentai.',
+    'status_neutral_admin_help' => 'Studentai susilaikė arba sprendimas neturėjo aiškios naudos ar žalos studentams.',
+    'status_no_vote_admin_help' => 'Balsavimo klausimas, tačiau balsavimo duomenys dar neįvesti. Nepamirškite užpildyti!',
+    'status_deferred_admin_help' => 'Klausimo svarstymas atidėtas kitam posėdžiui. Pasirinkite tipą "Atidėtas".',
+    'status_informational_admin_help' => 'Informacinio pobūdžio klausimas, kuriame nėra balsavimo. Pasirinkite tipą "Informacinis".',
+    'status_unset_admin_help' => 'Klausimo tipas dar nenurodytas. Būtinai pasirinkite atitinkamą tipą!',
 ];

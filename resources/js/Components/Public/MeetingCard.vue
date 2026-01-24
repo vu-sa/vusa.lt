@@ -27,6 +27,25 @@
                 {{ allAgendaItems.length === 1 ? $t('klausimas') : $t('klausimai') }}
               </span>
               <AgendaOutcomeIndicators :agenda-items="itemsWithDecisions" />
+              <!-- Vote alignment summary badge -->
+              <span
+                v-if="meetingSummary.voteAlignmentStatus !== 'unknown' && meetingSummary.totalItems > 0"
+                class="inline-flex items-center gap-1 text-[10px] font-medium rounded-full px-1.5 py-0.5"
+                :class="{
+                  'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400': meetingSummary.voteAlignmentStatus === 'all_match',
+                  'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400': meetingSummary.voteAlignmentStatus === 'mixed',
+                  'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400': meetingSummary.voteAlignmentStatus === 'all_mismatch',
+                  'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400': meetingSummary.voteAlignmentStatus === 'neutral',
+                }"
+              >
+                <CheckIcon v-if="meetingSummary.voteAlignmentStatus === 'all_match'" class="h-2.5 w-2.5" />
+                <AlertTriangleIcon v-else-if="meetingSummary.voteAlignmentStatus === 'mixed'" class="h-2.5 w-2.5" />
+                <XIcon v-else-if="meetingSummary.voteAlignmentStatus === 'all_mismatch'" class="h-2.5 w-2.5" />
+                <MinusIcon v-else class="h-2.5 w-2.5" />
+                {{ meetingSummary.voteAlignmentStatus === 'all_match' ? $t('Pozicija priimta') :
+                   meetingSummary.voteAlignmentStatus === 'all_mismatch' ? $t('Pozicija nepriimta') :
+                   meetingSummary.voteAlignmentStatus === 'mixed' ? $t('Mišrus rezultatas') : $t('Neutralu') }}
+              </span>
             </div>
           </div>
         </div>
@@ -55,8 +74,8 @@
               <p class="font-medium text-zinc-900 dark:text-zinc-100 flex-1">
                 {{ item.order }}. {{ item.title }}
               </p>
-              <span 
-                v-if="item.brought_by_students" 
+              <span
+                v-if="item.brought_by_students"
                 class="shrink-0 inline-flex items-center gap-0.5 rounded-full bg-zinc-200 dark:bg-zinc-700 px-1.5 py-0 text-[10px] font-medium text-zinc-600 dark:text-zinc-300"
               >
                 <UsersIcon class="h-2.5 w-2.5" />
@@ -67,15 +86,15 @@
             <div v-if="hasDecisionData(item)" class="flex gap-4 text-zinc-500 dark:text-zinc-400">
               <span class="flex items-center gap-1">
                 {{ $t('Studentų balsas') }}:
-                <VoteIndicator :vote="item.student_vote" type="vote" compact />
+                <VoteStatusIndicator :vote="getMainVote(item)?.student_vote" type="vote" compact />
               </span>
               <span class="flex items-center gap-1">
                 {{ $t('Sprendimas') }}:
-                <VoteIndicator :vote="item.decision" type="vote" compact />
+                <VoteStatusIndicator :vote="getMainVote(item)?.decision" type="vote" compact />
               </span>
               <span class="flex items-center gap-1">
                 {{ $t('Nauda') }}:
-                <VoteIndicator :vote="item.student_benefit" type="benefit" compact />
+                <VoteStatusIndicator :vote="getMainVote(item)?.student_benefit" type="benefit" compact />
               </span>
             </div>
           </div>
@@ -88,21 +107,23 @@
 import { computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Badge } from '@/Components/ui/badge';
-import { ArrowRightIcon, Users as UsersIcon } from 'lucide-vue-next';
+import { ArrowRightIcon, Users as UsersIcon, Check as CheckIcon, AlertTriangle as AlertTriangleIcon, X as XIcon, Minus as MinusIcon } from 'lucide-vue-next';
+
 import AgendaOutcomeIndicators from './AgendaOutcomeIndicators.vue';
-import VoteIndicator from './VoteIndicator.vue';
+import VoteStatusIndicator from './VoteStatusIndicator.vue';
 import SmartLink from './SmartLink.vue';
+
+import { Badge } from '@/Components/ui/badge';
 import { formatStaticTime } from '@/Utils/IntlTime';
-import { useMeetingStatus } from '@/Composables/useMeetingStatus';
+import { getMainVote, getMeetingStatusSummary, hasDecisionData } from '@/Composables/useAgendaItemStyling';
 
 const $page = usePage();
 
 const props = withDefaults(defineProps<{
   meeting: App.Entities.Meeting;
-  showInstitution?: boolean;  // Show institution name (for search results)
+  showInstitution?: boolean; // Show institution name (for search results)
 }>(), {
-  showInstitution: false
+  showInstitution: false,
 });
 
 // All agenda items count
@@ -110,17 +131,15 @@ const allAgendaItems = computed(() => {
   return props.meeting.agenda_items || [];
 });
 
-// Items with at least one decision field filled (for outcome indicators)
-const itemsWithDecisions = computed(() => {
-  return allAgendaItems.value.filter(item =>
-    item.student_vote !== null || item.decision !== null || item.student_benefit !== null
-  );
+// Meeting summary for alignment status
+const meetingSummary = computed(() => {
+  return getMeetingStatusSummary(allAgendaItems.value);
 });
 
-// Check if an agenda item has any decision data to show
-const hasDecisionData = (item: App.Entities.AgendaItem) => {
-  return item.student_vote !== null || item.decision !== null || item.student_benefit !== null;
-};
+// Items with at least one decision field filled (for outcome indicators)
+const itemsWithDecisions = computed(() => {
+  return allAgendaItems.value.filter(hasDecisionData);
+});
 
 const formatMeetingDate = (date: string) => {
   return formatStaticTime(new Date(date), {

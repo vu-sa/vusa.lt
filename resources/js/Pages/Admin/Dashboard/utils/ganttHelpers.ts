@@ -104,12 +104,17 @@ export function extractMeetingsFromInstitutions(
       // Check authorization for agenda item visibility
       const isAuthorized = (inst as any).authorized !== false;
       const agendaItems = isAuthorized 
-        ? (m.agenda_items ?? []).slice(0, 4).map((item: any) => ({
-            id: String(item.id),
-            title: String(item.title ?? ''),
-            student_vote: item.student_vote ?? null,
-            decision: item.decision ?? null,
-          }))
+        ? (m.agenda_items ?? []).slice(0, 4).map((item: any) => {
+            // Get main vote from either main_vote property or votes array
+            const mainVote = item.main_vote ?? item.votes?.find((v: any) => v.is_main);
+            return {
+              id: String(item.id),
+              title: String(item.title ?? ''),
+              type: item.type ?? null,
+              student_vote: mainVote?.student_vote ?? null,
+              decision: mainVote?.decision ?? null,
+            };
+          })
         : [];
       const totalAgendaCount = isAuthorized ? (m.agenda_items ?? []).length : 0;
 

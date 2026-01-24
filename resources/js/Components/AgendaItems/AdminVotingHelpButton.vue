@@ -151,6 +151,88 @@
             </div>
           </section>
 
+          <!-- Agenda item status types -->
+          <section>
+            <h3 class="font-semibold mb-3 text-base flex items-center gap-2">
+              <CircleDot class="h-4 w-4 text-primary" />
+              {{ $t('Darbotvarkės klausimų būsenos') }}
+            </h3>
+            <p class="text-sm text-muted-foreground mb-4">
+              {{ $t('voting.help_agenda_status_description') }}
+            </p>
+            <dl class="space-y-3">
+              <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+                <div class="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30">
+                  <Check class="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                </div>
+                <div class="flex-1">
+                  <dt class="font-medium text-sm">{{ $t('Studentų pozicija priimta') }}</dt>
+                  <dd class="text-xs text-muted-foreground">{{ $t('voting.status_aligned_admin_help') }}</dd>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+                <div class="flex h-7 w-7 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
+                  <X class="h-4 w-4 text-red-600 dark:text-red-400" />
+                </div>
+                <div class="flex-1">
+                  <dt class="font-medium text-sm">{{ $t('Studentų pozicija nepriimta') }}</dt>
+                  <dd class="text-xs text-muted-foreground">{{ $t('voting.status_misaligned_admin_help') }}</dd>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+                <div class="flex h-7 w-7 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
+                  <Minus class="h-4 w-4 text-zinc-600 dark:text-zinc-400" />
+                </div>
+                <div class="flex-1">
+                  <dt class="font-medium text-sm">{{ $t('Neutralus sprendimas') }}</dt>
+                  <dd class="text-xs text-muted-foreground">{{ $t('voting.status_neutral_admin_help') }}</dd>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+                <div class="flex h-7 w-7 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30 border border-dashed border-amber-400">
+                  <Circle class="h-3.5 w-3.5 text-amber-500/50" />
+                </div>
+                <div class="flex-1">
+                  <dt class="font-medium text-sm">{{ $t('Neaptartas') }}</dt>
+                  <dd class="text-xs text-muted-foreground">{{ $t('voting.status_no_vote_admin_help') }}</dd>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+                <div class="flex h-7 w-7 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
+                  <Clock class="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
+                </div>
+                <div class="flex-1">
+                  <dt class="font-medium text-sm">{{ $t('Atidėtas') }}</dt>
+                  <dd class="text-xs text-muted-foreground">{{ $t('voting.status_deferred_admin_help') }}</dd>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+                <div class="flex h-7 w-7 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
+                  <Info class="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
+                </div>
+                <div class="flex-1">
+                  <dt class="font-medium text-sm">{{ $t('Informacinis') }}</dt>
+                  <dd class="text-xs text-muted-foreground">{{ $t('voting.status_informational_admin_help') }}</dd>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+                <div class="flex h-7 w-7 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30">
+                  <HelpCircle class="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                </div>
+                <div class="flex-1">
+                  <dt class="font-medium text-sm">{{ $t('Nepažymėtas') }}</dt>
+                  <dd class="text-xs text-muted-foreground">{{ $t('voting.status_unset_admin_help') }}</dd>
+                </div>
+              </div>
+            </dl>
+          </section>
+
           <!-- Contact info -->
           <section class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
             <p class="text-sm text-blue-800 dark:text-blue-300 flex items-center gap-2">
@@ -174,16 +256,19 @@
 import { ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import {
+  Check,
+  Circle,
+  CircleDot,
+  Clock,
+  FileText,
   HelpCircle,
   Info,
-  Check,
-  X,
-  Minus,
-  ThumbsUp,
-  FileText,
   Lightbulb,
   MessageCircle,
-  Users
+  Minus,
+  ThumbsUp,
+  Users,
+  X,
 } from 'lucide-vue-next';
 
 import { Button } from '@/Components/ui/button';

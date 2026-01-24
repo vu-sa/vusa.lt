@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\AgendaItemType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -22,6 +23,7 @@ class AgendaItemFactory extends Factory
             'title' => $this->faker->sentence,
             'order' => $this->faker->numberBetween(1, 10),
             'description' => $this->faker->optional()->paragraph,
+            'type' => AgendaItemType::Informational,
         ];
     }
 
@@ -36,26 +38,42 @@ class AgendaItemFactory extends Factory
     }
 
     /**
-     * Mark agenda item as complete with all required fields filled.
+     * Mark agenda item as voting type with vote status set.
      */
-    public function complete(): static
+    public function voting(): static
     {
         return $this->state(fn (array $attributes) => [
-            'student_vote' => $this->faker->randomElement(['už', 'prieš', 'susilaikė']),
-            'decision' => $this->faker->sentence,
-            'student_benefit' => $this->faker->paragraph,
+            'type' => AgendaItemType::Voting,
         ]);
     }
 
     /**
-     * Mark agenda item as incomplete (missing required fields).
+     * Mark agenda item as informational type.
      */
-    public function incomplete(): static
+    public function informational(): static
     {
         return $this->state(fn (array $attributes) => [
-            'student_vote' => null,
-            'decision' => null,
-            'student_benefit' => null,
+            'type' => AgendaItemType::Informational,
+        ]);
+    }
+
+    /**
+     * Mark agenda item as deferred type.
+     */
+    public function deferred(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'type' => AgendaItemType::Deferred,
+        ]);
+    }
+
+    /**
+     * Add a student position to the agenda item.
+     */
+    public function withStudentPosition(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'student_position' => $this->faker->paragraph,
         ]);
     }
 }

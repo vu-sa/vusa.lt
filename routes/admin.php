@@ -120,6 +120,8 @@ Route::post('calendar/{calendar}/media/{media}', [CalendarController::class, 'de
 Route::post('calendar/{calendar}/duplicate', [CalendarController::class, 'duplicate'])->name('calendar.duplicate');
 Route::resource('agendaItems', AgendaItemController::class)->except(['index', 'create']);
 Route::post('agendaItems/reorder', [AgendaItemController::class, 'reorder'])->name('agendaItems.reorder');
+Route::resource('votes', VoteController::class)->except(['index', 'create', 'show', 'edit']);
+Route::post('votes/{vote}/set-main', [VoteController::class, 'setMain'])->name('votes.setMain');
 Route::resource('meetings', MeetingController::class)->except(['create']);
 Route::get('meetings-search', [MeetingController::class, 'search'])->name('meetings.search');
 

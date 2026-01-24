@@ -122,7 +122,7 @@ class Meeting extends Model implements SharepointFileableContract
         $this->loadMissing([
             'institutions.types',
             'institutions.tenant',
-            'agendaItems',
+            'agendaItems.votes',
         ]);
 
         // Get tenant IDs for filtering with scoped API keys
@@ -142,7 +142,7 @@ class Meeting extends Model implements SharepointFileableContract
             ->values()
             ->toArray();
 
-        // Aggregate vote statistics from agenda items
+        // Aggregate vote statistics from agenda items' votes
         $voteStats = $this->calculateVoteStatistics();
 
         return [
@@ -175,6 +175,9 @@ class Meeting extends Model implements SharepointFileableContract
             // Agenda items count
             'agenda_items_count' => $this->agendaItems->count(),
 
+            // Total votes count
+            'votes_count' => $voteStats['total_votes'],
+
             // Meeting type (enum)
             'type' => $this->type?->value,
             'type_slug' => $this->type_slug,
@@ -200,32 +203,37 @@ class Meeting extends Model implements SharepointFileableContract
     }
 
     /**
-     * Calculate vote statistics from agenda items
+     * Calculate vote statistics from agenda items' votes.
+     * Aggregates statistics from all votes across all agenda items.
      */
     protected function calculateVoteStatistics(): array
     {
-        $items = $this->agendaItems;
+        // Collect all votes from all agenda items
+        $allVotes = $this->agendaItems->flatMap(fn ($item) => $item->votes);
 
-        // Count vote alignment - items where both student_vote and decision exist
-        $itemsWithBothVotes = $items->filter(function ($item) {
-            return ! empty($item->student_vote) && ! empty($item->decision);
+        $totalVotes = $allVotes->count();
+
+        // Votes with both student_vote and decision filled
+        $votesWithBoth = $allVotes->filter(function ($vote) {
+            return ! empty($vote->student_vote) && ! empty($vote->decision);
         });
 
-        $voteMatches = $itemsWithBothVotes->filter(function ($item) {
-            return $item->student_vote === $item->decision;
+        $voteMatches = $votesWithBoth->filter(function ($vote) {
+            return $vote->student_vote === $vote->decision;
         })->count();
 
-        $voteMismatches = $itemsWithBothVotes->count() - $voteMatches;
+        $voteMismatches = $votesWithBoth->count() - $voteMatches;
 
-        // Items with incomplete vote data
-        $incompleteVoteData = $items->filter(function ($item) {
-            $hasStudentVote = ! empty($item->student_vote);
-            $hasDecision = ! empty($item->decision);
+        // Votes with incomplete data (only one of student_vote/decision filled)
+        $incompleteVoteData = $allVotes->filter(function ($vote) {
+            $hasStudentVote = ! empty($vote->student_vote);
+            $hasDecision = ! empty($vote->decision);
 
             return $hasStudentVote xor $hasDecision;
         })->count();
 
         return [
+            'total_votes' => $totalVotes,
             'vote_matches' => $voteMatches,
             'vote_mismatches' => $voteMismatches,
             'incomplete_vote_data' => $incompleteVoteData,
@@ -362,15 +370,15 @@ class Meeting extends Model implements SharepointFileableContract
     }
 
     /**
-     * Check if all agenda items have completion fields filled.
+     * Check if all agenda items have votes with completion fields filled.
      *
      * @return string 'complete'|'incomplete'|'no_items'
      */
     public function getCompletionStatusAttribute(): string
     {
-        // Load agenda items if not already loaded
+        // Load agenda items with votes if not already loaded
         if (! $this->relationLoaded('agendaItems')) {
-            $this->load('agendaItems');
+            $this->load('agendaItems.votes');
         }
 
         $agendaItems = $this->agendaItems;
@@ -380,11 +388,37 @@ class Meeting extends Model implements SharepointFileableContract
             return 'no_items';
         }
 
-        // Check if all agenda items have the 3 required fields filled
+        // Check if all voting agenda items have at least one complete vote
         $allComplete = $agendaItems->every(function ($item) {
-            return ! empty($item->student_vote)
-                && ! empty($item->decision)
-                && ! empty($item->student_benefit);
+            // Informational items don't need votes
+            if ($item->type?->value === 'informational') {
+                return true;
+            }
+
+            // For voting items, check if they have at least one vote with all fields filled
+            if (! $item->relationLoaded('votes')) {
+                $item->load('votes');
+            }
+
+            // If no votes exist, not complete
+            if ($item->votes->isEmpty()) {
+                return false;
+            }
+
+            // Check if at least the main vote is complete
+            $mainVote = $item->votes->firstWhere('is_main', true);
+            if ($mainVote) {
+                return ! empty($mainVote->student_vote)
+                    && ! empty($mainVote->decision)
+                    && ! empty($mainVote->student_benefit);
+            }
+
+            // No main vote, check if any vote is complete
+            return $item->votes->contains(function ($vote) {
+                return ! empty($vote->student_vote)
+                    && ! empty($vote->decision)
+                    && ! empty($vote->student_benefit);
+            });
         });
 
         return $allComplete ? 'complete' : 'incomplete';

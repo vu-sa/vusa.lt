@@ -3,7 +3,7 @@
     <div class="relative">
       <!-- Subtle gradient background -->
       <div class="absolute inset-0 bg-gradient-to-br from-zinc-100/50 to-zinc-50 dark:from-zinc-800/50 dark:to-zinc-900" />
-      
+
       <CardContent class="relative py-4 sm:py-6">
         <div class="flex flex-col gap-4 sm:gap-6">
           <!-- Header row: Icon + Title/Status -->
@@ -54,8 +54,7 @@
               </div>
               <div
                 v-if="pendingCount > 0"
-                class="flex min-w-16 flex-col items-center justify-center rounded-lg border border-amber-200 bg-amber-50 px-3 py-1.5 sm:min-w-20 sm:px-4 sm:py-2"
-                :class="'dark:border-amber-900 dark:bg-amber-950'"
+                class="flex min-w-16 flex-col items-center justify-center rounded-lg border border-amber-200 bg-amber-50 px-3 py-1.5 sm:min-w-20 sm:px-4 sm:py-2 dark:border-amber-900 dark:bg-amber-950"
               >
                 <span class="text-xl font-semibold leading-none text-amber-600 sm:text-2xl dark:text-amber-400">
                   {{ pendingCount }}
@@ -65,7 +64,7 @@
                 </span>
               </div>
             </div>
-            
+
             <!-- Actions -->
             <div class="flex items-center gap-2">
               <Button variant="outline" size="sm" class="h-9 gap-1.5" @click="$emit('add-user')">
@@ -85,16 +84,16 @@
 </template>
 
 <script setup lang="ts">
-import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
-import { computed } from "vue";
-import { usePage } from "@inertiajs/vue3";
+import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
+import { computed } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 
-import { Badge } from "@/Components/ui/badge";
-import { Button } from "@/Components/ui/button";
-import { Card, CardContent } from "@/Components/ui/card";
-import { formatStaticTime } from "@/Utils/IntlTime";
-import Icons from "@/Types/Icons/filled";
-import UsersAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
+import { Badge } from '@/Components/ui/badge';
+import { Button } from '@/Components/ui/button';
+import { Card, CardContent } from '@/Components/ui/card';
+import { formatStaticTime } from '@/Utils/IntlTime';
+import Icons from '@/Types/Icons/filled';
+import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
 
 const props = defineProps<{
   reservation: App.Entities.Reservation;
@@ -128,7 +127,7 @@ const resourcesCount = computed(() => props.reservation.resources?.length ?? 0);
 
 const pendingCount = computed(() => {
   return props.reservation.resources?.filter(
-    r => r.pivot?.state === 'created' || r.pivot?.state === 'reserved'
+    r => r.pivot?.state === 'created' || r.pivot?.state === 'reserved',
   ).length ?? 0;
 });
 
@@ -137,15 +136,15 @@ type ReservationStatus = 'empty' | 'pending' | 'approved' | 'mixed' | 'completed
 
 const overallStatus = computed<ReservationStatus>(() => {
   const resources = props.reservation.resources ?? [];
-  
+
   if (resources.length === 0) return 'empty';
-  
+
   const states = resources.map(r => r.pivot?.state);
   const allReturned = states.every(s => s === 'returned');
   const allLent = states.every(s => s === 'lent' || s === 'returned');
   const allPending = states.every(s => s === 'created' || s === 'reserved');
   const hasCancelledOrRejected = states.some(s => s === 'cancelled' || s === 'rejected');
-  
+
   if (allReturned) return 'completed';
   if (allLent && !hasCancelledOrRejected) return 'approved';
   if (allPending) return 'pending';

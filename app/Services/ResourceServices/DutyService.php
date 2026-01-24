@@ -186,7 +186,8 @@ class DutyService
                 'tenant:id,shortname,type', // type is needed for cross-tenant scope matching in RelationshipService
                 'types', // explicit since not auto-loaded
                 'meetings:id,title,start_time,type',
-                'meetings.agendaItems:id,meeting_id,title,student_vote,decision,student_benefit',
+                'meetings.agendaItems:id,meeting_id,title,type,brought_by_students',
+                'meetings.agendaItems.votes:id,agenda_item_id,title,decision,student_vote,student_benefit,is_main',
                 // Load fileableFiles for has_report and has_protocol accessors (prevents N+1)
                 'meetings.fileableFiles:id,fileable_id,fileable_type,file_type,deleted_externally_at',
                 // Load all users (including historical) for Gantt timeline display

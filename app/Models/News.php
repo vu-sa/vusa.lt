@@ -44,7 +44,9 @@ use Spatie\Sitemap\Tags\Url;
  * @property-read \App\Models\Tenant $tenant
  * @property-read \App\Models\User|null $user
  *
+ * @method static \App\Collections\NewsCollection<int, static> all($columns = ['*'])
  * @method static \Database\Factories\NewsFactory factory($count = null, $state = [])
+ * @method static \App\Collections\NewsCollection<int, static> get($columns = ['*'])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|News newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|News newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|News onlyTrashed()

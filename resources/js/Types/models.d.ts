@@ -340,18 +340,25 @@ declare global {
       title: string
       order: number
       brought_by_students: boolean
+      type?: AgendaItemType | null
+      student_position?: string | null
       description?: string | null
-      student_vote?: string | null
-      decision?: string | null
-      student_benefit?: string | null
       start_time?: string | null
       // relations
       meeting?: Meeting
+      votes?: Vote[]
+      main_vote?: Vote
+      additional_votes?: Vote[]
       activities?: Activity[]
       // counts
+      votes_count: number
+      additional_votes_count: number
       activities_count: number
       // exists
       meeting_exists: boolean
+      votes_exists: boolean
+      main_vote_exists: boolean
+      additional_votes_exists: boolean
       activities_exists: boolean
     }
 
@@ -617,7 +624,7 @@ declare global {
       created_at: string
       updated_at: string
       // mutators
-      html: unknown
+      html: string
       // relations
       content?: Content
       // counts
@@ -1707,6 +1714,44 @@ declare global {
       tasks_exists: boolean
       activities_exists: boolean
     }
+
+    export interface Vote {
+      // columns
+      id: string
+      agenda_item_id: string
+      is_main: boolean
+      title?: string | null
+      student_vote?: string | null
+      decision?: string | null
+      student_benefit?: string | null
+      note?: string | null
+      order: number
+      created_at?: string | null
+      updated_at?: string | null
+      // mutators
+      is_complete: boolean
+      vote_matches: boolean
+      vote_alignment_status: string
+      decision_label: string
+      student_vote_label: string
+      student_benefit_label: string
+      // relations
+      agenda_item?: AgendaItem
+      activities?: Activity[]
+      // counts
+      activities_count: number
+      // exists
+      agenda_item_exists: boolean
+      activities_exists: boolean
+    }
+
+    const AgendaItemType = {
+      Voting: 'voting',
+      Informational: 'informational',
+      Deferred: 'deferred',
+    } as const;
+
+    export type AgendaItemType = typeof AgendaItemType[keyof typeof AgendaItemType]
 
     const ActionType = {
       Manual: 'manual',

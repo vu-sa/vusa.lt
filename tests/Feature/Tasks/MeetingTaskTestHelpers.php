@@ -95,9 +95,9 @@ trait MeetingTaskTestHelpers
             ->create(['start_time' => now()]);
 
         // Create agenda items first (before dispatching event)
+        // These agenda items have no votes, so they are considered incomplete
         AgendaItem::factory()
             ->count($agendaItemCount)
-            ->incomplete()
             ->sequentialOrder()
             ->create(['meeting_id' => $meeting->id]);
 

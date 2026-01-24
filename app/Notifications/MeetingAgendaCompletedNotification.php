@@ -5,6 +5,7 @@ namespace App\Notifications;
 use App\Enums\NotificationCategory;
 use App\Models\Meeting;
 use App\Models\User;
+use App\Tasks\Handlers\AgendaCompletionTaskHandler;
 
 /**
  * Notification sent to administrators when all meeting agenda items are completed.
@@ -39,20 +40,63 @@ class MeetingAgendaCompletedNotification extends BaseNotification
     public function body(object $notifiable): string
     {
         $institutionName = $this->meeting->institutions->first()->name ?? __('Nežinoma institucija');
-        $agendaItemCount = $this->meeting->agendaItems()->count();
 
+        // Get type counts for the summary
+        $handler = app(AgendaCompletionTaskHandler::class);
+        $typeCounts = $handler->getAgendaItemTypeCounts($this->meeting);
+
+        $totalCount = $typeCounts['voting'] + $typeCounts['informational'] + $typeCounts['deferred'];
+
+        // Build the body message
         if ($this->completedBy) {
-            return __('notifications.meeting_agenda_completed_body_with_user', [
+            $body = __('notifications.meeting_agenda_completed_body_with_user', [
                 'institution' => $institutionName,
-                'count' => $agendaItemCount,
+                'count' => $totalCount,
                 'user' => $this->completedBy->name,
+            ]);
+        } else {
+            $body = __('notifications.meeting_agenda_completed_body', [
+                'institution' => $institutionName,
+                'count' => $totalCount,
             ]);
         }
 
-        return __('notifications.meeting_agenda_completed_body', [
-            'institution' => $institutionName,
-            'count' => $agendaItemCount,
-        ]);
+        // Add type breakdown summary
+        $summary = $this->buildTypeSummary($typeCounts);
+        if ($summary) {
+            $body .= ' '.$summary;
+        }
+
+        // Add note about additional votes if there were voting items
+        if ($typeCounts['voting'] > 0) {
+            $body .= ' '.__('notifications.meeting_agenda_additional_votes_note');
+        }
+
+        return $body;
+    }
+
+    /**
+     * Build a summary string of agenda item types.
+     */
+    protected function buildTypeSummary(array $typeCounts): string
+    {
+        $parts = [];
+
+        if ($typeCounts['voting'] > 0) {
+            $parts[] = __('notifications.meeting_agenda_type_voting', ['count' => $typeCounts['voting']]);
+        }
+        if ($typeCounts['informational'] > 0) {
+            $parts[] = __('notifications.meeting_agenda_type_informational', ['count' => $typeCounts['informational']]);
+        }
+        if ($typeCounts['deferred'] > 0) {
+            $parts[] = __('notifications.meeting_agenda_type_deferred', ['count' => $typeCounts['deferred']]);
+        }
+
+        if (empty($parts)) {
+            return '';
+        }
+
+        return '('.implode(', ', $parts).')';
     }
 
     public function url(): string

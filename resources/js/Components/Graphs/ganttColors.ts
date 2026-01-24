@@ -12,11 +12,15 @@
  */
 
 export interface GanttColors {
-  // Meeting dots
+  // Meeting dots - status-based colors
   meetingComplete: string;
   meetingIncomplete: string;
   meetingNoItems: string;
   meetingUnauthorized: string;
+  // Meeting alignment colors (for complete meetings)
+  meetingAligned: string;      // All votes aligned with student position
+  meetingMixed: string;        // Some aligned, some not
+  meetingMisaligned: string;   // None aligned
   
   // Check-in visualization
   gap: string;
@@ -59,6 +63,7 @@ export interface GanttColors {
   
   // Grid and axis
   gridLine: string;
+  sundayMark: string;
   yearMarker: string;
   axisText: string;
   
@@ -88,9 +93,13 @@ export interface GanttColors {
 export const lightModeColors: GanttColors = {
   // Meeting dots - dark for visibility on light backgrounds
   meetingComplete: 'oklch(0.21 0.006 285.885)', // zinc-900
-  meetingIncomplete: 'oklch(0.637 0.237 25.331)', // red-500
-  meetingNoItems: 'oklch(0.637 0.237 25.331)', // red-500 (stroke only)
+  meetingIncomplete: 'oklch(0.769 0.188 70.08)', // amber-500 (softer than red for incomplete)
+  meetingNoItems: 'oklch(0.552 0.016 285.938)', // zinc-500 (neutral for empty)
   meetingUnauthorized: 'oklch(0.552 0.016 285.938)', // zinc-500 - grey for unauthorized
+  // Meeting alignment colors
+  meetingAligned: 'oklch(0.527 0.154 150.069)', // emerald-600 - all aligned
+  meetingMixed: 'oklch(0.666 0.179 58.318)', // amber-600 - mixed alignment
+  meetingMisaligned: 'oklch(0.577 0.245 27.325)', // red-600 - all misaligned
   
   // Check-in visualization - amber theme
   gap: 'oklch(0.769 0.188 70.08 / 90%)', // amber-500/90% (legacy, kept for compatibility)
@@ -133,6 +142,7 @@ export const lightModeColors: GanttColors = {
   
   // Grid and axis
   gridLine: 'oklch(0.552 0.016 285.938 / 10%)', // zinc-500/10%
+  sundayMark: 'oklch(0.552 0.016 285.938 / 6%)', // zinc-500/6% - subtle Sunday markers
   yearMarker: 'oklch(0.21 0.006 285.885 / 18%)', // zinc-900/18%
   axisText: 'oklch(0.552 0.016 285.938)', // zinc-500
   
@@ -162,9 +172,13 @@ export const lightModeColors: GanttColors = {
 export const darkModeColors: GanttColors = {
   // Meeting dots - light for visibility on dark backgrounds
   meetingComplete: 'oklch(0.985 0 0)', // white
-  meetingIncomplete: 'oklch(0.712 0.194 13.428)', // rose-400
-  meetingNoItems: 'oklch(0.712 0.194 13.428)', // rose-400 (stroke only)
+  meetingIncomplete: 'oklch(0.828 0.189 84.429)', // amber-400 (softer for incomplete)
+  meetingNoItems: 'oklch(0.705 0.015 286.067)', // zinc-400 (neutral for empty)
   meetingUnauthorized: 'oklch(0.705 0.015 286.067)', // zinc-400 - grey for unauthorized
+  // Meeting alignment colors
+  meetingAligned: 'oklch(0.765 0.177 163.223)', // emerald-400 - all aligned
+  meetingMixed: 'oklch(0.828 0.189 84.429)', // amber-400 - mixed alignment
+  meetingMisaligned: 'oklch(0.712 0.194 13.428)', // rose-400 - all misaligned
   
   // Check-in visualization - amber theme (dimmed for dark mode)
   gap: 'oklch(0.75 0.14 84.429 / 70%)', // amber-400 dimmed/70% (legacy, kept for compatibility)
@@ -207,6 +221,7 @@ export const darkModeColors: GanttColors = {
   
   // Grid and axis
   gridLine: 'oklch(0.65 0.01 286.067 / 6%)', // zinc-400 dimmed/6%
+  sundayMark: 'oklch(0.65 0.01 286.067 / 4%)', // zinc-400/4% - subtle Sunday markers
   yearMarker: 'oklch(0.985 0 0 / 10%)', // white/10%
   axisText: 'oklch(0.705 0.015 286.067)', // zinc-400
   

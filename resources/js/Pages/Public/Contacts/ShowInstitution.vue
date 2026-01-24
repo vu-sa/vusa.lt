@@ -5,10 +5,10 @@
       <!-- Decorative blur circles -->
       <div class="pointer-events-none absolute -right-20 -top-20 size-64 rounded-full bg-vusa-red/5 blur-3xl" />
       <div class="pointer-events-none absolute -bottom-10 -left-10 size-48 rounded-full bg-vusa-yellow/5 blur-3xl" />
-      
+
       <div class="relative">
         <!-- Back link -->
-        <SmartLink 
+        <SmartLink
           :href="route('contacts', { subdomain: 'www', lang: $page.props.app.locale })"
           class="mb-4 inline-flex items-center gap-1.5 text-xs font-medium text-zinc-500 transition-colors hover:text-vusa-red dark:text-zinc-400"
         >
@@ -22,30 +22,30 @@
           <div v-if="institution.logo_url || institution.image_url" class="shrink-0">
             <!-- Logo with image background -->
             <div v-if="institution.image_url && institution.logo_url" class="relative">
-              <img 
-                :src="institution.image_url" 
+              <img
+                :src="institution.image_url"
                 :alt="institution.name + ' background'"
                 class="h-24 w-40 rounded-xl object-cover blur-[1px] sm:h-28 sm:w-48"
                 style="object-position: 50% 35%"
               >
               <div class="absolute inset-0 rounded-xl bg-black/10" />
-              <img 
-                :src="institution.logo_url" 
+              <img
+                :src="institution.logo_url"
                 :alt="institution.name + ' logo'"
                 class="absolute left-1/2 top-1/2 size-14 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-white object-contain shadow-lg sm:size-16"
               >
             </div>
             <!-- Logo only -->
-            <img 
+            <img
               v-else-if="institution.logo_url"
-              :src="institution.logo_url" 
+              :src="institution.logo_url"
               :alt="institution.name + ' logo'"
               class="size-16 rounded-xl border border-zinc-200 bg-white object-contain shadow-sm dark:border-zinc-700 sm:size-20"
             >
             <!-- Image only -->
-            <img 
+            <img
               v-else-if="institution.image_url"
-              :src="institution.image_url" 
+              :src="institution.image_url"
               :alt="institution.name"
               class="h-24 w-40 rounded-xl object-cover shadow-sm sm:h-28 sm:w-48"
               style="object-position: 50% 35%"
@@ -76,9 +76,9 @@
 
             <!-- Social & contact links -->
             <div class="mt-4 flex flex-wrap gap-2">
-              <a 
-                v-if="institution.facebook_url" 
-                :href="institution.facebook_url" 
+              <a
+                v-if="institution.facebook_url"
+                :href="institution.facebook_url"
                 target="_blank"
                 rel="noopener noreferrer"
                 class="inline-flex items-center gap-1.5 rounded-lg bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700 transition-colors hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50"
@@ -86,9 +86,9 @@
                 <IMdiFacebook class="size-3.5" />
                 Facebook
               </a>
-              <a 
-                v-if="institution.instagram_url" 
-                :href="institution.instagram_url" 
+              <a
+                v-if="institution.instagram_url"
+                :href="institution.instagram_url"
                 target="_blank"
                 rel="noopener noreferrer"
                 class="inline-flex items-center gap-1.5 rounded-lg bg-pink-50 px-2.5 py-1 text-xs font-medium text-pink-700 transition-colors hover:bg-pink-100 dark:bg-pink-900/30 dark:text-pink-300 dark:hover:bg-pink-900/50"
@@ -96,9 +96,9 @@
                 <IMdiInstagram class="size-3.5" />
                 Instagram
               </a>
-              <a 
-                v-if="institution.website" 
-                :href="institution.website" 
+              <a
+                v-if="institution.website"
+                :href="institution.website"
                 target="_blank"
                 rel="noopener noreferrer"
                 class="inline-flex items-center gap-1.5 rounded-lg bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-700 transition-colors hover:bg-zinc-200 dark:bg-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-600"
@@ -106,16 +106,16 @@
                 <GlobeIcon class="size-3.5" />
                 {{ extractDomain(institution.website) }}
               </a>
-              <a 
-                v-if="institution.email" 
+              <a
+                v-if="institution.email"
                 :href="`mailto:${institution.email}`"
                 class="inline-flex items-center gap-1.5 rounded-lg bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-700 transition-colors hover:bg-zinc-200 dark:bg-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-600"
               >
                 <MailIcon class="size-3.5" />
                 {{ institution.email }}
               </a>
-              <a 
-                v-if="institution.phone" 
+              <a
+                v-if="institution.phone"
                 :href="`tel:${institution.phone}`"
                 class="inline-flex items-center gap-1.5 rounded-lg bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-700 transition-colors hover:bg-zinc-200 dark:bg-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-600"
               >
@@ -131,8 +131,8 @@
           <Collapsible v-if="isMobile" v-model:open="isDescriptionOpen">
             <CollapsibleTrigger class="flex w-full items-center justify-between text-left">
               <span class="text-sm font-medium text-zinc-700 dark:text-zinc-300">{{ $t('Aprašymas') }}</span>
-              <ChevronDownIcon 
-                class="size-4 text-zinc-500 transition-transform duration-200" 
+              <ChevronDownIcon
+                class="size-4 text-zinc-500 transition-transform duration-200"
                 :class="{ 'rotate-180': isDescriptionOpen }"
               />
             </CollapsibleTrigger>
@@ -155,10 +155,10 @@
       </div>
 
       <!-- Empty state -->
-      <EmptyContactsState 
-        v-if="!hasAnyContacts" 
-        :student-rep-form-info="studentRepFormInfo" 
-        :institution-name="String(institution.name)" 
+      <EmptyContactsState
+        v-if="!hasAnyContacts"
+        :student-rep-form-info
+        :institution-name="String(institution.name)"
       />
 
       <!-- Mixed contact sections (grouped by duty) -->
@@ -166,20 +166,24 @@
         <div v-for="section in contactSections" :key="section.dutyName">
           <!-- Section header -->
           <div class="mb-4 flex items-center gap-2">
-            <h3 class="text-base font-semibold text-zinc-800 dark:text-zinc-200">{{ section.dutyName }}</h3>
+            <h3 class="text-base font-semibold text-zinc-800 dark:text-zinc-200">
+{{ section.dutyName }}
+</h3>
             <div class="h-px flex-1 bg-zinc-200/50 dark:bg-zinc-700/50" />
           </div>
-          
+
           <!-- Grouped duty contacts -->
           <div v-if="section.type === 'grouped_duty'" class="space-y-6">
             <div v-for="group in section.groups" :key="group.name">
-              <h4 class="mb-3 text-sm font-medium text-zinc-600 dark:text-zinc-400">{{ group.name }}</h4>
+              <h4 class="mb-3 text-sm font-medium text-zinc-600 dark:text-zinc-400">
+{{ group.name }}
+</h4>
               <div class="grid gap-3 grid-cols-2 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
-                <ContactCard 
-                  v-for="contact in group.contacts" 
-                  :key="contact.id" 
-                  :contact="contact" 
-                  :duties="contact.duties || []" 
+                <ContactCard
+                  v-for="contact in group.contacts"
+                  :key="contact.id"
+                  :contact
+                  :duties="contact.duties || []"
                 />
               </div>
             </div>
@@ -187,11 +191,11 @@
 
           <!-- Flat duty contacts -->
           <div v-else class="grid gap-3 grid-cols-2 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
-            <ContactCard 
-              v-for="contact in section.contacts" 
-              :key="contact.id" 
-              :contact="contact" 
-              :duties="contact.duties || []" 
+            <ContactCard
+              v-for="contact in section.contacts"
+              :key="contact.id"
+              :contact
+              :duties="contact.duties || []"
             />
           </div>
         </div>
@@ -199,11 +203,11 @@
 
       <!-- Flat contacts grid -->
       <div v-else class="grid gap-3 grid-cols-2 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
-        <ContactCard 
-          v-for="contact in contacts" 
-          :key="contact.id" 
-          :contact="contact" 
-          :duties="contact.duties || []" 
+        <ContactCard
+          v-for="contact in contacts"
+          :key="contact.id"
+          :contact
+          :duties="contact.duties || []"
         />
       </div>
     </section>
@@ -214,9 +218,11 @@
         <!-- Section header -->
         <div class="mb-6 flex items-center justify-between">
           <div class="flex items-center gap-3">
-            <h2 class="text-xl font-bold text-zinc-900 dark:text-zinc-50">{{ $t('Posėdžiai') }}</h2>
+            <h2 class="text-xl font-bold text-zinc-900 dark:text-zinc-50">
+{{ $t('Posėdžiai') }}
+</h2>
             <div class="h-px flex-1 bg-gradient-to-r from-zinc-200 to-transparent dark:from-zinc-700" />
-            
+
             <!-- Info button -->
             <TooltipProvider>
               <Tooltip>
@@ -261,7 +267,7 @@
                 :vote-alignment="getVoteAlignment(meeting)"
                 :is-last="index === currentYearMeetings.meetings.length - 1"
               >
-                <MeetingCard :meeting="meeting" />
+                <MeetingCard :meeting />
               </MeetingTimelineItem>
             </div>
           </div>
@@ -297,7 +303,7 @@
                   :vote-alignment="getVoteAlignment(meeting)"
                   :is-last="index === yearGroup.meetings.length - 1"
                 >
-                  <MeetingCard :meeting="meeting" />
+                  <MeetingCard :meeting />
                 </MeetingTimelineItem>
               </div>
             </div>
@@ -307,7 +313,7 @@
     </section>
 
     <!-- Info modal -->
-    <MeetingInfoModal v-model:open="showInfoModal" />
+    <PublicVotingExplainerModal v-model:open="showInfoModal" />
   </div>
 </template>
 
@@ -316,16 +322,18 @@ import { computed, ref } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { breakpointsTailwind, useBreakpoints } from '@vueuse/core';
 import { ArrowLeftIcon, ChevronDownIcon, GlobeIcon, InfoIcon, MailIcon, PhoneIcon } from 'lucide-vue-next';
+
 import { Button } from '@/Components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Components/ui/collapsible';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
-import ContactCard from "@/Components/Public/ContactWithPhoto.vue";
-import EmptyContactsState from "@/Components/Public/EmptyContactsState.vue";
-import MeetingCard from "@/Components/Public/MeetingCard.vue";
-import MeetingInfoModal from "@/Components/Public/MeetingInfoModal.vue";
-import MeetingTimelineItem from "@/Components/Public/MeetingTimelineItem.vue";
-import SmartLink from "@/Components/Public/SmartLink.vue";
+import ContactCard from '@/Components/Public/ContactWithPhoto.vue';
+import EmptyContactsState from '@/Components/Public/EmptyContactsState.vue';
+import MeetingCard from '@/Components/Public/MeetingCard.vue';
+import PublicVotingExplainerModal from '@/Components/Public/PublicVotingExplainerModal.vue';
+import MeetingTimelineItem from '@/Components/Public/MeetingTimelineItem.vue';
+import SmartLink from '@/Components/Public/SmartLink.vue';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
+import { getMeetingStatusSummary } from '@/Composables/useAgendaItemStyling';
 import { UserIcon, InstitutionIcon, TypeIcon } from '@/Components/icons';
 
 interface ContactGroup {
@@ -371,16 +379,16 @@ const isMobile = breakpoints.smallerOrEqual('sm');
 // Set breadcrumbs
 usePageBreadcrumbs(() => {
   const items = [];
-  
+
   items.push(
     BreadcrumbHelpers.createRouteBreadcrumb(
       'Kontaktai',
       'contacts',
       { subdomain: 'www', lang: $page.props.app.locale },
-      UserIcon
-    )
+      UserIcon,
+    ),
   );
-  
+
   const institutionType = props.institution.types?.[0];
   if (institutionType) {
     items.push(
@@ -388,19 +396,19 @@ usePageBreadcrumbs(() => {
         String(institutionType.title ?? institutionType.slug),
         'contacts.category',
         { subdomain: 'www', lang: $page.props.app.locale, type: institutionType.slug },
-        TypeIcon
-      )
+        TypeIcon,
+      ),
     );
   }
-  
+
   items.push(
     BreadcrumbHelpers.createBreadcrumbItem(
       String(props.institution.name ?? props.institution.alias),
       undefined,
-      InstitutionIcon
-    )
+      InstitutionIcon,
+    ),
   );
-  
+
   return BreadcrumbHelpers.publicContent(items);
 });
 
@@ -412,7 +420,7 @@ const showInfoModal = ref(false);
 // Check if there are any contacts
 const hasAnyContacts = computed(() => {
   if (props.hasMixedGrouping) {
-    return (props.contactSections?.length ?? 0) > 0 && props.contactSections?.some(section => {
+    return (props.contactSections?.length ?? 0) > 0 && props.contactSections?.some((section) => {
       if (section.type === 'grouped_duty') {
         return section.groups?.some(group => (group.contacts?.length ?? 0) > 0);
       }
@@ -427,23 +435,26 @@ const extractDomain = (url: string): string => {
   try {
     const domain = new URL(url).hostname;
     return domain.replace(/^www\./, '');
-  } catch {
+  }
+  catch {
     return url;
   }
 };
 
-// Calculate vote alignment for meetings
+// Calculate vote alignment for meetings using composable
 const getVoteAlignment = (meeting: App.Entities.Meeting): 'aligned' | 'mixed' | 'misaligned' | 'no_data' => {
-  const items = meeting.agenda_items || [];
-  const itemsWithBothVotes = items.filter(item => item.student_vote && item.decision);
-  
-  if (itemsWithBothVotes.length === 0) return 'no_data';
-  
-  const matches = itemsWithBothVotes.filter(item => item.student_vote === item.decision).length;
-  const mismatches = itemsWithBothVotes.length - matches;
-  
-  if (mismatches === 0) return 'aligned';
-  if (matches === 0) return 'misaligned';
-  return 'mixed';
+  const summary = getMeetingStatusSummary(meeting.agenda_items || []);
+
+  // Map composable's voteAlignmentStatus to component's format
+  switch (summary.voteAlignmentStatus) {
+    case 'all_match':
+      return 'aligned';
+    case 'all_mismatch':
+      return 'misaligned';
+    case 'mixed':
+      return 'mixed';
+    default:
+      return 'no_data';
+  }
 };
 </script>

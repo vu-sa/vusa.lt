@@ -100,6 +100,10 @@ return [
     'meeting_agenda_completed_title' => 'Meeting Agenda Completed',
     'meeting_agenda_completed_body' => 'All :count agenda items for :institution meeting have been completed',
     'meeting_agenda_completed_body_with_user' => ':user completed all :count agenda items for :institution meeting',
+    'meeting_agenda_type_voting' => ':count voting',
+    'meeting_agenda_type_informational' => ':count informational',
+    'meeting_agenda_type_deferred' => ':count deferred',
+    'meeting_agenda_additional_votes_note' => 'If there were additional votes, don\'t forget to add them.',
 
     // News notifications
     'news_published_title' => 'New Article',

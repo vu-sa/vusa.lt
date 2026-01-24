@@ -9,13 +9,13 @@
 
         <div class="relative">
           <!-- Institution link - subtle top line -->
-          <inertia-link
+          <InertiaLink
             :href="route('contacts.institution', { institution: institution.id, lang: page.props.app.locale, subdomain: page.props.tenant?.subdomain || 'www' })"
             class="inline-flex items-center gap-1.5 text-sm text-zinc-500 dark:text-zinc-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors mb-3"
           >
             <Building2 class="h-4 w-4" />
             {{ institution.name }}
-          </inertia-link>
+          </InertiaLink>
 
           <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-5">
             <div class="flex-1">
@@ -55,9 +55,9 @@
               {{ $t('Studentų atstovai') }}
             </h3>
             <div v-if="representatives && representatives.length > 0" class="flex flex-wrap items-center gap-3">
-              <div 
-                v-for="user in representatives" 
-                :key="user.id" 
+              <div
+                v-for="user in representatives"
+                :key="user.id"
                 class="flex items-center gap-2"
               >
                 <UserAvatar :user :size="28" border />
@@ -132,7 +132,7 @@
       </div>
 
       <!-- Agenda items section -->
-      <div class="space-y-4">
+      <div class="space-y-8">
         <h2 class="text-lg font-semibold text-zinc-900 dark:text-zinc-50 mb-4">
           {{ $t('Darbotvarkė') }}
         </h2>
@@ -149,8 +149,8 @@
             <h3 class="text-base font-semibold text-zinc-900 dark:text-zinc-50 flex-1">
               <span class="text-zinc-400 dark:text-zinc-500 font-normal">{{ item.order }}.</span> {{ item.title }}
             </h3>
-            <span 
-              v-if="item.brought_by_students" 
+            <span
+              v-if="item.brought_by_students"
               class="shrink-0 inline-flex items-center gap-1 rounded-full bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 text-xs font-medium text-zinc-600 dark:text-zinc-400 ring-1 ring-zinc-200 dark:ring-zinc-700"
             >
               <UsersIcon class="h-3 w-3" />
@@ -163,37 +163,59 @@
             {{ item.description }}
           </p>
 
-          <!-- Inline voting indicators (only show if at least one value exists) -->
-          <div v-if="hasDecisionData(item)" class="flex flex-wrap items-center gap-x-4 gap-y-2 mt-3 pt-3 border-t border-zinc-100 dark:border-zinc-800 text-sm">
-            <span class="flex items-center gap-1.5 text-zinc-500 dark:text-zinc-400">
-              {{ $t('Studentų balsas') }}:
-              <VoteIndicator :vote="item.student_vote" type="vote" compact />
-            </span>
-            <span class="flex items-center gap-1.5 text-zinc-500 dark:text-zinc-400">
-              {{ $t('Sprendimas') }}:
-              <VoteIndicator :vote="item.decision" type="vote" compact />
-            </span>
-            <span class="flex items-center gap-1.5 text-zinc-500 dark:text-zinc-400">
-              {{ $t('Nauda') }}:
-              <VoteIndicator :vote="item.student_benefit" type="benefit" compact />
-            </span>
-            <!-- Vote comparison inline indicator -->
-            <span 
-              v-if="showVoteComparison(item)" 
-              class="flex items-center gap-1.5 text-xs"
-              :class="item.student_vote === item.decision 
-                ? 'text-green-600 dark:text-green-500' 
-                : 'text-amber-600 dark:text-amber-500'"
-            >
-              <component :is="getVoteOutcomeIcon(item)" class="h-3.5 w-3.5" />
-              {{ getVoteOutcomeText(item) }}
-            </span>
-          </div>
+          <!-- Status display based on item type -->
+          <div class="mt-3 pt-3 border-t border-zinc-100 dark:border-zinc-800">
+            <!-- Voting type with decision data: show full vote details -->
+            <template v-if="item.type === 'voting' && hasDecisionData(item)">
+              <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+                <span class="flex items-center gap-1.5 text-zinc-500 dark:text-zinc-400">
+                  {{ $t('Studentų balsas') }}:
+                  <VoteStatusIndicator :vote="getMainVote(item)?.student_vote" type="vote" compact />
+                </span>
+                <span class="flex items-center gap-1.5 text-zinc-500 dark:text-zinc-400">
+                  {{ $t('Sprendimas') }}:
+                  <VoteStatusIndicator :vote="getMainVote(item)?.decision" type="vote" compact />
+                </span>
+                <span class="flex items-center gap-1.5 text-zinc-500 dark:text-zinc-400">
+                  {{ $t('Nauda') }}:
+                  <VoteStatusIndicator :vote="getMainVote(item)?.student_benefit" type="benefit" compact />
+                </span>
+                <!-- Vote comparison inline indicator -->
+                <span
+                  v-if="canCompareVotes(item)"
+                  class="flex items-center gap-1.5 text-xs"
+                  :class="getVoteComparisonColorClass(item)"
+                >
+                  <component :is="getVoteOutcomeIcon(item)" class="h-3.5 w-3.5" />
+                  {{ getVoteComparisonText(item) }}
+                </span>
+              </div>
+            </template>
 
-          <!-- No decision data message -->
-          <p v-else class="text-xs text-zinc-400 dark:text-zinc-500 italic mt-3 pt-3 border-t border-zinc-100 dark:border-zinc-800">
-            {{ $t('Balsavimo duomenys dar neįvesti') }}
-          </p>
+            <!-- Voting type without data: show "not yet entered" -->
+            <template v-else-if="item.type === 'voting'">
+              <p class="text-xs text-zinc-400 dark:text-zinc-500 italic">
+                {{ $t('Balsavimo duomenys dar neįvesti') }}
+              </p>
+            </template>
+
+            <!-- Non-voting types: show status badge -->
+            <template v-else>
+              <div class="flex items-center gap-2">
+                <component
+                  :is="getAgendaItemStatusMeta(item).icon"
+                  class="h-4 w-4"
+                  :class="getAgendaItemStatusMeta(item).colorClass"
+                />
+                <span
+                  class="text-sm"
+                  :class="getAgendaItemStatusMeta(item).colorClass"
+                >
+                  {{ getAgendaItemStatusMeta(item).label }}
+                </span>
+              </div>
+            </template>
+          </div>
         </div>
         </template>
 
@@ -215,7 +237,7 @@
       <!-- Previous/Next Meeting Navigation -->
       <nav v-if="previousMeeting || nextMeeting" class="mt-12 pt-8 border-t border-zinc-200 dark:border-zinc-800">
         <div class="flex flex-col sm:flex-row justify-between gap-4">
-          <inertia-link
+          <InertiaLink
             v-if="previousMeeting"
             :href="route('publicMeetings.show', { meeting: previousMeeting.id, lang: page.props.app.locale, subdomain: page.props.tenant?.subdomain || 'www' })"
             class="flex items-center gap-3 group"
@@ -223,28 +245,32 @@
             <ChevronLeft class="h-5 w-5 text-zinc-300 group-hover:text-zinc-500 dark:text-zinc-600 dark:group-hover:text-zinc-400 transition-colors" />
             <div class="text-left">
               <span class="text-xs uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ $t('Ankstesnis posėdis') }}</span>
-              <p class="text-sm font-medium text-zinc-600 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-zinc-200 transition-colors">{{ formatMeetingDate(previousMeeting.start_time) }}</p>
+              <p class="text-sm font-medium text-zinc-600 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-zinc-200 transition-colors">
+{{ formatMeetingDate(previousMeeting.start_time) }}
+</p>
             </div>
-          </inertia-link>
+          </InertiaLink>
           <div v-else />
 
-          <inertia-link
+          <InertiaLink
             v-if="nextMeeting"
             :href="route('publicMeetings.show', { meeting: nextMeeting.id, lang: page.props.app.locale, subdomain: page.props.tenant?.subdomain || 'www' })"
             class="flex items-center gap-3 group sm:ml-auto"
           >
             <div class="text-right">
               <span class="text-xs uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ $t('Kitas posėdis') }}</span>
-              <p class="text-sm font-medium text-zinc-600 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-zinc-200 transition-colors">{{ formatMeetingDate(nextMeeting.start_time) }}</p>
+              <p class="text-sm font-medium text-zinc-600 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-zinc-200 transition-colors">
+{{ formatMeetingDate(nextMeeting.start_time) }}
+</p>
             </div>
             <ChevronRight class="h-5 w-5 text-zinc-300 group-hover:text-zinc-500 dark:text-zinc-600 dark:group-hover:text-zinc-400 transition-colors" />
-          </inertia-link>
+          </InertiaLink>
         </div>
       </nav>
     </div>
 
     <!-- Info modal -->
-    <MeetingInfoModal v-model:open="showInfoModal" />
+    <PublicVotingExplainerModal v-model:open="showInfoModal" />
 
     <FeedbackPopover />
   </section>
@@ -257,8 +283,9 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { InfoIcon, CheckCircleIcon, AlertCircleIcon, ChevronLeft, ChevronRight, Building2, Users as UsersIcon } from 'lucide-vue-next';
 
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
-import MeetingInfoModal from '@/Components/Public/MeetingInfoModal.vue';
-import VoteIndicator from '@/Components/Public/VoteIndicator.vue';
+import { getMainVote, getAgendaItemStatusMeta, getMeetingStatusSummary, hasDecisionData, getVoteAlignmentLabel, canCompareVotes, isVoteAligned, getVoteComparisonText, getVoteComparisonColorClass, type AgendaItemStatus } from '@/Composables/useAgendaItemStyling';
+import PublicVotingExplainerModal from '@/Components/Public/PublicVotingExplainerModal.vue';
+import VoteStatusIndicator from '@/Components/Public/VoteStatusIndicator.vue';
 import AgendaOutcomeIndicators from '@/Components/Public/AgendaOutcomeIndicators.vue';
 import FeedbackPopover from '@/Components/Public/FeedbackPopover.vue';
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
@@ -266,7 +293,7 @@ import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 import { formatStaticTime } from '@/Utils/IntlTime';
-import IFluentPeople24Regular from "~icons/fluent/people-24-regular";
+import IFluentPeople24Regular from '~icons/fluent/people-24-regular';
 
 const props = defineProps<{
   meeting: App.Entities.Meeting;
@@ -294,48 +321,37 @@ const allAgendaItems = computed(() => {
   return props.meeting.agenda_items || [];
 });
 
-// Outcome summary for the summary card
+// Outcome summary for the summary card - use composable's getMeetingStatusSummary
 const outcomeSummary = computed(() => {
+  const summary = getMeetingStatusSummary(allAgendaItems.value);
   const items = allAgendaItems.value;
+
+  // Count decision types for display
   let positive = 0;
   let negative = 0;
   let neutral = 0;
-  let alignedCount = 0;
-  let comparableCount = 0;
 
   for (const item of items) {
-    // Count decisions
-    if (item.decision === 'positive') positive++;
-    else if (item.decision === 'negative') negative++;
-    else if (item.decision === 'neutral') neutral++;
+    const mainVote = getMainVote(item);
+    if (!mainVote) continue;
 
-    // Count student vote alignment
-    if (item.student_vote && item.decision) {
-      comparableCount++;
-      if (item.student_vote === item.decision) {
-        alignedCount++;
-      }
-    }
+    if (mainVote.decision === 'positive') positive++;
+    else if (mainVote.decision === 'negative') negative++;
+    else if (mainVote.decision === 'neutral') neutral++;
   }
 
   const total = positive + negative + neutral;
-  const alignmentRate = comparableCount > 0 ? Math.round((alignedCount / comparableCount) * 100) : 0;
 
   return {
     total,
     positive,
     negative,
     neutral,
-    alignedCount,
-    comparableCount,
-    alignmentRate
+    alignedCount: summary.aligned,
+    comparableCount: summary.aligned + summary.misaligned,
+    alignmentRate: summary.alignmentRate,
   };
 });
-
-// Check if an agenda item has any decision data to show
-const hasDecisionData = (item: App.Entities.AgendaItem) => {
-  return item.student_vote !== null || item.decision !== null || item.student_benefit !== null;
-};
 
 // Items with decision data (for the outcome indicators in header)
 const itemsWithDecisions = computed(() => {
@@ -354,18 +370,18 @@ usePageBreadcrumbs(() => {
       {
         institution: props.institution.id,
         lang: page.props.app.locale,
-        subdomain: page.props.tenant?.subdomain || 'www'
+        subdomain: page.props.tenant?.subdomain || 'www',
       },
-      IFluentPeople24Regular
-    )
+      IFluentPeople24Regular,
+    ),
   );
 
   // Current meeting
   items.push(
     BreadcrumbHelpers.createBreadcrumbItem(
       formatMeetingDate(props.meeting.start_time),
-      undefined
-    )
+      undefined,
+    ),
   );
 
   return items;
@@ -381,22 +397,8 @@ const formatMeetingDate = (date: string) => {
   });
 };
 
-const showVoteComparison = (item: App.Entities.AgendaItem) => {
-  return item.student_vote && item.decision;
-};
-
-const getVoteOutcomeVariant = (item: App.Entities.AgendaItem) => {
-  return item.student_vote === item.decision ? 'success' : 'warning';
-};
-
+// Use composable functions for vote outcome display
 const getVoteOutcomeIcon = (item: App.Entities.AgendaItem) => {
-  return item.student_vote === item.decision ? CheckCircleIcon : AlertCircleIcon;
-};
-
-const getVoteOutcomeText = (item: App.Entities.AgendaItem) => {
-  if (item.student_vote === item.decision) {
-    return $t('Studentų pozicija priimta');
-  }
-  return $t('Studentų pozicija nesutampa su sprendimu');
+  return isVoteAligned(item) ? CheckCircleIcon : AlertCircleIcon;
 };
 </script>

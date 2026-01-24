@@ -8,6 +8,7 @@ use App\Models\Pivots\Relationshipable;
 use App\Models\Relationship;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Models\Vote;
 use App\Services\RelationshipService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -103,14 +104,19 @@ describe('getRelatedInstitutionsForMultiple', function () {
         ]);
         $meeting->institutions()->attach($this->relatedInstitution->id);
 
-        // Create agenda items with the actual columns from the database
-        // Using only columns that exist: student_vote, decision, student_benefit
-        AgendaItem::factory()->create([
+        // Create agenda item and a vote for it (votes are now in separate table)
+        $agendaItem = AgendaItem::factory()->create([
             'meeting_id' => $meeting->id,
             'title' => 'Test Agenda Item',
-            'student_vote' => 'už',
-            'decision' => 'priimta',
-            'student_benefit' => 'teigiamas',
+            'type' => 'voting',
+        ]);
+
+        Vote::create([
+            'agenda_item_id' => $agendaItem->id,
+            'is_main' => true,
+            'student_vote' => 'positive',
+            'decision' => 'positive',
+            'student_benefit' => 'positive',
         ]);
 
         RelationshipService::clearRelatedInstitutionsCache($this->sourceInstitution->id);
@@ -126,11 +132,11 @@ describe('getRelatedInstitutionsForMultiple', function () {
         expect($relatedInst->meetings)->toHaveCount(1);
         expect($relatedInst->meetings->first()->agendaItems)->toHaveCount(1);
 
-        // Verify correct columns are loaded
+        // Verify the agenda item has votes loaded
         $agendaItem = $relatedInst->meetings->first()->agendaItems->first();
-        expect($agendaItem->student_vote)->toBe('už');
-        expect($agendaItem->decision)->toBe('priimta');
-        expect($agendaItem->student_benefit)->toBe('teigiamas');
+        $agendaItem->load('votes');
+        expect($agendaItem->votes)->toHaveCount(1);
+        expect($agendaItem->votes->first()->decision)->toBe('positive');
     });
 
     test('eager loads duties with users for duty member display', function () {

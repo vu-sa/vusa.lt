@@ -214,7 +214,7 @@ class MeetingController extends AdminController
                 $query->with('users:id,name,email,profile_photo_path', 'taskable');
             },
             'agendaItems' => function ($query) {
-                $query->orderBy('order');
+                $query->with('votes')->orderBy('order');
             },
         ]);
 

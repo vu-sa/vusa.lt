@@ -19,6 +19,8 @@ interface ParsedMeeting {
   title?: string
   institution?: string
   completion_status?: 'complete' | 'incomplete' | 'no_items'
+  // Vote alignment status from indexed meeting data
+  vote_alignment_status?: 'all_match' | 'mixed' | 'all_mismatch' | 'neutral'
   // Whether the user has authorization for this meeting's institution
   authorized?: boolean
   // Meeting type for icon differentiation (in-person, remote, email)
@@ -240,14 +242,34 @@ export function renderMeetings(ctx: MeetingRenderContext): void {
       if (d.authorized === false) {
         return colors.meetingUnauthorized
       }
-      // Regular meetings use status-based colors
-      if (d.completion_status === 'complete') {
-        return colors.meetingComplete
-      } else if (d.completion_status === 'no_items') {
+      
+      // No agenda items - neutral grey
+      if (d.completion_status === 'no_items') {
         return colors.meetingNoItems
-      } else {
+      }
+      
+      // Incomplete meetings - amber warning
+      if (d.completion_status === 'incomplete') {
         return colors.meetingIncomplete
       }
+      
+      // Complete meetings - use alignment status for color
+      if (d.completion_status === 'complete') {
+        switch (d.vote_alignment_status) {
+          case 'all_match':
+            return colors.meetingAligned
+          case 'mixed':
+            return colors.meetingMixed
+          case 'all_mismatch':
+            return colors.meetingMisaligned
+          default:
+            // Neutral or unknown alignment - use complete color
+            return colors.meetingComplete
+        }
+      }
+      
+      // Default fallback
+      return colors.meetingComplete
     })
 
   // Add native tooltip as fallback (when no tooltipManager)
@@ -256,12 +278,25 @@ export function renderMeetings(ctx: MeetingRenderContext): void {
       let status = ''
       if (d.authorized === false) {
         status = ' (unauthorized)'
-      } else if (d.completion_status === 'complete') {
-        status = ' ✓'
       } else if (d.completion_status === 'no_items') {
         status = ' (no agenda items)'
-      } else {
+      } else if (d.completion_status === 'incomplete') {
         status = ' (incomplete)'
+      } else if (d.completion_status === 'complete') {
+        // Show alignment status for complete meetings
+        switch (d.vote_alignment_status) {
+          case 'all_match':
+            status = ' ✓ (aligned)'
+            break
+          case 'mixed':
+            status = ' ⚠ (mixed)'
+            break
+          case 'all_mismatch':
+            status = ' ✗ (misaligned)'
+            break
+          default:
+            status = ' ✓'
+        }
       }
       return (d.title || labelFor(d.institution_id) || new Date(d.date).toLocaleString()) + status
     })

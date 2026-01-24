@@ -320,6 +320,7 @@ class ContactController extends PublicController
             'agendaItems' => function ($query) {
                 $query->orderBy('order');
             },
+            'agendaItems.mainVote',
             'institutions.types',
         ]);
 
@@ -658,9 +659,12 @@ class ContactController extends PublicController
 
         // Load all past meetings with necessary relationships
         return $institution->meetings()
-            ->with(['agendaItems' => function ($query) {
-                $query->orderBy('order');
-            }])
+            ->with([
+                'agendaItems' => function ($query) {
+                    $query->orderBy('order');
+                },
+                'agendaItems.mainVote',
+            ])
             ->where('start_time', '<=', now())
             ->orderBy('start_time', 'desc')
             ->get()

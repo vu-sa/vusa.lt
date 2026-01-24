@@ -121,17 +121,25 @@ class MeetingTaskSubscriber
     /**
      * Handle agenda item saved (updated) event.
      * Updates task progress and checks for completion.
+     * Also handles reopening tasks when type changes from informational/deferred to voting.
+     * Creates a task if one doesn't exist (for legacy meetings without tasks).
      */
     public function handleAgendaItemSaved(AgendaItem $agendaItem): void
     {
         $meeting = $agendaItem->meeting;
 
-        // Reload meeting with fresh agenda items data
-        $meeting->load('agendaItems');
+        // Reload meeting with fresh agenda items and votes data
+        $meeting->load('agendaItems.votes');
 
         // Get the user who made the change
         /** @var User|null $actor */
         $actor = Auth::user();
+
+        // Check if we need to reopen a completed task (e.g., type changed to voting without complete vote)
+        $this->completionHandler->reopenIfNeeded($meeting);
+
+        // Ensure a task exists (for legacy meetings that don't have one yet)
+        $this->ensureCompletionTaskExists($meeting);
 
         // Update progress and check if completed
         $wasCompleted = $this->completionHandler->updateProgressForMeeting($meeting, $actor);
@@ -220,6 +228,44 @@ class MeetingTaskSubscriber
 
         if ($recipients->isNotEmpty()) {
             Notification::send($recipients, new MeetingAgendaCompletedNotification($meeting, $completedBy));
+        }
+    }
+
+    /**
+     * Ensure a completion task exists for a meeting.
+     * Creates one if it doesn't exist (for legacy meetings without tasks).
+     */
+    protected function ensureCompletionTaskExists(Meeting $meeting): void
+    {
+        // Check if any task exists (completed or not) for this meeting
+        $existingTask = $this->completionHandler->findExistingTask($meeting);
+
+        if ($existingTask) {
+            return;
+        }
+
+        // Also check for completed tasks (reopenIfNeeded would have handled them already)
+        $hasCompletedTask = \App\Models\Task::query()
+            ->where('taskable_type', Meeting::class)
+            ->where('taskable_id', $meeting->getKey())
+            ->where('action_type', \App\Tasks\Enums\ActionType::AgendaCompletion)
+            ->whereNotNull('completed_at')
+            ->exists();
+
+        if ($hasCompletedTask) {
+            return;
+        }
+
+        // No task exists, create one
+        $representatives = $meeting->getRepresentativesActiveAt();
+
+        if ($representatives->isNotEmpty()) {
+            $this->completionHandler->findOrCreate(
+                name: __('Užpildyti darbotvarkės klausimų informaciją'),
+                meeting: $meeting,
+                users: $representatives,
+                dueDate: $meeting->start_time->addDays(7)->toDateString(),
+            );
         }
     }
 }
