@@ -34,6 +34,7 @@ class UpdateAgendaItemRequest extends FormRequest
             'votes' => 'nullable|array',
             'votes.*.id' => 'nullable|string',
             'votes.*.is_main' => 'nullable|boolean',
+            'votes.*.is_consensus' => 'nullable|boolean',
             'votes.*.title' => 'nullable|string|max:500',
             'votes.*.student_vote' => 'nullable|string|in:positive,negative,neutral',
             'votes.*.decision' => 'nullable|string|in:positive,negative,neutral',

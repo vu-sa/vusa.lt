@@ -201,6 +201,112 @@ describe('vote controller', function () {
         expect($misalignedCount)->toBe(1);
         expect($allVotes->count())->toBe(2);
     });
+
+    test('updating agenda item syncs is_consensus field on votes', function () {
+        // Create initial vote without consensus
+        $existingVote = Vote::factory()->main()->for($this->agendaItem, 'agendaItem')->create([
+            'title' => 'Original Vote',
+            'is_consensus' => false,
+        ]);
+
+        // Update with consensus enabled
+        $response = asUser($this->admin)
+            ->patch(route('agendaItems.update', $this->agendaItem), [
+                'title' => 'Updated Agenda Item',
+                'votes' => [
+                    [
+                        'id' => $existingVote->id,
+                        'is_main' => true,
+                        'is_consensus' => true,
+                        'title' => 'Consensus Vote',
+                        'decision' => 'positive',
+                        'student_vote' => 'positive',
+                        'student_benefit' => 'positive',
+                        'order' => 0,
+                    ],
+                ],
+            ]);
+
+        $response->assertStatus(302);
+
+        $existingVote->refresh();
+        expect($existingVote->is_consensus)->toBeTrue();
+        expect($existingVote->decision)->toBe('positive');
+        expect($existingVote->student_vote)->toBe('positive');
+        expect($existingVote->student_benefit)->toBe('positive');
+    });
+
+    test('creating new vote via agenda item update sets is_consensus correctly', function () {
+        $response = asUser($this->admin)
+            ->patch(route('agendaItems.update', $this->agendaItem), [
+                'title' => 'Test Agenda Item',
+                'votes' => [
+                    [
+                        'id' => null, // New vote
+                        'is_main' => true,
+                        'is_consensus' => true,
+                        'title' => 'New Consensus Vote',
+                        'decision' => 'positive',
+                        'student_vote' => 'positive',
+                        'student_benefit' => 'positive',
+                        'order' => 0,
+                    ],
+                ],
+            ]);
+
+        $response->assertStatus(302);
+
+        $this->agendaItem->refresh();
+        $vote = $this->agendaItem->votes()->first();
+
+        expect($vote)->not->toBeNull();
+        expect($vote->is_consensus)->toBeTrue();
+        expect($vote->is_main)->toBeTrue();
+    });
+
+    test('is_consensus can be toggled off via agenda item update', function () {
+        // Create vote with consensus enabled
+        $vote = Vote::factory()->main()->for($this->agendaItem, 'agendaItem')->create([
+            'is_consensus' => true,
+            'decision' => 'positive',
+            'student_vote' => 'positive',
+            'student_benefit' => 'positive',
+        ]);
+
+        // Update with consensus disabled
+        $response = asUser($this->admin)
+            ->patch(route('agendaItems.update', $this->agendaItem), [
+                'votes' => [
+                    [
+                        'id' => $vote->id,
+                        'is_main' => true,
+                        'is_consensus' => false,
+                        'decision' => null,
+                        'student_vote' => null,
+                        'student_benefit' => null,
+                        'order' => 0,
+                    ],
+                ],
+            ]);
+
+        $response->assertStatus(302);
+
+        $vote->refresh();
+        expect($vote->is_consensus)->toBeFalse();
+        expect($vote->decision)->toBeNull();
+    });
+
+    test('vote factory supports consensus state', function () {
+        $consensusVote = Vote::factory()
+            ->consensus()
+            ->for($this->agendaItem, 'agendaItem')
+            ->create();
+
+        expect($consensusVote->is_consensus)->toBeTrue();
+        expect($consensusVote->decision)->toBe('positive');
+        expect($consensusVote->student_vote)->toBe('positive');
+        expect($consensusVote->student_benefit)->toBe('positive');
+    });
 });
 
 describe('vote authorization', function () {

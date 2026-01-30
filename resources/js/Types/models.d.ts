@@ -1720,6 +1720,7 @@ declare global {
       id: string
       agenda_item_id: string
       is_main: boolean
+      is_consensus: boolean
       title?: string | null
       student_vote?: string | null
       decision?: string | null

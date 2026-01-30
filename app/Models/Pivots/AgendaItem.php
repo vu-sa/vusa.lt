@@ -184,10 +184,13 @@ class AgendaItem extends Pivot
             'student_vote' => $mainVote?->student_vote,
             'decision' => $mainVote?->decision,
             'student_benefit' => $mainVote?->student_benefit,
+            'is_consensus' => (bool) $mainVote?->is_consensus,
 
             // Vote counts
             'votes_count' => $this->votes->count(),
             'main_vote_exists' => $mainVote !== null,
+            'has_consensus_votes' => $voteStats['has_consensus_votes'],
+            'consensus_votes_count' => $voteStats['consensus_votes_count'],
 
             // Tenant filtering (CRITICAL for scoped API keys)
             'tenant_ids' => $tenantIds,
@@ -240,6 +243,8 @@ class AgendaItem extends Pivot
                 'all_votes_complete' => false,
                 'vote_matches' => 0,
                 'vote_mismatches' => 0,
+                'has_consensus_votes' => false,
+                'consensus_votes_count' => 0,
             ];
         }
 
@@ -247,6 +252,7 @@ class AgendaItem extends Pivot
         $hasAnyDecision = $votes->contains(fn ($v) => ! empty($v->decision));
         $hasAnyStudentBenefit = $votes->contains(fn ($v) => ! empty($v->student_benefit));
         $allComplete = $votes->every(fn ($v) => $v->is_complete);
+        $consensusVotes = $votes->filter(fn ($v) => $v->is_consensus);
 
         // Count vote alignment
         $votesWithBoth = $votes->filter(fn ($v) => ! empty($v->student_vote) && ! empty($v->decision));
@@ -260,6 +266,8 @@ class AgendaItem extends Pivot
             'all_votes_complete' => $allComplete,
             'vote_matches' => $voteMatches,
             'vote_mismatches' => $voteMismatches,
+            'has_consensus_votes' => $consensusVotes->isNotEmpty(),
+            'consensus_votes_count' => $consensusVotes->count(),
         ];
     }
 

@@ -143,7 +143,10 @@
               v-for="(vote, voteIndex) in localVotes"
               :key="vote.id || `vote-${voteIndex}`"
               class="rounded-lg border border-zinc-200 dark:border-zinc-700 p-3 space-y-3"
-              :class="vote.is_main ? 'border-primary/30 bg-primary/5' : ''"
+              :class="[
+                vote.is_main ? 'border-primary/30 bg-primary/5' : '',
+                vote.is_consensus ? 'border-teal-300 dark:border-teal-700 bg-teal-50 dark:bg-teal-900/20' : '',
+              ]"
             >
               <!-- Vote Header -->
               <div class="flex items-center justify-between">
@@ -157,6 +160,14 @@
                   </span>
                   <Badge v-if="vote.is_main && localType === 'voting'" variant="secondary" class="text-[10px] px-1.5 py-0">
                     {{ $t('Pagrindinis') }}
+                  </Badge>
+                  <Badge
+                    v-if="vote.is_consensus"
+                    class="text-[10px] px-1.5 py-0 bg-teal-100 text-teal-700
+                      dark:bg-teal-900/50 dark:text-teal-300 border-teal-200 dark:border-teal-700"
+                  >
+                    <Handshake class="h-3 w-3 mr-1" />
+                    {{ $t('Bendras sutarimas') }}
                   </Badge>
                   <button
                     type="button"
@@ -177,6 +188,35 @@
                 >
                   <X class="h-3.5 w-3.5" />
                 </Button>
+              </div>
+              
+              <!-- Quick Consensus Toggle -->
+              <div class="flex items-center gap-2 pb-1">
+                <TooltipProvider :delay-duration="200">
+                  <Tooltip>
+                    <TooltipTrigger as-child>
+                      <Button
+                        type="button"
+                        :variant="vote.is_consensus ? 'default' : 'outline'"
+                        size="sm"
+                        class="h-8 gap-1.5"
+                        :class="vote.is_consensus ? 'bg-teal-600 hover:bg-teal-700 text-white' : 'hover:border-teal-400 hover:text-teal-600'"
+                        @click="toggleConsensus(voteIndex)"
+                      >
+                        <Handshake class="h-3.5 w-3.5" />
+                        {{ vote.is_consensus ? $t('Bendras sutarimas') : $t('Pažymėti kaip sutarimą') }}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                      <p v-if="!vote.is_consensus">
+                        {{ $t('Klausimas priimtas bendru sutarimu – automatiškai užpildys visus laukus') }}
+                      </p>
+                      <p v-else>
+                        {{ $t('Pašalinti bendro sutarimo žymėjimą') }}
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
 
               <!-- Vote Title Input (conditional) -->
@@ -470,6 +510,7 @@ import {
   ThumbsUp,
   ThumbsDown,
   Sparkles,
+  Handshake,
 } from 'lucide-vue-next';
 
 import VoteSelectionBadge from './VoteSelectionBadge.vue';
@@ -505,7 +546,7 @@ interface AgendaItem {
   brought_by_students?: boolean;
   type?: 'voting' | 'informational' | 'deferred' | null;
   student_position?: string | null;
-  votes?: App.Entities.Vote[];
+  votes?: (App.Entities.Vote & { is_consensus?: boolean })[];
 }
 
 interface Props {
@@ -680,6 +721,12 @@ const setVoteField = (
 
   vote[field] = value;
 
+  // If user manually changes decision or student_vote, clear consensus status
+  // (consensus means all values were auto-set, manual override breaks that)
+  if ((field === 'decision' || field === 'student_vote') && vote.is_consensus) {
+    vote.is_consensus = false;
+  }
+
   // Auto-update student_benefit when both student_vote and decision are set
   // Only auto-update if we're changing student_vote or decision (not student_benefit itself)
   if (field !== 'student_benefit') {
@@ -720,10 +767,11 @@ const addVote = () => {
   // Only for voting type and when no votes exist, the first vote becomes main
   // For deferred/informational types, votes are never main
   const isMain = localType.value === 'voting' && localVotes.value.length === 0;
-  const newVote: App.Entities.Vote = {
+  const newVote: App.Entities.Vote & { is_consensus?: boolean } = {
     id: generateTempId(),
     agenda_item_id: props.item.id,
     is_main: isMain,
+    is_consensus: false,
     title: null,
     student_vote: null,
     decision: null,
@@ -734,6 +782,37 @@ const addVote = () => {
     updated_at: new Date().toISOString(),
   };
   localVotes.value.push(newVote);
+  saveChanges();
+};
+
+/**
+ * Toggle consensus status for a vote.
+ * When enabling consensus, auto-fill all vote fields with positive values.
+ * When disabling, clear the fields to allow manual entry.
+ */
+const toggleConsensus = (voteIndex: number) => {
+  const vote = localVotes.value[voteIndex];
+  if (!vote) return;
+
+  if (vote.is_consensus) {
+    // Disable consensus - clear the fields
+    vote.is_consensus = false;
+    vote.decision = null;
+    vote.student_vote = null;
+    vote.student_benefit = null;
+  }
+  else {
+    // Enable consensus - auto-fill with positive values
+    vote.is_consensus = true;
+    vote.decision = 'positive';
+    vote.student_vote = 'positive';
+    vote.student_benefit = 'positive';
+
+    toast.success($t('Klausimas pažymėtas kaip priimtas bendru sutarimu'), {
+      duration: 2000,
+    });
+  }
+
   saveChanges();
 };
 
@@ -800,6 +879,7 @@ const saveChanges = () => {
     votes: localVotes.value.map((vote, index) => ({
       id: vote.id?.startsWith('temp_') ? null : vote.id,
       is_main: vote.is_main,
+      is_consensus: vote.is_consensus || false,
       title: vote.title,
       student_vote: vote.student_vote,
       decision: vote.decision,

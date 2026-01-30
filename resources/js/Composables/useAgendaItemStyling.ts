@@ -7,6 +7,7 @@ import {
   Clock,
   Info,
   HelpCircle,
+  Handshake,
   type LucideIcon,
 } from 'lucide-vue-next';
 
@@ -20,6 +21,7 @@ export type AgendaItemType = 'voting' | 'informational' | 'deferred' | string | 
 export interface Vote {
   id?: string | number;
   is_main?: boolean;
+  is_consensus?: boolean;
   decision?: VoteValue;
   student_vote?: VoteValue;
   student_benefit?: VoteValue;
@@ -41,7 +43,8 @@ export interface AgendaItem {
  * the state of an agenda item based on its type and main vote.
  */
 export type AgendaItemStatus
-  = 'student_aligned' // Voting: student_vote === decision (green)
+  = 'consensus' // Voting: approved by consensus (teal/cyan)
+    | 'student_aligned' // Voting: student_vote === decision (green)
     | 'student_misaligned' // Voting: student_vote !== decision (red/amber)
     | 'neutral_decided' // Voting: decision is neutral (gray)
     | 'no_vote' // Voting type but no vote recorded yet (amber/warning)
@@ -92,6 +95,11 @@ export function getAgendaItemStatus(item: AgendaItem): AgendaItemStatus {
     return 'no_vote';
   }
 
+  // Check if consensus vote (takes priority over other statuses)
+  if (mainVote.is_consensus) {
+    return 'consensus';
+  }
+
   // Neutral decision
   if (mainVote.decision === 'neutral') {
     return 'neutral_decided';
@@ -117,6 +125,15 @@ export function getAgendaItemStatusMeta(item: AgendaItem): AgendaItemStatusMeta 
   const status = getAgendaItemStatus(item);
 
   const statusMap: Record<AgendaItemStatus, AgendaItemStatusMeta> = {
+    consensus: {
+      status: 'consensus',
+      icon: Handshake,
+      label: $t('Pritarta bendru sutarimu'),
+      colorClass: 'text-teal-600 dark:text-teal-400',
+      bgClass: 'bg-teal-100 dark:bg-teal-900/30',
+      borderClass: 'border-teal-200 dark:border-teal-800',
+      dotClass: 'bg-teal-500',
+    },
     student_aligned: {
       status: 'student_aligned',
       icon: CheckCircle,
@@ -191,6 +208,7 @@ export function getAgendaItemStatusMeta(item: AgendaItem): AgendaItemStatusMeta 
  */
 export interface MeetingStatusSummary {
   totalItems: number;
+  consensus: number;
   aligned: number;
   misaligned: number;
   neutralDecided: number;
@@ -215,6 +233,7 @@ export interface MeetingStatusSummary {
 export function getMeetingStatusSummary(items: AgendaItem[]): MeetingStatusSummary {
   const summary: MeetingStatusSummary = {
     totalItems: items.length,
+    consensus: 0,
     aligned: 0,
     misaligned: 0,
     neutralDecided: 0,
@@ -235,6 +254,9 @@ export function getMeetingStatusSummary(items: AgendaItem[]): MeetingStatusSumma
   for (const item of items) {
     const status = getAgendaItemStatus(item);
     switch (status) {
+      case 'consensus':
+        summary.consensus++;
+        break;
       case 'student_aligned':
         summary.aligned++;
         break;
@@ -260,17 +282,18 @@ export function getMeetingStatusSummary(items: AgendaItem[]): MeetingStatusSumma
   }
 
   // Calculate completion rate (for voting items only)
-  const votingItems = summary.aligned + summary.misaligned + summary.neutralDecided + summary.noVote;
-  const completedVotingItems = summary.aligned + summary.misaligned + summary.neutralDecided;
+  const votingItems = summary.consensus + summary.aligned + summary.misaligned + summary.neutralDecided + summary.noVote;
+  const completedVotingItems = summary.consensus + summary.aligned + summary.misaligned + summary.neutralDecided;
 
   if (votingItems > 0) {
     summary.completionRate = Math.round((completedVotingItems / votingItems) * 100);
   }
 
   // Calculate alignment rate (for items with both student vote and decision)
-  const alignableItems = summary.aligned + summary.misaligned;
+  // Consensus votes are considered aligned (all parties agreed)
+  const alignableItems = summary.consensus + summary.aligned + summary.misaligned;
   if (alignableItems > 0) {
-    summary.alignmentRate = Math.round((summary.aligned / alignableItems) * 100);
+    summary.alignmentRate = Math.round(((summary.consensus + summary.aligned) / alignableItems) * 100);
   }
 
   // Determine overall status
@@ -343,6 +366,11 @@ export function getNumberBadgeClass(item: AgendaItem): string {
     return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400';
   }
 
+  // Consensus - teal
+  if (mainVote.is_consensus) {
+    return 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400';
+  }
+
   // Has a decision
   if (mainVote.decision === 'positive') {
     return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400';
@@ -369,6 +397,7 @@ export function getStatusText(item: AgendaItem): string {
 
   if (!mainVote?.decision) return $t('Neaptartas');
 
+  if (mainVote.is_consensus) return $t('Bendras sutarimas');
   if (mainVote.decision === 'positive') return $t('Priimtas');
   if (mainVote.decision === 'negative') return $t('Atmestas');
   return $t('Neutralus');
@@ -402,6 +431,7 @@ export function getStatusTextClass(item: AgendaItem): string {
 
   if (!mainVote?.decision) return 'text-zinc-400 dark:text-zinc-500';
 
+  if (mainVote.is_consensus) return 'text-teal-600 dark:text-teal-400';
   if (mainVote.decision === 'positive') return 'text-emerald-600 dark:text-emerald-400';
   if (mainVote.decision === 'negative') return 'text-red-600 dark:text-red-400';
   return 'text-zinc-500 dark:text-zinc-400';

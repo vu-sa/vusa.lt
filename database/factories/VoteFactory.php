@@ -23,6 +23,7 @@ class VoteFactory extends Factory
         return [
             'agenda_item_id' => AgendaItem::factory(),
             'is_main' => true,
+            'is_consensus' => false,
             'title' => null,
             'student_vote' => null,
             'decision' => null,
@@ -134,6 +135,20 @@ class VoteFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'note' => $note ?? $this->faker->paragraph,
+        ]);
+    }
+
+    /**
+     * Set vote as consensus (approved by unanimous agreement).
+     * All fields are set to positive as consensus implies full agreement.
+     */
+    public function consensus(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'is_consensus' => true,
+            'student_vote' => 'positive',
+            'decision' => 'positive',
+            'student_benefit' => 'positive',
         ]);
     }
 }

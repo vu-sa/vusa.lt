@@ -1,5 +1,25 @@
 <template>
+  <!-- Consensus Badge - distinct styling with student_benefit background -->
   <Badge
+    v-if="vote.is_consensus"
+    variant="outline"
+    class="gap-1.5 text-xs font-normal px-2 py-1 h-6"
+    :class="[
+      consensusBadgeClass,
+      vote.is_main ? 'font-semibold' : '',
+    ]"
+  >
+    <Handshake class="h-3.5 w-3.5" />
+    <span>{{ $t('Sutarimas') }}</span>
+    <!-- Vote title (if exists) -->
+    <span v-if="vote.title" class="opacity-80">
+      · {{ vote.title }}
+    </span>
+  </Badge>
+  
+  <!-- Standard Vote Badge -->
+  <Badge
+    v-else
     variant="outline"
     class="gap-0 text-xs font-normal px-1.5 py-1 h-6"
     :class="badgeBackground"
@@ -26,7 +46,8 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { Gavel, GraduationCap } from 'lucide-vue-next';
+import { trans as $t } from 'laravel-vue-i18n';
+import { Gavel, GraduationCap, Handshake } from 'lucide-vue-next';
 
 import { Badge } from '@/Components/ui/badge';
 import { useAgendaItemStyling, type VoteValue } from '@/Composables/useAgendaItemStyling';
@@ -63,6 +84,25 @@ function getIconColorClass(value: VoteValue): string {
 const badgeBackground = computed(() => {
   const bgClass = styling.getStudentBenefitBgClass(props.vote.student_benefit);
   return `${bgClass} border-zinc-200 dark:border-zinc-700 ${props.vote.is_main ? 'font-semibold border border-zinc-300 dark:border-zinc-700' : ''}`;
+});
+
+// Consensus badge class - combines teal accent with student_benefit background
+const consensusBadgeClass = computed(() => {
+  // Base teal styling for consensus indicator
+  const baseClass = 'border-teal-400 dark:border-teal-600';
+  
+  // Background based on student_benefit
+  switch (props.vote.student_benefit) {
+    case 'positive':
+      return `${baseClass} bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300`;
+    case 'negative':
+      return `${baseClass} bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300`;
+    case 'neutral':
+      return `${baseClass} bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300`;
+    default:
+      // Default teal when no benefit set
+      return `${baseClass} bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300`;
+  }
 });
 
 // Separator color that works on all backgrounds

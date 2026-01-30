@@ -91,6 +91,7 @@ class AgendaItemController extends AdminController
                 if ($vote && $vote->agenda_item_id === $agendaItem->id) {
                     $vote->update([
                         'is_main' => $voteData['is_main'] ?? false,
+                        'is_consensus' => $voteData['is_consensus'] ?? false,
                         'title' => $voteData['title'] ?? null,
                         'student_vote' => $voteData['student_vote'] ?? null,
                         'decision' => $voteData['decision'] ?? null,
@@ -104,6 +105,7 @@ class AgendaItemController extends AdminController
                 // Create new vote
                 $vote = $agendaItem->votes()->create([
                     'is_main' => $voteData['is_main'] ?? false,
+                    'is_consensus' => $voteData['is_consensus'] ?? false,
                     'title' => $voteData['title'] ?? null,
                     'student_vote' => $voteData['student_vote'] ?? null,
                     'decision' => $voteData['decision'] ?? null,

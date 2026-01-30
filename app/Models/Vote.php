@@ -22,6 +22,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string $id
  * @property string $agenda_item_id
  * @property bool $is_main
+ * @property bool $is_consensus
  * @property string|null $title
  * @property string|null $student_vote
  * @property string|null $decision
@@ -62,6 +63,7 @@ class Vote extends Model
     {
         return [
             'is_main' => 'boolean',
+            'is_consensus' => 'boolean',
             'order' => 'integer',
         ];
     }

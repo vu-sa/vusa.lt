@@ -72,4 +72,21 @@ enum VoteValue: string
             self::cases()
         );
     }
+
+    /**
+     * Get default values for consensus votes.
+     * Consensus means approved unanimously without formal voting,
+     * so all values are positive.
+     *
+     * @return array{decision: string, student_vote: string, student_benefit: string, is_consensus: bool}
+     */
+    public static function consensusDefaults(): array
+    {
+        return [
+            'decision' => self::Positive->value,
+            'student_vote' => self::Positive->value,
+            'student_benefit' => self::Positive->value,
+            'is_consensus' => true,
+        ];
+    }
 }
