@@ -747,7 +747,7 @@ declare global {
       users?: User
       followers?: User[]
       available_trainings?: Training[]
-      commentable?: PublicInstitution
+      commentable?: Institution
       comments?: Comment[]
       outgoing_relationships?: Relationship[]
       incoming_relationships?: Relationship[]
@@ -814,7 +814,7 @@ declare global {
       types?: Type[]
       agenda_items?: AgendaItem[]
       comments?: Comment[]
-      commentable?: PublicMeeting
+      commentable?: Meeting
       files?: SharepointFile[]
       fileable_files?: FileableFile[]
       available_files?: FileableFile[]

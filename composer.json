@@ -47,13 +47,13 @@
         "ueberdosis/tiptap-php": "^2.0"
     },
     "require-dev": {
-        "barryvdh/laravel-debugbar": "^3.16",
         "barryvdh/laravel-ide-helper": "^3.6",
         "fakerphp/faker": "^1.9.1",
+        "fruitcake/laravel-debugbar": "^4.0",
         "fumeapp/modeltyper": "^3.0",
         "kitloong/laravel-migrations-generator": "^7.0.1",
         "larastan/larastan": "^3.0",
-        "laravel/boost": "^1.8",
+        "laravel/boost": "^2.0",
         "laravel/pint": "^1.2",
         "laravel/sail": "^1.12",
         "mockery/mockery": "^1.4.4",
