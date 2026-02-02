@@ -36,6 +36,16 @@
         @endforeach
     @endif
     
+    {{-- Pagination SEO: rel=prev/next for paginated content --}}
+    @if (isset($page['props']['seo']['pagination']))
+        @if ($page['props']['seo']['pagination']['prevPageUrl'])
+            <link rel="prev" href="{{ $page['props']['seo']['pagination']['prevPageUrl'] }}" />
+        @endif
+        @if ($page['props']['seo']['pagination']['nextPageUrl'])
+            <link rel="next" href="{{ $page['props']['seo']['pagination']['nextPageUrl'] }}" />
+        @endif
+    @endif
+    
     {{-- Site-wide structured data schemas --}}
     @if (isset($page['props']['schemas']))
         @foreach ($page['props']['schemas'] as $schema)

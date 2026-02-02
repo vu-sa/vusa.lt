@@ -27,8 +27,10 @@ class NewsController extends PublicController
         ) : null);
 
         // Get description for SEO, prioritizing 'short' field over tiptap content
+        // Pass the news article's tenant for proper canonical URL
         $seo = $this->shareAndReturnSEOObject(
-            title: $news->title.' - '.$this->tenant->shortname,
+            contentTenant: $news->tenant,
+            title: $news->title.' - '.$news->tenant->shortname,
             description: ContentHelper::getDescriptionForSeo($news),
             author: $news->tenant->shortname,
             image: $news->getImageUrl(),
@@ -131,7 +133,9 @@ class NewsController extends PublicController
                 ->first();
         }
 
+        // Pass the current tenant for proper canonical URL
         $seo = $this->shareAndReturnSEOObject(
+            contentTenant: $this->tenant,
             title: $currentTag
                 ? "{$this->tenant->shortname} naujienos - {$currentTag->name}"
                 : "{$this->tenant->shortname} naujienų archyvas",
@@ -139,6 +143,9 @@ class NewsController extends PublicController
                 ? "Naršyk per {$this->tenant->shortname} naujienas pagal žymą '{$currentTag->name}'"
                 : "Naršyk per visas {$this->tenant->shortname} naujienas"
         );
+
+        // Share pagination SEO metadata for rel=next/prev links
+        $this->sharePaginationSeoMeta($news, $this->tenant);
 
         return Inertia::render('Public/NewsArchive', [
             'news' => $news,

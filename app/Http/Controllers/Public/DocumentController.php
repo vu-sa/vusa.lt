@@ -16,7 +16,9 @@ class DocumentController extends PublicController
         $this->getTenantLinks();
         $this->shareOtherLangURL('documents');
 
+        // Global content - use null for current tenant
         $seo = $this->shareAndReturnSEOObject(
+            contentTenant: null,
             title: __('search.document_page_title'),
             description: __('search.document_page_description')
         );

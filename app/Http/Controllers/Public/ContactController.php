@@ -25,6 +25,7 @@ class ContactController extends PublicController
         $this->shareOtherLangURL('contacts', $this->subdomain);
 
         $seo = $this->shareAndReturnSEOObject(
+            contentTenant: $this->tenant,
             title: __('Kontaktų paieška').' - '.$this->tenant->shortname,
             description: app()->getLocale() === 'lt' ? 'VU SA kontaktų paieškoje vienoje vietoje suraskite visus VU SA kontaktus' : 'In the VU SA contact search, find all VU SA contacts in one place',
         );
@@ -180,6 +181,7 @@ class ContactController extends PublicController
         })->values();
 
         $seo = $this->shareAndReturnSEOObject(
+            contentTenant: $this->tenant,
             title: __('Studentų atstovai').' - '.$this->tenant->shortname,
             description: app()->getLocale() === 'lt' ? $this->tenant->shortname.' studentų atstovų paieškoje vienoje vietoje suraskite visus '.$this->tenant->shortname.'studentų atstovus' : 'In '.$this->tenant->shortname.'contact search find all'.$this->tenant->shortname.'student representatives');
 
@@ -203,8 +205,10 @@ class ContactController extends PublicController
         $meetings = $this->getAllMeetingsForInstitution($institution);
         $groupedMeetings = $this->groupMeetingsByAcademicYear($meetings);
 
+        // Use the institution's tenant for proper canonical URL
         $seo = $this->shareAndReturnSEOObject(
-            title: $title.' - '.$this->tenant->shortname,
+            contentTenant: $institution->tenant,
+            title: $title.' - '.($institution->tenant?->shortname ?? $this->tenant->shortname),
             description: Str::limit(strip_tags($institution->description), 160),
             image: $institution->image_url,
         );
@@ -368,7 +372,9 @@ class ContactController extends PublicController
             'meeting' => $meeting->id,
         ]));
 
+        // Use the institution's tenant for proper canonical URL
         $seo = $this->shareAndReturnSEOObject(
+            contentTenant: $primaryInstitution->tenant,
             title: $meeting->title.' - '.$primaryInstitution->name,
             description: Str::limit(strip_tags($meeting->description), 160),
         );
@@ -406,6 +412,7 @@ class ContactController extends PublicController
             }])->institutions;
 
             $seo = $this->shareAndReturnSEOObject(
+                contentTenant: $this->tenant,
                 title: __('Kontaktai').': '.$type->title.' - VU SA',
                 description: Str::limit($type->description, 160),
             );
@@ -456,6 +463,7 @@ class ContactController extends PublicController
         })->values();
 
         $seo = $this->shareAndReturnSEOObject(
+            contentTenant: $this->tenant,
             title: __('Kontaktai').': '.$type->title.' - '.$this->tenant->shortname,
             description: Str::limit($type->description, 160),
         );

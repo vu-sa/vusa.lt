@@ -20,6 +20,7 @@ class MeetingController extends PublicController
 
         // Create SEO metadata
         $seo = $this->shareAndReturnSEOObject(
+            contentTenant: $this->tenant,
             title: __('search.meeting_page_title'),
             description: __('search.meeting_page_description')
         );
