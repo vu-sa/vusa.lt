@@ -328,14 +328,21 @@ function buildFileStatusHtml(hasProtocol?: boolean, hasReport?: boolean): string
  * Build tooltip HTML for a duty member
  */
 export function buildMemberTooltipContent(
-  member: { user: { name: string }; startDate: Date; endDate: Date | null }
+  member: { user: { name: string }; startDate: Date; endDate: Date | null },
+  activityLabel?: string
 ): TooltipContent {
   const startStr = member.startDate.toLocaleDateString()
   const endStr = member.endDate ? member.endDate.toLocaleDateString() : 'Present'
-  const html = `
+  
+  let html = `
     <div class="font-medium text-[12px]">${member.user.name}</div>
     <div class="opacity-70">${startStr} → ${endStr}</div>
   `
+  
+  // Add activity status if provided
+  if (activityLabel) {
+    html += `<div class="mt-1 text-[10px] opacity-80">${activityLabel}</div>`
+  }
 
   return {
     type: 'member',

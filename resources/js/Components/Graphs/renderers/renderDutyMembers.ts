@@ -9,6 +9,13 @@ import type { GanttColors } from '../ganttColors'
 import { isDarkModeActive } from '../ganttColors'
 import type { GanttTooltipManager } from './GanttTooltip'
 import { buildMemberTooltipContent } from './GanttTooltip'
+import { 
+  getActivityRingColor, 
+  getActivityLabel, 
+  isDutyCurrentlyActive,
+  type ActivityLevel 
+} from '@/Pages/Admin/Dashboard/Composables/useActivityStatus'
+import type { RepresentativeActivityCategory } from '@/Pages/Admin/Dashboard/types'
 
 interface ParsedDutyMember {
   institution_id: string | number
@@ -18,6 +25,9 @@ interface ParsedDutyMember {
     id: string
     name: string
     profile_photo_path?: string | null
+    // Activity status (only available in tenant view)
+    activityCategory?: 'today' | 'week' | 'month' | 'stale' | 'never'
+    lastAction?: string | null
   }
 }
 
@@ -44,13 +54,15 @@ export interface DutyMemberRenderContext {
   rowHeightFor: (key: string | number) => number
   /** Unified tooltip manager */
   tooltipManager?: GanttTooltipManager
+  /** Show activity status rings around avatars (tenant view only) */
+  showActivityStatus?: boolean
 }
 
 /**
  * Render duty member avatar markers
  */
 export function renderDutyMembers(ctx: DutyMemberRenderContext): void {
-  const { g, defs, container, x, groupedDutyMembers, innerWidth, detailsExpanded, colors, rowTop, rowHeightFor, tooltipManager } = ctx
+  const { g, defs, container, x, groupedDutyMembers, innerWidth, detailsExpanded, colors, rowTop, rowHeightFor, tooltipManager, showActivityStatus } = ctx
 
   if (groupedDutyMembers.size === 0) return
 
@@ -91,14 +103,24 @@ export function renderDutyMembers(ctx: DutyMemberRenderContext): void {
         .attr('transform', `translate(${offsetX}, 0)`)
         .style('cursor', 'pointer')
 
+      // Determine stroke color - use activity status ring only for CURRENT duties
+      // A duty is current if endDate >= today OR endDate is null (ongoing)
+      const isCurrentDuty = isDutyCurrentlyActive(member.startDate, member.endDate)
+      const shouldShowActivityRing = showActivityStatus && isCurrentDuty && member.user.activityCategory
+      const activityRingColor = shouldShowActivityRing 
+        ? getActivityRingColor(member.user.activityCategory as RepresentativeActivityCategory, isDark) 
+        : null
+      const strokeColor = activityRingColor ?? (isDark ? '#4b5563' : '#d1d5db')
+      const strokeWidth = activityRingColor ? 2 : 1
+
       // Circle background
       memberG.append('circle')
         .attr('cx', avatarSize / 2)
         .attr('cy', avatarSize / 2)
         .attr('r', avatarSize / 2)
         .attr('fill', isDark ? '#374151' : '#e5e7eb')
-        .attr('stroke', isDark ? '#4b5563' : '#d1d5db')
-        .attr('stroke-width', 1)
+        .attr('stroke', strokeColor)
+        .attr('stroke-width', strokeWidth)
 
       if (member.user.profile_photo_path) {
         // Add clipPath for circular image
@@ -143,7 +165,11 @@ export function renderDutyMembers(ctx: DutyMemberRenderContext): void {
         memberG
           .on('mouseenter', (event) => {
             const rect = container.getBoundingClientRect()
-            const content = buildMemberTooltipContent(member)
+            // Pass activity info to tooltip builder only for current duties with activity data
+            const activityLabel = shouldShowActivityRing 
+              ? getActivityLabel(member.user.activityCategory as RepresentativeActivityCategory) 
+              : undefined
+            const content = buildMemberTooltipContent(member, activityLabel)
             tooltipManager.show(content, event.clientX - rect.left, event.clientY - rect.top)
           })
           .on('mousemove', (event) => {
@@ -158,7 +184,10 @@ export function renderDutyMembers(ctx: DutyMemberRenderContext): void {
         memberG.append('title').text(() => {
           const startStr = member.startDate.toLocaleDateString()
           const endStr = member.endDate ? member.endDate.toLocaleDateString() : 'Present'
-          return `${member.user.name}\n${startStr} → ${endStr}`
+          const activityLabel = shouldShowActivityRing 
+            ? getActivityLabel(member.user.activityCategory as RepresentativeActivityCategory) 
+            : ''
+          return `${member.user.name}\n${startStr} → ${endStr}${activityLabel ? `\n${activityLabel}` : ''}`
         })
       }
     })

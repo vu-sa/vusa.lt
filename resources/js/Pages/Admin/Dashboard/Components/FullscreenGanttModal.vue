@@ -28,12 +28,15 @@
             :show-only-with-activity="filters.showOnlyWithActivityTenant.value"
             :show-only-with-public-meetings="filters.showOnlyWithPublicMeetingsTenant.value"
             :show-duty-members="filters.showDutyMembersTenant.value"
+            :show-activity-status="filters.showActivityStatusTenant.value"
+            :show-activity-status-option="filters.showDutyMembersTenant.value"
             :show-tenant-headers="ganttSettings.showTenantHeaders.value"
             :show-reset="false"
             @update:selected-tenants="(val: string[]) => filters.selectedTenantForGantt.value = val"
             @update:show-only-with-activity="(val: boolean) => filters.showOnlyWithActivityTenant.value = val"
             @update:show-only-with-public-meetings="(val: boolean) => filters.showOnlyWithPublicMeetingsTenant.value = val"
             @update:show-duty-members="(val: boolean) => filters.showDutyMembersTenant.value = val"
+            @update:show-activity-status="(val: boolean) => filters.showActivityStatusTenant.value = val"
             @update:show-tenant-headers="(val: boolean) => ganttSettings.showTenantHeaders.value = val"
           />
           <GanttFilterDropdown
@@ -98,6 +101,7 @@
             :duty-members="tenantDutyMembers"
             :inactive-periods="tenantInactivePeriods"
             :show-duty-members="filters.showDutyMembersTenant.value"
+            :show-activity-status="filters.showActivityStatusTenant.value"
             :empty-message="$t('Šiame padalinyje nėra institucijų')"
             height="100%"
             :hide-fullscreen-button="true"

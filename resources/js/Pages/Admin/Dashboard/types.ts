@@ -134,6 +134,9 @@ export interface GanttDutyMember {
     id: string;
     name: string;
     profile_photo_path?: string | null;
+    // Activity status (only available in tenant view, enriched from representativeActivity)
+    activityCategory?: RepresentativeActivityCategory;
+    lastAction?: string | null;
   };
   start_date: Date;
   end_date?: Date | null;
@@ -144,5 +147,35 @@ export interface InactivePeriod {
   institution_id: string;
   from: Date;
   until: Date;
+}
+
+// Representative activity tracking types
+export type RepresentativeActivityCategory = 'today' | 'week' | 'month' | 'stale' | 'never';
+
+export interface RepresentativeUser {
+  id: string;
+  name: string;
+  email: string;
+  profile_photo_path?: string | null;
+  last_action: string | null;
+  category: RepresentativeActivityCategory;
+  duties: Array<{
+    id: string;
+    name: string;
+    institution_name?: string;
+  }>;
+}
+
+export interface RepresentativeActivityStats {
+  total: number;
+  activeToday: number;
+  activeLast7Days: number;
+  activeLast30Days: number;
+  neverLoggedIn: number;
+}
+
+export interface RepresentativeActivityData {
+  stats: RepresentativeActivityStats;
+  users: RepresentativeUser[];
 }
 

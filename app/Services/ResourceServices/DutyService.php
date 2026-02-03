@@ -6,6 +6,7 @@ use App\Models\Institution;
 use App\Models\Meeting;
 use App\Services\ModelAuthorizer;
 use App\Settings\AtstovavimasSettings;
+use App\Settings\MeetingSettings;
 use Illuminate\Support\Collection;
 
 class DutyService
@@ -172,6 +173,148 @@ class DutyService
         return self::buildInstitutionQuery()
             ->whereIn('tenant_id', $accessibleTenantIds)
             ->get();
+    }
+
+    /**
+     * Get representative activity statistics for specific tenant IDs.
+     *
+     * Returns user login activity stats and categorized user lists for
+     * the representative activity dashboard cards.
+     *
+     * @param  Collection|array  $tenantIds  The tenant IDs to get activity for
+     * @return array{stats: array, users: array}
+     */
+    public static function getRepresentativeActivityForTenants($tenantIds): array
+    {
+        $tenantIds = collect($tenantIds)->filter();
+
+        if ($tenantIds->isEmpty()) {
+            return [
+                'stats' => [
+                    'total' => 0,
+                    'activeToday' => 0,
+                    'activeLast7Days' => 0,
+                    'activeLast30Days' => 0,
+                    'neverLoggedIn' => 0,
+                ],
+                'users' => [],
+            ];
+        }
+
+        $user = request()->user();
+        $atstovavimasSettings = app(AtstovavimasSettings::class);
+        $visibleTenantIds = $atstovavimasSettings->getVisibleTenantIds($user);
+
+        // Filter to only accessible tenants
+        $accessibleTenantIds = $tenantIds->intersect($visibleTenantIds);
+
+        if ($accessibleTenantIds->isEmpty()) {
+            return [
+                'stats' => [
+                    'total' => 0,
+                    'activeToday' => 0,
+                    'activeLast7Days' => 0,
+                    'activeLast30Days' => 0,
+                    'neverLoggedIn' => 0,
+                ],
+                'users' => [],
+            ];
+        }
+
+        // Get users with active duties in the specified tenants
+        $meetingSettings = app(MeetingSettings::class);
+        $excludedTypeIds = $meetingSettings->getExcludedInstitutionTypeIds();
+
+        $users = \App\Models\User::query()
+            ->select('id', 'name', 'email', 'profile_photo_path', 'last_action')
+            ->whereHas('current_duties', function ($query) use ($accessibleTenantIds, $excludedTypeIds) {
+                $query->whereHas('institution', function ($q) use ($accessibleTenantIds, $excludedTypeIds) {
+                    $q->whereIn('tenant_id', $accessibleTenantIds);
+
+                    // Exclude institutions of excluded types (e.g., padalinys, pkp)
+                    if ($excludedTypeIds->isNotEmpty()) {
+                        $q->whereDoesntHave('types', function ($typeQuery) use ($excludedTypeIds) {
+                            $typeQuery->whereIn('types.id', $excludedTypeIds);
+                        });
+                    }
+                });
+            })
+            ->with(['current_duties' => function ($query) use ($accessibleTenantIds, $excludedTypeIds) {
+                $query->select('duties.id', 'duties.name', 'duties.institution_id')
+                    ->whereHas('institution', function ($q) use ($accessibleTenantIds, $excludedTypeIds) {
+                        $q->whereIn('tenant_id', $accessibleTenantIds);
+
+                        if ($excludedTypeIds->isNotEmpty()) {
+                            $q->whereDoesntHave('types', function ($typeQuery) use ($excludedTypeIds) {
+                                $typeQuery->whereIn('types.id', $excludedTypeIds);
+                            });
+                        }
+                    })
+                    ->with('institution:id,name,tenant_id');
+            }])
+            ->get()
+            ->makeVisible(['last_action']);
+
+        $now = now();
+        $today = $now->copy()->startOfDay();
+        $sevenDaysAgo = $now->copy()->subDays(7);
+        $thirtyDaysAgo = $now->copy()->subDays(30);
+
+        // Calculate stats
+        $stats = [
+            'total' => $users->count(),
+            'activeToday' => $users->filter(fn ($u) => $u->last_action && $u->last_action >= $today)->count(),
+            'activeLast7Days' => $users->filter(fn ($u) => $u->last_action && $u->last_action >= $sevenDaysAgo)->count(),
+            'activeLast30Days' => $users->filter(fn ($u) => $u->last_action && $u->last_action >= $thirtyDaysAgo)->count(),
+            'neverLoggedIn' => $users->filter(fn ($u) => $u->last_action === null)->count(),
+        ];
+
+        // Categorize users for frontend display
+        $categorizedUsers = $users->map(function ($user) use ($today, $sevenDaysAgo, $thirtyDaysAgo) {
+            $lastAction = $user->last_action;
+
+            // Determine activity category
+            $category = 'never';
+            if ($lastAction !== null) {
+                if ($lastAction >= $today) {
+                    $category = 'today';
+                } elseif ($lastAction >= $sevenDaysAgo) {
+                    $category = 'week';
+                } elseif ($lastAction >= $thirtyDaysAgo) {
+                    $category = 'month';
+                } else {
+                    $category = 'stale';
+                }
+            }
+
+            return [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'profile_photo_path' => $user->profile_photo_path,
+                'last_action' => $lastAction?->toISOString(),
+                'category' => $category,
+                'duties' => $user->current_duties->map(fn ($duty) => [
+                    'id' => $duty->id,
+                    'name' => $duty->name,
+                    'institution_name' => $duty->institution?->name,
+                ])->values(),
+            ];
+        })
+            ->sortBy(function ($user) {
+                // Sort: never first, then by staleness (oldest last_action first)
+                if ($user['category'] === 'never') {
+                    return '0_';
+                }
+
+                return '1_'.($user['last_action'] ?? '');
+            })
+            ->values();
+
+        return [
+            'stats' => $stats,
+            'users' => $categorizedUsers,
+        ];
     }
 
     /**

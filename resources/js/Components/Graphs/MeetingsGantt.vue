@@ -262,9 +262,11 @@ const props = withDefaults(defineProps<{
   // Container height
   height?: string
   // Duty members display
-  dutyMembers?: Array<{ institution_id: string | number, user: { id: string, name: string, profile_photo_path?: string | null }, start_date: string | Date, end_date?: string | Date | null }>
+  dutyMembers?: Array<{ institution_id: string | number, user: { id: string, name: string, profile_photo_path?: string | null, activityCategory?: 'today' | 'week' | 'month' | 'stale' | 'never', lastAction?: string | null }, start_date: string | Date, end_date?: string | Date | null }>
   inactivePeriods?: Array<{ institution_id: string | number, from: string | Date, until: string | Date }>
   showDutyMembers?: boolean
+  // Activity status rings for duty member avatars (tenant view only)
+  showActivityStatus?: boolean
   // Meeting periodicity per institution (days between expected meetings)
   institutionPeriodicity?: Record<string | number, number>
   // Hide fullscreen button (when already in fullscreen modal)
@@ -287,6 +289,7 @@ const props = withDefaults(defineProps<{
   extendThresholdPx: 200,
   height: '400px',
   showDutyMembers: true,
+  showActivityStatus: false,
 })
 
 const wrap = ref<HTMLElement | null>(null)
@@ -687,6 +690,7 @@ const render = () => {
       rowTop,
       rowHeightFor,
       tooltipManager,
+      showActivityStatus: props.showActivityStatus,
     })
   }
 
@@ -867,7 +871,7 @@ watch(() => dragSelection.state.value, (state) => {
   })
 }, { deep: true })
 
-watch([parsedMeetings, parsedGaps, parsedDutyMembers, parsedInactivePeriods, institutions, layoutRows, () => props.daysBefore, () => props.daysAfter, () => props.startDate, () => props.tenantFilter, () => props.showOnlyWithActivity, () => props.showOnlyWithPublicMeetings, () => props.showDutyMembers, () => props.detailsExpanded, extraBefore, extraAfter, dayWidthPx], () => render())
+watch([parsedMeetings, parsedGaps, parsedDutyMembers, parsedInactivePeriods, institutions, layoutRows, () => props.daysBefore, () => props.daysAfter, () => props.startDate, () => props.tenantFilter, () => props.showOnlyWithActivity, () => props.showOnlyWithPublicMeetings, () => props.showDutyMembers, () => props.showActivityStatus, () => props.detailsExpanded, extraBefore, extraAfter, dayWidthPx], () => render())
 </script>
 
 <style scoped>

@@ -337,6 +337,13 @@ class DashboardController extends AdminController
 
                 return $institutions->values();
             }),
+            // Lazy load representative activity stats - loaded together with tenantInstitutions
+            // Returns login activity stats and categorized user lists for the activity dashboard cards
+            'representativeActivity' => Inertia::lazy(function () {
+                $tenantIds = request()->input('tenantIds', []);
+
+                return DutyService::getRepresentativeActivityForTenants($tenantIds);
+            }),
             'availableTenants' => $availableTenants,
             // Note: recentMeetings is fetched via API endpoint: api.v1.admin.meetings.recent
         ]);

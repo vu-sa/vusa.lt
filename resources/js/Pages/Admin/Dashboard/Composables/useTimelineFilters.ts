@@ -30,6 +30,7 @@ export interface TimelineFilters {
   showOnlyWithActivityTenant: Ref<boolean>;
   showOnlyWithPublicMeetingsTenant: Ref<boolean>;
   showDutyMembersTenant: Ref<boolean>;
+  showActivityStatusTenant: Ref<boolean>;
   tenantInstitutionsLoaded: Ref<boolean>;
   tenantInstitutionsLoading: Ref<boolean>;
   
@@ -53,6 +54,7 @@ interface StoredFilters {
   showOnlyWithActivityTenant: boolean;
   showOnlyWithPublicMeetingsTenant: boolean;
   showDutyMembersTenant: boolean;
+  showActivityStatusTenant: boolean;
   showOnlyWithActivityUser: boolean;
   showOnlyWithPublicMeetingsUser: boolean;
   showDutyMembersUser: boolean;
@@ -106,6 +108,8 @@ export function provideTimelineFilters(
   const showOnlyWithActivityTenant = ref(stored.showOnlyWithActivityTenant ?? false);
   const showOnlyWithPublicMeetingsTenant = ref(stored.showOnlyWithPublicMeetingsTenant ?? false);
   const showDutyMembersTenant = ref(stored.showDutyMembersTenant ?? true);
+  // Default to false - activity status rings are off by default to keep Gantt clean
+  const showActivityStatusTenant = ref(stored.showActivityStatusTenant ?? false);
   // Track if tenant institutions have been loaded via Inertia lazy
   const tenantInstitutionsLoaded = ref(false);
   const tenantInstitutionsLoading = ref(false);
@@ -144,6 +148,7 @@ export function provideTimelineFilters(
       showOnlyWithActivityTenant: showOnlyWithActivityTenant.value,
       showOnlyWithPublicMeetingsTenant: showOnlyWithPublicMeetingsTenant.value,
       showDutyMembersTenant: showDutyMembersTenant.value,
+      showActivityStatusTenant: showActivityStatusTenant.value,
       showOnlyWithActivityUser: showOnlyWithActivityUser.value,
       showOnlyWithPublicMeetingsUser: showOnlyWithPublicMeetingsUser.value,
       showDutyMembersUser: showDutyMembersUser.value,
@@ -157,6 +162,7 @@ export function provideTimelineFilters(
     showOnlyWithActivityTenant,
     showOnlyWithPublicMeetingsTenant,
     showDutyMembersTenant,
+    showActivityStatusTenant,
     showOnlyWithActivityUser,
     showOnlyWithPublicMeetingsUser,
     showDutyMembersUser,
@@ -174,6 +180,7 @@ export function provideTimelineFilters(
     showOnlyWithActivityTenant.value = false;
     showOnlyWithPublicMeetingsTenant.value = false;
     showDutyMembersTenant.value = true;
+    showActivityStatusTenant.value = false;
     scrollPosition.value = 0;
     if (availableTenants.length > 0) {
       selectedTenantForGantt.value = [String(availableTenants[0]?.id)];
@@ -204,6 +211,7 @@ export function provideTimelineFilters(
 
   // Load tenant institutions via Inertia lazy reload
   // If tenantIds is not provided, uses the current selectedTenantForGantt value
+  // Also loads representativeActivity data for the same tenants
   function loadTenantInstitutions(tenantIds?: string[]) {
     const idsToLoad = tenantIds ?? selectedTenantForGantt.value;
     
@@ -225,7 +233,7 @@ export function provideTimelineFilters(
     tenantInstitutionsLoading.value = true;
     
     router.reload({
-      only: ['tenantInstitutions'],
+      only: ['tenantInstitutions', 'representativeActivity'],
       data: { tenantIds: idsToLoad },
       onSuccess: () => {
         tenantInstitutionsLoaded.value = true;
@@ -251,6 +259,7 @@ export function provideTimelineFilters(
     showOnlyWithActivityTenant,
     showOnlyWithPublicMeetingsTenant,
     showDutyMembersTenant,
+    showActivityStatusTenant,
     tenantInstitutionsLoaded,
     tenantInstitutionsLoading,
     // Shared state

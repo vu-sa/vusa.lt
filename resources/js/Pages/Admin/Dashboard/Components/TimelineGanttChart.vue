@@ -24,6 +24,7 @@
         :duty-members="dutyMembers"
         :inactive-periods="inactivePeriods"
         :show-duty-members="showDutyMembers"
+        :show-activity-status="showActivityStatus"
         :height="effectiveHeight"
         :hide-fullscreen-button="hideFullscreenButton"
         @create-meeting="$emit('create-meeting', $event)"
@@ -73,6 +74,8 @@ interface Props {
   dutyMembers?: GanttDutyMember[];
   inactivePeriods?: InactivePeriod[];
   showDutyMembers?: boolean;
+  // Activity status rings for duty members (only in tenant view)
+  showActivityStatus?: boolean;
   // Meeting periodicity per institution (days between expected meetings)
   institutionPeriodicity?: Record<string | number, number>;
   // Hide fullscreen button (when already in fullscreen modal)

@@ -67,15 +67,6 @@
       </TabsContent>
 
       <TabsContent value="tenant" class="mt-6 space-y-6">
-        <!-- Quick actions for tenant view -->
-        <div class="flex flex-wrap items-center gap-3">
-          <Link :href="route('tasks.summary', { taskable_type: 'App\\Models\\Meeting' })">
-            <Button variant="outline" size="sm" class="gap-2">
-              <ClipboardList class="h-4 w-4" />
-              {{ $t('tasks.summary.view_meeting_tasks') }}
-            </Button>
-          </Link>
-        </div>
 
         <TenantTimelineSection v-if="deferredContentReady" :available-tenants="props.availableTenants"
           :tenant-institutions="ganttData.formattedTenantInstitutions.value" :meetings="ganttData.tenantMeetings.value"
@@ -84,12 +75,23 @@
           :institution-has-public-meetings="tenantInstitutionHasPublicMeetings"
           :institution-periodicity="tenantInstitutionPeriodicity" :duty-members="ganttData.tenantDutyMembers.value"
           :inactive-periods="ganttData.tenantInactivePeriods.value" :is-hidden="actions.showFullscreenGantt.value"
+          :representative-activity="props.representativeActivity"
           @create-meeting="actions.onGapCreateMeeting" @create-check-in="actions.onGapCreateCheckIn"
           @fullscreen="actions.onGanttFullscreen('tenant')" />
         <!-- Timeline loading skeleton -->
         <div v-else class="space-y-4">
           <Skeleton class="h-8 w-48" />
           <Skeleton class="h-64 w-full rounded-lg" />
+        </div>
+
+                <!-- Quick actions for tenant view -->
+        <div class="flex flex-wrap items-center gap-3">
+          <Link :href="route('tasks.summary', { taskable_type: 'App\\Models\\Meeting' })">
+            <Button variant="outline" size="sm" class="gap-2">
+              <ClipboardList class="h-4 w-4" />
+              {{ $t('tasks.summary.view_meeting_tasks') }}
+            </Button>
+          </Link>
         </div>
       </TabsContent>
     </Tabs>
@@ -105,7 +107,7 @@
       :tenant-institutions="ganttData.formattedTenantInstitutions.value"
       :tenant-meetings="ganttData.tenantMeetings.value" :tenant-gaps="ganttData.tenantGaps.value"
       :tenant-institution-names :tenant-institution-tenant :tenant-institution-has-public-meetings
-      :tenant-institution-periodicity :tenant-duty-members="ganttData.tenantDutyMembers.value"
+      :tenant-institution-periodicity :tenant-duty-members="enrichedTenantDutyMembers"
       :tenant-inactive-periods="ganttData.tenantInactivePeriods.value" :tenant-names
       @update:is-open="actions.showFullscreenGantt.value = $event" @create-meeting="actions.onGapCreateMeeting"
       @create-check-in="actions.onGapCreateCheckIn" />
@@ -173,7 +175,7 @@ import { provideTimelineFilters } from './Composables/useTimelineFilters';
 import { useAtstovavimosActions } from './Composables/useAtstovavimasActions';
 import { useGanttChartData } from './Composables/useGanttChartData';
 import { provideGanttSettings } from './Composables/useGanttSettings';
-import type { AtstovavimosUser, AtstovavimosTenant, AtstovavimosInstitution } from './types';
+import type { AtstovavimosUser, AtstovavimosTenant, AtstovavimosInstitution, RepresentativeActivityData } from './types';
 
 import VisakInfoModal from '@/Components/Modals/VisakInfoModal.vue';
 import { useProductTour } from '@/Composables/useProductTour';
@@ -369,6 +371,7 @@ const props = defineProps<{
   relatedInstitutions?: AtstovavimosInstitution[];
   mayHaveRelatedInstitutions?: boolean;
   availableTenants: AtstovavimosTenant[];
+  representativeActivity?: RepresentativeActivityData;
 }>();
 
 // Reactive computed for tenant institutions (from lazy-loaded props)
@@ -534,6 +537,29 @@ const tenantInstitutionHasPublicMeetings = computed(() => {
 
 const tenantInstitutionPeriodicity = computed(() => {
   return ganttData.getInstitutionPeriodicity(ganttData.tenantInstitutions.value as unknown as AtstovavimosInstitution[]);
+});
+
+// Enrich tenant duty members with activity status from representativeActivity
+// This allows the FullscreenGanttModal to show activity rings on duty member avatars
+const enrichedTenantDutyMembers = computed(() => {
+  const dutyMembers = ganttData.tenantDutyMembers.value;
+  if (!dutyMembers) return [];
+  if (!props.representativeActivity?.users) return dutyMembers;
+  
+  // Build lookup map from representativeActivity users
+  const activityByUserId = new Map(
+    props.representativeActivity.users.map(u => [u.id, { category: u.category, lastAction: u.last_action }])
+  );
+  
+  // Enrich each duty member's user object with activity data
+  return dutyMembers.map(dm => ({
+    ...dm,
+    user: {
+      ...dm.user,
+      activityCategory: activityByUserId.get(dm.user.id)?.category,
+      lastAction: activityByUserId.get(dm.user.id)?.lastAction,
+    }
+  }));
 });
 
 const checkInInstitutionName = computed(() => {

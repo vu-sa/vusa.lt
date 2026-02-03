@@ -8,7 +8,29 @@
     <DropdownMenuContent align="end" class="w-64">
       <!-- Tenant selection (optional) -->
       <template v-if="tenants && tenants.length > 0">
-        <DropdownMenuLabel>{{ $t('Padaliniai') }} ({{ selectedTenants.length }}/{{ tenants.length }})</DropdownMenuLabel>
+        <DropdownMenuLabel class="flex items-center justify-between">
+          <span>{{ $t('Padaliniai') }} ({{ selectedTenants.length }}/{{ tenants.length }})</span>
+          <div class="flex gap-1">
+            <Button
+              size="xs"
+              variant="ghost"
+              class="h-5 px-1.5 text-xs"
+              :disabled="selectedTenants.length === tenants.length"
+              @click.stop="selectAllTenants"
+            >
+              {{ $t('Visi') }}
+            </Button>
+            <Button
+              size="xs"
+              variant="ghost"
+              class="h-5 px-1.5 text-xs"
+              :disabled="selectedTenants.length === 0"
+              @click.stop="deselectAllTenants"
+            >
+              {{ $t('Joks') }}
+            </Button>
+          </div>
+        </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <div class="max-h-48 overflow-y-auto">
           <DropdownMenuCheckboxItem 
@@ -54,6 +76,16 @@
         @select.prevent
       >
         {{ $t('Rodyti narius') }}
+      </DropdownMenuCheckboxItem>
+      
+      <!-- Activity status toggle - only visible when showDutyMembers is enabled -->
+      <DropdownMenuCheckboxItem 
+        v-if="showDutyMembers && showActivityStatusOption"
+        :model-value="showActivityStatus"
+        @update:model-value="(val: boolean) => $emit('update:showActivityStatus', val)" 
+        @select.prevent
+      >
+        {{ $t('Rodyti aktyvumo žymėjimą') }}
       </DropdownMenuCheckboxItem>
       
       <DropdownMenuCheckboxItem 
@@ -121,6 +153,8 @@ interface Props {
   showOnlyWithActivity: boolean;
   showOnlyWithPublicMeetings: boolean;
   showDutyMembers: boolean;
+  showActivityStatus?: boolean;
+  showActivityStatusOption?: boolean;
   showTenantHeaders: boolean;
   showRelatedInstitutions?: boolean;
   hasRelatedInstitutions?: boolean;
@@ -135,6 +169,8 @@ const props = withDefaults(defineProps<Props>(), {
   showReset: true,
   showRelatedInstitutions: true,
   hasRelatedInstitutions: false,
+  showActivityStatus: false,
+  showActivityStatusOption: false,
 });
 
 const emit = defineEmits<{
@@ -142,6 +178,7 @@ const emit = defineEmits<{
   'update:showOnlyWithActivity': [value: boolean];
   'update:showOnlyWithPublicMeetings': [value: boolean];
   'update:showDutyMembers': [value: boolean];
+  'update:showActivityStatus': [value: boolean];
   'update:showTenantHeaders': [value: boolean];
   'update:showRelatedInstitutions': [value: boolean];
   'reset': [];
@@ -181,5 +218,17 @@ function toggleTenant(tenantId: string, checked: boolean) {
     }
   }
   emit('update:selectedTenants', newSelection);
+}
+
+// Select all tenants
+function selectAllTenants() {
+  if (!props.tenants) return;
+  const allIds = props.tenants.map(t => String(t.id));
+  emit('update:selectedTenants', allIds);
+}
+
+// Deselect all tenants
+function deselectAllTenants() {
+  emit('update:selectedTenants', []);
 }
 </script>
