@@ -34,6 +34,23 @@ class Banner extends Model
 
     protected static function booted()
     {
+        static::creating(function (self $banner): void {
+            if ($banner->tenant_id === null) {
+                return;
+            }
+
+            if ($banner->order === null || self::query()
+                ->where('tenant_id', $banner->tenant_id)
+                ->where('order', $banner->order)
+                ->exists()) {
+                $maxOrder = self::query()
+                    ->where('tenant_id', $banner->tenant_id)
+                    ->max('order');
+
+                $banner->order = ($maxOrder ?? 0) + 1;
+            }
+        });
+
         static::saved(function ($banner) {
             Cache::tags(['banners', "tenant_{$banner->tenant_id}"])->flush();
         });
