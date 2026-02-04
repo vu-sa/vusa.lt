@@ -46,6 +46,7 @@ trait HasNotificationPreferences
         return [
             'channels' => $channels,
             'digest_frequency_hours' => 4, // Default: every 4 hours
+            'digest_emails' => [], // Empty means use default (duty email if exists, else user email)
             'muted_until' => null,
             'muted_threads' => [],
             'reminder_settings' => [
@@ -291,6 +292,94 @@ trait HasNotificationPreferences
     {
         $preferences = $this->notification_preferences;
         $preferences['reminder_settings']['calendar_reminder_hours'] = array_values(array_unique(array_filter($hours, fn ($h) => $h > 0)));
+
+        $this->update(['notification_preferences' => $preferences]);
+    }
+
+    /**
+     * Get all available email addresses the user can use for digests.
+     *
+     * Returns the user's personal email and all current duty emails.
+     *
+     * @return array<array{email: string, label: string, type: string}>
+     */
+    public function getAvailableDigestEmails(): array
+    {
+        $emails = [];
+
+        // User's personal email
+        $emails[] = [
+            'email' => $this->email,
+            'label' => $this->email.' (asmeninis)',
+            'type' => 'user',
+        ];
+
+        // Current duty emails
+        foreach ($this->current_duties()->get() as $duty) {
+            if (! empty($duty->email)) {
+                $emails[] = [
+                    'email' => $duty->email,
+                    'label' => $duty->email.' ('.$duty->name.')',
+                    'type' => 'duty',
+                ];
+            }
+        }
+
+        return $emails;
+    }
+
+    /**
+     * Get the email addresses to send notification digests to.
+     *
+     * Applies lazy cleanup: removes any emails that are no longer available
+     * (e.g., from duties that have ended).
+     *
+     * @return array<string>
+     */
+    public function getDigestEmails(): array
+    {
+        $preferences = $this->notification_preferences;
+        $configuredEmails = $preferences['digest_emails'] ?? [];
+        $availableEmails = collect($this->getAvailableDigestEmails())->pluck('email')->toArray();
+
+        // If no emails configured, use default behavior:
+        // - First @vusa.lt duty email if exists
+        // - Otherwise, user's personal email
+        if (empty($configuredEmails)) {
+            foreach ($this->current_duties()->get() as $duty) {
+                if (! empty($duty->email) && str_ends_with($duty->email, 'vusa.lt')) {
+                    return [$duty->email];
+                }
+            }
+
+            return [$this->email];
+        }
+
+        // Lazy cleanup: filter to only currently available emails
+        $validEmails = array_values(array_intersect($configuredEmails, $availableEmails));
+
+        // If all configured emails became invalid, fall back to default
+        if (empty($validEmails)) {
+            return [$this->email];
+        }
+
+        return $validEmails;
+    }
+
+    /**
+     * Set the email addresses to send notification digests to.
+     *
+     * @param  array<string>  $emails
+     */
+    public function setDigestEmails(array $emails): void
+    {
+        $availableEmails = collect($this->getAvailableDigestEmails())->pluck('email')->toArray();
+
+        // Only store valid emails
+        $validEmails = array_values(array_intersect($emails, $availableEmails));
+
+        $preferences = $this->notification_preferences;
+        $preferences['digest_emails'] = $validEmails;
 
         $this->update(['notification_preferences' => $preferences]);
     }

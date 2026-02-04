@@ -70,7 +70,8 @@ class ProcessNotificationDigests extends Command
 
             // Send the digest email
             try {
-                Mail::to($user)->send(new NotificationDigest($user, $groupedItems));
+                $digestEmails = $user->getDigestEmails();
+                Mail::to($digestEmails)->send(new NotificationDigest($user, $groupedItems));
 
                 // Delete processed items
                 NotificationDigestQueue::where('user_id', $userId)
@@ -78,7 +79,7 @@ class ProcessNotificationDigests extends Command
                     ->delete();
 
                 $sentCount++;
-                $this->info("Sent digest to {$user->email} with {$digestItems->count()} notifications.");
+                $this->info('Sent digest to '.implode(', ', $digestEmails)." with {$digestItems->count()} notifications.");
             } catch (\Exception $e) {
                 $this->error("Failed to send digest to {$user->email}: {$e->getMessage()}");
             }

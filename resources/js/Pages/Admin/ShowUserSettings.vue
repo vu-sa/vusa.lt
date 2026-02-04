@@ -144,6 +144,7 @@
             :notification-preferences="notificationPreferences"
             :notification-categories="notificationCategories"
             :notification-channels="notificationChannels"
+            :available-digest-emails="availableDigestEmails"
           />
 
           <h2>{{ $t("Tavo rolės") }}</h2>
@@ -202,6 +203,7 @@ const props = defineProps<{
   notificationPreferences: {
     channels: Record<string, Record<string, boolean>>;
     digest_frequency_hours: number;
+    digest_emails: string[];
     muted_until: string | null;
     muted_threads: Record<string, string[]>;
     reminder_settings: {
@@ -211,6 +213,7 @@ const props = defineProps<{
   };
   notificationCategories: Record<string, { value: string; modelEnumKey: string; color: string }>;
   notificationChannels: Record<string, { value: string; enabledByDefault: boolean }>;
+  availableDigestEmails: { email: string; label: string; type: 'user' | 'duty' }[];
 }>();
 
 const loading = ref(false);

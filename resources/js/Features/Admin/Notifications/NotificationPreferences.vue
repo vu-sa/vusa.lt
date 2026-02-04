@@ -58,6 +58,12 @@
         </div>
       </NFormItem>
 
+      <!-- Digest Email Selection -->
+      <DigestEmailSelector 
+        v-model="form.digest_emails" 
+        :available-emails="availableDigestEmails" 
+      />
+
       <!-- Category Channel Settings -->
       <div class="space-y-2">
         <h4 class="font-medium">{{ $t('notifications.preferences.category_settings') }}</h4>
@@ -169,6 +175,7 @@ import { router, useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import FormElement from '@/Components/AdminForms/FormElement.vue';
+import DigestEmailSelector from '@/Features/Admin/Notifications/DigestEmailSelector.vue';
 import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { ToggleGroup, ToggleGroupItem } from '@/Components/ui/toggle-group';
@@ -199,6 +206,7 @@ import IFluentCalendar24Regular from '~icons/fluent/calendar-24-regular';
 interface NotificationPreferences {
   channels: Record<string, Record<string, boolean>>;
   digest_frequency_hours: number;
+  digest_emails: string[];
   muted_until: string | null;
   muted_threads: Record<string, string[]>;
   reminder_settings: {
@@ -206,6 +214,12 @@ interface NotificationPreferences {
     meeting_reminder_hours: number[];
     calendar_reminder_hours: number[];
   };
+}
+
+interface EmailOption {
+  email: string;
+  label: string;
+  type: 'user' | 'duty';
 }
 
 interface CategoryOption {
@@ -223,6 +237,7 @@ const props = defineProps<{
   notificationPreferences: NotificationPreferences;
   notificationCategories: Record<string, CategoryOption>;
   notificationChannels: Record<string, ChannelOption>;
+  availableDigestEmails: EmailOption[];
 }>();
 
 const loading = ref(false);
@@ -231,6 +246,7 @@ const muteSelection = ref<string>('');
 const form = useForm({
   channels: { ...props.notificationPreferences.channels },
   digest_frequency_hours: props.notificationPreferences.digest_frequency_hours,
+  digest_emails: props.notificationPreferences.digest_emails || [],
   muted_until: props.notificationPreferences.muted_until,
   reminder_settings: { 
     task_reminder_days: props.notificationPreferences.reminder_settings?.task_reminder_days || [7, 3, 1],

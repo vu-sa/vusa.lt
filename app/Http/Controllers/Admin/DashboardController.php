@@ -453,6 +453,7 @@ class DashboardController extends AdminController
             'notificationPreferences' => $user->notification_preferences,
             'notificationCategories' => \App\Enums\NotificationCategory::toOptions(),
             'notificationChannels' => \App\Enums\NotificationChannel::toOptions(),
+            'availableDigestEmails' => $user->getAvailableDigestEmails(),
         ]);
     }
 
@@ -489,6 +490,8 @@ class DashboardController extends AdminController
             'channels.*' => 'nullable|array',
             'channels.*.*' => 'boolean',
             'digest_frequency_hours' => 'nullable|integer|min:1|max:24',
+            'digest_emails' => 'nullable|array',
+            'digest_emails.*' => 'email',
             'muted_until' => 'nullable|date',
             'reminder_settings' => 'nullable|array',
             'reminder_settings.task_reminder_days' => 'nullable|array',
@@ -507,6 +510,12 @@ class DashboardController extends AdminController
 
         if (isset($validated['digest_frequency_hours'])) {
             $preferences['digest_frequency_hours'] = $validated['digest_frequency_hours'];
+        }
+
+        if (array_key_exists('digest_emails', $validated)) {
+            // Validate against available emails (only store valid ones)
+            $availableEmails = collect($user->getAvailableDigestEmails())->pluck('email')->toArray();
+            $preferences['digest_emails'] = array_values(array_intersect($validated['digest_emails'] ?? [], $availableEmails));
         }
 
         if (array_key_exists('muted_until', $validated)) {
