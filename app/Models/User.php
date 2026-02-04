@@ -160,14 +160,14 @@ class User extends Authenticatable
 
     public function setImpersonateAuthorization(Authorization $authorization): void
     {
-        $authorization->impersonator(fn (User $user) => $user->hasRole(config('permission.super_admin_role_name')));
+        $authorization->impersonator(fn (User $user) => $user->isSuperAdmin());
 
         $authorization->impersonated(function ($impersonateResource) {
             if ($impersonateResource::class === ImpersonateResource::class) {
                 $impersonateResource = $impersonateResource->resource;
             }
 
-            return ! $impersonateResource->hasRole(config('permission.super_admin_role_name'));
+            return ! $impersonateResource->isSuperAdmin();
         });
     }
 
@@ -333,7 +333,6 @@ class User extends Authenticatable
         return $this->belongsToMany(Membership::class)->using(MembershipUser::class)->withTimestamps()->withPivot('start_date', 'end_date');
     }
 
-    // TODO: refactor to use the new method
     public function isSuperAdmin(): bool
     {
         return $this->hasRole(config('permission.super_admin_role_name'));

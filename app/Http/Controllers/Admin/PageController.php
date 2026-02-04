@@ -61,7 +61,7 @@ class PageController extends AdminController
         $tenant_id = null;
 
         // check if super admin, else set tenant_id
-        if (request()->user()->hasRole(config('permission.super_admin_role_name'))) {
+        if (request()->user()->isSuperAdmin()) {
             $tenant_id = Tenant::where('type', 'pagrindinis')->first()?->id;
         } else {
             $tenant_id = $this->authorizer->permissableDuties->first()?->tenants->first()?->id;
@@ -97,7 +97,7 @@ class PageController extends AdminController
 
         $page->load('tenant:id,alias,shortname');
 
-        $other_lang_pages = Page::with('tenant:id,shortname')->when(! request()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) use ($page) {
+        $other_lang_pages = Page::with('tenant:id,shortname')->when(! request()->user()->isSuperAdmin(), function ($query) use ($page) {
             $query->where('tenant_id', $page->tenant_id);
         })->where('lang', '!=', $page->lang)->select('id', 'title', 'tenant_id')->get();
 

@@ -257,7 +257,7 @@ class InstitutionController extends AdminController
         $institution->fill($request->safe()->except('tenant_id', 'types'));
 
         // check if super admin, then update tenant_id
-        if (auth()->user()->hasRole(config('permission.super_admin_role_name'))) {
+        if (auth()->user()->isSuperAdmin()) {
             $institution->fill($request->safe()->only('tenant_id'));
         }
 

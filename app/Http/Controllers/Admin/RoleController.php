@@ -85,7 +85,7 @@ class RoleController extends AdminController
         $role->load('permissions:id,name', 'duties:id,name');
 
         $tenantsWithDuties = Tenant::orderBy('shortname')->with('institutions:id,name,tenant_id', 'institutions.duties:id,name,institution_id')
-            ->when(! auth()->user()?->hasRole(config('permission.super_admin_role_name')), function ($query) {
+            ->when(! auth()->user()?->isSuperAdmin(), function ($query) {
                 $query->whereIn('id', User::find(Auth::id())->tenants->pluck('id'));
             })->get();
 

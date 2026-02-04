@@ -66,7 +66,7 @@ class QuickLinkController extends AdminController
             'link' => 'required',
         ]);
 
-        if (request()->user()->hasRole(config('permission.super_admin_role_name'))) {
+        if (request()->user()->isSuperAdmin()) {
             $tenant_id = Tenant::where('type', 'pagrindinis')->first()?->id;
         } else {
             $tenant_id = $this->authorizer->permissableDuties->first()?->tenants->first()?->id;

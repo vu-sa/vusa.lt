@@ -85,7 +85,7 @@ class UserDutyService
     {
         $currentUser = User::find(Auth::id());
 
-        if ($currentUser->hasRole(config('permission.super_admin_role_name'))) {
+        if ($currentUser->isSuperAdmin()) {
             return Tenant::all();
         }
 

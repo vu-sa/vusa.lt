@@ -69,7 +69,7 @@ class NewsController extends AdminController
         $tenant_id = null;
 
         // check if super admin, else set tenant_id
-        if (request()->user()->hasRole(config('permission.super_admin_role_name'))) {
+        if (request()->user()->isSuperAdmin()) {
             $tenant_id = Tenant::where('type', 'pagrindinis')->first()?->id;
         } else {
             $tenant_id = $this->authorizer->permissableDuties->first()?->tenants->first()?->id;
@@ -112,7 +112,7 @@ class NewsController extends AdminController
     {
         $this->handleAuthorization('update', $news);
 
-        $other_lang_pages = News::with('tenant:id,shortname')->when(! request()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) use ($news) {
+        $other_lang_pages = News::with('tenant:id,shortname')->when(! request()->user()->isSuperAdmin(), function ($query) use ($news) {
             $query->where('tenant_id', $news->tenant_id);
         })->where('lang', '!=', $news->lang)->select('id', 'title', 'tenant_id')->get();
 

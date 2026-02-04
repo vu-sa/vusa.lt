@@ -21,7 +21,7 @@ class GetAttachableTypesForDuty
         /** @var \App\Models\User $user */
         $user = auth()->user();
 
-        if ($user->hasRole(config('permission.super_admin_role_name'))) {
+        if ($user->isSuperAdmin()) {
             $types = Type::all();
         } else {
             $userWithDuties = User::query()->with('duties.roles.attachable_types')->find($user->id);

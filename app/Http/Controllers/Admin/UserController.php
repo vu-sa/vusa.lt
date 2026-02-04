@@ -85,7 +85,7 @@ class UserController extends AdminController
             }
 
             // check if user is super admin
-            if (User::find(Auth::id())->hasRole(config('permission.super_admin_role_name'))) {
+            if (User::find(Auth::id())->isSuperAdmin()) {
                 if ($request->has('roles')) {
                     $user->roles()->sync($request->roles);
                 } else {
@@ -147,7 +147,7 @@ class UserController extends AdminController
             $user->update($request->only('name', 'email', 'facebook_url', 'phone', 'profile_photo_path', 'pronouns', 'show_pronouns'));
 
             // check if user is super admin
-            if (User::find(Auth::id())->hasRole(config('permission.super_admin_role_name'))) {
+            if (User::find(Auth::id())->isSuperAdmin()) {
                 if ($request->has('roles')) {
                     $user->roles()->sync($request->roles);
                 } else {

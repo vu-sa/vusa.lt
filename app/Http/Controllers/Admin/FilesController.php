@@ -213,7 +213,7 @@ class FilesController extends AdminController
 
         if ($isTipTapUpload) {
             // TipTap uploads: use tenant-based content directory logic
-            if ($request->user()->hasRole(config('permission.super_admin_role_name'))) {
+            if ($request->user()->isSuperAdmin()) {
                 // Super admins always upload to global content directory
                 $path = 'files/content/'.date('Y/m');
             } elseif ($this->authorizer->getTenants()->count() > 0) {
@@ -504,7 +504,7 @@ class FilesController extends AdminController
      */
     protected function resolveTipTapDirectory($user): string
     {
-        if ($user->hasRole(config('permission.super_admin_role_name'))) {
+        if ($user->isSuperAdmin()) {
             return 'files/content/'.date('Y/m');
         }
 
