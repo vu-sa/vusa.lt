@@ -75,7 +75,7 @@ class ContentPart extends Model
         }
 
         // Use updated_at timestamp in cache key for automatic invalidation on edit
-        $cacheKey = "content_part_html_{$this->id}_{$this->updated_at?->timestamp}";
+        $cacheKey = "content_part_html_{$this->id}_{$this->updated_at->timestamp}";
 
         return Cache::remember($cacheKey, 86400, function () {
             return $this->renderTiptapHtml();
@@ -91,7 +91,7 @@ class ContentPart extends Model
             $editor = new TiptapEditor;
 
             // Convert ArrayObject to plain array for TipTap PHP compatibility
-            $content = $this->json_content?->toArray() ?? [];
+            $content = $this->json_content->toArray();
 
             return $editor->setContent($content)->getHTML();
         } catch (\Throwable $e) {
@@ -107,7 +107,7 @@ class ContentPart extends Model
      */
     public function clearHtmlCache(): void
     {
-        $cacheKey = "content_part_html_{$this->id}_{$this->updated_at?->timestamp}";
+        $cacheKey = "content_part_html_{$this->id}_{$this->updated_at->timestamp}";
         Cache::forget($cacheKey);
     }
 

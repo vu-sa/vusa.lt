@@ -85,9 +85,10 @@ class AgendaItemController extends AdminController
         $updatedVoteIds = [];
 
         foreach ($votes as $voteData) {
-            if (isset($voteData['id']) && $voteData['id'] !== null) {
+            $voteId = $voteData['id'] ?? null;
+            if ($voteId !== null) {
                 // Update existing vote
-                $vote = Vote::find($voteData['id']);
+                $vote = Vote::find($voteId);
                 if ($vote && $vote->agenda_item_id === $agendaItem->id) {
                     $vote->update([
                         'is_main' => $voteData['is_main'] ?? false,
@@ -99,7 +100,7 @@ class AgendaItemController extends AdminController
                         'note' => $voteData['note'] ?? null,
                         'order' => $voteData['order'] ?? 0,
                     ]);
-                    $updatedVoteIds[] = $vote->id;
+                    $updatedVoteIds[] = (string) $vote->getKey();
                 }
             } else {
                 // Create new vote
@@ -113,7 +114,7 @@ class AgendaItemController extends AdminController
                     'note' => $voteData['note'] ?? null,
                     'order' => $voteData['order'] ?? 0,
                 ]);
-                $updatedVoteIds[] = $vote->id;
+                $updatedVoteIds[] = (string) $vote->getKey();
             }
         }
 

@@ -35,16 +35,20 @@ class Banner extends Model
     protected static function booted()
     {
         static::creating(function (self $banner): void {
-            if ($banner->tenant_id === null) {
+            $tenantId = data_get($banner, 'tenant_id');
+
+            if ($tenantId === null) {
                 return;
             }
 
-            if ($banner->order === null || self::query()
-                ->where('tenant_id', $banner->tenant_id)
-                ->where('order', $banner->order)
+            $order = data_get($banner, 'order');
+
+            if ($order === null || self::query()
+                ->where('tenant_id', $tenantId)
+                ->where('order', $order)
                 ->exists()) {
                 $maxOrder = self::query()
-                    ->where('tenant_id', $banner->tenant_id)
+                    ->where('tenant_id', $tenantId)
                     ->max('order');
 
                 $banner->order = ($maxOrder ?? 0) + 1;

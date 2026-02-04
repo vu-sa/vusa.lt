@@ -270,7 +270,7 @@ class DutyService
         ];
 
         // Categorize users for frontend display
-        $categorizedUsers = $users->map(function ($user) use ($today, $sevenDaysAgo, $thirtyDaysAgo) {
+        $categorizedUsers = $users->map(function (\App\Models\User $user) use ($today, $sevenDaysAgo, $thirtyDaysAgo) {
             $lastAction = $user->last_action;
 
             // Determine activity category
@@ -294,11 +294,26 @@ class DutyService
                 'profile_photo_path' => $user->profile_photo_path,
                 'last_action' => $lastAction?->toISOString(),
                 'category' => $category,
-                'duties' => $user->current_duties->map(fn ($duty) => [
-                    'id' => $duty->id,
-                    'name' => $duty->name,
-                    'institution_name' => $duty->institution?->name,
-                ])->values(),
+                'duties' => $user->current_duties->map(function ($duty) {
+                    /** @var array|string|null $dutyName */
+                    $dutyName = data_get($duty, 'name');
+                    /** @var array|string|null $institutionName */
+                    $institutionName = data_get($duty, 'institution.name');
+
+                    if ($dutyName === '') {
+                        $dutyName = null;
+                    }
+
+                    if ($institutionName === '') {
+                        $institutionName = null;
+                    }
+
+                    return [
+                        'id' => $duty->id,
+                        'name' => $dutyName,
+                        'institution_name' => $institutionName,
+                    ];
+                })->values()->all(),
             ];
         })
             ->sortBy(function ($user) {
@@ -313,7 +328,7 @@ class DutyService
 
         return [
             'stats' => $stats,
-            'users' => $categorizedUsers,
+            'users' => $categorizedUsers->all(),
         ];
     }
 

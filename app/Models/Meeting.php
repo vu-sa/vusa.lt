@@ -391,7 +391,8 @@ class Meeting extends Model implements SharepointFileableContract
         // Check if all voting agenda items have at least one complete vote
         $allComplete = $agendaItems->every(function ($item) {
             // Informational items don't need votes
-            if ($item->type?->value === 'informational') {
+            $type = $item->getAttribute('type');
+            if ($type instanceof \App\Enums\AgendaItemType && $type->value === 'informational') {
                 return true;
             }
 

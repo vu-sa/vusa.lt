@@ -66,16 +66,6 @@ class News extends Model implements Feedable, Sitemapable
 
     public $fallback_image = '/images/icons/naujienu_foto.png';
 
-    /**
-     * Create a new Eloquent Collection instance.
-     *
-     * @param  array<int, News>  $models
-     */
-    public function newCollection(array $models = []): \App\Collections\NewsCollection
-    {
-        return new \App\Collections\NewsCollection($models);
-    }
-
     protected function casts(): array
     {
         return [

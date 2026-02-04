@@ -197,7 +197,9 @@ class Vote extends Model
 
         // Set order on creation
         static::creating(function (Vote $vote) {
-            if ($vote->order === 0 || $vote->order === null) {
+            $order = $vote->getAttribute('order');
+
+            if ($order === 0 || $order === null) {
                 $maxOrder = static::where('agenda_item_id', $vote->agenda_item_id)->max('order') ?? -1;
                 $vote->order = $maxOrder + 1;
             }

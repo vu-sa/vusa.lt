@@ -208,7 +208,7 @@ class ContactController extends PublicController
         // Use the institution's tenant for proper canonical URL
         $seo = $this->shareAndReturnSEOObject(
             contentTenant: $institution->tenant,
-            title: $title.' - '.($institution->tenant?->shortname ?? $this->tenant->shortname),
+            title: $title.' - '.$institution->tenant->shortname,
             description: Str::limit(strip_tags($institution->description), 160),
             image: $institution->image_url,
         );

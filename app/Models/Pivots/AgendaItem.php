@@ -136,10 +136,10 @@ class AgendaItem extends Pivot
             'votes',
         ]);
 
-        $meeting = $this->meeting;
+        $meeting = $this->getRelation('meeting');
 
         // Handle orphaned agenda items (meeting was deleted)
-        if ($meeting === null) {
+        if (! $meeting instanceof Meeting) {
             return [];
         }
 
@@ -164,10 +164,14 @@ class AgendaItem extends Pivot
         $institution = $meeting->institutions->first();
 
         // Get main vote for backward-compatible fields
+        /** @var Vote|null $mainVote */
         $mainVote = $this->votes->firstWhere('is_main', true);
 
         // Calculate vote statistics from all votes
         $voteStats = $this->calculateVoteStatistics();
+
+        $type = $this->getAttribute('type');
+        $typeValue = $type instanceof AgendaItemType ? $type->value : 'voting';
 
         return [
             'id' => $this->id,
@@ -176,7 +180,7 @@ class AgendaItem extends Pivot
             'order' => $this->order,
 
             // New fields
-            'type' => $this->type?->value ?? 'voting',
+            'type' => $typeValue,
             'student_position' => $this->student_position,
             'brought_by_students' => (bool) $this->brought_by_students,
 
@@ -286,6 +290,7 @@ class AgendaItem extends Pivot
         }
 
         // Prefer main vote status if available
+        /** @var Vote|null $mainVote */
         $mainVote = $votes->firstWhere('is_main', true);
         if ($mainVote) {
             return $mainVote->vote_alignment_status;

@@ -17,7 +17,7 @@ class NewsCollection extends Collection
      * Transform news items to a public-facing format with resolved image URLs.
      * Used for API responses and Inertia props.
      *
-     * @return \Illuminate\Support\Collection<int, array{
+     * @return array<int, array{
      *     id: int,
      *     title: string,
      *     lang: string,
@@ -27,7 +27,7 @@ class NewsCollection extends Collection
      *     image: string
      * }>
      */
-    public function toPublicArray(): \Illuminate\Support\Collection
+    public function toPublicArray(): array
     {
         return $this->map(fn (News $item) => [
             'id' => $item->id,
@@ -37,7 +37,7 @@ class NewsCollection extends Collection
             'publish_time' => $item->publish_time,
             'permalink' => $item->permalink,
             'image' => $item->getImageUrl(),
-        ]);
+        ])->values()->all();
     }
 
     /**
@@ -59,7 +59,7 @@ class NewsCollection extends Collection
      */
     public static function getPublishedForTenant(int $tenantId, string $lang, int $limit = 5): self
     {
-        return News::query()
+        $news = News::query()
             ->where('tenant_id', $tenantId)
             ->where('lang', $lang)
             ->where('draft', false)
@@ -67,5 +67,7 @@ class NewsCollection extends Collection
             ->orderByDesc('publish_time')
             ->take($limit)
             ->get(['id', 'title', 'lang', 'short', 'publish_time', 'permalink', 'image']);
+
+        return new self($news->all());
     }
 }

@@ -88,7 +88,7 @@ class PublicPageController extends PublicController
         $seo = $this->shareAndReturnSEOObject(contentTenant: $this->tenant, title: __('Pagrindinis puslapis').' - '.$this->tenant->shortname);
 
         // Get first news image URL for LCP preload hint
-        $firstNewsImageUrl = $news->first()['image'] ?? null;
+        $firstNewsImageUrl = $news[0]['image'] ?? null;
 
         return Inertia::render('Public/HomePage', [
             'content' => $content,
@@ -162,7 +162,7 @@ class PublicPageController extends PublicController
         // Use the page's tenant for proper canonical URL
         $seo = $this->shareAndReturnSEOObject(
             contentTenant: $page->tenant,
-            title: $page->title.' - '.($page->tenant?->shortname ?? $this->tenant->shortname),
+            title: $page->title.' - '.$page->tenant->shortname,
             description: ContentHelper::getDescriptionForSeo($page),
         );
 
@@ -617,7 +617,7 @@ class PublicPageController extends PublicController
         // Use the calendar event's tenant for proper canonical URL
         $seo = $this->shareAndReturnSEOObject(
             contentTenant: $calendar->tenant,
-            title: $calendar->title.' - '.($calendar->tenant?->shortname ?? $this->tenant->shortname),
+            title: $calendar->title.' - '.$calendar->tenant->shortname,
             // Replace " with empty string, because it breaks JSON-LD
             description: app()->getLocale() === 'lt' ? Str::of((strip_tags($calendar->description)))->limit(160)->replaceMatches(pattern: '/\"/', replace: '') : Str::of((strip_tags($calendar->description)))->limit(160)->replaceMatches(pattern: '/\"/', replace: ''),
             image: $calendar->getFirstMediaUrl('images'),

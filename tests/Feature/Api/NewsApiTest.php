@@ -69,6 +69,7 @@ describe('news API image fallback', function () {
                 ],
             ])
             ->assertJsonPath('data.0.title', 'Test News Title')
+            ->assertJsonPath('data.0.short', 'Test short description')
             ->assertJsonPath('data.0.permalink', 'test-news-permalink');
     });
 });

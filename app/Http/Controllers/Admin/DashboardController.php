@@ -556,10 +556,8 @@ class DashboardController extends AdminController
         } else {
             // Incomplete/all: overdue first, then by due date, then by creation date
             $tasksQuery
-                ->when($status !== 'completed', function ($query) {
-                    // Put incomplete tasks first when showing all
-                    $query->orderByRaw('completed_at IS NOT NULL');
-                })
+                // Put incomplete tasks first when showing all
+                ->orderByRaw('completed_at IS NOT NULL')
                 ->orderByRaw('CASE WHEN due_date IS NOT NULL AND due_date < ? THEN 0 ELSE 1 END', [now()])
                 ->orderBy('due_date')
                 ->latest('created_at');
