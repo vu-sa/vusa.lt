@@ -143,6 +143,7 @@ export default defineConfig({
         '**/*.test.ts',
         '**/*.component.test.ts',
         '**/*.stories.ts',
+        'resources/js/Components/NavMain.vue',
       ],
       thresholds: {
         global: {

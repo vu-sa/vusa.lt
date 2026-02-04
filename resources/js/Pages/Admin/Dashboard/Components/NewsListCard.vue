@@ -23,7 +23,7 @@
     <CardContent class="flex-1 relative z-10 pt-0">
       <div class="flex flex-col space-y-1">
         <a v-for="news in newsList" :key="news.id" :href="route('news', {
-          subdomain: news.tenant?.alias ?? $page.props.tenant?.subdomain
+          subdomain: $page.props.tenant?.subdomain
             ?? 'www',
           lang: news.lang,
           newsString: locale === 'lt' ? 'naujiena' : 'news',
