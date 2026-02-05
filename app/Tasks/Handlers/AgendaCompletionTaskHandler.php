@@ -2,6 +2,7 @@
 
 namespace App\Tasks\Handlers;
 
+use App\Enums\AgendaItemType;
 use App\Models\Meeting;
 use App\Models\Task;
 use App\Models\User;
@@ -172,7 +173,7 @@ class AgendaCompletionTaskHandler extends BaseTaskHandler
             }
 
             // Informational and deferred items are complete without votes
-            if ($item->type === 'informational' || $item->type === 'deferred') {
+            if ($item->type === AgendaItemType::Informational || $item->type === AgendaItemType::Deferred) {
                 return true;
             }
 
@@ -199,9 +200,9 @@ class AgendaCompletionTaskHandler extends BaseTaskHandler
         $agendaItems = $meeting->agendaItems()->get();
 
         return [
-            'voting' => $agendaItems->where('type', 'voting')->count(),
-            'informational' => $agendaItems->where('type', 'informational')->count(),
-            'deferred' => $agendaItems->where('type', 'deferred')->count(),
+            'voting' => $agendaItems->where('type', AgendaItemType::Voting)->count(),
+            'informational' => $agendaItems->where('type', AgendaItemType::Informational)->count(),
+            'deferred' => $agendaItems->where('type', AgendaItemType::Deferred)->count(),
             'unset' => $agendaItems->whereNull('type')->count(),
         ];
     }
@@ -218,7 +219,7 @@ class AgendaCompletionTaskHandler extends BaseTaskHandler
 
         foreach ($agendaItems as $item) {
             // Check if any voting item is incomplete
-            if ($item->type === 'voting') {
+            if ($item->type === AgendaItemType::Voting) {
                 $mainVote = $item->votes->firstWhere('is_main', true);
 
                 if (! $mainVote) {

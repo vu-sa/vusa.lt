@@ -27,4 +27,10 @@ return [
     'status_deferred_admin_help' => 'Klausimo svarstymas atidėtas kitam posėdžiui. Pasirinkite tipą "Atidėtas".',
     'status_informational_admin_help' => 'Informacinio pobūdžio klausimas, kuriame nėra balsavimo. Pasirinkite tipą "Informacinis".',
     'status_unset_admin_help' => 'Klausimo tipas dar nenurodytas. Būtinai pasirinkite atitinkamą tipą!',
+
+    // Agenda item type tooltips
+    'type_voting_tooltip' => 'Klausimas, dėl kurio buvo balsuojama. Reikia užpildyti balsavimo rezultatus (sprendimą, studentų balsą ir palankumą studentams).',
+    'type_deferred_tooltip' => 'Klausimo svarstymas atidėtas kitam posėdžiui. Balsavimo duomenų pildyti nereikia.',
+    'type_informational_tooltip' => 'Informacinio pobūdžio klausimas be balsavimo. Balsavimo duomenų pildyti nereikia.',
+    'main_vote_required_tooltip' => 'Pagrindinis balsavimas yra privalomas balsavimo tipo klausimams. Jo pašalinti negalima.',
 ];

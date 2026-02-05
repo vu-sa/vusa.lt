@@ -94,7 +94,7 @@ return [
     'admin_home' => [
         'welcome' => [
             'title' => 'Sveiki atvykę į Mano VU SA!',
-            'description' => 'Tai yra jūsų <strong>pagrindinis darbalaukis</strong>, kuriame rasite svarbiausius įrankius ir informaciją. Leiskite trumpai supažindinti su pagrindinėmis funkcijomis.',
+            'description' => 'Mano VU SA atsinaujino!<br><br>Tai yra jūsų <strong>pagrindinis darbalaukis</strong>, kuriame rasite svarbiausius įrankius ir informaciją. Leiskite trumpai supažindinti su pagrindinėmis funkcijomis.',
         ],
         'meetings_card' => [
             'title' => 'Artėjantys susitikimai',

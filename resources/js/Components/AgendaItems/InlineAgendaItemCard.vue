@@ -96,33 +96,60 @@
           <!-- Type Toggle -->
           <div class="flex flex-wrap items-center gap-2">
             <span class="text-xs text-zinc-600 dark:text-zinc-400 mr-1">{{ $t('Klausimo tipas') }}</span>
-            <Button
-              type="button"
-              :variant="localType === 'voting' ? 'default' : 'outline'"
-              size="sm"
-              class="h-8 px-3"
-              @click="setType('voting')"
-            >
-              {{ $t('Balsavimas') }}
-            </Button>
-            <Button
-              type="button"
-              :variant="localType === 'deferred' ? 'default' : 'outline'"
-              size="sm"
-              class="h-8 px-3"
-              @click="setType('deferred')"
-            >
-              {{ $t('Atidėtas') }}
-            </Button>
-            <Button
-              type="button"
-              :variant="localType === 'informational' ? 'default' : 'outline'"
-              size="sm"
-              class="h-8 px-3"
-              @click="setType('informational')"
-            >
-              {{ $t('Informacinis') }}
-            </Button>
+            <TooltipProvider :delay-duration="300">
+              <Tooltip>
+                <TooltipTrigger as-child>
+                  <Button
+                    type="button"
+                    :variant="localType === 'voting' ? 'default' : 'outline'"
+                    size="sm"
+                    class="h-8 px-3"
+                    @click="setType('voting')"
+                  >
+                    {{ $t('Balsavimas') }}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" class="max-w-64">
+                  <p class="text-xs">{{ $t('voting.type_voting_tooltip') }}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <TooltipProvider :delay-duration="300">
+              <Tooltip>
+                <TooltipTrigger as-child>
+                  <Button
+                    type="button"
+                    :variant="localType === 'deferred' ? 'default' : 'outline'"
+                    size="sm"
+                    class="h-8 px-3"
+                    @click="setType('deferred')"
+                  >
+                    {{ $t('Atidėtas') }}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" class="max-w-64">
+                  <p class="text-xs">{{ $t('voting.type_deferred_tooltip') }}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <TooltipProvider :delay-duration="300">
+              <Tooltip>
+                <TooltipTrigger as-child>
+                  <Button
+                    type="button"
+                    :variant="localType === 'informational' ? 'default' : 'outline'"
+                    size="sm"
+                    class="h-8 px-3"
+                    @click="setType('informational')"
+                  >
+                    {{ $t('Informacinis') }}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" class="max-w-64">
+                  <p class="text-xs">{{ $t('voting.type_informational_tooltip') }}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             <!-- Clear type button -->
             <Button
               v-if="localType"
@@ -177,10 +204,27 @@
                     {{ vote.title || $t('+ Pridėti pavadinimą') }}
                   </button>
                 </div>
-                <!-- Delete button: for voting type, main vote can only be deleted if it's the only vote -->
-                <!-- For deferred type, any vote can be deleted -->
+                <!-- Delete button: for voting type, main vote can never be deleted -->
+                <!-- For deferred/informational type, any vote can be deleted -->
+                <TooltipProvider v-if="vote.is_main && localType === 'voting'" :delay-duration="200">
+                  <Tooltip>
+                    <TooltipTrigger as-child>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        class="h-6 w-6 text-zinc-300 dark:text-zinc-600 cursor-not-allowed"
+                        disabled
+                      >
+                        <X class="h-3.5 w-3.5" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="left">
+                      <p class="text-xs max-w-48">{{ $t('voting.main_vote_required_tooltip') }}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
                 <Button
-                  v-if="canDeleteVote(vote)"
+                  v-else-if="canDeleteVote(vote)"
                   variant="ghost"
                   size="icon"
                   class="h-6 w-6 text-zinc-400 hover:text-destructive"
@@ -830,7 +874,7 @@ const removeVote = (index: number) => {
 /**
  * Determine if a vote can be deleted.
  * - For deferred/informational type: any vote can be deleted (no main vote concept)
- * - For voting type: main vote can only be deleted if it's the only vote
+ * - For voting type: main vote can NEVER be deleted (it's required for completion)
  *   (additional votes can always be deleted)
  */
 const canDeleteVote = (vote: App.Entities.Vote): boolean => {
@@ -841,9 +885,9 @@ const canDeleteVote = (vote: App.Entities.Vote): boolean => {
 
   // For voting type:
   // - If this is NOT the main vote, it can be deleted
-  // - If this IS the main vote, it can only be deleted if it's the only vote
-  if (vote.is_main) {
-    return localVotes.value.length === 1;
+  // - If this IS the main vote, it can NEVER be deleted
+  if (vote.is_main && localType.value === 'voting') {
+    return false;
   }
 
   return true;

@@ -23,7 +23,7 @@ class AgendaItemFactory extends Factory
             'title' => $this->faker->sentence,
             'order' => $this->faker->numberBetween(1, 10),
             'description' => $this->faker->optional()->paragraph,
-            'type' => AgendaItemType::Informational,
+            'type' => null, // Default to unset type, requiring user to select
         ];
     }
 

@@ -27,4 +27,10 @@ return [
     'status_deferred_admin_help' => 'The discussion of this item was postponed to another meeting. Select type "Deferred".',
     'status_informational_admin_help' => 'An informational item with no voting involved. Select type "Informational".',
     'status_unset_admin_help' => 'The item type has not been specified yet. Make sure to select the appropriate type!',
+
+    // Agenda item type tooltips
+    'type_voting_tooltip' => 'An item that was voted on. You need to fill in the voting results (decision, student vote, and student benefit).',
+    'type_deferred_tooltip' => 'The discussion of this item was postponed to another meeting. No voting data required.',
+    'type_informational_tooltip' => 'An informational item with no voting. No voting data required.',
+    'main_vote_required_tooltip' => 'The main vote is required for voting type items and cannot be removed.',
 ];

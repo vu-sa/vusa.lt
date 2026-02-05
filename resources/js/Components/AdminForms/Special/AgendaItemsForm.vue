@@ -60,9 +60,9 @@
                       }}</span>
                       <div class="flex-1 space-y-2">
                         <FormControl>
-                          <Textarea 
+                          <Textarea
                             ref="questionTextareas"
-                            v-model="(field as any).value" 
+                            v-model="(field as any).value"
                             :placeholder="`Darbotvarkės klausimas nr. ${index + 1}`"
                             class="min-h-9 resize-none overflow-hidden py-2"
                             :rows="1"
@@ -73,9 +73,9 @@
                         <!-- Optional description for agenda items (per-item toggle) -->
                         <div v-if="itemDescriptionsVisible[field.key]" class="relative">
                           <FormControl>
-                            <Textarea 
+                            <Textarea
                               v-model="itemDescriptions[field.key]"
-                              :placeholder="$t('Papildomas aprašymas (neprivalomas)')" 
+                              :placeholder="$t('Papildomas aprašymas (neprivalomas)')"
                               class="text-sm resize-none min-h-16 overflow-hidden"
                               :rows="2"
                               @input="autoResizeTextarea($event)" />
@@ -87,10 +87,10 @@
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger as-child>
-                              <Button 
-                                type="button" 
-                                :variant="itemDescriptionsVisible[field.key] ? 'secondary' : 'ghost'" 
-                                size="icon" 
+                              <Button
+                                type="button"
+                                :variant="itemDescriptionsVisible[field.key] ? 'secondary' : 'ghost'"
+                                size="icon"
                                 class="h-6 w-6"
                                 :class="itemDescriptionsVisible[field.key] ? '' : 'opacity-50 hover:opacity-100'"
                                 @click="itemDescriptionsVisible[field.key] = !itemDescriptionsVisible[field.key]">
@@ -112,10 +112,10 @@
                           :is-dismissed="!studentBroughtSpotlight.isVisible.value"
                           @dismiss="studentBroughtSpotlight.dismiss"
                         >
-                          <Button 
-                            type="button" 
-                            :variant="broughtByStudentsFlags[field.key] ? 'default' : 'ghost'" 
-                            size="icon" 
+                          <Button
+                            type="button"
+                            :variant="broughtByStudentsFlags[field.key] ? 'default' : 'ghost'"
+                            size="icon"
                             class="h-6 w-6"
                             :class="broughtByStudentsFlags[field.key] ? 'bg-vusa-red hover:bg-vusa-red/90' : 'opacity-50 hover:opacity-100'"
                             @click="broughtByStudentsFlags[field.key] = !broughtByStudentsFlags[field.key]">
@@ -125,10 +125,10 @@
                         <TooltipProvider v-else>
                           <Tooltip>
                             <TooltipTrigger as-child>
-                              <Button 
-                                type="button" 
-                                :variant="broughtByStudentsFlags[field.key] ? 'default' : 'ghost'" 
-                                size="icon" 
+                              <Button
+                                type="button"
+                                :variant="broughtByStudentsFlags[field.key] ? 'default' : 'ghost'"
+                                size="icon"
                                 class="h-6 w-6"
                                 :class="broughtByStudentsFlags[field.key] ? 'bg-vusa-red hover:bg-vusa-red/90' : 'opacity-50 hover:opacity-100'"
                                 @click="broughtByStudentsFlags[field.key] = !broughtByStudentsFlags[field.key]">
@@ -194,7 +194,7 @@
 
                   <FormControl>
                     <Textarea v-model="questionInputInTextArea"
-                      :placeholder="$page.props.app.locale === 'lt' ? 'Kiekvienas klausimas turi būti iš naujos eilutės, pvz.:\n\n1. Praėjusio posėdžio protokolo tvirtinimas\n2. Einamųjų reikalų aptarimas\n3. Ateities planų pristatymas\n4. Kiti klausimai' : 'Every question must begin from new line, e.g.\n\n1. Previous meeting protocol approval\n2. Current affairs discussion\n3. Future plans presentation\n4. Other questions'"
+                      :placeholder="$page.props.app.locale === 'lt' ? 'Kiekvienas klausimas turi būti iš naujos eilutės, pvz.:\n\nPraėjusio posėdžio protokolo tvirtinimas\nEinamųjų reikalų aptarimas\nAteities planų pristatymas\nKiti klausimai' : 'Every question must begin from new line, e.g.\n\nPrevious meeting protocol approval\nCurrent affairs discussion\nFuture plans presentation\nOther questions'"
                       class="w-full font-mono text-sm" :rows="8" />
                   </FormControl>
 
@@ -224,8 +224,8 @@
                     <!-- Option 1: From previous meeting (disabled if no templates) -->
                     <button type="button"
                       class="flex flex-col items-center gap-3 p-6 rounded-lg border-2 border-dashed transition-all group"
-                      :class="recentTemplates.length > 0 
-                        ? 'hover:border-primary hover:bg-muted/50 cursor-pointer' 
+                      :class="recentTemplates.length > 0
+                        ? 'hover:border-primary hover:bg-muted/50 cursor-pointer'
                         : 'opacity-50 cursor-not-allowed'"
                       :disabled="recentTemplates.length === 0"
                       @click="recentTemplates.length > 0 && showPreviousMeetingSelector()">
@@ -233,8 +233,8 @@
                       <div class="text-center">
                         <p class="font-medium">{{ $t('Naudoti ankstesnį') }}</p>
                         <p class="text-xs text-muted-foreground mt-1">
-                          {{ recentTemplates.length > 0 
-                            ? $t('Pasirinkti iš praėjusių posėdžių') 
+                          {{ recentTemplates.length > 0
+                            ? $t('Pasirinkti iš praėjusių posėdžių')
                             : $t('Nėra ankstesnių posėdžių') }}
                         </p>
                       </div>
@@ -441,7 +441,7 @@ const itemDescriptions = ref<Record<string, string>>({});
 const currentFieldKeys = ref<string[]>([]);
 
 // Computed properties
-const recentTemplates = computed(() => 
+const recentTemplates = computed(() =>
   getTemplatesForInstitution(props.institutionId).slice(0, 5)
 );
 
@@ -484,7 +484,7 @@ const addNewItem = (index: number, push: Function) => {
 // Handle Enter key: focus next if not last, create new if last
 const handleEnterKey = (index: number, totalFields: number, push: Function) => {
   const isLastItem = index === totalFields - 1;
-  
+
   if (isLastItem) {
     // On last item, create a new one
     addNewItem(index + 1, push);
@@ -603,10 +603,10 @@ const onSubmit = (values: any) => {
       key: currentFieldKeys.value[index],
     }))
     .filter((item: { title: string }) => item.title.trim() !== '');
-  
+
   const formData = {
     agendaItemTitles: itemsWithKeys.map((item: { title: string }) => item.title),
-    broughtByStudentsFlags: itemsWithKeys.map((item: { key: string }) => 
+    broughtByStudentsFlags: itemsWithKeys.map((item: { key: string }) =>
       broughtByStudentsFlags.value[item.key] || false
     ),
     descriptions: itemsWithKeys.map((item: { key: string }) =>

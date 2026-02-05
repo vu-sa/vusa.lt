@@ -1,5 +1,66 @@
 <template>
   <div class="space-y-4">
+    <!-- Help Section - Collapsible -->
+    <Collapsible v-model:open="showHelp">
+      <div class="rounded-xl border border-blue-200 dark:border-blue-800/50 bg-blue-50/50 dark:bg-blue-900/20">
+        <CollapsibleTrigger as-child>
+          <button
+            type="button"
+            class="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-blue-100/50 dark:hover:bg-blue-800/20 transition-colors rounded-t-xl"
+            :class="{ 'rounded-b-xl': !showHelp }"
+          >
+            <div class="flex items-center gap-2">
+              <HelpCircle class="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              <span class="text-sm font-medium text-blue-900 dark:text-blue-100">{{ $t('voting.help_title') }}</span>
+            </div>
+            <ChevronDown
+              class="h-4 w-4 text-blue-600 dark:text-blue-400 transition-transform"
+              :class="{ 'rotate-180': showHelp }"
+            />
+          </button>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <div class="px-4 pb-4 space-y-3">
+            <p class="text-sm text-blue-800 dark:text-blue-200">{{ $t('voting.help_agenda_status_description') }}</p>
+
+            <!-- Type explanations -->
+            <div class="space-y-2">
+              <div class="flex items-start gap-2">
+                <div class="w-2 h-2 rounded-full bg-green-500 mt-1.5 shrink-0" />
+                <div>
+                  <span class="text-sm font-medium text-zinc-900 dark:text-zinc-100">{{ $t('Balsavimas') }}</span>
+                  <p class="text-xs text-zinc-600 dark:text-zinc-400">{{ $t('voting.type_voting_tooltip') }}</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-2">
+                <div class="w-2 h-2 rounded-full bg-zinc-400 mt-1.5 shrink-0" />
+                <div>
+                  <span class="text-sm font-medium text-zinc-900 dark:text-zinc-100">{{ $t('Atidėtas') }}</span>
+                  <p class="text-xs text-zinc-600 dark:text-zinc-400">{{ $t('voting.type_deferred_tooltip') }}</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-2">
+                <div class="w-2 h-2 rounded-full bg-zinc-300 dark:bg-zinc-600 mt-1.5 shrink-0" />
+                <div>
+                  <span class="text-sm font-medium text-zinc-900 dark:text-zinc-100">{{ $t('Informacinis') }}</span>
+                  <p class="text-xs text-zinc-600 dark:text-zinc-400">{{ $t('voting.type_informational_tooltip') }}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tips -->
+            <div class="pt-2 border-t border-blue-200 dark:border-blue-800/50">
+              <p class="text-xs font-medium text-blue-800 dark:text-blue-200 mb-1">{{ $t('voting.help_tips_title') }}:</p>
+              <ul class="text-xs text-blue-700 dark:text-blue-300 space-y-0.5 list-disc list-inside">
+                <li>{{ $t('voting.help_tip_1') }}</li>
+                <li>{{ $t('voting.help_tip_2') }}</li>
+              </ul>
+            </div>
+          </div>
+        </CollapsibleContent>
+      </div>
+    </Collapsible>
+
     <!-- Agenda Summary Section -->
     <div class="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
       <!-- Header -->
@@ -103,14 +164,15 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ChevronRight, ClipboardList, FileText, Upload } from 'lucide-vue-next';
+import { ChevronDown, ChevronRight, ClipboardList, FileText, HelpCircle, Upload } from 'lucide-vue-next';
 
 import MeetingNavigationCards from './MeetingNavigationCards.vue';
 
 import VoteSelectionBadge from '@/Components/AgendaItems/VoteSelectionBadge.vue';
 import { Button } from '@/Components/ui/button';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Components/ui/collapsible';
 import { useMeetingUrgency } from '@/Composables/useMeetingUrgency';
 import { useAgendaItemStyling } from '@/Composables/useAgendaItemStyling';
 
@@ -137,6 +199,9 @@ defineEmits<{
 // Use composables
 const { hasProtocol, hasReport } = useMeetingUrgency(() => props.meeting);
 const styling = useAgendaItemStyling();
+
+// State
+const showHelp = ref(false);
 
 // Constants
 const MAX_DISPLAY_VOTES = 3;
