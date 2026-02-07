@@ -3,30 +3,64 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\AdminController;
+use App\Http\Requests\IndexTenantRequest;
 use App\Http\Requests\StoreTenantRequest;
 use App\Http\Requests\UpdateContentRequest;
 use App\Http\Requests\UpdateTenantRequest;
+use App\Http\Traits\HasTanstackTables;
 use App\Models\Content;
 use App\Models\Institution;
 use App\Models\Tenant;
 use App\Services\ModelAuthorizer as Authorizer;
+use App\Services\TanstackTableService;
+use Illuminate\Support\Facades\Cache;
 
 class TenantController extends AdminController
 {
-    public function __construct(public Authorizer $authorizer) {}
+    use HasTanstackTables;
+
+    public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService) {}
 
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(IndexTenantRequest $request): \Inertia\Response
     {
         $this->handleAuthorization('viewAny', Tenant::class);
 
-        $tenants = Tenant::query()->paginate(15);
+        $query = Tenant::query();
 
-        // also check if empty array
+        $searchableColumns = ['fullname', 'shortname', 'alias'];
+
+        $query = $this->applyTanstackFilters(
+            $query,
+            $request,
+            $this->tableService,
+            $searchableColumns,
+            [
+                'applySortBeforePagination' => true,
+            ]
+        );
+
+        $tenants = $query->paginate($request->input('per_page', 15))
+            ->withQueryString();
+
+        $sorting = $request->getSorting();
+
         return $this->inertiaResponse('Admin/People/IndexTenant', [
-            'tenants' => $tenants,
+            'tenants' => [
+                'data' => $tenants->items(),
+                'meta' => [
+                    'total' => $tenants->total(),
+                    'per_page' => $tenants->perPage(),
+                    'current_page' => $tenants->currentPage(),
+                    'last_page' => $tenants->lastPage(),
+                    'from' => $tenants->firstItem(),
+                    'to' => $tenants->lastItem(),
+                ],
+            ],
+            'filters' => $request->getFilters(),
+            'sorting' => $sorting,
         ]);
     }
 
@@ -118,6 +152,9 @@ class TenantController extends AdminController
 
         // Use ContentService to efficiently update content parts
         app(\App\Services\ContentService::class)->updateContentParts($content, $validated['parts']);
+
+        // Clear homepage cache for this tenant (both locales)
+        Cache::tags(['homepage', "tenant_{$tenant->id}"])->flush();
 
         return redirect()->back()->with('success', 'Tenant updated.');
     }

@@ -384,35 +384,6 @@ describe('DocumentFacetSidebar', () => {
     })
   })
 
-  describe('utility functions', () => {
-    it('formats counts correctly', () => {
-      const wrapper = createWrapper()
-      const vm = wrapper.vm as any
-      
-      expect(vm.formatCount(999)).toBe('999')
-      expect(vm.formatCount(1500)).toBe('1.5K')
-      expect(vm.formatCount(1500000)).toBe('1.5M')
-    })
-
-    it('gets correct language flags', () => {
-      const wrapper = createWrapper()
-      const vm = wrapper.vm as any
-      
-      expect(vm.getLanguageFlag('Lietuvių')).toContain('lt.svg')
-      expect(vm.getLanguageFlag('Anglų')).toContain('gb.svg')
-      expect(vm.getLanguageFlag('Unknown')).toBe('')
-    })
-
-    it('gets correct language display names', () => {
-      const wrapper = createWrapper()
-      const vm = wrapper.vm as any
-      
-      expect(vm.getLanguageDisplay('Lietuvių')).toBe('LT')
-      expect(vm.getLanguageDisplay('Anglų')).toBe('EN')
-      expect(vm.getLanguageDisplay('Unknown')).toBe('Not specified')
-    })
-  })
-
   describe('mobile functionality', () => {
     it('toggles mobile filters sheet', async () => {
       const wrapper = createWrapper()

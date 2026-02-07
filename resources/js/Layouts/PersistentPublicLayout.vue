@@ -1,46 +1,10 @@
 <template>
-  <!-- v-show="mounted" -->
-  <NConfigProvider :theme="isDark ? darkTheme : undefined"
-    :theme-overrides="isDark ? darkThemeOverrides : themeOverrides">
-    <PublicLayout>
-      <slot />
-    </PublicLayout>
-  </NConfigProvider>
+  <!-- Simplified layout without Naive UI wrapper for better performance -->
+  <PublicLayout>
+    <slot />
+  </PublicLayout>
 </template>
 
 <script setup lang="tsx">
-import { NConfigProvider, darkTheme } from "naive-ui";
-import { useDark } from "@vueuse/core";
-
 import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
-
-const isDark = useDark();
-
-const themeOverrides = {
-  common: {
-    primaryColor: "#bd2835FF",
-    primaryColorHover: "#CD3543FF",
-    primaryColorPressed: "#CC2130FF",
-    primaryColorSuppl: "#B93945FF",
-  },
-  Layout: {
-    color: "rgb(250 248 248)",
-    headerColor: "rgb(250 248 248)",
-    footerColor: "rgb(250 248 248)",
-  },
-};
-
-const darkThemeOverrides = {
-  common: {
-    primaryColor: "#bd2835FF",
-    primaryColorHover: "#CD3543FF",
-    primaryColorPressed: "#CC2130FF",
-    primaryColorSuppl: "#B93945FF",
-  },
-  Layout: {
-    color: "rgb(30 30 33)",
-    headerColor: "rgb(30 30 33)",
-    footerColor: "rgb(30 30 33)",
-  },
-};
 </script>

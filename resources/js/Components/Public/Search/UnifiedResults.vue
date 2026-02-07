@@ -159,6 +159,13 @@ const isMobile = computed(() => {
 
 // Event handlers for direct navigation
 const handleItemClick = (item: any, event: MouseEvent) => {
+  // For documents with external URLs, prevent default and handle navigation
+  if (item.type === 'documents' && item.anonymous_url) {
+    event.preventDefault()
+    event.stopPropagation()
+    window.open(item.anonymous_url, '_blank')
+    return
+  }
   emit('navigateToItem', item)
 }
 

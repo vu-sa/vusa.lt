@@ -1,271 +1,83 @@
-<script setup lang="ts">
-import NavMain from './NavMain.vue'
-import NavSecondary from './NavSecondary.vue'
-import AppLogo from './AppLogo.vue'
-
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarGroupLabel,
-  SidebarRail,
-  type SidebarProps,
-} from '@/Components/ui/sidebar'
-
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/Components/ui/dialog'
-
-import { Button } from '@/Components/ui/button'
-import { Input } from '@/Components/ui/input'
-import { Label } from '@/Components/ui/label'
-import { Checkbox } from '@/Components/ui/checkbox'
-import { Textarea } from '@/Components/ui/textarea'
-
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from '@/Components/ui/avatar'
-
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/Components/ui/dropdown-menu'
-
-import {
-  BookOpen,
-  GraduationCap,
-  Globe,
-  Bookmark,
-  Settings,
-  LifeBuoy,
-  MessageSquare,
-  Moon,
-  Sun,
-  ChevronsUpDown,
-  LogOut,
-  UserIcon,
-  Send,
-  Clock,
-  type LucideIcon
-} from 'lucide-vue-next'
-
-import { Link, router, usePage, useForm } from '@inertiajs/vue3'
-import { loadLanguageAsync, trans as $t } from 'laravel-vue-i18n'
-import { capitalize } from '@/Utils/String'
-import { computed, ref } from 'vue'
-import { useDark } from '@vueuse/core'
-
-const props = withDefaults(defineProps<SidebarProps>(), {
-  variant: 'inset',
-})
-
-const isDark = useDark()
-
-// Toggle dark mode function
-const toggleDarkMode = () => {
-  isDark.value = !isDark.value
-}
-
-// Change locale function
-const changeLocale = () => {
-  const toLocale = usePage().props.app.locale === "en" ? "lt" : "en"
-  router.reload({ data: { lang: toLocale }, onSuccess: () => loadLanguageAsync(toLocale) })
-}
-
-// Current user data
-const currentUser = computed(() => {
-  return usePage().props.auth?.user ?? {
-    name: '',
-    email: '',
-    profile_photo_path: '',
-  }
-})
-
-// Primary navigation items
-const navMainItems = computed(() => {
-  const items = []
-
-  // Representation (Atstovavimas)
-  if (usePage().props.auth?.can.create.meeting) {
-    items.push({
-      title: $t("Atstovavimas"),
-      url: route('dashboard.atstovavimas'),
-      icon: GraduationCap,
-      isActive: route().current('dashboard.atstovavimas*'),
-    })
-  }
-
-  // Website (Svetainė)
-  if (usePage().props.auth?.can.create.page) {
-    items.push({
-      title: $t("Svetainė"),
-      url: route('dashboard.svetaine'),
-      icon: Globe,
-      isActive: route().current('dashboard.svetaine*'),
-    })
-  }
-
-  // Reservations
-  items.push({
-    title: $t('Rezervacijos'),
-    url: route('dashboard.reservations'),
-    icon: Bookmark,
-    isActive: route().current('dashboard.reservations*'),
-  })
-
-  // Settings/Admin (Administravimas)
-  items.push({
-    title: $t('Administravimas'),
-    url: route('administration'),
-    icon: Settings,
-    isActive: route().current('administration*'),
-  })
-
-  return items
-})
-
-// Secondary navigation items (bottom)
-const navSecondaryItems = computed(() => {
-  return [
-    {
-      title: $t('Dokumentacija'),
-      url: 'https://www.vusa.lt/docs',
-      icon: BookOpen,
-    },
-    {
-      title: $t('Palik atsiliepimą'),
-      url: '#feedback',
-      icon: MessageSquare,
-    },
-    // {
-    //   title: usePage().props.app.locale === 'en' ? 'Help' : 'Pagalba',
-    //   url: route('dashboard'),
-    //   icon: LifeBuoy,
-    // },
-  ]
-})
-
-// Handle secondary nav clicks
-const handleSecondaryNavClick = (url: string) => {
-  if (url === '#feedback') {
-    showFeedbackDialog.value = true
-  } else if (url.startsWith('http')) {
-    window.open(url, '_blank')
-  } else {
-    router.visit(url)
-  }
-}
-
-// Feedback dialog state and form
-const showFeedbackDialog = ref(false)
-const feedbackLoading = ref(false)
-
-const feedbackForm = useForm({
-  feedback: null as string | null,
-  anonymous: false,
-  href: typeof window !== 'undefined' ? window.location.href : '',
-  selectedText: null as string | null,
-})
-
-// Handle feedback submission
-const handleSendFeedback = () => {
-  feedbackLoading.value = true
-  feedbackForm.post(route('feedback.send'), {
-    onSuccess: () => {
-      showFeedbackDialog.value = false
-      feedbackLoading.value = false
-      feedbackForm.reset()
-    },
-    onError: () => {
-      feedbackLoading.value = false
-    }
-  })
-}
-
-// Handle logout
-const handleLogout = () => {
-  router.post(route('logout'), {}, {
-    onSuccess: () => {
-      window.location.href = route('home', {
-        lang: usePage().props.app.locale,
-        subdomain: usePage().props.tenant?.subdomain ?? 'www'
-      })
-    },
-    onError: () => {
-      console.error('Logout failed.')
-    }
-  });
-}
-</script>
-
 <template>
   <Sidebar v-bind="props">
-    <SidebarHeader>
-      <SidebarMenu>
+    <SidebarHeader class="relative overflow-hidden">
+      <!-- Subtle gradient accent -->
+      <div
+        class="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent dark:from-primary/3 pointer-events-none" />
+      <SidebarMenu class="relative">
         <SidebarMenuItem>
-          <Link :href="route('dashboard')">
-          <SidebarMenuButton size="lg"
-            class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
-            <div
-              class="flex aspect-square w-14 h-14 items-center justify-center rounded-lg text-sidebar-primary-foreground">
-              <AppLogo width="48" height="16" />
-            </div>
-            <div class="grid flex-1 text-left text-sm leading-tight">
-              <span class="truncate font-semibold">
-                {{ $t("Mano VU SA") }}
-              </span>
-              <span class="truncate text-xs" />
-            </div>
-            <!-- <ChevronsUpDown class="ml-auto" /> -->
-          </SidebarMenuButton>
+          <Link :href="route('dashboard')" prefetch>
+            <SidebarMenuButton size="lg"
+              class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground hover:bg-sidebar-accent/50 transition-colors">
+              <div
+                class="flex aspect-square w-14 h-14 items-center justify-center rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 dark:from-primary/8 dark:to-primary/3 text-sidebar-primary-foreground shadow-sm">
+                <AppLogo width="48" height="16" />
+              </div>
+              <div class="grid flex-1 text-left text-sm leading-tight">
+                <span class="truncate font-semibold text-base">
+                  {{ $t("Mano VU SA") }}
+                </span>
+              </div>
+            </SidebarMenuButton>
           </Link>
         </SidebarMenuItem>
       </SidebarMenu>
     </SidebarHeader>
-    <SidebarContent>
+    <SidebarContent class="flex flex-col">
+      <!-- Main navigation -->
       <NavMain :items="navMainItems" />
 
+      <SidebarSeparator class="my-2" />
+
+      <!-- Quick actions -->
+      <NavQuickActions @new-meeting="handleNewMeeting" @new-news="handleNewNews"
+        @new-reservation="handleNewReservation" />
+
+      <!-- Followed institutions -->
+      <FollowedInstitutionsHotbar />
+
+      <!-- Spacer to push secondary nav to bottom -->
+      <div class="flex-1" />
+
+      <SidebarSeparator class="my-2 group-data-[collapsible=icon]:hidden" />
+
+      <!-- START FM Radio -->
+      <div class="group-data-[collapsible=icon]:hidden">
+        <SidebarStartFM />
+      </div>
+
       <!-- Secondary navigation -->
-      <div class="group-data-[collapsible=icon]:hidden mt-auto">
+      <div class="group-data-[collapsible=icon]:hidden">
         <NavSecondary :items="navSecondaryItems" @item-click="handleSecondaryNavClick" />
       </div>
     </SidebarContent>
-    <SidebarFooter>
+    <SidebarFooter class="border-t border-sidebar-border/50">
+      <!-- Back to website link -->
+      <a :href="publicWebsiteUrl" target="_blank" rel="noopener noreferrer"
+        class="flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-sidebar-accent/50 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-2">
+        <ExternalLink class="h-3.5 w-3.5 shrink-0" />
+        <span class="group-data-[collapsible=icon]:hidden">{{ $t('Eiti į vusa.lt') }}</span>
+      </a>
       <SidebarMenu>
         <!-- User account dropdown -->
-        <SidebarMenuItem>
+        <SidebarMenuItem data-tour="user-menu">
           <DropdownMenu>
             <DropdownMenuTrigger as-child>
               <SidebarMenuButton size="lg"
-                class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
-                <Avatar class="h-8 w-8 rounded-lg">
+                class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground hover:bg-sidebar-accent/60 transition-all duration-200">
+                <Avatar class="h-9 w-9 rounded-xl ring-2 ring-primary/10 shadow-sm">
                   <AvatarImage v-if="currentUser.profile_photo_path" :src="currentUser.profile_photo_path"
                     :alt="currentUser.name" />
-                  <AvatarFallback class="rounded-lg">
+                  <AvatarFallback
+                    class="rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 text-primary font-semibold">
                     {{ currentUser.name ? currentUser.name.substring(0, 2).toUpperCase() : 'VU' }}
                   </AvatarFallback>
                 </Avatar>
                 <div class="grid flex-1 text-left text-sm leading-tight">
-                  <span class="truncate font-medium">{{ currentUser.name }}</span>
-                  <span class="truncate text-xs">{{ currentUser.email }}</span>
+                  <span class="truncate font-semibold">{{ currentUser.name }}</span>
+                  <span class="truncate text-xs text-muted-foreground">{{ currentUser.email }}</span>
                 </div>
-                <ChevronsUpDown class="ml-auto size-4" />
+                <ChevronsUpDown class="ml-auto size-4 text-muted-foreground" />
               </SidebarMenuButton>
             </DropdownMenuTrigger>
             <!-- User dropdown menu -->
@@ -288,9 +100,11 @@ const handleLogout = () => {
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
-                <DropdownMenuItem @click="router.visit(route('profile'))">
-                  <UserIcon class="mr-2 h-4 w-4" />
-                  <span>{{ $t('Nustatymai') }}</span>
+                <DropdownMenuItem as-child>
+                  <Link :href="route('profile')" prefetch class="flex items-center w-full cursor-pointer">
+                    <UserIcon class="mr-2 h-4 w-4" />
+                    <span>{{ $t('Nustatymai') }}</span>
+                  </Link>
                 </DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
@@ -361,7 +175,7 @@ const handleLogout = () => {
             rows="4" />
         </div>
         <div class="flex items-center space-x-2">
-          <Checkbox id="anonymous" v-model:checked="feedbackForm.anonymous" />
+          <Checkbox id="anonymous" v-model="feedbackForm.anonymous" />
           <Label for="anonymous" class="text-sm">{{ $t("Siųsti anonimiškai") }}</Label>
         </div>
       </div>
@@ -374,4 +188,273 @@ const handleLogout = () => {
       </DialogFooter>
     </DialogContent>
   </Dialog>
+
+  <!-- New Meeting Modal -->
+  <NewMeetingDialog :show-modal="showMeetingModal" @close="showMeetingModal = false" />
 </template>
+
+<script setup lang="ts">
+import {
+  BookOpen,
+  GraduationCap,
+  Globe,
+  Bookmark,
+  Settings,
+  LifeBuoy,
+  MessageSquare,
+  Moon,
+  Sun,
+  ChevronsUpDown,
+  LogOut,
+  UserIcon,
+  Send,
+  Clock,
+  ExternalLink,
+  Bell,
+  Search,
+  type LucideIcon
+} from 'lucide-vue-next'
+import { Link, router, usePage, useForm } from '@inertiajs/vue3'
+import { loadLanguageAsync, trans as $t } from 'laravel-vue-i18n'
+import { computed, markRaw, ref } from 'vue'
+import { useDark } from '@vueuse/core'
+
+import NavMain from './NavMain.vue'
+import NavSecondary from './NavSecondary.vue'
+import NavQuickActions from './NavQuickActions.vue'
+import FollowedInstitutionsHotbar from './Sidebar/FollowedInstitutionsHotbar.vue'
+import SidebarStartFM from './SidebarStartFM.vue'
+import AppLogo from './AppLogo.vue'
+
+import NewMeetingDialog from '@/Components/Dialogs/NewMeetingDialog.vue'
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarGroupLabel,
+  SidebarSeparator,
+  SidebarRail,
+  type SidebarProps,
+} from '@/Components/ui/sidebar'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/Components/ui/dialog'
+import { Button } from '@/Components/ui/button'
+import { Input } from '@/Components/ui/input'
+import { Label } from '@/Components/ui/label'
+import { Checkbox } from '@/Components/ui/checkbox'
+import { Textarea } from '@/Components/ui/textarea'
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from '@/Components/ui/avatar'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/Components/ui/dropdown-menu'
+import { capitalize } from '@/Utils/String'
+
+
+const props = withDefaults(defineProps<SidebarProps>(), {
+  variant: 'inset',
+})
+
+const isDark = useDark()
+
+// Toggle dark mode function
+const toggleDarkMode = () => {
+  isDark.value = !isDark.value
+}
+
+// Change locale function
+const changeLocale = () => {
+  const toLocale = usePage().props.app.locale === "en" ? "lt" : "en"
+  router.reload({ data: { lang: toLocale }, onSuccess: () => loadLanguageAsync(toLocale) })
+}
+
+// Current user data
+const currentUser = computed(() => {
+  return usePage().props.auth?.user ?? {
+    name: '',
+    email: '',
+    profile_photo_path: '',
+  }
+})
+
+// Primary navigation items
+const navMainItems = computed(() => {
+  const items = []
+
+  // Representation (ViSAK - Virtualus Studentų Atstovų Koordinatorius)
+  if (usePage().props.auth?.can.create.meeting) {
+    items.push({
+      title: "ViSAK",
+      url: route('dashboard.atstovavimas'),
+      icon: markRaw(GraduationCap),
+      isActive: route().current('dashboard.atstovavimas') ||
+        route().current('meetings.show') ||
+        route().current('institutions.show') ||
+        route().current('duties.show'),
+      dataTour: 'nav-visak',
+    })
+
+    // Search (Paieška) - meetings and agenda items search pages
+    // items.push({
+    //   title: $t('Paieška'),
+    //   url: route('search.meetings'),
+    //   icon: markRaw(Search),
+    //   isActive: route().current('search.*'),
+    //   items: [
+    //     { title: $t('Posėdžiai'), url: route('search.meetings') },
+    //     { title: $t('Darbotvarkės punktai'), url: route('search.agendaItems') },
+    //     { title: $t('Institucijos'), url: route('search.institutions') },
+    //   ],
+    // })
+  }
+
+  // Website (Svetainė)
+  if (usePage().props.auth?.can.create.page) {
+    items.push({
+      title: $t("Svetainė"),
+      url: route('dashboard.svetaine'),
+      icon: markRaw(Globe),
+      isActive: false,
+    })
+  }
+
+  // Reservations
+  items.push({
+    title: $t('Rezervacijos'),
+    url: route('dashboard.reservations'),
+    icon: markRaw(Bookmark),
+    isActive: route().current('dashboard.reservations*') ||
+      route().current('reservations.create') ||
+      route().current('reservations.show'),
+  })
+
+  // Settings/Admin (Administravimas) - only show if user can access administration
+  if (usePage().props.auth?.can.accessAdministration) {
+    items.push({
+      title: $t('Administravimas'),
+      url: route('administration'),
+      icon: markRaw(Settings),
+      isActive: route().current('administration*'),
+      dataTour: 'nav-administravimas',
+    })
+  }
+
+  return items
+})
+
+// Secondary navigation items (bottom) - help section only
+const navSecondaryItems = computed(() => {
+  return [
+    {
+      title: $t('Dokumentacija'),
+      url: '/docs',
+      icon: markRaw(BookOpen),
+      dataTour: 'nav-dokumentacija',
+    },
+    {
+      title: $t('Palik atsiliepimą'),
+      url: '#feedback',
+      icon: markRaw(MessageSquare),
+      dataTour: 'nav-feedback',
+    },
+  ]
+})
+
+// Handle secondary nav clicks
+const handleSecondaryNavClick = (url: string) => {
+  if (url === '#feedback') {
+    showFeedbackDialog.value = true
+  } else if (url.startsWith('http')) {
+    window.open(url, '_blank')
+  } else {
+    router.visit(url)
+  }
+}
+
+// Meeting modal state
+const showMeetingModal = ref(false)
+
+// Handle quick actions
+const handleNewMeeting = () => {
+  showMeetingModal.value = true
+}
+
+const handleNewNews = () => {
+  router.visit(route('news.create'))
+}
+
+const handleNewReservation = () => {
+  router.visit(route('reservations.create'))
+}
+
+// Notification count
+const notificationCount = computed(() => {
+  return usePage().props.auth?.user?.unread_notifications_count || 0
+})
+
+// Public website URL
+const publicWebsiteUrl = computed(() => {
+  const page = usePage()
+  return route('home', {
+    lang: page.props.app.locale,
+    subdomain: page.props.tenant?.subdomain ?? 'www'
+  })
+})
+
+// Feedback dialog state and form
+const showFeedbackDialog = ref(false)
+const feedbackLoading = ref(false)
+
+const feedbackForm = useForm({
+  feedback: null as string | null,
+  anonymous: false,
+  href: typeof window !== 'undefined' ? window.location.href : '',
+  selectedText: null as string | null,
+})
+
+// Handle feedback submission
+const handleSendFeedback = () => {
+  feedbackLoading.value = true
+  feedbackForm.post(route('feedback.send'), {
+    onSuccess: () => {
+      showFeedbackDialog.value = false
+      feedbackLoading.value = false
+      feedbackForm.reset()
+    },
+    onError: () => {
+      feedbackLoading.value = false
+    }
+  })
+}
+
+// Handle logout
+const handleLogout = () => {
+  router.post(route('logout'), {}, {
+    onSuccess: () => {
+      window.location.href = route('login')
+    },
+    onError: () => {
+      console.error('Logout failed.')
+    }
+  });
+}
+</script>

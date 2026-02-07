@@ -3,6 +3,28 @@
     <div class="space-y-3">
       <!-- Content Type Groups -->
       <div class="space-y-3">
+        <!-- Most Important Documents -->
+        <div v-if="importantContentTypes.length > 0" class="space-y-2">
+          <h5 class="text-xs font-medium text-amber-600 dark:text-amber-400 uppercase tracking-wide flex items-center gap-1">
+            <Star class="w-3 h-3" />
+            {{ $t('search.most_important') }}
+          </h5>
+          <div class="flex flex-wrap gap-1.5">
+            <Badge v-for="contentType in importantContentTypes" :key="contentType.value"
+              :variant="isSelected(contentType.value) ? 'default' : 'outline'" :class="[
+                'cursor-pointer transition-all duration-200 text-xs hover:scale-105 py-1 px-2',
+                isSelected(contentType.value)
+                  ? 'bg-amber-500 text-white hover:bg-amber-600'
+                  : 'border-amber-300 dark:border-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950'
+              ]" @click="toggleContentType(contentType.value)">
+              {{ contentType.label }}
+              <span v-if="contentType.count > 0" class="ml-1.5 text-xs opacity-70 font-medium">
+                {{ contentType.count }}
+              </span>
+            </Badge>
+          </div>
+        </div>
+
         <!-- VU SA Documents -->
         <div v-if="vuSaContentTypes.length > 0" class="space-y-2">
           <h5 class="text-xs font-medium text-muted-foreground uppercase tracking-wide">
@@ -91,7 +113,7 @@ import { Badge } from '@/Components/ui/badge'
 import { Button } from '@/Components/ui/button'
 
 // Icons
-import { FileText, CheckSquare, RotateCcw } from 'lucide-vue-next'
+import { FileText, CheckSquare, RotateCcw, Star } from 'lucide-vue-next'
 
 // Props & Emits
 interface ContentTypeOption {
@@ -109,6 +131,7 @@ interface GroupedContentTypes {
 interface Props {
   groupedTypes: GroupedContentTypes
   selectedTypes: string[]
+  importantTypes?: string[]
 }
 
 interface Emits {
@@ -117,7 +140,8 @@ interface Emits {
 
 const props = withDefaults(defineProps<Props>(), {
   groupedTypes: () => ({ vusa: [], vusaP: [], other: [] }),
-  selectedTypes: () => []
+  selectedTypes: () => [],
+  importantTypes: () => []
 })
 
 const emit = defineEmits<Emits>()
@@ -128,29 +152,62 @@ const truncateLabel = (label: string, maxLength: number): string => {
   return label.substring(0, maxLength - 3) + '...'
 }
 
-// Use the grouped types directly from props
+// All content types combined for lookup
+const allGroupedTypes = computed(() => [
+  ...props.groupedTypes.vusa,
+  ...props.groupedTypes.vusaP,
+  ...props.groupedTypes.other
+])
+
+// Important content types (extracted from other groups based on importantTypes prop)
+const importantContentTypes = computed(() => {
+  if (!props.importantTypes || props.importantTypes.length === 0) return []
+  
+  return props.importantTypes
+    .map(importantValue => {
+      const found = allGroupedTypes.value.find(ct => ct.value === importantValue)
+      if (!found) return null
+      return {
+        value: found.value,
+        label: truncateLabel(found.label || found.value, 28),
+        count: found.count
+      }
+    })
+    .filter((ct): ct is { value: string; label: string; count: number } => ct !== null)
+})
+
+// Set of important type values for quick lookup
+const importantTypeSet = computed(() => new Set(props.importantTypes || []))
+
+// Use the grouped types directly from props, but exclude important ones
 const vuSaContentTypes = computed(() => {
-  return props.groupedTypes.vusa.map(ct => ({
-    value: ct.value,
-    label: truncateLabel(ct.label || ct.value, 28), // Use the capitalized label from parent
-    count: ct.count
-  }))
+  return props.groupedTypes.vusa
+    .filter(ct => !importantTypeSet.value.has(ct.value))
+    .map(ct => ({
+      value: ct.value,
+      label: truncateLabel(ct.label || ct.value, 28),
+      count: ct.count
+    }))
 })
 
 const vuSaPContentTypes = computed(() => {
-  return props.groupedTypes.vusaP.map(ct => ({
-    value: ct.value,
-    label: truncateLabel(ct.label || ct.value, 28), // Use the capitalized label from parent
-    count: ct.count
-  }))
+  return props.groupedTypes.vusaP
+    .filter(ct => !importantTypeSet.value.has(ct.value))
+    .map(ct => ({
+      value: ct.value,
+      label: truncateLabel(ct.label || ct.value, 28),
+      count: ct.count
+    }))
 })
 
 const otherContentTypes = computed(() => {
-  return props.groupedTypes.other.map(ct => ({
-    value: ct.value,
-    label: truncateLabel(ct.label || ct.value, 28), // Shorter truncation
-    count: ct.count
-  }))
+  return props.groupedTypes.other
+    .filter(ct => !importantTypeSet.value.has(ct.value))
+    .map(ct => ({
+      value: ct.value,
+      label: truncateLabel(ct.label || ct.value, 28),
+      count: ct.count
+    }))
 })
 
 const allContentTypes = computed(() => [

@@ -1,11 +1,18 @@
 import "../css/app.css";
+import "../css/admin.css";
+import "../css/driver-tour.css";
 
 import { type DefineComponent, createApp, h } from "vue";
+import { initPWA } from "./Composables/usePWA";
+
+// Initialize PWA (service worker registration, install prompt handling)
+initPWA();
 import { ZiggyVue } from 'ziggy-js'
 import { createInertiaApp } from "@inertiajs/vue3";
 import { defineAsyncComponent } from "vue";
 import { i18nVue } from "laravel-vue-i18n";
 import { resolvePageComponent } from "laravel-vite-plugin/inertia-helpers";
+import { initProgress } from "./Composables/useTutorialProgress";
 
 const AdminLayout = defineAsyncComponent(
   () => import("./Components/Layouts/AdminLayout.vue"),
@@ -28,9 +35,20 @@ const metaTitle =
 const pageTitle = metaTitle.replace(" - VU SA", "");
 
 
+// Check if user has disabled view transitions in settings
+const isReduceMotionEnabled = () => {
+  if (typeof window === 'undefined') return false;
+  return localStorage.getItem('vusa-reduce-motion') === 'true';
+};
+
 createInertiaApp({
   title: (title) => {
     return title ? `${title} - VU SA` : pageTitle;
+  },
+  defaults: {
+    visitOptions: (href, options) => {
+      return { viewTransition: !isReduceMotionEnabled() };
+    },
   },
   resolve: (name) => {
     const page = resolvePageComponent(
@@ -57,8 +75,26 @@ createInertiaApp({
       .use(i18nVue, {
         fallbackLang: "en",
         resolve: async (lang: string) => {
-          const langs = import.meta.glob("../../lang/*.json");
-          return await langs[`../../lang/${lang}.json`]();
+          // Load JSON translations (shared between admin/public)
+          const jsonLangs = import.meta.glob("../../lang/*.json");
+          // Load admin-specific PHP translations (shared + admin combined)
+          const phpLangs = import.meta.glob("../../lang/php_admin_*.json");
+          
+          const jsonPath = `../../lang/${lang}.json`;
+          const phpPath = `../../lang/php_admin_${lang}.json`;
+          
+          // Load both translation sources
+          const jsonModule = jsonLangs[jsonPath] ? await jsonLangs[jsonPath]() : { default: {} };
+          const phpModule = phpLangs[phpPath] ? await phpLangs[phpPath]() : { default: {} };
+          
+          // Merge translations: JSON base + PHP compiled
+          // Return in { default: {...} } format expected by laravel-vue-i18n
+          return {
+            default: {
+              ...(jsonModule as { default: Record<string, string> }).default,
+              ...(phpModule as { default: Record<string, string> }).default,
+            }
+          };
         },
       })
       .use(ZiggyVue);
@@ -72,6 +108,10 @@ createInertiaApp({
     });
 
     application.mount(el);
+
+    // Initialize tutorial progress from server data after mounting
+    // Inertia props are only available after the app is mounted
+    initProgress();
 
     delete el.dataset.page;
 

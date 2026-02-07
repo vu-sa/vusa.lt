@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Cache;
 use Laravel\Scout\Searchable;
 
@@ -34,6 +35,27 @@ class Banner extends Model
 
     protected static function booted()
     {
+        static::creating(function (self $banner): void {
+            $tenantId = data_get($banner, 'tenant_id');
+
+            if ($tenantId === null) {
+                return;
+            }
+
+            $order = data_get($banner, 'order');
+
+            if ($order === null || self::query()
+                ->where('tenant_id', $tenantId)
+                ->where('order', $order)
+                ->exists()) {
+                $maxOrder = self::query()
+                    ->where('tenant_id', $tenantId)
+                    ->max('order');
+
+                $banner->order = ($maxOrder ?? 0) + 1;
+            }
+        });
+
         static::saved(function ($banner) {
             Cache::tags(['banners', "tenant_{$banner->tenant_id}"])->flush();
         });
@@ -43,14 +65,14 @@ class Banner extends Model
         });
     }
 
-    public function toSearchableArray()
+    public function toSearchableArray(): array
     {
         return [
             'title' => $this->title,
         ];
     }
 
-    public function tenant()
+    public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }

@@ -3,10 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\AdminController;
+use App\Http\Requests\IndexRelationshipRequest;
+use App\Http\Traits\HasTanstackTables;
 use App\Models\Pivots\Relationshipable;
 use App\Models\Relationship;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\RelationshipService;
+use App\Services\TanstackTableService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -16,17 +19,50 @@ use Inertia\Inertia;
 
 class RelationshipController extends AdminController
 {
-    public function __construct(public Authorizer $authorizer) {}
+    use HasTanstackTables;
+
+    public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService) {}
 
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(IndexRelationshipRequest $request): \Inertia\Response
     {
         $this->handleAuthorization('viewAny', Relationship::class);
 
+        $query = Relationship::query();
+
+        $searchableColumns = ['name', 'slug', 'description'];
+
+        $query = $this->applyTanstackFilters(
+            $query,
+            $request,
+            $this->tableService,
+            $searchableColumns,
+            [
+                'applySortBeforePagination' => true,
+            ]
+        );
+
+        $relationships = $query->paginate($request->input('per_page', 20))
+            ->withQueryString();
+
+        $sorting = $request->getSorting();
+
         return $this->inertiaResponse('Admin/ModelMeta/IndexRelationships', [
-            'relationships' => Relationship::all()->paginate(20),
+            'relationships' => [
+                'data' => $relationships->items(),
+                'meta' => [
+                    'total' => $relationships->total(),
+                    'per_page' => $relationships->perPage(),
+                    'current_page' => $relationships->currentPage(),
+                    'last_page' => $relationships->lastPage(),
+                    'from' => $relationships->firstItem(),
+                    'to' => $relationships->lastItem(),
+                ],
+            ],
+            'filters' => $request->getFilters(),
+            'sorting' => $sorting,
         ]);
     }
 
@@ -142,14 +178,47 @@ class RelationshipController extends AdminController
             'model_id' => 'required',
             'model_type' => 'required',
             'related_model_id' => 'required',
+            'scope' => 'nullable|in:within-tenant,cross-tenant',
+            'bidirectional' => 'nullable|boolean',
         ]);
 
-        $relationship->models($request->model_type)->attach($request->model_id, [
+        $pivotData = [
             'related_model_id' => $request->related_model_id,
-        ]);
+            'bidirectional' => $request->boolean('bidirectional', false),
+        ];
+
+        // Only add scope for Type-based relationships
+        if ($request->model_type === \App\Models\Type::class) {
+            $pivotData['scope'] = $request->scope ?? 'within-tenant';
+        }
+
+        $relationship->models($request->model_type)->attach($request->model_id, $pivotData);
 
         return redirect()->route('relationships.edit', $relationship)
             ->with('success', 'Ryšys sukurtas sėkmingai.');
+    }
+
+    public function updateModelRelationship(Request $request, Relationshipable $relationshipable)
+    {
+        $this->handleAuthorization('update', $relationshipable);
+
+        $request->validate([
+            'scope' => 'nullable|in:within-tenant,cross-tenant',
+            'bidirectional' => 'nullable|boolean',
+        ]);
+
+        $updateData = [
+            'bidirectional' => $request->boolean('bidirectional', false),
+        ];
+
+        // Only update scope for Type-based relationships
+        if ($relationshipable->relationshipable_type === \App\Models\Type::class && $request->has('scope')) {
+            $updateData['scope'] = $request->scope;
+        }
+
+        $relationshipable->update($updateData);
+
+        return back()->with('success', 'Ryšys atnaujintas sėkmingai.');
     }
 
     public function deleteModelRelationship(Relationshipable $relationshipable)

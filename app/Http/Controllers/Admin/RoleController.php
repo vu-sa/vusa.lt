@@ -3,29 +3,65 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\AdminController;
+use App\Http\Requests\IndexRoleRequest;
+use App\Http\Traits\HasTanstackTables;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\Type;
 use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
+use App\Services\TanstackTableService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 
 class RoleController extends AdminController
 {
-    public function __construct(public Authorizer $authorizer) {}
+    use HasTanstackTables;
+
+    public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService) {}
 
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(IndexRoleRequest $request): \Inertia\Response
     {
         $this->handleAuthorization('viewAny', Role::class);
 
+        $query = Role::query();
+
+        $searchableColumns = ['name'];
+
+        $query = $this->applyTanstackFilters(
+            $query,
+            $request,
+            $this->tableService,
+            $searchableColumns,
+            [
+                'applySortBeforePagination' => true,
+            ]
+        );
+
+        $roles = $query->paginate($request->input('per_page', 20))
+            ->withQueryString();
+
+        $sorting = $request->getSorting();
+
         return $this->inertiaResponse('Admin/Permissions/IndexRole', [
-            'roles' => Role::paginate(20),
+            'roles' => [
+                'data' => $roles->items(),
+                'meta' => [
+                    'total' => $roles->total(),
+                    'per_page' => $roles->perPage(),
+                    'current_page' => $roles->currentPage(),
+                    'last_page' => $roles->lastPage(),
+                    'from' => $roles->firstItem(),
+                    'to' => $roles->lastItem(),
+                ],
+            ],
+            'filters' => $request->getFilters(),
+            'sorting' => $sorting,
         ]);
     }
 
@@ -85,7 +121,7 @@ class RoleController extends AdminController
         $role->load('permissions:id,name', 'duties:id,name');
 
         $tenantsWithDuties = Tenant::orderBy('shortname')->with('institutions:id,name,tenant_id', 'institutions.duties:id,name,institution_id')
-            ->when(! auth()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) {
+            ->when(! auth()->user()?->isSuperAdmin(), function ($query) {
                 $query->whereIn('id', User::find(Auth::id())->tenants->pluck('id'));
             })->get();
 

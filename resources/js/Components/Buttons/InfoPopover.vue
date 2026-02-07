@@ -1,15 +1,21 @@
 <template>
-  <NTooltip :style="{ maxWidth: '600px' }" trigger="hover" :show-arrow="false" :show-delay="500" :hide-delay="100">
-    <template #trigger>
-      <NButton text type="tertiary" size="tiny"><template #icon>
+  <TooltipProvider>
+    <Tooltip :delay-duration="500">
+      <TooltipTrigger as-child>
+        <Button variant="ghost" size="icon-xs">
           <IFluentInfo24Regular />
-        </template></NButton>
-    </template>
-    <slot />
-  </NTooltip>
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent class="max-w-[600px]">
+        <slot />
+      </TooltipContent>
+    </Tooltip>
+  </TooltipProvider>
 </template>
 
 <script setup lang="tsx">
+import { Button } from "@/Components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
 defineProps<{
   color?: string;
 }>();

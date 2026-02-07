@@ -1,51 +1,75 @@
+# === Dependency directories ===
 /node_modules
-test-results.junit.xml
-/storage/*.key
-/storage/clockwork/
-/storage/backups
 /vendor
+
+# === Environment & config ===
 .env
 .env.backup
 .phpunit.result.cache
-docker-compose.override.yml
+.phpunit.cache
 # composer.lock
 # package-lock.json
+docker-compose.override.yml
+test-results.junit.xml
 
-# VU SA specific
+# === Storage & cache ===
+/storage/*.key
+/storage/clockwork/
+/storage/backups
+coverage/*
+
+# === Build outputs ===
+public/build
+public/hot
+
+# === Public uploads & docs ===
 public/uploads
 public/docs
 
-## Other
-.jshintrc
+# === Public aliases ===
+public/chgf
+public/evaf
+public/ff
+public/filf
+public/fsf
+public/gmc
+public/if
+public/kf
+public/knf
+public/mf
+public/mif
+public/sa
+public/static
+public/tf
+public/tspmi
+public/vm
+public/vusa
+public/www
+
+# === Public vendor & builds ===
 public/vendor
-
-.DS_Store
-.vscode/settings.json
-webpack.mix.js
-
 public/js/app/*.js
 public/js/*.js
-database/vusa_www-2022.sql
-.DS_Store
-
 public/vendor/telescope/app.js
 public/vendor/telescope/mix-manifest.json
 
-# vite builds
-/public/build
-public/hot
-lang/php_en.json
-lang/php_lt.json
+# === Language files ===
+lang/php_*.json
 
-.phpunit.cache
-coverage/*
+# === Database dumps ===
+database/vusa_www-2022.sql
 
-# vitepress
+# === Editor & system files ===
+.DS_Store
+.vscode/settings.json
+
+# === Docs & static site ===
 docs/.vitepress/dist
 docs/.vitepress/cache
 
-# components from unplugin
+# === TypeScript/Component output ===
 resources/js/Types/components.d.ts
 
+# === Storybook ===
 *storybook.log
 storybook-static

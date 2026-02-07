@@ -2,10 +2,13 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\HasImageValidation;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateCalendarRequest extends FormRequest
 {
+    use HasImageValidation;
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -23,7 +26,7 @@ class UpdateCalendarRequest extends FormRequest
     // NOTE: just transform date always to datetime, don't keep as number, as problems arise
     public function rules(): array
     {
-        return [
+        $rules = [
             'title.lt' => 'required|string',
             'title.en' => 'nullable|string',
             'description.lt' => 'nullable|string',
@@ -43,9 +46,16 @@ class UpdateCalendarRequest extends FormRequest
             'end_date' => 'nullable|date|after:date',
             'category' => 'nullable',
             'tenant_id' => 'required|integer',
-            'images' => 'nullable|array',
-            'images.*.file' => 'image|max:5120|mimes:jpeg,jpg,png', // Max 5MB per image
         ];
+
+        // Skip file validation during precognitive requests
+        if (! $this->isPrecognitive()) {
+            $rules['main_image'] = $this->singleImageRules(maxMB: 10);
+            $rules['images'] = $this->imagesArrayRules(maxFiles: 20);
+            $rules['images.*'] = $this->galleryImageRules(maxMB: 5);
+        }
+
+        return $rules;
     }
 
     /**
@@ -53,9 +63,6 @@ class UpdateCalendarRequest extends FormRequest
      */
     public function messages(): array
     {
-        return [
-            'images.*.file.max' => 'Paveiksliukas negali būti didesnis nei 5MB. Sumažinkite failo dydį.',
-            'images.*.file.image' => 'Failas turi būti paveiksliukas (JPEG, PNG).',
-        ];
+        return $this->imageValidationMessages();
     }
 }

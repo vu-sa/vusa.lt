@@ -31,9 +31,12 @@ class TrainingTask extends Model
 
     protected $guarded = [];
 
-    protected $casts = [
-        'due_date' => 'datetime',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'due_date' => 'datetime',
+        ];
+    }
 
     public $translatable = ['name', 'description'];
 

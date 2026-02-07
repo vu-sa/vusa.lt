@@ -11,12 +11,75 @@ interface TypesenseNode {
 interface TypesenseConfig {
   apiKey: string
   nodes: TypesenseNode[]
+  collections?: Record<string, string>
 }
 
 interface SearchClient {
-  search: (collection: string, searchParams: any) => Promise<any>
+  search: (collection: string, searchParams: Record<string, any>, abortSignal?: AbortSignal) => Promise<any>
   apiKey: string
   nodes: TypesenseNode[]
+}
+
+interface TypesenseClientOptions {
+  additionalSearchParameters: Record<string, any>
+  collectionSpecificSearchParameters?: Record<string, any>
+  connectionTimeoutSeconds?: number
+}
+
+export const createTypesenseClients = (
+  typesenseConfig: TypesenseConfig,
+  options: TypesenseClientOptions
+) => {
+  if (!typesenseConfig.nodes?.length) {
+    throw new Error('No Typesense nodes configured')
+  }
+
+  const adapter = new TypesenseInstantSearchAdapter({
+    server: {
+      apiKey: typesenseConfig.apiKey,
+      nodes: typesenseConfig.nodes,
+      connectionTimeoutSeconds: options.connectionTimeoutSeconds ?? 10,
+    },
+    additionalSearchParameters: options.additionalSearchParameters,
+    collectionSpecificSearchParameters: options.collectionSpecificSearchParameters
+  })
+
+  const typesenseClient: SearchClient = {
+    apiKey: typesenseConfig.apiKey,
+    nodes: typesenseConfig.nodes,
+    search: async (collection: string, searchParams: Record<string, any>, abortSignal?: AbortSignal) => {
+      const node = typesenseConfig.nodes[0]
+      const baseUrl = `${node.protocol}://${node.host}:${node.port}`
+      const url = new URL(`${baseUrl}/collections/${collection}/documents/search`)
+
+      Object.entries(searchParams).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          url.searchParams.append(key, String(value))
+        }
+      })
+
+      const response = await fetch(url.toString(), {
+        method: 'GET',
+        headers: {
+          'X-TYPESENSE-API-KEY': typesenseConfig.apiKey,
+          'Content-Type': 'application/json',
+        },
+        signal: abortSignal
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`Typesense API error: ${response.status} - ${errorText}`)
+      }
+
+      return await response.json()
+    }
+  }
+
+  return {
+    searchClient: adapter.searchClient,
+    typesenseClient
+  }
 }
 
 export const useSearchClient = () => {
@@ -29,19 +92,13 @@ export const useSearchClient = () => {
     const page = usePage()
     const typesenseConfig = page.props.typesenseConfig as TypesenseConfig
 
-    if (!typesenseConfig?.apiKey || ['xyz', 'xyza'].includes(typesenseConfig.apiKey)) {
+    if (!typesenseConfig?.apiKey) {
       initializationError.value = 'Typesense not configured - document search unavailable'
       return null
     }
 
     try {
-      // Create InstantSearch adapter (for compatibility)
-      const adapter = new TypesenseInstantSearchAdapter({
-        server: {
-          apiKey: typesenseConfig.apiKey,
-          nodes: typesenseConfig.nodes,
-          connectionTimeoutSeconds: 10,
-        },
+      const clients = createTypesenseClients(typesenseConfig, {
         additionalSearchParameters: {
           query_by: 'title,summary',
           num_typos: 2,
@@ -51,7 +108,7 @@ export const useSearchClient = () => {
           per_page: 20,
           facet_by: [
             'content_type',
-            'tenant_shortname', 
+            'tenant_shortname',
             'language',
             'document_date'
           ].join(','),
@@ -72,47 +129,12 @@ export const useSearchClient = () => {
         }
       })
 
-      searchClient.value = adapter.searchClient
-
-      // Store Typesense configuration for direct API calls
-      typesenseClient.value = {
-        apiKey: typesenseConfig.apiKey,
-        nodes: typesenseConfig.nodes,
-        search: async (collection: string, searchParams: any) => {
-          const node = typesenseConfig.nodes[0] // Use first node
-          if (!node) {
-            throw new Error('No Typesense nodes configured')
-          }
-          const baseUrl = `${node.protocol}://${node.host}:${node.port}`
-          const url = new URL(`${baseUrl}/collections/${collection}/documents/search`)
-          
-          // Add search parameters to URL
-          Object.entries(searchParams).forEach(([key, value]) => {
-            if (value !== undefined && value !== null && value !== '') {
-              url.searchParams.append(key, String(value))
-            }
-          })
-          
-          const response = await fetch(url.toString(), {
-            method: 'GET',
-            headers: {
-              'X-TYPESENSE-API-KEY': typesenseConfig.apiKey,
-              'Content-Type': 'application/json',
-            }
-          })
-          
-          if (!response.ok) {
-            const errorText = await response.text()
-            throw new Error(`Typesense API error: ${response.status} - ${errorText}`)
-          }
-          
-          return await response.json()
-        }
-      }
+      searchClient.value = clients.searchClient
+      typesenseClient.value = clients.typesenseClient
 
       isInitialized.value = true
       initializationError.value = null
-      return adapter.searchClient
+      return clients.searchClient
     } catch (error) {
       initializationError.value = `Failed to initialize Typesense client: ${error instanceof Error ? error.message : 'Unknown error'}`
       return null

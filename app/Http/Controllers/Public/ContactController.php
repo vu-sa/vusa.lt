@@ -3,12 +3,17 @@
 namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\PublicController;
+use App\Models\Form;
 use App\Models\Institution;
+use App\Models\Meeting;
 use App\Models\Tenant;
 use App\Models\Type;
 use App\Models\User;
+use App\Settings\FormSettings;
+use App\Settings\MeetingSettings;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 
@@ -19,28 +24,22 @@ class ContactController extends PublicController
         $this->getTenantLinks();
         $this->shareOtherLangURL('contacts', $this->subdomain);
 
-        $tenants = json_decode(base64_decode(request()->input('selectedTenants'))) ??
-            collect([Tenant::query()->where('type', 'pagrindinis')->first()->id, $this->tenant->id])->unique();
-
-        $institutions = Institution::query()->with('tenant', 'types:id,title,model_type,slug')
-            ->whereHas('tenant', fn ($query) => $query->whereIn('id', $tenants)->select(['id', 'shortname', 'alias'])
-            )->withCount('duties')->orderBy('name')->get()->makeHidden(['created_at', 'updated_at', 'deleted_at']);
-
         $seo = $this->shareAndReturnSEOObject(
+            contentTenant: $this->tenant,
             title: __('Kontaktų paieška').' - '.$this->tenant->shortname,
-            description: app()->getLocale() === 'lt' ? 'VU SA kontaktų paieškoje vienoje vietoje suraskite visus VU SA kontaktus' : 'In the VU SA contact search, find all VU SA contacts in one place', );
+            description: app()->getLocale() === 'lt' ? 'VU SA kontaktų paieškoje vienoje vietoje suraskite visus VU SA kontaktus' : 'In the VU SA contact search, find all VU SA contacts in one place',
+        );
 
-        return Inertia::render('Public/Contacts/ContactsSearch', [
-            'institutions' => $institutions->map(function ($institution) {
-                return [
-                    ...$institution->toArray(),
-                    // shorten description and add ellipsis
-                    // 'description' => Str::limit(strip_tags($institution->description), 100, '...'),
-                    //  TODO: better solution for displaying description or remove completely
-                    'description' => '',
-                ];
-            }),
-            'selectedTenants' => $tenants,
+        // Get institution type mappings for facet display (slug => title)
+        $institutionTypes = Type::whereHas('institutions')
+            ->get()
+            ->mapWithKeys(fn ($type) => [
+                $type->slug => $type->getTranslation('title', app()->getLocale()),
+            ])
+            ->toArray();
+
+        return Inertia::render('Public/Contacts/ShowContacts', [
+            'institutionTypes' => $institutionTypes,
         ])->withViewData(
             ['SEOData' => $seo]
         );
@@ -51,6 +50,9 @@ class ContactController extends PublicController
         $this->getTenantLinks();
 
         Inertia::share('otherLangURL', route('contacts.institution', ['subdomain' => $this->subdomain, 'lang' => $this->getOtherLang(), 'institution' => $institution->id]));
+
+        // Load types for breadcrumb navigation
+        $institution->load('types');
 
         $duties = $institution->load('duties.current_users.current_duties')->duties->sortBy(function ($duty) {
             return $duty->order;
@@ -71,7 +73,7 @@ class ContactController extends PublicController
         if ($hasGroupedDuties) {
             $processedContacts = $this->processDutiesWithGrouping($duties);
 
-            return $this->showInstitutionWithMixedContacts($institution, $processedContacts, $institution->name.' | Kontaktai');
+            return $this->renderInstitutionPage($institution, $processedContacts, $institution->name.' | Kontaktai', hasMixedGrouping: true);
         }
 
         // Default behavior - flatten and deduplicate all duties
@@ -80,7 +82,7 @@ class ContactController extends PublicController
         // make eloquent collection from array
         $contacts = new Collection($contacts);
 
-        return $this->showInstitution($institution, $contacts, $institution->name.' | Kontaktai');
+        return $this->renderInstitutionPage($institution, $contacts, $institution->name.' | Kontaktai');
     }
 
     public function institutionDutyTypeContacts($subdomain, $lang, Type $type)
@@ -103,6 +105,9 @@ class ContactController extends PublicController
         } else {
             $institution = Institution::where('alias', '=', $this->tenant->alias)->firstOrFail();
         }
+
+        // Load types for breadcrumb navigation
+        $institution->load('types');
 
         // load duties whereHas types
         $duties = $institution->load(['duties' => function ($query) use ($types) {
@@ -128,7 +133,7 @@ class ContactController extends PublicController
             // Filter processed contacts to only show duties related to the selected types
             $processedContacts = $this->filterProcessedContactsByTypes($processedContacts, $types);
 
-            return $this->showInstitutionWithMixedContacts($institution, $processedContacts, $institution->name.' | '.ucfirst($type->slug));
+            return $this->renderInstitutionPage($institution, $processedContacts, $institution->name.' | '.ucfirst($type->slug), hasMixedGrouping: true);
         }
 
         // Default behavior - flatten and deduplicate all duties
@@ -147,7 +152,7 @@ class ContactController extends PublicController
         // make eloquent collection from array
         $contacts = new Collection($contacts);
 
-        return $this->showInstitution($institution, $contacts, $institution->name.' | '.ucfirst($type->slug));
+        return $this->renderInstitutionPage($institution, $contacts, $institution->name.' | '.ucfirst($type->slug));
     }
 
     public function studentRepresentatives()
@@ -156,6 +161,7 @@ class ContactController extends PublicController
         $this->shareOtherLangURL('contacts.studentRepresentatives', $this->subdomain);
 
         $type = Type::query()->where('slug', '=', 'studentu-atstovu-organas')->first();
+        /** @var \Illuminate\Database\Eloquent\Collection<int, Type> $descendants */
         $descendants = $type->getDescendantsAndSelf();
 
         $descendants->load(['institutions' => function ($query) {
@@ -175,6 +181,7 @@ class ContactController extends PublicController
         })->values();
 
         $seo = $this->shareAndReturnSEOObject(
+            contentTenant: $this->tenant,
             title: __('Studentų atstovai').' - '.$this->tenant->shortname,
             description: app()->getLocale() === 'lt' ? $this->tenant->shortname.' studentų atstovų paieškoje vienoje vietoje suraskite visus '.$this->tenant->shortname.'studentų atstovus' : 'In '.$this->tenant->shortname.'contact search find all'.$this->tenant->shortname.'student representatives');
 
@@ -185,17 +192,42 @@ class ContactController extends PublicController
         ]);
     }
 
-    private function showInstitution(Institution $institution, Collection $contacts, string $title)
-    {
+    /**
+     * Render institution page with contacts (flat or grouped)
+     */
+    private function renderInstitutionPage(
+        Institution $institution,
+        Collection|array $contacts,
+        string $title,
+        bool $hasMixedGrouping = false
+    ) {
+        // Load meetings and group by academic year
+        $meetings = $this->getAllMeetingsForInstitution($institution);
+        $groupedMeetings = $this->groupMeetingsByAcademicYear($meetings);
+
+        // Use the institution's tenant for proper canonical URL
         $seo = $this->shareAndReturnSEOObject(
-            title: $title.' - '.$this->tenant->shortname,
+            contentTenant: $institution->tenant,
+            title: $title.' - '.$institution->tenant->shortname,
             description: Str::limit(strip_tags($institution->description), 160),
             image: $institution->image_url,
         );
 
-        return Inertia::render('Public/Contacts/ContactInstitutionOrType', [
+        $data = [
             'institution' => $institution,
-            'contacts' => $contacts->map(function ($contact) use ($institution) {
+            'currentYearMeetings' => $groupedMeetings['current'] ?? null,
+            'previousYearsMeetings' => $groupedMeetings['previous'] ?? [],
+            'hasMeetings' => ! empty($groupedMeetings),
+            'studentRepFormInfo' => $this->getStudentRepFormInfo($institution),
+        ];
+
+        if ($hasMixedGrouping) {
+            // Transform processed contacts for frontend
+            $data['contactSections'] = $this->transformContactSections($contacts);
+            $data['hasMixedGrouping'] = true;
+        } else {
+            // Map flat contacts
+            $data['contacts'] = $contacts->map(function ($contact) use ($institution) {
                 /** @var User $contact */
                 return [
                     'id' => $contact->id,
@@ -203,17 +235,157 @@ class ContactController extends PublicController
                     'email' => $contact->email,
                     'phone' => $contact->phone,
                     'facebook_url' => $contact->facebook_url,
-                    // Sometimes the duties may be filtered, e.g. curator duties are not shown in coordinator
-                    'duties' => isset($contact->filtered_current_duties) ? $contact->filtered_current_duties->where('institution_id', '=', $institution->id)->values() :
-                    $contact->current_duties->where('institution_id', '=', $institution->id)->values(),
+                    'duties' => isset($contact->filtered_current_duties)
+                        ? $contact->filtered_current_duties->where('institution_id', '=', $institution->id)->values()
+                        : $contact->current_duties->where('institution_id', '=', $institution->id)->values(),
                     'profile_photo_path' => $contact->profile_photo_path,
                     'pronouns' => $contact->pronouns,
                     'show_pronouns' => $contact->show_pronouns,
                 ];
-            }),
-        ])->withViewData(
+            })->values();
+        }
+
+        return Inertia::render('Public/Contacts/ShowInstitution', $data)->withViewData(
             ['SEOData' => $seo]
         );
+    }
+
+    /**
+     * Transform processed contact sections for frontend
+     */
+    private function transformContactSections(array $processedContacts): array
+    {
+        $transformedSections = [];
+
+        foreach ($processedContacts as $section) {
+            if ($section['type'] === 'grouped_duty') {
+                $transformedGroups = [];
+                foreach ($section['groups'] as $group) {
+                    $transformedGroups[] = [
+                        'name' => $group['name'],
+                        'contacts' => collect($group['contacts'])->map(fn ($item) => [
+                            'id' => $item['user']->id,
+                            'name' => $item['user']->name,
+                            'email' => $item['user']->email,
+                            'phone' => $item['user']->phone,
+                            'facebook_url' => $item['user']->facebook_url,
+                            'duties' => [$item['duty']->only(['id', 'name', 'description'])],
+                            'profile_photo_path' => $item['user']->profile_photo_path,
+                            'pronouns' => $item['user']->pronouns,
+                            'show_pronouns' => $item['user']->show_pronouns,
+                        ])->values()->toArray(),
+                    ];
+                }
+
+                $transformedSections[] = [
+                    'type' => 'grouped_duty',
+                    'dutyName' => $section['duty']->name,
+                    'groups' => $transformedGroups,
+                ];
+            } else {
+                $transformedSections[] = [
+                    'type' => 'flat_duty',
+                    'dutyName' => $section['duty']->name,
+                    'contacts' => collect($section['contacts'])->map(fn ($item) => [
+                        'id' => $item['user']->id,
+                        'name' => $item['user']->name,
+                        'email' => $item['user']->email,
+                        'phone' => $item['user']->phone,
+                        'facebook_url' => $item['user']->facebook_url,
+                        'duties' => [$item['duty']->only(['id', 'name', 'description'])],
+                        'profile_photo_path' => $item['user']->profile_photo_path,
+                        'pronouns' => $item['user']->pronouns,
+                        'show_pronouns' => $item['user']->show_pronouns,
+                    ])->values()->toArray(),
+                ];
+            }
+        }
+
+        return $transformedSections;
+    }
+
+    /**
+     * Show individual meeting detail page
+     */
+    public function showMeeting($subdomain, $lang, Meeting $meeting)
+    {
+        $this->getTenantLinks();
+
+        // Verify meeting is public (belongs to allowed institution types)
+        $settings = app(MeetingSettings::class);
+        $allowedTypeIds = $settings->getPublicMeetingInstitutionTypeIds();
+
+        if ($allowedTypeIds->isEmpty()) {
+            abort(404);
+        }
+
+        // Load relationships
+        $meeting->load([
+            'agendaItems' => function ($query) {
+                $query->orderBy('order');
+            },
+            'agendaItems.mainVote',
+            'institutions.types',
+        ]);
+
+        // Check if meeting's institution has allowed type
+        $hasAllowedType = false;
+        foreach ($meeting->institutions as $institution) {
+            $institutionTypeIds = $institution->types->pluck('id');
+            if ($institutionTypeIds->intersect($allowedTypeIds)->isNotEmpty()) {
+                $hasAllowedType = true;
+                break;
+            }
+        }
+
+        if (! $hasAllowedType) {
+            abort(404);
+        }
+
+        // Append completion status
+        $meeting->append('completion_status');
+
+        // Get primary institution for breadcrumbs
+        $primaryInstitution = $meeting->institutions->first();
+
+        // Get representatives who were active at meeting time
+        $representatives = $meeting->getRepresentativesActiveAt();
+
+        // Get previous and next meetings for the same institution
+        $previousMeeting = Meeting::query()
+            ->whereHas('institutions', fn ($q) => $q->where('institutions.id', $primaryInstitution->id))
+            ->where('start_time', '<', $meeting->start_time)
+            ->orderBy('start_time', 'desc')
+            ->select(['id', 'start_time'])
+            ->first();
+
+        $nextMeeting = Meeting::query()
+            ->whereHas('institutions', fn ($q) => $q->where('institutions.id', $primaryInstitution->id))
+            ->where('start_time', '>', $meeting->start_time)
+            ->orderBy('start_time', 'asc')
+            ->select(['id', 'start_time'])
+            ->first();
+
+        Inertia::share('otherLangURL', route('publicMeetings.show', [
+            'subdomain' => $this->subdomain,
+            'lang' => $this->getOtherLang(),
+            'meeting' => $meeting->id,
+        ]));
+
+        // Use the institution's tenant for proper canonical URL
+        $seo = $this->shareAndReturnSEOObject(
+            contentTenant: $primaryInstitution->tenant,
+            title: $meeting->title.' - '.$primaryInstitution->name,
+            description: Str::limit(strip_tags($meeting->description), 160),
+        );
+
+        return Inertia::render('Public/Meetings/ShowMeeting', [
+            'meeting' => $meeting,
+            'institution' => $primaryInstitution,
+            'representatives' => $representatives,
+            'previousMeeting' => $previousMeeting,
+            'nextMeeting' => $nextMeeting,
+        ])->withViewData(['SEOData' => $seo]);
     }
 
     /**
@@ -231,28 +403,75 @@ class ContactController extends PublicController
             'subdomain' => $this->subdomain,
             'lang' => $this->getOtherLang(), 'type' => $type->slug]));
 
-        $institutions = $type->load(['institutions' => function ($query) {
-            $query->orderBy('name')->with(['tenant' => function ($query) {
-                $query->where('type', 'padalinys');
-            }]);
-        }])->institutions;
+        // For padaliniai type, use the traditional ShowContactCategory view
+        if ($type->slug === 'padaliniai') {
+            $institutions = $type->load(['institutions' => function ($query) {
+                $query->orderBy('name')->with(['tenant' => function ($query) {
+                    $query->where('type', 'padalinys');
+                }]);
+            }])->institutions;
+
+            $seo = $this->shareAndReturnSEOObject(
+                contentTenant: $this->tenant,
+                title: __('Kontaktai').': '.$type->title.' - VU SA',
+                description: Str::limit($type->description, 160),
+            );
+
+            return Inertia::render('Public/Contacts/ShowContactCategory', [
+                'institutions' => $institutions->map(function ($institution) {
+                    return [
+                        ...$institution->toArray(),
+                        'description' => '',
+                    ];
+                }),
+                'type' => $type->unsetRelation('institutions'),
+            ])->withViewData(
+                ['SEOData' => $seo]
+            );
+        }
+
+        // For other types (pkp, studentu-atstovu-organas), use ShowStudentReps format
+        $descendants = $type->getDescendantsAndSelf();
+
+        // Default to showing all tenants on www (pagrindinis), filter by tenant on padalinys subdomains
+        // Can be overridden with ?all=1 or ?all=0 query parameter
+        $isMainTenant = $this->tenant->type === 'pagrindinis';
+        $showAllTenants = request()->has('all') ? request()->boolean('all') : $isMainTenant;
+
+        $descendants->load(['institutions' => function ($query) use ($showAllTenants) {
+            $query
+                ->with('duties.current_users:id,name,email,phone,facebook_url,profile_photo_path')
+                ->with('tenant:id,alias,shortname,type')
+                ->where('is_active', true)
+                // Order by tenant type 'pagrindinis' first, then by name
+                ->orderByRaw("CASE WHEN EXISTS (SELECT 1 FROM tenants WHERE tenants.id = institutions.tenant_id AND tenants.type = 'pagrindinis') THEN 0 ELSE 1 END")
+                ->orderBy('name');
+
+            // Only filter by tenant if not showing all
+            if (! $showAllTenants) {
+                $query->where('tenant_id', '=', $this->tenant->id);
+            }
+        }]);
+
+        // Remove descendants without institutions
+        $descendants = $descendants->filter(function ($descendant) {
+            if (! $descendant instanceof Type) {
+                return false;
+            }
+
+            return $descendant->institutions->count() > 0;
+        })->values();
 
         $seo = $this->shareAndReturnSEOObject(
-            title: __('Kontaktai').': '.$type->title.' - VU SA',
+            contentTenant: $this->tenant,
+            title: __('Kontaktai').': '.$type->title.' - '.$this->tenant->shortname,
             description: Str::limit($type->description, 160),
         );
 
-        return Inertia::render('Public/Contacts/ShowContactCategory', [
-            'institutions' => $institutions->map(function ($institution) {
-                return [
-                    ...$institution->toArray(),
-                    // shorten description and add ellipsis
-                    // 'description' => Str::limit(strip_tags($institution->description), 100, '...'),
-                    //  TODO: better solution for displaying description or remove completely
-                    'description' => '',
-                ];
-            }),
-            'type' => $type->unsetRelation('institutions'),
+        return Inertia::render('Public/Contacts/ShowStudentReps', [
+            'types' => $descendants,
+            'categoryType' => $type->only(['id', 'slug', 'title', 'description']),
+            'showAllTenants' => $showAllTenants,
         ])->withViewData(
             ['SEOData' => $seo]
         );
@@ -380,78 +599,6 @@ class ContactController extends PublicController
     }
 
     /**
-     * Show institution with mixed grouped and flat contacts
-     */
-    private function showInstitutionWithMixedContacts(Institution $institution, array $processedContacts, string $title)
-    {
-        $seo = $this->shareAndReturnSEOObject(
-            title: $title.' - '.$this->tenant->shortname,
-            description: Str::limit(strip_tags($institution->description), 160),
-            image: $institution->image_url,
-        );
-
-        // Transform processed contacts for frontend
-        $transformedSections = [];
-        foreach ($processedContacts as $section) {
-            if ($section['type'] === 'grouped_duty') {
-                // This is a duty with grouped contacts
-                $transformedGroups = [];
-                foreach ($section['groups'] as $group) {
-                    $transformedGroups[] = [
-                        'name' => $group['name'],
-                        'contacts' => collect($group['contacts'])->map(function ($item) {
-                            return [
-                                'id' => $item['user']->id,
-                                'name' => $item['user']->name,
-                                'email' => $item['user']->email,
-                                'phone' => $item['user']->phone,
-                                'facebook_url' => $item['user']->facebook_url,
-                                'duties' => [$item['duty']->only(['id', 'name', 'description'])],
-                                'profile_photo_path' => $item['user']->profile_photo_path,
-                                'pronouns' => $item['user']->pronouns,
-                                'show_pronouns' => $item['user']->show_pronouns,
-                            ];
-                        })->values()->toArray(),
-                    ];
-                }
-
-                $transformedSections[] = [
-                    'type' => 'grouped_duty',
-                    'dutyName' => $section['duty']->name, // Use the duty model directly for translation
-                    'groups' => $transformedGroups,
-                ];
-            } else {
-                // This is a flat duty
-                $transformedSections[] = [
-                    'type' => 'flat_duty',
-                    'dutyName' => $section['duty']->name, // Use the duty model directly for translation
-                    'contacts' => collect($section['contacts'])->map(function ($item) {
-                        return [
-                            'id' => $item['user']->id,
-                            'name' => $item['user']->name,
-                            'email' => $item['user']->email,
-                            'phone' => $item['user']->phone,
-                            'facebook_url' => $item['user']->facebook_url,
-                            'duties' => [$item['duty']->only(['id', 'name', 'description'])],
-                            'profile_photo_path' => $item['user']->profile_photo_path,
-                            'pronouns' => $item['user']->pronouns,
-                            'show_pronouns' => $item['user']->show_pronouns,
-                        ];
-                    })->values()->toArray(),
-                ];
-            }
-        }
-
-        return Inertia::render('Public/Contacts/ContactInstitutionOrType', [
-            'institution' => $institution,
-            'contactSections' => $transformedSections,
-            'hasMixedGrouping' => true,
-        ])->withViewData(
-            ['SEOData' => $seo]
-        );
-    }
-
-    /**
      * Filter processed contacts to only show duties related to the selected types
      */
     private function filterProcessedContactsByTypes(array $processedContacts, $types): array
@@ -496,5 +643,148 @@ class ContactController extends PublicController
 
         // For all other types, keep the same slug
         return $currentSlug;
+    }
+
+    /**
+     * Get all meetings for an institution (for grouping by academic year)
+     */
+    protected function getAllMeetingsForInstitution(Institution $institution): Collection
+    {
+        $settings = app(MeetingSettings::class);
+        $allowedTypeIds = $settings->getPublicMeetingInstitutionTypeIds();
+
+        if ($allowedTypeIds->isEmpty()) {
+            return new Collection([]);
+        }
+
+        // Check if institution has any allowed types
+        $institutionTypeIds = $institution->types->pluck('id');
+        $hasAllowedType = $institutionTypeIds->intersect($allowedTypeIds)->isNotEmpty();
+
+        if (! $hasAllowedType) {
+            return new Collection([]);
+        }
+
+        // Load all past meetings with necessary relationships
+        return $institution->meetings()
+            ->with([
+                'agendaItems' => function ($query) {
+                    $query->orderBy('order');
+                },
+                'agendaItems.mainVote',
+            ])
+            ->where('start_time', '<=', now())
+            ->orderBy('start_time', 'desc')
+            ->get()
+            ->each->append('completion_status');
+    }
+
+    /**
+     * Group meetings by academic year (Sept 1 - Aug 31)
+     *
+     * @param  Collection<int, Meeting>  $meetings
+     */
+    protected function groupMeetingsByAcademicYear(Collection $meetings): array
+    {
+        if ($meetings->isEmpty()) {
+            return [];
+        }
+
+        $grouped = $meetings->groupBy(function (\App\Models\Meeting $meeting) {
+            return $this->getAcademicYear($meeting->start_time);
+        });
+
+        $currentAcademicYear = $this->getAcademicYear(now());
+
+        $result = [
+            'current' => null,
+            'previous' => [],
+        ];
+
+        foreach ($grouped as $year => $yearMeetings) {
+            $yearData = [
+                'year_key' => $year,
+                'year_label' => $year.' mokslo metai',
+                'meetings' => $yearMeetings->values(),
+            ];
+
+            if ($year === $currentAcademicYear) {
+                $result['current'] = $yearData;
+            } else {
+                $result['previous'][] = $yearData;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Calculate academic year from date (Sept 1 boundary)
+     *
+     * @param  string|Carbon  $date
+     */
+    protected function getAcademicYear($date): string
+    {
+        $carbon = $date instanceof Carbon ? $date : Carbon::parse($date);
+
+        // If before September 1, use previous year
+        // Example: 2024-05-15 → "2023-2024"
+        // Example: 2024-09-15 → "2024-2025"
+        $startYear = $carbon->month >= 9 ? $carbon->year : $carbon->year - 1;
+
+        return "{$startYear}-".($startYear + 1);
+    }
+
+    /**
+     * Get student representative registration form info for an institution.
+     *
+     * Returns null if:
+     * - No student rep form is configured
+     * - The institution type is not in the allowed types
+     *
+     * @return array{formPath: string, institutionId: string}|null
+     */
+    protected function getStudentRepFormInfo(Institution $institution): ?array
+    {
+        $formSettings = app(FormSettings::class);
+
+        // Check if a form is configured
+        if (! $formSettings->student_rep_registration_form_id) {
+            return null;
+        }
+
+        // Check if institution type is in allowed types
+        $allowedTypeIds = $formSettings->getStudentRepInstitutionTypeIds();
+
+        if ($allowedTypeIds->isNotEmpty()) {
+            // Load types if not already loaded
+            if (! $institution->relationLoaded('types')) {
+                $institution->load('types');
+            }
+
+            $institutionTypeIds = $institution->types->pluck('id');
+            $hasAllowedType = $institutionTypeIds->intersect($allowedTypeIds)->isNotEmpty();
+
+            if (! $hasAllowedType) {
+                return null;
+            }
+        }
+
+        // Get the form path
+        $form = Form::find($formSettings->student_rep_registration_form_id);
+
+        if (! $form) {
+            return null;
+        }
+
+        return [
+            'formPath' => route('registrationPage', [
+                'registrationString' => app()->getLocale() === 'lt' ? 'registracija' : 'registration',
+                'registrationForm' => $form->path,
+                'lang' => app()->getLocale(),
+            ]),
+            'institutionId' => $institution->id,
+            'institutionName' => $institution->name,
+        ];
     }
 }

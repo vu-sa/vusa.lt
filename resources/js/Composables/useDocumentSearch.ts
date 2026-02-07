@@ -1,156 +1,154 @@
-import { ref, computed, watch, onUnmounted, nextTick, shallowRef } from 'vue'
-import { useLocalStorage } from '@vueuse/core'
-import { debounce } from 'lodash-es'
-import TypesenseInstantSearchAdapter from 'typesense-instantsearch-adapter'
-import { usePage } from '@inertiajs/vue3'
+/**
+ * Document Search Composable V2
+ *
+ * Refactored version using shared search infrastructure.
+ * This composable extends useBaseSearch with document-specific functionality.
+ */
 
-// Import types and services
-import type { 
-  DocumentSearchFilters, 
-  DocumentFacet, 
-  SearchError, 
-  SearchStatus, 
-  SearchState, 
+import { ref, computed, nextTick, watch, type Ref, type ComputedRef } from 'vue'
+import { useLocalStorage, useUrlSearchParams } from '@vueuse/core'
+import { usePage } from '@inertiajs/vue3'
+import { createTypesenseClients } from './useSearchClient'
+
+import { useBaseSearch, type BaseSearchService } from '@/Shared/Search/composables/useBaseSearch'
+import { FilterUtils } from '@/Shared/Search/services/FilterUtils'
+import type { ProcessedSearchResult } from '@/Shared/Search/types'
+
+import type {
+  DocumentSearchFilters,
+  DocumentFacet,
   DocumentSearchPreferences,
-  DocumentSearchController
+  DocumentSearchController,
+  SearchState,
+  SearchError,
+  SearchStatus
 } from '../Types/DocumentSearchTypes'
 import { DocumentSearchService } from '../Services/DocumentSearchService'
-import { FacetMerger } from '../Services/FacetMerger'
-import { 
-  LanguageUtils, 
-  RecentSearchManager, 
-  FilterUtils, 
-  ErrorUtils, 
-  QueryUtils 
-} from '../Utils/SearchUtils'
 
 // Re-export types for backward compatibility
-export type { 
-  DocumentSearchFilters, 
-  DocumentFacet, 
-  SearchError, 
-  SearchStatus, 
-  SearchState, 
-  DocumentSearchPreferences 
+export type {
+  DocumentSearchFilters,
+  DocumentFacet
 }
 
+// ============================================================================
+// Types
+// ============================================================================
+
+/**
+ * Extended preferences for document search
+ */
+interface DocumentPreferences extends DocumentSearchPreferences {
+  viewMode: 'list' | 'compact'
+  recentSearches: string[]
+}
+
+// ============================================================================
+// Service Adapter
+// ============================================================================
+
+/**
+ * Adapter to make DocumentSearchService compatible with BaseSearchService interface
+ */
+class DocumentSearchServiceAdapter implements BaseSearchService<DocumentSearchFilters, DocumentFacet> {
+  private service: DocumentSearchService
+
+  constructor(service: DocumentSearchService) {
+    this.service = service
+  }
+
+  async performSearch(
+    filters: DocumentSearchFilters,
+    perPage: number,
+    isLoadMore: boolean,
+    currentPage: number
+  ): Promise<ProcessedSearchResult<DocumentFacet>> {
+    const result = await this.service.performSearch(filters, perPage, isLoadMore, currentPage)
+    return {
+      hits: result.hits,
+      totalHits: result.totalHits,
+      totalPages: result.totalPages,
+      currentPage: result.currentPage,
+      facets: result.facets
+    }
+  }
+
+  async loadInitialFacets(): Promise<DocumentFacet[]> {
+    return this.service.loadInitialFacets()
+  }
+
+  cancelCurrentSearch(): void {
+    this.service.cancelCurrentSearch()
+  }
+}
+
+// ============================================================================
+// Composable
+// ============================================================================
+
 export const useDocumentSearch = (): DocumentSearchController => {
-  // Persistent preferences
-  const preferences = useLocalStorage<DocumentSearchPreferences>('document-search-preferences', {
-    viewMode: 'list', // Default to list view as requested
+  // Extended preferences for document search
+  const documentPreferences = useLocalStorage<DocumentPreferences>('document-search-preferences', {
+    viewMode: 'list',
     recentSearches: []
   })
 
-  // Simplified state management with status - using shallowRef for performance with large arrays
-  const status = ref<SearchStatus>('idle')
-  const searchQuery = ref('') // This is what the user sees in the input
-  const internalQuery = ref('') // This is what we actually search for
-  const results = shallowRef<any[]>([]) // Performance: use shallowRef for large arrays
-  const totalHits = ref(0)
-  const facets = shallowRef<DocumentFacet[]>([]) // Performance: use shallowRef for facets
-  const initialFacets = shallowRef<DocumentFacet[]>([]) // Performance: use shallowRef for initial facets
-  
-  // Error handling state with user-friendly messages
-  const searchError = ref<SearchError | null>(null)
-  const isOnline = ref(navigator.onLine)
-  const retryCount = ref(0)
-  const maxRetries = 3
-  
-  // Pagination state
-  const currentPage = ref(0)
-  const totalPages = ref(0)
-  const perPage = ref(24)
+  // Search client refs (for initialization)
+  const searchClient = ref<any>(null)
+  const typesenseClient = ref<any>(null)
+  const documentService = ref<DocumentSearchService | null>(null)
 
-  // Filter state - consolidated into single source of truth
-  const filters = ref<DocumentSearchFilters>({
+  // Default filters for document search
+  const defaultFilters: DocumentSearchFilters = {
     query: '',
     tenants: [],
     contentTypes: [],
     languages: [],
     dateRange: {}
-  })
-
-  // Search clients
-  const searchClient = ref<any>(null) // InstantSearch adapter (for compatibility)
-  const typesenseClient = ref<any>(null) // Direct Typesense client
-  const instantSearchInstance = ref<any>(null)
-
-  // Services
-  const searchService = ref<DocumentSearchService | null>(null)
-
-  // Computed properties for intelligent facet merging using service with memoization key
-  const facetMergeKey = computed(() => {
-    // Create a stable key for memoization based on facet data and filters
-    return JSON.stringify({
-      initialCount: initialFacets.value.length,
-      currentCount: facets.value.length,
-      filters: {
-        tenants: filters.value.tenants.slice().sort(),
-        contentTypes: filters.value.contentTypes.slice().sort(),
-        languages: filters.value.languages.slice().sort()
-      }
-    })
-  })
-
-  const mergedFacets = computed(() => {
-    // The key dependency ensures this only recalculates when necessary
-    facetMergeKey.value // Touch the key for reactivity
-    return FacetMerger.mergeFacets(initialFacets.value, facets.value, filters.value)
-  })
-
-  // Network status monitoring
-  const updateOnlineStatus = () => {
-    isOnline.value = navigator.onLine
   }
 
-  // Simplified error handling using utility
-  const clearError = () => {
-    searchError.value = null
-    retryCount.value = 0
-    status.value = 'idle'
-  }
-
-  const handleSearchError = (error: unknown, context: string) => {
-    console.error(`Search error in ${context}:`, error)
-    
-    const errorType = ErrorUtils.getErrorType(error)
-    const userMessage = ErrorUtils.getUserFriendlyMessage(error)
-    const message = error instanceof Error ? error.message : 'Unknown error'
-    const retryable = !ErrorUtils.isAbortError(error)
-    
-    searchError.value = ErrorUtils.createSearchError(
-      errorType,
-      message,
-      userMessage,
-      errorType.toUpperCase(),
-      retryable
-    )
-    
-    if (ErrorUtils.isAbortError(error)) {
-      return // Don't set error status for aborted requests
+  // Filter key mapper for document facets
+  const filterKeyMapper = (field: string, filters: DocumentSearchFilters): string[] => {
+    switch (field) {
+      case 'tenant_shortname':
+        return filters.tenants
+      case 'content_type':
+        return filters.contentTypes
+      case 'language':
+        return filters.languages
+      default:
+        return []
     }
-    
-    status.value = 'error'
   }
 
-  // Initialize Typesense search client
+  // Initialize base search without service (will be set after client init)
+  const baseSearch = useBaseSearch<DocumentSearchFilters, DocumentFacet, any>({
+    defaultFilters,
+    searchService: null, // Will be set after initialization
+    filterKeyMapper,
+    localStorageKey: 'document-search-state',
+    perPage: 24,
+    debounceDelay: 300,
+    maxRetries: 3,
+    searchOnMount: false,
+    loadFacetsOnMount: false
+  })
+
+  // ============================================================================
+  // Client Initialization
+  // ============================================================================
+
   const initializeSearchClient = async () => {
     const page = usePage()
     const typesenseConfig = page.props.typesenseConfig as any
 
-    if (!typesenseConfig?.apiKey || ['xyz', 'xyza'].includes(typesenseConfig.apiKey)) {
+    if (!typesenseConfig?.apiKey) {
       console.warn('Typesense not configured - document search unavailable')
       return null
     }
 
     try {
-      // Create InstantSearch adapter (for compatibility)
-      const adapter = new TypesenseInstantSearchAdapter({
-        server: {
-          apiKey: typesenseConfig.apiKey,
-          nodes: typesenseConfig.nodes,
-          connectionTimeoutSeconds: 10,
-        },
+      const clients = createTypesenseClients(typesenseConfig, {
         additionalSearchParameters: {
           query_by: 'title,summary',
           num_typos: 2,
@@ -160,7 +158,7 @@ export const useDocumentSearch = (): DocumentSearchController => {
           per_page: 20,
           facet_by: [
             'content_type',
-            'tenant_shortname', 
+            'tenant_shortname',
             'language',
             'document_date'
           ].join(','),
@@ -176,391 +174,327 @@ export const useDocumentSearch = (): DocumentSearchController => {
               'language',
               'document_date'
             ].join(','),
-            per_page: 24,
+            per_page: 24
           }
         }
       })
 
-      searchClient.value = adapter.searchClient
+      searchClient.value = clients.searchClient
+      typesenseClient.value = clients.typesenseClient
 
-      // Create direct Typesense client for service usage
-      typesenseClient.value = {
-        apiKey: typesenseConfig.apiKey,
-        nodes: typesenseConfig.nodes,
-        search: async (collection: string, searchParams: any, abortSignal?: AbortSignal) => {
-          const node = typesenseConfig.nodes[0]
-          const baseUrl = `${node.protocol}://${node.host}:${node.port}`
-          const url = new URL(`${baseUrl}/collections/${collection}/documents/search`)
-          
-          Object.entries(searchParams).forEach(([key, value]) => {
-            if (value !== undefined && value !== null && value !== '') {
-              url.searchParams.append(key, String(value))
-            }
-          })
-          
-          const response = await fetch(url.toString(), {
-            method: 'GET',
-            headers: {
-              'X-TYPESENSE-API-KEY': typesenseConfig.apiKey,
-              'Content-Type': 'application/json',
-            },
-            signal: abortSignal
-          })
-          
-          if (!response.ok) {
-            const errorText = await response.text()
-            throw new Error(`Typesense API error: ${response.status} - ${errorText}`)
-          }
-          
-          return await response.json()
-        }
-      }
+      // Get collection name from config (includes Scout prefix)
+      const collectionName = typesenseConfig.collections?.documents || 'documents'
 
-      // Initialize search service
-      searchService.value = new DocumentSearchService(typesenseClient.value)
+      // Create document service and adapter
+      documentService.value = new DocumentSearchService(typesenseClient.value, collectionName)
+      const adapter = new DocumentSearchServiceAdapter(documentService.value)
 
-      // Load initial facets after client initialization
-      if (typesenseClient.value) {
-        // Use nextTick to ensure the client is fully set up
-        await nextTick()
-        await loadInitialFacets()
-      }
+      // Set the service on base search
+      baseSearch.setSearchService(adapter)
 
-      return adapter.searchClient
+      // Load initial facets
+      await nextTick()
+      await baseSearch.loadInitialFacets()
+
+      return clients.searchClient
     } catch (error) {
       console.error('Failed to initialize Typesense clients:', error)
       return null
     }
   }
 
-  // Search function using service - much cleaner!
-  const performSearch = async (isLoadMore = false, attempt = 1) => {
-    // Clear previous errors on new search attempts
-    if (!isLoadMore && attempt === 1) {
-      clearError()
-    }
-    
-    if (!searchService.value) {
-      handleSearchError(new Error('Search service not initialized'), 'service initialization')
-      return
-    }
-
-    // Check network connectivity
-    if (!isOnline.value) {
-      searchError.value = ErrorUtils.createSearchError(
-        'network', 
-        'No internet connection', 
-        'Check your internet connection and try again', 
-        'OFFLINE', 
-        true
-      )
-      return
-    }
-
-    // Validate search using utility
-    const hasActiveFilters = FilterUtils.hasActiveFilters(filters.value)
-    const shouldSearch = QueryUtils.shouldSearch(filters.value.query, hasActiveFilters)
-    
-    if (!shouldSearch) {
-      results.value = []
-      totalHits.value = 0
-      facets.value = []
-      currentPage.value = 0
-      totalPages.value = 0
-      status.value = 'idle'
-      return
-    }
-
-    // Set loading states
-    if (isLoadMore) {
-      status.value = 'loading-more'
-    } else {
-      status.value = 'searching'
-    }
-
-    try {
-      // Use service to perform search - all the complex logic is now encapsulated
-      const result = await searchService.value.performSearch(
-        filters.value,
-        perPage.value,
-        isLoadMore,
-        currentPage.value
-      )
-
-      // Update state with results
-      if (isLoadMore) {
-        results.value = [...results.value, ...result.hits]
-      } else {
-        results.value = result.hits
-      }
-      
-      totalHits.value = result.totalHits
-      totalPages.value = result.totalPages
-      currentPage.value = result.currentPage
-      facets.value = result.facets
-
-      // Add to recent searches using utility - use the user's actual query, not internal query
-      if (QueryUtils.isValidQuery(searchQuery.value)) {
-        preferences.value.recentSearches = RecentSearchManager.addToRecentSearches(
-          preferences.value.recentSearches, 
-          searchQuery.value
-        )
-      }
-
-      // Reset retry count on successful search
-      retryCount.value = 0
-
-    } catch (error) {
-      if (!ErrorUtils.isAbortError(error)) {
-        handleSearchError(error, `search attempt ${attempt}`)
-        
-        // Retry logic for retryable errors
-        if (searchError.value?.retryable && attempt < maxRetries) {
-          console.log(`Retrying search, attempt ${attempt + 1}/${maxRetries}`)
-          retryCount.value = attempt
-          
-          // Exponential backoff: 1s, 2s, 4s
-          const delay = Math.pow(2, attempt - 1) * 1000
-          setTimeout(() => {
-            performSearch(isLoadMore, attempt + 1)
-          }, delay)
-          return
-        }
-      }
-    } finally {
-      status.value = 'idle'
-    }
-  }
-
-  // Debounced search function (for new searches) with optimization
-  const debouncedSearch = debounce(() => {
-    // Only perform search if not already searching or loading
-    if (status.value === 'idle' || status.value === 'error') {
-      performSearch(false)
-    }
-  }, 300)
-
-  // Cache for initial facets to avoid unnecessary API calls
-  const initialFacetsLoaded = ref(false)
-
-  // Load initial facets using service with caching
-  const loadInitialFacets = async () => {
-    if (!searchService.value || initialFacetsLoaded.value) {
-      return // Already loaded, skip
-    }
-
-    status.value = 'loading-facets'
-
-    try {
-      const facetResults = await searchService.value.loadInitialFacets()
-      
-      initialFacets.value = facetResults
-      initialFacetsLoaded.value = true // Mark as loaded
-      
-      // If no current facets, use initial facets as default
-      if (facets.value.length === 0) {
-        facets.value = [...initialFacets.value]
-      }
-
-    } catch (error) {
-      console.error('Failed to load initial facets:', error)
-      initialFacets.value = []
-    } finally {
-      status.value = 'idle'
-    }
-  }
-
-  // Public API methods
-  const search = (query: string, immediate = false) => {
-    // If it's a wildcard search (for loading all documents), don't show it in the input
-    if (query === '*') {
-      internalQuery.value = '*'
-      filters.value.query = '*'
-      // Keep searchQuery empty so input shows placeholder
-      searchQuery.value = ''
-    } else {
-      // Normal search - show in input and use for search
-      searchQuery.value = query
-      internalQuery.value = query
-      filters.value.query = query
-    }
-    
-    // Use immediate search for initial load, debounced for user typing
-    if (immediate) {
-      performSearch(false)
-    } else {
-      debouncedSearch()
-    }
-  }
-
-  const setFilter = <K extends keyof DocumentSearchFilters>(
-    key: K, 
-    value: DocumentSearchFilters[K]
-  ) => {
-    filters.value[key] = value
-    debouncedSearch()
-  }
+  // ============================================================================
+  // Document-Specific Methods
+  // ============================================================================
 
   const toggleTenant = (tenantShortname: string) => {
-    const current = [...filters.value.tenants]
-    const index = current.indexOf(tenantShortname)
-    
-    if (index >= 0) {
-      current.splice(index, 1)
-    } else {
-      current.push(tenantShortname)
+    const current = baseSearch.filters.value.tenants
+    baseSearch.filters.value = {
+      ...baseSearch.filters.value,
+      tenants: FilterUtils.toggleArrayValue(current, tenantShortname)
     }
-    
-    filters.value.tenants = current
-    debouncedSearch()
+    baseSearch.debouncedSearch()
   }
 
   const toggleContentType = (contentType: string) => {
-    const current = [...filters.value.contentTypes]
-    const index = current.indexOf(contentType)
-    
-    if (index >= 0) {
-      current.splice(index, 1)
-    } else {
-      current.push(contentType)
+    const current = baseSearch.filters.value.contentTypes
+    baseSearch.filters.value = {
+      ...baseSearch.filters.value,
+      contentTypes: FilterUtils.toggleArrayValue(current, contentType)
     }
-    
-    filters.value.contentTypes = current
-    debouncedSearch()
+    baseSearch.debouncedSearch()
   }
 
   const toggleLanguage = (language: string) => {
-    const current = [...filters.value.languages]
-    const index = current.indexOf(language)
-    
-    if (index >= 0) {
-      current.splice(index, 1)
-    } else {
-      current.push(language)
+    const current = baseSearch.filters.value.languages
+    baseSearch.filters.value = {
+      ...baseSearch.filters.value,
+      languages: FilterUtils.toggleArrayValue(current, language)
     }
-    
-    filters.value.languages = current
-    debouncedSearch()
+    baseSearch.debouncedSearch()
   }
 
-  const setDateRange = (dateRange: any) => {
-    filters.value.dateRange = {
-      from: dateRange.from,
-      to: dateRange.to,
-      preset: dateRange.preset
+  const setDateRange = (dateRange: { from?: Date; to?: Date; preset?: string }) => {
+    baseSearch.filters.value = {
+      ...baseSearch.filters.value,
+      dateRange: {
+        from: dateRange.from,
+        to: dateRange.to,
+        preset: dateRange.preset as DocumentSearchFilters['dateRange']['preset']
+      }
     }
-    debouncedSearch()
+    baseSearch.debouncedSearch()
   }
 
   const setViewMode = (mode: 'list' | 'compact') => {
-    preferences.value.viewMode = mode
+    documentPreferences.value.viewMode = mode
   }
 
   const clearFilters = () => {
-    filters.value = FilterUtils.clearFilters(filters.value.query)
-    debouncedSearch()
+    baseSearch.filters.value = {
+      query: baseSearch.filters.value.query,
+      tenants: [],
+      contentTypes: [],
+      languages: [],
+      dateRange: {}
+    }
+    baseSearch.debouncedSearch()
   }
 
+  // ============================================================================
+  // Recent Searches (using document preferences)
+  // ============================================================================
+
   const clearRecentSearches = () => {
-    preferences.value.recentSearches = RecentSearchManager.clearRecentSearches()
+    documentPreferences.value.recentSearches = []
   }
 
   const removeRecentSearch = (searchToRemove: string) => {
-    preferences.value.recentSearches = RecentSearchManager.removeRecentSearch(
-      preferences.value.recentSearches, 
-      searchToRemove
+    documentPreferences.value.recentSearches = documentPreferences.value.recentSearches.filter(
+      s => s !== searchToRemove
     )
   }
 
-  const loadMore = () => {
-    if (status.value !== 'loading-more' && currentPage.value < totalPages.value) {
-      performSearch(true)
-    }
-  }
-
-  // Computed properties using utilities
-  const hasActiveFilters = computed(() => FilterUtils.hasActiveFilters(filters.value))
-
-  const hasResults = computed(() => results.value.length > 0)
-  const hasMoreResults = computed(() => currentPage.value < totalPages.value)
+  // ============================================================================
+  // Search State (matching original interface)
+  // ============================================================================
 
   const searchState = computed<SearchState>(() => ({
-    isSearching: status.value === 'searching',
-    hasResults: hasResults.value,
-    totalHits: totalHits.value,
-    query: searchQuery.value, // Use display query, not internal query
-    filters: filters.value,
-    facets: facets.value,
-    results: results.value,
-    viewMode: preferences.value.viewMode,
-    error: searchError.value,
-    isOnline: isOnline.value,
-    status: status.value
+    status: baseSearch.status.value,
+    isSearching: baseSearch.status.value === 'searching',
+    hasResults: baseSearch.hasResults.value,
+    totalHits: baseSearch.totalHits.value,
+    query: baseSearch.displayQuery.value,
+    filters: baseSearch.filters.value,
+    facets: baseSearch.facets.value,
+    results: baseSearch.results.value,
+    viewMode: documentPreferences.value.viewMode,
+    error: baseSearch.error.value,
+    isOnline: baseSearch.isOnline.value
   }))
 
-  // Watch for query changes from external sources
-  watch(() => filters.value.query, (newQuery) => {
-    // Only update display query if it's not a wildcard
-    if (newQuery !== '*') {
-      searchQuery.value = newQuery
-    }
-    internalQuery.value = newQuery
-  })
+  // ============================================================================
+  // URL Sync - Using W3 HTML standard array notation (param[]=value)
+  // ============================================================================
 
-  // Retry functionality
-  const retrySearch = () => {
-    if (searchError.value?.retryable) {
-      clearError()
-      performSearch(false, 1)
-    }
-  }
-
-  // Network monitoring setup
-  if (typeof window !== 'undefined') {
-    window.addEventListener('online', updateOnlineStatus)
-    window.addEventListener('offline', updateOnlineStatus)
-  }
-
-  // Cleanup on unmount
-  onUnmounted(() => {
-    // Cancel any ongoing searches through service
-    if (searchService.value) {
-      searchService.value.cancelCurrentSearch()
-    }
-    debouncedSearch.cancel()
+  /**
+   * Sync current filter state to URL using array notation for multi-value params
+   * Following HTML standard: tenants[]=value1&tenants[]=value2
+   */
+  const syncFiltersToUrl = () => {
+    const filters = baseSearch.filters.value
+    if (!filters) return
     
-    // Clean up network listeners
-    if (typeof window !== 'undefined') {
-      window.removeEventListener('online', updateOnlineStatus)
-      window.removeEventListener('offline', updateOnlineStatus)
+    const params = new URLSearchParams()
+
+    // Query
+    if (filters.query && filters.query !== '' && filters.query !== '*') {
+      params.set('q', filters.query)
     }
-  })
+
+    // Tenants (array notation)
+    filters.tenants?.forEach(tenant => {
+      params.append('tenants[]', tenant)
+    })
+
+    // Content types (array notation)
+    filters.contentTypes?.forEach(type => {
+      params.append('contentTypes[]', type)
+    })
+
+    // Languages (array notation)
+    filters.languages?.forEach(lang => {
+      params.append('language[]', lang)
+    })
+
+    // Date range
+    if (filters.dateRange?.from) {
+      params.set('dateFrom', Math.floor(filters.dateRange.from.getTime() / 1000).toString())
+    }
+    if (filters.dateRange?.to) {
+      params.set('dateTo', Math.floor(filters.dateRange.to.getTime() / 1000).toString())
+    }
+    if (filters.dateRange?.preset && filters.dateRange.preset !== 'recent') {
+      params.set('datePreset', filters.dateRange.preset)
+    }
+
+    // Update URL without page reload
+    const newUrl = new URL(window.location.href)
+    newUrl.search = params.toString()
+    window.history.replaceState({}, '', newUrl.toString())
+  }
+
+  /**
+   * Load filter state from URL
+   */
+  const loadFiltersFromUrl = (): Partial<DocumentSearchFilters> => {
+    if (typeof window === 'undefined') return {}
+
+    const params = new URLSearchParams(window.location.search)
+    const filters: Partial<DocumentSearchFilters> = {}
+
+    // Query
+    const query = params.get('q')
+    if (query) {
+      filters.query = query
+    }
+
+    // Parse array params using HTML standard notation (param[]=value)
+    const parseArrayParam = (paramName: string): string[] => {
+      const values = params.getAll(`${paramName}[]`)
+      // Also support indexed notation for backwards compatibility
+      if (values.length === 0) {
+        const indexed: string[] = []
+        for (let i = 0; i < 50; i++) {
+          const value = params.get(`${paramName}[${i}]`)
+          if (value) {
+            indexed.push(value)
+          }
+        }
+        return indexed
+      }
+      return values
+    }
+
+    const tenants = parseArrayParam('tenants')
+    if (tenants.length > 0) filters.tenants = tenants
+
+    const contentTypes = parseArrayParam('contentTypes')
+    if (contentTypes.length > 0) filters.contentTypes = contentTypes
+
+    const languages = parseArrayParam('language')
+    if (languages.length > 0) filters.languages = languages
+
+    // Date range
+    const dateFrom = params.get('dateFrom')
+    const dateTo = params.get('dateTo')
+    const datePreset = params.get('datePreset')
+
+    if (dateFrom || dateTo || datePreset) {
+      filters.dateRange = {
+        from: dateFrom ? new Date(Number(dateFrom) * 1000) : undefined,
+        to: dateTo ? new Date(Number(dateTo) * 1000) : undefined,
+        preset: datePreset as DocumentSearchFilters['dateRange']['preset']
+      }
+    }
+
+    return filters
+  }
+
+  // Flag to prevent URL sync during initial load
+  let isInitialLoad = true
+
+  // Watch for filter changes and sync to URL (after initial load)
+  watch(
+    () => baseSearch.filters.value,
+    () => {
+      if (!isInitialLoad && baseSearch.status.value !== 'searching') {
+        syncFiltersToUrl()
+      }
+    },
+    { deep: true }
+  )
+
+  // Also sync after search completes
+  watch(
+    () => baseSearch.status.value,
+    (newStatus, oldStatus) => {
+      if (oldStatus === 'searching' && newStatus === 'idle' && !isInitialLoad) {
+        syncFiltersToUrl()
+      }
+    }
+  )
+
+  // ============================================================================
+  // Return Controller (matching DocumentSearchController interface)
+  // ============================================================================
+
+  // Wrap initializeSearchClient to load URL params first
+  const initializeWithUrlSync = async () => {
+    // Load filters from URL before initializing
+    const urlFilters = loadFiltersFromUrl()
+    
+    // Apply URL filters to base search (with null checks)
+    if (baseSearch.filters.value) {
+      if (urlFilters.tenants) {
+        baseSearch.filters.value.tenants = urlFilters.tenants
+      }
+      if (urlFilters.contentTypes) {
+        baseSearch.filters.value.contentTypes = urlFilters.contentTypes
+      }
+      if (urlFilters.languages) {
+        baseSearch.filters.value.languages = urlFilters.languages
+      }
+      if (urlFilters.dateRange) {
+        baseSearch.filters.value.dateRange = urlFilters.dateRange
+      }
+      if (urlFilters.query) {
+        baseSearch.filters.value.query = urlFilters.query
+      }
+    }
+
+    // Initialize search client
+    const result = await initializeSearchClient()
+    
+    // Mark initial load as complete after a short delay
+    setTimeout(() => {
+      isInitialLoad = false
+    }, 500)
+    
+    return result
+  }
 
   return {
-    // State
+    // State from base
     searchState,
-    isSearching: computed(() => status.value === 'searching'),
-    isLoadingFacets: computed(() => status.value === 'loading-facets'),
-    isLoadingMore: computed(() => status.value === 'loading-more'),
-    hasResults,
-    hasActiveFilters,
-    hasMoreResults,
-    totalHits: computed(() => totalHits.value),
-    results: computed(() => results.value),
-    facets: computed(() => mergedFacets.value), // Use merged facets instead of raw facets
-    filters: computed(() => filters.value),
-    viewMode: computed(() => preferences.value.viewMode),
-    recentSearches: computed(() => preferences.value.recentSearches),
+    isSearching: baseSearch.isSearching,
+    isLoadingFacets: baseSearch.isLoadingFacets,
+    isLoadingMore: baseSearch.isLoadingMore,
+    hasResults: baseSearch.hasResults,
+    hasActiveFilters: baseSearch.hasActiveFilters,
+    hasMoreResults: baseSearch.hasMoreResults,
+    totalHits: baseSearch.totalHits,
+    results: baseSearch.results,
+    facets: baseSearch.mergedFacets, // Use merged facets
+    filters: baseSearch.filters as unknown as ComputedRef<DocumentSearchFilters>,
+    viewMode: computed(() => documentPreferences.value.viewMode),
+    recentSearches: computed(() => documentPreferences.value.recentSearches),
 
     // Error handling
-    searchError: computed(() => searchError.value),
-    isOnline: computed(() => isOnline.value),
-    retryCount: computed(() => retryCount.value),
-    maxRetries,
+    searchError: baseSearch.error as ComputedRef<SearchError | null>,
+    isOnline: baseSearch.isOnline,
+    retryCount: baseSearch.retryCount,
+    maxRetries: baseSearch.maxRetries,
 
-    // Actions
-    search,
-    setFilter,
+    // Actions from base
+    search: baseSearch.search,
+    setFilter: baseSearch.setFilter as <K extends keyof DocumentSearchFilters>(key: K, value: DocumentSearchFilters[K]) => void,
+    loadMore: baseSearch.loadMore,
+    retrySearch: baseSearch.retrySearch,
+    clearError: baseSearch.clearError,
+    loadInitialFacets: baseSearch.loadInitialFacets,
+
+    // Document-specific actions
     toggleTenant,
     toggleContentType,
     toggleLanguage,
@@ -569,13 +503,9 @@ export const useDocumentSearch = (): DocumentSearchController => {
     clearFilters,
     clearRecentSearches,
     removeRecentSearch,
-    loadMore,
-    retrySearch,
-    clearError,
-    loadInitialFacets, // Expose for manual loading
-    
+
     // Internal
     searchClient: computed(() => searchClient.value),
-    initializeSearchClient
+    initializeSearchClient: initializeWithUrlSync
   }
 }

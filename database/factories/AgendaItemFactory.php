@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\AgendaItemType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -20,6 +21,59 @@ class AgendaItemFactory extends Factory
     {
         return [
             'title' => $this->faker->sentence,
+            'order' => $this->faker->numberBetween(1, 10),
+            'description' => $this->faker->optional()->paragraph,
+            'type' => null, // Default to unset type, requiring user to select
         ];
+    }
+
+    /**
+     * Create agenda items with sequential ordering for a specific meeting.
+     */
+    public function sequentialOrder(int $startOrder = 1): static
+    {
+        return $this->sequence(fn ($sequence) => [
+            'order' => $startOrder + $sequence->index,
+        ]);
+    }
+
+    /**
+     * Mark agenda item as voting type with vote status set.
+     */
+    public function voting(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'type' => AgendaItemType::Voting,
+        ]);
+    }
+
+    /**
+     * Mark agenda item as informational type.
+     */
+    public function informational(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'type' => AgendaItemType::Informational,
+        ]);
+    }
+
+    /**
+     * Mark agenda item as deferred type.
+     */
+    public function deferred(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'type' => AgendaItemType::Deferred,
+        ]);
+    }
+
+    /**
+     * Add a student position to the agenda item.
+     */
+    public function withStudentPosition(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'student_position' => $this->faker->paragraph,
+        ]);
     }
 }

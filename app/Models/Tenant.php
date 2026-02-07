@@ -32,9 +32,9 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Page> $pages
  * @property-read \App\Models\Institution|null $primary_institution
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\QuickLink> $quickLinks
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Reservation[] $reservations
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Reservation> $reservations
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Resource> $resources
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $users
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $users
  * @property-read int|null $users_count
  * @property-read int|null $reservations_count
  *

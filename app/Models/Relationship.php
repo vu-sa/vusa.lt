@@ -33,10 +33,13 @@ class Relationship extends Model
 
     protected $guarded = [];
 
-    protected $casts = [
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
+        ];
+    }
 
     // Is it safe?
     public function models($model = null)

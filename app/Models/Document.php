@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Helpers\ShortUrlHelper;
 use App\Services\SharepointGraphService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Carbon;
@@ -53,14 +54,17 @@ class Document extends Model
 
     protected $hidden = ['sharepoint_id', 'eTag', 'public_url_created_at', 'sharepoint_site_id', 'sharepoint_list_id', 'created_at', 'updated_at'];
 
-    protected $casts = [
-        'is_active' => 'boolean',
-        'document_date' => 'datetime',
-        'effective_date' => 'datetime',
-        'expiration_date' => 'datetime',
-        'checked_at' => 'datetime',
-        'last_sync_attempt_at' => 'datetime',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'is_active' => 'boolean',
+            'document_date' => 'datetime',
+            'effective_date' => 'datetime',
+            'expiration_date' => 'datetime',
+            'checked_at' => 'datetime',
+            'last_sync_attempt_at' => 'datetime',
+        ];
+    }
 
     protected static function booted()
     {
@@ -73,7 +77,7 @@ class Document extends Model
         });
     }
 
-    public function toSearchableArray()
+    public function toSearchableArray(): array
     {
         // Load the tenant relationship if not already loaded
         if (! $this->relationLoaded('institution') || ($this->institution && ! $this->institution->relationLoaded('tenant'))) {
@@ -92,6 +96,7 @@ class Document extends Model
             'institution_name_en' => $this->institution ? $this->institution->getTranslation('name', 'en') : null,
             'tenant_shortname' => $this->institution && $this->institution->tenant ? $this->institution->tenant->shortname : null,
             'anonymous_url' => $this->anonymous_url,
+            'share_url' => $this->anonymous_url ? ShortUrlHelper::documentUrl($this->id) : null,
             'is_active' => $this->is_active,
             'sync_status' => $this->sync_status,
             'checked_at' => $this->checked_at ? $this->checked_at->timestamp : null,

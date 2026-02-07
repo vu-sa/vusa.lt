@@ -6,6 +6,7 @@ use App\Enums\CRUDEnum;
 use App\Enums\ModelEnum;
 use App\Models\Meeting;
 use App\Models\User;
+use App\Services\InstitutionAccessService;
 use App\Services\ModelAuthorizer;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -15,12 +16,15 @@ use Illuminate\Support\Str;
  */
 class MeetingPolicy extends ModelPolicy
 {
+    protected InstitutionAccessService $institutionAccessService;
+
     /**
      * Initialize policy with model name
      */
-    public function __construct(ModelAuthorizer $authorizer)
+    public function __construct(ModelAuthorizer $authorizer, InstitutionAccessService $institutionAccessService)
     {
         parent::__construct($authorizer);
+        $this->institutionAccessService = $institutionAccessService;
         $this->pluralModelName = Str::plural(ModelEnum::MEETING()->label);
     }
 
@@ -33,6 +37,12 @@ class MeetingPolicy extends ModelPolicy
     {
         // Check if user is a participant in the meeting
         if ($meeting->users->contains('id', $user->id)) {
+            return true;
+        }
+
+        // Check if user has access via institution relationships or coordinator access
+        $meetingInstitutionIds = $meeting->institutions->pluck('id');
+        if ($this->institutionAccessService->canAccessMeetingViaRelationships($user, $meetingInstitutionIds)) {
             return true;
         }
 

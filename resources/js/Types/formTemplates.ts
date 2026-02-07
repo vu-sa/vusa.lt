@@ -7,6 +7,7 @@ export const calendarTemplate: Omit<App.Entities.Calendar, "created_at" | "updat
   organizer: { lt: '', en: '' },
   cto_url: { lt: '', en: '' },
   tenant_id: null,
+  main_image: null,
   images: [],
   category_id: null,
   facebook_url: "",
@@ -14,21 +15,6 @@ export const calendarTemplate: Omit<App.Entities.Calendar, "created_at" | "updat
   is_draft: false,
   is_all_day: false,
   is_international: false,
-};
-
-export const changelogItemTemplate: Pick<App.Entities.ChangelogItem, "date"> & {
-  title: Record<"lt" | "en", string>;
-  description: Record<"lt" | "en", string>;
-} = {
-  title: {
-    lt: "",
-    en: "",
-  },
-  description: {
-    lt: "",
-    en: "",
-  },
-  date: null,
 };
 
 export const formTemplate: Pick<
@@ -69,6 +55,7 @@ export const newsTemplate = {
       {
         type: "tiptap",
         json_content: {},
+        key: "initial-tiptap",
       },
     ]
   },
@@ -78,11 +65,36 @@ export const newsTemplate = {
   image: null,
   image_author: null,
   tags: [],
+  highlights: [],
+  layout: "modern" as const,
+}
+
+export const pageTemplate = {
+  title: "",
+  permalink: "",
+  lang: "lt",
+  category_id: null,
+  other_lang_id: null,
+  is_active: true,
+  content: {
+    parts: [
+      {
+        type: "tiptap",
+        json_content: {},
+        key: "initial-tiptap",
+      },
+    ]
+  },
+  highlights: [],
+  layout: "default" as const,
+  featured_image: null,
+  meta_description: "",
+  publish_time: null,
 }
 
 export const typeTemplate: Pick<
   App.Entities.Type,
-  "title" | "slug" | "description" | "model_type" | "parent_id"
+  "title" | "slug" | "description" | "model_type" | "parent_id" | "extra_attributes"
 > = {
   title: { lt: '', en: '' },
   slug: "",
@@ -90,6 +102,7 @@ export const typeTemplate: Pick<
   model_type: "",
   parent_id: null,
   roles: [],
+  extra_attributes: {},
 };
 
 export const tagTemplate: Pick<

@@ -52,6 +52,7 @@ class StoreInstitutionRequest extends FormRequest
             'is_active' => 'boolean',
             'contacts_layout' => 'required|in:aside,below',
             'types' => 'nullable|array',
+            'meeting_periodicity_days' => 'nullable|integer|min:1|max:365',
         ];
     }
 }

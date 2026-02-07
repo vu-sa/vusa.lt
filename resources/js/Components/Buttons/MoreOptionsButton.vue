@@ -1,84 +1,87 @@
 <template>
-  <NDropdown placement="bottom-end" trigger="click" :options="dropdownOptions" @select="handleSelect">
-    <NButton :size="small ? 'tiny' : 'small'" :disabled="disabled" circle quaternary @click.stop>
-      <template #icon>
+  <DropdownMenu>
+    <DropdownMenuTrigger as-child>
+      <Button :size="small ? 'icon-xs' : 'icon-sm'" :disabled="disabled" variant="ghost" class="rounded-full" @click.stop>
         <IFluentMoreHorizontal24Filled />
+      </Button>
+    </DropdownMenuTrigger>
+    <DropdownMenuContent align="end">
+      <DropdownMenuItem v-if="edit" @click="$emit('editClick')">
+        <IFluentEdit24Filled class="mr-2 size-4" />
+        {{ $t("forms.edit") }}
+      </DropdownMenuItem>
+      <template v-for="option in moreOptions" :key="option.key">
+        <DropdownMenuItem @click="$emit('moreOptionClick', option.key)">
+          <component :is="option.icon" v-if="option.icon" class="mr-2 size-4" />
+          {{ option.label }}
+        </DropdownMenuItem>
       </template>
-    </NButton>
-  </NDropdown>
-  <NModal v-model:show="showDeleteModal" preset="dialog" title="Ištrinti įrašą?"
-    content="Šis įrašas bus ištrintas negrįžtamai..." type="warning" :positive-text="$t('forms.delete')"
-    :negative-text="$t('forms.cancel')" @positive-click="$emit('deleteClick')"
-    @negative-click="showDeleteModal = false" />
+      <DropdownMenuSeparator v-if="$props.delete && (edit || moreOptions?.length)" />
+      <DropdownMenuItem v-if="$props.delete" class="text-destructive focus:text-destructive" @click="showDeleteModal = true">
+        <IFluentDelete24Filled class="mr-2 size-4" />
+        {{ $t("forms.delete") }}
+      </DropdownMenuItem>
+    </DropdownMenuContent>
+  </DropdownMenu>
+
+  <AlertDialog :open="showDeleteModal" @update:open="showDeleteModal = $event">
+    <AlertDialogContent>
+      <AlertDialogHeader>
+        <AlertDialogTitle>{{ $t('Ištrinti įrašą?') }}</AlertDialogTitle>
+        <AlertDialogDescription>
+          {{ $t('Šis įrašas bus ištrintas negrįžtamai...') }}
+        </AlertDialogDescription>
+      </AlertDialogHeader>
+      <AlertDialogFooter>
+        <AlertDialogCancel>{{ $t('forms.cancel') }}</AlertDialogCancel>
+        <AlertDialogAction @click="$emit('deleteClick')">{{ $t('forms.delete') }}</AlertDialogAction>
+      </AlertDialogFooter>
+    </AlertDialogContent>
+  </AlertDialog>
 </template>
 
-<script setup lang="tsx">
-import { trans as $t } from "laravel-vue-i18n";
+<script setup lang="ts">
+import { ref } from "vue";
+import type { Component } from "vue";
+
+import { Button } from "@/Components/ui/button";
 import {
-  type DropdownOption,
-  NIcon,
-} from "naive-ui";
-import { computed, ref } from "vue";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/Components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/Components/ui/alert-dialog";
 
-import Delete24Filled from "~icons/fluent/delete24-filled";
-import Edit24Filled from "~icons/fluent/edit24-filled";
+interface MoreOption {
+  label: string;
+  key: string;
+  icon?: Component;
+}
 
-const emit = defineEmits<{
+defineEmits<{
   (event: "editClick"): void;
   (event: "deleteClick"): void;
   (event: "moreOptionClick", key: string): void;
 }>();
 
-const props = defineProps<{
+defineProps<{
   disabled?: boolean;
   small?: boolean;
   edit?: boolean;
   delete?: boolean;
-  moreOptions?: DropdownOption[];
+  moreOptions?: MoreOption[];
 }>();
 
 const showDeleteModal = ref(false);
-
-const defaultOptions: DropdownOption[] = [
-  {
-    label() {
-      return $t("forms.edit");
-    },
-    key: "edit",
-    icon: () => {
-      return <NIcon component={Edit24Filled}></NIcon>;
-    },
-    show: props.edit,
-  },
-  {
-    label() {
-      return $t("forms.delete");
-    },
-    key: "delete",
-    icon: () => {
-      return <NIcon color="#bd2835" component={Delete24Filled}></NIcon>;
-    },
-    show: props.delete,
-  },
-];
-
-// add those two arrays of options if they are not empty
-const dropdownOptions = computed(() => {
-  const options = props.moreOptions ? props.moreOptions : [];
-  return [...defaultOptions, ...options];
-});
-
-const handleSelect = (key: string) => {
-  switch (key) {
-    case "edit":
-      emit("editClick");
-      break;
-    case "delete":
-      showDeleteModal.value = true;
-      break;
-    default:
-      emit("moreOptionClick", key);
-      break;
-  }
-};
 </script>

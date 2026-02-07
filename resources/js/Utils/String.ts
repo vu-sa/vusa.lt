@@ -19,6 +19,68 @@ export const pluralizeModels = (word: string, forPermissions = true) => {
   return word + "s";
 };
 
+/**
+ * Detect if a Lithuanian word is feminine based on its ending
+ * Feminine endings: -a, -ė, -is (some), -ija, -tis
+ * Masculine endings: -as, -is (most), -us, -ys
+ */
+export const isLithuanianFeminine = (word: string): boolean => {
+  const lowercased = word.toLowerCase().trim();
+  
+  // Feminine patterns (order matters - check longer patterns first)
+  if (lowercased.endsWith('ija')) return true;  // komisija, kolegija
+  if (lowercased.endsWith('tis')) return true;  //atis patterns (but rare)
+  if (lowercased.endsWith('yba')) return true;  // taryba
+  if (lowercased.endsWith('a') && !lowercased.endsWith('as')) return true;  // komisija, taryba
+  if (lowercased.endsWith('ė')) return true;    // grupė
+  
+  // Masculine by default (as, is, us, ys, etc.)
+  return false;
+};
+
+/**
+ * Pluralize a Lithuanian word and return "Visi" or "Visos" accordingly
+ * Returns { word: pluralized word, visi: "Visi" or "Visos" }
+ */
+export const pluralizeLithuanian = (word: string): { word: string; visi: string } => {
+  const isFeminine = isLithuanianFeminine(word);
+  const lowercased = word.toLowerCase().trim();
+  
+  let pluralized = word;
+  
+  // Pluralize based on ending
+  if (lowercased.endsWith('ija')) {
+    // komisija -> komisijos
+    pluralized = word.slice(0, -1) + 'os';
+  } else if (lowercased.endsWith('yba')) {
+    // taryba -> tarybos
+    pluralized = word.slice(0, -1) + 'os';
+  } else if (lowercased.endsWith('a') && !lowercased.endsWith('as')) {
+    // -a -> -os (feminine)
+    pluralized = word.slice(0, -1) + 'os';
+  } else if (lowercased.endsWith('ė')) {
+    // grupė -> grupės
+    pluralized = word.slice(0, -1) + 'ės';
+  } else if (lowercased.endsWith('as')) {
+    // dekanatas -> dekanatuose? No, just keep nominative plural: dekanatai
+    pluralized = word.slice(0, -2) + 'ai';
+  } else if (lowercased.endsWith('is')) {
+    // -is -> -iai (masculine)
+    pluralized = word.slice(0, -2) + 'iai';
+  } else if (lowercased.endsWith('us')) {
+    // -us -> -ūs or -ai
+    pluralized = word.slice(0, -2) + 'ai';
+  } else if (lowercased.endsWith('ys')) {
+    // -ys -> -iai
+    pluralized = word.slice(0, -2) + 'iai';
+  }
+  
+  return {
+    word: pluralized.toLowerCase(),
+    visi: isFeminine ? 'Visos' : 'Visi'
+  };
+};
+
 export const genitivize = (name: string | null) => {
   if (name === null) {
     return "";
@@ -194,4 +256,56 @@ export function slugify(str: string) {
            .replace(/\s+/g, '-') // replace spaces with hyphens
            .replace(/-+/g, '-'); // remove consecutive hyphens
   return str;
+}
+
+/**
+ * Character map for transliterating Lithuanian diacritics to ASCII equivalents.
+ * Matches Laravel's Str::slug() behavior with 'lt' locale.
+ */
+const LITHUANIAN_CHAR_MAP: Record<string, string> = {
+  'Ą': 'A', 'ą': 'a',
+  'Č': 'C', 'č': 'c',
+  'Ę': 'E', 'ę': 'e',
+  'Ė': 'E', 'ė': 'e',
+  'Į': 'I', 'į': 'i',
+  'Š': 'S', 'š': 's',
+  'Ų': 'U', 'ų': 'u',
+  'Ū': 'U', 'ū': 'u',
+  'Ž': 'Z', 'ž': 'z',
+};
+
+/**
+ * Transliterate Lithuanian diacritical characters to their ASCII equivalents.
+ * 
+ * @param text - The string containing Lithuanian characters
+ * @returns The transliterated string with Lithuanian diacritics replaced
+ * 
+ * @example
+ * translitLithuanian('Žalioji ąžuolynas') // 'Zalioji azuolynas'
+ * translitLithuanian('Būti čia') // 'Buti cia'
+ */
+export function translitLithuanian(text: string): string {
+  return text.replace(/[ĄąČčĘęĖėĮįŠšŲųŪūŽž]/g, (char) => LITHUANIAN_CHAR_MAP[char] || char);
+}
+
+/**
+ * Generate a URL-safe ID from text by transliterating Lithuanian characters
+ * and converting to a lowercase slug format.
+ * 
+ * Used for generating anchor IDs for headings in TipTap editor.
+ * 
+ * @param text - The text to convert to an ID
+ * @param maxLength - Maximum length of the resulting ID (default: 100)
+ * @returns A URL-safe lowercase ID with hyphens
+ * 
+ * @example
+ * latinizeId('Įvadas į programavimą') // 'ivadas-i-programavima'
+ * latinizeId('Šiandien yra gera diena!') // 'siandien-yra-gera-diena'
+ */
+export function latinizeId(text: string, maxLength = 100): string {
+  return translitLithuanian(text)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '')
+    .substring(0, maxLength);
 }

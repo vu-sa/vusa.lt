@@ -2,30 +2,39 @@
   <div class="mt-4 flex flex-col gap-4">
     <!-- Ensure the json_content is initialized properly -->
     <div v-if="!isModelValueInitialized" class="flex justify-center">
-      <NButton primary @click="initializeModelValue">
-        <template #icon>
-          <IFluentAdd24Filled />
-        </template>
+      <Button @click="initializeModelValue">
+        <IFluentAdd24Filled />
         Sukurti tinklelį
-      </NButton>
+      </Button>
     </div>
 
     <template v-else>
       <!-- Grid Options -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <NFormItem label="Tarpai" :show-feedback="false">
-          <NSelect v-model:value="options.gap" :options="gapOptions" />
-        </NFormItem>
-        <NFormItem label="Mobilusis vaizdas" :show-feedback="false">
-          <NSwitch v-model:value="options.mobileStacking">
-            Dėti stulpelius vertikaliai
-          </NSwitch>
-        </NFormItem>
-        <NFormItem label="Vienodas aukštis" :show-feedback="false">
-          <NSwitch v-model:value="options.equalHeight">
-            Vienodo aukščio stulpeliai
-          </NSwitch>
-        </NFormItem>
+        <FormFieldWrapper id="gap" label="Tarpai">
+          <Select v-model="options.gap">
+            <SelectTrigger>
+              <SelectValue placeholder="Pasirinkite tarpą" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem v-for="opt in gapOptions" :key="opt.value" :value="opt.value">
+                {{ opt.label }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </FormFieldWrapper>
+        <FormFieldWrapper id="mobileStacking" label="Mobilusis vaizdas">
+          <div class="flex items-center gap-2">
+            <Switch :checked="options.mobileStacking" @update:checked="val => options.mobileStacking = val" />
+            <span class="text-sm">Dėti stulpelius vertikaliai</span>
+          </div>
+        </FormFieldWrapper>
+        <FormFieldWrapper id="equalHeight" label="Vienodas aukštis">
+          <div class="flex items-center gap-2">
+            <Switch :checked="options.equalHeight" @update:checked="val => options.equalHeight = val" />
+            <span class="text-sm">Vienodo aukščio stulpeliai</span>
+          </div>
+        </FormFieldWrapper>
       </div>
 
       <!-- Row management -->
@@ -36,24 +45,18 @@
             Eilutė {{ rowIndex + 1 }}
           </h4>
           <div class="flex-grow" />
-          <NButtonGroup size="small">
-            <NButton v-if="rowIndex > 0" quaternary circle @click="moveRow(rowIndex, rowIndex - 1)">
-              <template #icon>
-                <IFluentArrowUp24Filled />
-              </template>
-            </NButton>
-            <NButton v-if="rowIndex < json_content.json_content.length - 1" quaternary circle
+          <ButtonGroup>
+            <Button v-if="rowIndex > 0" variant="ghost" size="icon-sm" class="rounded-full" @click="moveRow(rowIndex, rowIndex - 1)">
+              <IFluentArrowUp24Filled />
+            </Button>
+            <Button v-if="rowIndex < json_content.json_content.length - 1" variant="ghost" size="icon-sm" class="rounded-full"
               @click="moveRow(rowIndex, rowIndex + 1)">
-              <template #icon>
-                <IFluentArrowDown24Filled />
-              </template>
-            </NButton>
-            <NButton quaternary circle @click="removeRow(rowIndex)">
-              <template #icon>
-                <IFluentDelete24Filled />
-              </template>
-            </NButton>
-          </NButtonGroup>
+              <IFluentArrowDown24Filled />
+            </Button>
+            <Button variant="ghost" size="icon-sm" class="rounded-full" @click="removeRow(rowIndex)">
+              <IFluentDelete24Filled />
+            </Button>
+          </ButtonGroup>
         </div>
 
         <!-- Column layout -->
@@ -63,42 +66,54 @@
             <div v-for="(column, colIndex) in row.columns" :key="colIndex"
               :class="[column.width, 'flex flex-col gap-2 rounded-md border bg-zinc-50/70 p-4 dark:border-zinc-700 dark:bg-zinc-800/20']">
               <div class="flex items-center gap-4">
-                <NFormItem label="Plotis" :show-feedback="false" class="max-w-[140px]">
-                  <NSelect v-model:value="column.width" :options="columnWidthOptions" />
-                </NFormItem>
+                <FormFieldWrapper id="`width-${rowIndex}-${colIndex}`" label="Plotis" class="max-w-[140px]">
+                  <Select v-model="column.width">
+                    <SelectTrigger>
+                      <SelectValue placeholder="Plotis" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem v-for="opt in columnWidthOptions" :key="opt.value" :value="opt.value">
+                        {{ opt.label }}
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormFieldWrapper>
                 <div class="flex-grow" />
-                <NButtonGroup size="small">
-                  <NButton v-if="colIndex > 0" quaternary circle @click="moveColumn(rowIndex, colIndex, colIndex - 1)">
-                    <template #icon>
-                      <IFluentArrowLeft24Filled />
-                    </template>
-                  </NButton>
-                  <NButton v-if="colIndex < row.columns.length - 1" quaternary circle
+                <ButtonGroup>
+                  <Button v-if="colIndex > 0" variant="ghost" size="icon-sm" class="rounded-full" @click="moveColumn(rowIndex, colIndex, colIndex - 1)">
+                    <IFluentArrowLeft24Filled />
+                  </Button>
+                  <Button v-if="colIndex < row.columns.length - 1" variant="ghost" size="icon-sm" class="rounded-full"
                     @click="moveColumn(rowIndex, colIndex, colIndex + 1)">
-                    <template #icon>
-                      <IFluentArrowRight24Filled />
-                    </template>
-                  </NButton>
-                  <NButton quaternary circle @click="removeColumn(rowIndex, colIndex)">
-                    <template #icon>
-                      <IFluentDelete24Filled />
-                    </template>
-                  </NButton>
-                </NButtonGroup>
+                    <IFluentArrowRight24Filled />
+                  </Button>
+                  <Button variant="ghost" size="icon-sm" class="rounded-full" @click="removeColumn(rowIndex, colIndex)">
+                    <IFluentDelete24Filled />
+                  </Button>
+                </ButtonGroup>
               </div>
 
               <!-- Column content type selector -->
-              <NFormItem label="Turinio tipas" :show-feedback="false">
-                <NSelect v-model:value="column.content.type" :options="columnContentOptions" />
-              </NFormItem>
+              <FormFieldWrapper :id="`content-type-${rowIndex}-${colIndex}`" label="Turinio tipas">
+                <Select v-model="column.content.type">
+                  <SelectTrigger>
+                    <SelectValue placeholder="Turinio tipas" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem v-for="opt in columnContentOptions" :key="opt.value" :value="opt.value">
+                      {{ opt.label }}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </FormFieldWrapper>
 
               <!-- Content editor based on content type -->
               <div class="mt-2 w-full">
                 <div v-if="column.content.type === 'tiptap'" class="w-full">
-                  <CompactTiptap v-model="column.content.value" :show-toolbar-toggle="true" />
+                  <TiptapEditor v-model="column.content.value" preset="compact" :show-toolbar-toggle="true" />
                 </div>
                 <div v-else-if="column.content.type === 'image'">
-                  <NFormItem label="Nuotrauka" :show-feedback="false">
+                  <FormFieldWrapper :id="`image-${rowIndex}-${colIndex}`" label="Nuotrauka">
                     <div>
                       <TiptapImageButton v-if="!column.content.value" size="medium"
                         @submit="column.content.value = $event">
@@ -106,15 +121,13 @@
                       </TiptapImageButton>
                       <div v-else class="relative">
                         <img :src="column.content.value" class="aspect-video w-full rounded-lg object-cover">
-                        <NButton class="absolute top-1 right-1" size="small" quaternary circle
+                        <Button class="absolute top-1 right-1 rounded-full" size="icon-sm" variant="ghost"
                           @click="column.content.value = null">
-                          <template #icon>
-                            <IFluentDismiss20Regular />
-                          </template>
-                        </NButton>
+                          <IFluentDismiss20Regular />
+                        </Button>
                       </div>
                     </div>
-                  </NFormItem>
+                  </FormFieldWrapper>
                 </div>
               </div>
             </div>
@@ -122,32 +135,32 @@
 
           <!-- Add column button -->
           <div class="mt-2 flex justify-center">
-            <NButton quaternary :disabled="isMaxColumnsReached(row)" @click="addColumn(rowIndex)">
-              <template #icon>
-                <IFluentAdd24Filled />
-              </template>
+            <Button variant="ghost" :disabled="isMaxColumnsReached(row)" @click="addColumn(rowIndex)">
+              <IFluentAdd24Filled />
               Pridėti stulpelį
-            </NButton>
-            <NTooltip v-if="isMaxColumnsReached(row)">
-              <template #trigger>
-                <span class="ml-2 text-zinc-400 flex items-center">
-                  <IFluentInfo16Filled class="mr-1" />
-                </span>
-              </template>
-              Maksimalus stulpelių skaičius: {{ MAX_COLUMNS }}
-            </NTooltip>
+            </Button>
+            <TooltipProvider v-if="isMaxColumnsReached(row)">
+              <Tooltip>
+                <TooltipTrigger as-child>
+                  <span class="ml-2 text-zinc-400 flex items-center">
+                    <IFluentInfo16Filled class="mr-1" />
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  Maksimalus stulpelių skaičius: {{ MAX_COLUMNS }}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         </div>
       </div>
 
       <!-- Add row button -->
       <div class="mt-2 flex justify-center">
-        <NButton quaternary @click="addRow">
-          <template #icon>
-            <IFluentAdd24Filled />
-          </template>
+        <Button variant="ghost" @click="addRow">
+          <IFluentAdd24Filled />
           Pridėti eilutę
-        </NButton>
+        </Button>
       </div>
     </template>
   </div>
@@ -155,9 +168,15 @@
 
 <script setup lang="ts">
 import { defineModel, computed, onMounted, ref, watch } from 'vue';
-import CompactTiptap from '@/Components/TipTap/CompactTiptap.vue';
+import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import TiptapImageButton from '@/Components/TipTap/TiptapImageButton.vue';
 import type { ContentGrid } from '@/Types/contentParts';
+import { Button } from '@/Components/ui/button';
+import { ButtonGroup } from '@/Components/ui/button-group';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { Switch } from '@/Components/ui/switch';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
+import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 
 const json_content = defineModel<ContentGrid['json_content']>();
 const options = defineModel<ContentGrid[]>('options')

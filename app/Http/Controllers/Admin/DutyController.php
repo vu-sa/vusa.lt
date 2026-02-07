@@ -3,48 +3,85 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetAttachableTypesForDuty;
+use App\Actions\GetTenantsForUpserts;
 use App\Http\Controllers\AdminController;
+use App\Http\Requests\BatchUpdateDutyUsersRequest;
+use App\Http\Requests\IndexDutyRequest;
 use App\Http\Requests\StoreDutyRequest;
+use App\Http\Traits\HasTanstackTables;
 use App\Models\Duty;
+use App\Models\Institution;
 use App\Models\Role;
+use App\Models\StudyProgram;
 use App\Models\Type;
 use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
-use App\Services\ModelIndexer;
 use App\Services\ResourceServices\DutyService;
-use Illuminate\Database\Eloquent\Builder;
+use App\Services\TanstackTableService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
 
 class DutyController extends AdminController
 {
-    public function __construct(public Authorizer $authorizer) {}
+    use HasTanstackTables;
+
+    public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService) {}
 
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index(IndexDutyRequest $request)
     {
         $this->handleAuthorization('viewAny', Duty::class);
 
-        $indexer = new ModelIndexer(new Duty);
+        $query = Duty::query()->with([
+            'institution:id,name,short_name,tenant_id',
+            'institution.tenant:id,shortname',
+            'types:id,title',
+        ]);
 
-        $duties = $indexer
-            ->setEloquentQuery([fn (Builder $query) => $query->with('institution')])
-            ->filterAllColumns()
-            ->sortAllColumns()
-            ->builder->paginate(20);
+        $searchableColumns = ['name', 'email'];
+
+        $query = $this->applyTanstackFilters(
+            $query,
+            $request,
+            $this->tableService,
+            $searchableColumns,
+            [
+                'tenantRelation' => 'institution.tenant',
+                'permission' => 'duties.read.padalinys',
+            ]
+        );
+
+        $duties = $query->paginate($request->input('per_page', 20))
+            ->withQueryString();
 
         return $this->inertiaResponse('Admin/People/IndexDuty', [
-            'duties' => $duties,
+            'duties' => [
+                'data' => $duties->getCollection()->map(function ($duty) {
+                    /** @var \App\Models\Duty $duty */
+                    return $duty->toFullArray();
+                })->values(),
+                'meta' => [
+                    'total' => $duties->total(),
+                    'per_page' => $duties->perPage(),
+                    'current_page' => $duties->currentPage(),
+                    'last_page' => $duties->lastPage(),
+                    'from' => $duties->firstItem(),
+                    'to' => $duties->lastItem(),
+                ],
+            ],
+            'filters' => $request->getFilters(),
+            'sorting' => $request->getSorting(),
         ]);
     }
 
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Request $request)
     {
         $this->handleAuthorization('create', Duty::class);
 
@@ -53,6 +90,7 @@ class DutyController extends AdminController
             'roles' => Role::all(),
             'assignableInstitutions' => DutyService::getInstitutionsForUpserts($this->authorizer),
             'assignableUsers' => User::select('id', 'name', 'profile_photo_path')->orderBy('name')->get(),
+            'prefillInstitutionId' => $request->query('institution_id'),
         ]);
     }
 
@@ -70,7 +108,19 @@ class DutyController extends AdminController
 
         $this->handleUsersUpdate(new Collection($duty->current_users->pluck('id')), new Collection($request->current_users), $duty);
 
-        return redirect()->route('duties.index')->with('success', trans_choice('messages.created', 0, ['model' => trans_choice('entities.duty.model', 1)]));
+        // Load relationships needed for the response
+        $duty->load('institution', 'types', 'current_users');
+
+        // Return JSON response for AJAX requests (inline creation in wizard)
+        if ($request->wantsJson() || $request->header('X-Inertia-Partial-Data')) {
+            return response()->json([
+                'success' => true,
+                'message' => trans_choice('messages.created', 0, ['model' => trans_choice('entities.duty.model', 1)]),
+                'duty' => $duty,
+            ]);
+        }
+
+        return back()->with('success', trans_choice('messages.created', 0, ['model' => trans_choice('entities.duty.model', 1)]));
     }
 
     /**
@@ -80,8 +130,12 @@ class DutyController extends AdminController
     {
         $this->handleAuthorization('view', $duty);
 
+        $duty->load('institution.tenant', 'users', 'activities.causer', 'types');
+
         return $this->inertiaResponse('Admin/People/ShowDuty', [
-            'duty' => $duty->load('institution', 'users', 'activities.causer'),
+            'duty' => array_merge($duty->toArray(), [
+                'sharepointPath' => $duty->institution?->tenant ? $duty->sharepoint_path() : null,
+            ]),
         ]);
     }
 
@@ -194,5 +248,119 @@ class DutyController extends AdminController
         $duty->restore();
 
         return back()->with('success', 'Pareigybė sėkmingai atkurta!');
+    }
+
+    /**
+     * Display the duty user update wizard page.
+     */
+    public function updateUsersWizard()
+    {
+        $this->handleAuthorization('viewAny', Duty::class);
+
+        // Get institutions the user can access, with their duties and current users
+        // Include pivot data (start_date) to detect long-staying users
+        $institutions = DutyService::getInstitutionsForUpserts($this->authorizer)
+            ->load(['duties' => function ($query) {
+                $query->with(['current_users' => function ($q) {
+                    $q->select('users.id', 'name', 'email', 'profile_photo_path')
+                        ->withPivot('start_date', 'end_date');
+                }]);
+            }, 'tenant:id,shortname']);
+
+        // Get data needed for creating institutions and duties
+        $assignableTenants = GetTenantsForUpserts::execute('institutions.create.padalinys', $this->authorizer);
+        $institutionTypes = Type::where('model_type', Institution::class)->get();
+
+        return $this->inertiaResponse('Admin/People/DutyUserUpdateWizard', [
+            // Immediate data for Step 1
+            'institutions' => $institutions,
+            // Data for inline institution creation (small datasets, load immediately)
+            'assignableTenants' => $assignableTenants,
+            'institutionTypes' => $institutionTypes,
+            // Lazy loaded data - only fetched when explicitly requested via router.reload({ only: [...] })
+            // Step 3: User assignment
+            'users' => Inertia::optional(fn () => User::select('id', 'name', 'email', 'profile_photo_path')
+                ->orderBy('name')->get()),
+            'studyPrograms' => Inertia::optional(fn () => StudyProgram::select('id', 'name', 'degree', 'tenant_id')->get()),
+            // Step 2: Duty creation (only needed if user wants to create a new duty)
+            'dutyTypes' => Inertia::optional(fn () => GetAttachableTypesForDuty::execute()->values()),
+        ]);
+    }
+
+    /**
+     * Batch update users for a duty.
+     */
+    public function batchUpdateUsers(BatchUpdateDutyUsersRequest $request, Duty $duty)
+    {
+        $validated = $request->validated();
+
+        $createdUsers = [];
+
+        DB::transaction(function () use ($validated, $duty, &$createdUsers) {
+            // Create new users if any, tracking by temp_id for proper matching
+            if (! empty($validated['new_users'])) {
+                foreach ($validated['new_users'] as $newUserData) {
+                    $user = User::create([
+                        'name' => $newUserData['name'],
+                        'email' => $newUserData['email'],
+                        'phone' => $newUserData['phone'] ?? null,
+                    ]);
+                    // Store with temp_id for matching against user_changes
+                    $createdUsers[$newUserData['temp_id']] = $user;
+                }
+            }
+
+            // Process user changes
+            foreach ($validated['user_changes'] as $change) {
+                $userId = $change['user_id'];
+
+                // Handle temporary IDs (new users) - match by temp_id
+                if (str_starts_with($userId, 'new-')) {
+                    if (isset($createdUsers[$userId])) {
+                        $duty->users()->attach($createdUsers[$userId]->id, [
+                            'start_date' => $change['start_date'] ?? now(),
+                            'end_date' => $change['end_date'] ?? null,
+                            'study_program_id' => $change['study_program_id'] ?? null,
+                        ]);
+                    }
+
+                    continue;
+                }
+
+                if ($change['action'] === 'add') {
+                    // Check if user is already attached
+                    $existingPivot = $duty->dutiables()->where('dutiable_id', $userId)->first();
+
+                    if ($existingPivot) {
+                        // Update existing pivot
+                        $existingPivot->update([
+                            'start_date' => $change['start_date'] ?? now(),
+                            'end_date' => $change['end_date'] ?? null,
+                            'study_program_id' => $change['study_program_id'] ?? null,
+                        ]);
+                    } else {
+                        // Create new pivot
+                        $duty->users()->attach($userId, [
+                            'start_date' => $change['start_date'] ?? now(),
+                            'end_date' => $change['end_date'] ?? null,
+                            'study_program_id' => $change['study_program_id'] ?? null,
+                        ]);
+                    }
+                } elseif ($change['action'] === 'remove') {
+                    // Set end_date for removal
+                    $duty->users()->updateExistingPivot($userId, [
+                        'end_date' => $change['end_date'] ?? now(),
+                    ]);
+                }
+            }
+
+            // Update places_to_occupy if provided
+            if (isset($validated['places_to_occupy'])) {
+                $duty->update(['places_to_occupy' => $validated['places_to_occupy']]);
+            }
+        });
+
+        return redirect()->route('duties.show', $duty)
+            ->with('success', trans('Pareigybės nariai sėkmingai atnaujinti!'));
     }
 }

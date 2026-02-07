@@ -21,36 +21,22 @@
     <td>
       <div v-if="availableScopes.hasOwn || availableScopes.hasPadalinys" class="flex w-64 items-center gap-2">
         <!-- Show checkbox only if 'own' scope is available -->
-        <NCheckbox v-if="availableScopes.hasOwn" v-model:checked="checkboxPadalinys" :disabled="switchAll || disabled"
-          @update:checked="handleUpdate" />
-        
+        <Checkbox v-if="availableScopes.hasOwn" :checked="checkboxPadalinys" :disabled="switchAll || disabled"
+          @update:checked="val => { checkboxPadalinys = val; handleUpdate(); }" />
+
         <!-- For models with both own and padalinys scopes -->
-        <NSwitch v-if="availableScopes.hasPadalinys && availableScopes.hasOwn" v-model:value="switchPadalinys" :disabled="switchAll || !checkboxPadalinys || disabled" size="small"
-          @update:value="handleUpdate">
-          <template #unchecked>
-            Savo
-          </template>
-          <template #checked>
-            Visus
-          </template>
-          <template #checked-icon>
-            <NIcon :component="icon" />
-          </template>
-        </NSwitch>
-        
+        <div v-if="availableScopes.hasPadalinys && availableScopes.hasOwn" class="flex items-center gap-2">
+          <Switch :checked="switchPadalinys" :disabled="switchAll || !checkboxPadalinys || disabled"
+            @update:checked="val => { switchPadalinys = val; handleUpdate(); }" />
+          <span class="text-xs">{{ switchPadalinys ? 'Visus' : 'Savo' }}</span>
+        </div>
+
         <!-- For models with only padalinys scope (no own scope) -->
-        <NSwitch v-if="!availableScopes.hasOwn && availableScopes.hasPadalinys" v-model:value="switchPadalinys" :disabled="switchAll || disabled" size="small"
-          @update:value="handleUpdate">
-          <template #unchecked>
-            <!-- Empty when off -->
-          </template>
-          <template #checked>
-            Padalinyje
-          </template>
-          <template #checked-icon>
-            <NIcon :component="icon" />
-          </template>
-        </NSwitch>
+        <div v-if="!availableScopes.hasOwn && availableScopes.hasPadalinys" class="flex items-center gap-2">
+          <Switch :checked="switchPadalinys" :disabled="switchAll || disabled"
+            @update:checked="val => { switchPadalinys = val; handleUpdate(); }" />
+          <span class="text-xs">{{ switchPadalinys ? 'Padalinyje' : '' }}</span>
+        </div>
       </div>
       <div v-else class="flex w-64 items-center gap-2 text-gray-500">
         <span class="text-sm">Netaikoma</span>
@@ -58,11 +44,7 @@
     </td>
     <td>
       <div v-if="showAllControl">
-        <NSwitch v-model:value="switchAll" :disabled="disabled" size="small" @update:value="handleUpdate">
-          <template #checked-icon>
-            <NIcon :component="icon" />
-          </template>
-        </NSwitch>
+        <Switch :checked="switchAll" :disabled="disabled" @update:checked="val => { switchAll = val; handleUpdate(); }" />
       </div>
       <div v-else class="text-gray-500">
         <span class="text-sm">Netaikoma</span>
@@ -71,9 +53,12 @@
   </tr>
 </template>
 
-<script setup lang="tsx">
+<script setup lang="ts">
 import { type Component, ref, computed, watchEffect, watch } from "vue";
 import type { CRUDEnum } from "@/Types/enums";
+
+import { Checkbox } from '@/Components/ui/checkbox';
+import { Switch } from '@/Components/ui/switch';
 
 const emit = defineEmits<{
   (e: "update", scope: string | undefined): void;
@@ -91,7 +76,7 @@ const props = defineProps<{
 // Determine available scopes based on available permissions data
 const availableScopes = computed(() => {
   const scopes = new Set<string>();
-  
+
   // Extract scopes from available permissions for this ability
   props.availablePermissions.forEach(permission => {
     const parts = permission.split('.');
@@ -99,9 +84,9 @@ const availableScopes = computed(() => {
       scopes.add(parts[2]);
     }
   });
-  
 
-  
+
+
   return {
     hasOwn: scopes.has('own'),
     hasPadalinys: scopes.has('padalinys'),
@@ -110,7 +95,7 @@ const availableScopes = computed(() => {
 });
 
 // Show padalinys controls only if model supports own or padalinys scopes
-const showPadalinysControls = computed(() => 
+const showPadalinysControls = computed(() =>
   availableScopes.value.hasOwn || availableScopes.value.hasPadalinys
 );
 
@@ -125,17 +110,17 @@ const switchAll = ref(false);
 // Initialize values based on default and available scopes
 const initializeValues = () => {
   checkboxPadalinys.value = availableScopes.value.hasOwn && ["own", "padalinys"].includes(props.defaultValue ?? "");
-  
+
   // For models with both own and padalinys scopes
   if (availableScopes.value.hasOwn && availableScopes.value.hasPadalinys) {
     switchPadalinys.value = props.defaultValue === "padalinys";
   }
-  
+
   // For models with only padalinys scope
   if (!availableScopes.value.hasOwn && availableScopes.value.hasPadalinys) {
     switchPadalinys.value = props.defaultValue === "padalinys";
   }
-  
+
   switchAll.value = props.defaultValue === "*" && availableScopes.value.hasAll;
 };
 
@@ -145,7 +130,7 @@ const handleUpdate = () => {
     if (!checkboxPadalinys.value) {
       switchPadalinys.value = false;
     }
-    
+
     if (switchPadalinys.value) {
       checkboxPadalinys.value = true;
     }

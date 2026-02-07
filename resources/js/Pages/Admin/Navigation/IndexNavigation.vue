@@ -1,28 +1,27 @@
 <template>
   <PageContent title="Navigacija">
-    <ThemeProvider>
-      <NFormItem label-placement="left" label="Rodyti redagavimą">
-        <NSwitch v-model:value="showAdminEdit" />
-      </NFormItem>
-      <NFormItem label-placement="left" label="Rodyti stulpelių keitimo rodykles">
-        <NSwitch v-model:value="showColumnChangeArrows" />
-      </NFormItem>
+    <div class="flex items-center gap-4 mb-4">
+      <div class="flex items-center gap-2">
+        <Label>Rodyti redagavimą</Label>
+        <Switch :checked="showAdminEdit" @update:checked="val => showAdminEdit = val" />
+      </div>
+      <div class="flex items-center gap-2">
+        <Label>Rodyti stulpelių keitimo rodykles</Label>
+        <Switch :checked="showColumnChangeArrows" @update:checked="val => showColumnChangeArrows = val" />
+      </div>
+    </div>
     <TransitionGroup ref="el" tag="div">
       <div v-for="item in navigation" :key="item.id"
         class="relative grid w-full grid-cols-[24px__1fr] gap-4 border border-zinc-300 p-3 shadow-xs first:rounded-t-lg last:rounded-b-lg dark:border-zinc-700/40 dark:bg-zinc-800/5">
-        <NButton class="handle" style="height: 100%;" quaternary size="small">
-          <template #icon>
-            <IFluentReOrderDotsVertical24Regular />
-          </template>
-        </NButton>
+        <Button class="handle" style="height: 100%;" variant="ghost" size="sm">
+          <IFluentReOrderDotsVertical24Regular />
+        </Button>
         <div>
           <span class="text-xl font-bold">{{ item.name }}
             <Link v-if="showAdminEdit" :href="route('navigation.edit', { navigation: item.id })">
-            <NButton size="tiny" circle secondary>
-              <template #icon>
-                <Icon icon="fluent:edit-16-regular" width="12" height="12" />
-              </template>
-            </NButton>
+            <Button size="icon-xs" variant="secondary" class="rounded-full">
+              <Icon icon="fluent:edit-16-regular" width="12" height="12" />
+            </Button>
             </Link>
           </span>
           <MainNavigationMenuContent :item is-used-without-root are-links-disabled :show-edit-icons="showAdminEdit">
@@ -31,18 +30,14 @@
                 :edit-route="route('navigation.edit', { navigation: link.id })" @delete="handleDelete(link)"
                 @move-up="moveUp(item, link)" @move-down="moveDown(item, link)" />
               <div v-else>
-                <NButtonGroup>
-                  <NButton size="tiny" circle tertiary @click="changeColumn(link, 'left')">
-                    <template #icon>
-                      <Icon icon="fluent:arrow-left-16-regular" width="12" height="12" />
-                    </template>
-                  </NButton>
-                  <NButton size="tiny" circle tertiary @click="changeColumn(link, 'right')">
-                    <template #icon>
-                      <Icon icon="fluent:arrow-right-16-regular" width="12" height="12" />
-                    </template>
-                  </NButton>
-                </NButtonGroup>
+                <ButtonGroup>
+                  <Button size="icon-xs" variant="ghost" class="rounded-full" @click="changeColumn(link, 'left')">
+                    <Icon icon="fluent:arrow-left-16-regular" width="12" height="12" />
+                  </Button>
+                  <Button size="icon-xs" variant="ghost" class="rounded-full" @click="changeColumn(link, 'right')">
+                    <Icon icon="fluent:arrow-right-16-regular" width="12" height="12" />
+                  </Button>
+                </ButtonGroup>
               </div>
             </template>
             <template #editIconsBg="{ index, link, links }">
@@ -51,18 +46,14 @@
                 @move-up="moveUp(item, link)" @move-down="moveDown(item, link)" />
 
               <div v-else>
-                <NButtonGroup>
-                  <NButton size="tiny" circle tertiary @click="changeColumn(link, 'left')">
-                    <template #icon>
-                      <Icon icon="fluent:arrow-left-16-regular" width="12" height="12" />
-                    </template>
-                  </NButton>
-                  <NButton size="tiny" circle tertiary @click="changeColumn(link, 'right')">
-                    <template #icon>
-                      <Icon icon="fluent:arrow-right-16-regular" width="12" height="12" />
-                    </template>
-                  </NButton>
-                </NButtonGroup>
+                <ButtonGroup>
+                  <Button size="icon-xs" variant="ghost" class="rounded-full" @click="changeColumn(link, 'left')">
+                    <Icon icon="fluent:arrow-left-16-regular" width="12" height="12" />
+                  </Button>
+                  <Button size="icon-xs" variant="ghost" class="rounded-full" @click="changeColumn(link, 'right')">
+                    <Icon icon="fluent:arrow-right-16-regular" width="12" height="12" />
+                  </Button>
+                </ButtonGroup>
               </div>
             </template>
             <template #editIconsDivider="{ index, link, links }">
@@ -74,45 +65,45 @@
           </MainNavigationMenuContent>
         </div>
         <div v-if="showAdminEdit" class="col-span-full ml-auto p-2">
-          <NButtonGroup class="ml-auto" size="small">
-            <NButton type="primary" :tag="Link" :href="route('navigation.create', { parent_id: item.id })">
-              <template #icon>
-                <Icon icon="fluent:add-16-regular" />
-              </template>
+          <ButtonGroup class="ml-auto">
+            <Button :as="Link" :href="route('navigation.create', { parent_id: item.id })">
+              <Icon icon="fluent:add-16-regular" />
               Pridėti elementą
-            </NButton>
-            <NPopconfirm @positive-click="handleDelete(item)">
-              <template #trigger>
-                <NButton type="error">
-                  <template #icon>
-                    <Icon icon="fluent:delete-16-regular" />
-                  </template>
+            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger as-child>
+                <Button variant="destructive">
+                  <Icon icon="fluent:delete-16-regular" />
                   Ištrinti
-                </NButton>
-              </template>
-              Ar tikrai norite ištrinti šį elementą?
-            </NPopconfirm>
-          </NButtonGroup>
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Ar tikrai?</AlertDialogTitle>
+                  <AlertDialogDescription>Ar tikrai norite ištrinti šį elementą?</AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Atšaukti</AlertDialogCancel>
+                  <AlertDialogAction @click="handleDelete(item)">Patvirtinti</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </ButtonGroup>
         </div>
       </div>
       <div class="mt-4">
-        <NButtonGroup>
-          <NButton :tag="Link" type="primary" :href="route('navigation.create', { parent_id: 0 })">
-            <template #icon>
-              <Icon icon="fluent:add-16-regular" />
-            </template>
+        <ButtonGroup>
+          <Button :as="Link" :href="route('navigation.create', { parent_id: 0 })">
+            <Icon icon="fluent:add-16-regular" />
             Pridėti pagrindinį navigacijos elementą
-          </NButton>
-          <NButton @click="saveOrder()">
-            <template #icon>
-              <Icon icon="fluent:save-16-regular" />
-            </template>
+          </Button>
+          <Button variant="secondary" @click="saveOrder()">
+            <Icon icon="fluent:save-16-regular" />
             Išsaugoti rikiavimą
-          </NButton>
-        </NButtonGroup>
+          </Button>
+        </ButtonGroup>
       </div>
     </TransitionGroup>
-    </ThemeProvider>
   </PageContent>
 </template>
 
@@ -122,10 +113,24 @@ import { Link, router } from "@inertiajs/vue3";
 import { ref } from "vue";
 import { useSortable } from "@vueuse/integrations/useSortable";
 
+import { Button } from "@/Components/ui/button";
+import { ButtonGroup } from "@/Components/ui/button-group";
+import { Label } from "@/Components/ui/label";
+import { Switch } from "@/Components/ui/switch";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/Components/ui/alert-dialog";
 import MainNavigationMenuContent from "@/Components/Public/Nav/MainNavigationMenuContent.vue";
 import OrderEditDeleteButtons from "@/Components/Buttons/OrderEditDeleteButtons.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import ThemeProvider from "@/Components/Providers/ThemeProvider.vue";
 
 const props = defineProps<{
   navigation: App.Entities.Navigation;
@@ -148,7 +153,7 @@ const saveOrder = () => {
 };
 
 const moveUp = (parent, link) => {
-  // Find contents array by parent id 
+  // Find contents array by parent id
   const contentsIndex = contents.value.findIndex((item) => item.id === parent.id);
 
   let linkArrayIndex = -1;
@@ -177,7 +182,7 @@ const moveUp = (parent, link) => {
 };
 
 const moveDown = (parent, link) => {
-  // Find contents array by parent id 
+  // Find contents array by parent id
   const contentsIndex = contents.value.findIndex((item) => item.id === parent.id);
 
   let linkArrayIndex = -1;

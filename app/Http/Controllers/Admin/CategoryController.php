@@ -3,26 +3,63 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\AdminController;
+use App\Http\Requests\IndexCategoryRequest;
 use App\Http\Requests\StoreCategoryRequest;
 use App\Http\Requests\UpdateCategoryRequest;
+use App\Http\Traits\HasTanstackTables;
 use App\Models\Category;
-use Illuminate\Http\Request;
+use App\Services\TanstackTableService;
 
 class CategoryController extends AdminController
 {
+    use HasTanstackTables;
+
+    public function __construct(private TanstackTableService $tableService) {}
+
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index(IndexCategoryRequest $request): \Inertia\Response
     {
         $this->handleAuthorization(Category::class, 'viewAny');
 
-        $categories = Category::paginate(20);
+        $query = Category::query();
+
+        $searchableColumns = ['name', 'alias'];
+
+        $query = $this->applyTanstackFilters(
+            $query,
+            $request,
+            $this->tableService,
+            $searchableColumns,
+            [
+                'applySortBeforePagination' => true,
+            ]
+        );
+
+        $categories = $query->paginate($request->input('per_page', 20))
+            ->withQueryString();
+
+        $sorting = $request->getSorting();
 
         return $this->inertiaResponse('Admin/Content/IndexCategory', [
-            'categories' => $categories,
-            'filters' => (object) [], // Empty filters for test compatibility
-            'sorting' => (object) [], // Empty sorting for test compatibility
+            'categories' => [
+                'data' => $categories->getCollection()
+                    ->map(function ($category) {
+                        /** @var \App\Models\Category $category */
+                        return $category->toFullArray();
+                    }),
+                'meta' => [
+                    'total' => $categories->total(),
+                    'per_page' => $categories->perPage(),
+                    'current_page' => $categories->currentPage(),
+                    'last_page' => $categories->lastPage(),
+                    'from' => $categories->firstItem(),
+                    'to' => $categories->lastItem(),
+                ],
+            ],
+            'filters' => $request->getFilters(),
+            'sorting' => $sorting,
         ]);
     }
 

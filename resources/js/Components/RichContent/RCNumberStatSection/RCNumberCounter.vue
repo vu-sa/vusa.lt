@@ -1,11 +1,10 @@
 <template>
-  <span ref="target">{{ numberRef }}{{ showPlus ? '+' : '' }}</span>
+  <span ref="target">{{ displayNumber }}{{ showPlus ? '+' : '' }}</span>
 </template>
 
 <script setup lang="ts">
-import { gsap } from "gsap";
-import { ref, useTemplateRef, watch } from "vue";
-import { useIntersectionObserver } from '@vueuse/core'
+import { computed, ref, useTemplateRef, watch } from "vue";
+import { useIntersectionObserver, useTransition, TransitionPresets } from '@vueuse/core'
 
 const props = defineProps<{
   endNumber: number;
@@ -14,10 +13,16 @@ const props = defineProps<{
 
 const target = useTemplateRef('target')
 const targetIsVisible = ref(false)
-const numberRef = ref(0);
+const source = ref(0);
+
+const output = useTransition(source, {
+  duration: 2000,
+  transition: TransitionPresets.easeOutCubic,
+});
+
+const displayNumber = computed(() => Math.round(output.value));
 
 // run the animation only once on intersection
-
 const { stop } = useIntersectionObserver(target, ([{ isIntersecting }]) => {
   if (isIntersecting) {
     stop()
@@ -27,11 +32,7 @@ const { stop } = useIntersectionObserver(target, ([{ isIntersecting }]) => {
 
 watch(targetIsVisible, (isVisible) => {
   if (isVisible) {
-    gsap.to(numberRef, {
-      value: props.endNumber,
-      duration: 2,
-      roundProps: "value",
-    });
+    source.value = props.endNumber;
   }
 })
 </script>

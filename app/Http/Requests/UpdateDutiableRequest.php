@@ -4,7 +4,6 @@ namespace App\Http\Requests;
 
 use App\Models\Duty;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Carbon;
 
 class UpdateDutiableRequest extends FormRequest
 {
@@ -14,18 +13,6 @@ class UpdateDutiableRequest extends FormRequest
     public function authorize(): bool
     {
         return $this->user()->can('update', Duty::find(request('duty')['id']));
-    }
-
-    protected function prepareForValidation()
-    {
-        $this->merge([
-            'start_date' => Carbon::createFromTimestampMs($this->input('start_date'), 'Europe/Vilnius'),
-        ]);
-        if ($this->input('end_date') !== null) {
-            $this->merge([
-                'end_date' => Carbon::createFromTimestampMs($this->input('end_date'), 'Europe/Vilnius'),
-            ]);
-        }
     }
 
     /**

@@ -1,24 +1,27 @@
 <template>
   <HoverCard :open-delay="300" :close-delay="100">
     <HoverCardTrigger as-child>
-      <div class="inline-block">
-        <UserAvatar 
-          v-if="!showName" 
-          v-bind="$attrs" 
-          :user="user" 
-          :size="size" 
+      <div
+        v-if="!showName"
+        v-bind="$attrs"
+        class="inline-flex items-center leading-none"
+        :class="avatarWrapperClass"
+      >
+        <UserAvatar
+          :user="user"
+          :size="avatarSize"
           :interactive="true"
         />
-        <div 
-          v-else 
-          v-bind="$attrs" 
-          class="inline-flex items-center gap-2 px-1 py-0.5 rounded-md transition-colors hover:bg-accent group"
-        >
-          <UserAvatar :user="user" :size="size" :interactive="true" />
-          <span :class="[size > 20 ? 'text-base' : 'text-sm', 'font-medium group-hover:text-accent-foreground']">
-            {{ user.name }}
-          </span>
-        </div>
+      </div>
+      <div 
+        v-else 
+        v-bind="$attrs" 
+        class="inline-flex items-center gap-2 px-1 py-0.5 rounded-md transition-colors hover:bg-accent group"
+      >
+        <UserAvatar :user="user" :size="avatarSize" :interactive="true" />
+        <span :class="[nameTextClass, 'font-medium group-hover:text-accent-foreground']">
+          {{ user.name }}
+        </span>
       </div>
     </HoverCardTrigger>
     
@@ -69,12 +72,37 @@
 import { computed } from "vue";
 import UserAvatar from "./UserAvatar.vue";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/Components/ui/hover-card";
+import { avatarSizeClasses, mapPixelToSize, type AvatarSize } from "@/Components/ui/avatar";
 
 const props = defineProps<{
   showName?: boolean;
-  size?: number;
+  size?: number | AvatarSize;
   user: Record<string, any>;
 }>();
+
+// Support both pixel values (backward compat) and size variant names
+const avatarSize = computed<AvatarSize>(() => {
+  if (typeof props.size === 'string') {
+    return props.size as AvatarSize;
+  }
+  return mapPixelToSize(props.size);
+});
+
+// Text size for the name label when showName is true
+const nameTextClass = computed(() => {
+  const sizeMap: Record<AvatarSize, string> = {
+    xs: 'text-xs',
+    sm: 'text-sm',
+    default: 'text-base',
+    lg: 'text-base',
+    xl: 'text-lg',
+  };
+  return sizeMap[avatarSize.value];
+});
+
+const avatarWrapperClass = computed(() => {
+  return avatarSizeClasses[avatarSize.value];
+});
 
 const photo = computed(() => {
   if (props.user.src) return props.user.src;

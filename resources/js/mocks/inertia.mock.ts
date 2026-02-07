@@ -9,7 +9,10 @@ import { defineComponent, h } from 'vue';
 
 // Detect if we're in a Vitest environment
 const isVitest = typeof vi !== 'undefined';
-const mockFn = isVitest ? vi.fn : fn;
+
+// Use a unified mock function type to avoid TypeScript conflicts
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mockFn = (isVitest ? vi.fn : fn) as <T extends (...args: any[]) => any>(impl?: T) => T;
 
 // Mock usePage() function returning commonly used page props
 export const usePage = mockFn(() => ({

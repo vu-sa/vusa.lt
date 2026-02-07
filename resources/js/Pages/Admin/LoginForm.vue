@@ -22,59 +22,80 @@
   <!-- Main Content -->
   <div class="min-h-screen">
     <FadeTransition appear>
-      <div class="grid min-h-screen justify-center p-4 md:grid-cols-2">
+      <div class="grid min-h-screen items-center justify-center p-4 md:grid-cols-2">
         <!-- Logo Section -->
-        <div class="flex h-fit justify-center sm:h-auto">
-          <AppLogo class="hidden w-96 invert sm:block" />
+        <div class="hidden md:flex items-center justify-center">
+          <AppLogo class="w-96 invert" />
         </div>
         
         <!-- Login Form Section -->
-        <div class="m-auto mt-0 flex h-auto flex-col items-center gap-6 rounded-lg bg-white/95 backdrop-blur-sm p-8 text-zinc-700 shadow-xl dark:bg-zinc-900/95 dark:text-zinc-300 sm:mt-auto sm:justify-center sm:p-12 max-w-md w-full -order-1 md:order-2">
-          <!-- Mobile Logo -->
-          <div class="flex justify-center mb-4 sm:hidden">
-            <AppLogo class="w-24" />
-          </div>
-          <!-- Welcome Header -->
-          <div class="text-center space-y-2">
-            <h1 class="text-2xl font-bold text-zinc-800 dark:text-zinc-100">
-              {{ $page.props.app.locale === 'en' ? 'Welcome back' : 'Sveiki sugrįžę' }}
-            </h1>
-            <p class="text-lg text-zinc-700 dark:text-zinc-300">
-              {{ $page.props.app.locale === 'en' ? 'to my VU SR' : 'į Mano VU SA' }}
-            </p>
-            <!-- <p class="text-sm text-zinc-600 dark:text-zinc-400"> -->
-            <!--   {{ $page.props.app.locale === 'en' ? 'Continue your student representation journey' : 'Tęskite savo studentų atstovavimo kelionę' }} -->
-            <!-- </p> -->
-          </div>
-
-          <!-- Login Options -->
-          <FadeTransition mode="out-in">
-            <!-- Microsoft Login -->
-            <div v-if="!useSimpleRegistration" class="w-full space-y-4">
-              <MicrosoftButton class="w-full" />
-              <p class="text-center text-xs text-zinc-500 dark:text-zinc-400">
-                {{ $page.props.app.locale === 'en' ? 'Quick access with your university account' : 'Greitas priėjimas su universiteto paskyra' }}
-              </p>
-              
-              <!-- Simple Divider -->
-              <div class="relative flex items-center justify-center my-6">
-                <div class="flex-1 border-t border-zinc-300 dark:border-zinc-600"></div>
-                <div class="mx-4 text-sm text-zinc-500 dark:text-zinc-400 bg-white dark:bg-zinc-900 px-2">
-                  {{ $t('Arba') }}
-                </div>
-                <div class="flex-1 border-t border-zinc-300 dark:border-zinc-600"></div>
-              </div>
-              
-              <Button
-                variant="ghost"
-                size="sm"
-                class="w-full text-zinc-600 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200"
-                @click="useSimpleRegistration = true"
-              >
-                <IFluentKey24Filled class="w-4 h-4 mr-2" />
-                {{ $page.props.app.locale === 'en' ? 'Sign in with email' : 'Prisijungti el. paštu' }}
-              </Button>
+        <div class="m-auto flex flex-col rounded-2xl bg-gradient-to-br from-white/95 via-white/90 to-zinc-50/85 backdrop-blur-md text-zinc-700 shadow-2xl ring-1 ring-zinc-200/50 dark:from-zinc-900/95 dark:via-zinc-900/90 dark:to-zinc-800/85 dark:text-zinc-300 dark:ring-zinc-700/50 max-w-md w-full overflow-hidden">
+          <!-- Main content area -->
+          <div class="flex flex-col items-center gap-5 p-6 sm:p-10">
+            <!-- Mobile Logo -->
+            <div class="flex justify-center sm:hidden">
+              <AppLogo class="w-20" />
             </div>
+            <!-- Welcome Header -->
+            <div class="text-center space-y-2">
+              <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-zinc-800 dark:text-zinc-100">
+                {{ $page.props.app.locale === 'en' ? 'Welcome back' : 'Sveiki sugrįžę' }}
+              </h1>
+              <p class="text-base sm:text-lg font-medium text-vusa-red/80 dark:text-vusa-red/70">
+                {{ $page.props.app.locale === 'en' ? 'to my VU SR' : 'į Mano VU SA' }}
+              </p>
+            </div>
+
+            <!-- Login Options -->
+            <FadeTransition mode="out-in">
+              <!-- Microsoft Login -->
+              <div v-if="!useSimpleRegistration" class="w-full space-y-4">
+                <!-- Error Message -->
+                <Alert v-if="Object.keys(errors).length > 0 && !errorDismissed" variant="destructive" class="relative">
+                  <IFluentErrorCircle16Regular class="size-4" />
+                  <AlertTitle>
+                    {{ $page.props.app.locale === 'en' ? 'Login failed' : 'Prisijungimas nepavyko' }}
+                  </AlertTitle>
+                  <AlertDescription>
+                    <ul class="space-y-1">
+                      <li v-for="(error, key) in errors" :key="key">
+                        {{ error }}
+                      </li>
+                    </ul>
+                  </AlertDescription>
+                  <button 
+                    type="button"
+                    class="absolute top-3 right-3 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors"
+                    @click="errorDismissed = true"
+                  >
+                    <IFluentDismiss16Regular class="size-4" />
+                  </button>
+                </Alert>
+                
+                <MicrosoftButton class="w-full" />
+                <p class="text-center text-xs text-zinc-500 dark:text-zinc-400">
+                  {{ $page.props.app.locale === 'en' ? 'Quick access with your university account' : 'Greitas priėjimas su universiteto paskyra' }}
+                </p>
+                
+                <!-- Simple Divider -->
+                <div class="relative flex items-center justify-center py-2">
+                  <div class="flex-1 border-t border-zinc-300/60 dark:border-zinc-600/60"></div>
+                  <div class="mx-4 text-sm text-zinc-500 dark:text-zinc-400 bg-transparent px-2">
+                    {{ $t('Arba') }}
+                  </div>
+                  <div class="flex-1 border-t border-zinc-300/60 dark:border-zinc-600/60"></div>
+                </div>
+                
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  class="w-full text-zinc-600 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200"
+                  @click="useSimpleRegistration = true"
+                >
+                  <IFluentKey24Filled class="w-4 h-4 mr-2" />
+                  {{ $page.props.app.locale === 'en' ? 'Sign in with email' : 'Prisijungti el. paštu' }}
+                </Button>
+              </div>
             
             <!-- Email/Password Form -->
             <div v-else class="w-full space-y-6">
@@ -93,22 +114,33 @@
               </div>
               
               <!-- Status Messages -->
-              <div v-if="Object.keys(errors).length > 0" class="p-4 rounded-lg bg-red-50 border border-red-200 dark:bg-red-950/20 dark:border-red-900/30">
-                <div class="font-medium text-red-800 dark:text-red-200 text-sm">
+              <Alert v-if="Object.keys(errors).length > 0 && !errorDismissed" variant="destructive" class="relative">
+                <IFluentErrorCircle16Regular class="size-4" />
+                <AlertTitle>
                   {{ $page.props.app.locale === 'en' ? 'Something went wrong' : 'Kažkas ne taip' }}...
-                </div>
-                <ul class="mt-2 text-sm text-red-700 dark:text-red-300 space-y-1">
-                  <li v-for="(error, key) in errors" :key="key">
-                    {{ error }}
-                  </li>
-                </ul>
-              </div>
+                </AlertTitle>
+                <AlertDescription>
+                  <ul class="space-y-1">
+                    <li v-for="(error, key) in errors" :key="key">
+                      {{ error }}
+                    </li>
+                  </ul>
+                </AlertDescription>
+                <button 
+                  type="button"
+                  class="absolute top-3 right-3 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors"
+                  @click="errorDismissed = true"
+                >
+                  <IFluentDismiss16Regular class="size-4" />
+                </button>
+              </Alert>
 
-              <div v-if="status" class="p-4 rounded-lg bg-green-50 border border-green-200 dark:bg-green-950/20 dark:border-green-900/30">
-                <div class="text-sm font-medium text-green-800 dark:text-green-200">
+              <Alert v-if="status" class="bg-green-50 border-green-200 text-green-800 dark:bg-green-950/20 dark:border-green-900/30 dark:text-green-200">
+                <IFluentCheckmarkCircle16Regular class="size-4" />
+                <AlertDescription>
                   {{ status }}
-                </div>
-              </div>
+                </AlertDescription>
+              </Alert>
 
               <!-- Login Form -->
               <Form v-slot="{ errors: validationErrors }" :validation-schema="validationSchema" @submit="handleSubmit">
@@ -186,6 +218,17 @@
               </Form>
             </div>
           </FadeTransition>
+          </div>
+          
+          <!-- Card Footer - Back to main site (hidden in PWA) -->
+          <a 
+            v-if="!isPWA"
+            :href="route('home', { lang: $page.props.app.locale, subdomain: 'www' })"
+            class="flex items-center justify-center gap-2 py-3.5 text-xs text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300 transition-colors border-t border-zinc-200/50 dark:border-zinc-700/50 hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30"
+          >
+            <IFluentArrowLeft16Regular class="size-3.5" />
+            {{ $page.props.app.locale === 'en' ? 'Back to vusa.lt' : 'Grįžti į vusa.lt' }}
+          </a>
         </div>
       </div>
     </FadeTransition>
@@ -200,6 +243,7 @@ import { Head, useForm, usePage } from "@inertiajs/vue3";
 import { ref, computed } from "vue";
 import Autoplay from "embla-carousel-autoplay";
 import Fade from "embla-carousel-fade";
+import { usePWA } from "@/Composables/usePWA";
 
 // Components
 import AppLogo from "@/Components/AppLogo.vue";
@@ -216,19 +260,33 @@ import {
   FormLabel,
   FormMessage,
 } from "@/Components/ui/form";
+import { Alert, AlertDescription, AlertTitle } from "@/Components/ui/alert";
 
 // Icons
 import IFluentKey24Filled from "~icons/fluent/key-24-filled";
 import IFluentArrowHookUpLeft24Regular from "~icons/fluent/arrow-hook-up-left-24-regular";
+import IFluentArrowLeft16Regular from "~icons/fluent/arrow-left-16-regular";
+import IFluentErrorCircle16Regular from "~icons/fluent/error-circle-16-regular";
+import IFluentDismiss16Regular from "~icons/fluent/dismiss-16-regular";
+import IFluentCheckmarkCircle16Regular from "~icons/fluent/checkmark-circle-16-regular";
 
 defineProps<{
   status?: string;
 }>();
 
+const { isPWA } = usePWA();
 const useSimpleRegistration = ref(false);
+const errorDismissed = ref(false);
 
-// Get errors from Inertia page props
-const errors = computed(() => usePage().props.errors || {});
+// Get errors from Inertia page props - reset dismissed state when errors change
+const errors = computed(() => {
+  const pageErrors = usePage().props.errors || {};
+  // Reset dismissed state when new errors come in
+  if (Object.keys(pageErrors).length > 0) {
+    errorDismissed.value = false;
+  }
+  return pageErrors;
+});
 
 // Inertia form for submission
 const form = useForm({

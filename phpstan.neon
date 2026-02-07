@@ -14,6 +14,9 @@ parameters:
     stubFiles:
         - stubs/EagerLoadPivotBuilder.stub
 
+    # Laravel uses magic properties extensively, so treat PHPDoc types as certain
+    treatPhpDocTypesAsCertain: true
+
 #    ignoreErrors:
 #        - '#PHPDoc tag @var#'
 #

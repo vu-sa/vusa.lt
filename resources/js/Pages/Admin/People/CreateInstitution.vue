@@ -2,12 +2,13 @@
   <PageContent :title="$page.props.seo.title" :heading-icon="Icons.INSTITUTION">
     <UpsertModelLayout>
       <InstitutionForm remember-key="CreateInstitution" :assignable-tenants :institution :institution-types
-        @submit:form="(form) => form.post(route('institutions.store'))" />
+        @submit:form="handleSubmit" />
     </UpsertModelLayout>
   </PageContent>
 </template>
 
 <script setup lang="ts">
+import { router } from '@inertiajs/vue3';
 import Icons from "@/Types/Icons/regular";
 import InstitutionForm from "@/Components/AdminForms/InstitutionForm.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
@@ -32,4 +33,12 @@ const institution = {
   tenant_id: null,
   types: null,
 } as any;
+
+const handleSubmit = (form: any) => {
+  form.post(route('institutions.store'), {
+    onSuccess: () => {
+      router.visit(route('institutions.index'));
+    }
+  });
+};
 </script>

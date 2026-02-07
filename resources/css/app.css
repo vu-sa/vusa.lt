@@ -1,12 +1,10 @@
 @import 'tailwindcss';
 
-/* these are necessary styles for vue flow */
-@import '@vue-flow/core/dist/style.css';
-
-/* this contains the default theme, these are optional styles */
-@import '@vue-flow/core/dist/theme-default.css';
-
 @import 'tw-animate-css';
+
+/* Vue Flow - used in rich content on public pages */
+@import '@vue-flow/core/dist/style.css';
+@import '@vue-flow/core/dist/theme-default.css';
 
 @source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
@@ -88,7 +86,6 @@
   --sidebar-ring: oklch(0.442 0.017 285.786);
 }
 
-
 @utility container {
   margin-inline: auto;
   padding-inline: 2rem;
@@ -168,6 +165,21 @@
   }
 }
 
+/* Font family utilities */
+@layer utilities {
+  .font-heading {
+    font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  }
+
+  .font-public {
+    font-family: 'Atkinson Hyperlegible Next', ui-sans-serif, system-ui, sans-serif;
+  }
+
+  .font-admin {
+    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  }
+}
+
 html.dark {
   color-scheme: dark;
 }
@@ -183,6 +195,16 @@ html.dark-mode-init {
 }
 
 .typography {
+
+  /* Ensure images are responsive and don't overflow */
+  img {
+    @apply max-w-full h-auto;
+  }
+
+  /* Allow long URLs to wrap at any character */
+  a {
+    @apply underline break-all;
+  }
 
   /* Rich content typography with proper spacing and enhanced styling */
   h1 {
@@ -221,10 +243,6 @@ html.dark-mode-init {
     @apply not-first:mt-6 mt-4 mb-5 tracking-normal
   }
 
-  a {
-    @apply underline
-  }
-
   ul,
   ol {
     @apply ml-4 [&>li]:mt-2;
@@ -259,6 +277,8 @@ html.dark-mode-init {
   display: grid;
   grid-template-columns:
     minmax(1rem, 1fr) min(calc(100% - 2rem), 1200px) minmax(1rem, 1fr);
+  /* CSS containment for performance - isolates layout calculations */
+  contain: layout style;
 
   @media (width >=768px) {
     grid-template-columns:
@@ -271,6 +291,7 @@ html.dark-mode-init {
   display: grid;
   grid-template-columns:
     minmax(1rem, 1fr) min(calc(100% - 2rem), 1400px) minmax(1rem, 1fr);
+  contain: layout style;
 
   @media (width >=768px) {
     grid-template-columns:
@@ -282,6 +303,7 @@ html.dark-mode-init {
   display: grid;
   grid-template-columns:
     minmax(0.75rem, 1fr) min(calc(100% - 1.5rem), none) minmax(0.75rem, 1fr);
+  contain: layout style;
 
   @media (width >=768px) {
     grid-template-columns:
@@ -293,6 +315,7 @@ html.dark-mode-init {
   display: grid;
   grid-template-columns:
     minmax(1rem, 1fr) min(calc(100% - 2rem), 1600px) minmax(1rem, 1fr);
+  contain: layout style;
 
   @media (width >=768px) {
     grid-template-columns:
@@ -361,11 +384,6 @@ html.dark-mode-init {
   contain: layout style;
 }
 
-/*This aligns form items to start, when MultiLocaleInput is present in the form.*/
-.n-form-item {
-  align-items: start;
-}
-
 .archive-document-link {
   /* Add pseudo class with icon */
   background-color: rgb(244 244 245);
@@ -406,19 +424,20 @@ html.dark-mode-init {
   color: #bd2835;
 }
 
+/* Vue Flow custom styling */
 .basic-flow.dark {
   background: #2d3748;
-  color: #fffffb
+  color: #fffffb;
 }
 
 .basic-flow.dark .vue-flow__node {
   background: #4a5568;
-  color: #fffffb
+  color: #fffffb;
 }
 
 .basic-flow.dark .vue-flow__node.selected {
   background: #333;
-  box-shadow: 0 0 0 2px #2563eb
+  box-shadow: 0 0 0 2px #2563eb;
 }
 
 .basic-flow .vue-flow__controls {
@@ -429,7 +448,7 @@ html.dark-mode-init {
 }
 
 .basic-flow.dark .vue-flow__controls {
-  border: 1px solid #EEEEEE
+  border: 1px solid #EEEEEE;
 }
 
 .basic-flow .vue-flow__controls .vue-flow__controls-button {
@@ -439,15 +458,15 @@ html.dark-mode-init {
 
 .basic-flow .vue-flow__controls .vue-flow__controls-button svg {
   height: 12px;
-  width: 12px
+  width: 12px;
 }
 
 .basic-flow .vue-flow__controls .vue-flow__controls-button {
-  @apply border border-zinc-200 dark:border-zinc-500/30 bg-zinc-200/60 dark:bg-zinc-600 dark:fill-zinc-50 transition-shadow
+  @apply border border-zinc-200 dark:border-zinc-500/30 bg-zinc-200/60 dark:bg-zinc-600 dark:fill-zinc-50 transition-shadow;
 }
 
 .basic-flow .vue-flow__edge-text {
-  @apply fill-zinc-900 dark:fill-zinc-50
+  @apply fill-zinc-900 dark:fill-zinc-50;
 }
 
 .basic-flow .vue-flow__node-multiple-handle {
@@ -455,29 +474,70 @@ html.dark-mode-init {
 }
 
 .basic-flow .vue-flow__edge-textbg {
-  @apply fill-zinc-50 dark:fill-zinc-900
+  @apply fill-zinc-50 dark:fill-zinc-900;
 }
 
-/*Overwrite padding for node div, so button would use it*/
-
-.vue-flow__node-default, .vue-flow__node-input, .vue-flow__node-output {
+/* Overwrite padding for node div, so button would use it */
+.vue-flow__node-default,
+.vue-flow__node-input,
+.vue-flow__node-output {
   padding: 0;
 }
 
-
 /* Consolidated theme colors for Tailwind CSS v4 */
 @theme inline {
-  /* VU SA Brand Colors */
-  --color-vusa-red: #bd2835;
-  --color-vusa-red-secondary: #8c1d27;
-  --color-vusa-red-tertiary: #bb2734;
-  --color-vusa-red-quaternary: #d74350;
-  --color-vusa-red-dark: #5d131a;
-  --color-vusa-yellow: #fbb01b;
-  --color-vusa-yellow-secondary: #de9503;
-  --color-vusa-yellow-tertiary: #fbb120;
-  --color-vusa-yellow-quaternary: #fcc557;
-  --color-vusa-yellow-dark: #a77002;
+  /* Font Families */
+  --font-heading: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --font-public: 'Atkinson Hyperlegible Next', ui-sans-serif, system-ui, sans-serif;
+  --font-admin: 'Inter', ui-sans-serif, system-ui, sans-serif;
+
+  /* VU SA Brand Colors - converted to OKLCH */
+  --color-vusa-red: oklch(0.5 0.2 25);
+  --color-vusa-red-secondary: oklch(0.4 0.18 25);
+  --color-vusa-red-tertiary: oklch(0.5 0.2 25);
+  --color-vusa-red-quaternary: oklch(0.6 0.18 25);
+  --color-vusa-red-dark: oklch(0.3 0.15 25);
+  --color-vusa-yellow: oklch(0.82 0.17 75);
+  --color-vusa-yellow-secondary: oklch(0.72 0.16 70);
+  --color-vusa-yellow-tertiary: oklch(0.82 0.17 75);
+  --color-vusa-yellow-quaternary: oklch(0.87 0.14 80);
+  --color-vusa-yellow-dark: oklch(0.55 0.14 65);
+
+  /* Semantic Status Colors - OKLCH for consistency */
+  /* Success - Emerald tones */
+  --color-status-success: oklch(0.696 0.17 162.48);
+  --color-status-success-muted: oklch(0.95 0.052 163.051);
+  --color-status-success-foreground: oklch(0.378 0.077 168.94);
+
+  /* Warning - Amber tones (unified, no orange) */
+  --color-status-warning: oklch(0.769 0.188 70.08);
+  --color-status-warning-muted: oklch(0.962 0.059 95.617);
+  --color-status-warning-foreground: oklch(0.414 0.112 45.904);
+
+  /* Danger - Red/Rose tones */
+  --color-status-danger: oklch(0.637 0.237 25.331);
+  --color-status-danger-muted: oklch(0.936 0.032 17.717);
+  --color-status-danger-foreground: oklch(0.396 0.141 25.723);
+
+  /* Info - Blue tones */
+  --color-status-info: oklch(0.623 0.214 259.815);
+  --color-status-info-muted: oklch(0.932 0.032 255.585);
+  --color-status-info-foreground: oklch(0.379 0.146 265.522);
+
+  /* Neutral - Slate tones */
+  --color-status-neutral: oklch(0.554 0.046 257.417);
+  --color-status-neutral-muted: oklch(0.968 0.007 247.896);
+  --color-status-neutral-foreground: oklch(0.372 0.044 257.287);
+
+  /* Gantt Chart specific colors */
+  --color-gantt-meeting-complete: oklch(0.21 0.006 285.885);
+  --color-gantt-meeting-incomplete: oklch(0.637 0.237 25.331);
+  --color-gantt-gap: oklch(0.769 0.188 70.08);
+  --color-gantt-safety-band: oklch(0.696 0.17 162.48 / 18%);
+  --color-gantt-today: oklch(0.623 0.214 259.815);
+  --color-gantt-vacation-summer: oklch(0.828 0.189 84.429 / 8%);
+  --color-gantt-vacation-winter: oklch(0.809 0.105 251.813 / 8%);
+  --color-gantt-vacation-easter: oklch(0.811 0.111 293.571 / 8%);
 
   /* Navigation Colors */
   --color-nav-gradient-from-light: oklch(0.979 0.006 74.59);
@@ -591,7 +651,6 @@ html.dark-mode-init {
   /* 24px */
 }
 
-
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -600,4 +659,48 @@ html.dark-mode-init {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* View Transitions API - Smoother animations */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 200ms;
+  animation-timing-function: ease-out;
+}
+
+/* News image transitions - smoother morph with no flash */
+[style*="view-transition-name: news-image"] {
+  /* Reset any transforms before transition starts */
+  transform: scale(1) !important;
+}
+
+/* During the transition, ensure smooth animation */
+::view-transition-group(*) {
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  animation-duration: 250ms;
+}
+
+::view-transition-old(*),
+::view-transition-new(*) {
+  /* Prevent flash by matching animation timing */
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  mix-blend-mode: normal;
+}
+
+/* Respect user's reduced motion preference - disable all view transitions */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+    animation-duration: 0s !important;
+  }
+}
+
+/* Also respect in-app reduce motion setting via class */
+.reduce-motion ::view-transition-group(*),
+.reduce-motion ::view-transition-old(*),
+.reduce-motion ::view-transition-new(*) {
+  animation: none !important;
+  animation-duration: 0s !important;
 }

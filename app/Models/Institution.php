@@ -9,8 +9,10 @@ use App\Models\Pivots\Trainable;
 use App\Models\Traits\HasComments;
 use App\Models\Traits\HasContentRelationships;
 use App\Models\Traits\HasSharepointFiles;
+use App\Models\Traits\HasTasks;
 use App\Models\Traits\HasTranslations;
 use App\Services\RelationshipService;
+use App\Settings\MeetingSettings;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -38,27 +40,38 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string|null $instagram_url
  * @property int|null $tenant_id
  * @property int $is_active
+ * @property int $meeting_periodicity_days
  * @property string $contacts_layout
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
- * @property-read \App\Models\Pivots\Relationshipable|Trainable|null $pivot
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\FileableFile> $availableFiles
+ * @property-read \App\Models\Pivots\Relationshipable|\App\Models\InstitutionFollow|Trainable|null $pivot
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Training> $availableTrainings
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\InstitutionCheckIn> $checkIns
  * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $commentable
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Comment> $comments
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Document> $documents
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Duty> $duties
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\FileableFile> $fileableFiles
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\SharepointFile> $files
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $followers
+ * @property-read bool $has_protocol
+ * @property-read bool $has_public_meetings
+ * @property-read bool $has_report
  * @property-read mixed $maybe_short_name
  * @property-read mixed $related_institutions
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Relationship> $incomingRelationships
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Meeting> $meetings
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Relationship> $outgoingRelationships
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Task> $tasks
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Task> $tasksFromMeetings
  * @property-read \App\Models\Tenant|null $tenant
  * @property-read mixed $translations
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Type> $types
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $users
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $users
+ * @property-read int|null $tasks_from_meetings_count
  * @property-read int|null $users_count
  *
  * @method static \Database\Factories\InstitutionFactory factory($count = null, $state = [])
@@ -77,11 +90,17 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  */
 class Institution extends Model implements SharepointFileableContract
 {
-    use HasComments, HasContentRelationships, HasFactory, HasRelationships, HasSharepointFiles, HasTranslations, HasUlids, LogsActivity, Searchable, SoftDeletes;
+    use HasComments, HasContentRelationships, HasFactory, HasRelationships, HasSharepointFiles, HasTasks, HasTranslations, HasUlids, LogsActivity, Searchable, SoftDeletes;
 
     protected $guarded = [];
 
-    protected $with = ['types'];
+    // Note: types are NOT auto-loaded to prevent N+1 in collections.
+    // Load explicitly where needed: ->with('types') or ->load('types').
+    // Computed attributes like has_public_meetings and meeting_periodicity_days
+    // will lazy-load types if not already loaded.
+
+    // Note: has_public_meetings is NOT auto-appended due to performance.
+    // Append it explicitly where needed: $institution->append('has_public_meetings')
 
     public $translatable = ['name', 'short_name', 'description', 'address'];
 
@@ -115,9 +134,29 @@ class Institution extends Model implements SharepointFileableContract
         return $this->hasMany(Document::class);
     }
 
+    public function checkIns()
+    {
+        return $this->hasMany(InstitutionCheckIn::class);
+    }
+
+    public function activeCheckIns()
+    {
+        return $this->checkIns()
+            ->where('start_date', '<=', now())
+            ->where('end_date', '>=', now());
+    }
+
     public function meetings(): BelongsToMany
     {
         return $this->belongsToMany(Meeting::class);
+    }
+
+    /**
+     * Get all tasks from meetings belonging to this institution.
+     */
+    public function tasksFromMeetings(): HasManyDeep
+    {
+        return $this->hasManyDeepFromRelations($this->meetings(), (new Meeting)->tasks());
     }
 
     public function lastMeeting(): ?Meeting
@@ -142,6 +181,18 @@ class Institution extends Model implements SharepointFileableContract
         return $this->hasManyDeepFromRelations($this->duties(), (new Duty)->users());
     }
 
+    /**
+     * Users who are explicitly following this institution.
+     *
+     * @return BelongsToMany<User, $this, InstitutionFollow, 'pivot'>
+     */
+    public function followers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'institution_follows')
+            ->using(InstitutionFollow::class)
+            ->withTimestamps();
+    }
+
     public function managers()
     {
         return GetInstitutionManagers::execute($this);
@@ -157,20 +208,46 @@ class Institution extends Model implements SharepointFileableContract
         return RelationshipService::getRelatedInstitutions($this);
     }
 
-    public function toSearchableArray()
+    /**
+     * Get the name of the index for the model.
+     */
+    public function searchableAs(): string
+    {
+        return config('scout.prefix').'institutions';
+    }
+
+    /**
+     * Get the engine used to index the model.
+     */
+    public function searchableUsing()
+    {
+        return app(\Laravel\Scout\EngineManager::class)->engine('typesense');
+    }
+
+    public function toSearchableArray(): array
     {
         return [
-            'name->'.app()->getLocale() => $this->getTranslation('name', app()->getLocale()),
-            'short_name->'.app()->getLocale() => $this->getTranslation('short_name', app()->getLocale()),
+            'id' => (string) $this->id,
+            'name_lt' => $this->getTranslation('name', 'lt'),
+            'name_en' => $this->getTranslation('name', 'en'),
+            'short_name_lt' => $this->getTranslation('short_name', 'lt'),
+            'short_name_en' => $this->getTranslation('short_name', 'en'),
+            'alias' => $this->alias,
+            'email' => $this->email,
+            'tenant_id' => $this->tenant_id,
+            'tenant_ids' => $this->tenant_id ? [$this->tenant_id] : [],
+            'tenant_shortname' => $this->tenant?->shortname,
+            // Self-referential institution_ids for .own permission filtering
+            'institution_ids' => [(string) $this->id],
+            'created_at' => $this->created_at->timestamp,
         ];
     }
 
     protected static function booted()
     {
-        static::saved(function (Institution $institution) {
-            // check if institution name $institution->getChanges()['name'] has changed
-            if (array_key_exists('name', $institution->getChanges())) {
-                // dispatch event FileableNameUpdated
+        static::saving(function (Institution $institution) {
+            // Dispatch event when name is about to change - SharePoint must succeed first
+            if ($institution->isDirty('name')) {
                 FileableNameUpdated::dispatch($institution);
             }
         });
@@ -179,6 +256,56 @@ class Institution extends Model implements SharepointFileableContract
     public function getMaybeShortNameAttribute()
     {
         return $this->short_name ?? $this->name;
+    }
+
+    /**
+     * Check if this institution type allows public meetings.
+     * Based on MeetingSettings::getPublicMeetingInstitutionTypeIds().
+     */
+    public function getHasPublicMeetingsAttribute(): bool
+    {
+        $settings = app(MeetingSettings::class);
+        $allowedTypeIds = $settings->getPublicMeetingInstitutionTypeIds();
+
+        if ($allowedTypeIds->isEmpty()) {
+            return false;
+        }
+
+        // Load types if not already loaded
+        if (! $this->relationLoaded('types')) {
+            $this->load('types');
+        }
+
+        return $this->types->pluck('id')->intersect($allowedTypeIds)->isNotEmpty();
+    }
+
+    /**
+     * Get meeting periodicity in days.
+     * Priority: 1) Institution override, 2) Minimum from assigned types, 3) Default 30 days.
+     */
+    public function getMeetingPeriodicityDaysAttribute(): int
+    {
+        // 1) Use institution-level override if set
+        if ($this->attributes['meeting_periodicity_days'] ?? null) {
+            return (int) $this->attributes['meeting_periodicity_days'];
+        }
+
+        // 2) Inherit from types - use minimum periodicity if multiple types have it set
+        if (! $this->relationLoaded('types')) {
+            $this->load('types');
+        }
+
+        $periodicities = $this->types
+            ->map(fn ($type) => $type->extra_attributes['meeting_periodicity_days'] ?? null)
+            ->filter()
+            ->values();
+
+        if ($periodicities->isNotEmpty()) {
+            return (int) $periodicities->min();
+        }
+
+        // 3) Default to 30 days
+        return 30;
     }
 
     public function availableTrainings()

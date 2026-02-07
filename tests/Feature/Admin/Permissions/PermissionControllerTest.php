@@ -40,7 +40,7 @@ describe('permission index', function () {
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->has('permissions.data', 20) // Default pagination size
-                ->has('permissions.links')
+                ->has('permissions.meta')
             );
     });
 
@@ -119,7 +119,7 @@ describe('permission filtering and search', function () {
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->has('permissions.data', 5) // Remaining permissions on page 2
-                ->has('permissions.links')
+                ->has('permissions.meta')
             );
     });
 

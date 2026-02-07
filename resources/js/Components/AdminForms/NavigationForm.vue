@@ -5,22 +5,58 @@
         Pagrindinė informacija
       </template>
       <div class="grid gap-3 lg:grid-cols-2">
-        <NFormItem required label="Pavadinimas">
-          <NInput v-model:value="form.name" type="text" placeholder="Įrašyti pavadinimą..." />
-        </NFormItem>
-        <NFormItem required label="Stulpelis">
-          <NSelect v-model:value="form.extra_attributes.column" :options="columnOptions" />
-        </NFormItem>
-        <NFormItem label="Tėvinis elementas">
-          <NSelect v-model:value="form.parent_id" filterable
-            :options="parentElements.map((element) => ({ value: element.id, label: element.name }))"
-            placeholder="Pasirinkti tėvinį elementą..." clearable />
-        </NFormItem>
+        <FormFieldWrapper id="name" label="Pavadinimas" required>
+          <Input v-model="form.name" type="text" placeholder="Įrašyti pavadinimą..." />
+        </FormFieldWrapper>
+        <FormFieldWrapper id="column" label="Stulpelis" required>
+          <Select
+            :model-value="form.extra_attributes.column != null ? String(form.extra_attributes.column) : undefined"
+            @update:model-value="val => form.extra_attributes.column = Number(val)"
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem v-for="opt in columnOptions" :key="opt.value" :value="String(opt.value)">
+                {{ opt.label }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </FormFieldWrapper>
+        <FormFieldWrapper id="parent_id" label="Tėvinis elementas">
+          <Select
+            :model-value="form.parent_id != null ? String(form.parent_id) : undefined"
+            @update:model-value="val => form.parent_id = val === '__none__' ? null : val"
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Pasirinkti tėvinį elementą..." />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__none__">-- Nėra --</SelectItem>
+              <SelectItem v-for="element in parentElements" :key="element.id" :value="String(element.id)">
+                {{ element.name }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </FormFieldWrapper>
       </div>
-      <NFormItem :show-feedback="false" required label="Nuorodos stilius">
-        <NSelect v-model:value="form.extra_attributes.type" :options="linkStyles(value)"
-          placeholder="Pasirinkti nuorodos stilių..." />
-      </NFormItem>
+      <FormFieldWrapper id="link_style" label="Nuorodos stilius" required>
+        <Select v-model="form.extra_attributes.type">
+          <SelectTrigger>
+            <SelectValue placeholder="Pasirinkti nuorodos stilių..." />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem
+              v-for="opt in linkStyleOptions"
+              :key="opt.value"
+              :value="opt.value"
+              :disabled="opt.disabled"
+            >
+              {{ opt.label }}
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </FormFieldWrapper>
     </FormElement>
     <FormElement>
       <template #title>
@@ -28,64 +64,96 @@
       </template>
 
       <div class="grid grid-cols-2 gap-2">
-        <NFormItem label="Nuorodos tipas">
-          <NSelect v-model:value="form.linkType" :options="quickLinkType" :render-label="renderLabel"
-            @update:value="(changedValue) => handleTypeChange(changedValue)" />
-        </NFormItem>
-        <NFormItem v-if="form.linkType !== 'url'" label="Pasirinkite puslapį">
-          <NSelect v-model:value="form.pageSelection" filterable :options="typeOptions"
-            placeholder="Pasirinkti puslapį..."
-            @update:value="(changedValue, option) => createQuickLinkLink(changedValue, option)" />
-        </NFormItem>
+        <FormFieldWrapper id="linkType" label="Nuorodos tipas">
+          <Select
+            :model-value="form.linkType"
+            @update:model-value="val => { form.linkType = val; handleTypeChange(val); }"
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem v-for="opt in quickLinkType" :key="opt.value" :value="opt.value">
+                <span class="flex items-center gap-2">
+                  <component :is="opt.icon" class="h-4 w-4" />
+                  {{ opt.label }}
+                </span>
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </FormFieldWrapper>
+        <FormFieldWrapper v-if="form.linkType !== 'url'" id="page" label="Pasirinkite puslapį">
+          <Select
+            :model-value="form.pageSelection != null ? String(form.pageSelection) : undefined"
+            @update:model-value="handlePageSelection"
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Pasirinkti puslapį..." />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem v-for="opt in typeOptions" :key="opt.value" :value="String(opt.value)">
+                {{ opt.label }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </FormFieldWrapper>
       </div>
-      <NFormItem required label="Nuoroda">
-        <NInputGroup>
-          <NInput v-model:value="form.url" :disabled="form.linkType !== 'url'" type="text" placeholder="" />
+      <FormFieldWrapper id="url" label="Nuoroda" required>
+        <div class="flex gap-1">
+          <Input v-model="form.url" :disabled="form.linkType !== 'url'" type="text" placeholder="" />
           <!-- link to form.link -->
-          <NButton tag="a" :href="form.url" target="_blank">
-            <template #icon>
-              <IFluentOpen24Regular />
-            </template>
-          </NButton>
-        </NInputGroup>
-      </NFormItem>
+          <Button variant="outline" size="icon" as="a" :href="form.url" target="_blank">
+            <IFluentOpen24Regular />
+          </Button>
+        </div>
+      </FormFieldWrapper>
     </FormElement>
-    <template v-if="form.type !== 'divider'">
-      <FluentIconSelect :icon="form.extra_attributes.icon"
+    <template v-if="form.extra_attributes.type !== 'divider'">
+      <FluentIconSelect :icon="form.extra_attributes.icon ?? null"
         @update:icon="(value) => form.extra_attributes.icon = value" />
-      <NFormItem label="Aprašymas">
-        <NInput v-model:value="form.extra_attributes.description" type="textarea" placeholder="Įrašyti aprašymą..." />
-      </NFormItem>
-      <NFormItem label="Mažas tekstas">
-        <NInput v-model:value="form.extra_attributes.small_text" type="text" placeholder="Įrašyti trumpą tekstą, atkreipiantį dėmesį į nuorodą..." />
-      </NFormItem>
-      <NFormItem label="Foninis paveikslėlis">
+      <FormFieldWrapper id="description" label="Aprašymas">
+        <Textarea v-model="form.extra_attributes.description" placeholder="Įrašyti aprašymą..." />
+      </FormFieldWrapper>
+      <FormFieldWrapper id="small_text" label="Mažas tekstas">
+        <Input v-model="form.extra_attributes.small_text" type="text" placeholder="Įrašyti trumpą tekstą, atkreipiantį dėmesį į nuorodą..." />
+      </FormFieldWrapper>
+      <FormFieldWrapper id="image" label="Foninis paveikslėlis">
         <img v-if="form.extra_attributes.image" class="mr-4 size-20 object-cover" :src="form.extra_attributes.image"
           alt="image">
-        <NButtonGroup>
-          <TiptapImageButton v-model:show-modal="showModal" @submit="form.extra_attributes.image = $event" />
+        <ButtonGroup>
+          <TiptapImageButton @submit="form.extra_attributes.image = $event">
+            <Button variant="outline" size="sm" type="button">
+              Pasirinkti paveikslėlį
+            </Button>
+          </TiptapImageButton>
           <!-- Remove image button -->
-          <NButton v-if="form.extra_attributes.image" type="error" size="small"
+          <Button v-if="form.extra_attributes.image" variant="destructive" size="sm"
             @click="form.extra_attributes.image = null">
             Ištrinti paveikslėlį
-          </NButton>
-        </NButtonGroup>
-      </NFormItem>
+          </Button>
+        </ButtonGroup>
+      </FormFieldWrapper>
     </template>
   </AdminForm>
 </template>
 
-<script setup lang="tsx">
-import { computed, ref } from "vue";
+<script setup lang="ts">
+import { computed } from "vue";
 import { router, useForm, usePage } from "@inertiajs/vue3"
 
 import Link24Regular from "~icons/fluent/link24-regular";
 
 import FluentIconSelect from "../FormItems/FluentIconSelect.vue";
 import FormElement from "./FormElement.vue";
+import FormFieldWrapper from "./FormFieldWrapper.vue";
 import Icons from "@/Types/Icons/regular";
 import TiptapImageButton from "@/Components/TipTap/TiptapImageButton.vue";
 import AdminForm from "./AdminForm.vue";
+import { Button } from "@/Components/ui/button";
+import { ButtonGroup } from "@/Components/ui/button-group";
+import { Input } from "@/Components/ui/input";
+import { Textarea } from "@/Components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
 
 const props = defineProps<{
   navigation: App.Entities.Navigation;
@@ -103,20 +171,21 @@ const form = props.rememberKey
   ? useForm(props.rememberKey, props.navigation)
   : useForm(props.navigation);
 
-const showModal = ref(false);
-
-const linkStyles = (value) => [
+const linkStyleOptions = computed(() => [
   {
     value: 'link',
     label: 'Nuoroda',
+    disabled: false,
   },
   {
     value: 'block-link',
     label: 'Nuoroda bloke',
+    disabled: false,
   },
   {
     value: 'category-link',
     label: 'Kategorijos nuoroda',
+    disabled: false,
   },
   {
     value: 'full-height-background-link',
@@ -126,8 +195,9 @@ const linkStyles = (value) => [
   {
     value: 'divider',
     label: 'Skirtukas',
+    disabled: false,
   },
-]
+]);
 
 const columnOptions = [
   { value: 1, label: "1" },
@@ -168,11 +238,6 @@ const quickLinkType = [
     label: "Kategorija",
     icon: Icons.CATEGORY,
   },
-  // {
-  //   value: "special-page",
-  //   label: "Specialus puslapis",
-  //   icon: Icons.PAGE,
-  // },
 ];
 
 const typeOptions = computed(() => {
@@ -189,15 +254,6 @@ const typeOptions = computed(() => {
   });
 });
 
-const renderLabel = (option: any) => {
-  return (
-    <div class="flex items-center">
-      <NIcon class="mr-2" component={option.icon} />
-      <span>{option.label}</span>
-    </div>
-  );
-};
-
 const handleTypeChange = (changedValue: string) => {
 
   if (changedValue === "url") {
@@ -213,29 +269,36 @@ const handleTypeChange = (changedValue: string) => {
   });
 };
 
-const createQuickLinkLink = (changedValue: string, option) => {
+const handlePageSelection = (value: string) => {
+  form.pageSelection = value;
+
   if (form.linkType === "url") {
     return;
   }
 
+  const selectedOption = typeOptions.value.find(opt => String(opt.value) === value);
+  if (!selectedOption) return;
+
+  const optionData = selectedOption.option;
+
   let subdomain =
-    option.option.tenant?.alias === "vusa"
+    optionData.tenant?.alias === "vusa"
       ? "www"
-      : option.option.tenant?.alias;
+      : optionData.tenant?.alias;
 
   if (form.linkType === "page") {
     form.url = route("page", {
-      lang: option.option.lang,
+      lang: optionData.lang,
       subdomain: subdomain,
-      permalink: option.option.permalink,
+      permalink: optionData.permalink,
     });
     return;
   }
 
   if (form.linkType === "news") {
     form.url = route("news", {
-      lang: option.option.lang,
-      news: option.option.permalink,
+      lang: optionData.lang,
+      news: optionData.permalink,
       newsString: "naujiena",
       subdomain: subdomain,
     });
@@ -245,7 +308,7 @@ const createQuickLinkLink = (changedValue: string, option) => {
   if (form.linkType === "calendarEvent") {
     form.url = route("calendar.event", {
       lang: currentLang.value as string,
-      calendar: option.option.id,
+      calendar: optionData.id,
     });
     return;
   }
@@ -253,7 +316,7 @@ const createQuickLinkLink = (changedValue: string, option) => {
   if (form.linkType === "institution") {
     form.url = route("contacts.institution", {
       lang: currentLang.value as string,
-      institution: option.option.id,
+      institution: optionData.id,
       subdomain: subdomain,
     });
     return;
@@ -262,7 +325,7 @@ const createQuickLinkLink = (changedValue: string, option) => {
   if (form.linkType === "category") {
     form.url = route("category", {
       lang: currentLang.value as string,
-      category: option.option.alias,
+      category: optionData.alias,
       subdomain: subdomain,
     });
     return;

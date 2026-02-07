@@ -20,43 +20,43 @@
           <li>Priskirk jam jo pareigybes</li>
         </ol>
       </template>
-      <NFormItem :label="$t('forms.fields.name_and_surname')" required>
-        <NInput v-model:value="form.name" :disabled="user.name !== ''" type="text"
+      <FormFieldWrapper id="name" :label="$t('forms.fields.name_and_surname')" required>
+        <Input v-model="form.name" :disabled="user.name !== ''" type="text"
           placeholder="Įrašyti vardą ir pavardę" />
-      </NFormItem>
+      </FormFieldWrapper>
 
-      <NFormItem required>
-        <template #label>
-          <div class="inline-flex items-center gap-2">
-            <span>Studentinis el. paštas</span>
-            <InfoPopover v-if="isUserEmailMaybeDutyEmail">
-              Jeigu <strong>{{ user.email }}</strong> yra pareigybinis el.
-              paštas (ir panašu, kad šiuo atveju taip ir yra 😊), jį reikėtų
-              pakeisti į studentinį.
-            </InfoPopover>
-          </div>
-        </template>
-        <NInput v-model:value="form.email"
+      <FormFieldWrapper id="email" label="Studentinis el. paštas" required>
+        <div v-if="isUserEmailMaybeDutyEmail" class="mb-1 text-xs text-amber-600 dark:text-amber-400">
+          Jeigu <strong>{{ user.email }}</strong> yra pareigybinis el.
+          paštas (ir panašu, kad šiuo atveju taip ir yra), jį reikėtų
+          pakeisti į studentinį.
+        </div>
+        <Input v-model="form.email"
           placeholder="vardas.pavarde@padalinys.stud.vu.lt" />
-      </NFormItem>
+      </FormFieldWrapper>
 
       <div class="grid gap-4 lg:grid-cols-2">
-        <NFormItem :label="$t('forms.fields.phone')">
-          <NInput v-model:value="form.phone" placeholder="+370 612 34 567" />
-        </NFormItem>
-        <NFormItem :label="$t('forms.fields.facebook_url')">
-          <NInput v-model:value="form.facebook_url" placeholder="https://www.facebook.com/..." />
-        </NFormItem>
+        <FormFieldWrapper id="phone" :label="$t('forms.fields.phone')">
+          <Input v-model="form.phone" placeholder="+370 612 34 567" />
+        </FormFieldWrapper>
+        <FormFieldWrapper id="facebook_url" :label="$t('forms.fields.facebook_url')">
+          <Input v-model="form.facebook_url" placeholder="https://www.facebook.com/..." />
+        </FormFieldWrapper>
       </div>
 
-      <NFormItem :label="$t('forms.fields.picture')">
-        <UploadImageWithCropper v-model:url="form.profile_photo_path" folder="contacts" />
-      </NFormItem>
+      <FormFieldWrapper id="profile_photo_path" :label="$t('forms.fields.picture')">
+        <ImageUpload v-model:url="form.profile_photo_path" mode="immediate" folder="contacts" cropper :existing-url="user?.profile_photo_path" />
+      </FormFieldWrapper>
 
-      <NFormItem v-if="$page.props.auth?.user?.isSuperAdmin" :label="$t('forms.fields.admin_role')">
-        <NSelect v-model:value="form.roles" :options="rolesOptions" clearable multiple type="text"
-          placeholder="Be rolės..." />
-      </NFormItem>
+      <FormFieldWrapper v-if="$page.props.auth?.user?.isSuperAdmin" id="roles" :label="$t('forms.fields.admin_role')">
+        <MultiSelect
+          v-model="selectedRoles"
+          :options="rolesOptions"
+          label-field="label"
+          value-field="value"
+          placeholder="Be rolės..."
+        />
+      </FormFieldWrapper>
     </FormElement>
 
     <FormElement>
@@ -73,19 +73,17 @@
         </p>
       </template>
       <div class="grid gap-4 lg:grid-cols-2">
-        <NFormItem :label="$t('forms.fields.pronouns')">
+        <FormFieldWrapper id="pronouns" :label="$t('forms.fields.pronouns')">
           <MultiLocaleInput v-model:input="form.pronouns" :placeholder="{ lt: 'Jie/jų', en: 'They/them' }" />
-        </NFormItem>
-        <NFormItem :label="$t('forms.fields.show_pronouns')">
-          <NSwitch v-model:value="form.show_pronouns" :disabled="form.pronouns === ''">
-            <template #checked>
-              <span>Įvardžiai rodomi viešai</span>
-            </template>
-            <template #unchecked>
-              <span>Įvardžiai nerodomi viešai</span>
-            </template>
-          </NSwitch>
-        </NFormItem>
+        </FormFieldWrapper>
+        <FormFieldWrapper id="show_pronouns" :label="$t('forms.fields.show_pronouns')">
+          <div class="flex items-center gap-2">
+            <Switch :model-value="form.show_pronouns" :disabled="!form.pronouns?.lt && !form.pronouns?.en" @update:model-value="form.show_pronouns = $event" />
+            <span class="text-sm text-muted-foreground">
+              {{ form.show_pronouns ? 'Įvardžiai rodomi viešai' : 'Įvardžiai nerodomi viešai' }}
+            </span>
+          </div>
+        </FormFieldWrapper>
       </div>
     </FormElement>
 
@@ -104,33 +102,89 @@
           pareigybės nėra.
         </p>
       </template>
-      <NFormItem>
-        <template #label>
-          <div class="flex items-center gap-2">
-            <span><strong>{{ $t("Pareigybės") }}</strong></span><a target="_blank" :href="route('duties.create')">
-              <NButton size="tiny" round secondary><template #icon>
-                  <IFluentAdd24Filled />
-                </template>Sukurti naują pareigybę?</NButton>
-            </a>
-            <NButton class="ml-auto" size="tiny" round @click="handleChangeDutyShowMode">
-              Pakeisti rodymo būdą
-            </NButton>
-          </div>
-        </template>
-        <NTransfer ref="transfer" v-model:value="form.current_duties" :options="flattenDutyOptions" :render-source-list="dutyShowMode === 'tree' ? renderSourceList : undefined
-          " :render-target-label="renderTargetLabel" source-filterable />
-      </NFormItem>
-      <NCard class="mb-4">
-        <h4>Užimamos pareigos</h4>
-        <NDataTable :data="user.current_duties" :columns="existingDutyColumns" :bordered="false" size="small" />
-      </NCard>
-      <NCard class="mb-4">
-        <h4>Buvusios pareigos</h4>
-        <NDataTable :data="user.previous_duties" :columns="previousDutyColumns" :bordered="false" size="small" />
-      </NCard>
-      <!-- <template v-if="users.previous_duties.length > 0">
-          <p>Praėjusios pareigos:</p>
-        </template> -->
+      <div class="space-y-2">
+        <div class="flex items-center gap-2">
+          <Label><strong>{{ $t("Pareigybės") }}</strong></Label>
+          <a target="_blank" :href="route('duties.create')">
+            <Button size="xs" variant="secondary">
+              <IFluentAdd24Filled />
+              Sukurti naują pareigybę?
+            </Button>
+          </a>
+          <Button class="ml-auto" size="xs" variant="outline" @click="handleChangeDutyShowMode">
+            Pakeisti rodymo būdą
+          </Button>
+        </div>
+        <TransferList v-if="dutyShowMode === 'tree'" v-model="form.current_duties" :options="flattenDutyOptions">
+          <template #source="{ filter }">
+            <Tree
+              v-model="form.current_duties"
+              :items="dutyOptions"
+              :get-key="(item) => String(item.value)"
+              :get-label="(item) => item.label"
+              :is-item-disabled="(item) => item.checkboxDisabled ?? false"
+              :filter="filter"
+              multiple
+              class="p-1"
+            >
+              <template #item="{ item }">
+                <span class="inline-flex items-center gap-2">
+                  {{ item.label }}
+                  <a
+                    v-if="typeof item.value !== 'number'"
+                    target="_blank"
+                    :href="item.checkboxDisabled
+                      ? route('institutions.edit', item.value)
+                      : route('duties.edit', item.value)"
+                  >
+                    <Button variant="ghost" size="icon-xs" @click.stop>
+                      <Eye16Regular />
+                    </Button>
+                  </a>
+                </span>
+              </template>
+            </Tree>
+          </template>
+          <template #target-label="{ option }">
+            <span class="inline-flex items-center gap-2">
+              {{ option.label }}
+              <a target="_blank" :href="route('duties.edit', option.value)">
+                <Button variant="ghost" size="icon-xs" @click.stop>
+                  <Eye16Regular />
+                </Button>
+              </a>
+            </span>
+          </template>
+        </TransferList>
+        <TransferList v-else v-model="form.current_duties" :options="flattenDutyOptions">
+          <template #target-label="{ option }">
+            <span class="inline-flex items-center gap-2">
+              {{ option.label }}
+              <a target="_blank" :href="route('duties.edit', option.value)">
+                <Button variant="ghost" size="icon-xs" @click.stop>
+                  <Eye16Regular />
+                </Button>
+              </a>
+            </span>
+          </template>
+        </TransferList>
+      </div>
+      <Card class="mb-4 h-auto">
+        <CardHeader class="pb-2">
+          <CardTitle class="text-base">Užimamos pareigos</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <SimpleDataTable :data="user.current_duties ?? []" :columns="existingDutyColumns" :enable-pagination="false" :enable-filtering="false" />
+        </CardContent>
+      </Card>
+      <Card class="mb-4 h-auto">
+        <CardHeader class="pb-2">
+          <CardTitle class="text-base">Buvusios pareigos</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <SimpleDataTable :data="user.previous_duties ?? []" :columns="previousDutyColumns" :enable-pagination="false" :enable-filtering="false" />
+        </CardContent>
+      </Card>
     </FormElement>
     <FormElement>
       <template #title>
@@ -149,55 +203,72 @@
             <div>
               <span class="inline-flex items-center gap-2">
                 <span>{{ $t("Slaptažodžio būsena") }}:</span>
-                <NTag :type="user.has_password ? 'success' : 'warning'" size="small">
+                <Badge :variant="user.has_password ? 'success' : 'warning'" size="tiny">
                   {{ user.has_password ? $t("Nustatytas") : $t("Nenustatytas") }}
-                </NTag>
+                </Badge>
               </span>
             </div>
             <div class="flex gap-2">
-              <NPopconfirm @positive-click="generatePassword">
-                <template #trigger>
-                  <NButton size="small" type="primary">
+              <AlertDialog>
+                <AlertDialogTrigger as-child>
+                  <Button size="sm">
                     {{ $t("Generuoti naują slaptažodį") }}
-                  </NButton>
-                </template>
-                <span>{{ $t("Ar tikrai norite sugeneruoti naują slaptažodį šiam naudotojui?") }}</span>
-                <template v-if="user.has_password">
-                  <p class="text-orange-500 mt-1">{{ $t("Dėmesio: Tai pakeis esamą naudotojo slaptažodį!") }}</p>
-                </template>
-              </NPopconfirm>
-              
-              <NPopconfirm v-if="user.has_password" @positive-click="deletePassword">
-                <template #trigger>
-                  <NButton size="small" type="error">
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>{{ $t("Ar tikrai norite sugeneruoti naują slaptažodį šiam naudotojui?") }}</AlertDialogTitle>
+                    <AlertDialogDescription v-if="user.has_password" class="text-orange-500">
+                      {{ $t("Dėmesio: Tai pakeis esamą naudotojo slaptažodį!") }}
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>{{ $t("Atšaukti") }}</AlertDialogCancel>
+                    <AlertDialogAction @click="generatePassword">{{ $t("Generuoti") }}</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+
+              <AlertDialog v-if="user.has_password">
+                <AlertDialogTrigger as-child>
+                  <Button size="sm" variant="destructive">
                     {{ $t("Ištrinti slaptažodį") }}
-                  </NButton>
-                </template>
-                <span>{{ $t("Ar tikrai norite ištrinti šio naudotojo slaptažodį?") }}</span>
-                <p class="text-orange-500 mt-1">{{ $t("Dėmesio: Naudotojas nebegalės prisijungti su slaptažodžiu!") }}</p>
-              </NPopconfirm>
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>{{ $t("Ar tikrai norite ištrinti šio naudotojo slaptažodį?") }}</AlertDialogTitle>
+                    <AlertDialogDescription class="text-orange-500">
+                      {{ $t("Dėmesio: Naudotojas nebegalės prisijungti su slaptažodžiu!") }}
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>{{ $t("Atšaukti") }}</AlertDialogCancel>
+                    <AlertDialogAction @click="deletePassword">{{ $t("Ištrinti") }}</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           </div>
-          
+
           <!-- Display generated password if available -->
           <div v-if="$page.props.flash.data" class="mt-4 p-4 bg-green-50 border border-green-200 rounded-md">
             <h5 class="font-semibold mb-2">{{ $t("Sugeneruotas slaptažodis:") }}</h5>
             <div class="relative mb-2">
-              <NInput 
-                readonly 
-                :value="$page.props.flash.data" 
+              <Input
+                readonly
+                :model-value="$page.props.flash.data"
                 class="font-mono"
               />
-              <NButton 
-                size="small" 
+              <Button
+                size="sm"
+                variant="outline"
                 class="absolute right-2 top-1/2 transform -translate-y-1/2"
                 @click="copyPasswordToClipboard"
               >
-                <template #icon>
-                  <IFluentCopy16Regular />
-                </template>
+                <IFluentCopy16Regular />
                 {{ hasCopied ? $t("Nukopijuota!") : $t("Kopijuoti") }}
-              </NButton>
+              </Button>
             </div>
             <p class="text-sm text-orange-600">
               {{ $t("Šis slaptažodis bus rodomas tik vieną kartą! Įsitikinkite, kad jį išsaugojote saugiai.") }}
@@ -205,53 +276,39 @@
           </div>
         </div>
       </template>
-      <!-- <template v-else-if="modelRoute === 'users.update'">
-          <p class="mb-2">
-            Šis asmuo dar niekada neprisijungė prie sistemos.
-          </p>
-          <NPopconfirm style="max-width: 400px" @positive-click="sendWelcomeEmail">
-            <span>Bus išsiųstas atstovo rolę supažindinantis laiškas apie
-              mano.vusa.lt, paštu&nbsp;
-              <span class="underline">{{ user.email }}</span>
-            </span>
-            <template #trigger>
-              <NButton>Siųsti laišką</NButton>
-            </template>
-          </NPopconfirm>
-          <NButton tag="a" size="tiny" text :href="route('users.renderWelcomeEmail', user.id)" target="_blank"
-            class="ml-2 align-middle">
-            <template #icon>
-              <IFluentEye24Filled />
-            </template>
-          </NButton>
-        </template> -->
     </FormElement>
   </AdminForm>
 </template>
 
 <script setup lang="tsx">
-import {
-  type DataTableColumns,
-  NButton,
-  NIcon,
-  NTree,
-  type TransferRenderSourceList,
-  type TreeOption,
-} from "naive-ui";
-import { computed, h, ref } from "vue";
+import type { ColumnDef } from "@tanstack/vue-table";
+import { computed, ref } from "vue";
 import { router, useForm, usePage } from "@inertiajs/vue3";
+import { trans as $t } from "laravel-vue-i18n";
 
 import Delete24Regular from "~icons/fluent/delete24-regular";
 import Eye16Regular from "~icons/fluent/eye16-regular";
 import PersonEdit24Regular from "~icons/fluent/person-edit24-regular";
 import IFluentCopy16Regular from "~icons/fluent/copy16-regular";
 
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/Components/ui/alert-dialog";
+import { Badge } from "@/Components/ui/badge";
+import { Button } from "@/Components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
+import { Input } from "@/Components/ui/input";
+import { Label } from "@/Components/ui/label";
+import { MultiSelect } from "@/Components/ui/multi-select";
+import { Switch } from "@/Components/ui/switch";
+import { TransferList } from "@/Components/ui/transfer-list";
+import { Tree } from "@/Components/ui/tree";
+import { ImageUpload } from "@/Components/ui/upload";
+
 import { formatStaticTime } from "@/Utils/IntlTime";
-import FormElement from "./FormElement.vue";
-import InfoPopover from "../Buttons/InfoPopover.vue";
-import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";
-import UploadImageWithCropper from "../Buttons/UploadImageWithCropper.vue";
 import AdminForm from "./AdminForm.vue";
+import FormElement from "./FormElement.vue";
+import FormFieldWrapper from "./FormFieldWrapper.vue";
+import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";
+import SimpleDataTable from "@/Components/Tables/SimpleDataTable.vue";
 
 const props = defineProps<{
   user: App.Entities.User;
@@ -281,7 +338,25 @@ if (Array.isArray(form.pronouns)) {
   form.pronouns = { lt: "", en: "" };
 }
 
-const dutyOptions: TreeOption[] = props.tenantsWithDuties.map(
+const rolesOptions = props.roles.map((role) => ({
+  label: role.name,
+  value: role.id,
+}));
+
+// Bridge object array <-> id array for MultiSelect
+const selectedRoles = computed({
+  get: () => rolesOptions.filter(opt => form.roles?.includes(opt.value)),
+  set: (items) => { form.roles = items.map(item => item.value); },
+});
+
+interface DutyTreeOption {
+  label: string
+  value: string | number
+  checkboxDisabled?: boolean
+  children?: DutyTreeOption[]
+}
+
+const dutyOptions: DutyTreeOption[] = props.tenantsWithDuties.map(
   (tenant) => {
     return ({
       label: tenant.shortname,
@@ -305,133 +380,66 @@ const isUserEmailMaybeDutyEmail = computed(() => {
   return props.user.email.includes("vusa.lt");
 });
 
-const existingDutyColumns: DataTableColumns = [
+const existingDutyColumns: ColumnDef<any, any>[] = [
   {
-    title: "Pavadinimas",
-    key: "name",
-    render(row) {
-      return (
-        <a
-          target="_blank"
-          href={route("duties.edit", { id: row.id })}
-          class="flex-inline gap-2"
-        >
-          {row.name}
-        </a>
-      );
-    },
-  },
-  {
-    title: "Pradžia",
-    key: "pivot.start_date",
-    render(row) {
-      return formatStaticTime(row.pivot.start_date);
-    },
-  },
-  {
-    title: "Pabaiga",
-    key: "pivot.end_date",
-    render(row) {
-      return row.pivot?.end_date ? formatStaticTime(row.pivot.end_date) : "Nenurodyta";
-    },
-  },
-  {
-    key: "actions",
-    render(row) {
-      return (
-        <NButton
-          secondary
-          size="tiny"
-          tag="a"
-          href={route("dutiables.edit", row.pivot.id as string)}
-          target="_blank"
-        >
-          {{
-            icon: () => <NIcon component={PersonEdit24Regular} />,
-          }}
-        </NButton>
-      );
-    },
-  },
-];
-
-const previousDutyColumns: DataTableColumns = [
-  ...existingDutyColumns,
-  {
-    key: "delete",
-    render(row) {
-      return (
-        <NButton
-          size="tiny"
-          type="error"
-          onClick={() =>
-            router.delete(route("dutiables.destroy", row.pivot.id), {
-              preserveState: true,
-              preserveScroll: true,
-            })
-          }
-        >
-          {{
-            icon: () => <NIcon component={Delete24Regular} />,
-          }}
-        </NButton>
-      );
-    },
-  },
-];
-
-const renderLabel = ({ option }: { option: TreeOption }) => {
-  // jsx element
-  // if value is integer then it's a tenant and doesn't have additional button
-  if (typeof option.value === "number") {
-    return <span>{option.label}</span>;
-  }
-
-  // jsx element with button
-  // ! assumption that if checkbox is enabled then it's a duty
-  return (
-    <span class="inline-flex items-center gap-2">
-      {option.label}
+    accessorKey: "name",
+    header: () => "Pavadinimas",
+    cell: ({ row }) => (
       <a
         target="_blank"
-        href={
-          option.checkboxDisabled
-            ? route("institutions.edit", option.value as string)
-            : route("duties.edit", option.value as string)
+        href={route("duties.edit", { id: row.original.id })}
+        class="flex-inline gap-2"
+      >
+        {row.original.name}
+      </a>
+    ),
+  },
+  {
+    id: "start_date",
+    header: () => "Pradžia",
+    cell: ({ row }) => formatStaticTime(row.original.pivot.start_date),
+  },
+  {
+    id: "end_date",
+    header: () => "Pabaiga",
+    cell: ({ row }) => row.original.pivot?.end_date ? formatStaticTime(row.original.pivot.end_date) : "Nenurodyta",
+  },
+  {
+    id: "actions",
+    cell: ({ row }) => (
+      <Button
+        variant="secondary"
+        size="icon-xs"
+        as="a"
+        href={route("dutiables.edit", row.original.pivot.id as string)}
+        target="_blank"
+      >
+        <PersonEdit24Regular />
+      </Button>
+    ),
+  },
+];
+
+const previousDutyColumns: ColumnDef<any, any>[] = [
+  ...existingDutyColumns,
+  {
+    id: "delete",
+    cell: ({ row }) => (
+      <Button
+        size="icon-xs"
+        variant="destructive"
+        onClick={() =>
+          router.delete(route("dutiables.destroy", row.original.pivot.id), {
+            preserveState: true,
+            preserveScroll: true,
+          })
         }
       >
-        <NButton size="tiny" text>
-          {{
-            icon: <NIcon component={Eye16Regular} />,
-          }}
-        </NButton>
-      </a>
-    </span>
-  );
-};
-
-const renderTargetLabel = ({ option }: { option: TreeOption }) => {
-  // jsx element
-  // if value is integer then it's a tenant and doesn't have additional button
-  if (typeof option.value === "number") {
-    return <span>{option.label}</span>;
-  }
-
-  // jsx element with button
-  // ! assumption that if checkbox is enabled then it's a duty
-  return (
-    <span class="inline-flex items-center gap-2">
-      {option.label}
-      <a target="_blank" href={route("duties.edit", option.value as string)}>
-        <NButton size="tiny" text>
-          {{
-            icon: <NIcon component={Eye16Regular} />,
-          }}
-        </NButton>
-      </a>
-    </span>
-  );
-};
+        <Delete24Regular />
+      </Button>
+    ),
+  },
+];
 
 const flattenDutyOptions = computed(() => {
   return dutyOptions.flatMap(
@@ -452,44 +460,8 @@ const flattenDutyOptions = computed(() => {
   ).filter((duty) => props.permissableTenants.some((permissable) => permissable.id === duty?.tenantId));
 });
 
-const rolesOptions = props.roles.map((role) => ({
-  label: role.name,
-  value: role.id,
-}));
-
 form.current_duties = props.user.current_duties?.map((duty) => duty.id);
 
-// tsx render Ntree
-const renderSourceList: TransferRenderSourceList = ({ onCheck, pattern }) => {
-  return h(NTree, {
-    style: "margin: 0 4px;",
-    keyField: "value",
-    checkable: true,
-    selectable: false,
-    blockLine: true,
-    virtualScroll: true,
-    renderLabel: renderLabel,
-    data: dutyOptions,
-    pattern,
-    checkedKeys: form.current_duties,
-    onUpdateCheckedKeys: (checkedKeys: Array<string | number>) => {
-      onCheck(checkedKeys);
-    },
-  });
-};
-
-const sendWelcomeEmail = () => {
-  router.post(
-    route("users.sendWelcomeEmail", props.user.id as number),
-    {},
-    {
-      preserveState: true,
-      preserveScroll: true,
-    },
-  );
-};
-
-const hasPassword = computed(() => !!props.user.password);
 const hasCopied = ref(false);
 
 const generatePassword = () => {
@@ -514,6 +486,7 @@ const deletePassword = () => {
 };
 
 const copyPasswordToClipboard = () => {
+  const $page = usePage();
   navigator.clipboard.writeText($page.props.flash.generated_password).then(() => {
     hasCopied.value = true;
     setTimeout(() => {

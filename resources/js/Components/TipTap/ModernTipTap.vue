@@ -270,9 +270,19 @@
     <!-- Editor Content -->
     <div class="modern-editor-content">
       <EditorContent :editor class="typography" />
-    </div>
-    <div class="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
-      Galite vilkti ir mesti nuotraukas tiesiai į teksto redaktorių
+      <!-- Drag hint as inline tooltip -->
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger as-child>
+            <button type="button" class="absolute bottom-2 right-2 p-1 text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300 transition-colors">
+              <IFluentInfo16Regular class="h-4 w-4" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="top">
+            <p>{{ $t('rich-content.drag_drop_hint') }}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     </div>
 
     <!-- Image Accessibility Dialog -->
@@ -283,28 +293,28 @@
     <Dialog :open="showYoutubeModal" @update:open="showYoutubeModal = $event">
       <DialogContent class="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Įkelti YouTube filmuką</DialogTitle>
+          <DialogTitle>{{ $t('rich-content.youtube_upload_title') }}</DialogTitle>
           <DialogDescription>
-            Įveskite YouTube vaizdo įrašo nuorodą, kurią norite įterpti.
+            {{ $t('rich-content.youtube_upload_description') }}
           </DialogDescription>
         </DialogHeader>
 
         <div class="space-y-4">
           <div class="space-y-2">
-            <Label for="youtube-url">YouTube nuoroda</Label>
+            <Label for="youtube-url">{{ $t('rich-content.youtube_url_label') }}</Label>
             <Input id="youtube-url" v-model="youtubeUrl" placeholder="https://www.youtube.com/watch?v=..." type="url" />
             <p class="text-xs text-muted-foreground">
-              Įklijuokite YouTube vaizdo įrašo nuorodą
+              {{ $t('rich-content.youtube_url_hint') }}
             </p>
           </div>
         </div>
 
         <DialogFooter>
           <Button variant="outline" @click="showYoutubeModal = false">
-            Atšaukti
+            {{ $t('rich-content.cancel') }}
           </Button>
           <Button :disabled="!youtubeUrl.trim()" @click="handleYoutubeSubmit(youtubeUrl)">
-            Įkelti
+            {{ $t('rich-content.upload') }}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -328,7 +338,7 @@ import { TableKit } from '@tiptap/extension-table';
 import { Youtube } from "@tiptap/extension-youtube";
 import { Subscript } from '@tiptap/extension-subscript';
 import { Superscript } from '@tiptap/extension-superscript';
-import latinize from "latinize";
+import { latinizeId } from "@/Utils/String";
 import { trans as $t } from "laravel-vue-i18n";
 
 import { AccessibleImage } from "./AccessibleImage";
@@ -405,6 +415,7 @@ import IFluentTextAlignCenter24Regular from "~icons/fluent/text-align-center24-r
 import IFluentTextAlignRight24Regular from "~icons/fluent/text-align-right24-regular";
 import IFluentResize20Regular from "~icons/fluent/resize20-regular";
 import IFluentAccessibility24Regular from "~icons/fluent/accessibility24-regular";
+import IFluentInfo16Regular from "~icons/fluent/info16-regular";
 
 const props = defineProps<{
   disableTables?: boolean;
@@ -1085,14 +1096,6 @@ function handleUpdate() {
   const innerHeadings: { level: number; text: string; id: string }[] = []
   const transaction = editor.value?.state.tr
 
-  function latinizeId(text: string) {
-    return latinize(text)
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '')
-      .substring(0, 100)
-  }
-
   editor.value?.state.doc.descendants((node, pos) => {
     if (node.type.name === 'heading') {
       let id = latinizeId(node.textContent)
@@ -1149,6 +1152,7 @@ onBeforeUnmount(() => {
 }
 
 .modern-editor-content {
+  position: relative;
   border-radius: 0.5rem;
   border: 1px solid rgb(228 228 231);
   background-color: white;

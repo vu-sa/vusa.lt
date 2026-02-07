@@ -57,8 +57,10 @@
         :current-page="currentPage"
         :total-pages="totalPages"
         :visible-pages="visiblePages"
+        :view-mode="viewMode"
         @update:items-per-page="itemsPerPage = $event"
         @update:current-page="currentPage = $event"
+        @update:view-mode="viewMode = $event"
         @toggle-multi-select="toggleMultiSelectMode"
         @select-all="selectAllFiles"
         @clear-selection="clearSelection"
@@ -138,6 +140,8 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
+import { useFuse } from '@vueuse/integrations/useFuse';
+import { useStorage } from '@vueuse/core';
 import { useToasts } from '@/Composables/useToasts';
 
 // Components
@@ -160,6 +164,9 @@ import FileManagerHeader from './Components/FileManagerHeader.vue';
 import FileGrid from './Components/FileGrid.vue';
 import FilePropertiesDrawer from './Components/FilePropertiesDrawer.vue';
 
+// Types
+import type { FileSource, FileableRef } from './types';
+
 const props = defineProps<{
   directories: any;
   files: any;
@@ -173,6 +180,12 @@ const props = defineProps<{
   uploadAccept?: string;
   /** Optional limited extensions for uploads when in selection mode */
   uploadExtensions?: string[];
+  /** File source backend: 'local' (default) or 'sharepoint' */
+  source?: FileSource;
+  /** Starting path for SharePoint mode */
+  startingPath?: string;
+  /** Associated fileable entity for SharePoint uploads */
+  fileable?: FileableRef;
 }>();
 
 const emit = defineEmits<{
@@ -198,24 +211,36 @@ const uploadAreaRef = ref();
 const search = ref("");
 const itemsPerPage = ref(50);
 const currentPage = ref(1);
+const viewMode = useStorage<'grid' | 'list'>('fileManager-viewMode', 'grid');
 
-// Computed properties
+// Fuse.js fuzzy search options
+const fuseOptions = computed(() => ({
+  fuseOptions: {
+    keys: ['name'],
+    threshold: 0.4, // Allow some fuzzy matching
+  },
+  matchAllWhenSearchEmpty: true,
+}));
+
+// Fuzzy search for files
+const { results: fileSearchResults } = useFuse(search, () => props.files ?? [], fuseOptions);
+
+// Fuzzy search for directories
+const { results: directorySearchResults } = useFuse(search, () => props.directories ?? [], fuseOptions);
+
+// Computed properties - use fuzzy search results
 const shownFiles = computed(() => {
   if (search.value === "") {
     return props.files;
   }
-  return props.files.filter((file: any) => {
-    return file.name.toLowerCase().includes(search.value.toLowerCase());
-  });
+  return fileSearchResults.value.map(result => result.item);
 });
 
 const shownDirectories = computed(() => {
   if (search.value === "") {
     return props.directories;
   }
-  return props.directories.filter((directory: any) => {
-    return directory.name.toLowerCase().includes(search.value.toLowerCase());
-  });
+  return directorySearchResults.value.map(result => result.item);
 });
 
 const totalItems = computed(() => {
@@ -367,12 +392,17 @@ const deleteFileConfirmed = () => {
       data: { paths: filesToDelete },
       preserveScroll: true,
       preserveState: true,
-      onSuccess: () => {
-        toasts.success(`${filesToDelete.length} failai ištrinti`);
-        clearSelection();
+      onSuccess: (page) => {
         loading.value = false;
         showDeleteModal.value = false;
-        emit("update", props.path);
+        // Check if there's a flash error (e.g., from staging read-only mode)
+        if (page.props.flash?.error) {
+          toasts.error(page.props.flash.error);
+        } else {
+          toasts.success(`${filesToDelete.length} failai ištrinti`);
+          clearSelection();
+          emit("update", props.path);
+        }
       },
       onError: () => {
         toasts.error('Klaida trinant failus');
@@ -388,19 +418,23 @@ const deleteFileConfirmed = () => {
       {
         preserveScroll: true,
         preserveState: true,
-        onSuccess: () => {
-          toasts.success("Aplankas ištrintas");
+        onSuccess: (page) => {
           loading.value = false;
           showDeleteModal.value = false;
-          
-          // Check if current path is inside the deleted folder
-          if (props.path === folderPath || props.path.startsWith(`${folderPath}/`)) {
-            // Navigate to parent directory of the deleted folder
-            const parentPath = folderPath.split('/').slice(0, -1).join('/') || '/';
-            emit('changeDirectory', parentPath);
+          // Check if there's a flash error (e.g., from staging read-only mode)
+          if (page.props.flash?.error) {
+            toasts.error(page.props.flash.error);
           } else {
-            // Just refresh current directory
-            emit("update", props.path);
+            toasts.success("Aplankas ištrintas");
+            // Check if current path is inside the deleted folder
+            if (props.path === folderPath || props.path.startsWith(`${folderPath}/`)) {
+              // Navigate to parent directory of the deleted folder
+              const parentPath = folderPath.split('/').slice(0, -1).join('/') || '/';
+              emit('changeDirectory', parentPath);
+            } else {
+              // Just refresh current directory
+              emit("update", props.path);
+            }
           }
         },
         onError: () => {
@@ -416,11 +450,16 @@ const deleteFileConfirmed = () => {
       {
         preserveScroll: true,
         preserveState: true,
-        onSuccess: () => {
-          toasts.success("Failas ištrintas");
+        onSuccess: (page) => {
           loading.value = false;
           showDeleteModal.value = false;
-          emit("update", props.path);
+          // Check if there's a flash error (e.g., from staging read-only mode)
+          if (page.props.flash?.error) {
+            toasts.error(page.props.flash.error);
+          } else {
+            toasts.success("Failas ištrintas");
+            emit("update", props.path);
+          }
         },
         onError: () => {
           toasts.error('Klaida trinant failą');

@@ -103,7 +103,19 @@ class InstitutionController extends AdminController
 
         $institution->types()->sync($request->types);
 
-        return redirect()->route('institutions.index')->with('success', 'Institucija sėkmingai sukurta!');
+        // Load relationships needed for the response
+        $institution->load('tenant:id,shortname', 'types');
+
+        // Return JSON response for AJAX requests (inline creation in wizard)
+        if ($request->wantsJson() || $request->header('X-Inertia-Partial-Data')) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Institucija sėkmingai sukurta!',
+                'institution' => $institution,
+            ]);
+        }
+
+        return back()->with('success', 'Institucija sėkmingai sukurta!');
     }
 
     /**
@@ -114,9 +126,75 @@ class InstitutionController extends AdminController
         $this->handleAuthorization('view', $institution);
 
         // TODO: only show current_users
-        $institution->load('tenant', 'duties.current_users')->load(['meetings' => function ($query) {
-            $query->with('tasks', 'comments', 'files')->orderBy('start_time', 'asc');
-        }])->load('activities.causer');
+        $institution->load('tenant', 'duties.current_users')->load([
+            'tasks' => function ($query) {
+                $query->with('users:id,name,email,profile_photo_path', 'taskable');
+            },
+            'meetings' => function ($query) {
+                $query->with([
+                    'tasks' => fn ($q) => $q->with('users:id,name,email,profile_photo_path', 'taskable'),
+                    'comments',
+                    'files',
+                    'institutions.types',
+                    'fileableFiles',
+                ])->orderBy('start_time', 'asc');
+            },
+        ])->load('activities.causer');
+
+        // Append public visibility flags now that types are loaded (avoids N+1)
+        $institution->append('has_public_meetings');
+        $institution->append('meeting_periodicity_days');
+        $institution->meetings->each->append(['is_public', 'has_report', 'has_protocol']);
+
+        // Combine direct institution tasks + tasks from meetings into a flat list
+        // Transform tasks with computed properties (same as MeetingController)
+        $allTasks = $institution->tasks
+            ->merge($institution->meetings->pluck('tasks')->flatten())
+            ->sortByDesc('created_at')
+            ->values()
+            ->map(function (\App\Models\Task $task) {
+                /** @var \Illuminate\Database\Eloquent\Model|null $taskable */
+                $taskable = $task->taskable;
+
+                return [
+                    'id' => $task->id,
+                    'name' => $task->name,
+                    'description' => $task->description,
+                    'due_date' => $task->due_date?->toISOString(),
+                    'completed_at' => $task->completed_at?->toISOString(),
+                    'created_at' => $task->created_at->toISOString(),
+                    'action_type' => $task->action_type?->value,
+                    'metadata' => $task->metadata,
+                    'progress' => $task->getProgress(),
+                    'is_overdue' => $task->isOverdue(),
+                    'can_be_manually_completed' => $task->canBeManuallyCompleted(),
+                    'icon' => $task->icon,
+                    'color' => $task->color,
+                    'taskable' => $taskable ? [
+                        'id' => $taskable->getKey(),
+                        'name' => $taskable->getAttribute('title') ?? $taskable->getAttribute('name') ?? null,
+                        'type' => class_basename($task->taskable_type),
+                    ] : null,
+                    'taskable_type' => class_basename($task->taskable_type ?? ''),
+                    'taskable_id' => $task->taskable_id,
+                    'users' => $task->users->map(fn (\App\Models\User $u) => [
+                        'id' => $u->id,
+                        'name' => $u->name,
+                        'profile_photo_path' => $u->profile_photo_path,
+                    ])->all(),
+                ];
+            });
+
+        // Get related institutions as flat list with metadata (cached)
+        $relatedInstitutionsFlat = \App\Services\RelationshipService::getRelatedInstitutionsCached($institution);
+
+        // Get subscription status for the current user
+        $user = request()->user();
+        $subscriptionStatus = $user ? [
+            'is_followed' => $user->follows($institution),
+            'is_muted' => $user->isInstitutionMuted($institution),
+            'is_duty_based' => $user->hasInstitution($institution),
+        ] : null;
 
         // Inertia::share('layout.navBackground', $institution->image_url ?? null);
 
@@ -125,10 +203,22 @@ class InstitutionController extends AdminController
                 ...$institution->toArray(),
                 'current_users' => $institution->duties->load('current_users')->pluck('current_users')->flatten()->unique('id')->values(),
                 'managers' => $institution->managers(),
+                // Provide both formats for backwards compatibility during transition
                 'relatedInstitutions' => $institution->related_institution_relationshipables(),
+                'relatedInstitutionsFlat' => $relatedInstitutionsFlat->map(fn ($item) => [
+                    // Only load meetings for authorized relationships
+                    ...($item['authorized']
+                        ? $item['institution']->load('meetings', 'tenant')->toArray()
+                        : $item['institution']->load('tenant')->toArray()),
+                    'direction' => $item['direction'],
+                    'type' => $item['type'],
+                    'authorized' => $item['authorized'],
+                ])->values(),
                 'sharepointPath' => $institution->tenant ? $institution->sharepoint_path() : null,
                 'lastMeeting' => $institution->lastMeeting(),
+                'allTasks' => $allTasks,
             ],
+            'subscription' => $subscriptionStatus,
         ]);
     }
 
@@ -140,7 +230,11 @@ class InstitutionController extends AdminController
         $this->handleAuthorization('update', $institution);
 
         $institution->load('types')->load(['duties' => function ($query) {
-            $query->with('current_users')->orderBy('order', 'asc');
+            $query->with([
+                'current_users',
+                // Load the most recent previous user for duties without current users
+                'previous_users' => fn ($q) => $q->orderByPivot('end_date', 'desc')->limit(1),
+            ])->orderBy('order', 'asc');
         }]);
 
         Inertia::share('seo.title', $institution->name);
@@ -163,7 +257,7 @@ class InstitutionController extends AdminController
         $institution->fill($request->safe()->except('tenant_id', 'types'));
 
         // check if super admin, then update tenant_id
-        if (auth()->user()->hasRole(config('permission.super_admin_role_name'))) {
+        if (auth()->user()->isSuperAdmin()) {
             $institution->fill($request->safe()->only('tenant_id'));
         }
 

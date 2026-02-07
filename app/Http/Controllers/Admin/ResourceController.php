@@ -9,8 +9,6 @@ use App\Http\Requests\UpdateResourceRequest;
 use App\Models\Resource;
 use App\Models\ResourceCategory;
 use App\Services\ModelAuthorizer as Authorizer;
-use App\Services\ModelIndexer;
-use Illuminate\Database\Eloquent\Builder;
 
 class ResourceController extends AdminController
 {
@@ -23,17 +21,10 @@ class ResourceController extends AdminController
     {
         $this->handleAuthorization('viewAny', Resource::class);
 
-        $indexer = new ModelIndexer(new Resource);
-
-        $resources = $indexer
-            ->setEloquentQuery([fn (Builder $query) => $query->with(['media', 'category'])], false)
-            ->filterAllColumns()
-            ->sortAllColumns()
-            ->builder->paginate(20);
-
-        return $this->inertiaResponse('Admin/Reservations/IndexResource', [
-            'resources' => $resources,
-            'categories' => ResourceCategory::all(),
+        return $this->inertiaResponse('Admin/Search/SearchResources', [
+            'can' => [
+                'create' => $this->authorizer->forUser(auth()->user())->check('resources.create.padalinys'),
+            ],
         ]);
     }
 

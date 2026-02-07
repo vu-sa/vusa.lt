@@ -7,9 +7,16 @@
       <template #card-header>
         Puslapio informacija
       </template>
-      <NewsForm :news :other-lang-news="otherLangNews" :available-tags="availableTags" enable-delete
+      <NewsForm
+        :news
+        :other-lang-news="otherLangNews"
+        :available-tags="availableTags"
+        :submit-url="route('news.update', news.id)"
+        submit-method="patch"
+        enable-delete
         @submit:form="(form: any) => form.patch(route('news.update', news.id), { preserveScroll: true })"
-        @delete="() => router.delete(route('news.destroy', news.id))" />
+        @delete="() => router.delete(route('news.destroy', news.id))"
+      />
     </UpsertModelLayout>
   </PageContent>
 </template>

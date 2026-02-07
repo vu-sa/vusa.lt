@@ -47,6 +47,8 @@ jobs:
     uses: ./.github/workflows/setup.yml
     with:
       include-coverage: true
+    secrets:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
   # PHP Jobs - run in parallel where possible
   php-lint:
@@ -114,7 +116,7 @@ jobs:
           php artisan key:generate --force
       
       - name: Running Static Analysis
-        run: vendor/bin/phpstan analyze --no-progress --memory-limit=384M
+        run: vendor/bin/phpstan analyze --no-progress --memory-limit=1G
 
   php-tests:
     needs: [changes, setup, php-lint]
@@ -239,9 +241,56 @@ jobs:
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
+  # JS Quality - TypeScript typecheck and ESLint (non-blocking)
+  js-quality:
+    needs: [changes, setup]
+    if: ${{ needs.changes.outputs.js == 'true' || github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    name: TypeScript & ESLint
+    steps:
+    - uses: actions/checkout@v5
+    
+    - name: Download build artifacts
+      uses: actions/download-artifact@v6
+      with:
+        name: build-assets
+        path: ./
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v6
+      with:
+        node-version: '20'
+        cache: 'npm'
+    
+    - name: Install npm dependencies
+      run: npm ci
+    
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: 8.3
+        extensions: dom, curl, libxml, mbstring, zip, fileinfo
+
+    - name: Set up environment
+      run: |
+        cp .env.example .env
+        php artisan key:generate --force
+
+    - name: Generate Ziggy route types
+      run: php artisan ziggy:generate --types-only node_modules/vite-plugin-ziggy/routes --no-interaction
+
+    - name: TypeScript Typecheck
+      run: npm run typecheck
+      continue-on-error: true
+    
+    - name: ESLint Check
+      run: npm run lint
+      continue-on-error: true
+
   status-check:
     name: CI Status
-    needs: [changes, php-static-analysis, php-tests, js-tests]
+    needs: [changes, php-static-analysis, php-tests, js-tests, js-quality]
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -250,15 +299,21 @@ jobs:
           STATIC_ANALYSIS_RESULT="${{ needs.php-static-analysis.result }}"
           PHP_TESTS_RESULT="${{ needs.php-tests.result }}"
           JS_TESTS_RESULT="${{ needs.js-tests.result }}"
+          JS_QUALITY_RESULT="${{ needs.js-quality.result }}"
           
-          echo "Results: Static Analysis=$STATIC_ANALYSIS_RESULT, PHP Tests=$PHP_TESTS_RESULT, JS Tests=$JS_TESTS_RESULT"
+          echo "Results: Static Analysis=$STATIC_ANALYSIS_RESULT, PHP Tests=$PHP_TESTS_RESULT, JS Tests=$JS_TESTS_RESULT, JS Quality=$JS_QUALITY_RESULT"
           
-          # Check if any required job failed
+          # Check if any required job failed (js-quality is non-blocking)
           if [[ "$STATIC_ANALYSIS_RESULT" == "failure" ]] || [[ "$PHP_TESTS_RESULT" == "failure" ]] || [[ "$JS_TESTS_RESULT" == "failure" ]]; then
             echo "❌ Some checks failed"
             exit 1
           fi
           
-          # All jobs either succeeded or were skipped
-          echo "✅ All checks passed or were skipped"
+          # Report js-quality status (informational only)
+          if [[ "$JS_QUALITY_RESULT" == "failure" ]]; then
+            echo "⚠️ TypeScript/ESLint check has issues (non-blocking)"
+          fi
+          
+          # All required jobs either succeeded or were skipped
+          echo "✅ All required checks passed or were skipped"
           exit 0

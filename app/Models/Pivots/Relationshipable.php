@@ -11,6 +11,8 @@ use Illuminate\Database\Eloquent\Relations\MorphPivot;
  * @property string $relationshipable_type
  * @property string $relationshipable_id
  * @property string $related_model_id
+ * @property string $scope
+ * @property bool $bidirectional
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
  * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $related_model
@@ -25,9 +27,32 @@ use Illuminate\Database\Eloquent\Relations\MorphPivot;
  */
 class Relationshipable extends MorphPivot
 {
+    // Scope constants for relationship resolution
+    // Note: 'within-type' sibling relationships are computed dynamically
+    // based on Type.extra_attributes.enable_sibling_relationships, not stored here
+    public const SCOPE_WITHIN_TENANT = 'within-tenant';
+
+    public const SCOPE_CROSS_TENANT = 'cross-tenant';
+
     protected $table = 'relationshipables';
 
+    protected $primaryKey = 'id';
+
+    public $incrementing = true;
+
     protected $guarded = [];
+
+    protected $attributes = [
+        'scope' => self::SCOPE_WITHIN_TENANT,
+        'bidirectional' => false,
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'bidirectional' => 'boolean',
+        ];
+    }
 
     public function relationshipable()
     {

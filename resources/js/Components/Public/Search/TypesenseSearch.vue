@@ -170,6 +170,14 @@ interface TypesenseConfig {
     protocol: string
     path?: string
   }>
+  collections?: {
+    news?: string
+    pages?: string
+    documents?: string
+    calendar?: string
+    public_institutions?: string
+    public_meetings?: string
+  }
   searchParams?: {
     query_by?: {
       documents?: string
@@ -310,8 +318,7 @@ const handleUpdateContentTypeResults = (
 const getTypesenseConfig = computed((): TypesenseConfig | null => {
   const typesenseConfig = page.props.typesenseConfig as any
   
-  if (typesenseConfig?.apiKey && 
-      !['xyz', 'xyza'].includes(typesenseConfig.apiKey)) {
+  if (typesenseConfig?.apiKey) {
     return typesenseConfig
   }
   return null
@@ -323,7 +330,53 @@ const searchAdapter = computed(() => {
     return null
   }
 
+  // Get collection names from config (with staging prefix if applicable)
+  const collections = getTypesenseConfig.value.collections || {}
+  const documentsCollection = collections.documents || 'documents'
+  const newsCollection = collections.news || 'news'
+  const pagesCollection = collections.pages || 'pages'
+  const calendarCollection = collections.calendar || 'calendar'
+  const publicInstitutionsCollection = collections.public_institutions || 'public_institutions'
+
   try {
+    // Build collection-specific search parameters with dynamic collection names
+    const collectionSpecificSearchParameters: Record<string, any> = {}
+    
+    collectionSpecificSearchParameters[documentsCollection] = {
+      query_by: getTypesenseConfig.value.searchParams?.query_by?.documents || 'title,summary,content_type,document_year,document_date_formatted',
+      query_by_weights: '10,3,2,6,4',
+      sort_by: '_text_match:desc,document_date:desc',
+      per_page: 15,
+    }
+    
+    collectionSpecificSearchParameters[newsCollection] = {
+      query_by: getTypesenseConfig.value.searchParams?.query_by?.news || 'title,short',
+      query_by_weights: '10,4',
+      sort_by: '_text_match:desc,publish_time:desc',
+      per_page: 15,
+    }
+    
+    collectionSpecificSearchParameters[pagesCollection] = {
+      query_by: getTypesenseConfig.value.searchParams?.query_by?.pages || 'title',
+      query_by_weights: '10',
+      sort_by: '_text_match:desc,created_at:desc',
+      per_page: 10,
+    }
+    
+    collectionSpecificSearchParameters[calendarCollection] = {
+      query_by: getTypesenseConfig.value.searchParams?.query_by?.calendar || 'title,title_lt,title_en',
+      query_by_weights: '10,8,8',
+      sort_by: '_text_match:desc,date:desc',
+      per_page: 10,
+    }
+    
+    collectionSpecificSearchParameters[publicInstitutionsCollection] = {
+      query_by: 'title,name_lt,name_en,short_name_lt,short_name_en,alias',
+      query_by_weights: '10,10,8,6,4,3',
+      sort_by: '_text_match:desc,updated_at:desc',
+      per_page: 10,
+    }
+
     return new TypesenseInstantSearchAdapter({
       server: {
         apiKey: getTypesenseConfig.value.apiKey,
@@ -345,32 +398,7 @@ const searchAdapter = computed(() => {
         max_hits: 100,
         per_page: 20,
       },
-      collectionSpecificSearchParameters: {
-        documents: {
-          query_by: getTypesenseConfig.value.searchParams?.query_by?.documents || 'title,summary,content_type,document_year,document_date_formatted',
-          query_by_weights: '10,3,2,6,4',
-          sort_by: '_text_match:desc,document_date:desc',
-          per_page: 15,
-        },
-        news: {
-          query_by: getTypesenseConfig.value.searchParams?.query_by?.news || 'title,short',
-          query_by_weights: '10,4',
-          sort_by: '_text_match:desc,publish_time:desc',
-          per_page: 15,
-        },
-        pages: {
-          query_by: getTypesenseConfig.value.searchParams?.query_by?.pages || 'title',
-          query_by_weights: '10',
-          sort_by: '_text_match:desc,created_at:desc',
-          per_page: 10,
-        },
-        calendar: {
-          query_by: getTypesenseConfig.value.searchParams?.query_by?.calendar || 'title,title_lt,title_en',
-          query_by_weights: '10,8,8',
-          sort_by: '_text_match:desc,date:desc',
-          per_page: 10,
-        },
-      }
+      collectionSpecificSearchParameters
     })
   } catch (error) {
     console.warn('Failed to initialize Typesense search adapter:', error)

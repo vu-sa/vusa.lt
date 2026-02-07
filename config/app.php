@@ -59,6 +59,34 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Staging Environment Protection
+    |--------------------------------------------------------------------------
+    |
+    | Credentials for HTTP Basic Auth protection on staging environment.
+    | Only used when APP_ENV=staging.
+    |
+    */
+
+    'staging_user' => env('STAGING_USER'),
+
+    'staging_password' => env('STAGING_PASSWORD'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Staging Read-Only Modes
+    |--------------------------------------------------------------------------
+    |
+    | When staging shares resources with production, enable read-only mode
+    | to prevent accidental modifications.
+    |
+    */
+
+    'files_read_only' => env('FILES_READ_ONLY', false),
+
+    'sharepoint_read_only' => env('SHAREPOINT_READ_ONLY', false),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |

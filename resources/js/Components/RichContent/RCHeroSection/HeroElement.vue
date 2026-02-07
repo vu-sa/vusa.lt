@@ -9,9 +9,9 @@
           v-html="element.json_content.title" />
         <div class="text-lg text-zinc-200 mb-4" v-html="element.json_content.subtitle" />
         <SmartLink v-if="element.json_content.buttonLink" :href="element.json_content.buttonLink" class="mt-4 w-fit">
-          <NButton round :color="buttonColor" size="large" strong>
+          <Button class="rounded-full text-lg h-12 px-6 font-bold" :style="{ backgroundColor: buttonColor }">
             <span class="text-black">{{ element.json_content.buttonText }}</span>
-          </NButton>
+          </Button>
         </SmartLink>
       </div>
       <img :src="element.json_content.backgroundMedia" :class="[{ 'blur-[1px]': element.options?.backgroundBlur }]"
@@ -33,6 +33,7 @@
 <script setup lang="ts">
 import type { Hero } from '@/Types/contentParts';
 import SmartLink from '../../Public/SmartLink.vue';
+import { Button } from '@/Components/ui/button';
 import { computed } from 'vue';
 
 const { element } = defineProps<{

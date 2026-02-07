@@ -1,5 +1,5 @@
 <template>
-  <NButtonGroup>
+  <ButtonGroup>
     <TipTapMarkButton :editor="editor" type="bold">
       <template #icon>
         <IFluentTextBold20Regular />
@@ -10,17 +10,17 @@
         <IFluentTextItalic20Regular />
       </template>
     </TipTapMarkButton>
-    <NButton size="small" :type="editor.isActive('underline') ? 'primary' : 'default'"
+    <Button size="sm" :variant="editor.isActive('underline') ? 'default' : 'outline'"
       @click="editor.chain().focus().toggleUnderline().run()">
-      <template #icon>
-        <IFluentTextUnderline20Regular />
-      </template>
-    </NButton>
-  </NButtonGroup>
+      <IFluentTextUnderline20Regular />
+    </Button>
+  </ButtonGroup>
 </template>
 
 <script setup lang="ts">
 import TipTapMarkButton from '@/Features/Admin/CommentViewer/TipTap/TipTapMarkButton.vue';
+import { Button } from '@/Components/ui/button';
+import { ButtonGroup } from '@/Components/ui/button-group';
 
 defineModel<any>("editor")
 </script>

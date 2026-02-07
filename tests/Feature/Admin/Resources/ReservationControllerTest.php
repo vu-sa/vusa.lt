@@ -110,14 +110,16 @@ describe('auth: simple user', function () {
 
         asUser($this->user)->get(route('reservations.show', $reservation->id));
 
-        $response = $this->post(route('users.comments.store', $this->user->id), [
-            'commentable_type' => 'reservation_resource',
-            'commentable_id' => $resource->pivot->id,
-            'comment' => 'test',
-            'decision' => 'cancel',
+        $response = $this->post(route('approvals.store'), [
+            'approvable_type' => 'reservation_resource',
+            'approvable_id' => (string) $resource->pivot->id,
+            'decision' => 'cancelled',
         ]);
 
-        $response->assertRedirect(route('reservations.show', $reservation->id));
+        // Check if the response has an error flash message
+        $response->assertRedirect();
+        $response->assertSessionDoesntHaveErrors();
+        $response->assertSessionHas('success');
 
         $resource = $reservation->load(['resources' => fn ($query) => $query->where('resources.id', $resource->id)])->resources->first();
 
@@ -186,14 +188,15 @@ describe('auth: reservation manager', function () {
         asUser($this->reservationManager)->get(route('reservations.show', $this->reservation->id))
             ->assertStatus(200);
 
-        $response = $this->post(route('users.comments.store', $this->reservation->id), [
-            'commentable_type' => 'reservation_resource',
-            'commentable_id' => $resource->pivot->id,
-            'comment' => 'test',
-            'decision' => 'cancel',
+        $response = $this->post(route('approvals.store'), [
+            'approvable_type' => 'reservation_resource',
+            'approvable_id' => (string) $resource->pivot->id,
+            'decision' => 'cancelled',
         ]);
 
-        $response->assertRedirect(route('reservations.show', $this->reservation->id));
+        $response->assertRedirect();
+        $response->assertSessionDoesntHaveErrors();
+        $response->assertSessionHas('success');
 
         $resource = $this->reservation->load(['resources' => fn ($query) => $query->where('resources.id', $resource->id)])->resources->first();
 

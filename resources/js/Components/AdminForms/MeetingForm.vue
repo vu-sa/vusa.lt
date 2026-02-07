@@ -1,64 +1,89 @@
 <template>
-  <Form @submit="onSubmit" :validation-schema="schema" :initial-values="initialValues">
-    <div class="space-y-4">
-      <div class="flex flex-wrap gap-4">
-        <FormField v-slot="{ componentField }" name="date" class="flex-1 min-w-[240px]">
-          <FormItem>
-            <FormLabel class="inline-flex items-center gap-1">
-              <component :is="Icons.DATE" class="h-4 w-4" />
-              {{ $t("forms.fields.date") }}
-            </FormLabel>
-            <FormControl>
-              <DatePicker
-                class="w-full"
-                v-bind="componentField"
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        </FormField>
-        
-        <FormField v-slot="{ componentField }" name="time" class="min-w-[120px]">
-          <FormItem>
-            <FormLabel class="inline-flex items-center gap-1">
-              {{ $t("forms.fields.time") }}
-            </FormLabel>
-            <FormControl>
-              <TimePicker 
-                v-bind="componentField"
-                :hour-range="[7, 22]"
-                :minute-step="5"
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        </FormField>
-      </div>
-
-      <FormField v-slot="{ componentField }" name="type_id">
+  <Form ref="meetingFormRef" v-slot="{ values, setFieldValue }" :validation-schema="schema" :initial-values="initialValues"
+    @submit="onSubmit">
+    <div class="space-y-6">
+      <!-- Meeting Type (Radio Selection) -->
+      <FormField v-slot="{ componentField }" name="type">
         <FormItem>
           <FormLabel class="inline-flex items-center gap-1">
             <component :is="Icons.TYPE" class="h-4 w-4" />
             {{ $tChoice("forms.fields.type", 0) }}
           </FormLabel>
           <FormControl>
-            <Select v-bind="componentField" :disabled="isLoadingTypes">
-              <SelectTrigger>
-                <SelectValue :placeholder="isLoadingTypes ? $t('Loading...') : $t('Koks posėdžio tipas?')" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem v-for="type in meetingTypes" :key="type.id" :value="type.id">
-                  {{ type.title }}
-                </SelectItem>
-              </SelectContent>
-            </Select>
+            <RadioGroup 
+              :model-value="componentField.modelValue === null ? '__null__' : componentField.modelValue" 
+              @update:model-value="(val) => setFieldValue('type', val === '__null__' ? null : val)"
+              class="space-y-2 mt-2"
+            >
+              <div class="space-y-2 pl-2">
+                <div v-for="typeOption in meetingTypeOptions" :key="typeOption.value ?? 'null'" class="flex items-center space-x-2">
+                  <RadioGroupItem :id="`type-${typeOption.value ?? 'null'}`" :value="typeOption.value ?? '__null__'" />
+                  <Label :for="`type-${typeOption.value ?? 'null'}`" class="cursor-pointer flex items-center gap-2">
+                    {{ typeOption.label }}
+                    <span v-if="typeOption.isDateOnly" class="text-xs text-muted-foreground">
+                      ({{ $t('tik data') }})
+                    </span>
+                  </Label>
+                </div>
+              </div>
+            </RadioGroup>
           </FormControl>
           <FormMessage />
         </FormItem>
       </FormField>
 
+      <!-- Date and Time Selection -->
+      <FormField v-slot="{ componentField, value }" name="start_time">
+        <FormItem>
+          <FormLabel class="inline-flex items-center gap-1">
+            <component :is="Icons.DATE" class="h-4 w-4" />
+            {{ isEmailMeeting(values.type) ? $t("forms.fields.date") : `${$t("forms.fields.date")} / ${$t("forms.fields.time")}` }}
+          </FormLabel>
+          <FormControl>
+            <!-- Date-only picker for email meetings -->
+            <DatePicker
+              v-if="isEmailMeeting(values.type)"
+              class="w-full"
+              :model-value="componentField.modelValue"
+              @update:model-value="componentField['onUpdate:modelValue']"
+            />
+            <!-- DateTime picker for other meeting types -->
+            <DateTimePicker
+              v-else
+              class="w-full"
+              :model-value="componentField.modelValue"
+              @update:model-value="componentField['onUpdate:modelValue']"
+              @blur="(e) => componentField.onBlur(e as Event)"
+              :hour-range="[7, 22]"
+              :minute-step="5"
+            />
+          </FormControl>
+          <FormDescription v-if="isWeekendTime(value)" class="text-amber-600 dark:text-amber-400">
+            {{ $t('Pasirinktas savaitgalio laikas') }}
+          </FormDescription>
+          <FormMessage />
+        </FormItem>
+      </FormField>
+
+      <!-- Description -->
+      <FormField v-slot="{ componentField }" name="description">
+        <FormItem>
+          <FormLabel class="inline-flex items-center gap-1">
+            <component :is="Icons.DESCRIPTION" class="h-4 w-4" />
+            {{ $t('Aprašymas') }}
+          </FormLabel>
+          <FormControl>
+            <Textarea v-bind="componentField" :placeholder="$t('Trumpas posėdžio aprašymas (neprivaloma)')"
+              class="resize-none" rows="3" />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      </FormField>
+
+      <!-- Submit Button -->
       <Button type="submit" :disabled="loading">
-        {{ $t("Toliau") }}...
+        <Loader2 v-if="loading" class="h-4 w-4 animate-spin mr-2" />
+        {{ submitLabel }}
       </Button>
     </div>
   </Form>
@@ -66,136 +91,72 @@
 
 <script setup lang="ts">
 import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
-import { ref, computed, inject, onMounted } from "vue";
+import { computed, useTemplateRef, watch, nextTick } from "vue";
 import { Form } from "vee-validate";
-import { toTypedSchema } from '@vee-validate/zod';
-import * as z from 'zod';
-import { 
-  getLocalTimeZone, 
-  today as todayFunction, 
-} from '@internationalized/date';
+import { Loader2 } from "lucide-vue-next";
 
 import Icons from "@/Types/Icons/filled";
+import { useMeetingForm } from "@/Composables/useMeetingForm";
 
 // Import Shadcn UI components
 import { Button } from "@/Components/ui/button";
+import { Textarea } from "@/Components/ui/textarea";
 import {
   FormControl,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/Components/ui/form";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/Components/ui/select";
-import { DatePicker } from "../ui/date-picker";
-import { TimePicker, type TimeValue } from '@/Components/ui/time-picker'
+  RadioGroup,
+  RadioGroupItem,
+} from "@/Components/ui/radio-group";
+import { Label } from "@/Components/ui/label";
+import { DateTimePicker, DatePicker } from "@/Components/ui/date-picker";
 
 const emit = defineEmits<{
   (event: "submit", form: any): void;
 }>();
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   loading?: boolean;
-  meeting: App.Entities.Meeting;
-  meetingTypes?: Array<{id: number, title: string, model_type: string}>;
-}>();
-
-// Access shared form state from parent component
-const formState = inject('meetingFormState');
-
-// Define schema using Zod with a single validation approach
-const schema = toTypedSchema(
-  z.object({
-    date: z.date({
-      required_error: $t("validation.required", { attribute: $t("forms.fields.date") }),
-    }),
-    time: z.object({
-      hour: z.number({ required_error: $t("validation.required", { attribute: $t("forms.fields.time") }) }),
-      minute: z.number({ required_error: $t("validation.required", { attribute: $t("forms.fields.time") }) })
-        .min(0, $t("validation.min.numeric", { attribute: $t("forms.fields.time"), min: 0 }))
-        .max(59, $t("validation.max.numeric", { attribute: $t("forms.fields.time"), max: 59 })),
-    }, { 
-      required_error: $t("validation.required", { attribute: $t("forms.fields.time") })
-    }),
-    type_id: z.number({
-      required_error: $t("validation.required", { attribute: $tChoice("forms.fields.type", 0) }),
-    }),
-  })
-);
-
-// Determine initial values, using stored state first, then passed prop, then default
-const initialValues = {
-  // Use state date if available, otherwise use prop or undefined
-  date: formState?.meetingData?.date ? new Date(formState.meetingData.date) : 
-        props.meeting?.date ? new Date(props.meeting.date) : undefined,
-  
-  // Use state time if available, otherwise use prop or null
-  time: formState?.meetingData?.date ? {
-    hour: new Date(formState.meetingData.date).getHours(),
-    minute: new Date(formState.meetingData.date).getMinutes()
-  } : props.meeting?.date ? {
-    hour: new Date(props.meeting.date).getHours(),
-    minute: new Date(props.meeting.date).getMinutes()
-  } : null,
-  
-  // Use state type_id if available, otherwise use prop
-  type_id: formState?.meetingData?.type_id || props.meeting?.type_id
-};
-
-// Handle form submission with typed values
-const onSubmit = (values) => {
-  const dt = new Date(values.date);
-  
-  // Time is required so should always be present at this point
-  dt.setHours(values.time.hour, values.time.minute);
-  
-  // Format date in local timezone without conversion to UTC
-  // This formats as YYYY-MM-DDTHH:mm:ss.sss in local timezone
-  const localISOString = new Date(dt.getTime() - (dt.getTimezoneOffset() * 60000))
-    .toISOString()
-    .slice(0, 19)
-    .replace('T', ' ');
-  
-  const formData = {
-    start_time: localISOString,
-    type_id: values.type_id,
-  };
-  
-  // Update state
-  if (formState) {
-    formState.meetingData = formData;
-  }
-  
-  emit("submit", formData);
-};
-
-// State for managing meeting types
-const meetingTypes = ref(props.meetingTypes || []);
-const isLoadingTypes = ref(!props.meetingTypes);
-
-const fetchMeetingTypes = async () => {
-  try {
-    const response = await fetch(route("api.types.index"));
-    const data = await response.json();
-    meetingTypes.value = data.filter((type) => type.model_type === "App\\Models\\Meeting");
-  } catch (error) {
-    console.error('Failed to fetch meeting types:', error);
-    meetingTypes.value = [];
-  } finally {
-    isLoadingTypes.value = false;
-  }
-};
-
-// Only fetch if types weren't provided via props
-onMounted(() => {
-  if (!props.meetingTypes) {
-    fetchMeetingTypes();
-  }
+  meeting?: App.Entities.Meeting | Record<string, any>;
+  submitLabel?: string;
+}>(), {
+  submitLabel: undefined,
 });
+
+// Use shared meeting form logic
+const {
+  meetingTypeOptions,
+  isEmailMeeting,
+  isWeekendTime,
+  extendedSchema: schema,
+  formatMeetingData,
+  getInitialValues,
+} = useMeetingForm();
+
+// Local state
+const meetingFormRef = useTemplateRef<typeof Form>("meetingFormRef");
+
+// Initial values
+const initialValues = computed(() => getInitialValues(props.meeting || {}));
+
+// Submit label
+const submitLabel = computed(() => props.submitLabel || $t('Išsaugoti'));
+
+const onSubmit = (values: Record<string, any>) => {
+  emit("submit", formatMeetingData(values));
+};
+
+// Watch for changes to meeting prop and synchronize form state
+watch(() => props.meeting, (newMeeting) => {
+  if (newMeeting && Object.keys(newMeeting).length > 0) {
+    nextTick(() => {
+      meetingFormRef.value?.setValues(getInitialValues(newMeeting));
+    });
+  }
+}, { deep: true });
 </script>

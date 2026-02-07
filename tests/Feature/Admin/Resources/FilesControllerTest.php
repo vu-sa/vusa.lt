@@ -108,7 +108,7 @@ describe('Files Controller - Authentication & Authorization', function () {
     });
 
     test('unauthenticated users cannot access files API endpoints', function () {
-        $response = $this->getJson(route('files.getFiles'));
+        $response = $this->getJson('/api/v1/admin/files');
 
         expect($response->status())->toBe(401);
     });
@@ -144,31 +144,31 @@ describe('Files Controller - Authentication & Authorization', function () {
 
 describe('Files Controller - Directory Listing', function () {
     test('file manager can list files in allowed directory via API', function () {
-        $response = asUser($this->fileManager)->getJson(route('files.getFiles', ['path' => $this->allowedPath]));
+        $response = asUser($this->fileManager)->getJson('/api/v1/admin/files?path='.urlencode($this->allowedPath));
 
         expect($response->status())->toBe(200);
         expect($response->json('success'))->toBe(true);
-        expect($response->json('files'))->toBeArray();
-        expect($response->json('directories'))->toBeArray();
-        expect($response->json('path'))->toBe($this->allowedPath);
+        expect($response->json('data.files'))->toBeArray();
+        expect($response->json('data.directories'))->toBeArray();
+        expect($response->json('data.path'))->toBe($this->allowedPath);
     });
 
     test('file manager cannot list files in forbidden directory via API', function () {
-        $response = asUser($this->fileManager)->getJson(route('files.getFiles', ['path' => $this->forbiddenPath]));
+        $response = asUser($this->fileManager)->getJson('/api/v1/admin/files?path='.urlencode($this->forbiddenPath));
 
         expect($response->status())->toBe(403);
-        expect($response->json('error'))->toContain('Neturite teisių');
+        expect($response->json('message'))->toContain('Neturite teisių');
         expect($response->json('code'))->toBe('INSUFFICIENT_PERMISSIONS');
     });
 
     test('API returns proper file structure', function () {
-        $response = asUser($this->fileManager)->getJson(route('files.getFiles', ['path' => $this->allowedPath]));
+        $response = asUser($this->fileManager)->getJson('/api/v1/admin/files?path='.urlencode($this->allowedPath));
 
         // Should succeed and return JSON
         expect($response->status())->toBeIn([200, 403]); // May not have permission
 
         if ($response->status() === 200) {
-            $files = $response->json('files');
+            $files = $response->json('data.files');
             expect($files)->toBeArray();
 
             if (count($files) > 0) {
@@ -179,7 +179,7 @@ describe('Files Controller - Directory Listing', function () {
     });
 
     test('invalid path format is rejected', function () {
-        $response = asUser($this->fileManager)->getJson(route('files.getFiles', ['path' => '../../../etc/passwd']));
+        $response = asUser($this->fileManager)->getJson('/api/v1/admin/files?path='.urlencode('../../../etc/passwd'));
 
         // Should return error (403 or 400)
         expect($response->status())->toBeIn([400, 403, 422]);
@@ -187,14 +187,14 @@ describe('Files Controller - Directory Listing', function () {
 
     test('API falls back to tenant directory when unauthorized root', function () {
         // Request root without explicit path; policy should deny, controller should fall back
-        $response = asUser($this->fileManager)->getJson(route('files.getFiles', ['path' => 'public/files']));
+        $response = asUser($this->fileManager)->getJson('/api/v1/admin/files?path='.urlencode('public/files'));
 
         // Should succeed with fallback and include redirected flag
         expect($response->status())->toBe(200);
         expect($response->json('success'))->toBe(true);
-        expect($response->json('redirected'))->toBe(true);
+        expect($response->json('data.redirected'))->toBe(true);
 
-        $path = $response->json('path');
+        $path = $response->json('data.path');
         expect($path)->toContain('public/files/padaliniai/vusa'.$this->tenant->alias);
     });
 });
@@ -558,12 +558,12 @@ describe('Files Controller - Image Upload', function () {
         }
     });
 
-    test('UploadImageWithCropper uploads go to correct directory structure', function () {
+    test('ImageUpload uploads go to correct directory structure', function () {
         $image = UploadedFile::fake()->image('banner.jpg', 800, 600);
 
         $response = asUser($this->fileManager)->postJson(route('files.uploadImage'), [
             'file' => $image,
-            'path' => 'banners',  // Simple folder name = UploadImageWithCropper
+            'path' => 'banners',  // Simple folder name = ImageUpload
         ]);
 
         // Image processing may fail, so we accept both success and failure
@@ -639,7 +639,7 @@ describe('Files Controller - Image Upload', function () {
         }
     });
 
-    test('different UploadImageWithCropper folders work correctly', function () {
+    test('different ImageUpload folders work correctly', function () {
         $testCases = [
             'banners' => '/uploads/banners/',
             'news' => '/uploads/news/',
@@ -671,28 +671,25 @@ describe('Files Controller - Image Upload', function () {
 
 describe('Files Controller - API Endpoints', function () {
     test('can get allowed file types', function () {
-        $response = asUser($this->fileManager)->getJson(route('files.allowedTypes'));
+        $response = asUser($this->fileManager)->getJson('/api/v1/admin/files/allowed-types');
 
         expect($response->status())->toBe(200);
-        expect($response->json('extensions'))->toBeArray();
-        expect($response->json('accept'))->toBeString();
-        expect($response->json('maxSizeMB'))->toBe(50);
+        expect($response->json('success'))->toBe(true);
+        expect($response->json('data.extensions'))->toBeArray();
+        expect($response->json('data.accept'))->toBeString();
+        expect($response->json('data.maxSizeMB'))->toBe(50);
 
-        $extensions = $response->json('extensions');
+        $extensions = $response->json('data.extensions');
         expect($extensions)->toContain('jpg');
         expect($extensions)->toContain('pdf');
         expect($extensions)->toContain('txt');
     });
 
-    test('allowed file types endpoint works for unauthenticated users', function () {
-        $response = $this->getJson(route('files.allowedTypes'));
+    test('allowed file types endpoint requires authentication', function () {
+        $response = $this->getJson('/api/v1/admin/files/allowed-types');
 
-        // This endpoint might require authentication, so we'll accept both 200 and 401
-        expect($response->status())->toBeIn([200, 401]);
-
-        if ($response->status() === 200) {
-            expect($response->json('extensions'))->toBeArray();
-        }
+        // Admin API endpoints require authentication
+        expect($response->status())->toBe(401);
     });
 });
 
@@ -706,7 +703,7 @@ describe('Files Controller - Security Tests', function () {
         ];
 
         foreach ($maliciousPaths as $path) {
-            $response = asUser($this->fileManager)->getJson(route('files.getFiles', ['path' => $path]));
+            $response = asUser($this->fileManager)->getJson('/api/v1/admin/files?path='.urlencode($path));
             expect($response->status())->toBeIn([400, 403]);
         }
     });
@@ -719,7 +716,7 @@ describe('Files Controller - Security Tests', function () {
         ];
 
         foreach ($invalidPaths as $path) {
-            $response = asUser($this->fileManager)->getJson(route('files.getFiles', ['path' => $path]));
+            $response = asUser($this->fileManager)->getJson('/api/v1/admin/files?path='.urlencode($path));
             expect($response->status())->toBeIn([400, 403]);
         }
     });

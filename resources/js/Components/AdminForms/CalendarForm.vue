@@ -1,166 +1,249 @@
 <template>
   <AdminForm :model="form" label-placement="top" @submit:form="$emit('submit:form', form)" @delete="$emit('delete')">
-    <FormElement>
+    <!-- Status Header -->
+    <template #status-header>
+      <FormStatusHeader :is-published="!form.is_draft" :server-is-published="!props.calendar.is_draft"
+        :links="statusLinks" :is-create @update:is-published="form.is_draft = !$event" />
+    </template>
+
+    <!-- Section 1: Main Info -->
+    <FormElement :section-number="1" :is-complete="mainInfoComplete" required>
       <template #title>
         {{ $t("forms.context.main_info") }}
       </template>
-      <template #description>
-        <p>Pagrindinė informacija apie renginį.</p>
-        <ul>
-          <li>
-            <p>
-              <strong>Kategorija </strong>keičia spalvą renginių kalendoriuje.
-            </p>
-          </li>
-          <li>
-            <p>
-              <strong>Organizatorius</strong>, jeigu neįrašytas, bus
-              <strong>{{ defaultOrganizer }}</strong>
-            </p>
-          </li>
-        </ul>
+      <template #subtitle>
+        {{ $t('Pagrindiniai renginio nustatymai') }}
       </template>
-      <NFormItem :label="$t('forms.fields.title')" required>
-        <MultiLocaleInput v-model:input="form.title" />
-      </NFormItem>
-      <div class="grid gap-4 lg:grid-cols-2">
-        <NFormItem label="Organizatorius">
-          <MultiLocaleInput v-model:input="form.organizer" />
-        </NFormItem>
-        <NFormItem label="Renginio vieta">
-          <MultiLocaleInput v-model:input="form.location" />
-        </NFormItem>
-      </div>
-      <NFormItem label="Ar šablonas?" required>
-        <NSwitch v-model:value="form.is_draft" />
-      </NFormItem>
-      <NFormItem label="Kategorija">
-        <NSelect v-model:value="form.category_id" :options="categories" placeholder="Pasirinkti kategoriją..."
-          label-field="name" value-field="id" clearable />
-      </NFormItem>
-      <NFormItem label="Viešinimo auditorija">
-        <div class="grid w-full grid-cols-2 gap-4">
-          <NButton strong :type="form.is_international ? 'primary' : 'default'" @click="form.is_international = true">
-            Visi studentai
-            <template #icon>
-              <IFluentGlobe20Regular width="16" />
-            </template>
-          </NButton>
-          <NButton :type="form.is_international ? 'default' : 'primary'" @click="form.is_international = false">
-            Tik lietuviškai mokantys studentai
-          </NButton>
+      <template #description>
+        <p><strong>{{ $t('Kategorija') }}</strong> {{ $t('keičia spalvą renginių kalendoriuje.') }}</p>
+        <p><strong>{{ $t('Organizatorius') }}</strong>, {{ $t('jeigu neįrašytas, bus') }} <strong>{{ defaultOrganizer
+            }}</strong></p>
+      </template>
+
+      <div class="space-y-4">
+        <!-- Title -->
+        <FormFieldWrapper id="title" :label="$t('forms.fields.title')" required
+          :hint="$t('Renginio pavadinimas abiem kalbom')" :error="form.errors['title.lt']" :validating="form.validating"
+          :valid="form.valid('title.lt')" :invalid="form.invalid('title.lt')">
+          <MultiLocaleInput v-model:input="form.title" @blur="form.validate('title.lt')" />
+        </FormFieldWrapper>
+
+        <!-- Organizer & Location -->
+        <div class="grid gap-4 lg:grid-cols-2">
+          <FormFieldWrapper id="organizer" :label="$t('Organizatorius')" :hint="$t('Kas organizuoja renginį')">
+            <MultiLocaleInput v-model:input="form.organizer" />
+          </FormFieldWrapper>
+
+          <FormFieldWrapper id="location" :label="$t('Renginio vieta')" :hint="$t('Fizinė arba virtuali vieta')">
+            <MultiLocaleInput v-model:input="form.location" />
+          </FormFieldWrapper>
         </div>
-      </NFormItem>
-      <NFormItem label="Padalinys" required>
-        <NSelect v-model:value="form.tenant_id" :options="assignableTenants" label-field="shortname" value-field="id" 
-          placeholder="VU SA ..." :default-value="assignableTenants[0].id ?? ''" />
-      </NFormItem>
+
+        <!-- Category & Tenant -->
+        <div class="grid gap-4 lg:grid-cols-2">
+          <FormFieldWrapper id="category" :label="$t('Kategorija')" :hint="$t('Kategorija keičia spalvą kalendoriuje')">
+            <Select v-model="categoryIdString">
+              <SelectTrigger id="category">
+                <SelectValue :placeholder="$t('Pasirinkti kategoriją...')" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none__">
+                  -- {{ $t('Be kategorijos') }} --
+                </SelectItem>
+                <SelectItem v-for="cat in categories" :key="cat.id" :value="String(cat.id)">
+                  {{ cat.name }}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </FormFieldWrapper>
+
+          <FormFieldWrapper id="tenant" :label="$t('Padalinys')" required :error="form.errors.tenant_id"
+            :valid="form.valid('tenant_id')" :invalid="form.invalid('tenant_id')">
+            <Select v-model="tenantIdString" @update:model-value="form.validate('tenant_id')">
+              <SelectTrigger id="tenant">
+                <SelectValue :placeholder="$t('VU SA ...')" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem v-for="tenant in assignableTenants" :key="tenant.id" :value="String(tenant.id)">
+                  {{ tenant.shortname }}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </FormFieldWrapper>
+        </div>
+
+        <!-- Audience toggle -->
+        <FormFieldWrapper id="audience" :label="$t('Viešinimo auditorija')"
+          :hint="$t('Ar renginys skirtas tarptautiniams studentams')">
+          <div class="flex gap-2">
+            <Button type="button" :variant="form.is_international ? 'default' : 'outline'" class="flex-1 gap-2"
+              @click="form.is_international = true">
+              <IFluentGlobe20Regular class="h-4 w-4" />
+              {{ $t('Visi studentai') }}
+            </Button>
+            <Button type="button" :variant="form.is_international ? 'outline' : 'default'" class="flex-1"
+              @click="form.is_international = false">
+              {{ $t('Tik LT') }}
+            </Button>
+          </div>
+        </FormFieldWrapper>
+      </div>
     </FormElement>
-    <FormElement>
+
+    <!-- Section 2: Date & Time -->
+    <FormElement :section-number="2" :is-complete="!!form.date" required>
       <template #title>
-        Informacija apie renginio laiką
+        {{ $t('Renginio laikas') }}
+      </template>
+      <template #subtitle>
+        {{ $t('Kada vyks renginys') }}
       </template>
       <template #description>
-        <p class="mb-2">
-          Jeigu nėra nurodytas pabaigos laikas, kalendoriuje renginys
-          rodomas kaip 1 val. trukmės.
+        <p>{{ $t('Jeigu nėra nurodytas pabaigos laikas, kalendoriuje renginys rodomas kaip 1 val. trukmės.') }}</p>
+      </template>
+
+      <div class="grid gap-4 lg:grid-cols-3">
+        <FormFieldWrapper id="date" :label="$t('Renginio pradžia')" required :error="form.errors.date"
+          :valid="form.valid('date')" :invalid="form.invalid('date')">
+          <DateTimePicker v-model="startDate" @update:model-value="form.validate('date')" />
+        </FormFieldWrapper>
+
+        <FormFieldWrapper id="end_date" :label="$t('Renginio pabaiga')" :error="form.errors.end_date">
+          <DateTimePicker v-model="endDate" />
+        </FormFieldWrapper>
+
+        <div class="flex items-end pb-2">
+          <div class="flex w-full items-center gap-3 rounded-lg border p-3">
+            <Switch id="is_all_day" v-model="form.is_all_day" />
+            <div class="flex-1">
+              <Label for="is_all_day" class="flex items-center gap-2 font-medium">
+                {{ $t('Visos dienos renginys') }}
+                <InfoPopover>
+                  {{ $t('ICS kalendoriuje šis renginys bus žymimas kaip visos dienos renginys.') }}
+                </InfoPopover>
+              </Label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </FormElement>
+
+    <!-- Section 3: Promotion -->
+    <FormElement :section-number="3" :is-complete="!!form.cto_url?.lt || !!form.facebook_url">
+      <template #title>
+        {{ $t('Viešinimas') }}
+      </template>
+      <template #subtitle>
+        {{ $t('Nuorodos ir vaizdo turinys') }}
+      </template>
+
+      <div class="space-y-4">
+        <FormFieldWrapper id="cto_url" :label="$t('CTO nuoroda')"
+          :hint="$t('Nuoroda į pagrindinį renginio puslapį arba registracijos formą')">
+          <MultiLocaleInput v-model:input="form.cto_url" />
+        </FormFieldWrapper>
+
+        <div class="grid gap-4 lg:grid-cols-2">
+          <FormFieldWrapper id="facebook_url" :label="$t('forms.fields.facebook_url')" :error="form.errors.facebook_url"
+            :valid="form.valid('facebook_url')" :invalid="form.invalid('facebook_url')">
+            <div class="flex items-center gap-2">
+              <IMdiFacebook class="h-4 w-4 shrink-0 text-[#1877F2]" />
+              <Input id="facebook_url" v-model="form.facebook_url" type="url"
+                placeholder="https://www.facebook.com/events/..." @change="form.validate('facebook_url')" />
+            </div>
+          </FormFieldWrapper>
+
+          <FormFieldWrapper id="video_url" :label="$t('Youtube video kodas')"
+            :hint="$t('Tik video kodas, ne pilna nuoroda')">
+            <div class="flex items-center gap-2">
+              <span class="shrink-0 text-sm text-muted-foreground">youtube.com/embed/</span>
+              <Input id="video_url" v-model="form.video_url" type="text" placeholder="dQw4w9WgXcQ" class="flex-1" />
+            </div>
+          </FormFieldWrapper>
+        </div>
+      </div>
+    </FormElement>
+
+    <!-- Section 4: Main Image -->
+    <FormElement :section-number="4" :is-complete="hasMainImage" required>
+      <template #title>
+        {{ $t('Pagrindinė nuotrauka') }}
+      </template>
+      <template #subtitle>
+        {{ $t('Rodoma renginio kortelėje ir viršuje') }}
+      </template>
+
+      <FormFieldWrapper id="main_image" :label="$t('Pagrindinė nuotrauka')" required :error="form.errors.main_image">
+        <ImageUpload :max="1" :existing-url="existingMainImageUrl" cropper compress folder="calendar"
+          @update:file="handleMainImageUpdate" />
+      </FormFieldWrapper>
+    </FormElement>
+
+    <!-- Section 5: Gallery Images -->
+    <FormElement :section-number="5" :is-complete="(form.images?.length ?? 0) > 0">
+      <template #title>
+        {{ $t('Galerijos nuotraukos') }}
+      </template>
+      <template #subtitle>
+        {{ $t('Papildomos nuotraukos, rodomos galerijoje') }}
+      </template>
+      <template #description>
+        <p>{{ $t('Nuotraukos optimizuojamos automatiškai prieš įkėlimą.') }}</p>
+        <p class="text-amber-600 dark:text-amber-400">
+          {{ $t('Naujos nuotraukos bus įkeltos išsaugojus formą.') }}
         </p>
       </template>
-      <div class="grid gap-4 lg:grid-cols-3">
-        <NFormItem label="Renginio pradžia" required>
-          <NDatePicker v-model:formatted-value="form.date" placeholder="Pasirinkti pradžios laiką..."
-            format="yyyy-MM-dd HH:mm" :time-picker-props="{ format: 'HH:mm' }" type="datetime" />
-        </NFormItem>
 
-        <NFormItem label="Renginio pabaiga">
-          <NDatePicker v-model:formatted-value="form.end_date" placeholder="Pasirinkti pabaigos laiką..."
-            format="yyyy-MM-dd HH:mm" :time-picker-props="{ format: 'HH:mm' }" type="datetime" clearable />
-        </NFormItem>
-        <NFormItem>
-          <template #label>
-            <div class="inline-flex items-center gap-2">
-              Visos dienos renginys<InfoPopover>
-                ICS kalendoriuje šis renginys bus žymimas kaip
-                <strong>visos dienos</strong> renginys.
-              </InfoPopover>
-            </div>
-          </template>
-          <NSwitch v-model:value="form.is_all_day" />
-        </NFormItem>
+      <ImageUpload v-model:files="newGalleryImages" :max="20" :existing-urls="existingGalleryImages" cropper compress
+        folder="calendar" @remove:existing="removeExistingImage" />
+    </FormElement>
+
+    <!-- Section 6: Description -->
+    <FormElement :section-number="6" :is-complete="!!form.description?.lt">
+      <template #title>
+        {{ $t('Aprašymas') }}
+      </template>
+      <template #subtitle>
+        {{ $t('Detali informacija apie renginį') }}
+      </template>
+
+      <div class="space-y-4">
+        <div class="flex items-center gap-2">
+          <Label class="font-medium">{{ $t('Aprašymo kalba') }}</Label>
+          <SimpleLocaleButton v-model:locale="locale" />
+        </div>
+
+        <TiptapEditor v-if="locale === 'lt'" v-model="form.description.lt" preset="full" :html="true" />
+        <TiptapEditor v-else v-model="form.description.en" preset="full" :html="true" />
       </div>
-    </FormElement>
-    <FormElement>
-      <template #title>
-        Informacija viešinimui
-      </template>
-      <NFormItem>
-        <template #label>
-          <div class="inline-flex items-center gap-2">
-            CTO (Call to action) nuoroda<InfoPopover>
-              Įvedus nuorodą, renginio aprašyme bus rodomas
-              <strong>CTO mygtukas</strong>, kuris nukreips vartotoją į
-              nurodytą nuorodą. Dažniausiai šis mygtukas turėtų vesti į
-              <strong> pagrindinį renginio puslapį</strong> arba
-              <strong>registracijos formą</strong>.
-            </InfoPopover>
-          </div>
-        </template>
-        <MultiLocaleInput v-model:input="form.cto_url" />
-      </NFormItem>
-
-      <NFormItem :label="$t('forms.fields.facebook_url')">
-        <NInput v-model:value="form.facebook_url" type="text"
-          placeholder="https://www.facebook.com/events/584152539934772" />
-      </NFormItem>
-
-      <NFormItem label="Youtube video kodas">
-        <NInputGroup>
-          <NInput autosize value="https://www.youtube.com/embed/" :disabled="true" />
-          <NInput v-model:value="form.video_url" type="text" placeholder="dQw4w9WgXcQ" />
-        </NInputGroup>
-      </NFormItem>
-    </FormElement>
-    <FormElement>
-      <template #title>
-        Papildoma informacija
-      </template>
-      <NFormItem
-        label="Įkelti paveikslėlius (pirmas bus panaudotas, kaip pagrindinis. Jeigu metama klaida, prieš tai sumažinkite paveikslėlius)"
-        :span="6">
-        <NUpload ref="upload" accept="image/jpg, image/jpeg, image/png" list-type="image-card"
-          :default-file-list="form.images" multiple @change="handleUploadChange" @remove="handleUploadRemove">
-          Įkelti paveikslėlius
-        </NUpload>
-      </NFormItem>
-
-      <NFormItem label="Aprašymas">
-        <template #label>
-          <div class="inline-flex items-center gap-2">
-            Aprašymas
-            <SimpleLocaleButton v-model:locale="locale" />
-          </div>
-        </template>
-        <TipTap v-if="locale === 'lt'" v-model="form.description.lt" html />
-        <TipTap v-else v-model="form.description.en" html />
-      </NFormItem>
     </FormElement>
   </AdminForm>
 </template>
 
 <script setup lang="ts">
-import {
-  type UploadFileInfo,
-  type UploadInst,
-} from "naive-ui";
-import { computed, ref, useTemplateRef } from "vue";
+import { computed, ref, watch } from "vue";
 import { router, useForm, usePage } from "@inertiajs/vue3";
+import { translitLithuanian } from "@/Utils/String";
 
-import FormElement from "./FormElement.vue";
 import InfoPopover from "../Buttons/InfoPopover.vue";
-import TipTap from "@/Components/TipTap/OriginalTipTap.vue";
 import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";
 import SimpleLocaleButton from "../Buttons/SimpleLocaleButton.vue";
+
+import FormElement from "./FormElement.vue";
+import FormFieldWrapper from "./FormFieldWrapper.vue";
+import FormStatusHeader from "./FormStatusHeader.vue";
 import AdminForm from "./AdminForm.vue";
+
+import { getCalendarEvent2Route } from "@/Utils/Route";
+import { Button } from "@/Components/ui/button";
+import { Input } from "@/Components/ui/input";
+import { Label } from "@/Components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
+import { ImageUpload } from "@/Components/ui/upload";
+import DateTimePicker from "@/Components/ui/date-picker/DateTimePicker.vue";
+import TiptapEditor from "@/Components/TipTap/TiptapEditor.vue";
+
+
 
 defineEmits<{
   (event: "submit:form", form: unknown): void;
@@ -172,45 +255,151 @@ const props = defineProps<{
   categories: App.Entities.Category[];
   assignableTenants: App.Entities.Tenant[];
   rememberKey?: string;
+  submitUrl: string;
+  submitMethod: 'post' | 'patch';
 }>();
 
+const isCreate = computed(() => !!props.rememberKey);
 const locale = ref("lt");
 
+// Store existing main_image URL for display in MediaUpload
+const existingMainImageUrl = ref<string | null>(props.calendar.main_image_url ?? null);
+
+// Prepare form data - main_image will be File | null for submission
+const formData = {
+  ...props.calendar,
+  main_image: null as File | null, // Reset to null, will be set if user uploads new image
+} as any;
+
 const form = props.rememberKey
-  ? useForm(props.rememberKey, props.calendar)
-  : useForm(props.calendar); 
+  ? useForm(props.rememberKey, formData).withPrecognition(props.submitMethod, props.submitUrl)
+  : useForm(formData).withPrecognition(props.submitMethod, props.submitUrl);
+
+// Set validation timeout
+form.setValidationTimeout(500);
+
+// Handle main image update explicitly
+function handleMainImageUpdate(file: File | null) {
+  form.main_image = file;
+}
+
+// Track if main image section is complete (either existing or new file selected)
+const hasMainImage = computed(() => !!form.main_image || !!existingMainImageUrl.value);
+
+// Section completion states
+const mainInfoComplete = computed(() =>
+  (form.title?.lt?.length || 0) >= 3 && form.tenant_id
+);
+
+// Status header links
+const statusLinks = computed(() => {
+  // Need id, date, and title to construct a valid public URL
+  if (!props.calendar.id || !props.calendar.date || !form.title?.lt) return [];
+
+  const locale = usePage().props.app?.locale ?? 'lt';
+  const url = getCalendarEvent2Route(
+    { date: props.calendar.date, title: translitLithuanian(form.title.lt) },
+    locale
+  );
+
+  return [{ url, label: 'Public' }];
+});
 
 const defaultOrganizer = computed(() => {
   return (
-    props.calendar.tenant?.shortname ?? usePage().props.auth?.user.tenant
+    props.calendar.tenant?.shortname ?? usePage().props.auth?.user?.tenants?.[0]?.shortname
   );
 });
 
-const upload = useTemplateRef<UploadInst | null>('upload');
+// Handle category_id as string for Select component
+const categoryIdString = computed({
+  get: () => form.category_id ? String(form.category_id) : '__none__',
+  set: (val: string) => {
+    form.category_id = val && val !== '__none__' ? parseInt(val) : null;
+  }
+});
 
-const handleUploadChange = (options: {
-  file: UploadFileInfo;
-  fileList: Array<UploadFileInfo>;
-  event?: Event;
-}) => {
-  form.images = options.fileList;
-};
+// Handle tenant_id as string for Select component
+const tenantIdString = computed({
+  get: () => form.tenant_id ? String(form.tenant_id) : '',
+  set: (val: string) => {
+    form.tenant_id = val ? parseInt(val) : null;
+  }
+});
 
-const handleUploadRemove = (options: {
-  file: UploadFileInfo;
-  fileList: Array<UploadFileInfo>;
-  event?: Event;
-}) => {
-  if (options.file.status === "pending") return;
-  router.post(
-    route("calendar.destroyMedia", {
-      calendar: form.id,
-      media: options.file.id,
-    }),
-    {},
-    {
-      preserveScroll: true,
+// Date pickers compatibility - convert string to Date
+const startDate = computed({
+  get: () => form.date ? new Date(form.date) : undefined,
+  set: (val: Date | undefined) => {
+    if (!val) {
+      form.date = null;
+      return;
     }
-  );
-};
+    // Format in local timezone to avoid UTC conversion
+    const localISOString = new Date(val.getTime() - (val.getTimezoneOffset() * 60000))
+      .toISOString()
+      .slice(0, 19)
+      .replace('T', ' ');
+    form.date = localISOString;
+  }
+});
+
+const endDate = computed({
+  get: () => form.end_date ? new Date(form.end_date) : undefined,
+  set: (val: Date | undefined) => {
+    if (!val) {
+      form.end_date = null;
+      return;
+    }
+    // Format in local timezone to avoid UTC conversion
+    const localISOString = new Date(val.getTime() - (val.getTimezoneOffset() * 60000))
+      .toISOString()
+      .slice(0, 19)
+      .replace('T', ' ');
+    form.end_date = localISOString;
+  }
+});
+
+// Gallery images handling
+interface ExistingImage {
+  id: string | number;
+  url: string;
+  name: string;
+}
+
+// Existing gallery images from the server
+const existingGalleryImages = ref<ExistingImage[]>(
+  (props.calendar.images ?? []).map((img: any) => ({
+    id: img.id,
+    url: img.url || img.original_url,
+    name: img.name || 'image.jpg',
+  }))
+);
+
+// New gallery images to be uploaded
+const newGalleryImages = ref<File[]>([]);
+
+// Sync new gallery images to form.images for submission
+watch(newGalleryImages, (files) => {
+  form.images = files;
+}, { deep: true });
+
+// Remove existing gallery image
+function removeExistingImage(img: { id: string | number; url: string }) {
+  if (props.calendar.id) {
+    router.post(
+      route('calendar.destroyMedia', {
+        calendar: props.calendar.id,
+        media: img.id,
+      }),
+      {},
+      {
+        preserveScroll: true,
+        onSuccess: () => {
+          existingGalleryImages.value = existingGalleryImages.value.filter(i => i.id !== img.id);
+        },
+      }
+    );
+  }
+}
 </script>

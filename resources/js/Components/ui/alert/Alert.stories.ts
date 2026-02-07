@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { Alert, AlertTitle, AlertDescription } from './';
 
 const meta: Meta<typeof Alert> = {
-    title: 'Shadcn/Alert',
+    title: 'UI/Alert',
     component: Alert,
     argTypes: {
         variant: { control: 'select', options: ['default', 'destructive'] },

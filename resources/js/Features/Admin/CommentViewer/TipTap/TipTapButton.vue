@@ -1,15 +1,15 @@
 <template>
-  <NButton
-    size="small"
-    :type="editor.isActive(type) ? 'primary' : 'default'"
+  <Button
+    size="sm"
+    :variant="editor.isActive(type) ? 'default' : 'outline'"
   >
-    <template #icon>
-      <slot name="icon" />
-    </template>
-  </NButton>
+    <slot name="icon" />
+  </Button>
 </template>
 
 <script setup lang="ts">
+import { Button } from '@/Components/ui/button';
+
 defineProps<{
   editor: any;
   callback?: any;

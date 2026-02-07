@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Contracts\SharepointFileableContract;
+use App\Events\FileableNameUpdated;
 use App\Models\Traits\HasContentRelationships;
 use App\Models\Traits\HasSharepointFiles;
 use App\Models\Traits\HasTranslations;
@@ -21,17 +22,21 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property array|string|null $description
  * @property string|null $model_type
  * @property string|null $slug
+ * @property array<array-key, mixed>|null $extra_attributes
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property-read Collection<int, \Spatie\Activitylog\Models\Activity> $activities
+ * @property-read Collection<int, \App\Models\FileableFile> $availableFiles
  * @property-read Collection<int, Type> $descendants
  * @property-read Collection<int, \App\Models\Duty> $duties
+ * @property-read Collection<int, \App\Models\FileableFile> $fileableFiles
  * @property-read Collection<int, \App\Models\SharepointFile> $files
+ * @property-read bool $has_protocol
+ * @property-read bool $has_report
  * @property-read \App\Models\RoleType|\App\Models\Pivots\Relationshipable|null $pivot
  * @property-read Collection<int, \App\Models\Relationship> $incomingRelationships
  * @property-read Collection<int, \App\Models\Institution> $institutions
- * @property-read Collection<int, \App\Models\Meeting> $meetings
  * @property-read Collection<int, \App\Models\Relationship> $outgoingRelationships
  * @property-read Type|null $parent
  * @property-read Type|null $recursiveParent
@@ -39,6 +44,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read mixed $translations
  *
  * @method static \Database\Factories\TypeFactory factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Type forDuties()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Type forInstitutions()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Type newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Type newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Type onlyTrashed()
@@ -60,17 +67,34 @@ class Type extends Model implements SharepointFileableContract
 
     protected $translatable = ['title', 'description'];
 
-    protected $casts = [
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
+            'extra_attributes' => 'array',
+        ];
+    }
 
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()->logUnguarded()->logOnlyDirty();
     }
 
-    public function institutions()
+    protected static function booted()
+    {
+        static::saving(function (Type $type) {
+            // Dispatch event when title is about to change - SharePoint must succeed first
+            if ($type->isDirty('title')) {
+                FileableNameUpdated::dispatch($type);
+            }
+        });
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\MorphToMany<\App\Models\Institution, $this>
+     */
+    public function institutions(): \Illuminate\Database\Eloquent\Relations\MorphToMany
     {
         return $this->morphedByMany(Institution::class, 'typeable');
     }
@@ -78,11 +102,6 @@ class Type extends Model implements SharepointFileableContract
     public function duties()
     {
         return $this->morphedByMany(Duty::class, 'typeable');
-    }
-
-    public function meetings()
-    {
-        return $this->morphedByMany(Meeting::class, 'typeable');
     }
 
     public function roles()
@@ -160,8 +179,48 @@ class Type extends Model implements SharepointFileableContract
             return $this->model_type::select('id', 'name', 'tenant_id')->with('tenants')->orderBy('name')->get();
         } elseif (Str::contains($this->model_type, 'Duty')) {
             return $this->model_type::select('id', 'name', 'institution_id')->with('tenants')->orderBy('name')->get();
-        } elseif (Str::contains($this->model_type, 'Meeting')) {
-            return $this->model_type::select('id', 'title')->with('tenants')->orderBy('title')->get();
         }
+
+        return collect();
+    }
+
+    /**
+     * Scope to filter types for Institutions only.
+     */
+    public function scopeForInstitutions($query)
+    {
+        return $query->where('model_type', Institution::class);
+    }
+
+    /**
+     * Scope to filter types for Duties only.
+     */
+    public function scopeForDuties($query)
+    {
+        return $query->where('model_type', Duty::class);
+    }
+
+    /**
+     * Check if sibling relationships are enabled for this type.
+     * When enabled, institutions with this type in the same tenant
+     * will automatically be related as siblings.
+     */
+    public function hasSiblingRelationshipsEnabled(): bool
+    {
+        return (bool) ($this->extra_attributes['enable_sibling_relationships'] ?? false);
+    }
+
+    /**
+     * Check if cross-tenant sibling relationships are enabled for this type.
+     * When enabled, institutions of this type can see institutions of the same type
+     * across tenant boundaries (pagrindinis <-> padalinys).
+     *
+     * Authorization is one-directional:
+     * - Pagrindinis sees padalinys siblings with authorized: true (full data access)
+     * - Padalinys sees pagrindinis sibling with authorized: false (visible but no agenda items)
+     */
+    public function hasCrossTenantSiblingRelationshipsEnabled(): bool
+    {
+        return (bool) ($this->extra_attributes['enable_cross_tenant_sibling_relationships'] ?? false);
     }
 }

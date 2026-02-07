@@ -27,36 +27,34 @@
       <ProgrammeBlock v-for="(block, index) in section.blocks" :key="block.id" v-model:block="section.blocks[index]"
         :section-start-time>
         <template v-if="editable" #buttons>
-          <NButton size="tiny" secondary circle @click="showBlockEditModal = true; selectedBlock = block">
-            <template #icon>
-              <IFluentEdit24Filled />
-            </template>
-          </NButton>
-          <NButton size="tiny" secondary circle @click="deleteProgrammeBlock(index)">
-            <template #icon>
-              <IFluentDelete24Filled />
-            </template>
-          </NButton>
+          <Button size="icon-xs" variant="secondary" class="rounded-full" @click="showBlockEditModal = true; selectedBlock = block">
+            <IFluentEdit24Filled />
+          </Button>
+          <Button size="icon-xs" variant="secondary" class="rounded-full" @click="deleteProgrammeBlock(index)">
+            <IFluentDelete24Filled />
+          </Button>
         </template>
       </ProgrammeBlock>
     </div>
-    <NTooltip v-if="editable">
-      <template #trigger>
-        <NButton size="small" circle @click="createProgrammeBlock">
-          <template #icon>
+    <TooltipProvider v-if="editable">
+      <Tooltip>
+        <TooltipTrigger as-child>
+          <Button size="icon-sm" class="rounded-full" @click="createProgrammeBlock">
             <IFluentLayerDiagonalAdd24Regular />
-          </template>
-        </NButton>
-      </template>
-      Pridėti programos bloką
-    </NTooltip>
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          Pridėti programos bloką
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
     <CardModal v-model:show="showBlockEditModal" @close="showBlockEditModal = false">
-      <NFormItem label="Dienos pavadinimas">
+      <FormFieldWrapper id="block-title" label="Dienos pavadinimas">
         <MultiLocaleInput v-model:input="selectedBlock.title" />
-      </NFormItem>
-      <NButton @click="showBlockEditModal = false">
+      </FormFieldWrapper>
+      <Button variant="outline" @click="showBlockEditModal = false">
         Uždaryti
-      </NButton>
+      </Button>
     </CardModal>
   </div>
 </template>
@@ -68,6 +66,9 @@ import { router } from "@inertiajs/vue3";
 import { formatStaticTime } from '@/Utils/IntlTime';
 import ProgrammeBlock from './ProgrammeBlock.vue';
 import CardModal from '@/Components/Modals/CardModal.vue';
+import { Button } from '@/Components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
+import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import MultiLocaleInput from '@/Components/FormItems/MultiLocaleInput.vue';
 
 const section = defineModel<App.Entities.ProgrammeSection | App.Entities.ProgrammePart>('element')

@@ -6,8 +6,8 @@ use App\Helpers\AddressivizeHelper;
 use App\Models\Pivots\Dutiable;
 use App\Models\Pivots\MembershipUser;
 use App\Models\Pivots\Trainable;
+use App\Models\Traits\HasNotificationPreferences;
 use App\Models\Traits\HasTranslations;
-use App\Models\Traits\HasUnitRelation;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -16,6 +16,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Notifications\Notification;
 use Laravel\Scout\Searchable;
+use NotificationChannels\WebPush\HasPushSubscriptions;
 use Octopy\Impersonate\Authorization;
 use Octopy\Impersonate\Concerns\HasImpersonation;
 use Octopy\Impersonate\Http\Resources\ImpersonateResource;
@@ -37,7 +38,8 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string|null $email_verified_at
  * @property string|null $remember_token
  * @property \Illuminate\Support\Carbon|null $last_action
- * @property string|null $last_changelog_check
+ * @property array<array-key, mixed>|null $tutorial_progress
+ * @property array $notification_preferences
  * @property string|null $microsoft_token
  * @property \Illuminate\Support\Carbon $updated_at
  * @property \Illuminate\Support\Carbon $created_at
@@ -45,17 +47,20 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property bool $name_was_changed
  * @property-read Collection<int, \Spatie\Activitylog\Models\Activity> $activities
- * @property-read MembershipUser|Dutiable|Trainable|null $pivot
+ * @property-read \App\Models\InstitutionNotificationMute|MembershipUser|\App\Models\InstitutionFollow|Dutiable|Trainable|null $pivot
  * @property-read Collection<int, \App\Models\Training> $availableTrainingsThroughUser
  * @property-read Collection<int, \App\Models\Duty> $current_duties
  * @property-read Collection<int, Dutiable> $dutiables
  * @property-read Collection<int, \App\Models\Duty> $duties
+ * @property-read Collection<int, \App\Models\Institution> $followedInstitutions
  * @property-read mixed $has_password
  * @property-read Collection<int, \App\Models\Institution> $institutions
  * @property-read Collection<int, \App\Models\Membership> $memberships
+ * @property-read Collection<int, \App\Models\Institution> $mutedInstitutions
  * @property-read \Illuminate\Notifications\DatabaseNotificationCollection<int, \Illuminate\Notifications\DatabaseNotification> $notifications
  * @property-read Collection<int, \App\Models\Permission> $permissions
  * @property-read Collection<int, \App\Models\Duty> $previous_duties
+ * @property-read Collection<int, \NotificationChannels\WebPush\PushSubscription> $pushSubscriptions
  * @property-read Collection<int, \App\Models\Reservation> $reservations
  * @property-read Collection<int, \App\Models\Role> $roles
  * @property-read Collection<int, \App\Models\Task> $tasks
@@ -83,7 +88,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  */
 class User extends Authenticatable
 {
-    use HasFactory, HasImpersonation, HasRelationships, HasRoles, HasTranslations, HasUlids, HasUnitRelation, LogsActivity, Notifiable, Searchable, SoftDeletes;
+    use HasFactory, HasImpersonation, HasNotificationPreferences, HasPushSubscriptions, HasRelationships, HasRoles, HasTranslations, HasUlids, LogsActivity, Notifiable, Searchable, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -92,6 +97,7 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name', 'email', 'facebook_url', 'password', 'phone', 'profile_photo_path', 'pronouns', 'show_pronouns',
+        'notification_preferences',
     ];
 
     public $translatable = [
@@ -107,24 +113,30 @@ class User extends Authenticatable
         'password',
         'remember_token',
         'email_verified_at',
-        'last_changelog_check',
+        'tutorial_progress',
+        'notification_preferences',
         'last_action',
         'microsoft_token',
         'name_was_changed',
     ];
 
-    protected $casts = [
-        'last_action' => 'datetime',
-        'show_pronouns' => 'boolean',
-        'name_was_changed' => 'boolean',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'last_action' => 'datetime',
+            'show_pronouns' => 'boolean',
+            'name_was_changed' => 'boolean',
+            'tutorial_progress' => 'array',
+            'notification_preferences' => 'array',
+        ];
+    }
 
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()->logFillable()->logOnlyDirty();
     }
 
-    public function toSearchableArray()
+    public function toSearchableArray(): array
     {
         return [
             'name' => $this->name,
@@ -147,14 +159,14 @@ class User extends Authenticatable
 
     public function setImpersonateAuthorization(Authorization $authorization): void
     {
-        $authorization->impersonator(fn (User $user) => $user->hasRole(config('permission.super_admin_role_name')));
+        $authorization->impersonator(fn (User $user) => $user->isSuperAdmin());
 
         $authorization->impersonated(function ($impersonateResource) {
             if ($impersonateResource::class === ImpersonateResource::class) {
                 $impersonateResource = $impersonateResource->resource;
             }
 
-            return ! $impersonateResource->hasRole(config('permission.super_admin_role_name'));
+            return ! $impersonateResource->isSuperAdmin();
         });
     }
 
@@ -234,6 +246,82 @@ class User extends Authenticatable
         return $this->hasManyDeepFromRelations($this->duties(), (new Duty)->institution());
     }
 
+    /**
+     * Institutions the user is explicitly following.
+     */
+    public function followedInstitutions(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Institution::class, 'institution_follows')
+            ->using(InstitutionFollow::class)
+            ->withTimestamps();
+    }
+
+    /**
+     * Institutions the user has muted notifications for.
+     */
+    public function mutedInstitutions(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Institution::class, 'institution_notification_mutes')
+            ->using(InstitutionNotificationMute::class)
+            ->withPivot('muted_at')
+            ->withTimestamps();
+    }
+
+    /**
+     * Check if the user is following a specific institution.
+     */
+    public function follows(Institution $institution): bool
+    {
+        return $this->followedInstitutions()->where('institution_id', $institution->id)->exists();
+    }
+
+    /**
+     * Check if the user has muted a specific institution.
+     */
+    public function isInstitutionMuted(Institution $institution): bool
+    {
+        return $this->mutedInstitutions()->where('institution_id', $institution->id)->exists();
+    }
+
+    /**
+     * Check if the user has a duty at a specific institution.
+     */
+    public function hasInstitution(Institution $institution): bool
+    {
+        return $this->institutions()->where('institutions.id', $institution->id)->exists();
+    }
+
+    /**
+     * Get all "interesting" institutions (duty + followed - muted).
+     *
+     * @return \Illuminate\Support\Collection<int, Institution>
+     */
+    public function interestingInstitutions(): \Illuminate\Support\Collection
+    {
+        $dutyInstitutions = $this->institutions()->get();
+        $followedInstitutions = $this->followedInstitutions()->get();
+        $mutedIds = $this->mutedInstitutions()->pluck('institutions.id');
+
+        return $dutyInstitutions->merge($followedInstitutions)
+            ->unique('id')
+            ->reject(fn ($institution) => $mutedIds->contains($institution->id))
+            ->values();
+    }
+
+    /**
+     * Check if the user should receive notifications for a specific institution.
+     */
+    public function shouldNotifyForInstitution(Institution $institution): bool
+    {
+        // Check if explicitly muted
+        if ($this->isInstitutionMuted($institution)) {
+            return false;
+        }
+
+        // Notify if: user has duty at institution OR user follows institution
+        return $this->hasInstitution($institution) || $this->follows($institution);
+    }
+
     public function reservations()
     {
         return $this->belongsToMany(Reservation::class)->withTimestamps();
@@ -244,7 +332,6 @@ class User extends Authenticatable
         return $this->belongsToMany(Membership::class)->using(MembershipUser::class)->withTimestamps()->withPivot('start_date', 'end_date');
     }
 
-    // TODO: refactor to use the new method
     public function isSuperAdmin(): bool
     {
         return $this->hasRole(config('permission.super_admin_role_name'));

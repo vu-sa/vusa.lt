@@ -1,47 +1,94 @@
 <template>
-  <IndexPageLayout :title="capitalize($tChoice('entities.membership.model', 2))" model-name="memberships"
-    :can-use-routes="canUseRoutes" :columns="columns" :paginated-models="memberships" />
+  <IndexTablePage
+    ref="indexTablePageRef"
+    v-bind="tableConfig"
+    @data-loaded="onDataLoaded"
+    @sorting-changed="handleSortingChange"
+    @page-changed="handlePageChange"
+    @filter-changed="handleFilterChange"
+  />
 </template>
 
-<script setup lang="ts">
-import {
-  type DataTableColumns,
-} from "naive-ui";
-import { computed, provide, ref } from "vue";
-import { trans as $t } from "laravel-vue-i18n";
+<script setup lang="tsx">
+import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
+import { type ColumnDef } from "@tanstack/vue-table";
+import { ref, computed } from "vue";
 
 import { capitalize } from "@/Utils/String";
-import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
-import { tenantColumn } from "@/Composables/dataTableColumns";
-import { usePage } from "@inertiajs/vue3";
+import { resolveTranslatable } from "@/Utils/DataTableColumns";
+import IndexTablePage from "@/Components/Layouts/IndexTablePage.vue";
+import { createStandardActionsColumn } from "@/Composables/useTableActions";
+import { type IndexTablePageProps } from "@/Types/TableConfigTypes";
 
-defineProps<{
-  memberships: PaginatedModels<App.Entities.Membership>;
+const props = defineProps<{
+  memberships: {
+    data: App.Entities.Membership[];
+    meta: {
+      total: number;
+      current_page: number;
+      per_page: number;
+      last_page: number;
+      from: number;
+      to: number;
+    };
+  };
+  filters?: Record<string, any>;
+  sorting?: { id: string; desc: boolean }[];
 }>();
 
-const canUseRoutes = {
-  create: true,
-  show: false,
-  edit: true,
-  destroy: false,
+const modelName = "memberships";
+const entityName = "membership";
+
+const indexTablePageRef = ref<any>(null);
+
+const getRowId = (row: App.Entities.Membership) => {
+  return `membership-${row.id}`;
 };
 
-const filters = ref<Record<string, any>>({
-  "tenant.id": [],
-});
-
-provide("filters", filters);
-
-const columns = computed<DataTableColumns<App.Entities.Duty>>(() => [
+const columns = computed<ColumnDef<App.Entities.Membership, any>[]>(() => [
   {
-    title: "Pavadinimas",
-    key: "name",
+    accessorKey: "name",
+    header: () => $t("forms.fields.title"),
+    cell: ({ row }) => resolveTranslatable(row.getValue("name")),
+    size: 250,
   },
   {
-    ...tenantColumn(filters, usePage().props.tenants),
-    render(row) {
-      return $t(row.tenant?.shortname ?? "");
+    accessorKey: "tenant",
+    header: () => $t("Padalinys"),
+    cell: ({ row }) => {
+      const tenant = row.original.tenant;
+      return tenant ? $t(tenant.shortname ?? "") : null;
     },
+    size: 200,
   },
+  createStandardActionsColumn<App.Entities.Membership>("memberships", {
+    canEdit: true,
+  }),
 ]);
+
+const tableConfig = computed<IndexTablePageProps<App.Entities.Membership>>(() => ({
+  modelName,
+  entityName,
+  data: props.memberships.data,
+  columns: columns.value,
+  getRowId,
+  totalCount: props.memberships.meta.total,
+  initialPage: props.memberships.meta.current_page,
+  pageSize: props.memberships.meta.per_page,
+
+  initialFilters: props.filters,
+  initialSorting: props.sorting,
+  enableFiltering: true,
+  enableColumnVisibility: false,
+  enableRowSelection: false,
+
+  headerTitle: capitalize($tChoice("entities.membership.model", 2)),
+  createRoute: route("memberships.create"),
+  canCreate: true,
+}));
+
+const onDataLoaded = (data: any) => {};
+const handleSortingChange = (sorting: any) => {};
+const handlePageChange = (page: any) => {};
+const handleFilterChange = (filterKey: any, value: any) => {};
 </script>

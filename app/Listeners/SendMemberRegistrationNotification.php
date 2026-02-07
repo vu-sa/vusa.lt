@@ -8,7 +8,7 @@ use App\Mail\ConfirmMemberRegistration;
 use App\Models\FieldResponse;
 use App\Models\Institution;
 use App\Models\Tenant;
-use App\Notifications\MemberRegistered;
+use App\Notifications\MemberRegistrationNotification;
 use App\Settings\FormSettings;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Log;
@@ -109,7 +109,7 @@ class SendMemberRegistrationNotification implements ShouldQueue
 
         foreach ($mailableDuties as $mailableDuty) {
             /** @var \App\Models\Duty $mailableDuty */
-            Notification::send($mailableDuty->current_users()->first(), new MemberRegistered($event->registration->id, $nameResponse->getValue(), $institution, $mailableDuty->email, $form->id));
+            Notification::send($mailableDuty->current_users()->first(), new MemberRegistrationNotification($event->registration->id, $nameResponse->getValue(), $institution, $mailableDuty->email, $form->id));
         }
     }
 }

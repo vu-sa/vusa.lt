@@ -1,7 +1,6 @@
 <template>
   <IndexTablePage ref="indexTablePageRef" v-bind="tableConfig" @data-loaded="onDataLoaded"
-    @sorting-changed="handleSortingChange" @page-changed="handlePageChange" @filter-changed="handleFilterChange"
-    @update:row-selection="handleRowSelectionChange">
+    @sorting-changed="handleSortingChange" @page-changed="handlePageChange" @filter-changed="handleFilterChange">
     <template #filters>
       <DataTableFilter v-if="types.length > 0" v-model:value="selectedTypeIds" :options="typeOptions" multiple
         @update:value="handleTypeFilterChange">
@@ -20,42 +19,19 @@
       {{ $t('No institutions found. You can add a new institution using the button above.') }}
     </template> -->
   </IndexTablePage>
-
-  <!-- Delete Confirmation Dialog -->
-  <Dialog v-model:open="showDeleteDialog">
-    <DialogContent>
-      <DialogHeader>
-        <DialogTitle>{{ $t('Are you sure?') }}</DialogTitle>
-        <DialogDescription>
-          {{ $t('This action cannot be undone. This will permanently delete the selected institutions.') }}
-        </DialogDescription>
-      </DialogHeader>
-      <DialogFooter>
-        <DialogClose as-child>
-          <Button variant="outline">{{ $t('Cancel') }}</Button>
-        </DialogClose>
-        <Button variant="destructive" @click="confirmDelete">
-          {{ $t('Delete') }}
-        </Button>
-      </DialogFooter>
-    </DialogContent>
-  </Dialog>
 </template>
 
 <script setup lang="tsx">
 import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
 import { type ColumnDef } from '@tanstack/vue-table';
 import { ref, computed, watch, capitalize } from "vue";
-import { router, usePage } from "@inertiajs/vue3";
+import { usePage } from "@inertiajs/vue3";
 import {
   BuildingIcon
 } from 'lucide-vue-next';
-import { toast } from "vue-sonner";
 
 import { formatStaticTime } from "@/Utils/IntlTime";
-import PreviewModelButton from "@/Components/Buttons/PreviewModelButton.vue";
 import DataTableFilter from "@/Components/ui/data-table/DataTableFilter.vue";
-import { Button } from "@/Components/ui/button";
 import { Badge } from "@/Components/ui/badge";
 import IndexTablePage from "@/Components/Layouts/IndexTablePage.vue";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
@@ -65,18 +41,6 @@ import {
   createTenantColumn,
   createTagsColumn
 } from '@/Utils/DataTableColumns';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogClose,
-} from "@/Components/ui/dialog";
-import { Label } from "@/Components/ui/label";
-import { Input } from "@/Components/ui/input";
-import { Checkbox } from "@/Components/ui/checkbox";
 import {
   type IndexTablePageProps,
 } from "@/Types/TableConfigTypes";
@@ -106,18 +70,10 @@ const indexTablePageRef = ref<InstanceType<typeof IndexTablePage> | null>(null);
 
 // Permission checks
 const canCreate = computed(() => usePage().props.auth?.can?.create?.institution || false);
-const canDelete = computed(() => usePage().props.auth?.can?.delete?.institution || false);
 
 // Filter states
 const selectedTypeIds = ref<number[]>(props.filters?.['types.id'] || []);
 const selectedTenantIds = ref<number[]>(props.filters?.['tenant.id'] || []);
-
-// Row selection
-const selectedRows = ref([]);
-
-// Delete dialog state
-const showDeleteDialog = ref(false);
-const itemsToDelete = ref([]);
 
 // Filter options computed values
 const typeOptions = computed(() => {
@@ -168,27 +124,6 @@ const columns = computed<ColumnDef<App.Entities.Institution, any>[]>(() => [
       );
     }
   }),
-  {
-    accessorKey: "alias",
-    header: () => '',
-    cell: ({ row }) => {
-      const alias = row.original.alias;
-      if (!alias) return null;
-
-      return (
-        <PreviewModelButton
-          publicRoute="contacts.alias"
-          routeProps={{
-            institution: alias,
-            lang: "lt",
-            subdomain: "www",
-          }}
-        />
-      );
-    },
-    size: 60,
-    enableSorting: false,
-  },
   createTenantColumn({
     enableSorting: false,
     cell: ({ row }) => {
@@ -306,12 +241,6 @@ const handleTenantFilterChange = (tenantIds: number[]) => {
   }
 };
 
-// Row selection handler
-const handleRowSelectionChange = (selection) => {
-  // Get the actual row objects from the selection state
-  selectedRows.value = indexTablePageRef.value?.getSelectedRows() || [];
-};
-
 // Event handlers for IndexTablePage
 const handleFilterChange = (filterKey, value) => {
   // Update local filter references if needed
@@ -332,27 +261,6 @@ const handlePageChange = (page) => {
 
 const onDataLoaded = (data) => {
   // Handle data loaded event if needed
-};
-
-
-// Delete confirmation functions
-const confirmDelete = () => {
-  if (itemsToDelete.value.length === 0) return;
-  
-  const ids = itemsToDelete.value.map(item => item.id);
-  
-  router.delete(route('institutions.destroy', { ids }), {
-    onSuccess: () => {
-      toast.success($t('Institutions deleted successfully'));
-      showDeleteDialog.value = false;
-      itemsToDelete.value = [];
-      indexTablePageRef.value?.reloadData();
-    },
-    onError: (errors) => {
-      toast.error($t('Error deleting institutions'));
-      console.error('Delete errors:', errors);
-    }
-  });
 };
 
 // Sync filter values when changed externally

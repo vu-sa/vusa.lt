@@ -4,37 +4,66 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\DuplicateNewsAction;
 use App\Http\Controllers\AdminController;
+use App\Http\Requests\IndexNewsRequest;
 use App\Http\Requests\StoreNewsRequest;
 use App\Http\Requests\UpdateNewsRequest;
+use App\Http\Traits\HasTanstackTables;
 use App\Models\Content;
 use App\Models\News;
 use App\Models\Tag;
 use App\Models\Tenant;
 use App\Services\ModelAuthorizer as Authorizer;
-use App\Services\ModelIndexer;
-use Illuminate\Http\Request;
+use App\Services\TanstackTableService;
 
 class NewsController extends AdminController
 {
-    public function __construct(public Authorizer $authorizer) {}
+    use HasTanstackTables;
+
+    public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService) {}
 
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index(IndexNewsRequest $request)
     {
         $this->handleAuthorization('viewAny', News::class);
 
-        $indexer = new ModelIndexer(new News);
+        $query = News::query()->with([
+            'other_language_news:id,title,lang',
+            'tenant:id,shortname',
+        ]);
 
-        $news = $indexer
-            ->setEloquentQuery([fn ($query) => $query->with('other_language_news:id,title,lang')])
-            ->filterAllColumns()
-            ->sortAllColumns(['publish_time' => 'descend'])
-            ->builder->paginate(20);
+        $searchableColumns = ['title', 'short'];
+
+        $query = $this->applyTanstackFilters(
+            $query,
+            $request,
+            $this->tableService,
+            $searchableColumns,
+            [
+                'applySortBeforePagination' => true,
+                'tenantRelation' => 'tenant',
+                'permission' => 'news.read.padalinys',
+            ]
+        );
+
+        $news = $query->paginate($request->input('per_page', 20))
+            ->withQueryString();
 
         return $this->inertiaResponse('Admin/Content/IndexNews', [
-            'news' => $news,
+            'news' => [
+                'data' => $news->items(),
+                'meta' => [
+                    'total' => $news->total(),
+                    'per_page' => $news->perPage(),
+                    'current_page' => $news->currentPage(),
+                    'last_page' => $news->lastPage(),
+                    'from' => $news->firstItem(),
+                    'to' => $news->lastItem(),
+                ],
+            ],
+            'filters' => $request->getFilters(),
+            'sorting' => $request->getSorting(),
         ]);
     }
 
@@ -69,10 +98,10 @@ class NewsController extends AdminController
         $tenant_id = null;
 
         // check if super admin, else set tenant_id
-        if (request()->user()->hasRole(config('permission.super_admin_role_name'))) {
-            $tenant_id = Tenant::where('type', 'pagrindinis')->first()->id;
+        if (request()->user()->isSuperAdmin()) {
+            $tenant_id = Tenant::where('type', 'pagrindinis')->first()?->id;
         } else {
-            $tenant_id = $this->authorizer->permissableDuties->first()->tenants->first()->id;
+            $tenant_id = $this->authorizer->permissableDuties->first()?->tenants->first()?->id;
         }
 
         $content = new Content;
@@ -92,6 +121,8 @@ class NewsController extends AdminController
             'image_author' => $request->image_author,
             'draft' => $request->draft ?? 0,
             'publish_time' => $request->publish_time,
+            'layout' => $request->layout ?? 'modern',
+            'highlights' => $request->highlights ?? [],
             'tenant_id' => $tenant_id,
         ]);
 
@@ -110,7 +141,7 @@ class NewsController extends AdminController
     {
         $this->handleAuthorization('update', $news);
 
-        $other_lang_pages = News::with('tenant:id,shortname')->when(! request()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) use ($news) {
+        $other_lang_pages = News::with('tenant:id,shortname')->when(! request()->user()->isSuperAdmin(), function ($query) use ($news) {
             $query->where('tenant_id', $news->tenant_id);
         })->where('lang', '!=', $news->lang)->select('id', 'title', 'tenant_id')->get();
 
@@ -128,10 +159,13 @@ class NewsController extends AdminController
                 'tenant' => $news->tenant,
                 'draft' => $news->draft,
                 'short' => $news->short,
+                // Raw image value for admin form (no fallback applied)
                 'image' => $news->image,
                 'tags' => $news->tags->pluck('id')->toArray(),
                 'image_author' => $news->image_author,
                 'publish_time' => $news->publish_time,
+                'layout' => $news->layout ?? 'modern',
+                'highlights' => $news->highlights ?? [],
             ],
             'otherLangNews' => $other_lang_pages,
             'availableTags' => $tags->map->toFullArray(),
@@ -154,6 +188,8 @@ class NewsController extends AdminController
             'short',
             'image',
             'image_author',
+            'layout',
+            'highlights',
         ));
 
         $news->save();

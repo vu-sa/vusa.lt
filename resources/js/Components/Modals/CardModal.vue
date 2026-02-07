@@ -1,27 +1,24 @@
 <template>
-  <NModal
-    :show="show"
-    class="max-w-3xl transition"
-    :bordered="false"
-    size="large"
-    role="card"
-    aria-modal="true"
-    preset="card"
-    @close="$emit('close')"
-    @mask-click="$emit('close')"
-    @esc="$emit('close')"
-  >
-    <slot />
-    <template #footer><slot name="footer"></slot></template>
-  </NModal>
+  <Dialog :open="show" @update:open="(val) => { if (!val) $emit('close') }">
+    <DialogContent class="max-w-3xl" @escape-key-down="$emit('close')">
+      <DialogHeader v-if="title">
+        <DialogTitle>{{ title }}</DialogTitle>
+      </DialogHeader>
+      <slot />
+      <DialogFooter v-if="$slots.footer">
+        <slot name="footer" />
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
 </template>
 
 <script setup lang="ts">
-import { NModal } from "naive-ui";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
 
 defineEmits(["close"]);
 
 defineProps<{
   show: boolean;
+  title?: string;
 }>();
 </script>

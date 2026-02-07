@@ -89,14 +89,26 @@ class ReindexSearchCommand extends Command
             $client = new Client(config('scout.typesense.client-settings'));
             $client->collections[$collectionName]->delete();
             $this->line("  - Deleted collection '{$collectionName}' to update schema");
-        } catch (\Exception $e) {
-            // Collection might not exist, which is fine
+        } catch (\Typesense\Exceptions\ObjectNotFound $e) {
+            // Collection doesn't exist yet, which is fine for first run
             $this->line("  - Collection '{$collectionName}' not found (will be created)");
+        } catch (\Exception $e) {
+            // Other errors (connection, auth, etc.) - log but continue
+            $this->warn("  - Could not delete collection '{$collectionName}': ".$e->getMessage());
         }
 
         // Import will recreate the collection with the current schema
         Artisan::call('scout:import', ['model' => $model]);
-        $this->line('  - Recreated collection with fresh schema and data');
+
+        // Verify collection was created
+        try {
+            $client = new Client(config('scout.typesense.client-settings'));
+            $collection = $client->collections[$collectionName]->retrieve();
+            $docCount = $collection['num_documents'] ?? 0;
+            $this->line("  - Recreated collection with fresh schema and data ({$docCount} documents)");
+        } catch (\Exception $e) {
+            $this->line('  - Recreated collection with fresh schema and data');
+        }
     }
 
     /**

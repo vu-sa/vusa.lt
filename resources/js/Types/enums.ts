@@ -1,3 +1,17 @@
+export enum ActionType {
+  Manual = "manual",
+  Approval = "approval",
+  Pickup = "pickup",
+  Return = "return",
+  AgendaCreation = "agenda_creation",
+  AgendaCompletion = "agenda_completion",
+  PeriodicityGap = "periodicity_gap",
+}
+export enum AgendaItemType {
+  Voting = "voting",
+  Informational = "informational",
+  Deferred = "deferred",
+}
 export enum AllowedFileablesEnum {
   "DUTY" = "duty",
   "INSTITUTION" = "institution",
@@ -8,6 +22,11 @@ export enum AllowedFileablesEnum {
 export enum AllowedRelationshipablesEnum {
   "INSTITUTION" = "institution",
   "TYPE" = "type",
+}
+export enum ApprovalDecision {
+  Approved = "approved",
+  Rejected = "rejected",
+  Cancelled = "cancelled",
 }
 export enum CRUDEnum {
   "CREATE" = "create",
@@ -22,6 +41,7 @@ export enum ContentPartEnum {
   "TIPTAP" = "tiptap",
   "HERO" = "hero",
   "SPOTIFY_EMBED" = "spotify-embed",
+  "SOCIAL_EMBED" = "social-embed",
   "FLOW_GRAPH" = "flow-graph",
   "NUMBER_STAT_SECTION" = "number-stat-section",
   "NEWS" = "news",
@@ -40,12 +60,16 @@ export enum LocaleEnum {
   "LT" = "lt",
   "EN" = "en",
 }
+export enum MeetingType {
+  InPerson = "in-person",
+  Remote = "remote",
+  Email = "email",
+}
 export enum ModelEnum {
   "AGENDA_ITEM" = "agendaItem",
   "BANNER" = "banner",
   "CALENDAR" = "calendar",
   "CATEGORY" = "category",
-  "CHANGELOG_ITEM" = "changelogItem",
   "COMMENT" = "comment",
   "DOCUMENT" = "document",
   "DUTIABLE" = "dutiable",
@@ -76,6 +100,34 @@ export enum ModelEnum {
   "TYPE" = "type",
   "USER" = "user",
 }
+export enum NewsLayoutEnum {
+  "MODERN" = "modern",
+  "CLASSIC" = "classic",
+  "IMMERSIVE" = "immersive",
+  "HEADLINE" = "headline",
+}
+export enum NotificationCategory {
+  Comment = "comment",
+  Task = "task",
+  Reservation = "reservation",
+  Meeting = "meeting",
+  Registration = "registration",
+  User = "user",
+  Duty = "duty",
+  System = "system",
+  News = "news",
+  Calendar = "calendar",
+}
+export enum NotificationChannel {
+  InApp = "in_app",
+  Push = "push",
+  EmailDigest = "email_digest",
+}
+export enum PageLayoutEnum {
+  "DEFAULT" = "default",
+  "WIDE" = "wide",
+  "FOCUSED" = "focused",
+}
 export enum PermissionScopeEnum {
   "OWN" = "own",
   "PADALINYS" = "padalinys",
@@ -86,6 +138,12 @@ export enum SearchableModelEnum {
   "PAGE" = "page",
   "DOCUMENT" = "document",
   "CALENDAR" = "calendar",
+  "PUBLIC_INSTITUTION" = "public_institution",
+  "PUBLIC_MEETING" = "public_meeting",
+  "MEETING" = "meeting",
+  "AGENDA_ITEM" = "agenda_item",
+  "RESOURCE" = "resource",
+  "INSTITUTION" = "institution",
 }
 export enum SharepointConfigEnum {
   "API_BASE_URL" = "https://graph.microsoft.com/v1.0/",
@@ -120,4 +178,9 @@ export enum SharepointScopeEnum {
   "ANONYMOUS" = "anonymous",
   "ORGANIZATION" = "organization",
   "USERS" = "users",
+}
+export enum VoteValue {
+  Positive = "positive",
+  Negative = "negative",
+  Neutral = "neutral",
 }

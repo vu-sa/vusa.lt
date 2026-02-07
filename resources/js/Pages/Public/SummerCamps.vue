@@ -119,12 +119,10 @@
               })
             "
           >
-            <NButton round quartenary size="small">
-              <template #icon>
-                <i-fluent-arrow-left-24-filled />
-              </template>
+            <Button variant="ghost" size="sm" class="rounded-full">
+              <i-fluent-arrow-left-24-filled />
               {{ $t("Grįžti") }}
-            </NButton>
+            </Button>
           </SmartLink>
           <h3 class="mb-0">{{ year }} {{ $t("m. pirmakursių stovyklos") }}</h3>
         </div>
@@ -171,9 +169,9 @@
             })
           "
         >
-          <NButton round tertiary>
+          <Button variant="ghost" class="rounded-full">
             {{ eventsYear }}
-          </NButton>
+          </Button>
         </SmartLink>
       </div>
     </div>
@@ -224,6 +222,7 @@ import { Link, usePage } from "@inertiajs/vue3";
 import { computed } from "vue";
 import { trans as $t } from "laravel-vue-i18n";
 
+import { Button } from "@/Components/ui/button";
 import { getFacultyName } from "@/Utils/String";
 import HeaderWithShapeDivider1 from "@/Components/Headers/HeaderWithShapeDivider1.vue";
 import SmartLink from "@/Components/Public/SmartLink.vue";

@@ -1,173 +1,59 @@
-# Storybook Setup & Configuration Guide
+# Storybook - AI Guidance
 
-This document provides comprehensive information about the Storybook setup for the vusa.lt project, including configuration, testing integration, and best practices.
+Quick reference for AI assistants working with Storybook in vusa.lt.
 
-## 🎯 Overview
+**For comprehensive documentation**: See [README.md](README.md) in this directory.
 
-Our Storybook setup provides:
-- **Component Documentation**: Interactive documentation for Vue components
-- **Visual Testing**: Browser-based component testing with Playwright
-- **Vitest Integration**: Run tests directly from Storybook UI
-- **Mock System**: Centralized mocking for Laravel dependencies
-- **TypeScript Support**: Full type safety for stories and tests
+## Quick Reference
 
-## 📁 Architecture
+### When to Use Storybook
 
-```
-.storybook/
-├── main.ts              # Core Storybook configuration
-├── preview.ts           # Global decorators and parameters
-├── vitest.setup.ts      # Test environment setup
-└── CLAUDE.md           # This documentation
+- **Visual components**: UI elements like buttons, modals, cards
+- **Interactive testing**: User flows that need browser environment
+- **Documentation**: Component showcase for team
+- **Accessibility testing**: Using a11y addon
 
-resources/js/mocks/
-├── inertia.mock.ts     # Inertia.js mocks (usePage, router, useForm)
-├── i18n.mock.ts        # Laravel Vue i18n mocks (trans, transChoice)
-└── route.mock.ts       # Ziggy route mocks
+**Don't use for**: Services, composables, utilities (use unit tests instead)
 
-resources/js/Components/
-└── **/*.stories.ts     # Component stories
-```
+## Mock System
 
-## ⚙️ Configuration Files
+### Available Mocks
 
-### `.storybook/main.ts`
+**Location**: `resources/js/mocks/` (NOT `.storybook/mocks/`)
 
-The main configuration follows official Vue3+Vite guidelines with essential customizations:
-
-```typescript
-export default {
-  stories: ["../resources/js/**/*.stories.@(js|jsx|mjs|ts|tsx)"],
-  addons: [
-    "@storybook/addon-docs",
-    "@storybook/addon-vitest", 
-    "@storybook/addon-a11y"
-  ],
-  framework: {
-    name: "@storybook/vue3-vite",
-    options: {}
-  },
-  // Critical: Alias configuration must match main vite.config.mts
-  async viteFinal(config) {
-    return mergeConfig(config, {
-      resolve: {
-        alias: {
-          "@": "/resources/js",
-          "ziggy-js": "/vendor/tightenco/ziggy/dist",
-        }
-      }
-    });
-  }
-}
-```
-
-**Key Points:**
-- ✅ Aliases must exactly match main Vite config (`"@": "/resources/js"`)
-- ✅ Uses minimal addon set for stability
-- ✅ TypeScript checking disabled for performance (`check: false`)
-
-### `vitest.config.ts` Integration
-
-The Vitest configuration includes a dedicated Storybook project:
-
-```typescript
-{
-  test: {
-    name: 'storybook',
-    browser: {
-      enabled: true,
-      provider: 'playwright',
-      instances: [{ browser: 'chromium' }],
-      headless: true
-    },
-    setupFiles: ['./.storybook/vitest.setup.ts']
-  }
-}
-```
-
-## 🔧 Mock System
-
-### Centralized Mocks
-
-All Laravel-specific dependencies are mocked in dedicated files:
-
-#### `@/mocks/inertia.mock.ts`
-```typescript
-export const usePage = vi.fn(() => ({
-  props: {
-    app: { locale: 'lt', subdomain: 'www', name: 'VU SA' },
-    auth: { user: null, can: {} },
-    flash: { success: null, error: null }
-  }
-}));
-
-export const router = {
-  visit: vi.fn(),
-  get: vi.fn(),
-  post: vi.fn(),
-  // ... other router methods
-};
-```
-
-#### `@/mocks/i18n.mock.ts`
-```typescript
-export const trans = vi.fn((key: string) => {
-  const translations = {
-    'Save': 'Išsaugoti',
-    'Cancel': 'Atšaukti',
-    // ... more translations
-  };
-  return translations[key] || key;
-});
-```
-
-#### `@/mocks/route.mock.ts`
-```typescript
-export const route = vi.fn((name: string, params?: any) => {
-  const routes = {
-    'users.index': '/mano/users',
-    'users.create': '/mano/users/create',
-    // ... more routes
-  };
-  return routes[name] || `/mocked-route/${name}`;
-});
-```
+- **`inertia.mock.ts`**: usePage, router, useForm
+- **`i18n.ts`**: trans, transChoice, $t - uses actual translations from `lang/*.json`
+- **`route.ts`**: route() function - returns predictable mock URLs
 
 ### Using Mocks in Stories
 
 ```typescript
 import { usePage, router } from "@/mocks/inertia.mock";
 
-// Override specific mock behavior
+// Override for specific test
 usePage.mockImplementation(() => ({
   props: {
-    auth: {
-      user: { id: 1, name: 'Test User' },
-      can: { create: { meeting: true } }
-    }
+    auth: { user: { id: 1, name: 'Test User' }, can: { create: { meeting: true } } },
+    flash: { success: 'Operation successful' }
   }
 }));
+
+// Note: $t() and route() are globally available via .storybook/preview.ts
+// They use real translations from lang/lt.json and lang/php_admin_lt.json
 ```
 
-## 📝 Writing Stories
+## Story Patterns
 
-### Basic Story Template
+### Basic Story
 
 ```typescript
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-import { fn } from 'storybook/test';
 import ComponentName from './ComponentName.vue';
 
 const meta: Meta<typeof ComponentName> = {
   title: 'Components/ComponentName',
   component: ComponentName,
-  tags: ['autodocs'],
-  argTypes: {
-    variant: { control: 'select', options: ['default', 'destructive'] }
-  },
-  args: {
-    onClick: fn()
-  }
+  tags: ['autodocs']
 };
 
 export default meta;
@@ -175,12 +61,12 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {
-    children: 'Button text'
+    title: 'Example Title'
   }
 };
 ```
 
-### Interactive Story with Testing
+### Interactive Story with Tests
 
 ```typescript
 import { userEvent, within } from 'storybook/test';
@@ -188,60 +74,46 @@ import { userEvent, within } from 'storybook/test';
 export const Interactive: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    
-    // Wait for component to render
-    await new Promise(resolve => setTimeout(resolve, 100));
-    
-    // Interact with component
+
     const button = canvas.getByRole('button');
     await userEvent.click(button);
-    
-    // Verify behavior
+
     await canvas.findByText('Expected result');
   }
 };
 ```
 
-## 🧪 Testing Integration
+## Troubleshooting
 
-### Running Tests
+### Issue: "Failed to resolve import '@/mocks/...'"
 
-```bash
-# Daily development (unit + component tests)
-npm run test
+**Cause**: Alias configuration mismatch
+**Solution**: Ensure `.storybook/main.ts` aliases match `vite.config.mts`
 
-# Storybook tests only
-npm run test:storybook
-
-# All tests including browser tests
-npm run test:all
-
-# Interactive Storybook with testing UI
-npm run storybook
+```typescript
+// .storybook/main.ts must have:
+resolve: {
+  alias: {
+    "@": "/resources/js",
+    "ziggy-js": "/vendor/tightenco/ziggy/dist"
+  }
+}
 ```
 
-### Test Environment
+### Issue: "Component stuck in loading state"
 
-- **Browser**: Chromium via Playwright
-- **Environment**: jsdom for component tests, real browser for stories
-- **Mocks**: Automatic setup via `vitest.setup.ts`
-- **Coverage**: Istanbul provider with 75% thresholds
+**Cause**: Component uses top-level await or async data fetching
+**Solution**: Make component accept data via props
 
-### Writing Testable Components
+```vue
+<!-- ❌ Avoid -->
+<script setup>
+const data = await fetch('/api/data');
+</script>
 
-**❌ Avoid:**
-```typescript
-// Top-level await makes component async and untestable
-const apiData = await fetch('/api/data');
-```
-
-**✅ Prefer:**
-```typescript
-// Props allow for dependency injection in tests
-const props = defineProps<{
-  data?: ApiData[];
-}>();
-
+<!-- ✅ Prefer -->
+<script setup>
+const props = defineProps<{ data?: ApiData[] }>();
 const data = ref(props.data || []);
 
 onMounted(async () => {
@@ -249,98 +121,148 @@ onMounted(async () => {
     data.value = await fetchApiData();
   }
 });
+</script>
 ```
 
-## 🎨 Story Categories
+### Issue: "Tests failing with undefined globals"
 
-### Component Organization
+**Cause**: Missing mock setup
+**Solution**: Ensure `vitest.setup.ts` properly configures mocks
 
+Use `globalThis` instead of `global`:
+
+```typescript
+// ✅ Correct
+globalThis.route = route;
+
+// ❌ Wrong
+global.route = route;
 ```
-Components/
-├── ui/                 # Base UI components (Button, Input, etc.)
-├── Alerts/            # Alert and notification components  
-├── AdminForms/        # Admin form components
-├── Public/            # Public-facing components
-└── Modals/           # Modal and dialog components
+
+### Issue: "Browser tests not running"
+
+**Cause**: Playwright browsers not installed
+**Solution**: Install Playwright browsers
+
+```bash
+npx playwright install
 ```
 
-### Story Naming Conventions
+### Issue: "Checkbox v-model not working"
 
-- **Title**: Use hierarchical structure (`Components/ui/Button`)
-- **Stories**: Descriptive names (`Default`, `WithIcon`, `Loading`)
-- **Interactive**: Suffix with interaction purpose (`WithValidation`, `UserFlow`)
+**Pattern**: Use `modelValue` prop, not `checked`
 
-## 🔍 Troubleshooting
+```vue
+<!-- ✅ Correct -->
+<Checkbox v-model="isChecked" />
 
-### Common Issues
+<!-- ❌ Wrong -->
+<Checkbox v-model:checked="isChecked" />
+```
 
-**1. "Failed to resolve import '@/mocks/...'"**
-- ✅ **Solution**: Ensure aliases in `.storybook/main.ts` match `vite.config.mts`
-- ✅ **Check**: Use `@/mocks/inertia.mock` (not `@/mocks/inertia`)
+## Configuration Gotchas
 
-**2. "Component stuck in loading state"**
-- ✅ **Solution**: Provide data via props instead of async fetching
-- ✅ **Pattern**: Make components testable with dependency injection
+### Alias Configuration
 
-**3. "Tests failing with undefined globals"**
-- ✅ **Solution**: Use `globalThis` instead of `global` in setup files
-- ✅ **Check**: Ensure proper mock setup in `vitest.setup.ts`
+**Critical**: Aliases in `.storybook/main.ts` **must** exactly match `vite.config.mts`
 
-**4. "Browser tests not running"**
-- ✅ **Solution**: Install Playwright browsers: `npx playwright install`
-- ✅ **Check**: Use modern `browser.instances` config (not deprecated `browser.name`)
+### Mock Import Paths
 
-### Debug Tips
+**Always use full mock file names**:
+- ✅ `@/mocks/inertia.mock`
+- ❌ `@/mocks/inertia` (missing `.mock`)
 
-1. **Use Storybook UI**: Click "Run tests" button to see detailed test results
-2. **Check Network**: Monitor failed requests in browser DevTools
-3. **Console Logs**: Add `console.log` in stories for debugging
-4. **Accessibility**: Use a11y addon to catch accessibility issues
+### Test Environment
 
-## 🚀 Best Practices
+- **Browser tests**: Chromium via Playwright
+- **Setup file**: `.storybook/vitest.setup.ts`
+- **Mocks**: Automatically applied globally
 
-### Story Writing
+## Best Practices for AI
 
-1. **Start Simple**: Create basic visual stories first
-2. **Add Interactions**: Use `play` functions for user interactions
-3. **Mock Dependencies**: Always mock external dependencies
-4. **Document Variants**: Cover all important component states
+### When Creating Stories
+
+1. **Start with basic visual story** (no interactions)
+2. **Add interactive tests** if component has user interactions
+3. **Mock all Laravel dependencies** (Inertia, i18n, routes)
+4. **Use dependency injection** (props) over async fetching
 
 ### Component Design
 
-1. **Dependency Injection**: Accept data via props when possible
-2. **Error Boundaries**: Handle loading and error states gracefully
-3. **Accessibility**: Use semantic HTML and ARIA attributes
-4. **TypeScript**: Provide proper prop types and interfaces
+1. **Accept data via props** when possible
+2. **Avoid top-level await** in components
+3. **Handle loading/error states** gracefully
+4. **Use semantic HTML** for accessibility
 
-### Performance
+### Testable Components
 
-1. **Lazy Loading**: Use `defineAsyncComponent` for heavy components
-2. **Mock Optimization**: Keep mocks simple and focused
-3. **Test Isolation**: Ensure tests don't interfere with each other
-4. **Bundle Size**: Monitor story compilation times
+```vue
+<!-- ✅ Good: Testable with dependency injection -->
+<script setup>
+const props = defineProps<{
+  users?: User[];
+  onSave?: (data: FormData) => void;
+}>();
 
-## 📚 Resources
+const users = ref(props.users || []);
+const handleSave = props.onSave || defaultSaveHandler;
+</script>
 
-- [Storybook Vue3+Vite Documentation](https://storybook.js.org/docs/get-started/frameworks/vue3-vite)
-- [Vitest Browser Mode](https://vitest.dev/guide/browser.html)
-- [Testing Library Vue](https://testing-library.com/docs/vue-testing-library/intro/)
-- [Playwright Documentation](https://playwright.dev/)
+<!-- ❌ Bad: Hard to test -->
+<script setup>
+const users = await fetchUsers(); // Top-level await
+const handleSave = () => {
+  axios.post('/api/save'); // Hard-coded dependency
+};
+</script>
+```
 
-## 🎯 Migration Notes
+## Running Tests
 
-### From Legacy Naive UI Tables
-- **Don't migrate** existing working tables unnecessarily
-- **Use TanStack** for new table features
-- **Stories benefit** from simplified component architecture
+```bash
+# Daily development (skips browser tests)
+npm run test
 
-### From Complex Components
-- **Refactor async components** to accept props
-- **Extract business logic** from presentation components  
-- **Use composition API** for better testability
+# Storybook tests only
+npm run test:storybook
+
+# All tests including browser
+npm run test:all
+
+# Interactive Storybook UI
+npm run storybook
+```
+
+## Quick Decision Tree
+
+```
+Need to test visual appearance? → Write Storybook story
+Need to test user interactions? → Write Storybook story with `play` function
+Need to test business logic? → Write unit test (*.test.ts)
+Need to test component API? → Write component test (*.component.test.ts)
+```
+
+## Debug Tips
+
+1. **Use Storybook UI**: Run tests directly in browser
+2. **Check console**: Look for mock-related errors
+3. **Verify mocks**: Log mock return values
+4. **Test isolation**: Clear mocks between stories
+
+```typescript
+import { beforeEach, vi } from 'vitest';
+
+beforeEach(() => {
+  vi.clearAllMocks();
+});
+```
 
 ---
 
-**Last Updated**: January 2025  
-**Storybook Version**: 9.1.0  
-**Vitest Version**: 3.2.4
+**See [README.md](./README.md) for**:
+
+- Complete configuration details
+- Story writing guide
+- Testing integration setup
+- Best practices guide
+- Migration notes

@@ -4,24 +4,24 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetTenantsForUpserts;
 use App\Http\Controllers\AdminController;
+use App\Models\Calendar;
 use App\Models\Institution;
 use App\Models\Meeting;
+use App\Models\News;
 use App\Models\Page;
-use App\Models\Pivots\AgendaItem;
 use App\Models\Resource;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\RelationshipService;
+use App\Services\ResourceServices\DutyService;
+use App\Settings\AtstovavimasSettings;
+use App\Settings\MeetingSettings;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
-
-// HACK: there's so much hacking here...
-// TODO: 1. Refactor, so the tenant selection and authorization is done in a middleware
-// TODO: 2. Non-existing tenants should 404
 
 class DashboardController extends AdminController
 {
@@ -30,82 +30,322 @@ class DashboardController extends AdminController
     public function index(Request $request)
     {
         $user = User::query()->find(Auth::id()) ?? abort(404);
-        $userTenantId = $user->current_duties->first()->institution->tenant_id ?? null;
+        $userTenantId = $user->current_duties->first()?->institution?->tenant_id;
 
         // TODO: for some reasoning, the chaining doesn't work
         $this->authorizer = $this->authorizer->forUser($user);
 
-        // Get task statistics for the dashboard
-        $taskStats = [
-            'completed' => $user->tasks()->where('completed_at', '!=', null)->count(),
-            'pending' => $user->tasks()->where('completed_at', null)->where('due_date', '>=', now())->count(),
-            'overdue' => $user->tasks()->where('completed_at', null)->where('due_date', '<', now())->count(),
-        ];
-
         // Get notification count
         $unreadNotificationsCount = $user->unreadNotifications()->count();
 
+        // Get task statistics for the dashboard
+        $taskStats = [
+            'total' => $user->tasks()->whereNull('completed_at')->count(),
+            'overdue' => $user->tasks()->whereNull('completed_at')->where('due_date', '<', now())->count(),
+            'dueSoon' => $user->tasks()->whereNull('completed_at')
+                ->where('due_date', '>=', now())
+                ->where('due_date', '<=', now()->addDays(7))
+                ->count(),
+        ];
+
+        // Get upcoming tasks (due within 14 days or overdue)
+        $upcomingTasks = $user->tasks()
+            ->whereNull('completed_at')
+            ->where(function ($query) {
+                $query->where('due_date', '<=', now()->addDays(14))
+                    ->orWhere('due_date', '<', now());
+            })
+            ->orderByRaw('CASE WHEN due_date < ? THEN 0 ELSE 1 END', [now()]) // Overdue first
+            ->orderBy('due_date')
+            ->with('taskable')
+            ->take(10)
+            ->get()
+            ->map(fn ($task) => [
+                'id' => $task->id,
+                'name' => $task->name,
+                'due_date' => $task->due_date?->toISOString(),
+                'is_overdue' => $task->isOverdue(),
+                'taskable_type' => class_basename($task->taskable_type ?? ''),
+                'taskable_id' => $task->taskable_id,
+                'action_type' => $task->action_type?->value,
+                'metadata' => $task->metadata,
+                'progress' => $task->getProgress(),
+                'can_be_manually_completed' => $task->canBeManuallyCompleted(),
+                'icon' => $task->icon,
+                'color' => $task->color,
+            ]);
+
+        // Get user's institutions and upcoming meetings
+        $userInstitutionIds = $user->current_duties->pluck('institution_id')->filter()->unique();
+
+        $upcomingMeetings = Meeting::query()
+            ->whereHas('institutions', fn ($q) => $q->whereIn('institutions.id', $userInstitutionIds))
+            ->where('start_time', '>', now())
+            ->where('start_time', '<', now()->addMonths(2))
+            ->orderBy('start_time')
+            ->with(['institutions:id,name'])
+            ->take(3)
+            ->get()
+            ->map(fn ($meeting) => [
+                'id' => $meeting->id,
+                'title' => $meeting->title,
+                'start_time' => $meeting->start_time->toISOString(),
+                'institution_name' => $meeting->institutions->first()?->name,
+            ]);
+
+        // Get institutions needing attention (overdue meetings based on periodicity)
+        $meetingSettings = app(MeetingSettings::class);
+        $excludedTypeIds = $meetingSettings->getExcludedInstitutionTypeIds();
+
+        $userInstitutions = Institution::query()
+            ->whereIn('id', $userInstitutionIds)
+            ->with(['meetings' => fn ($q) => $q->orderByDesc('start_time')->take(1), 'types'])
+            ->get()
+            ->filter(function ($institution) use ($excludedTypeIds) {
+                // Exclude institutions with excluded types
+                if ($excludedTypeIds->isNotEmpty()) {
+                    return $institution->types->pluck('id')->intersect($excludedTypeIds)->isEmpty();
+                }
+
+                return true;
+            });
+
+        $institutionsNeedingAttention = $userInstitutions
+            ->map(function ($institution) {
+                $lastMeeting = $institution->meetings->first();
+                $periodicity = $institution->meeting_periodicity_days ?? 30;
+
+                if (! $lastMeeting) {
+                    return [
+                        'id' => $institution->id,
+                        'name' => $institution->name,
+                        'days_since_last_meeting' => null,
+                        'periodicity' => $periodicity,
+                        'status' => 'no_meetings',
+                    ];
+                }
+
+                $daysSinceLastMeeting = (int) now()->diffInDays($lastMeeting->start_time);
+                $isOverdue = $daysSinceLastMeeting > $periodicity;
+                $isApproaching = ! $isOverdue && $daysSinceLastMeeting >= ($periodicity * 0.8);
+
+                if (! $isOverdue && ! $isApproaching) {
+                    return null;
+                }
+
+                return [
+                    'id' => $institution->id,
+                    'name' => $institution->name,
+                    'days_since_last_meeting' => $daysSinceLastMeeting,
+                    'periodicity' => $periodicity,
+                    'status' => $isOverdue ? 'overdue' : 'approaching',
+                    'last_meeting_date' => $lastMeeting->start_time->toISOString(),
+                ];
+            })
+            ->filter()
+            ->sortByDesc(fn ($i) => ($i['days_since_last_meeting'] ?? 999) - $i['periodicity'])
+            ->take(3)
+            ->values();
+
+        // Get upcoming calendar events (non-draft, future) - return full models for EventCard component
+        $upcomingCalendarEvents = Calendar::query()
+            ->where('is_draft', false)
+            ->where('date', '>=', now())
+            ->with(['tenant:id,shortname', 'category:id,name'])
+            ->orderBy('date')
+            ->take(3)
+            ->get();
+
+        // Get latest published news - return full models for NewsCard component
+        $locale = app()->getLocale();
+        $latestNews = News::query()
+            ->where('draft', false)
+            ->whereNotNull('publish_time')
+            ->where('publish_time', '<=', now())
+            ->where('lang', $locale)
+            ->with(['tenant:id,shortname,alias'])
+            ->orderByDesc('publish_time')
+            ->take(3)
+            ->get()
+            ->map(fn (News $news) => [
+                'id' => $news->id,
+                'title' => $news->title,
+                'permalink' => $news->permalink,
+                'lang' => $news->lang,
+                'publish_time' => $news->publish_time,
+                'image' => $news->getImageUrl(),
+                'tenant' => $news->tenant,
+            ]);
+
         return $this->inertiaResponse('Admin/ShowAdminHome', [
-            'taskStats' => $taskStats,
             'unreadNotificationsCount' => $unreadNotificationsCount,
             'hasNotifications' => $unreadNotificationsCount > 0,
-            'user' => $user,
+            'taskStats' => $taskStats,
+            'upcomingTasks' => $upcomingTasks,
+            'upcomingMeetings' => $upcomingMeetings,
+            'institutionsNeedingAttention' => $institutionsNeedingAttention,
+            'upcomingCalendarEvents' => $upcomingCalendarEvents,
+            'latestNews' => $latestNews,
         ]);
     }
 
     public function atstovavimas()
     {
-        $selectedTenant = request()->input('tenant_id');
+        // Get basic user info with duty institution IDs only
+        $user = User::query()->where('id', Auth::id())
+            ->with(['current_duties:id,name,institution_id'])
+            ->first();
 
-        $user = User::query()->where('id', Auth::id())->with('current_duties.institution.meetings.institutions:id,name')->first();
+        // Pre-load user's subscription data (followed and muted institution IDs)
+        $followedInstitutionIds = $user->followedInstitutions()->pluck('institutions.id');
+        $mutedInstitutionIds = $user->mutedInstitutions()->pluck('institutions.id');
 
-        // Leave only tenants that are not 'pkp'
-        $tenants = collect(GetTenantsForUpserts::execute('institutions.update.padalinys', $this->authorizer))->filter(function ($tenant) {
-            return $tenant['type'] !== 'pkp';
-        })->values();
+        // Get only user's directly assigned institutions (lightweight, always loaded)
+        $userInstitutions = DutyService::getUserInstitutionsForDashboard();
 
-        // Check if selected tenant is in the list of tenants
-        if ($selectedTenant) {
-            $selectedTenant = $tenants->firstWhere('id', $selectedTenant);
+        // Filter out institutions with excluded types (e.g., padalinys, pkp - institutions that don't have formal meetings)
+        $excludedTypeIds = app(\App\Settings\MeetingSettings::class)->getExcludedInstitutionTypeIds();
+        if ($excludedTypeIds->isNotEmpty()) {
+            $userInstitutions = $userInstitutions->filter(function ($institution) use ($excludedTypeIds) {
+                // Exclude institution if any of its types are in the excluded list
+                return $institution->types->pluck('id')->intersect($excludedTypeIds)->isEmpty();
+            })->values();
+        }
+
+        // Helper function to append computed attributes to institutions
+        $appendInstitutionAttributes = function ($institutions, $userInstitutionIds = null) use ($followedInstitutionIds, $mutedInstitutionIds) {
+            $institutions->each(function ($institution) use ($userInstitutionIds, $followedInstitutionIds, $mutedInstitutionIds) {
+                $institution->meetings?->each->append(['completion_status', 'has_report', 'has_protocol']);
+                // Add active_check_in from already-loaded checkIns
+                $institution->active_check_in = $institution->checkIns
+                    ?->where('end_date', '>=', now())
+                    ->where('start_date', '<=', now())
+                    ->first() ?? null;
+                // Append has_public_meetings for UI indicators (uses already-loaded types relation)
+                $institution->append('has_public_meetings');
+                // Append meeting_periodicity_days for overdue warnings (inherits from types, defaults to 30)
+                $institution->append('meeting_periodicity_days');
+
+                // Add subscription status for follow/mute UI
+                $institution->subscription = [
+                    'is_followed' => $followedInstitutionIds->contains($institution->id),
+                    'is_muted' => $mutedInstitutionIds->contains($institution->id),
+                    'is_duty_based' => $userInstitutionIds?->contains($institution->id) ?? false,
+                ];
+            });
+
+            return $institutions;
+        };
+
+        // Get user's duty-based institution IDs for subscription status
+        $userDutyInstitutionIds = $userInstitutions->pluck('id');
+
+        // Append computed attributes to user institutions (all duty-based for user's own institutions)
+        $appendInstitutionAttributes($userInstitutions, $userDutyInstitutionIds);
+
+        // Get available tenants for filtering - only for coordinators and admins
+        // Regular users should not see the tenant tab (they only see their assigned institutions)
+        $atstovavimasSettings = app(AtstovavimasSettings::class);
+        $visibleTenantIds = $atstovavimasSettings->getVisibleTenantIds($user);
+
+        if ($visibleTenantIds->isNotEmpty()) {
+            $availableTenants = Tenant::query()
+                ->whereIn('id', $visibleTenantIds)
+                ->where('type', '!=', 'pkp')
+                ->orderBy('shortname_vu')
+                ->get(['id', 'shortname', 'type'])
+                ->map(fn ($tenant) => [
+                    'id' => $tenant->id,
+                    'shortname' => __($tenant->shortname),
+                    'type' => $tenant->type,
+                ]);
         } else {
-            // Check if there's tenant with type 'pagrindinis'
-            $selectedTenant = $tenants->firstWhere('type', 'pagrindinis');
+            $availableTenants = collect();
         }
 
-        // If not, select first tenant
-        if (! $selectedTenant) {
-            $selectedTenant = $tenants->first();
-        }
-
-        if (! $selectedTenant) {
-            $providedTenant = null;
-        } elseif ($this->authorizer->isAllScope && request()->input('tenant_id') === '0') {
-            $providedTenant = Tenant::query()->with('institutions:id,name,tenant_id', 'institutions.meetings:id,title,start_time', 'institutions.duties.current_users:id,name', 'institutions.duties.types:id,title,slug')->get();
-
-            $providedTenant = [
-                'id' => 0,
-                'name' => 'Visi padaliniai',
-                'institutions' => $providedTenant->map(function ($tenant) {
-                    return $tenant->institutions;
-                })->flatten(1),
-            ];
-
-        } else {
-            $providedTenant = Tenant::query()->where('id', $selectedTenant['id'])->with('institutions:id,name,tenant_id', 'institutions.meetings:id,title,start_time', 'institutions.duties.current_users:id,name', 'institutions.duties.types:id,title,slug')->first();
-        }
+        // Quick check if user might have related institutions (without loading them)
+        // This enables the filter UI even when relatedInstitutions is lazy-loaded
+        $mayHaveRelatedInstitutions = $userInstitutions->isNotEmpty();
 
         return $this->inertiaResponse('Admin/Dashboard/ShowAtstovavimas', [
-            'user' => [...$user->toArray(),
-                'current_duties' => $user->current_duties->map(function ($duty) {
+            // User with institutions - always included, even in partial reloads (ensures check-in data stays fresh)
+            'user' => Inertia::always(fn () => [
+                ...$user->toArray(),
+                'current_duties' => $user->current_duties->map(function ($duty) use ($userInstitutions) {
+                    $institution = $userInstitutions->firstWhere('id', $duty->institution_id);
+
                     return [
                         ...$duty->toArray(),
-                        'institution' => $duty->institution?->append('relatedInstitutions'),
+                        'institution' => $institution,
                     ];
-                })],
-            'tenants' => $tenants->when($this->authorizer->isAllScope, function ($tenants) {
-                return $tenants->prepend(['id' => 0, 'shortname' => 'Visi padaliniai']);
+                }),
+            ]),
+            // User's own institutions - always included, even in partial reloads (ensures check-in data stays fresh)
+            'userInstitutions' => Inertia::always($userInstitutions->values()),
+            // Quick flag to show/hide related institutions filter (lazy data may not be loaded yet)
+            'mayHaveRelatedInstitutions' => $mayHaveRelatedInstitutions,
+            // Lazy load relatedInstitutions - only fetched when explicitly requested via Inertia reload
+            'relatedInstitutions' => Inertia::optional(function () use ($userInstitutions, $userDutyInstitutionIds, $followedInstitutionIds, $mutedInstitutionIds) {
+                /** @var Collection<int, Institution> $institutionCollection */
+                $institutionCollection = new Collection($userInstitutions->values()->all());
+                $relatedInstitutions = RelationshipService::getRelatedInstitutionsForMultiple(
+                    $institutionCollection
+                );
+
+                // Append computed attributes to related institution meetings
+                // Note: For unauthorized institutions, we skip completion_status as it triggers N+1 agendaItems load
+                $relatedInstitutions->each(function ($institution) use ($userDutyInstitutionIds, $followedInstitutionIds, $mutedInstitutionIds) {
+                    /** @var Institution&object{authorized?: bool, subscription?: array<string, bool>} $institution */
+                    $isAuthorized = ($institution->authorized ?? true) !== false;
+                    $institution->meetings->each(function ($meeting) use ($isAuthorized) {
+                        // Only append completion_status for authorized institutions (it lazy-loads agendaItems)
+                        if ($isAuthorized) {
+                            $meeting->append(['completion_status', 'has_report', 'has_protocol']);
+                        } else {
+                            $meeting->append(['has_report', 'has_protocol']);
+                        }
+                    });
+                    $institution->append('has_public_meetings');
+                    $institution->append('meeting_periodicity_days');
+
+                    // Add subscription status for related institutions
+                    // @phpstan-ignore property.notFound
+                    $institution->subscription = [
+                        'is_followed' => $followedInstitutionIds->contains($institution->id),
+                        'is_muted' => $mutedInstitutionIds->contains($institution->id),
+                        'is_duty_based' => $userDutyInstitutionIds->contains($institution->id),
+                    ];
+                });
+
+                return $relatedInstitutions->values();
+            })->once(),
+            // Lazy load tenant institutions - only fetched when tenant tab is opened
+            // Expects 'tenantIds' parameter in the reload request
+            'tenantInstitutions' => Inertia::lazy(function () use ($excludedTypeIds, $appendInstitutionAttributes, $userDutyInstitutionIds) {
+                $tenantIds = request()->input('tenantIds', []);
+                $institutions = DutyService::getInstitutionsForTenants($tenantIds, $this->authorizer);
+
+                // Apply same filtering as user institutions
+                if ($excludedTypeIds->isNotEmpty()) {
+                    $institutions = $institutions->filter(function ($institution) use ($excludedTypeIds) {
+                        return $institution->types->pluck('id')->intersect($excludedTypeIds)->isEmpty();
+                    })->values();
+                }
+
+                // Append computed attributes (pass userDutyInstitutionIds for subscription status)
+                $appendInstitutionAttributes($institutions, $userDutyInstitutionIds);
+
+                return $institutions->values();
             }),
-            'providedTenant' => $providedTenant,
+            // Lazy load representative activity stats - loaded together with tenantInstitutions
+            // Returns login activity stats and categorized user lists for the activity dashboard cards
+            'representativeActivity' => Inertia::lazy(function () {
+                $tenantIds = request()->input('tenantIds', []);
+
+                return DutyService::getRepresentativeActivityForTenants($tenantIds);
+            }),
+            'availableTenants' => $availableTenants,
+            // Note: recentMeetings is fetched via API endpoint: api.v1.admin.meetings.recent
         ]);
     }
 
@@ -178,7 +418,7 @@ class DashboardController extends AdminController
         } else {
             $providedTenant = Tenant::query()->where('id', $selectedTenant['id'])->with('reservations.resources', 'resources')->first();
 
-            $tenantResourceReservations = $providedTenant->resources->load('reservations.users')->pluck('reservations')->flatten()->unique('id')->values();
+            $tenantResourceReservations = $providedTenant->resources->load('reservations.users:id,name,email,profile_photo_path')->pluck('reservations')->flatten()->unique('id')->values();
 
             $tenantResourceReservations = new Collection($tenantResourceReservations);
         }
@@ -192,7 +432,7 @@ class DashboardController extends AdminController
             'tenants' => $tenants,
             'providedTenant' => $providedTenant ? [
                 ...$providedTenant->toArray(),
-                'reservations' => $providedTenant->reservations->load('resources.tenant', 'users')->append('isCompleted')->unique('id')->values(),
+                'reservations' => $providedTenant->reservations->load('resources.tenant', 'users:id,name,email,profile_photo_path')->append('isCompleted')->unique('id')->values(),
                 'activeReservations' => $tenantResourceReservations->append('isCompleted'),
             ] : null,
         ]);
@@ -210,6 +450,10 @@ class DashboardController extends AdminController
 
         return $this->inertiaResponse('Admin/ShowUserSettings', [
             'user' => $user->append('has_password')->toFullArray(),
+            'notificationPreferences' => $user->notification_preferences,
+            'notificationCategories' => \App\Enums\NotificationCategory::toOptions(),
+            'notificationChannels' => \App\Enums\NotificationChannel::toOptions(),
+            'availableDigestEmails' => $user->getAvailableDigestEmails(),
         ]);
     }
 
@@ -237,15 +481,135 @@ class DashboardController extends AdminController
         return redirect()->back()->with('success', 'Slaptažodis sėkmingai pakeistas.');
     }
 
-    public function userTasks()
+    public function updateNotificationPreferences(Request $request)
     {
         $user = User::find(Auth::id());
 
-        $tasks = $user->tasks->load('taskable', 'users');
+        $validated = $request->validate([
+            'channels' => 'nullable|array',
+            'channels.*' => 'nullable|array',
+            'channels.*.*' => 'boolean',
+            'digest_frequency_hours' => 'nullable|integer|min:1|max:24',
+            'digest_emails' => 'nullable|array',
+            'digest_emails.*' => 'email',
+            'muted_until' => 'nullable|date',
+            'reminder_settings' => 'nullable|array',
+            'reminder_settings.task_reminder_days' => 'nullable|array',
+            'reminder_settings.task_reminder_days.*' => 'integer|min:1',
+            'reminder_settings.meeting_reminder_hours' => 'nullable|array',
+            'reminder_settings.meeting_reminder_hours.*' => 'integer|min:1',
+            'reminder_settings.calendar_reminder_hours' => 'nullable|array',
+            'reminder_settings.calendar_reminder_hours.*' => 'integer|min:1',
+        ]);
+
+        $preferences = $user->notification_preferences;
+
+        if (isset($validated['channels'])) {
+            $preferences['channels'] = $validated['channels'];
+        }
+
+        if (isset($validated['digest_frequency_hours'])) {
+            $preferences['digest_frequency_hours'] = $validated['digest_frequency_hours'];
+        }
+
+        if (array_key_exists('digest_emails', $validated)) {
+            // Validate against available emails (only store valid ones)
+            $availableEmails = collect($user->getAvailableDigestEmails())->pluck('email')->toArray();
+            $preferences['digest_emails'] = array_values(array_intersect($validated['digest_emails'] ?? [], $availableEmails));
+        }
+
+        if (array_key_exists('muted_until', $validated)) {
+            $preferences['muted_until'] = $validated['muted_until'];
+        }
+
+        if (isset($validated['reminder_settings'])) {
+            $preferences['reminder_settings'] = array_merge(
+                $preferences['reminder_settings'] ?? [],
+                $validated['reminder_settings']
+            );
+        }
+
+        $user->notification_preferences = $preferences;
+        $user->save();
+
+        return $this->redirectBackWithSuccess('Pranešimų nustatymai išsaugoti.');
+    }
+
+    public function userTasks(Request $request)
+    {
+        $user = User::find(Auth::id());
+
+        $tasksQuery = $user->tasks()->with('taskable', 'users:id,name,email,profile_photo_path');
+
+        // Get task statistics (before any filtering for accurate counts)
+        $taskStats = [
+            'total' => (clone $tasksQuery)->whereNull('completed_at')->count(),
+            'completed' => (clone $tasksQuery)->whereNotNull('completed_at')->count(),
+            'overdue' => (clone $tasksQuery)->whereNull('completed_at')->where('due_date', '<', now())->count(),
+            'autoCompleting' => (clone $tasksQuery)->whereNull('completed_at')->whereNotNull('action_type')->where('action_type', '!=', 'manual')->count(),
+        ];
+
+        // Apply status filter
+        $status = $request->input('status', 'incomplete');
+
+        match ($status) {
+            'completed' => $tasksQuery->whereNotNull('completed_at'),
+            'incomplete' => $tasksQuery->whereNull('completed_at'),
+            default => null, // 'all' - no filter
+        };
+
+        // Apply ordering based on status filter
+        if ($status === 'completed') {
+            // Completed tasks: most recently completed first
+            $tasksQuery->latest('completed_at');
+        } else {
+            // Incomplete/all: overdue first, then by due date, then by creation date
+            $tasksQuery
+                // Put incomplete tasks first when showing all
+                ->orderByRaw('completed_at IS NOT NULL')
+                ->orderByRaw('CASE WHEN due_date IS NOT NULL AND due_date < ? THEN 0 ELSE 1 END', [now()])
+                ->orderBy('due_date')
+                ->latest('created_at');
+        }
+
+        // Paginate tasks
+        $perPage = $request->input('per_page', 20);
+        $paginatedTasks = $tasksQuery->paginate($perPage)->withQueryString();
+
+        // Transform tasks with computed properties
+        $tasks = $paginatedTasks->through(fn ($task) => [
+            'id' => $task->id,
+            'name' => $task->name,
+            'description' => $task->description,
+            'due_date' => $task->due_date?->toISOString(),
+            'completed_at' => $task->completed_at?->toISOString(),
+            'created_at' => $task->created_at?->toISOString(),
+            'action_type' => $task->action_type?->value,
+            'metadata' => $task->metadata,
+            'progress' => $task->getProgress(),
+            'is_overdue' => $task->isOverdue(),
+            'can_be_manually_completed' => $task->canBeManuallyCompleted(),
+            'icon' => $task->icon,
+            'color' => $task->color,
+            // Subject model - lightweight taskable info
+            'taskable' => $task->taskable ? [
+                'id' => $task->taskable->id,
+                'name' => $task->taskable->title ?? $task->taskable->name ?? null,
+                'type' => class_basename($task->taskable_type),
+            ] : null,
+            'taskable_type' => class_basename($task->taskable_type ?? ''),
+            'taskable_id' => $task->taskable_id,
+            'users' => $task->users->map(fn ($u) => [
+                'id' => $u->id,
+                'name' => $u->name,
+                'profile_photo_path' => $u->profile_photo_path,
+            ]),
+        ]);
 
         return $this->inertiaResponse('Admin/ShowTasks', [
             'tasks' => $tasks,
-            'taskableInstitutions' => Inertia::lazy(fn () => Institution::select('id', 'name')->withWhereHas('users:users.id,users.name,profile_photo_path,phone')->get()),
+            'taskStats' => $taskStats,
+            'status' => $status,
         ]);
     }
 
@@ -273,123 +637,5 @@ class DashboardController extends AdminController
         return $this->redirectBackWithSuccess('Ačiū už atsiliepimą!');
     }
 
-    public function atstovavimasSummary(Request $request, $date = null)
-    {
-        $selectedTenant = request()->input('tenant_id');
-
-        $date = $date ? $date : now()->toDateString();
-
-        // Leave only tenants that are not 'pkp'
-        $tenants = collect(GetTenantsForUpserts::execute('institutions.update.padalinys', $this->authorizer))->filter(function ($tenant) {
-            return $tenant['type'] !== 'pkp';
-        })->values();
-
-        // Check if selected tenant is in the list of tenants
-        if ($selectedTenant) {
-            $selectedTenant = $tenants->firstWhere('id', $selectedTenant);
-        } else {
-            // Check if there's tenant with type 'pagrindinis'
-            $selectedTenant = $tenants->firstWhere('type', 'pagrindinis');
-        }
-
-        // If not, select first tenant
-        if (! $selectedTenant) {
-            $selectedTenant = $tenants->first();
-        }
-
-        if (! $selectedTenant) {
-            $providedTenant = null;
-            $meetings = null;
-            // All tenants and all activities
-        } elseif ($this->authorizer->isAllScope && request()->input('tenant_id') === '0') {
-            $meetingsWithActivities = Meeting::query()
-                // NOTE: some dark magic doesn't allow to filter activities in this way. In certain cases,
-                // where there are no activity log that day for a meeting, it will exceed compute time of 30s.
-                // ->withWhereHas('activities', function ($query) use ($date) {
-                // $query->where('created_at', '>=', $date)->where('created_at', '<=', $date . ' 23:59:59');
-                // })
-                ->with(['institutions', 'activities.causer'])->get();
-
-            $agendaItemsWithActivities = AgendaItem::query()->withWhereHas('activities', function ($query) use ($date) {
-                $query->with('causer')->where('created_at', '>=', $date)->where('created_at', '<=', $date.' 23:59:59');
-            })->with('meeting.institutions')->get();
-
-            // Organize loaded activities by meeting
-            /** @var \Illuminate\Support\Collection<int, \App\Models\Meeting> $meetings */
-            $meetings = collect($meetingsWithActivities);
-
-            $agendaItemsWithActivities->each(function ($agendaItem) use (&$meetings) {
-                $meeting = $meetings->firstWhere('id', $agendaItem->meeting->id);
-                if ($meeting) {
-                    if (! $meeting->getAttribute('changedAgendaItems')) {
-                        $meeting->setAttribute('changedAgendaItems', collect());
-                    }
-                    $meeting->getAttribute('changedAgendaItems')->push($agendaItem);
-                } else {
-                    $agendaItem->meeting->setAttribute('changedAgendaItems', collect([$agendaItem]));
-                    $meetings->push($agendaItem->meeting);
-                }
-            });
-
-            $providedTenant = Tenant::query()->get();
-
-            $providedTenant = [
-                'id' => 0,
-                'shortname' => 'Visi padaliniai',
-                'institutions' => $providedTenant->map(function ($tenant) {
-                    return $tenant->institutions;
-                })->flatten(1),
-            ];
-
-            // Only one tenant meeting and agenda item activities
-        } else {
-            $meetingsWithActivities = Meeting::query()
-                ->withWhereHas('institutions', function ($query) use ($selectedTenant) {
-                    $query->where('tenant_id', $selectedTenant['id']);
-                })
-                // NOTE: some dark magic doesn't allow to filter activities in this way. In certain cases,
-                // where there are no activity log that day for a meeting, it will exceed compute time of 30s.
-                // ->withWhereHas('activities', function ($query) use ($date) {
-                // $query->where('created_at', '>=', $date)->where('created_at', '<=', $date . ' 23:59:59');
-                // })
-                ->with('activities.causer')
-                ->get();
-
-            $agendaItemsWithActivities = AgendaItem::query()->withWhereHas('meeting.institutions', function ($query) use ($selectedTenant) {
-                $query->where('tenant_id', $selectedTenant['id']);
-            })->withWhereHas('activities', function ($query) use ($date) {
-                $query->with('causer')->where('created_at', '>=', $date)->where('created_at', '<=', $date.' 23:59:59');
-            })->get();
-
-            // Organize loaded activities by meeting
-            /** @var \Illuminate\Support\Collection<int, \App\Models\Meeting> $meetings */
-            $meetings = collect($meetingsWithActivities);
-
-            $agendaItemsWithActivities->each(function ($agendaItem) use ($meetings) {
-                $meeting = $meetings->firstWhere('id', $agendaItem->meeting->id);
-                if ($meeting) {
-                    if (! $meeting->getAttribute('changedAgendaItems')) {
-                        $meeting->setAttribute('changedAgendaItems', collect());
-                    }
-                    $meeting->getAttribute('changedAgendaItems')->push($agendaItem);
-                } else {
-                    $agendaItem->meeting->setAttribute('changedAgendaItems', collect([$agendaItem]));
-                    $meetings->push($agendaItem->meeting);
-                }
-            });
-
-            $providedTenant = Tenant::query()->where('id', $selectedTenant['id'])->first();
-        }
-
-        // $user = User::query()->where('id', Auth::id())->with('current_duties.institution.meetings.institutions:id,name')->first();
-
-        return $this->inertiaResponse('Admin/Dashboard/ShowAtstovavimasActivity', [
-            'meetings' => $meetings->toArray(),
-            'date' => $date,
-            'tenants' => $tenants->when($this->authorizer->isAllScope, function ($tenants) {
-                return $tenants->prepend(['id' => 0, 'shortname' => 'Visi padaliniai']);
-            }),
-            'providedTenant' => $providedTenant,
-        ]);
-    }
+    // Removed atstovavimasSummary endpoint and related view as per simplification request.
 }

@@ -1,32 +1,67 @@
 <template>
   <AdminContentPage :title="role.name" :back-url="route('roles.index')">
-    <NCard title="Priskirti rolę pareigybėms" class="max-w-4xl">
-      <NTransfer ref="transfer" v-model:value="currentDuties" :options="flattenDutyOptions"
-        :render-source-list="renderSourceList" source-filterable :show-irrelevant-nodes="true" />
-      <template #action>
-        <NButton type="primary" class="mt-4" @click="handleDutyUpdate">
+    <Card class="max-w-4xl">
+      <CardHeader>
+        <CardTitle>Priskirti rolę pareigybėms</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <TransferList v-model="currentDuties" :options="flattenDutyOptions">
+          <template #source="{ filter }">
+            <Tree
+              v-model="currentDuties"
+              :items="dutyOptions"
+              :get-key="(item) => String(item.value)"
+              :get-label="(item) => item.label"
+              :is-item-disabled="(item) => item.checkboxDisabled ?? false"
+              :filter="filter"
+              multiple
+              class="p-1"
+            >
+              <template #item="{ item }">
+                <span class="inline-flex items-center gap-2">
+                  {{ item.label }}
+                  <a
+                    v-if="typeof item.value !== 'number'"
+                    target="_blank"
+                    :href="item.checkboxDisabled
+                      ? route('institutions.edit', item.value)
+                      : route('duties.edit', item.value)"
+                  >
+                    <Button variant="ghost" size="icon-xs" @click.stop>
+                      <Eye16Regular />
+                    </Button>
+                  </a>
+                </span>
+              </template>
+            </Tree>
+          </template>
+        </TransferList>
+      </CardContent>
+      <CardFooter>
+        <Button @click="handleDutyUpdate">
           Atnaujinti
-        </NButton>
-      </template>
-    </NCard>
-    <NCard>
-      <template #header>
-        Pasirinkti priskiriamus tipus
-      </template>
-      <NFormItem :span="6">
-        <NTransfer v-model:value="role.attachable_types" :options="allTypes.map((type) => ({
-          value: type.id,
-          label: type.title,
-          type: type,
-        }))
-          " />
-      </NFormItem>
-      <template #action>
-        <NButton type="primary" class="mt-4" @click="handleAttachableTypesUpdate">
+        </Button>
+      </CardFooter>
+    </Card>
+    <Card>
+      <CardHeader>
+        <CardTitle>Pasirinkti priskiriamus tipus</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <TransferList
+          v-model="role.attachable_types"
+          :options="allTypes.map((type) => ({
+            value: type.id,
+            label: type.title,
+          }))"
+        />
+      </CardContent>
+      <CardFooter>
+        <Button @click="handleAttachableTypesUpdate">
           Atnaujinti
-        </NButton>
-      </template>
-    </NCard>
+        </Button>
+      </CardFooter>
+    </Card>
     <h2 class="mt-4">
       Rolės teisės
     </h2>
@@ -34,20 +69,16 @@
   </AdminContentPage>
 </template>
 
-<script setup lang="tsx">
-import {
-  NButton,
-  NIcon,
-  NTransfer,
-  NTree,
-  type TransferRenderSourceList,
-  type TreeOption,
-} from "naive-ui";
-import { h, ref } from "vue";
+<script setup lang="ts">
+import { ref } from "vue";
 import { router } from "@inertiajs/vue3";
 
 import Eye16Regular from "~icons/fluent/eye16-regular"
 
+import { Button } from "@/Components/ui/button";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/Components/ui/card";
+import { TransferList } from "@/Components/ui/transfer-list";
+import { Tree } from "@/Components/ui/tree";
 import AdminContentPage from "@/Components/Layouts/AdminContentPage.vue";
 import RolePermissionForms from "@/Components/AdminForms/RolePermissionForms.vue";
 
@@ -58,7 +89,14 @@ const props = defineProps<{
   allAvailablePermissions: Record<string, string[]>;
 }>();
 
-const dutyOptions: TreeOption[] = props.tenantsWithDuties.map(
+interface DutyTreeOption {
+  label: string
+  value: string | number
+  checkboxDisabled?: boolean
+  children?: DutyTreeOption[]
+}
+
+const dutyOptions: DutyTreeOption[] = props.tenantsWithDuties.map(
   (tenant) => ({
     label: tenant.shortname,
     value: tenant.id,
@@ -75,63 +113,17 @@ const dutyOptions: TreeOption[] = props.tenantsWithDuties.map(
   }),
 );
 
-const renderLabel = ({ option }: { option: TreeOption }) => {
-  // jsx element
-  // if value is integer then it's a tenant and doesn't have additional button
-  if (typeof option.value === "number") {
-    return <span>{option.label}</span>;
-  }
-
-  // jsx element with button
-  // ! assumption that if checkbox is enabled then it's a duty
-  return (
-    <span class="inline-flex items-center gap-2">
-      {option.label}
-      <a
-        target="_blank"
-        href={
-          option.checkboxDisabled
-            ? route("institutions.edit", option.value)
-            : route("duties.edit", option.value)
-        }
-      >
-        <NButton size="tiny" text>
-          {{
-            icon: <NIcon component={Eye16Regular} />,
-          }}
-        </NButton>
-      </a>
-    </span>
-  );
-};
-
 const flattenDutyOptions = dutyOptions.flatMap(
   (tenant) =>
     tenant.children?.flatMap(
-      (institution) => institution.children?.map((duty) => duty),
-    ),
+      (institution) => institution.children?.map((duty) => ({
+        value: duty.value,
+        label: duty.label,
+      })) ?? [],
+    ) ?? [],
 );
 
 const currentDuties = ref(props.role.duties?.map((duty) => duty.id));
-
-// tsx render Ntree
-const renderSourceList: TransferRenderSourceList = ({ onCheck, pattern }) => {
-  return h(NTree, {
-    style: "margin: 0 4px;",
-    keyField: "value",
-    checkable: true,
-    selectable: false,
-    blockLine: true,
-    virtualScroll: true,
-    renderLabel: renderLabel,
-    data: dutyOptions,
-    pattern,
-    checkedKeys: currentDuties,
-    onUpdateCheckedKeys: (checkedKeys: Array<string | number>) => {
-      onCheck(checkedKeys);
-    },
-  });
-};
 
 const handleDutyUpdate = () => {
   router.put(

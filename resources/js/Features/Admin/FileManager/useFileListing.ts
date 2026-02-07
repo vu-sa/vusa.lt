@@ -25,13 +25,15 @@ export function useFileListing(initialPath = 'public/files') {
 
   async function fetch(path: string) {
     loading.value = true;
-    const { data } = await useFetch(route('files.getFiles', { path })).get().json();
+    const { data } = await useFetch(route('api.v1.admin.files.index', { path })).get().json();
 
-    filesRaw.value = (data.value?.files as FileEntry[]) ?? [];
-    directoriesRaw.value = (data.value?.directories as DirectoryEntry[]) ?? [];
-    currentPath.value = (data.value?.path as string) ?? path;
+    // Handle standardized API response format
+    const responseData = data.value?.success ? data.value.data : data.value;
+    filesRaw.value = (responseData?.files as FileEntry[]) ?? [];
+    directoriesRaw.value = (responseData?.directories as DirectoryEntry[]) ?? [];
+    currentPath.value = (responseData?.path as string) ?? path;
 
-    if (data.value?.redirected) {
+    if (responseData?.redirected) {
       router.reload({ only: ['flash'] });
     }
 

@@ -258,6 +258,117 @@ describe('model relationship operations', function () {
         ]);
     });
 
+    test('can store type relationship with scope', function () {
+        $data = [
+            'model_id' => $this->type->id,
+            'model_type' => Type::class,
+            'related_model_id' => $this->type->id,
+            'scope' => 'cross-tenant',
+        ];
+
+        asUser($this->admin)->post(route('relationships.storeModelRelationship', $this->relationship), $data)
+            ->assertRedirect(route('relationships.edit', $this->relationship))
+            ->assertSessionHas('success', 'Ryšys sukurtas sėkmingai.');
+
+        $this->assertDatabaseHas('relationshipables', [
+            'relationship_id' => $this->relationship->id,
+            'relationshipable_type' => Type::class,
+            'relationshipable_id' => $this->type->id,
+            'scope' => 'cross-tenant',
+        ]);
+    });
+
+    test('scope defaults to within-tenant for type relationships', function () {
+        $data = [
+            'model_id' => $this->type->id,
+            'model_type' => Type::class,
+            'related_model_id' => $this->type->id,
+            // No scope provided - should default to within-tenant
+        ];
+
+        asUser($this->admin)->post(route('relationships.storeModelRelationship', $this->relationship), $data)
+            ->assertRedirect(route('relationships.edit', $this->relationship));
+
+        $this->assertDatabaseHas('relationshipables', [
+            'relationship_id' => $this->relationship->id,
+            'relationshipable_type' => Type::class,
+            'relationshipable_id' => $this->type->id,
+            'scope' => 'within-tenant',
+        ]);
+    });
+
+    test('can store model relationship with bidirectional = true', function () {
+        $data = [
+            'model_id' => $this->institution->id,
+            'model_type' => Institution::class,
+            'related_model_id' => $this->relatedInstitution->id,
+            'bidirectional' => true,
+        ];
+
+        asUser($this->admin)->post(route('relationships.storeModelRelationship', $this->relationship), $data)
+            ->assertRedirect(route('relationships.edit', $this->relationship));
+
+        $this->assertDatabaseHas('relationshipables', [
+            'relationship_id' => $this->relationship->id,
+            'relationshipable_type' => Institution::class,
+            'relationshipable_id' => $this->institution->id,
+            'related_model_id' => $this->relatedInstitution->id,
+            'bidirectional' => true,
+        ]);
+    });
+
+    test('can store model relationship with bidirectional = false', function () {
+        $data = [
+            'model_id' => $this->institution->id,
+            'model_type' => Institution::class,
+            'related_model_id' => $this->relatedInstitution->id,
+            'bidirectional' => false,
+        ];
+
+        asUser($this->admin)->post(route('relationships.storeModelRelationship', $this->relationship), $data)
+            ->assertRedirect(route('relationships.edit', $this->relationship));
+
+        $this->assertDatabaseHas('relationshipables', [
+            'relationship_id' => $this->relationship->id,
+            'relationshipable_type' => Institution::class,
+            'relationshipable_id' => $this->institution->id,
+            'related_model_id' => $this->relatedInstitution->id,
+            'bidirectional' => false,
+        ]);
+    });
+
+    test('bidirectional defaults to false when not provided', function () {
+        $data = [
+            'model_id' => $this->institution->id,
+            'model_type' => Institution::class,
+            'related_model_id' => $this->relatedInstitution->id,
+            // No bidirectional provided - should default to false
+        ];
+
+        asUser($this->admin)->post(route('relationships.storeModelRelationship', $this->relationship), $data)
+            ->assertRedirect(route('relationships.edit', $this->relationship));
+
+        $this->assertDatabaseHas('relationshipables', [
+            'relationship_id' => $this->relationship->id,
+            'relationshipable_type' => Institution::class,
+            'relationshipable_id' => $this->institution->id,
+            'related_model_id' => $this->relatedInstitution->id,
+            'bidirectional' => false,
+        ]);
+    });
+
+    test('cannot store model relationship with invalid scope', function () {
+        $data = [
+            'model_id' => $this->type->id,
+            'model_type' => Type::class,
+            'related_model_id' => $this->type->id,
+            'scope' => 'invalid-scope',
+        ];
+
+        asUser($this->admin)->post(route('relationships.storeModelRelationship', $this->relationship), $data)
+            ->assertSessionHasErrors(['scope']);
+    });
+
     test('cannot store model relationship with invalid data', function () {
         $data = [
             'model_id' => '',
@@ -291,6 +402,53 @@ describe('model relationship operations', function () {
 
         $this->assertDatabaseMissing('relationshipables', [
             'id' => $relationshipable->id,
+        ]);
+    });
+
+    test('relationshipable model can be updated', function () {
+        // Create a relationshipable first
+        $relationshipable = new Relationshipable([
+            'relationship_id' => $this->relationship->id,
+            'relationshipable_type' => Institution::class,
+            'relationshipable_id' => $this->institution->id,
+            'related_model_id' => $this->relatedInstitution->id,
+            'bidirectional' => false,
+        ]);
+        $relationshipable->save();
+
+        // Update the bidirectional setting
+        asUser($this->admin)->patch(route('relationships.updateModelRelationship', ['relationshipable' => $relationshipable->id]), [
+            'bidirectional' => true,
+        ])->assertRedirect()->assertSessionHas('success');
+
+        $this->assertDatabaseHas('relationshipables', [
+            'id' => $relationshipable->id,
+            'bidirectional' => true,
+        ]);
+    });
+
+    test('relationshipable scope can be updated for type-based relationships', function () {
+        // Create a type-based relationshipable
+        $relationshipable = new Relationshipable([
+            'relationship_id' => $this->relationship->id,
+            'relationshipable_type' => Type::class,
+            'relationshipable_id' => $this->type->id,
+            'related_model_id' => $this->type->id,
+            'scope' => 'within-tenant',
+            'bidirectional' => false,
+        ]);
+        $relationshipable->save();
+
+        // Update scope
+        asUser($this->admin)->patch(route('relationships.updateModelRelationship', ['relationshipable' => $relationshipable->id]), [
+            'scope' => 'cross-tenant',
+            'bidirectional' => true,
+        ])->assertRedirect()->assertSessionHas('success');
+
+        $this->assertDatabaseHas('relationshipables', [
+            'id' => $relationshipable->id,
+            'scope' => 'cross-tenant',
+            'bidirectional' => true,
         ]);
     });
 });

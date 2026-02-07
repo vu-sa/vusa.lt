@@ -1,100 +1,253 @@
 <template>
-  <header class="relative overflow-hidden bg-gradient-to-br from-zinc-900 to-zinc-800 text-white"
-    :class="heroContainerClasses" :style="backgroundStyle">
-    <!-- Background Image Overlay -->
-    <div class="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/80"
-      :class="{ 'bg-gradient-to-br from-zinc-900/80 to-zinc-800/80': !hasImage }" />
-
-    <!-- Decorative Pattern for No Image State -->
-    <div v-if="!hasImage" class="absolute inset-0 opacity-10">
-      <svg class="h-full w-full" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <pattern id="calendar-pattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
-            <circle cx="10" cy="10" r="1.5" fill="currentColor" opacity="0.3" />
-            <rect x="5" y="5" width="10" height="10" fill="none" stroke="currentColor" opacity="0.2"
-              stroke-width="0.5" />
-          </pattern>
-        </defs>
-        <rect width="100%" height="100%" fill="url(#calendar-pattern)" />
-      </svg>
-    </div>
-
-    <!-- Breadcrumb Navigation -->
-    <nav class="relative z-20 bg-black/20 backdrop-blur-sm">
-      <div class="mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
-        <div class="flex items-center gap-2 text-sm font-medium text-white/80">
-          <Link :href="route('home', { lang: locale, subdomain: 'www' })" class="hover:text-red-300 transition-colors">
-          {{ $t("Pradžia") }}
-          </Link>
-          <IFluentChevronRight16Regular class="text-white/60" />
-          <Link :href="route('calendar.list', { lang: locale })" class="hover:text-red-300 transition-colors">
-          {{ $t("Kalendorius") }}
-          </Link>
-          <IFluentChevronRight16Regular class="text-white/60" />
-          <span class="text-white/90 truncate">{{ event.title }}</span>
+  <div class="event-hero-wrapper">
+    <!-- Desktop Hero (lg+) - Immersive full-bleed design -->
+    <header 
+      class="hidden lg:block relative overflow-hidden"
+      :class="heroContainerClasses"
+    >
+      <!-- Background Layer -->
+      <div class="absolute inset-0">
+        <!-- Image Background -->
+        <div 
+          v-if="hasImage" 
+          class="absolute inset-0 bg-cover bg-center"
+          :style="{ backgroundImage: `url(${heroImageUrl})` }"
+        />
+        
+        <!-- Gradient Placeholder for No Image -->
+        <div 
+          v-else 
+          class="absolute inset-0 bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900"
+        >
+          <!-- Animated mesh gradient overlay -->
+          <div class="absolute inset-0 opacity-60 bg-[radial-gradient(ellipse_80%_50%_at_20%_40%,rgba(189,28,38,0.3),transparent),radial-gradient(ellipse_60%_40%_at_80%_60%,rgba(189,28,38,0.15),transparent)]" />
+          
+          <!-- Geometric pattern -->
+          <svg class="absolute inset-0 w-full h-full opacity-[0.04]" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="hero-grid" width="60" height="60" patternUnits="userSpaceOnUse">
+                <path d="M 60 0 L 0 0 0 60" fill="none" stroke="white" stroke-width="0.5"/>
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#hero-grid)" />
+          </svg>
+          
+          <!-- Decorative accent shapes -->
+          <div class="absolute top-1/4 -right-20 w-80 h-80 rounded-full bg-vusa-red/10 blur-3xl" />
+          <div class="absolute -bottom-20 left-1/4 w-96 h-96 rounded-full bg-vusa-red/5 blur-3xl" />
         </div>
+        
+        <!-- Gradient overlay for text readability -->
+        <div class="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-black/40" />
       </div>
-    </nav>
 
-    <!-- Hero Content -->
-    <div class="absolute inset-0 flex items-end">
-      <div class="relative z-10 w-full">
-        <div class="mx-auto max-w-7xl px-4 pb-8 sm:px-6 lg:px-8">
+      <!-- Content Container - Absolute positioned at bottom -->
+      <div class="absolute inset-x-0 bottom-0 z-10 pb-10 lg:pb-14 px-8">
+        <div class="max-w-7xl mx-auto">
           <div class="max-w-4xl space-y-4">
-            <!-- Event Title -->
-            <h1 class="text-3xl font-extrabold leading-tight text-white sm:text-4xl lg:text-5xl xl:text-6xl">
-              <span class="drop-shadow-2xl">{{ event.title }}</span>
-            </h1>
-
-            <!-- Event Status Badge -->
-            <div v-if="eventStatus">
-              <span class="inline-flex items-center gap-1 rounded-full px-3 py-1 text-sm font-medium backdrop-blur-sm"
-                :class="statusBadgeClasses">
-                <Icon :icon="statusIcon" class="h-4 w-4" />
-                {{ eventStatus }}
-              </span>
-            </div>
-
-            <!-- Event Metadata -->
-            <div class="flex flex-wrap gap-2 lg:gap-6 text-white/90">
-              <!-- Date and Time -->
-              <div class="flex items-center gap-2 min-w-0">
-                <IFluentCalendarLtr20Regular class="flex-shrink-0 text-red-400" />
-                <span class="font-medium">
-                  {{ formattedDateTime }}
+              <!-- Category/Tenant badges -->
+              <div class="flex items-center gap-3">
+                <span 
+                  v-if="event.tenant" 
+                  class="px-3 py-1.5 text-xs font-medium rounded-full bg-vusa-red text-white"
+                >
+                  {{ event.tenant.shortname }}
+                </span>
+                <span 
+                  v-if="event.category" 
+                  class="px-3 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-full bg-white/20 text-white backdrop-blur-md border border-white/20"
+                >
+                  {{ event.category.name }}
                 </span>
               </div>
 
-              <!-- Location -->
-              <div v-if="event.location" class="flex items-center gap-2 min-w-0">
-                <IFluentLocation20Regular class="flex-shrink-0 text-red-400" />
-                <span class="truncate">{{ event.location }}</span>
+              <!-- Status Badge -->
+              <div v-if="eventStatus">
+                <span 
+                  class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-full backdrop-blur-md"
+                  :class="statusBadgeClasses"
+                >
+                  <span class="relative flex h-2.5 w-2.5">
+                    <span 
+                      v-if="isLive" 
+                      class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
+                      :class="statusPingClasses"
+                    />
+                    <span class="relative inline-flex rounded-full h-2.5 w-2.5" :class="statusDotClasses" />
+                  </span>
+                  {{ eventStatus }}
+                </span>
               </div>
 
-              <!-- Organizer -->
-              <div class="flex items-center gap-2 min-w-0">
-                <IFluentPeopleTeam20Regular class="flex-shrink-0 text-red-400" />
-                <span class="truncate">{{ event.organizer || event.tenant?.shortname }}</span>
+              <!-- Title -->
+              <h1 class="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-black leading-[1.05] text-white tracking-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
+                {{ event.title }}
+              </h1>
+
+              <!-- Metadata Row -->
+              <div class="flex flex-wrap items-center gap-x-6 gap-y-3 text-white">
+                <!-- Date -->
+                <div class="flex items-center gap-2.5 text-base">
+                  <div class="flex items-center justify-center w-9 h-9 rounded-xl bg-white/20 backdrop-blur-md">
+                    <IFluentCalendarLtr20Regular class="w-5 h-5 text-white" />
+                  </div>
+                  <span class="font-medium drop-shadow-sm">{{ formattedDateTime }}</span>
+                </div>
+                
+                <!-- Location -->
+                <a 
+                  v-if="event.location" 
+                  :href="`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(String(event.location))}`"
+                  target="_blank"
+                  class="flex items-center gap-2.5 text-base group"
+                >
+                  <div class="flex items-center justify-center w-9 h-9 rounded-xl bg-white/20 backdrop-blur-md group-hover:bg-white/30 transition-colors">
+                    <IFluentLocation20Regular class="w-5 h-5 text-white" />
+                  </div>
+                  <span class="font-medium underline-offset-2 group-hover:underline drop-shadow-sm">{{ event.location }}</span>
+                </a>
+                
+                <!-- Organizer -->
+                <div v-if="event.organizer" class="flex items-center gap-2.5 text-base">
+                  <div class="flex items-center justify-center w-9 h-9 rounded-xl bg-white/20 backdrop-blur-md">
+                    <IFluentPeopleTeam20Regular class="w-5 h-5 text-white" />
+                  </div>
+                  <span class="font-medium drop-shadow-sm">{{ event.organizer }}</span>
+                </div>
+              </div>
+
+              <!-- Action Buttons Slot -->
+              <div v-if="$slots.actions" class="pt-2">
+                <slot name="actions" />
               </div>
             </div>
           </div>
         </div>
+    </header>
+
+    <!-- Mobile Hero (< lg) - Clean stacked design -->
+    <div class="lg:hidden">
+      <!-- Image or gradient header -->
+      <div class="relative">
+        <div 
+          v-if="hasImage" 
+          class="aspect-[16/10] bg-zinc-200 dark:bg-zinc-800"
+        >
+          <img 
+            :src="heroImageUrl" 
+            :alt="String(event.title)"
+            class="w-full h-full object-cover"
+          >
+          <!-- Gradient fade at bottom -->
+          <div class="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-white dark:from-zinc-950 to-transparent" />
+        </div>
+        
+        <!-- Gradient header for no image -->
+        <div 
+          v-else 
+          class="relative h-40 sm:h-48 bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 overflow-hidden"
+        >
+          <!-- Subtle radial accent -->
+          <div class="absolute inset-0 bg-[radial-gradient(ellipse_100%_100%_at_50%_0%,rgba(189,28,38,0.2),transparent)]" />
+          
+          <!-- Grid pattern -->
+          <svg class="absolute inset-0 w-full h-full opacity-[0.06]" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="mobile-hero-grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" stroke-width="0.5"/>
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#mobile-hero-grid)" />
+          </svg>
+          
+          <!-- Category/Tenant badges -->
+          <div class="absolute top-4 left-4 flex items-center gap-2">
+            <span 
+              v-if="event.category" 
+              class="px-2.5 py-1 text-xs font-semibold uppercase tracking-wide rounded-full bg-white/10 text-white/90 backdrop-blur-sm"
+            >
+              {{ event.category.name }}
+            </span>
+            <span 
+              v-if="event.tenant" 
+              class="px-2.5 py-1 text-xs font-medium rounded-full bg-vusa-red text-white"
+            >
+              {{ event.tenant.shortname }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Content section -->
+      <div class="px-6 sm:px-8 -mt-4 relative z-10" :class="{ 'pt-4': !hasImage }">
+        <!-- Status Badge -->
+        <div v-if="eventStatus" class="mb-4">
+          <span 
+            class="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-semibold rounded-full"
+            :class="mobileStatusBadgeClasses"
+          >
+            <span class="relative flex h-2 w-2">
+              <span 
+                v-if="isLive" 
+                class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
+                :class="mobileStatusPingClasses"
+              />
+              <span class="relative inline-flex rounded-full h-2 w-2" :class="mobileStatusDotClasses" />
+            </span>
+            {{ eventStatus }}
+          </span>
+        </div>
+
+        <!-- Title -->
+        <h1 class="text-2xl sm:text-3xl font-extrabold leading-tight text-zinc-900 dark:text-zinc-100 mb-6">
+          {{ event.title }}
+        </h1>
+
+        <!-- Metadata -->
+        <div class="space-y-4 text-sm mb-6">
+          <!-- Date -->
+          <div class="flex items-center gap-3 text-zinc-700 dark:text-zinc-300">
+            <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-vusa-red/10 dark:bg-vusa-red/20">
+              <IFluentCalendarLtr20Regular class="w-5 h-5 text-vusa-red" />
+            </div>
+            <span class="font-medium">{{ formattedDateTime }}</span>
+          </div>
+          
+          <!-- Location -->
+          <a 
+            v-if="event.location"
+            :href="`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(String(event.location))}`"
+            target="_blank"
+            class="flex items-center gap-3 text-zinc-700 dark:text-zinc-300 group"
+          >
+            <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-vusa-red/10 dark:bg-vusa-red/20 group-hover:bg-vusa-red/20 dark:group-hover:bg-vusa-red/30 transition-colors">
+              <IFluentLocation20Regular class="w-5 h-5 text-vusa-red" />
+            </div>
+            <span class="font-medium underline-offset-2 group-hover:underline">{{ event.location }}</span>
+          </a>
+          
+          <!-- Organizer -->
+          <div v-if="event.organizer || event.tenant" class="flex items-center gap-3 text-zinc-700 dark:text-zinc-300">
+            <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-vusa-red/10 dark:bg-vusa-red/20">
+              <IFluentPeopleTeam20Regular class="w-5 h-5 text-vusa-red" />
+            </div>
+            <span class="font-medium">{{ event.organizer || event.tenant?.shortname }}</span>
+          </div>
+        </div>
+
+        <!-- Action Buttons Slot -->
+        <div v-if="$slots.actions" class="pt-4 pb-2">
+          <slot name="actions" />
+        </div>
       </div>
     </div>
-
-    <!-- Image Attribution (if applicable) -->
-    <div v-if="hasImage && (event as any).images?.[0]?.attribution"
-      class="absolute bottom-2 right-2 z-20 text-xs text-white/60 bg-black/30 backdrop-blur-sm px-2 py-1 rounded">
-      {{ (event as any).images[0].attribution }}
-    </div>
-  </header>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
 import { trans as $t } from 'laravel-vue-i18n'
-import { Link, usePage } from '@inertiajs/vue3'
-import { Icon } from '@iconify/vue'
+import { usePage } from '@inertiajs/vue3'
 
 import { formatDateRange } from '@/Utils/IntlTime'
 
@@ -106,41 +259,20 @@ const props = defineProps<Props>()
 const page = usePage()
 const locale = computed(() => page.props.app.locale)
 
+// Get hero image URL - uses main_image_url accessor with fallback
+const heroImageUrl = computed(() => {
+  return (props.event as any).main_image_url || null
+})
+
 // Check if event has hero image
-const hasImage = computed(() => {
-  // Handle both array and object types temporarily until types are fixed
-  const { images } = (props.event as any)
-  return images && (Array.isArray(images) ? images.length > 0 : true)
-})
+const hasImage = computed(() => !!heroImageUrl.value)
 
-// Background style computation
-const backgroundStyle = computed(() => {
-  if (!hasImage.value) {
-    return {}
-  }
-
-  const { images } = (props.event as any)
-  const imageUrl = Array.isArray(images) && images.length > 0
-    ? images[0].original_url
-    : images?.original_url
-
-  if (!imageUrl) return {}
-
-  return {
-    backgroundImage: `url(${imageUrl})`,
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-    backgroundRepeat: 'no-repeat',
-  }
-})
-
-// Responsive height classes with proper aspect ratio
+// Responsive height classes - taller hero for impact
 const heroContainerClasses = computed(() => {
-  // Use aspect ratio classes for better consistency
   if (hasImage.value) {
-    return 'aspect-[16/9] min-h-[400px] max-h-[600px] lg:aspect-[21/9] lg:min-h-[500px]'
+    return 'min-h-[480px] lg:min-h-[560px] xl:min-h-[640px]'
   } else {
-    return 'aspect-[16/9] min-h-[400px] max-h-[500px] lg:aspect-[21/9]'
+    return 'min-h-[420px] lg:min-h-[500px] xl:min-h-[560px]'
   }
 })
 
@@ -153,83 +285,95 @@ const formattedDateTime = computed(() => {
 })
 
 // Event status computation
-const eventStatus = computed(() => {
-  const now = new Date()
-  const eventDate = new Date(props.event.date)
-  const endDate = props.event.end_date ? new Date(props.event.end_date) : eventDate
+const now = computed(() => new Date())
+const eventDate = computed(() => new Date(props.event.date))
+const endDate = computed(() => props.event.end_date ? new Date(props.event.end_date) : eventDate.value)
 
-  if (endDate < now) {
+const isPast = computed(() => endDate.value < now.value)
+const isLive = computed(() => eventDate.value <= now.value && endDate.value >= now.value)
+const isUpcoming = computed(() => eventDate.value > now.value)
+
+const eventStatus = computed(() => {
+  if (isPast.value) {
     return $t('Renginys įvyko')
-  } else if (eventDate <= now && endDate >= now) {
-    return $t('Renginys vyksta')
-  } else if (eventDate > now) {
-    const timeDiff = eventDate.getTime() - now.getTime()
+  } else if (isLive.value) {
+    return $t('Vyksta dabar')
+  } else if (isUpcoming.value) {
+    const timeDiff = eventDate.value.getTime() - now.value.getTime()
     const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24))
 
     if (daysDiff === 0) {
-      return $t('Renginys šiandien')
+      return $t('Šiandien')
     } else if (daysDiff === 1) {
-      return $t('Renginys rytoj')
+      return $t('Rytoj')
     } else if (daysDiff <= 7) {
-      return $t('Renginys šią savaitę')
+      return $t('Šią savaitę')
     }
+    return $t('Netrukus')
   }
-
   return null
 })
 
-// Status badge classes
+// Desktop status badge styling
 const statusBadgeClasses = computed(() => {
-  const now = new Date()
-  const eventDate = new Date(props.event.date)
-  const endDate = props.event.end_date ? new Date(props.event.end_date) : eventDate
-
-  if (endDate < now) {
-    return 'bg-zinc-500/80 text-zinc-100'
-  } else if (eventDate <= now && endDate >= now) {
-    return 'bg-green-500/80 text-white'
+  if (isPast.value) {
+    return 'bg-zinc-500/30 text-zinc-200 border border-zinc-500/30'
+  } else if (isLive.value) {
+    return 'bg-emerald-500/30 text-emerald-200 border border-emerald-500/30'
   } else {
-    return 'bg-red-500/80 text-white'
+    return 'bg-vusa-red/30 text-red-200 border border-vusa-red/30'
   }
 })
 
-// Status icon component
-const statusIcon = computed(() => {
-  const now = new Date()
-  const eventDate = new Date(props.event.date)
-  const endDate = props.event.end_date ? new Date(props.event.end_date) : eventDate
+const statusDotClasses = computed(() => {
+  if (isPast.value) return 'bg-zinc-400'
+  if (isLive.value) return 'bg-emerald-400'
+  return 'bg-vusa-red'
+})
 
-  if (endDate < now) {
-    return 'fluent:checkmark-circle-20-regular'
-  } else if (eventDate <= now && endDate >= now) {
-    return 'fluent:play-20-filled'
+const statusPingClasses = computed(() => {
+  if (isLive.value) return 'bg-emerald-400'
+  return 'bg-vusa-red'
+})
+
+// Mobile status badge styling
+const mobileStatusBadgeClasses = computed(() => {
+  if (isPast.value) {
+    return 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400'
+  } else if (isLive.value) {
+    return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400'
   } else {
-    return 'fluent:person-add-20-regular'
+    return 'bg-vusa-red/10 text-vusa-red dark:bg-vusa-red/20'
   }
+})
+
+const mobileStatusDotClasses = computed(() => {
+  if (isPast.value) return 'bg-zinc-400 dark:bg-zinc-500'
+  if (isLive.value) return 'bg-emerald-500'
+  return 'bg-vusa-red'
+})
+
+const mobileStatusPingClasses = computed(() => {
+  if (isLive.value) return 'bg-emerald-500'
+  return 'bg-vusa-red'
 })
 </script>
 
 <style scoped>
-/* Ensure proper contrast for text over images */
-.drop-shadow-2xl {
-  filter: drop-shadow(0 25px 25px rgb(0 0 0 / 0.15)) drop-shadow(0 10px 10px rgb(0 0 0 / 0.1)) drop-shadow(0 4px 6px rgb(0 0 0 / 0.1));
-}
-
-/* Smooth transitions for interactive elements */
-.transition-colors {
-  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
-}
-
-/* Backdrop blur support */
-.backdrop-blur-sm {
-  backdrop-filter: blur(4px);
-}
-
-/* Ensure hero takes full width without container padding */
-header {
+/* Full-bleed hero - breaks out of wrapper grid */
+.event-hero-wrapper {
   width: 100vw;
-  margin-left: calc(-50vw + 50%);
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+}
+
+/* Smooth reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .animate-ping {
+    animation: none;
+  }
 }
 </style>

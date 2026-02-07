@@ -42,6 +42,10 @@ class AppServiceProvider extends ServiceProvider
     {
         Schema::defaultStringLength(125);
 
+        // Load translations from split directories (shared, admin, public)
+        // Laravel will merge these with the default translations
+        $this->loadSplitTranslations();
+
         // Needed for json_content in Content model
         TrimStrings::skipWhen(function (Request $request) {
             return $request->is('mano/*');
@@ -72,6 +76,36 @@ class AppServiceProvider extends ServiceProvider
         } elseif ($tag instanceof Collection) {
             foreach ($tag as $item) {
                 $this->addInertiaAttribute($item);
+            }
+        }
+    }
+
+    /**
+     * Load translations from the split directory structure.
+     *
+     * Translations are organized in:
+     * - lang/shared/{locale}/ - Shared between admin and public
+     * - lang/admin/{locale}/ - Admin-only translations
+     * - lang/public/{locale}/ - Public-only translations
+     *
+     * All are loaded for Laravel backend (which needs all translations).
+     * The Vite plugin handles splitting for frontend bundles.
+     */
+    private function loadSplitTranslations(): void
+    {
+        $langPath = lang_path();
+        $directories = ['shared', 'admin', 'public'];
+
+        // Get the file loader from the translator
+        $loader = $this->app['translation.loader'];
+
+        foreach ($directories as $dir) {
+            $path = $langPath.'/'.$dir;
+
+            if (is_dir($path)) {
+                // Add this path as an additional translation path
+                // The loader will look here for translations
+                $loader->addPath($path);
             }
         }
     }

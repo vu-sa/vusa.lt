@@ -14,8 +14,6 @@ class NewsController extends PublicController
         $this->getBanners();
         $this->getTenantLinks();
 
-        $image = $news->getImageUrl();
-
         $other_lang_page = $news->other_language_news;
 
         Inertia::share('otherLangURL', $other_lang_page ? route(
@@ -29,18 +27,42 @@ class NewsController extends PublicController
         ) : null);
 
         // Get description for SEO, prioritizing 'short' field over tiptap content
+        // Pass the news article's tenant for proper canonical URL
         $seo = $this->shareAndReturnSEOObject(
-            title: $news->title.' - '.$this->tenant->shortname,
+            contentTenant: $news->tenant,
+            title: $news->title.' - '.$news->tenant->shortname,
             description: ContentHelper::getDescriptionForSeo($news),
             author: $news->tenant->shortname,
-            image: $news->image,
+            image: $news->getImageUrl(),
             published_time: $news->publish_time,
             modified_time: $news->updated_at,
         );
 
+        // Fetch related articles from the same tenant
+        $relatedArticles = News::where('tenant_id', $news->tenant_id)
+            ->where('id', '!=', $news->id)
+            ->where('lang', $news->lang)
+            ->where('draft', false)
+            ->where('publish_time', '<=', now())
+            ->orderByDesc('publish_time')
+            ->take(3)
+            ->get(['id', 'title', 'permalink', 'publish_time', 'lang'])
+            ->map(fn ($article) => [
+                'id' => $article->id,
+                'title' => $article->title,
+                'permalink' => $article->permalink,
+                'publish_time' => $article->publish_time,
+                'url' => route('news', [
+                    'subdomain' => $this->subdomain,
+                    'lang' => $article->lang,
+                    'newsString' => $article->lang === 'lt' ? 'naujiena' : 'news',
+                    'news' => $article->permalink,
+                ]),
+            ]);
+
         return Inertia::render('Public/NewsPage', [
             'article' => [
-                ...$news->only('id', 'title', 'short', 'lang', 'other_lang_id', 'permalink', 'publish_time', 'category', 'content', 'image_author', 'important', 'main_points', 'read_more'),
+                ...$news->only('id', 'title', 'short', 'lang', 'other_lang_id', 'permalink', 'publish_time', 'category', 'content', 'image_author', 'important', 'main_points', 'read_more', 'layout', 'highlights'),
                 'tags' => $news->tags->map(function ($tag) {
                     return [
                         'id' => $tag->id,
@@ -57,9 +79,11 @@ class NewsController extends PublicController
                 /*        ]; */
                 /*    }), */
                 /* ], */
-                'image' => $image,
+                // Use getImageUrl() for public display with fallback for missing images
+                'image' => $news->getImageUrl(),
                 'tenant' => $news->tenant->shortname,
             ],
+            'relatedArticles' => $relatedArticles,
         ])->withViewData([
             'SEOData' => $seo,
             'JSONLD_Schemas' => [$news->toNewsArticleSchema()],
@@ -109,7 +133,9 @@ class NewsController extends PublicController
                 ->first();
         }
 
+        // Pass the current tenant for proper canonical URL
         $seo = $this->shareAndReturnSEOObject(
+            contentTenant: $this->tenant,
             title: $currentTag
                 ? "{$this->tenant->shortname} naujienos - {$currentTag->name}"
                 : "{$this->tenant->shortname} naujienų archyvas",
@@ -117,6 +143,9 @@ class NewsController extends PublicController
                 ? "Naršyk per {$this->tenant->shortname} naujienas pagal žymą '{$currentTag->name}'"
                 : "Naršyk per visas {$this->tenant->shortname} naujienas"
         );
+
+        // Share pagination SEO metadata for rel=next/prev links
+        $this->sharePaginationSeoMeta($news, $this->tenant);
 
         return Inertia::render('Public/NewsArchive', [
             'news' => $news,

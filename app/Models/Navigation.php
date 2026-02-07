@@ -37,9 +37,12 @@ class Navigation extends Model
 
     protected $hidden = ['created_at', 'updated_at'];
 
-    protected $casts = [
-        'extra_attributes' => 'array',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'extra_attributes' => 'array',
+        ];
+    }
 
     protected static function booted()
     {

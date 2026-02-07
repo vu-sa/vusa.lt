@@ -7,42 +7,39 @@
       <template #description>
         Pagrindinė informacija apie registracijos formą.
       </template>
-      <NFormItem required>
-        <template #label>
-          <span class="inline-flex items-center gap-1">
-            <NIcon :component="Icons.TITLE" />
-            Pavadinimas
-          </span>
-        </template>
+      <FormFieldWrapper id="name" label="Pavadinimas" required>
         <MultiLocaleInput v-model:input="form.name" />
-      </NFormItem>
+      </FormFieldWrapper>
 
-      <NFormItem>
-        <template #label>
-          <div class="inline-flex items-center gap-2">
-            Aprašymas
-            <SimpleLocaleButton v-model:locale="locale" />
-          </div>
-        </template>
-        <TipTap v-if="locale === 'lt'" v-model="form.description.lt" html />
-        <TipTap v-else v-model="form.description.en" html />
-      </NFormItem>
-      <NFormItem>
-        <template #label>
-          <span class="inline-flex items-center gap-1">
-            Nuoroda
-          </span>
-        </template>
+      <div class="space-y-2">
+        <Label class="inline-flex items-center gap-2">
+          Aprašymas
+          <SimpleLocaleButton v-model:locale="locale" />
+        </Label>
+        <TiptapEditor v-if="locale === 'lt'" v-model="form.description.lt" preset="full" :html="true" />
+        <TiptapEditor v-else v-model="form.description.en" preset="full" :html="true" />
+      </div>
+
+      <FormFieldWrapper id="path" label="Nuoroda">
         <MultiLocaleInput v-model:input="form.path" />
-      </NFormItem>
-      <NFormItem v-if="assignableTenants && assignableTenants.length > 0" label="Padalinys">
-        <NSelect v-model:value="form.tenant_id" :options="assignableTenants" label-field="shortname" value-field="id"
-          placeholder="VU SA ..." :default-value="assignableTenants[0].id ?? ''" />
-      </NFormItem>
-      <NFormItem label="Formos paskelbimo laikas">
-        <NDatePicker v-model:value="form.publish_time" placeholder="Data..." type="datetime"
-          value-format="yyyy-MM-dd'T'HH:mm:ss.SSSxxx" />
-      </NFormItem>
+      </FormFieldWrapper>
+
+      <FormFieldWrapper v-if="assignableTenants && assignableTenants.length > 0" id="tenant_id" label="Padalinys">
+        <Select v-model="tenantIdString">
+          <SelectTrigger>
+            <SelectValue placeholder="VU SA ..." />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem v-for="tenant in assignableTenants" :key="tenant.id" :value="String(tenant.id)">
+              {{ tenant.shortname }}
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </FormFieldWrapper>
+
+      <FormFieldWrapper id="publish_time" label="Formos paskelbimo laikas">
+        <DateTimePicker v-model="publishTimeDate" placeholder="Data..." @change="onPublishTimeChange" />
+      </FormFieldWrapper>
     </FormElement>
 
     <FormElement>
@@ -72,27 +69,21 @@
             </div>
             <span class="my-1">{{ model.label?.lt }}</span>
             <div class="flex justify-end gap-2">
-              <NButton size="tiny" @click="handleEditFormField(model)">
-                <template #icon>
-                  <IFluentEdit24Filled />
-                </template>
-              </NButton>
-              <NButton size="tiny" :disabled="hasRegistrations" @click="handleDeleteFormField(model)">
-                <template #icon>
-                  <IFluentDelete24Filled color="red" />
-                </template>
-              </NButton>
+              <Button size="icon-xs" variant="ghost" @click="handleEditFormField(model)">
+                <IFluentEdit24Filled />
+              </Button>
+              <Button size="icon-xs" variant="ghost" :disabled="hasRegistrations" @click="handleDeleteFormField(model)">
+                <IFluentDelete24Filled class="text-red-500" />
+              </Button>
             </div>
           </div>
         </template>
       </SortableFormFieldsTable>
       <div class="mt-4">
-        <NButton type="primary" :disabled="hasRegistrations" @click="handleNewFormFieldCreate">
-          <template #icon>
-            <IFluentAdd24Filled />
-          </template>
+        <Button :disabled="hasRegistrations" @click="handleNewFormFieldCreate">
+          <IFluentAdd24Filled />
           {{ $t("forms.add") }}
-        </NButton>
+        </Button>
       </div>
     </FormElement>
     <CardModal v-model:show="showFormFieldModal" title="Formos laukelis" @close="showFormFieldModal = false">
@@ -107,11 +98,15 @@ import { Link, useForm } from "@inertiajs/vue3";
 import { computed, reactive, ref } from "vue";
 
 import { formFieldTemplate } from "@/Types/formTemplates";
+import { Button } from "@/Components/ui/button";
+import { DateTimePicker } from "@/Components/ui/date-picker";
+import { Label } from "@/Components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
 import FormElement from "./FormElement.vue";
-import Icons from "@/Types/Icons/filled";
+import FormFieldWrapper from "./FormFieldWrapper.vue";
 import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";
 import SimpleLocaleButton from "../Buttons/SimpleLocaleButton.vue";
-import TipTap from "../TipTap/OriginalTipTap.vue";
+import TiptapEditor from "../TipTap/TiptapEditor.vue";
 import AdminForm from "./AdminForm.vue";
 import SortableFormFieldsTable from "../Tables/SortableFormFieldsTable.vue";
 import CardModal from "../Modals/CardModal.vue";
@@ -138,6 +133,21 @@ const selectedFormField = ref(formFieldTemplate);
 const form = reactive(props.form);
 
 const hasRegistrations = computed(() => form?.registrations_count > 0);
+
+// Shadcn Select requires string values
+const tenantIdString = computed({
+  get: () => form.tenant_id != null ? String(form.tenant_id) : '',
+  set: (val: string) => { form.tenant_id = val ? Number(val) : null; },
+});
+
+// DateTimePicker works with Date objects; form.publish_time is an ISO string
+const publishTimeDate = ref<Date | null>(
+  form.publish_time ? new Date(form.publish_time) : null
+);
+
+const onPublishTimeChange = (date: Date | null) => {
+  form.publish_time = date ? date.toISOString() : null;
+};
 
 function handleNewFormFieldCreate() {
   selectedFormField.value = formFieldTemplate;

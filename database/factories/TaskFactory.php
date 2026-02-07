@@ -2,6 +2,10 @@
 
 namespace Database\Factories;
 
+use App\Models\Institution;
+use App\Models\Meeting;
+use App\Models\Reservation;
+use App\Tasks\Enums\ActionType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,7 +21,87 @@ class TaskFactory extends Factory
     public function definition()
     {
         return [
-            //
+            'name' => $this->faker->sentence(3),
+            'description' => $this->faker->paragraph(),
+            'due_date' => $this->faker->dateTimeBetween('now', '+30 days'),
+            'taskable_type' => Institution::class,
+            'taskable_id' => Institution::query()->inRandomOrder()->first()?->id ?? Institution::factory(),
+            'completed_at' => null,
         ];
+    }
+
+    /**
+     * Task is completed.
+     */
+    public function completed(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'completed_at' => now(),
+        ]);
+    }
+
+    /**
+     * Task is overdue.
+     */
+    public function overdue(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'due_date' => now()->subDays($this->faker->numberBetween(1, 10)),
+            'completed_at' => null,
+        ]);
+    }
+
+    /**
+     * Task is due soon (within 7 days).
+     */
+    public function dueSoon(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'due_date' => now()->addDays($this->faker->numberBetween(1, 7)),
+            'completed_at' => null,
+        ]);
+    }
+
+    /**
+     * Task with specific action type.
+     */
+    public function withActionType(ActionType $type): static
+    {
+        return $this->state(['action_type' => $type]);
+    }
+
+    /**
+     * Task with progress tracking metadata.
+     */
+    public function withProgress(int $completed, int $total): static
+    {
+        return $this->state([
+            'metadata' => [
+                'items_completed' => $completed,
+                'items_total' => $total,
+            ],
+        ]);
+    }
+
+    /**
+     * Task for a reservation.
+     */
+    public function forReservation(?Reservation $reservation = null): static
+    {
+        return $this->state([
+            'taskable_type' => Reservation::class,
+            'taskable_id' => $reservation?->id ?? Reservation::factory(),
+        ]);
+    }
+
+    /**
+     * Task for a meeting.
+     */
+    public function forMeeting(?Meeting $meeting = null): static
+    {
+        return $this->state([
+            'taskable_type' => Meeting::class,
+            'taskable_id' => $meeting?->id ?? Meeting::factory(),
+        ]);
     }
 }

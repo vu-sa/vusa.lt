@@ -2,18 +2,18 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
 use App\Models\Type;
+use Illuminate\Http\JsonResponse;
 
-class TypeController extends Controller
+class TypeController extends ApiController
 {
     /**
-     * Display a listing of the resource.
+     * Get all types (public endpoint).
      */
-    public function index()
+    public function index(): JsonResponse
     {
         $types = Type::all();
 
-        return response()->json($types);
+        return $this->jsonSuccess($types);
     }
 }

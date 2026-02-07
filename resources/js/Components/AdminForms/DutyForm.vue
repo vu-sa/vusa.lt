@@ -19,32 +19,45 @@
             }}</strong>
         </li>
       </template>
-      <NFormItem :label="$t('forms.fields.title')">
+      <FormFieldWrapper id="name" :label="$t('forms.fields.title')" :error="form.errors.name">
         <MultiLocaleInput v-model:input="form.name" />
-      </NFormItem>
+      </FormFieldWrapper>
 
-      <NFormItem :label="$t('forms.fields.email')">
-        <NInput v-model:value="form.email" placeholder="vusa@vusa.lt" />
-      </NFormItem>
+      <FormFieldWrapper id="email" :label="$t('forms.fields.email')" :error="form.errors.email">
+        <Input id="email" v-model="form.email" placeholder="vusa@vusa.lt" />
+      </FormFieldWrapper>
 
       <div class="grid gap-4 lg:grid-cols-2">
-        <NFormItem label="Institucija">
-          <NSelect v-model:value="form.institution_id" filterable placeholder="Pasirink instituciją pagal pavadinimą..."
-            :options="institutionsFromDatabase" clearable />
-        </NFormItem>
+        <FormFieldWrapper id="institution_id" label="Institucija" :error="form.errors.institution_id">
+          <Select v-model="institutionIdString">
+            <SelectTrigger>
+              <SelectValue placeholder="Pasirink instituciją pagal pavadinimą..." />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem v-for="inst in institutionsFromDatabase" :key="inst.value" :value="String(inst.value)">
+                {{ inst.label }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </FormFieldWrapper>
 
-        <NFormItem :label="$t('forms.fields.duty_people_count')" :min="0">
-          <NInputNumber v-model:value="form.places_to_occupy" />
-        </NFormItem>
+        <FormFieldWrapper id="places_to_occupy" :label="$t('forms.fields.duty_people_count')" :error="form.errors.places_to_occupy">
+          <NumberField id="places_to_occupy" v-model="form.places_to_occupy" :min="0" />
+        </FormFieldWrapper>
       </div>
-      
-      <NFormItem label="Kontaktų grupavimas">
-        <NSelect v-model:value="form.contacts_grouping" :options="[
-          { value: 'none', label: 'Be grupavimo' },
-          { value: 'study_program', label: 'Pagal studijų programą' },
-          { value: 'tenant', label: 'Pagal padalinį' },
-        ]" placeholder="Pasirinkite grupavimo būdą" default-value="none" />
-      </NFormItem>
+
+      <FormFieldWrapper id="contacts_grouping" label="Kontaktų grupavimas" :error="form.errors.contacts_grouping">
+        <Select v-model="form.contacts_grouping">
+          <SelectTrigger>
+            <SelectValue placeholder="Pasirinkite grupavimo būdą" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">Be grupavimo</SelectItem>
+            <SelectItem value="study_program">Pagal studijų programą</SelectItem>
+            <SelectItem value="tenant">Pagal padalinį</SelectItem>
+          </SelectContent>
+        </Select>
+      </FormFieldWrapper>
     </FormElement>
     <FormElement>
       <template #title>
@@ -53,16 +66,17 @@
       <template #description>
         Aprašymas yra rodomas vusa.lt puslapyje prie pareigybės
       </template>
-      <NFormItem label="Aprašymas" :span="6">
-        <template #label>
-          <div class="inline-flex items-center gap-2">
-            Aprašymas
-            <SimpleLocaleButton v-model:locale="locale" />
-          </div>
-        </template>
-        <TipTap v-if="locale === 'lt'" v-model="form.description.lt" html />
-        <TipTap v-else v-model="form.description.en" html />
-      </NFormItem>
+      <div class="space-y-2">
+        <div class="inline-flex items-center gap-2">
+          <Label for="description">Aprašymas</Label>
+          <SimpleLocaleButton v-model:locale="locale" />
+        </div>
+        <TiptapEditor v-if="locale === 'lt'" v-model="form.description.lt" preset="full" :html="true" />
+        <TiptapEditor v-else v-model="form.description.en" preset="full" :html="true" />
+        <p v-if="form.errors.description" class="text-xs text-red-600 dark:text-red-400">
+          {{ form.errors.description }}
+        </p>
+      </div>
     </FormElement>
     <FormElement>
       <template #title>
@@ -77,23 +91,43 @@
           sukurti.
         </p>
       </template>
-      <NFormItem>
-        <template #label>
-          <div class="inline-flex items-center gap-2">
-            <strong>{{ $t("Nariai") }}</strong>
-            <a target="_blank" :href="route('users.create')">
-              <NButton text size="tiny">
-                <template #icon>
-                  <IFluentAdd24Filled />
-                </template>Sukurti naują asmenį
-              </NButton>
-            </a>
-          </div>
-        </template>
-        <NTransfer ref="transfer" v-model:value="form.current_users" virtual-scroll :options="userOptions"
-          :render-source-label="renderSourceLabel" :render-target-label="renderTargetLabel" source-filterable />
-      </NFormItem>
-      
+      <div class="space-y-2">
+        <div class="inline-flex items-center gap-2">
+          <Label><strong>{{ $t("Nariai") }}</strong></Label>
+          <a target="_blank" :href="route('users.create')">
+            <Button variant="link" size="xs">
+              <IFluentAdd24Filled />
+              Sukurti naują asmenį
+            </Button>
+          </a>
+        </div>
+        <TransferList v-model="form.current_users" :options="userOptions">
+          <template #source-label="{ option }">
+            <span class="inline-flex items-center gap-2">
+              {{ option.label }}
+              <a target="_blank" :href="route('users.edit', option.value)">
+                <Button variant="ghost" size="icon-xs" @click.stop>
+                  <IconEdit />
+                </Button>
+              </a>
+            </span>
+          </template>
+          <template #target-label="{ option }">
+            <div class="flex items-center gap-2">
+              <UserAvatar :size="24" :user="option.user" />
+              <span class="inline-flex gap-2">
+                {{ option.label }}
+                <a target="_blank" :href="route('users.edit', option.value)">
+                  <Button variant="ghost" size="icon-xs" @click.stop>
+                    <IconEye />
+                  </Button>
+                </a>
+              </span>
+            </div>
+          </template>
+        </TransferList>
+      </div>
+
       <!-- Current users with study programs display -->
       <div v-if="duty.current_users && duty.current_users.length > 0" class="mt-4">
         <div class="mb-3 text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -109,19 +143,17 @@
                   {{ user.name }}
                 </div>
                 <div v-if="getUserStudyProgram(user)" class="text-sm text-gray-600 dark:text-gray-400">
-                  <NTag size="small" type="info">
+                  <Badge variant="secondary">
                     {{ getUserStudyProgram(user)?.name }} ({{ getUserStudyProgram(user)?.degree }})
-                  </NTag>
+                  </Badge>
                 </div>
               </div>
             </div>
             <a v-if="getUserDutiableId(user)" :href="route('dutiables.edit', { dutiable: getUserDutiableId(user) })" target="_blank">
-              <NButton size="tiny" text>
-                <template #icon>
-                  <IconEdit />
-                </template>
+              <Button variant="link" size="xs">
+                <IconEdit />
                 Redaguoti pareigybės laikotarpį
-              </NButton>
+              </Button>
             </a>
           </div>
         </div>
@@ -146,34 +178,39 @@
           </p>
         </div>
       </template>
-      <NFormItem label="Pareigybės tipas">
-        <NSelect v-model:value="form.types" multiple :options="dutyTypes" label-field="title" value-field="id"
-          placeholder="Pasirinkti kategoriją..." clearable />
-      </NFormItem>
+      <FormFieldWrapper id="types" label="Pareigybės tipas" :error="form.errors.types">
+        <MultiSelect v-model="selectedTypes" :options="dutyTypes" label-field="title" value-field="id"
+          placeholder="Pasirinkti kategoriją..." />
+      </FormFieldWrapper>
 
-      <NFormItem label="Administracinė vusa.lt rolė">
-        <NSelect v-model:value="form.roles" :options="rolesOptions" :disabled="!$page.props.auth?.user.isSuperAdmin"
-          clearable multiple type="text" placeholder="Be rolės..." />
-      </NFormItem>
+      <FormFieldWrapper id="roles" label="Administracinė vusa.lt rolė" :error="form.errors.roles">
+        <MultiSelect v-model="selectedRoles" :options="rolesOptions" label-field="label" value-field="value"
+          :disabled="!$page.props.auth?.user.isSuperAdmin" placeholder="Be rolės..." />
+      </FormFieldWrapper>
     </FormElement>
   </AdminForm>
 </template>
 
-<script setup lang="tsx">
-import {
-  NButton,
-  type TransferRenderSourceLabel,
-  type TransferRenderTargetLabel,
-} from "naive-ui";
+<script setup lang="ts">
 import { computed, ref } from "vue";
 import { useForm, usePage } from "@inertiajs/vue3";
+import { trans as $t } from "laravel-vue-i18n";
 import IconEdit from "~icons/fluent/edit16-filled";
 import IconEye from "~icons/fluent/eye16-regular";
 
+import { Badge } from "@/Components/ui/badge";
+import { Button } from "@/Components/ui/button";
+import { Input } from "@/Components/ui/input";
+import { Label } from "@/Components/ui/label";
+import { MultiSelect } from "@/Components/ui/multi-select";
+import { NumberField } from "@/Components/ui/number-field";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
+import { TransferList } from "@/Components/ui/transfer-list";
 import { changeDutyNameEndings } from "@/Utils/String";
 import FormElement from "./FormElement.vue";
+import FormFieldWrapper from "./FormFieldWrapper.vue";
 import SimpleLocaleButton from "../Buttons/SimpleLocaleButton.vue";
-import TipTap from "@/Components/TipTap/OriginalTipTap.vue";
+import TiptapEditor from "@/Components/TipTap/TiptapEditor.vue";
 import UserAvatar from "../Avatars/UserAvatar.vue";
 import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";
 import AdminForm from "./AdminForm.vue";
@@ -213,55 +250,37 @@ const rolesOptions = props.roles.map((role) => ({
   value: role.id,
 }));
 
+// MultiSelect operates on full objects, but form stores ID arrays for server submission
+const selectedTypes = computed({
+  get: () => props.dutyTypes.filter(dt => form.types?.includes(dt.id)),
+  set: (items: App.Entities.Type[]) => { form.types = items.map(item => item.id); },
+});
+
+const selectedRoles = computed({
+  get: () => rolesOptions.filter(opt => form.roles?.includes(opt.value)),
+  set: (items: { label: string; value: number }[]) => { form.roles = items.map(item => item.value); },
+});
+
 const institutionsFromDatabase = props.assignableInstitutions.map((institution) => ({
   label: `${institution.name} (${institution.tenant?.shortname})`,
   value: institution.id,
 }));
 
+// Shadcn Select requires string values
+const institutionIdString = computed({
+  get: () => form.institution_id != null ? String(form.institution_id) : '',
+  set: (val: string) => { form.institution_id = val ? Number(val) : null; },
+});
+
 // Helper functions for displaying study program information
 const getUserStudyProgram = (user: any) => {
-  // The dutiable data is in user.pivot based on the structure you provided
   const dutiable = user.pivot;
   return dutiable?.study_program;
 };
 
 const getUserDutiableId = (user: any) => {
-  // The dutiable data is in user.pivot, and now should include the 'id' field
   const dutiable = user.pivot;
-  
-  // Now we should have the actual dutiable record ID
   return dutiable?.id || null;
 };
 
-const renderSourceLabel: TransferRenderSourceLabel = ({ option }) => {
-  return (
-    <div class="flex items-center gap-2">
-      <span>{option.label}</span>
-      <a target="_blank" href={route("users.edit", option.value)}>
-        <NButton text size="tiny">
-          {{ icon: <IconEdit /> }}
-        </NButton>
-      </a>
-    </div>
-  );
-};
-
-const renderTargetLabel: TransferRenderTargetLabel = ({ option }) => {
-  return (
-    <div class="flex items-center gap-2">
-      <UserAvatar size={24} user={(option as any).user}></UserAvatar>
-      <span class="inline-flex gap-2">
-        {option.label}
-
-        <a target="_blank" href={route("users.edit", option.value)}>
-          <NButton size="tiny" text>
-            {{
-              icon: <IconEye />,
-            }}
-          </NButton>
-        </a>
-      </span>
-    </div>
-  );
-};
 </script>

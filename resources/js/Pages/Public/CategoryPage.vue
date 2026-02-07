@@ -24,8 +24,22 @@
 <script setup lang="ts">
 import SmartLink from '@/Components/Public/SmartLink.vue';
 import PageCard from '../../Components/Cards/PageCard.vue';
+import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 
-defineProps<{
+import IFluentFolder16Regular from '~icons/fluent/folder-16-regular';
+
+const props = defineProps<{
   category: App.Entities.Category;
 }>();
+
+// Set breadcrumbs for category page
+usePageBreadcrumbs(() => {
+  return BreadcrumbHelpers.publicContent([
+    BreadcrumbHelpers.createBreadcrumbItem(
+      props.category.name || 'Kategorija',
+      undefined,
+      IFluentFolder16Regular
+    )
+  ]);
+});
 </script>

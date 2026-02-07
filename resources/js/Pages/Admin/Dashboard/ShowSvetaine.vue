@@ -6,131 +6,139 @@
           Pasirinkti padalinį
         </h3>
         <div>
-          <ThemeProvider>
-            <NSelect :value="providedTenant?.id" filterable
-              :options="tenants.map(tenant => ({ label: tenant.shortname, value: tenant.id }))"
-              @update:value="handleTenantUpdateValue" />
-          </ThemeProvider>
+          <Select :model-value="selectedTenantId" @update:model-value="handleTenantUpdateValue">
+            <SelectTrigger class="w-[200px]">
+              <SelectValue placeholder="Pasirinkite padalinį" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem v-for="tenant in tenants" :key="tenant.id" :value="String(tenant.id)">
+                {{ tenant.shortname }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
-      <ThemeProvider>
-        <div class="grid grid-cols-1 gap-4 lg:grid-cols-2 2xl:grid-cols-3">
-          <NCard :segmented="{
-            footer: 'soft',
-          }">
-          <template #header>
-            <div class="inline-flex items-center gap-2">
-              <component :is="Icons.PAGE" />
-              Puslapiai
+      <div class="grid grid-cols-1 gap-4 lg:grid-cols-2 2xl:grid-cols-3">
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              <div class="inline-flex items-center gap-2">
+                <component :is="Icons.PAGE" />
+                Puslapiai
+              </div>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div class="grid grid-cols-2 gap-2">
+              <p>Visi</p>
+              <p>Išversti</p>
+              <span class="inline-block text-4xl font-bold">
+                {{ providedTenant?.pages?.length }}
+              </span>
+              <span class="inline-block text-4xl font-bold">
+                {{ providedTenant?.pages?.filter(page => page.other_lang_id).length }}
+              </span>
             </div>
-          </template>
-          <div class="grid grid-cols-2 gap-2">
-            <p>Visi</p>
-            <p>🌐 Išversti</p>
-            <span class="inline-block text-4xl font-bold">
-              <NNumberAnimation :from="0" :to="providedTenant?.pages?.length" />
-            </span>
-            <span class="inline-block text-4xl font-bold">
-              <NNumberAnimation :from="0" :to="providedTenant?.pages?.filter(page => page.other_lang_id).length" />
-            </span>
-          </div>
-          <template #footer>
+          </CardContent>
+          <CardFooter>
             <Link :href="route('pages.index')">
-            <NButton size="small" secondary>
-              <template #icon>
-                <Icons.PAGE />
-              </template>
+            <Button size="sm" variant="secondary">
+              <Icons.PAGE />
               {{ $t('Rodyti visus') }}
-            </NButton>
+            </Button>
             </Link>
-          </template>
-        </NCard>
-        <NCard :segmented="{
-          footer: 'soft',
-        }">
-          <template #header>
-            <div class="inline-flex items-center gap-2">
-              <component :is="Icons.NEWS" />
-              Naujienos
+          </CardFooter>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              <div class="inline-flex items-center gap-2">
+                <component :is="Icons.NEWS" />
+                Naujienos
+              </div>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div class="grid grid-cols-2 gap-2">
+              <p>Visos</p>
+              <p>Išverstos</p>
+
+              <span class="inline-block text-4xl font-bold">
+                {{ providedTenant?.news?.length }}
+              </span>
+
+              <span class="inline-block text-4xl font-bold">
+                {{ providedTenant?.news?.filter(news => news.other_lang_id).length }}
+              </span>
             </div>
-          </template>
-          <div class="grid grid-cols-2 gap-2">
-            <p>Visos</p>
-            <p>🌐 Išverstos</p>
-
-            <span class="inline-block text-4xl font-bold">
-              <NNumberAnimation :from="0" :to="providedTenant?.news?.length" />
-            </span>
-
-            <span class="inline-block text-4xl font-bold">
-              <NNumberAnimation :from="0" :to="providedTenant?.news?.filter(news => news.other_lang_id).length" />
-            </span>
-          </div>
-          <template #footer>
+          </CardContent>
+          <CardFooter>
             <Link :href="route('news.index')">
-            <NButton size="small" secondary>
-              <template #icon>
-                <Icons.NEWS />
-              </template>
+            <Button size="sm" variant="secondary">
+              <Icons.NEWS />
               {{ $t('Rodyti visus') }}
-            </NButton>
+            </Button>
             </Link>
-          </template>
-        </NCard>
-        <NCard title="Visų naujienų statistika">
-          <div ref="wrapper" class="mx-auto w-fit" />
-        </NCard>
-        <NCard :segmented="{
-          footer: 'soft',
-        }">
-          <template #header>
-            <div class="inline-flex items-center gap-2">
-              <component :is="Icons.QUICK_LINK" />
-              Greitieji mygtukai
-            </div>
-          </template>
-          <span class="inline-block text-4xl font-bold">
-            <NNumberAnimation :from="0" :to="providedTenant?.quick_links?.length" />
-          </span>
-          <template #footer>
+          </CardFooter>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Visų naujienų statistika</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div ref="wrapper" class="mx-auto w-fit" />
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              <div class="inline-flex items-center gap-2">
+                <component :is="Icons.QUICK_LINK" />
+                Greitieji mygtukai
+              </div>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <span class="inline-block text-4xl font-bold">
+              {{ providedTenant?.quick_links?.length }}
+            </span>
+          </CardContent>
+          <CardFooter>
             <Link :href="route('quickLinks.index')">
-            <NButton size="small" secondary>
-              <template #icon>
-                <Icons.QUICK_LINK />
-              </template>
+            <Button size="sm" variant="secondary">
+              <Icons.QUICK_LINK />
               {{ $t('Rodyti visus') }}
-            </NButton>
+            </Button>
             </Link>
-          </template>
-        </NCard>
-        <NCard :segmented="{
-          footer: 'soft',
-        }">
-          <template #header>
-            <div class="inline-flex items-center gap-2">
-              <component :is="Icons.CALENDAR" />
-              Kalendoriaus įrašai
-            </div>
-          </template>
-          <p class="mb-2">
-            Paskutinius 12 mėnesių:
-          </p>
-          <span class="inline-block text-4xl font-bold">
-            <NNumberAnimation :from="0" :to="providedTenant?.calendar?.length" />
-          </span>
-          <template #footer>
+          </CardFooter>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              <div class="inline-flex items-center gap-2">
+                <component :is="Icons.CALENDAR" />
+                Kalendoriaus įrašai
+              </div>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p class="mb-2">
+              Paskutinius 12 mėnesių:
+            </p>
+            <span class="inline-block text-4xl font-bold">
+              {{ providedTenant?.calendar?.length }}
+            </span>
+          </CardContent>
+          <CardFooter>
             <Link :href="route('calendar.index')">
-            <NButton size="small" secondary>
-              <template #icon>
-                <Icons.CALENDAR />
-              </template>
+            <Button size="sm" variant="secondary">
+              <Icons.CALENDAR />
               {{ $t('Rodyti visus') }}
-            </NButton>
+            </Button>
             </Link>
-          </template>
-        </NCard>
-        </div>
-      </ThemeProvider>
+          </CardFooter>
+        </Card>
+      </div>
     </section>
   </AdminContentPage>
 </template>
@@ -142,17 +150,21 @@ import { binX, plot, rectY } from '@observablehq/plot';
 import { onMounted, ref, watch } from 'vue';
 import { computed } from 'vue';
 import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
+import { Button } from '@/Components/ui/button';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/Components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import { trans as $t } from "laravel-vue-i18n";
-import ThemeProvider from "@/Components/Providers/ThemeProvider.vue";
 
 const { tenants, providedTenant } = defineProps<{
   tenants: App.Entities.Tenant[];
   providedTenant: App.Entities.Tenant | null;
 }>();
 
-const handleTenantUpdateValue = (value) => {
-  router.reload({ data: { tenant_id: value } });
+const selectedTenantId = computed(() => providedTenant?.id ? String(providedTenant.id) : undefined);
+
+const handleTenantUpdateValue = (value: string) => {
+  router.reload({ data: { tenant_id: Number(value) } });
 }
 
 const wrapper = ref(null);

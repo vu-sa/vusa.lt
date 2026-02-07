@@ -9,7 +9,7 @@
           <template #description>
             <div class="typography">
               <p>
-                Pasirinkus narius, <strong>tik</strong> egzistuojantys ryšiai bus perduoti vienam vartotojui, t.y.: 
+                Pasirinkus narius, <strong>tik</strong> egzistuojantys ryšiai bus perduoti vienam vartotojui, t.y.:
               </p>
               <ul>
                 <li> Pareigos </li>
@@ -22,42 +22,65 @@
               <p> Šis veiksmas yra <strong>neatstatomas</strong>! </p>
             </div>
           </template>
-          <NFormItem required>
-            <template #label>
-              <span class="inline-flex items-center gap-1">
-                <NIcon :component="Icons.USER" />
-                Prijungiamas vartotojas
-              </span>
-            </template>
-            <NSelect v-model:value="form.merged_user_id" filterable :options="users" label-field="name" value-field="id"
-              :render-label="renderOptionLabel" placeholder="Pasirinkite vartotoją" />
-          </NFormItem>
-          <NFormItem required>
-            <template #label>
-              <span class="inline-flex items-center gap-1">
-                <NIcon :component="Icons.USER" />
-                Prijungti prie...
-              </span>
-            </template>
-            <NSelect v-model:value="form.kept_user_id" filterable :options="users" value-field="id" label-field="name"
-              :render-label="renderOptionLabel" placeholder="Pasirinkite vartotoją" />
-          </NFormItem>
+          <FormFieldWrapper id="merged_user_id" label="Prijungiamas vartotojas" required>
+            <Select v-model="mergedUserIdString">
+              <SelectTrigger>
+                <SelectValue placeholder="Pasirinkite vartotoją" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem v-for="user in users" :key="user.id" :value="String(user.id)">
+                  <span class="flex items-center gap-2">
+                    <UserAvatar :user="user" :size="24" />
+                    {{ user.name }}
+                    <a :href="route('users.edit', user.id)" target="_blank" @click.stop>
+                      <Button variant="ghost" size="icon-xs">
+                        <IconEye />
+                      </Button>
+                    </a>
+                  </span>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </FormFieldWrapper>
+          <FormFieldWrapper id="kept_user_id" label="Prijungti prie..." required>
+            <Select v-model="keptUserIdString">
+              <SelectTrigger>
+                <SelectValue placeholder="Pasirinkite vartotoją" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem v-for="user in users" :key="user.id" :value="String(user.id)">
+                  <span class="flex items-center gap-2">
+                    <UserAvatar :user="user" :size="24" />
+                    {{ user.name }}
+                    <a :href="route('users.edit', user.id)" target="_blank" @click.stop>
+                      <Button variant="ghost" size="icon-xs">
+                        <IconEye />
+                      </Button>
+                    </a>
+                  </span>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </FormFieldWrapper>
         </FormElement>
       </AdminForm>
     </UpsertModelLayout>
   </PageContent>
 </template>
 
-<script setup lang="tsx">
-import { NButton, type SelectRenderLabel } from "naive-ui";
+<script setup lang="ts">
 import { useForm } from "@inertiajs/vue3";
+import { computed } from "vue";
 import IconEye from "~icons/fluent/eye16-regular";
 
+import { Button } from "@/Components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
+import AdminForm from "@/Components/AdminForms/AdminForm.vue";
+import FormElement from "@/Components/AdminForms/FormElement.vue";
+import FormFieldWrapper from "@/Components/AdminForms/FormFieldWrapper.vue";
 import Icons from "@/Types/Icons/regular";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
-import AdminForm from "@/Components/AdminForms/AdminForm.vue";
-import FormElement from "@/Components/AdminForms/FormElement.vue";
 import UserAvatar from "@/Components/Avatars/UserAvatar.vue";
 
 const { users } = defineProps<{
@@ -65,28 +88,20 @@ const { users } = defineProps<{
 }>();
 
 const form = useForm({
-  kept_user_id: null,
-  merged_user_id: null,
+  kept_user_id: null as number | null,
+  merged_user_id: null as number | null,
 });
 
-const renderOptionLabel: SelectRenderLabel = (option) => {
-  return (
-    <div class="flex items-center gap-2">
-      <UserAvatar size={24} user={{ name: option.name, profile_photo_path: option.profile_photo_path }} />
-      <span class="inline-flex gap-2">
-        {option.name}
+// Bridge string <-> number for Select
+const mergedUserIdString = computed({
+  get: () => form.merged_user_id != null ? String(form.merged_user_id) : '',
+  set: (val: string) => { form.merged_user_id = val ? Number(val) : null; },
+});
 
-        <a target="_blank" href={route("users.edit", option.id)}>
-          <NButton size="tiny" text>
-            {{
-              icon: <IconEye />,
-            }}
-          </NButton>
-        </a>
-      </span>
-    </div>
-  );
-};
+const keptUserIdString = computed({
+  get: () => form.kept_user_id != null ? String(form.kept_user_id) : '',
+  set: (val: string) => { form.kept_user_id = val ? Number(val) : null; },
+});
 
 function handleFormSubmit() {
   form.post(route("users.mergeUsers"), {

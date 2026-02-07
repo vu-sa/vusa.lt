@@ -17,7 +17,7 @@ const delegatedProps = computed(() => {
     data-slot="tabs-list"
     v-bind="delegatedProps"
     :class="cn(
-      'bg-zinc-100 text-zinc-500 inline-flex h-9 w-fit items-center justify-center rounded-lg p-[3px] dark:bg-zinc-800 dark:text-zinc-400',
+      'bg-zinc-100 text-zinc-500 inline-flex h-9 w-full sm:w-fit items-center justify-start sm:justify-center rounded-lg p-[3px] dark:bg-zinc-800 dark:text-zinc-400 overflow-x-auto scrollbar-none',
       props.class,
     )"
   >

@@ -1,46 +1,50 @@
 <template>
   <div class="flex items-center gap-2">
     <!-- Primary participate button -->
-    <NButton v-if="eventUrl" :type="isPast ? 'default' : 'primary'" :size :secondary="isPast"
-      :tag="eventUrl ? 'a' : 'button'" :href="eventUrl" target="_blank" rel="noopener noreferrer" @click.stop>
-      <template v-if="showIcons" #icon>
+    <Button v-if="eventUrl" :variant="isPast ? 'secondary' : 'default'" :size="buttonSize"
+      :as="eventUrl ? 'a' : 'button'" :href="eventUrl" target="_blank" rel="noopener noreferrer" @click.stop>
+      <template v-if="showIcons">
         <IFluentPersonAdd20Regular v-if="!isPast" />
         <IFluentArrowUpRight16Regular v-else />
       </template>
       {{ participateText }}
-    </NButton>
+    </Button>
 
     <!-- View details button -->
-    <NButton v-if="showViewButton && eventDetailUrl" :secondary="!isPast" :size tag="a" :href="eventDetailUrl">
+    <Button v-if="showViewButton && eventDetailUrl" :variant="!isPast ? 'secondary' : 'default'" :size="buttonSize" as="a" :href="eventDetailUrl">
       {{ viewText }}
-    </NButton>
+    </Button>
 
     <!-- Social/External actions -->
     <div v-if="showSocialActions" class="flex items-center gap-1">
       <!-- Google Calendar -->
-      <NPopover v-if="googleLink" trigger="hover">
-        <template #trigger>
-          <NButton :size secondary circle tag="a" :href="googleLink" target="_blank" rel="noopener noreferrer"
-            @click.stop>
-            <template #icon>
+      <TooltipProvider v-if="googleLink">
+        <Tooltip>
+          <TooltipTrigger as-child>
+            <Button :size="iconButtonSize" variant="secondary" class="rounded-full" as="a" :href="googleLink" target="_blank" rel="noopener noreferrer"
+              @click.stop>
               <IMdiGoogle />
-            </template>
-          </NButton>
-        </template>
-        {{ $t("Įsidėk į Google kalendorių") }}
-      </NPopover>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            {{ $t("Įsidėk į Google kalendorių") }}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
 
       <!-- Facebook Event -->
-      <NPopover v-if="facebookUrl" trigger="hover">
-        <template #trigger>
-          <NButton :size secondary circle tag="a" :href="facebookUrl" target="_blank" @click.stop>
-            <template #icon>
+      <TooltipProvider v-if="facebookUrl">
+        <Tooltip>
+          <TooltipTrigger as-child>
+            <Button :size="iconButtonSize" variant="secondary" class="rounded-full" as="a" :href="facebookUrl" target="_blank" @click.stop>
               <IMdiFacebook />
-            </template>
-          </NButton>
-        </template>
-        {{ $t("Facebook renginys") }}
-      </NPopover>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            {{ $t("Facebook renginys") }}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     </div>
   </div>
 </template>
@@ -48,8 +52,10 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { trans as $t } from 'laravel-vue-i18n'
-import { NButton, NPopover } from 'naive-ui'
 import { usePage } from '@inertiajs/vue3'
+
+import { Button } from '@/Components/ui/button'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip'
 
 interface Props {
   /** Event participation/registration URL */
@@ -86,6 +92,17 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const page = usePage()
+
+// Map NButton size to ShadcnVue Button size
+const buttonSize = computed(() => {
+  const sizeMap = { tiny: 'xs', small: 'sm', medium: 'default', large: 'lg' } as const
+  return sizeMap[props.size] ?? 'default'
+})
+
+const iconButtonSize = computed(() => {
+  const sizeMap = { tiny: 'icon-xs', small: 'icon-sm', medium: 'icon', large: 'icon' } as const
+  return sizeMap[props.size] ?? 'icon'
+})
 
 // Generate event detail URL if not provided but eventId is available
 const eventDetailUrl = computed(() => {
@@ -125,10 +142,6 @@ const viewText = computed(() => {
 /* Compact layout adjustments */
 .layout-compact .flex {
   gap: 0.25rem;
-}
-
-.layout-compact .NButton {
-  min-width: auto;
 }
 
 /* Vertical layout */

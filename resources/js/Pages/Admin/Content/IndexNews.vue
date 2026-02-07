@@ -1,129 +1,150 @@
 <template>
-  <IndexPageLayout title="Naujienos" model-name="news" :can-use-routes="canUseRoutes" :columns="columns"
-    :paginated-models="news" :icon="Icons.NEWS" />
+  <IndexTablePage
+    ref="indexTablePageRef"
+    v-bind="tableConfig"
+    @data-loaded="onDataLoaded"
+    @sorting-changed="handleSortingChange"
+    @page-changed="handlePageChange"
+    @filter-changed="handleFilterChange"
+  />
 </template>
 
 <script setup lang="tsx">
-import { NButton } from "naive-ui";
-import { computed, provide, ref } from "vue";
-import { router, usePage } from "@inertiajs/vue3";
-import type { DataTableColumns, DataTableSortState } from "naive-ui";
+import { trans as $t } from "laravel-vue-i18n";
+import { type ColumnDef } from '@tanstack/vue-table';
+import { ref, computed } from "vue";
 
 import { formatStaticTime } from "@/Utils/IntlTime";
-import { langColumn, tenantColumn } from "@/Composables/dataTableColumns";
 import Icons from "@/Types/Icons/regular";
-import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
-import PreviewModelButton from "@/Components/Buttons/PreviewModelButton.vue";
+import IndexTablePage from "@/Components/Layouts/IndexTablePage.vue";
+import { createStandardActionsColumn } from "@/Composables/useTableActions";
+import {
+  createIdColumn,
+  createTenantColumn,
+} from '@/Utils/DataTableColumns';
+import {
+  type IndexTablePageProps
+} from "@/Types/TableConfigTypes";
 
-defineProps<{
-  news: PaginatedModels<App.Entities.News>;
+const props = defineProps<{
+  news: {
+    data: App.Entities.News[];
+    meta: {
+      total: number;
+      current_page: number;
+      per_page: number;
+      last_page: number;
+      from: number;
+      to: number;
+    };
+  };
+  filters?: Record<string, any>;
+  sorting?: { id: string; desc: boolean }[];
 }>();
 
-const canUseRoutes = {
-  create: true,
-  show: false,
-  edit: true,
-  duplicate: true,
-  destroy: true,
+const modelName = 'news';
+const entityName = 'news';
+
+const indexTablePageRef = ref<any>(null);
+
+const getRowId = (row: App.Entities.News) => {
+  return `news-${row.id}`;
 };
 
-const sorters = ref<Record<string, DataTableSortState["order"]>>({
-  publish_time: "descend",
-  title: false,
-});
-
-provide("sorters", sorters);
-
-const filters = ref<Record<string, any>>({
-  lang: [],
-  "tenant.id": [],
-});
-
-provide("filters", filters);
-
-const columns = computed<DataTableColumns<App.Entities.News>>(() => [
+const columns = computed<ColumnDef<App.Entities.News, any>[]>(() => [
+  createIdColumn<App.Entities.News>({ width: 70 }),
   {
-    title: "ID",
-    key: "id",
-    width: 70,
-  },
-  {
-    title: "Pavadinimas",
-    key: "title",
-    className: "text-wrap",
-    sorter: true,
-    sortOrder: sorters.value.title,
-    minWidth: 150,
-    width: 200,
-    resizable: true,
-  },
-  {
-    // title: "Nuoroda",
-    key: "permalink",
-    // ellipsis: true,
-    width: 55,
-    render(row) {
-      return row.permalink ? (
-        <PreviewModelButton
-          publicRoute="news"
-          routeProps={{
-            lang: row.lang,
-            news: row.permalink,
-            newsString: "naujiena",
-            subdomain: row.tenant?.alias ?? "www",
-          }}
-        />
-      ) : (
-        ""
+    accessorKey: "title",
+    header: () => "Pavadinimas",
+    cell: ({ row }) => {
+      return (
+        <div class="max-w-[200px] text-wrap">
+          {row.getValue("title")}
+        </div>
       );
     },
+    size: 200,
+    enableSorting: true,
   },
   {
-    ...langColumn(filters),
-    render(row) {
-      return row.lang === "lt" ? "🇱🇹" : "🇬🇧";
+    accessorKey: "lang",
+    header: () => "Kalba",
+    cell: ({ row }) => {
+      return row.original.lang === "lt" ? "🇱🇹" : "🇬🇧";
     },
+    size: 80,
   },
   {
-    key: "other_lang_id",
-    title: "Kitos kalbos naujiena",
-    maxWidth: 110,
-    ellipsis: {
-      tooltip: true,
-    },
-    render(row) {
-      return row.other_language_news ? (
+    id: "other_language_news",
+    header: () => "Kitos kalbos naujiena",
+    cell: ({ row }) => {
+      const otherNews = row.original.other_language_news;
+      if (!otherNews) return null;
+      return (
         <a
-          href={route("news.edit", { id: row.other_language_news.id })}
+          href={route("news.edit", { id: otherNews.id })}
           target="_blank"
+          class="hover:underline"
         >
-          {row.other_language_news?.title}
+          <div class="max-w-[100px] truncate" title={otherNews.title}>
+            {otherNews.title}
+          </div>
         </a>
-      ) : null;
-    },
-  },
-  {
-    ...tenantColumn(filters, usePage().props.tenants),
-    render(row) {
-      return row.tenant?.shortname;
-    },
-  },
-  {
-    title: "Paskelbimo data",
-    key: "publish_time",
-    width: 150,
-    sorter: true,
-    sortOrder: sorters.value.publish_time,
-    ellipsis: {
-      tooltip: true,
-    },
-    render(row) {
-      return formatStaticTime(
-        new Date(row.publish_time),
-        { year: "numeric", month: "numeric", day: "numeric" },
-        usePage().props.app.locale
       );
     },
+    size: 110,
   },
+  createTenantColumn<App.Entities.News>(),
+  {
+    accessorKey: "publish_time",
+    header: () => "Paskelbimo data",
+    cell: ({ row }) => {
+      const publishTime = row.original.publish_time;
+      if (!publishTime) return null;
+      return formatStaticTime(new Date(publishTime), {
+        year: "numeric",
+        month: "numeric",
+        day: "numeric",
+      });
+    },
+    size: 150,
+    enableSorting: true,
+    sortDescFirst: true,
+  },
+  createStandardActionsColumn<App.Entities.News>("news", {
+    canView: false,
+    canEdit: true,
+    canDelete: true,
+    canDuplicate: true,
+  })
 ]);
+
+const tableConfig = computed<IndexTablePageProps<App.Entities.News>>(() => {
+  return {
+    modelName,
+    entityName,
+    data: props.news.data,
+    columns: columns.value,
+    getRowId,
+    totalCount: props.news.meta.total,
+    initialPage: props.news.meta.current_page,
+    pageSize: props.news.meta.per_page,
+
+    initialFilters: props.filters,
+    initialSorting: props.sorting ?? [{ id: 'publish_time', desc: true }],
+    enableFiltering: true,
+    enableColumnVisibility: false,
+    enableRowSelection: false,
+
+    headerTitle: "Naujienos",
+    icon: Icons.NEWS,
+    createRoute: route('news.create'),
+    canCreate: true,
+  };
+});
+
+const onDataLoaded = (data: any) => {};
+const handleSortingChange = (sorting: any) => {};
+const handlePageChange = (page: any) => {};
+const handleFilterChange = (filterKey: any, value: any) => {};
 </script>

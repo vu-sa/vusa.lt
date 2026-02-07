@@ -162,7 +162,7 @@ describe('cross-tenant data prevention', function () {
     test('API endpoints respect tenant boundaries', function () {
         $newsB = News::factory()->create(['tenant_id' => $this->tenantB->id]);
 
-        asUser($this->adminA)->get("/api/v1/lt/news/{$this->tenantB->alias}")
+        asUser($this->adminA)->get("/api/v1/tenants/{$this->tenantB->alias}/news")
             ->assertStatus(200); // API should return data but be properly scoped
     });
 

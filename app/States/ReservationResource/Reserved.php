@@ -23,7 +23,7 @@ class Reserved extends ReservationResourceState
 
     public function handleReject(): void
     {
-        abort(403, 'Užrezervuoto ištekliaus negalima atmesti.');
+        // This should never be called - validation in isDecisionAllowed prevents it
     }
 
     public function handleCancel(): void

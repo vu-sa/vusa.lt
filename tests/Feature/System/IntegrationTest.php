@@ -163,7 +163,7 @@ describe('route accessibility and authentication', function () {
 
         // Test that API routes work with proper tenant context
         $protectedApiRoutes = [
-            "/api/v1/lt/news/{$userTenant->alias}",
+            "/api/v1/tenants/{$userTenant->alias}/news",
         ];
 
         foreach ($protectedApiRoutes as $route) {

@@ -81,6 +81,17 @@ export type SpotifyEmbed = {
   options: null
 }
 
+export type SocialEmbed = {
+  json_content: {
+    url: string;
+    platform: 'facebook' | 'instagram' | null;
+    postId?: string;
+  };
+  options: {
+    showCaption?: boolean;
+  }
+}
+
 export type FlowGraph = {
   json_content: {
     nodes?: Record<string, any>[];
@@ -107,7 +118,9 @@ export type Calendar = {
   json_content: {
     title: string;
   }
-  options: null
+  options: {
+    allTenants?: boolean;
+  } | null
 };
 
 export type News = {
@@ -116,3 +129,17 @@ export type News = {
   }
   options: null
 };
+
+/**
+ * Public-facing news item structure returned by API and Inertia props.
+ * Matches the shape from NewsCollection::toPublicArray()
+ */
+export interface NewsItem {
+  id: number;
+  title: string;
+  lang: string;
+  short: string;
+  publish_time: string;
+  permalink: string | null;
+  image: string;
+}

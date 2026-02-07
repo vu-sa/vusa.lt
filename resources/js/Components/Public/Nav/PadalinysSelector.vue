@@ -141,6 +141,8 @@ interface Props {
   size: "tiny" | "small" | "medium";
   /** Additional options to prepend to the dropdown list */
   prependOptions?: Array<DropdownOption>;
+  /** Override default label when on main tenant (instead of "Padaliniai") */
+  mainTenantLabel?: string;
 }
 
 interface FacultyLocation {
@@ -189,10 +191,11 @@ const isPopoverOpen = ref(false);
 const handleSelectPadalinys = (key: string | string[]) => {
   let padalinys_alias: string = Array.isArray(key) ? key[0] ?? '' : key;
 
-  // get last two elements of host and join them with dot
+  // Remove the first subdomain (current tenant) and keep the rest of the hostname
+  // This handles both production (ff.vusa.lt) and staging (ff.naujas.vusa.lt) environments
   const hostWithoutSubdomain = window.location.host
     .split(".")
-    .slice(-2)
+    .slice(1)
     .join(".");
 
   // If padalinys_alias is 'vusa', set to 'www'
@@ -283,11 +286,10 @@ const otherCitiesFaculties = computed(() => {
 });
 
 const padalinys = computed(() => {
-  return $t(
-    usePage().props.tenant?.alias !== "vusa"
-      ? usePage().props.tenant?.shortname.split(" ").pop() ?? "Padaliniai"
-      : "Padaliniai",
-  );
+  if (usePage().props.tenant?.alias === "vusa") {
+    return $t(props.mainTenantLabel ?? "Padaliniai");
+  }
+  return $t(usePage().props.tenant?.shortname.split(" ").pop() ?? "Padaliniai");
 });
 
 const isDisabled = computed(() => {

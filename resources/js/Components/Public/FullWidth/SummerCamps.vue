@@ -30,18 +30,19 @@
         year: null,
         lang: 'lt',
       })">
-        <NButton round size="large" strong type="primary">Pirmakursių stovyklos<template #icon>
-           <IFluentBalloon20Regular />
-          </template>
-        </NButton>
+        <Button class="rounded-full text-lg h-12 px-6 font-bold">
+          <IFluentBalloon20Regular />
+          Pirmakursių stovyklos
+        </Button>
       </SmartLink>
       <SmartLink :href="route('pirmakursiuStovyklos', {
         year: 2023,
         lang: 'lt',
       })">
-        <NButton round size="large" strong secondary>2023 m. stovyklos<template #icon>
-            <IFluentHatGraduation20Filled />
-        </template></NButton>
+        <Button variant="secondary" class="rounded-full text-lg h-12 px-6 font-bold">
+          <IFluentHatGraduation20Filled />
+          2023 m. stovyklos
+        </Button>
       </SmartLink>
       <SmartLink :href="route('contacts.category', {
         type: 'padaliniai',
@@ -49,11 +50,10 @@
         subdomain: 'www',
       })
         ">
-        <NButton round strong secondary>VU SA kontaktai tavo fakultete
-          <template #icon>
-            <IFluentPerson20Filled />
-          </template>
-        </NButton>
+        <Button variant="secondary" class="rounded-full font-bold">
+          <IFluentPerson20Filled />
+          VU SA kontaktai tavo fakultete
+        </Button>
       </SmartLink>
     </div>
   </div>
@@ -63,4 +63,5 @@
 import { Head } from "@inertiajs/vue3";
 import ShapeDivider1 from "@/Components/Public/ShapeDivider1.vue";
 import SmartLink from "../SmartLink.vue";
+import { Button } from "@/Components/ui/button";
 </script>

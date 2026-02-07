@@ -14,7 +14,7 @@ class SyncDocumentsCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'documents:sync 
+    protected $signature = 'sharepoint:sync-documents 
                             {--all : Sync all documents regardless of staleness}
                             {--failed : Only sync documents with failed status}
                             {--limit=50 : Maximum number of documents to sync}

@@ -24,7 +24,8 @@ import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from '@/Components/ui/dropdown-menu';
 import { 
-  ChevronDownIcon, 
+  ChevronDownIcon,
+  ChevronUpIcon, 
   SlidersIcon, 
   ChevronLeftIcon, 
   ChevronRightIcon,
@@ -62,12 +63,13 @@ const props = defineProps<{
   rowCount?: number
   pageCount?: number
   // Row selection props
-  enableRowSelection?: boolean
+  enableRowSelection?: boolean | ((row: any) => boolean)
   enableMultiRowSelection?: boolean
   initialRowSelection?: RowSelectionState
   rowSelectionState?: RowSelectionState
   getRowId?: (originalRow: TData, index: number, parent?: any) => string
   enableRowSelectionColumn?: boolean
+  showSelectionCount?: boolean
 }>()
 
 const emit = defineEmits([
@@ -128,8 +130,8 @@ const selectionColumn = computed<ColumnDef<TData, any>>(() => {
     header: ({ table }) => (
       <div class="px-1">
         <Checkbox 
-          checked={table.getIsAllPageRowsSelected()}
-          onUpdate:checked={(value) => table.toggleAllPageRowsSelected(!!value)}
+          modelValue={table.getIsAllPageRowsSelected()}
+          onUpdate:modelValue={(value) => table.toggleAllPageRowsSelected(!!value)}
           aria-label={$t('Select all')}
           class="data-[state=checked]:bg-primary"
         />
@@ -138,8 +140,8 @@ const selectionColumn = computed<ColumnDef<TData, any>>(() => {
     cell: ({ row }) => (
       <div class="px-1">
         <Checkbox 
-          checked={row.getIsSelected()}
-          onUpdate:checked={(value) => row.toggleSelected(!!value)}
+          modelValue={row.getIsSelected()}
+          onUpdate:modelValue={(value) => row.toggleSelected(!!value)}
           aria-label={$t('Select row')}
           disabled={!row.getCanSelect()}
           class="data-[state=checked]:bg-primary"
@@ -215,8 +217,10 @@ const tableOptions = computed(() => {
       get rowSelection() { return rowSelection.value },
     },
 
-    // Row selection options
-    enableRowSelection: props.enableRowSelection,
+    // Row selection options - support both boolean and function
+    enableRowSelection: typeof props.enableRowSelection === 'function' 
+      ? props.enableRowSelection 
+      : props.enableRowSelection,
     enableMultiRowSelection: props.enableMultiRowSelection !== false, // Default to true if not specified
     getRowId: props.getRowId, // Custom row ID function if provided
 
@@ -285,10 +289,10 @@ defineExpose({
 
 <template>
   <div class="space-y-4">
-    <div v-if="enableFiltering || enableColumnVisibility || (enableRowSelection && table.getSelectedRowModel().rows.length > 0)" class="flex flex-wrap items-center justify-between gap-2 w-full">
+    <div v-if="enableFiltering || enableColumnVisibility || (showSelectionCount && enableRowSelection && table.getSelectedRowModel().rows.length > 0)" class="flex flex-wrap items-center justify-between gap-2 w-full">
       <div class="flex flex-wrap items-center gap-2">
-        <!-- Show selection count when rows are selected -->
-        <div v-if="enableRowSelection && table.getSelectedRowModel().rows.length > 0" class="bg-muted rounded-md px-2 py-1 text-sm flex items-center">
+        <!-- Show selection count when rows are selected (opt-in) -->
+        <div v-if="showSelectionCount && enableRowSelection && table.getSelectedRowModel().rows.length > 0" class="bg-muted rounded-md px-2 py-1 text-sm flex items-center">
           {{ $t('Selected') }}: {{ table.getSelectedRowModel().rows.length }}
           <Button variant="ghost" size="sm" class="ml-2 h-6 w-6 p-0" @click="table.resetRowSelection()">
             <span class="sr-only">{{ $t('Clear selection') }}</span>
@@ -354,20 +358,10 @@ defineExpose({
                     v-if="!header.isPlaceholder" :render="header.column.columnDef.header"
                     :props="header.getContext()"
                   />
-                  <!-- Enhanced sorting indicators -->
-                  <div class="flex items-center ml-2">
-                    <span 
-                      v-if="header.column.getCanSort()" 
-                      class="text-xs font-medium transition-opacity"
-                      :class="{
-                        'opacity-100': header.column.getIsSorted(),
-                        'opacity-40 group-hover:opacity-60': !header.column.getIsSorted()
-                      }"
-                    >
-                      <span v-if="header.column.getIsSorted() === 'asc'" class="text-primary">↑</span>
-                      <span v-else-if="header.column.getIsSorted() === 'desc'" class="text-primary">↓</span>
-                      <span v-else class="text-muted-foreground">↕</span>
-                    </span>
+                  <!-- Sorting indicators -->
+                  <div v-if="header.column.getCanSort() && header.column.getIsSorted()" class="flex items-center ml-1.5">
+                    <ChevronUpIcon v-if="header.column.getIsSorted() === 'asc'" class="size-3.5 text-primary" />
+                    <ChevronDownIcon v-else-if="header.column.getIsSorted() === 'desc'" class="size-3.5 text-primary" />
                   </div>
                 </div>
               </TableHead>
@@ -407,7 +401,7 @@ defineExpose({
 
       <!-- Use custom pagination slot if available (for server-side mode) -->
       <slot name="pagination">
-        <div v-if="pagination && table.getPageCount() > 0" class="flex flex-wrap items-center justify-between gap-2 p-4 border-t">
+        <div v-if="pagination === true && table.getPageCount() > 1" class="flex flex-wrap items-center justify-between gap-2 p-4 border-t">
           <Pagination 
             :items-per-page="table.getState().pagination.pageSize"
             :total="table.getPrePaginationRowModel().rows.length"

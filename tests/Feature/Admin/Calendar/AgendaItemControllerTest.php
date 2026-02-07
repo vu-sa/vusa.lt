@@ -1,12 +1,13 @@
 <?php
 
+use App\Enums\MeetingType;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Role;
 use App\Models\Tenant;
-use App\Models\Type;
 use App\Models\User;
+use App\Models\Vote;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -21,18 +22,15 @@ beforeEach(function () {
     // Create an institution for testing
     $this->institution = Institution::factory()->for($this->tenant)->create();
 
-    // Create a meeting type
-    $this->meetingType = Type::firstOrCreate(['title' => 'Test Meeting Type']);
-
     // Create a meeting for testing agenda items
     $startTime = Carbon::now()->addDays(1);
     $this->meeting = Meeting::create([
         'title' => $startTime->locale('lt-LT')->isoFormat('YYYY MMMM DD [d.] HH.mm [val.]').' posėdis',
         'start_time' => $startTime->format('Y-m-d H:i'),
+        'type' => MeetingType::InPerson,
     ]);
 
     $this->meeting->institutions()->attach($this->institution->id);
-    $this->meeting->types()->attach($this->meetingType->id);
 
     // Record initial counts
     $this->initialAgendaItemCount = AgendaItem::count();
@@ -101,7 +99,7 @@ describe('agenda items controller', function () {
         $this->assertEquals($initialTaskCount, $this->meeting->fresh()->tasks()->count());
     });
 
-    test('can update agenda item details', function () {
+    test('can update agenda item details with votes', function () {
         // First create an agenda item
         asUser($this->admin)
             ->post(route('agendaItems.store'), [
@@ -115,9 +113,15 @@ describe('agenda items controller', function () {
             ->patch(route('agendaItems.update', $agendaItem->id), [
                 'title' => 'Updated Title',
                 'description' => 'New Description',
-                'decision' => 'positive',
-                'student_vote' => 'neutral',
-                'student_benefit' => 'negative',
+                'type' => 'voting',
+                'votes' => [
+                    [
+                        'is_main' => true,
+                        'decision' => 'positive',
+                        'student_vote' => 'neutral',
+                        'student_benefit' => 'negative',
+                    ],
+                ],
             ]);
 
         $response->assertStatus(302);
@@ -126,12 +130,17 @@ describe('agenda items controller', function () {
         $agendaItem->refresh();
         $this->assertEquals('Updated Title', $agendaItem->title);
         $this->assertEquals('New Description', $agendaItem->description);
-        $this->assertEquals('positive', $agendaItem->decision);
-        $this->assertEquals('neutral', $agendaItem->student_vote);
-        $this->assertEquals('negative', $agendaItem->student_benefit);
+
+        // Check that the vote was created
+        $vote = $agendaItem->votes()->first();
+        $this->assertNotNull($vote);
+        $this->assertTrue($vote->is_main);
+        $this->assertEquals('positive', $vote->decision);
+        $this->assertEquals('neutral', $vote->student_vote);
+        $this->assertEquals('negative', $vote->student_benefit);
     });
 
-    test('validates agenda item update values', function () {
+    test('validates agenda item vote values', function () {
         // First create an agenda item
         asUser($this->admin)
             ->post(route('agendaItems.store'), [
@@ -143,15 +152,20 @@ describe('agenda items controller', function () {
 
         $response = asUser($this->admin)
             ->patch(route('agendaItems.update', $agendaItem->id), [
-                'decision' => 'invalid-value', // Invalid enum value
+                'votes' => [
+                    [
+                        'is_main' => true,
+                        'decision' => 'invalid-value', // Invalid enum value
+                    ],
+                ],
             ]);
 
         $response->assertStatus(302);
-        $response->assertSessionHasErrors(['decision']);
+        $response->assertSessionHasErrors(['votes.0.decision']);
 
         $agendaItem->refresh();
         $this->assertEquals('Original Title', $agendaItem->title);
-        $this->assertNull($agendaItem->decision);
+        $this->assertEquals(0, $agendaItem->votes()->count());
     });
 
     test('deleting a meeting also deletes its agenda items', function () {

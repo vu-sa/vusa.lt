@@ -5,7 +5,7 @@
     <CardHeader>
       <div class="flex items-center gap-2"
         :style="`color: ${props.element.options?.isTitleColored ? cardColors.title[isDark ? 'dark' : 'light'][props.element.options?.color] : ''}`">
-        <NIcon v-if="element.options?.showIcon" size="20" :component="iconToUse" />
+        <component :is="iconToUse" v-if="element.options?.showIcon" class="size-5" />
         <CardTitle class="mb-0 tracking-tight"
           :style="`color: ${props.element.options?.isTitleColored ? cardColors.title[isDark ? 'dark' : 'light'][props.element.options?.color] : ''}`">
           {{ element.options?.title }}
@@ -20,7 +20,6 @@
 
 <script setup lang="ts">
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { type CardProps } from 'naive-ui';
 import { computed } from 'vue';
 import { useDark } from '@vueuse/core';
 
@@ -58,18 +57,6 @@ const cardColors = {
       yellow: 'rgba(251, 176, 27, 0.8)',
     }
   },
-  background: {
-    light: {
-      zinc: 'rgb(247, 247, 247)',
-      red: 'rgba(189, 40, 53, 0.1)',
-      yellow: 'rgba(251, 176, 27, 0.1)',
-    },
-    dark: {
-      zinc: 'rgba(255, 255, 255, 0.06)',
-      red: 'rgba(189, 40, 53, 0.1)',
-      yellow: 'rgba(251, 176, 27, 0.06)',
-    }
-  },
   title: {
     light: {
       zinc: 'rgb(0, 0, 0)',
@@ -83,26 +70,4 @@ const cardColors = {
     }
   }
 };
-
-const commonOverrides = {
-  borderRadius: '10px',
-};
-
-const lightCardThemeOverrides = computed<NonNullable<CardProps['themeOverrides']>>(() => {
-  return {
-    ...commonOverrides,
-    borderColor: props.element.options?.variant === 'outline' ? cardColors.border.light[props.element.options?.color] : 'rgb(220, 222, 224)',
-    color: props.element.options?.variant !== 'outline' ? cardColors.background.light[props.element.options?.color] : undefined,
-    titleTextColor: props.element.options?.isTitleColored ? cardColors.title.light[props.element.options?.color] : undefined
-  };
-});
-
-const darkCardThemeOverrides = computed<NonNullable<CardProps['themeOverrides']>>(() => {
-  return {
-    ...commonOverrides,
-    borderColor: props.element.options?.variant === 'outline' ? cardColors.border.dark[props.element.options?.color] : 'rgba(255, 255, 255, 0.14)',
-    color: props.element.options?.variant !== 'outline' ? cardColors.background.dark[props.element.options?.color] : undefined,
-    titleTextColor: props.element.options?.isTitleColored ? cardColors.title.dark[props.element.options?.color] : undefined
-  };
-});
 </script>

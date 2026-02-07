@@ -1,5 +1,8 @@
-import { type Component } from 'vue';
+import { type Component, type AsyncComponentLoader } from 'vue';
 import TextCaseUppercase20Filled from '~icons/fluent/text-case-uppercase20-filled';
+
+// Re-export all type definitions
+export * from './types';
 import AppsListDetail24Regular from '~icons/fluent/apps-list-detail24-regular';
 import CalendarDay24Regular from '~icons/fluent/calendar-day24-regular';
 import ImageMultiple24Regular from '~icons/fluent/image-multiple24-regular';
@@ -10,6 +13,7 @@ import FlowIcon from '~icons/fluent/flow24-regular';
 import NumberIcon from '~icons/fluent/number-symbol24-regular';
 import HeroIcon from '~icons/fluent/slide-play24-regular';
 import GridIcon from '~icons/fluent/table-simple24-regular';
+import SocialIcon from '~icons/fluent/share-24-regular';
 
 export interface ContentType {
   value: string;
@@ -61,8 +65,15 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     label: "Hero",
     icon: HeroIcon,
     description: "Didelis turinio blokas su paveiksliuku",
-    defaultContent: () => ({}),
-    defaultOptions: () => ({ is_active: true }),
+    defaultContent: () => ({
+      title: '',
+      subtitle: '',
+      backgroundMedia: null,
+      rightMedia: null,
+      buttonText: '',
+      buttonLink: '',
+    }),
+    defaultOptions: () => ({ is_active: true, backgroundBlur: false, buttonColor: 'red' }),
   },
   "news": {
     value: "news",
@@ -77,6 +88,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     icon: CalendarIcon,
     description: "Kalendoriaus blokas",
     defaultContent: () => ({ title: "" }),
+    defaultOptions: () => ({ allTenants: false }),
   },
   "spotify-embed": {
     value: "spotify-embed",
@@ -84,6 +96,14 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     icon: SpotifyIcon,
     description: "Spotify grojaraščio įterpimas",
     defaultContent: () => ({ url: "" }),
+  },
+  "social-embed": {
+    value: "social-embed",
+    label: "Facebook / Instagram",
+    icon: SocialIcon,
+    description: "Facebook arba Instagram įrašo įterpimas",
+    defaultContent: () => ({ url: "", platform: null, postId: "" }),
+    defaultOptions: () => ({ showCaption: true }),
   },
   "flow-graph": {
     value: "flow-graph",
@@ -138,7 +158,7 @@ export const getAllContentTypes = (): ContentType[] => {
 };
 
 export const getContentType = (type: string): ContentType => {
-  return contentTypeRegistry[type] || contentTypeRegistry["tiptap"];
+  return contentTypeRegistry[type] ?? contentTypeRegistry["tiptap"]!;
 };
 
 export const createContentItem = (type: string) => {
