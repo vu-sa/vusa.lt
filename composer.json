@@ -43,7 +43,7 @@
         "staudenmeir/eloquent-has-many-deep": "^v1.18",
         "symfony/psr-http-message-bridge": "^7.1",
         "tightenco/ziggy": "^2.0",
-        "typesense/typesense-php": "^5.1",
+        "typesense/typesense-php": "^6.0",
         "ueberdosis/tiptap-php": "^2.0"
     },
     "require-dev": {
