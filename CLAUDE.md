@@ -62,6 +62,10 @@ All Laravel commands **MUST** be run using Laravel Sail:
 - Support both lt/en languages
 - Use `sail` for all Laravel commands
 
+### Shadcn Vue Component Gotchas
+
+- **Checkbox**: Uses `model-value` / `v-model`, NOT `checked`. The reka-ui `CheckboxRoot` underlying it binds via `modelValue`. Always use `:model-value` + `@update:model-value` (or `v-model`) — never `:checked` + `@update:checked`.
+
 ### API Architecture
 
 **Route Organization**:

@@ -17,14 +17,8 @@ import Icons from "@/Types/Icons/regular";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 
-const props = defineProps<{
+defineProps<{
   dutiable: App.Entities.Dutiable;
   studyPrograms: App.Entities.StudyProgram[];
 }>();
-
-const dutiable = {
-  ...props.dutiable,
-  start_date: new Date(props.dutiable.start_date).getTime(),
-  end_date: props.dutiable.end_date ? new Date(props.dutiable.end_date).getTime() : null,
-};
 </script>

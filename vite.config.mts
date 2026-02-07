@@ -1,5 +1,5 @@
 import { defineConfig } from 'vitest/config';
-import { NaiveUiResolver, VueUseComponentsResolver } from 'unplugin-vue-components/resolvers';
+import { VueUseComponentsResolver } from 'unplugin-vue-components/resolvers';
 import Components from 'unplugin-vue-components/vite';
 import Icons from 'unplugin-icons/vite';
 import IconsResolver from 'unplugin-icons/resolver';
@@ -39,7 +39,6 @@ export default defineConfig(({ command }) => {
     Components({
       resolvers: [
         IconsResolver(),
-        NaiveUiResolver(),
         VueUseComponentsResolver(),
       ],
       // For fixing imports: https://github.com/unplugin/unplugin-icons/issues/317#issuecomment-1789146323

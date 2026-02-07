@@ -21,30 +21,22 @@
               </span>
             </div>
           </div>
-          <NTag v-if="training.form === null" type="warning" size="small" round class="float-right">
-            <template #icon>
-              <IFluentSubtractCircle12Regular class="mr-1" />
-            </template>
+          <Badge v-if="training.form === null" variant="warning">
+            <IFluentSubtractCircle12Regular class="mr-1" />
             Registracija nevykdoma
-          </NTag>
-          <NTag v-else-if="!userCanRegister" size="small" round class="float-right">
-            <template #icon>
-              <IFluentCircleOff16Regular class="mr-1" />
-            </template>
+          </Badge>
+          <Badge v-else-if="!userCanRegister" variant="secondary">
+            <IFluentCircleOff16Regular class="mr-1" />
             Negalite registruotis
-          </NTag>
-          <NTag v-else-if="!userIsRegistered" type="warning" size="small" round class="float-right">
-            <template #icon>
-              <IFluentCircle24Regular class="mr-1" />
-            </template>
+          </Badge>
+          <Badge v-else-if="!userIsRegistered" variant="warning">
+            <IFluentCircle24Regular class="mr-1" />
             Registracija vyksta
-          </NTag>
-          <NTag v-else-if="userIsRegistered" type="success" size="small" round class="float-right">
-            <template #icon>
-              <IFluentCheckmarkCircle24Filled class="mr-1" />
-            </template>
-            Užsiregistruota
-          </NTag>
+          </Badge>
+          <Badge v-else-if="userIsRegistered" variant="success">
+            <IFluentCheckmarkCircle24Filled class="mr-1" />
+            Uzsiregistruota
+          </Badge>
         </div>
         <div class="text-zinc-900 mt-2">
           <div v-html="training.description" />
@@ -59,7 +51,7 @@
           </Button>
           </Link>
           <Button v-else-if="userIsRegistered" variant="warning" disabled>
-            Atšaukti registraciją
+            Atsaukti registracija
           </Button>
           <Button v-else disabled>
             Registruotis
@@ -71,12 +63,16 @@
         </div>
       </CardFooter>
     </Card>
-    <NTabs class="my-4" type="segment" animated :default-value="defaultTab">
-      <NTabPane name="summary" tab="Pagrindinis">
+    <Tabs class="my-4" :default-value="defaultTab">
+      <TabsList>
+        <TabsTrigger value="summary">Pagrindinis</TabsTrigger>
+        <TabsTrigger value="programme">Programa</TabsTrigger>
+      </TabsList>
+      <TabsContent value="summary">
         <Card class="border shadow-xs bg-white dark:bg-zinc-800 dark:border-zinc-700">
           <CardHeader>
             <h2 class="mb-0">
-              Pagrindinė informacija
+              Pagrindine informacija
             </h2>
           </CardHeader>
           <CardContent class="flex flex-col gap-2">
@@ -94,16 +90,16 @@
             </div>
             <div class="inline-flex items-center gap-2">
               <Icons.USER />
-              Organizuoja: 
+              Organizuoja:
               <UserPopover show-name :size="20" :user="training.organizer" />
             </div>
           </CardContent>
         </Card>
-      </NTabPane>
-      <NTabPane name="programme" tab="Programa">
+      </TabsContent>
+      <TabsContent value="programme">
         <ProgrammePlanner show-times :programme="training.programmes?.at(0)" />
-      </NTabPane>
-    </NTabs>
+      </TabsContent>
+    </Tabs>
   </AdminContentPage>
 </template>
 
@@ -111,9 +107,9 @@
 import UserPopover from "@/Components/Avatars/UserPopover.vue";
 import AdminContentPage from "@/Components/Layouts/AdminContentPage.vue";
 import { Button } from "@/Components/ui/button";
-import Card from "@/Components/ui/card/Card.vue";
-import CardContent from "@/Components/ui/card/CardContent.vue";
-import CardHeader from "@/Components/ui/card/CardHeader.vue";
+import { Badge } from "@/Components/ui/badge";
+import { Card, CardContent, CardFooter, CardHeader } from "@/Components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
 import ProgrammePlanner from "@/Features/Admin/ProgrammePlanner/ProgrammePlanner.vue";
 import { formatStaticTime } from "@/Utils/IntlTime";
 import { Link } from "@inertiajs/vue3";
@@ -121,7 +117,6 @@ import { computed } from "vue";
 import Icons from "@/Types/Icons/filled";
 
 import Sparkle20Filled from "~icons/fluent/sparkle20-filled";
-import CardFooter from "@/Components/ui/card/CardFooter.vue";
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 
 const props = defineProps<{
@@ -139,7 +134,7 @@ const defaultTab = computed(() => {
   return "summary";
 });
 
-usePageBreadcrumbs(() => 
+usePageBreadcrumbs(() =>
   BreadcrumbHelpers.adminShow(
     "Mokymai",
     "trainings.index",

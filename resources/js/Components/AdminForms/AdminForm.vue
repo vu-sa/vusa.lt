@@ -1,76 +1,74 @@
 <template>
-  <ThemeProvider>
-    <NForm v-bind="$attrs">
-      <div class="flex flex-col pb-20">
-        <!-- Status header slot (for publish status, preview buttons) -->
-        <slot name="status-header" />
+  <form v-bind="$attrs" @submit.prevent>
+    <div class="flex flex-col pb-20">
+      <!-- Status header slot (for publish status, preview buttons) -->
+      <slot name="status-header" />
 
-        <slot />
-      </div>
+      <slot />
+    </div>
 
-      <!-- Sticky Bottom Action Bar -->
-      <div
-        class="fixed bottom-0 left-0 right-0 z-50 border-t bg-white/95 backdrop-blur-sm px-4 py-3 dark:bg-zinc-900/95 dark:border-zinc-800 md:left-(--sidebar-width,16rem)">
-        <div class="mx-auto flex max-w-5xl items-center justify-between gap-4">
-          <!-- Left side: Status indicators -->
-          <div class="flex items-center gap-3 text-sm">
-            <Transition name="fade" mode="out-in">
-              <div v-if="isSaving" key="saving" class="flex items-center gap-2 text-muted-foreground">
-                <div
-                  class="h-3 w-3 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-600 dark:border-zinc-600 dark:border-t-zinc-300" />
-                <span class="hidden sm:inline">{{ $t('Išsaugoma...') }}</span>
-              </div>
-              <div v-else-if="recentlySaved" key="saved"
-                class="flex items-center gap-2 text-green-600 dark:text-green-400">
-                <IFluentCheckmarkCircle16Filled class="h-4 w-4" />
-                <span class="hidden sm:inline">{{ $t('Išsaugota') }}</span>
-              </div>
-              <div v-else-if="props.model.isDirty" key="unsaved"
-                class="flex items-center gap-2 text-amber-600 dark:text-amber-400">
-                <div class="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
-                <span class="hidden sm:inline">{{ $t('Neišsaugoti pakeitimai') }}</span>
-              </div>
-            </Transition>
-          </div>
+    <!-- Sticky Bottom Action Bar -->
+    <div
+      class="fixed bottom-0 left-0 right-0 z-50 border-t bg-white/95 backdrop-blur-sm px-4 py-3 dark:bg-zinc-900/95 dark:border-zinc-800 md:left-(--sidebar-width,16rem)">
+      <div class="mx-auto flex max-w-5xl items-center justify-between gap-4">
+        <!-- Left side: Status indicators -->
+        <div class="flex items-center gap-3 text-sm">
+          <Transition name="fade" mode="out-in">
+            <div v-if="isSaving" key="saving" class="flex items-center gap-2 text-muted-foreground">
+              <div
+                class="h-3 w-3 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-600 dark:border-zinc-600 dark:border-t-zinc-300" />
+              <span class="hidden sm:inline">{{ $t('Išsaugoma...') }}</span>
+            </div>
+            <div v-else-if="recentlySaved" key="saved"
+              class="flex items-center gap-2 text-green-600 dark:text-green-400">
+              <IFluentCheckmarkCircle16Filled class="h-4 w-4" />
+              <span class="hidden sm:inline">{{ $t('Išsaugota') }}</span>
+            </div>
+            <div v-else-if="props.model.isDirty" key="unsaved"
+              class="flex items-center gap-2 text-amber-600 dark:text-amber-400">
+              <div class="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+              <span class="hidden sm:inline">{{ $t('Neišsaugoti pakeitimai') }}</span>
+            </div>
+          </Transition>
+        </div>
 
-          <!-- Right side: Action buttons -->
-          <div class="flex items-center gap-2 sm:gap-3">
-            <!-- Autosave toggle -->
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger as-child>
-                  <div class="hidden items-center gap-2 sm:flex" :class="{ 'opacity-50': isCreatePage }">
-                    <Switch id="autosave" v-model="autosaveEnabled" :disabled="isCreatePage" />
-                    <Label for="autosave" class="text-xs text-muted-foreground" :class="isCreatePage ? 'cursor-not-allowed' : 'cursor-pointer'">
-                      {{ $t('Automatinis išsaugojimas') }}
-                    </Label>
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent v-if="isCreatePage">
-                  <p>{{ $t('Automatinis išsaugojimas galimas tik redaguojant esamą įrašą') }}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+        <!-- Right side: Action buttons -->
+        <div class="flex items-center gap-2 sm:gap-3">
+          <!-- Autosave toggle -->
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger as-child>
+                <div class="hidden items-center gap-2 sm:flex" :class="{ 'opacity-50': isCreatePage }">
+                  <Switch id="autosave" v-model="autosaveEnabled" :disabled="isCreatePage" />
+                  <Label for="autosave" class="text-xs text-muted-foreground" :class="isCreatePage ? 'cursor-not-allowed' : 'cursor-pointer'">
+                    {{ $t('Automatinis išsaugojimas') }}
+                  </Label>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent v-if="isCreatePage">
+                <p>{{ $t('Automatinis išsaugojimas galimas tik redaguojant esamą įrašą') }}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
 
-            <Separator orientation="vertical" class="hidden h-6 sm:block" />
+          <Separator orientation="vertical" class="hidden h-6 sm:block" />
 
-            <slot name="buttons">
-              <Button v-if="enableDelete" variant="ghost" size="icon"
-                class="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30 sm:size-auto sm:px-4"
-                @click="showDeleteDialog = true">
-                <IFluentDelete24Filled class="h-4 w-4" />
-                <span class="hidden sm:inline ml-2">{{ $t('Ištrinti') }}</span>
-              </Button>
-              <Button :disabled="isSaving" @click="handleSubmit">
-                <IFluentSave24Filled class="h-4 w-4" />
-                <span class="hidden sm:inline ml-2">{{ $t('Išsaugoti') }}</span>
-              </Button>
-            </slot>
-          </div>
+          <slot name="buttons">
+            <Button v-if="enableDelete" variant="ghost" size="icon"
+              class="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30 sm:size-auto sm:px-4"
+              @click="showDeleteDialog = true">
+              <IFluentDelete24Filled class="h-4 w-4" />
+              <span class="hidden sm:inline ml-2">{{ $t('Ištrinti') }}</span>
+            </Button>
+            <Button :disabled="isSaving" @click="handleSubmit">
+              <IFluentSave24Filled class="h-4 w-4" />
+              <span class="hidden sm:inline ml-2">{{ $t('Išsaugoti') }}</span>
+            </Button>
+          </slot>
         </div>
       </div>
-    </NForm>
-  </ThemeProvider>
+    </div>
+  </form>
 
   <Dialog :open="showDeleteDialog" @update:open="showDeleteDialog = $event">
     <DialogContent class="sm:max-w-106.25">
@@ -105,7 +103,6 @@ import { Switch } from '@/Components/ui/switch';
 import { Label } from '@/Components/ui/label';
 import { Separator } from '@/Components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
-import ThemeProvider from '@/Components/Providers/ThemeProvider.vue';
 
 const props = defineProps<{
   model: Record<string, any>;

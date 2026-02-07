@@ -1,7 +1,7 @@
 <template>
-  <NFormItem v-if="showTimeSwitch" label="Rodyti laikus">
-    <NSwitch v-model:value="showTimes" />
-  </NFormItem>
+  <FormFieldWrapper v-if="showTimeSwitch" id="show-times" label="Rodyti laikus">
+    <Switch :checked="showTimes" @update:checked="val => showTimes = val" />
+  </FormFieldWrapper>
   <div class="flex flex-col gap-4 bg-white dark:bg-zinc-800 rounded-lg">
     <div ref="programmeEl" class="mb-3 flex flex-col gap-2">
       <ProgrammeDay v-for="(day, index) in programmeDays" :key="day.id" v-model:day="programmeDays[index]"
@@ -18,17 +18,16 @@
     </div>
   </div>
   <CardModal v-model:show="showDayEditModal" @close="showDayEditModal = false">
-    <NFormItem label="Dienos pavadinimas">
+    <FormFieldWrapper id="day-title" label="Dienos pavadinimas">
       <MultiLocaleInput v-model:input="selectedDay.title" />
-    </NFormItem>
-    <NFormItem label="Dienos pradžios laikas">
-      <NDatePicker v-model:value="selectedDay.start_time" :first-day-of-week="0" :format="'yyyy-MM-dd HH:mm'"
-        :time-picker-props="{
-          format: 'HH:mm',
-          minutes: 5,
-          hours: Array.from({ length: 22 - 8 + 1 }, (v, i) => i + 8),
-        }" type="datetime" clearable :actions="['confirm']" />
-    </NFormItem>
+    </FormFieldWrapper>
+    <FormFieldWrapper id="day-start-time" label="Dienos pradžios laikas">
+      <Input
+        type="datetime-local"
+        :value="formatDatetimeLocal(selectedDay.start_time)"
+        @input="(e: Event) => selectedDay.start_time = parseDatetimeLocal((e.target as HTMLInputElement).value)"
+      />
+    </FormFieldWrapper>
     <Button variant="outline" @click="showDayEditModal = false">
       Uždaryti
     </Button>
@@ -50,6 +49,9 @@ import { useSortable } from '@vueuse/integrations/useSortable'
 import { router } from "@inertiajs/vue3";
 
 import { Button } from '@/Components/ui/button';
+import { Input } from '@/Components/ui/input';
+import { Switch } from '@/Components/ui/switch';
+import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import ProgrammeDay from './ProgrammeDay.vue';
 import MultiLocaleInput from '@/Components/FormItems/MultiLocaleInput.vue';
 import CardModal from '@/Components/Modals/CardModal.vue';
@@ -86,6 +88,19 @@ provide('movedElement', { movedElement, updateMovedElement });
 if (props.editable) useSortable<HTMLDivElement | null>(programmeEl, programmeDays, {
   handle: '.day-handle',
 });
+
+function formatDatetimeLocal(value: string | number | null | undefined): string {
+  if (!value) return '';
+  const date = new Date(value);
+  if (isNaN(date.getTime())) return '';
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+function parseDatetimeLocal(value: string): string {
+  if (!value) return '';
+  return new Date(value).toISOString();
+}
 
 function createDay() {
   programmeDays.value?.push({

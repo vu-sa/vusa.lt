@@ -1,10 +1,9 @@
 <template>
   <PageContent :title="`${$page.props.auth?.user?.name}`">
-    <ThemeProvider>
-      <NCard>
+    <Card>
+      <CardContent class="pt-6">
         <!-- <p>{{ salutation }}</p> -->
         <div class="mb-4">
-          <NForm :model="form">
           <FormElement>
             <template #title>
               {{ $t("Nustatymai") }}
@@ -12,40 +11,36 @@
             <template #description>
               Kitus nustatymus gali tvarkyti komunikacijos ir atstovų koordinatoriai.
             </template>
-            <NFormItem :label="$t('forms.fields.name_and_surname')">
+            <FormFieldWrapper id="name" :label="$t('forms.fields.name_and_surname')">
               <div class="flex grow flex-col gap-1">
-                <NInput v-model:value="form.name" :disabled="user.name_was_changed" />
+                <Input v-model="form.name" :disabled="user.name_was_changed" />
                 <InfoText v-if="!user.name_was_changed">
                   Paskyros vardą galima pakeisti tik VIENĄ kartą!
                 </InfoText>
               </div>
-            </NFormItem>
+            </FormFieldWrapper>
             <div class="grid gap-4 lg:grid-cols-2">
-              <NFormItem :label="$t('forms.fields.phone')">
-                <NInput v-model:value="form.phone" placeholder="+370 612 34 567" />
-              </NFormItem>
-              <NFormItem :label="$t('forms.fields.facebook_url')">
-                <NInput v-model:value="form.facebook_url" placeholder="https://www.facebook.com/..." />
-              </NFormItem>
+              <FormFieldWrapper id="phone" :label="$t('forms.fields.phone')">
+                <Input v-model="form.phone" placeholder="+370 612 34 567" />
+              </FormFieldWrapper>
+              <FormFieldWrapper id="facebook_url" :label="$t('forms.fields.facebook_url')">
+                <Input v-model="form.facebook_url" placeholder="https://www.facebook.com/..." />
+              </FormFieldWrapper>
             </div>
-            <NFormItem :label="$t('forms.fields.picture')">
+            <FormFieldWrapper id="picture" :label="$t('forms.fields.picture')">
               <ImageUpload v-model:url="form.profile_photo_path" mode="immediate" folder="contacts" cropper :existing-url="user?.profile_photo_path" />
-            </NFormItem>
+            </FormFieldWrapper>
 
             <div class="grid gap-4 lg:grid-cols-2">
-              <NFormItem :label="$t('forms.fields.pronouns')">
+              <FormFieldWrapper id="pronouns" :label="$t('forms.fields.pronouns')">
                 <MultiLocaleInput v-model:input="form.pronouns" :placeholder="{ lt: 'Jie/jų', en: 'They/them' }" />
-              </NFormItem>
-              <NFormItem :label="$t('forms.fields.show_pronouns')">
-                <NSwitch v-model:value="form.show_pronouns" :disabled="form.pronouns === ''">
-                  <template #checked>
-                    <span>Įvardžiai rodomi viešai</span>
-                  </template>
-                  <template #unchecked>
-                    <span>Įvardžiai nerodomi viešai</span>
-                  </template>
-                </NSwitch>
-              </NFormItem>
+              </FormFieldWrapper>
+              <FormFieldWrapper id="show_pronouns" :label="$t('forms.fields.show_pronouns')">
+                <div class="flex items-center gap-2">
+                  <Switch :checked="form.show_pronouns" :disabled="form.pronouns === ''" @update:checked="val => form.show_pronouns = val" />
+                  <span class="text-sm text-muted-foreground">{{ form.show_pronouns ? 'Įvardžiai rodomi viešai' : 'Įvardžiai nerodomi viešai' }}</span>
+                </div>
+              </FormFieldWrapper>
             </div>
             <Button :disabled="loading" variant="default" @click="handleSubmit">
               <IMdiContentSave />
@@ -61,33 +56,31 @@
             <template #description>
               Jūs galite pakeisti savo slaptažodį čia. Įveskite dabartinį slaptažodį ir naują slaptažodį.
             </template>
-            <NForm :model="passwordForm">
-              <NFormItem :label="$t('Dabartinis slaptažodis')" required>
-                <NInput 
-                  v-model:value="passwordForm.current_password" 
-                  type="password" 
-                  placeholder="Įveskite dabartinį slaptažodį" 
-                />
-              </NFormItem>
-              <NFormItem :label="$t('Naujas slaptažodis')" required>
-                <NInput 
-                  v-model:value="passwordForm.password" 
-                  type="password" 
-                  placeholder="Įveskite naują slaptažodį" 
-                />
-              </NFormItem>
-              <NFormItem :label="$t('Pakartokite naują slaptažodį')" required>
-                <NInput 
-                  v-model:value="passwordForm.password_confirmation" 
-                  type="password" 
-                  placeholder="Pakartokite naują slaptažodį" 
-                />
-              </NFormItem>
-              <Button :disabled="passwordLoading" variant="default" @click="handlePasswordUpdate">
-                <IMdiLock />
-                {{ $t("Keisti slaptažodį") }}
-              </Button>
-            </NForm>
+            <FormFieldWrapper id="current_password" :label="$t('Dabartinis slaptažodis')" required>
+              <Input
+                v-model="passwordForm.current_password"
+                type="password"
+                placeholder="Įveskite dabartinį slaptažodį"
+              />
+            </FormFieldWrapper>
+            <FormFieldWrapper id="password" :label="$t('Naujas slaptažodis')" required>
+              <Input
+                v-model="passwordForm.password"
+                type="password"
+                placeholder="Įveskite naują slaptažodį"
+              />
+            </FormFieldWrapper>
+            <FormFieldWrapper id="password_confirmation" :label="$t('Pakartokite naują slaptažodį')" required>
+              <Input
+                v-model="passwordForm.password_confirmation"
+                type="password"
+                placeholder="Pakartokite naują slaptažodį"
+              />
+            </FormFieldWrapper>
+            <Button :disabled="passwordLoading" variant="default" @click="handlePasswordUpdate">
+              <IMdiLock />
+              {{ $t("Keisti slaptažodį") }}
+            </Button>
           </FormElement>
 
           <!-- Tutorial Settings Section -->
@@ -99,9 +92,9 @@
               {{ $t("Galite iš naujo peržiūrėti interaktyvius vadovus, kurie padeda susipažinti su sistema.") }}
             </template>
             <div class="flex items-center gap-4">
-              <Button 
-                :disabled="tutorialResetLoading" 
-                variant="outline" 
+              <Button
+                :disabled="tutorialResetLoading"
+                variant="outline"
                 @click="handleResetTutorials"
               >
                 <IMdiRefresh />
@@ -121,16 +114,12 @@
             <template #description>
               {{ $t("Nustatymai, padedantys pritaikyti sistemą pagal jūsų poreikius.") }}
             </template>
-            <NFormItem :label="$t('Išjungti puslapių perėjimo animacijas')">
-              <NSwitch v-model:value="reduceMotion" @update:value="handleReduceMotionChange">
-                <template #checked>
-                  <span>{{ $t('Animacijos išjungtos') }}</span>
-                </template>
-                <template #unchecked>
-                  <span>{{ $t('Animacijos įjungtos') }}</span>
-                </template>
-              </NSwitch>
-            </NFormItem>
+            <FormFieldWrapper id="reduce_motion" :label="$t('Išjungti puslapių perėjimo animacijas')">
+              <div class="flex items-center gap-2">
+                <Switch :checked="reduceMotion" @update:checked="handleReduceMotionChange" />
+                <span class="text-sm text-muted-foreground">{{ reduceMotion ? $t('Animacijos išjungtos') : $t('Animacijos įjungtos') }}</span>
+              </div>
+            </FormFieldWrapper>
             <p class="text-sm text-muted-foreground">
               {{ $t('Šį nustatymą taip pat galima valdyti operacinės sistemos prieinamumo nustatymuose ("Reduce motion").') }}
             </p>
@@ -155,23 +144,22 @@
             <template v-for="duty in user.current_duties">
               <li v-for="role in duty.roles" :key="role.id">
                 <strong>{{ $t(role.name) }}</strong> ({{
-                  `iš pareigybės „${duty.name}“, kuri yra iš ${duty.institution?.tenant?.shortname ?? "nežinomo\
+                  `iš pareigybės „${duty.name}", kuri yra iš ${duty.institution?.tenant?.shortname ?? "nežinomo\
                 padalinio"}` }})
               </li>
             </template>
           </ul>
-          </nform>
         </div>
-      </NCard>
-      <p class="mt-4 flex items-center justify-center gap-2">
-        <a class="inline-flex items-center" target="_blank" href="https://github.com/vu-sa/vusa.lt/">
-          <Button variant="link">
-            <IMdiGithub />
-            {{ $t("Projekto puslapis") }}
-          </Button>
-        </a>
-      </p>
-    </ThemeProvider>
+      </CardContent>
+    </Card>
+    <p class="mt-4 flex items-center justify-center gap-2">
+      <a class="inline-flex items-center" target="_blank" href="https://github.com/vu-sa/vusa.lt/">
+        <Button variant="link">
+          <IMdiGithub />
+          {{ $t("Projekto puslapis") }}
+        </Button>
+      </a>
+    </p>
   </PageContent>
 </template>
 
@@ -183,7 +171,11 @@ import { useForm, usePage } from "@inertiajs/vue3";
 import { useApiMutation } from "@/Composables/useApi";
 import { resetInitialization } from "@/Composables/useTutorialProgress";
 import { Button } from "@/Components/ui/button";
+import { Card, CardContent } from "@/Components/ui/card";
+import { Input } from "@/Components/ui/input";
+import { Switch } from "@/Components/ui/switch";
 import FormElement from "@/Components/AdminForms/FormElement.vue";
+import FormFieldWrapper from "@/Components/AdminForms/FormFieldWrapper.vue";
 import MultiLocaleInput from "@/Components/FormItems/MultiLocaleInput.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import { ImageUpload } from "@/Components/ui/upload";
@@ -191,7 +183,6 @@ import InfoText from "@/Components/SmallElements/InfoText.vue";
 import NotificationPreferences from "@/Features/Admin/Notifications/NotificationPreferences.vue";
 import PushDeviceManagement from "@/Features/Admin/Notifications/PushDeviceManagement.vue";
 import { BreadcrumbHelpers, usePageBreadcrumbs } from "@/Composables/useBreadcrumbsUnified";
-import ThemeProvider from "@/Components/Providers/ThemeProvider.vue";
 import IMdiContentSave from '~icons/mdi/content-save';
 import IMdiGithub from '~icons/mdi/github';
 import IMdiLock from '~icons/mdi/lock';
@@ -224,12 +215,13 @@ const tutorialResetSuccess = ref(false);
 // View transitions / reduced motion preference
 const REDUCE_MOTION_KEY = 'vusa-reduce-motion';
 const reduceMotion = ref(
-  typeof window !== 'undefined' 
+  typeof window !== 'undefined'
     ? localStorage.getItem(REDUCE_MOTION_KEY) === 'true'
     : false
 );
 
 const handleReduceMotionChange = (value: boolean) => {
+  reduceMotion.value = value;
   localStorage.setItem(REDUCE_MOTION_KEY, String(value));
   // Also toggle a class on documentElement for CSS-based disabling
   if (value) {
@@ -292,7 +284,7 @@ const handlePasswordUpdate = () => {
 const handleResetTutorials = async () => {
   tutorialResetLoading.value = true;
   tutorialResetSuccess.value = false;
-  
+
   try {
     const { execute, isSuccess } = useApiMutation(
       route("api.v1.admin.tutorials.resetAll"),
@@ -300,20 +292,20 @@ const handleResetTutorials = async () => {
       {},
       { showSuccessToast: false, showErrorToast: true }
     );
-    
+
     await execute();
-    
+
     if (isSuccess.value) {
       tutorialResetSuccess.value = true;
-      
+
       // Reset the shared tutorial progress state
       resetInitialization();
-      
+
       // Also clear localStorage (legacy)
       if (typeof window !== 'undefined') {
         localStorage.removeItem('vusa-tutorial-progress');
       }
-      
+
       // Hide success message after 3 seconds
       setTimeout(() => {
         tutorialResetSuccess.value = false;

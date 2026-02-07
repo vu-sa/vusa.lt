@@ -17,7 +17,7 @@
             <Card class="h-full transition-all duration-200 hover:shadow-md hover:ring-1 hover:ring-primary/20">
               <CardHeader>
                 <CardTitle class="flex items-center gap-2">
-                  <NIcon :component="Icons.FORM" />
+                  <component :is="Icons.FORM" class="size-5" />
                   {{ $t('settings.pages.forms.title') }}
                 </CardTitle>
                 <CardDescription>
@@ -32,7 +32,7 @@
             <Card class="h-full transition-all duration-200 hover:shadow-md hover:ring-1 hover:ring-primary/20">
               <CardHeader>
                 <CardTitle class="flex items-center gap-2">
-                  <NIcon :component="Icons.MEETING" />
+                  <component :is="Icons.MEETING" class="size-5" />
                   {{ $t('settings.pages.meetings.title') }}
                 </CardTitle>
                 <CardDescription>
@@ -47,7 +47,7 @@
             <Card class="h-full transition-all duration-200 hover:shadow-md hover:ring-1 hover:ring-primary/20">
               <CardHeader>
                 <CardTitle class="flex items-center gap-2">
-                  <NIcon :component="Icons.INSTITUTION" />
+                  <component :is="Icons.INSTITUTION" class="size-5" />
                   {{ $t('settings.pages.atstovavimas.title') }}
                 </CardTitle>
                 <CardDescription>
@@ -62,7 +62,7 @@
             <Card class="h-full transition-all duration-200 hover:shadow-md hover:ring-1 hover:ring-primary/20">
               <CardHeader>
                 <CardTitle class="flex items-center gap-2">
-                  <NIcon :component="Icons.DOCUMENT" />
+                  <component :is="Icons.DOCUMENT" class="size-5" />
                   {{ $t('settings.pages.documents.title') }}
                 </CardTitle>
                 <CardDescription>
@@ -85,7 +85,7 @@
             <Card class="h-full transition-all duration-200 hover:shadow-md hover:ring-1 hover:ring-primary/20">
               <CardHeader>
                 <CardTitle class="flex items-center gap-2">
-                  <NIcon :component="Icons.ROLE" />
+                  <component :is="Icons.ROLE" class="size-5" />
                   {{ $t('settings.pages.authorization.title') }}
                 </CardTitle>
                 <CardDescription>
@@ -102,7 +102,6 @@
 
 <script setup lang="ts">
 import { Link } from "@inertiajs/vue3";
-import { NIcon } from "naive-ui";
 
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/Components/ui/card";

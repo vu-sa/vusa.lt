@@ -27,10 +27,6 @@ const getPosthog = async () => {
 //// get title from appTitle by removing the suffix
 //const pageTitle = metaTitle.replace(" - VU SA", "");
 
-const meta = document.createElement("meta");
-meta.name = "naive-ui-style";
-document.head.appendChild(meta);
-
 createInertiaApp({
   title: (title) => {
     // Ensure title is always a string to prevent Inertia Head escape() errors

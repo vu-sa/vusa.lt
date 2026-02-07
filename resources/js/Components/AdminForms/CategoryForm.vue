@@ -4,15 +4,15 @@
       <template #title>
         {{ $t("forms.context.main_info") }}
       </template>
-      <NFormItem :label="$t('forms.fields.title')">
-        <NInput v-model:value="form.name" type="text" placeholder="Įrašyti pavadinimą..." />
-      </NFormItem>
-      <NFormItem label="Trumpinys">
-        <NInput v-model:value="form.alias" type="text" placeholder="" :disabled="form.id" />
-      </NFormItem>
-      <NFormItem label="Aprašymas">
-        <NInput v-model:value="form.description" type="textarea" placeholder="..." />
-      </NFormItem>
+      <FormFieldWrapper id="name" :label="$t('forms.fields.title')">
+        <Input id="name" v-model="form.name" type="text" placeholder="Įrašyti pavadinimą..." />
+      </FormFieldWrapper>
+      <FormFieldWrapper id="alias" label="Trumpinys">
+        <Input id="alias" v-model="form.alias" type="text" placeholder="" :disabled="!!form.id" />
+      </FormFieldWrapper>
+      <FormFieldWrapper id="description" label="Aprašymas">
+        <Textarea id="description" v-model="form.description" placeholder="..." />
+      </FormFieldWrapper>
     </FormElement>
   </AdminForm>
 </template>
@@ -20,7 +20,10 @@
 <script setup lang="ts">
 import { useForm } from "@inertiajs/vue3";
 
+import { Input } from "@/Components/ui/input";
+import { Textarea } from "@/Components/ui/textarea";
 import FormElement from "./FormElement.vue";
+import FormFieldWrapper from "./FormFieldWrapper.vue";
 import AdminForm from "./AdminForm.vue";
 
 const { category, rememberKey } = defineProps<{

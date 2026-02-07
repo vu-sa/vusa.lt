@@ -139,9 +139,6 @@ declare global {
       available_trainings_exists: boolean
     }
 
-    export interface Model {
-    }
-
     export interface Permission {
       // columns
       id: string
@@ -301,35 +298,6 @@ declare global {
       user_exists: boolean
     }
 
-    export interface Dutiable {
-      // columns
-      id: string
-      duty_id: string
-      dutiable_id: string
-      dutiable_type: string
-      start_date: string
-      end_date?: string | null
-      study_program_id?: string | null
-      additional_email?: string | null
-      additional_photo?: string | null
-      description?: Array<unknown> | null
-      use_original_duty_name: boolean
-      created_at: string
-      updated_at: string
-      // mutators
-      translations: unknown
-      // relations
-      dutiable?: Dutiable
-      duty?: Duty
-      study_program?: StudyProgram
-      user?: User
-      // counts
-      // exists
-      duty_exists: boolean
-      study_program_exists: boolean
-      user_exists: boolean
-    }
-
     export interface AgendaItem {
       // columns
       id: string
@@ -360,6 +328,35 @@ declare global {
       main_vote_exists: boolean
       additional_votes_exists: boolean
       activities_exists: boolean
+    }
+
+    export interface Dutiable {
+      // columns
+      id: string
+      duty_id: string
+      dutiable_id: string
+      dutiable_type: string
+      start_date: string
+      end_date?: string | null
+      study_program_id?: string | null
+      additional_email?: string | null
+      additional_photo?: string | null
+      description?: Array<unknown> | null
+      use_original_duty_name: boolean
+      created_at: string
+      updated_at: string
+      // mutators
+      translations: unknown
+      // relations
+      dutiable?: Dutiable
+      duty?: Duty
+      study_program?: StudyProgram
+      user?: User
+      // counts
+      // exists
+      duty_exists: boolean
+      study_program_exists: boolean
+      user_exists: boolean
     }
 
     export interface Programme {
@@ -1059,51 +1056,6 @@ declare global {
       media_exists: boolean
     }
 
-    export interface Training {
-      // columns
-      id: string
-      name: Array<unknown>
-      description: Array<unknown>
-      address?: string | null
-      meeting_url?: string | null
-      image?: string | null
-      status: string
-      start_time: string
-      end_time?: string | null
-      organizer_id: string
-      institution_id: string
-      form_id?: string | null
-      max_participants?: number | null
-      created_at: string
-      updated_at: string
-      // mutators
-      translations: unknown
-      // relations
-      trainables?: Trainable[]
-      organizer?: User
-      users?: User[]
-      institution?: Institution
-      form?: Form
-      tasks?: TrainingTask[]
-      programmes?: Programme[]
-      activities?: Activity[]
-      // counts
-      trainables_count: number
-      users_count: number
-      tasks_count: number
-      programmes_count: number
-      activities_count: number
-      // exists
-      trainables_exists: boolean
-      organizer_exists: boolean
-      users_exists: boolean
-      institution_exists: boolean
-      form_exists: boolean
-      tasks_exists: boolean
-      programmes_exists: boolean
-      activities_exists: boolean
-    }
-
     export interface Type {
       // columns
       id: number
@@ -1553,84 +1505,6 @@ declare global {
       institution_exists: boolean
     }
 
-    export interface User {
-      // columns
-      id: string
-      email: string
-      phone?: string | null
-      facebook_url?: string | null
-      name: string
-      pronouns?: Array<unknown> | null
-      show_pronouns: boolean
-      password?: string | null
-      is_active: boolean
-      email_verified_at?: string | null
-      remember_token?: string | null
-      last_action?: string | null
-      tutorial_progress?: Array<unknown> | null
-      notification_preferences?: Array<unknown> | null
-      microsoft_token?: string | null
-      updated_at: string
-      created_at: string
-      profile_photo_path?: string | null
-      deleted_at?: string | null
-      name_was_changed?: boolean
-      // mutators
-      has_password: unknown
-      translations: unknown
-      // relations
-      duties?: Duty[]
-      previous_duties?: Duty[]
-      current_duties?: Duty[]
-      dutiables?: Dutiable[]
-      tasks?: Task[]
-      followed_institutions?: Institution[]
-      muted_institutions?: Institution[]
-      reservations?: Reservation[]
-      memberships?: Membership[]
-      trainings?: Training[]
-      available_trainings_through_user?: Training[]
-      push_subscriptions?: PushSubscription[]
-      roles?: Role[]
-      permissions?: Permission[]
-      activities?: Activity[]
-      notifications?: DatabaseNotification[]
-      // counts
-      duties_count: number
-      previous_duties_count: number
-      current_duties_count: number
-      dutiables_count: number
-      tasks_count: number
-      followed_institutions_count: number
-      muted_institutions_count: number
-      reservations_count: number
-      memberships_count: number
-      trainings_count: number
-      available_trainings_through_user_count: number
-      push_subscriptions_count: number
-      roles_count: number
-      permissions_count: number
-      activities_count: number
-      notifications_count: number
-      // exists
-      duties_exists: boolean
-      previous_duties_exists: boolean
-      current_duties_exists: boolean
-      dutiables_exists: boolean
-      tasks_exists: boolean
-      followed_institutions_exists: boolean
-      muted_institutions_exists: boolean
-      reservations_exists: boolean
-      memberships_exists: boolean
-      trainings_exists: boolean
-      available_trainings_through_user_exists: boolean
-      push_subscriptions_exists: boolean
-      roles_exists: boolean
-      permissions_exists: boolean
-      activities_exists: boolean
-      notifications_exists: boolean
-    }
-
     export interface Institution {
       // columns
       id: string
@@ -1743,6 +1617,132 @@ declare global {
       activities_count: number
       // exists
       agenda_item_exists: boolean
+      activities_exists: boolean
+    }
+
+    export interface Model {
+    }
+
+    export interface User {
+      // columns
+      id: string
+      email: string
+      phone?: string | null
+      facebook_url?: string | null
+      name: string
+      pronouns?: Array<unknown> | null
+      show_pronouns: boolean
+      password?: string | null
+      is_active: boolean
+      email_verified_at?: string | null
+      remember_token?: string | null
+      last_action?: string | null
+      tutorial_progress?: Array<unknown> | null
+      notification_preferences?: Array<unknown> | null
+      microsoft_token?: string | null
+      updated_at: string
+      created_at: string
+      profile_photo_path?: string | null
+      deleted_at?: string | null
+      name_was_changed?: boolean
+      // mutators
+      has_password: unknown
+      translations: unknown
+      // relations
+      duties?: Duty[]
+      previous_duties?: Duty[]
+      current_duties?: Duty[]
+      dutiables?: Dutiable[]
+      tasks?: Task[]
+      followed_institutions?: Institution[]
+      muted_institutions?: Institution[]
+      reservations?: Reservation[]
+      memberships?: Membership[]
+      trainings?: Training[]
+      available_trainings_through_user?: Training[]
+      push_subscriptions?: PushSubscription[]
+      roles?: Role[]
+      permissions?: Permission[]
+      activities?: Activity[]
+      notifications?: DatabaseNotification[]
+      // counts
+      duties_count: number
+      previous_duties_count: number
+      current_duties_count: number
+      dutiables_count: number
+      tasks_count: number
+      followed_institutions_count: number
+      muted_institutions_count: number
+      reservations_count: number
+      memberships_count: number
+      trainings_count: number
+      available_trainings_through_user_count: number
+      push_subscriptions_count: number
+      roles_count: number
+      permissions_count: number
+      activities_count: number
+      notifications_count: number
+      // exists
+      duties_exists: boolean
+      previous_duties_exists: boolean
+      current_duties_exists: boolean
+      dutiables_exists: boolean
+      tasks_exists: boolean
+      followed_institutions_exists: boolean
+      muted_institutions_exists: boolean
+      reservations_exists: boolean
+      memberships_exists: boolean
+      trainings_exists: boolean
+      available_trainings_through_user_exists: boolean
+      push_subscriptions_exists: boolean
+      roles_exists: boolean
+      permissions_exists: boolean
+      activities_exists: boolean
+      notifications_exists: boolean
+    }
+
+    export interface Training {
+      // columns
+      id: string
+      name: Array<unknown>
+      description: Array<unknown>
+      address?: string | null
+      meeting_url?: string | null
+      image?: string | null
+      status: string
+      start_time: string
+      end_time?: string | null
+      organizer_id: string
+      institution_id: string
+      form_id?: string | null
+      max_participants?: number | null
+      created_at: string
+      updated_at: string
+      // mutators
+      translations: unknown
+      // relations
+      trainables?: Trainable[]
+      organizer?: User
+      users?: User[]
+      institution?: Institution
+      form?: Form
+      tasks?: TrainingTask[]
+      programmes?: Programme[]
+      activities?: Activity[]
+      // counts
+      trainables_count: number
+      users_count: number
+      tasks_count: number
+      programmes_count: number
+      activities_count: number
+      // exists
+      trainables_exists: boolean
+      organizer_exists: boolean
+      users_exists: boolean
+      institution_exists: boolean
+      form_exists: boolean
+      tasks_exists: boolean
+      programmes_exists: boolean
       activities_exists: boolean
     }
 

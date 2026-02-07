@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property array|string|null $name
  * @property array|string|null $description
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Calendar> $calendars
- * @property-read \App\Collections\NewsCollection<int, \App\Models\News> $news
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\News> $news
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Page> $pages
  * @property-read mixed $translations
  *

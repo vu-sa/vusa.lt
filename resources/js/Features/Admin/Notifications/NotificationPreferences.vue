@@ -39,7 +39,7 @@
       </div>
 
       <!-- Digest Frequency -->
-      <NFormItem :label="$t('notifications.preferences.digest_frequency')">
+      <FormFieldWrapper id="digest-frequency" :label="$t('notifications.preferences.digest_frequency')">
         <div class="flex items-center gap-4">
           <Select v-model="digestFrequencyString" @update:modelValue="updateDigestFrequency">
             <SelectTrigger class="w-40">
@@ -56,7 +56,7 @@
             {{ $t('notifications.preferences.digest_frequency_description') }}
           </p>
         </div>
-      </NFormItem>
+      </FormFieldWrapper>
 
       <!-- Digest Email Selection -->
       <DigestEmailSelector 
@@ -112,9 +112,9 @@
         <h4 class="font-medium">{{ $t('notifications.preferences.reminder_settings') }}</h4>
         
         <!-- Task Reminder Days -->
-        <NFormItem :label="$t('notifications.preferences.task_reminder_days')">
-          <ToggleGroup 
-            type="multiple" 
+        <FormFieldWrapper id="task-reminder-days" :label="$t('notifications.preferences.task_reminder_days')">
+          <ToggleGroup
+            type="multiple"
             :model-value="taskReminderDays.map(String)"
             @update:model-value="updateTaskReminderDays"
           >
@@ -125,12 +125,12 @@
           <p class="text-sm text-muted-foreground mt-2">
             {{ $t('notifications.preferences.task_reminder_days_description') }}
           </p>
-        </NFormItem>
+        </FormFieldWrapper>
 
         <!-- Meeting Reminder Hours -->
-        <NFormItem :label="$t('notifications.preferences.meeting_reminder_hours')">
-          <ToggleGroup 
-            type="multiple" 
+        <FormFieldWrapper id="meeting-reminder-hours" :label="$t('notifications.preferences.meeting_reminder_hours')">
+          <ToggleGroup
+            type="multiple"
             :model-value="meetingReminderHours.map(String)"
             @update:model-value="updateMeetingReminderHours"
           >
@@ -141,12 +141,12 @@
           <p class="text-sm text-muted-foreground mt-2">
             {{ $t('notifications.preferences.meeting_reminder_hours_description') }}
           </p>
-        </NFormItem>
+        </FormFieldWrapper>
 
         <!-- Calendar Reminder Hours -->
-        <NFormItem :label="$t('notifications.preferences.calendar_reminder_hours')">
-          <ToggleGroup 
-            type="multiple" 
+        <FormFieldWrapper id="calendar-reminder-hours" :label="$t('notifications.preferences.calendar_reminder_hours')">
+          <ToggleGroup
+            type="multiple"
             :model-value="calendarReminderHours.map(String)"
             @update:model-value="updateCalendarReminderHours"
           >
@@ -157,7 +157,7 @@
           <p class="text-sm text-muted-foreground mt-2">
             {{ $t('notifications.preferences.calendar_reminder_hours_description') }}
           </p>
-        </NFormItem>
+        </FormFieldWrapper>
       </div>
 
       <Button :disabled="loading" @click="handleSubmit">
@@ -175,6 +175,7 @@ import { router, useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import FormElement from '@/Components/AdminForms/FormElement.vue';
+import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import DigestEmailSelector from '@/Features/Admin/Notifications/DigestEmailSelector.vue';
 import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';

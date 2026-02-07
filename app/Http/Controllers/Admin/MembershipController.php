@@ -47,7 +47,10 @@ class MembershipController extends AdminController
 
         return $this->inertiaResponse('Admin/People/IndexMembership', [
             'memberships' => [
-                'data' => $memberships->getCollection()->map->toFullArray()->values(),
+                'data' => $memberships->getCollection()->map(function ($membership) {
+                    /** @var \App\Models\Membership $membership */
+                    return $membership->toFullArray();
+                })->values(),
                 'meta' => [
                     'total' => $memberships->total(),
                     'per_page' => $memberships->perPage(),

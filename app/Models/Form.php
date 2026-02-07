@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Traits\HasTranslations;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Laravel\Scout\Searchable;
@@ -82,7 +83,7 @@ class Form extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function tenant()
+    public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }

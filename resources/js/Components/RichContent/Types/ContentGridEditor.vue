@@ -11,19 +11,30 @@
     <template v-else>
       <!-- Grid Options -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <NFormItem label="Tarpai" :show-feedback="false">
-          <NSelect v-model:value="options.gap" :options="gapOptions" />
-        </NFormItem>
-        <NFormItem label="Mobilusis vaizdas" :show-feedback="false">
-          <NSwitch v-model:value="options.mobileStacking">
-            Dėti stulpelius vertikaliai
-          </NSwitch>
-        </NFormItem>
-        <NFormItem label="Vienodas aukštis" :show-feedback="false">
-          <NSwitch v-model:value="options.equalHeight">
-            Vienodo aukščio stulpeliai
-          </NSwitch>
-        </NFormItem>
+        <FormFieldWrapper id="gap" label="Tarpai">
+          <Select v-model="options.gap">
+            <SelectTrigger>
+              <SelectValue placeholder="Pasirinkite tarpą" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem v-for="opt in gapOptions" :key="opt.value" :value="opt.value">
+                {{ opt.label }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </FormFieldWrapper>
+        <FormFieldWrapper id="mobileStacking" label="Mobilusis vaizdas">
+          <div class="flex items-center gap-2">
+            <Switch :checked="options.mobileStacking" @update:checked="val => options.mobileStacking = val" />
+            <span class="text-sm">Dėti stulpelius vertikaliai</span>
+          </div>
+        </FormFieldWrapper>
+        <FormFieldWrapper id="equalHeight" label="Vienodas aukštis">
+          <div class="flex items-center gap-2">
+            <Switch :checked="options.equalHeight" @update:checked="val => options.equalHeight = val" />
+            <span class="text-sm">Vienodo aukščio stulpeliai</span>
+          </div>
+        </FormFieldWrapper>
       </div>
 
       <!-- Row management -->
@@ -55,9 +66,18 @@
             <div v-for="(column, colIndex) in row.columns" :key="colIndex"
               :class="[column.width, 'flex flex-col gap-2 rounded-md border bg-zinc-50/70 p-4 dark:border-zinc-700 dark:bg-zinc-800/20']">
               <div class="flex items-center gap-4">
-                <NFormItem label="Plotis" :show-feedback="false" class="max-w-[140px]">
-                  <NSelect v-model:value="column.width" :options="columnWidthOptions" />
-                </NFormItem>
+                <FormFieldWrapper id="`width-${rowIndex}-${colIndex}`" label="Plotis" class="max-w-[140px]">
+                  <Select v-model="column.width">
+                    <SelectTrigger>
+                      <SelectValue placeholder="Plotis" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem v-for="opt in columnWidthOptions" :key="opt.value" :value="opt.value">
+                        {{ opt.label }}
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormFieldWrapper>
                 <div class="flex-grow" />
                 <ButtonGroup>
                   <Button v-if="colIndex > 0" variant="ghost" size="icon-sm" class="rounded-full" @click="moveColumn(rowIndex, colIndex, colIndex - 1)">
@@ -74,9 +94,18 @@
               </div>
 
               <!-- Column content type selector -->
-              <NFormItem label="Turinio tipas" :show-feedback="false">
-                <NSelect v-model:value="column.content.type" :options="columnContentOptions" />
-              </NFormItem>
+              <FormFieldWrapper :id="`content-type-${rowIndex}-${colIndex}`" label="Turinio tipas">
+                <Select v-model="column.content.type">
+                  <SelectTrigger>
+                    <SelectValue placeholder="Turinio tipas" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem v-for="opt in columnContentOptions" :key="opt.value" :value="opt.value">
+                      {{ opt.label }}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </FormFieldWrapper>
 
               <!-- Content editor based on content type -->
               <div class="mt-2 w-full">
@@ -84,7 +113,7 @@
                   <TiptapEditor v-model="column.content.value" preset="compact" :show-toolbar-toggle="true" />
                 </div>
                 <div v-else-if="column.content.type === 'image'">
-                  <NFormItem label="Nuotrauka" :show-feedback="false">
+                  <FormFieldWrapper :id="`image-${rowIndex}-${colIndex}`" label="Nuotrauka">
                     <div>
                       <TiptapImageButton v-if="!column.content.value" size="medium"
                         @submit="column.content.value = $event">
@@ -98,7 +127,7 @@
                         </Button>
                       </div>
                     </div>
-                  </NFormItem>
+                  </FormFieldWrapper>
                 </div>
               </div>
             </div>
@@ -144,7 +173,10 @@ import TiptapImageButton from '@/Components/TipTap/TiptapImageButton.vue';
 import type { ContentGrid } from '@/Types/contentParts';
 import { Button } from '@/Components/ui/button';
 import { ButtonGroup } from '@/Components/ui/button-group';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { Switch } from '@/Components/ui/switch';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
+import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 
 const json_content = defineModel<ContentGrid['json_content']>();
 const options = defineModel<ContentGrid[]>('options')

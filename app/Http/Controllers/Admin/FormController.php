@@ -69,10 +69,10 @@ class FormController extends AdminController
                         /** @var \App\Models\Form $form */
                         return [
                             ...$form->toFullArray(),
-                            'tenant' => $form->tenant ? [
+                            'tenant' => [
                                 'id' => $form->tenant->id,
                                 'shortname' => $form->tenant->shortname,
-                            ] : null,
+                            ],
                         ];
                     }),
                 'meta' => [

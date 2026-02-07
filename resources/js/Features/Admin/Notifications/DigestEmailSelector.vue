@@ -1,5 +1,5 @@
 <template>
-  <NFormItem :label="$t('notifications.preferences.digest_emails')">
+  <FormFieldWrapper id="digest-emails" :label="$t('notifications.preferences.digest_emails')">
     <div class="space-y-2">
       <p class="text-sm text-muted-foreground mb-3">
         {{ $t('notifications.preferences.digest_emails_description') }}
@@ -35,7 +35,7 @@
         {{ $t('notifications.preferences.digest_emails_default_info') }}
       </p>
     </div>
-  </NFormItem>
+  </FormFieldWrapper>
 </template>
 
 <script setup lang="ts">
@@ -43,6 +43,7 @@ import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import { Checkbox } from '@/Components/ui/checkbox';
+import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import IFluentBriefcase24Regular from '~icons/fluent/briefcase-24-regular';
 import IFluentPerson24Regular from '~icons/fluent/person-24-regular';
 import IFluentInfo24Regular from '~icons/fluent/info-24-regular';

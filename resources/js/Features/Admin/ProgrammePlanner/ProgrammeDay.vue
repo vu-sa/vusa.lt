@@ -30,29 +30,29 @@
       <!-- calculate current time from previous parts and blocks -->
     </div>
     <CardModal v-model:show="showPartEditModal" :part="selectedPart" @close="showPartEditModal = false">
-      <NFormItem label="Dalies pavadinimas">
+      <FormFieldWrapper id="part-title" label="Dalies pavadinimas">
         <MultiLocaleInput v-model:input="selectedPart.title" />
-      </NFormItem>
-      <NFormItem label="Dalies trukmė">
-        <NInputNumber v-model:value="selectedPart.duration" />
-      </NFormItem>
-      <NFormItem label="Instruktorius">
-        <NInput v-model:value="selectedPart.instructor" />
-      </NFormItem>
-      <NFormItem label="Aprašymas">
+      </FormFieldWrapper>
+      <FormFieldWrapper id="part-duration" label="Dalies trukmė">
+        <NumberField v-model="selectedPart.duration" :min="0" />
+      </FormFieldWrapper>
+      <FormFieldWrapper id="part-instructor" label="Instruktorius">
+        <Input v-model="selectedPart.instructor" />
+      </FormFieldWrapper>
+      <FormFieldWrapper id="part-description" label="Aprašymas">
         <MultiLocaleInput v-model:input="selectedPart.description" />
-      </NFormItem>
+      </FormFieldWrapper>
       <Button variant="outline" @click="showPartEditModal = false">
         Uždaryti
       </Button>
     </CardModal>
     <CardModal v-model:show="showSectionEditModal" :section="selectedSection" @close="showSectionEditModal = false">
-      <NFormItem label="Sekcijos pavadinimas">
+      <FormFieldWrapper id="section-title" label="Sekcijos pavadinimas">
         <MultiLocaleInput v-model:input="selectedSection.title" />
-      </NFormItem>
-      <NFormItem label="Sekcijos trukmė">
-        <NInputNumber v-model:value="selectedSection.duration" />
-      </NFormItem>
+      </FormFieldWrapper>
+      <FormFieldWrapper id="section-duration" label="Sekcijos trukmė">
+        <NumberField v-model="selectedSection.duration" :min="0" />
+      </FormFieldWrapper>
       <Button @click="showSectionEditModal = false">
         Išsaugoti
       </Button>
@@ -95,7 +95,10 @@ import ProgrammePart from './ProgrammePart.vue';
 import ProgrammeSection from './ProgrammeSection.vue';
 import { formatStaticTime } from '@/Utils/IntlTime';
 import { Button } from '@/Components/ui/button';
+import { Input } from '@/Components/ui/input';
+import { NumberField } from '@/Components/ui/number-field';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
+import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import CardModal from '@/Components/Modals/CardModal.vue';
 import MultiLocaleInput from '@/Components/FormItems/MultiLocaleInput.vue';
 

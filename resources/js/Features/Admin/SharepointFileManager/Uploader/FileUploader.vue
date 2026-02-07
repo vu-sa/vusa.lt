@@ -1,13 +1,22 @@
 <template>
   <CardModal :show :title="modalTitle" @close="$emit('close')">
-    <NSteps v-if="!props.fileable" class="my-2 py-2" :current="(current as number)" :status="'process'">
-      <NStep :title="$t('Į ką kelsi failą?')">
-        <template #icon>
-          <IFluentDocumentTableSearch24Regular />
-        </template>
-      </NStep>
-      <NStep :title="$t('Failo įkėlimas')" />
-    </NSteps>
+    <Stepper v-if="!props.fileable" v-model="stepperStep" class="my-2 py-2">
+      <StepperItem :step="1">
+        <StepperTrigger>
+          <StepperIndicator>
+            <IFluentDocumentTableSearch24Regular class="h-4 w-4" />
+          </StepperIndicator>
+        </StepperTrigger>
+        <StepperTitle>{{ $t('Į ką kelsi failą?') }}</StepperTitle>
+        <StepperSeparator />
+      </StepperItem>
+      <StepperItem :step="2">
+        <StepperTrigger>
+          <StepperIndicator>2</StepperIndicator>
+        </StepperTrigger>
+        <StepperTitle>{{ $t('Failo įkėlimas') }}</StepperTitle>
+      </StepperItem>
+    </Stepper>
     <FadeTransition>
       <FileableForm v-if="current === 1" :show-alert="showAlert" @close:alert="showAlert = false"
         @submit="handleFileableSubmit" />
@@ -27,13 +36,13 @@ import { useForm } from "@inertiajs/vue3";
 import { useStorage } from "@vueuse/core";
 import { trans as $t } from "laravel-vue-i18n";
 
+import { Stepper, StepperIndicator, StepperItem, StepperSeparator, StepperTitle, StepperTrigger } from "@/Components/ui/stepper";
 import CardModal from "@/Components/Modals/CardModal.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import FileForm from "./FileForm.vue";
 import FileableForm from "@/Components/AdminForms/Special/FileableForm.vue";
 import ModalHelperButton from "@/Components/Buttons/ModalHelperButton.vue";
 import IFluentDocumentTableSearch24Regular from '~icons/fluent/document-table-search-24-regular';
-import { NStep, NSteps } from 'naive-ui';
 
 const emit = defineEmits(["close"]);
 
@@ -45,7 +54,7 @@ const props = defineProps<{
 // Fileable type display names
 const typeDisplayNames: Record<string, string> = {
   'Meeting': 'Posėdis',
-  'Institution': 'Institucija', 
+  'Institution': 'Institucija',
   'Duty': 'Pareigos',
   'Type': 'Tipas',
 };
@@ -55,14 +64,14 @@ const modalTitle = computed(() => {
   if (!props.fileable) {
     return $t('Įkelti naują failą');
   }
-  
+
   const typeName = typeDisplayNames[props.fileable.type] || props.fileable.type;
   const fileableName = (props.fileable as any).fileable_name;
-  
+
   if (fileableName) {
     return `${$t('Įkelti failą')}: ${fileableName}`;
   }
-  
+
   return `${$t('Įkelti failą')} (${typeName})`;
 });
 
@@ -76,6 +85,12 @@ const sanitizedFileable = computed<FileableFormData | null>(() => {
 const current = ref(props.fileable ? 2 : 1);
 const loading = ref(false);
 const showAlert = useStorage("new-file-button-alert", true);
+
+// Bridge current step for Stepper v-model (read-only display)
+const stepperStep = computed({
+  get: () => current.value,
+  set: () => {},
+});
 
 const keepFileable = inject<boolean>("keepFileable", false);
 

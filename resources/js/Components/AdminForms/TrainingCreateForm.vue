@@ -13,55 +13,51 @@
           Įrašytą informaciją bus galima pakeisti.
         </p>
       </template>
-      <NFormItem required>
-        <template #label>
-          <span class="inline-flex items-center gap-1">
-            <NIcon :component="Icons.TITLE" />
-            Pavadinimas
-          </span>
-        </template>
+      <FormFieldWrapper id="name" label="Pavadinimas" required :error="form.errors.name">
         <MultiLocaleInput v-model:input="form.name" />
-      </NFormItem>
-      <NFormItem required>
-        <template #label>
-          <div class="inline-flex items-center gap-2">
-            Aprašymas
-            <SimpleLocaleButton v-model:locale="locale" />
-          </div>
-        </template>
+      </FormFieldWrapper>
+      <div class="space-y-2">
+        <div class="inline-flex items-center gap-2">
+          <Label for="description">Aprašymas</Label>
+          <span class="text-red-500">*</span>
+          <SimpleLocaleButton v-model:locale="locale" />
+        </div>
         <TiptapEditor v-if="locale === 'lt'" v-model="form.description.lt" preset="full" :html="true" />
         <TiptapEditor v-else v-model="form.description.en" preset="full" :html="true" />
-      </NFormItem>
-      <NFormItem required>
-        <template #label>
-          <span class="flex items-center gap-1">
-            <NIcon :component="Icons.INSTITUTION" />
-            {{ $t("Kas organizuoja mokymus?") }}
-          </span>
-        </template>
-
-        <NSelect v-model:value="form.institution_id" filterable :options="institutions" />
-      </NFormItem>
-      <NFormItem label="Preliminari mokymų pradžia" required>
-        <NDatePicker v-model:value="form.start_time" :first-day-of-week="0" :format="'yyyy-MM-dd HH:mm'"
-          :time-picker-props="{
-            format: 'HH:mm',
-            minutes: 5,
-            hours: Array.from({ length: 22 - 8 + 1 }, (v, i) => i + 8),
-          }" type="datetime" clearable :actions="['confirm']" />
-      </NFormItem>
+        <p v-if="form.errors.description" class="text-xs text-red-600 dark:text-red-400">
+          {{ form.errors.description }}
+        </p>
+      </div>
+      <FormFieldWrapper id="institution_id" :label="$t('Kas organizuoja mokymus?')" required :error="form.errors.institution_id">
+        <Select v-model="institutionIdString">
+          <SelectTrigger>
+            <SelectValue :placeholder="$t('Pasirinkite instituciją')" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem v-for="institution in institutions" :key="institution.value" :value="String(institution.value)">
+              {{ institution.label }}
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </FormFieldWrapper>
+      <FormFieldWrapper id="start_time" label="Preliminari mokymų pradžia" required :error="form.errors.start_time">
+        <DateTimePicker v-model="form.start_time" :hour-range="[8, 22]" :minute-step="5" />
+      </FormFieldWrapper>
     </FormElement>
   </AdminForm>
 </template>
 
-<script setup lang="tsx">
+<script setup lang="ts">
+import { trans as $t } from "laravel-vue-i18n";
 import { useForm, usePage } from "@inertiajs/vue3";
-import { NIcon } from "naive-ui";
 import { computed, ref } from "vue";
 
+import { DateTimePicker } from "@/Components/ui/date-picker";
+import { Label } from "@/Components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
 import FormElement from "./FormElement.vue";
+import FormFieldWrapper from "./FormFieldWrapper.vue";
 import AdminForm from "./AdminForm.vue";
-import Icons from "@/Types/Icons/regular";
 import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";
 import SimpleLocaleButton from "../Buttons/SimpleLocaleButton.vue";
 import TiptapEditor from "@/Components/TipTap/TiptapEditor.vue";
@@ -77,6 +73,12 @@ defineEmits<{
 
 const form = useForm("CreateTraining", training);
 const locale = ref("lt");
+
+// Shadcn Select requires string values
+const institutionIdString = computed({
+  get: () => form.institution_id != null ? String(form.institution_id) : '',
+  set: (val: string) => { form.institution_id = val ? Number(val) : null; },
+});
 
 // NOTE: Duplicated in InstitutionSelectorForm.vue
 const institutions = computed(() => {

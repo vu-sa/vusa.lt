@@ -315,6 +315,7 @@ trait HasNotificationPreferences
         ];
 
         // Current duty emails
+        /** @var \App\Models\Duty $duty */
         foreach ($this->current_duties()->get() as $duty) {
             if (! empty($duty->email)) {
                 $emails[] = [

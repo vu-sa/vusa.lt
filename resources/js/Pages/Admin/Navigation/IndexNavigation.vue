@@ -1,12 +1,15 @@
 <template>
   <PageContent title="Navigacija">
-    <ThemeProvider>
-      <NFormItem label-placement="left" label="Rodyti redagavimą">
-        <NSwitch v-model:value="showAdminEdit" />
-      </NFormItem>
-      <NFormItem label-placement="left" label="Rodyti stulpelių keitimo rodykles">
-        <NSwitch v-model:value="showColumnChangeArrows" />
-      </NFormItem>
+    <div class="flex items-center gap-4 mb-4">
+      <div class="flex items-center gap-2">
+        <Label>Rodyti redagavimą</Label>
+        <Switch :checked="showAdminEdit" @update:checked="val => showAdminEdit = val" />
+      </div>
+      <div class="flex items-center gap-2">
+        <Label>Rodyti stulpelių keitimo rodykles</Label>
+        <Switch :checked="showColumnChangeArrows" @update:checked="val => showColumnChangeArrows = val" />
+      </div>
+    </div>
     <TransitionGroup ref="el" tag="div">
       <div v-for="item in navigation" :key="item.id"
         class="relative grid w-full grid-cols-[24px__1fr] gap-4 border border-zinc-300 p-3 shadow-xs first:rounded-t-lg last:rounded-b-lg dark:border-zinc-700/40 dark:bg-zinc-800/5">
@@ -67,15 +70,24 @@
               <Icon icon="fluent:add-16-regular" />
               Pridėti elementą
             </Button>
-            <NPopconfirm @positive-click="handleDelete(item)">
-              <template #trigger>
+            <AlertDialog>
+              <AlertDialogTrigger as-child>
                 <Button variant="destructive">
                   <Icon icon="fluent:delete-16-regular" />
                   Ištrinti
                 </Button>
-              </template>
-              Ar tikrai norite ištrinti šį elementą?
-            </NPopconfirm>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Ar tikrai?</AlertDialogTitle>
+                  <AlertDialogDescription>Ar tikrai norite ištrinti šį elementą?</AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Atšaukti</AlertDialogCancel>
+                  <AlertDialogAction @click="handleDelete(item)">Patvirtinti</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </ButtonGroup>
         </div>
       </div>
@@ -92,7 +104,6 @@
         </ButtonGroup>
       </div>
     </TransitionGroup>
-    </ThemeProvider>
   </PageContent>
 </template>
 
@@ -104,10 +115,22 @@ import { useSortable } from "@vueuse/integrations/useSortable";
 
 import { Button } from "@/Components/ui/button";
 import { ButtonGroup } from "@/Components/ui/button-group";
+import { Label } from "@/Components/ui/label";
+import { Switch } from "@/Components/ui/switch";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/Components/ui/alert-dialog";
 import MainNavigationMenuContent from "@/Components/Public/Nav/MainNavigationMenuContent.vue";
 import OrderEditDeleteButtons from "@/Components/Buttons/OrderEditDeleteButtons.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import ThemeProvider from "@/Components/Providers/ThemeProvider.vue";
 
 const props = defineProps<{
   navigation: App.Entities.Navigation;
@@ -130,7 +153,7 @@ const saveOrder = () => {
 };
 
 const moveUp = (parent, link) => {
-  // Find contents array by parent id 
+  // Find contents array by parent id
   const contentsIndex = contents.value.findIndex((item) => item.id === parent.id);
 
   let linkArrayIndex = -1;
@@ -159,7 +182,7 @@ const moveUp = (parent, link) => {
 };
 
 const moveDown = (parent, link) => {
-  // Find contents array by parent id 
+  // Find contents array by parent id
   const contentsIndex = contents.value.findIndex((item) => item.id === parent.id);
 
   let linkArrayIndex = -1;

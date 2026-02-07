@@ -3,11 +3,9 @@
     <div
       class="relative flex rounded-t-md border border-b-0 border-zinc-300 px-2 pt-2 dark:border-zinc-700"
     >
-      <NScrollbar
+      <ScrollArea
         v-if="comments && comments.length > 0"
-        ref="scrollContainer"
-        style="max-height: 24rem"
-        class="px-4"
+        class="max-h-96 px-4"
       >
         <div ref="commentContainer">
           <div v-for="comment in comments" :key="comment.id" :comment="comment">
@@ -38,7 +36,7 @@
             <hr class="my-4 last:invisible dark:border-zinc-600" />
           </div>
         </div>
-      </NScrollbar>
+      </ScrollArea>
       <p v-else class="m-auto w-fit text-zinc-400">Komentarų nėra</p>
     </div>
     <CommentTipTap
@@ -51,12 +49,12 @@
 </template>
 
 <script setup lang="tsx">
-import { NScrollbar } from "naive-ui";
-import { computed, onUpdated, ref } from "vue";
+import { computed, nextTick, onUpdated, ref } from "vue";
 import { formatRelativeTime } from "@/Utils/IntlTime";
 import { router, usePage } from "@inertiajs/vue3";
 import CommentTipTap from "./CommentTipTap.vue";
 import UserPopover from "@/Components/Avatars/UserPopover.vue";
+import { ScrollArea } from "@/Components/ui/scroll-area";
 
 defineEmits<{
   (e: "passText", text: string): void;
@@ -71,7 +69,6 @@ const props = defineProps<{
 const loading = ref(false);
 const text = ref<string | null>(null);
 const commentContainer = ref<HTMLElement | null>(null);
-const scrollContainer = ref<(typeof NScrollbar)['$type'] | null>(null);
 
 const comments = computed(() => {
   if (props.comments) return props.comments;
@@ -91,7 +88,6 @@ const submitComment = () => {
     {
       preserveScroll: true,
       onSuccess: () => {
-        // editor.value?.chain().focus().setContent("").run();
         loading.value = false;
       },
       onError: () => {
@@ -102,11 +98,16 @@ const submitComment = () => {
 };
 
 onUpdated(() => {
-  if (!commentContainer.value || !scrollContainer.value) return;
+  if (!commentContainer.value) return;
 
-  scrollContainer.value?.scrollTo({
-    top: commentContainer.value?.scrollHeight,
-    behavior: "smooth",
+  nextTick(() => {
+    const viewport = commentContainer.value?.closest('[data-slot="scroll-area-viewport"]');
+    if (viewport) {
+      viewport.scrollTo({
+        top: viewport.scrollHeight,
+        behavior: "smooth",
+      });
+    }
   });
 });
 </script>

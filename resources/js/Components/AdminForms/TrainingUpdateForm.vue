@@ -4,142 +4,134 @@
       <template #title>
         {{ $t("forms.context.main_info") }}
       </template>
-      <NFormItem>
-        <template #label>
-          <span class="inline-flex items-center gap-1">
-            Pagrindinis organizatorius
-          </span>
-        </template>
+      <FormFieldWrapper id="organizer" label="Pagrindinis organizatorius">
         <UserPopover class="mt-2" show-name :user="training.organizer" />
-      </NFormItem>
-      <NFormItem required>
-        <template #label>
-          <span class="inline-flex items-center gap-1">
-            <NIcon :component="Icons.TITLE" />
-            Pavadinimas
-          </span>
-        </template>
+      </FormFieldWrapper>
+      <FormFieldWrapper id="name" label="Pavadinimas" required :error="form.errors.name">
         <MultiLocaleInput v-model:input="form.name" />
-      </NFormItem>
-      <NFormItem required>
-        <template #label>
-          <div class="inline-flex items-center gap-2">
-            Aprašymas
-            <SimpleLocaleButton v-model:locale="locale" />
-          </div>
-        </template>
+      </FormFieldWrapper>
+      <div class="space-y-2">
+        <div class="inline-flex items-center gap-2">
+          <Label for="description">Aprašymas</Label>
+          <span class="text-red-500">*</span>
+          <SimpleLocaleButton v-model:locale="locale" />
+        </div>
         <TiptapEditor v-if="locale === 'lt'" v-model="form.description.lt" preset="full" :html="true" />
         <TiptapEditor v-else v-model="form.description.en" preset="full" :html="true" />
-      </NFormItem>
-      <NFormItem required>
-        <template #label>
-          <span class="flex items-center gap-1">
-            <NIcon :component="Icons.INSTITUTION" />
-            {{ $t("Kas organizuoja mokymus?") }}
-          </span>
-        </template>
-
-        <NSelect v-model:value="form.institution_id" filterable :options="institutions" />
-      </NFormItem>
+        <p v-if="form.errors.description" class="text-xs text-red-600 dark:text-red-400">
+          {{ form.errors.description }}
+        </p>
+      </div>
+      <FormFieldWrapper id="institution_id" :label="$t('Kas organizuoja mokymus?')" required :error="form.errors.institution_id">
+        <Select v-model="institutionIdString">
+          <SelectTrigger>
+            <SelectValue :placeholder="$t('Pasirinkite instituciją')" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem v-for="institution in institutions" :key="institution.value" :value="String(institution.value)">
+              {{ institution.label }}
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </FormFieldWrapper>
       <div class="flex flex-wrap gap-4">
-        <NFormItem label="Mokymų pradžia" required>
-          <NDatePicker v-model:value="form.start_time" :first-day-of-week="0" :format="'yyyy-MM-dd HH:mm'"
-            :time-picker-props="{
-              format: 'HH:mm',
-              minutes: 5,
-              hours: Array.from({ length: 22 - 8 + 1 }, (v, i) => i + 8),
-            }" type="datetime" clearable :actions="['confirm']" />
-        </NFormItem>
-        <NFormItem label="Mokymų pabaiga" required>
-          <NDatePicker v-model:value="form.end_time" :first-day-of-week="0" :format="'yyyy-MM-dd HH:mm'"
-            :time-picker-props="{
-              format: 'HH:mm',
-              minutes: 5,
-              hours: Array.from({ length: 22 - 8 + 1 }, (v, i) => i + 8),
-            }" type="datetime" clearable :actions="['confirm']" />
-        </NFormItem>
+        <FormFieldWrapper id="start_time" label="Mokymų pradžia" required :error="form.errors.start_time">
+          <DateTimePicker v-model="form.start_time" :hour-range="[8, 22]" :minute-step="5" />
+        </FormFieldWrapper>
+        <FormFieldWrapper id="end_time" label="Mokymų pabaiga" required :error="form.errors.end_time">
+          <DateTimePicker v-model="form.end_time" :hour-range="[8, 22]" :minute-step="5" />
+        </FormFieldWrapper>
       </div>
     </FormElement>
     <FormElement>
       <template #title>
         Papildoma informacija
       </template>
-      <NFormItem label="Mokymų adresas">
-        <NInput v-model:value="form.address" />
-      </NFormItem>
-      <NFormItem label="Susitikimo nuoroda">
-        <NInput v-model:value="form.meeting_url" />
-      </NFormItem>
-      <NFormItem label="Nuotrauka">
+      <FormFieldWrapper id="address" label="Mokymų adresas" :error="form.errors.address">
+        <Input id="address" v-model="form.address" />
+      </FormFieldWrapper>
+      <FormFieldWrapper id="meeting_url" label="Susitikimo nuoroda" :error="form.errors.meeting_url">
+        <Input id="meeting_url" v-model="form.meeting_url" />
+      </FormFieldWrapper>
+      <FormFieldWrapper id="image" label="Nuotrauka" :error="form.errors.image">
         <ImageUpload v-model:url="form.image" mode="immediate" folder="trainings" cropper :existing-url="training?.image" />
-      </NFormItem>
-      <NFormItem label="Dalyvių skaičius" required>
-        <NInputNumber v-model:value="form.max_participants" clearable :min="0" />
-      </NFormItem>
+      </FormFieldWrapper>
+      <FormFieldWrapper id="max_participants" label="Dalyvių skaičius" required :error="form.errors.max_participants">
+        <NumberField id="max_participants" v-model="form.max_participants" :min="0" />
+      </FormFieldWrapper>
     </FormElement>
-    <NTabs type="segment" animated>
-      <NTabPane name="dalyviai" tab="Kas gali dalyvauti?">
+    <Tabs default-value="dalyviai">
+      <TabsList class="grid w-full grid-cols-4">
+        <TabsTrigger value="dalyviai">Kas gali dalyvauti?</TabsTrigger>
+        <TabsTrigger value="registracija">Registracijos forma</TabsTrigger>
+        <TabsTrigger value="programa">Programa</TabsTrigger>
+        <TabsTrigger value="uzduotys">Užduotys</TabsTrigger>
+      </TabsList>
+      <TabsContent value="dalyviai">
         <FormElement no-divider class="mt-4 min-h-64">
           <template #title>
             Dalyviai
           </template>
-          <NDynamicInput v-model:value="form.trainables" class="mt-4" @create="onTrainablesCreate">
-            <template #default="{ value }">
+          <DynamicListInput v-model="form.trainables" :create-item="onTrainablesCreate" allow-empty
+            empty-text="Nėra pridėtų dalyvių" add-first-text="Pridėti pirmą dalyvį" add-text="Pridėti dalyvį">
+            <template #item="{ item }">
               <div class="flex w-full gap-4">
-                <NFormItem label="Tipas">
-                  <NSelect v-model:value="value.trainable_type" class="min-w-40"
-                    :options="trainableTypeOptions" />
-                </NFormItem>
-                <NFormItem v-if="value.trainable_type" label="Pasirinkimas" class="min-w-80">
-                  <NSelect v-model:value="value.trainable_id" filterable
-                    :options="trainableTypes[value.trainable_type].values" value-field="id"
-                    :label-field="value.trainable_type === 'App\\Models\\Type' ? 'title' : 'name'" />
-                </NFormItem>
+                <FormFieldWrapper id="trainable_type" label="Tipas">
+                  <Select v-model="item.trainable_type">
+                    <SelectTrigger class="min-w-40">
+                      <SelectValue placeholder="Pasirinkite tipą" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem v-for="opt in trainableTypeOptions" :key="opt.value" :value="opt.value">
+                        {{ opt.label }}
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormFieldWrapper>
+                <FormFieldWrapper v-if="item.trainable_type" id="trainable_id" label="Pasirinkimas" class="min-w-80">
+                  <Select v-model="item.trainable_id">
+                    <SelectTrigger>
+                      <SelectValue placeholder="Pasirinkite" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem v-for="val in trainableTypes[item.trainable_type].values" :key="val.id" :value="String(val.id)">
+                        {{ item.trainable_type === 'App\\Models\\Type' ? val.title : val.name }}
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormFieldWrapper>
               </div>
             </template>
-          </NDynamicInput>
+          </DynamicListInput>
         </FormElement>
-      </NTabPane>
-      <NTabPane class="my-4 rounded-xl border border-zinc-500" name="registracija" tab="Registracijos forma">
-        <div class="m-4 min-h-64">
+      </TabsContent>
+      <TabsContent value="registracija">
+        <div class="my-4 min-h-64 rounded-xl border border-zinc-500 p-4">
           <FormForm :form="formTemplate" @submit:form="handleFormFormSubmit" />
         </div>
-      </NTabPane>
-      <NTabPane name="programa" tab="Programa" display-directive="show">
+      </TabsContent>
+      <TabsContent value="programa">
         <div class="mt-4 min-h-64 rounded-md border border-black p-4">
           <ProgrammePlanner editable show-time-switch :programme="training.programme"
             :start-time="new Date(form.start_time)" />
         </div>
-      </NTabPane>
-      <NTabPane name="uzduotys" tab="Užduotys">
+      </TabsContent>
+      <TabsContent value="uzduotys">
         <FormElement no-divider class="mt-4 min-h-64">
           <template #title>
             Užduotys
           </template>
-          <NDynamicInput v-model:value="form.tasks" @create="onTasksCreate">
-            <template #default="{ value, index }">
-              <NFormItem label="Užduotis">
-                <div class="flex items-start gap-4">
-                  <MultiLocaleInput v-model:input="value.name" />
-                  <ButtonGroup class="ml-4">
-                    <Button variant="outline" size="icon-sm" @click="onTasksCreateAdd">
-                      <!-- add -->
-                      <IFluentAdd24Filled />
-                    </Button>
-                    <Button variant="outline" size="icon-sm" @click="onTasksRemove(index)">
-                      <IFluentDelete24Filled />
-                    </Button>
-                  </ButtonGroup>
-                </div>
-              </NFormItem>
+          <DynamicListInput v-model="form.tasks" :create-item="onTasksCreate" allow-empty
+            empty-text="Nėra pridėtų užduočių" add-first-text="Pridėti pirmą užduotį" add-text="Pridėti užduotį">
+            <template #item="{ item }">
+              <FormFieldWrapper id="task_name" label="Užduotis">
+                <MultiLocaleInput v-model:input="item.name" />
+              </FormFieldWrapper>
             </template>
-            <template #action>
-              <div />
-            </template>
-          </NDynamicInput>
+          </DynamicListInput>
         </FormElement>
-      </NTabPane>
-    </NTabs>
+      </TabsContent>
+    </Tabs>
     <template #buttons>
       <Button variant="outline" @click="$emit('submit:form', form)">
         <IFluentSave24Filled />
@@ -153,20 +145,26 @@
   </AdminForm>
 </template>
 
-<script setup lang="tsx">
+<script setup lang="ts">
 import { router, useForm, usePage } from "@inertiajs/vue3";
-import { NIcon } from "naive-ui";
-import { computed, ref, watch } from "vue";
+import { trans as $t } from "laravel-vue-i18n";
+import { computed, ref } from "vue";
 
-import FormElement from "./FormElement.vue";
-import AdminForm from "./AdminForm.vue";
-import Icons from "@/Types/Icons/regular";
-import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";
+import { DateTimePicker } from "@/Components/ui/date-picker";
+import { DynamicListInput } from "@/Components/ui/dynamic-list-input";
+import { Input } from "@/Components/ui/input";
+import { Label } from "@/Components/ui/label";
+import { NumberField } from "@/Components/ui/number-field";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
 import { Button } from "@/Components/ui/button";
-import { ButtonGroup } from "@/Components/ui/button-group";
+import { ImageUpload } from "@/Components/ui/upload";
+import FormElement from "./FormElement.vue";
+import FormFieldWrapper from "./FormFieldWrapper.vue";
+import AdminForm from "./AdminForm.vue";
+import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";
 import SimpleLocaleButton from "../Buttons/SimpleLocaleButton.vue";
 import TiptapEditor from "@/Components/TipTap/TiptapEditor.vue";
-import { ImageUpload } from "@/Components/ui/upload";
 import FormForm from "./FormForm.vue";
 import UserPopover from "../Avatars/UserPopover.vue";
 import ProgrammePlanner from "@/Features/Admin/ProgrammePlanner/ProgrammePlanner.vue";
@@ -174,7 +172,7 @@ import ProgrammePlanner from "@/Features/Admin/ProgrammePlanner/ProgrammePlanner
 interface TrainableType<T> {
   type: T;
   name: string;
-  values: Array<{ id: number; name: string }>;
+  values: Array<{ id: number; name: string; title?: string }>;
 }
 
 export interface TrainableTypes {
@@ -204,36 +202,22 @@ const trainableTypeOptions = computed(() => {
   }));
 });
 
-const onTrainablesCreate = () => {
-  return {
-    trainable_type: null,
-    trainable_id: null
-  };
-};
+const onTrainablesCreate = () => ({
+  trainable_type: null,
+  trainable_id: null,
+});
 
-const onTasksCreate = () => {
-  return {
-    name: { lt: '', en: '' },
-  };
-};
-
-const onTasksCreateAdd = () => {
-  form.tasks.push({
-    name: { lt: "", en: "" },
-  });
-  //return {
-  //  name: { lt: '', en: '' },
-  //};
-};
-
-const onTasksRemove = (index: number) => {
-  form.tasks.splice(index, 1);
-};
-
-form.start_time = new Date(form.start_time).getTime();
-form.end_time = form.end_time ? new Date(form.end_time).getTime() : null;
+const onTasksCreate = () => ({
+  name: { lt: '', en: '' },
+});
 
 const locale = ref("lt");
+
+// Shadcn Select requires string values
+const institutionIdString = computed({
+  get: () => form.institution_id != null ? String(form.institution_id) : '',
+  set: (val: string) => { form.institution_id = val ? Number(val) : null; },
+});
 
 const formTemplate = training.form?.id ? training.form : {
   name: { lt: '', en: '' },
@@ -262,7 +246,6 @@ const institutions = computed(() => {
         self.findIndex((t) => t?.value === value?.value) === index
     );
 });
-
 
 const handleFormFormSubmit = (form: unknown) => {
   if (training.form_id === null) {

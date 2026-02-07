@@ -9,20 +9,24 @@
           <template #description>
             {{ $t('settings.atstovavimas_settings.manager_role_description') }}
           </template>
-          
+
           <div class="space-y-2">
             <Label class="inline-flex items-center gap-1">
               <component :is="Icons.ROLE" class="h-4 w-4" />
               {{ $t('settings.atstovavimas_settings.manager_role_label') }}
             </Label>
-            
-            <NSelect
-              v-model:value="form.institution_manager_role_id"
-              :options="roleOptions"
-              clearable
-              :placeholder="$t('settings.atstovavimas_settings.manager_role_placeholder')"
-            />
-            
+
+            <Select v-model="form.institution_manager_role_id">
+              <SelectTrigger>
+                <SelectValue :placeholder="$t('settings.atstovavimas_settings.manager_role_placeholder')" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem v-for="option in roleOptions" :key="option.value" :value="option.value">
+                  {{ option.label }}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+
             <p class="text-sm text-muted-foreground">
               {{ $t('settings.atstovavimas_settings.manager_role_note') }}
             </p>
@@ -43,6 +47,7 @@ import AdminForm from "@/Components/AdminForms/AdminForm.vue";
 import FormElement from "@/Components/AdminForms/FormElement.vue";
 import Icons from "@/Types/Icons/regular";
 import { Label } from "@/Components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
 
 interface Role {
   id: string;
@@ -54,7 +59,7 @@ const props = defineProps<{
   roles: Role[];
 }>();
 
-const roleOptions = computed(() => 
+const roleOptions = computed(() =>
   props.roles.map(role => ({
     label: role.name,
     value: role.id

@@ -18,7 +18,6 @@ use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ResourceServices\UserDutyService;
 use App\Services\TanstackTableService;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection as SupportCollection;
 use Illuminate\Support\Facades\Auth;
@@ -60,7 +59,9 @@ class UserController extends AdminController
         $users = $query->paginate($request->input('per_page', 20))
             ->withQueryString();
 
-        $collection = $users->getCollection()->makeVisible(['last_action']);
+        /** @var \Illuminate\Database\Eloquent\Collection<int, User> $collection */
+        $collection = $users->getCollection();
+        $collection->makeVisible(['last_action']);
 
         return $this->inertiaResponse('Admin/People/IndexUser', [
             'users' => [
@@ -204,16 +205,14 @@ class UserController extends AdminController
     {
         $this->handleAuthorization('merge', User::class);
 
-        $indexer = new ModelIndexer(new User);
-
-        $users = $indexer
-            ->setEloquentQuery([
-                fn (Builder $query) => $query->with([
-                    'duties:id,institution_id',
-                    'duties.institution:id,tenant_id',
-                    'duties.institution.tenant:id,shortname',
-                ])->withCount('duties')])
-            ->builder->get();
+        $users = User::query()
+            ->with([
+                'duties:id,institution_id',
+                'duties.institution:id,tenant_id',
+                'duties.institution.tenant:id,shortname',
+            ])
+            ->withCount('duties')
+            ->get();
 
         return $this->inertiaResponse('Admin/People/MergeUser', [
             'users' => $users,

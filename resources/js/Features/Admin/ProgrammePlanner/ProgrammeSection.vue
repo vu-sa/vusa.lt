@@ -49,9 +49,9 @@
       </Tooltip>
     </TooltipProvider>
     <CardModal v-model:show="showBlockEditModal" @close="showBlockEditModal = false">
-      <NFormItem label="Dienos pavadinimas">
+      <FormFieldWrapper id="block-title" label="Dienos pavadinimas">
         <MultiLocaleInput v-model:input="selectedBlock.title" />
-      </NFormItem>
+      </FormFieldWrapper>
       <Button variant="outline" @click="showBlockEditModal = false">
         Uždaryti
       </Button>
@@ -68,6 +68,7 @@ import ProgrammeBlock from './ProgrammeBlock.vue';
 import CardModal from '@/Components/Modals/CardModal.vue';
 import { Button } from '@/Components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
+import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import MultiLocaleInput from '@/Components/FormItems/MultiLocaleInput.vue';
 
 const section = defineModel<App.Entities.ProgrammeSection | App.Entities.ProgrammePart>('element')

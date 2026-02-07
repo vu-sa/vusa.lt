@@ -1,10 +1,11 @@
 <template>
   <section class="flex flex-col gap-3">
     <div class="flex items-center gap-2 text-lg font-bold">
-      <NIcon :component="icon" />
-      {{ title }} <NTag size="tiny">
+      <component :is="icon" class="size-5" />
+      {{ title }}
+      <Badge variant="secondary" class="text-xs">
         {{ id ? `#${id}` : 'Nauja' }}
-      </NTag>
+      </Badge>
       <div class="ml-auto flex gap-4">
         <!-- up and down arrows -->
         <Button size="icon-sm" variant="outline" class="rounded-full" @click="$emit('up')">
@@ -28,7 +29,7 @@
 
 <script setup lang="ts">
 import type { Component } from 'vue';
-import { NIcon, NTag } from 'naive-ui';
+import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 
 defineProps<{

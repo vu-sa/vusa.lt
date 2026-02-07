@@ -86,7 +86,7 @@ test('cannot update resource in invalid state', function () {
 
 ### Local Development
 - Uses Docker services via Laravel Sail (MySQL, Redis, Typesense)
-- Admin operations use database driver (via ModelIndexer)
+- Admin operations use database driver
 - Public search would use Typesense in production
 
 ### CI/CD Environment
@@ -103,7 +103,6 @@ test('cannot update resource in invalid state', function () {
 ### Search Architecture in Production
 - **Public frontend**: Typesense for fast, typo-tolerant search
 - **Admin operations**: Database driver (prevents circular dependencies)
-- **ModelIndexer**: Automatically switches to database driver for admin searches
 
 ## Test Organization
 

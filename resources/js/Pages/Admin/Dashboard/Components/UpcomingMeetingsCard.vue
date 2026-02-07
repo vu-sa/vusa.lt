@@ -179,7 +179,6 @@
 import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { NNumberAnimation } from 'naive-ui';
 import { ArrowRight, Globe } from "lucide-vue-next";
 
 import type { AtstovavimosMeeting, InstitutionInsights } from '../types';

@@ -15,7 +15,7 @@ use Illuminate\Support\Str;
  * @property \Illuminate\Support\Carbon $updated_at
  * @property array|string|null $name
  * @property array|string|null $description
- * @property-read \App\Collections\NewsCollection<int, \App\Models\News> $news
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\News> $news
  * @property-read mixed $translations
  *
  * @method static \Database\Factories\TagFactory factory($count = null, $state = [])

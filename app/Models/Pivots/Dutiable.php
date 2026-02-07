@@ -63,8 +63,8 @@ class Dutiable extends MorphPivot
     protected function casts(): array
     {
         return [
-            'start_date' => 'datetime',
-            'end_date' => 'datetime',
+            'start_date' => 'date:Y-m-d',
+            'end_date' => 'date:Y-m-d',
             'use_original_duty_name' => 'boolean',
         ];
     }

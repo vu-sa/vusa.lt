@@ -1,20 +1,16 @@
 <template>
   <div class="space-y-4">
-    <NImageGroup :show-toolbar="false">
-      <div class="grid grid-flow-row-dense grid-cols-6 gap-4">
-        <div v-for="(image, index) in element.json_content" :key="index" 
-             :class="getClassesForImage(image.colspan)">
-          <NImage 
-            :src="image.image" 
-            width="100%" 
-            class="size-full rounded-md shadow-xs" 
-            object-fit="cover"
-            :alt="image.alt || image.title || `Image ${index + 1}`"
-            :title="image.title || image.alt || `Image ${index + 1}`"
-          />
-        </div>
+    <div class="grid grid-flow-row-dense grid-cols-6 gap-4">
+      <div v-for="(image, index) in element.json_content" :key="index"
+           :class="getClassesForImage(image.colspan)">
+        <img
+          :src="image.image"
+          class="size-full rounded-md shadow-xs object-cover"
+          :alt="image.alt || image.title || `Image ${index + 1}`"
+          :title="image.title || image.alt || `Image ${index + 1}`"
+        />
       </div>
-    </NImageGroup>
+    </div>
   </div>
 </template>
 
@@ -30,4 +26,3 @@ const getClassesForImage = (colspan: string) => {
   return `md:h-40 ${colspan}`;
 };
 </script>
-
