@@ -3,10 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\AdminController;
+use App\Http\Requests\IndexRelationshipRequest;
+use App\Http\Traits\HasTanstackTables;
 use App\Models\Pivots\Relationshipable;
 use App\Models\Relationship;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\RelationshipService;
+use App\Services\TanstackTableService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -16,17 +19,50 @@ use Inertia\Inertia;
 
 class RelationshipController extends AdminController
 {
-    public function __construct(public Authorizer $authorizer) {}
+    use HasTanstackTables;
+
+    public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService) {}
 
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(IndexRelationshipRequest $request): \Inertia\Response
     {
         $this->handleAuthorization('viewAny', Relationship::class);
 
+        $query = Relationship::query();
+
+        $searchableColumns = ['name', 'slug', 'description'];
+
+        $query = $this->applyTanstackFilters(
+            $query,
+            $request,
+            $this->tableService,
+            $searchableColumns,
+            [
+                'applySortBeforePagination' => true,
+            ]
+        );
+
+        $relationships = $query->paginate($request->input('per_page', 20))
+            ->withQueryString();
+
+        $sorting = $request->getSorting();
+
         return $this->inertiaResponse('Admin/ModelMeta/IndexRelationships', [
-            'relationships' => Relationship::all()->paginate(20),
+            'relationships' => [
+                'data' => $relationships->items(),
+                'meta' => [
+                    'total' => $relationships->total(),
+                    'per_page' => $relationships->perPage(),
+                    'current_page' => $relationships->currentPage(),
+                    'last_page' => $relationships->lastPage(),
+                    'from' => $relationships->firstItem(),
+                    'to' => $relationships->lastItem(),
+                ],
+            ],
+            'filters' => $request->getFilters(),
+            'sorting' => $sorting,
         ]);
     }
 

@@ -1,8 +1,22 @@
 import { type ColumnDef } from '@tanstack/vue-table';
 import { format, isValid } from 'date-fns';
-import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
+import { trans as $t, transChoice as $tChoice, getActiveLanguage } from 'laravel-vue-i18n';
 import { Badge } from '@/Components/ui/badge';
 import { capitalize } from './String';
+
+/**
+ * Resolve a translatable value from toFullArray() format.
+ * If the value is a translation object like {lt: "...", en: "..."}, returns the string
+ * for the current active language. Otherwise returns the value as-is.
+ */
+export function resolveTranslatable(value: unknown): string {
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    const lang = getActiveLanguage();
+    const obj = value as Record<string, string>;
+    return obj[lang] ?? obj['lt'] ?? Object.values(obj)[0] ?? '';
+  }
+  return (value as string) ?? '';
+}
 
 /**
  * Create a standardized ID column
@@ -38,11 +52,11 @@ export function createTitleColumn<T extends { id: string | number }>(options: {
     accessorKey,
     header: () => $t(accessorKey === 'name' ? 'forms.fields.name' : 'forms.fields.title'),
     cell: options.cell || (({ row }) => {
-      const value = row.getValue(accessorKey);
+      const value = resolveTranslatable(row.getValue(accessorKey));
       const id = row.original.id;
       const modelName = (row.original as any)?.type || '';
       const baseRouteName = modelName ? `${modelName}s.${routeName}` : `${routeName}`;
-      
+
       return (
         <a href={route(baseRouteName, { id })} class="font-medium hover:underline">
           {value}
@@ -179,7 +193,7 @@ export function createTagsColumn<T>(accessorKey: string, options: {
         <div class="flex flex-wrap gap-1">
           {items.map((item) => (
             <Badge variant="secondary" key={item.id} class="text-xs">
-              {$t(item[labelKey])}
+              {resolveTranslatable(item[labelKey])}
             </Badge>
           ))}
         </div>
@@ -202,7 +216,7 @@ export function createTextColumn<T>(accessorKey: string, options: {
   return {
     accessorKey,
     header: () => options.title || $t(accessorKey),
-    cell: options.cell || (({ row }) => row.getValue(accessorKey) as string),
+    cell: options.cell || (({ row }) => resolveTranslatable(row.getValue(accessorKey))),
     size: options.width || 150,
     enableSorting: options.enableSorting !== false,
   };

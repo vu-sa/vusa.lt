@@ -6,7 +6,9 @@ use App\Actions\GetAttachableTypesForDuty;
 use App\Actions\GetTenantsForUpserts;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\BatchUpdateDutyUsersRequest;
+use App\Http\Requests\IndexDutyRequest;
 use App\Http\Requests\StoreDutyRequest;
+use App\Http\Traits\HasTanstackTables;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Role;
@@ -14,9 +16,8 @@ use App\Models\StudyProgram;
 use App\Models\Type;
 use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
-use App\Services\ModelIndexer;
 use App\Services\ResourceServices\DutyService;
-use Illuminate\Database\Eloquent\Builder;
+use App\Services\TanstackTableService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -24,25 +25,53 @@ use Inertia\Inertia;
 
 class DutyController extends AdminController
 {
-    public function __construct(public Authorizer $authorizer) {}
+    use HasTanstackTables;
+
+    public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService) {}
 
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index(IndexDutyRequest $request)
     {
         $this->handleAuthorization('viewAny', Duty::class);
 
-        $indexer = new ModelIndexer(new Duty);
+        $query = Duty::query()->with([
+            'institution:id,name,short_name,tenant_id',
+            'institution.tenant:id,shortname',
+            'types:id,title',
+        ]);
 
-        $duties = $indexer
-            ->setEloquentQuery([fn (Builder $query) => $query->with('institution')])
-            ->filterAllColumns()
-            ->sortAllColumns()
-            ->builder->paginate(20);
+        $searchableColumns = ['name', 'email'];
+
+        $query = $this->applyTanstackFilters(
+            $query,
+            $request,
+            $this->tableService,
+            $searchableColumns,
+            [
+                'tenantRelation' => 'institution.tenant',
+                'permission' => 'duties.read.padalinys',
+            ]
+        );
+
+        $duties = $query->paginate($request->input('per_page', 20))
+            ->withQueryString();
 
         return $this->inertiaResponse('Admin/People/IndexDuty', [
-            'duties' => $duties,
+            'duties' => [
+                'data' => $duties->getCollection()->map->toFullArray()->values(),
+                'meta' => [
+                    'total' => $duties->total(),
+                    'per_page' => $duties->perPage(),
+                    'current_page' => $duties->currentPage(),
+                    'last_page' => $duties->lastPage(),
+                    'from' => $duties->firstItem(),
+                    'to' => $duties->lastItem(),
+                ],
+            ],
+            'filters' => $request->getFilters(),
+            'sorting' => $request->getSorting(),
         ]);
     }
 

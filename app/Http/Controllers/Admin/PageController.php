@@ -3,37 +3,64 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\AdminController;
+use App\Http\Requests\IndexPageRequest;
 use App\Http\Requests\StorePageRequest;
 use App\Http\Requests\UpdatePageRequest;
+use App\Http\Traits\HasTanstackTables;
 use App\Models\Category;
 use App\Models\Content;
 use App\Models\Page;
 use App\Models\Tenant;
 use App\Services\ModelAuthorizer as Authorizer;
-use App\Services\ModelIndexer;
+use App\Services\TanstackTableService;
 use Illuminate\Http\Request;
 
 class PageController extends AdminController
 {
-    public function __construct(public Authorizer $authorizer) {}
+    use HasTanstackTables;
+
+    public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService) {}
 
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index(IndexPageRequest $request)
     {
         $this->handleAuthorization('viewAny', Page::class);
 
-        $indexer = new ModelIndexer(new Page);
+        $query = Page::query()->with('tenant:id,shortname');
 
-        $pages = $indexer
-            ->setEloquentQuery()
-            ->filterAllColumns()
-            ->sortAllColumns(['created_at' => 'desc'])
-            ->builder->paginate(20);
+        $searchableColumns = ['title', 'permalink'];
+
+        $query = $this->applyTanstackFilters(
+            $query,
+            $request,
+            $this->tableService,
+            $searchableColumns,
+            [
+                'applySortBeforePagination' => true,
+                'tenantRelation' => 'tenant',
+                'permission' => 'pages.read.padalinys',
+            ]
+        );
+
+        $pages = $query->paginate($request->input('per_page', 20))
+            ->withQueryString();
 
         return $this->inertiaResponse('Admin/Content/IndexPages', [
-            'pages' => $pages,
+            'pages' => [
+                'data' => $pages->items(),
+                'meta' => [
+                    'total' => $pages->total(),
+                    'per_page' => $pages->perPage(),
+                    'current_page' => $pages->currentPage(),
+                    'last_page' => $pages->lastPage(),
+                    'from' => $pages->firstItem(),
+                    'to' => $pages->lastItem(),
+                ],
+            ],
+            'filters' => $request->getFilters(),
+            'sorting' => $request->getSorting(),
         ]);
     }
 

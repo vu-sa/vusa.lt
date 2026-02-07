@@ -6,37 +6,68 @@ use App\Actions\DuplicateCalendarAction;
 use App\Actions\GetTenantsForUpserts;
 use App\Actions\HandleModelMediaUploads;
 use App\Http\Controllers\AdminController;
+use App\Http\Requests\IndexCalendarRequest;
 use App\Http\Requests\StoreCalendarRequest;
 use App\Http\Requests\UpdateCalendarRequest;
+use App\Http\Traits\HasTanstackTables;
 use App\Models\Calendar;
 use App\Models\Category;
 use App\Services\ModelAuthorizer as Authorizer;
-use App\Services\ModelIndexer;
+use App\Services\TanstackTableService;
 use Illuminate\Support\Facades\DB;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class CalendarController extends AdminController
 {
-    public function __construct(public Authorizer $authorizer) {}
+    use HasTanstackTables;
+
+    public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService) {}
 
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(IndexCalendarRequest $request)
     {
         $this->handleAuthorization('viewAny', Calendar::class);
 
-        $indexer = new ModelIndexer(new Calendar);
+        $query = Calendar::query()->with(['category', 'tenant:id,shortname']);
 
-        $calendar = $indexer
-            ->setEloquentQuery([fn ($query) => $query->with('category')])
-            ->filterAllColumns()
-            ->sortAllColumns()
-            ->builder->paginate(20);
+        $searchableColumns = ['title'];
+
+        $query = $this->applyTanstackFilters(
+            $query,
+            $request,
+            $this->tableService,
+            $searchableColumns,
+            [
+                'applySortBeforePagination' => true,
+                'tenantRelation' => 'tenant',
+                'permission' => 'calendars.read.padalinys',
+            ]
+        );
+
+        $calendar = $query->paginate($request->input('per_page', 20))
+            ->withQueryString();
 
         return $this->inertiaResponse('Admin/Calendar/IndexCalendarEvents', [
-            'calendar' => $calendar,
+            'calendar' => [
+                'data' => $calendar->getCollection()
+                    ->map(function ($event) {
+                        /** @var \App\Models\Calendar $event */
+                        return $event->toFullArray();
+                    }),
+                'meta' => [
+                    'total' => $calendar->total(),
+                    'per_page' => $calendar->perPage(),
+                    'current_page' => $calendar->currentPage(),
+                    'last_page' => $calendar->lastPage(),
+                    'from' => $calendar->firstItem(),
+                    'to' => $calendar->lastItem(),
+                ],
+            ],
             'allCategories' => Category::all(['id', 'alias', 'name', 'description']),
+            'filters' => $request->getFilters(),
+            'sorting' => $request->getSorting(),
         ]);
     }
 

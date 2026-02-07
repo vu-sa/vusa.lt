@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\AdminController;
+use App\Http\Requests\IndexTrainingRequest;
 use App\Http\Requests\StoreTrainingRequest;
 use App\Http\Requests\UpdateTrainingRequest;
+use App\Http\Traits\HasTanstackTables;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Membership;
@@ -16,29 +18,58 @@ use App\Models\Training;
 use App\Models\Type;
 use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
-use App\Services\ModelIndexer;
+use App\Services\TanstackTableService;
 
 class TrainingController extends AdminController
 {
-    public function __construct(public Authorizer $authorizer) {}
+    use HasTanstackTables;
+
+    public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService) {}
 
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(IndexTrainingRequest $request): \Inertia\Response
     {
         $this->handleAuthorization('viewAny', Training::class);
 
-        $indexer = new ModelIndexer(new Training);
+        $query = Training::query();
 
-        $trainings = $indexer
-            ->setEloquentQuery()
-            ->filterAllColumns()
-            ->sortAllColumns()
-            ->builder->paginate(15);
+        $searchableColumns = ['name'];
+
+        $query = $this->applyTanstackFilters(
+            $query,
+            $request,
+            $this->tableService,
+            $searchableColumns,
+            [
+                'applySortBeforePagination' => true,
+            ]
+        );
+
+        $trainings = $query->paginate($request->input('per_page', 15))
+            ->withQueryString();
+
+        $sorting = $request->getSorting();
 
         return $this->inertiaResponse('Admin/People/IndexTraining', [
-            'trainings' => $trainings,
+            'trainings' => [
+                'data' => $trainings->getCollection()
+                    ->map(function ($training) {
+                        /** @var \App\Models\Training $training */
+                        return $training->toFullArray();
+                    }),
+                'meta' => [
+                    'total' => $trainings->total(),
+                    'per_page' => $trainings->perPage(),
+                    'current_page' => $trainings->currentPage(),
+                    'last_page' => $trainings->lastPage(),
+                    'from' => $trainings->firstItem(),
+                    'to' => $trainings->lastItem(),
+                ],
+            ],
+            'filters' => $request->getFilters(),
+            'sorting' => $sorting,
         ]);
     }
 

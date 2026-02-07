@@ -5,37 +5,50 @@ namespace App\Http\Controllers\Admin;
 use App\Actions\GetTenantsForUpserts;
 use App\Exports\FormRegistrationsExport;
 use App\Http\Controllers\AdminController;
+use App\Http\Requests\IndexFormRequest;
 use App\Http\Requests\StoreFormRequest;
 use App\Http\Requests\UpdateFormRequest;
+use App\Http\Traits\HasTanstackTables;
 use App\Models\Form;
 use App\Models\FormField;
 use App\Models\Institution;
 use App\Models\Tenant;
 use App\Models\Training;
 use App\Services\ModelAuthorizer as Authorizer;
-use App\Services\ModelIndexer;
+use App\Services\TanstackTableService;
 use App\Settings\FormSettings;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 
 class FormController extends AdminController
 {
-    public function __construct(public Authorizer $authorizer) {}
+    use HasTanstackTables;
+
+    public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService) {}
 
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(IndexFormRequest $request): \Inertia\Response
     {
         $this->handleAuthorization('viewAny', Form::class);
 
-        $indexer = new ModelIndexer(new Form);
+        $query = Form::query()->with('tenant:id,shortname');
 
-        $forms = $indexer
-            ->setEloquentQuery()
-            ->filterAllColumns()
-            ->sortAllColumns()
-            ->builder->paginate(15);
+        $searchableColumns = ['name', 'path'];
+
+        $query = $this->applyTanstackFilters(
+            $query,
+            $request,
+            $this->tableService,
+            $searchableColumns,
+            [
+                'applySortBeforePagination' => true,
+            ]
+        );
+
+        $forms = $query->paginate($request->input('per_page', 15))
+            ->withQueryString();
 
         // Check member registration form access
         $memberFormId = app(FormSettings::class)->member_registration_form_id;
@@ -47,8 +60,32 @@ class FormController extends AdminController
         $canAccessStudentRepForm = $studentRepFormId &&
             ! GetTenantsForUpserts::execute('forms.read.padalinys', $this->authorizer)->isEmpty();
 
+        $sorting = $request->getSorting();
+
         return $this->inertiaResponse('Admin/Forms/IndexForm', [
-            'forms' => $forms,
+            'forms' => [
+                'data' => $forms->getCollection()
+                    ->map(function ($form) {
+                        /** @var \App\Models\Form $form */
+                        return [
+                            ...$form->toFullArray(),
+                            'tenant' => $form->tenant ? [
+                                'id' => $form->tenant->id,
+                                'shortname' => $form->tenant->shortname,
+                            ] : null,
+                        ];
+                    }),
+                'meta' => [
+                    'total' => $forms->total(),
+                    'per_page' => $forms->perPage(),
+                    'current_page' => $forms->currentPage(),
+                    'last_page' => $forms->lastPage(),
+                    'from' => $forms->firstItem(),
+                    'to' => $forms->lastItem(),
+                ],
+            ],
+            'filters' => $request->getFilters(),
+            'sorting' => $sorting,
             'memberFormId' => $memberFormId,
             'canAccessMemberForm' => $canAccessMemberForm,
             'studentRepFormId' => $studentRepFormId,

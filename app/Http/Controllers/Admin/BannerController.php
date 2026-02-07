@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetTenantsForUpserts;
 use App\Http\Controllers\AdminController;
+use App\Http\Requests\IndexBannerRequest;
+use App\Http\Traits\HasTanstackTables;
 use App\Models\Banner;
 use App\Services\ModelAuthorizer as Authorizer;
-use App\Services\ModelIndexer;
+use App\Services\TanstackTableService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -14,25 +16,50 @@ use Inertia\Response as InertiaResponse;
 
 class BannerController extends AdminController
 {
-    public function __construct(public Authorizer $authorizer) {}
+    use HasTanstackTables;
+
+    public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService) {}
 
     /**
      * Display a listing of the resource.
      */
-    public function index(): InertiaResponse
+    public function index(IndexBannerRequest $request): InertiaResponse
     {
         $this->handleAuthorization('viewAny', Banner::class);
 
-        $indexer = new ModelIndexer(new Banner);
+        $query = Banner::query()->with('tenant:id,shortname');
 
-        $banners = $indexer
-            ->setEloquentQuery()
-            ->filterAllColumns()
-            ->sortAllColumns()
-            ->builder->paginate(20);
+        $searchableColumns = ['title'];
+
+        $query = $this->applyTanstackFilters(
+            $query,
+            $request,
+            $this->tableService,
+            $searchableColumns,
+            [
+                'applySortBeforePagination' => true,
+                'tenantRelation' => 'tenant',
+                'permission' => 'banners.read.padalinys',
+            ]
+        );
+
+        $banners = $query->paginate($request->input('per_page', 20))
+            ->withQueryString();
 
         return $this->inertiaResponse('Admin/Content/IndexBanner', [
-            'banners' => $banners,
+            'banners' => [
+                'data' => $banners->items(),
+                'meta' => [
+                    'total' => $banners->total(),
+                    'per_page' => $banners->perPage(),
+                    'current_page' => $banners->currentPage(),
+                    'last_page' => $banners->lastPage(),
+                    'from' => $banners->firstItem(),
+                    'to' => $banners->lastItem(),
+                ],
+            ],
+            'filters' => $request->getFilters(),
+            'sorting' => $request->getSorting(),
         ]);
     }
 

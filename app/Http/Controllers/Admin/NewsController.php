@@ -4,37 +4,66 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\DuplicateNewsAction;
 use App\Http\Controllers\AdminController;
+use App\Http\Requests\IndexNewsRequest;
 use App\Http\Requests\StoreNewsRequest;
 use App\Http\Requests\UpdateNewsRequest;
+use App\Http\Traits\HasTanstackTables;
 use App\Models\Content;
 use App\Models\News;
 use App\Models\Tag;
 use App\Models\Tenant;
 use App\Services\ModelAuthorizer as Authorizer;
-use App\Services\ModelIndexer;
-use Illuminate\Http\Request;
+use App\Services\TanstackTableService;
 
 class NewsController extends AdminController
 {
-    public function __construct(public Authorizer $authorizer) {}
+    use HasTanstackTables;
+
+    public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService) {}
 
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index(IndexNewsRequest $request)
     {
         $this->handleAuthorization('viewAny', News::class);
 
-        $indexer = new ModelIndexer(new News);
+        $query = News::query()->with([
+            'other_language_news:id,title,lang',
+            'tenant:id,shortname',
+        ]);
 
-        $news = $indexer
-            ->setEloquentQuery([fn ($query) => $query->with('other_language_news:id,title,lang')])
-            ->filterAllColumns()
-            ->sortAllColumns(['publish_time' => 'descend'])
-            ->builder->paginate(20);
+        $searchableColumns = ['title', 'short'];
+
+        $query = $this->applyTanstackFilters(
+            $query,
+            $request,
+            $this->tableService,
+            $searchableColumns,
+            [
+                'applySortBeforePagination' => true,
+                'tenantRelation' => 'tenant',
+                'permission' => 'news.read.padalinys',
+            ]
+        );
+
+        $news = $query->paginate($request->input('per_page', 20))
+            ->withQueryString();
 
         return $this->inertiaResponse('Admin/Content/IndexNews', [
-            'news' => $news,
+            'news' => [
+                'data' => $news->items(),
+                'meta' => [
+                    'total' => $news->total(),
+                    'per_page' => $news->perPage(),
+                    'current_page' => $news->currentPage(),
+                    'last_page' => $news->lastPage(),
+                    'from' => $news->firstItem(),
+                    'to' => $news->lastItem(),
+                ],
+            ],
+            'filters' => $request->getFilters(),
+            'sorting' => $request->getSorting(),
         ]);
     }
 

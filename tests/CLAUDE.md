@@ -40,11 +40,8 @@ tests/Feature/
 │   ├── Permissions/# Permission, Role controllers
 │   └── Resources/  # Document, Files, Reservation controllers
 ├── Auth/           # Authentication & Authorization
-├── Content/        # DEPRECATED: Legacy model tests (avoid, use Admin/ instead)
 ├── Forms/          # Dynamic Forms & Registration workflows
-├── Management/     # DEPRECATED: Legacy management tests
 ├── Public/         # Public-facing features
-├── Resources/      # DEPRECATED: Legacy resource tests
 ├── System/         # API, Permissions, Integration, Search
 └── Other/          # Legacy tests (to be cleaned up)
 ```

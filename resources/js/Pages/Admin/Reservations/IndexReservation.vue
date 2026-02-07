@@ -1,223 +1,251 @@
 <template>
-  <IndexPageLayout :title="capitalize($tChoice('entities.reservation.model', 2))" model-name="reservations"
-    :icon="Icons.RESERVATION" :can-use-routes :columns :paginated-models="reservations">
-    <template #after-table>
-      <NCard class="mt-4">
-        <template #header>
-          {{ $t("Reservations with unit resources") }}
-        </template>
+  <IndexTablePage
+    ref="indexTablePageRef"
+    v-bind="tableConfig"
+    @data-loaded="onDataLoaded"
+    @sorting-changed="handleSortingChange"
+    @page-changed="handlePageChange"
+    @filter-changed="handleFilterChange"
+  >
+    <!-- After-table: Reservations with unit resources -->
+    <Card v-if="activeReservations?.length" class="mt-4">
+      <CardHeader>
+        <CardTitle>{{ $t("Reservations with unit resources") }}</CardTitle>
+      </CardHeader>
+      <CardContent>
         <ReservationsWithUnitResources :active-reservations />
-      </NCard>
-    </template>
-  </IndexPageLayout>
+      </CardContent>
+    </Card>
+  </IndexTablePage>
 </template>
 
 <script setup lang="tsx">
 import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
-import {
-  type DataTableColumns,
-  type DataTableSortState,
-  NTag,
-} from "naive-ui";
+import { type ColumnDef } from "@tanstack/vue-table";
 import { Link, usePage } from "@inertiajs/vue3";
-import { capitalize, computed, provide, ref } from "vue";
+import { ref, computed } from "vue";
 
-import ArrowForward20Filled from "~icons/fluent/arrow-forward20-filled";
+import { Info } from "lucide-vue-next";
+import { Badge } from "@/Components/ui/badge";
 import { Button } from "@/Components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/Components/ui/popover";
 import { RESERVATION_DATE_TIME_FORMAT } from "@/Constants/DateTimeFormats";
+import { capitalize } from "@/Utils/String";
 import { formatRelativeTime, formatStaticTime } from "@/Utils/IntlTime";
 import Icons from "@/Types/Icons/regular";
-import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
-import UsersAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
+import IndexTablePage from "@/Components/Layouts/IndexTablePage.vue";
 import ReservationsWithUnitResources from "@/Components/Tables/ReservationsWithUnitResources.vue";
-import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
+import UsersAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
+import { createStandardActionsColumn } from "@/Composables/useTableActions";
+import { type IndexTablePageProps } from "@/Types/TableConfigTypes";
+import { usePageBreadcrumbs, BreadcrumbHelpers } from "@/Composables/useBreadcrumbsUnified";
 
-defineProps<{
-  reservations: PaginatedModels<App.Entities.Reservation>;
+const props = defineProps<{
+  reservations: {
+    data: App.Entities.Reservation[];
+    meta: {
+      total: number;
+      current_page: number;
+      per_page: number;
+      last_page: number;
+      from: number;
+      to: number;
+    };
+  };
+  filters?: Record<string, any>;
+  sorting?: { id: string; desc: boolean }[];
   activeReservations: Array<App.Entities.Reservation>;
 }>();
 
-const canUseRoutes = {
-  create: true,
-  show: true,
-  edit: false,
-  destroy: false,
-  duplicate: false
+const modelName = "reservations";
+const entityName = "reservation";
+
+const indexTablePageRef = ref<any>(null);
+
+const getRowId = (row: App.Entities.Reservation) => {
+  return `reservation-${row.id}`;
 };
-
-const sorters = ref<Record<string, DataTableSortState["order"]>>({
-  name: false,
-  start_time: "descend",
-  end_time: false,
-});
-
-provide("sorters", sorters);
 
 // Breadcrumbs setup
 usePageBreadcrumbs(() => [
   BreadcrumbHelpers.homeItem(),
-  BreadcrumbHelpers.createBreadcrumbItem($t("administration.title"), route("administration")),
-  BreadcrumbHelpers.createBreadcrumbItem(capitalize($tChoice("entities.reservation.model", 2)), undefined, Icons.RESERVATION)
+  BreadcrumbHelpers.createBreadcrumbItem(
+    $t("administration.title"),
+    route("administration")
+  ),
+  BreadcrumbHelpers.createBreadcrumbItem(
+    capitalize($tChoice("entities.reservation.model", 2)),
+    undefined,
+    Icons.RESERVATION
+  ),
 ]);
 
-// add columns
-const columns = computed<DataTableColumns<App.Entities.Reservation>>(() => {
-  return [
-    {
-      type: "expand",
-      renderExpand(row) {
-        return (
-          <section class="flex flex-col gap-2 p-2">
-            <div>
-              <strong>{$t("forms.fields.description")}</strong>
-              <p>{row.description}</p>
+const columns = computed<ColumnDef<App.Entities.Reservation, any>[]>(() => [
+  {
+    accessorKey: "name",
+    header: () => $t("forms.fields.title"),
+    cell: ({ row }) => {
+      const reservation = row.original;
+      return (
+        <div class="flex items-center gap-1.5">
+          <Link
+            href={route("reservations.show", reservation.id)}
+            class="transition hover:text-vusa-red"
+          >
+            <div class="max-w-[250px] truncate" title={reservation.name}>
+              {reservation.name}
             </div>
-            <div>
-              <strong>
-                {capitalize($t("entities.reservation.resources"))}
-              </strong>
-              <ul class="list-inside list-disc">
-                {/* add quantity and tenant.shortname */}
-                {row.resources?.map((resource) => (
-                  <li>
-                    <div class="inline-flex items-center gap-2">
-                      <Link href={route("resources.edit", resource.id)}>
-                        {resource.name}
-                      </Link>
-                      <NTag size="tiny" round>
-                        <span class="ml-1 text-xs text-gray-500">
-                          {$t(resource.tenant?.shortname)}
-                        </span>
-                      </NTag>
+          </Link>
+          {(reservation.description || reservation.resources?.length) ? (
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" size="icon-sm" class="size-6 shrink-0">
+                  <Info class="size-3.5 text-muted-foreground" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent class="w-80">
+                <div class="flex flex-col gap-3">
+                  {reservation.description && (
+                    <div>
+                      <p class="text-sm font-medium">
+                        {$t("forms.fields.description")}
+                      </p>
+                      <p class="text-sm text-muted-foreground">
+                        {reservation.description}
+                      </p>
                     </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </section>
-        );
-      },
+                  )}
+                  {reservation.resources?.length ? (
+                    <div>
+                      <p class="text-sm font-medium">
+                        {capitalize($t("entities.reservation.resources"))}
+                      </p>
+                      <ul class="list-inside list-disc text-sm">
+                        {reservation.resources.map((resource) => (
+                          <li key={resource.id}>
+                            <div class="inline-flex items-center gap-1.5">
+                              <Link href={route("resources.edit", resource.id)}>
+                                {resource.name}
+                              </Link>
+                              {resource.tenant?.shortname && (
+                                <Badge variant="secondary" class="text-xs">
+                                  {$t(resource.tenant.shortname)}
+                                </Badge>
+                              )}
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : null}
+                </div>
+              </PopoverContent>
+            </Popover>
+          ) : null}
+        </div>
+      );
     },
-    {
-      title() {
-        return $t("forms.fields.title");
-      },
-      key: "name",
-      sorter: 'default',
-      maxWidth: 300,
-      ellipsis: {
-        tooltip: true,
-      },
-      render(row) {
-        return (
-          <Link href={route("reservations.show", row.id)}>
-            {row.name}
-          </Link>
-        );
-      },
+    size: 300,
+    enableSorting: true,
+  },
+  {
+    accessorKey: "managers",
+    header: () => capitalize($tChoice("entities.reservation.managers", 2)),
+    cell: ({ row }) => {
+      const users = row.original.users;
+      return users && users.length > 0 ? (
+        <UsersAvatarGroup class="align-middle" size={30} users={users} />
+      ) : (
+        <span class="text-muted-foreground">-</span>
+      );
     },
-    {
-      title() {
-        return capitalize($tChoice("entities.reservation.managers", 2));
-      },
-      key: "managers",
-      render(row) {
-        return row.users && row.users?.length > 0 ? (
-          <UsersAvatarGroup class="align-middle" size={30} users={row.users} />
-        ) : (
-          "Nėra"
-        );
-      },
+    size: 150,
+  },
+  {
+    accessorKey: "start_time",
+    header: () => capitalize($tChoice("entities.reservation.start_time", 2)),
+    cell: ({ row }) => {
+      const startTime = row.original.start_time;
+      return (
+        <div class="max-w-[180px] truncate" title={startTime}>
+          {formatStaticTime(
+            new Date(startTime),
+            RESERVATION_DATE_TIME_FORMAT,
+            usePage().props.app.locale
+          )}
+        </div>
+      );
     },
-    {
-      title() {
-        return capitalize($tChoice("entities.reservation.start_time", 2));
-      },
-      key: "start_time",
-      sorter: (a, b) =>
-        new Date(a.start_time).getTime() - new Date(b.start_time).getTime(),
-      defaultSortOrder: "descend",
-      ellipsis: {
-        tooltip: true,
-      },
-      render(row) {
-        return formatStaticTime(
-          new Date(row.start_time),
-          RESERVATION_DATE_TIME_FORMAT,
-          usePage().props.app.locale,
-        );
-      },
+    size: 180,
+    enableSorting: true,
+  },
+  {
+    accessorKey: "end_time",
+    header: () => capitalize($tChoice("entities.reservation.end_time", 2)),
+    cell: ({ row }) => {
+      const endTime = row.original.end_time;
+      return (
+        <div class="max-w-[180px] truncate" title={endTime}>
+          {formatStaticTime(
+            new Date(endTime),
+            RESERVATION_DATE_TIME_FORMAT,
+            usePage().props.app.locale
+          )}
+        </div>
+      );
     },
-    {
-      title() {
-        return capitalize($tChoice("entities.reservation.end_time", 2));
-      },
-      key: "end_time",
-      sorter: (a, b) =>
-        new Date(a.end_time).getTime() - new Date(b.end_time).getTime(),
-      ellipsis: {
-        tooltip: true,
-      },
-      render(row) {
-        return formatStaticTime(
-          new Date(row.end_time),
-          RESERVATION_DATE_TIME_FORMAT,
-          usePage().props.app.locale,
-        );
-      },
+    size: 180,
+    enableSorting: true,
+  },
+  {
+    accessorKey: "created_at",
+    header: () => $t("forms.fields.created_at"),
+    cell: ({ row }) => {
+      return formatRelativeTime(
+        new Date(row.original.created_at),
+        { numeric: "auto" },
+        usePage().props.app.locale
+      );
     },
-    {
-      title() {
-        return $t("forms.fields.created_at");
-      },
-      key: "created_at",
-      render(row) {
-        return formatRelativeTime(
-          new Date(row.created_at),
-          {
-            numeric: "auto",
-          },
-          usePage().props.app.locale,
-        );
-      },
-    },
-    //{
-    //      title: "Ar užbaigta",
-    //      key: "isCompleted",
-    //      filter(value, row) {
-    //        return row.isCompleted === value;
-    //      },
-    //      filterOptions: [
-    //        { label: "Taip", value: true },
-    //        { label: "Ne", value: false },
-    //      ],
-    //      defaultFilterOptionValue: false,
-    //      render(row) {
-    //        return row.isCompleted ? "✅ Taip" : "❌ Ne";
-    //      },
-    //    }
-  ];
-});
+    size: 150,
+  },
+  createStandardActionsColumn<App.Entities.Reservation>("reservations", {
+    canView: true,
+  }),
+]);
 
-const columnsWithActions = computed(() => {
-  return [
-    ...columns.value,
-    {
-      title() {
-        return $t("Veiksmai");
-      },
-      key: "actions",
-      width: 100,
-      render(row) {
-        return (
-          <Link href={route("reservations.show", row.id)} >
-            <Button variant="ghost" size="icon-sm">
-              <ArrowForward20Filled />
-            </Button>
-          </Link>
-        );
-      },
-    },
-  ];
-});
+const tableConfig = computed<IndexTablePageProps<App.Entities.Reservation>>(
+  () => ({
+    modelName,
+    entityName,
+    data: props.reservations.data,
+    columns: columns.value,
+    getRowId,
+    totalCount: props.reservations.meta.total,
+    initialPage: props.reservations.meta.current_page,
+    pageSize: props.reservations.meta.per_page,
+
+    initialFilters: props.filters,
+    initialSorting: props.sorting ?? [{ id: "start_time", desc: true }],
+    enableFiltering: true,
+    enableColumnVisibility: false,
+    enableRowSelection: false,
+    allowToggleDeleted: true,
+
+    headerTitle: capitalize($tChoice("entities.reservation.model", 2)),
+    icon: Icons.RESERVATION,
+    createRoute: route("reservations.create"),
+    canCreate: true,
+  })
+);
+
+const onDataLoaded = (data: any) => {};
+const handleSortingChange = (sorting: any) => {};
+const handlePageChange = (page: any) => {};
+const handleFilterChange = (filterKey: any, value: any) => {};
 </script>

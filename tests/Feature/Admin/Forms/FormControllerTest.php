@@ -111,8 +111,8 @@ describe('authorized access', function () {
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->has('forms.data', 2) // Super Admin sees all forms
-                ->where('forms.data.0.name', 'My Form')
-                ->where('forms.data.1.name', 'Other Form')
+                ->where('forms.data.0.name.lt', 'My Form')
+                ->where('forms.data.1.name.lt', 'Other Form')
             );
     });
 
@@ -124,11 +124,11 @@ describe('authorized access', function () {
         Form::factory()->for($this->tenant)->create(['name' => ['lt' => 'Regular Form', 'en' => 'Regular Form']]);
 
         asUser($this->admin)
-            ->get(route('forms.index', ['text' => 'Important']))
+            ->get(route('forms.index', ['search' => 'Important']))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->has('forms.data', 1)
-                ->where('forms.data.0.name', 'Important Form')
+                ->where('forms.data.0.name.lt', 'Important Form')
             );
     });
 

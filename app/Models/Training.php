@@ -4,7 +4,6 @@ namespace App\Models;
 
 use App\Models\Pivots\Trainable;
 use App\Models\Traits\HasTranslations;
-use App\Models\Traits\HasUnitRelation;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Laravel\Scout\Searchable;
@@ -51,7 +50,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  */
 class Training extends Model
 {
-    use HasFactory, HasRelationships, HasTranslations, HasUlids, HasUnitRelation, LogsActivity, Searchable;
+    use HasFactory, HasRelationships, HasTranslations, HasUlids, LogsActivity, Searchable;
 
     public $table = 'trainings';
 

@@ -81,7 +81,7 @@ class ModelIndexer
         // get authorizer singleton
         $this->authorizer = app(Authorizer::class);
 
-        $this->tenantRelationString = (new $indexable)->whichUnitRelation();
+        $this->tenantRelationString = method_exists($indexable, 'tenant') ? 'tenant' : 'tenants';
 
         $this->search();
         $this->setEloquentQuery();

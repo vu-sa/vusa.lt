@@ -127,9 +127,6 @@ tests/Feature/
 ├── Forms/          # Dynamic Forms & Registration workflows
 ├── Public/         # Public-facing features
 ├── System/         # API, Permissions, Integration, Search
-├── Content/        # DEPRECATED: Legacy model relationship tests
-├── Management/     # DEPRECATED: Legacy management tests  
-├── Resources/      # DEPRECATED: Legacy resource tests
 └── Other/          # Legacy tests (to be cleaned up)
 ```
 

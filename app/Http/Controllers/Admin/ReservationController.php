@@ -3,15 +3,16 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\AdminController;
+use App\Http\Requests\IndexReservationRequest;
 use App\Http\Requests\StoreReservationRequest;
 use App\Http\Requests\UpdateReservationRequest;
+use App\Http\Traits\HasTanstackTables;
 use App\Models\Reservation;
 use App\Models\Resource;
 use App\Models\User;
 use App\Notifications\AssignedToResourceNotification;
 use App\Services\ModelAuthorizer as Authorizer;
-use App\Services\ModelIndexer;
-use Illuminate\Database\Eloquent\Builder;
+use App\Services\TanstackTableService;
 /* use Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests; */
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
@@ -20,7 +21,9 @@ use Inertia\Inertia;
 
 class ReservationController extends AdminController
 {
-    public function __construct(public Authorizer $authorizer)
+    use HasTanstackTables;
+
+    public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService)
     {
         /* $this->middleware([HandlePrecognitiveRequests::class])->only(['store', 'update']); */
     }
@@ -28,26 +31,45 @@ class ReservationController extends AdminController
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(IndexReservationRequest $request)
     {
-        // TODO: also return reservations with resources for this tenant
-
         $this->handleAuthorization('viewAny', Reservation::class);
 
-        $indexer = new ModelIndexer(new Reservation);
+        $query = Reservation::query()->with([
+            'resources.tenant:id,shortname',
+            'users:id,name,profile_photo_path',
+        ]);
 
-        $reservations = $indexer
-            ->setEloquentQuery([fn (Builder $query) => $query->with(['resources.tenant', 'users'])])
-            ->filterAllColumns()
-            ->sortAllColumns(['start_time' => 'descend'])
-            ->builder->paginate(20);
+        $searchableColumns = ['name', 'description'];
+
+        $query = $this->applyTanstackFilters(
+            $query,
+            $request,
+            $this->tableService,
+            $searchableColumns,
+        );
+
+        $reservations = $query->paginate($request->input('per_page', 20))
+            ->withQueryString();
 
         $resources = Resource::withWhereHas('tenant', function ($query) {
             $query->whereIn('id', $this->authorizer->getTenants()->pluck('id'));
         });
 
         return $this->inertiaResponse('Admin/Reservations/IndexReservation', [
-            'reservations' => $reservations,
+            'reservations' => [
+                'data' => $reservations->getCollection()->values(),
+                'meta' => [
+                    'total' => $reservations->total(),
+                    'per_page' => $reservations->perPage(),
+                    'current_page' => $reservations->currentPage(),
+                    'last_page' => $reservations->lastPage(),
+                    'from' => $reservations->firstItem(),
+                    'to' => $reservations->lastItem(),
+                ],
+            ],
+            'filters' => $request->getFilters(),
+            'sorting' => $request->getSorting(),
             'activeReservations' => $resources->with('reservations.resources.tenant', 'reservations.users')->get()->pluck('reservations')->flatten()->unique('id')->values(),
         ]);
     }

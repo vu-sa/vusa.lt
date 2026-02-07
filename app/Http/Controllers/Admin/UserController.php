@@ -7,15 +7,17 @@ use App\Actions\GenerateUserPassword;
 use App\Actions\MergeUsers;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\GenerateUserPasswordRequest;
+use App\Http\Requests\IndexUserRequest;
 use App\Http\Requests\MergeUsersRequest;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
+use App\Http\Traits\HasTanstackTables;
 use App\Models\Duty;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
-use App\Services\ModelIndexer;
 use App\Services\ResourceServices\UserDutyService;
+use App\Services\TanstackTableService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection as SupportCollection;
@@ -24,32 +26,56 @@ use Illuminate\Support\Facades\DB;
 
 class UserController extends AdminController
 {
-    public function __construct(public Authorizer $authorizer) {}
+    use HasTanstackTables;
+
+    public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService) {}
 
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index(IndexUserRequest $request)
     {
         $this->handleAuthorization('viewAny', User::class);
 
-        $indexer = new ModelIndexer(new User);
+        $query = User::query()->with([
+            'duties:id,institution_id',
+            'duties.institution:id,tenant_id',
+            'duties.institution.tenant:id,shortname',
+        ])->withCount('duties');
 
-        $users = $indexer
-            ->setEloquentQuery([
-                fn (Builder $query) => $query->with([
-                    'duties:id,institution_id',
-                    'duties.institution:id,tenant_id',
-                    'duties.institution.tenant:id,shortname',
-                ])->withCount('duties')])
-            ->filterAllColumns()
-            ->sortAllColumns()
-            ->builder->paginate(20);
+        $searchableColumns = ['name', 'email', 'phone'];
+
+        $query = $this->applyTanstackFilters(
+            $query,
+            $request,
+            $this->tableService,
+            $searchableColumns,
+            [
+                'applySortBeforePagination' => true,
+                'tenantRelation' => 'tenants',
+                'permission' => 'users.read.padalinys',
+            ]
+        );
+
+        $users = $query->paginate($request->input('per_page', 20))
+            ->withQueryString();
 
         $collection = $users->getCollection()->makeVisible(['last_action']);
 
         return $this->inertiaResponse('Admin/People/IndexUser', [
-            'users' => $users->setCollection($collection),
+            'users' => [
+                'data' => $collection->values(),
+                'meta' => [
+                    'total' => $users->total(),
+                    'per_page' => $users->perPage(),
+                    'current_page' => $users->currentPage(),
+                    'last_page' => $users->lastPage(),
+                    'from' => $users->firstItem(),
+                    'to' => $users->lastItem(),
+                ],
+            ],
+            'filters' => $request->getFilters(),
+            'sorting' => $request->getSorting(),
         ]);
     }
 
