@@ -42,11 +42,9 @@ class SharepointFileController extends AdminController
     {
         $this->handleAuthorization('create', SharepointFile::class);
 
-        // This is the actually working validation
         $validated = $request->validate([
             'file' => 'required|array',
-            'file.uploadValue' => 'required|array',
-            'file.uploadValue.file' => 'required|file',
+            'file.uploadValue' => 'required|file',
             'file.typeValue' => 'required|string',
             'file.nameValue' => 'required|string',
             'file.datetimeValue' => 'required|numeric',
@@ -90,7 +88,7 @@ class SharepointFileController extends AdminController
         }
 
         // Use new upload method that creates FileableFile record
-        $uploadedFile = $request->file('file.uploadValue.file');
+        $uploadedFile = $request->file('file.uploadValue');
         $fileableFile = $sharepointFileService->uploadFile(
             $uploadedFile,
             $validated['file']['nameValue'],
