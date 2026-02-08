@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\Duty;
+use Carbon\Carbon;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateDutiableRequest extends FormRequest
@@ -13,6 +14,23 @@ class UpdateDutiableRequest extends FormRequest
     public function authorize(): bool
     {
         return $this->user()->can('update', Duty::find(request('duty')['id']));
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $data = [];
+
+        if ($this->input('start_date') !== null) {
+            $data['start_date'] = Carbon::parse($this->input('start_date'))->format('Y-m-d');
+        }
+
+        if ($this->input('end_date') !== null) {
+            $data['end_date'] = Carbon::parse($this->input('end_date'))->format('Y-m-d');
+        }
+
+        if (! empty($data)) {
+            $this->merge($data);
+        }
     }
 
     /**
