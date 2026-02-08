@@ -24,24 +24,32 @@
           </template>
           <FormFieldWrapper id="merged_user_id" label="Prijungiamas vartotojas" required>
             <Combobox
-              :model-value="form.merged_user_id"
+              v-model="selectedMergedUser"
+              :filter-function="filterUsers"
               :display-value="displayUserName"
-              @update:model-value="onSelectMergedUser"
             >
-              <ComboboxAnchor class="w-full">
-                <ComboboxInput v-model="mergedSearchTerm" placeholder="Pasirinkite vartotoją" />
-                <ComboboxTrigger />
+              <ComboboxAnchor
+                class="relative flex h-10 w-full items-center gap-2 rounded-md border border-input bg-background px-3 text-sm ring-offset-background focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2"
+              >
+                <SearchIcon class="size-4 shrink-0 opacity-50" />
+                <ComboboxInput
+                  class="flex-1 bg-transparent placeholder:text-muted-foreground focus:outline-none"
+                  placeholder="Pasirinkite vartotoją"
+                />
+                <ComboboxTrigger class="ml-auto shrink-0 text-muted-foreground hover:text-foreground">
+                  <ChevronDownIcon class="size-4" />
+                </ComboboxTrigger>
               </ComboboxAnchor>
-              <ComboboxList class="w-full min-w-[var(--reka-combobox-trigger-width)]">
+              <ComboboxList class="min-w-[var(--reka-popper-anchor-width)]">
                 <ComboboxViewport class="max-h-60 p-1">
                   <ComboboxEmpty>Nerasta</ComboboxEmpty>
                   <ComboboxVirtualizer
                     v-slot="{ option }"
-                    :options="filteredMergedUsers"
+                    :options="users"
                     :estimate-size="40"
                     :text-content="(opt: App.Entities.Role) => opt.name"
                   >
-                    <ComboboxItem :value="option.id" class="flex items-center gap-2">
+                    <ComboboxItem :value="option" class="flex items-center gap-2">
                       <UserAvatar :user="option" :size="24" />
                       <span class="truncate">{{ option.name }}</span>
                       <a :href="route('users.edit', option.id)" target="_blank" class="ml-auto shrink-0" @click.stop>
@@ -57,24 +65,32 @@
           </FormFieldWrapper>
           <FormFieldWrapper id="kept_user_id" label="Prijungti prie..." required>
             <Combobox
-              :model-value="form.kept_user_id"
+              v-model="selectedKeptUser"
+              :filter-function="filterUsers"
               :display-value="displayUserName"
-              @update:model-value="onSelectKeptUser"
             >
-              <ComboboxAnchor class="w-full">
-                <ComboboxInput v-model="keptSearchTerm" placeholder="Pasirinkite vartotoją" />
-                <ComboboxTrigger />
+              <ComboboxAnchor
+                class="relative flex h-10 w-full items-center gap-2 rounded-md border border-input bg-background px-3 text-sm ring-offset-background focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2"
+              >
+                <SearchIcon class="size-4 shrink-0 opacity-50" />
+                <ComboboxInput
+                  class="flex-1 bg-transparent placeholder:text-muted-foreground focus:outline-none"
+                  placeholder="Pasirinkite vartotoją"
+                />
+                <ComboboxTrigger class="ml-auto shrink-0 text-muted-foreground hover:text-foreground">
+                  <ChevronDownIcon class="size-4" />
+                </ComboboxTrigger>
               </ComboboxAnchor>
-              <ComboboxList class="w-full min-w-[var(--reka-combobox-trigger-width)]">
+              <ComboboxList class="min-w-[var(--reka-popper-anchor-width)]">
                 <ComboboxViewport class="max-h-60 p-1">
                   <ComboboxEmpty>Nerasta</ComboboxEmpty>
                   <ComboboxVirtualizer
                     v-slot="{ option }"
-                    :options="filteredKeptUsers"
+                    :options="users"
                     :estimate-size="40"
                     :text-content="(opt: App.Entities.Role) => opt.name"
                   >
-                    <ComboboxItem :value="option.id" class="flex items-center gap-2">
+                    <ComboboxItem :value="option" class="flex items-center gap-2">
                       <UserAvatar :user="option" :size="24" />
                       <span class="truncate">{{ option.name }}</span>
                       <a :href="route('users.edit', option.id)" target="_blank" class="ml-auto shrink-0" @click.stop>
@@ -96,8 +112,9 @@
 
 <script setup lang="ts">
 import { useForm } from "@inertiajs/vue3";
-import { computed, ref } from "vue";
-import { ComboboxVirtualizer } from "reka-ui";
+import { ref, watch } from "vue";
+import { ComboboxInput, ComboboxVirtualizer } from "reka-ui";
+import { SearchIcon, ChevronDownIcon } from "lucide-vue-next";
 import IconEye from "~icons/fluent/eye16-regular";
 
 import { Button } from "@/Components/ui/button";
@@ -105,7 +122,6 @@ import {
   Combobox,
   ComboboxAnchor,
   ComboboxEmpty,
-  ComboboxInput,
   ComboboxItem,
   ComboboxList,
   ComboboxTrigger,
@@ -128,58 +144,35 @@ const form = useForm({
   merged_user_id: null as number | null,
 });
 
-const mergedSearchTerm = ref('');
-const keptSearchTerm = ref('');
+const selectedMergedUser = ref<App.Entities.Role | null>(null);
+const selectedKeptUser = ref<App.Entities.Role | null>(null);
 
-const usersById = computed(() => {
-  const map = new Map<number, App.Entities.Role>();
-  for (const user of users) {
-    map.set(user.id, user);
+function filterUsers(options: App.Entities.Role[], searchTerm: string): App.Entities.Role[] {
+  if (!searchTerm) {
+    return options;
   }
-  return map;
-});
-
-function displayUserName(id: unknown): string {
-  if (id == null) {
-    return '';
-  }
-  return usersById.value.get(id as number)?.name ?? '';
+  const term = searchTerm.toLowerCase();
+  return options.filter(u => u.name.toLowerCase().includes(term));
 }
 
-const filteredMergedUsers = computed(() => {
-  if (!mergedSearchTerm.value) {
-    return users;
-  }
-  const term = mergedSearchTerm.value.toLowerCase();
-  return users.filter(u => u.name.toLowerCase().includes(term));
-});
-
-const filteredKeptUsers = computed(() => {
-  if (!keptSearchTerm.value) {
-    return users;
-  }
-  const term = keptSearchTerm.value.toLowerCase();
-  return users.filter(u => u.name.toLowerCase().includes(term));
-});
-
-function onSelectMergedUser(id: number) {
-  form.merged_user_id = id;
-  const user = users.find(u => u.id === id);
-  mergedSearchTerm.value = user?.name ?? '';
+function displayUserName(val: unknown): string {
+  return (val as App.Entities.Role)?.name ?? '';
 }
 
-function onSelectKeptUser(id: number) {
-  form.kept_user_id = id;
-  const user = users.find(u => u.id === id);
-  keptSearchTerm.value = user?.name ?? '';
-}
+watch(selectedMergedUser, (user) => {
+  form.merged_user_id = user?.id ?? null;
+});
+
+watch(selectedKeptUser, (user) => {
+  form.kept_user_id = user?.id ?? null;
+});
 
 function handleFormSubmit() {
   form.post(route("users.mergeUsers"), {
     onSuccess: () => {
       form.reset();
-      mergedSearchTerm.value = '';
-      keptSearchTerm.value = '';
+      selectedMergedUser.value = null;
+      selectedKeptUser.value = null;
     },
   });
 }

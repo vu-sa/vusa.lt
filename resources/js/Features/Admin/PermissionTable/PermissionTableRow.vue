@@ -21,20 +21,20 @@
     <td>
       <div v-if="availableScopes.hasOwn || availableScopes.hasPadalinys" class="flex w-64 items-center gap-2">
         <!-- Show checkbox only if 'own' scope is available -->
-        <Checkbox v-if="availableScopes.hasOwn" :checked="checkboxPadalinys" :disabled="switchAll || disabled"
-          @update:checked="val => { checkboxPadalinys = val; handleUpdate(); }" />
+        <Checkbox v-if="availableScopes.hasOwn" :model-value="checkboxPadalinys" :disabled="switchAll || disabled"
+          @update:model-value="val => { checkboxPadalinys = val; handleUpdate(); }" />
 
         <!-- For models with both own and padalinys scopes -->
         <div v-if="availableScopes.hasPadalinys && availableScopes.hasOwn" class="flex items-center gap-2">
-          <Switch :checked="switchPadalinys" :disabled="switchAll || !checkboxPadalinys || disabled"
-            @update:checked="val => { switchPadalinys = val; handleUpdate(); }" />
+          <Switch :model-value="switchPadalinys" :disabled="switchAll || !checkboxPadalinys || disabled"
+            @update:model-value="val => { switchPadalinys = val; handleUpdate(); }" />
           <span class="text-xs">{{ switchPadalinys ? 'Visus' : 'Savo' }}</span>
         </div>
 
         <!-- For models with only padalinys scope (no own scope) -->
         <div v-if="!availableScopes.hasOwn && availableScopes.hasPadalinys" class="flex items-center gap-2">
-          <Switch :checked="switchPadalinys" :disabled="switchAll || disabled"
-            @update:checked="val => { switchPadalinys = val; handleUpdate(); }" />
+          <Switch :model-value="switchPadalinys" :disabled="switchAll || disabled"
+            @update:model-value="val => { switchPadalinys = val; handleUpdate(); }" />
           <span class="text-xs">{{ switchPadalinys ? 'Padalinyje' : '' }}</span>
         </div>
       </div>
@@ -44,7 +44,7 @@
     </td>
     <td>
       <div v-if="showAllControl">
-        <Switch :checked="switchAll" :disabled="disabled" @update:checked="val => { switchAll = val; handleUpdate(); }" />
+        <Switch :model-value="switchAll" :disabled="disabled" @update:model-value="val => { switchAll = val; handleUpdate(); }" />
       </div>
       <div v-else class="text-gray-500">
         <span class="text-sm">Netaikoma</span>

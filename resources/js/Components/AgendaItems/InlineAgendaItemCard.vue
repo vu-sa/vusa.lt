@@ -21,24 +21,47 @@
       </div>
 
       <!-- Title & Click Area -->
-      <button
-        type="button"
-        class="flex-1 min-w-0 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-lg -my-1 py-1"
-        @click="toggleExpanded"
-      >
-        <div class="flex items-center gap-2">
-          <h3 class="text-sm font-semibold text-zinc-800 dark:text-zinc-100 truncate">
-            {{ item.title }}
-          </h3>
-          <Badge v-if="item.brought_by_students" variant="default" class="bg-vusa-red hover:bg-vusa-red/90 shrink-0 text-[10px] px-1.5 py-0">
-            {{ $t('Studentų') }}
-          </Badge>
+      <div class="flex-1 min-w-0">
+        <!-- Editing title mode (only when expanded) -->
+        <div v-if="isExpanded && editingTitle" class="flex items-center gap-2">
+          <Input
+            ref="titleInputRef"
+            v-model="localTitle"
+            class="h-8 text-sm font-semibold"
+            @blur="finishEditingTitle"
+            @keydown.enter="finishEditingTitle"
+            @keydown.escape="cancelEditingTitle"
+          />
         </div>
-        <!-- Status Summary (collapsed state) -->
-        <div v-if="!isExpanded" class="flex items-center gap-2 mt-1">
-          <span class="text-xs" :class="statusTextClass">{{ statusText }}</span>
-        </div>
-      </button>
+
+        <!-- Display mode -->
+        <button
+          v-else
+          type="button"
+          class="w-full text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-lg -my-1 py-1"
+          @click="isExpanded ? startEditingTitle() : toggleExpanded()"
+        >
+          <div class="flex items-center gap-2">
+            <h3
+              class="text-sm font-semibold truncate text-zinc-800 dark:text-zinc-100"
+              :class="isExpanded && 'cursor-text hover:text-primary dark:hover:text-primary hover:underline decoration-primary/30 underline-offset-2'"
+            >
+              {{ localTitle }}
+            </h3>
+            <Pencil
+              v-if="isExpanded"
+              class="h-3 w-3 shrink-0 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+            />
+            <Badge v-if="item.brought_by_students" variant="default" class="bg-vusa-red hover:bg-vusa-red/90 shrink-0 text-[10px] px-1.5 py-0">
+              {{ $t('Studentų') }}
+            </Badge>
+          </div>
+          <!-- Status Summary (collapsed state) -->
+          <div v-if="!isExpanded" class="flex items-center gap-2 mt-1">
+            <span class="text-xs" :class="statusTextClass">{{ statusText }}</span>
+          </div>
+        </button>
+      </div>
 
       <!-- Right side: Vote Badges (collapsed) + Expand Icon -->
       <div class="flex items-center gap-2 shrink-0">
@@ -555,6 +578,7 @@ import {
   ThumbsDown,
   Sparkles,
   Handshake,
+  Pencil,
 } from 'lucide-vue-next';
 
 import VoteSelectionBadge from './VoteSelectionBadge.vue';
@@ -613,12 +637,15 @@ const emit = defineEmits<Emits>();
 
 // Local state
 const isExpanded = ref(props.expanded);
+const editingTitle = ref(false);
 const editingDescription = ref(false);
 const editingStudentPosition = ref(false);
 const editingVoteTitle = ref<number | null>(null);
 const recentlyAutoUpdatedVotes = ref<Set<string>>(new Set());
+const titleInputRef = ref<{ $el: HTMLInputElement } | null>(null);
 
 // Local editable copies - keep null type as null (requires user selection)
+const localTitle = ref(props.item.title);
 const localType = ref<'voting' | 'informational' | 'deferred' | null>(props.item.type ?? null);
 const localDescription = ref(props.item.description || '');
 const localStudentPosition = ref(props.item.student_position || '');
@@ -627,6 +654,7 @@ const localVotes = ref<App.Entities.Vote[]>([...(props.item.votes || [])]);
 
 // Watch for prop changes
 watch(() => props.item, (newItem) => {
+  localTitle.value = newItem.title;
   localType.value = newItem.type ?? null;
   localDescription.value = newItem.description || '';
   localStudentPosition.value = newItem.student_position || '';
@@ -668,7 +696,31 @@ const statusTextClass = computed(() => styling.getStatusTextClass(itemForStyling
 // Methods
 const toggleExpanded = () => {
   isExpanded.value = !isExpanded.value;
+  if (!isExpanded.value && editingTitle.value) {
+    cancelEditingTitle();
+  }
   emit('toggle-expand', props.item.id);
+};
+
+const startEditingTitle = () => {
+  editingTitle.value = true;
+  nextTick(() => {
+    titleInputRef.value?.$el?.focus();
+    titleInputRef.value?.$el?.select();
+  });
+};
+
+const finishEditingTitle = () => {
+  if (!localTitle.value?.trim()) {
+    localTitle.value = props.item.title;
+  }
+  editingTitle.value = false;
+  saveChanges();
+};
+
+const cancelEditingTitle = () => {
+  localTitle.value = props.item.title;
+  editingTitle.value = false;
 };
 
 /**
@@ -916,6 +968,7 @@ const getVoteStatusColor = (vote: App.Entities.Vote) => {
 // Save changes to backend
 const saveChanges = () => {
   const payload = {
+    title: localTitle.value,
     type: localType.value,
     description: localDescription.value || null,
     student_position: localStudentPosition.value || null,
