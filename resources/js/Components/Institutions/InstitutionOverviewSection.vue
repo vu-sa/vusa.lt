@@ -11,100 +11,149 @@
       @action="$emit('schedule-meeting')"
     />
 
-    <!-- Stats Row - Clickable cards navigating to tabs -->
-    <StatsRow :columns="4">
-      <StatCard
-        :label="$t('Aktyvūs nariai')"
-        :value="`${filledPositions} / ${totalPositions}`"
-        :icon="Users"
-        :urgency="memberUrgency"
-        :subtitle="memberSubtitle"
-        :on-click="() => $emit('navigate-tab', 'duties')"
-      />
-
-      <StatCard
-        :label="$t('Paskutinis susitikimas')"
-        :value="lastMeetingDisplay"
-        :icon="CalendarIcon"
-        :urgency="meetingUrgency"
-        :subtitle="lastMeetingSubtitle"
-        :on-click="() => $emit('navigate-tab', 'meetings')"
-      />
-
-      <StatCard
-        :label="$t('Susitikimų')"
-        :value="meetingsCount"
-        :icon="BarChart3"
-        urgency="neutral"
-        :subtitle="$t('šiais metais')"
-        :on-click="() => $emit('navigate-tab', 'meetings')"
-      />
-
-      <StatCard
-        :label="$t('Periodiškumas')"
-        :value="periodicityDisplay"
-        :icon="Repeat"
-        :urgency="meetingUrgency"
-        :subtitle="periodicitySubtitle"
-        :on-click="() => $emit('navigate-tab', 'meetings')"
-      />
-    </StatsRow>
-
-    <!-- Main Content - Full Width (no sidebar) -->
-    <div class="space-y-6">
-      <!-- Current Members Grid -->
-      <MemberGrid
-        :title="$t('Dabartiniai nariai')"
-        :subtitle="`${filledPositions} ${$t('aktyvūs nariai')}`"
-        :members="institution.current_users || []"
-        :institution
-        :max-positions="totalPositions"
-        :show-contact="true"
-        :show-actions="true"
-        :can-edit="canEditMembers"
-        :can-add-member="canEditMembers"
-        @add-member="$emit('add-member')"
-        @view-profile="(member) => $emit('view-profile', member)"
-        @edit-member="(member) => $emit('edit-member', member)"
-      />
-
-      <!-- Meetings Preview (last 3) -->
-      <InstitutionMeetingsPreview
-        v-if="institution.meetings && institution.meetings.length > 0"
-        :meetings="recentMeetings"
-        :institution
-        :total-count="meetingsCount"
-        :is-overdue
-        @view-all="$emit('navigate-tab', 'meetings')"
-        @schedule-meeting="$emit('schedule-meeting')"
-        @view-meeting="(meeting) => $emit('view-meeting', meeting)"
-      />
-
-      <!-- Recent Activity -->
-      <Card v-if="activities && activities.length > 0">
-        <CardHeader>
-          <CardTitle class="flex items-center gap-2">
-            <Activity class="h-5 w-5 text-primary" />
-            {{ $t('Paskutinė veikla') }}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div class="space-y-3">
-            <div
-              v-for="activity in activities.slice(0, 5)"
-              :key="activity.id"
-              class="flex items-center gap-3 text-sm"
-            >
-              <div class="w-2 h-2 rounded-full bg-blue-500" />
-              <span class="text-zinc-600 dark:text-zinc-400">{{ activity.description }}</span>
-              <span class="text-zinc-400 dark:text-zinc-500 ml-auto">
-                {{ formatRelativeTime(activity.created_at) }}
-              </span>
-            </div>
+    <!-- Compact Stats Grid -->
+    <div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <button
+        v-for="stat in stats"
+        :key="stat.label"
+        type="button"
+        :class="[
+          'rounded-lg border bg-card text-card-foreground shadow-sm',
+          'border-border transition-colors hover:border-primary/20',
+          'text-left focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2',
+        ]"
+        @click="stat.onClick"
+      >
+        <div class="flex items-start gap-3 p-4">
+          <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-accent">
+            <component :is="stat.icon" class="h-4 w-4 text-accent-foreground" />
           </div>
-        </CardContent>
-      </Card>
+          <div class="min-w-0">
+            <p class="text-xs text-muted-foreground">{{ stat.label }}</p>
+            <p class="text-lg font-bold leading-tight text-foreground">{{ stat.value }}</p>
+            <p class="text-[11px] text-primary">{{ stat.subtitle }}</p>
+          </div>
+        </div>
+      </button>
     </div>
+
+    <!-- Main Content: Members (3/5) + Meetings (2/5) side-by-side on large screens -->
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-5">
+      <!-- Current Members - simple list -->
+      <div class="lg:col-span-3">
+        <Card>
+          <CardHeader class="pb-3">
+            <div class="flex items-center justify-between">
+              <CardTitle class="flex items-center gap-2 text-base">
+                <Users class="h-5 w-5 text-primary" />
+                {{ $t('Dabartiniai nariai') }}
+                <span class="text-sm font-normal text-muted-foreground">
+                  ({{ filledPositions }} / {{ totalPositions }})
+                </span>
+              </CardTitle>
+              <Button
+                v-if="canEditMembers"
+                variant="outline"
+                size="sm"
+                class="gap-2"
+                @click="$emit('add-member')"
+              >
+                <UserPlus class="h-4 w-4" />
+                {{ $t('Pridėti') }}
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div v-if="members.length > 0" class="space-y-1">
+              <button
+                v-for="member in members"
+                :key="member.id"
+                type="button"
+                :class="[
+                  'flex w-full items-center gap-3 rounded-md px-2 py-2 text-left',
+                  'transition-colors hover:bg-accent/50',
+                  'focus:outline-none focus:ring-2 focus:ring-primary/50',
+                ]"
+                @click="$emit('view-profile', member)"
+              >
+                <UserPopover :user="member" :size="32" />
+                <span class="truncate text-sm font-medium text-foreground">{{ member.name }}</span>
+              </button>
+            </div>
+
+            <!-- Empty State -->
+            <div v-else class="py-8 text-center">
+              <Users class="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
+              <p class="text-sm text-muted-foreground">{{ $t('Nėra narių') }}</p>
+            </div>
+
+            <!-- Capacity Warning -->
+            <div
+              v-if="showCapacityWarning"
+              class="mt-3 flex items-center gap-2 rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-700 dark:bg-amber-900/20 dark:text-amber-300"
+            >
+              <AlertTriangle class="h-3.5 w-3.5 shrink-0" />
+              {{ $t('Viršytas narių limitas') }}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <!-- Recent Meetings - simple list -->
+      <div class="lg:col-span-2">
+        <InstitutionMeetingsPreview
+          v-if="institution.meetings && institution.meetings.length > 0"
+          :meetings="recentMeetings"
+          :institution
+          :total-count="meetingsCount"
+          :is-overdue
+          @view-all="$emit('navigate-tab', 'meetings')"
+          @schedule-meeting="$emit('schedule-meeting')"
+          @view-meeting="(meeting) => $emit('view-meeting', meeting)"
+        />
+
+        <!-- Empty meetings state -->
+        <Card v-else>
+          <CardHeader class="pb-3">
+            <CardTitle class="flex items-center gap-2 text-base">
+              <CalendarIcon class="h-5 w-5 text-primary" />
+              {{ $t('Paskutiniai susitikimai') }}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div class="py-8 text-center">
+              <CalendarIcon class="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
+              <p class="text-sm text-muted-foreground">{{ $t('Nėra susitikimų') }}</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <Card v-if="activities && activities.length > 0">
+      <CardHeader>
+        <CardTitle class="flex items-center gap-2">
+          <Activity class="h-5 w-5 text-primary" />
+          {{ $t('Paskutinė veikla') }}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div class="space-y-3">
+          <div
+            v-for="activity in activities.slice(0, 5)"
+            :key="activity.id"
+            class="flex items-center gap-3 text-sm"
+          >
+            <div class="h-2 w-2 rounded-full bg-blue-500" />
+            <span class="text-zinc-600 dark:text-zinc-400">{{ activity.description }}</span>
+            <span class="ml-auto text-zinc-400 dark:text-zinc-500">
+              {{ formatRelativeTime(activity.created_at) }}
+            </span>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   </div>
 </template>
 
@@ -113,18 +162,19 @@ import { computed, ref } from 'vue'
 import { trans as $t } from 'laravel-vue-i18n'
 import {
   Users,
+  UserPlus,
   Calendar as CalendarIcon,
   BarChart3,
   Repeat,
-  Activity
+  Activity,
+  AlertTriangle
 } from 'lucide-vue-next'
 
-import StatCard from '@/Components/Cards/StatCard.vue'
-import StatsRow from '@/Components/Cards/StatsRow.vue'
 import PriorityAlert from '@/Components/Alerts/PriorityAlert.vue'
-import MemberGrid from '@/Components/Members/MemberGrid.vue'
+import UserPopover from '@/Components/Avatars/UserPopover.vue'
 import InstitutionMeetingsPreview from './InstitutionMeetingsPreview.vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card'
+import { Button } from '@/Components/ui/button'
 
 import { useInstitutionUrgency } from '@/Composables/useInstitutionUrgency'
 import { formatRelativeTime } from '@/Utils/IntlTime'
@@ -165,6 +215,13 @@ const {
 // Alert state
 const showOverdueAlert = ref(true)
 
+// Members
+const members = computed(() => props.institution.current_users || [])
+
+const showCapacityWarning = computed(() => {
+  return totalPositions.value > 0 && members.value.length > totalPositions.value
+})
+
 // Computed displays
 const meetingsCount = computed(() => props.institution.meetings?.length || 0)
 
@@ -198,13 +255,13 @@ const memberSubtitle = computed(() => {
 
 const periodicityDisplay = computed(() => {
   const days = props.institution.meeting_periodicity_days ?? 30
-  return `${$t('Kas')} ${days} ${$t('d.')}`
+  return `${days} ${$t('d.')}`
 })
 
 const periodicitySubtitle = computed(() => {
   if (daysSinceLastMeeting.value === null) return ''
   if (isOverdue.value) {
-    return `${daysSinceLastMeeting.value} ${$t('d. nuo paskutinio')} (${$t('vėluoja')})`
+    return `${daysSinceLastMeeting.value} ${$t('d. nuo paskutinio')}`
   }
   return `${daysSinceLastMeeting.value} ${$t('d. nuo paskutinio')}`
 })
@@ -216,4 +273,36 @@ const overdueAlertDescription = computed(() => {
     days: overdueDays
   })
 })
+
+// Stats data for the compact grid
+const stats = computed(() => [
+  {
+    label: $t('Aktyvūs nariai'),
+    value: `${filledPositions.value} / ${totalPositions.value}`,
+    icon: Users,
+    subtitle: memberSubtitle.value,
+    onClick: () => emit('navigate-tab', 'duties'),
+  },
+  {
+    label: $t('Paskutinis susitikimas'),
+    value: lastMeetingDisplay.value,
+    icon: CalendarIcon,
+    subtitle: lastMeetingSubtitle.value,
+    onClick: () => emit('navigate-tab', 'meetings'),
+  },
+  {
+    label: $t('Susitikimų'),
+    value: String(meetingsCount.value),
+    icon: BarChart3,
+    subtitle: $t('šiais metais'),
+    onClick: () => emit('navigate-tab', 'meetings'),
+  },
+  {
+    label: $t('Periodiškumas'),
+    value: periodicityDisplay.value,
+    icon: Repeat,
+    subtitle: periodicitySubtitle.value,
+    onClick: () => emit('navigate-tab', 'meetings'),
+  },
+])
 </script>

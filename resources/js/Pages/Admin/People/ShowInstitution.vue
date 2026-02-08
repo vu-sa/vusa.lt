@@ -93,7 +93,7 @@
 
     <!-- Main Content -->
     <Tabs v-model="currentTab" class="mt-6">
-      <TabsList class="gap-2">
+      <TabsList class="gap-2 mb-4">
         <TabsTrigger value="overview">
           {{ $t('Apžvalga') }}
         </TabsTrigger>
@@ -188,20 +188,88 @@
 
       <!-- Meetings Tab -->
       <TabsContent value="meetings" class="space-y-6">
-        <div v-if="institution.meetings?.length > 0" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          <ModernMeetingCard v-for="meeting in institution.meetings" :key="meeting.id" :meeting :institution
-            :can-delete="canDeleteMeetings" @click="router.visit(route('meetings.show', meeting.id))"
-            @delete="handleDeleteMeeting(meeting)" />
-        </div>
-        <div v-else class="text-center py-12">
+        <Card v-if="institution.meetings?.length > 0">
+          <CardContent class="p-0">
+            <button
+              v-for="meeting in sortedMeetings"
+              :key="meeting.id"
+              type="button"
+              :class="[
+                'flex w-full items-center gap-4 px-4 py-3 text-left',
+                'border-b border-border last:border-b-0',
+                'transition-colors hover:bg-accent/50',
+                'focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary/50',
+              ]"
+              @click="router.visit(route('meetings.show', meeting.id))"
+            >
+              <!-- Date -->
+              <span class="w-24 shrink-0 text-sm text-muted-foreground">
+                {{ formatMeetingDate(meeting.start_time) }}
+              </span>
+
+              <!-- Title -->
+              <span class="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
+                {{ getMeetingTitle(meeting) }}
+              </span>
+
+              <!-- Agenda count + Vote indicators -->
+              <div class="flex shrink-0 items-center gap-3 text-xs text-muted-foreground">
+                <span v-if="meeting.agenda_items_count" class="whitespace-nowrap">
+                  {{ meeting.agenda_items_count }} {{ meeting.agenda_items_count === 1 ? $t('klausimas') : $t('klausimai') }}
+                </span>
+                <MeetingOutcomeIndicators
+                  v-if="(meeting.vote_matches || 0) + (meeting.vote_mismatches || 0) + (meeting.incomplete_vote_data || 0) > 0"
+                  :matches="meeting.vote_matches || 0"
+                  :mismatches="meeting.vote_mismatches || 0"
+                  :incomplete="meeting.incomplete_vote_data || 0"
+                />
+              </div>
+
+              <!-- Status badges -->
+              <div class="flex shrink-0 items-center gap-1.5">
+                <Badge
+                  v-if="meeting.has_protocol"
+                  variant="outline"
+                  class="text-xs gap-1 text-green-600 border-green-300 dark:text-green-400 dark:border-green-700"
+                >
+                  <FileCheck class="h-3 w-3" />
+                  {{ $t('Protokolas') }}
+                </Badge>
+                <Badge
+                  v-if="meeting.has_report"
+                  variant="outline"
+                  class="text-xs gap-1 text-blue-600 border-blue-300 dark:text-blue-400 dark:border-blue-700"
+                >
+                  <ClipboardCheck class="h-3 w-3" />
+                  {{ $t('Ataskaita') }}
+                </Badge>
+              </div>
+
+              <!-- Delete + Arrow -->
+              <div class="flex shrink-0 items-center gap-1">
+                <Button
+                  v-if="canDeleteMeetings"
+                  variant="ghost"
+                  size="sm"
+                  class="h-7 w-7 p-0"
+                  @click.stop="handleDeleteMeeting(meeting)"
+                >
+                  <Trash2 class="h-3.5 w-3.5 text-muted-foreground" />
+                </Button>
+                <ChevronRight class="h-4 w-4 text-muted-foreground" />
+              </div>
+            </button>
+          </CardContent>
+        </Card>
+        <div v-else class="py-12 text-center">
           <div
-            class="mx-auto h-16 w-16 bg-zinc-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mb-4">
+            class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
             <CalendarIcon class="h-8 w-8 text-zinc-400" />
           </div>
-          <h3 class="text-lg font-medium text-zinc-900 dark:text-zinc-100 mb-2">
+          <h3 class="mb-2 text-lg font-medium text-zinc-900 dark:text-zinc-100">
             {{ $t('Nėra susitikimų') }}
           </h3>
-          <p class="text-zinc-500 dark:text-zinc-400 mb-4">
+          <p class="mb-4 text-zinc-500 dark:text-zinc-400">
             {{ $t('Šiai institucijai dar nėra suplanuota susitikimų.') }}
           </p>
           <Button class="gap-2" @click="showMeetingModal = true">
@@ -265,18 +333,21 @@ import {
   BellOff,
   Loader2,
   AlertTriangle,
-  AlertCircle
+  AlertCircle,
+  FileCheck,
+  ClipboardCheck,
+  Trash2
 } from 'lucide-vue-next';
 
 // Layout and Components
 import AdminContentPage from "@/Components/Layouts/AdminContentPage.vue";
 import ShowPageHero from "@/Components/Hero/ShowPageHero.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
-import ModernMeetingCard from "@/Components/Meetings/ModernMeetingCard.vue";
 import SimpleFileViewer from "@/Features/Admin/SharepointFileManager/Viewer/SimpleFileViewer.vue";
 import NewMeetingDialog from "@/Components/Dialogs/NewMeetingDialog.vue";
 import AddCheckInDialog from "@/Components/Institutions/AddCheckInDialog.vue";
 import UsersAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
+import MeetingOutcomeIndicators from "@/Components/Public/Search/MeetingOutcomeIndicators.vue";
 import InstitutionOverviewSection from "@/Components/Institutions/InstitutionOverviewSection.vue";
 import TaskManager from "@/Features/Admin/TaskManager/TaskManager.vue";
 
@@ -286,7 +357,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Button } from "@/Components/ui/button";
 import { Badge } from "@/Components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
-import { Skeleton } from "@/Components/ui/skeleton";
 
 // Utils
 import Icons from "@/Types/Icons/filled";
@@ -444,6 +514,30 @@ const sortedDuties = computed(() => {
   if (!props.institution.duties) return [];
   return [...props.institution.duties].sort((a, b) => (a.order || 0) - (b.order || 0));
 });
+
+const sortedMeetings = computed(() => {
+  if (!props.institution.meetings) return [];
+  return [...props.institution.meetings].sort(
+    (a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime()
+  );
+});
+
+const formatMeetingDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('lt-LT', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  });
+};
+
+const getMeetingTitle = (meeting: App.Entities.Meeting) => {
+  if (meeting.title && meeting.title.trim() !== '') {
+    return meeting.title;
+  }
+  const institutionName = props.institution.name || 'Institucijos';
+  return `${institutionName} ${$t('posėdis')}`;
+};
 
 const getDutyStatusVariant = (duty: App.Entities.Duty) => {
   const currentCount = duty.current_users?.length || 0;

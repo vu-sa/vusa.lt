@@ -131,20 +131,38 @@ class InstitutionController extends AdminController
                 $query->with('users:id,name,email,profile_photo_path', 'taskable');
             },
             'meetings' => function ($query) {
-                $query->with([
-                    'tasks' => fn ($q) => $q->with('users:id,name,email,profile_photo_path', 'taskable'),
-                    'comments',
-                    'files',
-                    'institutions.types',
-                    'fileableFiles',
-                ])->orderBy('start_time', 'asc');
+                $query->withCount('agendaItems')
+                    ->with([
+                        'tasks' => fn ($q) => $q->with('users:id,name,email,profile_photo_path', 'taskable'),
+                        'comments',
+                        'files',
+                        'institutions.types',
+                        'fileableFiles',
+                        'agendaItems.votes',
+                    ])->orderBy('start_time', 'asc');
             },
         ])->load('activities.causer');
 
         // Append public visibility flags now that types are loaded (avoids N+1)
         $institution->append('has_public_meetings');
         $institution->append('meeting_periodicity_days');
-        $institution->meetings->each->append(['is_public', 'has_report', 'has_protocol']);
+        $institution->meetings->each(function (\App\Models\Meeting $meeting) {
+            $meeting->append(['is_public', 'has_report', 'has_protocol']);
+
+            // Compute vote stats from loaded agendaItems.votes
+            $allVotes = $meeting->agendaItems->flatMap(fn ($item) => $item->votes);
+            $votesWithBoth = $allVotes->filter(fn ($v) => ! empty($v->student_vote) && ! empty($v->decision));
+            $voteMatches = $votesWithBoth->filter(fn ($v) => $v->student_vote === $v->decision)->count();
+
+            $meeting->setAttribute('vote_matches', $voteMatches);
+            $meeting->setAttribute('vote_mismatches', $votesWithBoth->count() - $voteMatches);
+            $meeting->setAttribute('incomplete_vote_data', $allVotes->filter(
+                fn ($v) => ! empty($v->student_vote) xor ! empty($v->decision)
+            )->count());
+
+            // Hide heavy relations not needed by frontend
+            $meeting->makeHidden('agendaItems');
+        });
 
         // Combine direct institution tasks + tasks from meetings into a flat list
         // Transform tasks with computed properties (same as MeetingController)
