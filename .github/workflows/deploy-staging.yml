@@ -56,6 +56,10 @@ jobs:
           VITE_ATSTOVAI_PASSWORD=${{ secrets.ATSTOVAI_PASSWORD }} \
           VITE_SHAREPOINT_CLIENT_ID=${{ secrets.SHAREPOINT_CLIENT_ID }} \
           VITE_SHAREPOINT_TENANT_ID=${{ secrets.SHAREPOINT_TENANT_ID }} \
+          VITE_REVERB_APP_KEY=${{ secrets.REVERB_APP_KEY }} \
+          VITE_REVERB_HOST=${{ vars.REVERB_HOST }} \
+          VITE_REVERB_PORT=${{ vars.REVERB_PORT }} \
+          VITE_REVERB_SCHEME=${{ vars.REVERB_SCHEME }} \
           npm run build
           
       - name: Install SSH keys
