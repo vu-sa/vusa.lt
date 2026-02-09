@@ -1,37 +1,39 @@
-import type { Meta, StoryObj } from "@storybook/vue3-vite";
-import { fn } from "storybook/test";
-import NewMeetingDialog from "../NewMeetingDialog.vue";
-import { usePage } from "@/mocks/inertia.storybook";
-import { createMockAuthUser, getMockTenantsList } from "@/mocks/fixtures";
+import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import { fn } from 'storybook/test';
+
+import NewMeetingDialog from '../NewMeetingDialog.vue';
+
+import { usePage } from '@/mocks/inertia.storybook';
+import { createMockAuthUser, getMockTenantsList } from '@/mocks/fixtures';
 
 // Mock institution data for accessible institutions
 const accessibleInstitutions = [
-  { 
-    id: 'inst1', 
-    name: 'Faculty of Science', 
+  {
+    id: 'inst1',
+    name: 'Faculty of Science',
     shortname: 'FS',
     tenant: { id: 'vusa', shortname: 'VU SA' },
     last_meeting_date: '2024-01-15',
     active_check_in: false,
-    meetings: []
+    meetings: [],
   },
-  { 
-    id: 'inst2', 
-    name: 'Student Council', 
+  {
+    id: 'inst2',
+    name: 'Student Council',
     shortname: 'SC',
     tenant: { id: 'vusa', shortname: 'VU SA' },
     last_meeting_date: '2024-01-10',
     active_check_in: false,
-    meetings: []
+    meetings: [],
   },
-  { 
-    id: 'inst3', 
-    name: 'University Senate', 
+  {
+    id: 'inst3',
+    name: 'University Senate',
     shortname: 'US',
     tenant: { id: 'vusa', shortname: 'VU SA' },
     last_meeting_date: null,
     active_check_in: false,
-    meetings: []
+    meetings: [],
   },
 ];
 
@@ -42,42 +44,42 @@ usePage.mockImplementation(() => ({
       locale: 'lt',
       subdomain: 'www',
       name: 'VU SA',
-      url: 'http://localhost'
+      url: 'http://localhost',
     },
     auth: {
       user: {
         ...createMockAuthUser(),
         current_duties: [
-          { 
-            institution: { 
-              id: 'inst1', 
-              name: 'Faculty of Science', 
+          {
+            institution: {
+              id: 'inst1',
+              name: 'Faculty of Science',
               shortname: 'FS',
               types: [{ title: 'Faculty' }],
               last_meeting_date: '2024-01-15',
               active_check_in: false,
-              meetings: []
-            } 
+              meetings: [],
+            },
           },
-          { 
-            institution: { 
-              id: 'inst2', 
-              name: 'Student Council', 
+          {
+            institution: {
+              id: 'inst2',
+              name: 'Student Council',
               shortname: 'SC',
               types: [{ title: 'Council' }],
               last_meeting_date: '2024-01-10',
               active_check_in: false,
-              meetings: []
-            } 
+              meetings: [],
+            },
           },
-        ]
+        ],
       },
       can: {
         create: {
           meeting: true,
-          document: true
-        }
-      }
+          document: true,
+        },
+      },
     },
     accessibleInstitutions,
     tenants: getMockTenantsList() as any,
@@ -85,9 +87,9 @@ usePage.mockImplementation(() => ({
       success: null,
       error: null,
       info: null,
-      warning: null
-    }
-  }
+      warning: null,
+    },
+  },
 }));
 
 // Mock institution data using shared fixtures pattern
@@ -100,14 +102,14 @@ const meta: Meta<typeof NewMeetingDialog> = {
   tags: ['autodocs'],
   argTypes: {
     showModal: { control: 'boolean' },
-    institution: { 
+    institution: {
       control: 'select',
       options: [null, 'inst1', 'inst2'],
       mapping: {
-        'null': null,
-        'inst1': mockInstitution,
-        'inst2': { id: 'inst2', name: 'Student Council' },
-      }
+        null: null,
+        inst1: mockInstitution,
+        inst2: { id: 'inst2', name: 'Student Council' },
+      },
     },
   },
   args: {
@@ -117,7 +119,7 @@ const meta: Meta<typeof NewMeetingDialog> = {
     onClose: fn(),
   },
   decorators: [
-    (story) => ({
+    story => ({
       components: { story },
       template: `
         <div class="p-4 bg-zinc-100 min-h-screen">
@@ -130,7 +132,7 @@ const meta: Meta<typeof NewMeetingDialog> = {
             </template>
           </Suspense>
         </div>
-      `
+      `,
     }),
   ],
   parameters: {
@@ -146,7 +148,7 @@ const meta: Meta<typeof NewMeetingDialog> = {
           { id: 1, title: 'Regular Meeting', model_type: 'App\\Models\\Meeting' },
           { id: 2, title: 'Special Meeting', model_type: 'App\\Models\\Meeting' },
         ],
-      }
+      },
     ],
   },
 };
@@ -156,7 +158,7 @@ type Story = StoryObj<typeof meta>;
 
 // Default state of the dialog (first step)
 export const Default: Story = {
-  render: (args) => ({
+  render: args => ({
     components: { NewMeetingDialog },
     setup() {
       return { args };
@@ -170,7 +172,7 @@ export const WithPreselectedInstitution: Story = {
   args: {
     institution: 'inst1',
   },
-  render: (args) => ({
+  render: args => ({
     components: { NewMeetingDialog },
     setup() {
       return { args };
@@ -184,7 +186,7 @@ export const Closed: Story = {
   args: {
     showModal: false,
   },
-  render: (args) => ({
+  render: args => ({
     components: { NewMeetingDialog },
     setup() {
       return { args };
@@ -195,7 +197,7 @@ export const Closed: Story = {
 
 // Walkthrough the entire meeting creation process
 export const FullWalkthrough: Story = {
-  render: (args) => ({
+  render: args => ({
     components: { NewMeetingDialog },
     setup() {
       return { args };

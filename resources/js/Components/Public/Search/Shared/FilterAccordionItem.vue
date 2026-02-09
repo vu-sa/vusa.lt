@@ -1,6 +1,6 @@
 <template>
   <!-- Mobile version (simple styling) -->
-  <AccordionItem v-if="variant === 'mobile'" :value="value">
+  <AccordionItem v-if="variant === 'mobile'" :value>
     <AccordionTrigger class="text-sm font-medium">
       <div class="flex items-center gap-2">
         <component :is="icon" class="w-4 h-4 text-muted-foreground" />
@@ -16,14 +16,14 @@
   </AccordionItem>
 
   <!-- Desktop version (enhanced styling) -->
-  <AccordionItem 
+  <AccordionItem
     v-else
-    :value="value"
+    :value
     class="border border-border/60 rounded-xl bg-card/50 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-200"
   >
     <AccordionTrigger class="px-5 py-4 hover:no-underline group">
       <div class="flex items-center gap-3 flex-1">
-        <div 
+        <div
           class="p-1.5 rounded-lg transition-colors"
           :class="iconContainerClass"
         >
@@ -50,33 +50,34 @@
 </template>
 
 <script setup lang="ts">
-import type { Component } from 'vue'
-import { Badge } from '@/Components/ui/badge'
+import type { Component } from 'vue';
+
+import { Badge } from '@/Components/ui/badge';
 import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from '@/Components/ui/accordion'
+} from '@/Components/ui/accordion';
 
 interface Props {
   /** Unique value for accordion state */
-  value: string
+  value: string;
   /** Filter label */
-  label: string
+  label: string;
   /** Optional description (desktop only) */
-  description?: string
+  description?: string;
   /** Icon component */
-  icon: Component
+  icon: Component;
   /** Number to show in badge (0 = hidden) */
-  badgeCount?: number
+  badgeCount?: number;
   /** Whether content is loading */
-  isLoading?: boolean
+  isLoading?: boolean;
   /** Number of skeleton items to show when loading */
-  skeletonCount?: number
+  skeletonCount?: number;
   /** Variant: 'mobile' for simple, 'desktop' for enhanced */
-  variant?: 'mobile' | 'desktop'
+  variant?: 'mobile' | 'desktop';
   /** Icon container color classes (desktop only) */
-  iconContainerClass?: string
+  iconContainerClass?: string;
 }
 
 withDefaults(defineProps<Props>(), {
@@ -84,6 +85,6 @@ withDefaults(defineProps<Props>(), {
   isLoading: false,
   skeletonCount: 3,
   variant: 'desktop',
-  iconContainerClass: 'bg-primary/10 text-primary group-hover:bg-primary/15'
-})
+  iconContainerClass: 'bg-primary/10 text-primary group-hover:bg-primary/15',
+});
 </script>

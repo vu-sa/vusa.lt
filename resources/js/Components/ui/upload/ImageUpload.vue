@@ -206,22 +206,22 @@
  * - Immediate mode: Files uploaded immediately to server and URL returned
  * - Existing image preview for edit forms
  */
-import { computed, ref, watch, onMounted, nextTick } from "vue";
-import { router, usePage } from "@inertiajs/vue3";
+import { computed, ref, watch, onMounted, nextTick } from 'vue';
+import { router, usePage } from '@inertiajs/vue3';
 
-import { cn } from "@/Utils/Shadcn/utils";
-import { useImageCompression, type CompressionOptions, type CompressionResult } from "@/Composables/useImageCompression";
-import { Upload, UploadDropzone, type UploadFile } from "@/Components/ui/upload";
-import { Button } from "@/Components/ui/button";
-import { Dialog, DialogContent } from "@/Components/ui/dialog";
-import { Label } from "@/Components/ui/label";
-import { ImageCropper } from "@/Components/ui/cropper";
+import { cn } from '@/Utils/Shadcn/utils';
+import { useImageCompression, type CompressionOptions, type CompressionResult } from '@/Composables/useImageCompression';
+import { Upload, UploadDropzone, type UploadFile } from '@/Components/ui/upload';
+import { Button } from '@/Components/ui/button';
+import { Dialog, DialogContent } from '@/Components/ui/dialog';
+import { Label } from '@/Components/ui/label';
+import { ImageCropper } from '@/Components/ui/cropper';
 
 export interface ImageUploadProps {
   /** Maximum number of files allowed. Use 1 for single file upload (default: 1) */
   max?: number;
   /** Upload mode: 'deferred' stores files for form submit, 'immediate' uploads instantly */
-  mode?: "deferred" | "immediate";
+  mode?: 'deferred' | 'immediate';
   /** Enable cropping functionality */
   cropper?: boolean;
   /** Enable browser-side compression (true for defaults, or pass custom options) */
@@ -242,30 +242,30 @@ export interface ImageUploadProps {
 
 const props = withDefaults(defineProps<ImageUploadProps>(), {
   max: 1,
-  mode: "deferred",
+  mode: 'deferred',
   cropper: false,
   compress: true,
-  folder: "uploads",
+  folder: 'uploads',
   existingUrl: null,
   existingUrls: () => [],
   maxSize: 10 * 1024 * 1024,
-  accept: "image/jpg,image/jpeg,image/png,image/webp",
+  accept: 'image/jpg,image/jpeg,image/png,image/webp',
 });
 
 const emit = defineEmits<{
-  (e: "update:file", file: File | null): void;
-  (e: "update:files", files: File[]): void;
-  (e: "update:url", url: string | null): void;
-  (e: "update:urls", urls: string[]): void;
-  (e: "compression", result: CompressionResult): void;
-  (e: "remove:existing", item: { id: string | number; url: string }): void;
+  (e: 'update:file', file: File | null): void;
+  (e: 'update:files', files: File[]): void;
+  (e: 'update:url', url: string | null): void;
+  (e: 'update:urls', urls: string[]): void;
+  (e: 'compression', result: CompressionResult): void;
+  (e: 'remove:existing', item: { id: string | number; url: string }): void;
 }>();
 
 // Models for two-way binding
 // Note: For multiple files (files), we use emit directly instead of defineModel due to array reactivity issues
-const file = defineModel<File | null>("file", { default: null });
-const url = defineModel<string | null>("url", { default: null });
-const urls = defineModel<string[]>("urls", { default: () => [] });
+const file = defineModel<File | null>('file', { default: null });
+const url = defineModel<string | null>('url', { default: null });
+const urls = defineModel<string[]>('urls', { default: () => [] });
 
 // Component refs
 const uploadRef = ref<InstanceType<typeof Upload> | null>(null);
@@ -285,7 +285,7 @@ const { compressImage, formatFileSize } = useImageCompression();
 
 // Computed
 const isSingle = computed(() => props.max === 1);
-const isImmediate = computed(() => props.mode === "immediate");
+const isImmediate = computed(() => props.mode === 'immediate');
 const hasExistingImages = computed(() => {
   if (isSingle.value) {
     return !!props.existingUrl || !!url.value;
@@ -295,13 +295,13 @@ const hasExistingImages = computed(() => {
 
 // Compression options
 const compressionOptions = computed<CompressionOptions>(() => {
-  if (typeof props.compress === "object") {
+  if (typeof props.compress === 'object') {
     return props.compress;
   }
   return {
     maxSizeMB: 2,
     maxWidthOrHeight: 1600,
-    fileType: "image/webp",
+    fileType: 'image/webp',
     quality: 0.8,
   };
 });
@@ -310,32 +310,33 @@ const compressionOptions = computed<CompressionOptions>(() => {
 function initializeFromExistingUrls() {
   // For single mode, check both existingUrl prop and url model
   const existingUrl = props.existingUrl || url.value;
-  
+
   if (isSingle.value && existingUrl) {
     localFiles.value = [
       {
-        id: "existing-1",
-        name: "image.jpg",
+        id: 'existing-1',
+        name: 'image.jpg',
         size: 0,
-        type: "image/jpeg",
+        type: 'image/jpeg',
         url: existingUrl,
-        status: "success",
+        status: 'success',
         progress: 100,
       },
     ];
-  } else if (!isSingle.value && props.existingUrls.length > 0) {
+  }
+  else if (!isSingle.value && props.existingUrls.length > 0) {
     // Filter out existing entries that were already added (to avoid duplicates)
-    const existingIds = new Set(localFiles.value.filter(f => f.id.startsWith("existing-")).map(f => f.id));
+    const existingIds = new Set(localFiles.value.filter(f => f.id.startsWith('existing-')).map(f => f.id));
     const newExisting = props.existingUrls.filter(img => !existingIds.has(`existing-${img.id}`));
-    
+
     if (localFiles.value.length === 0 || newExisting.length > 0) {
-      localFiles.value = props.existingUrls.map((img) => ({
+      localFiles.value = props.existingUrls.map(img => ({
         id: `existing-${img.id}`,
-        name: img.name || "image.jpg",
+        name: img.name || 'image.jpg',
         size: 0,
-        type: "image/jpeg",
+        type: 'image/jpeg',
         url: img.url,
-        status: "success" as const,
+        status: 'success' as const,
         progress: 100,
       }));
     }
@@ -356,11 +357,11 @@ onMounted(() => {
 watch(
   () => props.existingUrls,
   (newUrls) => {
-    if (newUrls && newUrls.length > 0 && localFiles.value.filter(f => f.id.startsWith("existing-")).length === 0) {
+    if (newUrls && newUrls.length > 0 && localFiles.value.filter(f => f.id.startsWith('existing-')).length === 0) {
       initializeFromExistingUrls();
     }
   },
-  { deep: true }
+  { deep: true },
 );
 
 // Watch for changes in existingUrl (single mode)
@@ -370,7 +371,7 @@ watch(
     if (isSingle.value && newUrl && localFiles.value.length === 0) {
       initializeFromExistingUrls();
     }
-  }
+  },
 );
 
 // Watch for changes in url model (single mode, v-model:url)
@@ -380,7 +381,7 @@ watch(
     if (isSingle.value && newUrl && localFiles.value.length === 0) {
       initializeFromExistingUrls();
     }
-  }
+  },
 );
 
 // Process file with compression
@@ -392,9 +393,10 @@ async function processFile(rawFile: File): Promise<File> {
   isCompressing.value = true;
   try {
     const result = await compressImage(rawFile, compressionOptions.value);
-    emit("compression", result);
+    emit('compression', result);
     return result.file;
-  } finally {
+  }
+  finally {
     isCompressing.value = false;
   }
 }
@@ -403,7 +405,7 @@ async function processFile(rawFile: File): Promise<File> {
 async function handleFilesUpdate(newFiles: UploadFile[]) {
   // Find newly added files (have file object and aren't processed yet)
   const filesToProcess = newFiles.filter(
-    (f) => f.file && !f.id.startsWith("processed-") && !f.id.startsWith("existing-")
+    f => f.file && !f.id.startsWith('processed-') && !f.id.startsWith('existing-'),
   );
 
   // Process new files with compression
@@ -429,23 +431,22 @@ async function handleFilesUpdate(newFiles: UploadFile[]) {
 
 // Upload file to server (immediate mode)
 async function uploadFileToServer(uploadFile: UploadFile) {
-  
   if (!uploadFile.file) return;
 
-  uploadFile.status = "uploading";
+  uploadFile.status = 'uploading';
   uploadFile.progress = 0;
 
   const formData = new FormData();
-  formData.append("image", uploadFile.file);
-  formData.append("path", props.folder);
-  formData.append("name", uploadFile.name);
+  formData.append('image', uploadFile.file);
+  formData.append('path', props.folder);
+  formData.append('name', uploadFile.name);
 
   try {
-    const response = await fetch(route("files.uploadImage"), {
-      method: "POST",
+    const response = await fetch(route('files.uploadImage'), {
+      method: 'POST',
       headers: {
-        "X-CSRF-TOKEN": usePage().props.csrf_token as string,
-        Accept: "application/json",
+        'X-CSRF-TOKEN': usePage().props.csrf_token as string,
+        'Accept': 'application/json',
       },
       body: formData,
     });
@@ -456,16 +457,17 @@ async function uploadFileToServer(uploadFile: UploadFile) {
     }
 
     const data = await response.json();
-    
+
     uploadFile.url = data.url;
-    uploadFile.status = "success";
+    uploadFile.status = 'success';
     uploadFile.progress = 100;
 
     updateModels();
-  } catch (error) {
-    console.error("[ImageUpload] Upload error:", error);
-    uploadFile.status = "error";
-    uploadFile.error = error instanceof Error ? error.message : "Upload failed";
+  }
+  catch (error) {
+    console.error('[ImageUpload] Upload error:', error);
+    uploadFile.status = 'error';
+    uploadFile.error = error instanceof Error ? error.message : 'Upload failed';
   }
 }
 
@@ -473,25 +475,26 @@ async function uploadFileToServer(uploadFile: UploadFile) {
 function updateModels() {
   if (isSingle.value) {
     // Single file mode
-    const currentFile = localFiles.value.find((f) => f.file);
+    const currentFile = localFiles.value.find(f => f.file);
     file.value = currentFile?.file ?? null;
-    emit("update:file", file.value);
+    emit('update:file', file.value);
 
     if (isImmediate.value) {
-      const successFile = localFiles.value.find((f) => f.status === "success");
+      const successFile = localFiles.value.find(f => f.status === 'success');
       // Use local variable and emit directly to avoid defineModel reactivity issues
       const newUrl = successFile?.url ?? null;
-      emit("update:url", newUrl);
+      emit('update:url', newUrl);
     }
-  } else {
+  }
+  else {
     // Multiple files mode - use emit directly instead of defineModel for arrays (reactivity issues)
-    const filesWithFile = localFiles.value.filter((f) => f.file);
-    const newFilesArray = filesWithFile.map((f) => f.file!);
-    emit("update:files", newFilesArray);
+    const filesWithFile = localFiles.value.filter(f => f.file);
+    const newFilesArray = filesWithFile.map(f => f.file!);
+    emit('update:files', newFilesArray);
 
     if (isImmediate.value) {
-      urls.value = localFiles.value.filter((f) => f.status === "success" && f.url).map((f) => f.url!);
-      emit("update:urls", urls.value);
+      urls.value = localFiles.value.filter(f => f.status === 'success' && f.url).map(f => f.url!);
+      emit('update:urls', urls.value);
     }
   }
 }
@@ -499,17 +502,18 @@ function updateModels() {
 // Handle file removal
 function handleRemove(removedFile: UploadFile) {
   // Check if this is an existing file
-  if (removedFile.id.startsWith("existing-")) {
-    const existingId = removedFile.id.replace("existing-", "");
-    const existingItem = props.existingUrls.find((e) => String(e.id) === existingId);
+  if (removedFile.id.startsWith('existing-')) {
+    const existingId = removedFile.id.replace('existing-', '');
+    const existingItem = props.existingUrls.find(e => String(e.id) === existingId);
     if (existingItem) {
-      emit("remove:existing", existingItem);
-    } else if (isSingle.value) {
-      emit("remove:existing", { id: existingId, url: removedFile.url || "" });
+      emit('remove:existing', existingItem);
+    }
+    else if (isSingle.value) {
+      emit('remove:existing', { id: existingId, url: removedFile.url || '' });
     }
   }
 
-  localFiles.value = localFiles.value.filter((f) => f.id !== removedFile.id);
+  localFiles.value = localFiles.value.filter(f => f.id !== removedFile.id);
   updateModels();
 }
 
@@ -527,15 +531,15 @@ async function handleCropFinish(data: { dataUrl: string; blob: Blob }) {
   showCropperModal.value = false;
 
   // Find the file being cropped
-  const fileIndex = localFiles.value.findIndex((f) => f.id === cropperFileId.value);
+  const fileIndex = localFiles.value.findIndex(f => f.id === cropperFileId.value);
   if (fileIndex === -1) return;
 
   const uploadFile = localFiles.value[fileIndex];
   if (!uploadFile) return;
 
   // Create File from blob
-  const fileName = uploadFile.name.replace(/\.[^.]+$/, ".webp");
-  const croppedFile = new File([data.blob], fileName, { type: "image/webp" });
+  const fileName = uploadFile.name.replace(/\.[^.]+$/, '.webp');
+  const croppedFile = new File([data.blob], fileName, { type: 'image/webp' });
 
   // Process with compression
   const processedFile = await processFile(croppedFile);

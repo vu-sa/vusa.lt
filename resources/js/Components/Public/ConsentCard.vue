@@ -27,5 +27,5 @@
 <script setup lang="ts">
 import { Button } from '@/Components/ui/button';
 
-defineEmits(["okayCookieConsent"]);
+defineEmits(['okayCookieConsent']);
 </script>

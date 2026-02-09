@@ -13,17 +13,19 @@
         <div class="flex items-center gap-3">
           <component :is="currentDeviceIcon" class="size-5 text-zinc-500" />
           <div>
-            <p class="font-medium">{{ $t('Šis įrenginys') }}</p>
+            <p class="font-medium">
+              {{ $t('Šis įrenginys') }}
+            </p>
             <p class="text-sm text-muted-foreground">
               {{ currentDeviceStatus }}
             </p>
           </div>
         </div>
         <div class="flex items-center gap-2">
-          <Button 
+          <Button
             v-if="!hasPushSubscription && canSubscribeToPush"
-            :disabled="isSubscribingToPush" 
-            variant="outline" 
+            :disabled="isSubscribingToPush"
+            variant="outline"
             size="sm"
             @click="handleSubscribe"
           >
@@ -31,10 +33,10 @@
             <IMdiLoading v-else class="size-4 animate-spin" />
             {{ $t('Įjungti') }}
           </Button>
-          <Button 
+          <Button
             v-else-if="hasPushSubscription"
-            :disabled="isUnsubscribingFromPush" 
-            variant="outline" 
+            :disabled="isUnsubscribingFromPush"
+            variant="outline"
             size="sm"
             @click="handleUnsubscribe"
           >
@@ -53,10 +55,12 @@
 
       <!-- Device list header with refresh button -->
       <div class="flex items-center justify-between">
-        <h4 class="font-medium text-sm">{{ $t('Visi įrenginiai') }} ({{ devices.length }})</h4>
-        <Button 
-          variant="ghost" 
-          size="sm" 
+        <h4 class="font-medium text-sm">
+          {{ $t('Visi įrenginiai') }} ({{ devices.length }})
+        </h4>
+        <Button
+          variant="ghost"
+          size="sm"
           :disabled="isLoading || isRefreshingSubscriptionStatus"
           @click="refreshDevices"
         >
@@ -69,16 +73,18 @@
       <div v-if="isLoading" class="flex items-center justify-center py-8">
         <IMdiLoading class="size-6 animate-spin text-muted-foreground" />
       </div>
-      
+
       <div v-else-if="devices.length === 0" class="text-center py-8 text-muted-foreground">
         <IMdiCellphoneOff class="size-8 mx-auto mb-2 opacity-50" />
-        <p class="text-sm">{{ $t('Nėra įrenginių su įjungtais push pranešimais') }}</p>
+        <p class="text-sm">
+          {{ $t('Nėra įrenginių su įjungtais push pranešimais') }}
+        </p>
       </div>
 
       <div v-else class="space-y-2">
         <TransitionGroup name="device-list">
-          <div 
-            v-for="device in devices" 
+          <div
+            v-for="device in devices"
             :key="device.id"
             class="flex items-center justify-between p-3 border rounded-lg dark:border-zinc-700 group"
             :class="{ 'bg-blue-50/50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800': device.isCurrentDevice }"
@@ -90,8 +96,8 @@
                   <p class="font-medium text-sm">
                     {{ device.device_name || $t('Nežinomas įrenginys') }}
                   </p>
-                  <span 
-                    v-if="device.isCurrentDevice" 
+                  <span
+                    v-if="device.isCurrentDevice"
                     class="text-[10px] font-medium px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
                   >
                     {{ $t('Šis') }}
@@ -102,8 +108,8 @@
                 </p>
               </div>
             </div>
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               size="sm"
               class="text-destructive hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-opacity"
               :class="{ 'opacity-100': device.isCurrentDevice }"
@@ -119,9 +125,9 @@
 
       <!-- Test notification button -->
       <div v-if="hasAnyPushSubscription" class="pt-4 border-t dark:border-zinc-700">
-        <Button 
-          :disabled="testNotificationLoading" 
-          variant="secondary" 
+        <Button
+          :disabled="testNotificationLoading"
+          variant="secondary"
           size="sm"
           @click="handleSendTestNotification"
         >
@@ -141,6 +147,7 @@
 import { ref, computed, onMounted, h } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
+
 import { usePWA, type PushSubscriptionDevice } from '@/Composables/usePWA';
 import FormElement from '@/Components/AdminForms/FormElement.vue';
 import { Button } from '@/Components/ui/button';
@@ -205,7 +212,7 @@ const currentDeviceStatus = computed(() => {
 // Get appropriate icon for device
 const getDeviceIcon = (deviceName: string | null) => {
   if (!deviceName) return IMdiWeb;
-  
+
   const name = deviceName.toLowerCase();
   if (name.includes('iphone') || name.includes('android')) return IMdiCellphone;
   if (name.includes('ipad') || name.includes('tablet')) return IMdiTablet;
@@ -233,7 +240,8 @@ const loadDevices = async () => {
   isLoading.value = true;
   try {
     devices.value = await fetchPushSubscriptions();
-  } finally {
+  }
+  finally {
     isLoading.value = false;
   }
 };
@@ -264,7 +272,8 @@ const handleRemoveDevice = async (device: PushSubscriptionDevice) => {
     if (success) {
       devices.value = devices.value.filter(d => d.id !== device.id);
     }
-  } finally {
+  }
+  finally {
     removingDeviceId.value = null;
   }
 };
@@ -273,11 +282,11 @@ const handleRemoveDevice = async (device: PushSubscriptionDevice) => {
 const handleSendTestNotification = async () => {
   testNotificationLoading.value = true;
   testNotificationSuccess.value = false;
-  
+
   try {
     const page = usePage();
     const csrfToken = (page.props.csrf_token as string) || '';
-    
+
     const response = await fetch(route('push-subscription.test'), {
       method: 'POST',
       headers: {
@@ -285,16 +294,18 @@ const handleSendTestNotification = async () => {
         'X-CSRF-TOKEN': csrfToken,
       },
     });
-    
+
     if (response.ok) {
       testNotificationSuccess.value = true;
       setTimeout(() => {
         testNotificationSuccess.value = false;
       }, 5000);
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Failed to send test notification:', error);
-  } finally {
+  }
+  finally {
     testNotificationLoading.value = false;
   }
 };

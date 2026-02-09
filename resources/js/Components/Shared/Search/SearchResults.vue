@@ -106,8 +106,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, type Component } from 'vue'
-import { trans as $t } from 'laravel-vue-i18n'
+import { computed, type Component } from 'vue';
+import { trans as $t } from 'laravel-vue-i18n';
 import {
   Search,
   SearchX,
@@ -116,51 +116,51 @@ import {
   Loader2,
   AlertTriangle,
   RefreshCw,
-} from 'lucide-vue-next'
+} from 'lucide-vue-next';
 
-import { Button } from '@/Components/ui/button'
+import type { SearchError } from './types';
 
-import type { SearchError } from './types'
+import { Button } from '@/Components/ui/button';
 
 interface Props {
   /** Whether search is in progress */
-  isLoading?: boolean
+  isLoading?: boolean;
   /** Whether there are results to display */
-  hasResults: boolean
+  hasResults: boolean;
   /** Whether a search has been performed */
-  hasSearched: boolean
+  hasSearched: boolean;
   /** Whether there are active filters */
-  hasActiveFilters?: boolean
+  hasActiveFilters?: boolean;
   /** Whether more results can be loaded */
-  hasMoreResults?: boolean
+  hasMoreResults?: boolean;
   /** Whether load more is in progress */
-  isLoadingMore?: boolean
+  isLoadingMore?: boolean;
   /** Error state */
-  error?: SearchError | null
+  error?: SearchError | null;
   /** Custom empty message */
-  emptyMessage?: string
+  emptyMessage?: string;
 
   // Layout options
   /** Layout mode: 'grid' or 'list' */
-  layout?: 'grid' | 'list'
+  layout?: 'grid' | 'list';
   /** Number of grid columns (1, 2, or 3) */
-  gridCols?: 1 | 2 | 3
+  gridCols?: 1 | 2 | 3;
 
   // Skeleton configuration
-  skeletonCount?: number
+  skeletonCount?: number;
 
   // CSS class customization
-  loadingContainerClass?: string
-  resultsContainerClass?: string
+  loadingContainerClass?: string;
+  resultsContainerClass?: string;
 
   // Translation keys
-  noResultsTitleKey?: string
-  noResultsDescriptionKey?: string
-  emptyStateTitleKey?: string
-  emptyStateDescriptionKey?: string
+  noResultsTitleKey?: string;
+  noResultsDescriptionKey?: string;
+  emptyStateTitleKey?: string;
+  emptyStateDescriptionKey?: string;
 
   // Empty state icon
-  emptyStateIcon?: Component
+  emptyStateIcon?: Component;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -180,26 +180,26 @@ const props = withDefaults(defineProps<Props>(), {
   emptyStateTitleKey: 'search.start_search_title',
   emptyStateDescriptionKey: 'search.start_search_description',
   emptyStateIcon: () => Search,
-})
+});
 
 const emit = defineEmits<{
-  loadMore: []
-  clearFilters: []
-  retry: []
-}>()
+  loadMore: [];
+  clearFilters: [];
+  retry: [];
+}>();
 
 // Compute grid classes based on layout
 const gridClasses = computed(() => {
   if (props.layout === 'list') {
-    return 'space-y-4'
+    return 'space-y-4';
   }
 
   const colsMap: Record<number, string> = {
     1: 'grid grid-cols-1 gap-4',
     2: 'grid grid-cols-1 md:grid-cols-2 gap-4',
     3: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4',
-  }
+  };
 
-  return colsMap[props.gridCols] || colsMap[2]
-})
+  return colsMap[props.gridCols] || colsMap[2];
+});
 </script>

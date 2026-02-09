@@ -94,11 +94,11 @@ const heightClass = computed(() => {
   if (props.heightClass) return props.heightClass;
 
   const heights = {
-    'sm': 'h-32 md:h-40',
-    'md': 'h-40 md:h-52',
-    'lg': 'h-52 md:h-64',
-    'xl': 'h-64 md:h-80',
-    'custom': ''
+    sm: 'h-32 md:h-40',
+    md: 'h-40 md:h-52',
+    lg: 'h-52 md:h-64',
+    xl: 'h-64 md:h-80',
+    custom: '',
   };
   return heights[props.height];
 });

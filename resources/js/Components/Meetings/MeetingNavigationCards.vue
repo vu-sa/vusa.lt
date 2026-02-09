@@ -79,27 +79,27 @@
 </template>
 
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3'
-import { trans as $t } from 'laravel-vue-i18n'
-import { ChevronLeft, ChevronRight } from 'lucide-vue-next'
+import { Link } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
+import { ChevronLeft, ChevronRight } from 'lucide-vue-next';
 
-import { formatStaticTime } from '@/Utils/IntlTime'
+import { formatStaticTime } from '@/Utils/IntlTime';
 
 interface MeetingNav {
-  id: string
-  start_time: string
+  id: string;
+  start_time: string;
 }
 
 defineProps<{
-  previousMeeting?: MeetingNav | null
-  nextMeeting?: MeetingNav | null
-}>()
+  previousMeeting?: MeetingNav | null;
+  nextMeeting?: MeetingNav | null;
+}>();
 
 const formatNavDate = (date: string) => {
   return formatStaticTime(new Date(date), {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
-  })
-}
+  });
+};
 </script>

@@ -67,7 +67,6 @@
       </TabsContent>
 
       <TabsContent value="tenant" class="mt-6 space-y-6">
-
         <TenantTimelineSection v-if="deferredContentReady" :available-tenants="props.availableTenants"
           :tenant-institutions="ganttData.formattedTenantInstitutions.value" :meetings="ganttData.tenantMeetings.value"
           :gaps="ganttData.tenantGaps.value" :institution-names="tenantInstitutionNames" :tenant-names
@@ -84,7 +83,7 @@
           <Skeleton class="h-64 w-full rounded-lg" />
         </div>
 
-                <!-- Quick actions for tenant view -->
+        <!-- Quick actions for tenant view -->
         <div class="flex flex-wrap items-center gap-3">
           <Link :href="route('tasks.summary', { taskable_type: 'App\\Models\\Meeting' })">
             <Button variant="outline" size="sm" class="gap-2">
@@ -127,7 +126,7 @@
       @close="actions.showCreateCheckIn.value = null" />
 
     <InstitutionDataTable :institutions="atstovavimosData.institutions.value"
-      :related-institutions="relatedInstitutions"
+      :related-institutions
       :is-open="actions.showAllInstitutionModal.value" :on-schedule-meeting="actions.handleScheduleMeeting"
       :on-add-check-in="actions.handleAddCheckIn" @update:is-open="actions.showAllInstitutionModal.value = $event" />
 
@@ -137,9 +136,9 @@
 </template>
 
 <script setup lang="tsx">
-import { Head as InertiaHead, Link, router } from "@inertiajs/vue3";
+import { Head as InertiaHead, Link, router } from '@inertiajs/vue3';
 import { computed, ref, watch, onMounted } from 'vue';
-import { trans as $t } from "laravel-vue-i18n";
+import { trans as $t } from 'laravel-vue-i18n';
 
 // Deferred rendering for heavy timeline sections
 // This prevents lag during view transitions by rendering timelines after transition completes
@@ -184,23 +183,23 @@ import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 // Icons and utils
 
-import Icons from "@/Types/Icons/filled";
+import Icons from '@/Types/Icons/filled';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 // Types
-import TabsContent from '@/Components/ui/tabs/TabsContent.vue'
-import TabsTrigger from '@/Components/ui/tabs/TabsTrigger.vue'
-import TabsList from '@/Components/ui/tabs/TabsList.vue'
-import Tabs from '@/Components/ui/tabs/Tabs.vue'
-import { Skeleton } from '@/Components/ui/skeleton'
-import { Button } from '@/Components/ui/button'
-import AddCheckInDialog from "@/Components/Institutions/AddCheckInDialog.vue";
+import TabsContent from '@/Components/ui/tabs/TabsContent.vue';
+import TabsTrigger from '@/Components/ui/tabs/TabsTrigger.vue';
+import TabsList from '@/Components/ui/tabs/TabsList.vue';
+import Tabs from '@/Components/ui/tabs/Tabs.vue';
+import { Skeleton } from '@/Components/ui/skeleton';
+import { Button } from '@/Components/ui/button';
+import AddCheckInDialog from '@/Components/Institutions/AddCheckInDialog.vue';
 import NewMeetingDialog from '@/Components/Dialogs/NewMeetingDialog.vue';
 import PageHero from '@/Components/Hero/PageHero.vue';
 import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
 
 // Setup breadcrumbs
 usePageBreadcrumbs(() => [
-  BreadcrumbHelpers.createBreadcrumbItem('ViSAK', undefined, Icons.MEETING)
+  BreadcrumbHelpers.createBreadcrumbItem('ViSAK', undefined, Icons.MEETING),
 ]);
 
 // Setup product tour
@@ -345,7 +344,8 @@ const { startTour: startGanttTour, startTourIfNew: startGanttTourIfNew, hasCompl
 function startContextTour() {
   if (activeTab.value === 'tenant') {
     startGanttTour(true); // voluntary = true
-  } else {
+  }
+  else {
     startTour(true); // voluntary = true
   }
 }
@@ -416,7 +416,8 @@ watch(activeTab, (newTab) => {
   const url = new URL(window.location.href);
   if (newTab === 'user') {
     url.searchParams.delete('tab');
-  } else {
+  }
+  else {
     url.searchParams.set('tab', newTab);
   }
   window.history.replaceState({}, '', url.toString());
@@ -438,8 +439,8 @@ watch(activeTab, (newTab) => {
 // Computed admin check
 const isAdmin = computed(() => {
   const roles = (props.user as any)?.roles?.map((r: any) => r.name) ?? [];
-  return roles.includes('Super Admin') || roles.includes('Administratorius') ||
-    roles.includes('Resource Manager') || roles.includes('Communication Coordinator');
+  return roles.includes('Super Admin') || roles.includes('Administratorius')
+    || roles.includes('Resource Manager') || roles.includes('Communication Coordinator');
 });
 
 // Initialize composables - pass getter to maintain reactivity on Inertia prop updates
@@ -545,12 +546,12 @@ const enrichedTenantDutyMembers = computed(() => {
   const dutyMembers = ganttData.tenantDutyMembers.value;
   if (!dutyMembers) return [];
   if (!props.representativeActivity?.users) return dutyMembers;
-  
+
   // Build lookup map from representativeActivity users
   const activityByUserId = new Map(
-    props.representativeActivity.users.map(u => [u.id, { category: u.category, lastAction: u.last_action }])
+    props.representativeActivity.users.map(u => [u.id, { category: u.category, lastAction: u.last_action }]),
   );
-  
+
   // Enrich each duty member's user object with activity data
   return dutyMembers.map(dm => ({
     ...dm,
@@ -558,7 +559,7 @@ const enrichedTenantDutyMembers = computed(() => {
       ...dm.user,
       activityCategory: activityByUserId.get(dm.user.id)?.category,
       lastAction: activityByUserId.get(dm.user.id)?.lastAction,
-    }
+    },
   }));
 });
 

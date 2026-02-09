@@ -1,12 +1,3 @@
-<script setup lang="ts">
-import type { HTMLAttributes } from "vue"
-import { cn } from '@/Utils/Shadcn/utils'
-
-const props = defineProps<{
-  class?: HTMLAttributes["class"]
-}>()
-</script>
-
 <template>
   <p
     data-slot="field-description"
@@ -20,3 +11,13 @@ const props = defineProps<{
     <slot />
   </p>
 </template>
+
+<script setup lang="ts">
+import type { HTMLAttributes } from 'vue';
+
+import { cn } from '@/Utils/Shadcn/utils';
+
+const props = defineProps<{
+  class?: HTMLAttributes['class'];
+}>();
+</script>

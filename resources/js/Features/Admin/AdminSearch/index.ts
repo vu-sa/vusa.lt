@@ -5,15 +5,15 @@
  */
 
 // Types
-export * from './Types/AdminSearchTypes'
+export * from './Types/AdminSearchTypes';
 
 // Services
-export * from './Services/AdminSearchService'
-export * from './Services/AdminFacetMerger'
+export * from './Services/AdminSearchService';
+export * from './Services/AdminFacetMerger';
 
 // Config
-export * from './Config/collectionFacetConfig'
+export * from './Config/collectionFacetConfig';
 
 // Composables
-export { useAdminCollectionSearch } from './Composables/useAdminCollectionSearch'
-export type { AdminCollectionSearchController } from './Composables/useAdminCollectionSearch'
+export { useAdminCollectionSearch } from './Composables/useAdminCollectionSearch';
+export type { AdminCollectionSearchController } from './Composables/useAdminCollectionSearch';

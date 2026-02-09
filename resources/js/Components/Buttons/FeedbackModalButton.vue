@@ -41,15 +41,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
-import { useForm } from "@inertiajs/vue3";
+import { ref } from 'vue';
+import { useForm } from '@inertiajs/vue3';
 
-import CardModal from "../Modals/CardModal.vue";
-import { Button } from "@/Components/ui/button";
-import { Checkbox } from "@/Components/ui/checkbox";
-import { Label } from "@/Components/ui/label";
-import { Spinner } from "@/Components/ui/spinner";
-import { Textarea } from "@/Components/ui/textarea";
+import CardModal from '../Modals/CardModal.vue';
+
+import { Button } from '@/Components/ui/button';
+import { Checkbox } from '@/Components/ui/checkbox';
+import { Label } from '@/Components/ui/label';
+import { Spinner } from '@/Components/ui/spinner';
+import { Textarea } from '@/Components/ui/textarea';
 
 const showModal = ref(false);
 const loading = ref(false);
@@ -63,7 +64,7 @@ const form = useForm({
 
 const handleSend = () => {
   loading.value = true;
-  form.post(route("feedback.send"), {
+  form.post(route('feedback.send'), {
     onSuccess: () => {
       showModal.value = false;
       loading.value = false;

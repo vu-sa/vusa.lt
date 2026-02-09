@@ -19,7 +19,7 @@
           :src="notification.data.subject.image"
           :alt="notification.data.subject.name"
           class="size-5 rounded-full object-cover"
-        />
+        >
         <p class="font-medium text-sm truncate">
           {{ notification.data.title || legacyTitle }}
         </p>
@@ -61,6 +61,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+
 import { formatRelativeTime } from '@/Utils/IntlTime';
 import { getModelIcon } from '@/Components/icons';
 import { Button } from '@/Components/ui/button';
@@ -109,9 +110,7 @@ const props = defineProps<{
   };
 }>();
 
-const emit = defineEmits<{
-  (event: 'muteThread', modelClass: string, modelId: string): void;
-}>();
+const emit = defineEmits<(event: 'muteThread', modelClass: string, modelId: string) => void>();
 
 // Get the notification type from the full class name
 const notificationType = computed(() => props.notification.type.split('\\').pop() || '');
@@ -151,7 +150,7 @@ const notificationIcon = computed(() => {
   }
 
   // Fall back to category-based icons
-  const category = props.notification.data.category;
+  const { category } = props.notification.data;
   switch (category) {
     case 'comment':
       return IFluentComment24Regular;
@@ -174,7 +173,7 @@ const notificationIcon = computed(() => {
 
 // Get color classes based on category
 const colorClasses = computed(() => {
-  const color = props.notification.data.color;
+  const { color } = props.notification.data;
   const colorMap: Record<string, string> = {
     blue: 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400',
     orange: 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400',

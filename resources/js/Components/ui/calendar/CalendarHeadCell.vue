@@ -1,19 +1,3 @@
-<script lang="ts" setup>
-import { cn } from '@/Utils/Shadcn/utils'
-import { CalendarHeadCell, type CalendarHeadCellProps, useForwardProps } from 'reka-ui'
-import { computed, type HTMLAttributes } from 'vue'
-
-const props = defineProps<CalendarHeadCellProps & { class?: HTMLAttributes['class'] }>()
-
-const delegatedProps = computed(() => {
-  const { class: _, ...delegated } = props
-
-  return delegated
-})
-
-const forwardedProps = useForwardProps(delegatedProps)
-</script>
-
 <template>
   <CalendarHeadCell
     data-slot="calendar-head-cell"
@@ -23,3 +7,20 @@ const forwardedProps = useForwardProps(delegatedProps)
     <slot />
   </CalendarHeadCell>
 </template>
+
+<script lang="ts" setup>
+import { CalendarHeadCell, type CalendarHeadCellProps, useForwardProps } from 'reka-ui';
+import { computed, type HTMLAttributes } from 'vue';
+
+import { cn } from '@/Utils/Shadcn/utils';
+
+const props = defineProps<CalendarHeadCellProps & { class?: HTMLAttributes['class'] }>();
+
+const delegatedProps = computed(() => {
+  const { class: _, ...delegated } = props;
+
+  return delegated;
+});
+
+const forwardedProps = useForwardProps(delegatedProps);
+</script>

@@ -166,8 +166,12 @@
                   <Check class="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                 </div>
                 <div class="flex-1">
-                  <dt class="font-medium text-sm">{{ $t('Studentų pozicija priimta') }}</dt>
-                  <dd class="text-xs text-muted-foreground">{{ $t('voting.status_aligned_admin_help') }}</dd>
+                  <dt class="font-medium text-sm">
+                    {{ $t('Studentų pozicija priimta') }}
+                  </dt>
+                  <dd class="text-xs text-muted-foreground">
+                    {{ $t('voting.status_aligned_admin_help') }}
+                  </dd>
                 </div>
               </div>
 
@@ -176,8 +180,12 @@
                   <X class="h-4 w-4 text-red-600 dark:text-red-400" />
                 </div>
                 <div class="flex-1">
-                  <dt class="font-medium text-sm">{{ $t('Studentų pozicija nepriimta') }}</dt>
-                  <dd class="text-xs text-muted-foreground">{{ $t('voting.status_misaligned_admin_help') }}</dd>
+                  <dt class="font-medium text-sm">
+                    {{ $t('Studentų pozicija nepriimta') }}
+                  </dt>
+                  <dd class="text-xs text-muted-foreground">
+                    {{ $t('voting.status_misaligned_admin_help') }}
+                  </dd>
                 </div>
               </div>
 
@@ -186,8 +194,12 @@
                   <Minus class="h-4 w-4 text-zinc-600 dark:text-zinc-400" />
                 </div>
                 <div class="flex-1">
-                  <dt class="font-medium text-sm">{{ $t('Neutralus sprendimas') }}</dt>
-                  <dd class="text-xs text-muted-foreground">{{ $t('voting.status_neutral_admin_help') }}</dd>
+                  <dt class="font-medium text-sm">
+                    {{ $t('Neutralus sprendimas') }}
+                  </dt>
+                  <dd class="text-xs text-muted-foreground">
+                    {{ $t('voting.status_neutral_admin_help') }}
+                  </dd>
                 </div>
               </div>
 
@@ -196,8 +208,12 @@
                   <Circle class="h-3.5 w-3.5 text-amber-500/50" />
                 </div>
                 <div class="flex-1">
-                  <dt class="font-medium text-sm">{{ $t('Neaptartas') }}</dt>
-                  <dd class="text-xs text-muted-foreground">{{ $t('voting.status_no_vote_admin_help') }}</dd>
+                  <dt class="font-medium text-sm">
+                    {{ $t('Neaptartas') }}
+                  </dt>
+                  <dd class="text-xs text-muted-foreground">
+                    {{ $t('voting.status_no_vote_admin_help') }}
+                  </dd>
                 </div>
               </div>
 
@@ -206,8 +222,12 @@
                   <Clock class="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
                 </div>
                 <div class="flex-1">
-                  <dt class="font-medium text-sm">{{ $t('Atidėtas') }}</dt>
-                  <dd class="text-xs text-muted-foreground">{{ $t('voting.status_deferred_admin_help') }}</dd>
+                  <dt class="font-medium text-sm">
+                    {{ $t('Atidėtas') }}
+                  </dt>
+                  <dd class="text-xs text-muted-foreground">
+                    {{ $t('voting.status_deferred_admin_help') }}
+                  </dd>
                 </div>
               </div>
 
@@ -216,8 +236,12 @@
                   <Info class="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
                 </div>
                 <div class="flex-1">
-                  <dt class="font-medium text-sm">{{ $t('Informacinis') }}</dt>
-                  <dd class="text-xs text-muted-foreground">{{ $t('voting.status_informational_admin_help') }}</dd>
+                  <dt class="font-medium text-sm">
+                    {{ $t('Informacinis') }}
+                  </dt>
+                  <dd class="text-xs text-muted-foreground">
+                    {{ $t('voting.status_informational_admin_help') }}
+                  </dd>
                 </div>
               </div>
 
@@ -226,8 +250,12 @@
                   <HelpCircle class="h-4 w-4 text-amber-600 dark:text-amber-400" />
                 </div>
                 <div class="flex-1">
-                  <dt class="font-medium text-sm">{{ $t('Nepažymėtas') }}</dt>
-                  <dd class="text-xs text-muted-foreground">{{ $t('voting.status_unset_admin_help') }}</dd>
+                  <dt class="font-medium text-sm">
+                    {{ $t('Nepažymėtas') }}
+                  </dt>
+                  <dd class="text-xs text-muted-foreground">
+                    {{ $t('voting.status_unset_admin_help') }}
+                  </dd>
                 </div>
               </div>
             </dl>

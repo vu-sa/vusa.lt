@@ -16,7 +16,7 @@ import type {
  */
 export function extractDutyMembers(institutions: AtstovavimosInstitution[]): GanttDutyMember[] {
   const members: GanttDutyMember[] = [];
-  
+
   for (const institution of institutions) {
     const inst = institution as any;
     for (const duty of (inst.duties ?? [])) {
@@ -24,22 +24,22 @@ export function extractDutyMembers(institutions: AtstovavimosInstitution[]): Gan
       for (const user of (duty.users ?? [])) {
         const pivot = user.pivot ?? {};
         if (!pivot.start_date) continue;
-        
+
         members.push({
           institution_id: String(institution.id),
           duty_id: String(duty.id),
           user: {
             id: String(user.id),
             name: String(user.name ?? ''),
-            profile_photo_path: user.profile_photo_path ?? null
+            profile_photo_path: user.profile_photo_path ?? null,
           },
           start_date: new Date(pivot.start_date),
-          end_date: pivot.end_date ? new Date(pivot.end_date) : null
+          end_date: pivot.end_date ? new Date(pivot.end_date) : null,
         });
       }
     }
   }
-  
+
   return members;
 }
 
@@ -49,46 +49,48 @@ export function extractDutyMembers(institutions: AtstovavimosInstitution[]): Gan
  */
 export function calculateInactivePeriods(
   institutions: AtstovavimosInstitution[],
-  members: GanttDutyMember[]
+  members: GanttDutyMember[],
 ): InactivePeriod[] {
   const periods: InactivePeriod[] = [];
-  
+
   for (const institution of institutions) {
     const instId = String(institution.id);
     const instMembers = members.filter(m => m.institution_id === instId);
-    
+
     if (instMembers.length === 0) continue;
-    
-    const sortedMembers = [...instMembers].sort((a, b) => 
-      a.start_date.getTime() - b.start_date.getTime()
+
+    const sortedMembers = [...instMembers].sort((a, b) =>
+      a.start_date.getTime() - b.start_date.getTime(),
     );
-    
+
     const activePeriods: Array<{ from: Date; until: Date }> = [];
-    
+
     for (const member of sortedMembers) {
       const from = member.start_date;
       const until = member.end_date ?? new Date();
-      
+
       if (activePeriods.length === 0) {
         activePeriods.push({ from, until });
-      } else {
+      }
+      else {
         const last = activePeriods[activePeriods.length - 1]!;
         if (from <= last.until) {
           if (until > last.until) {
             last.until = until;
           }
-        } else {
+        }
+        else {
           periods.push({
             institution_id: instId,
             from: last.until,
-            until: from
+            until: from,
           });
           activePeriods.push({ from, until });
         }
       }
     }
   }
-  
+
   return periods;
 }
 
@@ -97,13 +99,13 @@ export function calculateInactivePeriods(
  * Returns formatted GanttMeeting array.
  */
 export function extractMeetingsFromInstitutions(
-  institutions: AtstovavimosInstitution[]
+  institutions: AtstovavimosInstitution[],
 ): GanttMeeting[] {
-  return institutions.flatMap(inst => 
+  return institutions.flatMap(inst =>
     ((inst as any).meetings ?? []).map((m: any) => {
       // Check authorization for agenda item visibility
       const isAuthorized = (inst as any).authorized !== false;
-      const agendaItems = isAuthorized 
+      const agendaItems = isAuthorized
         ? (m.agenda_items ?? []).slice(0, 4).map((item: any) => {
             // Get main vote from either main_vote property or votes array
             const mainVote = item.main_vote ?? item.votes?.find((v: any) => v.is_main);
@@ -132,7 +134,7 @@ export function extractMeetingsFromInstitutions(
         // Extract meeting type for icon differentiation (in-person, remote, email)
         type_slug: m.type ?? m.type_slug,
       };
-    })
+    }),
   );
 }
 
@@ -141,7 +143,7 @@ export function extractMeetingsFromInstitutions(
  */
 export function formatInstitutionsForGantt(
   institutions: AtstovavimosInstitution[],
-  isRelated = false
+  isRelated = false,
 ): GanttInstitution[] {
   return institutions.map(i => ({
     id: i.id,
@@ -150,7 +152,7 @@ export function formatInstitutionsForGantt(
     is_related: isRelated || i.is_related,
     relationship_direction: i.relationship_direction,
     source_institution_id: i.source_institution_id,
-    authorized: i.authorized
+    authorized: i.authorized,
   }));
 }
 
@@ -159,11 +161,11 @@ export function formatInstitutionsForGantt(
  */
 export function getInstitutionDisplayName(institution: AtstovavimosInstitution | any): string {
   return String(
-    institution?.name?.lt ?? 
-    institution?.name?.en ?? 
-    institution?.name ?? 
-    institution?.shortname ?? 
-    institution?.id ?? ''
+    institution?.name?.lt
+    ?? institution?.name?.en
+    ?? institution?.name
+    ?? institution?.shortname
+    ?? institution?.id ?? '',
   );
 }
 
@@ -171,7 +173,7 @@ export function getInstitutionDisplayName(institution: AtstovavimosInstitution |
  * Build institution names lookup map.
  */
 export function buildInstitutionNamesMap(
-  institutions: AtstovavimosInstitution[]
+  institutions: AtstovavimosInstitution[],
 ): Record<string, string> {
   const result: Record<string, string> = {};
   for (const inst of institutions) {
@@ -184,7 +186,7 @@ export function buildInstitutionNamesMap(
  * Build institution tenant ID lookup map.
  */
 export function buildInstitutionTenantMap(
-  institutions: AtstovavimosInstitution[]
+  institutions: AtstovavimosInstitution[],
 ): Record<string, string> {
   const result: Record<string, string> = {};
   for (const inst of institutions) {
@@ -197,7 +199,7 @@ export function buildInstitutionTenantMap(
  * Build institution has public meetings lookup map.
  */
 export function buildInstitutionPublicMeetingsMap(
-  institutions: AtstovavimosInstitution[]
+  institutions: AtstovavimosInstitution[],
 ): Record<string, boolean> {
   const result: Record<string, boolean> = {};
   for (const inst of institutions) {
@@ -210,7 +212,7 @@ export function buildInstitutionPublicMeetingsMap(
  * Build institution periodicity lookup map.
  */
 export function buildInstitutionPeriodicityMap(
-  institutions: AtstovavimosInstitution[]
+  institutions: AtstovavimosInstitution[],
 ): Record<string, number> {
   const result: Record<string, number> = {};
   for (const inst of institutions) {
@@ -224,7 +226,7 @@ export function buildInstitutionPeriodicityMap(
  */
 export function mergeRecordMaps<T>(
   base: Record<string, T>,
-  additions: Record<string, T>
+  additions: Record<string, T>,
 ): Record<string, T> {
   return { ...base, ...additions };
 }

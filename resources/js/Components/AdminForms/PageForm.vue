@@ -192,35 +192,34 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, h } from "vue";
-import { useForm, usePage } from "@inertiajs/vue3";
-import { translitLithuanian } from "@/Utils/String";
+import { computed, ref, watch, h } from 'vue';
+import { useForm, usePage } from '@inertiajs/vue3';
 
-import RichContentFormElement from "../RichContentFormElement.vue";
+import RichContentFormElement from '../RichContentFormElement.vue';
 
-import AdminForm from "./AdminForm.vue";
-import FormElement from "./FormElement.vue";
-import FormFieldWrapper from "./FormFieldWrapper.vue";
-import FormStatusHeader from "./FormStatusHeader.vue";
-import PermalinkField from "./PermalinkField.vue";
-import SEOPreview from "./SEOPreview.vue";
+import AdminForm from './AdminForm.vue';
+import FormElement from './FormElement.vue';
+import FormFieldWrapper from './FormFieldWrapper.vue';
+import FormStatusHeader from './FormStatusHeader.vue';
+import PermalinkField from './PermalinkField.vue';
+import SEOPreview from './SEOPreview.vue';
 
-import { Button } from "@/Components/ui/button";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/Components/ui/collapsible";
-import { Input } from "@/Components/ui/input";
-import { Label } from "@/Components/ui/label";
-import { OrderedListInput } from "@/Components/ui/ordered-list-input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
-import { Textarea } from "@/Components/ui/textarea";
-import { DateTimePicker } from "@/Components/ui/date-picker";
-import { ImageUpload } from "@/Components/ui/upload";
-
+import { translitLithuanian } from '@/Utils/String';
+import { Button } from '@/Components/ui/button';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Components/ui/collapsible';
+import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
+import { OrderedListInput } from '@/Components/ui/ordered-list-input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { Textarea } from '@/Components/ui/textarea';
+import { DateTimePicker } from '@/Components/ui/date-picker';
+import { ImageUpload } from '@/Components/ui/upload';
 
 const props = defineProps<{
   categories: App.Entities.Category[];
   page: App.Entities.Page;
   otherLangPages?: App.Entities.Page[];
-  rememberKey?: "CreatePage";
+  rememberKey?: 'CreatePage';
   submitUrl: string;
   submitMethod: 'post' | 'patch';
   /** Public URL for preview button */
@@ -228,11 +227,11 @@ const props = defineProps<{
 }>();
 
 defineEmits<{
-  (event: "submit:form", form: unknown): void;
-  (event: "delete"): void;
+  (event: 'submit:form', form: unknown): void;
+  (event: 'delete'): void;
 }>();
 
-const isCreate = computed(() => props.rememberKey === "CreatePage");
+const isCreate = computed(() => props.rememberKey === 'CreatePage');
 
 // Advanced settings collapsed by default
 const advancedSettingsOpen = ref(false);
@@ -244,7 +243,7 @@ const formData = {
   highlights: props.page.highlights || [],
   meta_description: props.page.meta_description || '',
   featured_image: props.page.featured_image || '',
-  publish_time: props.page.publish_time || null
+  publish_time: props.page.publish_time || null,
 } as any;
 
 const form = props.rememberKey
@@ -288,7 +287,7 @@ const fullPageUrl = computed(() => {
 
 // Section completion states
 const mainInfoComplete = computed(() =>
-  (form.title?.length || 0) >= 3 && form.category_id && form.lang
+  (form.title?.length || 0) >= 3 && form.category_id && form.lang,
 );
 
 // Status header links
@@ -353,7 +352,7 @@ const otherPageOptions = computed(() => {
   }
 
   return props.otherLangPages
-    .map((page) => ({
+    .map(page => ({
       value: page.id,
       label: `${page.title} (${page.tenant?.shortname})`,
     }))
@@ -361,8 +360,8 @@ const otherPageOptions = computed(() => {
 });
 
 const languageOptions = [
-  { value: "lt", label: "Lietuvių" },
-  { value: "en", label: "English" },
+  { value: 'lt', label: 'Lietuvių' },
+  { value: 'en', label: 'English' },
 ];
 
 // Date/time picker compatibility
@@ -370,7 +369,7 @@ const publishTimeDate = computed({
   get: () => form.publish_time ? new Date(form.publish_time) : undefined,
   set: (val: Date | undefined) => {
     form.publish_time = val ? val.toISOString() : null;
-  }
+  },
 });
 
 // Watch form.title and update form.permalink for new pages
@@ -381,12 +380,12 @@ if (isCreate.value) {
       const latinizedTitle = translitLithuanian(String(title || ''));
       form.permalink = latinizedTitle
         .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/-+/g, "-")
-        .replace(/^-+/, "")
-        .replace(/-+$/, "")
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-+/, '')
+        .replace(/-+$/, '')
         .substring(0, 30);
-    }
+    },
   );
 }
 
@@ -397,6 +396,6 @@ watch(
     if (value === '__none__') {
       form.other_lang_id = null;
     }
-  }
+  },
 );
 </script>

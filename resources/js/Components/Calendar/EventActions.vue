@@ -100,50 +100,53 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { trans as $t } from 'laravel-vue-i18n'
-import { usePage } from '@inertiajs/vue3'
+import { computed } from 'vue';
+import { trans as $t } from 'laravel-vue-i18n';
+import { usePage } from '@inertiajs/vue3';
 
-import { formatEventDate } from '@/Utils/IntlTime'
-import Button from '@/Components/ui/button/Button.vue'
+import { formatEventDate } from '@/Utils/IntlTime';
+import Button from '@/Components/ui/button/Button.vue';
 
 interface Props {
-  event: App.Entities.Calendar
-  googleLink?: string
-  isMobile?: boolean
-  isSticky?: boolean
-  showDetailButton?: boolean
-  detailUrl?: string
-  variant?: 'default' | 'compact' | 'sidebar' | 'consolidated'
+  event: App.Entities.Calendar;
+  googleLink?: string;
+  isMobile?: boolean;
+  isSticky?: boolean;
+  showDetailButton?: boolean;
+  detailUrl?: string;
+  variant?: 'default' | 'compact' | 'sidebar' | 'consolidated';
 }
 
 const props = withDefaults(defineProps<Props>(), {
   isMobile: false,
   isSticky: false,
   showDetailButton: true,
-  variant: 'default'
-})
+  variant: 'default',
+});
 
-const page = usePage()
-const locale = computed(() => page.props.app.locale)
+const page = usePage();
+const locale = computed(() => page.props.app.locale);
 
 // Check if browser supports native share API
 const supportsNativeShare = computed(() => {
-  return typeof navigator !== 'undefined' && 'share' in navigator
-})
+  return typeof navigator !== 'undefined' && 'share' in navigator;
+});
 
 // Layout classes based on variant and context
 const layoutClasses = computed(() => {
-  const classes = []
+  const classes = [];
 
   if (props.variant === 'consolidated') {
-    classes.push('flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between')
-  } else if (props.variant === 'sidebar') {
-    classes.push('space-y-4 p-4 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-sm')
-  } else if (props.variant === 'compact') {
-    classes.push('space-y-2')
-  } else {
-    classes.push('space-y-4')
+    classes.push('flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between');
+  }
+  else if (props.variant === 'sidebar') {
+    classes.push('space-y-4 p-4 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-sm');
+  }
+  else if (props.variant === 'compact') {
+    classes.push('space-y-2');
+  }
+  else {
+    classes.push('space-y-4');
   }
 
   if (props.isSticky && props.isMobile) {
@@ -151,78 +154,85 @@ const layoutClasses = computed(() => {
       'fixed bottom-0 left-0 right-0 z-40',
       'bg-white/95 dark:bg-zinc-900/95 backdrop-blur-sm',
       'border-t border-zinc-200 dark:border-zinc-700',
-      'p-4 pb-safe-bottom'
-    )
+      'p-4 pb-safe-bottom',
+    );
   }
 
-  return classes.join(' ')
-})
+  return classes.join(' ');
+});
 
 // Primary action availability
 const hasPrimaryAction = computed(() => {
-  return (props.event as any).url || props.showDetailButton
-})
+  return (props.event as any).url || props.showDetailButton;
+});
 
 // Secondary actions availability
 const hasSecondaryActions = computed(() => {
-  return props.googleLink || props.event.facebook_url || supportsNativeShare.value
-})
+  return props.googleLink || props.event.facebook_url || supportsNativeShare.value;
+});
 
 // Show additional info on mobile
 const showAdditionalInfo = computed(() => {
-  return props.isMobile && !props.isSticky && props.variant !== 'compact'
-})
+  return props.isMobile && !props.isSticky && props.variant !== 'compact';
+});
 
 // Event status helpers
 const isEventPast = computed(() => {
-  const now = new Date()
-  const eventEndDate = props.event.end_date ? new Date(props.event.end_date) : new Date(props.event.date)
-  return eventEndDate < now
-})
+  const now = new Date();
+  const eventEndDate = props.event.end_date ? new Date(props.event.end_date) : new Date(props.event.date);
+  return eventEndDate < now;
+});
 
 const isEventActive = computed(() => {
-  const now = new Date()
-  const eventStartDate = new Date(props.event.date)
-  const eventEndDate = props.event.end_date ? new Date(props.event.end_date) : eventStartDate
-  return eventStartDate <= now && eventEndDate >= now
-})
+  const now = new Date();
+  const eventStartDate = new Date(props.event.date);
+  const eventEndDate = props.event.end_date ? new Date(props.event.end_date) : eventStartDate;
+  return eventStartDate <= now && eventEndDate >= now;
+});
 
 // Primary action text and styling
 const primaryActionText = computed(() => {
   if (isEventPast.value) {
-    return $t('Renginys įvyko')
-  } else if (isEventActive.value) {
-    return $t('Dalyvauk dabar')
-  } else if ((props.event as any).url) {
-    return $t('Dalyvauk renginyje')
-  } else {
-    return $t('Daugiau informacijos')
+    return $t('Renginys įvyko');
   }
-})
+  else if (isEventActive.value) {
+    return $t('Dalyvauk dabar');
+  }
+  else if ((props.event as any).url) {
+    return $t('Dalyvauk renginyje');
+  }
+  else {
+    return $t('Daugiau informacijos');
+  }
+});
 
 const primaryIcon = computed(() => {
   if (isEventPast.value) {
-    return 'IFluentCheckmarkCircle20Regular'
-  } else if (isEventActive.value) {
-    return 'IFluentPlay20Filled'
-  } else {
-    return 'IFluentPersonAdd20Regular'
+    return 'IFluentCheckmarkCircle20Regular';
   }
-})
+  else if (isEventActive.value) {
+    return 'IFluentPlay20Filled';
+  }
+  else {
+    return 'IFluentPersonAdd20Regular';
+  }
+});
 
 const primaryButtonClasses = computed(() => {
   if (isEventPast.value) {
-    return 'opacity-75 cursor-not-allowed pointer-events-none bg-zinc-500 hover:bg-zinc-500'
-  } else if (isEventActive.value) {
-    return 'bg-green-600 hover:bg-green-700 text-white animate-pulse'
-  } else {
-    return '' // Default styling
+    return 'opacity-75 cursor-not-allowed pointer-events-none bg-zinc-500 hover:bg-zinc-500';
   }
-})
+  else if (isEventActive.value) {
+    return 'bg-green-600 hover:bg-green-700 text-white animate-pulse';
+  }
+  else {
+    return ''; // Default styling
+  }
+});
 
 // Native share functionality
 const handleNativeShare = async () => {
-  if (!supportsNativeShare.value) return
+  if (!supportsNativeShare.value) return;
 
   try {
     const eventTitle = Array.isArray(props.event.title) ? props.event.title.join(' ') : (props.event.title || '');
@@ -231,15 +241,16 @@ const handleNativeShare = async () => {
     await navigator.share({
       title: eventTitle,
       text: `${eventTitle} - ${formatEventDate(eventDate, locale.value)}`,
-      url: window.location.href
-    })
-  } catch (error) {
-    console.log('Share cancelled or failed:', error)
+      url: window.location.href,
+    });
+  }
+  catch (error) {
+    console.log('Share cancelled or failed:', error);
     // Fallback to clipboard copy
-    await navigator.clipboard.writeText(window.location.href)
+    await navigator.clipboard.writeText(window.location.href);
     // Could show a toast notification here
   }
-}
+};
 </script>
 
 <style scoped>

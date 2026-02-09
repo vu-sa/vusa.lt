@@ -18,12 +18,12 @@
               <RichContentTiptapHTML :json_content="column.content.value" />
             </div>
             <div v-else-if="column.content.type === 'image'" class="h-full">
-              <img 
-                :src="column.content.value" 
-                class="rounded-lg w-full object-cover" 
+              <img
+                :src="column.content.value"
+                class="rounded-lg w-full object-cover"
                 :class="[
                   processedOptions.equalHeight ? 'h-full object-cover' : 'aspect-video object-cover',
-                ]" 
+                ]"
                 :alt="column.content.alt || ''"
                 :title="column.content.title || column.content.alt || ''"
               >
@@ -37,6 +37,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+
 import RichContentTiptapHTML from '@/Components/RichContentTiptapHTML.vue';
 
 const props = defineProps<{
@@ -59,7 +60,8 @@ const displayElement = computed(() => {
   if (typeof result.json_content === 'string') {
     try {
       result.json_content = JSON.parse(result.json_content);
-    } catch (e) {
+    }
+    catch (e) {
       console.error('Failed to parse grid JSON content', e);
       // Provide a fallback empty structure
       result.json_content = [];
@@ -70,12 +72,13 @@ const displayElement = computed(() => {
   if (typeof result.options === 'string') {
     try {
       result.options = JSON.parse(result.options);
-    } catch (e) {
+    }
+    catch (e) {
       console.error('Failed to parse grid options', e);
       result.options = {
         gap: 'gap-4',
         mobileStacking: true,
-        equalHeight: false
+        equalHeight: false,
       };
     }
   }
@@ -85,20 +88,20 @@ const displayElement = computed(() => {
 
 // Process options to ensure they're properly accessible
 const processedOptions = computed(() => {
-  const options = displayElement.value.options;
-  
+  const { options } = displayElement.value;
+
   // If the json_content has a nested options structure, use that instead
-  if (displayElement.value.json_content && 
-      displayElement.value.json_content.options && 
-      typeof displayElement.value.json_content.options === 'object') {
+  if (displayElement.value.json_content
+    && displayElement.value.json_content.options
+    && typeof displayElement.value.json_content.options === 'object') {
     return displayElement.value.json_content.options;
   }
-  
+
   // Otherwise use the top-level options
   return options || {
     gap: 'gap-4',
     mobileStacking: true,
-    equalHeight: false
+    equalHeight: false,
   };
 });
 

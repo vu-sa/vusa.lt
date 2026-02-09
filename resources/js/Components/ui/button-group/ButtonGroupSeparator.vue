@@ -1,16 +1,3 @@
-<script setup lang="ts">
-import type { SeparatorProps } from "reka-ui"
-import type { HTMLAttributes } from "vue"
-import { reactiveOmit } from "@vueuse/core"
-import { cn } from '@/Utils/Shadcn/utils'
-import { Separator } from '@/Components/ui/separator'
-
-const props = withDefaults(defineProps<SeparatorProps & { class?: HTMLAttributes["class"] }>(), {
-  orientation: "vertical",
-})
-const delegatedProps = reactiveOmit(props, "class")
-</script>
-
 <template>
   <Separator
     data-slot="button-group-separator"
@@ -22,3 +9,17 @@ const delegatedProps = reactiveOmit(props, "class")
     )"
   />
 </template>
+
+<script setup lang="ts">
+import type { SeparatorProps } from 'reka-ui';
+import type { HTMLAttributes } from 'vue';
+import { reactiveOmit } from '@vueuse/core';
+
+import { cn } from '@/Utils/Shadcn/utils';
+import { Separator } from '@/Components/ui/separator';
+
+const props = withDefaults(defineProps<SeparatorProps & { class?: HTMLAttributes['class'] }>(), {
+  orientation: 'vertical',
+});
+const delegatedProps = reactiveOmit(props, 'class');
+</script>

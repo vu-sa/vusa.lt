@@ -10,20 +10,20 @@
 </template>
 
 <script setup lang="tsx">
-import { trans as $t } from "laravel-vue-i18n";
-import { type ColumnDef } from '@tanstack/vue-table';
-import { ref, computed } from "vue";
+import { trans as $t } from 'laravel-vue-i18n';
+import type { ColumnDef } from '@tanstack/vue-table';
+import { ref, computed } from 'vue';
 
-import { formatStaticTime } from "@/Utils/IntlTime";
-import Icons from "@/Types/Icons/regular";
-import IndexTablePage from "@/Components/Layouts/IndexTablePage.vue";
-import { createStandardActionsColumn } from "@/Composables/useTableActions";
+import { formatStaticTime } from '@/Utils/IntlTime';
+import Icons from '@/Types/Icons/regular';
+import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
+import { createStandardActionsColumn } from '@/Composables/useTableActions';
 import {
   createTenantColumn,
 } from '@/Utils/DataTableColumns';
-import {
-  type IndexTablePageProps
-} from "@/Types/TableConfigTypes";
+import type {
+  IndexTablePageProps,
+} from '@/Types/TableConfigTypes';
 
 const props = defineProps<{
   calendar: {
@@ -53,10 +53,10 @@ const getRowId = (row: App.Entities.Calendar) => {
 
 const columns = computed<ColumnDef<App.Entities.Calendar, any>[]>(() => [
   {
-    accessorKey: "title",
-    header: () => "Pavadinimas",
+    accessorKey: 'title',
+    header: () => 'Pavadinimas',
     cell: ({ row }) => {
-      const title = row.getValue("title");
+      const title = row.getValue('title');
       const displayTitle = typeof title === 'object' && title !== null
         ? ((title as any).lt || (title as any).en || '-')
         : title;
@@ -70,26 +70,26 @@ const columns = computed<ColumnDef<App.Entities.Calendar, any>[]>(() => [
     enableSorting: true,
   },
   {
-    accessorKey: "date",
-    header: () => "Data",
+    accessorKey: 'date',
+    header: () => 'Data',
     cell: ({ row }) => {
-      const date = row.original.date;
+      const { date } = row.original;
       if (!date) return null;
       return formatStaticTime(date, {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "numeric",
-        minute: "numeric",
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
       });
     },
     size: 200,
   },
   {
-    id: "category",
-    header: () => "Kategorija",
+    id: 'category',
+    header: () => 'Kategorija',
     cell: ({ row }) => {
-      const category = row.original.category;
+      const { category } = row.original;
       if (!category) return null;
       const name = typeof category.name === 'object' && category.name !== null
         ? ((category.name as any).lt || (category.name as any).en || '-')
@@ -99,20 +99,20 @@ const columns = computed<ColumnDef<App.Entities.Calendar, any>[]>(() => [
     size: 150,
   },
   {
-    accessorKey: "is_draft",
-    header: () => "Ar rodomas?",
+    accessorKey: 'is_draft',
+    header: () => 'Ar rodomas?',
     cell: ({ row }) => {
-      return row.original.is_draft ? "❌ Ne" : "✅ Taip";
+      return row.original.is_draft ? '❌ Ne' : '✅ Taip';
     },
     size: 100,
   },
   createTenantColumn<App.Entities.Calendar>(),
-  createStandardActionsColumn<App.Entities.Calendar>("calendar", {
+  createStandardActionsColumn<App.Entities.Calendar>('calendar', {
     canView: false,
     canEdit: true,
     canDelete: true,
     canDuplicate: true,
-  })
+  }),
 ]);
 
 const tableConfig = computed<IndexTablePageProps<App.Entities.Calendar>>(() => {
@@ -132,7 +132,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Calendar>>(() => {
     enableColumnVisibility: false,
     enableRowSelection: false,
 
-    headerTitle: "Renginiai",
+    headerTitle: 'Renginiai',
     icon: Icons.CALENDAR,
     createRoute: route('calendar.create'),
     canCreate: true,

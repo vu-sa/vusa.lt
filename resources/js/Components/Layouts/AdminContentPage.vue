@@ -5,24 +5,24 @@
 
   <div class="flex flex-col min-h-full">
     <!-- Pre-header area -->
-    <div class="mb-4" v-if="$slots['above-header']">
+    <div v-if="$slots['above-header']" class="mb-4">
       <slot name="above-header" />
     </div>
 
     <!-- Header section with title and actions -->
-    <header 
-      v-if="title" 
+    <header
+      v-if="title"
       class="flex items-center justify-between mb-6 gap-6"
     >
       <div class="flex items-center gap-3">
         <!-- Back button (if not an index page) -->
-        <Button 
-          v-if="!isIndex && backUrl" 
-          variant="ghost" 
+        <Button
+          v-if="!isIndex && backUrl"
+          variant="ghost"
           size="icon"
-          class="h-8 w-8" 
-          @click="back"
+          class="h-8 w-8"
           aria-label="Go back"
+          @click="back"
         >
           <ArrowLeft class="h-4 w-4" />
         </Button>
@@ -31,7 +31,9 @@
         <div class="flex items-center gap-3">
           <component :is="headingIcon" v-if="headingIcon" class="h-6 w-6 text-primary" />
           <h1 class="text-2xl font-semibold tracking-tight text-foreground">
-            <slot name="title">{{ $t(title) }}</slot>
+            <slot name="title">
+              {{ $t(title) }}
+            </slot>
           </h1>
         </div>
       </div>
@@ -54,7 +56,7 @@
     </header>
 
     <slot name="below-header" />
-    
+
     <!-- Optional header divider -->
     <Separator v-if="title && headerDivider" class="mb-6" />
 
@@ -66,13 +68,13 @@
 </template>
 
 <script setup lang="ts">
-import { trans as $t } from "laravel-vue-i18n";
-import { Head, Link } from "@inertiajs/vue3";
-import { computed } from "vue";
-import { ArrowLeft, Plus } from "lucide-vue-next";
+import { trans as $t } from 'laravel-vue-i18n';
+import { Head, Link } from '@inertiajs/vue3';
+import { computed } from 'vue';
+import { ArrowLeft, Plus } from 'lucide-vue-next';
 
-import { Separator } from "@/Components/ui/separator";
-import { Button } from "@/Components/ui/button";
+import { Separator } from '@/Components/ui/separator';
+import { Button } from '@/Components/ui/button';
 
 const props = defineProps<{
   backUrl?: string;
@@ -83,7 +85,7 @@ const props = defineProps<{
 }>();
 
 const isIndex = computed(() => {
-  return route().current("*.index");
+  return route().current('*.index');
 });
 
 const back = () => window.history.back();

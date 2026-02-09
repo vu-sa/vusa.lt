@@ -2,7 +2,7 @@
   <div class="padalinys-map">
     <div class="relative h-[350px] w-full bg-muted overflow-hidden">
       <!-- Leaflet Map Container -->
-      <div id="padalinys-leaflet-map" class="h-full w-full"></div>
+      <div id="padalinys-leaflet-map" class="h-full w-full" />
 
       <!-- <div class="absolute bottom-2 left-2 z-[1000] p-2 bg-zinc-50/80 dark:bg-zinc-900/80 backdrop-blur-sm rounded-md shadow text-sm max-w-[200px]">
         <p v-if="hoveredLocation" class="font-medium">
@@ -18,11 +18,12 @@
 </template>
 
 <script setup lang="ts">
-import { trans as $t, trans } from "laravel-vue-i18n";
-import { computed, ref, watch, onMounted, onBeforeUnmount, nextTick, h, render } from "vue";
-import { usePage } from "@inertiajs/vue3";
-import { Avatar, AvatarFallback, AvatarImage } from "@/Components/ui/avatar";
-import { useDark } from "@vueuse/core";
+import { trans as $t, trans } from 'laravel-vue-i18n';
+import { computed, ref, watch, onMounted, onBeforeUnmount, nextTick, h, render } from 'vue';
+import { usePage } from '@inertiajs/vue3';
+import { useDark } from '@vueuse/core';
+
+import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
 
 interface DropdownOption {
   label: string;
@@ -66,7 +67,7 @@ const isDark = useDark();
 // Map tile URLs for light and dark modes
 const mapTileUrls = {
   light: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-  dark: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+  dark: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
 };
 
 // Map tile layer - will be initialized once we know the theme
@@ -79,15 +80,15 @@ const isActivePadalinys = (key: string): boolean => {
 const vilniusFaculties = computed(() => {
   if (!props.searchQuery) {
     return props.faculties.filter(
-      option => props.facultyLocations[option.key]?.city === 'vilnius'
+      option => props.facultyLocations[option.key]?.city === 'vilnius',
     );
   }
 
-  return props.faculties.filter(option => 
+  return props.faculties.filter(option =>
     props.facultyLocations[option.key]?.city === 'vilnius' && (
-      option.label.toLowerCase().includes(props.searchQuery.toLowerCase()) ||
-      option.key.toLowerCase().includes(props.searchQuery.toLowerCase())
-    )
+      option.label.toLowerCase().includes(props.searchQuery.toLowerCase())
+      || option.key.toLowerCase().includes(props.searchQuery.toLowerCase())
+    ),
   );
 });
 
@@ -96,9 +97,9 @@ const filteredFaculties = computed(() => {
     return props.faculties;
   }
 
-  return props.faculties.filter(option => 
-    option.label.toLowerCase().includes(props.searchQuery.toLowerCase()) ||
-    option.key.toLowerCase().includes(props.searchQuery.toLowerCase())
+  return props.faculties.filter(option =>
+    option.label.toLowerCase().includes(props.searchQuery.toLowerCase())
+    || option.key.toLowerCase().includes(props.searchQuery.toLowerCase()),
   );
 });
 
@@ -112,13 +113,13 @@ const setHoveredLocation = (option: DropdownOption | null) => {
 const renderAvatarToHTML = (option: DropdownOption, isActive: boolean): string => {
   // Get avatar URL from primary institution
   const avatarUrl = option.primary_institution?.image_url;
-  const key = option.key;
-  const isMainOffice = option.isMainOffice;
+  const { key } = option;
+  const { isMainOffice } = option;
   const avatarClasses = `map-avatar ${isActive ? 'active' : ''} ${isMainOffice ? 'main-office' : ''}`;
-  
+
   // Create direct HTML structure that matches Shadcn Avatar component structure
   let html = '';
-  
+
   if (avatarUrl) {
     // If we have an avatar URL, create an avatar with an image
     html = `
@@ -126,7 +127,8 @@ const renderAvatarToHTML = (option: DropdownOption, isActive: boolean): string =
         <img src="${avatarUrl}" alt="${option.label}" class="h-full w-full object-cover" />
       </div>
     `;
-  } else {
+  }
+  else {
     // Otherwise create an avatar with fallback text
     const fallbackText = key.substring(0, 2).toUpperCase();
     html = `
@@ -137,7 +139,7 @@ const renderAvatarToHTML = (option: DropdownOption, isActive: boolean): string =
       </div>
     `;
   }
-  
+
   return html;
 };
 
@@ -159,14 +161,14 @@ watch(() => isDark, (newIsDark) => {
   if (leafletMap && tileLayer) {
     // Remove existing tile layer
     tileLayer.remove();
-    
+
     // Add new tile layer based on theme
     tileLayer = L.tileLayer(newIsDark ? mapTileUrls.dark : mapTileUrls.light, {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
       subdomains: 'abcd',
       maxZoom: 19,
     }).addTo(leafletMap);
-    
+
     // Force update styling for attribution in dark mode
     updateMapControlsStyle(newIsDark.value);
   }
@@ -175,7 +177,7 @@ watch(() => isDark, (newIsDark) => {
 // Initialize or recreate the map
 const initializeOrUpdateMap = async () => {
   if (typeof window === 'undefined') return;
-  
+
   try {
     // Clean up any existing map
     if (leafletMap) {
@@ -185,30 +187,30 @@ const initializeOrUpdateMap = async () => {
       markerClusterGroup = null;
       tileLayer = null;
     }
-    
+
     mapCreationAttempted.value = true;
-    
+
     // Dynamically import Leaflet and Leaflet.MarkerCluster
     const leaflet = await import('leaflet');
     L = leaflet.default;
-    
+
     // Import Leaflet and MarkerCluster CSS
     await import('leaflet/dist/leaflet.css');
-    
+
     // Import MarkerCluster
     const MarkerCluster = await import('leaflet.markercluster');
     await import('leaflet.markercluster/dist/MarkerCluster.css');
     await import('leaflet.markercluster/dist/MarkerCluster.Default.css');
-    
+
     // Initialize map if container exists
     const container = document.getElementById('padalinys-leaflet-map');
     if (container) {
       // Center on Vilnius
       leafletMap = L.map('padalinys-leaflet-map', {
         zoomControl: false, // Disable default zoom control for cleaner look
-        attributionControl: false // We'll add attribution in a more subtle way
+        attributionControl: false, // We'll add attribution in a more subtle way
       }).setView([54.683333, 25.286944], 13);
-      
+
       // Add tile layer based on current theme
       tileLayer = L.tileLayer(isDark.value ? mapTileUrls.dark : mapTileUrls.light, {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
@@ -219,40 +221,41 @@ const initializeOrUpdateMap = async () => {
       // Add custom attribution control in a more subtle way
       L.control.attribution({
         position: 'bottomright',
-        prefix: ''
+        prefix: '',
       }).addAttribution('© <a href="https://www.openstreetmap.org/copyright" class="text-xs opacity-70">OpenStreetMap</a>').addTo(leafletMap);
-      
+
       // Add custom zoom control in a more subtle position
       L.control.zoom({
-        position: 'bottomright'
+        position: 'bottomright',
       }).addTo(leafletMap);
-      
+
       // Apply custom styling for attribution and zoom controls
       updateMapControlsStyle(isDark.value);
-      
+
       // Create marker cluster group with custom options
       markerClusterGroup = L.markerClusterGroup({
         showCoverageOnHover: false,
         maxClusterRadius: 40,
-        iconCreateFunction: function(cluster) {
+        iconCreateFunction(cluster) {
           const count = cluster.getChildCount();
           return L.divIcon({
             html: `<div class="marker-cluster-icon">+${count}</div>`,
             className: 'marker-cluster',
-            iconSize: L.point(36, 36)
+            iconSize: L.point(36, 36),
           });
-        }
+        },
       });
-      
+
       // Add marker cluster group to map
       leafletMap.addLayer(markerClusterGroup);
-      
+
       // Add markers for each faculty in Vilnius only
       updateMapMarkers();
-      
+
       isMapInitialized.value = true;
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Failed to load map libraries:', error);
     isMapInitialized.value = false;
   }
@@ -270,17 +273,17 @@ const forceUpdateMap = () => {
 // Update map markers based on filtered Vilnius options
 const updateMapMarkers = () => {
   if (!L || !leafletMap || !markerClusterGroup) return;
-  
+
   // Clear existing markers from cluster group
   markerClusterGroup.clearLayers();
   markers = [];
-  
+
   // Only show Vilnius faculties on the map
   // vilniusFaculties.value.forEach(option => {
-  filteredFaculties.value.forEach(option => {
+  filteredFaculties.value.forEach((option) => {
     const location = props.facultyLocations[option.key];
     if (!location) return;
-    
+
     // Create marker based on whether we have an avatar image
     let marker;
     const isActive = isActivePadalinys(option.key);
@@ -291,11 +294,12 @@ const updateMapMarkers = () => {
         className: 'custom-map-marker',
         html: renderAvatarToHTML(option, isActive),
         iconSize: [32, 32],
-        iconAnchor: [16, 32]
+        iconAnchor: [16, 32],
       });
-      
+
       marker = L.marker([location.lat, location.lng], { icon: customIcon });
-    } else {
+    }
+    else {
       // Fallback to minimal circle marker
       const markerColor = isActive ? '#ef4444' : (isDark.value ? '#94a3b8' : '#64748b');
       marker = L.circleMarker([location.lat, location.lng], {
@@ -304,37 +308,38 @@ const updateMapMarkers = () => {
         color: isDark.value ? '#1e293b' : '#fff',
         weight: 2,
         opacity: 1,
-        fillOpacity: 0.8
+        fillOpacity: 0.8,
       });
     }
-    
+
     // Add hover and click events
     marker.on('mouseover', () => setHoveredLocation(option));
     marker.on('mouseout', () => setHoveredLocation(null));
     marker.on('click', () => props.onFacultySelect(option.key));
-    
+
     // Add tooltip with faculty name and short name
     const shortName = $t(option.primary_institution?.short_name ?? '');
 
     if (option.isMainOffice) {
       option.label = `${$t('Centrinis biuras')}`;
     }
-  
+
     marker.bindTooltip(`${option.label} (${shortName})`);
-    
+
     // Add marker to cluster group
     markerClusterGroup.addLayer(marker);
     markers.push(marker);
   });
-  
+
   // If we have markers, fit the map to show all of them
   if (markers.length > 0) {
     const group = L.featureGroup(markers);
-    leafletMap.fitBounds(group.getBounds(), { 
+    leafletMap.fitBounds(group.getBounds(), {
       padding: [30, 30],
-      maxZoom: 14 // Prevent excessive zoom on small areas
+      maxZoom: 14, // Prevent excessive zoom on small areas
     });
-  } else {
+  }
+  else {
     // If no markers (e.g., all filtered out), reset to Vilnius center
     leafletMap.setView([54.683333, 25.286944], 13);
   }
@@ -343,25 +348,26 @@ const updateMapMarkers = () => {
 // Apply custom styling to map controls based on theme
 const updateMapControlsStyle = (isDark: boolean) => {
   if (!leafletMap) return;
-  
+
   // Find all zoom control buttons and apply spacing
   const zoomInButton = document.querySelector('.leaflet-control-zoom-in');
   const zoomOutButton = document.querySelector('.leaflet-control-zoom-out');
-  
+
   if (zoomInButton && zoomOutButton) {
     // Add margin between zoom buttons
     (zoomInButton as HTMLElement).style.marginBottom = '4px';
     (zoomInButton as HTMLElement).style.borderRadius = '4px';
     (zoomOutButton as HTMLElement).style.borderRadius = '4px';
   }
-  
+
   // Fix attribution background color in dark mode
   const attributionContainer = document.querySelector('.leaflet-control-attribution');
   if (attributionContainer) {
     if (isDark) {
       (attributionContainer as HTMLElement).style.backgroundColor = 'rgba(30, 41, 59, 0.7)';
       (attributionContainer as HTMLElement).style.color = '#94a3b8';
-    } else {
+    }
+    else {
       (attributionContainer as HTMLElement).style.backgroundColor = 'rgba(255, 255, 255, 0.7)';
       (attributionContainer as HTMLElement).style.color = '#64748b';
     }
@@ -371,7 +377,7 @@ const updateMapControlsStyle = (isDark: boolean) => {
 // Provide methods for parent component to call
 defineExpose({
   forceUpdateMap,
-  initializeOrUpdateMap
+  initializeOrUpdateMap,
 });
 
 // Clean up map on component unmount

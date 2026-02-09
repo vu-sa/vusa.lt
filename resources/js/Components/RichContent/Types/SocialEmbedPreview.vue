@@ -2,24 +2,24 @@
   <div class="social-embed-preview">
     <!-- Loading state -->
     <div v-if="isLoading && !hasRendered" class="flex items-center justify-center py-8">
-      <div class="h-6 w-6 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-600"></div>
+      <div class="h-6 w-6 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-600" />
     </div>
 
     <!-- Facebook embed -->
-    <div v-if="platform === 'facebook'" ref="fbContainer" class="facebook-embed" :key="'fb-' + url">
-      <div id="fb-root"></div>
-      <div 
-        class="fb-post" 
-        :data-href="url" 
+    <div v-if="platform === 'facebook'" ref="fbContainer" :key="'fb-' + url" class="facebook-embed">
+      <div id="fb-root" />
+      <div
+        class="fb-post"
+        :data-href="url"
         data-width="500"
         :data-show-text="showCaption ? 'true' : 'false'"
-      ></div>
+      />
     </div>
 
     <!-- Instagram embed -->
-    <div v-else-if="platform === 'instagram'" ref="igContainer" class="instagram-embed" :key="'ig-' + url">
-      <blockquote 
-        class="instagram-media" 
+    <div v-else-if="platform === 'instagram'" ref="igContainer" :key="'ig-' + url" class="instagram-embed">
+      <blockquote
+        class="instagram-media"
         :data-instgrm-permalink="instagramEmbedUrl"
         data-instgrm-version="14"
         style="max-width:540px; min-width:326px; width:100%;"
@@ -57,7 +57,7 @@ const instagramEmbedUrl = computed(() => {
   // Ensure URL ends with proper format
   const cleanUrl = props.url.split('?')[0] || ''; // Remove query params
   if (!cleanUrl.endsWith('/')) {
-    return cleanUrl + '/';
+    return `${cleanUrl}/`;
   }
   return cleanUrl;
 });
@@ -86,10 +86,10 @@ async function loadFacebookSDK(): Promise<any> {
       return;
     }
 
-    window.fbAsyncInit = function() {
+    window.fbAsyncInit = function () {
       window.FB.init({
         xfbml: true,
-        version: 'v21.0'
+        version: 'v21.0',
       });
       resolve(window.FB);
     };
@@ -144,7 +144,8 @@ async function loadInstagramEmbed(): Promise<any> {
         clearInterval(checkIG);
         if (window.instgrm) {
           resolve(window.instgrm);
-        } else {
+        }
+        else {
           reject(new Error('Instagram embed init timeout'));
         }
       }, 5000);
@@ -172,16 +173,19 @@ async function processEmbed() {
         FB.XFBML.parse(fbContainer.value);
         hasRendered.value = true;
       }
-    } else if (props.platform === 'instagram') {
+    }
+    else if (props.platform === 'instagram') {
       const instgrm = await loadInstagramEmbed();
       if (instgrm?.Embeds) {
         instgrm.Embeds.process();
         hasRendered.value = true;
       }
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error loading social embed:', error);
-  } finally {
+  }
+  finally {
     isLoading.value = false;
   }
 }

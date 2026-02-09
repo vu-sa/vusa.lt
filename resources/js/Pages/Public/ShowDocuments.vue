@@ -3,18 +3,18 @@
     <title>{{ $t('search.document_page_title') }}</title>
     <meta name="description" :content="$t('search.document_page_description')">
   </Head>
-  
+
   <DocumentSearchInterface
-    :important-content-types="importantContentTypes"
+    :important-content-types
   />
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted } from 'vue';
 import { usePage, Head } from '@inertiajs/vue3';
+
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import DocumentSearchInterface from '@/Components/Public/Search/DocumentSearchInterface.vue';
-
 import IFluentDocument16Regular from '~icons/fluent/document-16-regular';
 
 // Props - now only used for static metadata
@@ -29,8 +29,8 @@ usePageBreadcrumbs(() => {
     BreadcrumbHelpers.createBreadcrumbItem(
       'Dokumentai',
       undefined,
-      IFluentDocument16Regular
-    )
+      IFluentDocument16Regular,
+    ),
   ]);
 });
 

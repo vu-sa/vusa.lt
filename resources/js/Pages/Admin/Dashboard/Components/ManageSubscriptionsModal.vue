@@ -26,12 +26,12 @@
               <Eye class="h-4 w-4" />
               {{ $t('visak.additionally_followed') }}
             </h3>
-            
-            <div v-if="additionallyFollowed.length === 0" 
+
+            <div v-if="additionallyFollowed.length === 0"
               class="text-sm text-zinc-500 dark:text-zinc-400 py-4 text-center bg-zinc-50 dark:bg-zinc-800/50 rounded-lg">
               {{ $t('visak.no_additional_follows') }}
             </div>
-            
+
             <div v-else class="space-y-2">
               <div v-for="institution in additionallyFollowed" :key="institution.id"
                 class="flex items-center justify-between p-3 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/50">
@@ -83,12 +83,12 @@
               <BellOff class="h-4 w-4" />
               {{ $t('visak.muted_institutions') }}
             </h3>
-            
-            <div v-if="mutedInstitutions.length === 0" 
+
+            <div v-if="mutedInstitutions.length === 0"
               class="text-sm text-zinc-500 dark:text-zinc-400 py-4 text-center bg-zinc-50 dark:bg-zinc-800/50 rounded-lg">
               {{ $t('visak.no_muted_institutions') }}
             </div>
-            
+
             <div v-else class="space-y-2">
               <div v-for="institution in mutedInstitutions" :key="institution.id"
                 class="flex items-center justify-between p-3 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/50">
@@ -131,10 +131,11 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
+import { Settings2, Eye, EyeOff, Bell, BellOff, Building2, Loader2 } from 'lucide-vue-next';
 
-import { useApi } from '@/Composables/useApi';
 import { useInstitutionSubscription } from '../Composables/useInstitutionSubscription';
 
+import { useApi } from '@/Composables/useApi';
 import {
   Dialog,
   DialogContent,
@@ -146,7 +147,6 @@ import {
 import { Button } from '@/Components/ui/button';
 import { Skeleton } from '@/Components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
-import { Settings2, Eye, EyeOff, Bell, BellOff, Building2, Loader2 } from 'lucide-vue-next';
 
 interface FollowedInstitution {
   id: string;
@@ -181,7 +181,7 @@ const subscriptions = useInstitutionSubscription();
 // Fetch followed institutions when modal opens
 const { data, isFetching, execute } = useApi<FollowedInstitution[]>(
   route('api.v1.admin.institutions.followed'),
-  { immediate: false }
+  { immediate: false },
 );
 
 // Refresh data when modal opens
@@ -195,8 +195,8 @@ const institutions = computed(() => data.value ?? []);
 
 // Additionally followed = followed but not duty-based
 const additionallyFollowed = computed(() => {
-  return institutions.value.filter(inst => 
-    inst.subscription.is_followed && !inst.subscription.is_duty_based
+  return institutions.value.filter(inst =>
+    inst.subscription.is_followed && !inst.subscription.is_duty_based,
   );
 });
 

@@ -14,9 +14,9 @@
         <h2 class="text-xl font-semibold tracking-tight">
           {{
             filters.selectedTenantForGantt.value.length === 0 ? $t('Visi padaliniai') :
-              filters.selectedTenantForGantt.value.length === 1 ? (availableTenants.find(t => String(t.id) === filters.selectedTenantForGantt.value[0])?.shortname ||
-                $t('Padalinys')) :
-                $t('Pasirinkti padaliniai')
+            filters.selectedTenantForGantt.value.length === 1 ? (availableTenants.find(t => String(t.id) === filters.selectedTenantForGantt.value[0])?.shortname ||
+              $t('Padalinys')) :
+            $t('Pasirinkti padaliniai')
           }} — {{ $t('laiko juosta') }}
         </h2>
         <div data-tour="gantt-filters" class="flex flex-wrap items-center gap-2 ml-auto">
@@ -48,12 +48,12 @@
         {{ $t('Pasirinkite padalinį norėdami matyti institucijų laiko juostą') }}
       </div>
       <div v-else-if="!isHidden" data-tour="gantt-chart">
-        <TimelineGanttChart :institutions="formattedInstitutions" :meetings :gaps 
+        <TimelineGanttChart :institutions="formattedInstitutions" :meetings :gaps
           :tenant-filter="filters.selectedTenantForGantt.value"
-          :show-only-with-activity="filters.showOnlyWithActivityTenant.value" 
-          :show-only-with-public-meetings="filters.showOnlyWithPublicMeetingsTenant.value" 
-          :institution-names :tenant-names :institution-tenant :institution-has-public-meetings="institutionHasPublicMeetings"
-          :institution-periodicity="institutionPeriodicity"
+          :show-only-with-activity="filters.showOnlyWithActivityTenant.value"
+          :show-only-with-public-meetings="filters.showOnlyWithPublicMeetingsTenant.value"
+          :institution-names :tenant-names :institution-tenant :institution-has-public-meetings
+          :institution-periodicity
           :duty-members="enrichedDutyMembers" :inactive-periods :show-duty-members="filters.showDutyMembersTenant.value"
           :show-activity-status="filters.showActivityStatusTenant.value"
           :empty-message="$t('Šiame padalinyje nėra institucijų')" @create-meeting="$emit('create-meeting', $event)"
@@ -75,16 +75,15 @@ import type {
   GanttInstitution,
   GanttDutyMember,
   InactivePeriod,
-  RepresentativeActivityData
+  RepresentativeActivityData,
 } from '../types';
+import { useGanttSettings } from '../Composables/useGanttSettings';
+import { useTimelineFilters } from '../Composables/useTimelineFilters';
 
 import TimelineGanttChart from './TimelineGanttChart.vue';
 import TimelineGanttSkeleton from './TimelineGanttSkeleton.vue';
 import GanttFilterDropdown from './GanttFilterDropdown.vue';
 import RepresentativeActivitySection from './RepresentativeActivitySection.vue';
-import { useGanttSettings } from '../Composables/useGanttSettings';
-import { useTimelineFilters } from '../Composables/useTimelineFilters';
-
 
 interface Props {
   availableTenants: AtstovavimosTenant[];
@@ -136,12 +135,12 @@ watch(
       // Trigger reload
       filters.loadTenantInstitutions();
     }
-  }
+  },
 );
 
 const emit = defineEmits<{
-  'create-meeting': [payload: { institution_id: string | number, suggestedAt: Date, institutionName?: string }];
-  'create-check-in': [payload: { institution_id: string | number, startDate: Date, endDate: Date }];
+  'create-meeting': [payload: { institution_id: string | number; suggestedAt: Date; institutionName?: string }];
+  'create-check-in': [payload: { institution_id: string | number; startDate: Date; endDate: Date }];
   'fullscreen': [];
 }>();
 
@@ -150,7 +149,7 @@ const formattedInstitutions = computed(() => {
   const formatted = props.tenantInstitutions.map(i => ({
     id: i.id,
     name: i.name,
-    tenant_id: i.tenant_id
+    tenant_id: i.tenant_id,
   }));
   return formatted;
 });
@@ -160,12 +159,12 @@ const formattedInstitutions = computed(() => {
 const enrichedDutyMembers = computed(() => {
   if (!props.dutyMembers) return [];
   if (!props.representativeActivity?.users) return props.dutyMembers;
-  
+
   // Build lookup map from representativeActivity users
   const activityByUserId = new Map(
-    props.representativeActivity.users.map(u => [u.id, { category: u.category, lastAction: u.last_action }])
+    props.representativeActivity.users.map(u => [u.id, { category: u.category, lastAction: u.last_action }]),
   );
-  
+
   // Enrich each duty member's user object with activity data
   return props.dutyMembers.map(dm => ({
     ...dm,
@@ -173,7 +172,7 @@ const enrichedDutyMembers = computed(() => {
       ...dm.user,
       activityCategory: activityByUserId.get(dm.user.id)?.category,
       lastAction: activityByUserId.get(dm.user.id)?.lastAction,
-    }
+    },
   }));
 });
 </script>

@@ -1,11 +1,3 @@
-<script setup lang="ts">
-import type { HTMLAttributes } from 'vue'
-import { cn } from '@/Utils/Shadcn/utils'
-import { SelectLabel, type SelectLabelProps } from 'reka-ui'
-
-const props = defineProps<SelectLabelProps & { class?: HTMLAttributes['class'] }>()
-</script>
-
 <template>
   <SelectLabel
     data-slot="select-label"
@@ -14,3 +6,12 @@ const props = defineProps<SelectLabelProps & { class?: HTMLAttributes['class'] }
     <slot />
   </SelectLabel>
 </template>
+
+<script setup lang="ts">
+import type { HTMLAttributes } from 'vue';
+import { SelectLabel, type SelectLabelProps } from 'reka-ui';
+
+import { cn } from '@/Utils/Shadcn/utils';
+
+const props = defineProps<SelectLabelProps & { class?: HTMLAttributes['class'] }>();
+</script>

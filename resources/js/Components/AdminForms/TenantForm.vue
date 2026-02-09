@@ -45,35 +45,36 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
-import { useForm } from "@inertiajs/vue3";
+import { computed } from 'vue';
+import { useForm } from '@inertiajs/vue3';
 
-import { Input } from "@/Components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
-import FormElement from "./FormElement.vue";
-import FormFieldWrapper from "./FormFieldWrapper.vue";
-import AdminForm from "./AdminForm.vue";
+import FormElement from './FormElement.vue';
+import FormFieldWrapper from './FormFieldWrapper.vue';
+import AdminForm from './AdminForm.vue';
+
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { Input } from '@/Components/ui/input';
 
 const { tenant, assignableInstitutions, rememberKey } = defineProps<{
   tenant: App.Entities.Tenant;
   assignableInstitutions: Array<App.Entities.Institution>;
-  rememberKey?: "CreateTenant";
+  rememberKey?: 'CreateTenant';
 }>();
 
 defineEmits<{
-  (event: "submit:form", form: unknown): void;
-  (event: "delete"): void;
+  (event: 'submit:form', form: unknown): void;
+  (event: 'delete'): void;
 }>();
 
 const form = rememberKey ? useForm(rememberKey, tenant) : useForm(tenant);
 
 const typeOptions = [
-  { label: "PKP", value: "pkp" },
-  { label: "Padalinys", value: "padalinys" },
-  { label: "Pagrindinis", value: "pagrindinis" },
+  { label: 'PKP', value: 'pkp' },
+  { label: 'Padalinys', value: 'padalinys' },
+  { label: 'Pagrindinis', value: 'pagrindinis' },
 ];
 
-const institutionOptions = assignableInstitutions.map((institution) => ({
+const institutionOptions = assignableInstitutions.map(institution => ({
   label: institution.name,
   value: institution.id,
 }));

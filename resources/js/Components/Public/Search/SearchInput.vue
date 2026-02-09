@@ -34,74 +34,75 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick } from 'vue'
-import { trans as $t } from 'laravel-vue-i18n'
-import { debounce } from 'lodash-es'
-import { AisSearchBox } from 'vue-instantsearch/vue3/es'
-import { Button } from '@/Components/ui/button'
-import { Input } from '@/Components/ui/input'
-import { useSearchUtils } from '@/Composables/useSearchUtils'
-import IconDismiss from '~icons/fluent/dismiss20-regular'
+import { ref, computed, nextTick } from 'vue';
+import { trans as $t } from 'laravel-vue-i18n';
+import { debounce } from 'lodash-es';
+import { AisSearchBox } from 'vue-instantsearch/vue3/es';
+
+import { Button } from '@/Components/ui/button';
+import { Input } from '@/Components/ui/input';
+import { useSearchUtils } from '@/Composables/useSearchUtils';
+import IconDismiss from '~icons/fluent/dismiss20-regular';
 
 interface SearchInputProps {
-  searchQuery: string
+  searchQuery: string;
 }
 
-const props = defineProps<SearchInputProps>()
+const props = defineProps<SearchInputProps>();
 
 const emit = defineEmits<{
-  (e: 'update:searchQuery', value: string): void
-  (e: 'clear'): void
-}>()
+  (e: 'update:searchQuery', value: string): void;
+  (e: 'clear'): void;
+}>();
 
-const { trackSearchInteraction } = useSearchUtils()
+const { trackSearchInteraction } = useSearchUtils();
 
-const searchInputRef = ref<HTMLInputElement | null>(null)
-const refineFunction = ref<((query: string) => void) | null>(null)
+const searchInputRef = ref<HTMLInputElement | null>(null);
+const refineFunction = ref<((query: string) => void) | null>(null);
 
 const isMac = computed(() => {
-  if (typeof navigator === 'undefined') return false
-  return navigator.platform?.includes('Mac') || navigator.userAgent?.includes('Mac') || false
-})
+  if (typeof navigator === 'undefined') return false;
+  return navigator.platform?.includes('Mac') || navigator.userAgent?.includes('Mac') || false;
+});
 
 // Search input handling with debouncing and minimum length check
 const debouncedSearchUpdate = debounce((value: string) => {
   // Only update search if query is long enough or empty (for clearing)
   if (value.length >= 3 || value.length === 0) {
-    emit('update:searchQuery', value)
+    emit('update:searchQuery', value);
   }
-}, 300)
+}, 300);
 
 const handleUpdateValue = (value: string) => {
   // Update UI immediately for responsiveness, but debounce the actual search
-  debouncedSearchUpdate(value)
-}
+  debouncedSearchUpdate(value);
+};
 
 const clearSearch = () => {
-  const previousQuery = props.searchQuery
-  
+  const previousQuery = props.searchQuery;
+
   // Clear the input field by calling refine with empty string
   if (refineFunction.value) {
-    refineFunction.value('')
+    refineFunction.value('');
   }
-  
-  emit('update:searchQuery', '')
-  emit('clear')
+
+  emit('update:searchQuery', '');
+  emit('clear');
 
   if (previousQuery) {
     trackSearchInteraction('search_cleared', {
-      previous_query: previousQuery
-    })
+      previous_query: previousQuery,
+    });
   }
-}
+};
 
 const focusSearchInput = async () => {
-  await nextTick()
-  searchInputRef.value?.focus()
-}
+  await nextTick();
+  searchInputRef.value?.focus();
+};
 
 defineExpose({
   focusSearchInput,
-  refineFunction
-})
+  refineFunction,
+});
 </script>

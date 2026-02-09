@@ -16,7 +16,7 @@
         <Skeleton class="h-10 w-64" />
         <Skeleton class="h-10 w-32" />
       </div>
-      
+
       <!-- Table rows or cards -->
       <div class="rounded-lg border">
         <div class="border-b p-4">

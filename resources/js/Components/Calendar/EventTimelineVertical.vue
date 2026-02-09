@@ -6,7 +6,7 @@
         <div class="w-1 h-5 bg-vusa-red rounded-full" />
         {{ $t('Renginių kalendorius') }}
       </h3>
-      
+
       <!-- Date range indicator -->
       <div class="text-xs text-zinc-400 dark:text-zinc-500">
         {{ formatDateCompact(dateRange.start) }} — {{ formatDateCompact(dateRange.end) }}
@@ -35,7 +35,7 @@
       <div class="space-y-2">
         <template v-for="(group, groupIndex) in eventGroups" :key="group.dateKey">
           <!-- Today marker - show BEFORE the first non-past group -->
-          <div 
+          <div
             v-if="shouldShowTodayMarkerBefore(groupIndex)"
             class="relative z-10 flex items-center gap-3 py-6"
           >
@@ -44,7 +44,7 @@
               <div class="absolute w-5 h-5 bg-vusa-red/20 rounded-full animate-ping" />
               <div class="w-3 h-3 bg-vusa-red rounded-full" />
             </div>
-            
+
             <!-- Today label -->
             <div class="flex-1 h-px bg-vusa-red/20" />
             <span class="px-3 py-1 text-xs font-semibold text-white bg-vusa-red rounded-full">
@@ -54,30 +54,30 @@
           </div>
 
           <!-- Date separator for new dates -->
-          <div 
+          <div
             v-if="groupIndex === 0 || !isSameDateGroup(group, eventGroups[groupIndex - 1])"
             class="flex items-center gap-3 pt-6 pb-3"
           >
             <!-- Date indicator on timeline -->
-            <div 
+            <div
               class="relative flex items-center justify-center w-10"
               :class="group.isToday ? 'z-20' : 'z-10'"
             >
-              <div 
+              <div
                 class="w-2.5 h-2.5 rounded-full"
-                :class="group.isPast 
-                  ? 'bg-zinc-300 dark:bg-zinc-600' 
-                  : group.isToday 
-                    ? 'bg-vusa-red' 
+                :class="group.isPast
+                  ? 'bg-zinc-300 dark:bg-zinc-600'
+                  : group.isToday
+                    ? 'bg-vusa-red'
                     : 'bg-vusa-red/70'"
               />
             </div>
-            
+
             <!-- Date label -->
-            <div 
+            <div
               class="text-sm font-medium"
-              :class="group.isPast 
-                ? 'text-zinc-400 dark:text-zinc-500' 
+              :class="group.isPast
+                ? 'text-zinc-400 dark:text-zinc-500'
                 : 'text-zinc-700 dark:text-zinc-300'"
             >
               {{ formatDateFull(group.date) }}
@@ -91,14 +91,14 @@
             :href="route('calendar.event', { calendar: event.id, lang: locale })"
             class="group relative flex items-center gap-4 ml-10 py-3 px-4 rounded-xl border transition-all duration-200"
             :class="[
-              group.isPast 
-                ? 'bg-zinc-50/50 dark:bg-zinc-800/30 border-zinc-100 dark:border-zinc-800 opacity-70 hover:opacity-100' 
+              group.isPast
+                ? 'bg-zinc-50/50 dark:bg-zinc-800/30 border-zinc-100 dark:border-zinc-800 opacity-70 hover:opacity-100'
                 : 'bg-white dark:bg-zinc-800/80 border-zinc-200 dark:border-zinc-700 hover:border-vusa-red/40 hover:shadow-sm',
               group.isNextUpcoming && event === group.events[0] ? 'ring-1 ring-vusa-red/20' : ''
             ]"
           >
             <!-- Upcoming badge -->
-            <div 
+            <div
               v-if="group.isNextUpcoming && event === group.events[0]"
               class="absolute -top-2 right-3 px-2 py-0.5 bg-vusa-red text-white text-[10px] font-semibold rounded-full"
             >
@@ -107,15 +107,15 @@
 
             <!-- Event thumbnail -->
             <div class="flex-shrink-0 w-11 h-11 rounded-lg overflow-hidden bg-zinc-100 dark:bg-zinc-700">
-              <img 
+              <img
                 v-if="getEventImage(event)"
                 :src="getEventImage(event)!"
                 :alt="getEventTitle(event)"
                 class="w-full h-full object-cover"
                 loading="lazy"
               >
-              <div 
-                v-else 
+              <div
+                v-else
                 class="w-full h-full bg-gradient-to-br from-vusa-red/10 to-vusa-red/20 flex items-center justify-center"
               >
                 <Calendar class="w-5 h-5 text-vusa-red/50" />
@@ -124,13 +124,13 @@
 
             <!-- Event content -->
             <div class="flex-1 min-w-0">
-              <h4 
+              <h4
                 class="font-medium text-sm line-clamp-2 leading-snug transition-colors group-hover:text-vusa-red"
                 :class="group.isPast ? 'text-zinc-500 dark:text-zinc-400' : 'text-zinc-800 dark:text-zinc-100'"
               >
                 {{ getEventTitle(event) }}
               </h4>
-              
+
               <div class="flex items-center gap-2 mt-1 text-xs" :class="group.isPast ? 'text-zinc-400 dark:text-zinc-500' : 'text-zinc-500 dark:text-zinc-400'">
                 <Clock class="w-3 h-3" />
                 <span>{{ formatEventTime(event.date) }}</span>
@@ -147,7 +147,7 @@
         </template>
 
         <!-- Today marker at the end (when all events are in the past) -->
-        <div 
+        <div
           v-if="shouldShowTodayMarkerAtEnd"
           class="relative z-10 flex items-center gap-3 py-6"
         >
@@ -156,7 +156,7 @@
             <div class="absolute w-5 h-5 bg-vusa-red/20 rounded-full animate-ping" />
             <div class="w-3 h-3 bg-vusa-red rounded-full" />
           </div>
-          
+
           <!-- Today label -->
           <div class="flex-1 h-px bg-vusa-red/20" />
           <span class="px-3 py-1 text-xs font-semibold text-white bg-vusa-red rounded-full">
@@ -167,15 +167,19 @@
       </div>
 
       <!-- Empty state -->
-      <div 
+      <div
         v-if="eventGroups.length === 0"
         class="flex flex-col items-center justify-center py-16 text-center"
       >
         <div class="w-14 h-14 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-4">
           <CalendarX class="w-6 h-6 text-zinc-400 dark:text-zinc-500" />
         </div>
-        <p class="text-zinc-500 dark:text-zinc-400 text-sm">{{ $t('Nėra renginių') }}</p>
-        <p class="text-xs text-zinc-400 dark:text-zinc-500 mt-1">{{ $t('Šiuo laikotarpiu renginių nerasta') }}</p>
+        <p class="text-zinc-500 dark:text-zinc-400 text-sm">
+          {{ $t('Nėra renginių') }}
+        </p>
+        <p class="text-xs text-zinc-400 dark:text-zinc-500 mt-1">
+          {{ $t('Šiuo laikotarpiu renginių nerasta') }}
+        </p>
       </div>
     </div>
 
@@ -207,22 +211,22 @@
 </template>
 
 <script setup lang="ts">
-import { trans as $t } from "laravel-vue-i18n";
-import { computed, ref } from "vue";
-import { format, addDays, subDays, startOfDay, isAfter, isBefore, isSameDay, parseISO } from "date-fns";
-import { lt, enUS } from "date-fns/locale";
-import { 
-  ArrowUp, 
-  ArrowDown, 
-  RefreshCw, 
-  Calendar, 
-  Clock, 
-  MapPin, 
+import { trans as $t } from 'laravel-vue-i18n';
+import { computed, ref } from 'vue';
+import { format, addDays, subDays, startOfDay, isAfter, isBefore, isSameDay, parseISO } from 'date-fns';
+import { lt, enUS } from 'date-fns/locale';
+import {
+  ArrowUp,
+  ArrowDown,
+  RefreshCw,
+  Calendar,
+  Clock,
+  MapPin,
   ChevronRight,
-  CalendarX
-} from "lucide-vue-next";
+  CalendarX,
+} from 'lucide-vue-next';
 
-import { Button } from "@/Components/ui/button";
+import { Button } from '@/Components/ui/button';
 
 const props = defineProps<{
   events: App.Entities.Calendar[];
@@ -264,7 +268,7 @@ const nextUpcomingDate = computed(() => {
   const upcomingEvents = props.events
     .filter(e => !isBefore(new Date(e.date), today.value))
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-  
+
   return upcomingEvents[0] ? startOfDay(new Date(upcomingEvents[0].date)) : null;
 });
 
@@ -280,18 +284,18 @@ const eventGroups = computed(() => {
   }> = [];
 
   // Filter events within date range
-  const rangeEvents = props.events.filter(event => {
+  const rangeEvents = props.events.filter((event) => {
     const eventDate = startOfDay(new Date(event.date));
     return !isBefore(eventDate, dateRange.value.start) && !isAfter(eventDate, dateRange.value.end);
   });
 
   // Group by date
   const groupMap = new Map<string, App.Entities.Calendar[]>();
-  
-  rangeEvents.forEach(event => {
+
+  rangeEvents.forEach((event) => {
     const eventDate = startOfDay(new Date(event.date));
     const dateKey = format(eventDate, 'yyyy-MM-dd');
-    
+
     if (!groupMap.has(dateKey)) {
       groupMap.set(dateKey, []);
     }
@@ -331,25 +335,25 @@ const todayMarkerShownRef = ref(false);
 const shouldShowTodayMarkerBefore = (groupIndex: number): boolean => {
   const groups = eventGroups.value;
   if (groups.length === 0) return false;
-  
+
   const currentGroup = groups[groupIndex];
   if (!currentGroup) return false;
-  
+
   // Check if this is the first non-past group
   const isFirstNonPast = !currentGroup.isPast;
-  
+
   // Check if all previous groups are past
   const allPreviousArePast = groups.slice(0, groupIndex).every(g => g.isPast);
-  
+
   // Check if there's at least one past group before (otherwise marker would be at very top)
   const hasPastGroupsBefore = groupIndex > 0 && groups.slice(0, groupIndex).some(g => g.isPast);
-  
+
   // Show today marker if this is the transition point from past to non-past events
   // OR if all events are in the past and this is the last group
   if (isFirstNonPast && allPreviousArePast && hasPastGroupsBefore) {
     return true;
   }
-  
+
   return false;
 };
 
@@ -357,7 +361,7 @@ const shouldShowTodayMarkerBefore = (groupIndex: number): boolean => {
 const shouldShowTodayMarkerAtEnd = computed(() => {
   const groups = eventGroups.value;
   if (groups.length === 0) return false;
-  
+
   // Show at end only if ALL events are in the past
   return groups.every(g => g.isPast);
 });
@@ -404,7 +408,8 @@ const formatEventTime = (dateStr: string): string => {
   try {
     const date = parseISO(dateStr);
     return format(date, 'HH:mm');
-  } catch {
+  }
+  catch {
     return '';
   }
 };

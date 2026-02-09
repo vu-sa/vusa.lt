@@ -5,11 +5,19 @@
  * Actions are automatically filtered based on user permissions.
  */
 
-import { computed, type Component } from 'vue'
-import { usePage, router } from '@inertiajs/vue3'
-import { trans as $t } from 'laravel-vue-i18n'
+import { computed, type Component } from 'vue';
+import { usePage, router } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
 
 // Import icons directly for tree-shaking
+import {
+  Home,
+  Search,
+  Settings,
+  Plus,
+  LayoutDashboard,
+} from 'lucide-vue-next';
+
 import {
   MeetingIcon,
   NewsIcon,
@@ -19,62 +27,54 @@ import {
   DutyIcon,
   TaskIcon,
   CalendarIcon,
-  AgendaItemIcon
-} from '@/Components/icons'
+  AgendaItemIcon,
+} from '@/Components/icons';
 
-import {
-  Home,
-  Search,
-  Settings,
-  Plus,
-  LayoutDashboard
-} from 'lucide-vue-next'
-
-export type ActionCategory = 'navigation' | 'create' | 'action'
+export type ActionCategory = 'navigation' | 'create' | 'action';
 
 export interface CommandAction {
-  id: string
-  label: string
-  keywords: string[]
-  icon: Component
-  category: ActionCategory
-  action: () => void
-  shortcut?: string
+  id: string;
+  label: string;
+  keywords: string[];
+  icon: Component;
+  category: ActionCategory;
+  action: () => void;
+  shortcut?: string;
 }
 
 interface AuthCan {
   create?: {
-    meeting?: boolean
-    news?: boolean
-    reservation?: boolean
-    institution?: boolean
-    duty?: boolean
-    user?: boolean
-  }
+    meeting?: boolean;
+    news?: boolean;
+    reservation?: boolean;
+    institution?: boolean;
+    duty?: boolean;
+    user?: boolean;
+  };
   read?: {
-    meeting?: boolean
-    user?: boolean
-    institution?: boolean
-    duty?: boolean
-    task?: boolean
-    reservation?: boolean
-    calendar?: boolean
-    news?: boolean
-  }
+    meeting?: boolean;
+    user?: boolean;
+    institution?: boolean;
+    duty?: boolean;
+    task?: boolean;
+    reservation?: boolean;
+    calendar?: boolean;
+    news?: boolean;
+  };
 }
 
 /**
  * Returns computed list of available command actions based on permissions
  */
 export function useCommandActions() {
-  const page = usePage()
+  const page = usePage();
 
   const can = computed<AuthCan>(() => {
-    return (page.props.auth as { can?: AuthCan })?.can || {}
-  })
+    return (page.props.auth as { can?: AuthCan })?.can || {};
+  });
 
   const actions = computed<CommandAction[]>(() => {
-    const result: CommandAction[] = []
+    const result: CommandAction[] = [];
 
     // ==================
     // Navigation Actions
@@ -87,8 +87,8 @@ export function useCommandActions() {
       keywords: ['home', 'dashboard', 'pradzia', 'pagrindinis'],
       icon: Home,
       category: 'navigation',
-      action: () => router.visit(route('dashboard'))
-    })
+      action: () => router.visit(route('dashboard')),
+    });
 
     // Representation dashboard
     result.push({
@@ -97,8 +97,8 @@ export function useCommandActions() {
       keywords: ['visak', 'representation', 'atstovavimas', 'posedziai'],
       icon: LayoutDashboard,
       category: 'navigation',
-      action: () => router.visit(route('dashboard.atstovavimas'))
-    })
+      action: () => router.visit(route('dashboard.atstovavimas')),
+    });
 
     // Meetings
     if (can.value.read?.meeting) {
@@ -108,8 +108,8 @@ export function useCommandActions() {
         keywords: ['meetings', 'posedziai', 'susirinkimai'],
         icon: MeetingIcon,
         category: 'navigation',
-        action: () => router.visit(route('meetings.index'))
-      })
+        action: () => router.visit(route('meetings.index')),
+      });
     }
 
     // Search meetings
@@ -120,8 +120,8 @@ export function useCommandActions() {
         keywords: ['search', 'meetings', 'ieskoti', 'posedziai', 'paieska'],
         icon: Search,
         category: 'navigation',
-        action: () => router.visit(route('meetings.search'))
-      })
+        action: () => router.visit(route('meetings.search')),
+      });
     }
 
     // Institutions
@@ -132,8 +132,8 @@ export function useCommandActions() {
         keywords: ['institutions', 'institucijos', 'organizacijos'],
         icon: InstitutionIcon,
         category: 'navigation',
-        action: () => router.visit(route('institutions.index'))
-      })
+        action: () => router.visit(route('institutions.index')),
+      });
     }
 
     // Users
@@ -144,8 +144,8 @@ export function useCommandActions() {
         keywords: ['users', 'naudotojai', 'vartotojai', 'zmones'],
         icon: UserIcon,
         category: 'navigation',
-        action: () => router.visit(route('users.index'))
-      })
+        action: () => router.visit(route('users.index')),
+      });
     }
 
     // Duties
@@ -156,8 +156,8 @@ export function useCommandActions() {
         keywords: ['duties', 'pareigybes', 'pareigos'],
         icon: DutyIcon,
         category: 'navigation',
-        action: () => router.visit(route('duties.index'))
-      })
+        action: () => router.visit(route('duties.index')),
+      });
     }
 
     // Tasks
@@ -168,8 +168,8 @@ export function useCommandActions() {
         keywords: ['tasks', 'uzduotys', 'darbai'],
         icon: TaskIcon,
         category: 'navigation',
-        action: () => router.visit(route('tasks.index'))
-      })
+        action: () => router.visit(route('tasks.index')),
+      });
     }
 
     // Reservations
@@ -180,8 +180,8 @@ export function useCommandActions() {
         keywords: ['reservations', 'rezervacijos', 'uzsakymai'],
         icon: ReservationIcon,
         category: 'navigation',
-        action: () => router.visit(route('reservations.index'))
-      })
+        action: () => router.visit(route('reservations.index')),
+      });
     }
 
     // Calendar
@@ -192,8 +192,8 @@ export function useCommandActions() {
         keywords: ['calendar', 'kalendorius', 'ivykiai'],
         icon: CalendarIcon,
         category: 'navigation',
-        action: () => router.visit(route('calendar.index'))
-      })
+        action: () => router.visit(route('calendar.index')),
+      });
     }
 
     // News
@@ -204,8 +204,8 @@ export function useCommandActions() {
         keywords: ['news', 'naujienos', 'straipsniai'],
         icon: NewsIcon,
         category: 'navigation',
-        action: () => router.visit(route('news.index'))
-      })
+        action: () => router.visit(route('news.index')),
+      });
     }
 
     // Profile - always available
@@ -215,8 +215,8 @@ export function useCommandActions() {
       keywords: ['profile', 'profilis', 'nustatymai', 'settings'],
       icon: Settings,
       category: 'navigation',
-      action: () => router.visit(route('profile'))
-    })
+      action: () => router.visit(route('profile')),
+    });
 
     // ==================
     // Create Actions
@@ -230,8 +230,8 @@ export function useCommandActions() {
         keywords: ['create', 'new', 'meeting', 'naujas', 'posedis', 'sukurti'],
         icon: Plus,
         category: 'create',
-        action: () => router.visit(route('meetings.create'))
-      })
+        action: () => router.visit(route('meetings.create')),
+      });
     }
 
     // Create news
@@ -242,8 +242,8 @@ export function useCommandActions() {
         keywords: ['create', 'new', 'news', 'nauja', 'naujiena', 'sukurti', 'straipsnis'],
         icon: Plus,
         category: 'create',
-        action: () => router.visit(route('news.create'))
-      })
+        action: () => router.visit(route('news.create')),
+      });
     }
 
     // Create reservation
@@ -254,8 +254,8 @@ export function useCommandActions() {
         keywords: ['create', 'new', 'reservation', 'nauja', 'rezervacija', 'sukurti'],
         icon: Plus,
         category: 'create',
-        action: () => router.visit(route('reservations.create'))
-      })
+        action: () => router.visit(route('reservations.create')),
+      });
     }
 
     // Create institution
@@ -266,8 +266,8 @@ export function useCommandActions() {
         keywords: ['create', 'new', 'institution', 'nauja', 'institucija', 'sukurti'],
         icon: Plus,
         category: 'create',
-        action: () => router.visit(route('institutions.create'))
-      })
+        action: () => router.visit(route('institutions.create')),
+      });
     }
 
     // Create duty
@@ -278,38 +278,38 @@ export function useCommandActions() {
         keywords: ['create', 'new', 'duty', 'nauja', 'pareigybe', 'sukurti'],
         icon: Plus,
         category: 'create',
-        action: () => router.visit(route('duties.create'))
-      })
+        action: () => router.visit(route('duties.create')),
+      });
     }
 
-    return result
-  })
+    return result;
+  });
 
   /**
    * Filter actions by search query
    */
   const filterActions = (query: string): CommandAction[] => {
     if (!query.trim()) {
-      return actions.value
+      return actions.value;
     }
 
-    const lowerQuery = query.toLowerCase().trim()
+    const lowerQuery = query.toLowerCase().trim();
 
     return actions.value.filter((action) => {
       // Check label
       if (action.label.toLowerCase().includes(lowerQuery)) {
-        return true
+        return true;
       }
 
       // Check keywords
-      return action.keywords.some((keyword) =>
-        keyword.toLowerCase().includes(lowerQuery)
-      )
-    })
-  }
+      return action.keywords.some(keyword =>
+        keyword.toLowerCase().includes(lowerQuery),
+      );
+    });
+  };
 
   return {
     actions,
-    filterActions
-  }
+    filterActions,
+  };
 }

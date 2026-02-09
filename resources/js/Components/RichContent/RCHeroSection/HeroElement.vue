@@ -31,10 +31,12 @@
 </template>
 
 <script setup lang="ts">
-import type { Hero } from '@/Types/contentParts';
-import SmartLink from '../../Public/SmartLink.vue';
-import { Button } from '@/Components/ui/button';
 import { computed } from 'vue';
+
+import SmartLink from '../../Public/SmartLink.vue';
+
+import type { Hero } from '@/Types/contentParts';
+import { Button } from '@/Components/ui/button';
 
 const { element } = defineProps<{
   element: Hero;

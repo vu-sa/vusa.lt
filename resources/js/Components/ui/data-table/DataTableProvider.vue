@@ -3,56 +3,58 @@
     <!-- Table header with filters and actions -->
     <div v-if="$slots.filters || $slots.actions" class="flex flex-wrap items-center justify-between gap-2">
       <div v-if="$slots.filters" class="flex flex-wrap items-center gap-2">
-        <slot name="filters"></slot>
+        <slot name="filters" />
       </div>
       <div v-if="$slots.actions" class="flex flex-wrap items-center gap-2">
-        <slot name="actions"></slot>
+        <slot name="actions" />
       </div>
     </div>
-    
+
     <!-- Client-side table -->
     <DataTable
       v-if="!isServerSide"
       ref="dataTableRef"
-      :columns="columns"
-      :data="data"
-      :row-class-name="rowClassName"
-      :page-size="pageSize"
+      :columns
+      :data
+      :row-class-name
+      :page-size
       :pagination="enablePagination"
-      :empty-message="emptyMessage"
-      :enable-filtering="enableFiltering"
-      :enable-column-visibility="enableColumnVisibility"
+      :empty-message
+      :enable-filtering
+      :enable-column-visibility
       :initial-sort="clientSorting"
-      :global-filter="globalFilter"
+      :global-filter
       :manual-sorting="false"
-      :enable-row-selection="enableRowSelection"
-      :enable-multi-row-selection="enableMultiRowSelection"
-      :row-selection-state="rowSelectionState"
-      :initial-row-selection="initialRowSelection"
-      :get-row-id="getRowId"
-      :enable-row-selection-column="enableRowSelectionColumn"
+      :enable-row-selection
+      :enable-multi-row-selection
+      :row-selection-state
+      :initial-row-selection
+      :get-row-id
+      :enable-row-selection-column
       @update:sorting="handleSortingChange"
       @update:global-filter="handleGlobalFilterChange"
-      @update:rowSelection="handleRowSelectionChange"
+      @update:row-selection="handleRowSelectionChange"
     >
       <template #empty>
         <slot name="empty">
           <div class="flex flex-col items-center justify-center py-6 text-center">
-            <p class="text-sm text-muted-foreground">{{ emptyMessage || $t('No results found.') }}</p>
+            <p class="text-sm text-muted-foreground">
+              {{ emptyMessage || $t('No results found.') }}
+            </p>
           </div>
         </slot>
       </template>
     </DataTable>
-    
+
     <!-- Server side table with custom pagination -->
     <DataTable
       v-else
       ref="dataTableRef"
-      :columns="columns"
-      :data="data"
-      :row-class-name="rowClassName"
-      :enable-filtering="enableFiltering"
-      :enable-column-visibility="enableColumnVisibility"
+      :columns
+      :data
+      :row-class-name
+      :enable-filtering
+      :enable-column-visibility
       :manual-sorting="true"
       :manual-filtering="true"
       :manual-pagination="true"
@@ -61,18 +63,18 @@
       :row-count="totalItems"
       :page-count="totalItems ? Math.ceil(totalItems / pageSize) : undefined"
       :pagination="true"
-      :empty-message="emptyMessage"
-      :global-filter="globalFilter"
-      :enable-row-selection="enableRowSelection"
-      :enable-multi-row-selection="enableMultiRowSelection"
-      :row-selection-state="rowSelectionState"
-      :initial-row-selection="initialRowSelection"
-      :get-row-id="getRowId"
-      :enable-row-selection-column="enableRowSelectionColumn"
+      :empty-message
+      :global-filter
+      :enable-row-selection
+      :enable-multi-row-selection
+      :row-selection-state
+      :initial-row-selection
+      :get-row-id
+      :enable-row-selection-column
       @update:sorting="handleSortingChange"
       @update:global-filter="handleGlobalFilterChange"
       @update:pagination="handlePaginationChange"
-      @update:rowSelection="handleRowSelectionChange"
+      @update:row-selection="handleRowSelectionChange"
     >
       <template #pagination>
         <!-- Server-side pagination -->
@@ -88,25 +90,25 @@
               <strong>{{ totalItems }}</strong>
               {{ $t('results') }}
             </div>
-            <Pagination 
+            <Pagination
               v-slot="{ page }"
               :items-per-page="pageSize"
-              :total="totalItems" 
+              :total="totalItems"
               :default-page="(serverPagination?.pageIndex || 0) + 1"
               @update:page="(newPage: number) => emit('page-change', newPage - 1)"
             >
               <PaginationContent>
                 <PaginationPrevious />
-                
+
                 <div class="flex items-center text-sm font-medium px-4">
                   {{ $t('Page') }} {{ page }} {{ $t('of') }} {{ Math.ceil(totalItems / pageSize) }}
                 </div>
-                
+
                 <PaginationNext />
               </PaginationContent>
             </Pagination>
           </template>
-          
+
           <!-- Show empty state when no results -->
           <template v-else>
             <div class="text-sm text-muted-foreground">
@@ -115,11 +117,13 @@
           </template>
         </div>
       </template>
-      
+
       <template #empty>
         <slot name="empty">
           <div class="flex flex-col items-center justify-center py-6 text-center">
-            <p class="text-sm text-muted-foreground">{{ emptyMessage || $t('No results found.') }}</p>
+            <p class="text-sm text-muted-foreground">
+              {{ emptyMessage || $t('No results found.') }}
+            </p>
           </div>
         </slot>
       </template>
@@ -133,6 +137,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import type { ColumnDef, SortingState, PaginationState, RowSelectionState } from '@tanstack/vue-table';
 
 import DataTable from './DataTable.vue';
+
 import { Button } from '@/Components/ui/button';
 import {
   Pagination,
@@ -144,45 +149,45 @@ import {
 
 const props = defineProps<{
   // Data props
-  columns: ColumnDef<TData, any>[],
-  data: TData[],
-  
+  columns: ColumnDef<TData, any>[];
+  data: TData[];
+
   // Optional customization
-  rowClassName?: (row: TData) => string,
-  emptyMessage?: string,
-  
+  rowClassName?: (row: TData) => string;
+  emptyMessage?: string;
+
   // Pagination config
-  enablePagination?: boolean,
-  pageSize?: number,
-  
+  enablePagination?: boolean;
+  pageSize?: number;
+
   // Feature flags
-  enableFiltering?: boolean,
-  enableColumnVisibility?: boolean,
-  
+  enableFiltering?: boolean;
+  enableColumnVisibility?: boolean;
+
   // Server-side related props
-  isServerSide?: boolean,
-  totalItems?: number,
+  isServerSide?: boolean;
+  totalItems?: number;
   serverPagination?: {
-    pageIndex: number,
-    pageSize: number
-  },
-  serverSorting?: SortingState,
-  globalFilter?: string,
-  
+    pageIndex: number;
+    pageSize: number;
+  };
+  serverSorting?: SortingState;
+  globalFilter?: string;
+
   // Row selection props
-  enableRowSelection?: boolean,
-  enableMultiRowSelection?: boolean,
-  enableRowSelectionColumn?: boolean,
-  rowSelectionState?: RowSelectionState,
-  initialRowSelection?: RowSelectionState,
-  getRowId?: (originalRow: TData, index: number, parent?: any) => string
+  enableRowSelection?: boolean;
+  enableMultiRowSelection?: boolean;
+  enableRowSelectionColumn?: boolean;
+  rowSelectionState?: RowSelectionState;
+  initialRowSelection?: RowSelectionState;
+  getRowId?: (originalRow: TData, index: number, parent?: any) => string;
 }>();
 
 const emit = defineEmits<{
-  'update:sorting': [sorting: SortingState],
-  'update:global-filter': [filter: string],
-  'page-change': [pageIndex: number],
-  'update:rowSelection': [selection: RowSelectionState]
+  'update:sorting': [sorting: SortingState];
+  'update:global-filter': [filter: string];
+  'page-change': [pageIndex: number];
+  'update:rowSelection': [selection: RowSelectionState];
 }>();
 
 // Default values
@@ -200,10 +205,10 @@ watch(() => props.globalFilter, (newValue) => {
 // Convert server sorting to client format if provided
 const clientSorting = computed(() => {
   if (!props.serverSorting) return undefined;
-  
+
   return props.serverSorting.map(item => ({
     id: item.id,
-    desc: item.desc
+    desc: item.desc,
   }));
 });
 
@@ -232,7 +237,7 @@ const handleGlobalFilterChange = (filter: string) => {
   emit('update:global-filter', filter);
 };
 
-const handlePaginationChange = (pagination: { pageIndex: number, pageSize: number }) => {
+const handlePaginationChange = (pagination: { pageIndex: number; pageSize: number }) => {
   emit('page-change', pagination.pageIndex);
 };
 

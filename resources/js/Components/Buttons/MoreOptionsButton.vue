@@ -1,7 +1,7 @@
 <template>
   <DropdownMenu>
     <DropdownMenuTrigger as-child>
-      <Button :size="small ? 'icon-xs' : 'icon-sm'" :disabled="disabled" variant="ghost" class="rounded-full" @click.stop>
+      <Button :size="small ? 'icon-xs' : 'icon-sm'" :disabled variant="ghost" class="rounded-full" @click.stop>
         <IFluentMoreHorizontal24Filled />
       </Button>
     </DropdownMenuTrigger>
@@ -34,24 +34,26 @@
       </AlertDialogHeader>
       <AlertDialogFooter>
         <AlertDialogCancel>{{ $t('forms.cancel') }}</AlertDialogCancel>
-        <AlertDialogAction @click="$emit('deleteClick')">{{ $t('forms.delete') }}</AlertDialogAction>
+        <AlertDialogAction @click="$emit('deleteClick')">
+          {{ $t('forms.delete') }}
+        </AlertDialogAction>
       </AlertDialogFooter>
     </AlertDialogContent>
   </AlertDialog>
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
-import type { Component } from "vue";
+import { ref } from 'vue';
+import type { Component } from 'vue';
 
-import { Button } from "@/Components/ui/button";
+import { Button } from '@/Components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/Components/ui/dropdown-menu";
+} from '@/Components/ui/dropdown-menu';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -61,7 +63,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/Components/ui/alert-dialog";
+} from '@/Components/ui/alert-dialog';
 
 interface MoreOption {
   label: string;
@@ -70,9 +72,9 @@ interface MoreOption {
 }
 
 defineEmits<{
-  (event: "editClick"): void;
-  (event: "deleteClick"): void;
-  (event: "moreOptionClick", key: string): void;
+  (event: 'editClick'): void;
+  (event: 'deleteClick'): void;
+  (event: 'moreOptionClick', key: string): void;
 }>();
 
 defineProps<{

@@ -57,23 +57,23 @@
 </template>
 
 <script setup lang="tsx">
-import { trans as $t } from "laravel-vue-i18n";
-import { type ColumnDef } from '@tanstack/vue-table';
-import { ref, computed } from "vue";
-import { Link } from "@inertiajs/vue3";
+import { trans as $t } from 'laravel-vue-i18n';
+import type { ColumnDef } from '@tanstack/vue-table';
+import { ref, computed } from 'vue';
+import { Link } from '@inertiajs/vue3';
 import { Users as UsersIcon, Eye as EyeIcon, UserPlus as UserPlusIcon } from 'lucide-vue-next';
 
-import IndexTablePage from "@/Components/Layouts/IndexTablePage.vue";
-import { createStandardActionsColumn } from "@/Composables/useTableActions";
+import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
+import { createStandardActionsColumn } from '@/Composables/useTableActions';
 import {
   createTextColumn,
   createTenantColumn,
 } from '@/Utils/DataTableColumns';
-import {
-  type IndexTablePageProps
-} from "@/Types/TableConfigTypes";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/Components/ui/card";
-import { Button } from "@/Components/ui/button";
+import type {
+  IndexTablePageProps,
+} from '@/Types/TableConfigTypes';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
+import { Button } from '@/Components/ui/button';
 
 const props = defineProps<{
   forms: {
@@ -105,20 +105,20 @@ const getRowId = (row: App.Entities.Form) => {
 };
 
 const columns = computed<ColumnDef<App.Entities.Form, any>[]>(() => [
-  createTextColumn<App.Entities.Form>("name", {
-    title: $t("forms.fields.name"),
+  createTextColumn<App.Entities.Form>('name', {
+    title: $t('forms.fields.name'),
     width: 300,
   }),
-  createTextColumn<App.Entities.Form>("path", {
-    title: $t("Nuoroda"),
+  createTextColumn<App.Entities.Form>('path', {
+    title: $t('Nuoroda'),
     width: 200,
   }),
   createTenantColumn<App.Entities.Form>(),
-  createStandardActionsColumn<App.Entities.Form>("forms", {
+  createStandardActionsColumn<App.Entities.Form>('forms', {
     canView: true,
     canEdit: true,
     canDelete: true,
-  })
+  }),
 ]);
 
 const tableConfig = computed<IndexTablePageProps<App.Entities.Form>>(() => {
@@ -138,7 +138,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Form>>(() => {
     enableColumnVisibility: false,
     enableRowSelection: false,
 
-    headerTitle: "Formos",
+    headerTitle: 'Formos',
     createRoute: route('forms.create'),
     canCreate: true,
   };

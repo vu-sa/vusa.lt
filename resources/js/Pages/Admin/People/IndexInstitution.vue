@@ -13,8 +13,6 @@
       </DataTableFilter>
     </template>
 
-
-
     <!-- <template #emptyDescription>
       {{ $t('No institutions found. You can add a new institution using the button above.') }}
     </template> -->
@@ -22,28 +20,28 @@
 </template>
 
 <script setup lang="tsx">
-import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
-import { type ColumnDef } from '@tanstack/vue-table';
-import { ref, computed, watch, capitalize } from "vue";
-import { usePage } from "@inertiajs/vue3";
+import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
+import type { ColumnDef } from '@tanstack/vue-table';
+import { ref, computed, watch, capitalize } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 import {
-  BuildingIcon
+  BuildingIcon,
 } from 'lucide-vue-next';
 
-import { formatStaticTime } from "@/Utils/IntlTime";
-import DataTableFilter from "@/Components/ui/data-table/DataTableFilter.vue";
-import { Badge } from "@/Components/ui/badge";
-import IndexTablePage from "@/Components/Layouts/IndexTablePage.vue";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
-import { createStandardActionsColumn } from "@/Composables/useTableActions";
+import { formatStaticTime } from '@/Utils/IntlTime';
+import DataTableFilter from '@/Components/ui/data-table/DataTableFilter.vue';
+import { Badge } from '@/Components/ui/badge';
+import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
+import { createStandardActionsColumn } from '@/Composables/useTableActions';
 import {
   createTitleColumn,
   createTenantColumn,
-  createTagsColumn
+  createTagsColumn,
 } from '@/Utils/DataTableColumns';
-import {
-  type IndexTablePageProps,
-} from "@/Types/TableConfigTypes";
+import type {
+  IndexTablePageProps,
+} from '@/Types/TableConfigTypes';
 
 const props = defineProps<{
   data: App.Entities.Institution[];
@@ -77,7 +75,7 @@ const selectedTenantIds = ref<number[]>(props.filters?.['tenant.id'] || []);
 
 // Filter options computed values
 const typeOptions = computed(() => {
-  return props.types.map((type) => ({
+  return props.types.map(type => ({
     label: $t(type.title),
     value: type.id,
   }));
@@ -85,7 +83,7 @@ const typeOptions = computed(() => {
 
 const tenantOptions = computed(() => {
   const tenants = usePage().props.tenants || [];
-  return tenants.map((tenant) => ({
+  return tenants.map(tenant => ({
     label: $t(tenant.shortname),
     value: tenant.id,
   }));
@@ -99,19 +97,21 @@ const getRowId = (row: App.Entities.Institution) => {
 // Table columns
 const columns = computed<ColumnDef<App.Entities.Institution, any>[]>(() => [
   createTitleColumn<App.Entities.Institution>({
-    accessorKey: "name",
-    routeName: "institutions.edit",
+    accessorKey: 'name',
+    routeName: 'institutions.edit',
     width: 300,
     enableSorting: true,
     cell: ({ row }) => {
-      const name = row.getValue("name");
+      const name = row.getValue('name');
       return (
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
               <div class="max-w-[290px] truncate">
-                <a href={route("institutions.edit", { id: row.original.id })}
-                  class="font-medium hover:underline">
+                <a
+                  href={route('institutions.edit', { id: row.original.id })}
+                  class="font-medium hover:underline"
+                >
                   {name}
                 </a>
               </div>
@@ -122,38 +122,40 @@ const columns = computed<ColumnDef<App.Entities.Institution, any>[]>(() => [
           </Tooltip>
         </TooltipProvider>
       );
-    }
+    },
   }),
   createTenantColumn({
     enableSorting: false,
     cell: ({ row }) => {
-      const tenant = row.original.tenant;
-      return tenant ? (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span class="flex items-center gap-1">
-                {tenant.logo_url && <img src={tenant.logo_url} alt={tenant.shortname} class="h-4 w-4 rounded-full" />}
-                <span class="max-w-[150px] truncate">{$t(tenant.shortname)}</span>
-              </span>
-            </TooltipTrigger>
-            <TooltipContent side="top" align="start">
-              <p>{$t(tenant.shortname)}</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      ) : "";
+      const { tenant } = row.original;
+      return tenant
+        ? (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span class="flex items-center gap-1">
+                    {tenant.logo_url && <img src={tenant.logo_url} alt={tenant.shortname} class="h-4 w-4 rounded-full" />}
+                    <span class="max-w-[150px] truncate">{$t(tenant.shortname)}</span>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent side="top" align="start">
+                  <p>{$t(tenant.shortname)}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )
+        : '';
     },
   }),
-  createTagsColumn("types", {
-    title: $tChoice("forms.fields.type", 2),
-    labelKey: "title",
+  createTagsColumn('types', {
+    title: $tChoice('forms.fields.type', 2),
+    labelKey: 'title',
     enableSorting: false,
     cell: ({ row }) => {
       const types = row.original.types || [];
       return (
         <div class="flex flex-wrap gap-1">
-          {types.map((type) => (
+          {types.map(type => (
             <Badge variant="outline" key={type.id}>
               {$t(type.title)}
             </Badge>
@@ -161,39 +163,46 @@ const columns = computed<ColumnDef<App.Entities.Institution, any>[]>(() => [
         </div>
       );
     },
-    width: 200
+    width: 200,
   }),
   {
-    id: "meetings",
-    header: () => $t("Meetings"),
+    id: 'meetings',
+    header: () => $t('Meetings'),
     cell: ({ row }) => {
       const meetings = row.original.meetings || [];
       if (meetings.length === 0) return null;
 
       return (
         <div class="flex flex-wrap items-center gap-2">
-          {meetings.slice(0, 3).map((meeting) => (
+          {meetings.slice(0, 3).map(meeting => (
             <a
               key={meeting.id}
               class="hover:underline text-xs px-2 py-1 rounded-md bg-muted"
-              href={route("meetings.show", meeting.id)}
+              href={route('meetings.show', meeting.id)}
             >
               {formatStaticTime(meeting.start_time)}
             </a>
           ))}
-          {meetings.length > 3 && <span class="text-xs text-muted-foreground">+{meetings.length - 3} more</span>}
+          {meetings.length > 3 && (
+            <span class="text-xs text-muted-foreground">
+              +
+              {meetings.length - 3}
+              {' '}
+              more
+            </span>
+          )}
         </div>
       );
     },
     size: 250,
     enableSorting: false,
   },
-  createStandardActionsColumn<App.Entities.Institution>("institutions", {
+  createStandardActionsColumn<App.Entities.Institution>('institutions', {
     canView: true,
     canEdit: true,
     canDelete: true,
-    canRestore: true
-  })
+    canRestore: true,
+  }),
 ]);
 
 // Simplified table configuration using the new interfaces
@@ -208,7 +217,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Institution>>(() =
     totalCount: props.meta.total,
     initialPage: props.meta.current_page,
     pageSize: props.meta.per_page,
-    
+
     // Advanced features
     initialFilters: props.filters,
     initialSorting: props.sorting,
@@ -216,13 +225,13 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Institution>>(() =
     enableColumnVisibility: true,
     allowToggleDeleted: true,
     showDeleted: props.showDeleted,
-    
+
     // Page layout
-    headerTitle: "Institutions",
+    headerTitle: 'Institutions',
     headerDescription: $t('Manage institution records and their types'),
     icon: BuildingIcon,
     createRoute: canCreate.value ? route('institutions.create') : undefined,
-    canCreate: canCreate.value
+    canCreate: canCreate.value,
   };
 });
 
@@ -246,7 +255,8 @@ const handleFilterChange = (filterKey, value) => {
   // Update local filter references if needed
   if (filterKey === 'types.id') {
     selectedTypeIds.value = value;
-  } else if (filterKey === 'tenant.id') {
+  }
+  else if (filterKey === 'tenant.id') {
     selectedTenantIds.value = value;
   }
 };

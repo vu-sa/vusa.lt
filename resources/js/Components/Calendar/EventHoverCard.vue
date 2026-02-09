@@ -2,21 +2,21 @@
   <div class="event-hover-card">
     <!-- Event image header -->
     <div class="relative h-32 overflow-hidden bg-gradient-to-br from-zinc-100 to-zinc-200 dark:from-zinc-800 dark:to-zinc-900">
-      <img 
+      <img
         v-if="eventImage"
         :src="eventImage"
         :alt="eventTitle"
         class="w-full h-full object-cover"
       >
-      <div 
-        v-else 
+      <div
+        v-else
         class="w-full h-full flex items-center justify-center bg-gradient-to-br from-vusa-red/10 to-vusa-red/30 dark:from-vusa-red/20 dark:to-vusa-red/40"
       >
         <IFluentCalendarLtr24Regular class="w-12 h-12 text-vusa-red/50" />
       </div>
 
       <!-- Category badge -->
-      <div 
+      <div
         v-if="event.category"
         class="absolute top-2 left-2 px-2 py-0.5 text-xs font-medium rounded-full bg-white/90 dark:bg-zinc-900/90 text-zinc-700 dark:text-zinc-300 backdrop-blur-sm"
       >
@@ -63,8 +63,8 @@
       </div>
 
       <!-- Action button -->
-      <Button 
-        as="a" 
+      <Button
+        as="a"
         :href="route('calendar.event', { calendar: event.id, lang: locale })"
         class="w-full"
         size="sm"
@@ -77,12 +77,12 @@
 </template>
 
 <script setup lang="ts">
-import { trans as $t } from "laravel-vue-i18n";
-import { computed } from "vue";
-import { format, parseISO } from "date-fns";
-import { lt, enUS } from "date-fns/locale";
+import { trans as $t } from 'laravel-vue-i18n';
+import { computed } from 'vue';
+import { format, parseISO } from 'date-fns';
+import { lt, enUS } from 'date-fns/locale';
 
-import { Button } from "@/Components/ui/button";
+import { Button } from '@/Components/ui/button';
 
 const props = defineProps<{
   event: App.Entities.Calendar;
@@ -121,7 +121,8 @@ const formatMonth = computed(() => {
   try {
     const date = parseISO(props.event.date);
     return format(date, 'MMM', { locale: dateLocale.value });
-  } catch {
+  }
+  catch {
     return '';
   }
 });
@@ -130,7 +131,8 @@ const formatDay = computed(() => {
   try {
     const date = parseISO(props.event.date);
     return format(date, 'd');
-  } catch {
+  }
+  catch {
     return '';
   }
 });
@@ -139,15 +141,16 @@ const formatTime = computed(() => {
   try {
     const date = parseISO(props.event.date);
     const timeStr = format(date, 'HH:mm');
-    
+
     if (props.event.end_date) {
       const endDate = parseISO(props.event.end_date);
       const endTimeStr = format(endDate, 'HH:mm');
       return `${timeStr} - ${endTimeStr}`;
     }
-    
+
     return timeStr;
-  } catch {
+  }
+  catch {
     return '';
   }
 });

@@ -49,44 +49,45 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { router } from '@inertiajs/vue3'
-import { trans as $t } from 'laravel-vue-i18n'
-import { ChevronRight, Link as LinkIcon } from 'lucide-vue-next'
-import { CommandItem } from '@/Components/ui/command'
-import { AgendaItemIcon } from '@/Components/icons'
-import { useCommandPalette, type RecentItem } from '@/Composables/useCommandPalette'
-import type { AgendaItemSearchResult } from '@/Composables/useAdminSearch'
+import { computed } from 'vue';
+import { router } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
+import { ChevronRight, Link as LinkIcon } from 'lucide-vue-next';
+
+import { CommandItem } from '@/Components/ui/command';
+import { AgendaItemIcon } from '@/Components/icons';
+import { useCommandPalette, type RecentItem } from '@/Composables/useCommandPalette';
+import type { AgendaItemSearchResult } from '@/Composables/useAdminSearch';
 
 const props = defineProps<{
-  item: AgendaItemSearchResult
-  isRelated?: boolean
-}>()
+  item: AgendaItemSearchResult;
+  isRelated?: boolean;
+}>();
 
-const { close, addRecentItem } = useCommandPalette()
+const { close, addRecentItem } = useCommandPalette();
 
-const itemValue = computed(() => `agenda-item-${props.item.id}`)
+const itemValue = computed(() => `agenda-item-${props.item.id}`);
 
 const formattedDate = computed(() => {
-  if (!props.item.meeting_start_time) return null
-  const date = new Date(props.item.meeting_start_time * 1000)
+  if (!props.item.meeting_start_time) return null;
+  const date = new Date(props.item.meeting_start_time * 1000);
   return date.toLocaleDateString('lt-LT', {
     year: 'numeric',
     month: 'short',
-    day: 'numeric'
-  })
-})
+    day: 'numeric',
+  });
+});
 
 const voteColorClasses = computed(() => {
-  const result = props.item.vote_result?.toLowerCase()
+  const result = props.item.vote_result?.toLowerCase();
   if (result === 'adopted' || result === 'priimta') {
-    return 'bg-emerald-500/10 text-emerald-600 ring-emerald-500/20 dark:bg-emerald-500/20 dark:text-emerald-400'
+    return 'bg-emerald-500/10 text-emerald-600 ring-emerald-500/20 dark:bg-emerald-500/20 dark:text-emerald-400';
   }
   if (result === 'rejected' || result === 'atmesta') {
-    return 'bg-red-500/10 text-red-600 ring-red-500/20 dark:bg-red-500/20 dark:text-red-400'
+    return 'bg-red-500/10 text-red-600 ring-red-500/20 dark:bg-red-500/20 dark:text-red-400';
   }
-  return 'bg-zinc-500/10 text-zinc-600 ring-zinc-500/20 dark:bg-zinc-500/20 dark:text-zinc-400'
-})
+  return 'bg-zinc-500/10 text-zinc-600 ring-zinc-500/20 dark:bg-zinc-500/20 dark:text-zinc-400';
+});
 
 const handleSelect = () => {
   // Add to recent items
@@ -94,13 +95,13 @@ const handleSelect = () => {
     id: props.item.id,
     type: 'agenda_item',
     title: props.item.title || $t('Be pavadinimo'),
-    href: props.item.meeting_id ? route('meetings.show', props.item.meeting_id) : undefined
-  } as Omit<RecentItem, 'timestamp'>)
+    href: props.item.meeting_id ? route('meetings.show', props.item.meeting_id) : undefined,
+  } as Omit<RecentItem, 'timestamp'>);
 
   // Navigate to the meeting that contains this agenda item
   if (props.item.meeting_id) {
-    close()
-    router.visit(route('meetings.show', props.item.meeting_id))
+    close();
+    router.visit(route('meetings.show', props.item.meeting_id));
   }
-}
+};
 </script>

@@ -27,13 +27,14 @@
 </template>
 
 <script setup lang="ts">
-import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
-import { Button } from '../ui/button';
 import { ref, watch } from 'vue';
 import { AlertCircle, X } from 'lucide-vue-next';
 import { usePage } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
+
 import { CardContent, Card } from '../ui/card';
-import { trans as $t } from "laravel-vue-i18n";
+import { Button } from '../ui/button';
+import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 // No props needed - this is a pure layout component
 
 const open = ref(true);
@@ -47,10 +48,11 @@ watch(
   (newErrors) => {
     if (newErrors && Object.keys(newErrors).length > 0) {
       open.value = true;
-    } else {
+    }
+    else {
       open.value = false;
     }
   },
-  { immediate: true }
+  { immediate: true },
 );
 </script>

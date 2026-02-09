@@ -8,58 +8,59 @@
  * - Overall institution urgency
  */
 
-import { computed, type ComputedRef, type MaybeRefOrGetter, toValue } from 'vue'
-import type { UrgencyLevel } from '@/Composables/useDashboardCardStyles'
+import { computed, type ComputedRef, type MaybeRefOrGetter, toValue } from 'vue';
+
+import type { UrgencyLevel } from '@/Composables/useDashboardCardStyles';
 
 interface InstitutionData {
-  id: string | number
-  name?: string
-  meeting_periodicity_days?: number | null
-  current_users?: any[]
+  id: string | number;
+  name?: string;
+  meeting_periodicity_days?: number | null;
+  current_users?: any[];
   duties?: Array<{
-    id: string | number
-    places_to_occupy?: number | null
-    current_users?: any[]
-  }>
+    id: string | number;
+    places_to_occupy?: number | null;
+    current_users?: any[];
+  }>;
   meetings?: Array<{
-    id: string | number
-    start_time: string
-  }>
+    id: string | number;
+    start_time: string;
+  }>;
 }
 
 interface InstitutionUrgencyResult {
   /** Urgency based on member fill rate */
-  memberUrgency: ComputedRef<UrgencyLevel>
+  memberUrgency: ComputedRef<UrgencyLevel>;
 
   /** Urgency based on meeting periodicity status */
-  meetingUrgency: ComputedRef<UrgencyLevel>
+  meetingUrgency: ComputedRef<UrgencyLevel>;
 
   /** Urgency based on duty fill rate */
-  dutyUrgency: ComputedRef<UrgencyLevel>
+  dutyUrgency: ComputedRef<UrgencyLevel>;
 
   /** Overall institution urgency (worst of all metrics) */
-  overallUrgency: ComputedRef<UrgencyLevel>
+  overallUrgency: ComputedRef<UrgencyLevel>;
 
   /** Days since last meeting (null if no meetings) */
-  daysSinceLastMeeting: ComputedRef<number | null>
+  daysSinceLastMeeting: ComputedRef<number | null>;
 
   /** Whether the institution is overdue for a meeting */
-  isOverdue: ComputedRef<boolean>
+  isOverdue: ComputedRef<boolean>;
 
   /** Member fill percentage (0-100) */
-  memberFillRate: ComputedRef<number>
+  memberFillRate: ComputedRef<number>;
 
   /** Duty fill percentage (0-100) */
-  dutyFillRate: ComputedRef<number>
+  dutyFillRate: ComputedRef<number>;
 
   /** Total positions available */
-  totalPositions: ComputedRef<number>
+  totalPositions: ComputedRef<number>;
 
   /** Positions currently filled */
-  filledPositions: ComputedRef<number>
+  filledPositions: ComputedRef<number>;
 
   /** Last meeting date */
-  lastMeeting: ComputedRef<{ id: string | number; start_time: string } | null>
+  lastMeeting: ComputedRef<{ id: string | number; start_time: string } | null>;
 }
 
 /**
@@ -74,99 +75,99 @@ interface InstitutionUrgencyResult {
  * ```
  */
 export function useInstitutionUrgency(
-  institution: MaybeRefOrGetter<InstitutionData>
+  institution: MaybeRefOrGetter<InstitutionData>,
 ): InstitutionUrgencyResult {
   // Calculate total positions from duties
   const totalPositions = computed(() => {
-    const inst = toValue(institution)
+    const inst = toValue(institution);
     return inst.duties?.reduce((sum, duty) => {
-      return sum + (duty.places_to_occupy || 0)
-    }, 0) || 0
-  })
+      return sum + (duty.places_to_occupy || 0);
+    }, 0) || 0;
+  });
 
   // Calculate filled positions
   const filledPositions = computed(() => {
-    const inst = toValue(institution)
-    return inst.current_users?.length || 0
-  })
+    const inst = toValue(institution);
+    return inst.current_users?.length || 0;
+  });
 
   // Member fill rate percentage
   const memberFillRate = computed(() => {
-    if (totalPositions.value === 0) return 100
-    return Math.round((filledPositions.value / totalPositions.value) * 100)
-  })
+    if (totalPositions.value === 0) return 100;
+    return Math.round((filledPositions.value / totalPositions.value) * 100);
+  });
 
   // Find last meeting
   const lastMeeting = computed(() => {
-    const inst = toValue(institution)
-    const meetings = inst.meetings
-    if (!meetings?.length) return null
+    const inst = toValue(institution);
+    const { meetings } = inst;
+    if (!meetings?.length) return null;
 
     return [...meetings].sort(
-      (a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime()
-    )[0]
-  })
+      (a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime(),
+    )[0];
+  });
 
   // Days since last meeting
   const daysSinceLastMeeting = computed(() => {
-    if (!lastMeeting.value) return null
-    const date = new Date(lastMeeting.value.start_time)
-    const now = new Date()
-    return Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24))
-  })
+    if (!lastMeeting.value) return null;
+    const date = new Date(lastMeeting.value.start_time);
+    const now = new Date();
+    return Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+  });
 
   // Check if overdue based on periodicity
   const isOverdue = computed(() => {
-    if (daysSinceLastMeeting.value === null) return false
-    const inst = toValue(institution)
-    const periodicity = inst.meeting_periodicity_days ?? 30
-    return daysSinceLastMeeting.value > periodicity
-  })
+    if (daysSinceLastMeeting.value === null) return false;
+    const inst = toValue(institution);
+    const periodicity = inst.meeting_periodicity_days ?? 30;
+    return daysSinceLastMeeting.value > periodicity;
+  });
 
   // Duty fill rate (duties with at least one member)
   const dutyFillRate = computed(() => {
-    const inst = toValue(institution)
-    const duties = inst.duties || []
-    if (duties.length === 0) return 100
+    const inst = toValue(institution);
+    const duties = inst.duties || [];
+    if (duties.length === 0) return 100;
 
     const filledDuties = duties.filter(
-      (duty) => (duty.current_users?.length || 0) > 0
-    ).length
+      duty => (duty.current_users?.length || 0) > 0,
+    ).length;
 
-    return Math.round((filledDuties / duties.length) * 100)
-  })
+    return Math.round((filledDuties / duties.length) * 100);
+  });
 
   // Member urgency based on fill rate
   const memberUrgency = computed<UrgencyLevel>(() => {
-    const rate = memberFillRate.value
-    if (rate >= 80) return 'success'
-    if (rate >= 50) return 'warning'
-    if (rate > 0) return 'danger'
-    return 'neutral'
-  })
+    const rate = memberFillRate.value;
+    if (rate >= 80) return 'success';
+    if (rate >= 50) return 'warning';
+    if (rate > 0) return 'danger';
+    return 'neutral';
+  });
 
   // Meeting urgency based on periodicity
   const meetingUrgency = computed<UrgencyLevel>(() => {
-    const inst = toValue(institution)
-    const periodicity = inst.meeting_periodicity_days ?? 30
+    const inst = toValue(institution);
+    const periodicity = inst.meeting_periodicity_days ?? 30;
 
-    if (daysSinceLastMeeting.value === null) return 'neutral'
+    if (daysSinceLastMeeting.value === null) return 'neutral';
 
-    const ratio = daysSinceLastMeeting.value / periodicity
-    if (ratio <= 0.5) return 'success'
-    if (ratio <= 0.8) return 'success'
-    if (ratio <= 1) return 'warning'
-    return 'danger'
-  })
+    const ratio = daysSinceLastMeeting.value / periodicity;
+    if (ratio <= 0.5) return 'success';
+    if (ratio <= 0.8) return 'success';
+    if (ratio <= 1) return 'warning';
+    return 'danger';
+  });
 
   // Duty urgency based on fill rate
   const dutyUrgency = computed<UrgencyLevel>(() => {
-    const rate = dutyFillRate.value
-    if (rate >= 80) return 'success'
-    if (rate >= 50) return 'warning'
-    if (rate > 0) return 'danger'
-    return 'neutral'
-  })
+    const rate = dutyFillRate.value;
+    if (rate >= 80) return 'success';
+    if (rate >= 50) return 'warning';
+    if (rate > 0) return 'danger';
+    return 'neutral';
+  });
 
   // Overall urgency (worst of all metrics)
   const overallUrgency = computed<UrgencyLevel>(() => {
@@ -174,14 +175,14 @@ export function useInstitutionUrgency(
       memberUrgency.value,
       meetingUrgency.value,
       dutyUrgency.value,
-    ]
+    ];
 
     // Priority: danger > warning > neutral > success
-    if (urgencies.includes('danger')) return 'danger'
-    if (urgencies.includes('warning')) return 'warning'
-    if (urgencies.includes('neutral')) return 'neutral'
-    return 'success'
-  })
+    if (urgencies.includes('danger')) return 'danger';
+    if (urgencies.includes('warning')) return 'warning';
+    if (urgencies.includes('neutral')) return 'neutral';
+    return 'success';
+  });
 
   return {
     memberUrgency,
@@ -195,5 +196,5 @@ export function useInstitutionUrgency(
     totalPositions,
     filledPositions,
     lastMeeting,
-  }
+  };
 }

@@ -1,29 +1,3 @@
-<script setup lang="ts">
-import { cn } from '@/Utils/Shadcn/utils'
-import { Search } from 'lucide-vue-next'
-import { ListboxFilter, type ListboxFilterProps, useForwardProps } from 'reka-ui'
-import { computed, type HTMLAttributes } from 'vue'
-import { useCommand } from '.'
-
-defineOptions({
-  inheritAttrs: false,
-})
-
-const props = defineProps<ListboxFilterProps & {
-  class?: HTMLAttributes['class']
-}>()
-
-const delegatedProps = computed(() => {
-  const { class: _, ...delegated } = props
-
-  return delegated
-})
-
-const forwardedProps = useForwardProps(delegatedProps)
-
-const { filterState } = useCommand()
-</script>
-
 <template>
   <div
     data-slot="command-input-wrapper"
@@ -39,3 +13,31 @@ const { filterState } = useCommand()
     />
   </div>
 </template>
+
+<script setup lang="ts">
+import { Search } from 'lucide-vue-next';
+import { ListboxFilter, type ListboxFilterProps, useForwardProps } from 'reka-ui';
+import { computed, type HTMLAttributes } from 'vue';
+
+import { useCommand } from '.';
+
+import { cn } from '@/Utils/Shadcn/utils';
+
+defineOptions({
+  inheritAttrs: false,
+});
+
+const props = defineProps<ListboxFilterProps & {
+  class?: HTMLAttributes['class'];
+}>();
+
+const delegatedProps = computed(() => {
+  const { class: _, ...delegated } = props;
+
+  return delegated;
+});
+
+const forwardedProps = useForwardProps(delegatedProps);
+
+const { filterState } = useCommand();
+</script>

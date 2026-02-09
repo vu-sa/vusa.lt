@@ -139,49 +139,49 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { trans as $t } from 'laravel-vue-i18n'
-import { Search, X, Filter, RotateCcw, Loader2 } from 'lucide-vue-next'
+import { ref } from 'vue';
+import { trans as $t } from 'laravel-vue-i18n';
+import { Search, X, Filter, RotateCcw, Loader2 } from 'lucide-vue-next';
 
-import { Button } from '@/Components/ui/button'
-import { Input } from '@/Components/ui/input'
-import { Badge } from '@/Components/ui/badge'
+import type { SortOption } from '../Types/AdminSearchTypes';
+
+import { Button } from '@/Components/ui/button';
+import { Input } from '@/Components/ui/input';
+import { Badge } from '@/Components/ui/badge';
 import {
   Sheet,
   SheetTrigger,
   SheetContent,
   SheetHeader,
   SheetTitle,
-} from '@/Components/ui/sheet'
+} from '@/Components/ui/sheet';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/Components/ui/select'
-
-import type { SortOption } from '../Types/AdminSearchTypes'
+} from '@/Components/ui/select';
 
 interface Props {
-  title: string
-  description?: string
-  query: string
-  searchPlaceholder?: string
-  totalHits: number
-  sortBy: string
-  sortOptions: SortOption[]
-  activeFilterCount?: number
-  hasMoreResults?: boolean
-  isLoadingMore?: boolean
+  title: string;
+  description?: string;
+  query: string;
+  searchPlaceholder?: string;
+  totalHits: number;
+  sortBy: string;
+  sortOptions: SortOption[];
+  activeFilterCount?: number;
+  hasMoreResults?: boolean;
+  isLoadingMore?: boolean;
 }
 
 interface Emits {
-  (e: 'update:query', value: string): void
-  (e: 'update:sortBy', value: string): void
-  (e: 'search'): void
-  (e: 'clearFilters'): void
-  (e: 'loadMore'): void
+  (e: 'update:query', value: string): void;
+  (e: 'update:sortBy', value: string): void;
+  (e: 'search'): void;
+  (e: 'clearFilters'): void;
+  (e: 'loadMore'): void;
 }
 
 withDefaults(defineProps<Props>(), {
@@ -190,10 +190,10 @@ withDefaults(defineProps<Props>(), {
   activeFilterCount: 0,
   hasMoreResults: false,
   isLoadingMore: false,
-})
+});
 
-defineEmits<Emits>()
+defineEmits<Emits>();
 
 // Mobile filters sheet state
-const isMobileFiltersOpen = ref(false)
+const isMobileFiltersOpen = ref(false);
 </script>

@@ -13,7 +13,7 @@
               <IFluentArrowClockwise24Filled class="h-4 w-4" />
             </Button>
           </div>
-          <div class="flex-1"></div>
+          <div class="flex-1" />
           <!-- Search -->
           <div class="w-full sm:w-[300px] h-10 flex items-center">
             <div class="relative w-full">
@@ -26,28 +26,28 @@
             </div>
           </div>
         </div>
-        
+
         <!-- Breadcrumb -->
         <div class="flex items-center gap-2 text-sm bg-muted/30 rounded-md px-3 py-2">
           <IFluentFolder24Filled class="h-4 w-4 text-muted-foreground flex-shrink-0" />
           <nav class="flex items-center gap-1 text-foreground min-w-0 flex-1">
-            <button 
-              @click="navigateToPath(startingPath!)"
+            <button
               class="font-medium transition-colors truncate hover:text-vusa-red"
               :class="{ 'text-vusa-red': currentPath === startingPath }"
+              @click="navigateToPath(startingPath!)"
             >
               {{ rootFolderName }}
             </button>
             <template v-if="breadcrumbParts.length > 0">
               <template v-for="(part, index) in breadcrumbParts" :key="index">
                 <span class="text-muted-foreground flex-shrink-0">/</span>
-                <button 
-                  @click="navigateToPath(part.path)"
+                <button
                   class="transition-colors truncate hover:text-vusa-red"
-                  :class="{ 
+                  :class="{
                     'text-vusa-red font-medium': index === breadcrumbParts.length - 1,
                     'text-muted-foreground': index < breadcrumbParts.length - 1
                   }"
+                  @click="navigateToPath(part.path)"
                 >
                   {{ part.name }}
                 </button>
@@ -56,7 +56,7 @@
           </nav>
         </div>
       </div>
-      
+
       <!-- Upload Context Indicator -->
       <Alert v-if="fileable" variant="default" class="mt-4 border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-950">
         <IFluentInfo16Regular class="h-4 w-4 text-blue-600 dark:text-blue-400" />
@@ -64,25 +64,25 @@
           {{ $t('Nauji failai bus priskirti') }}: <strong>{{ fileableDisplayName }}</strong>
         </AlertDescription>
       </Alert>
-      
+
       <!-- File Grid -->
       <FileGrid
-        :paginated-directories="paginatedDirectories"
-        :paginated-files="paginatedFiles"
+        :paginated-directories
+        :paginated-files
         :selected-file="selectedFile?.id ?? null"
         :selected-files="new Set()"
         :is-multi-select-mode="false"
         :selection-mode="false"
         :is-upload-mode="false"
-        :search="search"
+        :search
         :path="currentPath"
-        :total-items="totalItems"
-        :items-per-page="itemsPerPage"
-        :current-page="currentPage"
-        :total-pages="totalPages"
-        :visible-pages="visiblePages"
-        :view-mode="viewMode"
-        :loading="loading"
+        :total-items
+        :items-per-page
+        :current-page
+        :total-pages
+        :visible-pages
+        :view-mode
+        :loading
         :hide-multi-select="true"
         @update:items-per-page="itemsPerPage = $event"
         @update:current-page="currentPage = $event"
@@ -96,20 +96,20 @@
         @show-upload-mode="showFileUploader = true"
         @show-create-folder="handleCreateFolder"
       />
-      
+
       <!-- File Properties Drawer (unified) -->
-      <FilePropertiesDrawer 
+      <FilePropertiesDrawer
         source="sharepoint"
-        :sharepoint-file="selectedFile" 
-        @close="selectedFile = null" 
-        @delete="handleSharepointFileDelete" 
+        :sharepoint-file="selectedFile"
+        @close="selectedFile = null"
+        @delete="handleSharepointFileDelete"
       />
-      
+
       <!-- SharePoint File Uploader (modal) -->
-      <FileUploader 
-        :show="showFileUploader" 
-        :fileable="sanitizedFileable" 
-        @close="handleFileUploaderClose" 
+      <FileUploader
+        :show="showFileUploader"
+        :fileable="sanitizedFileable"
+        @close="handleFileUploaderClose"
       />
     </template>
     <p v-else v-once>
@@ -119,24 +119,25 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, provide } from "vue";
-import { router } from "@inertiajs/vue3";
-import { useFetch, useStorage } from "@vueuse/core";
-import { useFuse } from "@vueuse/integrations/useFuse";
-import { toast } from "vue-sonner";
-import { trans as $t } from "laravel-vue-i18n";
+import { computed, ref, watch, provide } from 'vue';
+import { router } from '@inertiajs/vue3';
+import { useFetch, useStorage } from '@vueuse/core';
+import { useFuse } from '@vueuse/integrations/useFuse';
+import { toast } from 'vue-sonner';
+import { trans as $t } from 'laravel-vue-i18n';
 
 // UI Components
-import { Button } from "@/Components/ui/button";
-import { Input } from "@/Components/ui/input";
-import { Alert, AlertDescription } from "@/Components/ui/alert";
+import FileUploader from './Uploader/FileUploader.vue';
+
+import { Button } from '@/Components/ui/button';
+import { Input } from '@/Components/ui/input';
+import { Alert, AlertDescription } from '@/Components/ui/alert';
 
 // Unified FileManager Components
-import FileGrid from "@/Features/Admin/FileManager/Components/FileGrid.vue";
-import FilePropertiesDrawer from "@/Features/Admin/FileManager/Components/FilePropertiesDrawer.vue";
+import FileGrid from '@/Features/Admin/FileManager/Components/FileGrid.vue';
+import FilePropertiesDrawer from '@/Features/Admin/FileManager/Components/FilePropertiesDrawer.vue';
 
 // SharePoint-specific Components
-import FileUploader from "./Uploader/FileUploader.vue";
 
 // Icons
 import IFluentDocumentAdd24Regular from '~icons/fluent/document-add-24-regular';
@@ -170,22 +171,22 @@ const currentPage = ref(1);
 // Display name for upload context indicator
 const fileableDisplayName = computed(() => {
   if (!props.fileable) return '';
-  
+
   // Extract a readable name from the fileable type
   const typeMap: Record<string, string> = {
-    'Meeting': 'Posėdis',
-    'Institution': 'Institucija',
-    'Duty': 'Pareigos',
-    'Type': 'Tipas',
+    Meeting: 'Posėdis',
+    Institution: 'Institucija',
+    Duty: 'Pareigos',
+    Type: 'Tipas',
   };
-  
+
   const typeName = typeMap[props.fileable.type] || props.fileable.type;
-  
+
   // If we have a fileable_name from the form data, use it
   if ((props.fileable as any).fileable_name) {
     return `${typeName}: ${(props.fileable as any).fileable_name}`;
   }
-  
+
   return typeName;
 });
 
@@ -242,26 +243,27 @@ const totalPages = computed(() => {
 
 const paginatedDirectories = computed(() => {
   if (itemsPerPage.value >= totalItems.value) return directories.value;
-  
+
   const startIndex = (currentPage.value - 1) * itemsPerPage.value;
   const endIndex = startIndex + itemsPerPage.value;
   const dirEnd = Math.min(endIndex, directories.value.length);
   const dirStart = Math.min(startIndex, directories.value.length);
-  
+
   return directories.value.slice(dirStart, dirEnd);
 });
 
 const paginatedFiles = computed(() => {
   if (itemsPerPage.value >= totalItems.value) return filesOnly.value;
-  
+
   const startIndex = (currentPage.value - 1) * itemsPerPage.value;
   const endIndex = startIndex + itemsPerPage.value;
   const fileStart = Math.max(0, startIndex - directories.value.length);
   const fileEnd = Math.max(0, endIndex - directories.value.length);
-  
+
   if (startIndex >= directories.value.length) {
     return filesOnly.value.slice(fileStart, fileEnd);
-  } else if (endIndex > directories.value.length) {
+  }
+  else if (endIndex > directories.value.length) {
     const remainingSpace = endIndex - directories.value.length;
     return filesOnly.value.slice(0, remainingSpace);
   }
@@ -272,10 +274,11 @@ const visiblePages = computed(() => {
   const pages: (number | string)[] = [];
   const total = totalPages.value;
   const current = currentPage.value;
-  
+
   if (total <= 7) {
     for (let i = 1; i <= total; i++) pages.push(i);
-  } else {
+  }
+  else {
     pages.push(1);
     if (current > 4) pages.push('...');
     const start = Math.max(2, current - 1);
@@ -284,7 +287,7 @@ const visiblePages = computed(() => {
     if (current < total - 3) pages.push('...');
     if (total > 1) pages.push(total);
   }
-  
+
   return pages;
 });
 
@@ -297,31 +300,32 @@ const rootFolderName = computed(() => {
 
 const breadcrumbParts = computed(() => {
   if (!props.startingPath || currentPath.value === props.startingPath) return [];
-  
-  const relativePath = currentPath.value.replace(props.startingPath + '/', '');
+
+  const relativePath = currentPath.value.replace(`${props.startingPath}/`, '');
   if (!relativePath) return [];
-  
+
   const parts = relativePath.split('/');
   return parts.map((part, index) => ({
     name: part,
-    path: props.startingPath + '/' + parts.slice(0, index + 1).join('/'),
+    path: `${props.startingPath}/${parts.slice(0, index + 1).join('/')}`,
   }));
 });
 
 // Fetch files from SharePoint
 async function fetchFiles(path: string) {
   if (!path) return;
-  
+
   loading.value = true;
   try {
     const { data } = await useFetch(
-      route('api.v1.admin.sharepoint.driveItems', { path })
+      route('api.v1.admin.sharepoint.driveItems', { path }),
     ).json();
-    
+
     // Handle standardized API response format
     const responseData = data.value?.success ? data.value.data : data.value;
     files.value = responseData ?? [];
-  } finally {
+  }
+  finally {
     loading.value = false;
   }
 }
@@ -360,7 +364,8 @@ function handleFileClick(file: any) {
   const rawItem = file._raw as MyDriveItem | undefined;
   if (rawItem && rawItem.file) {
     selectedFile.value = rawItem;
-  } else {
+  }
+  else {
     selectedFile.value = null;
   }
 }
@@ -395,31 +400,33 @@ function handleFileUploaderClose() {
 async function handleCreateFolder() {
   const folderName = prompt($t('Įveskite aplanko pavadinimą'));
   if (!folderName || !folderName.trim()) return;
-  
+
   loading.value = true;
   try {
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
     const response = await fetch(route('sharepoint.createFolder'), {
       method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json', 
+      headers: {
+        'Content-Type': 'application/json',
         'X-CSRF-TOKEN': csrfToken,
-        'Accept': 'application/json'
+        'Accept': 'application/json',
       },
       body: JSON.stringify({ path: currentPath.value, name: folderName.trim() }),
     });
-    
+
     if (!response.ok) {
       const error = await response.json();
       toast.error(error.message || $t('Nepavyko sukurti aplanko'));
       return;
     }
-    
+
     toast.success($t('Aplankas sukurtas'));
     refreshFiles();
-  } catch (error) {
+  }
+  catch (error) {
     toast.error($t('Nepavyko sukurti aplanko'));
-  } finally {
+  }
+  finally {
     loading.value = false;
   }
 }
@@ -435,17 +442,17 @@ function handleFileDeleted(id: string | number) {
 // Handle SharePoint file deletion via FilePropertiesDrawer emit
 function handleSharepointFileDelete() {
   if (!selectedFile.value) return;
-  
+
   // Check if this file has an associated FileableFile record (sharepointFile)
   // The sharepointFile property is added by the backend when file is linked to a fileable
   const sharepointFileRecord = (selectedFile.value as Record<string, unknown>).sharepointFile as { id: number } | undefined;
-  
+
   if (!sharepointFileRecord?.id) {
     // No associated FileableFile record - just remove from local state
     handleFileDeleted(selectedFile.value.id ?? '');
     return;
   }
-  
+
   router.delete(route('sharepointFiles.destroy', sharepointFileRecord.id), {
     preserveState: true,
     preserveScroll: true,

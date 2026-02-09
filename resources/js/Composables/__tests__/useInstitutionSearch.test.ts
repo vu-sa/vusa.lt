@@ -2,15 +2,15 @@
  * Tests for useInstitutionSearch composable (refactored version)
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 // Mock dependencies
 vi.mock('@vueuse/core', () => ({
   useLocalStorage: vi.fn((key: string, defaultValue: any) => {
-    return { value: { ...defaultValue } }
+    return { value: { ...defaultValue } };
   }),
-  useOnline: vi.fn(() => ({ value: true }))
-}))
+  useOnline: vi.fn(() => ({ value: true })),
+}));
 
 vi.mock('@inertiajs/vue3', () => ({
   usePage: vi.fn(() => ({
@@ -22,12 +22,12 @@ vi.mock('@inertiajs/vue3', () => ({
         port: 8108,
         protocol: 'http',
         collections: {
-          public_institutions: 'public_institutions'
-        }
-      }
-    }
-  }))
-}))
+          public_institutions: 'public_institutions',
+        },
+      },
+    },
+  })),
+}));
 
 vi.mock('../useSearchClient', () => ({
   createTypesenseClients: vi.fn(() => ({
@@ -36,11 +36,11 @@ vi.mock('../useSearchClient', () => ({
       search: vi.fn(() => Promise.resolve({
         hits: [],
         found: 0,
-        facet_counts: []
-      }))
-    }
-  }))
-}))
+        facet_counts: [],
+      })),
+    },
+  })),
+}));
 
 vi.mock('../../Services/InstitutionSearchService', () => ({
   InstitutionSearchService: vi.fn().mockImplementation(() => ({
@@ -49,104 +49,104 @@ vi.mock('../../Services/InstitutionSearchService', () => ({
       totalHits: 0,
       totalPages: 0,
       currentPage: 0,
-      facets: []
+      facets: [],
     })),
     loadInitialFacets: vi.fn(() => Promise.resolve([])),
-    cancelCurrentSearch: vi.fn()
-  }))
-}))
+    cancelCurrentSearch: vi.fn(),
+  })),
+}));
 
 describe('useInstitutionSearch (refactored)', () => {
   beforeEach(() => {
-    vi.clearAllMocks()
-  })
+    vi.clearAllMocks();
+  });
 
   afterEach(() => {
-    vi.restoreAllMocks()
-  })
+    vi.restoreAllMocks();
+  });
 
   describe('initialization', () => {
     it('creates default filters correctly', async () => {
-      const { useInstitutionSearch } = await import('../useInstitutionSearch')
-      const controller = useInstitutionSearch()
+      const { useInstitutionSearch } = await import('../useInstitutionSearch');
+      const controller = useInstitutionSearch();
 
       expect(controller.filters.value).toEqual({
         query: '',
         tenants: [],
         types: [],
-        hasContacts: null
-      })
-    })
+        hasContacts: null,
+      });
+    });
 
     it('provides all required controller methods', async () => {
-      const { useInstitutionSearch } = await import('../useInstitutionSearch')
-      const controller = useInstitutionSearch()
+      const { useInstitutionSearch } = await import('../useInstitutionSearch');
+      const controller = useInstitutionSearch();
 
       // Core methods
-      expect(typeof controller.search).toBe('function')
-      expect(typeof controller.setFilter).toBe('function')
-      expect(typeof controller.loadMore).toBe('function')
-      expect(typeof controller.retrySearch).toBe('function')
-      expect(typeof controller.clearError).toBe('function')
-      expect(typeof controller.loadInitialFacets).toBe('function')
+      expect(typeof controller.search).toBe('function');
+      expect(typeof controller.setFilter).toBe('function');
+      expect(typeof controller.loadMore).toBe('function');
+      expect(typeof controller.retrySearch).toBe('function');
+      expect(typeof controller.clearError).toBe('function');
+      expect(typeof controller.loadInitialFacets).toBe('function');
 
       // Institution-specific methods
-      expect(typeof controller.toggleTenant).toBe('function')
-      expect(typeof controller.toggleType).toBe('function')
-      expect(typeof controller.setHasContacts).toBe('function')
-      expect(typeof controller.setViewMode).toBe('function')
-      expect(typeof controller.clearFilters).toBe('function')
-      expect(typeof controller.clearRecentSearches).toBe('function')
-      expect(typeof controller.removeRecentSearch).toBe('function')
+      expect(typeof controller.toggleTenant).toBe('function');
+      expect(typeof controller.toggleType).toBe('function');
+      expect(typeof controller.setHasContacts).toBe('function');
+      expect(typeof controller.setViewMode).toBe('function');
+      expect(typeof controller.clearFilters).toBe('function');
+      expect(typeof controller.clearRecentSearches).toBe('function');
+      expect(typeof controller.removeRecentSearch).toBe('function');
 
       // Initialization
-      expect(typeof controller.initializeSearchClient).toBe('function')
-    })
+      expect(typeof controller.initializeSearchClient).toBe('function');
+    });
 
     it('provides all required state refs', async () => {
-      const { useInstitutionSearch } = await import('../useInstitutionSearch')
-      const controller = useInstitutionSearch()
+      const { useInstitutionSearch } = await import('../useInstitutionSearch');
+      const controller = useInstitutionSearch();
 
       // State refs
-      expect(controller.isSearching).toBeDefined()
-      expect(controller.isLoadingFacets).toBeDefined()
-      expect(controller.isLoadingMore).toBeDefined()
-      expect(controller.hasResults).toBeDefined()
-      expect(controller.hasActiveFilters).toBeDefined()
-      expect(controller.hasMoreResults).toBeDefined()
-      expect(controller.totalHits).toBeDefined()
-      expect(controller.results).toBeDefined()
-      expect(controller.facets).toBeDefined()
-      expect(controller.filters).toBeDefined()
-      expect(controller.viewMode).toBeDefined()
-      expect(controller.recentSearches).toBeDefined()
+      expect(controller.isSearching).toBeDefined();
+      expect(controller.isLoadingFacets).toBeDefined();
+      expect(controller.isLoadingMore).toBeDefined();
+      expect(controller.hasResults).toBeDefined();
+      expect(controller.hasActiveFilters).toBeDefined();
+      expect(controller.hasMoreResults).toBeDefined();
+      expect(controller.totalHits).toBeDefined();
+      expect(controller.results).toBeDefined();
+      expect(controller.facets).toBeDefined();
+      expect(controller.filters).toBeDefined();
+      expect(controller.viewMode).toBeDefined();
+      expect(controller.recentSearches).toBeDefined();
 
       // Error handling
-      expect(controller.searchError).toBeDefined()
-      expect(controller.isOnline).toBeDefined()
-      expect(controller.retryCount).toBeDefined()
-      expect(controller.maxRetries).toBe(3)
-    })
-  })
+      expect(controller.searchError).toBeDefined();
+      expect(controller.isOnline).toBeDefined();
+      expect(controller.retryCount).toBeDefined();
+      expect(controller.maxRetries).toBe(3);
+    });
+  });
 
   describe('searchState computed', () => {
     it('computes searchState correctly', async () => {
-      const { useInstitutionSearch } = await import('../useInstitutionSearch')
-      const controller = useInstitutionSearch()
+      const { useInstitutionSearch } = await import('../useInstitutionSearch');
+      const controller = useInstitutionSearch();
 
-      const state = controller.searchState.value
+      const state = controller.searchState.value;
 
-      expect(state).toHaveProperty('isSearching')
-      expect(state).toHaveProperty('hasResults')
-      expect(state).toHaveProperty('totalHits')
-      expect(state).toHaveProperty('query')
-      expect(state).toHaveProperty('filters')
-      expect(state).toHaveProperty('facets')
-      expect(state).toHaveProperty('results')
-      expect(state).toHaveProperty('viewMode')
-      expect(state).toHaveProperty('error')
-      expect(state).toHaveProperty('isOnline')
-      expect(state).toHaveProperty('status')
-    })
-  })
-})
+      expect(state).toHaveProperty('isSearching');
+      expect(state).toHaveProperty('hasResults');
+      expect(state).toHaveProperty('totalHits');
+      expect(state).toHaveProperty('query');
+      expect(state).toHaveProperty('filters');
+      expect(state).toHaveProperty('facets');
+      expect(state).toHaveProperty('results');
+      expect(state).toHaveProperty('viewMode');
+      expect(state).toHaveProperty('error');
+      expect(state).toHaveProperty('isOnline');
+      expect(state).toHaveProperty('status');
+    });
+  });
+});

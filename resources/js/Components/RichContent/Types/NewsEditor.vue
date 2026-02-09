@@ -14,4 +14,3 @@ import { Input } from '@/Components/ui/input';
 
 const modelValue = defineModel<News['json_content']>();
 </script>
-

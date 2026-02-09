@@ -1,7 +1,7 @@
-import type { VariantProps } from "class-variance-authority"
-import { cva } from "class-variance-authority"
+import type { VariantProps } from 'class-variance-authority';
+import { cva } from 'class-variance-authority';
 
-export { default as Button } from "./Button.vue"
+export { default as Button } from './Button.vue';
 
 export const buttonVariants = cva(
   'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*=\'size-\'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-zinc-950 focus-visible:ring-zinc-950/50 focus-visible:ring-[3px] aria-invalid:ring-red-500/20 dark:aria-invalid:ring-red-500/40 aria-invalid:border-red-500 dark:focus-visible:border-zinc-300 dark:focus-visible:ring-zinc-300/50 dark:aria-invalid:ring-red-900/20 dark:dark:aria-invalid:ring-red-900/40 dark:aria-invalid:border-red-900',
@@ -19,19 +19,19 @@ export const buttonVariants = cva(
         ghost:
           'hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-100/50 dark:hover:bg-zinc-800 dark:hover:text-zinc-50 dark:dark:hover:bg-zinc-800/50',
         link: 'text-zinc-900 underline-offset-4 hover:underline dark:text-zinc-50',
-       success:
+        success:
           'bg-green-600 text-white shadow-xs hover:bg-green-600/90 focus-visible:ring-green-500/20 dark:bg-green-700 dark:hover:bg-green-700/90',
         warning:
           'bg-amber-500 text-white shadow-xs hover:bg-amber-500/90 focus-visible:ring-amber-500/20 dark:bg-amber-600 dark:hover:bg-amber-600/90',
       },
       size: {
-        "default": "h-9 px-4 py-2 has-[>svg]:px-3",
-        "sm": "h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5",
-        "lg": "h-10 rounded-md px-6 has-[>svg]:px-4",
-        "icon": "size-9",
-        "icon-sm": "size-8",
+        'default': 'h-9 px-4 py-2 has-[>svg]:px-3',
+        'sm': 'h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5',
+        'lg': 'h-10 rounded-md px-6 has-[>svg]:px-4',
+        'icon': 'size-9',
+        'icon-sm': 'size-8',
         'icon-xs': 'size-6',
-        "icon-lg": "size-10",
+        'icon-lg': 'size-10',
       },
       animation: {
         none: '',
@@ -40,10 +40,10 @@ export const buttonVariants = cva(
       },
     },
     defaultVariants: {
-      variant: "default",
-      size: "default",
-      animation: "none",
+      variant: 'default',
+      size: 'default',
+      animation: 'none',
     },
   },
-)
-export type ButtonVariants = VariantProps<typeof buttonVariants>
+);
+export type ButtonVariants = VariantProps<typeof buttonVariants>;

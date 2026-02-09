@@ -8,15 +8,15 @@
         Pareigos rodymas pagal žmogaus įvardį, jeigu įvardyje pirmas žodis yra:
         <li>
           jis (he) - <strong>{{ changeDutyNameEndings(null, duty.name.lt, $page.props.app.locale, "jis/jo", false)
-            }}</strong>
+          }}</strong>
         </li>
         <li>
           ji (she) - <strong>{{ changeDutyNameEndings(null, duty.name.lt, $page.props.app.locale, "ji/jos", false)
-            }}</strong>
+          }}</strong>
         </li>
         <li>
           jie (they) - <strong>{{ changeDutyNameEndings(null, duty.name.lt, $page.props.app.locale, "jie/jų", false)
-            }}</strong>
+          }}</strong>
         </li>
       </template>
       <FormFieldWrapper id="name" :label="$t('forms.fields.title')" :error="form.errors.name">
@@ -52,9 +52,15 @@
             <SelectValue placeholder="Pasirinkite grupavimo būdą" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="none">Be grupavimo</SelectItem>
-            <SelectItem value="study_program">Pagal studijų programą</SelectItem>
-            <SelectItem value="tenant">Pagal padalinį</SelectItem>
+            <SelectItem value="none">
+              Be grupavimo
+            </SelectItem>
+            <SelectItem value="study_program">
+              Pagal studijų programą
+            </SelectItem>
+            <SelectItem value="tenant">
+              Pagal padalinį
+            </SelectItem>
           </SelectContent>
         </Select>
       </FormFieldWrapper>
@@ -137,7 +143,7 @@
           <div v-for="user in duty.current_users" :key="user.id"
             class="flex items-center justify-between rounded-lg border border-gray-200 p-3 dark:border-gray-700">
             <div class="flex items-center gap-3">
-              <UserAvatar :user="user" :size="32" />
+              <UserAvatar :user :size="32" />
               <div>
                 <div class="font-medium">
                   {{ user.name }}
@@ -192,28 +198,30 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
-import { useForm, usePage } from "@inertiajs/vue3";
-import { trans as $t } from "laravel-vue-i18n";
-import IconEdit from "~icons/fluent/edit16-filled";
-import IconEye from "~icons/fluent/eye16-regular";
+import { computed, ref } from 'vue';
+import { useForm, usePage } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
 
-import { Badge } from "@/Components/ui/badge";
-import { Button } from "@/Components/ui/button";
-import { Input } from "@/Components/ui/input";
-import { Label } from "@/Components/ui/label";
-import { MultiSelect } from "@/Components/ui/multi-select";
-import { NumberField } from "@/Components/ui/number-field";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
-import { TransferList } from "@/Components/ui/transfer-list";
-import { changeDutyNameEndings } from "@/Utils/String";
-import FormElement from "./FormElement.vue";
-import FormFieldWrapper from "./FormFieldWrapper.vue";
-import SimpleLocaleButton from "../Buttons/SimpleLocaleButton.vue";
-import TiptapEditor from "@/Components/TipTap/TiptapEditor.vue";
-import UserAvatar from "../Avatars/UserAvatar.vue";
-import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";
-import AdminForm from "./AdminForm.vue";
+import SimpleLocaleButton from '../Buttons/SimpleLocaleButton.vue';
+import UserAvatar from '../Avatars/UserAvatar.vue';
+import MultiLocaleInput from '../FormItems/MultiLocaleInput.vue';
+
+import FormElement from './FormElement.vue';
+import FormFieldWrapper from './FormFieldWrapper.vue';
+import AdminForm from './AdminForm.vue';
+
+import IconEdit from '~icons/fluent/edit16-filled';
+import IconEye from '~icons/fluent/eye16-regular';
+import { Badge } from '@/Components/ui/badge';
+import { Button } from '@/Components/ui/button';
+import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
+import { MultiSelect } from '@/Components/ui/multi-select';
+import { NumberField } from '@/Components/ui/number-field';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { TransferList } from '@/Components/ui/transfer-list';
+import { changeDutyNameEndings } from '@/Utils/String';
+import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 
 const props = defineProps<{
   duty: App.Entities.Duty;
@@ -225,27 +233,27 @@ const props = defineProps<{
 }>();
 
 defineEmits<{
-  (event: "submit:form", form: unknown): void;
-  (event: "delete"): void;
+  (event: 'submit:form', form: unknown): void;
+  (event: 'delete'): void;
 }>();
 
-const locale = ref("lt");
+const locale = ref('lt');
 
 const form = props.rememberKey
   ? useForm(props.rememberKey, props.duty as any)
   : useForm(props.duty as any);
 
-form.roles = props.duty.roles?.map((role) => role.id);
-form.types = props.duty.types?.map((type) => type.id);
-form.current_users = props.duty.current_users?.map((user) => user.id);
+form.roles = props.duty.roles?.map(role => role.id);
+form.types = props.duty.types?.map(type => type.id);
+form.current_users = props.duty.current_users?.map(user => user.id);
 
-const userOptions = props.assignableUsers.map((user) => ({
+const userOptions = props.assignableUsers.map(user => ({
   label: user.name,
   value: user.id,
-  user: user,
+  user,
 }));
 
-const rolesOptions = props.roles.map((role) => ({
+const rolesOptions = props.roles.map(role => ({
   label: role.name,
   value: role.id,
 }));
@@ -261,7 +269,7 @@ const selectedRoles = computed({
   set: (items: { label: string; value: number }[]) => { form.roles = items.map(item => item.value); },
 });
 
-const institutionsFromDatabase = props.assignableInstitutions.map((institution) => ({
+const institutionsFromDatabase = props.assignableInstitutions.map(institution => ({
   label: `${institution.name} (${institution.tenant?.shortname})`,
   value: institution.id,
 }));

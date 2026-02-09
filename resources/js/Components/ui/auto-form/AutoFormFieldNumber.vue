@@ -1,21 +1,7 @@
-<script setup lang="ts">
-import type { FieldProps } from './interface'
-import { FormControl, FormDescription, FormField, FormItem, FormMessage } from '@/Components/ui/form'
-import { Input } from '@/Components/ui/input'
-import AutoFormLabel from './AutoFormLabel.vue'
-import { beautifyObjectName } from './utils'
-
-defineOptions({
-  inheritAttrs: false,
-})
-
-defineProps<FieldProps>()
-</script>
-
 <template>
   <FormField v-slot="slotProps" :name="fieldName">
     <FormItem>
-      <AutoFormLabel v-if="!config?.hideLabel" :required="required">
+      <AutoFormLabel v-if="!config?.hideLabel" :required>
         {{ config?.label || beautifyObjectName(label ?? fieldName) }}
       </AutoFormLabel>
       <FormControl>
@@ -30,3 +16,18 @@ defineProps<FieldProps>()
     </FormItem>
   </FormField>
 </template>
+
+<script setup lang="ts">
+import type { FieldProps } from './interface';
+import AutoFormLabel from './AutoFormLabel.vue';
+import { beautifyObjectName } from './utils';
+
+import { FormControl, FormDescription, FormField, FormItem, FormMessage } from '@/Components/ui/form';
+import { Input } from '@/Components/ui/input';
+
+defineOptions({
+  inheritAttrs: false,
+});
+
+defineProps<FieldProps>();
+</script>

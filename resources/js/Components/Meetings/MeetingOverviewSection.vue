@@ -21,7 +21,9 @@
         </CollapsibleTrigger>
         <CollapsibleContent>
           <div class="px-4 pb-4 space-y-3">
-            <p class="text-sm text-blue-800 dark:text-blue-200">{{ $t('voting.help_agenda_status_description') }}</p>
+            <p class="text-sm text-blue-800 dark:text-blue-200">
+              {{ $t('voting.help_agenda_status_description') }}
+            </p>
 
             <!-- Type explanations -->
             <div class="space-y-2">
@@ -29,28 +31,36 @@
                 <div class="w-2 h-2 rounded-full bg-green-500 mt-1.5 shrink-0" />
                 <div>
                   <span class="text-sm font-medium text-zinc-900 dark:text-zinc-100">{{ $t('Balsavimas') }}</span>
-                  <p class="text-xs text-zinc-600 dark:text-zinc-400">{{ $t('voting.type_voting_tooltip') }}</p>
+                  <p class="text-xs text-zinc-600 dark:text-zinc-400">
+                    {{ $t('voting.type_voting_tooltip') }}
+                  </p>
                 </div>
               </div>
               <div class="flex items-start gap-2">
                 <div class="w-2 h-2 rounded-full bg-zinc-400 mt-1.5 shrink-0" />
                 <div>
                   <span class="text-sm font-medium text-zinc-900 dark:text-zinc-100">{{ $t('Atidėtas') }}</span>
-                  <p class="text-xs text-zinc-600 dark:text-zinc-400">{{ $t('voting.type_deferred_tooltip') }}</p>
+                  <p class="text-xs text-zinc-600 dark:text-zinc-400">
+                    {{ $t('voting.type_deferred_tooltip') }}
+                  </p>
                 </div>
               </div>
               <div class="flex items-start gap-2">
                 <div class="w-2 h-2 rounded-full bg-zinc-300 dark:bg-zinc-600 mt-1.5 shrink-0" />
                 <div>
                   <span class="text-sm font-medium text-zinc-900 dark:text-zinc-100">{{ $t('Informacinis') }}</span>
-                  <p class="text-xs text-zinc-600 dark:text-zinc-400">{{ $t('voting.type_informational_tooltip') }}</p>
+                  <p class="text-xs text-zinc-600 dark:text-zinc-400">
+                    {{ $t('voting.type_informational_tooltip') }}
+                  </p>
                 </div>
               </div>
             </div>
 
             <!-- Tips -->
             <div class="pt-2 border-t border-blue-200 dark:border-blue-800/50">
-              <p class="text-xs font-medium text-blue-800 dark:text-blue-200 mb-1">{{ $t('voting.help_tips_title') }}:</p>
+              <p class="text-xs font-medium text-blue-800 dark:text-blue-200 mb-1">
+                {{ $t('voting.help_tips_title') }}:
+              </p>
               <ul class="text-xs text-blue-700 dark:text-blue-300 space-y-0.5 list-disc list-inside">
                 <li>{{ $t('voting.help_tip_1') }}</li>
                 <li>{{ $t('voting.help_tip_2') }}</li>
@@ -133,8 +143,8 @@
       <div v-else class="px-4 py-8 text-center">
         <ClipboardList class="h-8 w-8 text-zinc-300 dark:text-zinc-600 mx-auto mb-2" />
         <p class="text-sm text-zinc-500 dark:text-zinc-400">
-{{ $t('Darbotvarkė tuščia') }}
-</p>
+          {{ $t('Darbotvarkė tuščia') }}
+        </p>
         <Button variant="outline" size="sm" class="mt-3" @click="$emit('go-to-agenda')">
           {{ $t('Pridėti punktų') }}
         </Button>

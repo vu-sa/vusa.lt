@@ -1,18 +1,3 @@
-<script setup lang="ts">
-import type { HTMLAttributes } from "vue"
-import { cn } from '@/Utils/Shadcn/utils'
-
-interface Props {
-  progress: number
-  class?: HTMLAttributes["class"]
-  showLabel?: boolean
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  showLabel: false,
-})
-</script>
-
 <template>
   <div
     :class="cn('w-full', props.class)"
@@ -25,7 +10,7 @@ const props = withDefaults(defineProps<Props>(), {
           :style="{ width: `${Math.min(100, Math.max(0, progress))}%` }"
         />
       </div>
-      <span 
+      <span
         v-if="showLabel"
         class="ml-3 min-w-[3rem] text-right text-xs font-medium text-zinc-600 dark:text-zinc-400"
       >
@@ -34,3 +19,19 @@ const props = withDefaults(defineProps<Props>(), {
     </div>
   </div>
 </template>
+
+<script setup lang="ts">
+import type { HTMLAttributes } from 'vue';
+
+import { cn } from '@/Utils/Shadcn/utils';
+
+interface Props {
+  progress: number;
+  class?: HTMLAttributes['class'];
+  showLabel?: boolean;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  showLabel: false,
+});
+</script>

@@ -3,7 +3,7 @@
     <!-- Active Members Section -->
     <section v-if="activeMembers.length > 0">
       <div class="flex items-center gap-2 mb-4">
-        <div class="h-2 w-2 rounded-full bg-green-500"></div>
+        <div class="h-2 w-2 rounded-full bg-green-500" />
         <h3 class="text-base font-semibold text-zinc-900 dark:text-zinc-100">
           {{ $t('Aktyvūs nariai') }}
         </h3>
@@ -11,15 +11,15 @@
           {{ activeMembers.length }}
         </Badge>
       </div>
-      
+
       <div class="space-y-3">
         <MemberHistoryCard
           v-for="member in activeMembers"
           :key="`active-${member.id}-${member.pivot?.id}`"
-          :member="member"
+          :member
           :is-active="true"
-          :show-contact="showContact"
-          :can-edit="canEdit"
+          :show-contact
+          :can-edit
           @edit-period="handleEditPeriod"
         />
       </div>
@@ -30,7 +30,7 @@
       <Collapsible v-model:open="isHistoryOpen" class="space-y-4">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
-            <div class="h-2 w-2 rounded-full bg-zinc-400"></div>
+            <div class="h-2 w-2 rounded-full bg-zinc-400" />
             <h3 class="text-base font-semibold text-zinc-900 dark:text-zinc-100">
               {{ $t('Istoriniai nariai') }}
             </h3>
@@ -38,11 +38,11 @@
               {{ historicalMembers.length }}
             </Badge>
           </div>
-          
+
           <CollapsibleTrigger as-child>
             <Button variant="ghost" size="sm" class="h-8 w-8 p-0">
-              <ChevronDown 
-                class="h-4 w-4 transition-transform duration-200" 
+              <ChevronDown
+                class="h-4 w-4 transition-transform duration-200"
                 :class="{ 'rotate-180': isHistoryOpen }"
               />
               <span class="sr-only">{{ $t('Rodyti istorinius narius') }}</span>
@@ -54,10 +54,10 @@
           <MemberHistoryCard
             v-for="member in historicalMembers"
             :key="`historical-${member.id}-${member.pivot?.id}`"
-            :member="member"
+            :member
             :is-active="false"
-            :show-contact="showContact"
-            :can-edit="canEdit"
+            :show-contact
+            :can-edit
             @edit-period="handleEditPeriod"
           />
         </CollapsibleContent>
@@ -83,11 +83,13 @@
 import { computed, ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { router } from '@inertiajs/vue3';
+import { ChevronDown, History } from 'lucide-vue-next';
+
+import MemberHistoryCard from './MemberHistoryCard.vue';
+
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Components/ui/collapsible';
-import { ChevronDown, History } from 'lucide-vue-next';
-import MemberHistoryCard from './MemberHistoryCard.vue';
 
 const props = withDefaults(defineProps<{
   members: App.Entities.User[];
@@ -109,7 +111,7 @@ const isHistoryOpen = ref(false);
 const activeMembers = computed(() => {
   const now = new Date();
   return props.members
-    .filter(member => {
+    .filter((member) => {
       if (!member.pivot) return false;
       // No end_date means currently active
       if (!member.pivot.end_date) return true;
@@ -125,7 +127,7 @@ const activeMembers = computed(() => {
 const historicalMembers = computed(() => {
   const now = new Date();
   return props.members
-    .filter(member => {
+    .filter((member) => {
       if (!member.pivot) return false;
       // Must have an end_date that's in the past
       if (!member.pivot.end_date) return false;

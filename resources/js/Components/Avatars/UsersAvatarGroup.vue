@@ -14,8 +14,8 @@
     <div v-if="hasMoreUsers" class="-ml-2 relative flex items-center" :class="avatarWrapperClass" :style="{ zIndex: 0 }">
       <HoverCard>
         <HoverCardTrigger as-child>
-          <Avatar 
-            :size="avatarSize" 
+          <Avatar
+            :size="avatarSize"
             :interactive="true"
           >
             <AvatarFallback
@@ -26,32 +26,32 @@
           </Avatar>
         </HoverCardTrigger>
         <HoverCardContent class="p-3 w-auto min-w-48 max-h-[280px] overflow-y-auto">
-        <div class="space-y-3">
-          <h4 class="text-sm font-medium text-muted-foreground">
-            {{ $t('Other users') }}
-          </h4>
-          <div class="grid gap-2">
-            <UserPopover v-for="user in hiddenUsers" :key="user.id || user.name" show-name :size="popoverAvatarSize"
-              :user>
-              <template #additional-info>
-                <slot name="user-additional-info" :user />
-              </template>
-            </UserPopover>
+          <div class="space-y-3">
+            <h4 class="text-sm font-medium text-muted-foreground">
+              {{ $t('Other users') }}
+            </h4>
+            <div class="grid gap-2">
+              <UserPopover v-for="user in hiddenUsers" :key="user.id || user.name" show-name :size="popoverAvatarSize"
+                :user>
+                <template #additional-info>
+                  <slot name="user-additional-info" :user />
+                </template>
+              </UserPopover>
+            </div>
           </div>
-        </div>
-      </HoverCardContent>
-    </HoverCard>
+        </HoverCardContent>
+      </HoverCard>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed } from 'vue';
 
-import UserPopover from "./UserPopover.vue";
+import UserPopover from './UserPopover.vue';
 
-import { Avatar, AvatarFallback, avatarSizeClasses, mapPixelToSize, avatarTextSizes, type AvatarSize } from "@/Components/ui/avatar";
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/Components/ui/hover-card";
+import { Avatar, AvatarFallback, avatarSizeClasses, mapPixelToSize, avatarTextSizes, type AvatarSize } from '@/Components/ui/avatar';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/Components/ui/hover-card';
 
 const props = defineProps<{
   users: App.Entities.User[];
@@ -68,8 +68,8 @@ const maxVisibleUsers = computed(() => {
 
   // Check if the screen is small and adjust the max visible users accordingly
   if (typeof window !== 'undefined') {
-    if (window.innerWidth < 640) return Math.min(defaultMax, 2);  // sm
-    if (window.innerWidth < 768) return Math.min(defaultMax, 3);  // md
+    if (window.innerWidth < 640) return Math.min(defaultMax, 2); // sm
+    if (window.innerWidth < 768) return Math.min(defaultMax, 3); // md
   }
 
   return defaultMax;

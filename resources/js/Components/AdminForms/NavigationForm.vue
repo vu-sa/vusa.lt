@@ -32,7 +32,9 @@
               <SelectValue placeholder="Pasirinkti tėvinį elementą..." />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="__none__">-- Nėra --</SelectItem>
+              <SelectItem value="__none__">
+                -- Nėra --
+              </SelectItem>
               <SelectItem v-for="element in parentElements" :key="element.id" :value="String(element.id)">
                 {{ element.name }}
               </SelectItem>
@@ -138,33 +140,34 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
-import { router, useForm, usePage } from "@inertiajs/vue3"
+import { computed } from 'vue';
+import { router, useForm, usePage } from '@inertiajs/vue3';
 
-import Link24Regular from "~icons/fluent/link24-regular";
+import FluentIconSelect from '../FormItems/FluentIconSelect.vue';
 
-import FluentIconSelect from "../FormItems/FluentIconSelect.vue";
-import FormElement from "./FormElement.vue";
-import FormFieldWrapper from "./FormFieldWrapper.vue";
-import Icons from "@/Types/Icons/regular";
-import TiptapImageButton from "@/Components/TipTap/TiptapImageButton.vue";
-import AdminForm from "./AdminForm.vue";
-import { Button } from "@/Components/ui/button";
-import { ButtonGroup } from "@/Components/ui/button-group";
-import { Input } from "@/Components/ui/input";
-import { Textarea } from "@/Components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
+import FormElement from './FormElement.vue';
+import FormFieldWrapper from './FormFieldWrapper.vue';
+import AdminForm from './AdminForm.vue';
+
+import Icons from '@/Types/Icons/regular';
+import TiptapImageButton from '@/Components/TipTap/TiptapImageButton.vue';
+import Link24Regular from '~icons/fluent/link24-regular';
+import { Button } from '@/Components/ui/button';
+import { ButtonGroup } from '@/Components/ui/button-group';
+import { Input } from '@/Components/ui/input';
+import { Textarea } from '@/Components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 
 const props = defineProps<{
   navigation: App.Entities.Navigation;
   parentElements: App.Entities.Navigation[];
-  typeOptions: any
-  rememberKey?: "CreateNavigation";
+  typeOptions: any;
+  rememberKey?: 'CreateNavigation';
 }>();
 
 defineEmits<{
-  (event: "submit:form", form: unknown): void;
-  (event: "delete"): void;
+  (event: 'submit:form', form: unknown): void;
+  (event: 'delete'): void;
 }>();
 
 const form = props.rememberKey
@@ -200,42 +203,42 @@ const linkStyleOptions = computed(() => [
 ]);
 
 const columnOptions = [
-  { value: 1, label: "1" },
-  { value: 2, label: "2" },
-  { value: 3, label: "3" },
-]
+  { value: 1, label: '1' },
+  { value: 2, label: '2' },
+  { value: 3, label: '3' },
+];
 
 const currentLang = usePage().props.app.locale;
 
 const quickLinkType = [
   {
-    value: "url",
-    label: "Nuoroda",
+    value: 'url',
+    label: 'Nuoroda',
     icon: Link24Regular,
   },
   {
-    value: "page",
-    label: "Turinio puslapis",
+    value: 'page',
+    label: 'Turinio puslapis',
     icon: Icons.PAGE,
   },
   {
-    value: "news",
-    label: "Naujiena",
+    value: 'news',
+    label: 'Naujiena',
     icon: Icons.NEWS,
   },
   {
-    value: "calendarEvent",
-    label: "Įvykis",
+    value: 'calendarEvent',
+    label: 'Įvykis',
     icon: Icons.CALENDAR,
   },
   {
-    value: "institution",
-    label: "Institucija",
+    value: 'institution',
+    label: 'Institucija',
     icon: Icons.INSTITUTION,
   },
   {
-    value: "category",
-    label: "Kategorija",
+    value: 'category',
+    label: 'Kategorija',
     icon: Icons.CATEGORY,
   },
 ];
@@ -255,14 +258,13 @@ const typeOptions = computed(() => {
 });
 
 const handleTypeChange = (changedValue: string) => {
-
-  if (changedValue === "url") {
+  if (changedValue === 'url') {
     return;
   }
 
   router.reload({
     data: { type: changedValue },
-    only: ["typeOptions"],
+    only: ['typeOptions'],
     onSuccess: () => {
       form.pageSelection = null;
     },
@@ -272,7 +274,7 @@ const handleTypeChange = (changedValue: string) => {
 const handlePageSelection = (value: string) => {
   form.pageSelection = value;
 
-  if (form.linkType === "url") {
+  if (form.linkType === 'url') {
     return;
   }
 
@@ -281,54 +283,53 @@ const handlePageSelection = (value: string) => {
 
   const optionData = selectedOption.option;
 
-  let subdomain =
-    optionData.tenant?.alias === "vusa"
-      ? "www"
+  const subdomain
+    = optionData.tenant?.alias === 'vusa'
+      ? 'www'
       : optionData.tenant?.alias;
 
-  if (form.linkType === "page") {
-    form.url = route("page", {
+  if (form.linkType === 'page') {
+    form.url = route('page', {
       lang: optionData.lang,
-      subdomain: subdomain,
+      subdomain,
       permalink: optionData.permalink,
     });
     return;
   }
 
-  if (form.linkType === "news") {
-    form.url = route("news", {
+  if (form.linkType === 'news') {
+    form.url = route('news', {
       lang: optionData.lang,
       news: optionData.permalink,
-      newsString: "naujiena",
-      subdomain: subdomain,
+      newsString: 'naujiena',
+      subdomain,
     });
     return;
   }
 
-  if (form.linkType === "calendarEvent") {
-    form.url = route("calendar.event", {
+  if (form.linkType === 'calendarEvent') {
+    form.url = route('calendar.event', {
       lang: currentLang.value as string,
       calendar: optionData.id,
     });
     return;
   }
 
-  if (form.linkType === "institution") {
-    form.url = route("contacts.institution", {
+  if (form.linkType === 'institution') {
+    form.url = route('contacts.institution', {
       lang: currentLang.value as string,
       institution: optionData.id,
-      subdomain: subdomain,
+      subdomain,
     });
     return;
   }
 
-  if (form.linkType === "category") {
-    form.url = route("category", {
+  if (form.linkType === 'category') {
+    form.url = route('category', {
       lang: currentLang.value as string,
       category: optionData.alias,
-      subdomain: subdomain,
+      subdomain,
     });
-    return;
   }
 };
 </script>

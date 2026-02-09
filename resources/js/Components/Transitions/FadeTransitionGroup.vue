@@ -4,8 +4,6 @@
   </TransitionGroup>
 </template>
 
-<script setup lang="ts"></script>
-
 <style>
 .fade-enter-active,
 .fade-leave-active {

@@ -14,26 +14,26 @@
       <ScrollArea v-if="groupResults" class="h-full">
         <div class="space-y-4 p-4" role="listbox" aria-label="Search results">
           <!-- Render sections for enabled content types in configured order -->
-          <SearchResultSection 
+          <SearchResultSection
             v-for="contentType in orderedTypes"
             :key="contentType.id"
             :index-name="contentType.indexName"
             :title="$t(contentType.name)"
             :icon="contentType.icon"
             :type="contentType.id"
-            :result-order="resultOrder"
+            :result-order
             @navigate-to-item="$emit('navigateToItem', $event)"
             @update-result-count="(count) => $emit('updateResultCount', contentType.id, count)"
             @update-total-hits="(totalHits) => $emit('updateTotalHits', contentType.id, totalHits)"
           />
         </div>
       </ScrollArea>
-      
+
       <!-- Unified Results (alternative view) -->
       <ScrollArea v-else class="h-full">
         <UnifiedResults
           :enabled-content-types="selectedTypes"
-          :result-order="resultOrder"
+          :result-order
           @navigate-to-item="$emit('navigateToItem', $event)"
           @update-result-count="(count) => $emit('updateResultCount', 'unified', count)"
           @update-total-hits="(contentTypeId, totalHits) => $emit('updateTotalHits', contentTypeId, totalHits)"
@@ -45,34 +45,36 @@
 </template>
 
 <script setup lang="ts">
-import { trans as $t } from 'laravel-vue-i18n'
-import { ScrollArea } from '@/Components/ui/scroll-area'
-import SearchResultSection from './SearchResultSection.vue'
-import UnifiedResults from './UnifiedResults.vue'
-import type { SearchItem } from '@/Composables/useSearchUtils'
+import { trans as $t } from 'laravel-vue-i18n';
+
+import SearchResultSection from './SearchResultSection.vue';
+import UnifiedResults from './UnifiedResults.vue';
+
+import { ScrollArea } from '@/Components/ui/scroll-area';
+import type { SearchItem } from '@/Composables/useSearchUtils';
 
 interface ContentType {
-  id: string
-  name: string
-  icon: string
-  color: string
-  indexName: string
+  id: string;
+  name: string;
+  icon: string;
+  color: string;
+  indexName: string;
 }
 
 interface SearchResultsAreaProps {
-  groupResults: boolean
-  orderedTypes: ContentType[]
-  selectedTypes: ContentType[]
-  resultOrder: string
-  totalResultCount: number
+  groupResults: boolean;
+  orderedTypes: ContentType[];
+  selectedTypes: ContentType[];
+  resultOrder: string;
+  totalResultCount: number;
 }
 
-defineProps<SearchResultsAreaProps>()
+defineProps<SearchResultsAreaProps>();
 
 defineEmits<{
-  (e: 'navigateToItem', item: SearchItem): void
-  (e: 'updateResultCount', typeId: string, count: number): void
-  (e: 'updateTotalHits', typeId: string, totalHits: number): void
-  (e: 'toggleView'): void
-}>()
+  (e: 'navigateToItem', item: SearchItem): void;
+  (e: 'updateResultCount', typeId: string, count: number): void;
+  (e: 'updateTotalHits', typeId: string, totalHits: number): void;
+  (e: 'toggleView'): void;
+}>();
 </script>

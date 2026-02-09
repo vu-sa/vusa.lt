@@ -1,13 +1,15 @@
 /**
  * TipTap Editor Composable
- * 
+ *
  * Centralized editor setup with preset support, heading ID generation, and cleanup logic.
  */
 import { ref, onBeforeUnmount, nextTick } from 'vue';
 import { useEditor, type Editor } from '@tiptap/vue-3';
 import type { EditorOptions } from '@tiptap/core';
-import { latinizeId } from '@/Utils/String';
+
 import { type EditorPreset, getExtensionsForPreset, type PresetOptions } from '../extensions/presets';
+
+import { latinizeId } from '@/Utils/String';
 
 export interface UseTiptapEditorOptions {
   /** Editor preset: 'minimal' | 'compact' | 'full' */
@@ -28,7 +30,7 @@ export interface UseTiptapEditorOptions {
 
 /**
  * Main TipTap editor composable
- * 
+ *
  * @example
  * ```ts
  * const { editor } = useTiptapEditor({
@@ -65,12 +67,13 @@ export function useTiptapEditor(options: UseTiptapEditorOptions) {
       if (generateHeadingIds) {
         updateHeadingIds(editorInstance);
       }
-      
+
       nextTick(() => {
         if (onUpdate) {
           if (html) {
             onUpdate(editorInstance.getHTML());
-          } else {
+          }
+          else {
             onUpdate(editorInstance.getJSON());
           }
         }
@@ -101,7 +104,7 @@ function updateHeadingIds(editorInstance: Editor) {
 
       // Ensure unique IDs
       let counter = 1;
-      while (innerHeadings.some((heading) => heading.id === id)) {
+      while (innerHeadings.some(heading => heading.id === id)) {
         id = `${latinizeId(node.textContent)}-${counter}`;
         counter++;
       }

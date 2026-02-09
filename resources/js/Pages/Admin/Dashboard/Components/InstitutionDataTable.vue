@@ -2,7 +2,9 @@
   <Dialog :open="isOpen" @update:open="emit('update:isOpen', $event)">
     <DialogContent class="max-w-[95vw] sm:max-w-[90vw] w-full max-h-[90vh] sm:max-h-[85vh] overflow-y-auto p-4 sm:p-6">
       <DialogHeader class="pb-3">
-        <DialogTitle class="text-lg sm:text-xl">{{ $t('Visos institucijos') }}</DialogTitle>
+        <DialogTitle class="text-lg sm:text-xl">
+          {{ $t('Visos institucijos') }}
+        </DialogTitle>
         <DialogDescription class="text-sm">
           {{ $t('Peržiūrėkite visas savo institucijas ir jų aktyvumą') }}
         </DialogDescription>
@@ -19,7 +21,7 @@
               {{ $t('Susijusios institucijos') }} ({{ relatedInstitutions.length }})
             </TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="my" class="space-y-4 mt-4">
             <!-- Search -->
             <div class="relative">
@@ -32,7 +34,7 @@
               <InstitutionCompactCard
                 v-for="institution in filteredInstitutions"
                 :key="institution.id"
-                :institution="institution"
+                :institution
                 :show-actions="true"
                 :can-schedule-meeting="true"
                 :can-add-check-in="true"
@@ -48,14 +50,14 @@
               <p>{{ searchQuery ? $t('Institucijų nerasta pagal paiešką') : $t('Institucijų nerasta') }}</p>
             </div>
           </TabsContent>
-          
+
           <TabsContent value="related" class="space-y-4 mt-4">
             <!-- Search -->
             <div class="relative">
               <input v-model="relatedSearchQuery" type="text" :placeholder="$t('Ieškoti institucijų...')"
                 class="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100">
             </div>
-            
+
             <!-- Info about related institutions -->
             <p class="text-sm text-zinc-500 dark:text-zinc-400">
               {{ $t('visak.related_institutions_info') }}
@@ -66,7 +68,7 @@
               <RelatedInstitutionCard
                 v-for="institution in filteredRelatedInstitutions"
                 :key="institution.id"
-                :institution="institution"
+                :institution
               />
             </div>
 
@@ -77,7 +79,7 @@
             </div>
           </TabsContent>
         </Tabs>
-        
+
         <!-- No tabs if no related institutions -->
         <template v-else>
           <!-- Search -->
@@ -91,7 +93,7 @@
             <InstitutionCompactCard
               v-for="institution in filteredInstitutions"
               :key="institution.id"
-              :institution="institution"
+              :institution
               :show-actions="true"
               :can-schedule-meeting="true"
               :can-add-check-in="true"
@@ -119,19 +121,18 @@ import { router } from '@inertiajs/vue3';
 
 import type { AtstovavimosInstitution } from '../types';
 
-import InstitutionCompactCard from '@/Components/Institutions/InstitutionCompactCard.vue';
 import RelatedInstitutionCard from './RelatedInstitutionCard.vue';
 
+import InstitutionCompactCard from '@/Components/Institutions/InstitutionCompactCard.vue';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/Components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
-import Icons from "@/Types/Icons/filled";
-
+} from '@/Components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
+import Icons from '@/Types/Icons/filled';
 
 interface Props {
   institutions: AtstovavimosInstitution[];
@@ -159,7 +160,7 @@ const filteredInstitutions = computed(() => {
 
   const query = searchQuery.value.toLowerCase();
   return props.institutions.filter(institution =>
-    institution.name.toLowerCase().includes(query)
+    institution.name.toLowerCase().includes(query),
   );
 });
 
@@ -169,7 +170,7 @@ const filteredRelatedInstitutions = computed(() => {
 
   const query = relatedSearchQuery.value.toLowerCase();
   return props.relatedInstitutions.filter(institution =>
-    institution.name.toLowerCase().includes(query)
+    institution.name.toLowerCase().includes(query),
   );
 });
 
@@ -178,8 +179,8 @@ const handleRemoveActiveCheckIn = (institutionId: string) => {
     preserveScroll: true,
     onSuccess: () => {
       // Refresh data to update UI after check-in deletion
-      router.reload({ only: ['user', 'userInstitutions', 'tenantInstitutions'], preserveScroll: true })
-    }
-  })
-}
+      router.reload({ only: ['user', 'userInstitutions', 'tenantInstitutions'], preserveScroll: true });
+    },
+  });
+};
 </script>

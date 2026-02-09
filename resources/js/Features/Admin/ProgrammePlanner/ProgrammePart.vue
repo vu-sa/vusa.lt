@@ -16,9 +16,9 @@
         <template v-if="showTimes">
           {{ formatStaticTime(new Date(partStartTime), { hour: 'numeric', minute: '2-digit' }) }}-{{
             formatStaticTime(new Date(partEndTime),
-              {
-                hour: 'numeric', minute: '2-digit'
-              }) }}
+                             {
+                               hour: 'numeric', minute: '2-digit'
+                             }) }}
 
           {{ part?.instructor ? ' | ' + part.instructor : '' }}
         </template>
@@ -31,13 +31,14 @@
 </template>
 
 <script setup lang="ts">
-import { formatStaticTime } from '@/Utils/IntlTime';
 import { computed, inject, type Ref, watch } from 'vue';
 
-const part = defineModel<App.Entities.ProgrammePart>('element')
+import { formatStaticTime } from '@/Utils/IntlTime';
+
+const part = defineModel<App.Entities.ProgrammePart>('element');
 
 const { parent, sectionStartTime } = defineProps<{
-  parent: any
+  parent: any;
   handleClass?: string;
   sectionStartTime?: number;
 }>();
@@ -52,13 +53,15 @@ const partStartTime = computed(() => {
       .reduce((acc, element) => acc + element.duration, 0);
 
     return (new Date(parent.start_time)).getTime() + 1000 * 60 * elapsedTime;
-  } else if (parent.type === 'block') {
+  }
+  else if (parent.type === 'block') {
     const elapsedTime = parent.parts
       .slice(0, parent.parts.indexOf(part.value))
       .reduce((acc, element) => acc + element.duration, 0);
 
     return (new Date(sectionStartTime)).getTime() + 1000 * 60 * elapsedTime;
-  } else {
+  }
+  else {
     return '';
   }
 });

@@ -8,8 +8,8 @@
     leave-from-class="translate-y-0"
     leave-to-class="translate-y-full"
   >
-    <div 
-      v-if="needRefresh && isPWA" 
+    <div
+      v-if="needRefresh && isPWA"
       class="fixed bottom-20 left-4 right-4 md:left-auto md:right-4 md:bottom-4 md:w-80 z-50 bg-primary text-primary-foreground rounded-lg shadow-lg p-4"
     >
       <div class="flex items-center justify-between gap-3">
@@ -32,6 +32,7 @@
 
 <script setup lang="ts">
 import { RefreshCwIcon } from 'lucide-vue-next';
+
 import { usePWA } from '@/Composables/usePWA';
 import { Button } from '@/Components/ui/button';
 

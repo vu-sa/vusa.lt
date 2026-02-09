@@ -8,20 +8,20 @@
  * Used by both admin and public search implementations.
  */
 
-import type { BaseFacet, FacetValue, BaseSearchFilters } from '../types'
+import type { BaseFacet, FacetValue, BaseSearchFilters } from '../types';
 
 /**
  * Selection map for determining which values are selected
  */
-export type SelectionMap = Record<string, (string | number)[]>
+export type SelectionMap = Record<string, (string | number)[]>;
 
 /**
  * Field to filter key mapping function
  */
 export type FilterKeyMapper<TFilters extends BaseSearchFilters> = (
   field: string,
-  filters: TFilters
-) => (string | number)[]
+  filters: TFilters,
+) => (string | number)[];
 
 /**
  * FacetMerger class - provides static methods for merging facets
@@ -40,66 +40,66 @@ export class FacetMerger {
   static mergeFacetsWithSelectionMap<T extends BaseFacet>(
     initialFacets: T[],
     currentFacets: T[],
-    selectedValuesByField: SelectionMap
+    selectedValuesByField: SelectionMap,
   ): T[] {
     // If no initial facets, return current facets as-is
     if (initialFacets.length === 0) {
-      return currentFacets
+      return currentFacets;
     }
 
-    return initialFacets.map(initialFacet => {
-      const currentFacet = currentFacets.find(f => f.field === initialFacet.field)
+    return initialFacets.map((initialFacet) => {
+      const currentFacet = currentFacets.find(f => f.field === initialFacet.field);
 
       // Create map of current counts for quick lookup
-      const currentValueMap = new Map<string, number>()
+      const currentValueMap = new Map<string, number>();
       if (currentFacet) {
-        currentFacet.values.forEach(value => {
-          currentValueMap.set(value.value, value.count)
-        })
+        currentFacet.values.forEach((value) => {
+          currentValueMap.set(value.value, value.count);
+        });
       }
 
       // Get selected values for this field (convert to strings for comparison)
       const selectedValues = (selectedValuesByField[initialFacet.field] || [])
-        .map(v => String(v))
+        .map(v => String(v));
 
       // Merge values: show ALL initial values with updated counts from current search
       const mergedValues: FacetValue[] = initialFacet.values.map(initialValue => ({
         ...initialValue,
         count: currentValueMap.get(initialValue.value) || 0,
-        isSelected: selectedValues.includes(initialValue.value)
-      }))
+        isSelected: selectedValues.includes(initialValue.value),
+      }));
 
       // Add any new values from current search that weren't in initial facets
       if (currentFacet) {
-        currentFacet.values.forEach(currentValue => {
+        currentFacet.values.forEach((currentValue) => {
           const existsInInitial = initialFacet.values.some(
-            iv => iv.value === currentValue.value
-          )
+            iv => iv.value === currentValue.value,
+          );
           if (!existsInInitial) {
             mergedValues.push({
               ...currentValue,
-              isSelected: selectedValues.includes(currentValue.value)
-            })
+              isSelected: selectedValues.includes(currentValue.value),
+            });
           }
-        })
+        });
       }
 
       // Sort: selected items first, then by count, then alphabetically
       mergedValues.sort((a, b) => {
-        const aSelected = a.isSelected ?? false
-        const bSelected = b.isSelected ?? false
+        const aSelected = a.isSelected ?? false;
+        const bSelected = b.isSelected ?? false;
 
-        if (aSelected && !bSelected) return -1
-        if (!aSelected && bSelected) return 1
-        if (a.count !== b.count) return b.count - a.count
-        return a.value.localeCompare(b.value)
-      })
+        if (aSelected && !bSelected) return -1;
+        if (!aSelected && bSelected) return 1;
+        if (a.count !== b.count) return b.count - a.count;
+        return a.value.localeCompare(b.value);
+      });
 
       return {
         ...initialFacet,
-        values: mergedValues
-      } as T
-    })
+        values: mergedValues,
+      } as T;
+    });
   }
 
   /**
@@ -117,15 +117,15 @@ export class FacetMerger {
     initialFacets: T[],
     currentFacets: T[],
     filters: TFilters,
-    getSelectedValues: FilterKeyMapper<TFilters>
+    getSelectedValues: FilterKeyMapper<TFilters>,
   ): T[] {
-    const selectionMap: SelectionMap = {}
+    const selectionMap: SelectionMap = {};
 
     for (const facet of initialFacets) {
-      selectionMap[facet.field] = getSelectedValues(facet.field, filters)
+      selectionMap[facet.field] = getSelectedValues(facet.field, filters);
     }
 
-    return this.mergeFacetsWithSelectionMap(initialFacets, currentFacets, selectionMap)
+    return this.mergeFacetsWithSelectionMap(initialFacets, currentFacets, selectionMap);
   }
 
   /**
@@ -144,21 +144,21 @@ export class FacetMerger {
       language: 'languages',
       year: 'years',
       institution_type_title: 'institutionTypes',
-      student_success_rate: 'successRateRanges'
-    }
+      student_success_rate: 'successRateRanges',
+    };
 
     return (field: string, filters: TFilters): (string | number)[] => {
-      const filterKey = fieldMappings[field] || field
+      const filterKey = fieldMappings[field] || field;
 
-      const value = filters[filterKey]
+      const value = filters[filterKey];
       if (Array.isArray(value)) {
-        return value
+        return value;
       }
       if (value !== undefined && value !== null && value !== '') {
-        return [value as string | number]
+        return [value as string | number];
       }
-      return []
-    }
+      return [];
+    };
   }
 
   /**
@@ -167,8 +167,8 @@ export class FacetMerger {
   static mergeSimple<T extends BaseFacet>(
     initialFacets: T[],
     currentFacets: T[],
-    filters: BaseSearchFilters
+    filters: BaseSearchFilters,
   ): T[] {
-    return this.mergeFacets(initialFacets, currentFacets, filters, this.createDefaultMapper())
+    return this.mergeFacets(initialFacets, currentFacets, filters, this.createDefaultMapper());
   }
 }

@@ -17,9 +17,10 @@
 
 <script setup lang="ts">
 import { XIcon } from 'lucide-vue-next';
+
 import { Alert, AlertTitle, AlertDescription } from '../ui/alert';
 
-const modelValue = defineModel("modelValue", {
+const modelValue = defineModel('modelValue', {
   type: Boolean,
   default: true,
 });

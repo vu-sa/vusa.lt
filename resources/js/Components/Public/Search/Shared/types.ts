@@ -3,13 +3,13 @@
  */
 
 export interface FilterOption {
-  value: string | number
-  label: string
-  count?: number
+  value: string | number;
+  label: string;
+  count?: number;
 }
 
 export interface ViewModeOption {
-  value: string
-  label: string
-  icon: string
+  value: string;
+  label: string;
+  icon: string;
 }

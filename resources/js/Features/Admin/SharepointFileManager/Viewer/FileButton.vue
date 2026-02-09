@@ -18,15 +18,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed } from 'vue';
 
-import File from "~icons/mdi/File";
-import FileExcel from "~icons/mdi/FileExcel";
-import FilePdf from "~icons/mdi/FilePdf";
-import FileWord from "~icons/mdi/FileWord";
-import Folder from "~icons/mdi/Folder";
-
-import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
+import File from '~icons/mdi/File';
+import FileExcel from '~icons/mdi/FileExcel';
+import FilePdf from '~icons/mdi/FilePdf';
+import FileWord from '~icons/mdi/FileWord';
+import Folder from '~icons/mdi/Folder';
+import FadeTransition from '@/Components/Transitions/FadeTransition.vue';
 
 const props = defineProps<{
   iconString: 'folder' | 'file' | 'file-pdf' | 'file-word' | 'file-excel';
@@ -35,7 +34,6 @@ const props = defineProps<{
   showThumbnail?: boolean;
   thumbnail?: string;
 }>();
-
 
 const icon = computed(() => {
   if (props.iconString === 'folder') {

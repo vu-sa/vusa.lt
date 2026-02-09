@@ -38,16 +38,16 @@
 </template>
 
 <script setup lang="ts">
-import { useForm } from "@inertiajs/vue3";
-import { computed } from "vue";
+import { useForm } from '@inertiajs/vue3';
+import { computed } from 'vue';
 
-import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
-import AdminForm from "@/Components/AdminForms/AdminForm.vue";
-import FormElement from "@/Components/AdminForms/FormElement.vue";
-import Icons from "@/Types/Icons/regular";
-import { Label } from "@/Components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
+import PageContent from '@/Components/Layouts/AdminContentPage.vue';
+import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
+import AdminForm from '@/Components/AdminForms/AdminForm.vue';
+import FormElement from '@/Components/AdminForms/FormElement.vue';
+import Icons from '@/Types/Icons/regular';
+import { Label } from '@/Components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 
 interface Role {
   id: string;
@@ -62,15 +62,15 @@ const props = defineProps<{
 const roleOptions = computed(() =>
   props.roles.map(role => ({
     label: role.name,
-    value: role.id
-  }))
+    value: role.id,
+  })),
 );
 
 const form = useForm({
-  institution_manager_role_id: props.institution_manager_role_id
+  institution_manager_role_id: props.institution_manager_role_id,
 });
 
 const handleFormSubmit = () => {
-  form.post(route("settings.atstovavimas.update"));
+  form.post(route('settings.atstovavimas.update'));
 };
 </script>

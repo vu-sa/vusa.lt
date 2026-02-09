@@ -130,10 +130,10 @@
 
           <!-- Notification Preferences Section -->
           <NotificationPreferences
-            :notification-preferences="notificationPreferences"
-            :notification-categories="notificationCategories"
-            :notification-channels="notificationChannels"
-            :available-digest-emails="availableDigestEmails"
+            :notification-preferences
+            :notification-categories
+            :notification-channels
+            :available-digest-emails
           />
 
           <h2>{{ $t("Tavo rolės") }}</h2>
@@ -164,25 +164,25 @@
 </template>
 
 <script setup lang="tsx">
-import { trans as $t } from "laravel-vue-i18n";
-import { ref, computed } from "vue";
-import { useForm, usePage } from "@inertiajs/vue3";
+import { trans as $t } from 'laravel-vue-i18n';
+import { ref, computed } from 'vue';
+import { useForm, usePage } from '@inertiajs/vue3';
 
-import { useApiMutation } from "@/Composables/useApi";
-import { resetInitialization } from "@/Composables/useTutorialProgress";
-import { Button } from "@/Components/ui/button";
-import { Card, CardContent } from "@/Components/ui/card";
-import { Input } from "@/Components/ui/input";
-import { Switch } from "@/Components/ui/switch";
-import FormElement from "@/Components/AdminForms/FormElement.vue";
-import FormFieldWrapper from "@/Components/AdminForms/FormFieldWrapper.vue";
-import MultiLocaleInput from "@/Components/FormItems/MultiLocaleInput.vue";
-import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import { ImageUpload } from "@/Components/ui/upload";
-import InfoText from "@/Components/SmallElements/InfoText.vue";
-import NotificationPreferences from "@/Features/Admin/Notifications/NotificationPreferences.vue";
-import PushDeviceManagement from "@/Features/Admin/Notifications/PushDeviceManagement.vue";
-import { BreadcrumbHelpers, usePageBreadcrumbs } from "@/Composables/useBreadcrumbsUnified";
+import { useApiMutation } from '@/Composables/useApi';
+import { resetInitialization } from '@/Composables/useTutorialProgress';
+import { Button } from '@/Components/ui/button';
+import { Card, CardContent } from '@/Components/ui/card';
+import { Input } from '@/Components/ui/input';
+import { Switch } from '@/Components/ui/switch';
+import FormElement from '@/Components/AdminForms/FormElement.vue';
+import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
+import MultiLocaleInput from '@/Components/FormItems/MultiLocaleInput.vue';
+import PageContent from '@/Components/Layouts/AdminContentPage.vue';
+import { ImageUpload } from '@/Components/ui/upload';
+import InfoText from '@/Components/SmallElements/InfoText.vue';
+import NotificationPreferences from '@/Features/Admin/Notifications/NotificationPreferences.vue';
+import PushDeviceManagement from '@/Features/Admin/Notifications/PushDeviceManagement.vue';
+import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import IMdiContentSave from '~icons/mdi/content-save';
 import IMdiGithub from '~icons/mdi/github';
 import IMdiLock from '~icons/mdi/lock';
@@ -217,7 +217,7 @@ const REDUCE_MOTION_KEY = 'vusa-reduce-motion';
 const reduceMotion = ref(
   typeof window !== 'undefined'
     ? localStorage.getItem(REDUCE_MOTION_KEY) === 'true'
-    : false
+    : false,
 );
 
 const handleReduceMotionChange = (value: boolean) => {
@@ -226,7 +226,8 @@ const handleReduceMotionChange = (value: boolean) => {
   // Also toggle a class on documentElement for CSS-based disabling
   if (value) {
     document.documentElement.classList.add('reduce-motion');
-  } else {
+  }
+  else {
     document.documentElement.classList.remove('reduce-motion');
   }
 };
@@ -254,12 +255,12 @@ const passwordForm = useForm({
 
 // Generate breadcrumbs automatically with new simplified API
 usePageBreadcrumbs([
-  { label: $t('Nustatymai'), icon: IMdiSettings }
+  { label: $t('Nustatymai'), icon: IMdiSettings },
 ]);
 
 const handleSubmit = () => {
   loading.value = true;
-  form.patch(route("profile.update", props.user.id), {
+  form.patch(route('profile.update', props.user.id), {
     preserveScroll: true,
     onSuccess: () => {
       loading.value = false;
@@ -269,7 +270,7 @@ const handleSubmit = () => {
 
 const handlePasswordUpdate = () => {
   passwordLoading.value = true;
-  passwordForm.patch(route("profile.updatePassword"), {
+  passwordForm.patch(route('profile.updatePassword'), {
     preserveScroll: true,
     onSuccess: () => {
       passwordLoading.value = false;
@@ -287,10 +288,10 @@ const handleResetTutorials = async () => {
 
   try {
     const { execute, isSuccess } = useApiMutation(
-      route("api.v1.admin.tutorials.resetAll"),
+      route('api.v1.admin.tutorials.resetAll'),
       'POST',
       {},
-      { showSuccessToast: false, showErrorToast: true }
+      { showSuccessToast: false, showErrorToast: true },
     );
 
     await execute();
@@ -311,7 +312,8 @@ const handleResetTutorials = async () => {
         tutorialResetSuccess.value = false;
       }, 3000);
     }
-  } finally {
+  }
+  finally {
     tutorialResetLoading.value = false;
   }
 };

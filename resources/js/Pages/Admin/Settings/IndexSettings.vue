@@ -101,11 +101,11 @@
 </template>
 
 <script setup lang="ts">
-import { Link } from "@inertiajs/vue3";
+import { Link } from '@inertiajs/vue3';
 
-import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import { Card, CardHeader, CardTitle, CardDescription } from "@/Components/ui/card";
-import Icons from "@/Types/Icons/regular";
+import PageContent from '@/Components/Layouts/AdminContentPage.vue';
+import { Card, CardHeader, CardTitle, CardDescription } from '@/Components/ui/card';
+import Icons from '@/Types/Icons/regular';
 
 defineProps<{
   isSuperAdmin: boolean;

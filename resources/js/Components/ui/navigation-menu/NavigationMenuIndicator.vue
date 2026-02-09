@@ -1,19 +1,3 @@
-<script setup lang="ts">
-import { cn } from '@/Utils/Shadcn/utils'
-import { NavigationMenuIndicator, type NavigationMenuIndicatorProps, useForwardProps } from 'reka-ui'
-import { computed, type HTMLAttributes } from 'vue'
-
-const props = defineProps<NavigationMenuIndicatorProps & { class?: HTMLAttributes['class'] }>()
-
-const delegatedProps = computed(() => {
-  const { class: _, ...delegated } = props
-
-  return delegated
-})
-
-const forwardedProps = useForwardProps(delegatedProps)
-</script>
-
 <template>
   <NavigationMenuIndicator
     data-slot="navigation-menu-indicator"
@@ -23,3 +7,20 @@ const forwardedProps = useForwardProps(delegatedProps)
     <div class="bg-zinc-200 relative top-[60%] h-2 w-2 rotate-45 rounded-tl-sm shadow-md dark:bg-zinc-800" />
   </NavigationMenuIndicator>
 </template>
+
+<script setup lang="ts">
+import { NavigationMenuIndicator, type NavigationMenuIndicatorProps, useForwardProps } from 'reka-ui';
+import { computed, type HTMLAttributes } from 'vue';
+
+import { cn } from '@/Utils/Shadcn/utils';
+
+const props = defineProps<NavigationMenuIndicatorProps & { class?: HTMLAttributes['class'] }>();
+
+const delegatedProps = computed(() => {
+  const { class: _, ...delegated } = props;
+
+  return delegated;
+});
+
+const forwardedProps = useForwardProps(delegatedProps);
+</script>

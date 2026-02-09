@@ -1,21 +1,3 @@
-<script setup lang="ts">
-import type { DialogRootEmits, DialogRootProps } from 'reka-ui'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/Components/ui/dialog'
-import { useForwardPropsEmits } from 'reka-ui'
-import Command from './Command.vue'
-
-const props = withDefaults(defineProps<DialogRootProps & {
-  title?: string
-  description?: string
-}>(), {
-  title: 'Command Palette',
-  description: 'Search for a command to run...',
-})
-const emits = defineEmits<DialogRootEmits>()
-
-const forwarded = useForwardPropsEmits(props, emits)
-</script>
-
 <template>
   <Dialog v-bind="forwarded">
     <DialogHeader class="sr-only">
@@ -29,3 +11,23 @@ const forwarded = useForwardPropsEmits(props, emits)
     </DialogContent>
   </Dialog>
 </template>
+
+<script setup lang="ts">
+import type { DialogRootEmits, DialogRootProps } from 'reka-ui';
+import { useForwardPropsEmits } from 'reka-ui';
+
+import Command from './Command.vue';
+
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
+
+const props = withDefaults(defineProps<DialogRootProps & {
+  title?: string;
+  description?: string;
+}>(), {
+  title: 'Command Palette',
+  description: 'Search for a command to run...',
+});
+const emits = defineEmits<DialogRootEmits>();
+
+const forwarded = useForwardPropsEmits(props, emits);
+</script>

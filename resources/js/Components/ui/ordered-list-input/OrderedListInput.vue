@@ -1,23 +1,23 @@
 <template>
   <DynamicListInput
     v-model="modelValue"
-    :max="max"
+    :max
     :allow-empty="false"
-    :empty-text="emptyText"
-    :add-first-text="addFirstText"
-    :add-text="addText"
-    :empty-icon="emptyIcon"
+    :empty-text
+    :add-first-text
+    :add-text
+    :empty-icon
     :create-item="() => ''">
     <template #item="{ item, index, update }">
-      <component 
-        :is="inputType === 'textarea' ? Textarea : Input" 
+      <component
+        :is="inputType === 'textarea' ? Textarea : Input"
         :model-value="item"
         :placeholder="placeholder?.replace('{n}', String(index + 1)) || `${$t('Punktas')} ${index + 1}...`"
         :class="inputType === 'textarea' ? 'min-h-9 resize-none' : ''"
-        :rows="inputType === 'textarea' ? 1 : undefined" 
+        :rows="inputType === 'textarea' ? 1 : undefined"
         @update:model-value="update($event)"
         @keydown.enter.prevent="handleEnter(index)"
-        @keydown.backspace="handleBackspace(index, item)" 
+        @keydown.backspace="handleBackspace(index, item)"
       />
     </template>
   </DynamicListInput>
@@ -26,6 +26,7 @@
 <script setup lang="ts">
 import type { Component } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
+
 import { DynamicListInput } from '@/Components/ui/dynamic-list-input';
 import { Input } from '@/Components/ui/input';
 import { Textarea } from '@/Components/ui/textarea';
@@ -60,7 +61,7 @@ function handleEnter(index: number) {
     const newValue = [...modelValue.value];
     newValue.splice(index + 1, 0, '');
     modelValue.value = newValue;
-    
+
     // Focus new input
     setTimeout(() => {
       const container = document.querySelector('[data-dynamic-list]');
@@ -76,7 +77,7 @@ function handleBackspace(index: number, value: string) {
     const newValue = [...modelValue.value];
     newValue.splice(index, 1);
     modelValue.value = newValue;
-    
+
     // Focus previous input
     setTimeout(() => {
       const container = document.querySelector('[data-dynamic-list]');

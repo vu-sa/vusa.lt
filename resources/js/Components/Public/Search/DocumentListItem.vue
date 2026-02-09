@@ -52,7 +52,7 @@
               </Badge>
 
               <!-- Status -->
-              <Badge v-if="'is_in_effect' in document && document.is_in_effect !== null" 
+              <Badge v-if="'is_in_effect' in document && document.is_in_effect !== null"
                 :variant="document.is_in_effect ? 'default' : 'secondary'"
                 class="text-xs px-1.5 py-0.5 flex-shrink-0">
                 <component :is="document.is_in_effect ? CheckCircle : Clock" class="w-3 h-3 mr-1" />
@@ -87,7 +87,7 @@
                   </Badge>
 
                   <!-- Status -->
-                  <Badge v-if="'is_in_effect' in document && document.is_in_effect !== null" 
+                  <Badge v-if="'is_in_effect' in document && document.is_in_effect !== null"
                     :variant="document.is_in_effect ? 'default' : 'secondary'"
                     class="text-xs flex-shrink-0">
                     <component :is="document.is_in_effect ? CheckCircle : Clock" class="w-3 h-3 mr-1" />
@@ -140,13 +140,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed } from 'vue';
 
 // ShadcnVue components
-import { Badge } from '@/Components/ui/badge'
-import { Button } from '@/Components/ui/button'
-
-// Icons
 import {
   Building2,
   Calendar,
@@ -155,21 +151,26 @@ import {
   Clock,
   FileText,
   Link as LinkIcon,
-} from 'lucide-vue-next'
-import { Icon } from '@iconify/vue'
+} from 'lucide-vue-next';
+import { Icon } from '@iconify/vue';
+import { trans as $t } from 'laravel-vue-i18n';
+
+import { Badge } from '@/Components/ui/badge';
+import { Button } from '@/Components/ui/button';
+
+// Icons
 
 // Composables
-import { useDocumentDisplay, type DocumentDisplayItem } from '@/Composables/useDocumentDisplay'
-import { useToasts } from '@/Composables/useToasts'
-import { trans as $t } from 'laravel-vue-i18n'
+import { useDocumentDisplay, type DocumentDisplayItem } from '@/Composables/useDocumentDisplay';
+import { useToasts } from '@/Composables/useToasts';
 
 // Props
 interface Props {
-  document: DocumentDisplayItem
+  document: DocumentDisplayItem;
 }
 
-const props = defineProps<Props>()
-const toasts = useToasts()
+const props = defineProps<Props>();
+const toasts = useToasts();
 
 // Use shared document display logic - use simple date format for list view
 const {
@@ -178,28 +179,29 @@ const {
   getDocumentIconClasses,
   getLanguageCode,
   getTenantDisplayName,
-  trackDocumentClick
-} = useDocumentDisplay(props.document)
+  trackDocumentClick,
+} = useDocumentDisplay(props.document);
 
 // For list view, use simple date format
-const formatDocumentDate = formatDocumentDateSimple
+const formatDocumentDate = formatDocumentDateSimple;
 
 // Use share_url for linking, fallback to anonymous_url
-const documentUrl = computed(() => props.document.share_url || props.document.anonymous_url)
+const documentUrl = computed(() => props.document.share_url || props.document.anonymous_url);
 
 // Copy share URL to clipboard
 const copyShareUrl = async () => {
   if (!props.document.share_url) {
-    return
+    return;
   }
-  
+
   try {
-    await navigator.clipboard.writeText(props.document.share_url)
-    toasts.success($t('copy_link_success'))
-  } catch {
-    toasts.error($t('copy_link_error'))
+    await navigator.clipboard.writeText(props.document.share_url);
+    toasts.success($t('copy_link_success'));
   }
-}
+  catch {
+    toasts.error($t('copy_link_error'));
+  }
+};
 </script>
 
 <style scoped>

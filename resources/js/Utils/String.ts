@@ -1,6 +1,6 @@
 export const pluralizeModels = (word: string, forPermissions = true) => {
-  if (word.endsWith("y")) {
-    return word.slice(0, -1) + "ies";
+  if (word.endsWith('y')) {
+    return `${word.slice(0, -1)}ies`;
   }
 
   // When the permissions where created, the Str::class was used to pluralize
@@ -8,15 +8,15 @@ export const pluralizeModels = (word: string, forPermissions = true) => {
   // semantic meaning is not the same in this application as those words may
   // imply.
 
-  if (["navigation", "calendar"].includes(word)) {
-    return forPermissions ? word + "s" : word;
+  if (['navigation', 'calendar'].includes(word)) {
+    return forPermissions ? `${word}s` : word;
   }
 
-  if (word.endsWith("s")) {
+  if (word.endsWith('s')) {
     return word;
   }
 
-  return word + "s";
+  return `${word}s`;
 };
 
 /**
@@ -26,14 +26,14 @@ export const pluralizeModels = (word: string, forPermissions = true) => {
  */
 export const isLithuanianFeminine = (word: string): boolean => {
   const lowercased = word.toLowerCase().trim();
-  
+
   // Feminine patterns (order matters - check longer patterns first)
-  if (lowercased.endsWith('ija')) return true;  // komisija, kolegija
-  if (lowercased.endsWith('tis')) return true;  //atis patterns (but rare)
-  if (lowercased.endsWith('yba')) return true;  // taryba
-  if (lowercased.endsWith('a') && !lowercased.endsWith('as')) return true;  // komisija, taryba
-  if (lowercased.endsWith('ė')) return true;    // grupė
-  
+  if (lowercased.endsWith('ija')) return true; // komisija, kolegija
+  if (lowercased.endsWith('tis')) return true; // atis patterns (but rare)
+  if (lowercased.endsWith('yba')) return true; // taryba
+  if (lowercased.endsWith('a') && !lowercased.endsWith('as')) return true; // komisija, taryba
+  if (lowercased.endsWith('ė')) return true; // grupė
+
   // Masculine by default (as, is, us, ys, etc.)
   return false;
 };
@@ -45,88 +45,95 @@ export const isLithuanianFeminine = (word: string): boolean => {
 export const pluralizeLithuanian = (word: string): { word: string; visi: string } => {
   const isFeminine = isLithuanianFeminine(word);
   const lowercased = word.toLowerCase().trim();
-  
+
   let pluralized = word;
-  
+
   // Pluralize based on ending
   if (lowercased.endsWith('ija')) {
     // komisija -> komisijos
-    pluralized = word.slice(0, -1) + 'os';
-  } else if (lowercased.endsWith('yba')) {
-    // taryba -> tarybos
-    pluralized = word.slice(0, -1) + 'os';
-  } else if (lowercased.endsWith('a') && !lowercased.endsWith('as')) {
-    // -a -> -os (feminine)
-    pluralized = word.slice(0, -1) + 'os';
-  } else if (lowercased.endsWith('ė')) {
-    // grupė -> grupės
-    pluralized = word.slice(0, -1) + 'ės';
-  } else if (lowercased.endsWith('as')) {
-    // dekanatas -> dekanatuose? No, just keep nominative plural: dekanatai
-    pluralized = word.slice(0, -2) + 'ai';
-  } else if (lowercased.endsWith('is')) {
-    // -is -> -iai (masculine)
-    pluralized = word.slice(0, -2) + 'iai';
-  } else if (lowercased.endsWith('us')) {
-    // -us -> -ūs or -ai
-    pluralized = word.slice(0, -2) + 'ai';
-  } else if (lowercased.endsWith('ys')) {
-    // -ys -> -iai
-    pluralized = word.slice(0, -2) + 'iai';
+    pluralized = `${word.slice(0, -1)}os`;
   }
-  
+  else if (lowercased.endsWith('yba')) {
+    // taryba -> tarybos
+    pluralized = `${word.slice(0, -1)}os`;
+  }
+  else if (lowercased.endsWith('a') && !lowercased.endsWith('as')) {
+    // -a -> -os (feminine)
+    pluralized = `${word.slice(0, -1)}os`;
+  }
+  else if (lowercased.endsWith('ė')) {
+    // grupė -> grupės
+    pluralized = `${word.slice(0, -1)}ės`;
+  }
+  else if (lowercased.endsWith('as')) {
+    // dekanatas -> dekanatuose? No, just keep nominative plural: dekanatai
+    pluralized = `${word.slice(0, -2)}ai`;
+  }
+  else if (lowercased.endsWith('is')) {
+    // -is -> -iai (masculine)
+    pluralized = `${word.slice(0, -2)}iai`;
+  }
+  else if (lowercased.endsWith('us')) {
+    // -us -> -ūs or -ai
+    pluralized = `${word.slice(0, -2)}ai`;
+  }
+  else if (lowercased.endsWith('ys')) {
+    // -ys -> -iai
+    pluralized = `${word.slice(0, -2)}iai`;
+  }
+
   return {
     word: pluralized.toLowerCase(),
-    visi: isFeminine ? 'Visos' : 'Visi'
+    visi: isFeminine ? 'Visos' : 'Visi',
   };
 };
 
 export const genitivize = (name: string | null) => {
   if (name === null) {
-    return "";
+    return '';
   }
 
   return name
-    .replace(/a$/, "os")
-    .replace(/as$/, "o")
-    .replace(/ė$/, "ės")
-    .replace(/is$/, "io")
-    .replace(/iai$/, "ių")
-    .replace(/ė$/, "ės");
+    .replace(/a$/, 'os')
+    .replace(/as$/, 'o')
+    .replace(/ė$/, 'ės')
+    .replace(/is$/, 'io')
+    .replace(/iai$/, 'ių')
+    .replace(/ė$/, 'ės');
 };
 
 export const addressivize = (name: string | null | undefined) => {
   if (name === null || name === undefined) {
-    return "";
+    return '';
   }
 
   return name
-    .replace(/as$/, "ai")
-    .replace(/ė$/, "e")
-    .replace(/is$/, "i")
-    .replace(/us$/, "au")
-    .replace(/ys$/, "y")
-}
+    .replace(/as$/, 'ai')
+    .replace(/ė$/, 'e')
+    .replace(/is$/, 'i')
+    .replace(/us$/, 'au')
+    .replace(/ys$/, 'y');
+};
 
 export const genitivizeEveryWord = (name: string | null) => {
   if (name === null) {
-    return "";
+    return '';
   }
 
   // delimit by spaces
-  const words = name.split(" ");
+  const words = name.split(' ');
 
   // genitivize each word
-  const genitivizedWords = words.map((word) => genitivize(word));
+  const genitivizedWords = words.map(word => genitivize(word));
 
   // join back together
-  return genitivizedWords.join(" ");
+  return genitivizedWords.join(' ');
 };
 
 export const splitFileNameAndExtension = (fileName: string) => {
-  const parts = fileName.split(".");
-  const extension = "." + parts.pop();
-  const name = parts.join(".");
+  const parts = fileName.split('.');
+  const extension = `.${parts.pop()}`;
+  const name = parts.join('.');
 
   return { name, extension };
 };
@@ -141,34 +148,34 @@ export const splitFileNameAndExtension = (fileName: string) => {
 export const getFacultyName = ({ fullname }: { fullname: string }) => {
   // split string into two parts, separated by string "Vilniaus universiteto Studentų atstovybė"
   let facultyName = fullname.split(
-    "Vilniaus universiteto Studentų atstovybė"
+    'Vilniaus universiteto Studentų atstovybė',
   )[1];
 
   if (facultyName === undefined) {
-    return "";
+    return '';
   }
 
   // change faculty name only at the string ending from "ete" to "etas"
-  if (facultyName.endsWith("ete")) {
-    facultyName = facultyName.replace("ete", "etas");
+  if (facultyName.endsWith('ete')) {
+    facultyName = facultyName.replace('ete', 'etas');
   }
   // also apply this to "tre" to "tas"
-  if (facultyName.endsWith("tre")) {
-    facultyName = facultyName.replace("tre", "tras");
+  if (facultyName.endsWith('tre')) {
+    facultyName = facultyName.replace('tre', 'tras');
   }
 
   // also if ends with "ykloje", change to "ykla"
-  if (facultyName.endsWith("ykloje")) {
-    facultyName = facultyName.replace("ykloje", "ykla");
+  if (facultyName.endsWith('ykloje')) {
+    facultyName = facultyName.replace('ykloje', 'ykla');
   }
 
   // change "ute" to "utas"
-  if (facultyName.endsWith("ute")) {
-    facultyName = facultyName.replace("ute", "utas");
+  if (facultyName.endsWith('ute')) {
+    facultyName = facultyName.replace('ute', 'utas');
   }
 
-  if (facultyName.endsWith("joje")) {
-    facultyName = facultyName.replace("joje", "ja");
+  if (facultyName.endsWith('joje')) {
+    facultyName = facultyName.replace('joje', 'ja');
   }
 
   return facultyName;
@@ -180,42 +187,44 @@ export const capitalize = (word: string) => {
 
 export const changeDutyNameEndings = (
   contact: App.Entities.User | null | undefined,
-  dutyName: App.Entities.Duty["name"],
+  dutyName: App.Entities.Duty['name'],
   locale: string,
   pronouns: string,
-  useOriginalDutyName: boolean
+  useOriginalDutyName: boolean,
 ) => {
-  if (locale === "en") {
+  if (locale === 'en') {
     return dutyName;
   }
 
   // check if duty name should not be explicitly changed
   if (useOriginalDutyName) return dutyName;
 
-  const splitPronouns = pronouns?.split("/");
+  const splitPronouns = pronouns?.split('/');
 
   // replace duty.name ending 'ius' with 'ė', but only on end of string
   const womanizedTitle = dutyName
-    .replace(/ius$/, "ė")
-    .replace(/as$/, "ė")
-    .replace(/ys$/, "ė");
+    .replace(/ius$/, 'ė')
+    .replace(/as$/, 'ė')
+    .replace(/ys$/, 'ė');
 
   const pluralizedTitle = dutyName
-    .replace(/ius$/, "iai")
-    .replace(/as$/, "ai")
-    .replace(/ys$/, "iai");
+    .replace(/ius$/, 'iai')
+    .replace(/as$/, 'ai')
+    .replace(/ys$/, 'iai');
 
   const masculinedTitle = dutyName
-    .replace(/vė$/, "vas")
-    .replace(/rė$/, "rius")
-    .replace(/kė$/, "kas");
+    .replace(/vė$/, 'vas')
+    .replace(/rė$/, 'rius')
+    .replace(/kė$/, 'kas');
 
   if (Array.isArray(splitPronouns) && splitPronouns.length > 1) {
-    if (splitPronouns[0] === "ji" || splitPronouns[0] === "she") {
+    if (splitPronouns[0] === 'ji' || splitPronouns[0] === 'she') {
       return womanizedTitle;
-    } else if (splitPronouns[0] === "jie" || splitPronouns[0] === "they") {
+    }
+    else if (splitPronouns[0] === 'jie' || splitPronouns[0] === 'they') {
       return pluralizedTitle;
-    } else if (splitPronouns[0] === "jis" || splitPronouns[0] === "he") {
+    }
+    else if (splitPronouns[0] === 'jis' || splitPronouns[0] === 'he') {
       return masculinedTitle;
     }
   }
@@ -225,36 +234,36 @@ export const changeDutyNameEndings = (
     return dutyName;
   }
 
-  const firstName = contact.name.split(" ")[0];
+  const firstName = contact.name.split(' ')[0];
 
-  const namesToWomanize = ["Katrin"];
+  const namesToWomanize = ['Katrin'];
   if (namesToWomanize.includes(firstName)) {
     return womanizedTitle;
   }
 
-  const namesNotToWomanize = ["German"];
+  const namesNotToWomanize = ['German'];
   if (namesNotToWomanize.includes(firstName)) {
     return dutyName;
   }
 
-  if (contact.name.endsWith("ė") || firstName.endsWith("ė")) {
+  if (contact.name.endsWith('ė') || firstName.endsWith('ė')) {
     return womanizedTitle;
   }
 
   // check for first name ending with 's'
-  if (contact.name.endsWith("a") && !firstName.endsWith("s")) {
+  if (contact.name.endsWith('a') && !firstName.endsWith('s')) {
     return womanizedTitle;
   }
 
-  return dutyName ?? "";
+  return dutyName ?? '';
 };
 
 export function slugify(str: string) {
   str = str.replace(/^\s+|\s+$/g, ''); // trim leading/trailing white space
   str = str.toLowerCase(); // convert string to lowercase
   str = str.replace(/[^a-z0-9 -]/g, '') // remove any non-alphanumeric characters
-           .replace(/\s+/g, '-') // replace spaces with hyphens
-           .replace(/-+/g, '-'); // remove consecutive hyphens
+    .replace(/\s+/g, '-') // replace spaces with hyphens
+    .replace(/-+/g, '-'); // remove consecutive hyphens
   return str;
 }
 
@@ -263,41 +272,41 @@ export function slugify(str: string) {
  * Matches Laravel's Str::slug() behavior with 'lt' locale.
  */
 const LITHUANIAN_CHAR_MAP: Record<string, string> = {
-  'Ą': 'A', 'ą': 'a',
-  'Č': 'C', 'č': 'c',
-  'Ę': 'E', 'ę': 'e',
-  'Ė': 'E', 'ė': 'e',
-  'Į': 'I', 'į': 'i',
-  'Š': 'S', 'š': 's',
-  'Ų': 'U', 'ų': 'u',
-  'Ū': 'U', 'ū': 'u',
-  'Ž': 'Z', 'ž': 'z',
+  Ą: 'A', ą: 'a',
+  Č: 'C', č: 'c',
+  Ę: 'E', ę: 'e',
+  Ė: 'E', ė: 'e',
+  Į: 'I', į: 'i',
+  Š: 'S', š: 's',
+  Ų: 'U', ų: 'u',
+  Ū: 'U', ū: 'u',
+  Ž: 'Z', ž: 'z',
 };
 
 /**
  * Transliterate Lithuanian diacritical characters to their ASCII equivalents.
- * 
+ *
  * @param text - The string containing Lithuanian characters
  * @returns The transliterated string with Lithuanian diacritics replaced
- * 
+ *
  * @example
  * translitLithuanian('Žalioji ąžuolynas') // 'Zalioji azuolynas'
  * translitLithuanian('Būti čia') // 'Buti cia'
  */
 export function translitLithuanian(text: string): string {
-  return text.replace(/[ĄąČčĘęĖėĮįŠšŲųŪūŽž]/g, (char) => LITHUANIAN_CHAR_MAP[char] || char);
+  return text.replace(/[ĄąČčĘęĖėĮįŠšŲųŪūŽž]/g, char => LITHUANIAN_CHAR_MAP[char] || char);
 }
 
 /**
  * Generate a URL-safe ID from text by transliterating Lithuanian characters
  * and converting to a lowercase slug format.
- * 
+ *
  * Used for generating anchor IDs for headings in TipTap editor.
- * 
+ *
  * @param text - The text to convert to an ID
  * @param maxLength - Maximum length of the resulting ID (default: 100)
  * @returns A URL-safe lowercase ID with hyphens
- * 
+ *
  * @example
  * latinizeId('Įvadas į programavimą') // 'ivadas-i-programavima'
  * latinizeId('Šiandien yra gera diena!') // 'siandien-yra-gera-diena'

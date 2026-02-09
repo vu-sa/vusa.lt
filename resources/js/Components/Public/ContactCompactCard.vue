@@ -41,7 +41,7 @@
       <TooltipProvider v-if="contact.email || dutyEmail">
         <Tooltip>
           <TooltipTrigger as-child>
-            <a 
+            <a
               :href="`mailto:${dutyEmail || contact.email}`"
               class="flex size-8 items-center justify-center rounded-full text-zinc-400 transition-colors hover:text-vusa-red dark:text-zinc-500 dark:hover:text-vusa-red"
             >
@@ -56,11 +56,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
-import { MailIcon } from "lucide-vue-next";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
-import { changeDutyNameEndings } from "@/Utils/String";
-import { usePage } from "@inertiajs/vue3";
+import { computed } from 'vue';
+import { MailIcon } from 'lucide-vue-next';
+import { usePage } from '@inertiajs/vue3';
+
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
+import { changeDutyNameEndings } from '@/Utils/String';
 
 const props = defineProps<{
   contact: App.Entities.User;
@@ -95,7 +96,7 @@ const dutyName = computed(() => {
     props.duty.name,
     $page.props.app.locale,
     props.contact.pronouns,
-    props.duty.pivot?.use_original_duty_name
+    props.duty.pivot?.use_original_duty_name,
   );
 });
 

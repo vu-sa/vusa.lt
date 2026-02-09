@@ -2,38 +2,38 @@
   <Card v-if="institutions.length > 0" :class="{ 'h-full flex flex-col': height === '100%' }">
     <CardContent class="p-4" :class="{ 'flex-1 min-h-0': height === '100%' }">
       <MeetingsGantt
-        :meetings="meetings"
-        :gaps="gaps"
+        v-model:details-expanded="detailsExpanded"
+        :meetings
+        :gaps
         :days-before="60"
         :days-after="60"
         :label-width="240"
-        v-model:detailsExpanded="detailsExpanded"
         :expanded-row-height="56"
         :institutions="formattedInstitutions"
-        :institution-names="institutionNames"
-        :tenant-names="tenantNames"
-        :institution-tenant="institutionTenant"
-        :institution-has-public-meetings="institutionHasPublicMeetings"
-        :institution-periodicity="institutionPeriodicity"
-        :tenant-filter="tenantFilter"
+        :institution-names
+        :tenant-names
+        :institution-tenant
+        :institution-has-public-meetings
+        :institution-periodicity
+        :tenant-filter
         :show-legend="true"
         :show-today-line="true"
         :interactive="true"
-        :show-only-with-activity="showOnlyWithActivity"
-        :show-only-with-public-meetings="showOnlyWithPublicMeetings"
-        :duty-members="dutyMembers"
-        :inactive-periods="inactivePeriods"
-        :show-duty-members="showDutyMembers"
-        :show-activity-status="showActivityStatus"
+        :show-only-with-activity
+        :show-only-with-public-meetings
+        :duty-members
+        :inactive-periods
+        :show-duty-members
+        :show-activity-status
         :height="effectiveHeight"
-        :hide-fullscreen-button="hideFullscreenButton"
+        :hide-fullscreen-button
         @create-meeting="$emit('create-meeting', $event)"
         @create-check-in="$emit('create-check-in', $event)"
         @fullscreen="$emit('fullscreen')"
         @show-legend-modal="showLegendModal = true"
       />
     </CardContent>
-    
+
     <!-- Legend Modal -->
     <GanttLegendModal :is-open="showLegendModal" @update:is-open="showLegendModal = $event" />
   </Card>
@@ -44,18 +44,19 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import MeetingsGantt from "@/Components/Graphs/MeetingsGantt.vue";
-import GanttLegendModal from "@/Components/Graphs/GanttLegendModal.vue";
-import { Card, CardContent } from "@/Components/ui/card";
-import { useGanttSettings } from '../Composables/useGanttSettings';
 
-import type { 
-  GanttMeeting, 
-  GanttInstitution, 
+import { useGanttSettings } from '../Composables/useGanttSettings';
+import type {
+  GanttMeeting,
+  GanttInstitution,
   AtstovavimosGap,
   GanttDutyMember,
-  InactivePeriod 
+  InactivePeriod,
 } from '../types';
+
+import MeetingsGantt from '@/Components/Graphs/MeetingsGantt.vue';
+import GanttLegendModal from '@/Components/Graphs/GanttLegendModal.vue';
+import { Card, CardContent } from '@/Components/ui/card';
 
 interface Props {
   institutions: GanttInstitution[];
@@ -85,8 +86,8 @@ interface Props {
 const props = defineProps<Props>();
 
 const emit = defineEmits<{
-  'create-meeting': [payload: { institution_id: string | number, suggestedAt: Date, institutionName?: string }];
-  'create-check-in': [payload: { institution_id: string | number, startDate: Date, endDate: Date }];
+  'create-meeting': [payload: { institution_id: string | number; suggestedAt: Date; institutionName?: string }];
+  'create-check-in': [payload: { institution_id: string | number; startDate: Date; endDate: Date }];
   'fullscreen': [];
 }>();
 
@@ -105,17 +106,17 @@ const formattedInstitutions = computed(() => {
     is_related: i.is_related,
     relationship_direction: i.relationship_direction,
     source_institution_id: i.source_institution_id,
-    authorized: i.authorized
+    authorized: i.authorized,
   }));
 
   // Filter to show only institutions with meetings if showOnlyWithActivity is true
   if (props.showOnlyWithActivity) {
     const institutionsWithMeetings = new Set(
-      props.meetings.map(meeting => meeting.institution_id)
+      props.meetings.map(meeting => meeting.institution_id),
     );
-    
-    institutions = institutions.filter(institution => 
-      institutionsWithMeetings.has(institution.id)
+
+    institutions = institutions.filter(institution =>
+      institutionsWithMeetings.has(institution.id),
     );
   }
 
@@ -131,45 +132,45 @@ const effectiveHeight = computed(() => {
   if (props.height) {
     return props.height;
   }
-  
+
   // Otherwise, calculate based on content with a reasonable cap
   const ROW_HEIGHT = 28; // keep in sync with MeetingsGantt default
-  const AXIS_TOP = 22;   // axis/header spacer in MeetingsGantt
+  const AXIS_TOP = 22; // axis/header spacer in MeetingsGantt
   const MARGIN_BOTTOM = 6;
   const EXPANDED_ROW_HEIGHT = 56; // keep in sync with MeetingsGantt default
 
   // Base institution ids = explicit institutions ∪ referenced by meetings/gaps
-  let idsArr: Array<string|number> = Array.from(new Set< string | number >([
+  let idsArr: Array<string | number> = Array.from(new Set<string | number>([
     ...formattedInstitutions.value.map(i => i.id),
     ...props.meetings.map(m => m.institution_id),
-    ...props.gaps.map(g => g.institution_id)
-  ]))
+    ...props.gaps.map(g => g.institution_id),
+  ]));
 
   // Apply tenant filtering if provided
   if (props.tenantFilter?.length && props.institutionTenant) {
-    const filter = new Set(props.tenantFilter.map(v => String(v)))
-    idsArr = idsArr.filter(id => filter.has(String((props.institutionTenant as any)[id as any])))
+    const filter = new Set(props.tenantFilter.map(v => String(v)));
+    idsArr = idsArr.filter(id => filter.has(String((props.institutionTenant as any)[id as any])));
   }
 
   // Apply showOnlyWithActivity if enabled
   if (props.showOnlyWithActivity) {
-    const active = new Set<string|number>([
+    const active = new Set<string | number>([
       ...props.meetings.map(m => m.institution_id),
-      ...props.gaps.map(g => g.institution_id)
-    ])
-    idsArr = idsArr.filter(id => active.has(id))
+      ...props.gaps.map(g => g.institution_id),
+    ]);
+    idsArr = idsArr.filter(id => active.has(id));
   }
 
   // Apply showOnlyWithPublicMeetings if enabled
   if (props.showOnlyWithPublicMeetings && props.institutionHasPublicMeetings) {
-    const pubMap = props.institutionHasPublicMeetings
-    idsArr = idsArr.filter(id => pubMap[id] || pubMap[String(id)])
+    const pubMap = props.institutionHasPublicMeetings;
+    idsArr = idsArr.filter(id => pubMap[id] || pubMap[String(id)]);
   }
 
   // Tenant header rows (only if showTenantHeaders is enabled and grouping data available)
   let tenantHeaderCount = 0;
   if (ganttSettings.showTenantHeaders.value && props.institutionTenant && props.tenantNames) {
-    const tenantIds = new Set<string|number>();
+    const tenantIds = new Set<string | number>();
     for (const id of idsArr) {
       const t = (props.institutionTenant as any)[id as any];
       if (t != null) tenantIds.add(t);

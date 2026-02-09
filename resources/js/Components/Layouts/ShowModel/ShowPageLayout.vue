@@ -20,7 +20,7 @@
       <div class="min-h-0">
         <slot />
       </div>
-      
+
       <!-- Related models and additional content -->
       <div class="space-y-6">
         <div v-if="relatedModels" class="flex flex-wrap items-center gap-4">
@@ -37,16 +37,15 @@
 </template>
 
 <script setup lang="tsx">
-import type { Component } from "vue";
+import type { Component } from 'vue';
 
-import ActivityLogButton from "@/Features/Admin/ActivityLogViewer/ActivityLogButton.vue";
-import AdminContentPage from "../AdminContentPage.vue";
-import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
-import RelatedModelButton from "@/Components/Buttons/RelatedModelButton.vue";
+import AdminContentPage from '../AdminContentPage.vue';
 
-const emit = defineEmits<{
-  (e: "change:tab", name: string): void;
-}>();
+import ActivityLogButton from '@/Features/Admin/ActivityLogViewer/ActivityLogButton.vue';
+import FadeTransition from '@/Components/Transitions/FadeTransition.vue';
+import RelatedModelButton from '@/Components/Buttons/RelatedModelButton.vue';
+
+const emit = defineEmits<(e: 'change:tab', name: string) => void>();
 
 const props = defineProps<{
   currentTab?: string;

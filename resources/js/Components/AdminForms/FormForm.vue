@@ -50,7 +50,7 @@
         <p>Registracijų skaičius: {{ form.registrations_count ?? 0 }}</p>
         <p v-if="form.registrations_count > 0">
           <Link :href="route('forms.show', form.id)">
-          Peržiūrėti registracijas
+            Peržiūrėti registracijas
           </Link>
         </p>
       </template>
@@ -94,27 +94,29 @@
 </template>
 
 <script setup lang="ts">
-import { Link, useForm } from "@inertiajs/vue3";
-import { computed, reactive, ref } from "vue";
+import { Link, useForm } from '@inertiajs/vue3';
+import { computed, reactive, ref } from 'vue';
 
-import { formFieldTemplate } from "@/Types/formTemplates";
-import { Button } from "@/Components/ui/button";
-import { DateTimePicker } from "@/Components/ui/date-picker";
-import { Label } from "@/Components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
-import FormElement from "./FormElement.vue";
-import FormFieldWrapper from "./FormFieldWrapper.vue";
-import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";
-import SimpleLocaleButton from "../Buttons/SimpleLocaleButton.vue";
-import TiptapEditor from "../TipTap/TiptapEditor.vue";
-import AdminForm from "./AdminForm.vue";
-import SortableFormFieldsTable from "../Tables/SortableFormFieldsTable.vue";
-import CardModal from "../Modals/CardModal.vue";
-import FormFieldForm from "./FormFieldForm.vue";
+import MultiLocaleInput from '../FormItems/MultiLocaleInput.vue';
+import SimpleLocaleButton from '../Buttons/SimpleLocaleButton.vue';
+import TiptapEditor from '../TipTap/TiptapEditor.vue';
+import SortableFormFieldsTable from '../Tables/SortableFormFieldsTable.vue';
+import CardModal from '../Modals/CardModal.vue';
+
+import AdminForm from './AdminForm.vue';
+import FormFieldWrapper from './FormFieldWrapper.vue';
+import FormElement from './FormElement.vue';
+import FormFieldForm from './FormFieldForm.vue';
+
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { Label } from '@/Components/ui/label';
+import { DateTimePicker } from '@/Components/ui/date-picker';
+import { Button } from '@/Components/ui/button';
+import { formFieldTemplate } from '@/Types/formTemplates';
 
 defineEmits<{
-  (event: "submit:form", form: unknown): void;
-  (event: "delete"): void;
+  (event: 'submit:form', form: unknown): void;
+  (event: 'delete'): void;
 }>();
 
 const props = defineProps<{
@@ -124,7 +126,7 @@ const props = defineProps<{
   fieldModelFields?: { value: string; label: string }[];
 }>();
 
-const locale = ref("lt");
+const locale = ref('lt');
 
 const showFormFieldModal = ref(false);
 const selectedFormField = ref(formFieldTemplate);
@@ -142,7 +144,7 @@ const tenantIdString = computed({
 
 // DateTimePicker works with Date objects; form.publish_time is an ISO string
 const publishTimeDate = ref<Date | null>(
-  form.publish_time ? new Date(form.publish_time) : null
+  form.publish_time ? new Date(form.publish_time) : null,
 );
 
 const onPublishTimeChange = (date: Date | null) => {
@@ -165,7 +167,7 @@ function handleEditFormField(model) {
 
 function handleDeleteFormField(model) {
   // Find ID of the form field
-  const formFieldIndex = form.form_fields.findIndex((field) => field.id === model.id);
+  const formFieldIndex = form.form_fields.findIndex(field => field.id === model.id);
   if (formFieldIndex !== -1) {
     form.form_fields.splice(formFieldIndex, 1);
   }
@@ -173,11 +175,12 @@ function handleDeleteFormField(model) {
 
 function handleFormFieldSubmitted(formField: any) {
   // Find ID of the form field
-  const formFieldIndex = form.form_fields.findIndex((field) => field.id === formField.id);
+  const formFieldIndex = form.form_fields.findIndex(field => field.id === formField.id);
 
   if (formFieldIndex !== -1) {
     form.form_fields[formFieldIndex] = formField;
-  } else {
+  }
+  else {
     form.form_fields.push(formField);
   }
 

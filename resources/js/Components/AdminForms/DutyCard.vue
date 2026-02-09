@@ -30,10 +30,10 @@
         <span class="font-medium text-foreground">{{ duty.name }}</span>
         <Pencil class="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
       </SmartLink>
-      
+
       <!-- User count badge if multiple -->
-      <span 
-        v-if="duty.current_users && duty.current_users.length > 1" 
+      <span
+        v-if="duty.current_users && duty.current_users.length > 1"
         class="text-xs text-muted-foreground"
       >
         {{ duty.current_users.length }} {{ $t('nariai') }}
@@ -44,17 +44,17 @@
     <div class="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 pl-0.5">
       <!-- Current users -->
       <template v-if="duty.current_users && duty.current_users.length > 0">
-        <div 
-          v-for="user in duty.current_users" 
+        <div
+          v-for="user in duty.current_users"
           :key="user.id"
           class="flex items-center gap-1.5 text-sm group/user"
         >
           <div class="h-1.5 w-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
           <SmartLink :href="route('users.edit', user.id)" class="hover:underline">
-            <UserPopover :user="user" :size="20" show-name class="text-muted-foreground" />
+            <UserPopover :user :size="20" show-name class="text-muted-foreground" />
           </SmartLink>
           <span class="text-[10px] text-muted-foreground/70">{{ formatDate(user.pivot?.start_date) }}</span>
-          <SmartLink 
+          <SmartLink
             v-if="user.pivot?.id"
             :href="route('dutiables.edit', user.pivot.id)"
             class="opacity-0 group-hover/user:opacity-100 transition-opacity"
@@ -80,10 +80,10 @@
 </template>
 
 <script setup lang="ts">
-import { CalendarCog, Pencil } from "lucide-vue-next";
+import { CalendarCog, Pencil } from 'lucide-vue-next';
 
-import SmartLink from "../Public/SmartLink.vue";
-import UserPopover from "../Avatars/UserPopover.vue";
+import SmartLink from '../Public/SmartLink.vue';
+import UserPopover from '../Avatars/UserPopover.vue';
 
 // User with pivot data from duty relationship
 type UserWithPivot = App.Entities.User & {
@@ -106,10 +106,10 @@ defineProps<{
 const formatDate = (dateString?: string | null): string => {
   if (!dateString) return '—';
   const date = new Date(dateString);
-  return date.toLocaleDateString('lt-LT', { 
-    year: 'numeric', 
-    month: '2-digit', 
-    day: '2-digit' 
+  return date.toLocaleDateString('lt-LT', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
   });
 };
 </script>

@@ -8,23 +8,22 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <!-- Upcoming meetings card -->
-      <UpcomingMeetingsCard 
-        :upcoming-meetings 
-        :institutions-insights 
+      <UpcomingMeetingsCard
+        :upcoming-meetings
+        :institutions-insights
         @show-all-meetings="$emit('show-all-meetings')"
         @create-meeting="$emit('create-meeting')" />
 
       <!-- Institution check-in card -->
-      <InstitutionsOverviewCard 
-        :institutions 
-        :is-admin 
-        :max-display-count="5" 
+      <InstitutionsOverviewCard
+        :institutions
+        :is-admin
+        :max-display-count="5"
         :current-user-id="String(currentUserId)"
-        @show-all-modal="$emit('show-all-institutions')" 
+        @show-all-modal="$emit('show-all-institutions')"
         @create-meeting="$emit('create-meeting')"
         @schedule-meeting="$emit('schedule-meeting', $event)"
         @show-institution-details="$emit('show-institution-details', $event)" />
-
     </div>
   </section>
 </template>

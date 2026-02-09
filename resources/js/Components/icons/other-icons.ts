@@ -1,25 +1,26 @@
 // Tree-shakable other icons with regular and filled variants
 
-import type { Component } from "vue";
-import type { OtherIconEnum } from "../../Types/otherEnums";
+import type { Component } from 'vue';
+
+import type { OtherIconEnum } from '../../Types/otherEnums';
 
 // =============================================================================
 // REGULAR ICONS - Import each icon only ONCE
 // =============================================================================
-import Alert24Regular from "~icons/fluent/alert24-regular";
-import DocumentMultiple24Regular from "~icons/fluent/document-multiple24-regular";
-import Home24Regular from "~icons/fluent/home24-regular";
-import Image24Regular from "~icons/fluent/image24-regular";
-import Settings24Regular from "~icons/fluent/settings24-regular";
+import Alert24Regular from '~icons/fluent/alert24-regular';
+import DocumentMultiple24Regular from '~icons/fluent/document-multiple24-regular';
+import Home24Regular from '~icons/fluent/home24-regular';
+import Image24Regular from '~icons/fluent/image24-regular';
+import Settings24Regular from '~icons/fluent/settings24-regular';
 
 // =============================================================================
 // FILLED ICONS - Import each icon only ONCE
 // =============================================================================
-import Alert24Filled from "~icons/fluent/alert24-filled";
-import DocumentMultiple24Filled from "~icons/fluent/document-multiple24-filled";
-import Home24Filled from "~icons/fluent/home24-filled";
-import Image24Filled from "~icons/fluent/image24-filled";
-import Settings24Filled from "~icons/fluent/settings24-filled";
+import Alert24Filled from '~icons/fluent/alert24-filled';
+import DocumentMultiple24Filled from '~icons/fluent/document-multiple24-filled';
+import Home24Filled from '~icons/fluent/home24-filled';
+import Image24Filled from '~icons/fluent/image24-filled';
+import Settings24Filled from '~icons/fluent/settings24-filled';
 
 // =============================================================================
 // TREE-SHAKABLE EXPORTS - Clean, concise naming
@@ -68,18 +69,18 @@ const otherIconMappingFilled: Record<keyof typeof OtherIconEnum, Component> = {
  */
 export function getOtherIcon(
   otherKey: keyof typeof OtherIconEnum,
-  variant: 'regular' | 'filled' = 'regular'
+  variant: 'regular' | 'filled' = 'regular',
 ): Component {
-  return variant === 'filled' 
-    ? otherIconMappingFilled[otherKey] 
+  return variant === 'filled'
+    ? otherIconMappingFilled[otherKey]
     : otherIconMappingRegular[otherKey];
 }
 
 const otherIconMapping = otherIconMappingRegular;
 
 // Export mappings for external use
-export { 
-  otherIconMapping, 
-  otherIconMappingRegular, 
-  otherIconMappingFilled 
+export {
+  otherIconMapping,
+  otherIconMappingRegular,
+  otherIconMappingFilled,
 };

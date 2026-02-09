@@ -42,10 +42,10 @@
           </CardContent>
           <CardFooter>
             <Link :href="route('pages.index')">
-            <Button size="sm" variant="secondary">
-              <Icons.PAGE />
-              {{ $t('Rodyti visus') }}
-            </Button>
+              <Button size="sm" variant="secondary">
+                <Icons.PAGE />
+                {{ $t('Rodyti visus') }}
+              </Button>
             </Link>
           </CardFooter>
         </Card>
@@ -74,10 +74,10 @@
           </CardContent>
           <CardFooter>
             <Link :href="route('news.index')">
-            <Button size="sm" variant="secondary">
-              <Icons.NEWS />
-              {{ $t('Rodyti visus') }}
-            </Button>
+              <Button size="sm" variant="secondary">
+                <Icons.NEWS />
+                {{ $t('Rodyti visus') }}
+              </Button>
             </Link>
           </CardFooter>
         </Card>
@@ -105,10 +105,10 @@
           </CardContent>
           <CardFooter>
             <Link :href="route('quickLinks.index')">
-            <Button size="sm" variant="secondary">
-              <Icons.QUICK_LINK />
-              {{ $t('Rodyti visus') }}
-            </Button>
+              <Button size="sm" variant="secondary">
+                <Icons.QUICK_LINK />
+                {{ $t('Rodyti visus') }}
+              </Button>
             </Link>
           </CardFooter>
         </Card>
@@ -131,10 +131,10 @@
           </CardContent>
           <CardFooter>
             <Link :href="route('calendar.index')">
-            <Button size="sm" variant="secondary">
-              <Icons.CALENDAR />
-              {{ $t('Rodyti visus') }}
-            </Button>
+              <Button size="sm" variant="secondary">
+                <Icons.CALENDAR />
+                {{ $t('Rodyti visus') }}
+              </Button>
             </Link>
           </CardFooter>
         </Card>
@@ -145,16 +145,16 @@
 
 <script setup lang="ts">
 import { Link, router } from '@inertiajs/vue3';
-import Icons from "@/Types/Icons/filled";
 import { binX, plot, rectY } from '@observablehq/plot';
-import { onMounted, ref, watch } from 'vue';
-import { computed } from 'vue';
+import { onMounted, ref, watch, computed } from 'vue';
+import { trans as $t } from 'laravel-vue-i18n';
+
+import Icons from '@/Types/Icons/filled';
 import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
-import { trans as $t } from "laravel-vue-i18n";
 
 const { tenants, providedTenant } = defineProps<{
   tenants: App.Entities.Tenant[];
@@ -165,22 +165,22 @@ const selectedTenantId = computed(() => providedTenant?.id ? String(providedTena
 
 const handleTenantUpdateValue = (value: string) => {
   router.reload({ data: { tenant_id: Number(value) } });
-}
+};
 
 const wrapper = ref(null);
 
 const tenantNews = computed(() => providedTenant?.news?.map(news => ({
   ...news,
   publish_time: new Date(news.publish_time),
-})))
+})));
 
 const generatePlot = () => plot({
-  x: { type: "time", label: "Paskelbimo laikas" },
+  x: { type: 'time', label: 'Paskelbimo laikas' },
   // don't show decimal
-  y: { grid: true, label: "Naujienų skaičius", round: true, nice: true, ticks: 3 },
+  y: { grid: true, label: 'Naujienų skaičius', round: true, nice: true, ticks: 3 },
   marks: [
-    rectY(tenantNews.value, binX({ y: "count" }, {
-      x: "publish_time", fill: '#aa2430ee'
+    rectY(tenantNews.value, binX({ y: 'count' }, {
+      x: 'publish_time', fill: '#aa2430ee',
     })),
   ],
   marginTop: 30,
@@ -191,13 +191,13 @@ const generatePlot = () => plot({
 
 // Setup breadcrumbs for the Svetaine page
 usePageBreadcrumbs([
-  { label: $t('Svetainė'), icon: Icons.PAGE }
+  { label: $t('Svetainė'), icon: Icons.PAGE },
 ]);
 
 watch(() => providedTenant, () => {
   if (wrapper.value) {
-    wrapper.value.innerHTML = ''
-    wrapper.value.appendChild(generatePlot())
+    wrapper.value.innerHTML = '';
+    wrapper.value.appendChild(generatePlot());
   }
 });
 

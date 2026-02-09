@@ -1,14 +1,15 @@
-import type { Meta, StoryObj } from '@storybook/vue3-vite'
-import { fn, userEvent, within } from 'storybook/test'
-import DocumentSearchInput from './DocumentSearchInput.vue'
+import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import { fn, userEvent, within } from 'storybook/test';
+
+import DocumentSearchInput from './DocumentSearchInput.vue';
 
 // Mock the recent searches functionality
 const mockRecentSearches = [
   'VU SR protokolai',
   'studijų programa',
   'padalinio susirinkimas',
-  'rektorato posėdis'
-]
+  'rektorato posėdis',
+];
 
 const meta: Meta<typeof DocumentSearchInput> = {
   title: 'Components/Search/DocumentSearchInput',
@@ -29,7 +30,7 @@ const meta: Meta<typeof DocumentSearchInput> = {
     onClearRecents: fn(),
     onFocus: fn(),
     onBlur: fn(),
-    onClear: fn()
+    onClear: fn(),
   },
   args: {
     query: '',
@@ -46,10 +47,10 @@ const meta: Meta<typeof DocumentSearchInput> = {
     onClearRecents: fn(),
     onFocus: fn(),
     onBlur: fn(),
-    onClear: fn()
+    onClear: fn(),
   },
   decorators: [
-    (story) => ({
+    story => ({
       components: { story },
       template: `
         <div class="p-6 bg-gray-50 min-h-screen">
@@ -58,26 +59,26 @@ const meta: Meta<typeof DocumentSearchInput> = {
             <story />
           </div>
         </div>
-      `
-    })
+      `,
+    }),
   ],
   parameters: {
     layout: 'fullscreen',
     backgrounds: {
-      default: 'light'
-    }
-  }
-}
+      default: 'light',
+    },
+  },
+};
 
-export default meta
-type Story = StoryObj<typeof meta>
+export default meta;
+type Story = StoryObj<typeof meta>;
 
 // Default state
 export const Default: Story = {
-  render: (args) => ({
+  render: args => ({
     components: { DocumentSearchInput },
     setup() {
-      return { args }
+      return { args };
     },
     template: `
       <DocumentSearchInput
@@ -91,19 +92,19 @@ export const Default: Story = {
         @blur="args.onBlur"
         @clear="args.onClear"
       />
-    `
-  })
-}
+    `,
+  }),
+};
 
 // With initial query
 export const WithQuery: Story = {
   args: {
-    query: 'VU SR protokolai'
+    query: 'VU SR protokolai',
   },
-  render: (args) => ({
+  render: args => ({
     components: { DocumentSearchInput },
     setup() {
-      return { args }
+      return { args };
     },
     template: `
       <DocumentSearchInput
@@ -117,20 +118,20 @@ export const WithQuery: Story = {
         @blur="args.onBlur"
         @clear="args.onClear"
       />
-    `
-  })
-}
+    `,
+  }),
+};
 
 // Loading state
 export const Loading: Story = {
   args: {
     loading: true,
-    query: 'searching...'
+    query: 'searching...',
   },
-  render: (args) => ({
+  render: args => ({
     components: { DocumentSearchInput },
     setup() {
-      return { args }
+      return { args };
     },
     template: `
       <DocumentSearchInput
@@ -144,19 +145,19 @@ export const Loading: Story = {
         @blur="args.onBlur"
         @clear="args.onClear"
       />
-    `
-  })
-}
+    `,
+  }),
+};
 
 // Type to search mode
 export const TypeToSearch: Story = {
   args: {
-    typeToSearch: true
+    typeToSearch: true,
   },
-  render: (args) => ({
+  render: args => ({
     components: { DocumentSearchInput },
     setup() {
-      return { args }
+      return { args };
     },
     template: `
       <DocumentSearchInput
@@ -170,20 +171,20 @@ export const TypeToSearch: Story = {
         @blur="args.onBlur"
         @clear="args.onClear"
       />
-    `
-  })
-}
+    `,
+  }),
+};
 
 // Disabled state
 export const Disabled: Story = {
   args: {
     disabled: true,
-    query: 'Cannot edit'
+    query: 'Cannot edit',
   },
-  render: (args) => ({
+  render: args => ({
     components: { DocumentSearchInput },
     setup() {
-      return { args }
+      return { args };
     },
     template: `
       <DocumentSearchInput
@@ -197,19 +198,19 @@ export const Disabled: Story = {
         @blur="args.onBlur"
         @clear="args.onClear"
       />
-    `
-  })
-}
+    `,
+  }),
+};
 
 // No recent searches
 export const NoRecentSearches: Story = {
   args: {
-    recentSearches: []
+    recentSearches: [],
   },
-  render: (args) => ({
+  render: args => ({
     components: { DocumentSearchInput },
     setup() {
-      return { args }
+      return { args };
     },
     template: `
       <DocumentSearchInput
@@ -223,16 +224,16 @@ export const NoRecentSearches: Story = {
         @blur="args.onBlur"
         @clear="args.onClear"
       />
-    `
-  })
-}
+    `,
+  }),
+};
 
 // Interactive story with user actions
 export const Interactive: Story = {
-  render: (args) => ({
+  render: args => ({
     components: { DocumentSearchInput },
     setup() {
-      return { args }
+      return { args };
     },
     template: `
       <DocumentSearchInput
@@ -246,38 +247,38 @@ export const Interactive: Story = {
         @blur="args.onBlur"
         @clear="args.onClear"
       />
-    `
+    `,
   }),
   play: async ({ canvasElement, args }) => {
-    const canvas = within(canvasElement)
-    
+    const canvas = within(canvasElement);
+
     // Focus the input
-    const input = canvas.getByPlaceholderText('Ieškokite dokumentų...')
-    await userEvent.click(input)
-    
+    const input = canvas.getByPlaceholderText('Ieškokite dokumentų...');
+    await userEvent.click(input);
+
     // Type a search query
-    await userEvent.type(input, 'VU SR protokolai')
-    
+    await userEvent.type(input, 'VU SR protokolai');
+
     // Verify the query was updated
-    await new Promise(resolve => setTimeout(resolve, 500))
-    
+    await new Promise(resolve => setTimeout(resolve, 500));
+
     // Press Enter to search
-    await userEvent.keyboard('{Enter}')
-    
+    await userEvent.keyboard('{Enter}');
+
     // Wait a bit for the action to be logged
-    await new Promise(resolve => setTimeout(resolve, 200))
-  }
-}
+    await new Promise(resolve => setTimeout(resolve, 200));
+  },
+};
 
 // Custom placeholder
 export const CustomPlaceholder: Story = {
   args: {
-    placeholder: 'Search for meeting minutes, reports, and documents...'
+    placeholder: 'Search for meeting minutes, reports, and documents...',
   },
-  render: (args) => ({
+  render: args => ({
     components: { DocumentSearchInput },
     setup() {
-      return { args }
+      return { args };
     },
     template: `
       <DocumentSearchInput
@@ -291,9 +292,9 @@ export const CustomPlaceholder: Story = {
         @blur="args.onBlur"
         @clear="args.onClear"
       />
-    `
-  })
-}
+    `,
+  }),
+};
 
 // Long recent searches list
 export const ManyRecentSearches: Story = {
@@ -308,14 +309,14 @@ export const ManyRecentSearches: Story = {
       'kokybės užtikrinimo sistema',
       'tarptautinio bendradarbiavimo sutartys',
       'studijų rezultatų analizė',
-      'mokslinių tyrimų ataskaita'
+      'mokslinių tyrimų ataskaita',
     ],
-    maxSuggestions: 3
+    maxSuggestions: 3,
   },
-  render: (args) => ({
+  render: args => ({
     components: { DocumentSearchInput },
     setup() {
-      return { args }
+      return { args };
     },
     template: `
       <DocumentSearchInput
@@ -329,6 +330,6 @@ export const ManyRecentSearches: Story = {
         @blur="args.onBlur"
         @clear="args.onClear"
       />
-    `
-  })
-}
+    `,
+  }),
+};

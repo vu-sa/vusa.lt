@@ -109,52 +109,51 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { format } from 'date-fns'
-import { lt } from 'date-fns/locale'
-import { CalendarDate, today, getLocalTimeZone, type DateValue } from '@internationalized/date'
-import { trans as $t } from 'laravel-vue-i18n'
+import { ref, computed } from 'vue';
+import { format } from 'date-fns';
+import { lt } from 'date-fns/locale';
+import { CalendarDate, today, getLocalTimeZone, type DateValue } from '@internationalized/date';
+import { trans as $t } from 'laravel-vue-i18n';
 
 // ShadcnVue components
-import { Button } from '@/Components/ui/button'
-import { Calendar } from '@/Components/ui/calendar'
-import { Slider } from '@/Components/ui/slider'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger
-} from '@/Components/ui/popover'
-
-// Icons
 import {
   Calendar as CalendarIcon,
   CalendarDays,
   CalendarCheck,
   X,
-  RotateCcw
-} from 'lucide-vue-next'
+  RotateCcw,
+} from 'lucide-vue-next';
+
+import { Button } from '@/Components/ui/button';
+import { Calendar } from '@/Components/ui/calendar';
+import { Slider } from '@/Components/ui/slider';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/Components/ui/popover';
+
+// Icons
 
 // Types
 interface DateRange {
-  from?: Date
-  to?: Date
-  preset?: 'recent' | '3months' | '6months' | '1year' | 'year-range' | 'custom'
+  from?: Date;
+  to?: Date;
+  preset?: 'recent' | '3months' | '6months' | '1year' | 'year-range' | 'custom';
 }
 
 interface Props {
-  dateRange: DateRange
+  dateRange: DateRange;
 }
 
-interface Emits {
-  (e: 'update:dateRange', range: DateRange): void
-}
+type Emits = (e: 'update:dateRange', range: DateRange) => void;
 
-const props = defineProps<Props>()
-const emit = defineEmits<Emits>()
+const props = defineProps<Props>();
+const emit = defineEmits<Emits>();
 
 // Local state
-const fromDateOpen = ref(false)
-const toDateOpen = ref(false)
+const fromDateOpen = ref(false);
+const toDateOpen = ref(false);
 
 // Date presets configuration - using translation keys
 const datePresets = computed(() => [
@@ -162,201 +161,200 @@ const datePresets = computed(() => [
     key: 'recent',
     label: $t('search.date_recent'),
     description: $t('search.date_recent_desc'),
-    icon: '🕒'
+    icon: '🕒',
   },
   {
     key: '3months',
     label: $t('search.date_3_months'),
     description: $t('search.date_3_months_desc'),
-    icon: '📅'
+    icon: '📅',
   },
   {
     key: '6months',
     label: $t('search.date_6_months'),
     description: $t('search.date_6_months_desc'),
-    icon: '📅'
+    icon: '📅',
   },
   {
     key: '1year',
     label: $t('search.date_1_year'),
     description: $t('search.date_1_year_desc'),
-    icon: '🗓️'
+    icon: '🗓️',
   },
   {
     key: 'year-range',
     label: $t('search.date_year_range'),
     description: $t('search.date_year_range_desc'),
-    icon: '📊'
+    icon: '📊',
   },
   {
     key: 'custom',
     label: $t('search.date_custom'),
     description: $t('search.date_custom_desc'),
-    icon: '🎯'
-  }
-])
+    icon: '🎯',
+  },
+]);
 
 // Helper functions
 const formatDate = (date: Date | string | null | undefined): string => {
-  if (!date) return ''
+  if (!date) return '';
 
-  const dateObj = date instanceof Date ? date : new Date(date)
-  if (isNaN(dateObj.getTime())) return ''
+  const dateObj = date instanceof Date ? date : new Date(date);
+  if (isNaN(dateObj.getTime())) return '';
 
-  return format(dateObj, 'yyyy-MM-dd', { locale: lt })
-}
+  return format(dateObj, 'yyyy-MM-dd', { locale: lt });
+};
 
 // Convert Date to CalendarDate for the Calendar component
 const dateToCalendarDate = (date: Date | undefined): CalendarDate | undefined => {
-  if (!date) return undefined
-  return new CalendarDate(date.getFullYear(), date.getMonth() + 1, date.getDate())
-}
+  if (!date) return undefined;
+  return new CalendarDate(date.getFullYear(), date.getMonth() + 1, date.getDate());
+};
 
 // Convert CalendarDate to Date
 const calendarDateToDate = (calendarDate: CalendarDate | undefined): Date | undefined => {
-  if (!calendarDate) return undefined
-  return new Date(calendarDate.year, calendarDate.month - 1, calendarDate.day)
-}
+  if (!calendarDate) return undefined;
+  return new Date(calendarDate.year, calendarDate.month - 1, calendarDate.day);
+};
 
 // Computed properties
 const hasActiveDateFilter = computed(() => {
   // Show active filter if user has explicitly selected any preset or custom dates
-  return !!props.dateRange.preset || 
-         !!props.dateRange.from || 
-         !!props.dateRange.to
-})
+  return !!props.dateRange.preset
+    || !!props.dateRange.from
+    || !!props.dateRange.to;
+});
 
 // Year range slider computed properties
 const oldestYear = computed(() => {
-  return 1989 // Hardcoded start year for VU SA documents
-})
+  return 1989; // Hardcoded start year for VU SA documents
+});
 
 const currentYear = computed(() => {
-  return new Date().getFullYear()
-})
+  return new Date().getFullYear();
+});
 
 const yearRangeValues = computed(() => {
   if (props.dateRange.preset === 'year-range' && props.dateRange.from && props.dateRange.to) {
-    const fromYear = new Date(props.dateRange.from).getFullYear()
-    const toYear = new Date(props.dateRange.to).getFullYear()
-    return [fromYear, toYear]
+    const fromYear = new Date(props.dateRange.from).getFullYear();
+    const toYear = new Date(props.dateRange.to).getFullYear();
+    return [fromYear, toYear];
   }
-  return [oldestYear.value, currentYear.value]
-})
+  return [oldestYear.value, currentYear.value];
+});
 
 // Date validation functions
 const getFromDisabledDates = (date: DateValue): boolean => {
   // Disable future dates and dates after 'to' date
-  const todayDate = today(getLocalTimeZone())
+  const todayDate = today(getLocalTimeZone());
 
-  if (date.compare(todayDate) > 0) return true
+  if (date.compare(todayDate) > 0) return true;
   if (props.dateRange.to) {
-    const toCalendarDate = dateToCalendarDate(props.dateRange.to)
-    if (toCalendarDate && date.compare(toCalendarDate) > 0) return true
+    const toCalendarDate = dateToCalendarDate(props.dateRange.to);
+    if (toCalendarDate && date.compare(toCalendarDate) > 0) return true;
   }
 
-  return false
-}
+  return false;
+};
 
 const getToDisabledDates = (date: DateValue): boolean => {
   // Disable future dates and dates before 'from' date
-  const todayDate = today(getLocalTimeZone())
+  const todayDate = today(getLocalTimeZone());
 
-  if (date.compare(todayDate) > 0) return true
+  if (date.compare(todayDate) > 0) return true;
   if (props.dateRange.from) {
-    const fromCalendarDate = dateToCalendarDate(props.dateRange.from)
-    if (fromCalendarDate && date.compare(fromCalendarDate) < 0) return true
+    const fromCalendarDate = dateToCalendarDate(props.dateRange.from);
+    if (fromCalendarDate && date.compare(fromCalendarDate) < 0) return true;
   }
 
-  return false
-}
+  return false;
+};
 
 // Event handlers
 const selectPreset = (preset: string) => {
-  let newRange: DateRange = { preset: preset as any }
+  const newRange: DateRange = { preset: preset as any };
 
   if (preset !== 'custom') {
     // Clear custom dates when selecting preset
-    newRange.from = undefined
-    newRange.to = undefined
+    newRange.from = undefined;
+    newRange.to = undefined;
   }
 
-  emit('update:dateRange', newRange)
-}
+  emit('update:dateRange', newRange);
+};
 
 const handleFromDateChange = (date: DateValue | undefined) => {
   const newRange: DateRange = {
     ...props.dateRange,
     from: calendarDateToDate(date as CalendarDate),
-    preset: 'custom'
-  }
+    preset: 'custom',
+  };
 
-  emit('update:dateRange', newRange)
-  fromDateOpen.value = false
-}
+  emit('update:dateRange', newRange);
+  fromDateOpen.value = false;
+};
 
 const handleToDateChange = (date: DateValue | undefined) => {
   const newRange: DateRange = {
     ...props.dateRange,
     to: calendarDateToDate(date as CalendarDate),
-    preset: 'custom'
-  }
+    preset: 'custom',
+  };
 
-  emit('update:dateRange', newRange)
-  toDateOpen.value = false
-}
+  emit('update:dateRange', newRange);
+  toDateOpen.value = false;
+};
 
 const clearCustomRange = () => {
   const newRange: DateRange = {
     preset: 'custom',
     from: undefined,
-    to: undefined
-  }
+    to: undefined,
+  };
 
-  emit('update:dateRange', newRange)
-}
+  emit('update:dateRange', newRange);
+};
 
 const clearDateFilter = () => {
-  const newRange: DateRange = {}
+  const newRange: DateRange = {};
 
-  emit('update:dateRange', newRange)
-}
+  emit('update:dateRange', newRange);
+};
 
 const handleYearRangeChange = (value: number[] | undefined) => {
   if (value && value.length === 2) {
-    const [fromYear, toYear] = value
+    const [fromYear, toYear] = value;
     if (typeof fromYear === 'number' && typeof toYear === 'number') {
       const newRange: DateRange = {
         preset: 'year-range',
         from: new Date(fromYear, 0, 1), // January 1st of from year
-        to: new Date(toYear, 11, 31)    // December 31st of to year
-      }
+        to: new Date(toYear, 11, 31), // December 31st of to year
+      };
 
-      emit('update:dateRange', newRange)
+      emit('update:dateRange', newRange);
     }
   }
-}
-
+};
 
 const getActiveDateRangeDescription = (): string => {
   // Only show description for non-default presets
   if (props.dateRange.preset && props.dateRange.preset !== 'recent' && props.dateRange.preset !== 'custom') {
-    const preset = datePresets.value.find(p => p.key === props.dateRange.preset)
-    return preset ? `${preset.label} (${preset.description})` : ''
+    const preset = datePresets.value.find(p => p.key === props.dateRange.preset);
+    return preset ? `${preset.label} (${preset.description})` : '';
   }
 
   if (props.dateRange.from && props.dateRange.to) {
-    return `${formatDate(props.dateRange.from)} - ${formatDate(props.dateRange.to)}`
+    return `${formatDate(props.dateRange.from)} - ${formatDate(props.dateRange.to)}`;
   }
 
   if (props.dateRange.from) {
-    return $t('search.date_from_format', { date: formatDate(props.dateRange.from) })
+    return $t('search.date_from_format', { date: formatDate(props.dateRange.from) });
   }
 
   if (props.dateRange.to) {
-    return $t('search.date_to_format', { date: formatDate(props.dateRange.to) })
+    return $t('search.date_to_format', { date: formatDate(props.dateRange.to) });
   }
 
-  return ''
-}
+  return '';
+};
 </script>

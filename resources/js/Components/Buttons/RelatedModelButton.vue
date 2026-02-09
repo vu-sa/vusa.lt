@@ -11,9 +11,10 @@
 </template>
 
 <script setup lang="ts">
-import type { Component } from "vue";
-import { Button } from "@/Components/ui/button";
-import { Badge } from "@/Components/ui/badge";
+import type { Component } from 'vue';
+
+import { Button } from '@/Components/ui/button';
+import { Badge } from '@/Components/ui/badge';
 
 defineProps<{
   name: string;

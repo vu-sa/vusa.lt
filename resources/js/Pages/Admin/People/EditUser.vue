@@ -9,14 +9,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed } from 'vue';
+import { usePage, router } from '@inertiajs/vue3';
 
-import { usePage, router } from "@inertiajs/vue3";
-import { BreadcrumbHelpers, usePageBreadcrumbs } from "@/Composables/useBreadcrumbsUnified";
-import Icons from "@/Types/Icons/regular";
-import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
-import UserForm from "@/Components/AdminForms/UserForm.vue";
+import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
+import Icons from '@/Types/Icons/regular';
+import PageContent from '@/Components/Layouts/AdminContentPage.vue';
+import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
+import UserForm from '@/Components/AdminForms/UserForm.vue';
 
 const props = defineProps<{
   user: App.Entities.User;
@@ -29,13 +29,14 @@ const props = defineProps<{
 const userName = computed(() => {
   if (props.user.show_pronouns) {
     return `${props.user.name} (${props.user.pronouns[usePage().props.app.locale]})`;
-  } else {
+  }
+  else {
     return props.user.name;
   }
 });
 
 // Generate breadcrumbs automatically with new simplified API
-usePageBreadcrumbs(() => 
-  BreadcrumbHelpers.adminForm('Nariai', 'users.index', userName.value, Icons.USER)
+usePageBreadcrumbs(() =>
+  BreadcrumbHelpers.adminForm('Nariai', 'users.index', userName.value, Icons.USER),
 );
 </script>

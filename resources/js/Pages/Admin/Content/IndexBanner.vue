@@ -10,19 +10,19 @@
 </template>
 
 <script setup lang="tsx">
-import { trans as $t } from "laravel-vue-i18n";
-import { type ColumnDef } from '@tanstack/vue-table';
-import { ref, computed } from "vue";
+import { trans as $t } from 'laravel-vue-i18n';
+import type { ColumnDef } from '@tanstack/vue-table';
+import { ref, computed } from 'vue';
 
-import Icons from "@/Types/Icons/regular";
-import IndexTablePage from "@/Components/Layouts/IndexTablePage.vue";
-import { createStandardActionsColumn } from "@/Composables/useTableActions";
+import Icons from '@/Types/Icons/regular';
+import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
+import { createStandardActionsColumn } from '@/Composables/useTableActions';
 import {
   createTenantColumn,
 } from '@/Utils/DataTableColumns';
-import {
-  type IndexTablePageProps
-} from "@/Types/TableConfigTypes";
+import type {
+  IndexTablePageProps,
+} from '@/Types/TableConfigTypes';
 
 const props = defineProps<{
   banners: {
@@ -51,14 +51,14 @@ const getRowId = (row: App.Entities.Banner) => {
 
 const columns = computed<ColumnDef<App.Entities.Banner, any>[]>(() => [
   {
-    accessorKey: "title",
-    header: () => "Pavadinimas",
+    accessorKey: 'title',
+    header: () => 'Pavadinimas',
     cell: ({ row }) => {
       const banner = row.original;
       return (
         <a
-          class={banner.is_active ? "font-bold text-green-700" : "text-red-700"}
-          href={route("banners.edit", { id: banner.id })}
+          class={banner.is_active ? 'font-bold text-green-700' : 'text-red-700'}
+          href={route('banners.edit', { id: banner.id })}
         >
           {banner.title}
         </a>
@@ -68,11 +68,11 @@ const columns = computed<ColumnDef<App.Entities.Banner, any>[]>(() => [
     enableSorting: true,
   },
   createTenantColumn<App.Entities.Banner>(),
-  createStandardActionsColumn<App.Entities.Banner>("banners", {
+  createStandardActionsColumn<App.Entities.Banner>('banners', {
     canView: false,
     canEdit: true,
     canDelete: true,
-  })
+  }),
 ]);
 
 const tableConfig = computed<IndexTablePageProps<App.Entities.Banner>>(() => {
@@ -92,7 +92,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Banner>>(() => {
     enableColumnVisibility: false,
     enableRowSelection: false,
 
-    headerTitle: "Baneriai",
+    headerTitle: 'Baneriai',
     icon: Icons.BANNER,
     createRoute: route('banners.create'),
     canCreate: true,

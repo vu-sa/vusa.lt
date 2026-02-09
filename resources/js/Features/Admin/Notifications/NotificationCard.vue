@@ -1,22 +1,22 @@
 <template>
-  <div 
+  <div
     class="group relative flex items-center gap-4 p-4 rounded-xl border transition-all duration-200 cursor-pointer"
     :class="[
-      notification.read_at 
-        ? 'bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700' 
+      notification.read_at
+        ? 'bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700'
         : 'bg-blue-50/50 dark:bg-blue-950/20 border-blue-200/50 dark:border-blue-800/30 hover:border-blue-300 dark:hover:border-blue-700/50',
       'hover:shadow-sm'
     ]"
     @click="handleNavigate"
   >
     <!-- Unread indicator dot -->
-    <div 
+    <div
       v-if="!notification.read_at"
       class="absolute left-2 top-1/2 -translate-y-1/2 size-1.5 rounded-full bg-blue-500"
     />
 
     <!-- Icon -->
-    <div 
+    <div
       :class="[
         'flex items-center justify-center size-11 rounded-xl shrink-0',
         colors.combined
@@ -34,11 +34,11 @@
           :src="notification.data.subject.image"
           :alt="notification.data.subject.name"
           class="size-5 rounded-full object-cover ring-2 ring-white dark:ring-zinc-900"
-        />
-        <h4 
+        >
+        <h4
           class="text-sm truncate"
-          :class="notification.read_at 
-            ? 'font-medium text-zinc-700 dark:text-zinc-300' 
+          :class="notification.read_at
+            ? 'font-medium text-zinc-700 dark:text-zinc-300'
             : 'font-semibold text-zinc-900 dark:text-zinc-100'"
         >
           {{ title }}
@@ -46,7 +46,7 @@
       </div>
 
       <!-- Body -->
-      <p 
+      <p
         class="text-sm text-zinc-600 dark:text-zinc-400 line-clamp-2"
         v-html="message"
       />
@@ -56,7 +56,7 @@
         <span class="text-xs text-zinc-500 dark:text-zinc-500">
           {{ formattedTime }}
         </span>
-        
+
         <!-- Mobile actions -->
         <div class="flex items-center gap-1 sm:hidden">
           <button
@@ -79,7 +79,7 @@
     </div>
 
     <!-- Desktop actions (show on hover) -->
-    <div 
+    <div
       class="hidden sm:flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
     >
       <Tooltip v-if="!notification.read_at">
@@ -93,7 +93,7 @@
         </TooltipTrigger>
         <TooltipContent>{{ $t('Pažymėti kaip skaitytą') }}</TooltipContent>
       </Tooltip>
-      
+
       <Tooltip>
         <TooltipTrigger as-child>
           <button
@@ -108,7 +108,7 @@
     </div>
 
     <!-- Action URL indicator -->
-    <div 
+    <div
       v-if="url"
       class="hidden sm:flex items-center shrink-0 text-zinc-400 dark:text-zinc-600 group-hover:text-zinc-600 dark:group-hover:text-zinc-400 transition-colors"
     >
@@ -121,6 +121,7 @@
 import { computed } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
+
 import {
   getNotificationIcon,
   getNotificationColorClasses,
@@ -128,10 +129,9 @@ import {
   getNotificationMessage,
   getNotificationUrl,
   formatNotificationTime,
-  type Notification
+  type Notification,
 } from '@/Composables/useNotificationFormatting';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/Components/ui/tooltip';
-
 import IFluentCheckmark24Filled from '~icons/fluent/checkmark24-filled';
 import IFluentDelete24Regular from '~icons/fluent/delete24-regular';
 import IFluentArrowRight16Filled from '~icons/fluent/arrow-right16-filled';

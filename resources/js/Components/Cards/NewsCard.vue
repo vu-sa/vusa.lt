@@ -6,7 +6,7 @@
                 ataskaitinė-rinkiminė konferencija -->
       <IFluentClock20Regular class="mr-1" />
       {{ formatStaticTime(new Date(news.publish_time), { year: "numeric", month: "long", day: "numeric" },
-        $page.props.app.locale) }}
+                          $page.props.app.locale) }}
     </template>
     <template #image>
       <img :src="news.image"
@@ -17,8 +17,9 @@
 </template>
 
 <script setup lang="ts">
-import { formatStaticTime } from "@/Utils/IntlTime";
-import HomeCard from "../Public/HomeCard.vue";
+import HomeCard from '../Public/HomeCard.vue';
+
+import { formatStaticTime } from '@/Utils/IntlTime';
 
 defineProps<{
   news: App.Entities.News;

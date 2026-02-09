@@ -18,10 +18,10 @@
       </StepperItem>
     </Stepper>
     <FadeTransition>
-      <FileableForm v-if="current === 1" :show-alert="showAlert" @close:alert="showAlert = false"
+      <FileableForm v-if="current === 1" :show-alert @close:alert="showAlert = false"
         @submit="handleFileableSubmit" />
       <div v-else-if="current === 2">
-        <FileForm :fileable="fileForm.fileable" :loading="loading" @submit="handleFileSubmit" />
+        <FileForm :fileable="fileForm.fileable" :loading @submit="handleFileSubmit" />
       </div>
     </FadeTransition>
     <FadeTransition>
@@ -31,20 +31,21 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, ref, watch } from "vue";
-import { useForm } from "@inertiajs/vue3";
-import { useStorage } from "@vueuse/core";
-import { trans as $t } from "laravel-vue-i18n";
+import { computed, inject, ref, watch } from 'vue';
+import { useForm } from '@inertiajs/vue3';
+import { useStorage } from '@vueuse/core';
+import { trans as $t } from 'laravel-vue-i18n';
 
-import { Stepper, StepperIndicator, StepperItem, StepperSeparator, StepperTitle, StepperTrigger } from "@/Components/ui/stepper";
-import CardModal from "@/Components/Modals/CardModal.vue";
-import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
-import FileForm from "./FileForm.vue";
-import FileableForm from "@/Components/AdminForms/Special/FileableForm.vue";
-import ModalHelperButton from "@/Components/Buttons/ModalHelperButton.vue";
+import FileForm from './FileForm.vue';
+
+import { Stepper, StepperIndicator, StepperItem, StepperSeparator, StepperTitle, StepperTrigger } from '@/Components/ui/stepper';
+import CardModal from '@/Components/Modals/CardModal.vue';
+import FadeTransition from '@/Components/Transitions/FadeTransition.vue';
+import FileableForm from '@/Components/AdminForms/Special/FileableForm.vue';
+import ModalHelperButton from '@/Components/Buttons/ModalHelperButton.vue';
 import IFluentDocumentTableSearch24Regular from '~icons/fluent/document-table-search-24-regular';
 
-const emit = defineEmits(["close"]);
+const emit = defineEmits(['close']);
 
 const props = defineProps<{
   fileable?: FileableFormData;
@@ -53,10 +54,10 @@ const props = defineProps<{
 
 // Fileable type display names
 const typeDisplayNames: Record<string, string> = {
-  'Meeting': 'Posėdis',
-  'Institution': 'Institucija',
-  'Duty': 'Pareigos',
-  'Type': 'Tipas',
+  Meeting: 'Posėdis',
+  Institution: 'Institucija',
+  Duty: 'Pareigos',
+  Type: 'Tipas',
 };
 
 // Modal title with context when fileable is provided
@@ -84,7 +85,7 @@ const sanitizedFileable = computed<FileableFormData | null>(() => {
 // Determine initial step based on whether fileable is provided
 const current = ref(props.fileable ? 2 : 1);
 const loading = ref(false);
-const showAlert = useStorage("new-file-button-alert", true);
+const showAlert = useStorage('new-file-button-alert', true);
 
 // Bridge current step for Stepper v-model (read-only display)
 const stepperStep = computed({
@@ -92,7 +93,7 @@ const stepperStep = computed({
   set: () => {},
 });
 
-const keepFileable = inject<boolean>("keepFileable", false);
+const keepFileable = inject<boolean>('keepFileable', false);
 
 const fileForm = useForm<{ fileable: FileableFormData | null; file: any }>({
   fileable: sanitizedFileable.value,
@@ -122,14 +123,15 @@ const handleFileSubmit = (file: any) => {
 
 const submitFullForm = () => {
   loading.value = true;
-  fileForm.post(route("sharepointFiles.store"), {
+  fileForm.post(route('sharepointFiles.store'), {
     forceFormData: true, // Ensure FormData is used for file uploads
     onSuccess: () => {
-      emit("close");
+      emit('close');
       if (!keepFileable) {
         fileForm.reset();
         current.value = 1;
-      } else {
+      }
+      else {
         current.value = 2;
         fileForm.file = null;
       }

@@ -1,23 +1,23 @@
-import type { DriveItem, ItemReference, NullableOption, SharepointIds } from "@microsoft/microsoft-graph-types";
+import type { DriveItem, ItemReference, NullableOption, SharepointIds } from '@microsoft/microsoft-graph-types';
 
 type ExtFilter = 'folder' | 'site' | 'documentLibrary' | 'list' | 'onenote' | 'file' | 'media' | 'photo' | 'video' | 'audio' | 'document' | 'listItem' | 'playlist' | 'syntexTemplate' | 'syntexSnippet' | 'syntexField' | `.${string}`;
 
-export type Item = {
+export interface Item {
   '@sharepoint.embedUrl': string;
   '@sharepoint.endpoint': string;
   '@sharepoint.listUrl': string;
-  folder?: string;
-  id: string;
-  name: string;
-  parentReference: NullableOption<ItemReference>;
-  sharepointIds: NullableOption<SharepointIds>;
-  size: number;
-  webDavUrl: string;
-  webUrl: string;
-};
+  'folder'?: string;
+  'id': string;
+  'name': string;
+  'parentReference': NullableOption<ItemReference>;
+  'sharepointIds': NullableOption<SharepointIds>;
+  'size': number;
+  'webDavUrl': string;
+  'webUrl': string;
+}
 
-export type FilePickerOptions = {
-  sdk: "8.0";
+export interface FilePickerOptions {
+  sdk: '8.0';
   /**
    * Establishes the messaging parameters used to setup the post message communications between
    * picker and host application
@@ -187,18 +187,18 @@ export type FilePickerOptions = {
      * Indicates support for individual token types.
      */
     tokens?: {
-       /**
+      /**
         * @defaultValue true
         */
-       graph?: boolean;
-       /**
+      graph?: boolean;
+      /**
         * @defaultValue true
         */
-       sharePoint?: boolean;
-       /**
+      sharePoint?: boolean;
+      /**
         * @defaultValue false
         */
-       substrate?: boolean;
+      substrate?: boolean;
     };
     /**
      * Indicates that the host app can handle 'claims' challenges.
@@ -221,7 +221,7 @@ export type FilePickerOptions = {
      * or a general-purpose picker.
      * @default 'all'
      */
-    mode?: "files" | "folders" | "all";
+    mode?: 'files' | 'folders' | 'all';
     /**
      * `filters` options: file extension, i.e. .xlsx, .docx, .ppt, etc.
      * `filters` options: 'photo', 'folder', 'video', 'documentLibrary'
@@ -253,7 +253,7 @@ export type FilePickerOptions = {
       /**
        * Filter for requires user access level for picked items. Default is `'read'`.
        */
-      mode?: "read" | "read-write";
+      mode?: 'read' | 'read-write';
     };
     /**
      * Specifies which pivots the user may access while browsing files and lists.
@@ -296,7 +296,7 @@ export type FilePickerOptions = {
      * Controls how selection works within the list.
      * @default 'single' for the Picker.
      */
-    mode?: "single" | "multiple" | "pick";
+    mode?: 'single' | 'multiple' | 'pick';
     /**
      * Whether or not to allow the user to maintain a selection across folders and pivots.
      */
@@ -326,7 +326,7 @@ export type FilePickerOptions = {
        * A special action to perform when picking the file, before handing the result
        * back to the host app.
        */
-      action?: "select" | "share" | "download" | "move";
+      action?: 'select' | 'share' | 'download' | 'move';
       /**
        * A custom label to apply to the button which picks files.
        * This must be localized by the host app if supplied.
@@ -372,26 +372,26 @@ export type FilePickerOptions = {
     browseThisDevice?: {
       enabled?: boolean;
       label?: string;
-      mode?: "upload" | "pick";
+      mode?: 'upload' | 'pick';
     };
     /**
      * Behavior for a "From a link" command to pick from a link.
      */
     fromALink?: {
       enabled?: boolean;
-      mode?: "nav" | "pivot";
+      mode?: 'nav' | 'pivot';
     };
     /**
      * Behavior for a "Switch account" command.
      */
     switchAccount?: {
-      mode?: "host" | "none";
+      mode?: 'host' | 'none';
     };
     /**
      * Behavior for a "Manage accounts" command.
      */
     manageAccounts?: {
-      mode?: "host" | "none";
+      mode?: 'host' | 'none';
       label?: string;
     };
     /**
@@ -410,7 +410,7 @@ export type FilePickerOptions = {
      * Behavior for "Filter by" in the column headers.
      */
     filterByColumn?: {
-      mode?: "panel" | "menu";
+      mode?: 'panel' | 'menu';
     };
     /**
      * How to handle actions defined by custom formatters.
@@ -418,7 +418,7 @@ export type FilePickerOptions = {
     customFormatter?: {
       actions?: {
         key: string;
-        mode?: "host" | "none";
+        mode?: 'host' | 'none';
       }[];
     };
     /**
@@ -438,11 +438,11 @@ export type FilePickerOptions = {
          * 'host': Invokes a `custom` command message against the host app.
          * 'none': Disables the action.
          */
-        mode?: "host" | "none";
+        mode?: 'host' | 'none';
         /**
          * Selection criteria to which the item applies.
          */
-        selection?: "single" | "multiple" | "current" | "none";
+        selection?: 'single' | 'multiple' | 'current' | 'none';
       }[];
     };
   };
@@ -489,12 +489,12 @@ export type FilePickerOptions = {
       /**
        * The action to perform when the button is clicked.
        */
-      action: "pick" | "close" | "custom";
+      action: 'pick' | 'close' | 'custom';
       /**
        * If `'pick'` is specified, which pick behavior to use.
        */
       pick?: {
-        action: "select" | "share" | "download" | "move";
+        action: 'select' | 'share' | 'download' | 'move';
       };
       /**
        * Whether the button should show as the primary button.
@@ -509,17 +509,17 @@ export type FilePickerOptions = {
      * Whether or not the picker tray might be provided by the host instead.
      * @defaultValue 'default'
      */
-    mode?: "host" | "default";
+    mode?: 'host' | 'default';
     /**
      * Configures a component to render in the picker tray to the left of the commands.
      * @default 'selection-summary'
      */
     prompt?:
-      | "keep-sharing"
-      | "selection-summary"
-      | "selection-editor"
-      | "save-as"
-      | "none";
+      | 'keep-sharing'
+      | 'selection-summary'
+      | 'selection-editor'
+      | 'save-as'
+      | 'none';
     /**
      * Configures use of the 'save-as' prompt.
      */
@@ -540,7 +540,7 @@ export type FilePickerOptions = {
        * `'accept'` - Accept the choice automatically.
        * `'none'` - Do not try to match with existing items.
        */
-      mode?: "warn" | "block" | "accept" | "none";
+      mode?: 'warn' | 'block' | 'accept' | 'none';
     };
     /**
      * Configures use of the 'keep-sharing' prompt.
@@ -559,16 +559,16 @@ export type FilePickerOptions = {
      * If the nav is enabled but this is set to `host`, the embedded app
      * will show a button to ask the host app to show a nav.
      */
-    mode?: "host" | "default";
+    mode?: 'host' | 'default';
     /**
      * Indicates whether the left nav will be initially modal.
      */
-    initialModality?: "modal" | "hidden";
+    initialModality?: 'modal' | 'hidden';
 
     /**
      * Type of left nav
      */
-    preset?: "oneDrive" | "current-site";
+    preset?: 'oneDrive' | 'current-site';
 
     /**
      * Custom commands to insert at the end of the left nav. Will appear before the default set.
@@ -586,7 +586,7 @@ export type FilePickerOptions = {
        * Type of action which will be performed when the command is clicked.
        * 'custom': Configured via `commands.custom`.
        */
-      action: "custom" | "pick" | "close" | "browse-this-device";
+      action: 'custom' | 'pick' | 'close' | 'browse-this-device';
       /**
        * Name of a Fluent icon to use for the command button.
        */
@@ -598,7 +598,7 @@ export type FilePickerOptions = {
    * Note: custom theme objects are expected in addition to the strings below
    * @default 'default': Light theme
    */
-  theme?: "default" | "dark" | "lists";
+  theme?: 'default' | 'dark' | 'lists';
   list?: {
     /**
      * A custom override for the initial list layout.
@@ -607,7 +607,7 @@ export type FilePickerOptions = {
       /**
        * Sets the preferred starting layout for the initial content.
        */
-      type?: "details" | "compact-details" | "tiles";
+      type?: 'details' | 'compact-details' | 'tiles';
     };
     /**
      * Configures scrolling behavior within the Picker.
@@ -638,4 +638,4 @@ export type FilePickerOptions = {
       };
     };
   };
-};
+}

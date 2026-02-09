@@ -1,14 +1,14 @@
-import { genitivize } from "@/Utils/String";
+import { genitivize } from '@/Utils/String';
 
-type Form = {
+interface Form {
   dateValue: string | null;
   nameValue: string;
   typeValue: string;
-};
+}
 
 export const generateNameForFile = (form: Form, fileable?: FileableFormData) => {
   // Meeting files get auto-generated names if fileable_name is available
-  if (fileable?.type === "Meeting" && fileable.fileable_name) {
+  if (fileable?.type === 'Meeting' && fileable.fileable_name) {
     return {
       fileName: `${genitivize(fileable.fileable_name)} protokolas`,
       isFileNameEditDisabled: true,

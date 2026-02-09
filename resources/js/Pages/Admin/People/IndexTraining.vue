@@ -10,20 +10,20 @@
 </template>
 
 <script setup lang="tsx">
-import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
-import { type ColumnDef } from '@tanstack/vue-table';
-import { ref, computed } from "vue";
+import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
+import type { ColumnDef } from '@tanstack/vue-table';
+import { ref, computed } from 'vue';
 
-import Icons from "@/Types/Icons/regular";
-import { capitalize } from "@/Utils/String";
-import IndexTablePage from "@/Components/Layouts/IndexTablePage.vue";
-import { createStandardActionsColumn } from "@/Composables/useTableActions";
+import Icons from '@/Types/Icons/regular';
+import { capitalize } from '@/Utils/String';
+import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
+import { createStandardActionsColumn } from '@/Composables/useTableActions';
 import {
   createTextColumn,
 } from '@/Utils/DataTableColumns';
-import {
-  type IndexTablePageProps
-} from "@/Types/TableConfigTypes";
+import type {
+  IndexTablePageProps,
+} from '@/Types/TableConfigTypes';
 
 const props = defineProps<{
   trainings: {
@@ -51,15 +51,15 @@ const getRowId = (row: App.Entities.Training) => {
 };
 
 const columns = computed<ColumnDef<App.Entities.Training, any>[]>(() => [
-  createTextColumn<App.Entities.Training>("name", {
-    title: $t("forms.fields.name"),
+  createTextColumn<App.Entities.Training>('name', {
+    title: $t('forms.fields.name'),
     width: 400,
   }),
-  createStandardActionsColumn<App.Entities.Training>("trainings", {
+  createStandardActionsColumn<App.Entities.Training>('trainings', {
     canView: true,
     canEdit: true,
     canDelete: false,
-  })
+  }),
 ]);
 
 const tableConfig = computed<IndexTablePageProps<App.Entities.Training>>(() => {

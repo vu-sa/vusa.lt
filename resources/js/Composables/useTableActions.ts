@@ -1,31 +1,32 @@
 import { h } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
+
 import DataTableActionsColumn from '@/Components/ui/data-table/DataTableActionsColumn.vue';
 
 export interface ActionColumnOptions {
   // Model information
   modelName: string;
-  
+
   // Route prefixes or explicit routes
   viewRoute?: string;
   editRoute?: string;
   duplicateRoute?: string;
   deleteRoute?: string;
   restoreRoute?: string;
-  
+
   // Permissions
   canView?: boolean;
   canEdit?: boolean;
   canDuplicate?: boolean;
   canDelete?: boolean;
   canRestore?: boolean;
-  
+
   // Confirmation settings
   confirmDelete?: boolean;
   deleteConfirmMessage?: string;
   deleteConfirmTitle?: string;
-  
+
   // Column display options
   header?: string;
   id?: string;
@@ -35,12 +36,12 @@ export interface ActionColumnOptions {
 
 /**
  * Creates an action column definition for data tables
- * 
+ *
  * @param options Configuration options for the action column
  * @returns ColumnDef object to add to the table columns
  */
-export function createActionsColumn<TData extends { id: string | number, deleted_at?: string | null }>(
-  options: ActionColumnOptions
+export function createActionsColumn<TData extends { id: string | number; deleted_at?: string | null }>(
+  options: ActionColumnOptions,
 ): ColumnDef<TData, any> {
   return {
     id: options.id || 'actions',
@@ -63,31 +64,31 @@ export function createActionsColumn<TData extends { id: string | number, deleted
         canRestore: options.canRestore,
         confirmDelete: options.confirmDelete,
         deleteConfirmMessage: options.deleteConfirmMessage,
-        deleteConfirmTitle: options.deleteConfirmTitle
+        deleteConfirmTitle: options.deleteConfirmTitle,
       });
-    }
+    },
   };
 }
 
 /**
  * Creates standard actions column with conventional route naming
- * 
+ *
  * @param modelName The name of the model (e.g., 'users', 'institutions')
  * @param permissions Object containing permission flags
  * @returns ColumnDef object for action column
  */
-export function createStandardActionsColumn<TData extends { id: string | number, deleted_at?: string | null }>(
+export function createStandardActionsColumn<TData extends { id: string | number; deleted_at?: string | null }>(
   modelName: string,
   permissions: {
     canView?: boolean;
     canEdit?: boolean;
-    canDuplicate?: boolean; 
+    canDuplicate?: boolean;
     canDelete?: boolean;
     canRestore?: boolean;
     confirmDelete?: boolean;
     deleteConfirmMessage?: string;
     deleteConfirmTitle?: string;
-  } = {}
+  } = {},
 ): ColumnDef<TData, any> {
   return createActionsColumn({
     modelName,
@@ -102,6 +103,6 @@ export function createStandardActionsColumn<TData extends { id: string | number,
     deleteConfirmMessage: permissions.deleteConfirmMessage,
     deleteConfirmTitle: permissions.deleteConfirmTitle,
     // Forward permissions
-    ...permissions
+    ...permissions,
   });
 }

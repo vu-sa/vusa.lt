@@ -1,47 +1,49 @@
 <template>
-  <!-- 
+  <!--
     SimpleServerTable.vue - Lightweight server-side table
     Use this for basic server-side tables without admin features or page wrapper
   -->
   <div class="space-y-4">
     <!-- Search and basic filters -->
     <div v-if="enableFiltering" class="flex gap-2">
-      <Input 
-        v-model="searchText" 
-        :placeholder="`${$t('Search')}...`" 
-        class="max-w-sm" 
-        @keydown.enter="handleSearch" 
+      <Input
+        v-model="searchText"
+        :placeholder="`${$t('Search')}...`"
+        class="max-w-sm"
+        @keydown.enter="handleSearch"
       />
-      <Button @click="handleSearch" variant="outline">
+      <Button variant="outline" @click="handleSearch">
         {{ $t('Search') }}
       </Button>
     </div>
 
     <!-- Table -->
-    <DataTableProvider 
+    <DataTableProvider
       ref="dataTableProviderRef"
-      :columns="columns" 
-      :data="data" 
-      :is-server-side="true" 
+      :columns
+      :data
+      :is-server-side="true"
       :total-items="totalCount"
-      :server-pagination="serverPagination" 
+      :server-pagination
       :server-sorting="sorting"
-      :page-size="pageSize" 
-      :enable-pagination="true" 
-      :row-class-name="rowClassName"
-      :empty-message="emptyMessage" 
+      :page-size
+      :enable-pagination="true"
+      :row-class-name
+      :empty-message
       :enable-filtering="false"
-      :enable-column-visibility="enableColumnVisibility" 
+      :enable-column-visibility
       :global-filter="searchText"
-      :loading="loading"
-      @page-change="handlePageChange" 
-      @update:sorting="handleSortChange" 
+      :loading
+      @page-change="handlePageChange"
+      @update:sorting="handleSortChange"
     >
       <template #empty>
         <slot name="empty">
           <div class="flex flex-col items-center justify-center py-8 text-center">
             <component :is="emptyIcon || CircleIcon" class="h-12 w-12 text-muted-foreground mb-4" />
-            <h3 class="text-lg font-medium mb-2">{{ emptyMessage || $t('No data found') }}</h3>
+            <h3 class="text-lg font-medium mb-2">
+              {{ emptyMessage || $t('No data found') }}
+            </h3>
             <p class="text-sm text-muted-foreground">
               {{ $t('Try adjusting your search or filters') }}
             </p>
@@ -61,30 +63,31 @@ import { useDebounceFn } from '@vueuse/core';
 import { CircleIcon } from 'lucide-vue-next';
 
 import DataTableProvider from '../ui/data-table/DataTableProvider.vue';
+
 import { Input } from '@/Components/ui/input';
 import { Button } from '@/Components/ui/button';
 
 // Simplified props for basic use cases
 const props = withDefaults(defineProps<{
   // Essential data
-  modelName: string,
-  data: TData[],
-  columns: ColumnDef<TData, any>[],
-  totalCount: number,
+  modelName: string;
+  data: TData[];
+  columns: ColumnDef<TData, any>[];
+  totalCount: number;
 
   // Basic options
-  pageSize?: number,
-  initialPage?: number,
-  enableFiltering?: boolean,
-  enableColumnVisibility?: boolean,
-  
+  pageSize?: number;
+  initialPage?: number;
+  enableFiltering?: boolean;
+  enableColumnVisibility?: boolean;
+
   // Customization
-  rowClassName?: (row: TData) => string,
-  emptyMessage?: string,
-  emptyIcon?: any,
-  
+  rowClassName?: (row: TData) => string;
+  emptyMessage?: string;
+  emptyIcon?: any;
+
   // Inertia options
-  reloadOnly?: boolean,
+  reloadOnly?: boolean;
 }>(), {
   pageSize: 10,
   initialPage: 1,
@@ -104,7 +107,7 @@ const loading = ref(false);
 // Server pagination for UI
 const serverPagination = computed(() => ({
   pageIndex: pageIndex.value,
-  pageSize: props.pageSize
+  pageSize: props.pageSize,
 }));
 
 // Reference to the DataTableProvider
@@ -135,19 +138,19 @@ const handlePageChange = (newPageIndex: number) => {
 const encodeTableState = () => {
   const state: Record<string, any> = {
     page: pageIndex.value + 1, // Convert to 1-based indexing for backend
-    per_page: props.pageSize
+    per_page: props.pageSize,
   };
-  
+
   // Add sorting if present
   if (sorting.value.length > 0) {
     state.sorting = JSON.stringify(sorting.value);
   }
-  
+
   // Add search text if present
   if (searchText.value) {
     state.search = searchText.value;
   }
-  
+
   return state;
 };
 
@@ -156,10 +159,10 @@ const reloadData = (page?: number) => {
   if (page !== undefined) {
     pageIndex.value = page;
   }
-  
+
   loading.value = true;
   const state = encodeTableState();
-  
+
   const options = {
     data: state,
     preserveScroll: true,
@@ -167,23 +170,24 @@ const reloadData = (page?: number) => {
     onSuccess: (response) => {
       const responseData = response.props[props.modelName];
       loading.value = false;
-      
+
       // Emit data loaded event
       emit('dataLoaded', {
         page: pageIndex.value,
         sorting: sorting.value,
-        data: responseData
+        data: responseData,
       });
     },
     onError: (errors) => {
       console.error('Error loading data:', errors);
       loading.value = false;
-    }
+    },
   };
-  
+
   if (props.reloadOnly) {
     router.reload(options);
-  } else {
+  }
+  else {
     router.visit(window.location.pathname, options);
   }
 };

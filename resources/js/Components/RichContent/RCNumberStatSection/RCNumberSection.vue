@@ -15,22 +15,23 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed } from 'vue';
 
-import NumberStatistic from "./RCNumberStatistic.vue";
+import NumberStatistic from './RCNumberStatistic.vue';
 
-import type { NumberStatSection } from "@/Types/contentParts"
+import type { NumberStatSection } from '@/Types/contentParts';
 
 const { element } = defineProps<{
-  element: NumberStatSection
+  element: NumberStatSection;
 }>();
 
 const colorClass = computed(() => {
   if (element.options.color === 'zinc' || element.options.color === undefined) {
-    return "text-zinc-800 dark:text-zinc-50"
-  } else {
-    return `text-vusa-${element.options.color}`
+    return 'text-zinc-800 dark:text-zinc-50';
   }
-})
+  else {
+    return `text-vusa-${element.options.color}`;
+  }
+});
 
 </script>

@@ -6,5 +6,5 @@
 </template>
 
 <script setup lang="tsx">
-import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
+import PublicLayout from '@/Components/Public/Layouts/PublicLayout.vue';
 </script>

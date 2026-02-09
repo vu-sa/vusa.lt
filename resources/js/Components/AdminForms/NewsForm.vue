@@ -193,27 +193,27 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, h } from "vue";
-import { useForm } from "@inertiajs/vue3";
-import { translitLithuanian } from "@/Utils/String";
+import { computed, ref, watch, h } from 'vue';
+import { useForm } from '@inertiajs/vue3';
 
-import RichContentFormElement from "../RichContentFormElement.vue";
+import RichContentFormElement from '../RichContentFormElement.vue';
 
-import AdminForm from "./AdminForm.vue";
-import FormElement from "./FormElement.vue";
-import FormFieldWrapper from "./FormFieldWrapper.vue";
-import FormStatusHeader from "./FormStatusHeader.vue";
+import AdminForm from './AdminForm.vue';
+import FormElement from './FormElement.vue';
+import FormFieldWrapper from './FormFieldWrapper.vue';
+import FormStatusHeader from './FormStatusHeader.vue';
 
-import { Button } from "@/Components/ui/button";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/Components/ui/collapsible";
-import { Input } from "@/Components/ui/input";
-import { Label } from "@/Components/ui/label";
-import { MultiSelect } from "@/Components/ui/multi-select";
-import { OrderedListInput } from "@/Components/ui/ordered-list-input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
-import { ImageUpload } from "@/Components/ui/upload";
-import TiptapEditor from "@/Components/TipTap/TiptapEditor.vue";
-import { newsTemplate } from "@/Types/formTemplates";
+import { translitLithuanian } from '@/Utils/String';
+import { Button } from '@/Components/ui/button';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Components/ui/collapsible';
+import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
+import { MultiSelect } from '@/Components/ui/multi-select';
+import { OrderedListInput } from '@/Components/ui/ordered-list-input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { ImageUpload } from '@/Components/ui/upload';
+import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
+import { newsTemplate } from '@/Types/formTemplates';
 
 // Layout preview icons as simple SVG components
 const ModernLayoutIcon = {
@@ -224,7 +224,7 @@ const ModernLayoutIcon = {
       h('rect', { x: 4, y: 36, width: 50, height: 2, rx: 1 }),
       h('rect', { x: 4, y: 42, width: 40, height: 2, rx: 1 }),
     ]);
-  }
+  },
 };
 
 const ClassicLayoutIcon = {
@@ -237,7 +237,7 @@ const ClassicLayoutIcon = {
       h('rect', { x: 4, y: 34, width: 72, height: 2, rx: 1 }),
       h('rect', { x: 4, y: 42, width: 60, height: 2, rx: 1 }),
     ]);
-  }
+  },
 };
 
 const ImmersiveLayoutIcon = {
@@ -247,7 +247,7 @@ const ImmersiveLayoutIcon = {
       h('rect', { x: 16, y: 36, width: 48, height: 4, rx: 1 }),
       h('rect', { x: 20, y: 44, width: 40, height: 2, rx: 1 }),
     ]);
-  }
+  },
 };
 
 const HeadlineLayoutIcon = {
@@ -257,7 +257,7 @@ const HeadlineLayoutIcon = {
       h('rect', { x: 4, y: 14, width: 35, height: 3, rx: 1 }),
       h('rect', { x: 4, y: 22, width: 72, height: 22, rx: 2 }),
     ]);
-  }
+  },
 };
 
 const props = defineProps<{
@@ -270,8 +270,8 @@ const props = defineProps<{
 }>();
 
 defineEmits<{
-  (event: "submit:form", form: unknown): void;
-  (event: "delete"): void;
+  (event: 'submit:form', form: unknown): void;
+  (event: 'delete'): void;
 }>();
 
 const isCreate = computed(() => props.rememberKey === 'CreateNews');
@@ -317,7 +317,7 @@ const publishTimeDate = computed({
   get: () => form.publish_time ? new Date(form.publish_time) : undefined,
   set: (val: Date | undefined) => {
     form.publish_time = val ? val.toISOString() : null;
-  }
+  },
 });
 
 // Handle publish time update from status header
@@ -333,7 +333,7 @@ const otherLangIdString = computed({
   get: () => form.other_lang_id ? String(form.other_lang_id) : '__none__',
   set: (val: string) => {
     form.other_lang_id = val && val !== '__none__' ? parseInt(val) : null;
-  }
+  },
 });
 
 const otherLangNewsOptions = computed(() => {
@@ -342,7 +342,7 @@ const otherLangNewsOptions = computed(() => {
   }
 
   return (props.otherLangNews || [])
-    .map((news) => ({
+    .map(news => ({
       value: news.id,
       label: `${news.title} (${news.tenant?.shortname})`,
     }))
@@ -350,13 +350,14 @@ const otherLangNewsOptions = computed(() => {
 });
 
 const tagOptions = computed(() => {
-  return (props.availableTags || []).map(tag => {
+  return (props.availableTags || []).map((tag) => {
     let label = 'Unknown';
     if (tag.name) {
       if (typeof tag.name === 'object' && !Array.isArray(tag.name)) {
         const nameObj = tag.name as Record<string, string>;
         label = nameObj.lt || nameObj.en || 'Unknown';
-      } else if (typeof tag.name === 'string') {
+      }
+      else if (typeof tag.name === 'string') {
         label = tag.name;
       }
     }
@@ -386,12 +387,12 @@ const selectedTags = computed({
   },
   set: (items: { label: string; value: number }[]) => {
     form.tags = items.map(item => item.value);
-  }
+  },
 });
 
 const languageOptions = [
-  { value: "lt", label: "Lietuvių" },
-  { value: "en", label: "English" },
+  { value: 'lt', label: 'Lietuvių' },
+  { value: 'en', label: 'English' },
 ];
 
 const layoutOptions = [
@@ -425,11 +426,11 @@ if (isCreate.value) {
       const latinizedTitle = translitLithuanian(String(title || ''));
       form.permalink = latinizedTitle
         .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/-+/g, "-")
-        .replace(/^-+/, "")
-        .replace(/-+$/, "")
-    }
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-+/, '')
+        .replace(/-+$/, '');
+    },
   );
 }
 </script>

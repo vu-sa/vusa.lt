@@ -1,7 +1,7 @@
-import { LocaleEnum, ModelEnum } from "./enums";
+import type { LocaleEnum, ModelEnum } from './enums';
 
-interface User extends Omit<App.Entities.User, "tenants"> {
-  tenants: Pick<App.Entities.Tenant, "id" | "shortname">[];
+interface User extends Omit<App.Entities.User, 'tenants'> {
+  tenants: Pick<App.Entities.Tenant, 'id' | 'shortname'>[];
   isSuperAdmin: boolean;
   unreadNotifications: Record<string, any>[] | null;
   tutorial_progress?: Record<string, string>;
@@ -10,7 +10,7 @@ interface User extends Omit<App.Entities.User, "tenants"> {
 export type PageProps<T extends Record<string, unknown> = Record<string, unknown>> = T & {
   alias?: string;
   app: {
-    env: "local" | "production" | "testing";
+    env: 'local' | 'production' | 'testing';
     locale: LocaleEnum;
     path: string;
     url: string;
@@ -41,10 +41,10 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
   seo: Record<string, any>;
   tenants: Pick<
     App.Entities.Tenant,
-    "id" | "alias" | "shortname" | "fullname" | "type" | "primary_institution_id" | "primary_institution"
+    'id' | 'alias' | 'shortname' | 'fullname' | 'type' | 'primary_institution_id' | 'primary_institution'
   >[];
   tenant:
-  | (Pick<App.Entities.Tenant, "id" | "alias" | "shortname" | "type"> & {
+  | (Pick<App.Entities.Tenant, 'id' | 'alias' | 'shortname' | 'type'> & {
     subdomain: string;
     links: Array<App.Entities.QuickLink | null>;
     banners: Array<App.Entities.Banner> | [];
@@ -58,23 +58,23 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
     } | null>;
     news: Array<{
       id: number;
-      lang: "lt" | "en";
+      lang: 'lt' | 'en';
       permalink: string;
       publish_time: string;
       title: string;
     } | null>;
     pages: Array<{
       id: number;
-      lang: "lt" | "en";
+      lang: 'lt' | 'en';
       permalink: string;
       title: string;
     } | null>;
     documents: Array<{
       id: number;
       title: string;
-      language: "Lietuvių" | "English";
+      language: 'Lietuvių' | 'English';
       anonymous_url: string;
       document_date: string;
     } | null>;
   };
-}
+};

@@ -80,37 +80,37 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { trans as $t } from 'laravel-vue-i18n'
-import { usePage } from '@inertiajs/vue3'
+import { computed } from 'vue';
+import { trans as $t } from 'laravel-vue-i18n';
+import { usePage } from '@inertiajs/vue3';
 
-import { formatStaticTime, isSameDay } from '@/Utils/IntlTime'
+import { formatStaticTime, isSameDay } from '@/Utils/IntlTime';
 
 interface Props {
   /** Start date of the event */
-  date: Date | string
+  date: Date | string;
   /** End date of the event (optional) */
-  endDate?: Date | string | null
+  endDate?: Date | string | null;
   /** Event location */
-  location?: string
+  location?: string;
   /** Event organizer */
-  organizer?: string
+  organizer?: string;
   /** Tenant/department information */
   tenant?: {
-    id: number
-    shortname?: string
-    fullname?: string
-  }
+    id: number;
+    shortname?: string;
+    fullname?: string;
+  };
   /** Style variant for different contexts */
-  variant?: 'upcoming' | 'past' | 'neutral'
+  variant?: 'upcoming' | 'past' | 'neutral';
   /** Whether to show date/time info */
-  showDateTime?: boolean
+  showDateTime?: boolean;
   /** Whether to show tenant information */
-  showTenant?: boolean
+  showTenant?: boolean;
   /** Whether to show "Organizuoja:" label */
-  showOrganizerLabel?: boolean
+  showOrganizerLabel?: boolean;
   /** Whether to make location clickable */
-  enableLocationLink?: boolean
+  enableLocationLink?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -118,27 +118,27 @@ const props = withDefaults(defineProps<Props>(), {
   showDateTime: true,
   showTenant: true,
   showOrganizerLabel: true,
-  enableLocationLink: false
-})
+  enableLocationLink: false,
+});
 
-const page = usePage()
-const locale = computed(() => page.props.app.locale)
+const page = usePage();
+const locale = computed(() => page.props.app.locale);
 
 // Convert to Date objects
-const startDate = computed(() => new Date(props.date))
-const endDate = computed(() => props.endDate ? new Date(props.endDate) : null)
+const startDate = computed(() => new Date(props.date));
+const endDate = computed(() => props.endDate ? new Date(props.endDate) : null);
 
 // Icon color classes based on variant
 const iconColorClass = computed(() => {
   switch (props.variant) {
     case 'upcoming':
-      return 'text-red-600/80 dark:text-red-400/80'
+      return 'text-red-600/80 dark:text-red-400/80';
     case 'past':
-      return 'text-zinc-500 dark:text-zinc-400'
+      return 'text-zinc-500 dark:text-zinc-400';
     default:
-      return 'text-red-500 dark:text-red-400'
+      return 'text-red-500 dark:text-red-400';
   }
-})
+});
 
 // Formatted date/time
 const formattedDateTime = computed(() => {
@@ -149,32 +149,33 @@ const formattedDateTime = computed(() => {
       month: 'short',
       day: 'numeric',
       hour: 'numeric',
-      minute: 'numeric'
-    }, locale.value)
+      minute: 'numeric',
+    }, locale.value);
     const endTime = formatStaticTime(endDate.value, {
       hour: 'numeric',
-      minute: 'numeric'
-    }, locale.value)
-    return `${startTime} - ${endTime}`
-  } else {
+      minute: 'numeric',
+    }, locale.value);
+    return `${startTime} - ${endTime}`;
+  }
+  else {
     // Single time or multi-day event start
     return formatStaticTime(startDate.value, {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
       hour: 'numeric',
-      minute: 'numeric'
-    }, locale.value)
+      minute: 'numeric',
+    }, locale.value);
   }
-})
+});
 
 // Formatted end date for multi-day events
 const formattedEndDate = computed(() => {
-  if (!endDate.value) return ''
+  if (!endDate.value) return '';
 
   return formatStaticTime(endDate.value, {
     month: 'short',
-    day: 'numeric'
-  }, locale.value)
-})
+    day: 'numeric',
+  }, locale.value);
+});
 </script>

@@ -45,30 +45,29 @@
 
 <script setup lang="ts">
 import { provide, ref, useTemplateRef } from 'vue';
-import { useSortable } from '@vueuse/integrations/useSortable'
-import { router } from "@inertiajs/vue3";
+import { useSortable } from '@vueuse/integrations/useSortable';
+import { router } from '@inertiajs/vue3';
+
+import ProgrammeDay from './ProgrammeDay.vue';
 
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Switch } from '@/Components/ui/switch';
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
-import ProgrammeDay from './ProgrammeDay.vue';
 import MultiLocaleInput from '@/Components/FormItems/MultiLocaleInput.vue';
 import CardModal from '@/Components/Modals/CardModal.vue';
 
-defineEmits<{
-  (e: "close"): void;
-}>();
+defineEmits<(e: 'close') => void>();
 
 const props = defineProps<{
-  programme: App.Entities.Programme
+  programme: App.Entities.Programme;
   editable?: boolean;
   showTimes?: boolean;
   showTimeSwitch?: boolean;
   startTime: Date;
 }>();
 
-const programmeEl = useTemplateRef<HTMLDivElement | null>('programmeEl')
+const programmeEl = useTemplateRef<HTMLDivElement | null>('programmeEl');
 const programmeDays = ref(props.programme.days);
 
 const selectedDay = ref<App.Entities.ProgrammeDay | null>(null);
@@ -82,7 +81,7 @@ provide('editable', props.editable);
 const movedElement = ref<App.Entities.ProgrammeSection | App.Entities.ProgrammePart | null>(null);
 const updateMovedElement = (element: App.Entities.ProgrammeSection | App.Entities.ProgrammePart) => {
   movedElement.value = element;
-}
+};
 provide('movedElement', { movedElement, updateMovedElement });
 
 if (props.editable) useSortable<HTMLDivElement | null>(programmeEl, programmeDays, {
@@ -104,10 +103,10 @@ function parseDatetimeLocal(value: string): string {
 
 function createDay() {
   programmeDays.value?.push({
-    id: 'programme-day-' + Math.random().toString(36).substring(7),
+    id: `programme-day-${Math.random().toString(36).substring(7)}`,
     title: {
-      lt: String(programmeDays.value.length + 1) + ' diena',
-      en: String(programmeDays.value.length + 1) + ' day',
+      lt: `${String(programmeDays.value.length + 1)} diena`,
+      en: `${String(programmeDays.value.length + 1)} day`,
     },
     type: 'day',
     elements: [],
@@ -130,7 +129,7 @@ function submitForm() {
   }, {
     preserveScroll: true,
     onSuccess: () => {
-      programmeDays.value = props.programme.days
+      programmeDays.value = props.programme.days;
     },
   });
 }

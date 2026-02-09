@@ -11,21 +11,22 @@
 </template>
 
 <script setup lang="ts">
-import { ref, useTemplateRef } from 'vue'
+import { ref, useTemplateRef } from 'vue';
+
 import StructureGraph from './StructureGraph.vue';
 
 defineProps<{
-  nodes: Record<string, any>[]
-  edges: Record<string, any>[]
-}>()
+  nodes: Record<string, any>[];
+  edges: Record<string, any>[];
+}>();
 
-const dialogRef = useTemplateRef<HTMLDialogElement | null>('dialogRef')
-const showGraph = ref(false)
+const dialogRef = useTemplateRef<HTMLDialogElement | null>('dialogRef');
+const showGraph = ref(false);
 
 function handleModal() {
-  dialogRef.value?.showModal()
-  showGraph.value = true
+  dialogRef.value?.showModal();
+  showGraph.value = true;
 }
 
-const animated = ref(true)
+const animated = ref(true);
 </script>

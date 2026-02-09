@@ -46,7 +46,9 @@
             <SelectValue placeholder="Studentų atstovybė" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="none">{{ $t('Nėra') }}</SelectItem>
+            <SelectItem value="none">
+              {{ $t('Nėra') }}
+            </SelectItem>
             <SelectItem v-for="opt in parentTypeOptions" :key="opt.id" :value="String(opt.id)">
               {{ opt.title }}
             </SelectItem>
@@ -136,31 +138,32 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
-import { useForm } from "@inertiajs/vue3";
-import { trans as $t } from "laravel-vue-i18n";
+import { computed, ref } from 'vue';
+import { useForm } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
 
-import Edit16Filled from "~icons/fluent/edit16-filled"
+import MultiLocaleInput from '../FormItems/MultiLocaleInput.vue';
+import SimpleLocaleButton from '../Buttons/SimpleLocaleButton.vue';
+import TiptapEditor from '../TipTap/TiptapEditor.vue';
 
-import { Button } from "@/Components/ui/button";
-import { Input } from "@/Components/ui/input";
-import { Label } from "@/Components/ui/label";
-import { NumberField } from "@/Components/ui/number-field";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
-import { Switch } from "@/Components/ui/switch";
-import { TransferList } from "@/Components/ui/transfer-list";
-import FileManager from "@/Features/Admin/SharepointFileManager/SharepointFileManager.vue";
-import FormElement from "./FormElement.vue";
-import FormFieldWrapper from "./FormFieldWrapper.vue";
-import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";
-import SimpleLocaleButton from "../Buttons/SimpleLocaleButton.vue";
-import TiptapEditor from "../TipTap/TiptapEditor.vue";
-import AdminForm from "./AdminForm.vue";
-import { modelTypes } from "@/Types/formOptions";
+import FormElement from './FormElement.vue';
+import FormFieldWrapper from './FormFieldWrapper.vue';
+import AdminForm from './AdminForm.vue';
+
+import Edit16Filled from '~icons/fluent/edit16-filled';
+import { Button } from '@/Components/ui/button';
+import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
+import { NumberField } from '@/Components/ui/number-field';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { Switch } from '@/Components/ui/switch';
+import { TransferList } from '@/Components/ui/transfer-list';
+import FileManager from '@/Features/Admin/SharepointFileManager/SharepointFileManager.vue';
+import { modelTypes } from '@/Types/formOptions';
 
 defineEmits<{
-  (event: "submit:form", form: unknown): void;
-  (event: "delete"): void;
+  (event: 'submit:form', form: unknown): void;
+  (event: 'delete'): void;
 }>();
 
 const props = defineProps<{
@@ -170,10 +173,10 @@ const props = defineProps<{
   sharepointPath?: string;
   allModelsFromModelType?: Record<string, any>[];
   roles?: App.Entities.Role[];
-  rememberKey?: "CreateType";
+  rememberKey?: 'CreateType';
 }>();
 
-const locale = ref("lt");
+const locale = ref('lt');
 
 const form = props.rememberKey
   ? useForm(props.rememberKey, {
@@ -244,12 +247,12 @@ const enableCrossTenantSiblingRelationships = computed({
 // map e.g. form.institutions to id only, so it's used in transfer values
 
 if (props.modelType) {
-  form[props.modelType] = props.type[props.modelType]?.map((model) => model.id);
+  form[props.modelType] = props.type[props.modelType]?.map(model => model.id);
 }
 
 const modelDefaults = modelTypes.type.map((type) => {
   return {
-    value: "App\\Models\\" + type,
+    value: `App\\Models\\${type}`,
     label: type,
   };
 });
@@ -259,14 +262,14 @@ const modelOptions = computed(() => {
     return {
       value: model.id,
       label: model.title ?? model.name,
-      model: model,
+      model,
     };
   });
 });
 
 const parentTypeOptions = computed(() => {
   return props.contentTypes.filter(
-    (type) => form.model_type === type.model_type && form.id !== type.id,
+    type => form.model_type === type.model_type && form.id !== type.id,
   );
 });
 </script>

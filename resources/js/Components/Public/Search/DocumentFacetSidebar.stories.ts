@@ -1,7 +1,9 @@
-import type { Meta, StoryObj } from '@storybook/vue3-vite'
-import { fn, userEvent, within } from 'storybook/test'
-import DocumentFacetSidebar from './DocumentFacetSidebar.vue'
-import type { DocumentFacet, DocumentSearchFilters } from '@/Types/DocumentSearchTypes'
+import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import { fn, userEvent, within } from 'storybook/test';
+
+import DocumentFacetSidebar from './DocumentFacetSidebar.vue';
+
+import type { DocumentFacet, DocumentSearchFilters } from '@/Types/DocumentSearchTypes';
 
 // Mock facet data that matches the expected DocumentFacet[] structure
 const mockFacets: DocumentFacet[] = [
@@ -13,8 +15,8 @@ const mockFacets: DocumentFacet[] = [
       { value: 'VU IF', label: 'VU IF', count: 89, highlighted: 'VU IF' },
       { value: 'VU MIF', label: 'VU MIF', count: 67, highlighted: 'VU MIF' },
       { value: 'VU GMC', label: 'VU GMC', count: 34, highlighted: 'VU GMC' },
-      { value: 'VU TF', label: 'VU TF', count: 28, highlighted: 'VU TF' }
-    ]
+      { value: 'VU TF', label: 'VU TF', count: 28, highlighted: 'VU TF' },
+    ],
   },
   {
     field: 'content_type',
@@ -23,18 +25,18 @@ const mockFacets: DocumentFacet[] = [
       { value: 'protokolas', label: 'Protokolas', count: 198, highlighted: 'protokolas' },
       { value: 'ataskaita', label: 'Ataskaita', count: 87, highlighted: 'ataskaita' },
       { value: 'sprendimas', label: 'Sprendimas', count: 56, highlighted: 'sprendimas' },
-      { value: 'pranešimas', label: 'Pranešimas', count: 43, highlighted: 'pranešimas' }
-    ]
+      { value: 'pranešimas', label: 'Pranešimas', count: 43, highlighted: 'pranešimas' },
+    ],
   },
   {
     field: 'language',
     label: 'Kalba',
     values: [
       { value: 'Lietuvių', label: 'Lietuvių', count: 298, highlighted: 'Lietuvių' },
-      { value: 'English', label: 'English', count: 86, highlighted: 'English' }
-    ]
-  }
-]
+      { value: 'English', label: 'English', count: 86, highlighted: 'English' },
+    ],
+  },
+];
 
 const mockFilters: DocumentSearchFilters = {
   query: '',
@@ -44,9 +46,9 @@ const mockFilters: DocumentSearchFilters = {
   dateRange: {
     preset: undefined,
     from: undefined,
-    to: undefined
-  }
-}
+    to: undefined,
+  },
+};
 
 const mockActiveFilters: DocumentSearchFilters = {
   query: 'VU SR protokolai',
@@ -56,9 +58,9 @@ const mockActiveFilters: DocumentSearchFilters = {
   dateRange: {
     preset: '3months',
     from: new Date('2024-11-01'),
-    to: new Date('2024-11-30')
-  }
-}
+    to: new Date('2024-11-30'),
+  },
+};
 
 const meta: Meta<typeof DocumentFacetSidebar> = {
   title: 'Components/Search/DocumentFacetSidebar',
@@ -74,7 +76,7 @@ const meta: Meta<typeof DocumentFacetSidebar> = {
     onUpdateLanguage: fn(),
     onUpdateDateRange: fn(),
     onClearFilters: fn(),
-    onApplyPreset: fn()
+    onApplyPreset: fn(),
   },
   args: {
     facets: mockFacets,
@@ -86,10 +88,10 @@ const meta: Meta<typeof DocumentFacetSidebar> = {
     onUpdateLanguage: fn(),
     onUpdateDateRange: fn(),
     onClearFilters: fn(),
-    onApplyPreset: fn()
+    onApplyPreset: fn(),
   },
   decorators: [
-    (story) => ({
+    story => ({
       components: { story },
       template: `
         <div class="p-6 bg-gray-50 min-h-screen">
@@ -104,26 +106,26 @@ const meta: Meta<typeof DocumentFacetSidebar> = {
             </div>
           </div>
         </div>
-      `
-    })
+      `,
+    }),
   ],
   parameters: {
     layout: 'fullscreen',
     backgrounds: {
-      default: 'light'
-    }
-  }
-}
+      default: 'light',
+    },
+  },
+};
 
-export default meta
-type Story = StoryObj<typeof meta>
+export default meta;
+type Story = StoryObj<typeof meta>;
 
 // Default state with no active filters
 export const Default: Story = {
-  render: (args) => ({
+  render: args => ({
     components: { DocumentFacetSidebar },
     setup() {
-      return { args }
+      return { args };
     },
     template: `
       <DocumentFacetSidebar
@@ -135,20 +137,20 @@ export const Default: Story = {
         @clearFilters="args.onClearFilters"
         @applyPreset="args.onApplyPreset"
       />
-    `
-  })
-}
+    `,
+  }),
+};
 
 // With active filters
 export const WithActiveFilters: Story = {
   args: {
     filters: mockActiveFilters,
-    activeFilterCount: 4
+    activeFilterCount: 4,
   },
-  render: (args) => ({
+  render: args => ({
     components: { DocumentFacetSidebar },
     setup() {
-      return { args }
+      return { args };
     },
     template: `
       <DocumentFacetSidebar
@@ -160,20 +162,20 @@ export const WithActiveFilters: Story = {
         @clearFilters="args.onClearFilters"
         @applyPreset="args.onApplyPreset"
       />
-    `
-  })
-}
+    `,
+  }),
+};
 
 // Loading state
 export const Loading: Story = {
   args: {
     isLoading: true,
-    facets: []
+    facets: [],
   },
-  render: (args) => ({
+  render: args => ({
     components: { DocumentFacetSidebar },
     setup() {
-      return { args }
+      return { args };
     },
     template: `
       <DocumentFacetSidebar
@@ -185,18 +187,18 @@ export const Loading: Story = {
         @clearFilters="args.onClearFilters"
         @applyPreset="args.onApplyPreset"
       />
-    `
-  })
-}
+    `,
+  }),
+};
 
 // Mobile view
 export const MobileView: Story = {
   args: {
     showMobileFilters: true,
-    filters: mockActiveFilters
+    filters: mockActiveFilters,
   },
   decorators: [
-    (story) => ({
+    story => ({
       components: { story },
       template: `
         <div class="p-4 bg-gray-50 min-h-screen">
@@ -205,19 +207,19 @@ export const MobileView: Story = {
             <story />
           </div>
         </div>
-      `
-    })
+      `,
+    }),
   ],
   parameters: {
     layout: 'fullscreen',
     viewport: {
-      defaultViewport: 'mobile1'
-    }
+      defaultViewport: 'mobile1',
+    },
   },
-  render: (args) => ({
+  render: args => ({
     components: { DocumentFacetSidebar },
     setup() {
-      return { args }
+      return { args };
     },
     template: `
       <DocumentFacetSidebar
@@ -229,19 +231,19 @@ export const MobileView: Story = {
         @clearFilters="args.onClearFilters"
         @applyPreset="args.onApplyPreset"
       />
-    `
-  })
-}
+    `,
+  }),
+};
 
 // No facets available
 export const NoFacets: Story = {
   args: {
-    facets: []
+    facets: [],
   },
-  render: (args) => ({
+  render: args => ({
     components: { DocumentFacetSidebar },
     setup() {
-      return { args }
+      return { args };
     },
     template: `
       <DocumentFacetSidebar
@@ -253,9 +255,9 @@ export const NoFacets: Story = {
         @clearFilters="args.onClearFilters"
         @applyPreset="args.onApplyPreset"
       />
-    `
-  })
-}
+    `,
+  }),
+};
 
 // Limited facets (some empty categories)
 export const LimitedFacets: Story = {
@@ -266,27 +268,27 @@ export const LimitedFacets: Story = {
         label: 'Dariniai',
         values: [
           { value: 'VU SA', label: 'VU SA', count: 156, highlighted: 'VU SA' },
-          { value: 'VU IF', label: 'VU IF', count: 89, highlighted: 'VU IF' }
-        ]
+          { value: 'VU IF', label: 'VU IF', count: 89, highlighted: 'VU IF' },
+        ],
       },
       {
         field: 'content_type',
-        label: 'Dokumentų tipas', 
+        label: 'Dokumentų tipas',
         values: [
-          { value: 'protokolas', label: 'Protokolas', count: 245, highlighted: 'protokolas' }
-        ]
+          { value: 'protokolas', label: 'Protokolas', count: 245, highlighted: 'protokolas' },
+        ],
       },
       {
         field: 'language',
         label: 'Kalba',
-        values: []
-      }
-    ]
+        values: [],
+      },
+    ],
   },
-  render: (args) => ({
+  render: args => ({
     components: { DocumentFacetSidebar },
     setup() {
-      return { args }
+      return { args };
     },
     template: `
       <DocumentFacetSidebar
@@ -298,16 +300,16 @@ export const LimitedFacets: Story = {
         @clearFilters="args.onClearFilters"
         @applyPreset="args.onApplyPreset"
       />
-    `
-  })
-}
+    `,
+  }),
+};
 
 // Interactive story with user actions
 export const Interactive: Story = {
-  render: (args) => ({
+  render: args => ({
     components: { DocumentFacetSidebar },
     setup() {
-      return { args }
+      return { args };
     },
     template: `
       <DocumentFacetSidebar
@@ -319,35 +321,35 @@ export const Interactive: Story = {
         @clearFilters="args.onClearFilters"
         @applyPreset="args.onApplyPreset"
       />
-    `
+    `,
   }),
   play: async ({ canvasElement, args }) => {
-    const canvas = within(canvasElement)
-    
+    const canvas = within(canvasElement);
+
     // Wait for component to render
-    await new Promise(resolve => setTimeout(resolve, 500))
-    
+    await new Promise(resolve => setTimeout(resolve, 500));
+
     try {
       // Click on a tenant filter
-      const vuSaCheckbox = canvas.getByLabelText('VU SA (156)')
-      await userEvent.click(vuSaCheckbox)
-      
+      const vuSaCheckbox = canvas.getByLabelText('VU SA (156)');
+      await userEvent.click(vuSaCheckbox);
+
       // Click on a content type filter
-      const protocolCheckbox = canvas.getByLabelText('protokolas (198)')
-      await userEvent.click(protocolCheckbox)
-      
+      const protocolCheckbox = canvas.getByLabelText('protokolas (198)');
+      await userEvent.click(protocolCheckbox);
+
       // Click on a language filter
-      const lithuanianCheckbox = canvas.getByLabelText('Lietuvių (298)')
-      await userEvent.click(lithuanianCheckbox)
-      
+      const lithuanianCheckbox = canvas.getByLabelText('Lietuvių (298)');
+      await userEvent.click(lithuanianCheckbox);
+
       // Wait for actions to be logged
-      await new Promise(resolve => setTimeout(resolve, 500))
-      
-    } catch (error) {
-      console.warn('Some interactive elements might not be available in this story:', error)
+      await new Promise(resolve => setTimeout(resolve, 500));
     }
-  }
-}
+    catch (error) {
+      console.warn('Some interactive elements might not be available in this story:', error);
+    }
+  },
+};
 
 // Many facets (scrollable)
 export const ManyFacets: Story = {
@@ -368,8 +370,8 @@ export const ManyFacets: Story = {
           { value: 'VU KnF', label: 'VU KnF', count: 16, highlighted: 'VU KnF' },
           { value: 'VU ŠA', label: 'VU ŠA', count: 14, highlighted: 'VU ŠA' },
           { value: 'VU EF', label: 'VU EF', count: 12, highlighted: 'VU EF' },
-          { value: 'VU VM', label: 'VU VM', count: 8, highlighted: 'VU VM' }
-        ]
+          { value: 'VU VM', label: 'VU VM', count: 8, highlighted: 'VU VM' },
+        ],
       },
       {
         field: 'content_type',
@@ -382,16 +384,16 @@ export const ManyFacets: Story = {
           { value: 'nuostatai', label: 'Nuostatai', count: 32, highlighted: 'nuostatai' },
           { value: 'taisyklės', label: 'Taisyklės', count: 28, highlighted: 'taisyklės' },
           { value: 'metodika', label: 'Metodika', count: 21, highlighted: 'metodika' },
-          { value: 'reglamentas', label: 'Reglamentas', count: 15, highlighted: 'reglamentas' }
-        ]
+          { value: 'reglamentas', label: 'Reglamentas', count: 15, highlighted: 'reglamentas' },
+        ],
       },
-      mockFacets[2] // Use the language facet from mockFacets
-    ]
+      mockFacets[2], // Use the language facet from mockFacets
+    ],
   },
-  render: (args) => ({
+  render: args => ({
     components: { DocumentFacetSidebar },
     setup() {
-      return { args }
+      return { args };
     },
     template: `
       <DocumentFacetSidebar
@@ -403,6 +405,6 @@ export const ManyFacets: Story = {
         @clearFilters="args.onClearFilters"
         @applyPreset="args.onApplyPreset"
       />
-    `
-  })
-}
+    `,
+  }),
+};

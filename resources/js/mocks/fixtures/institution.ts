@@ -3,7 +3,7 @@
  * Note: Uses type assertion for test mocks where not all properties are needed
  */
 export function createMockInstitution(
-  overrides: Record<string, unknown> = {}
+  overrides: Record<string, unknown> = {},
 ): App.Entities.Institution {
   return {
     id: '1',

@@ -10,20 +10,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
-import { usePage } from "@inertiajs/vue3";
+import { ref } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 
-import { Label } from "@/Components/ui/label";
-import TiptapEditor from "../TipTap/TiptapEditor.vue";
-import SimpleLocaleButton from "../Buttons/SimpleLocaleButton.vue";
+import TiptapEditor from '../TipTap/TiptapEditor.vue';
+import SimpleLocaleButton from '../Buttons/SimpleLocaleButton.vue';
+
+import { Label } from '@/Components/ui/label';
 
 defineProps<{
   label: string;
 }>();
 
-const inputLang = ref(usePage().props.app.locale)
+const inputLang = ref(usePage().props.app.locale);
 
-const input = defineModel<{ lt: string; en: string }>("input", {
-  default: { lt: "", en: "" },
+const input = defineModel<{ lt: string; en: string }>('input', {
+  default: { lt: '', en: '' },
 });
 </script>

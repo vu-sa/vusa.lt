@@ -6,7 +6,7 @@
         <IFluentCalendarLtr16Regular class="w-4 h-4 text-vusa-red" />
         {{ $t('Artėjantys renginiai') }}
       </h3>
-      <a 
+      <a
         :href="route('calendar.list', { lang: locale })"
         class="text-xs text-vusa-red hover:underline"
       >
@@ -24,10 +24,10 @@
         :class="index === 0 ? 'bg-vusa-red/5 dark:bg-vusa-red/10' : ''"
       >
         <!-- Date badge -->
-        <div 
+        <div
           class="flex flex-col items-center justify-center rounded-lg px-2 py-1.5 text-center min-w-[44px]"
-          :class="index === 0 
-            ? 'bg-vusa-red text-white' 
+          :class="index === 0
+            ? 'bg-vusa-red text-white'
             : 'bg-zinc-100 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300'"
         >
           <span class="text-[9px] font-medium uppercase leading-none">
@@ -40,15 +40,15 @@
 
         <!-- Event thumbnail -->
         <div class="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-zinc-100 dark:bg-zinc-700">
-          <img 
+          <img
             v-if="getEventImage(event)"
             :src="getEventImage(event)!"
             :alt="getEventTitle(event)"
             class="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
             loading="lazy"
           >
-          <div 
-            v-else 
+          <div
+            v-else
             class="w-full h-full bg-gradient-to-br from-vusa-red/10 to-vusa-red/30 flex items-center justify-center"
           >
             <IFluentCalendarLtr16Regular class="w-4 h-4 text-vusa-red/60" />
@@ -57,7 +57,7 @@
 
         <!-- Event info -->
         <div class="flex-1 min-w-0">
-          <p 
+          <p
             class="text-sm font-medium line-clamp-2 leading-tight transition-colors group-hover:text-vusa-red"
             :class="index === 0 ? 'text-zinc-900 dark:text-zinc-100' : 'text-zinc-700 dark:text-zinc-300'"
           >
@@ -70,7 +70,7 @@
         </div>
 
         <!-- Next badge for first event -->
-        <div 
+        <div
           v-if="index === 0"
           class="absolute -top-1 -right-1 px-1.5 py-0.5 bg-vusa-red text-white text-[8px] font-bold rounded-full shadow-sm"
         >
@@ -90,23 +90,25 @@
     </div>
 
     <!-- Empty state -->
-    <div 
+    <div
       v-if="events.length === 0"
       class="text-center py-6"
     >
       <div class="w-12 h-12 mx-auto rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-3">
         <IFluentCalendarEmpty16Regular class="w-6 h-6 text-zinc-400" />
       </div>
-      <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ $t('Nėra artėjančių renginių') }}</p>
+      <p class="text-sm text-zinc-500 dark:text-zinc-400">
+        {{ $t('Nėra artėjančių renginių') }}
+      </p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { trans as $t } from "laravel-vue-i18n";
-import { computed } from "vue";
-import { format, parseISO } from "date-fns";
-import { lt, enUS } from "date-fns/locale";
+import { trans as $t } from 'laravel-vue-i18n';
+import { computed } from 'vue';
+import { format, parseISO } from 'date-fns';
+import { lt, enUS } from 'date-fns/locale';
 
 const props = withDefaults(defineProps<{
   events: App.Entities.Calendar[];
@@ -123,7 +125,7 @@ const dateLocale = computed(() => props.locale === 'lt' ? lt : enUS);
 const upcomingEvents = computed(() => {
   const now = new Date();
   return props.events
-    .filter(e => {
+    .filter((e) => {
       if (props.excludeEventId && e.id === props.excludeEventId) return false;
       return new Date(e.date) >= now;
     })
@@ -153,7 +155,8 @@ const formatMonth = (dateStr: string): string => {
   try {
     const date = parseISO(dateStr);
     return format(date, 'MMM', { locale: dateLocale.value });
-  } catch {
+  }
+  catch {
     return '';
   }
 };
@@ -162,7 +165,8 @@ const formatDay = (dateStr: string): string => {
   try {
     const date = parseISO(dateStr);
     return format(date, 'd');
-  } catch {
+  }
+  catch {
     return '';
   }
 };
@@ -171,7 +175,8 @@ const formatTime = (dateStr: string): string => {
   try {
     const date = parseISO(dateStr);
     return format(date, 'HH:mm');
-  } catch {
+  }
+  catch {
     return '';
   }
 };

@@ -15,13 +15,13 @@
 </template>
 
 <script setup lang="ts">
-import { router } from "@inertiajs/vue3";
+import { router } from '@inertiajs/vue3';
 
-import Icons from "@/Types/Icons/regular";
-import NavigationForm from "@/Components/AdminForms/NavigationForm.vue";
-import NavigationParentForm from "@/Components/AdminForms/NavigationParentForm.vue";
-import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
+import Icons from '@/Types/Icons/regular';
+import NavigationForm from '@/Components/AdminForms/NavigationForm.vue';
+import NavigationParentForm from '@/Components/AdminForms/NavigationParentForm.vue';
+import PageContent from '@/Components/Layouts/AdminContentPage.vue';
+import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
 
 const props = defineProps<{
   navigationElement: App.Entities.Navigation;

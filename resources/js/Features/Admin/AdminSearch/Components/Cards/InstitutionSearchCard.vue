@@ -67,32 +67,32 @@
 </template>
 
 <script setup lang="ts">
-import { router } from '@inertiajs/vue3'
-import { trans as $t } from 'laravel-vue-i18n'
+import { router } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
 import {
   Building2,
   Eye,
   Mail,
   Pencil,
-} from 'lucide-vue-next'
+} from 'lucide-vue-next';
 
-import { Badge } from '@/Components/ui/badge'
-import { Button } from '@/Components/ui/button'
-import { Card, CardContent, CardFooter } from '@/Components/ui/card'
-import type { InstitutionSearchResult } from '@/Composables/useAdminSearch'
+import { Badge } from '@/Components/ui/badge';
+import { Button } from '@/Components/ui/button';
+import { Card, CardContent, CardFooter } from '@/Components/ui/card';
+import type { InstitutionSearchResult } from '@/Composables/useAdminSearch';
 
 interface Props {
-  institution: InstitutionSearchResult
+  institution: InstitutionSearchResult;
 }
 
-const props = defineProps<Props>()
+const props = defineProps<Props>();
 
 // Navigation handlers
 const navigateToShow = () => {
-  router.visit(route('institutions.show', { institution: props.institution.id }))
-}
+  router.visit(route('institutions.show', { institution: props.institution.id }));
+};
 
 const navigateToEdit = () => {
-  router.visit(route('institutions.edit', { institution: props.institution.id }))
-}
+  router.visit(route('institutions.edit', { institution: props.institution.id }));
+};
 </script>

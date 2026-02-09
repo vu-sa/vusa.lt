@@ -1,7 +1,7 @@
 <template>
   <DynamicListInput
     v-model="modelValue"
-    :create-item="createItem"
+    :create-item
     :empty-text="$t('rich-content.no_accordion_items')"
     :add-first-text="$t('rich-content.add_first_accordion_item')"
     :add-text="$t('rich-content.add_accordion_item')"
@@ -10,19 +10,19 @@
       <div class="flex flex-col gap-3">
         <Field>
           <FieldLabel>{{ $t('rich-content.title') }}</FieldLabel>
-          <Input 
-            :model-value="item.label" 
-            type="text" 
-            :placeholder="$t('rich-content.enter_accordion_title')" 
-            @update:model-value="update({ ...item, label: $event })" 
+          <Input
+            :model-value="item.label"
+            type="text"
+            :placeholder="$t('rich-content.enter_accordion_title')"
+            @update:model-value="update({ ...item, label: $event })"
           />
         </Field>
         <Field>
           <FieldLabel>{{ $t('rich-content.content') }}</FieldLabel>
-          <TiptapEditor 
-            :model-value="item.content" 
+          <TiptapEditor
+            :model-value="item.content"
             preset="full"
-            @update:model-value="update({ ...item, content: $event })" 
+            @update:model-value="update({ ...item, content: $event })"
           />
         </Field>
       </div>
@@ -41,7 +41,7 @@ const modelValue = defineModel<ShadcnAccordion['json_content']>();
 
 function createItem(): ShadcnAccordion['json_content'][number] {
   return {
-    label: "",
+    label: '',
     content: {} as ShadcnAccordion['json_content'][number]['content'],
   };
 }

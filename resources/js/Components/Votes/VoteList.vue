@@ -4,8 +4,8 @@
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-2">
         <h4 class="text-sm font-medium">
-{{ $t('Balsavimai') }}
-</h4>
+          {{ $t('Balsavimai') }}
+        </h4>
         <AdminVotingHelpButton class="h-4 w-4" />
       </div>
       <Button

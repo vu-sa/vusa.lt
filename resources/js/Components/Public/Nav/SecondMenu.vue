@@ -17,9 +17,9 @@
       <div class="inline-flex gap-1">
         <DropdownMenu>
           <DropdownMenuTrigger as-child>
-            <Button 
-              variant="ghost" 
-              size="sm" 
+            <Button
+              variant="ghost"
+              size="sm"
               class="h-6 px-1.5 hover:bg-nav-hover-bg-light dark:hover:bg-nav-hover-bg-dark tracking-wide"
               :title="$t('Daugiau nuorodų')"
             >
@@ -28,11 +28,11 @@
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" class="w-48">
-            <DropdownMenuItem 
-              v-for="option in dropdownOptions" 
-              :key="option.key" 
-              @click="() => handleSelect(option.key)"
+            <DropdownMenuItem
+              v-for="option in dropdownOptions"
+              :key="option.key"
               class="cursor-pointer"
+              @click="() => handleSelect(option.key)"
             >
               {{ option.label }}
             </DropdownMenuItem>
@@ -43,9 +43,9 @@
         <SearchButton class="h-6 px-2 text-xs tracking-wide hover:bg-nav-hover-bg-light dark:hover:bg-nav-hover-bg-dark">
           {{ $t('Paieška') }}
         </SearchButton>
-        <a href="/login" 
-           class="inline-flex items-center justify-center h-6 px-2 text-xs tracking-wide hover:bg-nav-hover-bg-light dark:hover:bg-nav-hover-bg-dark gap-1 rounded-md transition-colors"
-           :title="$page.props.auth?.user ? $page.props.auth.user?.name : $t('auth.login')">
+        <a href="/login"
+          class="inline-flex items-center justify-center h-6 px-2 text-xs tracking-wide hover:bg-nav-hover-bg-light dark:hover:bg-nav-hover-bg-dark gap-1 rounded-md transition-colors"
+          :title="$page.props.auth?.user ? $page.props.auth.user?.name : $t('auth.login')">
           <IFluentPerson24Filled v-if="$page.props.auth?.user" class="h-4 w-4" aria-hidden="true" />
           <IFluentPerson24Regular v-else class="h-4 w-4" aria-hidden="true" />
           <span class="hidden sm:inline">
@@ -61,22 +61,25 @@
 </template>
 
 <script setup lang="ts">
-import QuickLink from "./QuickLink.vue";
-import SmartLink from "../SmartLink.vue";
-import SearchButton from "./SearchButton.vue";
-import { usePage } from "@inertiajs/vue3";
-import { trans as $t } from "laravel-vue-i18n";
-import { Button } from "@/Components/ui/button";
+import { usePage } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
+
+import SmartLink from '../SmartLink.vue';
+
+import QuickLink from './QuickLink.vue';
+import SearchButton from './SearchButton.vue';
+
+import { Button } from '@/Components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/Components/ui/dropdown-menu";
+} from '@/Components/ui/dropdown-menu';
 
 const dropdownOptions = (usePage().props.tenant?.links ?? [])
   .filter((link): link is NonNullable<typeof link> => link?.text != null && link?.link != null)
-  .map((link) => ({
+  .map(link => ({
     label: link.text!,
     key: link.link!,
   }));

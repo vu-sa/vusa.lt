@@ -1,8 +1,8 @@
 <template>
-  <Button 
-    variant="ghost" 
-    :size="size" 
-    :title="$t('Tamsaus režimo perjungimas')" 
+  <Button
+    variant="ghost"
+    :size
+    :title="$t('Tamsaus režimo perjungimas')"
     @click="isDark = !isDark"
   >
     <IFluentWeatherMoon24Filled v-if="isDark" class="h-4 w-4" />
@@ -14,10 +14,11 @@
 </template>
 
 <script setup lang="ts">
-import { useDark } from "@vueuse/core";
-import { trans as $t } from "laravel-vue-i18n";
-import { Button } from "@/Components/ui/button";
-import type { ButtonVariants } from "@/Components/ui/button";
+import { useDark } from '@vueuse/core';
+import { trans as $t } from 'laravel-vue-i18n';
+
+import { Button } from '@/Components/ui/button';
+import type { ButtonVariants } from '@/Components/ui/button';
 
 interface Props {
   /** Button size variant - affects padding and height */

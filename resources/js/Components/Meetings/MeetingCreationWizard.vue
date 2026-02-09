@@ -17,8 +17,8 @@
         >
           <!-- Step 1: Institution -->
           <StepperItem
-            :step="1"
             v-slot="{ state }"
+            :step="1"
             class="relative flex w-full items-start gap-4"
             :disabled="loading"
           >
@@ -62,8 +62,8 @@
 
           <!-- Step 2: Meeting Details -->
           <StepperItem
-            :step="2"
             v-slot="{ state }"
+            :step="2"
             class="relative flex w-full items-start gap-4"
             :disabled="loading || (2 > meetingCreation.state.maxCompletedStep + 1 && meetingCreation.state.currentStep < 2)"
           >
@@ -115,8 +115,8 @@
           <!-- Step 3: Agenda -->
           <StepperItem
             v-if="!isQuickMode"
-            :step="3"
             v-slot="{ state }"
+            :step="3"
             class="relative flex w-full items-start gap-4"
             :disabled="loading || (3 > meetingCreation.state.maxCompletedStep + 1 && meetingCreation.state.currentStep < 3)"
           >
@@ -168,8 +168,8 @@
           <!-- Step 4: Review -->
           <StepperItem
             v-if="!isQuickMode"
-            :step="4"
             v-slot="{ state }"
+            :step="4"
             class="relative flex w-full items-start gap-4"
             :disabled="loading || (4 > meetingCreation.state.maxCompletedStep + 1 && meetingCreation.state.currentStep < 4)"
           >
@@ -214,7 +214,7 @@
           <InstitutionSelectorForm v-if="meetingCreation.state.currentStep === 1"
             :selected-institution="meetingCreation.state.institution" @submit="(id) => emit('institutionSelect', id)" />
           <MeetingForm v-else-if="meetingCreation.state.currentStep === 2"
-            :meeting="meetingCreation.state.meeting" 
+            :meeting="meetingCreation.state.meeting"
             :loading="meetingCreation.state.loading.validation"
             :submit-label="$t('Toliau')"
             @submit="(data) => emit('meetingFormSubmit', data)" />
@@ -233,7 +233,7 @@
             <!-- Action buttons rendered outside scroll area -->
             <div class="flex items-center justify-between pt-4 border-t mt-4 flex-shrink-0">
               <div class="flex items-center gap-2">
-                <Button v-if="agendaFormRef?.currentFieldCount > 1 || (agendaFormRef?.currentFieldCount === 1 && agendaFormRef?.hasNonEmptyItems)" 
+                <Button v-if="agendaFormRef?.currentFieldCount > 1 || (agendaFormRef?.currentFieldCount === 1 && agendaFormRef?.hasNonEmptyItems)"
                   type="button" variant="ghost" size="sm" @click="agendaFormRef?.clearAllItems">
                   <Trash2 class="mr-2 h-3 w-3" />
                   {{ $t('Šalinti visus') }}
@@ -259,7 +259,7 @@
                     <Loader2 class="mr-2 h-4 w-4 animate-spin" />
                     {{ $t('Kuriama...') }}
                   </span>
-                  <span class="inline-flex items-center" v-else>
+                  <span v-else class="inline-flex items-center">
                     {{ $t('Toliau') }}
                     <CheckCircle class="ml-2 h-4 w-4" />
                   </span>
@@ -283,18 +283,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
-import { trans as $t, getActiveLanguage } from "laravel-vue-i18n";
-import { CheckCircle, Loader2, Trash2 } from "lucide-vue-next";
+import { ref } from 'vue';
+import { trans as $t, getActiveLanguage } from 'laravel-vue-i18n';
+import { CheckCircle, Loader2, Trash2 } from 'lucide-vue-next';
 
-import type { useMeetingCreation } from "@/Composables/useMeetingCreation";
-import AgendaItemsForm from "@/Components/AdminForms/Special/AgendaItemsForm.vue";
-import MeetingForm from "@/Components/AdminForms/MeetingForm.vue";
-import MeetingReviewForm from "@/Components/AdminForms/MeetingReviewForm.vue";
-import InstitutionSelectorForm from "@/Components/AdminForms/Special/InstitutionSelectorForm.vue";
-import FadeTransition from "@/Components/Transitions/FadeTransition.vue"
-import Icons from "@/Types/Icons/filled";
-import { Button } from "@/Components/ui/button";
+import type { useMeetingCreation } from '@/Composables/useMeetingCreation';
+import AgendaItemsForm from '@/Components/AdminForms/Special/AgendaItemsForm.vue';
+import MeetingForm from '@/Components/AdminForms/MeetingForm.vue';
+import MeetingReviewForm from '@/Components/AdminForms/MeetingReviewForm.vue';
+import InstitutionSelectorForm from '@/Components/AdminForms/Special/InstitutionSelectorForm.vue';
+import FadeTransition from '@/Components/Transitions/FadeTransition.vue';
+import Icons from '@/Types/Icons/filled';
+import { Button } from '@/Components/ui/button';
 import {
   Stepper,
   StepperItem,
@@ -302,16 +302,15 @@ import {
   StepperTitle,
   StepperDescription,
   StepperSeparator,
-} from "@/Components/ui/stepper";
-import { ScrollArea } from "@/Components/ui/scroll-area";
+} from '@/Components/ui/stepper';
+import { ScrollArea } from '@/Components/ui/scroll-area';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/Components/ui/tooltip";
-
-import { getMeetingTypeOptions, type MeetingTypeValue } from "@/Types/MeetingType";
+} from '@/Components/ui/tooltip';
+import { getMeetingTypeOptions, type MeetingTypeValue } from '@/Types/MeetingType';
 
 const props = defineProps<{
   meetingCreation: ReturnType<typeof useMeetingCreation>;
@@ -342,7 +341,7 @@ const formatMeetingTime = (): string => {
     month: 'short',
     day: 'numeric',
     hour: 'numeric',
-    minute: '2-digit'
+    minute: '2-digit',
   });
 };
 
@@ -352,8 +351,8 @@ const getMeetingTypeName = (): string => {
 
   const locale = getActiveLanguage() === 'en' ? 'en' : 'lt';
   const options = getMeetingTypeOptions(locale);
-  const option = options.find((o) => o.value === type);
-  
+  const option = options.find(o => o.value === type);
+
   return option?.label || $t('Kita');
 };
 </script>

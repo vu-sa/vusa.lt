@@ -1,74 +1,3 @@
-<script setup lang="ts">
-import { computed, inject, ref } from 'vue'
-import { trans as $t } from 'laravel-vue-i18n'
-import { 
-  UserPlus, 
-  UserMinus,
-  Building2,
-  Calendar,
-  AlertTriangle,
-  CheckCircle,
-  Edit3,
-  Users,
-  ArrowRight
-} from 'lucide-vue-next'
-
-import { Button } from '@/Components/ui/button'
-import { Badge } from '@/Components/ui/badge'
-import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card'
-import { Alert, AlertDescription, AlertTitle } from '@/Components/ui/alert'
-import { Separator } from '@/Components/ui/separator'
-import { Input } from '@/Components/ui/input'
-import { Label } from '@/Components/ui/label'
-import Icons from '@/Types/Icons/regular'
-
-import { formatDateForDisplay } from '@/Composables/useDutyUserWizard'
-import type { useDutyUserWizard } from '@/Composables/useDutyUserWizard'
-
-const wizard = inject<ReturnType<typeof useDutyUserWizard>>('dutyUserWizard')!
-
-// Capacity editing
-const isEditingCapacity = ref(false)
-const newCapacity = ref(wizard.state.duty?.places_to_occupy || 0)
-
-// Users being added
-const usersToAdd = computed(() => {
-  return wizard.state.userChanges.filter(c => c.action === 'add')
-})
-
-// Users being removed
-const usersToRemove = computed(() => {
-  return wizard.state.userChanges.filter(c => c.action === 'remove')
-})
-
-// New users being created
-const newUsersToCreate = computed(() => {
-  return wizard.state.newUsersToCreate
-})
-
-// Summary calculations
-const currentCount = computed(() => wizard.state.duty?.current_users?.length || 0)
-const projectedCount = computed(() => wizard.projectedUserCount.value)
-const targetCapacity = computed(() => wizard.targetCapacity.value)
-const hasCapacityMismatch = computed(() => wizard.capacityMismatch.value)
-
-// Handle capacity update
-const handleUpdateCapacity = () => {
-  wizard.setNewPlacesToOccupy(newCapacity.value)
-  isEditingCapacity.value = false
-}
-
-const startEditingCapacity = () => {
-  newCapacity.value = wizard.targetCapacity.value
-  isEditingCapacity.value = true
-}
-
-const cancelEditingCapacity = () => {
-  isEditingCapacity.value = false
-  newCapacity.value = wizard.state.duty?.places_to_occupy || 0
-}
-</script>
-
 <template>
   <div class="space-y-6">
     <!-- Summary header -->
@@ -80,8 +9,12 @@ const cancelEditingCapacity = () => {
             <Building2 class="h-5 w-5 text-vusa-yellow-dark dark:text-vusa-yellow" />
           </div>
           <div class="flex-1 min-w-0">
-            <p class="text-xs text-vusa-yellow-dark/70 dark:text-vusa-yellow/70">{{ $t('Institucija') }}</p>
-            <p class="font-medium text-vusa-yellow-dark dark:text-vusa-yellow truncate">{{ wizard.state.institution?.name }}</p>
+            <p class="text-xs text-vusa-yellow-dark/70 dark:text-vusa-yellow/70">
+              {{ $t('Institucija') }}
+            </p>
+            <p class="font-medium text-vusa-yellow-dark dark:text-vusa-yellow truncate">
+              {{ wizard.state.institution?.name }}
+            </p>
           </div>
         </div>
       </div>
@@ -93,14 +26,18 @@ const cancelEditingCapacity = () => {
             <Icons.DUTY class="h-5 w-5 text-zinc-600 dark:text-zinc-400" />
           </div>
           <div class="flex-1 min-w-0">
-            <p class="text-xs text-zinc-600/70 dark:text-zinc-400/70">{{ $t('Pareigybė') }}</p>
-            <p class="font-medium text-zinc-900 dark:text-zinc-100 truncate">{{ wizard.state.duty?.name }}</p>
+            <p class="text-xs text-zinc-600/70 dark:text-zinc-400/70">
+              {{ $t('Pareigybė') }}
+            </p>
+            <p class="font-medium text-zinc-900 dark:text-zinc-100 truncate">
+              {{ wizard.state.duty?.name }}
+            </p>
           </div>
         </div>
       </div>
 
       <!-- Capacity -->
-      <div 
+      <div
         class="p-4 rounded-xl border transition-colors"
         :class="{
           'bg-gradient-to-br from-green-50 to-green-50/50 dark:from-green-950/30 dark:to-green-900/20 border-green-200 dark:border-green-900/50': !hasCapacityMismatch,
@@ -108,14 +45,14 @@ const cancelEditingCapacity = () => {
         }"
       >
         <div class="flex items-center gap-3">
-          <div 
+          <div
             class="h-10 w-10 rounded-lg flex items-center justify-center"
             :class="{
               'bg-green-100 dark:bg-green-900/50': !hasCapacityMismatch,
               'bg-vusa-yellow/20 dark:bg-vusa-yellow-dark/30': hasCapacityMismatch
             }"
           >
-            <Users 
+            <Users
               class="h-5 w-5"
               :class="{
                 'text-green-600 dark:text-green-400': !hasCapacityMismatch,
@@ -124,7 +61,7 @@ const cancelEditingCapacity = () => {
             />
           </div>
           <div class="flex-1">
-            <p 
+            <p
               class="text-xs"
               :class="{
                 'text-green-600/70 dark:text-green-400/70': !hasCapacityMismatch,
@@ -133,7 +70,7 @@ const cancelEditingCapacity = () => {
             >
               {{ $t('Nariai') }}
             </p>
-            <p 
+            <p
               class="font-medium"
               :class="{
                 'text-green-900 dark:text-green-100': !hasCapacityMismatch,
@@ -143,9 +80,9 @@ const cancelEditingCapacity = () => {
               {{ currentCount }} <ArrowRight class="h-3 w-3 inline mx-1" /> {{ projectedCount }} / {{ targetCapacity }}
             </p>
           </div>
-          <Button 
+          <Button
             v-if="hasCapacityMismatch && !isEditingCapacity"
-            variant="ghost" 
+            variant="ghost"
             size="sm"
             @click="startEditingCapacity"
           >
@@ -158,10 +95,14 @@ const cancelEditingCapacity = () => {
     <!-- Capacity mismatch alert -->
     <Alert v-if="hasCapacityMismatch && !isEditingCapacity" variant="default" class="border-vusa-yellow/30 dark:border-vusa-yellow-dark/30 bg-vusa-yellow/10 dark:bg-vusa-yellow-dark/20">
       <AlertTriangle class="h-4 w-4 text-vusa-yellow-dark dark:text-vusa-yellow" />
-      <AlertTitle class="text-vusa-yellow-dark dark:text-vusa-yellow">{{ $t('Vietų skaičiaus neatitikimas') }}</AlertTitle>
+      <AlertTitle class="text-vusa-yellow-dark dark:text-vusa-yellow">
+        {{ $t('Vietų skaičiaus neatitikimas') }}
+      </AlertTitle>
       <AlertDescription class="text-vusa-yellow-dark/80 dark:text-vusa-yellow/80">
         {{ $t('Bus') }} {{ projectedCount }} {{ $t('nariai, bet nurodyta') }} {{ targetCapacity }}.
-        <Button variant="link" class="h-auto p-0 ml-1 text-vusa-yellow-dark dark:text-vusa-yellow" @click="startEditingCapacity">{{ $t('Atnaujinti?') }}</Button>
+        <Button variant="link" class="h-auto p-0 ml-1 text-vusa-yellow-dark dark:text-vusa-yellow" @click="startEditingCapacity">
+          {{ $t('Atnaujinti?') }}
+        </Button>
       </AlertDescription>
     </Alert>
 
@@ -172,10 +113,10 @@ const cancelEditingCapacity = () => {
           <div class="flex-1">
             <Label>{{ $t('Vietų skaičius') }}</Label>
             <div class="flex items-center gap-2 mt-1">
-              <Input 
-                v-model.number="newCapacity" 
-                type="number" 
-                min="1" 
+              <Input
+                v-model.number="newCapacity"
+                type="number"
+                min="1"
                 class="w-24 h-9"
               />
               <Button size="sm" @click="handleUpdateCapacity">
@@ -214,24 +155,26 @@ const cancelEditingCapacity = () => {
             {{ $t('Nėra pridedamų narių') }}
           </div>
           <div v-else class="divide-y">
-            <div 
+            <div
               v-for="change in usersToAdd"
               :key="change.userId"
               class="p-3 flex items-center gap-3"
             >
               <div class="h-9 w-9 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center overflow-hidden shrink-0">
-                <img 
+                <img
                   v-if="change.userPhoto"
                   :src="change.userPhoto"
                   :alt="change.userName"
                   class="h-full w-full object-cover"
-                />
+                >
                 <span v-else class="text-sm font-medium text-green-700 dark:text-green-300">{{ change.userName?.charAt(0) }}</span>
               </div>
               <div class="flex-1 min-w-0">
                 <p class="font-medium text-sm truncate">
                   {{ change.userName }}
-                  <Badge v-if="change.isNewUser" variant="outline" class="ml-1 text-[10px]">{{ $t('Naujas') }}</Badge>
+                  <Badge v-if="change.isNewUser" variant="outline" class="ml-1 text-[10px]">
+                    {{ $t('Naujas') }}
+                  </Badge>
                 </p>
                 <div class="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
                   <Calendar class="h-3 w-3" />
@@ -264,22 +207,24 @@ const cancelEditingCapacity = () => {
             {{ $t('Nėra šalinamų narių') }}
           </div>
           <div v-else class="divide-y">
-            <div 
+            <div
               v-for="change in usersToRemove"
               :key="change.userId"
               class="p-3 flex items-center gap-3"
             >
               <div class="h-9 w-9 rounded-full bg-vusa-red/10 dark:bg-vusa-red-dark/30 flex items-center justify-center overflow-hidden shrink-0">
-                <img 
+                <img
                   v-if="change.userPhoto"
                   :src="change.userPhoto"
                   :alt="change.userName"
                   class="h-full w-full object-cover opacity-50"
-                />
+                >
                 <span v-else class="text-sm font-medium text-vusa-red dark:text-vusa-red-quaternary">{{ change.userName?.charAt(0) }}</span>
               </div>
               <div class="flex-1 min-w-0">
-                <p class="font-medium text-sm truncate line-through text-vusa-red dark:text-vusa-red-quaternary">{{ change.userName }}</p>
+                <p class="font-medium text-sm truncate line-through text-vusa-red dark:text-vusa-red-quaternary">
+                  {{ change.userName }}
+                </p>
                 <div class="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
                   <Calendar class="h-3 w-3" />
                   <span>{{ $t('Pabaiga:') }} {{ formatDateForDisplay(change.endDate || '') }}</span>
@@ -304,7 +249,7 @@ const cancelEditingCapacity = () => {
       </CardHeader>
       <CardContent class="p-0">
         <div class="divide-y">
-          <div 
+          <div
             v-for="(user, index) in newUsersToCreate"
             :key="index"
             class="p-3 flex items-center gap-3"
@@ -313,8 +258,12 @@ const cancelEditingCapacity = () => {
               <span class="text-sm font-medium text-primary">{{ user.name?.charAt(0) }}</span>
             </div>
             <div class="flex-1 min-w-0">
-              <p class="font-medium text-sm truncate">{{ user.name }}</p>
-              <p class="text-xs text-muted-foreground truncate">{{ user.email }}</p>
+              <p class="font-medium text-sm truncate">
+                {{ user.name }}
+              </p>
+              <p class="text-xs text-muted-foreground truncate">
+                {{ user.email }}
+              </p>
             </div>
           </div>
         </div>
@@ -331,3 +280,73 @@ const cancelEditingCapacity = () => {
     </Alert>
   </div>
 </template>
+
+<script setup lang="ts">
+import { computed, inject, ref } from 'vue';
+import { trans as $t } from 'laravel-vue-i18n';
+import {
+  UserPlus,
+  UserMinus,
+  Building2,
+  Calendar,
+  AlertTriangle,
+  CheckCircle,
+  Edit3,
+  Users,
+  ArrowRight,
+} from 'lucide-vue-next';
+
+import { Button } from '@/Components/ui/button';
+import { Badge } from '@/Components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import { Alert, AlertDescription, AlertTitle } from '@/Components/ui/alert';
+import { Separator } from '@/Components/ui/separator';
+import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
+import Icons from '@/Types/Icons/regular';
+import { formatDateForDisplay } from '@/Composables/useDutyUserWizard';
+import type { useDutyUserWizard } from '@/Composables/useDutyUserWizard';
+
+const wizard = inject<ReturnType<typeof useDutyUserWizard>>('dutyUserWizard')!;
+
+// Capacity editing
+const isEditingCapacity = ref(false);
+const newCapacity = ref(wizard.state.duty?.places_to_occupy || 0);
+
+// Users being added
+const usersToAdd = computed(() => {
+  return wizard.state.userChanges.filter(c => c.action === 'add');
+});
+
+// Users being removed
+const usersToRemove = computed(() => {
+  return wizard.state.userChanges.filter(c => c.action === 'remove');
+});
+
+// New users being created
+const newUsersToCreate = computed(() => {
+  return wizard.state.newUsersToCreate;
+});
+
+// Summary calculations
+const currentCount = computed(() => wizard.state.duty?.current_users?.length || 0);
+const projectedCount = computed(() => wizard.projectedUserCount.value);
+const targetCapacity = computed(() => wizard.targetCapacity.value);
+const hasCapacityMismatch = computed(() => wizard.capacityMismatch.value);
+
+// Handle capacity update
+const handleUpdateCapacity = () => {
+  wizard.setNewPlacesToOccupy(newCapacity.value);
+  isEditingCapacity.value = false;
+};
+
+const startEditingCapacity = () => {
+  newCapacity.value = wizard.targetCapacity.value;
+  isEditingCapacity.value = true;
+};
+
+const cancelEditingCapacity = () => {
+  isEditingCapacity.value = false;
+  newCapacity.value = wizard.state.duty?.places_to_occupy || 0;
+};
+</script>

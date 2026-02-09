@@ -1,5 +1,5 @@
 <template>
-  <Dialog :open="open" @update:open="$emit('close')">
+  <Dialog :open @update:open="$emit('close')">
     <DialogContent class="sm:max-w-[500px]">
       <DialogHeader>
         <DialogTitle>{{ $t("tasks.create_new") }}</DialogTitle>
@@ -8,31 +8,35 @@
 
       <div class="grid gap-4 py-4">
         <div class="grid gap-2">
-          <Label :for="'task-name'">{{ $t("forms.fields.title") }}</Label>
-          <Input 
-            id="task-name" 
-            v-model="taskForm.name" 
+          <Label for="task-name">{{ $t("forms.fields.title") }}</Label>
+          <Input
+            id="task-name"
+            v-model="taskForm.name"
             :placeholder="$t('tasks.name_placeholder')"
             :class="{ 'border-destructive': errors.name }"
           />
-          <p v-if="errors.name" class="text-sm text-destructive">{{ errors.name }}</p>
+          <p v-if="errors.name" class="text-sm text-destructive">
+            {{ errors.name }}
+          </p>
         </div>
 
         <div class="grid gap-2">
-          <Label :for="'task-date'">{{ $t("forms.fields.due_date") }}</Label>
-          <DatePicker 
-            v-model="taskForm.due_date" 
-            :placeholder="$t('tasks.date_placeholder')" 
+          <Label for="task-date">{{ $t("forms.fields.due_date") }}</Label>
+          <DatePicker
+            v-model="taskForm.due_date"
+            :placeholder="$t('tasks.date_placeholder')"
             :class="{ 'border-destructive': errors.due_date }"
             @change="handleDateChange"
           />
-          <p v-if="errors.due_date" class="text-sm text-destructive">{{ errors.due_date }}</p>
+          <p v-if="errors.due_date" class="text-sm text-destructive">
+            {{ errors.due_date }}
+          </p>
         </div>
 
         <div class="grid gap-2">
-          <Label :for="'task-users'">{{ $t("forms.fields.responsible_people") }}</Label>
-          <MultiSelect 
-            v-model="selectedUsers" 
+          <Label for="task-users">{{ $t("forms.fields.responsible_people") }}</Label>
+          <MultiSelect
+            v-model="selectedUsers"
             :options="props.users ?? []"
             label-field="name"
             value-field="id"
@@ -51,17 +55,21 @@
               <span class="min-w-0 truncate">{{ (user as App.Entities.User).name }}</span>
             </template>
           </MultiSelect>
-          <p v-if="errors.users" class="text-sm text-destructive">{{ errors.users }}</p>
+          <p v-if="errors.users" class="text-sm text-destructive">
+            {{ errors.users }}
+          </p>
         </div>
 
-        <div class="flex items-center space-x-2" v-if="taskForm.user_ids.length > 1">
+        <div v-if="taskForm.user_ids.length > 1" class="flex items-center space-x-2">
           <Checkbox id="separate-tasks" v-model="taskForm.separate_tasks" />
-          <Label :for="'separate-tasks'">{{ $t("tasks.create_separate_tasks") }}</Label>
+          <Label for="separate-tasks">{{ $t("tasks.create_separate_tasks") }}</Label>
         </div>
       </div>
 
       <DialogFooter>
-        <Button variant="outline" @click="$emit('close')">{{ $t("Cancel") }}</Button>
+        <Button variant="outline" @click="$emit('close')">
+          {{ $t("Cancel") }}
+        </Button>
         <Button type="submit" :disabled="isSubmitting" @click="createTask">
           {{ isSubmitting ? $t("forms.buttons.saving") : $t("forms.buttons.create") }}
         </Button>
@@ -71,19 +79,20 @@
 </template>
 
 <script setup lang="tsx">
-import { trans as $t } from "laravel-vue-i18n";
-import { ref, reactive, watch } from "vue";
-import { router } from "@inertiajs/vue3";
-import { toast } from "vue-sonner";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
-import { Label } from "@/Components/ui/label";
-import { Input } from "@/Components/ui/input";
-import { DatePicker } from "@/Components/ui/date-picker";
-import { Checkbox } from "@/Components/ui/checkbox";
-import { Button } from "@/Components/ui/button";
-import { MultiSelect } from "@/Components/ui/multi-select";
-import UserAvatar from "@/Components/Avatars/UserAvatar.vue";
-import { CheckCircleIcon } from "lucide-vue-next";
+import { trans as $t } from 'laravel-vue-i18n';
+import { ref, reactive, watch } from 'vue';
+import { router } from '@inertiajs/vue3';
+import { toast } from 'vue-sonner';
+import { CheckCircleIcon } from 'lucide-vue-next';
+
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
+import { Label } from '@/Components/ui/label';
+import { Input } from '@/Components/ui/input';
+import { DatePicker } from '@/Components/ui/date-picker';
+import { Checkbox } from '@/Components/ui/checkbox';
+import { Button } from '@/Components/ui/button';
+import { MultiSelect } from '@/Components/ui/multi-select';
+import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 
 // Component props
 const props = defineProps<{
@@ -105,17 +114,17 @@ const emit = defineEmits<{
 const isSubmitting = ref(false);
 const selectedUsers = ref<App.Entities.User[]>([]);
 const taskForm = reactive({
-  name: "",
+  name: '',
   due_date: undefined as Date | undefined, // Changed from null to undefined for DatePicker compatibility
   user_ids: [] as string[],
-  separate_tasks: false
+  separate_tasks: false,
 });
 
 // Form errors
 const errors = reactive({
   name: '',
   due_date: '',
-  users: ''
+  users: '',
 });
 
 // Sync selected users to form user_ids
@@ -128,30 +137,30 @@ watch(selectedUsers, (users) => {
  */
 const validateForm = (): boolean => {
   let isValid = true;
-  
+
   // Reset errors
   errors.name = '';
   errors.due_date = '';
   errors.users = '';
-  
+
   // Validate name
   if (!taskForm.name.trim()) {
-    errors.name = $t("validation.required", { attribute: $t("forms.fields.title").toLowerCase() });
+    errors.name = $t('validation.required', { attribute: $t('forms.fields.title').toLowerCase() });
     isValid = false;
   }
-  
+
   // Validate due date
   if (!taskForm.due_date) {
-    errors.due_date = $t("validation.required", { attribute: $t("forms.fields.due_date").toLowerCase() });
+    errors.due_date = $t('validation.required', { attribute: $t('forms.fields.due_date').toLowerCase() });
     isValid = false;
   }
-  
+
   // Validate users
   if (taskForm.user_ids.length === 0) {
-    errors.users = $t("validation.required", { attribute: $t("forms.fields.responsible_people").toLowerCase() });
+    errors.users = $t('validation.required', { attribute: $t('forms.fields.responsible_people').toLowerCase() });
     isValid = false;
   }
-  
+
   return isValid;
 };
 
@@ -160,34 +169,34 @@ const validateForm = (): boolean => {
  */
 const createTask = () => {
   if (!props.taskable || !validateForm()) return;
-  
+
   isSubmitting.value = true;
-  
-  router.post(route("tasks.store"), {
+
+  router.post(route('tasks.store'), {
     name: taskForm.name,
     due_date: taskForm.due_date,
     responsible_people: taskForm.user_ids,
     separate_tasks: taskForm.separate_tasks,
     taskable_type: props.taskable.type,
-    taskable_id: props.taskable.id
+    taskable_id: props.taskable.id,
   }, {
     onSuccess: () => {
       resetForm();
       isSubmitting.value = false;
       emit('close');
       emit('task-created');
-      
+
       // Show success toast
-      toast.success($t("tasks.creation_success"), {
-        description: taskForm.separate_tasks && taskForm.user_ids.length > 1 
-          ? $t("tasks.multiple_tasks_created") 
-          : $t("tasks.task_created"),
-        icon: <CheckCircleIcon class="h-4 w-4" />
+      toast.success($t('tasks.creation_success'), {
+        description: taskForm.separate_tasks && taskForm.user_ids.length > 1
+          ? $t('tasks.multiple_tasks_created')
+          : $t('tasks.task_created'),
+        icon: <CheckCircleIcon class="h-4 w-4" />,
       });
     },
     onError: (formErrors) => {
       isSubmitting.value = false;
-      
+
       // Map backend errors to form fields
       if (formErrors.name) {
         errors.name = formErrors.name;
@@ -198,11 +207,11 @@ const createTask = () => {
       if (formErrors.responsible_people) {
         errors.users = formErrors.responsible_people;
       }
-      
+
       // Show error toast for other errors
       if (!formErrors.name && !formErrors.due_date && !formErrors.responsible_people) {
-        toast.error($t("tasks.creation_error"), {
-          description: $t("tasks.try_again")
+        toast.error($t('tasks.creation_error'), {
+          description: $t('tasks.try_again'),
         });
       }
     },
@@ -215,12 +224,12 @@ const createTask = () => {
  * Reset form to initial state
  */
 const resetForm = () => {
-  taskForm.name = "";
+  taskForm.name = '';
   taskForm.due_date = undefined; // Changed from null to undefined for DatePicker compatibility
   taskForm.user_ids = [];
   taskForm.separate_tasks = false;
   selectedUsers.value = [];
-  
+
   // Reset errors
   errors.name = '';
   errors.due_date = '';

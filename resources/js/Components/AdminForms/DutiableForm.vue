@@ -63,7 +63,7 @@
           Asmens įvardžius gali nusistatyti pats asmuo, prisijungęs prie mano.vusa.lt, savo nustatymų lange. Taip pat
           galima nustatyti
           <Link :href="route('users.edit', dutiable?.dutiable_id)">
-          čia
+            čia
           </Link>.
         </p>
         <p>
@@ -78,22 +78,24 @@
 </template>
 
 <script setup lang="ts">
-import { Link, useForm, usePage } from "@inertiajs/vue3";
-import { computed, ref } from "vue";
-import TiptapEditor from "@/Components/TipTap/TiptapEditor.vue";
+import { Link, useForm, usePage } from '@inertiajs/vue3';
+import { computed, ref } from 'vue';
 
-import { Badge } from "@/Components/ui/badge";
-import { DatePicker } from "@/Components/ui/date-picker";
-import { Input } from "@/Components/ui/input";
-import { Label } from "@/Components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
-import { Switch } from "@/Components/ui/switch";
-import { ImageUpload } from "@/Components/ui/upload";
-import { changeDutyNameEndings } from "@/Utils/String";
-import FormElement from "./FormElement.vue";
-import FormFieldWrapper from "./FormFieldWrapper.vue";
-import SimpleLocaleButton from "../Buttons/SimpleLocaleButton.vue";
-import AdminForm from "./AdminForm.vue";
+import SimpleLocaleButton from '../Buttons/SimpleLocaleButton.vue';
+
+import FormElement from './FormElement.vue';
+import FormFieldWrapper from './FormFieldWrapper.vue';
+import AdminForm from './AdminForm.vue';
+
+import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
+import { Badge } from '@/Components/ui/badge';
+import { DatePicker } from '@/Components/ui/date-picker';
+import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { Switch } from '@/Components/ui/switch';
+import { ImageUpload } from '@/Components/ui/upload';
+import { changeDutyNameEndings } from '@/Utils/String';
 
 const props = defineProps<{
   dutiable: App.Entities.Dutiable;
@@ -102,8 +104,8 @@ const props = defineProps<{
 }>();
 
 defineEmits<{
-  (event: "submit:form", form: unknown): void;
-  (event: "delete"): void;
+  (event: 'submit:form', form: unknown): void;
+  (event: 'delete'): void;
 }>();
 
 const form = props.rememberKey
@@ -111,10 +113,10 @@ const form = props.rememberKey
   : useForm(props.dutiable as any);
 
 if (Array.isArray(form.description)) {
-  form.description = { lt: "", en: "" };
+  form.description = { lt: '', en: '' };
 }
 
-const locale = ref("lt");
+const locale = ref('lt');
 
 // Shadcn Select requires string values
 const studyProgramIdString = computed({
@@ -130,7 +132,7 @@ const shownDutyName = computed(() => {
     props.dutiable.duty.name,
     usePage().props.app.locale,
     (props.dutiable.dutiable as any)?.pronouns,
-    form.use_original_duty_name as boolean
+    form.use_original_duty_name as boolean,
   );
 });
 </script>

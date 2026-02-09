@@ -77,24 +77,24 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
-import { useFetch } from "@vueuse/core";
-import { ChevronsUpDown, X } from "lucide-vue-next";
+import { computed, ref, watch } from 'vue';
+import { useFetch } from '@vueuse/core';
+import { ChevronsUpDown, X } from 'lucide-vue-next';
 
-import { Button } from "@/Components/ui/button";
-import { Badge } from "@/Components/ui/badge";
-import { Input } from "@/Components/ui/input";
-import { Label } from "@/Components/ui/label";
-import { Popover, PopoverContent, PopoverTrigger } from "@/Components/ui/popover";
-import { ScrollArea } from "@/Components/ui/scroll-area";
-import { Spinner } from "@/Components/ui/spinner";
-import { Tree } from "@/Components/ui/tree";
-import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
-import SuggestionAlert from "@/Components/Alerts/SuggestionAlert.vue";
+import { Button } from '@/Components/ui/button';
+import { Badge } from '@/Components/ui/badge';
+import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
+import { ScrollArea } from '@/Components/ui/scroll-area';
+import { Spinner } from '@/Components/ui/spinner';
+import { Tree } from '@/Components/ui/tree';
+import FadeTransition from '@/Components/Transitions/FadeTransition.vue';
+import SuggestionAlert from '@/Components/Alerts/SuggestionAlert.vue';
 
 const emit = defineEmits<{
-  (e: "close:alert"): void;
-  (e: "submit", data: any): void;
+  (e: 'close:alert'): void;
+  (e: 'submit', data: any): void;
 }>();
 
 defineProps<{
@@ -102,18 +102,18 @@ defineProps<{
 }>();
 
 interface TreeOption {
-  label: string
-  key: string
-  children?: TreeOption[]
+  label: string;
+  key: string;
+  children?: TreeOption[];
 }
 
 const popoverOpen = ref(false);
-const filterText = ref("");
+const filterText = ref('');
 const selectedFileable = ref<string | undefined>(undefined);
 const treeOptions = ref<TreeOption[]>([]);
 
 const { data: fileablesData, isFetching } = useFetch(
-  route("api.v1.admin.sharepoint.potentialFileables")
+  route('api.v1.admin.sharepoint.potentialFileables'),
 ).json();
 
 watch([fileablesData, isFetching], ([data, fetching]) => {
@@ -125,11 +125,11 @@ watch([fileablesData, isFetching], ([data, fetching]) => {
         children:
           institution.meetings && institution.meetings.length > 0
             ? institution.meetings?.map((meeting: App.Entities.Meeting) => ({
-              label: meeting.title,
-              key: `${meeting.id}_${meeting.start_time}_Meeting`,
-            }))
+                label: meeting.title,
+                key: `${meeting.id}_${meeting.start_time}_Meeting`,
+              }))
             : undefined,
-      })
+      }),
     ) ?? [];
 
     const typeOptions = data.types?.map((type: App.Entities.Type) => ({
@@ -139,13 +139,13 @@ watch([fileablesData, isFetching], ([data, fetching]) => {
 
     treeOptions.value = [
       {
-        label: "Institucijos",
-        key: "institutions",
+        label: 'Institucijos',
+        key: 'institutions',
         children: institutionOptions,
       },
       {
-        label: "Tipai",
-        key: "types",
+        label: 'Tipai',
+        key: 'types',
         children: typeOptions,
       },
     ];
@@ -154,7 +154,7 @@ watch([fileablesData, isFetching], ([data, fetching]) => {
 
 // Compute display path for the selected item (e.g. "Institucijos / VU SA / 2024-01-15")
 const selectedPath = computed(() => {
-  if (!selectedFileable.value || treeOptions.value.length === 0) return "";
+  if (!selectedFileable.value || treeOptions.value.length === 0) return '';
 
   function findPath(items: TreeOption[], target: string, path: string[]): string[] | null {
     for (const item of items) {
@@ -168,13 +168,13 @@ const selectedPath = computed(() => {
   }
 
   const path = findPath(treeOptions.value, selectedFileable.value, []);
-  return path ? path.join(" / ") : "";
+  return path ? path.join(' / ') : '';
 });
 
 const handleTreeSelect = (_item: Record<string, any>, key: string) => {
   selectedFileable.value = key;
   popoverOpen.value = false;
-  filterText.value = "";
+  filterText.value = '';
 };
 
 const handleClick = () => {
@@ -182,10 +182,10 @@ const handleClick = () => {
 
   // delimit fileable type, name and id by _
   const [fileableId, fileableName, fileableType] = selectedFileable.value
-    ?.split("_")
-    .map((item) => item.trim()) ?? [];
+    ?.split('_')
+    .map(item => item.trim()) ?? [];
 
-  emit("submit", {
+  emit('submit', {
     id: fileableId,
     fileable_name: fileableName,
     type: fileableType,

@@ -1,35 +1,37 @@
 <template>
   <div class="wrapper">
     <!-- News article with dynamic layout based on article settings -->
-    <NewsArticleLayout 
-      :article="article" 
-      :other-lang-URL="$page.props.otherLangURL"
+    <NewsArticleLayout
+      :article
+      :other-lang-u-r-l="$page.props.otherLangURL"
       :locale="$page.props.app.locale"
       :layout="(article.layout as 'modern' | 'classic' | 'immersive' | 'headline') || 'modern'"
-      className="mb-8 md:mb-16"
+      class-name="mb-8 md:mb-16"
     >
       <RichContentParser :content="article.content?.parts ?? []" />
     </NewsArticleLayout>
-    
+
     <!-- Related Articles Section -->
     <section v-if="relatedArticles && relatedArticles.length > 0" :class="['mt-8 mb-12', relatedArticlesContainerClass]">
       <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-50 to-zinc-100 p-6 ring-1 ring-zinc-200/50 dark:from-zinc-900 dark:to-zinc-800 dark:ring-zinc-700/50">
         <!-- Decorative blur elements -->
         <div class="absolute -right-16 -top-16 size-48 rounded-full bg-vusa-red/5 blur-3xl" />
         <div class="absolute -bottom-8 -left-8 size-32 rounded-full bg-vusa-yellow/5 blur-3xl" />
-        
+
         <div class="relative">
-          <h2 class="text-xl font-semibold mb-5 text-zinc-900 dark:text-zinc-50">{{ $t('Skaityti daugiau') }}</h2>
+          <h2 class="text-xl font-semibold mb-5 text-zinc-900 dark:text-zinc-50">
+            {{ $t('Skaityti daugiau') }}
+          </h2>
           <ul class="space-y-3">
             <li v-for="related in relatedArticles" :key="related.id" class="flex items-start gap-3">
               <span class="mt-2 size-1.5 rounded-full bg-vusa-red/60 flex-shrink-0" />
-              <Link 
-                :href="related.url" 
+              <Link
+                :href="related.url"
                 class="group flex flex-1 items-baseline justify-between gap-4 hover:text-vusa-red transition-colors"
               >
                 <span class="font-heading group-hover:underline text-zinc-800 dark:text-zinc-200">{{ related.title }}</span>
-                <time 
-                  :datetime="related.publish_time" 
+                <time
+                  :datetime="related.publish_time"
                   class="text-sm text-zinc-500 dark:text-zinc-400 whitespace-nowrap"
                 >
                   {{ formatDate(related.publish_time) }}
@@ -40,22 +42,22 @@
         </div>
       </div>
     </section>
-    
+
     <FeedbackPopover />
   </div>
 </template>
 
 <script setup lang="ts">
 // No longer need computed, onMounted, onUnmounted - usePageBreadcrumbs handles this
-import { computed } from "vue";
-import { Link, usePage } from "@inertiajs/vue3";
-import { trans as $t } from "laravel-vue-i18n";
+import { computed } from 'vue';
+import { Link, usePage } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
 
-import RichContentParser from "@/Components/RichContentParser.vue";
-import FeedbackPopover from "@/Components/Public/FeedbackPopover.vue";
+import RichContentParser from '@/Components/RichContentParser.vue';
+import FeedbackPopover from '@/Components/Public/FeedbackPopover.vue';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
-import NewsArticleLayout from "@/Components/Public/News/NewsArticleLayout.vue";
-import IFluentNews24Regular from "~icons/fluent/news-24-regular";
+import NewsArticleLayout from '@/Components/Public/News/NewsArticleLayout.vue';
+import IFluentNews24Regular from '~icons/fluent/news-24-regular';
 
 interface RelatedArticle {
   id: number;
@@ -97,7 +99,7 @@ const formatDate = (dateString: string) => {
 // Set breadcrumbs for news article page
 usePageBreadcrumbs(() => {
   const items = [];
-  
+
   // News archive link
   items.push(
     BreadcrumbHelpers.createRouteBreadcrumb(
@@ -106,17 +108,17 @@ usePageBreadcrumbs(() => {
       {
         newsString: page.props.app.locale === 'lt' ? 'naujienos' : 'news',
         lang: page.props.app.locale,
-        subdomain: page.props.tenant?.subdomain || 'www'
+        subdomain: page.props.tenant?.subdomain || 'www',
       },
-      IFluentNews24Regular
-    )
+      IFluentNews24Regular,
+    ),
   );
-  
+
   // Current news article
   items.push(
-    BreadcrumbHelpers.createBreadcrumbItem(props.article.title)
+    BreadcrumbHelpers.createBreadcrumbItem(props.article.title),
   );
-  
+
   return BreadcrumbHelpers.publicContent(items);
 });
 </script>

@@ -13,11 +13,11 @@
 </template>
 
 <script setup lang="ts">
-import Icons from "@/Types/Icons/regular";
-import NavigationForm from "@/Components/AdminForms/NavigationForm.vue";
-import NavigationParentForm from "@/Components/AdminForms/NavigationParentForm.vue";
-import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
+import Icons from '@/Types/Icons/regular';
+import NavigationForm from '@/Components/AdminForms/NavigationForm.vue';
+import NavigationParentForm from '@/Components/AdminForms/NavigationParentForm.vue';
+import PageContent from '@/Components/Layouts/AdminContentPage.vue';
+import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
 
 const props = defineProps<{
   parent_id: number | string;
@@ -28,9 +28,9 @@ const props = defineProps<{
 const navigationElement = {
   id: null,
   parent_id: parseInt(props.parent_id),
-  name: "",
-  lang: "lt",
-  url: "#",
+  name: '',
+  lang: 'lt',
+  url: '#',
   is_active: true,
   extra_attributes: {},
 };

@@ -40,40 +40,42 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { trans as $t } from 'laravel-vue-i18n'
-import { ChevronRight } from 'lucide-vue-next'
-import { CommandItem } from '@/Components/ui/command'
-import { useCommandPalette, type RecentItem } from '@/Composables/useCommandPalette'
-import type { CommandAction } from '../useCommandActions'
+import { computed } from 'vue';
+import { trans as $t } from 'laravel-vue-i18n';
+import { ChevronRight } from 'lucide-vue-next';
+
+import type { CommandAction } from '../useCommandActions';
+
+import { CommandItem } from '@/Components/ui/command';
+import { useCommandPalette, type RecentItem } from '@/Composables/useCommandPalette';
 
 const props = defineProps<{
-  action: CommandAction
-}>()
+  action: CommandAction;
+}>();
 
-const { close, addRecentItem } = useCommandPalette()
+const { close, addRecentItem } = useCommandPalette();
 
 const iconContainerClasses = computed(() => {
   switch (props.action.category) {
     case 'create':
-      return 'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400 group-hover:bg-emerald-500/15 dark:group-hover:bg-emerald-500/25'
+      return 'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400 group-hover:bg-emerald-500/15 dark:group-hover:bg-emerald-500/25';
     case 'navigation':
-      return 'bg-zinc-500/10 text-zinc-600 dark:bg-zinc-500/20 dark:text-zinc-400 group-hover:bg-zinc-500/15 dark:group-hover:bg-zinc-500/25'
+      return 'bg-zinc-500/10 text-zinc-600 dark:bg-zinc-500/20 dark:text-zinc-400 group-hover:bg-zinc-500/15 dark:group-hover:bg-zinc-500/25';
     default:
-      return 'bg-muted/50 text-muted-foreground group-hover:bg-muted'
+      return 'bg-muted/50 text-muted-foreground group-hover:bg-muted';
   }
-})
+});
 
 const handleSelect = () => {
   // Add to recent items
   addRecentItem({
     id: props.action.id,
     type: 'action',
-    title: props.action.label
-  } as Omit<RecentItem, 'timestamp'>)
+    title: props.action.label,
+  } as Omit<RecentItem, 'timestamp'>);
 
   // Execute action and close
-  close()
-  props.action.action()
-}
+  close();
+  props.action.action();
+};
 </script>

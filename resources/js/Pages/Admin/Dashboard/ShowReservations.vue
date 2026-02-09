@@ -28,10 +28,10 @@
         <CardFooter>
           <div class="flex items-center gap-2">
             <Link :href="route('reservations.create')">
-            <Button size="sm">
-              <IFluentBookmarkAdd24Filled />
-              Kurti naują
-            </Button>
+              <Button size="sm">
+                <IFluentBookmarkAdd24Filled />
+                Kurti naują
+              </Button>
             </Link>
 
             <Button size="sm" variant="secondary" @click="showReservationsModal = true">
@@ -69,10 +69,10 @@
         <CardFooter>
           <div class="flex items-center gap-2">
             <Link :href="route('resources.index')">
-            <Button size="sm" variant="secondary">
-              <IFluentCube24Filled />
-              Peržiūrėti visus
-            </Button>
+              <Button size="sm" variant="secondary">
+                <IFluentCube24Filled />
+                Peržiūrėti visus
+              </Button>
             </Link>
           </div>
         </CardFooter>
@@ -158,7 +158,7 @@
 <script setup lang="tsx">
 import { Link, router } from '@inertiajs/vue3';
 import { h, ref, computed } from 'vue';
-import { trans as $t } from "laravel-vue-i18n";
+import { trans as $t } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
 
 import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
@@ -169,7 +169,7 @@ import CardModal from '@/Components/Modals/CardModal.vue';
 import ReservationsWithUnitResources from '@/Components/Tables/ReservationsWithUnitResources.vue';
 import SimpleDataTable from '@/Components/Tables/SimpleDataTable.vue';
 import { Separator } from '@/Components/ui/separator';
-import Icons from "@/Types/Icons/filled";
+import Icons from '@/Types/Icons/filled';
 import { formatStaticTime } from '@/Utils/IntlTime';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import IFluentBookmarkAdd24Filled from '~icons/fluent/bookmark-add-24-filled';
@@ -194,7 +194,7 @@ const selectedTenantId = computed(() => providedTenant?.id ? String(providedTena
 
 const handleTenantUpdateValue = (value: string) => {
   router.reload({ data: { tenant_id: Number(value) } });
-}
+};
 
 const reservationColumns: ColumnDef<App.Entities.Reservation, any>[] = [
   {
@@ -225,6 +225,6 @@ const reservationColumns: ColumnDef<App.Entities.Reservation, any>[] = [
 
 // Setup breadcrumbs for the Reservations page
 usePageBreadcrumbs([
-  { label: $t('Rezervacijos'), icon: Icons.RESERVATION }
+  { label: $t('Rezervacijos'), icon: Icons.RESERVATION },
 ]);
 </script>

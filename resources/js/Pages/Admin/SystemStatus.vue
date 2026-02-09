@@ -5,9 +5,11 @@
       <Card class="h-fit hover:shadow-lg transition-shadow duration-300">
         <CardHeader size="compact">
           <div class="flex items-center justify-between">
-            <CardTitle class="text-sm font-medium">Redis</CardTitle>
-            <component 
-              :is="getStatusIcon(status.redis?.status)" 
+            <CardTitle class="text-sm font-medium">
+              Redis
+            </CardTitle>
+            <component
+              :is="getStatusIcon(status.redis?.status)"
               :class="getStatusColor(status.redis?.status)"
               class="h-4 w-4"
             />
@@ -26,9 +28,11 @@
       <Card class="h-fit hover:shadow-lg transition-shadow duration-300">
         <CardHeader size="compact">
           <div class="flex items-center justify-between">
-            <CardTitle class="text-sm font-medium">{{ $t('Duomenų bazė') }}</CardTitle>
-            <component 
-              :is="getStatusIcon(status.database?.status)" 
+            <CardTitle class="text-sm font-medium">
+              {{ $t('Duomenų bazė') }}
+            </CardTitle>
+            <component
+              :is="getStatusIcon(status.database?.status)"
               :class="getStatusColor(status.database?.status)"
               class="h-4 w-4"
             />
@@ -47,9 +51,11 @@
       <Card class="h-fit hover:shadow-lg transition-shadow duration-300">
         <CardHeader size="compact">
           <div class="flex items-center justify-between">
-            <CardTitle class="text-sm font-medium">{{ $t('Talpykla') }}</CardTitle>
-            <component 
-              :is="getStatusIcon(status.cache?.status)" 
+            <CardTitle class="text-sm font-medium">
+              {{ $t('Talpykla') }}
+            </CardTitle>
+            <component
+              :is="getStatusIcon(status.cache?.status)"
               :class="getStatusColor(status.cache?.status)"
               class="h-4 w-4"
             />
@@ -68,9 +74,11 @@
       <Card class="h-fit hover:shadow-lg transition-shadow duration-300">
         <CardHeader size="compact">
           <div class="flex items-center justify-between">
-            <CardTitle class="text-sm font-medium">Typesense</CardTitle>
-            <component 
-              :is="getStatusIcon(status.typesense?.status)" 
+            <CardTitle class="text-sm font-medium">
+              Typesense
+            </CardTitle>
+            <component
+              :is="getStatusIcon(status.typesense?.status)"
               :class="getStatusColor(status.typesense?.status)"
               class="h-4 w-4"
             />
@@ -92,12 +100,16 @@
       <Card class="h-fit hover:shadow-lg transition-shadow duration-300">
         <CardHeader size="compact">
           <div class="flex items-center justify-between">
-            <CardTitle class="text-sm font-medium">{{ $t('Sistema') }}</CardTitle>
+            <CardTitle class="text-sm font-medium">
+              {{ $t('Sistema') }}
+            </CardTitle>
             <CheckCircleIcon class="h-4 w-4 text-green-500" />
           </div>
         </CardHeader>
         <CardContent size="compact">
-          <div class="text-2xl font-bold">{{ status.system?.environment || 'N/A' }}</div>
+          <div class="text-2xl font-bold">
+            {{ status.system?.environment || 'N/A' }}
+          </div>
           <p class="text-xs text-muted-foreground">
             PHP {{ status.system?.php_version || 'N/A' }}
           </p>
@@ -108,16 +120,16 @@
     <!-- Auto-refresh status -->
     <div class="mb-6 flex items-center gap-2">
       <Badge variant="outline" class="text-xs flex items-center gap-2">
-        <div class="h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
-        {{ $t('Atnaujinimas po') }} 
+        <div class="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+        {{ $t('Atnaujinimas po') }}
         <span class="font-mono font-bold tabular-nums transition-all duration-300">{{ countdown }}s</span>
       </Badge>
-      <Badge 
-        v-if="isPolling" 
-        variant="outline" 
+      <Badge
+        v-if="isPolling"
+        variant="outline"
         class="text-xs flex items-center gap-2 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800"
       >
-        <div class="h-2 w-2 rounded-full bg-blue-500 animate-spin"></div>
+        <div class="h-2 w-2 rounded-full bg-blue-500 animate-spin" />
         {{ $t('Atnaujinama...') }}
       </Badge>
       <Badge variant="outline" class="text-xs">
@@ -251,7 +263,7 @@
                 <span class="ml-2">{{ status.typesense.connection_time || 'N/A' }}</span>
               </div>
             </div>
-            
+
             <!-- Configuration badges with better spacing -->
             <div class="grid grid-cols-1 gap-3 text-sm">
               <div class="flex items-center justify-between">
@@ -276,11 +288,15 @@
 
             <!-- Collections Statistics -->
             <div v-if="status.typesense.collections" class="mt-6">
-              <h4 class="font-semibold text-sm mb-3">{{ $t('Kolekcijos') }}</h4>
-              
+              <h4 class="font-semibold text-sm mb-3">
+                {{ $t('Kolekcijos') }}
+              </h4>
+
               <!-- Memory Usage Summary -->
               <div v-if="status.typesense.collections.memory" class="mb-4 p-3 rounded-md bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
-                <h5 class="font-medium text-sm mb-2">{{ $t('Atminties naudojimas') }}</h5>
+                <h5 class="font-medium text-sm mb-2">
+                  {{ $t('Atminties naudojimas') }}
+                </h5>
                 <div class="grid grid-cols-2 gap-3 text-sm">
                   <div v-if="status.typesense.collections.memory.active_memory_mb && status.typesense.collections.memory.active_memory_mb > 0" class="flex justify-between">
                     <span>{{ $t('Aktyviai naudojama') }}:</span>
@@ -317,30 +333,38 @@
               </div>
 
               <div class="grid grid-cols-1 gap-3">
-                <div v-for="collection in status.typesense.collections.details" :key="collection.name" 
-                     class="flex items-center justify-between p-3 rounded-md border bg-muted/10">
+                <div v-for="collection in status.typesense.collections.details" :key="collection.name"
+                  class="flex items-center justify-between p-3 rounded-md border bg-muted/10">
                   <div class="flex items-center gap-3">
-                    <div class="w-3 h-3 rounded-full bg-primary"></div>
+                    <div class="w-3 h-3 rounded-full bg-primary" />
                     <div>
-                      <div class="font-medium text-sm">{{ collection.name }}</div>
+                      <div class="font-medium text-sm">
+                        {{ collection.name }}
+                      </div>
                       <div class="text-xs text-muted-foreground">
                         {{ collection.fields }} {{ $t('laukai') }} • {{ $t('rikiuoti pagal') }} {{ collection.default_sorting_field }}
                       </div>
                     </div>
                   </div>
                   <div class="text-right">
-                    <div class="font-bold text-sm">{{ collection.documents }}</div>
-                    <div class="text-xs text-muted-foreground">{{ $t('dokumentų') }}</div>
+                    <div class="font-bold text-sm">
+                      {{ collection.documents }}
+                    </div>
+                    <div class="text-xs text-muted-foreground">
+                      {{ $t('dokumentų') }}
+                    </div>
                   </div>
                 </div>
               </div>
-              
+
               <!-- Total Summary -->
               <div class="mt-4 p-3 rounded-md bg-primary/5 border border-primary/20">
                 <div class="flex justify-between items-center">
                   <span class="font-medium">{{ $t('Iš viso') }}:</span>
                   <div class="text-right">
-                    <div class="font-bold">{{ status.typesense.collections.total_documents }}</div>
+                    <div class="font-bold">
+                      {{ status.typesense.collections.total_documents }}
+                    </div>
                     <div class="text-xs text-muted-foreground">
                       {{ status.typesense.collections.count }} {{ $t('kolekcijose') }}
                       <span v-if="status.typesense.collections.memory?.active_memory_mb || status.typesense.collections.memory?.resident_memory_mb || status.typesense.collections.memory?.estimated_collections_mb">
@@ -362,8 +386,8 @@
                       {{ $t('Schemos neatitikimai rasti') }}
                     </h5>
                     <div class="space-y-3">
-                      <div v-for="mismatch in status.typesense.schema_validation.mismatches" :key="mismatch.model" 
-                           class="text-sm">
+                      <div v-for="mismatch in status.typesense.schema_validation.mismatches" :key="mismatch.model"
+                        class="text-sm">
                         <div class="font-medium text-yellow-800 dark:text-yellow-200">
                           {{ mismatch.model }}: {{ mismatch.message }}
                         </div>
@@ -401,8 +425,8 @@
           <div class="rounded-md border p-3">
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-2">
-                <component 
-                  :is="getStatusIcon(status.integrations.microsoft?.status === 'configured' ? 'healthy' : 'error')" 
+                <component
+                  :is="getStatusIcon(status.integrations.microsoft?.status === 'configured' ? 'healthy' : 'error')"
                   :class="getStatusColor(status.integrations.microsoft?.status === 'configured' ? 'healthy' : 'error')"
                   class="h-4 w-4"
                 />
@@ -418,8 +442,8 @@
           <div class="rounded-md border p-3">
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-2">
-                <component 
-                  :is="getStatusIcon(status.integrations.sharepoint?.status === 'configured' ? 'healthy' : 'error')" 
+                <component
+                  :is="getStatusIcon(status.integrations.sharepoint?.status === 'configured' ? 'healthy' : 'error')"
                   :class="getStatusColor(status.integrations.sharepoint?.status === 'configured' ? 'healthy' : 'error')"
                   class="h-4 w-4"
                 />
@@ -438,8 +462,8 @@
           <div class="rounded-md border p-3">
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-2">
-                <component 
-                  :is="getStatusIcon(status.integrations.mail?.status === 'configured' ? 'healthy' : 'error')" 
+                <component
+                  :is="getStatusIcon(status.integrations.mail?.status === 'configured' ? 'healthy' : 'error')"
                   :class="getStatusColor(status.integrations.mail?.status === 'configured' ? 'healthy' : 'error')"
                   class="h-4 w-4"
                 />
@@ -458,8 +482,8 @@
           <div class="rounded-md border p-3">
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-2">
-                <component 
-                  :is="getStatusIcon(status.integrations.scout?.status === 'configured' ? 'healthy' : 'warning')" 
+                <component
+                  :is="getStatusIcon(status.integrations.scout?.status === 'configured' ? 'healthy' : 'warning')"
                   :class="getStatusColor(status.integrations.scout?.status === 'configured' ? 'healthy' : 'warning')"
                   class="h-4 w-4"
                 />
@@ -476,7 +500,7 @@
                 • {{ $t('Gabalo dydis') }}: {{ status.integrations.scout.chunk_size }}
               </div>
               <div v-if="status.integrations.scout.driver === 'typesense'">
-                Typesense: 
+                Typesense:
                 <Badge :variant="status.integrations.scout.typesense_configured ? 'default' : 'destructive'" size="sm">
                   {{ status.integrations.scout.typesense_configured ? $t('Sukonfigūruotas') : $t('Nesukonfigūruotas') }}
                 </Badge>
@@ -520,7 +544,7 @@
               <span class="font-medium">{{ $t('Atmintis') }}:</span>
               <span>{{ status.system.memory_limit }}</span>
             </div>
-            
+
             <!-- Disk Space -->
             <div v-if="status.system.disk_space && !status.system.disk_space.error">
               <div class="flex justify-between">
@@ -529,10 +553,10 @@
               </div>
               <div class="mt-1">
                 <div class="h-2 w-full rounded-full bg-muted">
-                  <div 
-                    class="h-2 rounded-full bg-primary" 
+                  <div
+                    class="h-2 rounded-full bg-primary"
                     :style="{ width: status.system.disk_space.percentage }"
-                  ></div>
+                  />
                 </div>
                 <p class="mt-1 text-xs text-muted-foreground">
                   {{ $t('Naudojama') }} {{ status.system.disk_space.percentage }}
@@ -555,16 +579,28 @@
       <CardContent size="compact" class="pb-5">
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div class="text-center">
-            <div class="text-2xl font-bold text-green-600 font-mono tabular-nums">{{ displayRedisHits }}</div>
-            <p class="text-sm text-muted-foreground">{{ $t('Pataikymai') }}</p>
+            <div class="text-2xl font-bold text-green-600 font-mono tabular-nums">
+              {{ displayRedisHits }}
+            </div>
+            <p class="text-sm text-muted-foreground">
+              {{ $t('Pataikymai') }}
+            </p>
           </div>
           <div class="text-center">
-            <div class="text-2xl font-bold text-red-600 font-mono tabular-nums">{{ displayRedisMisses }}</div>
-            <p class="text-sm text-muted-foreground">{{ $t('Nepataikimai') }}</p>
+            <div class="text-2xl font-bold text-red-600 font-mono tabular-nums">
+              {{ displayRedisMisses }}
+            </div>
+            <p class="text-sm text-muted-foreground">
+              {{ $t('Nepataikimai') }}
+            </p>
           </div>
           <div class="text-center">
-            <div class="text-2xl font-bold text-blue-600">{{ status.redis.hit_ratio }}</div>
-            <p class="text-sm text-muted-foreground">{{ $t('Pataikymo koeficientas') }}</p>
+            <div class="text-2xl font-bold text-blue-600">
+              {{ status.redis.hit_ratio }}
+            </div>
+            <p class="text-sm text-muted-foreground">
+              {{ $t('Pataikymo koeficientas') }}
+            </p>
           </div>
         </div>
       </CardContent>
@@ -573,17 +609,12 @@
 </template>
 
 <script setup lang="ts">
-import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed, ref, onMounted, onUnmounted, nextTick, watch } from 'vue';
 import { router, usePoll } from '@inertiajs/vue3';
 import { useTransition, TransitionPresets } from '@vueuse/core';
 
 // UI components
-import { Card, CardHeader, CardTitle, CardContent } from '@/Components/ui/card';
-import { Badge } from '@/Components/ui/badge';
-
-// Icons
 import {
   CheckCircleIcon,
   XCircleIcon,
@@ -596,7 +627,12 @@ import {
   SearchIcon,
 } from 'lucide-vue-next';
 
-import { BreadcrumbHelpers, usePageBreadcrumbs } from "@/Composables/useBreadcrumbsUnified";
+import { Card, CardHeader, CardTitle, CardContent } from '@/Components/ui/card';
+import { Badge } from '@/Components/ui/badge';
+
+// Icons
+import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
+import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 
 // Props
 const props = defineProps<{
@@ -748,7 +784,7 @@ const isPolling = ref(false);
 const previousData = ref<Record<string, any>>({});
 
 // Auto-polling setup - refresh status every 30 seconds
-const { start, stop } = usePoll(30000, { 
+const { start, stop } = usePoll(30000, {
   only: ['status', 'lastUpdated'],
   onStart: () => {
     isPolling.value = true;
@@ -758,7 +794,7 @@ const { start, stop } = usePoll(30000, {
     isPolling.value = false;
     animateDataUpdate();
     countdown.value = 30;
-  }
+  },
 });
 
 // Countdown timer
@@ -767,10 +803,10 @@ const countdownInterval = ref<NodeJS.Timeout>();
 onMounted(() => {
   // Store initial data for comparison
   previousData.value = JSON.parse(JSON.stringify(props.status));
-  
+
   // Start countdown
   startCountdown();
-  
+
   // Initial animations
   nextTick(() => {
     animateInitialLoad();
@@ -788,7 +824,8 @@ const startCountdown = () => {
   countdownInterval.value = setInterval(() => {
     if (countdown.value > 0) {
       countdown.value--;
-    } else {
+    }
+    else {
       countdown.value = 30;
     }
   }, 1000);
@@ -822,7 +859,7 @@ const getStatusColor = (status?: string) => {
 // Format last updated time
 const formatLastUpdated = computed(() => {
   if (!props.lastUpdated) return $t('Niekada');
-  
+
   const date = new Date(props.lastUpdated);
   return date.toLocaleString('lt-LT', {
     year: 'numeric',
@@ -833,7 +870,6 @@ const formatLastUpdated = computed(() => {
     second: '2-digit',
   });
 });
-
 
 // Animation functions
 const animateInitialLoad = () => {
@@ -895,8 +931,6 @@ watch(() => props.status, () => {
 
 // Generate breadcrumbs automatically with new simplified API
 usePageBreadcrumbs([
-  { label: $t('Sistemos būsena') }
+  { label: $t('Sistemos būsena') },
 ]);
 </script>
-
-

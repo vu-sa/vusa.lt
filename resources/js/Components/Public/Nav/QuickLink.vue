@@ -10,8 +10,9 @@
 </template>
 
 <script setup lang="ts">
-import { Icon } from "@iconify/vue";
-import SmartLink from "../SmartLink.vue";
+import { Icon } from '@iconify/vue';
+
+import SmartLink from '../SmartLink.vue';
 
 defineProps<{
   quickLink: App.Entities.QuickLink | null;

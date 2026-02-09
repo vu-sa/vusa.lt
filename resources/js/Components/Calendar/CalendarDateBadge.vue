@@ -47,55 +47,55 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { usePage } from '@inertiajs/vue3'
+import { computed } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 
-import { formatEventDate, formatEventTime, formatEventYear, isSameDay } from '@/Utils/IntlTime'
+import { formatEventDate, formatEventTime, formatEventYear, isSameDay } from '@/Utils/IntlTime';
 
 interface Props {
-  date: Date | string
-  endDate?: Date | string | null
-  variant?: 'upcoming' | 'past'
-  size?: 'sm' | 'md'
-  showYear?: boolean
+  date: Date | string;
+  endDate?: Date | string | null;
+  variant?: 'upcoming' | 'past';
+  size?: 'sm' | 'md';
+  showYear?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   variant: 'upcoming',
   size: 'md',
-  showYear: false
-})
+  showYear: false,
+});
 
-const page = usePage()
-const locale = computed(() => page.props.app.locale)
+const page = usePage();
+const locale = computed(() => page.props.app.locale);
 
 // Convert to Date objects for consistent handling
-const date = computed(() => new Date(props.date))
-const endDate = computed(() => props.endDate ? new Date(props.endDate) : null)
+const date = computed(() => new Date(props.date));
+const endDate = computed(() => props.endDate ? new Date(props.endDate) : null);
 
 // Size classes
 const sizeClasses = computed(() => {
-  return props.size === 'sm' ? 'w-16 px-2 py-1' : 'w-18 px-3 py-2'
-})
+  return props.size === 'sm' ? 'w-16 px-2 py-1' : 'w-18 px-3 py-2';
+});
 
 // Formatted text values
 const monthText = computed(() => {
-  return formatEventDate(date.value, locale.value).split(' ')[0]
-})
+  return formatEventDate(date.value, locale.value).split(' ')[0];
+});
 
 const dayText = computed(() => {
-  return formatEventDate(date.value, locale.value).split(' ')[1]
-})
+  return formatEventDate(date.value, locale.value).split(' ')[1];
+});
 
 const yearText = computed(() => {
-  return formatEventYear(date.value, locale.value)
-})
+  return formatEventYear(date.value, locale.value);
+});
 
 const startTimeText = computed(() => {
-  return formatEventTime(date.value, locale.value)
-})
+  return formatEventTime(date.value, locale.value);
+});
 
 const endTimeText = computed(() => {
-  return endDate.value ? formatEventTime(endDate.value, locale.value) : ''
-})
+  return endDate.value ? formatEventTime(endDate.value, locale.value) : '';
+});
 </script>

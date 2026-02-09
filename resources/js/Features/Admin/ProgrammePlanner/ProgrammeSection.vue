@@ -9,9 +9,9 @@
       <span v-if="showTimes" class="text-zinc-500">
         {{ formatStaticTime(new Date(sectionStartTime), { hour: 'numeric', minute: '2-digit' }) }}-{{
           formatStaticTime(new Date(sectionEndTime),
-            {
-              hour: 'numeric', minute: '2-digit'
-            }) }}
+                           {
+                             hour: 'numeric', minute: '2-digit'
+                           }) }}
       </span>
       <span v-else class="text-zinc-500">
         <template v-if="section?.duration > 60">
@@ -61,17 +61,18 @@
 
 <script setup lang="ts">
 import { computed, inject, ref, type Ref } from 'vue';
-import { router } from "@inertiajs/vue3";
+import { router } from '@inertiajs/vue3';
+
+import ProgrammeBlock from './ProgrammeBlock.vue';
 
 import { formatStaticTime } from '@/Utils/IntlTime';
-import ProgrammeBlock from './ProgrammeBlock.vue';
 import CardModal from '@/Components/Modals/CardModal.vue';
 import { Button } from '@/Components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import MultiLocaleInput from '@/Components/FormItems/MultiLocaleInput.vue';
 
-const section = defineModel<App.Entities.ProgrammeSection | App.Entities.ProgrammePart>('element')
+const section = defineModel<App.Entities.ProgrammeSection | App.Entities.ProgrammePart>('element');
 
 const { parent } = defineProps<{
   parent: App.Entities.ProgrammeDay;
@@ -86,13 +87,13 @@ const selectedBlock = ref<App.Entities.ProgrammeBlock | null>(null);
 
 function createProgrammeBlock() {
   section.value?.blocks?.push({
-    id: 'programme-block-' + section.value.blocks.length,
+    id: `programme-block-${section.value.blocks.length}`,
     title: {
-      lt: 'Programos blokas ' + (section.value.blocks.length + 1),
-      en: 'Programme Block ' + (section.value.blocks.length + 1),
+      lt: `Programos blokas ${section.value.blocks.length + 1}`,
+      en: `Programme Block ${section.value.blocks.length + 1}`,
     },
     type: 'block',
-    parts: []
+    parts: [],
   });
 }
 
@@ -110,9 +111,7 @@ const sectionEndTime = computed(() => {
 });
 
 function deleteProgrammeBlock(index: number) {
-
   if (typeof section.value?.blocks[index].id !== 'string') {
-
     router.delete(route('programmeBlocks.destroy', { programmeBlock: section.value?.blocks[index].id }), {
       preserveScroll: true,
     });

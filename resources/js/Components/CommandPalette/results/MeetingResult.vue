@@ -53,33 +53,34 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { router } from '@inertiajs/vue3'
-import { trans as $t } from 'laravel-vue-i18n'
-import { ChevronRight, Link as LinkIcon } from 'lucide-vue-next'
-import { CommandItem } from '@/Components/ui/command'
-import { MeetingIcon } from '@/Components/icons'
-import { useCommandPalette, type RecentItem } from '@/Composables/useCommandPalette'
-import type { MeetingSearchResult } from '@/Composables/useAdminSearch'
+import { computed } from 'vue';
+import { router } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
+import { ChevronRight, Link as LinkIcon } from 'lucide-vue-next';
+
+import { CommandItem } from '@/Components/ui/command';
+import { MeetingIcon } from '@/Components/icons';
+import { useCommandPalette, type RecentItem } from '@/Composables/useCommandPalette';
+import type { MeetingSearchResult } from '@/Composables/useAdminSearch';
 
 const props = defineProps<{
-  meeting: MeetingSearchResult
-  isRelated?: boolean
-}>()
+  meeting: MeetingSearchResult;
+  isRelated?: boolean;
+}>();
 
-const { close, addRecentItem } = useCommandPalette()
+const { close, addRecentItem } = useCommandPalette();
 
-const itemValue = computed(() => `meeting-${props.meeting.id}`)
+const itemValue = computed(() => `meeting-${props.meeting.id}`);
 
 const formattedDate = computed(() => {
-  if (!props.meeting.start_time) return null
-  const date = new Date(props.meeting.start_time * 1000)
+  if (!props.meeting.start_time) return null;
+  const date = new Date(props.meeting.start_time * 1000);
   return date.toLocaleDateString('lt-LT', {
     year: 'numeric',
     month: 'short',
-    day: 'numeric'
-  })
-})
+    day: 'numeric',
+  });
+});
 
 const handleSelect = () => {
   // Add to recent items
@@ -87,11 +88,11 @@ const handleSelect = () => {
     id: props.meeting.id,
     type: 'meeting',
     title: props.meeting.title || $t('Be pavadinimo'),
-    href: route('meetings.show', props.meeting.id)
-  } as Omit<RecentItem, 'timestamp'>)
+    href: route('meetings.show', props.meeting.id),
+  } as Omit<RecentItem, 'timestamp'>);
 
   // Navigate and close
-  close()
-  router.visit(route('meetings.show', props.meeting.id))
-}
+  close();
+  router.visit(route('meetings.show', props.meeting.id));
+};
 </script>

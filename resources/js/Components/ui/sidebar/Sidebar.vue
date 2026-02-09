@@ -1,22 +1,3 @@
-<script setup lang="ts">
-import type { SidebarProps } from "."
-import { cn } from '@/Utils/Shadcn/utils'
-import { Sheet, SheetContent } from '@/Components/ui/sheet'
-import { SIDEBAR_WIDTH_MOBILE, useSidebar } from "./utils"
-
-defineOptions({
-  inheritAttrs: false,
-})
-
-const props = withDefaults(defineProps<SidebarProps>(), {
-  side: "left",
-  variant: "sidebar",
-  collapsible: "offcanvas",
-})
-
-const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
-</script>
-
 <template>
   <div
     v-if="collapsible === 'none'"
@@ -30,7 +11,7 @@ const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
     <SheetContent
       data-sidebar="sidebar"
       data-mobile="true"
-      :side="side"
+      :side
       class="w-(--sidebar-width) bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
       :style="{
         '--sidebar-width': SIDEBAR_WIDTH_MOBILE,
@@ -84,3 +65,24 @@ const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
     </div>
   </div>
 </template>
+
+<script setup lang="ts">
+import { SIDEBAR_WIDTH_MOBILE, useSidebar } from './utils';
+
+import type { SidebarProps } from '.';
+
+import { cn } from '@/Utils/Shadcn/utils';
+import { Sheet, SheetContent } from '@/Components/ui/sheet';
+
+defineOptions({
+  inheritAttrs: false,
+});
+
+const props = withDefaults(defineProps<SidebarProps>(), {
+  side: 'left',
+  variant: 'sidebar',
+  collapsible: 'offcanvas',
+});
+
+const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
+</script>

@@ -22,10 +22,10 @@
 </template>
 
 <script setup lang="ts">
-import SmartLink from '@/Components/Public/SmartLink.vue';
 import PageCard from '../../Components/Cards/PageCard.vue';
-import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 
+import SmartLink from '@/Components/Public/SmartLink.vue';
+import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import IFluentFolder16Regular from '~icons/fluent/folder-16-regular';
 
 const props = defineProps<{
@@ -38,8 +38,8 @@ usePageBreadcrumbs(() => {
     BreadcrumbHelpers.createBreadcrumbItem(
       props.category.name || 'Kategorija',
       undefined,
-      IFluentFolder16Regular
-    )
+      IFluentFolder16Regular,
+    ),
   ]);
 });
 </script>

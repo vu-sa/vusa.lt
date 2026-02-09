@@ -1,90 +1,3 @@
-<script setup lang="ts">
-import { computed, ref, type HTMLAttributes } from 'vue'
-import { X } from 'lucide-vue-next'
-import { Input } from '@/Components/ui/input'
-import { Checkbox } from '@/Components/ui/checkbox'
-import { ScrollArea } from '@/Components/ui/scroll-area'
-import { cn } from '@/Utils/Shadcn/utils'
-
-export interface TransferListOption {
-  value: string | number
-  label: string
-  [key: string]: any
-}
-
-const props = withDefaults(defineProps<{
-  /** Selected values (v-model) */
-  modelValue: (string | number)[]
-  /** Flat option list — used for default source rendering and target panel */
-  options: TransferListOption[]
-  /** Show search input in source panel */
-  sourceFilterable?: boolean
-  /** Show search input in target panel */
-  targetFilterable?: boolean
-  class?: HTMLAttributes['class']
-}>(), {
-  sourceFilterable: true,
-  targetFilterable: false,
-})
-
-const emit = defineEmits<{
-  'update:modelValue': [(string | number)[]]
-}>()
-
-defineSlots<{
-  /** Override the entire source panel content. Receives filter string, selected values, and toggle function. */
-  source?: (props: {
-    options: TransferListOption[]
-    selectedValues: (string | number)[]
-    toggle: (value: string | number) => void
-    filter: string
-  }) => any
-  /** Customize individual source item label */
-  'source-label'?: (props: { option: TransferListOption }) => any
-  /** Customize individual target item label */
-  'target-label'?: (props: { option: TransferListOption }) => any
-}>()
-
-const sourceFilter = ref('')
-const targetFilter = ref('')
-
-const selectedSet = computed(() => new Set((props.modelValue ?? []).map(String)))
-
-const filteredSourceOptions = computed(() => {
-  if (!sourceFilter.value) {
-    return props.options
-  }
-  const f = sourceFilter.value.toLowerCase()
-  return props.options.filter(o => o.label.toLowerCase().includes(f))
-})
-
-const selectedOptions = computed(() => {
-  const selected = props.options.filter(o => selectedSet.value.has(String(o.value)))
-  if (!targetFilter.value) {
-    return selected
-  }
-  const f = targetFilter.value.toLowerCase()
-  return selected.filter(o => o.label.toLowerCase().includes(f))
-})
-
-function isSelected(value: string | number): boolean {
-  return selectedSet.value.has(String(value))
-}
-
-function toggle(value: string | number) {
-  const strValue = String(value)
-  if (selectedSet.value.has(strValue)) {
-    emit('update:modelValue', props.modelValue.filter(v => String(v) !== strValue))
-  } else {
-    emit('update:modelValue', [...props.modelValue, value])
-  }
-}
-
-function remove(value: string | number) {
-  emit('update:modelValue', props.modelValue.filter(v => String(v) !== String(value)))
-}
-</script>
-
 <template>
   <div :class="cn('flex gap-2', props.class)">
     <!-- Source Panel -->
@@ -97,7 +10,7 @@ function remove(value: string | number) {
           name="source"
           :options="filteredSourceOptions"
           :selected-values="modelValue"
-          :toggle="toggle"
+          :toggle
           :filter="sourceFilter"
         >
           <div class="p-1">
@@ -114,7 +27,7 @@ function remove(value: string | number) {
                 @update:model-value="toggle(option.value)"
               />
               <div class="min-w-0 flex-1 text-sm">
-                <slot name="source-label" :option="option">
+                <slot name="source-label" :option>
                   {{ option.label }}
                 </slot>
               </div>
@@ -143,7 +56,7 @@ function remove(value: string | number) {
             class="flex items-center gap-2 rounded-sm px-2 py-1.5 hover:bg-accent/50"
           >
             <div class="min-w-0 flex-1 text-sm">
-              <slot name="target-label" :option="option">
+              <slot name="target-label" :option>
                 {{ option.label }}
               </slot>
             </div>
@@ -163,3 +76,92 @@ function remove(value: string | number) {
     </div>
   </div>
 </template>
+
+<script setup lang="ts">
+import { computed, ref, type HTMLAttributes } from 'vue';
+import { X } from 'lucide-vue-next';
+
+import { Input } from '@/Components/ui/input';
+import { Checkbox } from '@/Components/ui/checkbox';
+import { ScrollArea } from '@/Components/ui/scroll-area';
+import { cn } from '@/Utils/Shadcn/utils';
+
+export interface TransferListOption {
+  value: string | number;
+  label: string;
+  [key: string]: any;
+}
+
+const props = withDefaults(defineProps<{
+  /** Selected values (v-model) */
+  modelValue: (string | number)[];
+  /** Flat option list — used for default source rendering and target panel */
+  options: TransferListOption[];
+  /** Show search input in source panel */
+  sourceFilterable?: boolean;
+  /** Show search input in target panel */
+  targetFilterable?: boolean;
+  class?: HTMLAttributes['class'];
+}>(), {
+  sourceFilterable: true,
+  targetFilterable: false,
+});
+
+const emit = defineEmits<{
+  'update:modelValue': [(string | number)[]];
+}>();
+
+defineSlots<{
+  /** Override the entire source panel content. Receives filter string, selected values, and toggle function. */
+  'source'?: (props: {
+    options: TransferListOption[];
+    selectedValues: (string | number)[];
+    toggle: (value: string | number) => void;
+    filter: string;
+  }) => any;
+  /** Customize individual source item label */
+  'source-label'?: (props: { option: TransferListOption }) => any;
+  /** Customize individual target item label */
+  'target-label'?: (props: { option: TransferListOption }) => any;
+}>();
+
+const sourceFilter = ref('');
+const targetFilter = ref('');
+
+const selectedSet = computed(() => new Set((props.modelValue ?? []).map(String)));
+
+const filteredSourceOptions = computed(() => {
+  if (!sourceFilter.value) {
+    return props.options;
+  }
+  const f = sourceFilter.value.toLowerCase();
+  return props.options.filter(o => o.label.toLowerCase().includes(f));
+});
+
+const selectedOptions = computed(() => {
+  const selected = props.options.filter(o => selectedSet.value.has(String(o.value)));
+  if (!targetFilter.value) {
+    return selected;
+  }
+  const f = targetFilter.value.toLowerCase();
+  return selected.filter(o => o.label.toLowerCase().includes(f));
+});
+
+function isSelected(value: string | number): boolean {
+  return selectedSet.value.has(String(value));
+}
+
+function toggle(value: string | number) {
+  const strValue = String(value);
+  if (selectedSet.value.has(strValue)) {
+    emit('update:modelValue', props.modelValue.filter(v => String(v) !== strValue));
+  }
+  else {
+    emit('update:modelValue', [...props.modelValue, value]);
+  }
+}
+
+function remove(value: string | number) {
+  emit('update:modelValue', props.modelValue.filter(v => String(v) !== String(value)));
+}
+</script>

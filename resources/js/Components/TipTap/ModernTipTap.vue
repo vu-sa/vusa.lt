@@ -195,7 +195,7 @@
             <!-- Image Size Controls -->
             <DropdownMenu v-model:open="imageResizeMenuOpen">
               <DropdownMenuTrigger as-child>
-                <Button variant="ghost" size="sm" class="h-8 w-8 p-0" @click="openImageResizeMenu" :disabled="!editor?.isActive('image')">
+                <Button variant="ghost" size="sm" class="h-8 w-8 p-0" :disabled="!editor?.isActive('image')" @click="openImageResizeMenu">
                   <IFluentResize20Regular class="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
@@ -327,95 +327,97 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, ref } from "vue";
+import { computed, nextTick, onBeforeUnmount, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { EditorContent, useEditor } from "@tiptap/vue-3";
-import { BubbleMenu } from "@tiptap/vue-3/menus";
-import { CharacterCount, Placeholder } from "@tiptap/extensions";
-import { FileHandler } from "@tiptap/extension-file-handler";
-import { StarterKit } from "@tiptap/starter-kit";
+import { EditorContent, useEditor } from '@tiptap/vue-3';
+import { BubbleMenu } from '@tiptap/vue-3/menus';
+import { CharacterCount, Placeholder } from '@tiptap/extensions';
+import { FileHandler } from '@tiptap/extension-file-handler';
+import { StarterKit } from '@tiptap/starter-kit';
 import { TableKit } from '@tiptap/extension-table';
-import { Youtube } from "@tiptap/extension-youtube";
+import { Youtube } from '@tiptap/extension-youtube';
 import { Subscript } from '@tiptap/extension-subscript';
 import { Superscript } from '@tiptap/extension-superscript';
-import { latinizeId } from "@/Utils/String";
-import { trans as $t } from "laravel-vue-i18n";
 
-import { AccessibleImage } from "./AccessibleImage";
+import { latinizeId } from '@/Utils/String';
+
+import { trans as $t } from 'laravel-vue-i18n';
+
+import { AccessibleImage } from './AccessibleImage';
 import './accessible-image-commands.d.ts'; // Import command type definitions
-import { CustomHeading } from "./CustomHeading";
+import { CustomHeading } from './CustomHeading';
 import { Video } from './Video';
 // UI Components
-import TiptapImageButton from "./TiptapImageButton.vue";
-import TiptapLinkButton from "./TiptapLinkButton.vue";
-import TiptapVideoButton from "./TiptapVideoButton.vue";
-import ImageAccessibilityDialog from "./ImageAccessibilityDialog.vue";
+import TiptapImageButton from './TiptapImageButton.vue';
+import TiptapLinkButton from './TiptapLinkButton.vue';
+import TiptapVideoButton from './TiptapVideoButton.vue';
+import ImageAccessibilityDialog from './ImageAccessibilityDialog.vue';
 
-import { Button } from "@/Components/ui/button";
-import { Separator } from "@/Components/ui/separator";
+import { Button } from '@/Components/ui/button';
+import { Separator } from '@/Components/ui/separator';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
-  DropdownMenuTrigger
-} from "@/Components/ui/dropdown-menu";
+  DropdownMenuTrigger,
+} from '@/Components/ui/dropdown-menu';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
-  TooltipTrigger
-} from "@/Components/ui/tooltip";
-import { Input } from "@/Components/ui/input";
-import { Label } from "@/Components/ui/label";
+  TooltipTrigger,
+} from '@/Components/ui/tooltip';
+import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogTitle
-} from "@/Components/ui/dialog";
+  DialogTitle,
+} from '@/Components/ui/dialog';
 import { useToasts } from '@/Composables/useToasts';
 // Icons
-import IFluentTextBold20Regular from "~icons/fluent/text-bold20-regular";
-import IFluentTextItalic20Regular from "~icons/fluent/text-italic20-regular";
-import IFluentTextUnderline20Regular from "~icons/fluent/text-underline20-regular";
-import IFluentTextSubscript20Regular from "~icons/fluent/text-subscript20-regular";
-import IFluentTextSuperscript20Regular from "~icons/fluent/text-superscript20-regular";
-import TextHeader220Filled from "~icons/fluent/text-header-2-20-filled";
-import TextHeader320Filled from "~icons/fluent/text-header-3-20-filled";
-import IFluentTextT24Regular from "~icons/fluent/text-t24-regular";
-import IFluentTextBulletListLtr24Filled from "~icons/fluent/text-bullet-list-ltr24-filled";
-import IFluentTextNumberListLtr24Filled from "~icons/fluent/text-number-list-ltr24-filled";
-import IFluentTextQuote24Filled from "~icons/fluent/text-quote24-filled";
-import IFluentImage24Regular from "~icons/fluent/image24-regular";
-import IFluentLink24Regular from "~icons/fluent/link24-regular";
-import IFluentLinkDismiss20Filled from "~icons/fluent/link-dismiss20-filled";
-import IFluentArrowUndo20Regular from "~icons/fluent/arrow-undo20-regular";
-import IFluentArrowRedo20Regular from "~icons/fluent/arrow-redo20-regular";
-import IFluentChevronDown16Regular from "~icons/fluent/chevron-down16-regular";
-import IFluentClearFormatting20Filled from "~icons/fluent/clear-formatting20-filled";
-import LineHorizontal120Regular from "~icons/fluent/line-horizontal-1-20-regular";
-import IFluentVideoClip24Regular from "~icons/fluent/video-clip24-regular";
+import IFluentTextBold20Regular from '~icons/fluent/text-bold20-regular';
+import IFluentTextItalic20Regular from '~icons/fluent/text-italic20-regular';
+import IFluentTextUnderline20Regular from '~icons/fluent/text-underline20-regular';
+import IFluentTextSubscript20Regular from '~icons/fluent/text-subscript20-regular';
+import IFluentTextSuperscript20Regular from '~icons/fluent/text-superscript20-regular';
+import TextHeader220Filled from '~icons/fluent/text-header-2-20-filled';
+import TextHeader320Filled from '~icons/fluent/text-header-3-20-filled';
+import IFluentTextT24Regular from '~icons/fluent/text-t24-regular';
+import IFluentTextBulletListLtr24Filled from '~icons/fluent/text-bullet-list-ltr24-filled';
+import IFluentTextNumberListLtr24Filled from '~icons/fluent/text-number-list-ltr24-filled';
+import IFluentTextQuote24Filled from '~icons/fluent/text-quote24-filled';
+import IFluentImage24Regular from '~icons/fluent/image24-regular';
+import IFluentLink24Regular from '~icons/fluent/link24-regular';
+import IFluentLinkDismiss20Filled from '~icons/fluent/link-dismiss20-filled';
+import IFluentArrowUndo20Regular from '~icons/fluent/arrow-undo20-regular';
+import IFluentArrowRedo20Regular from '~icons/fluent/arrow-redo20-regular';
+import IFluentChevronDown16Regular from '~icons/fluent/chevron-down16-regular';
+import IFluentClearFormatting20Filled from '~icons/fluent/clear-formatting20-filled';
+import LineHorizontal120Regular from '~icons/fluent/line-horizontal-1-20-regular';
+import IFluentVideoClip24Regular from '~icons/fluent/video-clip24-regular';
 // Table Icons
-import IFluentTableAdd24Regular from "~icons/fluent/table-add24-regular";
-import IFluentTableFreezeRow24Regular from "~icons/fluent/table-freeze-row24-regular";
-import IFluentTableInsertColumn24Regular from "~icons/fluent/table-insert-column24-regular";
-import IFluentTableInsertRow24Regular from "~icons/fluent/table-insert-row24-regular";
-import IFluentTableDeleteColumn24Regular from "~icons/fluent/table-delete-column24-regular";
-import IFluentTableDeleteRow24Regular from "~icons/fluent/table-delete-row24-regular";
-import IFluentTableDismiss24Regular from "~icons/fluent/table-dismiss24-regular";
-import IFluentTableCellsMerge24Regular from "~icons/fluent/table-cells-merge24-regular";
-import IFluentTableCellsSplit24Regular from "~icons/fluent/table-cells-split24-regular";
-import IFluentTableSettings24Regular from "~icons/fluent/table-settings24-regular";
+import IFluentTableAdd24Regular from '~icons/fluent/table-add24-regular';
+import IFluentTableFreezeRow24Regular from '~icons/fluent/table-freeze-row24-regular';
+import IFluentTableInsertColumn24Regular from '~icons/fluent/table-insert-column24-regular';
+import IFluentTableInsertRow24Regular from '~icons/fluent/table-insert-row24-regular';
+import IFluentTableDeleteColumn24Regular from '~icons/fluent/table-delete-column24-regular';
+import IFluentTableDeleteRow24Regular from '~icons/fluent/table-delete-row24-regular';
+import IFluentTableDismiss24Regular from '~icons/fluent/table-dismiss24-regular';
+import IFluentTableCellsMerge24Regular from '~icons/fluent/table-cells-merge24-regular';
+import IFluentTableCellsSplit24Regular from '~icons/fluent/table-cells-split24-regular';
+import IFluentTableSettings24Regular from '~icons/fluent/table-settings24-regular';
 // Image Icons
-import IFluentTextAlignLeft24Regular from "~icons/fluent/text-align-left24-regular";
-import IFluentTextAlignCenter24Regular from "~icons/fluent/text-align-center24-regular";
-import IFluentTextAlignRight24Regular from "~icons/fluent/text-align-right24-regular";
-import IFluentResize20Regular from "~icons/fluent/resize20-regular";
-import IFluentAccessibility24Regular from "~icons/fluent/accessibility24-regular";
-import IFluentInfo16Regular from "~icons/fluent/info16-regular";
+import IFluentTextAlignLeft24Regular from '~icons/fluent/text-align-left24-regular';
+import IFluentTextAlignCenter24Regular from '~icons/fluent/text-align-center24-regular';
+import IFluentTextAlignRight24Regular from '~icons/fluent/text-align-right24-regular';
+import IFluentResize20Regular from '~icons/fluent/resize20-regular';
+import IFluentAccessibility24Regular from '~icons/fluent/accessibility24-regular';
+import IFluentInfo16Regular from '~icons/fluent/info16-regular';
 
 const props = defineProps<{
   disableTables?: boolean;
@@ -446,7 +448,7 @@ const youtubeUrl = ref('');
 const editor = useEditor({
   editorProps: {
     attributes: {
-      class: "focus:outline-none px-4 py-3 w-full min-h-[120px]",
+      class: 'focus:outline-none px-4 py-3 w-full min-h-[120px]',
     },
     handleDOMEvents: {
       focusin: (view, event) => {
@@ -482,7 +484,7 @@ const editor = useEditor({
       link: {
         openOnClick: false,
         HTMLAttributes: {
-          class: "text-blue-500 underline",
+          class: 'text-blue-500 underline',
         },
       },
     }),
@@ -492,16 +494,16 @@ const editor = useEditor({
     CustomHeading.configure({
       levels: [2, 3],
     }),
-  // Text formatting marks (order normally doesn't matter but keep core marks grouped)
-  Subscript,
-  Superscript,
+    // Text formatting marks (order normally doesn't matter but keep core marks grouped)
+    Subscript,
+    Superscript,
     Placeholder.configure({
-      placeholder: $t ? $t('rich-content.text_placeholder') : "Type something...",
+      placeholder: $t ? $t('rich-content.text_placeholder') : 'Type something...',
     }),
     AccessibleImage.configure({
       HTMLAttributes: {
-        class: "max-w-full h-auto rounded-md",
-        loading: "lazy",
+        class: 'max-w-full h-auto rounded-md',
+        loading: 'lazy',
       },
       allowBase64: true,
     }),
@@ -511,7 +513,7 @@ const editor = useEditor({
     Video,
     Youtube.configure({
       HTMLAttributes: {
-        class: "aspect-video h-36 w-auto my-2",
+        class: 'aspect-video h-36 w-auto my-2',
       },
     }),
     FileHandler.configure({
@@ -530,17 +532,17 @@ const editor = useEditor({
         // Web files
         'text/html', 'text/css', 'text/javascript', 'application/javascript', 'application/json', 'text/xml', 'application/xml',
         // Audio/Video
-        'audio/mpeg', 'video/mp4', 'video/x-msvideo', 'video/quicktime', 'video/webm'
+        'audio/mpeg', 'video/mp4', 'video/x-msvideo', 'video/quicktime', 'video/webm',
       ],
       onDrop: (currentEditor, files, pos) => {
         handleFileDrop(currentEditor, files, pos);
       },
       onPaste: (currentEditor, files, htmlContent) => {
         handleFilePaste(currentEditor, files);
-      }
+      },
     }),
   ],
-  content: modelValue.value ?? "",
+  content: modelValue.value ?? '',
   onCreate: ({ editor }) => {
   // editor initialized
   },
@@ -548,9 +550,10 @@ const editor = useEditor({
     handleUpdate();
     nextTick(() => {
       if (props.html) {
-        emit("update:modelValue", editor.value?.getHTML());
-      } else {
-        emit("update:modelValue", editor.value?.getJSON());
+        emit('update:modelValue', editor.value?.getHTML());
+      }
+      else {
+        emit('update:modelValue', editor.value?.getJSON());
       }
     });
   },
@@ -766,7 +769,6 @@ function attachVideoUrl(url: string) {
   editor.value?.chain().focus().setVideo(url).run();
 }
 
-
 function handleYoutubeSubmit(url: string) {
   editor.value?.commands.setYoutubeVideo({ src: url });
   showYoutubeModal.value = false;
@@ -780,17 +782,19 @@ function handleVideoSubmit(url: string) {
 
 function handleLinkSubmit(url: string, text?: string) {
   if (!editor.value) return;
-  
+
   const { from, to } = editor.value.state.selection;
   const hasSelection = from !== to;
-  
+
   if (hasSelection) {
     // Replace selected text with link
     editor.value.chain().focus().extendMarkRange('link').setLink({ href: url, class: '' }).run();
-  } else if (text) {
+  }
+  else if (text) {
     // Insert new link with provided text
     editor.value.chain().focus().insertContent(`<a href="${url}" class="">${text}</a>`).run();
-  } else {
+  }
+  else {
     // Insert link with URL as text
     editor.value.chain().focus().insertContent(`<a href="${url}" class="">${url}</a>`).run();
   }
@@ -798,17 +802,19 @@ function handleLinkSubmit(url: string, text?: string) {
 
 function handleDocumentLinkSubmit(url: string, text?: string) {
   if (!editor.value) return;
-  
+
   const { from, to } = editor.value.state.selection;
   const hasSelection = from !== to;
-  
+
   if (hasSelection) {
     // Replace selected text with document link
     editor.value.chain().focus().extendMarkRange('link').setLink({ href: url, class: 'archive-document-link plain' }).run();
-  } else if (text) {
+  }
+  else if (text) {
     // Insert new document link with provided text
     editor.value.chain().focus().insertContent(`<a href="${url}" class="archive-document-link plain">${text}</a>`).run();
-  } else {
+  }
+  else {
     // Insert document link with URL as text
     editor.value.chain().focus().insertContent(`<a href="${url}" class="archive-document-link plain">${url}</a>`).run();
   }
@@ -820,21 +826,21 @@ function attachImageWithAlt(imageData: { src: string; alt?: string; title?: stri
       src: imageData,
       alt: '',
       title: '',
-      align: 'center'
+      align: 'center',
     }).run();
-  } else {
+  }
+  else {
     editor.value?.chain().focus().setImageWithAlt({
       src: imageData.src,
       alt: imageData.alt || '',
       title: imageData.title || '',
-      align: 'center'
+      align: 'center',
     }).run();
   }
 }
 
 // Image control functions
 function resizeImage(size: string) {
-
   const sizeMap = {
     small: { width: '300px' },
     medium: { width: '500px' },
@@ -847,7 +853,7 @@ function resizeImage(size: string) {
 
   if (dimensions && editor.value) {
     // Use updateAttributes directly since it should work
-  editor.value.chain().focus().updateAttributes('image', dimensions).run();
+    editor.value.chain().focus().updateAttributes('image', dimensions).run();
   }
 }
 
@@ -884,7 +890,8 @@ async function handleFileDrop(currentEditor: any, files: File[], pos?: number) {
   for (const file of files) {
     if (file.type.startsWith('image/')) {
       await processImageUpload(currentEditor, file, pos);
-    } else {
+    }
+    else {
       await processFileUpload(currentEditor, file, pos);
     }
   }
@@ -894,7 +901,8 @@ async function handleFilePaste(currentEditor: any, files: File[]) {
   for (const file of files) {
     if (file.type.startsWith('image/')) {
       await processImageUpload(currentEditor, file);
-    } else {
+    }
+    else {
       await processFileUpload(currentEditor, file);
     }
   }
@@ -919,7 +927,7 @@ async function processImageUpload(currentEditor: any, file: File, pos?: number) 
     const uploadData = {
       image: file,
       name: file.name,
-      path: `content/${new Date().getFullYear()}/${String(new Date().getMonth() + 1).padStart(2, '0')}`
+      path: `content/${new Date().getFullYear()}/${String(new Date().getMonth() + 1).padStart(2, '0')}`,
     };
 
     await new Promise<UploadResult>((resolve, reject) => {
@@ -933,28 +941,30 @@ async function processImageUpload(currentEditor: any, file: File, pos?: number) 
             replacePlaceholderWithImage(currentEditor, uploadId, {
               src: result.url,
               alt: file.name,
-              title: `Uploaded: ${file.name}`
+              title: `Uploaded: ${file.name}`,
             });
 
             resolve(result);
-          } else {
+          }
+          else {
             reject(new Error('Upload succeeded but no data received'));
           }
         },
         onError: (errors) => {
           const errorMessage = Object.values(errors).flat().join(', ') || 'Upload failed';
           reject(new Error(errorMessage));
-        }
+        },
       });
     });
-
-  } catch (error: any) {
+  }
+  catch (error: any) {
     console.error('Upload failed:', error);
     replacePlaceholderWithError(currentEditor, uploadId, error.message);
     toasts.error(`Failed to upload ${file.name}`, {
-      description: error.message
+      description: error.message,
     });
-  } finally {
+  }
+  finally {
     uploadingFiles.value.delete(uploadId);
   }
 }
@@ -984,17 +994,18 @@ async function processFileUpload(currentEditor: any, file: File, pos?: number) {
         onError: (errors) => {
           const errorMessage = Object.values(errors).flat().join(', ') || 'Upload failed';
           reject(new Error(errorMessage));
-        }
+        },
       });
     });
-
-  } catch (error: any) {
+  }
+  catch (error: any) {
     console.error('File upload failed:', error);
     replacePlaceholderWithError(currentEditor, uploadId, error.message);
     toasts.error(`Failed to upload ${file.name}`, {
-      description: error.message
+      description: error.message,
     });
-  } finally {
+  }
+  finally {
     uploadingFiles.value.delete(uploadId);
   }
 }
@@ -1004,7 +1015,8 @@ function insertUploadPlaceholder(currentEditor: any, fileName: string, uploadId:
 
   if (pos !== undefined) {
     currentEditor.chain().focus().insertContentAt(pos, placeholderText).run();
-  } else {
+  }
+  else {
     currentEditor.chain().focus().insertContent(placeholderText).run();
   }
 
@@ -1031,7 +1043,7 @@ function replacePlaceholderWithImage(currentEditor: any, uploadId: string, image
         .deleteRange({ from, to })
         .insertContentAt(from, {
           type: 'image',
-          attrs: imageData
+          attrs: imageData,
         })
         .run();
 
@@ -1093,43 +1105,43 @@ function replacePlaceholderWithError(currentEditor: any, uploadId: string, error
 }
 
 function handleUpdate() {
-  const innerHeadings: { level: number; text: string; id: string }[] = []
-  const transaction = editor.value?.state.tr
+  const innerHeadings: { level: number; text: string; id: string }[] = [];
+  const transaction = editor.value?.state.tr;
 
   editor.value?.state.doc.descendants((node, pos) => {
     if (node.type.name === 'heading') {
-      let id = latinizeId(node.textContent)
+      let id = latinizeId(node.textContent);
 
-      let counter = 1
-      while (innerHeadings.some((heading) => heading.id === id)) {
-        id = `${latinizeId(node.textContent)}-${counter}`
-        counter++
+      let counter = 1;
+      while (innerHeadings.some(heading => heading.id === id)) {
+        id = `${latinizeId(node.textContent)}-${counter}`;
+        counter++;
       }
 
       if (node.attrs.id !== id) {
-        transaction?.setNodeAttribute(pos, 'id', id)
+        transaction?.setNodeAttribute(pos, 'id', id);
       }
 
       innerHeadings.push({
         level: node.attrs.level,
         text: node.textContent,
         id,
-      })
+      });
     }
-  })
+  });
 
-  transaction?.setMeta('addToHistory', false)
-  transaction?.setMeta('preventUpdate', true)
+  transaction?.setMeta('addToHistory', false);
+  transaction?.setMeta('preventUpdate', true);
 
   if (transaction) {
-    editor.value?.view.dispatch(transaction)
+    editor.value?.view.dispatch(transaction);
   }
 }
 
 onBeforeUnmount(() => {
   // Clear any pending uploads to prevent memory leaks
   uploadingFiles.value.clear();
-  
+
   // Destroy editor instance
   editor.value?.destroy();
 });

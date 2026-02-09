@@ -102,22 +102,22 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
-import { useForm } from "@inertiajs/vue3";
+import { computed, ref } from 'vue';
+import { useForm } from '@inertiajs/vue3';
 
-import { Button } from "@/Components/ui/button";
-import { DynamicListInput } from "@/Components/ui/dynamic-list-input";
-import { Input } from "@/Components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
-import { Switch } from "@/Components/ui/switch";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/Components/ui/collapsible";
-import FormFieldWrapper from "./FormFieldWrapper.vue";
-import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";
-import MultiLocaleTiptapFormItem from "../FormItems/MultiLocaleTiptapFormItem.vue";
+import MultiLocaleInput from '../FormItems/MultiLocaleInput.vue';
+import MultiLocaleTiptapFormItem from '../FormItems/MultiLocaleTiptapFormItem.vue';
 
-const emit = defineEmits<{
-  (e: "submit", form: any): void;
-}>();
+import FormFieldWrapper from './FormFieldWrapper.vue';
+
+import { Button } from '@/Components/ui/button';
+import { DynamicListInput } from '@/Components/ui/dynamic-list-input';
+import { Input } from '@/Components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { Switch } from '@/Components/ui/switch';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Components/ui/collapsible';
+
+const emit = defineEmits<(e: 'submit', form: any) => void>();
 
 const props = defineProps<{
   formField: App.Entities.FormField | Record<string, any>;
@@ -131,42 +131,42 @@ const advancedOpen = ref(false);
 
 const options = [
   {
-    value: "string",
-    label: "Tekstas",
+    value: 'string',
+    label: 'Tekstas',
   },
   {
-    value: "boolean",
-    label: "Taip / Ne",
+    value: 'boolean',
+    label: 'Taip / Ne',
   },
   {
-    value: "enum",
-    label: "Pasirinkimas",
+    value: 'enum',
+    label: 'Pasirinkimas',
   },
   {
-    value: "number",
-    label: "Skaičius",
+    value: 'number',
+    label: 'Skaičius',
   },
   {
-    value: "date",
-    label: "Data",
+    value: 'date',
+    label: 'Data',
   },
 ];
 
 // NOTE: Used in mailables to know which fields to use (also in validation sometimes)
 const subtypeOptions = computed(() => {
-  if (model.type === "string") {
+  if (model.type === 'string') {
     return [
       {
-        value: "name",
-        label: "Vardas",
+        value: 'name',
+        label: 'Vardas',
       },
       {
-        value: "email",
-        label: "El. paštas",
+        value: 'email',
+        label: 'El. paštas',
       },
       {
-        value: "textarea",
-        label: "Ilgo teksto laukas",
+        value: 'textarea',
+        label: 'Ilgo teksto laukas',
       },
     ];
   }
@@ -175,12 +175,12 @@ const subtypeOptions = computed(() => {
 
 function onCreate() {
   return {
-    value: "",
-    label: { lt: "", en: "" },
+    value: '',
+    label: { lt: '', en: '' },
   };
 }
 
 const handleSubmit = () => {
-  emit("submit", model.data());
+  emit('submit', model.data());
 };
 </script>

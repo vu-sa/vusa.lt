@@ -1,59 +1,3 @@
-<script setup lang="ts">
-import type { HTMLAttributes } from "vue"
-import { inject, computed } from "vue"
-import { cn } from '@/Utils/Shadcn/utils'
-import type { UploadFile } from "."
-import { Button } from "@/Components/ui/button"
-
-interface Props {
-  file: UploadFile
-  class?: HTMLAttributes["class"]
-  showRemove?: boolean
-  showProgress?: boolean
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  showRemove: true,
-  showProgress: true,
-})
-
-const upload = inject<{
-  listType: 'text' | 'image-card'
-  removeFile: (file: UploadFile) => void
-  onPreview: (file: UploadFile) => void
-}>('upload')!
-
-const isImage = computed(() => props.file.type.startsWith('image/'))
-const isImageCard = computed(() => upload.listType === 'image-card' && isImage.value)
-
-const statusClasses = computed(() => {
-  switch (props.file.status) {
-    case 'uploading':
-      return 'ring-2 ring-blue-500/50'
-    case 'success':
-      return 'ring-2 ring-green-500/50'
-    case 'error':
-      return 'ring-2 ring-red-500/50'
-    default:
-      return ''
-  }
-})
-
-function formatFileSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
-}
-
-function handleRemove() {
-  upload.removeFile(props.file)
-}
-
-function handlePreview() {
-  upload.onPreview(props.file)
-}
-</script>
-
 <template>
   <div
     :class="cn(
@@ -77,7 +21,7 @@ function handlePreview() {
           :alt="file.name"
           class="h-full w-full object-cover transition-transform group-hover:scale-105"
         >
-        
+
         <!-- Loading overlay -->
         <div
           v-if="file.status === 'uploading'"
@@ -176,3 +120,61 @@ function handlePreview() {
     </template>
   </div>
 </template>
+
+<script setup lang="ts">
+import type { HTMLAttributes } from 'vue';
+import { inject, computed } from 'vue';
+
+import type { UploadFile } from '.';
+
+import { cn } from '@/Utils/Shadcn/utils';
+import { Button } from '@/Components/ui/button';
+
+interface Props {
+  file: UploadFile;
+  class?: HTMLAttributes['class'];
+  showRemove?: boolean;
+  showProgress?: boolean;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  showRemove: true,
+  showProgress: true,
+});
+
+const upload = inject<{
+  listType: 'text' | 'image-card';
+  removeFile: (file: UploadFile) => void;
+  onPreview: (file: UploadFile) => void;
+}>('upload')!;
+
+const isImage = computed(() => props.file.type.startsWith('image/'));
+const isImageCard = computed(() => upload.listType === 'image-card' && isImage.value);
+
+const statusClasses = computed(() => {
+  switch (props.file.status) {
+    case 'uploading':
+      return 'ring-2 ring-blue-500/50';
+    case 'success':
+      return 'ring-2 ring-green-500/50';
+    case 'error':
+      return 'ring-2 ring-red-500/50';
+    default:
+      return '';
+  }
+});
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function handleRemove() {
+  upload.removeFile(props.file);
+}
+
+function handlePreview() {
+  upload.onPreview(props.file);
+}
+</script>

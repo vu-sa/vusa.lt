@@ -1,12 +1,3 @@
-<script lang="ts" setup>
-import type { HTMLAttributes } from 'vue'
-import { cn } from '@/Utils/Shadcn/utils'
-
-const props = defineProps<{
-  class?: HTMLAttributes['class']
-}>()
-</script>
-
 <template>
   <ol
     data-slot="breadcrumb-list"
@@ -15,3 +6,13 @@ const props = defineProps<{
     <slot />
   </ol>
 </template>
+
+<script lang="ts" setup>
+import type { HTMLAttributes } from 'vue';
+
+import { cn } from '@/Utils/Shadcn/utils';
+
+const props = defineProps<{
+  class?: HTMLAttributes['class'];
+}>();
+</script>

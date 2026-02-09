@@ -89,10 +89,11 @@
 <script setup lang="ts">
 import { inject, nextTick, onMounted, provide, ref } from 'vue';
 import { useSortable } from '@vueuse/integrations/useSortable';
-import { router } from "@inertiajs/vue3";
+import { router } from '@inertiajs/vue3';
 
 import ProgrammePart from './ProgrammePart.vue';
 import ProgrammeSection from './ProgrammeSection.vue';
+
 import { formatStaticTime } from '@/Utils/IntlTime';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
@@ -102,7 +103,7 @@ import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import CardModal from '@/Components/Modals/CardModal.vue';
 import MultiLocaleInput from '@/Components/FormItems/MultiLocaleInput.vue';
 
-const day = defineModel<App.Entities.ProgrammeDay>('day')
+const day = defineModel<App.Entities.ProgrammeDay>('day');
 
 const elementsEl = ref<HTMLDivElement | null>('elementsEl');
 
@@ -113,14 +114,14 @@ function createProgrammeSection() {
   if (!day.value) return;
 
   day.value.elements?.push({
-    id: 'programme-section-' + day.value.elements.length,
+    id: `programme-section-${day.value.elements.length}`,
     type: 'section',
     title: {
-      lt: 'Programos sekcija ' + (day.value.elements.length + 1),
-      en: 'Programme Section ' + (day.value.elements.length + 1),
+      lt: `Programos sekcija ${day.value.elements.length + 1}`,
+      en: `Programme Section ${day.value.elements.length + 1}`,
     },
     duration: 60,
-    blocks: []
+    blocks: [],
   });
 }
 
@@ -129,11 +130,11 @@ function createProgrammePart() {
 
   day.value.elements?.push({
     // generate unique substring
-    id: 'programme-part-' + Math.random().toString(36).substring(7),
+    id: `programme-part-${Math.random().toString(36).substring(7)}`,
     type: 'part',
     title: {
-      lt: 'Programos dali ' + (day.value.elements.length + 1),
-      en: 'Programme Part ' + (day.value.elements.length + 1),
+      lt: `Programos dali ${day.value.elements.length + 1}`,
+      en: `Programme Part ${day.value.elements.length + 1}`,
     },
     description: {
       lt: '',
@@ -149,11 +150,11 @@ function deleteProgrammeElement(index: number) {
 
   // check if part
   if (day.value.elements[index].type === 'part' && typeof day.value.elements[index].id !== 'string') {
-
     router.delete(route('programmeParts.destroy', { programmePart: day.value.elements[index].id }), {
       preserveScroll: true,
     });
-  } else if (day.value.elements[index].type === 'section' && typeof day.value.elements[index].id !== 'string') {
+  }
+  else if (day.value.elements[index].type === 'section' && typeof day.value.elements[index].id !== 'string') {
     router.delete(route('programmeSections.destroy', { programmeSection: day.value.elements[index].id }), {
       preserveScroll: true,
     });
@@ -172,7 +173,8 @@ function handleEditElement(element: App.Entities.ProgrammePart | App.Entities.Pr
   if (element.type === 'part') {
     selectedPart.value = element as App.Entities.ProgrammePart;
     showPartEditModal.value = true;
-  } else if (element.type === 'section') {
+  }
+  else if (element.type === 'section') {
     selectedSection.value = element as App.Entities.ProgrammeSection;
     showSectionEditModal.value = true;
   }
@@ -195,11 +197,12 @@ function createSortableElement() {
         if (movedElement.value.type === 'part') {
           router.post(route('programmeParts.attach', movedElement.value.id), {
             programmeDay: day.value.id,
-            order: newIndex
+            order: newIndex,
           }, {
             preserveScroll: true,
           });
-        } else if (movedElement.value.type === 'section') {
+        }
+        else if (movedElement.value.type === 'section') {
           router.post(route('programmeSections.attach', { programmeDay: day.value.id, programmeSection: movedElement.value.id, order: newIndex }), {
             preserveScroll: true,
           });
@@ -214,7 +217,8 @@ function createSortableElement() {
           router.post(route('programmeParts.detach', { programmePart: movedElement.value.id }), { programmeDay: day.value.id }, {
             preserveScroll: true,
           });
-        } else if (movedElement.value.type === 'section') {
+        }
+        else if (movedElement.value.type === 'section') {
           router.delete(route('programmeSections.detach', { programmeDay: day.value.id, programmeSection: movedElement.value.id }), {
             preserveScroll: true,
           });
@@ -222,10 +226,10 @@ function createSortableElement() {
       }
 
       day.value?.elements?.splice(oldIndex, 1);
-    }
+    },
   });
 
-  return sortable
+  return sortable;
 }
 
 if (editable) createSortableElement();

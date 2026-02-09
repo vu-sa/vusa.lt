@@ -22,10 +22,12 @@
         <TableOfContents :links="anchorLinks" :offset="160" />
       </aside>
     </article>
-    
+
     <!-- Wide layout: full width content, great for pages with images/grids -->
     <article v-else-if="pageLayout === 'wide'" class="w-full">
-      <h1 class="text-3xl font-bold text-gray-900 md:text-4xl lg:text-5xl dark:text-white">{{ page.title }}</h1>
+      <h1 class="text-3xl font-bold text-gray-900 md:text-4xl lg:text-5xl dark:text-white">
+        {{ page.title }}
+      </h1>
       <span v-if="lastUpdatedText" class="mt-1 mb-4 inline-flex items-center gap-1 text-xs text-zinc-400 dark:text-zinc-500">
         <ClockIcon class="size-3" />
         {{ lastUpdatedText }}
@@ -34,19 +36,21 @@
         <RichContentParser :content="(page.content?.parts as unknown as models.ContentPart[]) ?? []" />
       </div>
     </article>
-    
+
     <!-- Focused layout: centered, narrow reading width for long-form text -->
     <article v-else-if="pageLayout === 'focused'" class="mx-auto max-w-2xl px-4">
       <!-- Optional featured image -->
       <div v-if="page.featured_image" class="mb-8 overflow-hidden rounded-xl">
-        <img 
-          :src="page.featured_image" 
+        <img
+          :src="page.featured_image"
           :alt="page.title"
           class="h-auto max-h-[400px] w-full object-cover"
         >
       </div>
       <header class="mb-8 text-center">
-        <h1 class="text-3xl font-bold text-gray-900 md:text-4xl lg:text-5xl dark:text-white">{{ page.title }}</h1>
+        <h1 class="text-3xl font-bold text-gray-900 md:text-4xl lg:text-5xl dark:text-white">
+          {{ page.title }}
+        </h1>
         <div v-if="page.meta_description" class="mt-4 text-lg text-muted-foreground">
           {{ page.meta_description }}
         </div>
@@ -60,7 +64,7 @@
       </div>
     </article>
   </section>
-  
+
   <!-- Mobile ToC (shows for default layout with anchors) -->
   <TableOfContents
     v-if="pageLayout === 'default' && anchorLinks && anchorLinks.length > 0"
@@ -69,26 +73,26 @@
     mobile-only
     show-mobile-button
   />
-  
+
   <!-- Highlights floating button -->
   <HighlightsFloatingButton :highlights="page.highlights" />
-  
+
   <FeedbackPopover />
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
-import { usePage } from "@inertiajs/vue3";
-import { trans as $t } from "laravel-vue-i18n";
-import { ClockIcon } from "lucide-vue-next";
+import { computed } from 'vue';
+import { usePage } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
+import { ClockIcon } from 'lucide-vue-next';
 
-import FeedbackPopover from "@/Components/Public/FeedbackPopover.vue";
-import HighlightsFloatingButton from "@/Components/Public/HighlightsFloatingButton.vue";
-import RichContentParser from "@/Components/RichContentParser.vue";
-import TableOfContents from "@/Components/Public/TableOfContents.vue";
+import FeedbackPopover from '@/Components/Public/FeedbackPopover.vue';
+import HighlightsFloatingButton from '@/Components/Public/HighlightsFloatingButton.vue';
+import RichContentParser from '@/Components/RichContentParser.vue';
+import TableOfContents from '@/Components/Public/TableOfContents.vue';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
-import { formatRelativeTime, formatStaticTime } from "@/Utils/IntlTime";
-import { LocaleEnum } from "@/Types/enums";
+import { formatRelativeTime, formatStaticTime } from '@/Utils/IntlTime';
+import { LocaleEnum } from '@/Types/enums';
 
 // Type definitions for improved type safety and clarity
 interface AnchorLink {
@@ -144,23 +148,23 @@ const inertiaPage = usePage();
 const pageLayout = computed(() => props.page.layout || 'default');
 
 // Compute locale for formatting
-const locale = computed(() => 
-  inertiaPage.props.app?.locale === 'en' ? LocaleEnum.EN : LocaleEnum.LT
+const locale = computed(() =>
+  inertiaPage.props.app?.locale === 'en' ? LocaleEnum.EN : LocaleEnum.LT,
 );
 
 // Compute last updated text - relative for up to 7 days, absolute otherwise
 const lastUpdatedText = computed(() => {
   const dateString = props.page.last_edited_at || props.page.updated_at;
   if (!dateString) return null;
-  
+
   const date = new Date(dateString);
   const now = new Date();
   const diffInDays = Math.abs(Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24)));
-  
+
   if (diffInDays <= 7) {
     return formatRelativeTime(date, { numeric: 'auto' }, locale.value);
   }
-  
+
   return formatStaticTime(date, {
     year: 'numeric',
     month: 'long',
@@ -182,14 +186,14 @@ usePageBreadcrumbs(() => {
 
   // Otherwise just show the current page title
   return BreadcrumbHelpers.publicContent([
-    BreadcrumbHelpers.createBreadcrumbItem(props.page.title)
+    BreadcrumbHelpers.createBreadcrumbItem(props.page.title),
   ]);
 });
 
 const anchorLinks = props.page.content?.parts?.reduce((acc: AnchorLink[], part: PageContentPart) => {
-  if (part.type === "tiptap" && part.json_content?.content) {
+  if (part.type === 'tiptap' && part.json_content?.content) {
     const partHeadings = part.json_content.content.filter(
-      (node): node is HeadingNode => node.type === "heading" && 'attrs' in node && (node.attrs.level === 2 || node.attrs.level === 3)
+      (node): node is HeadingNode => node.type === 'heading' && 'attrs' in node && (node.attrs.level === 2 || node.attrs.level === 3),
     );
 
     // If there are no headings, just return the accumulator
@@ -205,7 +209,8 @@ const anchorLinks = props.page.content?.parts?.reduce((acc: AnchorLink[], part: 
             href: `#${node.attrs.id}`,
             children: [],
           });
-        } else if (node.attrs.level === 3) {
+        }
+        else if (node.attrs.level === 3) {
           const lastHeading = headingsAcc[headingsAcc.length - 1];
           // Ensure that an h2 exists to nest the h3 under
           if (lastHeading?.children) {
@@ -213,7 +218,8 @@ const anchorLinks = props.page.content?.parts?.reduce((acc: AnchorLink[], part: 
               title: node.content[0].text,
               href: `#${node.attrs.id}`,
             });
-          } else {
+          }
+          else {
             // If h3 appears without a preceding h2, treat it as a top-level item
             headingsAcc.push({
               title: node.content[0].text,

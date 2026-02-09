@@ -1,18 +1,18 @@
 <template>
   <div class="relative w-full">
     <!-- Loading overlay -->
-    <div v-if="loading" 
+    <div v-if="loading"
       class="absolute inset-0 z-10 flex items-center justify-center bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm">
       <Spinner class="h-6 w-6" />
     </div>
-    
+
     <FileManager
       small
       selection-mode
       class="w-full"
-      :files="files"
-      :directories="directories"
-      :path="path"
+      :files
+      :directories
+      :path
       :allow-upload-in-selection="true"
       :upload-accept="props.uploadAccept"
       :upload-extensions="props.uploadExtensions"
@@ -26,13 +26,13 @@
 
 <script setup lang="ts">
 import { ref, watchEffect } from 'vue';
+
 import { useFileListing } from './useFileListing';
 import FileManager from './FileManager.vue';
+
 import { Spinner } from '@/Components/ui/spinner';
 
-defineEmits<{
-  (e: 'submit', path: string): void
-}>();
+defineEmits<(e: 'submit', path: string) => void>();
 
 const props = defineProps<{
   uploadAccept?: string;

@@ -22,13 +22,13 @@ export * from './other-icons';
 export { getModelIcon } from './model-icons';
 
 /**
- * Get form icon dynamically (imports ALL form icons)  
+ * Get form icon dynamically (imports ALL form icons)
  * @warning This will bundle all form icons, use direct imports when possible
  */
 export { getFormIcon } from './form-icons';
 
 /**
  * Get other icon dynamically (imports ALL other icons)
- * @warning This will bundle all other icons, use direct imports when possible  
+ * @warning This will bundle all other icons, use direct imports when possible
  */
 export { getOtherIcon } from './other-icons';

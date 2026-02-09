@@ -45,22 +45,22 @@
               </Button>
             </CardHeader>
             <CardContent class="pt-0">
-              <ReservationResourceTable 
+              <ReservationResourceTable
                 v-model:selected-reservation-resource="selectedReservationResource"
-                :reservation 
+                :reservation
                 @edit:reservation-resource="editReservationResource"
-                @add-resource="handleAddResource" 
+                @add-resource="handleAddResource"
               />
             </CardContent>
           </Card>
-          
+
           <!-- Empty state handled by table component -->
-          <ReservationResourceTable 
+          <ReservationResourceTable
             v-else
             v-model:selected-reservation-resource="selectedReservationResource"
-            :reservation 
+            :reservation
             @edit:reservation-resource="editReservationResource"
-            @add-resource="handleAddResource" 
+            @add-resource="handleAddResource"
           />
         </TabsContent>
 
@@ -108,7 +108,8 @@
     <Dialog :open="showReservationHelpModal" @update:open="showReservationHelpModal = $event">
       <DialogContent class="max-w-3xl">
         <DialogHeader>
-          <DialogTitle>{{ $t('entities.meta.help', { model: $tChoice('entities.reservation.model', 2) }) }}
+          <DialogTitle>
+            {{ $t('entities.meta.help', { model: $tChoice('entities.reservation.model', 2) }) }}
           </DialogTitle>
         </DialogHeader>
         <MdSuspenseWrapper directory="reservations" :locale="$page.props.app.locale" file="help" />
@@ -139,13 +140,13 @@
         <div class="space-y-4">
           <div class="space-y-2">
             <Label>{{ $t('Naudotojai') }}</Label>
-            <MultiSelect 
-              ref="userMultiSelectRef" 
-              v-model="selectedUsersList" 
+            <MultiSelect
+              ref="userMultiSelectRef"
+              v-model="selectedUsersList"
               :options="allUsers ?? []"
               label-field="name"
               value-field="id"
-              :placeholder="`${$t('Pasirinkite')}...`" 
+              :placeholder="`${$t('Pasirinkite')}...`"
               :empty-text="$t('No users found.')"
             >
               <template #selected-item="{ item: user }">
@@ -172,30 +173,30 @@
 </template>
 
 <script setup lang="ts">
-import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
-import { ref, toRaw, computed, watch, capitalize } from "vue";
-import { router, useForm } from "@inertiajs/vue3";
-import { useStorage } from "@vueuse/core";
+import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
+import { ref, toRaw, computed, watch, capitalize } from 'vue';
+import { router, useForm } from '@inertiajs/vue3';
+import { useStorage } from '@vueuse/core';
 
-import ReservationHero from "./Partials/ReservationHero.vue";
+import ReservationHero from './Partials/ReservationHero.vue';
 
-import { Badge } from "@/Components/ui/badge";
-import { Button } from "@/Components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/Components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
-import { RESERVATION_CARD_MODAL_TITLES } from "@/Constants/I18n/CardModalTitles";
-import { RESERVATION_HELP_TEXTS } from "@/Constants/I18n/HelpTexts";
+import { Badge } from '@/Components/ui/badge';
+import { Button } from '@/Components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
+import { RESERVATION_CARD_MODAL_TITLES } from '@/Constants/I18n/CardModalTitles';
+import { RESERVATION_HELP_TEXTS } from '@/Constants/I18n/HelpTexts';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
-import AdminContentPage from "@/Components/Layouts/AdminContentPage.vue";
-import CommentViewer from "@/Features/Admin/CommentViewer/CommentViewer.vue";
-import Icons from "@/Types/Icons/filled";
-import MdSuspenseWrapper from "@/Features/MarkdownGetterFromDocs/MdSuspenseWrapper.vue";
-import ReservationResourceForm from "@/Components/AdminForms/ReservationResourceForm.vue";
-import ReservationResourceTable from "@/Components/Tables/ReservationResourceTable.vue";
-import UserAvatar from "@/Components/Avatars/UserAvatar.vue";
-import { MultiSelect } from "@/Components/ui/multi-select";
-import { Label } from "@/Components/ui/label";
+import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
+import CommentViewer from '@/Features/Admin/CommentViewer/CommentViewer.vue';
+import Icons from '@/Types/Icons/filled';
+import MdSuspenseWrapper from '@/Features/MarkdownGetterFromDocs/MdSuspenseWrapper.vue';
+import ReservationResourceForm from '@/Components/AdminForms/ReservationResourceForm.vue';
+import ReservationResourceTable from '@/Components/Tables/ReservationResourceTable.vue';
+import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
+import { MultiSelect } from '@/Components/ui/multi-select';
+import { Label } from '@/Components/ui/label';
 
 const props = defineProps<{
   reservation: App.Entities.Reservation;
@@ -207,16 +208,16 @@ const props = defineProps<{
 usePageBreadcrumbs(() => [
   BreadcrumbHelpers.homeItem(),
   BreadcrumbHelpers.createRouteBreadcrumb(
-    capitalize($tChoice("entities.reservation.model", 2)),
-    "reservations.index",
+    capitalize($tChoice('entities.reservation.model', 2)),
+    'reservations.index',
     {},
-    Icons.RESERVATION
+    Icons.RESERVATION,
   ),
-  BreadcrumbHelpers.createBreadcrumbItem(props.reservation.name)
+  BreadcrumbHelpers.createBreadcrumbItem(props.reservation.name),
 ]);
 
 // Tab management
-const currentTab = useStorage("show-reservation-tab", "resources");
+const currentTab = useStorage('show-reservation-tab', 'resources');
 
 // Resource form state
 const selectedReservationResource = ref<App.Entities.ReservationResource | null>(null);
@@ -254,7 +255,7 @@ const allCommentsCount = computed(() => {
   const baseComments = props.reservation.comments?.length ?? 0;
   const resourceComments = props.reservation.resources?.reduce(
     (acc, r) => acc + (r.pivot?.comments?.length ?? 0),
-    0
+    0,
   ) ?? 0;
   return baseComments + resourceComments;
 });
@@ -280,7 +281,7 @@ const getAllComments = () => {
 
   comments = comments.filter(
     (comment, index, self) =>
-      index === self.findIndex((c) => c.id === comment.id)
+      index === self.findIndex(c => c.id === comment.id),
   );
 
   return comments;
@@ -296,14 +297,14 @@ const handleAddResource = () => {
 
 const handleAddUser = () => {
   router.reload({
-    only: ["allUsers"],
+    only: ['allUsers'],
   });
   showReservationAddUserModal.value = true;
 };
 
 const handleSubmitUserForm = () => {
   reservationUserForm.put(
-    route("reservations.add-users", {
+    route('reservations.add-users', {
       reservation: props.reservation.id,
     }),
     {
@@ -313,7 +314,7 @@ const handleSubmitUserForm = () => {
         userMultiSelectRef.value?.reset();
         showReservationAddUserModal.value = false;
       },
-    }
+    },
   );
 };
 

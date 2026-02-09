@@ -11,7 +11,7 @@
             <p>{{ $t("Įmonės kodas") }}: 193077294</p>
             <p>{{ $t("PVM mokėtojo kodas") }}: LT100015645710</p>
             <p>
-              {{$t("Finansiniais klausimais kreipkitės el. paštu")}}:
+              {{ $t("Finansiniais klausimais kreipkitės el. paštu") }}:
               <a href="mailto:saskaitos@vusa.lt" class="text-vusa-red hover:underline">
                 saskaitos@vusa.lt
               </a>
@@ -21,7 +21,9 @@
 
         <!-- Social media and StartFM -->
         <section class="space-y-0" aria-labelledby="social-media">
-          <h2 id="social-media" class="sr-only">{{ $t("accessibility.social_media_and_radio") }}</h2>
+          <h2 id="social-media" class="sr-only">
+            {{ $t("accessibility.social_media_and_radio") }}
+          </h2>
           <nav aria-label="Social media links" class="flex flex-wrap gap-2">
             <FacebookButton>
               {{ $t("Facebook") }}
@@ -62,8 +64,9 @@
 </template>
 
 <script setup lang="ts">
-import { trans as $t } from "laravel-vue-i18n";
-import FacebookButton from "../Nav/FacebookButton.vue";
-import InstagramButton from "../Nav/InstagramButton.vue";
-import StartFM from "../Nav/StartFM.vue";
+import { trans as $t } from 'laravel-vue-i18n';
+
+import FacebookButton from '../Nav/FacebookButton.vue';
+import InstagramButton from '../Nav/InstagramButton.vue';
+import StartFM from '../Nav/StartFM.vue';
 </script>

@@ -14,7 +14,7 @@
             :src="resource.image_url"
             :alt="displayName"
             class="size-full object-cover"
-          />
+          >
           <Package v-else class="size-6" />
         </div>
 
@@ -83,9 +83,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { router } from '@inertiajs/vue3'
-import { trans as $t } from 'laravel-vue-i18n'
+import { computed } from 'vue';
+import { router } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
 import {
   Building2,
   Tag,
@@ -93,38 +93,37 @@ import {
   MapPin,
   Pencil,
   Package,
-} from 'lucide-vue-next'
+} from 'lucide-vue-next';
 
-import { Card, CardContent, CardFooter } from '@/Components/ui/card'
-import { Badge } from '@/Components/ui/badge'
-import { Button } from '@/Components/ui/button'
-
-import type { ResourceSearchResult } from '@/Shared/Search/types'
+import { Card, CardContent, CardFooter } from '@/Components/ui/card';
+import { Badge } from '@/Components/ui/badge';
+import { Button } from '@/Components/ui/button';
+import type { ResourceSearchResult } from '@/Shared/Search/types';
 
 interface Props {
-  resource: ResourceSearchResult
+  resource: ResourceSearchResult;
 }
 
-const props = defineProps<Props>()
+const props = defineProps<Props>();
 
 // Get localized display name
 const displayName = computed(() => {
-  const locale = document.documentElement.lang || 'lt'
+  const locale = document.documentElement.lang || 'lt';
   return locale === 'en'
     ? (props.resource.name_en || props.resource.name_lt || $t('Be pavadinimo'))
-    : (props.resource.name_lt || props.resource.name_en || $t('Be pavadinimo'))
-})
+    : (props.resource.name_lt || props.resource.name_en || $t('Be pavadinimo'));
+});
 
 // Get localized description
 const displayDescription = computed(() => {
-  const locale = document.documentElement.lang || 'lt'
+  const locale = document.documentElement.lang || 'lt';
   return locale === 'en'
     ? (props.resource.description_en || props.resource.description_lt)
-    : (props.resource.description_lt || props.resource.description_en)
-})
+    : (props.resource.description_lt || props.resource.description_en);
+});
 
 // Navigate to edit page
 const navigateToEdit = () => {
-  router.visit(route('resources.edit', props.resource.id))
-}
+  router.visit(route('resources.edit', props.resource.id));
+};
 </script>

@@ -4,13 +4,13 @@
       <label class="text-sm font-medium text-zinc-700 dark:text-zinc-300">
         {{ $t('Facebook arba Instagram įrašo nuoroda') }}
       </label>
-      <input 
-        v-model="modelValue.url" 
-        type="url" 
+      <input
+        v-model="modelValue.url"
+        type="url"
         class="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm placeholder:text-zinc-400 focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100 dark:placeholder:text-zinc-500"
         placeholder="https://www.facebook.com/... arba https://www.instagram.com/p/..."
         @input="detectPlatform"
-      />
+      >
       <p class="text-xs text-zinc-500 dark:text-zinc-400">
         {{ $t('Įklijuokite Facebook arba Instagram įrašo nuorodą') }}
       </p>
@@ -32,12 +32,12 @@
 
     <!-- Options -->
     <div class="flex items-center gap-2">
-      <input 
-        id="showCaption" 
-        v-model="options.showCaption" 
+      <input
+        id="showCaption"
+        v-model="options.showCaption"
         type="checkbox"
         class="h-4 w-4 rounded border-zinc-300 text-zinc-600 focus:ring-zinc-500 dark:border-zinc-600 dark:bg-zinc-800"
-      />
+      >
       <label for="showCaption" class="text-sm text-zinc-700 dark:text-zinc-300">
         {{ $t('Rodyti įrašo aprašymą') }}
       </label>
@@ -49,10 +49,10 @@
         {{ $t('Peržiūra') }}
       </label>
       <div class="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-800/50">
-        <SocialEmbedPreview 
-          :url="modelValue.url" 
-          :platform="detectedPlatform" 
-          :show-caption="options.showCaption" 
+        <SocialEmbedPreview
+          :url="modelValue.url"
+          :platform="detectedPlatform"
+          :show-caption="options.showCaption"
         />
       </div>
     </div>
@@ -74,6 +74,7 @@
 
 <script setup lang="ts">
 import { computed, defineAsyncComponent } from 'vue';
+
 import type { SocialEmbed } from '@/Types/contentParts';
 import FacebookIcon from '~icons/mdi/facebook';
 import InstagramIcon from '~icons/mdi/instagram';
@@ -92,8 +93,8 @@ const options = defineModel<SocialEmbed['options']>('options');
 // - https://fb.watch/...
 // All patterns are anchored at start (^) with scheme (https?://) and domain to prevent injection attacks
 const FACEBOOK_PATTERNS = [
-  /^https?:\/\/(?:www\.)?facebook\.com\/[\w.-]+\/posts\/[\w]+/i,  // username/posts/id or pfbid
-  /^https?:\/\/(?:www\.)?facebook\.com\/photo\/?\?fbid=/i,  // photo?fbid=
+  /^https?:\/\/(?:www\.)?facebook\.com\/[\w.-]+\/posts\/[\w]+/i, // username/posts/id or pfbid
+  /^https?:\/\/(?:www\.)?facebook\.com\/photo\/?\?fbid=/i, // photo?fbid=
   /^https?:\/\/(?:www\.)?facebook\.com\/[\w.-]+\/photos\//i, // username/photos/
   /^https?:\/\/(?:www\.)?facebook\.com\/[\w.-]+\/videos\//i, // username/videos/
   /^https?:\/\/(?:www\.)?facebook\.com\/permalink\.php/i, // permalink.php
@@ -104,7 +105,7 @@ const FACEBOOK_PATTERNS = [
 ];
 
 const INSTAGRAM_PATTERNS = [
-  /^https?:\/\/(?:www\.)?instagram\.com\/p\/[\w-]+/i,  // posts
+  /^https?:\/\/(?:www\.)?instagram\.com\/p\/[\w-]+/i, // posts
   /^https?:\/\/(?:www\.)?instagram\.com\/reel\/[\w-]+/i, // reels
   /^https?:\/\/(?:www\.)?instagram\.com\/tv\/[\w-]+/i, // IGTV
   /^https?:\/\/instagr\.am\/p\/[\w-]+/i, // short URL posts
@@ -113,9 +114,9 @@ const INSTAGRAM_PATTERNS = [
 // Detect platform from URL
 const detectedPlatform = computed(() => {
   if (!modelValue.value?.url) return null;
-  
-  const url = modelValue.value.url;
-  
+
+  const { url } = modelValue.value;
+
   // Check Facebook patterns (all anchored at start with scheme)
   if (FACEBOOK_PATTERNS.some(pattern => pattern.test(url))) {
     return 'facebook';
@@ -124,11 +125,11 @@ const detectedPlatform = computed(() => {
   if (/^https?:\/\/(?:www\.)?facebook\.com\/\S+/.test(url)) {
     return 'facebook';
   }
-  
+
   if (INSTAGRAM_PATTERNS.some(pattern => pattern.test(url))) {
     return 'instagram';
   }
-  
+
   return null;
 });
 
@@ -138,7 +139,8 @@ const isValidUrl = computed(() => {
   try {
     new URL(modelValue.value.url);
     return detectedPlatform.value !== null;
-  } catch {
+  }
+  catch {
     return false;
   }
 });

@@ -11,22 +11,22 @@
 </template>
 
 <script setup lang="tsx">
-import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
-import { type ColumnDef } from '@tanstack/vue-table';
-import { ref, computed, watch, capitalize } from "vue";
-import { usePage } from "@inertiajs/vue3";
+import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
+import type { ColumnDef } from '@tanstack/vue-table';
+import { ref, computed, watch, capitalize } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 import { CalendarIcon, CheckCircle2Icon, AlertCircleIcon, CircleSlashIcon } from 'lucide-vue-next';
 
-import { formatStaticTime } from "@/Utils/IntlTime";
-import DataTableFilter from "@/Components/ui/data-table/DataTableFilter.vue";
-import { Badge } from "@/Components/ui/badge";
-import IndexTablePage from "@/Components/Layouts/IndexTablePage.vue";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
-import { createStandardActionsColumn } from "@/Composables/useTableActions";
-import {
-  type IndexTablePageProps,
-} from "@/Types/TableConfigTypes";
-import Icons from "@/Types/Icons/regular";
+import { formatStaticTime } from '@/Utils/IntlTime';
+import DataTableFilter from '@/Components/ui/data-table/DataTableFilter.vue';
+import { Badge } from '@/Components/ui/badge';
+import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
+import { createStandardActionsColumn } from '@/Composables/useTableActions';
+import type {
+  IndexTablePageProps,
+} from '@/Types/TableConfigTypes';
+import Icons from '@/Types/Icons/regular';
 
 const props = defineProps<{
   data: App.Entities.Meeting[];
@@ -71,27 +71,27 @@ const getRowId = (row: App.Entities.Meeting) => {
 // Get completion status badge variant
 const getCompletionVariant = (status: string) => {
   return {
-    'complete': 'success',
-    'incomplete': 'warning',
-    'no_items': 'secondary',
+    complete: 'success',
+    incomplete: 'warning',
+    no_items: 'secondary',
   }[status] || 'secondary';
 };
 
 // Get completion status label
 const getCompletionLabel = (status: string) => {
   return {
-    'complete': $t('Užpildyta'),
-    'incomplete': $t('Neužpildyta'),
-    'no_items': $t('Nėra darbotvarkės'),
+    complete: $t('Užpildyta'),
+    incomplete: $t('Neužpildyta'),
+    no_items: $t('Nėra darbotvarkės'),
   }[status] || status;
 };
 
 // Get completion status icon
 const getCompletionIcon = (status: string) => {
   const icons = {
-    'complete': CheckCircle2Icon,
-    'incomplete': AlertCircleIcon,
-    'no_items': CircleSlashIcon,
+    complete: CheckCircle2Icon,
+    incomplete: AlertCircleIcon,
+    no_items: CircleSlashIcon,
   };
   return icons[status] || CircleSlashIcon;
 };
@@ -99,20 +99,20 @@ const getCompletionIcon = (status: string) => {
 // Table columns
 const columns = computed<ColumnDef<App.Entities.Meeting, any>[]>(() => [
   {
-    accessorKey: "start_time",
+    accessorKey: 'start_time',
     header: () => $t('Start Time'),
     cell: ({ row }) => {
-      const startTime = row.getValue("start_time");
+      const startTime = row.getValue('start_time');
       return (
         <div class="flex items-center gap-2">
           <CalendarIcon class="h-4 w-4 text-muted-foreground" />
           <span class="font-medium">
             {formatStaticTime(new Date(startTime as string), {
-              year: "numeric",
-              month: "long",
-              day: "2-digit",
-              hour: "2-digit",
-              minute: "2-digit",
+              year: 'numeric',
+              month: 'long',
+              day: '2-digit',
+              hour: '2-digit',
+              minute: '2-digit',
             })}
           </span>
         </div>
@@ -122,7 +122,7 @@ const columns = computed<ColumnDef<App.Entities.Meeting, any>[]>(() => [
     enableSorting: true,
   },
   {
-    accessorKey: "institutions",
+    accessorKey: 'institutions',
     header: () => $t('Institution'),
     cell: ({ row }) => {
       const institutions = row.original.institutions || [];
@@ -143,7 +143,7 @@ const columns = computed<ColumnDef<App.Entities.Meeting, any>[]>(() => [
     enableSorting: false,
   },
   {
-    accessorKey: "agenda_items",
+    accessorKey: 'agenda_items',
     header: () => $t('Agenda Items'),
     cell: ({ row }) => {
       const agendaItems = row.original.agenda_items || [];
@@ -155,7 +155,9 @@ const columns = computed<ColumnDef<App.Entities.Meeting, any>[]>(() => [
           <Tooltip>
             <TooltipTrigger asChild>
               <span class="text-sm">
-                {agendaItems.length} {agendaItems.length === 1 ? $t('item') : $t('items')}
+                {agendaItems.length}
+                {' '}
+                {agendaItems.length === 1 ? $t('item') : $t('items')}
               </span>
             </TooltipTrigger>
             <TooltipContent side="top" class="max-w-xs">
@@ -164,7 +166,10 @@ const columns = computed<ColumnDef<App.Entities.Meeting, any>[]>(() => [
                   <li key={item.id} class="truncate">{item.title}</li>
                 ))}
                 {agendaItems.length > 5 && (
-                  <li class="text-muted-foreground">...{$t('and {count} more', { count: agendaItems.length - 5 })}</li>
+                  <li class="text-muted-foreground">
+                    ...
+                    {$t('and {count} more', { count: agendaItems.length - 5 })}
+                  </li>
                 )}
               </ul>
             </TooltipContent>
@@ -176,7 +181,7 @@ const columns = computed<ColumnDef<App.Entities.Meeting, any>[]>(() => [
     enableSorting: false,
   },
   {
-    id: "completion_status",
+    id: 'completion_status',
     header: () => $t('Completion Status'),
     cell: ({ row }) => {
       const status = row.original.completion_status;
@@ -191,12 +196,12 @@ const columns = computed<ColumnDef<App.Entities.Meeting, any>[]>(() => [
     size: 180,
     enableSorting: false,
   },
-  createStandardActionsColumn<App.Entities.Meeting>("meetings", {
+  createStandardActionsColumn<App.Entities.Meeting>('meetings', {
     canView: true,
     canEdit: false,
     canDelete: true,
-    canRestore: true
-  })
+    canRestore: true,
+  }),
 ]);
 
 // Simplified table configuration using the new interfaces
@@ -211,7 +216,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Meeting>>(() => {
     totalCount: props.meta.total,
     initialPage: props.meta.current_page,
     pageSize: props.meta.per_page,
-    
+
     // Advanced features
     initialFilters: props.filters,
     initialSorting: props.sorting,
@@ -219,13 +224,13 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Meeting>>(() => {
     enableColumnVisibility: true,
     allowToggleDeleted: true,
     showDeleted: props.showDeleted,
-    
+
     // Page layout
     headerTitle: capitalize($tChoice('entities.meeting.model', 2)),
     headerDescription: $t('View and manage meeting records and their completion status'),
     icon: Icons.MEETING,
     createRoute: undefined, // Meetings are created from institution pages
-    canCreate: false
+    canCreate: false,
   };
 });
 

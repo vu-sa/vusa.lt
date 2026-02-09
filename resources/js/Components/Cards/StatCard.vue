@@ -107,46 +107,47 @@
 </template>
 
 <script setup lang="ts">
-import { computed, type Component } from 'vue'
-import { ChevronRight } from 'lucide-vue-next'
+import { computed, type Component } from 'vue';
+import { ChevronRight } from 'lucide-vue-next';
+
 import {
   urgencyPalette,
-  type UrgencyLevel
-} from '@/Composables/useDashboardCardStyles'
+  type UrgencyLevel,
+} from '@/Composables/useDashboardCardStyles';
 
 interface Props {
-  label: string
-  value: string | number
-  icon: Component
-  urgency?: UrgencyLevel
-  subtitle?: string
-  onClick?: () => void
+  label: string;
+  value: string | number;
+  icon: Component;
+  urgency?: UrgencyLevel;
+  subtitle?: string;
+  onClick?: () => void;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   urgency: 'neutral',
-})
+});
 
 // Format numeric values with locale
 const formattedValue = computed(() => {
   if (typeof props.value === 'number') {
-    return props.value.toLocaleString()
+    return props.value.toLocaleString();
   }
-  return props.value
-})
+  return props.value;
+});
 
 // Urgency-based styling classes
 const urgencyBorderClasses = computed(() => {
-  return urgencyPalette.border[props.urgency]
-})
+  return urgencyPalette.border[props.urgency];
+});
 
 const urgencyStatusClasses = computed(() => {
-  return urgencyPalette.statusIndicator[props.urgency]
-})
+  return urgencyPalette.statusIndicator[props.urgency];
+});
 
 const urgencyIconClasses = computed(() => {
-  return urgencyPalette.icon[props.urgency]
-})
+  return urgencyPalette.icon[props.urgency];
+});
 
 const urgencyValueClasses = computed(() => {
   // Values use a more prominent color for urgency states
@@ -154,12 +155,12 @@ const urgencyValueClasses = computed(() => {
     success: 'text-emerald-700 dark:text-emerald-400',
     warning: 'text-amber-700 dark:text-amber-400',
     danger: 'text-zinc-900 dark:text-zinc-100',
-    neutral: 'text-zinc-900 dark:text-zinc-100'
-  }
-  return classes[props.urgency]
-})
+    neutral: 'text-zinc-900 dark:text-zinc-100',
+  };
+  return classes[props.urgency];
+});
 
 const urgencySubtitleClasses = computed(() => {
-  return urgencyPalette.subtext[props.urgency]
-})
+  return urgencyPalette.subtext[props.urgency];
+});
 </script>

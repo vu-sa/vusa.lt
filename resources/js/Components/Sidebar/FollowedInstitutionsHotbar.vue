@@ -1,72 +1,3 @@
-<script setup lang="ts">
-import { useApi } from '@/Composables/useApi'
-import { trans as $t } from 'laravel-vue-i18n'
-import { Link } from '@inertiajs/vue3'
-import { computed, onMounted, ref, defineAsyncComponent } from 'vue'
-import { Building2, Calendar, ChevronRight, BellOff, Settings2 } from 'lucide-vue-next'
-import { Skeleton } from '@/Components/ui/skeleton'
-import {
-  SidebarGroup,
-  SidebarGroupLabel,
-  SidebarGroupContent,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-} from '@/Components/ui/sidebar'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/Components/ui/tooltip'
-
-// Async load the modal to avoid circular dependency issues
-const ManageSubscriptionsModal = defineAsyncComponent(
-  () => import('@/Pages/Admin/Dashboard/Components/ManageSubscriptionsModal.vue')
-)
-
-interface FollowedInstitution {
-  id: string
-  name: string
-  short_name: string | null
-  alias: string
-  meeting_periodicity_days: number
-  next_meeting: {
-    id: string
-    title: string
-    start_time: string
-  } | null
-  subscription: {
-    is_followed: boolean
-    is_muted: boolean
-    is_duty_based: boolean
-  }
-}
-
-const { data, isFetching, execute } = useApi<FollowedInstitution[]>(
-  route('api.v1.admin.institutions.followed'),
-  { immediate: false }
-)
-
-const institutions = computed(() => data.value ?? [])
-
-const hasInstitutions = computed(() => institutions.value.length > 0)
-
-// Modal state
-const showManageModal = ref(false)
-
-// Format date for display
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString)
-  return date.toLocaleDateString('lt-LT', { month: 'short', day: 'numeric' })
-}
-
-// Load data on mount
-onMounted(() => {
-  execute()
-})
-</script>
-
 <template>
   <SidebarGroup class="group-data-[collapsible=icon]:hidden">
     <!-- Dynamic label: clickable when empty, with settings icon when has institutions -->
@@ -79,7 +10,7 @@ onMounted(() => {
         {{ $t('visak.follow_institutions_question') }}
       </button>
       <span v-else>{{ $t('visak.followed_institutions') }}</span>
-      
+
       <!-- Settings icon when has institutions -->
       <TooltipProvider v-if="hasInstitutions">
         <Tooltip>
@@ -143,7 +74,9 @@ onMounted(() => {
               </TooltipTrigger>
               <TooltipContent side="right" class="max-w-xs">
                 <div class="space-y-1">
-                  <p class="font-medium">{{ institution.name }}</p>
+                  <p class="font-medium">
+                    {{ institution.name }}
+                  </p>
                   <p v-if="institution.next_meeting" class="text-xs text-muted-foreground">
                     {{ $t('Kitas posėdis') }}: {{ institution.next_meeting.title }}
                   </p>
@@ -165,3 +98,73 @@ onMounted(() => {
     @update:is-open="showManageModal = $event"
   />
 </template>
+
+<script setup lang="ts">
+import { trans as $t } from 'laravel-vue-i18n';
+import { Link } from '@inertiajs/vue3';
+import { computed, onMounted, ref, defineAsyncComponent } from 'vue';
+import { Building2, Calendar, ChevronRight, BellOff, Settings2 } from 'lucide-vue-next';
+
+import { useApi } from '@/Composables/useApi';
+import { Skeleton } from '@/Components/ui/skeleton';
+import {
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarGroupContent,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+} from '@/Components/ui/sidebar';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/Components/ui/tooltip';
+
+// Async load the modal to avoid circular dependency issues
+const ManageSubscriptionsModal = defineAsyncComponent(
+  () => import('@/Pages/Admin/Dashboard/Components/ManageSubscriptionsModal.vue'),
+);
+
+interface FollowedInstitution {
+  id: string;
+  name: string;
+  short_name: string | null;
+  alias: string;
+  meeting_periodicity_days: number;
+  next_meeting: {
+    id: string;
+    title: string;
+    start_time: string;
+  } | null;
+  subscription: {
+    is_followed: boolean;
+    is_muted: boolean;
+    is_duty_based: boolean;
+  };
+}
+
+const { data, isFetching, execute } = useApi<FollowedInstitution[]>(
+  route('api.v1.admin.institutions.followed'),
+  { immediate: false },
+);
+
+const institutions = computed(() => data.value ?? []);
+
+const hasInstitutions = computed(() => institutions.value.length > 0);
+
+// Modal state
+const showManageModal = ref(false);
+
+// Format date for display
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('lt-LT', { month: 'short', day: 'numeric' });
+};
+
+// Load data on mount
+onMounted(() => {
+  execute();
+});
+</script>

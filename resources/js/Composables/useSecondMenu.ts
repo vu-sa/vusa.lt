@@ -1,6 +1,7 @@
-import { computed, ref, onMounted, onUnmounted } from "vue";
-import { usePage } from "@inertiajs/vue3";
-import { SCROLL_THRESHOLD } from "@/Constants/navigation";
+import { computed, ref, onMounted, onUnmounted } from 'vue';
+import { usePage } from '@inertiajs/vue3';
+
+import { SCROLL_THRESHOLD } from '@/Constants/navigation';
 
 /**
  * Navigation height constants in pixels
@@ -17,16 +18,16 @@ export const NAV_HEIGHTS = {
 
 /**
  * Composable for managing secondary menu visibility and navigation spacing.
- * 
+ *
  * The secondary menu is visible when:
  * 1. The tenant has links configured (hasSecondMenu)
  * 2. The user hasn't scrolled past the threshold (not hasScrolledDown)
- * 
+ *
  * This composable centralizes the logic for both:
  * - MainNavigation.vue (to show/hide the menu)
  * - PublicLayout.vue (to adjust main content offset)
  * - Any other component that needs to react to navigation state
- * 
+ *
  * @example
  * ```vue
  * const { isSecondMenuVisible, hasSecondMenu, mainContentOffset } = useSecondMenu();
@@ -34,7 +35,7 @@ export const NAV_HEIGHTS = {
  */
 export function useSecondMenu() {
   const hasScrolledDown = ref(false);
-  
+
   // Check if tenant has second menu links configured
   const hasSecondMenu = computed(() => {
     const page = usePage();
@@ -43,21 +44,21 @@ export function useSecondMenu() {
   });
 
   // Second menu is visible when tenant has it AND user hasn't scrolled down
-  const isSecondMenuVisible = computed(() => 
-    hasSecondMenu.value && !hasScrolledDown.value
+  const isSecondMenuVisible = computed(() =>
+    hasSecondMenu.value && !hasScrolledDown.value,
   );
 
   // Calculate the main content offset based on navigation state
   // This ensures content doesn't overlap with the fixed navigation
   const mainContentOffset = computed(() => {
     const baseOffset = NAV_HEIGHTS.PRIMARY + NAV_HEIGHTS.MARGIN;
-    
+
     if (hasSecondMenu.value) {
       // When second menu exists, add its height
       // The menu slides away when scrolled, but we keep the offset for smooth transitions
       return baseOffset + NAV_HEIGHTS.SECONDARY;
     }
-    
+
     return baseOffset;
   });
 
@@ -78,13 +79,13 @@ export function useSecondMenu() {
 
   // Set up scroll listener
   onMounted(() => {
-    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener('scroll', handleScroll, { passive: true });
     // Check initial scroll position
     handleScroll();
   });
 
   onUnmounted(() => {
-    window.removeEventListener("scroll", handleScroll);
+    window.removeEventListener('scroll', handleScroll);
   });
 
   return {
@@ -104,7 +105,7 @@ export function useSecondMenu() {
 /**
  * Simplified version that only checks if second menu exists (no scroll tracking)
  * Use this when you only need to know about the menu existence, not visibility state.
- * 
+ *
  * @example
  * ```vue
  * const hasSecondMenu = useHasSecondMenu();

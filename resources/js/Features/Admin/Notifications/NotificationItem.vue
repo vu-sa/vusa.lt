@@ -5,7 +5,7 @@
     @click="handleNavigate"
   >
     <UnifiedNotification
-      :notification="notification"
+      :notification
       class="flex-1 min-w-0"
       @mute-thread="handleMuteThread"
     />
@@ -26,14 +26,15 @@
 </template>
 
 <script setup lang="ts">
-import { router, usePage } from "@inertiajs/vue3";
-import { useFetch } from "@vueuse/core";
+import { router, usePage } from '@inertiajs/vue3';
+import { useFetch } from '@vueuse/core';
 
-import { Button } from "@/Components/ui/button";
-import UnifiedNotification from "./NotificationTypes/UnifiedNotification.vue";
+import UnifiedNotification from './NotificationTypes/UnifiedNotification.vue';
+
+import { Button } from '@/Components/ui/button';
 import IFluentCheckmark24Filled from '~icons/fluent/checkmark24-filled';
 
-export type NotificationData = {
+export interface NotificationData {
   // New standardized structure
   category?: string;
   modelClass?: string;
@@ -56,43 +57,43 @@ export type NotificationData = {
   };
   // Legacy fields for backward compatibility
   text?: string;
-};
+}
 
 const props = defineProps<{
   notification: App.Entities.Notification<NotificationData>;
 }>();
 
 const emit = defineEmits<{
-  (event: "markAsRead", id: string): void;
-  (event: "hidePopover"): void;
-  (event: "muteThread", modelClass: string, modelId: string): void;
+  (event: 'markAsRead', id: string): void;
+  (event: 'hidePopover'): void;
+  (event: 'muteThread', modelClass: string, modelId: string): void;
 }>();
 
 const handleNavigate = () => {
   const url = props.notification.data.url || props.notification.data.object?.url;
   if (url) {
-    emit("hidePopover");
+    emit('hidePopover');
     router.visit(url);
   }
 };
 
 const handleMarkAsRead = async () => {
   const { execute } = useFetch(
-    route("notifications.markAsRead", props.notification.id),
+    route('notifications.markAsRead', props.notification.id),
     {
       headers: {
-        "X-CSRF-TOKEN": usePage().props.csrf_token,
+        'X-CSRF-TOKEN': usePage().props.csrf_token,
       },
     },
-    { immediate: false }
+    { immediate: false },
   ).post().json();
 
   await execute();
 
-  emit("markAsRead", props.notification.id);
+  emit('markAsRead', props.notification.id);
 };
 
 const handleMuteThread = (modelClass: string, modelId: string) => {
-  emit("muteThread", modelClass, modelId);
+  emit('muteThread', modelClass, modelId);
 };
 </script>

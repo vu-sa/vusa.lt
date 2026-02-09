@@ -36,7 +36,9 @@
                 <SelectValue :placeholder="$t('Kategorija')" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="__all__">{{ $t("Visos kategorijos") }}</SelectItem>
+                <SelectItem value="__all__">
+                  {{ $t("Visos kategorijos") }}
+                </SelectItem>
                 <SelectItem v-for="option in categoryOptions" :key="option.value" :value="String(option.value)">
                   {{ option.label }}
                 </SelectItem>
@@ -49,7 +51,9 @@
                 <SelectValue :placeholder="$t('Padalinys')" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="__all__">{{ $t("Visi padaliniai") }}</SelectItem>
+                <SelectItem value="__all__">
+                  {{ $t("Visi padaliniai") }}
+                </SelectItem>
                 <SelectItem v-for="option in tenantOptions" :key="option.value" :value="String(option.value)">
                   {{ option.label }}
                 </SelectItem>
@@ -85,16 +89,20 @@
     <!-- Tabs for upcoming and past events -->
     <Tabs :model-value="activeTab" @update:model-value="handleTabChange">
       <TabsList class="mb-4">
-        <TabsTrigger value="upcoming">{{ $t('Būsimi renginiai') }}</TabsTrigger>
-        <TabsTrigger value="past">{{ $t('Praėję renginiai') }}</TabsTrigger>
+        <TabsTrigger value="upcoming">
+          {{ $t('Būsimi renginiai') }}
+        </TabsTrigger>
+        <TabsTrigger value="past">
+          {{ $t('Praėję renginiai') }}
+        </TabsTrigger>
       </TabsList>
-      
+
       <TabsContent value="upcoming">
-        <EventListContent :events="events" :tab="activeTab" @page-change="handlePageChange" />
+        <EventListContent :events :tab="activeTab" @page-change="handlePageChange" />
       </TabsContent>
 
       <TabsContent value="past">
-        <EventListContent :events="events" :tab="activeTab" @page-change="handlePageChange" />
+        <EventListContent :events :tab="activeTab" @page-change="handlePageChange" />
       </TabsContent>
     </Tabs>
   </div>
@@ -104,19 +112,18 @@
 </template>
 
 <script setup lang="ts">
-import { trans as $t } from "laravel-vue-i18n";
-import { ref, computed } from "vue";
-import { router, usePage } from "@inertiajs/vue3";
-import { format, addDays, subDays, startOfDay, differenceInDays, isSameDay, parseISO } from "date-fns";
-import { lt, enUS } from "date-fns/locale";
+import { trans as $t } from 'laravel-vue-i18n';
+import { ref, computed } from 'vue';
+import { router, usePage } from '@inertiajs/vue3';
+import { format, addDays, subDays, startOfDay, differenceInDays, isSameDay, parseISO } from 'date-fns';
+import { lt, enUS } from 'date-fns/locale';
 
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
-import { Button } from "@/Components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
-import CalendarSyncModal from "@/Components/Modals/CalendarSyncModal.vue";
-import EventListContent from "@/Components/Calendar/EventListContent.vue";
-
+import { Button } from '@/Components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import CalendarSyncModal from '@/Components/Modals/CalendarSyncModal.vue';
+import EventListContent from '@/Components/Calendar/EventListContent.vue';
 import IFluentCalendar16Regular from '~icons/fluent/calendar-16-regular';
 
 // Set breadcrumbs for calendar list page
@@ -125,8 +132,8 @@ usePageBreadcrumbs(() => {
     BreadcrumbHelpers.createBreadcrumbItem(
       'Kalendorius',
       undefined,
-      IFluentCalendar16Regular
-    )
+      IFluentCalendar16Regular,
+    ),
   ]);
 });
 
@@ -141,8 +148,8 @@ const props = defineProps<{
     links: any[];
   };
   activeTab: string;
-  allCategories?: Array<{id: number, name: string}>;
-  allTenants?: Array<{id: number, shortname: string}>;
+  allCategories?: Array<{ id: number; name: string }>;
+  allTenants?: Array<{ id: number; shortname: string }>;
 }>();
 
 const showModal = ref(false);
@@ -162,7 +169,7 @@ const filters = ref({
   search: params.get('search') || '',
   category: categoryParam,
   tenant: tenantParam,
-  tab: props.activeTab || 'upcoming'
+  tab: props.activeTab || 'upcoming',
 });
 
 // Computed values for Select components (Shadcn Select uses string values)
@@ -171,14 +178,14 @@ const selectedCategory = computed({
   get: () => filters.value.category ? String(filters.value.category) : '__all__',
   set: (val: string) => {
     filters.value.category = val && val !== '__all__' ? parseInt(val) : null;
-  }
+  },
 });
 
 const selectedTenant = computed({
   get: () => filters.value.tenant ? String(filters.value.tenant) : '__all__',
   set: (val: string) => {
     filters.value.tenant = val && val !== '__all__' ? parseInt(val) : null;
-  }
+  },
 });
 
 // Handlers for select changes
@@ -198,31 +205,31 @@ const onTenantChange = (value: unknown) => {
 
 // Fetch all available categories and tenants from the backend rather than relying on filtered data
 const page = usePage();
-const allCategories = ref<{ label: string, value: number }[]>([]);
-const allTenants = ref<{ label: string, value: number }[]>([]);
+const allCategories = ref<{ label: string; value: number }[]>([]);
+const allTenants = ref<{ label: string; value: number }[]>([]);
 
 // Initialize with all categories and tenants from the backend
 const initializeFilters = () => {
   // Reset the filter options
   allCategories.value = [];
   allTenants.value = [];
-  
+
   // Add categories from backend
   if (props.allCategories) {
-    props.allCategories.forEach(category => {
+    props.allCategories.forEach((category) => {
       allCategories.value.push({
         label: category.name,
-        value: category.id
+        value: category.id,
       });
     });
   }
-  
+
   // Add tenants from backend
   if (props.allTenants) {
-    props.allTenants.forEach(tenant => {
+    props.allTenants.forEach((tenant) => {
       allTenants.value.push({
         label: tenant.shortname,
-        value: tenant.id
+        value: tenant.id,
       });
     });
   }
@@ -249,7 +256,7 @@ const applyFilters = () => {
     category: filters.value.category || undefined,
     tenant: filters.value.tenant || undefined,
     tab: filters.value.tab,
-    page: 1 // Reset to first page when applying new filters
+    page: 1, // Reset to first page when applying new filters
   }), {
     only: ['events', 'activeTab', 'allCategories', 'allTenants'],
     preserveState: true,
@@ -261,7 +268,7 @@ const applyFilters = () => {
     },
     onError: () => {
       searchLoading.value = false;
-    }
+    },
   });
 };
 
@@ -272,7 +279,7 @@ const handleTabChange = (tabValue: string | number) => {
     search: '',
     category: null,
     tenant: null,
-    tab: String(tabValue)
+    tab: String(tabValue),
   };
 
   // Apply filters with the new tab (all filters reset)
@@ -288,7 +295,7 @@ const handlePageChange = (page: number) => {
     category: filters.value.category || undefined,
     tenant: filters.value.tenant || undefined,
     tab: filters.value.tab,
-    page: page
+    page,
   }), {
     only: ['events', 'activeTab', 'allCategories', 'allTenants'],
     preserveState: true,
@@ -296,7 +303,7 @@ const handlePageChange = (page: number) => {
     onSuccess: () => {
       // We don't need to reinitialize filters when just changing pages
       // The tab hasn't changed so filter options should remain the same
-    }
+    },
   });
 };
 
@@ -306,7 +313,7 @@ const resetFilters = () => {
     search: '',
     category: null,
     tenant: null,
-    tab: filters.value.tab // Preserve the active tab
+    tab: filters.value.tab, // Preserve the active tab
   };
   applyFilters();
 };
@@ -328,7 +335,7 @@ const densityBars = computed(() => {
 
   // Count events per day
   const eventCounts = new Map<string, number>();
-  props.events.data.forEach(event => {
+  props.events.data.forEach((event) => {
     const eventDate = startOfDay(parseISO(event.date));
     const dateKey = format(eventDate, 'yyyy-MM-dd');
     eventCounts.set(dateKey, (eventCounts.get(dateKey) || 0) + 1);
@@ -336,7 +343,7 @@ const densityBars = computed(() => {
 
   // Find max count for scaling
   let maxCount = 0;
-  eventCounts.forEach(count => {
+  eventCounts.forEach((count) => {
     if (count > maxCount) maxCount = count;
   });
 

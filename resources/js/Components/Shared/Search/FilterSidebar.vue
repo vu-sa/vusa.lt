@@ -90,52 +90,52 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { trans as $t } from 'laravel-vue-i18n'
-import { Filter, RotateCcw } from 'lucide-vue-next'
+import { ref } from 'vue';
+import { trans as $t } from 'laravel-vue-i18n';
+import { Filter, RotateCcw } from 'lucide-vue-next';
 
-import { Button } from '@/Components/ui/button'
-import { Badge } from '@/Components/ui/badge'
+import { Button } from '@/Components/ui/button';
+import { Badge } from '@/Components/ui/badge';
 import {
   Sheet,
   SheetTrigger,
   SheetContent,
   SheetHeader,
   SheetTitle,
-} from '@/Components/ui/sheet'
-import { ScrollArea } from '@/Components/ui/scroll-area'
+} from '@/Components/ui/sheet';
+import { ScrollArea } from '@/Components/ui/scroll-area';
 
 interface Props {
   /** Number of active filters to display in badge */
-  activeFilterCount?: number
+  activeFilterCount?: number;
   /** Translation key for mobile sheet title */
-  mobileTitle?: string
+  mobileTitle?: string;
 }
 
 withDefaults(defineProps<Props>(), {
   activeFilterCount: 0,
   mobileTitle: 'search.filters',
-})
+});
 
 const emit = defineEmits<{
-  clearFilters: []
-}>()
+  clearFilters: [];
+}>();
 
-const isMobileFiltersOpen = ref(false)
+const isMobileFiltersOpen = ref(false);
 
 // Handle clear filters and close mobile sheet
 const handleClearFilters = () => {
-  emit('clearFilters')
-  isMobileFiltersOpen.value = false
-}
+  emit('clearFilters');
+  isMobileFiltersOpen.value = false;
+};
 
 // Expose for parent components that need to control the sheet
 defineExpose({
   closeSheet: () => {
-    isMobileFiltersOpen.value = false
+    isMobileFiltersOpen.value = false;
   },
   openSheet: () => {
-    isMobileFiltersOpen.value = true
+    isMobileFiltersOpen.value = true;
   },
-})
+});
 </script>

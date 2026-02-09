@@ -1,17 +1,3 @@
-<script setup lang="ts">
-import { cn } from '@/Utils/Shadcn/utils'
-import { TabsContent, type TabsContentProps } from 'reka-ui'
-import { computed, type HTMLAttributes } from 'vue'
-
-const props = defineProps<TabsContentProps & { class?: HTMLAttributes['class'] }>()
-
-const delegatedProps = computed(() => {
-  const { class: _, ...delegated } = props
-
-  return delegated
-})
-</script>
-
 <template>
   <TabsContent
     data-slot="tabs-content"
@@ -21,3 +7,18 @@ const delegatedProps = computed(() => {
     <slot />
   </TabsContent>
 </template>
+
+<script setup lang="ts">
+import { TabsContent, type TabsContentProps } from 'reka-ui';
+import { computed, type HTMLAttributes } from 'vue';
+
+import { cn } from '@/Utils/Shadcn/utils';
+
+const props = defineProps<TabsContentProps & { class?: HTMLAttributes['class'] }>();
+
+const delegatedProps = computed(() => {
+  const { class: _, ...delegated } = props;
+
+  return delegated;
+});
+</script>

@@ -8,12 +8,13 @@
 </template>
 
 <script setup lang="ts">
-import { router } from "@inertiajs/vue3";
+import { router } from '@inertiajs/vue3';
 
-import { formTemplate as form } from "../../../Types/formTemplates";
-import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
-import FormForm from "@/Components/AdminForms/FormForm.vue";
+import { formTemplate as form } from '../../../Types/formTemplates';
+
+import PageContent from '@/Components/Layouts/AdminContentPage.vue';
+import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
+import FormForm from '@/Components/AdminForms/FormForm.vue';
 
 defineProps<{
   assignableTenants: App.Entities.Tenant[];

@@ -14,7 +14,7 @@ import { useForm } from '@inertiajs/vue3';
 import RichContentFormElement from '@/Components/RichContentFormElement.vue';
 import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
 import AdminForm from '@/Components/AdminForms/AdminForm.vue';
-import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
+import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
 
 const { tenant } = defineProps<{
   tenant: App.Entities.Tenant;

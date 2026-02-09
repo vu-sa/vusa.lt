@@ -13,7 +13,7 @@
               :get-key="(item) => String(item.value)"
               :get-label="(item) => item.label"
               :is-item-disabled="(item) => item.checkboxDisabled ?? false"
-              :filter="filter"
+              :filter
               multiple
               class="p-1"
             >
@@ -65,22 +65,21 @@
     <h2 class="mt-4">
       Rolės teisės
     </h2>
-    <RolePermissionForms :role="role" :allAvailablePermissions="allAvailablePermissions" model-route="roles.update" />
+    <RolePermissionForms :role :all-available-permissions model-route="roles.update" />
   </AdminContentPage>
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
-import { router } from "@inertiajs/vue3";
+import { ref } from 'vue';
+import { router } from '@inertiajs/vue3';
 
-import Eye16Regular from "~icons/fluent/eye16-regular"
-
-import { Button } from "@/Components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/Components/ui/card";
-import { TransferList } from "@/Components/ui/transfer-list";
-import { Tree } from "@/Components/ui/tree";
-import AdminContentPage from "@/Components/Layouts/AdminContentPage.vue";
-import RolePermissionForms from "@/Components/AdminForms/RolePermissionForms.vue";
+import Eye16Regular from '~icons/fluent/eye16-regular';
+import { Button } from '@/Components/ui/button';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/Components/ui/card';
+import { TransferList } from '@/Components/ui/transfer-list';
+import { Tree } from '@/Components/ui/tree';
+import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
+import RolePermissionForms from '@/Components/AdminForms/RolePermissionForms.vue';
 
 const props = defineProps<{
   tenantsWithDuties: App.Entities.Tenant[];
@@ -90,22 +89,22 @@ const props = defineProps<{
 }>();
 
 interface DutyTreeOption {
-  label: string
-  value: string | number
-  checkboxDisabled?: boolean
-  children?: DutyTreeOption[]
+  label: string;
+  value: string | number;
+  checkboxDisabled?: boolean;
+  children?: DutyTreeOption[];
 }
 
 const dutyOptions: DutyTreeOption[] = props.tenantsWithDuties.map(
-  (tenant) => ({
+  tenant => ({
     label: tenant.shortname,
     value: tenant.id,
     checkboxDisabled: true,
-    children: tenant.institutions?.map((institution) => ({
+    children: tenant.institutions?.map(institution => ({
       label: institution.name,
       value: institution.id,
       checkboxDisabled: true,
-      children: institution.duties?.map((duty) => ({
+      children: institution.duties?.map(duty => ({
         label: duty.name,
         value: duty.id,
       })),
@@ -114,20 +113,20 @@ const dutyOptions: DutyTreeOption[] = props.tenantsWithDuties.map(
 );
 
 const flattenDutyOptions = dutyOptions.flatMap(
-  (tenant) =>
+  tenant =>
     tenant.children?.flatMap(
-      (institution) => institution.children?.map((duty) => ({
+      institution => institution.children?.map(duty => ({
         value: duty.value,
         label: duty.label,
       })) ?? [],
     ) ?? [],
 );
 
-const currentDuties = ref(props.role.duties?.map((duty) => duty.id));
+const currentDuties = ref(props.role.duties?.map(duty => duty.id));
 
 const handleDutyUpdate = () => {
   router.put(
-    route("roles.syncDuties", props.role.id),
+    route('roles.syncDuties', props.role.id),
     {
       duties: currentDuties.value,
     },
@@ -139,7 +138,7 @@ const handleDutyUpdate = () => {
 
 const handleAttachableTypesUpdate = () => {
   router.put(
-    route("roles.syncAttachableTypes", props.role.id),
+    route('roles.syncAttachableTypes', props.role.id),
     {
       attachable_types: props.role.attachable_types,
     },

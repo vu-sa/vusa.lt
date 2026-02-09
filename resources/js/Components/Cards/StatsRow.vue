@@ -41,17 +41,17 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted, onUnmounted } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue';
 
 interface Props {
-  columns?: 2 | 3 | 4 | 5
-  showScrollIndicators?: boolean
+  columns?: 2 | 3 | 4 | 5;
+  showScrollIndicators?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   columns: 4,
   showScrollIndicators: true,
-})
+});
 
 // Grid column classes based on props
 const gridColsClass = computed(() => {
@@ -60,30 +60,30 @@ const gridColsClass = computed(() => {
     3: 'md:grid-cols-3',
     4: 'md:grid-cols-2 lg:grid-cols-4',
     5: 'md:grid-cols-3 lg:grid-cols-5',
-  }
-  return colClasses[props.columns] || 'md:grid-cols-4'
-})
+  };
+  return colClasses[props.columns] || 'md:grid-cols-4';
+});
 
 // Scroll position tracking for fade indicators
-const scrollPosition = ref(0)
-const isAtEnd = ref(false)
+const scrollPosition = ref(0);
+const isAtEnd = ref(false);
 
-let scrollContainer: HTMLElement | null = null
+let scrollContainer: HTMLElement | null = null;
 
 const handleScroll = (e: Event) => {
-  const target = e.target as HTMLElement
-  scrollPosition.value = target.scrollLeft
-  isAtEnd.value = target.scrollLeft + target.clientWidth >= target.scrollWidth - 10
-}
+  const target = e.target as HTMLElement;
+  scrollPosition.value = target.scrollLeft;
+  isAtEnd.value = target.scrollLeft + target.clientWidth >= target.scrollWidth - 10;
+};
 
 onMounted(() => {
-  scrollContainer = document.querySelector('.snap-x')
-  scrollContainer?.addEventListener('scroll', handleScroll, { passive: true })
-})
+  scrollContainer = document.querySelector('.snap-x');
+  scrollContainer?.addEventListener('scroll', handleScroll, { passive: true });
+});
 
 onUnmounted(() => {
-  scrollContainer?.removeEventListener('scroll', handleScroll)
-})
+  scrollContainer?.removeEventListener('scroll', handleScroll);
+});
 </script>
 
 <style scoped>

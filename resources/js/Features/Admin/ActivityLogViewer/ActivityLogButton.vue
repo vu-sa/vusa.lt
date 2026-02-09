@@ -7,7 +7,7 @@
     <div v-if="activities.length > 0" class="flex flex-col gap-4">
       <div v-for="activity in activities" :key="activity.id"
         class="border-b last:border-0 pb-4 last:pb-0 border-zinc-300 dark:border-zinc-700">
-        <ActivityLogItem :activity="activity" />
+        <ActivityLogItem :activity />
       </div>
     </div>
     <div v-else>
@@ -19,11 +19,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref } from 'vue';
 
-import { Button } from "@/Components/ui/button";
-import ActivityLogItem from "@/Features/Admin/ActivityLogViewer/ActivityLogItem.vue";
-import CardModal from "@/Components/Modals/CardModal.vue";
+import { Button } from '@/Components/ui/button';
+import ActivityLogItem from '@/Features/Admin/ActivityLogViewer/ActivityLogItem.vue';
+import CardModal from '@/Components/Modals/CardModal.vue';
 
 defineProps<{
   activities: Record<string, any>;

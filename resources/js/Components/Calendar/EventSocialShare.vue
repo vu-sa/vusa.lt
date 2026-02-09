@@ -65,20 +65,20 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { trans as $t } from 'laravel-vue-i18n'
+import { computed, ref } from 'vue';
+import { trans as $t } from 'laravel-vue-i18n';
 
-import { formatStaticTime } from '@/Utils/IntlTime'
-import { LocaleEnum } from '@/Types/enums'
-import Button from '@/Components/ui/button/Button.vue'
+import { formatStaticTime } from '@/Utils/IntlTime';
+import { LocaleEnum } from '@/Types/enums';
+import Button from '@/Components/ui/button/Button.vue';
 
 interface Props {
-  event: App.Entities.Calendar
-  url?: string
-  locale?: string
-  variant?: 'default' | 'compact' | 'sidebar'
-  showAnalytics?: boolean
-  shareCount?: number
+  event: App.Entities.Calendar;
+  url?: string;
+  locale?: string;
+  variant?: 'default' | 'compact' | 'sidebar';
+  showAnalytics?: boolean;
+  shareCount?: number;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -86,168 +86,173 @@ const props = withDefaults(defineProps<Props>(), {
   locale: 'lt',
   variant: 'default',
   showAnalytics: false,
-  shareCount: 0
-})
+  shareCount: 0,
+});
 
 // Reactive state
-const isSharing = ref(false)
-const isCopying = ref(false)
-const copySuccess = ref(false)
+const isSharing = ref(false);
+const isCopying = ref(false);
+const copySuccess = ref(false);
 
 // Check if browser supports native share API
 const supportsNativeShare = computed(() => {
-  return typeof navigator !== 'undefined' && 'share' in navigator
-})
+  return typeof navigator !== 'undefined' && 'share' in navigator;
+});
 
 // Share data preparation
 const shareTitle = computed(() => {
-  return Array.isArray(props.event.title) ? props.event.title.join(' ') : (props.event.title || '')
-})
+  return Array.isArray(props.event.title) ? props.event.title.join(' ') : (props.event.title || '');
+});
 
 const shareText = computed(() => {
-  const title = shareTitle.value
+  const title = shareTitle.value;
   const dateText = formatStaticTime(
     new Date(props.event.date),
     { dateStyle: 'medium', timeStyle: 'short' },
-  // Ensure locale is one of our supported enums
-  (props.locale === LocaleEnum.EN || props.locale === 'en') ? LocaleEnum.EN : LocaleEnum.LT
-  )
-  return `${title} - ${dateText}`
-})
+    // Ensure locale is one of our supported enums
+    (props.locale === LocaleEnum.EN || props.locale === 'en') ? LocaleEnum.EN : LocaleEnum.LT,
+  );
+  return `${title} - ${dateText}`;
+});
 
 const shareDescription = computed(() => {
   // Strip HTML and truncate description
   const description = Array.isArray(props.event.description)
     ? props.event.description.join(' ')
-    : (props.event.description || '')
+    : (props.event.description || '');
   // Repeatedly remove tags to handle nested/malformed HTML without external deps
-  const tagRegex = /<[^>]*>/g
-  let cleanDescription = description
-  let prev: string
+  const tagRegex = /<[^>]*>/g;
+  let cleanDescription = description;
+  let prev: string;
   do {
-    prev = cleanDescription
-    cleanDescription = cleanDescription.replace(tagRegex, '')
-  } while (cleanDescription !== prev)
-  return cleanDescription.length > 200 ? `${cleanDescription.substring(0, 200)}...` : cleanDescription
-})
+    prev = cleanDescription;
+    cleanDescription = cleanDescription.replace(tagRegex, '');
+  } while (cleanDescription !== prev);
+  return cleanDescription.length > 200 ? `${cleanDescription.substring(0, 200)}...` : cleanDescription;
+});
 
 // Copy button state
 const copyIcon = computed(() => {
-  if (isCopying.value) return 'IFluentArrowSync20Regular'
-  if (copySuccess.value) return 'IFluentCheckmark20Regular'
-  return 'IFluentCopy20Regular'
-})
+  if (isCopying.value) return 'IFluentArrowSync20Regular';
+  if (copySuccess.value) return 'IFluentCheckmark20Regular';
+  return 'IFluentCopy20Regular';
+});
 
 const copyButtonText = computed(() => {
-  if (isCopying.value) return $t('Kopijuojama...')
-  if (copySuccess.value) return $t('Nukopijuota!')
-  return $t('Kopijuoti nuorodą')
-})
+  if (isCopying.value) return $t('Kopijuojama...');
+  if (copySuccess.value) return $t('Nukopijuota!');
+  return $t('Kopijuoti nuorodą');
+});
 
 // Native share functionality
 const handleNativeShare = async () => {
-  if (!supportsNativeShare.value) return
+  if (!supportsNativeShare.value) return;
 
-  isSharing.value = true
+  isSharing.value = true;
 
   try {
     await navigator.share({
       title: shareTitle.value,
       text: shareText.value,
-      url: props.url
-    })
-
-  } catch (error) {
-    console.log('Share cancelled or failed:', error)
-    // Fallback to clipboard copy
-    await copyToClipboard()
-  } finally {
-    isSharing.value = false
+      url: props.url,
+    });
   }
-}
+  catch (error) {
+    console.log('Share cancelled or failed:', error);
+    // Fallback to clipboard copy
+    await copyToClipboard();
+  }
+  finally {
+    isSharing.value = false;
+  }
+};
 
 // Social platform sharing
 const shareToFacebook = () => {
-  const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(props.url)}`
-  openShareWindow(url, 'Facebook')
-}
+  const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(props.url)}`;
+  openShareWindow(url, 'Facebook');
+};
 
 const shareToTwitter = () => {
-  const text = `${shareText.value}\n\n${props.url}`
-  const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`
-  openShareWindow(url, 'Twitter')
-}
+  const text = `${shareText.value}\n\n${props.url}`;
+  const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+  openShareWindow(url, 'Twitter');
+};
 
 const shareToLinkedIn = () => {
-  const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(props.url)}`
-  openShareWindow(url, 'LinkedIn')
-}
+  const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(props.url)}`;
+  openShareWindow(url, 'LinkedIn');
+};
 
 const shareViaEmail = () => {
-  const subject = encodeURIComponent(shareTitle.value)
-  const body = encodeURIComponent(`${shareText.value}\n\n${shareDescription.value}\n\n${props.url}`)
-  const url = `mailto:?subject=${subject}&body=${body}`
-  window.location.href = url
-}
+  const subject = encodeURIComponent(shareTitle.value);
+  const body = encodeURIComponent(`${shareText.value}\n\n${shareDescription.value}\n\n${props.url}`);
+  const url = `mailto:?subject=${subject}&body=${body}`;
+  window.location.href = url;
+};
 
 // Clipboard functionality
 const copyToClipboard = async () => {
-  if (isCopying.value) return
+  if (isCopying.value) return;
 
-  isCopying.value = true
+  isCopying.value = true;
 
   try {
-    await navigator.clipboard.writeText(props.url)
-    copySuccess.value = true
+    await navigator.clipboard.writeText(props.url);
+    copySuccess.value = true;
 
     // Reset success state after 2 seconds
     setTimeout(() => {
-      copySuccess.value = false
-    }, 2000)
-  } catch (error) {
-    console.error('Failed to copy to clipboard:', error)
-    // Fallback for older browsers
-    fallbackCopyToClipboard()
-  } finally {
-    isCopying.value = false
+      copySuccess.value = false;
+    }, 2000);
   }
-}
+  catch (error) {
+    console.error('Failed to copy to clipboard:', error);
+    // Fallback for older browsers
+    fallbackCopyToClipboard();
+  }
+  finally {
+    isCopying.value = false;
+  }
+};
 
 // Fallback copy method for older browsers
 const fallbackCopyToClipboard = () => {
-  const textArea = document.createElement('textarea')
-  textArea.value = props.url
-  textArea.style.position = 'fixed'
-  textArea.style.opacity = '0'
-  document.body.appendChild(textArea)
-  textArea.select()
+  const textArea = document.createElement('textarea');
+  textArea.value = props.url;
+  textArea.style.position = 'fixed';
+  textArea.style.opacity = '0';
+  document.body.appendChild(textArea);
+  textArea.select();
 
   try {
-    document.execCommand('copy')
-    copySuccess.value = true
+    document.execCommand('copy');
+    copySuccess.value = true;
     setTimeout(() => {
-      copySuccess.value = false
-    }, 2000)
-  } catch (error) {
-    console.error('Fallback copy failed:', error)
-  } finally {
-    document.body.removeChild(textArea)
+      copySuccess.value = false;
+    }, 2000);
   }
-}
+  catch (error) {
+    console.error('Fallback copy failed:', error);
+  }
+  finally {
+    document.body.removeChild(textArea);
+  }
+};
 
 // Share window helper
 const openShareWindow = (url: string, platform: string) => {
-  const width = 600
-  const height = 400
-  const left = (window.innerWidth - width) / 2
-  const top = (window.innerHeight - height) / 2
+  const width = 600;
+  const height = 400;
+  const left = (window.innerWidth - width) / 2;
+  const top = (window.innerHeight - height) / 2;
 
   window.open(
     url,
     `share-${platform}`,
-    `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
-  )
-}
+    `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`,
+  );
+};
 
 </script>
 

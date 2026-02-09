@@ -2,7 +2,7 @@
   <div class="space-y-2">
     <Label>
       Ikona. <span class="text-zinc-400"> Ikonų ieškokite <a target="_blank" class="font-bold underline"
-          href="https://icon-sets.iconify.design/fluent/">čia</a>. Suradę reikiamą ikoną pasirinkite iš
+        href="https://icon-sets.iconify.design/fluent/">čia</a>. Suradę reikiamą ikoną pasirinkite iš
         sąrašo. </span>
     </Label>
     <div class="flex items-center gap-2">
@@ -59,15 +59,13 @@ const props = defineProps<{
   icon: string | null;
 }>();
 
-defineEmits<{
-  (e: 'update:icon', value: string): void
-}>()
+defineEmits<(e: 'update:icon', value: string) => void>();
 
 const iconRef = ref(props.icon);
 const searchTerm = ref('');
 
 const getIconOptions = async () => {
-  const response = await fetch("https://api.iconify.design/collection?prefix=fluent");
+  const response = await fetch('https://api.iconify.design/collection?prefix=fluent');
   const iconData = await response.json();
   return iconData;
 };

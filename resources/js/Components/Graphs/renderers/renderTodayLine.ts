@@ -1,38 +1,39 @@
 /**
  * renderTodayLine - Render the today line indicator
- * 
+ *
  * Renders a vertical line at today's date position.
  */
-import * as d3 from 'd3'
-import type { GanttColors } from '../ganttColors'
+import type * as d3 from 'd3';
+
+import type { GanttColors } from '../ganttColors';
 
 export interface TodayLineRenderContext {
   /** Main group element */
-  g: d3.Selection<SVGGElement, unknown, null, undefined>
+  g: d3.Selection<SVGGElement, unknown, null, undefined>;
   /** Time scale */
-  x: d3.ScaleTime<number, number>
+  x: d3.ScaleTime<number, number>;
   /** Inner height of SVG */
-  innerHeight: number
+  innerHeight: number;
   /** Minimum visible time */
-  minTime: Date
+  minTime: Date;
   /** Maximum visible time */
-  maxTime: Date
+  maxTime: Date;
   /** Color palette */
-  colors: GanttColors
+  colors: GanttColors;
   /** Whether to show the today line */
-  showTodayLine: boolean
+  showTodayLine: boolean;
 }
 
 /**
  * Render today line indicator
  */
 export function renderTodayLine(ctx: TodayLineRenderContext): void {
-  const { g, x, innerHeight, minTime, maxTime, colors, showTodayLine } = ctx
+  const { g, x, innerHeight, minTime, maxTime, colors, showTodayLine } = ctx;
 
-  if (!showTodayLine) return
+  if (!showTodayLine) return;
 
-  const today = new Date()
-  if (today < minTime || today > maxTime) return
+  const today = new Date();
+  if (today < minTime || today > maxTime) return;
 
   g.append('line')
     .attr('class', 'today-line')
@@ -42,5 +43,5 @@ export function renderTodayLine(ctx: TodayLineRenderContext): void {
     .attr('y2', innerHeight)
     .attr('stroke', colors.todayLine)
     .attr('stroke-width', 1)
-    .attr('pointer-events', 'none')
+    .attr('pointer-events', 'none');
 }

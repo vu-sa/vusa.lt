@@ -71,6 +71,8 @@
 </template>
 
 <script setup lang="ts">
+import { useColorOptions } from '../composables/useColorOptions';
+
 import type { ShadcnCard } from '@/Types/contentParts';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import InfoPopover from '@/Components/Buttons/InfoPopover.vue';
@@ -79,7 +81,6 @@ import { Input } from '@/Components/ui/input';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { ToggleGroup, ToggleGroupItem } from '@/Components/ui/toggle-group';
-import { useColorOptions } from '../composables/useColorOptions';
 import IFluentSquare24Regular from '~icons/fluent/square24-regular';
 import IFluentSquare24Filled from '~icons/fluent/square24-filled';
 

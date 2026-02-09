@@ -3,7 +3,7 @@
  * Note: Uses type assertion for test mocks where not all properties are needed
  */
 export function createMockUser(
-  overrides: Record<string, unknown> = {}
+  overrides: Record<string, unknown> = {},
 ): App.Entities.User {
   return {
     id: '1',
@@ -65,7 +65,7 @@ export function createMockUser(
  * Creates a mock User with current_duties (for auth context)
  */
 export function createMockAuthUser(
-  overrides: Partial<App.Entities.User> = {}
+  overrides: Partial<App.Entities.User> = {},
 ): App.Entities.User & { current_duties: Array<{ institution: { id: string; name: string; shortname: string } }> } {
   const user = createMockUser(overrides);
   return {

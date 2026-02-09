@@ -43,14 +43,14 @@
           <Clock class="h-4 w-4" />
           {{ $t('Pridėti pažymą') }}
         </Button>
-        
+
         <!-- Subscription buttons -->
         <TooltipProvider v-if="subscription">
           <Tooltip>
             <TooltipTrigger as-child>
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 class="gap-2"
                 :disabled="isDutyBased || isFollowLoading"
                 @click="toggleFollow"
@@ -65,12 +65,12 @@
               {{ $t('Negalima nustoti sekti institucijos, kurioje turite pareigų') }}
             </TooltipContent>
           </Tooltip>
-          
+
           <Tooltip v-if="isFollowed">
             <TooltipTrigger as-child>
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 class="gap-2"
                 :disabled="isDutyBased || isMuteLoading"
                 @click="toggleMute"
@@ -86,7 +86,7 @@
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
-        
+
         <MoreOptionsButton edit @edit-click="router.visit(route('institutions.edit', institution.id))" />
       </template>
     </ShowPageHero>
@@ -146,7 +146,7 @@
 
                     <!-- Current Members -->
                     <div class="flex items-center gap-3 mb-2">
-                        <UsersAvatarGroup :users="duty.current_users" :max="3" :size="24" />
+                      <UsersAvatarGroup :users="duty.current_users" :max="3" :size="24" />
 
                       <span class="text-xs text-zinc-500 dark:text-zinc-400">
                         {{ duty.current_users?.length || 0 }} / {{ duty.places_to_occupy || 0 }} {{ $t('užimta') }}
@@ -316,9 +316,9 @@
 </template>
 
 <script setup lang="tsx">
-import { computed, defineAsyncComponent, ref } from "vue";
-import { router, Head as InertiaHead, usePage } from "@inertiajs/vue3";
-import { trans as $t } from "laravel-vue-i18n";
+import { computed, defineAsyncComponent, ref } from 'vue';
+import { router, Head as InertiaHead, usePage } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
 
 // Icons
 import {
@@ -336,34 +336,34 @@ import {
   AlertCircle,
   FileCheck,
   ClipboardCheck,
-  Trash2
+  Trash2,
 } from 'lucide-vue-next';
 
 // Layout and Components
-import AdminContentPage from "@/Components/Layouts/AdminContentPage.vue";
-import ShowPageHero from "@/Components/Hero/ShowPageHero.vue";
-import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
-import SimpleFileViewer from "@/Features/Admin/SharepointFileManager/Viewer/SimpleFileViewer.vue";
-import NewMeetingDialog from "@/Components/Dialogs/NewMeetingDialog.vue";
-import AddCheckInDialog from "@/Components/Institutions/AddCheckInDialog.vue";
-import UsersAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
-import MeetingOutcomeIndicators from "@/Components/Public/Search/MeetingOutcomeIndicators.vue";
-import InstitutionOverviewSection from "@/Components/Institutions/InstitutionOverviewSection.vue";
-import TaskManager from "@/Features/Admin/TaskManager/TaskManager.vue";
+import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
+import ShowPageHero from '@/Components/Hero/ShowPageHero.vue';
+import MoreOptionsButton from '@/Components/Buttons/MoreOptionsButton.vue';
+import SimpleFileViewer from '@/Features/Admin/SharepointFileManager/Viewer/SimpleFileViewer.vue';
+import NewMeetingDialog from '@/Components/Dialogs/NewMeetingDialog.vue';
+import AddCheckInDialog from '@/Components/Institutions/AddCheckInDialog.vue';
+import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
+import MeetingOutcomeIndicators from '@/Components/Public/Search/MeetingOutcomeIndicators.vue';
+import InstitutionOverviewSection from '@/Components/Institutions/InstitutionOverviewSection.vue';
+import TaskManager from '@/Features/Admin/TaskManager/TaskManager.vue';
 
 // UI Components
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
-import { Button } from "@/Components/ui/button";
-import { Badge } from "@/Components/ui/badge";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
+import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import { Button } from '@/Components/ui/button';
+import { Badge } from '@/Components/ui/badge';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 
 // Utils
-import Icons from "@/Types/Icons/filled";
-import { BreadcrumbHelpers, usePageBreadcrumbs } from "@/Composables/useBreadcrumbsUnified";
-import { useInstitutionSubscription } from "@/Pages/Admin/Dashboard/Composables/useInstitutionSubscription";
-import { useShowPageData } from "@/Composables/useShowPageData";
-import { useInstitutionUrgency } from "@/Composables/useInstitutionUrgency";
+import Icons from '@/Types/Icons/filled';
+import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
+import { useInstitutionSubscription } from '@/Pages/Admin/Dashboard/Composables/useInstitutionSubscription';
+import { useShowPageData } from '@/Composables/useShowPageData';
+import { useInstitutionUrgency } from '@/Composables/useInstitutionUrgency';
 
 const props = defineProps<{
   institution: App.Entities.Institution;
@@ -378,7 +378,7 @@ const props = defineProps<{
 const { currentTab, deferredContentReady, navigateToTab } = useShowPageData({
   tabKey: 'institution',
   entityId: props.institution.id,
-  defaultTab: 'overview'
+  defaultTab: 'overview',
 });
 
 const showMeetingModal = ref(false);
@@ -407,7 +407,7 @@ const isMuteLoading = computed(() => muteLoading.value[String(props.institution.
 
 const toggleFollow = async () => {
   if (isDutyBased.value) return;
-  
+
   const newState = await doToggleFollow(String(props.institution.id), subscriptionState.value, ['subscription']);
   isFollowed.value = newState;
   // If unfollowed, also unmute locally
@@ -418,30 +418,30 @@ const toggleFollow = async () => {
 
 const toggleMute = async () => {
   if (isDutyBased.value) return;
-  
+
   const newState = await doToggleMute(String(props.institution.id), subscriptionState.value, ['subscription']);
   isMuted.value = newState;
 };
 
 // Async Components
 const FileManager = defineAsyncComponent(
-  () => import("@/Features/Admin/SharepointFileManager/SharepointFileManager.vue")
+  () => import('@/Features/Admin/SharepointFileManager/SharepointFileManager.vue'),
 );
 
 const RelatedInstitutions = defineAsyncComponent(
-  () => import("@/Components/Carousels/RelatedInstitutions.vue")
+  () => import('@/Components/Carousels/RelatedInstitutions.vue'),
 );
 
 // Generate breadcrumbs
 usePageBreadcrumbs(
   BreadcrumbHelpers.adminShow(
-    "Institucijos",
-    "institutions.index",
+    'Institucijos',
+    'institutions.index',
     {},
     props.institution.name,
     Icons.INSTITUTION,
-    Icons.INSTITUTION
-  )
+    Icons.INSTITUTION,
+  ),
 );
 
 // Computed properties
@@ -453,7 +453,7 @@ const relatedInstitutionCount = computed(() => {
   // Fallback to legacy format
   return Object.values(props.institution.relatedInstitutions || {}).reduce(
     (acc, val) => acc + (val?.length || 0),
-    0
+    0,
   );
 });
 
@@ -518,7 +518,7 @@ const sortedDuties = computed(() => {
 const sortedMeetings = computed(() => {
   if (!props.institution.meetings) return [];
   return [...props.institution.meetings].sort(
-    (a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime()
+    (a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime(),
   );
 });
 
@@ -527,7 +527,7 @@ const formatMeetingDate = (dateString: string) => {
   return date.toLocaleDateString('lt-LT', {
     year: 'numeric',
     month: '2-digit',
-    day: '2-digit'
+    day: '2-digit',
   });
 };
 

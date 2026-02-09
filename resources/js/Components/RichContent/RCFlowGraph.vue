@@ -5,10 +5,10 @@
 </template>
 
 <script setup lang="ts">
-import type { FlowGraph } from "@/Types/contentParts";
+import type { FlowGraph } from '@/Types/contentParts';
 import VusaStructure from '@/Features/StructureGraph/presets/VusaStructure.vue';
 
 defineProps<{
   element: FlowGraph;
-}>()
+}>();
 </script>

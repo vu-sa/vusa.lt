@@ -1,4 +1,4 @@
-import { type ColumnDef, type SortingState, type RowSelectionState } from '@tanstack/vue-table';
+import type { ColumnDef, SortingState, RowSelectionState } from '@tanstack/vue-table';
 
 /**
  * Essential table configuration - required props only
@@ -12,7 +12,7 @@ export interface BaseTableConfig<TData> {
   columns: ColumnDef<TData, any>[];
   /** Total count of items (across all pages) - required for server-side tables */
   totalCount: number;
-  
+
   // Optional but commonly used
   /** The entity name in singular form (e.g., 'institution') - defaults to singular of modelName */
   entityName?: string;
@@ -41,7 +41,7 @@ export interface AdvancedTableConfig {
   allowToggleDeleted?: boolean;
   /** Whether to show deleted items initially */
   showDeleted?: boolean;
-  
+
   // Row selection
   /** Whether to enable row selection (defaults to false) */
   enableRowSelection?: boolean;
@@ -66,13 +66,13 @@ export interface PageTableConfig {
   icon?: any;
   /** Back route (if applicable) */
   backRoute?: string;
-  
+
   // Create functionality
   /** Route to create a new item */
   createRoute?: string;
   /** Whether the user can create new items (defaults to false) */
   canCreate?: boolean;
-  
+
   // Customization
   /** Custom message when table is empty */
   emptyMessage?: string;
@@ -87,16 +87,16 @@ export interface PageTableConfig {
 /**
  * Complete configuration for IndexTablePage component
  */
-export interface IndexTablePageProps<TData> extends 
-  BaseTableConfig<TData>, 
-  AdvancedTableConfig, 
+export interface IndexTablePageProps<TData> extends
+  BaseTableConfig<TData>,
+  AdvancedTableConfig,
   PageTableConfig {}
 
 /**
  * Configuration for ServerDataTable component (no page wrapper)
  */
-export interface ServerTableProps<TData> extends 
-  BaseTableConfig<TData>, 
+export interface ServerTableProps<TData> extends
+  BaseTableConfig<TData>,
   AdvancedTableConfig {
   /** Custom message when table is empty */
   emptyMessage?: string;
@@ -144,7 +144,7 @@ export const TablePresets = {
     enableColumnVisibility: false,
     enableRowSelection: false,
     canCreate: false,
-    pageSize: 10
+    pageSize: 10,
   } as Partial<AdvancedTableConfig & PageTableConfig>,
 
   /**
@@ -155,7 +155,7 @@ export const TablePresets = {
     enableColumnVisibility: false,
     enableRowSelection: false,
     canCreate: true,
-    pageSize: 15
+    pageSize: 15,
   } as Partial<AdvancedTableConfig & PageTableConfig>,
 
   /**
@@ -169,8 +169,8 @@ export const TablePresets = {
     enableRowSelectionColumn: true,
     allowToggleDeleted: true,
     canCreate: true,
-    pageSize: 15
-  } as Partial<AdvancedTableConfig & PageTableConfig>
+    pageSize: 15,
+  } as Partial<AdvancedTableConfig & PageTableConfig>,
 } as const;
 
 /**
@@ -178,10 +178,10 @@ export const TablePresets = {
  */
 export function createTableConfig<TData>(
   preset: keyof typeof TablePresets,
-  customConfig: Partial<IndexTablePageProps<TData>>
+  customConfig: Partial<IndexTablePageProps<TData>>,
 ): IndexTablePageProps<TData> {
   return {
     ...TablePresets[preset],
-    ...customConfig
+    ...customConfig,
   } as IndexTablePageProps<TData>;
 }

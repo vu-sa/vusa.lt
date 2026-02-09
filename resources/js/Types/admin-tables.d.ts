@@ -20,47 +20,47 @@ export interface AdminIndexPageProps<T = Record<string, any>> {
    * Paginated models returned from the server
    */
   paginatedModels: PaginatedModels<T[]>;
-  
+
   /**
    * Model name in snake_case - used for route generation
    */
   modelName: string;
-  
+
   /**
    * Entity name for display - e.g. "Institution" or "User"
    */
   entityName?: string;
-  
+
   /**
    * Entity name plural for display in title - e.g. "Institutions" or "Users"
    */
   entityNamePlural?: string;
-  
+
   /**
    * Initial sorter state
    */
   initialSorting?: SortingState;
-  
+
   /**
    * Initial filter state
    */
   initialFilters?: TableFilters;
-  
+
   /**
    * Function that builds the columns definition
    */
   columnBuilder: (sorting: Ref<SortingState>, filters: Ref<TableFilters>) => ColumnDef<T, any>[];
-  
+
   /**
    * Which routes are enabled for this index page
    */
   canUseRoutes?: RouteCapabilities;
-  
+
   /**
    * Icon component to display in the header
    */
   icon?: Component;
-  
+
   /**
    * Optional custom title. If not provided, will be generated from entityName
    */

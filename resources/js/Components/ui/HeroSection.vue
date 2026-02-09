@@ -7,7 +7,7 @@
           <div class="space-y-3 sm:space-y-4 md:space-y-5 2xl:space-y-6">
             <h1
               class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-zinc-900 dark:text-zinc-100 leading-tight"
-              v-html="title" 
+              v-html="title"
             />
             <p class="text-sm sm:text-base md:text-lg lg:text-xl text-zinc-600 dark:text-zinc-400 leading-relaxed max-w-lg">
               {{ description }}
@@ -26,8 +26,8 @@
             :alt="imageAlt"
             height-class="h-[240px] sm:h-[280px] md:h-[320px] lg:h-[360px] xl:h-[400px] 2xl:h-[500px]"
             :decorations="imageDecorations"
-            :overlay-content="overlayContent"
-            :object-position="objectPosition"
+            :overlay-content
+            :object-position
             loading="eager"
           />
         </div>
@@ -69,7 +69,7 @@ withDefaults(defineProps<Props>(), {
   objectPosition: '40% 65%',
   imageDecorations: () => [
     { type: 'line', position: 'top-right', size: 'md', color: 'vusa-red', opacity: 60 },
-    { type: 'square', position: 'top-left', size: 'md', color: 'vusa-yellow', rotation: true }
+    { type: 'square', position: 'top-left', size: 'md', color: 'vusa-yellow', rotation: true },
   ],
 });
 </script>

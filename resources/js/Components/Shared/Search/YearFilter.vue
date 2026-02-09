@@ -49,88 +49,88 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { trans as $t } from 'laravel-vue-i18n'
+import { ref, computed } from 'vue';
+import { trans as $t } from 'laravel-vue-i18n';
 
-import type { FacetValue, FilterOption } from './types'
+import type { FacetValue, FilterOption } from './types';
 
 interface Props {
   /**
    * Year values to display. Can be FacetValue[] or FilterOption[]
    */
-  values: FacetValue[] | FilterOption[]
+  values: FacetValue[] | FilterOption[];
   /**
    * Currently selected years
    */
-  selectedValues: number[]
+  selectedValues: number[];
   /**
    * Maximum number of years visible before "Show more" (0 = show all)
    */
-  maxVisible?: number
+  maxVisible?: number;
   /**
    * Whether to show counts next to years
    */
-  showCounts?: boolean
+  showCounts?: boolean;
   /**
    * Sort order for years
    */
-  sortOrder?: 'asc' | 'desc'
+  sortOrder?: 'asc' | 'desc';
 }
 
 const props = withDefaults(defineProps<Props>(), {
   maxVisible: 6,
   showCounts: true,
   sortOrder: 'desc',
-})
+});
 
 const emit = defineEmits<{
-  toggle: [year: number]
-}>()
+  toggle: [year: number];
+}>();
 
 // Local state
-const showAll = ref(false)
+const showAll = ref(false);
 
 // Normalize and sort values
 const allSortedValues = computed(() => {
-  const normalized = props.values.map((v) => ({
+  const normalized = props.values.map(v => ({
     value: typeof v.value === 'number' ? v.value : parseInt(String(v.value), 10),
     count: v.count ?? 0,
-  }))
+  }));
 
   return normalized.sort((a, b) => {
-    return props.sortOrder === 'desc' ? b.value - a.value : a.value - b.value
-  })
-})
+    return props.sortOrder === 'desc' ? b.value - a.value : a.value - b.value;
+  });
+});
 
 // Check if we have more years than max
 const hasMoreYears = computed(() => {
-  return props.maxVisible > 0 && props.values.length > props.maxVisible
-})
+  return props.maxVisible > 0 && props.values.length > props.maxVisible;
+});
 
 // Hidden count
 const hiddenCount = computed(() => {
-  return props.values.length - props.maxVisible
-})
+  return props.values.length - props.maxVisible;
+});
 
 // Values to display
 const displayedValues = computed(() => {
   if (props.maxVisible === 0 || showAll.value || !hasMoreYears.value) {
-    return allSortedValues.value
+    return allSortedValues.value;
   }
 
   // Ensure selected years are always visible
-  const selected = allSortedValues.value.filter((v) => props.selectedValues.includes(v.value))
-  const unselected = allSortedValues.value.filter((v) => !props.selectedValues.includes(v.value))
+  const selected = allSortedValues.value.filter(v => props.selectedValues.includes(v.value));
+  const unselected = allSortedValues.value.filter(v => !props.selectedValues.includes(v.value));
 
   // Show selected + recent years up to max
-  const remaining = props.maxVisible - selected.length
+  const remaining = props.maxVisible - selected.length;
   return [...selected, ...unselected.slice(0, Math.max(0, remaining))].sort((a, b) => {
-    return props.sortOrder === 'desc' ? b.value - a.value : a.value - b.value
-  })
-})
+    return props.sortOrder === 'desc' ? b.value - a.value : a.value - b.value;
+  });
+});
 
 // Check if a year is selected
 const isSelected = (value: number): boolean => {
-  return props.selectedValues.includes(value)
-}
+  return props.selectedValues.includes(value);
+};
 </script>

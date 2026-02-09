@@ -3,8 +3,8 @@
     <DialogContent class="max-w-[95vw] sm:max-w-[90vw] w-full max-h-[90vh] sm:max-h-[85vh] overflow-y-auto p-4 sm:p-6">
       <DialogHeader class="pb-3">
         <DialogTitle class="text-lg sm:text-xl">
-{{ $t('Visi atstovai') }}
-</DialogTitle>
+          {{ $t('Visi atstovai') }}
+        </DialogTitle>
         <DialogDescription class="text-sm">
           {{ $t('Peržiūrėkite visų atstovų prisijungimo aktyvumą') }}
         </DialogDescription>

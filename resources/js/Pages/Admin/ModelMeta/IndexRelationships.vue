@@ -10,20 +10,20 @@
 </template>
 
 <script setup lang="tsx">
-import { trans as $t } from "laravel-vue-i18n";
-import { type ColumnDef } from '@tanstack/vue-table';
-import { ref, computed } from "vue";
+import { trans as $t } from 'laravel-vue-i18n';
+import type { ColumnDef } from '@tanstack/vue-table';
+import { ref, computed } from 'vue';
 
-import Icons from "@/Types/Icons/regular";
-import IndexTablePage from "@/Components/Layouts/IndexTablePage.vue";
-import { createStandardActionsColumn } from "@/Composables/useTableActions";
+import Icons from '@/Types/Icons/regular';
+import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
+import { createStandardActionsColumn } from '@/Composables/useTableActions';
 import {
   createTextColumn,
   createIdColumn,
 } from '@/Utils/DataTableColumns';
-import {
-  type IndexTablePageProps
-} from "@/Types/TableConfigTypes";
+import type {
+  IndexTablePageProps,
+} from '@/Types/TableConfigTypes';
 
 const props = defineProps<{
   relationships: {
@@ -52,23 +52,23 @@ const getRowId = (row: App.Entities.Relationship) => {
 
 const columns = computed<ColumnDef<App.Entities.Relationship, any>[]>(() => [
   createIdColumn<App.Entities.Relationship>(),
-  createTextColumn<App.Entities.Relationship>("name", {
-    title: $t("forms.fields.name"),
+  createTextColumn<App.Entities.Relationship>('name', {
+    title: $t('forms.fields.name'),
     width: 250,
   }),
-  createTextColumn<App.Entities.Relationship>("slug", {
-    title: $t("Techninė žymė"),
+  createTextColumn<App.Entities.Relationship>('slug', {
+    title: $t('Techninė žymė'),
     width: 200,
   }),
-  createTextColumn<App.Entities.Relationship>("description", {
-    title: $t("forms.fields.description"),
+  createTextColumn<App.Entities.Relationship>('description', {
+    title: $t('forms.fields.description'),
     width: 300,
   }),
-  createStandardActionsColumn<App.Entities.Relationship>("relationships", {
+  createStandardActionsColumn<App.Entities.Relationship>('relationships', {
     canView: false,
     canEdit: true,
     canDelete: true,
-  })
+  }),
 ]);
 
 const tableConfig = computed<IndexTablePageProps<App.Entities.Relationship>>(() => {
@@ -88,7 +88,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Relationship>>(() 
     enableColumnVisibility: false,
     enableRowSelection: false,
 
-    headerTitle: "Ryšiai",
+    headerTitle: 'Ryšiai',
     icon: Icons.RELATIONSHIP,
     createRoute: route('relationships.create'),
     canCreate: true,

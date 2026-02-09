@@ -3,10 +3,11 @@
 </template>
 
 <script setup lang="ts">
-import StructureGraphWrapper from "@/Features/StructureGraph/StructureGraphWrapper.vue";
-import { usePage } from "@inertiajs/vue3";
-import { MarkerType } from "@vue-flow/core"
-import { trans as $t } from "laravel-vue-i18n";
+import { usePage } from '@inertiajs/vue3';
+import { MarkerType } from '@vue-flow/core';
+import { trans as $t } from 'laravel-vue-i18n';
+
+import StructureGraphWrapper from '@/Features/StructureGraph/StructureGraphWrapper.vue';
 
 const nodes = [
   {
@@ -72,7 +73,7 @@ const nodes = [
     style: { lineHeight: '1.25', width: '260px' },
     position: { x: 50, y: 410 },
   },
-]
+];
 
 const edges = [
   {
@@ -219,5 +220,5 @@ const edges = [
       type: MarkerType.ArrowClosed,
     },
   },
-]
+];
 </script>

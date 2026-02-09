@@ -1,22 +1,3 @@
-<script setup lang="ts">
-import type { WithClassAsProps } from './interface'
-import { cn } from '@/Utils/Shadcn/utils'
-import { Button, type ButtonVariants } from '@/Components/ui/button'
-import { ArrowLeft } from 'lucide-vue-next'
-import { useCarousel } from './useCarousel'
-
-const props = withDefaults(defineProps<{
-  variant?: ButtonVariants['variant']
-  size?: ButtonVariants['size']
-}
-& WithClassAsProps>(), {
-  variant: 'outline',
-  size: 'icon',
-})
-
-const { orientation, canScrollPrev, scrollPrev } = useCarousel()
-</script>
-
 <template>
   <Button
     data-slot="carousel-previous"
@@ -28,8 +9,8 @@ const { orientation, canScrollPrev, scrollPrev } = useCarousel()
         : '-top-12 left-1/2 -translate-x-1/2 rotate-90',
       props.class,
     )"
-    :variant="variant"
-    :size="size"
+    :variant
+    :size
     @click="scrollPrev"
   >
     <slot>
@@ -38,3 +19,24 @@ const { orientation, canScrollPrev, scrollPrev } = useCarousel()
     </slot>
   </Button>
 </template>
+
+<script setup lang="ts">
+import { ArrowLeft } from 'lucide-vue-next';
+
+import type { WithClassAsProps } from './interface';
+import { useCarousel } from './useCarousel';
+
+import { cn } from '@/Utils/Shadcn/utils';
+import { Button, type ButtonVariants } from '@/Components/ui/button';
+
+const props = withDefaults(defineProps<{
+  variant?: ButtonVariants['variant'];
+  size?: ButtonVariants['size'];
+}
+& WithClassAsProps>(), {
+  variant: 'outline',
+  size: 'icon',
+});
+
+const { orientation, canScrollPrev, scrollPrev } = useCarousel();
+</script>

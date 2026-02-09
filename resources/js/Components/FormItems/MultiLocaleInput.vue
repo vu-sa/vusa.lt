@@ -1,9 +1,9 @@
 <template>
   <div class="w-full space-y-1">
     <div class="relative">
-      <Input 
+      <Input
         v-if="inputType !== 'textarea'"
-        v-model="currentValue" 
+        v-model="currentValue"
         :placeholder="currentPlaceholder"
         class="pr-12"
       />
@@ -17,7 +17,7 @@
         <SimpleLocaleButton v-model:locale="inputLang" />
       </div>
     </div>
-    <button 
+    <button
       type="button"
       class="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
       @click="toggleLang"
@@ -30,28 +30,28 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
-import { usePage } from "@inertiajs/vue3";
+import { computed, ref } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 
-import SimpleLocaleButton from "../Buttons/SimpleLocaleButton.vue";
+import SimpleLocaleButton from '../Buttons/SimpleLocaleButton.vue';
 
-import { Input } from "@/Components/ui/input";
-import { Textarea } from "@/Components/ui/textarea";
-import { LocaleEnum } from "@/Types/enums";
+import { Input } from '@/Components/ui/input';
+import { Textarea } from '@/Components/ui/textarea';
+import { LocaleEnum } from '@/Types/enums';
 
 const props = defineProps<{
-  inputType?: "text" | "textarea";
+  inputType?: 'text' | 'textarea';
   placeholder?: string | { lt: string; en: string };
 }>();
 
 const inputLang = ref(usePage().props.app.locale);
 
-const input = defineModel<{ lt: string; en: string }>("input", {
-  default: { lt: "", en: "" },
+const input = defineModel<{ lt: string; en: string }>('input', {
+  default: { lt: '', en: '' },
 });
 
 if (Array.isArray(input.value)) {
-  input.value = { lt: "", en: "" };
+  input.value = { lt: '', en: '' };
 }
 
 const currentValue = computed({
@@ -59,10 +59,11 @@ const currentValue = computed({
   set: (val: string) => {
     if (inputLang.value === 'lt') {
       input.value.lt = val;
-    } else {
+    }
+    else {
       input.value.en = val;
     }
-  }
+  },
 });
 
 const currentPlaceholder = computed(() => {

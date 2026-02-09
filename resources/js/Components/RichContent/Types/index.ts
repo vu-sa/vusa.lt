@@ -1,4 +1,5 @@
-import { type Component, type AsyncComponentLoader } from 'vue';
+import type { Component, AsyncComponentLoader } from 'vue';
+
 import TextCaseUppercase20Filled from '~icons/fluent/text-case-uppercase20-filled';
 
 // Re-export all type definitions
@@ -25,46 +26,46 @@ export interface ContentType {
 }
 
 export const contentTypeRegistry: Record<string, ContentType> = {
-  "tiptap": {
-    value: "tiptap",
-    label: "Tekstas",
+  'tiptap': {
+    value: 'tiptap',
+    label: 'Tekstas',
     icon: TextCaseUppercase20Filled,
-    description: "Redaguojamas teksto blokas su formatavimo galimybėmis",
+    description: 'Redaguojamas teksto blokas su formatavimo galimybėmis',
     defaultContent: () => ({}),
   },
-  "shadcn-accordion": {
-    value: "shadcn-accordion",
-    label: "Išsiskleidžiantis sąrašas",
+  'shadcn-accordion': {
+    value: 'shadcn-accordion',
+    label: 'Išsiskleidžiantis sąrašas',
     icon: AppsListDetail24Regular,
-    description: "Išsiskleidžiantis turinio blokas, kur rodomas tik pavadinimas",
+    description: 'Išsiskleidžiantis turinio blokas, kur rodomas tik pavadinimas',
     defaultContent: () => ([]),
   },
-  "shadcn-card": {
-    value: "shadcn-card",
-    label: "Kortelė",
+  'shadcn-card': {
+    value: 'shadcn-card',
+    label: 'Kortelė',
     icon: CalendarDay24Regular,
-    description: "Specialiai apipavidalintas tekstas su antrašte",
+    description: 'Specialiai apipavidalintas tekstas su antrašte',
     defaultContent: () => ({}),
     defaultOptions: () => ({
       variant: 'outline',
       color: 'zinc',
       title: '',
       isTitleColored: false,
-      showIcon: false
+      showIcon: false,
     }),
   },
-  "image-grid": {
-    value: "image-grid",
-    label: "Nuotraukų tinklelis",
+  'image-grid': {
+    value: 'image-grid',
+    label: 'Nuotraukų tinklelis',
     icon: ImageMultiple24Regular,
-    description: "Kelių nuotraukų išdėstymas tinkleliu",
+    description: 'Kelių nuotraukų išdėstymas tinkleliu',
     defaultContent: () => ([]),
   },
-  "hero": {
-    value: "hero",
-    label: "Hero",
+  'hero': {
+    value: 'hero',
+    label: 'Hero',
     icon: HeroIcon,
-    description: "Didelis turinio blokas su paveiksliuku",
+    description: 'Didelis turinio blokas su paveiksliuku',
     defaultContent: () => ({
       title: '',
       subtitle: '',
@@ -75,80 +76,80 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     }),
     defaultOptions: () => ({ is_active: true, backgroundBlur: false, buttonColor: 'red' }),
   },
-  "news": {
-    value: "news",
-    label: "Naujienos",
+  'news': {
+    value: 'news',
+    label: 'Naujienos',
     icon: NewsIcon,
-    description: "Naujienų blokas",
-    defaultContent: () => ({ title: "" }),
+    description: 'Naujienų blokas',
+    defaultContent: () => ({ title: '' }),
   },
-  "calendar": {
-    value: "calendar",
-    label: "Kalendorius",
+  'calendar': {
+    value: 'calendar',
+    label: 'Kalendorius',
     icon: CalendarIcon,
-    description: "Kalendoriaus blokas",
-    defaultContent: () => ({ title: "" }),
+    description: 'Kalendoriaus blokas',
+    defaultContent: () => ({ title: '' }),
     defaultOptions: () => ({ allTenants: false }),
   },
-  "spotify-embed": {
-    value: "spotify-embed",
-    label: "Spotify",
+  'spotify-embed': {
+    value: 'spotify-embed',
+    label: 'Spotify',
     icon: SpotifyIcon,
-    description: "Spotify grojaraščio įterpimas",
-    defaultContent: () => ({ url: "" }),
+    description: 'Spotify grojaraščio įterpimas',
+    defaultContent: () => ({ url: '' }),
   },
-  "social-embed": {
-    value: "social-embed",
-    label: "Facebook / Instagram",
+  'social-embed': {
+    value: 'social-embed',
+    label: 'Facebook / Instagram',
     icon: SocialIcon,
-    description: "Facebook arba Instagram įrašo įterpimas",
-    defaultContent: () => ({ url: "", platform: null, postId: "" }),
+    description: 'Facebook arba Instagram įrašo įterpimas',
+    defaultContent: () => ({ url: '', platform: null, postId: '' }),
     defaultOptions: () => ({ showCaption: true }),
   },
-  "flow-graph": {
-    value: "flow-graph",
-    label: "Flow Graph",
+  'flow-graph': {
+    value: 'flow-graph',
+    label: 'Flow Graph',
     icon: FlowIcon,
-    description: "Proceso eigos schema",
-    defaultContent: () => ({ preset: "VusaStructure" }),
+    description: 'Proceso eigos schema',
+    defaultContent: () => ({ preset: 'VusaStructure' }),
   },
-  "number-stat-section": {
-    value: "number-stat-section",
-    label: "Skaitinės statistikos",
+  'number-stat-section': {
+    value: 'number-stat-section',
+    label: 'Skaitinės statistikos',
     icon: NumberIcon,
-    description: "Skaičių statistikos sekcija",
+    description: 'Skaičių statistikos sekcija',
     defaultContent: () => ([]),
-    defaultOptions: () => ({ title: "", color: "zinc" }),
+    defaultOptions: () => ({ title: '', color: 'zinc' }),
   },
-  "content-grid": {
-    value: "content-grid",
-    label: "Tinklelis",
+  'content-grid': {
+    value: 'content-grid',
+    label: 'Tinklelis',
     icon: GridIcon,
-    description: "Lankstus turinys stulpeliais ir eilutėmis",
+    description: 'Lankstus turinys stulpeliais ir eilutėmis',
     defaultContent: () => ([
       {
         columns: [
           {
-            width: "col-span-6",
+            width: 'col-span-6',
             content: {
-              type: "tiptap",
-              value: {}
-            }
+              type: 'tiptap',
+              value: {},
+            },
           },
           {
-            width: "col-span-6",
+            width: 'col-span-6',
             content: {
-              type: "tiptap",
-              value: {}
-            }
-          }
-        ]
-      }
+              type: 'tiptap',
+              value: {},
+            },
+          },
+        ],
+      },
     ]),
-    defaultOptions: () => ({ 
-      gap: "gap-4",
+    defaultOptions: () => ({
+      gap: 'gap-4',
       mobileStacking: true,
-      equalHeight: false
+      equalHeight: false,
     }),
   },
 };
@@ -158,7 +159,7 @@ export const getAllContentTypes = (): ContentType[] => {
 };
 
 export const getContentType = (type: string): ContentType => {
-  return contentTypeRegistry[type] ?? contentTypeRegistry["tiptap"]!;
+  return contentTypeRegistry[type] ?? contentTypeRegistry['tiptap']!;
 };
 
 export const createContentItem = (type: string) => {
@@ -168,7 +169,6 @@ export const createContentItem = (type: string) => {
     json_content: contentType.defaultContent(),
     options: contentType.defaultOptions ? contentType.defaultOptions() : { is_active: true },
     key: Math.random().toString(36).substring(7),
-    expanded: true
+    expanded: true,
   };
 };
-

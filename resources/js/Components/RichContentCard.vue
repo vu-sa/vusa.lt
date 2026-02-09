@@ -19,9 +19,10 @@
 </template>
 
 <script setup lang="ts">
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { computed } from 'vue';
 import { useDark } from '@vueuse/core';
+
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 
 import IconImportant from '~icons/fluent/important24-filled';
 import IconInfo from '~icons/fluent/info24-filled';
@@ -55,7 +56,7 @@ const cardColors = {
       zinc: 'rgba(255, 255, 255, 0.14)',
       red: 'rgba(189, 40, 53, 0.8)',
       yellow: 'rgba(251, 176, 27, 0.8)',
-    }
+    },
   },
   title: {
     light: {
@@ -67,7 +68,7 @@ const cardColors = {
       zinc: 'rgb(255, 255, 255)',
       red: 'rgb(189, 40, 53)',
       yellow: 'rgb(251, 176, 27)',
-    }
-  }
+    },
+  },
 };
 </script>

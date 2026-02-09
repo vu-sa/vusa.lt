@@ -46,32 +46,33 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
-import { useForm } from "@inertiajs/vue3";
+import { computed } from 'vue';
+import { useForm } from '@inertiajs/vue3';
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
-import FormElement from "./FormElement.vue";
-import FormFieldWrapper from "./FormFieldWrapper.vue";
-import AdminForm from "./AdminForm.vue";
-import MultiLocaleInput from "@/Components/FormItems/MultiLocaleInput.vue";
-import { getDegreeOptions } from "@/Utils/Degrees";
+import FormElement from './FormElement.vue';
+import FormFieldWrapper from './FormFieldWrapper.vue';
+import AdminForm from './AdminForm.vue';
+
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import MultiLocaleInput from '@/Components/FormItems/MultiLocaleInput.vue';
+import { getDegreeOptions } from '@/Utils/Degrees';
 
 const { studyProgram, tenants, rememberKey } = defineProps<{
   studyProgram: App.Entities.StudyProgram;
   tenants: Array<App.Entities.Tenant>;
-  rememberKey?: "CreateStudyProgram";
+  rememberKey?: 'CreateStudyProgram';
 }>();
 
 defineEmits<{
-  (event: "submit:form", form: unknown): void;
-  (event: "delete"): void;
+  (event: 'submit:form', form: unknown): void;
+  (event: 'delete'): void;
 }>();
 
 const form = rememberKey ? useForm(rememberKey, studyProgram) : useForm(studyProgram);
 
 const degreeOptions = getDegreeOptions();
 
-const tenantOptions = tenants.map((tenant) => ({
+const tenantOptions = tenants.map(tenant => ({
   label: tenant.shortname,
   value: tenant.id,
 }));

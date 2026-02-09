@@ -38,9 +38,9 @@
             :description="$t(`There are no ${modelName} matching your criteria.`)" :icon="EmptyIcon">
             <!-- Create button in empty state -->
             <Link v-if="canCreate && createRoute" :href="createRoute">
-            <Button>
-              {{ $t('Create') }} {{ singularModelName }}
-            </Button>
+              <Button>
+                {{ $t('Create') }} {{ singularModelName }}
+              </Button>
             </Link>
           </EmptyState>
         </slot>
@@ -53,12 +53,12 @@
 import { ref, watch, computed, onMounted } from 'vue';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import type { ColumnDef, SortingState, RowSelectionState } from '@tanstack/vue-table';
-import { router } from '@inertiajs/vue3';
+import { router, Link } from '@inertiajs/vue3';
 import { useDebounceFn } from '@vueuse/core';
 import { PlusCircleIcon } from 'lucide-vue-next';
-import { Link } from '@inertiajs/vue3';
 
 import DataTableProvider from '../ui/data-table/DataTableProvider.vue';
+
 import { Input } from '@/Components/ui/input';
 import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';
@@ -68,46 +68,46 @@ import EmptyState from '@/Components/Empty/EmptyState.vue';
 // Define the props with TypeScript generics support
 const props = defineProps<{
   // Inertia integration
-  modelName: string,
-  reloadOnly?: boolean,
+  modelName: string;
+  reloadOnly?: boolean;
 
   // Model information
-  entityName?: string,
-  pluralModelName?: string,
-  singularModelName?: string,
+  entityName?: string;
+  pluralModelName?: string;
+  singularModelName?: string;
 
   // Data display
-  columns: ColumnDef<TData, any>[],
-  data: TData[],
+  columns: ColumnDef<TData, any>[];
+  data: TData[];
 
   // Pagination
-  totalCount: number,
-  initialPage?: number,
-  pageSize?: number,
+  totalCount: number;
+  initialPage?: number;
+  pageSize?: number;
 
   // Options
-  rowClassName?: (row: TData) => string,
-  emptyMessage?: string,
-  emptyIcon?: any,
-  enableFiltering?: boolean,
-  enableColumnVisibility?: boolean,
-  showDeleted?: boolean,
+  rowClassName?: (row: TData) => string;
+  emptyMessage?: string;
+  emptyIcon?: any;
+  enableFiltering?: boolean;
+  enableColumnVisibility?: boolean;
+  showDeleted?: boolean;
 
   // Admin features
-  allowToggleDeleted?: boolean,
-  canCreate?: boolean,
-  createRoute?: string,
+  allowToggleDeleted?: boolean;
+  canCreate?: boolean;
+  createRoute?: string;
 
   // Initial state
-  initialSorting?: SortingState,
-  initialFilters?: Record<string, unknown>,
+  initialSorting?: SortingState;
+  initialFilters?: Record<string, unknown>;
 
   // Row selection
-  enableRowSelection?: boolean,
-  enableMultiRowSelection?: boolean,
-  enableRowSelectionColumn?: boolean,
-  initialRowSelection?: RowSelectionState,
-  getRowId?: (originalRow: TData, index: number, parent?: any) => string,
+  enableRowSelection?: boolean;
+  enableMultiRowSelection?: boolean;
+  enableRowSelectionColumn?: boolean;
+  initialRowSelection?: RowSelectionState;
+  getRowId?: (originalRow: TData, index: number, parent?: any) => string;
 }>();
 
 const emit = defineEmits(['dataLoaded', 'update:rowSelection', 'create', 'sorting-changed', 'page-changed', 'filter-changed']);
@@ -118,7 +118,7 @@ const pageIndex = ref(props.initialPage ? props.initialPage - 1 : 0);
 const sorting = ref<SortingState>(props.initialSorting || []);
 const filters = ref<Record<string, unknown>>({
   ...props.initialFilters || {},
-  showDeleted: props.showDeleted || false
+  showDeleted: props.showDeleted || false,
 });
 const pageSize = computed(() => props.pageSize || 10);
 const loading = ref(false);
@@ -137,12 +137,12 @@ const EmptyIcon = computed(() => props.emptyIcon || PlusCircleIcon);
 const computedRowClassName = computed(() => {
   return (row: TData) => {
     const baseClasses = props.rowClassName ? props.rowClassName(row) : '';
-    
+
     // Add soft-deleted styling if showDeleted is true and row has deleted_at
     if (showDeleted.value && row && (row as any).deleted_at) {
       return `${baseClasses} opacity-60`.trim();
     }
-    
+
     return baseClasses;
   };
 });
@@ -160,7 +160,7 @@ const singularModelName = computed(() => {
 // Server pagination for UI
 const serverPagination = computed(() => ({
   pageIndex: pageIndex.value,
-  pageSize: pageSize.value
+  pageSize: pageSize.value,
 }));
 
 // Reference to the DataTableProvider
@@ -215,7 +215,7 @@ const handleRowSelectionChange = (selection: RowSelectionState) => {
 const encodeTableState = () => {
   const state: Record<string, any> = {
     page: pageIndex.value + 1, // Convert to 1-based indexing for backend
-    per_page: pageSize.value
+    per_page: pageSize.value,
   };
 
   // Add sorting if present
@@ -267,18 +267,19 @@ const reloadData = (page?: number) => {
         sorting: sorting.value,
         filters: filters.value,
         data: responseData,
-        rowSelection: rowSelection.value
+        rowSelection: rowSelection.value,
       });
     },
     onError: (errors) => {
       console.error('Error loading data:', errors);
       loading.value = false;
-    }
+    },
   };
 
   if (props.reloadOnly) {
     router.reload(options);
-  } else {
+  }
+  else {
     router.visit(window.location.pathname, options);
   }
 };
@@ -333,10 +334,10 @@ watch(() => props.initialFilters, (newValue) => {
 
       // Handle objects specifically
       if (
-        value !== null &&
-        typeof value === 'object' &&
-        currentValue !== null &&
-        typeof currentValue === 'object'
+        value !== null
+        && typeof value === 'object'
+        && currentValue !== null
+        && typeof currentValue === 'object'
       ) {
         return JSON.stringify(value) !== JSON.stringify(currentValue);
       }
@@ -349,7 +350,7 @@ watch(() => props.initialFilters, (newValue) => {
       // Update filters keeping existing ones
       filters.value = {
         ...filters.value,
-        ...newValue
+        ...newValue,
       };
       reloadData();
     }

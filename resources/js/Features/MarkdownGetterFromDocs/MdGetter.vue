@@ -2,8 +2,10 @@
   <div v-if="error" class="subtle-error">
     {{ error }}
   </div>
-  <component v-else-if="refComponent" :is="refComponent" />
-  <div v-else class="loading">Loading content...</div>
+  <component :is="refComponent" v-else-if="refComponent" />
+  <div v-else class="loading">
+    Loading content...
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -31,7 +33,8 @@ async function loadComponent(directory: string, locale: string, file: string) {
     const { default: VueComponent } = await import(`../../../../docs/_parts/${directory}/${locale}/${file}.md`);
     refComponent.value = VueComponent;
     emit('content-loaded', true);
-  } catch (e) {
+  }
+  catch (e) {
     console.error(`Failed to load markdown file: ${directory}/${locale}/${file}.md`, e);
     error.value = `Failed to load content. Please try again later.`;
     emit('content-loaded', false);

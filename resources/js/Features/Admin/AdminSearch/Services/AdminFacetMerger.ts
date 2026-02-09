@@ -11,7 +11,7 @@ import type {
   AdminFacetValue,
   AdminSearchFilters,
   CollectionFacetConfig,
-} from '../Types/AdminSearchTypes'
+} from '../Types/AdminSearchTypes';
 
 /**
  * Merges initial facets with current search facets.
@@ -21,63 +21,63 @@ export function mergeFacets(
   initialFacets: AdminFacet[],
   currentFacets: AdminFacet[],
   filters: AdminSearchFilters,
-  facetConfig: CollectionFacetConfig
+  facetConfig: CollectionFacetConfig,
 ): AdminFacet[] {
   // If no initial facets, use current facets
   if (initialFacets.length === 0) {
-    return currentFacets.map(facet => addSelectionState(facet, filters))
+    return currentFacets.map(facet => addSelectionState(facet, filters));
   }
 
-  return initialFacets.map(initialFacet => {
+  return initialFacets.map((initialFacet) => {
     // Find corresponding current facet from search results
-    const currentFacet = currentFacets.find(f => f.field === initialFacet.field)
+    const currentFacet = currentFacets.find(f => f.field === initialFacet.field);
 
     // Create a map of current values for quick lookup
-    const currentValueMap = new Map<string, number>()
+    const currentValueMap = new Map<string, number>();
     if (currentFacet) {
-      currentFacet.values.forEach(value => {
-        currentValueMap.set(value.value, value.count)
-      })
+      currentFacet.values.forEach((value) => {
+        currentValueMap.set(value.value, value.count);
+      });
     }
 
     // Get selected values for this facet field
-    const selectedValues = getSelectedValuesForField(initialFacet.field, filters)
+    const selectedValues = getSelectedValuesForField(initialFacet.field, filters);
 
     // Merge values: show ALL initial values with updated counts from current search
-    const mergedValues = initialFacet.values.map(initialValue => {
-      const currentCount = currentValueMap.get(initialValue.value) || 0
-      const isSelected = selectedValues.includes(initialValue.value)
+    const mergedValues = initialFacet.values.map((initialValue) => {
+      const currentCount = currentValueMap.get(initialValue.value) || 0;
+      const isSelected = selectedValues.includes(initialValue.value);
 
       return {
         ...initialValue,
         count: currentCount,
         isSelected,
-      }
-    })
+      };
+    });
 
     // Add any new values from current search that weren't in initial facets
     if (currentFacet) {
-      currentFacet.values.forEach(currentValue => {
+      currentFacet.values.forEach((currentValue) => {
         const existsInInitial = initialFacet.values.some(
-          iv => iv.value === currentValue.value
-        )
+          iv => iv.value === currentValue.value,
+        );
         if (!existsInInitial) {
           mergedValues.push({
             ...currentValue,
             isSelected: selectedValues.includes(currentValue.value),
-          })
+          });
         }
-      })
+      });
     }
 
     // Sort: selected items first, then by count, then alphabetically
-    sortFacetValues(mergedValues, selectedValues)
+    sortFacetValues(mergedValues, selectedValues);
 
     return {
       ...initialFacet,
       values: mergedValues,
-    }
-  })
+    };
+  });
 }
 
 /**
@@ -85,17 +85,17 @@ export function mergeFacets(
  */
 function getSelectedValuesForField(
   field: string,
-  filters: AdminSearchFilters
+  filters: AdminSearchFilters,
 ): string[] {
-  const value = filters[field]
+  const value = filters[field];
 
   if (Array.isArray(value)) {
-    return value.map(String)
+    return value.map(String);
   }
   if (value !== undefined && value !== null) {
-    return [String(value)]
+    return [String(value)];
   }
-  return []
+  return [];
 }
 
 /**
@@ -103,22 +103,22 @@ function getSelectedValuesForField(
  */
 function sortFacetValues(
   values: AdminFacetValue[],
-  selectedValues: string[]
+  selectedValues: string[],
 ): void {
   values.sort((a, b) => {
-    const aSelected = selectedValues.includes(a.value)
-    const bSelected = selectedValues.includes(b.value)
+    const aSelected = selectedValues.includes(a.value);
+    const bSelected = selectedValues.includes(b.value);
 
     // Selected items first
-    if (aSelected && !bSelected) return -1
-    if (!aSelected && bSelected) return 1
+    if (aSelected && !bSelected) return -1;
+    if (!aSelected && bSelected) return 1;
 
     // Then by count (descending)
-    if (a.count !== b.count) return b.count - a.count
+    if (a.count !== b.count) return b.count - a.count;
 
     // Finally alphabetically
-    return a.value.localeCompare(b.value)
-  })
+    return a.value.localeCompare(b.value);
+  });
 }
 
 /**
@@ -126,9 +126,9 @@ function sortFacetValues(
  */
 function addSelectionState(
   facet: AdminFacet,
-  filters: AdminSearchFilters
+  filters: AdminSearchFilters,
 ): AdminFacet {
-  const selectedValues = getSelectedValuesForField(facet.field, filters)
+  const selectedValues = getSelectedValuesForField(facet.field, filters);
 
   return {
     ...facet,
@@ -136,7 +136,7 @@ function addSelectionState(
       ...value,
       isSelected: selectedValues.includes(value.value),
     })),
-  }
+  };
 }
 
 /**
@@ -145,52 +145,52 @@ function addSelectionState(
  */
 export function filterEmptyFacets(
   facets: AdminFacet[],
-  hasActiveSearch: boolean
+  hasActiveSearch: boolean,
 ): AdminFacet[] {
-  return facets.filter(facet => {
+  return facets.filter((facet) => {
     // Always show facets with values that have counts
     if (facet.values.some(v => v.count > 0)) {
-      return true
+      return true;
     }
 
     // During active search, show facets with selected values
     if (hasActiveSearch) {
-      return facet.values.some(v => v.isSelected)
+      return facet.values.some(v => v.isSelected);
     }
 
     // In browse mode, show all facets for discoverability
-    return true
-  })
+    return true;
+  });
 }
 
 /**
  * Calculate facet statistics for UI display
  */
 export function calculateFacetStats(facets: AdminFacet[]): {
-  totalFacets: number
-  activeFacets: number
-  totalValues: number
-  selectedValues: number
+  totalFacets: number;
+  activeFacets: number;
+  totalValues: number;
+  selectedValues: number;
 } {
-  let totalFacets = facets.length
-  let activeFacets = 0
-  let totalValues = 0
-  let selectedValues = 0
+  const totalFacets = facets.length;
+  let activeFacets = 0;
+  let totalValues = 0;
+  let selectedValues = 0;
 
-  facets.forEach(facet => {
-    const hasActiveValues = facet.values.some(v => v.count > 0)
-    if (hasActiveValues) activeFacets++
+  facets.forEach((facet) => {
+    const hasActiveValues = facet.values.some(v => v.count > 0);
+    if (hasActiveValues) activeFacets++;
 
-    totalValues += facet.values.length
-    selectedValues += facet.values.filter(v => v.isSelected).length
-  })
+    totalValues += facet.values.length;
+    selectedValues += facet.values.filter(v => v.isSelected).length;
+  });
 
   return {
     totalFacets,
     activeFacets,
     totalValues,
     selectedValues,
-  }
+  };
 }
 
 /**
@@ -198,20 +198,20 @@ export function calculateFacetStats(facets: AdminFacet[]): {
  */
 export function sortFacetsByConfig(
   facets: AdminFacet[],
-  facetConfig: CollectionFacetConfig
+  facetConfig: CollectionFacetConfig,
 ): AdminFacet[] {
-  const fieldOrder = facetConfig.fields.map(f => f.field)
+  const fieldOrder = facetConfig.fields.map(f => f.field);
 
   return [...facets].sort((a, b) => {
-    const aIndex = fieldOrder.indexOf(a.field)
-    const bIndex = fieldOrder.indexOf(b.field)
+    const aIndex = fieldOrder.indexOf(a.field);
+    const bIndex = fieldOrder.indexOf(b.field);
 
     // Unknown fields go to the end
-    const aPriority = aIndex === -1 ? 999 : aIndex
-    const bPriority = bIndex === -1 ? 999 : bIndex
+    const aPriority = aIndex === -1 ? 999 : aIndex;
+    const bPriority = bIndex === -1 ? 999 : bIndex;
 
-    return aPriority - bPriority
-  })
+    return aPriority - bPriority;
+  });
 }
 
 /**
@@ -219,19 +219,19 @@ export function sortFacetsByConfig(
  */
 export function groupFacetValues<T extends AdminFacetValue>(
   values: T[],
-  groupFn: (value: T) => string
+  groupFn: (value: T) => string,
 ): Record<string, T[]> {
-  const groups: Record<string, T[]> = {}
+  const groups: Record<string, T[]> = {};
 
   for (const value of values) {
-    const group = groupFn(value)
+    const group = groupFn(value);
     if (!groups[group]) {
-      groups[group] = []
+      groups[group] = [];
     }
-    groups[group].push(value)
+    groups[group].push(value);
   }
 
-  return groups
+  return groups;
 }
 
 /**
@@ -240,17 +240,17 @@ export function groupFacetValues<T extends AdminFacetValue>(
  */
 export function formatYearFacetValues(
   values: AdminFacetValue[],
-  maxYears = 10
+  maxYears = 10,
 ): AdminFacetValue[] {
   // Sort by year descending (assuming value is year string)
   const sorted = [...values].sort((a, b) => {
-    const yearA = parseInt(a.value, 10)
-    const yearB = parseInt(b.value, 10)
-    return yearB - yearA
-  })
+    const yearA = parseInt(a.value, 10);
+    const yearB = parseInt(b.value, 10);
+    return yearB - yearA;
+  });
 
   // Limit to max years
-  return sorted.slice(0, maxYears)
+  return sorted.slice(0, maxYears);
 }
 
 /**
@@ -258,45 +258,45 @@ export function formatYearFacetValues(
  * Groups tenants into main org, padaliniai (units), and PKP
  */
 export function processTenantFacetValues(
-  values: AdminFacetValue[]
+  values: AdminFacetValue[],
 ): {
-  main: AdminFacetValue[]
-  padaliniai: AdminFacetValue[]
-  pkp: AdminFacetValue[]
+  main: AdminFacetValue[];
+  padaliniai: AdminFacetValue[];
+  pkp: AdminFacetValue[];
 } {
-  const main: AdminFacetValue[] = []
-  const padaliniai: AdminFacetValue[] = []
-  const pkp: AdminFacetValue[] = []
+  const main: AdminFacetValue[] = [];
+  const padaliniai: AdminFacetValue[] = [];
+  const pkp: AdminFacetValue[] = [];
 
-  values.forEach(tenant => {
-    const value = tenant.value
+  values.forEach((tenant) => {
+    const { value } = tenant;
 
     // VU SA main organization - exact match only
     if (value === 'VU SA') {
-      main.push(tenant)
+      main.push(tenant);
     }
     // PKP (programs, clubs, projects)
     else if (value.includes('PKP')) {
-      pkp.push(tenant)
+      pkp.push(tenant);
     }
     // VU SA Padaliniai (faculty units)
     else if (value.startsWith('VU SA ')) {
-      padaliniai.push(tenant)
+      padaliniai.push(tenant);
     }
     // Other organizations
     else {
-      main.push(tenant)
+      main.push(tenant);
     }
-  })
+  });
 
   // Sort each group by count descending
-  const sortByCount = (a: AdminFacetValue, b: AdminFacetValue) => b.count - a.count
+  const sortByCount = (a: AdminFacetValue, b: AdminFacetValue) => b.count - a.count;
 
   return {
     main: main.sort(sortByCount),
     padaliniai: padaliniai.sort(sortByCount),
     pkp: pkp.sort(sortByCount),
-  }
+  };
 }
 
 /**
@@ -307,8 +307,8 @@ export function formatCompletionStatus(status: string): string {
     complete: 'Užbaigtas',
     incomplete: 'Neužbaigtas',
     partial: 'Dalinai užbaigtas',
-  }
-  return statusMap[status] || status
+  };
+  return statusMap[status] || status;
 }
 
 /**
@@ -320,6 +320,6 @@ export function formatVoteAlignmentStatus(status: string): string {
     misaligned: 'Neatitinka',
     incomplete: 'Nepilna informacija',
     unknown: 'Nežinoma',
-  }
-  return statusMap[status] || status
+  };
+  return statusMap[status] || status;
 }

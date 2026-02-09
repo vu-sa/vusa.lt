@@ -10,14 +10,14 @@
           {{ subtitle }}
         </p>
       </div>
-      
+
       <div class="flex items-center gap-2">
         <Button
           v-if="canAddMember"
           variant="outline"
           size="sm"
-          @click="$emit('add-member')"
           class="gap-2"
+          @click="$emit('add-member')"
         >
           <UserPlus class="h-4 w-4" />
           {{ $t('Pridėti narį') }}
@@ -27,17 +27,17 @@
     </div>
 
     <!-- Members Grid -->
-    <div v-if="members.length > 0" 
-         class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+    <div v-if="members.length > 0"
+      class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
       <MemberCard
         v-for="member in members"
         :key="member.id"
-        :member="member"
-        :institution="institution"
-        :max-positions="maxPositions"
-        :show-contact="showContact"
-        :show-actions="showActions"
-        :can-edit="canEdit"
+        :member
+        :institution
+        :max-positions
+        :show-contact
+        :show-actions
+        :can-edit
         @view-profile="$emit('view-profile', $event)"
         @edit-member="$emit('edit-member', $event)"
       />
@@ -57,8 +57,8 @@
       <Button
         v-if="canAddMember"
         variant="default"
-        @click="$emit('add-member')"
         class="gap-2"
+        @click="$emit('add-member')"
       >
         <UserPlus class="h-4 w-4" />
         {{ $t('Pridėti pirmą narį') }}
@@ -66,8 +66,8 @@
     </div>
 
     <!-- Capacity Warning -->
-    <div v-if="showCapacityWarning" 
-         class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-900/50 rounded-lg p-4">
+    <div v-if="showCapacityWarning"
+      class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-900/50 rounded-lg p-4">
       <div class="flex items-start gap-3">
         <AlertTriangle class="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
         <div>
@@ -86,9 +86,11 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Button } from '@/Components/ui/button';
 import { Users, UserPlus, AlertTriangle } from 'lucide-vue-next';
+
 import MemberCard from './MemberCard.vue';
+
+import { Button } from '@/Components/ui/button';
 
 const props = defineProps<{
   title: string;

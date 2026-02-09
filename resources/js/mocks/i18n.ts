@@ -1,6 +1,6 @@
 /**
  * Unified i18n mock for Storybook, VitePress, and Vitest
- * 
+ *
  * Uses actual generated translations from lang/*.json files.
  * Exports both plain functions (for VitePress) and fn()-wrapped versions (for Storybook).
  */
@@ -21,14 +21,14 @@ const translations: Record<string, string> = {
  */
 export function trans(key: string, replace: Record<string, string | number> = {}): string {
   let translation = translations[key] ?? key;
-  
+
   // Handle Laravel-style :parameter replacements
   if (replace && typeof replace === 'object') {
     Object.entries(replace).forEach(([replaceKey, value]) => {
       translation = translation.replace(`:${replaceKey}`, String(value));
     });
   }
-  
+
   return translation;
 }
 
@@ -48,20 +48,20 @@ export const $t = trans;
  */
 export function transChoice(key: string, count: number, replace: Record<string, string | number> = {}): string {
   let translation: string = translations[key] ?? key;
-  
+
   // Handle pipe-separated plurals (Laravel style)
   if (translation.includes('|')) {
     const [singular, plural] = translation.split('|');
     translation = count === 1 ? (singular ?? key) : (plural ?? singular ?? key);
   }
-  
+
   // Always include count in replacements
   const allReplacements = { count, ...replace };
-  
+
   Object.entries(allReplacements).forEach(([replaceKey, value]) => {
     translation = translation.replace(`:${replaceKey}`, String(value));
   });
-  
+
   return translation;
 }
 
@@ -74,8 +74,8 @@ export const wTransChoice = transChoice;
 // Storybook fn()-wrapped versions for spy/assertion capabilities
 // ============================================================================
 
-let transFn: typeof trans = trans;
-let transChoiceFn: typeof transChoice = transChoice;
+const transFn: typeof trans = trans;
+const transChoiceFn: typeof transChoice = transChoice;
 
 // Try to wrap with storybook/test fn() for spy capabilities
 // This will silently fail in VitePress where storybook/test is not available
@@ -86,7 +86,8 @@ try {
     // We're in Storybook - the fn() wrapped versions will be set up via preview.ts
     // This block is a placeholder for future dynamic setup if needed
   }
-} catch {
+}
+catch {
   // Not in Storybook environment, use plain functions
 }
 

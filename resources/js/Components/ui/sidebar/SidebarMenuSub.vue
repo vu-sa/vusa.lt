@@ -1,12 +1,3 @@
-<script setup lang="ts">
-import type { HTMLAttributes } from "vue"
-import { cn } from '@/Utils/Shadcn/utils'
-
-const props = defineProps<{
-  class?: HTMLAttributes["class"]
-}>()
-</script>
-
 <template>
   <ul
     data-sidebar="menu-badge"
@@ -19,3 +10,13 @@ const props = defineProps<{
     <slot />
   </ul>
 </template>
+
+<script setup lang="ts">
+import type { HTMLAttributes } from 'vue';
+
+import { cn } from '@/Utils/Shadcn/utils';
+
+const props = defineProps<{
+  class?: HTMLAttributes['class'];
+}>();
+</script>

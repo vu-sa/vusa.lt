@@ -11,7 +11,7 @@
           <template #prefix>
             <SearchIcon class="h-4 w-4 text-muted-foreground" />
           </template>
-          <template #suffix v-if="searchQuery">
+          <template v-if="searchQuery" #suffix>
             <Button variant="ghost" size="icon" @click="searchQuery = ''">
               <XIcon class="h-4 w-4" />
             </Button>
@@ -20,7 +20,7 @@
       </div>
       <div class="flex items-center gap-2">
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
+          <DropdownMenuTrigger as-child>
             <Button variant="outline" size="sm">
               <ListFilterIcon class="mr-2 h-4 w-4" />
               {{ $t('Filtrai') }}
@@ -53,22 +53,24 @@
     <Transition name="fade">
       <section v-if="showFavoritesSection" class="mb-8">
         <h2 class="mb-4 text-xl font-semibold">
-          {{ $t('Mėgstamiausi') }} 
-          <Badge variant="outline" class="ml-2">{{ favoriteMenuItems.length }}</Badge>
+          {{ $t('Mėgstamiausi') }}
+          <Badge variant="outline" class="ml-2">
+            {{ favoriteMenuItems.length }}
+          </Badge>
         </h2>
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          <div v-for="item in favoriteMenuItems" 
-              :key="item.title + item.href" 
-              class="group relative rounded-lg transition-all duration-200">
+          <div v-for="item in favoriteMenuItems"
+            :key="item.title + item.href"
+            class="group relative rounded-lg transition-all duration-200">
             <Link :href="item.href" class="block h-full w-full">
               <div class="flex w-full flex-col gap-3 rounded-md border border-zinc-100 bg-linear-to-br from-white to-white p-4 text-left text-sm leading-4 text-zinc-700 shadow-xs transition-all duration-300 group-hover:shadow-md group-hover:ring-1 group-hover:ring-primary/20 dark:border-0 dark:from-zinc-900 dark:to-neutral-800 dark:text-zinc-300 dark:group-hover:shadow-white/10">
                 <component :is="item.icon" width="28" height="28" />
                 {{ item.title }}
               </div>
             </Link>
-            <Button 
+            <Button
               variant="ghost"
-              size="icon" 
+              size="icon"
               class="absolute right-2 top-2 z-10 bg-background/80 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
               @click.prevent="toggleFavorite(item)"
             >
@@ -85,21 +87,23 @@
       <section v-if="category.show" class="my-8">
         <h2 class="mb-4 text-xl font-semibold flex items-center">
           {{ category.category }}
-          <Badge variant="outline" class="ml-2">{{ category.visibleItems.length }}</Badge>
+          <Badge variant="outline" class="ml-2">
+            {{ category.visibleItems.length }}
+          </Badge>
         </h2>
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          <div v-for="item in category.visibleItems" 
-              :key="item.title + item.href" 
-              class="group relative rounded-lg transition-all duration-200 hover:scale-[1.01]">
+          <div v-for="item in category.visibleItems"
+            :key="item.title + item.href"
+            class="group relative rounded-lg transition-all duration-200 hover:scale-[1.01]">
             <Link :href="item.href" class="block h-full w-full">
               <div class="flex w-full flex-col gap-3 rounded-md border border-zinc-100 bg-linear-to-br from-white to-white p-4 text-left text-sm leading-4 text-zinc-700 shadow-xs transition-all duration-300 group-hover:shadow-md group-hover:ring-1 group-hover:ring-primary/20 dark:border-0 dark:from-zinc-900 dark:to-neutral-800 dark:text-zinc-300 dark:group-hover:shadow-white/10">
                 <component :is="item.icon" width="28" height="28" />
                 {{ item.title }}
               </div>
             </Link>
-            <Button 
+            <Button
               variant="ghost"
-              size="icon" 
+              size="icon"
               class="absolute right-2 top-2 z-10 bg-background/80 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
               @click.prevent="toggleFavorite(item)"
             >
@@ -123,31 +127,32 @@
 </template>
 
 <script setup lang="ts">
-import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
-import Icons from '@/Types/Icons/regular';
-import { capitalize } from '@/Utils/String';
 import { Link, usePage } from '@inertiajs/vue3';
 import { useStorage } from '@vueuse/core';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { computed, ref, type Component } from 'vue';
 
 // Icons
-import IconFlowchart from "~icons/fluent/flowchart20-regular";
-import { 
-  SearchIcon, 
-  StarIcon, 
-  XIcon, 
-  ListFilterIcon, 
+import {
+  SearchIcon,
+  StarIcon,
+  XIcon,
+  ListFilterIcon,
   ChevronDownIcon,
-  AlertCircleIcon 
+  AlertCircleIcon,
 } from 'lucide-vue-next';
+
+import IconFlowchart from '~icons/fluent/flowchart20-regular';
+import { capitalize } from '@/Utils/String';
+import Icons from '@/Types/Icons/regular';
+import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
 
 // UI components
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Badge } from '@/Components/ui/badge';
 import { Alert, AlertTitle, AlertDescription } from '@/Components/ui/alert';
-import { 
+import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
@@ -161,22 +166,22 @@ const { auth } = usePage().props;
 
 // Set up breadcrumbs
 usePageBreadcrumbs([
-  { label: $t('Administravimas'), icon: Icons.TYPE }
+  { label: $t('Administravimas'), icon: Icons.TYPE },
 ]);
 
-type MenuItemType = {
+interface MenuItemType {
   title: string;
   icon: Component;
   href: string;
   show: boolean | undefined;
-};
+}
 
-type MenuItemsType = {
+interface MenuItemsType {
   category: string;
   items: MenuItemType[];
   visibleItems: MenuItemType[];
   show: boolean | undefined;
-};
+}
 
 // Search and filter states
 const searchQuery = ref('');
@@ -195,7 +200,8 @@ const toggleFavorite = (item: MenuItemType) => {
   const index = favoriteItems.value.indexOf(identifier);
   if (index === -1) {
     favoriteItems.value.push(identifier);
-  } else {
+  }
+  else {
     favoriteItems.value.splice(index, 1);
   }
 };
@@ -216,35 +222,35 @@ const menuItems = computed(() => [
         title: $t('Vartotojai'),
         icon: Icons.USER,
         href: route('users.index'),
-        show: auth?.can.create.user
+        show: auth?.can.create.user,
       },
       {
         title: $t('Pareigybės'),
         icon: Icons.DUTY,
         href: route('duties.index'),
-        show: auth?.can.create.duty
+        show: auth?.can.create.duty,
       },
       {
         title: $t('Narystės'),
         icon: Icons.INSTITUTION,
         href: route('memberships.index'),
-        show: auth?.can.create.membership
+        show: auth?.can.create.membership,
       },
       {
         title: $t('Mokymai'),
         icon: Icons.TRAINING,
         href: route('trainings.index'),
-        show: auth?.can.create.training
+        show: auth?.can.create.training,
       },
       {
         title: $t('Studijų programos'),
         icon: Icons.STUDY_PROGRAM,
         href: route('studyPrograms.index'),
-        show: auth?.can.create.studyProgram
+        show: auth?.can.create.studyProgram,
       },
     ],
     show: auth?.can.create.user || auth?.can.create.duty || auth?.can.create.membership || auth?.can.create.training || auth?.can.create.studyProgram,
-    visibleItems: [] as MenuItemType[]
+    visibleItems: [] as MenuItemType[],
   },
   {
     category: $t('Organizacijos'),
@@ -253,23 +259,23 @@ const menuItems = computed(() => [
         title: $t('Institucijos'),
         icon: Icons.INSTITUTION,
         href: route('institutions.index'),
-        show: auth?.can.create.institution
+        show: auth?.can.create.institution,
       },
       {
         title: $t('Padaliniai'),
         icon: Icons.TENANT,
         href: route('tenants.index'),
-        show: auth?.can.create.tenant
+        show: auth?.can.create.tenant,
       },
       {
         title: $t('Institucijų grafa'),
         icon: IconFlowchart,
         href: route('institutionGraph'),
-        show: auth?.can.create.institution
+        show: auth?.can.create.institution,
       },
     ],
     show: auth?.can.create.institution || auth?.can.create.tenant,
-    visibleItems: [] as MenuItemType[]
+    visibleItems: [] as MenuItemType[],
   },
   {
     category: $t('Svetainė'),
@@ -278,13 +284,13 @@ const menuItems = computed(() => [
         title: $t('Puslapiai'),
         icon: Icons.PAGE,
         href: route('pages.index'),
-        show: auth?.can.create.page
+        show: auth?.can.create.page,
       },
       {
         title: $t('Naujienos'),
         icon: Icons.NEWS,
         href: route('news.index'),
-        show: auth?.can.create.news
+        show: auth?.can.create.news,
       },
       {
         title: $t('Greitosios nuorodos'),
@@ -296,35 +302,35 @@ const menuItems = computed(() => [
         title: $t('Baneriai'),
         icon: Icons.BANNER,
         href: route('banners.index'),
-        show: auth?.can.create.banner
+        show: auth?.can.create.banner,
       },
       {
         title: $t('Navigacija'),
         icon: Icons.NAVIGATION,
         href: route('navigation.index'),
-        show: auth?.can.create.navigation
+        show: auth?.can.create.navigation,
       },
       {
         title: $t('Kalendorius'),
         icon: Icons.CALENDAR,
         href: route('calendar.index'),
-        show: auth?.can.create.calendar
+        show: auth?.can.create.calendar,
       },
       {
         title: $t('Kategorijos'),
         icon: Icons.CATEGORY,
         href: route('categories.index'),
-        show: auth?.can.create.category
+        show: auth?.can.create.category,
       },
       {
         title: $t('Žymos'),
         icon: Icons.TAG,
         href: route('tags.index'),
-        show: auth?.can.create.tag
+        show: auth?.can.create.tag,
       },
     ],
     show: auth?.can.create.page || auth?.can.create.news || auth?.can.create.quickLink || auth?.can.create.banner || auth?.can.create.navigation || auth?.can.create.calendar || auth?.can.create.category || auth?.can.create.tag,
-    visibleItems: [] as MenuItemType[]
+    visibleItems: [] as MenuItemType[],
   },
   {
     category: $t('Failai ir dokumentai'),
@@ -333,23 +339,23 @@ const menuItems = computed(() => [
         title: $t('Svetainės failai'),
         icon: Icons.SHAREPOINT_FILE,
         href: route('files.index'),
-        show: auth?.can.create.news || auth?.can.create.page
+        show: auth?.can.create.news || auth?.can.create.page,
       },
       {
         title: $t('Dokumentai'),
         icon: Icons.DOCUMENT,
         href: route('documents.index'),
-        show: auth?.can.create.document
+        show: auth?.can.create.document,
       },
       {
         title: $t('Sharepoint failai'),
         icon: Icons.SHAREPOINT_FILE,
         href: route('sharepointFiles.index'),
-        show: auth?.can.create.sharepointFile
+        show: auth?.can.create.sharepointFile,
       },
     ],
     show: auth?.can.create.news || auth?.can.create.page || auth?.can.create.document || auth?.can.create.sharepointFile,
-    visibleItems: [] as MenuItemType[]
+    visibleItems: [] as MenuItemType[],
   },
   {
     category: $t('Atstovavimas'),
@@ -358,36 +364,36 @@ const menuItems = computed(() => [
         title: $t('Susitikimai'),
         icon: Icons.MEETING,
         href: route('meetings.index'),
-        show: auth?.can.create.meeting
+        show: auth?.can.create.meeting,
       },
     ],
     show: auth?.can.create.meeting,
-    visibleItems: [] as MenuItemType[]
+    visibleItems: [] as MenuItemType[],
   },
   {
     category: $t('Rezervacijos'),
     items: [
       {
-        title: capitalize($tChoice("entities.reservation.model", 2)),
+        title: capitalize($tChoice('entities.reservation.model', 2)),
         icon: Icons.RESERVATION,
         href: route('reservations.index'),
-        show: auth?.can.create.reservation
+        show: auth?.can.create.reservation,
       },
       {
-        title: capitalize($tChoice("entities.resource.model", 2)),
+        title: capitalize($tChoice('entities.resource.model', 2)),
         icon: Icons.RESOURCE,
         href: route('resources.index'),
-        show: auth?.can.create.resource
+        show: auth?.can.create.resource,
       },
       {
-        title: capitalize($tChoice("entities.resource_category.model", 2)),
+        title: capitalize($tChoice('entities.resource_category.model', 2)),
         icon: Icons.CATEGORY,
         href: route('resourceCategories.index'),
-        show: auth?.can.create.resource
+        show: auth?.can.create.resource,
       },
     ],
     show: auth?.can.create.reservation || auth?.can.create.resource,
-    visibleItems: [] as MenuItemType[]
+    visibleItems: [] as MenuItemType[],
   },
   {
     category: $t('Formos'),
@@ -396,11 +402,11 @@ const menuItems = computed(() => [
         title: $t('Formos'),
         href: route('forms.index'),
         icon: Icons.FORM,
-        show: auth?.can.create.form
+        show: auth?.can.create.form,
       },
     ],
     show: auth?.can.create.form,
-    visibleItems: [] as MenuItemType[]
+    visibleItems: [] as MenuItemType[],
   },
   {
     category: $t('Sistema'),
@@ -409,42 +415,42 @@ const menuItems = computed(() => [
         title: $t('Rolės'),
         icon: Icons.ROLE,
         href: route('roles.index'),
-        show: auth?.can.create.role
+        show: auth?.can.create.role,
       },
       {
         title: $t('Leidimai'),
         icon: Icons.PERMISSION,
         href: route('permissions.index'),
-        show: auth?.can.create.permission
+        show: auth?.can.create.permission,
       },
       {
         title: $t('Tipai'),
         icon: Icons.TYPE,
         href: route('types.index'),
-        show: auth?.can.create.type
+        show: auth?.can.create.type,
       },
       {
         title: $t('Ryšiai'),
         icon: Icons.RELATIONSHIP,
         href: route('relationships.index'),
-        show: auth?.can.create.relationship
+        show: auth?.can.create.relationship,
       },
       {
         title: $t('Sistemos būsena'),
         icon: Icons.NOTIFICATION,
         href: route('systemStatus'),
-        show: auth?.can.create.role || auth?.can.create.permission
+        show: auth?.can.create.role || auth?.can.create.permission,
       },
       {
         title: $t('settings.title'),
         icon: Icons.SETTING,
         href: route('settings.index'),
-        show: auth?.can.manageSettings
+        show: auth?.can.manageSettings,
       },
     ],
     show: auth?.can.create.role || auth?.can.create.permission || auth?.can.create.type || auth?.can.create.relationship || auth?.can.manageSettings,
-    visibleItems: [] as MenuItemType[]
-  }
+    visibleItems: [] as MenuItemType[],
+  },
 ]);
 
 // Get unique categories for filter dropdown
@@ -455,7 +461,7 @@ const uniqueCategories = computed(() => {
 });
 
 // Initialize category filters if not already set
-uniqueCategories.value.forEach(category => {
+uniqueCategories.value.forEach((category) => {
   if (selectedCategories.value[category] === undefined) {
     selectedCategories.value[category] = true;
   }
@@ -463,26 +469,27 @@ uniqueCategories.value.forEach(category => {
 
 // Filter menu items based on search, favorites and selected categories
 const filteredMenuItems = computed(() => {
-  return menuItems.value.map(category => {
+  return menuItems.value.map((category) => {
     // Clone the category to avoid modifying the original
     const filteredCategory = { ...category };
-    
+
     // Filter items based on search and visibility
     let filteredItems = category.items.filter(item => item.show === true && matchesSearch(item));
-    
+
     // Apply favorites filter if needed
     if (showOnlyFavorites.value) {
       filteredItems = filteredItems.filter(item => isFavorite(item));
     }
-    
+
     // Store filtered items for display
     filteredCategory.visibleItems = filteredItems;
-    
-    return filteredCategory;  }).filter(category => {
+
+    return filteredCategory;
+  }).filter((category) => {
     // Keep category if it's enabled in filters and has visible items
-    return category.show === true &&
-           category.visibleItems.length > 0 &&
-           selectedCategories.value[category.category];
+    return category.show === true
+      && category.visibleItems.length > 0
+      && selectedCategories.value[category.category];
   });
 });
 
@@ -490,12 +497,12 @@ const filteredMenuItems = computed(() => {
 const favoriteMenuItems = computed(() => {
   // Collect all items across all categories
   const allItems = menuItems.value.flatMap(category => category.items);
-  
+
   // Filter for favorites that are visible and match search
   return allItems.filter(item =>
-    item.show === true &&
-    isFavorite(item) &&
-    matchesSearch(item)
+    item.show === true
+    && isFavorite(item)
+    && matchesSearch(item),
   );
 });
 

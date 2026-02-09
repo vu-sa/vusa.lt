@@ -1,6 +1,6 @@
 /**
  * TipTap Extension Presets
- * 
+ *
  * Centralized extension configurations for different editor use cases.
  * Presets: minimal, compact, full
  */
@@ -63,7 +63,7 @@ const ALLOWED_MIME_TYPES = [
   // Web files
   'text/html', 'text/css', 'text/javascript', 'application/javascript', 'application/json', 'text/xml', 'application/xml',
   // Audio/Video
-  'audio/mpeg', 'video/mp4', 'video/x-msvideo', 'video/quicktime', 'video/webm'
+  'audio/mpeg', 'video/mp4', 'video/x-msvideo', 'video/quicktime', 'video/webm',
 ];
 
 /**
@@ -79,7 +79,7 @@ export function createMinimalExtensions(options: PresetOptions = {}): AnyExtensi
     extensions.push(
       Placeholder.configure({
         placeholder: options.placeholder,
-      })
+      }),
     );
   }
 
@@ -113,7 +113,7 @@ export function createCompactExtensions(options: PresetOptions = {}): AnyExtensi
     extensions.push(
       Placeholder.configure({
         placeholder: options.placeholder,
-      })
+      }),
     );
   }
 
@@ -152,7 +152,7 @@ export function createFullExtensions(options: PresetOptions = {}): AnyExtension[
     extensions.push(
       CharacterCount.configure({
         limit: options.maxCharacters,
-      })
+      }),
     );
   }
 
@@ -161,7 +161,7 @@ export function createFullExtensions(options: PresetOptions = {}): AnyExtension[
     extensions.push(
       Placeholder.configure({
         placeholder: options.placeholder,
-      })
+      }),
     );
   }
 
@@ -170,7 +170,7 @@ export function createFullExtensions(options: PresetOptions = {}): AnyExtension[
     extensions.push(
       TableKit.configure({
         table: { resizable: true },
-      })
+      }),
     );
   }
 
@@ -185,7 +185,7 @@ export function createFullExtensions(options: PresetOptions = {}): AnyExtension[
         onPaste: (currentEditor, files) => {
           options.onFilePaste?.(currentEditor, files);
         },
-      })
+      }),
     );
   }
 

@@ -142,81 +142,81 @@
           <div
             v-for="item in allAgendaItems"
             :key="item.id"
-          class="overflow-hidden rounded-xl bg-white dark:bg-zinc-900 p-5 ring-1 ring-zinc-200 dark:ring-zinc-800 shadow-sm"
-        >
-          <!-- Item title -->
-          <div class="flex items-center gap-2">
-            <h3 class="text-base font-semibold text-zinc-900 dark:text-zinc-50 flex-1">
-              <span class="text-zinc-400 dark:text-zinc-500 font-normal">{{ item.order }}.</span> {{ item.title }}
-            </h3>
-            <span
-              v-if="item.brought_by_students"
-              class="shrink-0 inline-flex items-center gap-1 rounded-full bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 text-xs font-medium text-zinc-600 dark:text-zinc-400 ring-1 ring-zinc-200 dark:ring-zinc-700"
-            >
-              <UsersIcon class="h-3 w-3" />
-              {{ $t('Įtraukta studentų') }}
-            </span>
+            class="overflow-hidden rounded-xl bg-white dark:bg-zinc-900 p-5 ring-1 ring-zinc-200 dark:ring-zinc-800 shadow-sm"
+          >
+            <!-- Item title -->
+            <div class="flex items-center gap-2">
+              <h3 class="text-base font-semibold text-zinc-900 dark:text-zinc-50 flex-1">
+                <span class="text-zinc-400 dark:text-zinc-500 font-normal">{{ item.order }}.</span> {{ item.title }}
+              </h3>
+              <span
+                v-if="item.brought_by_students"
+                class="shrink-0 inline-flex items-center gap-1 rounded-full bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 text-xs font-medium text-zinc-600 dark:text-zinc-400 ring-1 ring-zinc-200 dark:ring-zinc-700"
+              >
+                <UsersIcon class="h-3 w-3" />
+                {{ $t('Įtraukta studentų') }}
+              </span>
+            </div>
+
+            <!-- Item description (ShowMeeting-specific) -->
+            <p v-if="item.description" class="text-zinc-600 dark:text-zinc-400 mt-2 text-sm leading-relaxed">
+              {{ item.description }}
+            </p>
+
+            <!-- Status display based on item type -->
+            <div class="mt-3 pt-3 border-t border-zinc-100 dark:border-zinc-800">
+              <!-- Voting type with decision data: show full vote details -->
+              <template v-if="item.type === 'voting' && hasDecisionData(item)">
+                <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+                  <span class="flex items-center gap-1.5 text-zinc-500 dark:text-zinc-400">
+                    {{ $t('Studentų balsas') }}:
+                    <VoteStatusIndicator :vote="getMainVote(item)?.student_vote" type="vote" compact />
+                  </span>
+                  <span class="flex items-center gap-1.5 text-zinc-500 dark:text-zinc-400">
+                    {{ $t('Sprendimas') }}:
+                    <VoteStatusIndicator :vote="getMainVote(item)?.decision" type="vote" compact />
+                  </span>
+                  <span class="flex items-center gap-1.5 text-zinc-500 dark:text-zinc-400">
+                    {{ $t('Nauda') }}:
+                    <VoteStatusIndicator :vote="getMainVote(item)?.student_benefit" type="benefit" compact />
+                  </span>
+                  <!-- Vote comparison inline indicator -->
+                  <span
+                    v-if="canCompareVotes(item)"
+                    class="flex items-center gap-1.5 text-xs"
+                    :class="getVoteComparisonColorClass(item)"
+                  >
+                    <component :is="getVoteOutcomeIcon(item)" class="h-3.5 w-3.5" />
+                    {{ getVoteComparisonText(item) }}
+                  </span>
+                </div>
+              </template>
+
+              <!-- Voting type without data: show "not yet entered" -->
+              <template v-else-if="item.type === 'voting'">
+                <p class="text-xs text-zinc-400 dark:text-zinc-500 italic">
+                  {{ $t('Balsavimo duomenys dar neįvesti') }}
+                </p>
+              </template>
+
+              <!-- Non-voting types: show status badge -->
+              <template v-else>
+                <div class="flex items-center gap-2">
+                  <component
+                    :is="getAgendaItemStatusMeta(item).icon"
+                    class="h-4 w-4"
+                    :class="getAgendaItemStatusMeta(item).colorClass"
+                  />
+                  <span
+                    class="text-sm"
+                    :class="getAgendaItemStatusMeta(item).colorClass"
+                  >
+                    {{ getAgendaItemStatusMeta(item).label }}
+                  </span>
+                </div>
+              </template>
+            </div>
           </div>
-
-          <!-- Item description (ShowMeeting-specific) -->
-          <p v-if="item.description" class="text-zinc-600 dark:text-zinc-400 mt-2 text-sm leading-relaxed">
-            {{ item.description }}
-          </p>
-
-          <!-- Status display based on item type -->
-          <div class="mt-3 pt-3 border-t border-zinc-100 dark:border-zinc-800">
-            <!-- Voting type with decision data: show full vote details -->
-            <template v-if="item.type === 'voting' && hasDecisionData(item)">
-              <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
-                <span class="flex items-center gap-1.5 text-zinc-500 dark:text-zinc-400">
-                  {{ $t('Studentų balsas') }}:
-                  <VoteStatusIndicator :vote="getMainVote(item)?.student_vote" type="vote" compact />
-                </span>
-                <span class="flex items-center gap-1.5 text-zinc-500 dark:text-zinc-400">
-                  {{ $t('Sprendimas') }}:
-                  <VoteStatusIndicator :vote="getMainVote(item)?.decision" type="vote" compact />
-                </span>
-                <span class="flex items-center gap-1.5 text-zinc-500 dark:text-zinc-400">
-                  {{ $t('Nauda') }}:
-                  <VoteStatusIndicator :vote="getMainVote(item)?.student_benefit" type="benefit" compact />
-                </span>
-                <!-- Vote comparison inline indicator -->
-                <span
-                  v-if="canCompareVotes(item)"
-                  class="flex items-center gap-1.5 text-xs"
-                  :class="getVoteComparisonColorClass(item)"
-                >
-                  <component :is="getVoteOutcomeIcon(item)" class="h-3.5 w-3.5" />
-                  {{ getVoteComparisonText(item) }}
-                </span>
-              </div>
-            </template>
-
-            <!-- Voting type without data: show "not yet entered" -->
-            <template v-else-if="item.type === 'voting'">
-              <p class="text-xs text-zinc-400 dark:text-zinc-500 italic">
-                {{ $t('Balsavimo duomenys dar neįvesti') }}
-              </p>
-            </template>
-
-            <!-- Non-voting types: show status badge -->
-            <template v-else>
-              <div class="flex items-center gap-2">
-                <component
-                  :is="getAgendaItemStatusMeta(item).icon"
-                  class="h-4 w-4"
-                  :class="getAgendaItemStatusMeta(item).colorClass"
-                />
-                <span
-                  class="text-sm"
-                  :class="getAgendaItemStatusMeta(item).colorClass"
-                >
-                  {{ getAgendaItemStatusMeta(item).label }}
-                </span>
-              </div>
-            </template>
-          </div>
-        </div>
         </template>
 
         <!-- Loading skeleton for deferred content -->
@@ -246,8 +246,8 @@
             <div class="text-left">
               <span class="text-xs uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ $t('Ankstesnis posėdis') }}</span>
               <p class="text-sm font-medium text-zinc-600 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-zinc-200 transition-colors">
-{{ formatMeetingDate(previousMeeting.start_time) }}
-</p>
+                {{ formatMeetingDate(previousMeeting.start_time) }}
+              </p>
             </div>
           </InertiaLink>
           <div v-else />
@@ -260,8 +260,8 @@
             <div class="text-right">
               <span class="text-xs uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ $t('Kitas posėdis') }}</span>
               <p class="text-sm font-medium text-zinc-600 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-zinc-200 transition-colors">
-{{ formatMeetingDate(nextMeeting.start_time) }}
-</p>
+                {{ formatMeetingDate(nextMeeting.start_time) }}
+              </p>
             </div>
             <ChevronRight class="h-5 w-5 text-zinc-300 group-hover:text-zinc-500 dark:text-zinc-600 dark:group-hover:text-zinc-400 transition-colors" />
           </InertiaLink>

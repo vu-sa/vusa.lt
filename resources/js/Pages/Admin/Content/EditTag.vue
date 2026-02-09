@@ -33,20 +33,20 @@
 </template>
 
 <script setup lang="tsx">
-import { router, Link } from "@inertiajs/vue3";
-import { trans as $t } from "laravel-vue-i18n";
-import { computed } from "vue";
+import { router, Link } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
+import { computed } from 'vue';
 import type { ColumnDef } from '@tanstack/vue-table';
 
-import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import TagForm from "@/Components/AdminForms/TagForm.vue";
-import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
-import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
-import { Button } from "@/Components/ui/button";
-import { Badge } from "@/Components/ui/badge";
-import SimpleDataTable from "@/Components/Tables/SimpleDataTable.vue";
-import IFluentNews24Regular from "~icons/fluent/news-24-regular";
-import IFluentEdit20Filled from "~icons/fluent/edit-20-filled";
+import PageContent from '@/Components/Layouts/AdminContentPage.vue';
+import TagForm from '@/Components/AdminForms/TagForm.vue';
+import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
+import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import { Button } from '@/Components/ui/button';
+import { Badge } from '@/Components/ui/badge';
+import SimpleDataTable from '@/Components/Tables/SimpleDataTable.vue';
+import IFluentNews24Regular from '~icons/fluent/news-24-regular';
+import IFluentEdit20Filled from '~icons/fluent/edit-20-filled';
 
 interface NewsItem {
   id: number;
@@ -83,12 +83,13 @@ const formatDate = (dateString: string) => {
   if (!dateString) return '';
 
   try {
-    return new Date(dateString).toLocaleDateString("lt-LT", {
-      year: "numeric",
-      month: "short",
-      day: "numeric"
+    return new Date(dateString).toLocaleDateString('lt-LT', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
     });
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Date formatting error:', error);
     return dateString;
   }
@@ -97,8 +98,8 @@ const formatDate = (dateString: string) => {
 // Table column definitions
 const columns: ColumnDef<NewsItem, any>[] = [
   {
-    accessorKey: "title",
-    header: () => $t("forms.fields.title"),
+    accessorKey: 'title',
+    header: () => $t('forms.fields.title'),
     cell: ({ row }: { row: any }) => (
       <div class="max-w-[300px]">
         <div class="font-medium truncate">{row.original.title}</div>
@@ -108,8 +109,8 @@ const columns: ColumnDef<NewsItem, any>[] = [
     size: 300,
   },
   {
-    accessorKey: "tenant",
-    header: () => $t("forms.fields.tenant"),
+    accessorKey: 'tenant',
+    header: () => $t('forms.fields.tenant'),
     cell: ({ row }: { row: any }) => (
       <Badge variant="secondary" class="text-xs">
         {row.original.tenant}
@@ -118,8 +119,8 @@ const columns: ColumnDef<NewsItem, any>[] = [
     size: 120,
   },
   {
-    accessorKey: "lang",
-    header: () => $t("forms.fields.language"),
+    accessorKey: 'lang',
+    header: () => $t('forms.fields.language'),
     cell: ({ row }: { row: any }) => (
       <Badge variant="outline" class="text-xs uppercase">
         {row.original.lang}
@@ -128,8 +129,8 @@ const columns: ColumnDef<NewsItem, any>[] = [
     size: 80,
   },
   {
-    id: "actions",
-    header: "",
+    id: 'actions',
+    header: '',
     cell: ({ row }: { row: any }) => (
       <Button
         size="sm"

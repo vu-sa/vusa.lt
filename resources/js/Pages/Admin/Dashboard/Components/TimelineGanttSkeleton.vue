@@ -46,20 +46,20 @@
           <div class="h-6 border-b bg-white px-4 flex items-center gap-8">
             <Skeleton v-for="i in 6" :key="i" class="h-3 w-8" />
           </div>
-          
+
           <!-- Timeline rows skeleton -->
           <div class="p-4 space-y-4">
             <div v-for="row in 8" :key="row" class="flex items-center gap-4">
               <!-- Meeting circles skeleton -->
-              <Skeleton v-for="i in Math.floor(Math.random() * 4) + 1" :key="i" 
-                        class="w-2 h-2 rounded-full" 
-                        :style="{ marginLeft: Math.random() * 200 + 'px' }" />
+              <Skeleton v-for="i in Math.floor(Math.random() * 4) + 1" :key="i"
+                class="w-2 h-2 rounded-full"
+                :style="{ marginLeft: Math.random() * 200 + 'px' }" />
               <!-- Gap bars skeleton -->
-              <Skeleton class="h-1 rounded" 
-                        :style="{ 
-                          width: Math.random() * 100 + 50 + 'px',
-                          marginLeft: Math.random() * 150 + 'px' 
-                        }" />
+              <Skeleton class="h-1 rounded"
+                :style="{
+                  width: Math.random() * 100 + 50 + 'px',
+                  marginLeft: Math.random() * 150 + 'px'
+                }" />
             </div>
           </div>
         </div>
@@ -69,6 +69,6 @@
 </template>
 
 <script setup lang="ts">
-import { Card, CardContent } from '@/Components/ui/card'
-import { Skeleton } from '@/Components/ui/skeleton'
+import { Card, CardContent } from '@/Components/ui/card';
+import { Skeleton } from '@/Components/ui/skeleton';
 </script>

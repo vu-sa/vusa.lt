@@ -4,7 +4,7 @@
       <slot name="additional" />
     </div>
     <NavigationMenuList>
-      <NavigationMenuItem class="list-none" v-for="item in mainNavigation" :key="item.name">
+      <NavigationMenuItem v-for="item in mainNavigation" :key="item.name" class="list-none">
         <NavigationMenuTrigger
           class="bg-transparent cursor-pointer hover:bg-zinc-100 dark:bg-transparent dark:hover:bg-zinc-700 max-lg:px-1 max-lg:py-0.5 max-lg:text-xs lg:px-2 lg:py-1.5">
           {{ item.name }}
@@ -16,16 +16,17 @@
 </template>
 
 <script setup lang="ts">
+import { computed, ref } from 'vue';
+import { usePage } from '@inertiajs/vue3';
+
+import MainNavigationMenuContent from './MainNavigationMenuContent.vue';
+
 import {
   NavigationMenu,
   NavigationMenuItem,
   NavigationMenuList,
   NavigationMenuTrigger,
-} from '@/Components/ui/navigation-menu'
-import { computed, ref } from 'vue';
-import { usePage } from '@inertiajs/vue3';
-
-import MainNavigationMenuContent from './MainNavigationMenuContent.vue';
+} from '@/Components/ui/navigation-menu';
 
 const activeMenuItem = ref(undefined);
 

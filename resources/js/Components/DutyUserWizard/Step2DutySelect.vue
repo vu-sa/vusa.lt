@@ -1,207 +1,3 @@
-<script setup lang="ts">
-import { ref, computed, inject, reactive, type ComputedRef } from 'vue'
-import { usePage } from '@inertiajs/vue3'
-import axios from 'axios'
-import { toast } from 'vue-sonner'
-import { trans as $t } from 'laravel-vue-i18n'
-import { 
-  Search, 
-  Users, 
-  ChevronRight, 
-  AlertCircle,
-  CheckCircle,
-  X,
-  Edit3,
-  Plus,
-  ChevronDown,
-  Loader2
-} from 'lucide-vue-next'
-
-import { Input } from '@/Components/ui/input'
-import { Button } from '@/Components/ui/button'
-import { Badge } from '@/Components/ui/badge'
-import { ScrollArea } from '@/Components/ui/scroll-area'
-import { Alert, AlertDescription } from '@/Components/ui/alert'
-import { Label } from '@/Components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select'
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Components/ui/collapsible'
-import Icons from '@/Types/Icons/regular'
-
-import type { useDutyUserWizard } from '@/Composables/useDutyUserWizard'
-
-const wizard = inject<ReturnType<typeof useDutyUserWizard>>('dutyUserWizard')!
-const dutyTypesRef = inject<ComputedRef<App.Entities.Type[]> | App.Entities.Type[]>('dutyTypes', [])
-
-// Unwrap computed ref or use array directly
-const dutyTypes = computed(() => 
-  'value' in dutyTypesRef ? dutyTypesRef.value : dutyTypesRef
-)
-
-const page = usePage()
-const auth = page.props.auth as any
-const canCreateDuty = computed(() => auth?.can?.create?.duty)
-
-// Check if duty types are loading
-const isDutyTypesLoading = computed(() => !dutyTypes.value || dutyTypes.value.length === 0)
-
-// Open create form and trigger lazy load of duty types
-const openCreateForm = () => {
-  wizard.loadDutyTypes()
-  showCreateForm.value = true
-}
-
-// Search state
-const searchQuery = ref('')
-
-// Create duty form state
-const showCreateForm = ref(false)
-const isCreating = ref(false)
-const createErrors = ref<Record<string, string[]>>({})
-const showExtraFields = ref(false)
-
-const newDuty = reactive({
-  name: { lt: '', en: '' },
-  description: { lt: '', en: '' },
-  email: '',
-  institution_id: '',
-  places_to_occupy: 1,
-  contacts_grouping: 'none',
-  types: [] as string[]
-})
-
-// Reset form
-const resetForm = () => {
-  newDuty.name = { lt: '', en: '' }
-  newDuty.description = { lt: '', en: '' }
-  newDuty.email = ''
-  newDuty.places_to_occupy = 1
-  newDuty.contacts_grouping = 'none'
-  newDuty.types = []
-  createErrors.value = {}
-  showExtraFields.value = false
-}
-
-const cancelCreate = () => {
-  showCreateForm.value = false
-  resetForm()
-}
-
-const createDuty = async () => {
-  if (!wizard.state.institution?.id) return
-  
-  isCreating.value = true
-  createErrors.value = {}
-  
-  const institutionId = wizard.state.institution.id
-  
-  try {
-    const response = await axios.post(route('duties.store'), {
-      ...newDuty,
-      institution_id: institutionId
-    }, {
-      headers: {
-        'Accept': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest'
-      }
-    })
-    
-    if (response.data.success && response.data.duty) {
-      // Add the new duty to the current institution
-      const newDutyData = response.data.duty as App.Entities.Duty
-      
-      // Update the institution's duties list locally
-      if (wizard.state.institution) {
-        const updatedInstitution = {
-          ...wizard.state.institution,
-          duties: [...(wizard.state.institution.duties || []), newDutyData]
-        } as App.Entities.Institution
-        wizard.setInstitution(updatedInstitution)
-      }
-      toast.success($t('Pareigybė sėkmingai sukurta'))
-      cancelCreate()
-    }
-  } catch (error: any) {
-    // Handle validation errors
-    if (error.response?.status === 422 && error.response?.data?.errors) {
-      Object.entries(error.response.data.errors).forEach(([key, value]) => {
-        createErrors.value[key] = Array.isArray(value) ? value as string[] : [value as string]
-      })
-      toast.error($t('Patikrinkite formos laukus'))
-    } else {
-      createErrors.value['general'] = [$t('Nepavyko sukurti pareigybės')]
-      toast.error($t('Nepavyko sukurti pareigybės'))
-    }
-  } finally {
-    isCreating.value = false
-  }
-}
-
-// Get duties from selected institution
-const duties = computed(() => {
-  return wizard.state.institution?.duties || []
-})
-
-// Filtered duties
-const filteredDuties = computed(() => {
-  if (!searchQuery.value) return duties.value
-  const query = searchQuery.value.toLowerCase()
-  return duties.value.filter(d => 
-    d.name?.toString().toLowerCase().includes(query) ||
-    d.email?.toLowerCase().includes(query)
-  )
-})
-
-// Compute status for each duty
-const getDutyStatus = (duty: any) => {
-  const currentCount = duty.current_users?.length || 0
-  const maxCount = duty.places_to_occupy || 0
-
-  if (maxCount === 0) return { type: 'unknown', label: $t('Nenurodyta'), color: 'secondary' }
-  if (currentCount === 0) return { type: 'empty', label: $t('Neužimta'), color: 'outline' }
-  if (currentCount < maxCount) return { type: 'partial', label: $t('Dalinai užimta'), color: 'secondary' }
-  if (currentCount === maxCount) return { type: 'full', label: $t('Pilnai užimta'), color: 'default' }
-  return { type: 'over', label: $t('Viršija limitą'), color: 'destructive' }
-}
-
-// Sort duties: empty/partial first, then by name
-const sortedDuties = computed(() => {
-  return [...filteredDuties.value].sort((a, b) => {
-    const aStatus = getDutyStatus(a)
-    const bStatus = getDutyStatus(b)
-    
-    // Priority: empty > partial > unknown > full > over
-    const priority: Record<string, number> = { empty: 0, partial: 1, unknown: 2, full: 3, over: 4 }
-    const aPriority = priority[aStatus.type] ?? 5
-    const bPriority = priority[bStatus.type] ?? 5
-    
-    if (aPriority !== bPriority) return aPriority - bPriority
-    
-    // Then by name
-    return (a.name?.toString() || '').localeCompare(b.name?.toString() || '')
-  })
-})
-
-// Handle duty selection
-const selectDuty = (duty: any) => {
-  wizard.setDuty(duty as App.Entities.Duty)
-  wizard.nextStep()
-}
-
-const clearSearch = () => {
-  searchQuery.value = ''
-}
-
-const toggleType = (typeId: string) => {
-  const idx = newDuty.types.indexOf(typeId)
-  if (idx === -1) {
-    newDuty.types.push(typeId)
-  } else {
-    newDuty.types.splice(idx, 1)
-  }
-}
-</script>
-
 <template>
   <div class="space-y-6">
     <!-- Selected institution header -->
@@ -210,8 +6,12 @@ const toggleType = (typeId: string) => {
         <Icons.INSTITUTION class="h-5 w-5 text-primary" />
       </div>
       <div class="flex-1 min-w-0">
-        <p class="text-xs text-muted-foreground">{{ $t('Pasirinkta institucija') }}</p>
-        <p class="font-medium text-foreground truncate">{{ wizard.state.institution?.name }}</p>
+        <p class="text-xs text-muted-foreground">
+          {{ $t('Pasirinkta institucija') }}
+        </p>
+        <p class="font-medium text-foreground truncate">
+          {{ wizard.state.institution?.name }}
+        </p>
       </div>
       <Button variant="ghost" size="sm" @click="wizard.previousStep()">
         <Edit3 class="h-4 w-4 mr-1" />
@@ -234,8 +34,8 @@ const toggleType = (typeId: string) => {
         <!-- Duty Name -->
         <div class="space-y-2">
           <Label class="text-sm font-medium">{{ $t('Pavadinimas') }} *</Label>
-          <Input 
-            v-model="newDuty.name.lt" 
+          <Input
+            v-model="newDuty.name.lt"
             :placeholder="$t('Pareigybės pavadinimas lietuvių kalba')"
             :class="{ 'border-destructive': createErrors['name.lt'] }"
           />
@@ -247,13 +47,15 @@ const toggleType = (typeId: string) => {
         <!-- Places to Occupy -->
         <div class="space-y-2">
           <Label class="text-sm font-medium">{{ $t('Kiek vietų') }}</Label>
-          <Input 
-            v-model.number="newDuty.places_to_occupy" 
+          <Input
+            v-model.number="newDuty.places_to_occupy"
             type="number"
             min="1"
             :placeholder="$t('1')"
           />
-          <p class="text-xs text-muted-foreground">{{ $t('Kiek žmonių gali užimti šią pareigybę') }}</p>
+          <p class="text-xs text-muted-foreground">
+            {{ $t('Kiek žmonių gali užimti šią pareigybę') }}
+          </p>
         </div>
 
         <!-- Contacts Grouping -->
@@ -264,9 +66,15 @@ const toggleType = (typeId: string) => {
               <SelectValue :placeholder="$t('Pasirinkite grupavimą')" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="none">{{ $t('Jokio') }}</SelectItem>
-              <SelectItem value="study_program">{{ $t('Pagal studijų programą') }}</SelectItem>
-              <SelectItem value="tenant">{{ $t('Pagal padalinį') }}</SelectItem>
+              <SelectItem value="none">
+                {{ $t('Jokio') }}
+              </SelectItem>
+              <SelectItem value="study_program">
+                {{ $t('Pagal studijų programą') }}
+              </SelectItem>
+              <SelectItem value="tenant">
+                {{ $t('Pagal padalinį') }}
+              </SelectItem>
             </SelectContent>
           </Select>
           <p v-if="createErrors['contacts_grouping']" class="text-sm text-destructive">
@@ -295,7 +103,9 @@ const toggleType = (typeId: string) => {
               {{ type.title }}
             </button>
           </div>
-          <p v-else class="text-sm text-muted-foreground">{{ $t('Nėra galimų tipų') }}</p>
+          <p v-else class="text-sm text-muted-foreground">
+            {{ $t('Nėra galimų tipų') }}
+          </p>
         </div>
 
         <!-- Extra fields (collapsible) -->
@@ -308,8 +118,8 @@ const toggleType = (typeId: string) => {
             <!-- English Name -->
             <div class="space-y-2">
               <Label class="text-sm font-medium">{{ $t('Pavadinimas anglų kalba') }}</Label>
-              <Input 
-                v-model="newDuty.name.en" 
+              <Input
+                v-model="newDuty.name.en"
                 :placeholder="$t('Duty name in English')"
               />
             </div>
@@ -317,8 +127,8 @@ const toggleType = (typeId: string) => {
             <!-- Email -->
             <div class="space-y-2">
               <Label class="text-sm font-medium">{{ $t('El. paštas') }}</Label>
-              <Input 
-                v-model="newDuty.email" 
+              <Input
+                v-model="newDuty.email"
                 type="email"
                 :placeholder="$t('pareigybe@vusa.lt')"
                 :class="{ 'border-destructive': createErrors['email'] }"
@@ -331,8 +141,8 @@ const toggleType = (typeId: string) => {
             <!-- Description -->
             <div class="space-y-2">
               <Label class="text-sm font-medium">{{ $t('Aprašymas') }}</Label>
-              <Input 
-                v-model="newDuty.description.lt" 
+              <Input
+                v-model="newDuty.description.lt"
                 :placeholder="$t('Pareigybės aprašymas')"
               />
             </div>
@@ -341,10 +151,10 @@ const toggleType = (typeId: string) => {
 
         <!-- Form actions -->
         <div class="flex justify-end gap-2 pt-2">
-          <Button variant="outline" @click="cancelCreate" :disabled="isCreating">
+          <Button variant="outline" :disabled="isCreating" @click="cancelCreate">
             {{ $t('Atšaukti') }}
           </Button>
-          <Button @click="createDuty" :disabled="isCreating || !newDuty.name.lt">
+          <Button :disabled="isCreating || !newDuty.name.lt" @click="createDuty">
             <Plus v-if="!isCreating" class="h-4 w-4 mr-1" />
             {{ isCreating ? $t('Kuriama...') : $t('Sukurti pareigybę') }}
           </Button>
@@ -362,10 +172,10 @@ const toggleType = (typeId: string) => {
           :placeholder="$t('Ieškoti pareigybės...')"
           class="pl-10 pr-10 h-11"
         />
-        <Button 
-          v-if="searchQuery" 
-          variant="ghost" 
-          size="icon" 
+        <Button
+          v-if="searchQuery"
+          variant="ghost"
+          size="icon"
           class="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
           @click="clearSearch"
         >
@@ -374,9 +184,9 @@ const toggleType = (typeId: string) => {
       </div>
 
       <!-- Create duty button -->
-      <Button 
+      <Button
         v-if="canCreateDuty"
-        variant="outline" 
+        variant="outline"
         class="w-full border-dashed"
         @click="openCreateForm"
       >
@@ -396,7 +206,7 @@ const toggleType = (typeId: string) => {
           >
             <div class="flex items-start gap-4">
               <!-- Icon -->
-              <div 
+              <div
                 class="h-11 w-11 rounded-xl flex items-center justify-center shrink-0 transition-colors"
                 :class="{
                   'bg-zinc-100 dark:bg-zinc-800': getDutyStatus(duty).type === 'unknown',
@@ -406,7 +216,7 @@ const toggleType = (typeId: string) => {
                   'bg-red-50 dark:bg-red-950/30': getDutyStatus(duty).type === 'over'
                 }"
               >
-                <Icons.DUTY 
+                <Icons.DUTY
                   class="h-5 w-5"
                   :class="{
                     'text-zinc-500': getDutyStatus(duty).type === 'unknown',
@@ -417,7 +227,7 @@ const toggleType = (typeId: string) => {
                   }"
                 />
               </div>
-              
+
               <!-- Content -->
               <div class="flex-1 min-w-0">
                 <div class="flex items-start justify-between gap-2">
@@ -428,12 +238,12 @@ const toggleType = (typeId: string) => {
                     {{ getDutyStatus(duty).label }}
                   </Badge>
                 </div>
-                
+
                 <!-- Email -->
                 <p v-if="duty.email" class="text-sm text-muted-foreground mt-1 truncate">
                   {{ duty.email }}
                 </p>
-                
+
                 <!-- Capacity indicator -->
                 <div class="flex items-center gap-3 mt-2">
                   <div class="flex items-center gap-1.5">
@@ -443,10 +253,10 @@ const toggleType = (typeId: string) => {
                       <span class="text-muted-foreground font-normal">/ {{ duty.places_to_occupy || '?' }}</span>
                     </span>
                   </div>
-                  
+
                   <!-- Capacity bar -->
                   <div class="flex-1 h-1.5 bg-muted rounded-full overflow-hidden max-w-24">
-                    <div 
+                    <div
                       class="h-full rounded-full transition-all"
                       :class="{
                         'bg-zinc-400': getDutyStatus(duty).type === 'unknown',
@@ -455,31 +265,31 @@ const toggleType = (typeId: string) => {
                         'bg-green-500': getDutyStatus(duty).type === 'full',
                         'bg-red-500': getDutyStatus(duty).type === 'over'
                       }"
-                      :style="{ 
-                        width: duty.places_to_occupy 
+                      :style="{
+                        width: duty.places_to_occupy
                           ? `${Math.min(100, ((duty.current_users?.length || 0) / duty.places_to_occupy) * 100)}%`
                           : '0%'
                       }"
                     />
                   </div>
-                  
+
                   <!-- Current users preview -->
                   <div v-if="duty.current_users?.length" class="flex -space-x-2">
-                    <div 
-                      v-for="(user, idx) in duty.current_users.slice(0, 3)" 
+                    <div
+                      v-for="(user, idx) in duty.current_users.slice(0, 3)"
                       :key="user.id"
                       class="h-6 w-6 rounded-full border-2 border-background bg-muted flex items-center justify-center text-xs font-medium overflow-hidden"
                       :title="user.name"
                     >
-                      <img 
+                      <img
                         v-if="user.profile_photo_path"
                         :src="user.profile_photo_path"
                         :alt="user.name"
                         class="h-full w-full object-cover"
-                      />
+                      >
                       <span v-else>{{ user.name?.charAt(0) }}</span>
                     </div>
-                    <div 
+                    <div
                       v-if="duty.current_users.length > 3"
                       class="h-6 w-6 rounded-full border-2 border-background bg-muted flex items-center justify-center text-xs font-medium"
                     >
@@ -488,7 +298,7 @@ const toggleType = (typeId: string) => {
                   </div>
                 </div>
               </div>
-              
+
               <!-- Arrow -->
               <ChevronRight class="h-5 w-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all shrink-0 mt-1" />
             </div>
@@ -499,8 +309,12 @@ const toggleType = (typeId: string) => {
             <div class="h-16 w-16 rounded-full bg-muted mx-auto flex items-center justify-center mb-4">
               <Icons.DUTY class="h-8 w-8 text-muted-foreground" />
             </div>
-            <p v-if="searchQuery" class="text-muted-foreground">{{ $t('Nerasta pareigybių pagal paiešką') }}</p>
-            <p v-else class="text-muted-foreground">{{ $t('Ši institucija neturi pareigybių') }}</p>
+            <p v-if="searchQuery" class="text-muted-foreground">
+              {{ $t('Nerasta pareigybių pagal paiešką') }}
+            </p>
+            <p v-else class="text-muted-foreground">
+              {{ $t('Ši institucija neturi pareigybių') }}
+            </p>
             <Button v-if="searchQuery" variant="link" class="mt-2" @click="clearSearch">
               {{ $t('Išvalyti paiešką') }}
             </Button>
@@ -514,3 +328,210 @@ const toggleType = (typeId: string) => {
     </template>
   </div>
 </template>
+
+<script setup lang="ts">
+import { ref, computed, inject, reactive, type ComputedRef } from 'vue';
+import { usePage } from '@inertiajs/vue3';
+import axios from 'axios';
+import { toast } from 'vue-sonner';
+import { trans as $t } from 'laravel-vue-i18n';
+import {
+  Search,
+  Users,
+  ChevronRight,
+  AlertCircle,
+  CheckCircle,
+  X,
+  Edit3,
+  Plus,
+  ChevronDown,
+  Loader2,
+} from 'lucide-vue-next';
+
+import { Input } from '@/Components/ui/input';
+import { Button } from '@/Components/ui/button';
+import { Badge } from '@/Components/ui/badge';
+import { ScrollArea } from '@/Components/ui/scroll-area';
+import { Alert, AlertDescription } from '@/Components/ui/alert';
+import { Label } from '@/Components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Components/ui/collapsible';
+import Icons from '@/Types/Icons/regular';
+import type { useDutyUserWizard } from '@/Composables/useDutyUserWizard';
+
+const wizard = inject<ReturnType<typeof useDutyUserWizard>>('dutyUserWizard')!;
+const dutyTypesRef = inject<ComputedRef<App.Entities.Type[]> | App.Entities.Type[]>('dutyTypes', []);
+
+// Unwrap computed ref or use array directly
+const dutyTypes = computed(() =>
+  'value' in dutyTypesRef ? dutyTypesRef.value : dutyTypesRef,
+);
+
+const page = usePage();
+const auth = page.props.auth as any;
+const canCreateDuty = computed(() => auth?.can?.create?.duty);
+
+// Check if duty types are loading
+const isDutyTypesLoading = computed(() => !dutyTypes.value || dutyTypes.value.length === 0);
+
+// Open create form and trigger lazy load of duty types
+const openCreateForm = () => {
+  wizard.loadDutyTypes();
+  showCreateForm.value = true;
+};
+
+// Search state
+const searchQuery = ref('');
+
+// Create duty form state
+const showCreateForm = ref(false);
+const isCreating = ref(false);
+const createErrors = ref<Record<string, string[]>>({});
+const showExtraFields = ref(false);
+
+const newDuty = reactive({
+  name: { lt: '', en: '' },
+  description: { lt: '', en: '' },
+  email: '',
+  institution_id: '',
+  places_to_occupy: 1,
+  contacts_grouping: 'none',
+  types: [] as string[],
+});
+
+// Reset form
+const resetForm = () => {
+  newDuty.name = { lt: '', en: '' };
+  newDuty.description = { lt: '', en: '' };
+  newDuty.email = '';
+  newDuty.places_to_occupy = 1;
+  newDuty.contacts_grouping = 'none';
+  newDuty.types = [];
+  createErrors.value = {};
+  showExtraFields.value = false;
+};
+
+const cancelCreate = () => {
+  showCreateForm.value = false;
+  resetForm();
+};
+
+const createDuty = async () => {
+  if (!wizard.state.institution?.id) return;
+
+  isCreating.value = true;
+  createErrors.value = {};
+
+  const institutionId = wizard.state.institution.id;
+
+  try {
+    const response = await axios.post(route('duties.store'), {
+      ...newDuty,
+      institution_id: institutionId,
+    }, {
+      headers: {
+        'Accept': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+      },
+    });
+
+    if (response.data.success && response.data.duty) {
+      // Add the new duty to the current institution
+      const newDutyData = response.data.duty as App.Entities.Duty;
+
+      // Update the institution's duties list locally
+      if (wizard.state.institution) {
+        const updatedInstitution = {
+          ...wizard.state.institution,
+          duties: [...(wizard.state.institution.duties || []), newDutyData],
+        } as App.Entities.Institution;
+        wizard.setInstitution(updatedInstitution);
+      }
+      toast.success($t('Pareigybė sėkmingai sukurta'));
+      cancelCreate();
+    }
+  }
+  catch (error: any) {
+    // Handle validation errors
+    if (error.response?.status === 422 && error.response?.data?.errors) {
+      Object.entries(error.response.data.errors).forEach(([key, value]) => {
+        createErrors.value[key] = Array.isArray(value) ? value as string[] : [value as string];
+      });
+      toast.error($t('Patikrinkite formos laukus'));
+    }
+    else {
+      createErrors.value['general'] = [$t('Nepavyko sukurti pareigybės')];
+      toast.error($t('Nepavyko sukurti pareigybės'));
+    }
+  }
+  finally {
+    isCreating.value = false;
+  }
+};
+
+// Get duties from selected institution
+const duties = computed(() => {
+  return wizard.state.institution?.duties || [];
+});
+
+// Filtered duties
+const filteredDuties = computed(() => {
+  if (!searchQuery.value) return duties.value;
+  const query = searchQuery.value.toLowerCase();
+  return duties.value.filter(d =>
+    d.name?.toString().toLowerCase().includes(query)
+    || d.email?.toLowerCase().includes(query),
+  );
+});
+
+// Compute status for each duty
+const getDutyStatus = (duty: any) => {
+  const currentCount = duty.current_users?.length || 0;
+  const maxCount = duty.places_to_occupy || 0;
+
+  if (maxCount === 0) return { type: 'unknown', label: $t('Nenurodyta'), color: 'secondary' };
+  if (currentCount === 0) return { type: 'empty', label: $t('Neužimta'), color: 'outline' };
+  if (currentCount < maxCount) return { type: 'partial', label: $t('Dalinai užimta'), color: 'secondary' };
+  if (currentCount === maxCount) return { type: 'full', label: $t('Pilnai užimta'), color: 'default' };
+  return { type: 'over', label: $t('Viršija limitą'), color: 'destructive' };
+};
+
+// Sort duties: empty/partial first, then by name
+const sortedDuties = computed(() => {
+  return [...filteredDuties.value].sort((a, b) => {
+    const aStatus = getDutyStatus(a);
+    const bStatus = getDutyStatus(b);
+
+    // Priority: empty > partial > unknown > full > over
+    const priority: Record<string, number> = { empty: 0, partial: 1, unknown: 2, full: 3, over: 4 };
+    const aPriority = priority[aStatus.type] ?? 5;
+    const bPriority = priority[bStatus.type] ?? 5;
+
+    if (aPriority !== bPriority) return aPriority - bPriority;
+
+    // Then by name
+    return (a.name?.toString() || '').localeCompare(b.name?.toString() || '');
+  });
+});
+
+// Handle duty selection
+const selectDuty = (duty: any) => {
+  wizard.setDuty(duty as App.Entities.Duty);
+  wizard.nextStep();
+};
+
+const clearSearch = () => {
+  searchQuery.value = '';
+};
+
+const toggleType = (typeId: string) => {
+  const idx = newDuty.types.indexOf(typeId);
+  if (idx === -1) {
+    newDuty.types.push(typeId);
+  }
+  else {
+    newDuty.types.splice(idx, 1);
+  }
+};
+</script>

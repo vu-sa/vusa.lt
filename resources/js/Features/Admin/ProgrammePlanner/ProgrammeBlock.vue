@@ -54,9 +54,10 @@
 <script setup lang="ts">
 import { useSortable } from '@vueuse/integrations/useSortable';
 import { inject, nextTick, ref, useTemplateRef } from 'vue';
-import { router } from "@inertiajs/vue3";
+import { router } from '@inertiajs/vue3';
 
 import ProgrammePart from './ProgrammePart.vue';
+
 import MultiLocaleInput from '@/Components/FormItems/MultiLocaleInput.vue';
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import CardModal from '@/Components/Modals/CardModal.vue';
@@ -74,7 +75,7 @@ const editable = inject<boolean>('editable');
 const showPartEditModal = ref(false);
 const selectedPart = ref<App.Entities.ProgrammePart | null>(null);
 
-const block = defineModel<App.Entities.ProgrammeBlock>('block')
+const block = defineModel<App.Entities.ProgrammeBlock>('block');
 const blockPartEl = useTemplateRef<HTMLDivElement | null>('blockPartEl');
 
 const { movedElement, updateMovedElement } = inject('movedElement');
@@ -85,7 +86,7 @@ if (editable) useSortable<HTMLDivElement | null>(blockPartEl, block.value?.parts
     name: 'elements',
     put(from, to, item) {
       return item.dataset.type === 'part';
-    }
+    },
   },
   animation: 200,
   async onAdd({ newIndex }: { newIndex: number }) {
@@ -96,7 +97,7 @@ if (editable) useSortable<HTMLDivElement | null>(blockPartEl, block.value?.parts
     if (typeof movedElement.value.id !== 'string' && typeof block.value?.id !== 'string') {
       router.post(route('programmeParts.attach', movedElement.value.id), {
         programmeBlock: block.value?.id,
-        order: newIndex
+        order: newIndex,
       }, {
         preserveScroll: true,
       });
@@ -112,16 +113,16 @@ if (editable) useSortable<HTMLDivElement | null>(blockPartEl, block.value?.parts
     }
 
     block.value?.parts?.splice(oldIndex, 1);
-  }
+  },
 });
 
 function createProgrammePart() {
   block.value?.parts?.push({
-    id: 'programme-part-' + 100 + block.value.parts.length,
+    id: `programme-part-${100}${block.value.parts.length}`,
     type: 'part',
     title: {
-      lt: 'Programos dalis ' + (block.value.parts.length + 1),
-      en: 'Programme Part ' + (block.value.parts.length + 1),
+      lt: `Programos dalis ${block.value.parts.length + 1}`,
+      en: `Programme Part ${block.value.parts.length + 1}`,
     },
     description: {
       lt: '',

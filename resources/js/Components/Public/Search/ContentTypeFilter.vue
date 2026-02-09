@@ -106,78 +106,77 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed } from 'vue';
 
 // ShadcnVue components
-import { Badge } from '@/Components/ui/badge'
-import { Button } from '@/Components/ui/button'
+import { FileText, CheckSquare, RotateCcw, Star } from 'lucide-vue-next';
+
+import { Badge } from '@/Components/ui/badge';
+import { Button } from '@/Components/ui/button';
 
 // Icons
-import { FileText, CheckSquare, RotateCcw, Star } from 'lucide-vue-next'
 
 // Props & Emits
 interface ContentTypeOption {
-  value: string
-  label: string
-  count: number
+  value: string;
+  label: string;
+  count: number;
 }
 
 interface GroupedContentTypes {
-  vusa: Array<{ value: string; label: string; count: number }>
-  vusaP: Array<{ value: string; label: string; count: number }>
-  other: Array<{ value: string; label: string; count: number }>
+  vusa: Array<{ value: string; label: string; count: number }>;
+  vusaP: Array<{ value: string; label: string; count: number }>;
+  other: Array<{ value: string; label: string; count: number }>;
 }
 
 interface Props {
-  groupedTypes: GroupedContentTypes
-  selectedTypes: string[]
-  importantTypes?: string[]
+  groupedTypes: GroupedContentTypes;
+  selectedTypes: string[];
+  importantTypes?: string[];
 }
 
-interface Emits {
-  (e: 'toggleType', value: string): void
-}
+type Emits = (e: 'toggleType', value: string) => void;
 
 const props = withDefaults(defineProps<Props>(), {
   groupedTypes: () => ({ vusa: [], vusaP: [], other: [] }),
   selectedTypes: () => [],
-  importantTypes: () => []
-})
+  importantTypes: () => [],
+});
 
-const emit = defineEmits<Emits>()
+const emit = defineEmits<Emits>();
 
 // Helper function to truncate long labels
 const truncateLabel = (label: string, maxLength: number): string => {
-  if (label.length <= maxLength) return label
-  return label.substring(0, maxLength - 3) + '...'
-}
+  if (label.length <= maxLength) return label;
+  return `${label.substring(0, maxLength - 3)}...`;
+};
 
 // All content types combined for lookup
 const allGroupedTypes = computed(() => [
   ...props.groupedTypes.vusa,
   ...props.groupedTypes.vusaP,
-  ...props.groupedTypes.other
-])
+  ...props.groupedTypes.other,
+]);
 
 // Important content types (extracted from other groups based on importantTypes prop)
 const importantContentTypes = computed(() => {
-  if (!props.importantTypes || props.importantTypes.length === 0) return []
-  
+  if (!props.importantTypes || props.importantTypes.length === 0) return [];
+
   return props.importantTypes
-    .map(importantValue => {
-      const found = allGroupedTypes.value.find(ct => ct.value === importantValue)
-      if (!found) return null
+    .map((importantValue) => {
+      const found = allGroupedTypes.value.find(ct => ct.value === importantValue);
+      if (!found) return null;
       return {
         value: found.value,
         label: truncateLabel(found.label || found.value, 28),
-        count: found.count
-      }
+        count: found.count,
+      };
     })
-    .filter((ct): ct is { value: string; label: string; count: number } => ct !== null)
-})
+    .filter((ct): ct is { value: string; label: string; count: number } => ct !== null);
+});
 
 // Set of important type values for quick lookup
-const importantTypeSet = computed(() => new Set(props.importantTypes || []))
+const importantTypeSet = computed(() => new Set(props.importantTypes || []));
 
 // Use the grouped types directly from props, but exclude important ones
 const vuSaContentTypes = computed(() => {
@@ -186,9 +185,9 @@ const vuSaContentTypes = computed(() => {
     .map(ct => ({
       value: ct.value,
       label: truncateLabel(ct.label || ct.value, 28),
-      count: ct.count
-    }))
-})
+      count: ct.count,
+    }));
+});
 
 const vuSaPContentTypes = computed(() => {
   return props.groupedTypes.vusaP
@@ -196,9 +195,9 @@ const vuSaPContentTypes = computed(() => {
     .map(ct => ({
       value: ct.value,
       label: truncateLabel(ct.label || ct.value, 28),
-      count: ct.count
-    }))
-})
+      count: ct.count,
+    }));
+});
 
 const otherContentTypes = computed(() => {
   return props.groupedTypes.other
@@ -206,44 +205,44 @@ const otherContentTypes = computed(() => {
     .map(ct => ({
       value: ct.value,
       label: truncateLabel(ct.label || ct.value, 28),
-      count: ct.count
-    }))
-})
+      count: ct.count,
+    }));
+});
 
 const allContentTypes = computed(() => [
   ...props.groupedTypes.vusa,
   ...props.groupedTypes.vusaP,
-  ...props.groupedTypes.other
-])
+  ...props.groupedTypes.other,
+]);
 
 // Methods
 const isSelected = (contentType: string): boolean => {
-  return props.selectedTypes.includes(contentType)
-}
+  return props.selectedTypes.includes(contentType);
+};
 
 const toggleContentType = (contentType: string) => {
-  emit('toggleType', contentType)
-}
+  emit('toggleType', contentType);
+};
 
 const selectAll = () => {
-  const allTypes = allContentTypes.value.map(ct => ct.value)
-  allTypes.forEach(type => {
+  const allTypes = allContentTypes.value.map(ct => ct.value);
+  allTypes.forEach((type) => {
     if (!isSelected(type)) {
-      emit('toggleType', type)
+      emit('toggleType', type);
     }
-  })
-}
+  });
+};
 
 const clearSelection = () => {
   // Create a copy of selectedTypes to avoid mutation during iteration
-  const typesToClear = [...props.selectedTypes]
-  typesToClear.forEach(type => {
-    emit('toggleType', type)
-  })
-}
+  const typesToClear = [...props.selectedTypes];
+  typesToClear.forEach((type) => {
+    emit('toggleType', type);
+  });
+};
 
 // Computed for selected content types count
 const selectedContentTypes = computed(() => {
-  return allContentTypes.value.filter(ct => props.selectedTypes.includes(ct.value))
-})
+  return allContentTypes.value.filter(ct => props.selectedTypes.includes(ct.value));
+});
 </script>

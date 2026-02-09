@@ -1,23 +1,3 @@
-<script lang="ts" setup>
-import { cn } from '@/Utils/Shadcn/utils'
-import { CalendarHeading, type CalendarHeadingProps, useForwardProps } from 'reka-ui'
-import { computed, type HTMLAttributes } from 'vue'
-
-const props = defineProps<CalendarHeadingProps & { class?: HTMLAttributes['class'] }>()
-
-defineSlots<{
-  default: (props: { headingValue: string }) => any
-}>()
-
-const delegatedProps = computed(() => {
-  const { class: _, ...delegated } = props
-
-  return delegated
-})
-
-const forwardedProps = useForwardProps(delegatedProps)
-</script>
-
 <template>
   <CalendarHeading
     v-slot="{ headingValue }"
@@ -30,3 +10,24 @@ const forwardedProps = useForwardProps(delegatedProps)
     </slot>
   </CalendarHeading>
 </template>
+
+<script lang="ts" setup>
+import { CalendarHeading, type CalendarHeadingProps, useForwardProps } from 'reka-ui';
+import { computed, type HTMLAttributes } from 'vue';
+
+import { cn } from '@/Utils/Shadcn/utils';
+
+const props = defineProps<CalendarHeadingProps & { class?: HTMLAttributes['class'] }>();
+
+defineSlots<{
+  default: (props: { headingValue: string }) => any;
+}>();
+
+const delegatedProps = computed(() => {
+  const { class: _, ...delegated } = props;
+
+  return delegated;
+});
+
+const forwardedProps = useForwardProps(delegatedProps);
+</script>

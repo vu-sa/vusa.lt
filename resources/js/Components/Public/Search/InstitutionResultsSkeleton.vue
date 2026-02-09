@@ -10,10 +10,10 @@
       <div class="flex-1 space-y-3">
         <!-- Title -->
         <div class="h-5 bg-muted rounded w-3/4" />
-        
+
         <!-- Tenant badge -->
         <div class="h-5 bg-muted rounded w-20" />
-        
+
         <!-- Types -->
         <div class="flex gap-2">
           <div class="h-4 bg-muted rounded w-24" />
@@ -32,6 +32,6 @@
 
 <script setup lang="ts">
 defineProps<{
-  viewMode?: 'grid' | 'list'
-}>()
+  viewMode?: 'grid' | 'list';
+}>();
 </script>

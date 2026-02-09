@@ -38,9 +38,9 @@
 </template>
 
 <script setup lang="ts">
-import { ChevronRight, type LucideIcon } from 'lucide-vue-next'
-import { usePage, Link } from '@inertiajs/vue3'
-import { trans as $t } from "laravel-vue-i18n"
+import { ChevronRight, type LucideIcon } from 'lucide-vue-next';
+import { usePage, Link } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
 
 import {
   SidebarGroup,
@@ -53,27 +53,27 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
-} from '@/Components/ui/sidebar'
+} from '@/Components/ui/sidebar';
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from '@/Components/ui/collapsible'
+} from '@/Components/ui/collapsible';
 
 defineProps<{
   items: {
-    title: string
-    url: string
-    icon: LucideIcon
-    isActive?: boolean
-    dataTour?: string
+    title: string;
+    url: string;
+    icon: LucideIcon;
+    isActive?: boolean;
+    dataTour?: string;
     items?: {
-      title: string
-      url: string
-    }[]
-  }[]
-}>()
+      title: string;
+      url: string;
+    }[];
+  }[];
+}>();
 
 // Compute section title based on the current locale
-const sectionTitle = $t('Funkcijos')
+const sectionTitle = $t('Funkcijos');
 </script>

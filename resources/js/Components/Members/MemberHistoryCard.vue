@@ -3,14 +3,14 @@
     <CardContent size="compact" class="py-3 px-4">
       <div class="flex items-center gap-4">
         <!-- Status Indicator Dot -->
-        <div 
+        <div
           class="h-2.5 w-2.5 rounded-full flex-shrink-0"
           :class="isActive ? 'bg-green-500' : 'bg-zinc-300 dark:bg-zinc-600'"
-        ></div>
+        />
 
         <!-- Avatar with link to user -->
-        <Link 
-          :href="route('users.edit', member.id)" 
+        <Link
+          :href="route('users.edit', member.id)"
           class="flex-shrink-0 rounded-full ring-2 ring-transparent hover:ring-blue-500 transition-all"
         >
           <UserPopover :user="member" :size="44" />
@@ -19,20 +19,20 @@
         <!-- Main Info -->
         <div class="flex-1 min-w-0">
           <div class="flex items-center gap-2 mb-1">
-            <Link 
+            <Link
               :href="route('users.edit', member.id)"
               class="font-medium text-zinc-900 dark:text-zinc-100 hover:text-blue-600 dark:hover:text-blue-400 truncate transition-colors"
             >
               {{ member.name }}
             </Link>
-            <Badge 
+            <Badge
               :variant="isActive ? 'default' : 'secondary'"
               class="text-xs flex-shrink-0"
             >
               {{ isActive ? $t('Aktyvus') : $t('Baigė') }}
             </Badge>
           </div>
-          
+
           <!-- Tenure Info Row -->
           <div class="flex items-center gap-4 text-sm text-zinc-600 dark:text-zinc-400">
             <div class="flex items-center gap-1.5">
@@ -56,16 +56,16 @@
             </CollapsibleTrigger>
             <CollapsibleContent class="mt-2">
               <div class="flex flex-wrap items-center gap-3 text-xs">
-                <a 
-                  v-if="member.email" 
+                <a
+                  v-if="member.email"
                   :href="`mailto:${member.email}`"
                   class="flex items-center gap-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
                 >
                   <Mail class="h-3 w-3" />
                   {{ member.email }}
                 </a>
-                <a 
-                  v-if="member.phone" 
+                <a
+                  v-if="member.phone"
                   :href="`tel:${member.phone}`"
                   class="flex items-center gap-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
                 >
@@ -106,12 +106,13 @@
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
 import { Link } from '@inertiajs/vue3';
+import { Calendar, ChevronDown, Clock, Mail, Pencil, Phone } from 'lucide-vue-next';
+
 import { Card, CardContent } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Components/ui/collapsible';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
-import { Calendar, ChevronDown, Clock, Mail, Pencil, Phone } from 'lucide-vue-next';
 import UserPopover from '@/Components/Avatars/UserPopover.vue';
 
 const props = defineProps<{
@@ -127,48 +128,48 @@ const emit = defineEmits<{
 
 const formatDateRange = (startDate?: string, endDate?: string | null) => {
   if (!startDate) return $t('Nežinoma');
-  
-  const start = new Date(startDate).toLocaleDateString('lt-LT', { 
-    year: 'numeric', 
-    month: 'short', 
-    day: 'numeric' 
+
+  const start = new Date(startDate).toLocaleDateString('lt-LT', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
   });
-  
+
   if (!endDate) {
     return `${start} – ${$t('dabar')}`;
   }
-  
-  const end = new Date(endDate).toLocaleDateString('lt-LT', { 
-    year: 'numeric', 
-    month: 'short', 
-    day: 'numeric' 
+
+  const end = new Date(endDate).toLocaleDateString('lt-LT', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
   });
-  
+
   return `${start} – ${end}`;
 };
 
 const getTenure = (member: App.Entities.User) => {
   const startDate = member.pivot?.start_date ? new Date(member.pivot.start_date) : null;
   const endDate = member.pivot?.end_date ? new Date(member.pivot.end_date) : new Date();
-  
+
   if (!startDate) return $t('Nežinoma');
-  
-  const diffInMonths = (endDate.getFullYear() - startDate.getFullYear()) * 12 + 
-                       (endDate.getMonth() - startDate.getMonth());
-  
+
+  const diffInMonths = (endDate.getFullYear() - startDate.getFullYear()) * 12
+    + (endDate.getMonth() - startDate.getMonth());
+
   if (diffInMonths < 1) {
     const diffInDays = Math.floor((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
     if (diffInDays < 1) return `< 1 ${$t('diena')}`;
     return `${diffInDays} ${diffInDays === 1 ? $t('diena') : $t('d.')}`;
   }
-  
+
   if (diffInMonths < 12) {
     return `${diffInMonths} ${$t('mėn.')}`;
   }
-  
+
   const years = Math.floor(diffInMonths / 12);
   const months = diffInMonths % 12;
-  
+
   let result = `${years} ${years === 1 ? $t('m.') : $t('m.')}`;
   if (months > 0) {
     result += ` ${months} ${$t('mėn.')}`;

@@ -6,15 +6,14 @@
       <Button class="handle" style="height: 100%;" variant="ghost" size="sm">
         <IFluentReOrderDotsVertical24Regular />
       </Button>
-      <slot :model="model" />
+      <slot :model />
     </div>
   </TransitionGroup>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import { useSortable } from "@vueuse/integrations/useSortable";
-import { watch } from 'vue';
+import { ref, watch } from 'vue';
+import { useSortable } from '@vueuse/integrations/useSortable';
 
 import { Button } from '@/Components/ui/button';
 
@@ -23,7 +22,7 @@ const contents = defineModel<Record<string, any>[]>();
 const el = ref(null);
 
 useSortable(el, contents, {
-  handle: ".handle", forceFallback: true, animation: 100,
+  handle: '.handle', forceFallback: true, animation: 100,
 });
 
 watch(() => contents.value, () => {

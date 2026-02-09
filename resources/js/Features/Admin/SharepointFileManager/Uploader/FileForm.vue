@@ -74,23 +74,24 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from "vue";
-import { trans as $t } from "laravel-vue-i18n";
+import { ref, watch } from 'vue';
+import { trans as $t } from 'laravel-vue-i18n';
 
-import { Button } from "@/Components/ui/button";
-import { DatePicker } from "@/Components/ui/date-picker";
-import { Input } from "@/Components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
-import { Textarea } from "@/Components/ui/textarea";
-import FormFieldWrapper from "@/Components/AdminForms/FormFieldWrapper.vue";
-import { generateNameForFile } from "./generateNameForFile";
-import { modelTypes } from "@/Types/formOptions";
-import { splitFileNameAndExtension } from "@/Utils/String";
-import { useToasts } from "@/Composables/useToasts";
+import { generateNameForFile } from './generateNameForFile';
+
+import { Button } from '@/Components/ui/button';
+import { DatePicker } from '@/Components/ui/date-picker';
+import { Input } from '@/Components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { Textarea } from '@/Components/ui/textarea';
+import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
+import { modelTypes } from '@/Types/formOptions';
+import { splitFileNameAndExtension } from '@/Utils/String';
+import { useToasts } from '@/Composables/useToasts';
 
 const emit = defineEmits<{
-  (e: "submit", form: any): void;
-  (e: "close"): void;
+  (e: 'submit', form: any): void;
+  (e: 'close'): void;
 }>();
 
 const props = defineProps<{
@@ -101,8 +102,8 @@ const props = defineProps<{
 const fileNameEditDisabled = ref(true);
 const { error } = useToasts();
 
-const originalFileName = ref("");
-const fileExtension = ref<string | undefined>("");
+const originalFileName = ref('');
+const fileExtension = ref<string | undefined>('');
 const fileInputRef = ref<HTMLInputElement | null>(null);
 
 const errors = ref<Record<string, string>>({});
@@ -116,7 +117,7 @@ const model = ref<{
   uploadValue: File | null;
 }>({
   datetimeValue: null,
-  description0Value: "",
+  description0Value: '',
   nameValue: null,
   tempNameValue: null,
   typeValue: null,
@@ -135,7 +136,7 @@ watch(dateValue, (val) => {
   model.value.datetimeValue = val ?? null;
 });
 
-const sharepointFileTypeOptions = modelTypes.sharepointFile.map((type) => ({
+const sharepointFileTypeOptions = modelTypes.sharepointFile.map(type => ({
   label: type,
   value: type,
 }));
@@ -143,14 +144,14 @@ const sharepointFileTypeOptions = modelTypes.sharepointFile.map((type) => ({
 const validateFile = (file: File): boolean => {
   if (!file.type) return false;
 
-  if (model.value.typeValue === "Pristatymai") {
+  if (model.value.typeValue === 'Pristatymai') {
     if (
       ![
-        "application/pdf",
-        "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        'application/pdf',
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation',
       ].includes(file.type)
     ) {
-      error("Pristatymas turi būti PDF arba PPTX formatu.");
+      error('Pristatymas turi būti PDF arba PPTX formatu.');
       return false;
     }
     return true;
@@ -158,11 +159,11 @@ const validateFile = (file: File): boolean => {
 
   if (
     ![
-      "application/pdf",
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      'application/pdf',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     ].includes(file.type)
   ) {
-    error("Failas turi būti PDF arba DOCX formatu.");
+    error('Failas turi būti PDF arba DOCX formatu.');
     return false;
   }
   return true;
@@ -193,7 +194,7 @@ const handleDrop = (e: DragEvent) => {
 const setUploadFileName = () => {
   fileNameEditDisabled.value = true;
 
-  if (originalFileName.value === "" || model.value.typeValue === null) {
+  if (originalFileName.value === '' || model.value.typeValue === null) {
     return null;
   }
 
@@ -203,7 +204,7 @@ const setUploadFileName = () => {
       nameValue: originalFileName.value,
       typeValue: model.value.typeValue,
     },
-    props.fileable
+    props.fileable,
   );
 
   fileNameEditDisabled.value = isFileNameEditDisabled;
@@ -214,13 +215,13 @@ const validate = (): boolean => {
   errors.value = {};
 
   if (!model.value.typeValue) {
-    errors.value.typeValue = "Pasirinkite tipą";
+    errors.value.typeValue = 'Pasirinkite tipą';
   }
   if (!model.value.datetimeValue) {
-    errors.value.datetimeValue = "Pasirinkite dokumento datą";
+    errors.value.datetimeValue = 'Pasirinkite dokumento datą';
   }
   if (!model.value.uploadValue) {
-    errors.value.uploadValue = "Įkelkite failą";
+    errors.value.uploadValue = 'Įkelkite failą';
   }
 
   return Object.keys(errors.value).length === 0;
@@ -240,6 +241,6 @@ const handleValidateClick = () => {
     datetimeValue: model.value.datetimeValue ? model.value.datetimeValue.getTime() : null,
   };
 
-  emit("submit", submitData);
+  emit('submit', submitData);
 };
 </script>

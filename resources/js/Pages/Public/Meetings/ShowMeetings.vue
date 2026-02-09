@@ -13,6 +13,7 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue';
 import { usePage, Head } from '@inertiajs/vue3';
+
 import MeetingSearchInterface from '@/Components/Public/Search/MeetingSearchInterface.vue';
 
 // Set wider layout for meeting search page
@@ -46,7 +47,8 @@ const initialFilters = computed(() => {
       const value = params.get(`${paramName}[${i}]`);
       if (value) {
         items.push(value);
-      } else {
+      }
+      else {
         break;
       }
     }
@@ -63,7 +65,8 @@ const initialFilters = computed(() => {
         if (!isNaN(num)) {
           items.push(num);
         }
-      } else {
+      }
+      else {
         break;
       }
     }
@@ -84,7 +87,7 @@ const initialFilters = computed(() => {
     filters.dateRange = {
       from: dateFrom ? new Date(Number(dateFrom) * 1000) : undefined,
       to: dateTo ? new Date(Number(dateTo) * 1000) : undefined,
-      preset: datePreset || undefined
+      preset: datePreset || undefined,
     };
   }
 

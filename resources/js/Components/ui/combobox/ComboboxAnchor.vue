@@ -1,17 +1,3 @@
-<script setup lang="ts">
-import type { ComboboxAnchorProps } from "reka-ui"
-import type { HTMLAttributes } from "vue"
-import { reactiveOmit } from "@vueuse/core"
-import { ComboboxAnchor, useForwardProps } from "reka-ui"
-import { cn } from '@/Utils/Shadcn/utils'
-
-const props = defineProps<ComboboxAnchorProps & { class?: HTMLAttributes["class"] }>()
-
-const delegatedProps = reactiveOmit(props, "class")
-
-const forwarded = useForwardProps(delegatedProps)
-</script>
-
 <template>
   <ComboboxAnchor
     data-slot="combobox-anchor"
@@ -21,3 +7,18 @@ const forwarded = useForwardProps(delegatedProps)
     <slot />
   </ComboboxAnchor>
 </template>
+
+<script setup lang="ts">
+import type { ComboboxAnchorProps } from 'reka-ui';
+import type { HTMLAttributes } from 'vue';
+import { reactiveOmit } from '@vueuse/core';
+import { ComboboxAnchor, useForwardProps } from 'reka-ui';
+
+import { cn } from '@/Utils/Shadcn/utils';
+
+const props = defineProps<ComboboxAnchorProps & { class?: HTMLAttributes['class'] }>();
+
+const delegatedProps = reactiveOmit(props, 'class');
+
+const forwarded = useForwardProps(delegatedProps);
+</script>

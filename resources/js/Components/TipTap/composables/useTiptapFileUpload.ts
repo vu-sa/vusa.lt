@@ -1,11 +1,12 @@
 /**
  * TipTap File Upload Composable
- * 
+ *
  * Handles file drag-and-drop and paste uploads with placeholder management.
  */
 import { ref } from 'vue';
 import { router } from '@inertiajs/vue3';
 import type { Editor } from '@tiptap/vue-3';
+
 import { useToasts } from '@/Composables/useToasts';
 
 interface UploadState {
@@ -27,11 +28,11 @@ interface UploadResult {
 
 /**
  * Composable for handling file uploads in TipTap editor
- * 
+ *
  * @example
  * ```ts
  * const { handleFileDrop, handleFilePaste } = useTiptapFileUpload();
- * 
+ *
  * // In FileHandler extension config
  * FileHandler.configure({
  *   onDrop: handleFileDrop,
@@ -50,7 +51,8 @@ export function useTiptapFileUpload() {
     for (const file of files) {
       if (file.type.startsWith('image/')) {
         await processImageUpload(currentEditor, file, pos);
-      } else {
+      }
+      else {
         await processFileUpload(currentEditor, file, pos);
       }
     }
@@ -63,7 +65,8 @@ export function useTiptapFileUpload() {
     for (const file of files) {
       if (file.type.startsWith('image/')) {
         await processImageUpload(currentEditor, file);
-      } else {
+      }
+      else {
         await processFileUpload(currentEditor, file);
       }
     }
@@ -99,7 +102,8 @@ export function useTiptapFileUpload() {
                 title: `Uploaded: ${file.name}`,
               });
               resolve(result);
-            } else {
+            }
+            else {
               reject(new Error('Upload succeeded but no data received'));
             }
           },
@@ -109,14 +113,16 @@ export function useTiptapFileUpload() {
           },
         });
       });
-    } catch (error: unknown) {
+    }
+    catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       console.error('Upload failed:', error);
       replacePlaceholderWithError(currentEditor, uploadId, errorMessage);
       toasts.error(`Failed to upload ${file.name}`, {
         description: errorMessage,
       });
-    } finally {
+    }
+    finally {
       uploadingFiles.value.delete(uploadId);
     }
   }
@@ -151,14 +157,16 @@ export function useTiptapFileUpload() {
           },
         });
       });
-    } catch (error: unknown) {
+    }
+    catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       console.error('File upload failed:', error);
       replacePlaceholderWithError(currentEditor, uploadId, errorMessage);
       toasts.error(`Failed to upload ${file.name}`, {
         description: errorMessage,
       });
-    } finally {
+    }
+    finally {
       uploadingFiles.value.delete(uploadId);
     }
   }
@@ -170,13 +178,14 @@ export function useTiptapFileUpload() {
     currentEditor: Editor,
     fileName: string,
     uploadId: string,
-    pos?: number
+    pos?: number,
   ) {
     const placeholderText = `🔄 Uploading and compressing ${fileName}...`;
 
     if (pos !== undefined) {
       currentEditor.chain().focus().insertContentAt(pos, placeholderText).run();
-    } else {
+    }
+    else {
       currentEditor.chain().focus().insertContent(placeholderText).run();
     }
 
@@ -189,7 +198,7 @@ export function useTiptapFileUpload() {
   function replacePlaceholderWithImage(
     currentEditor: Editor,
     uploadId: string,
-    imageData: { src: string; alt: string; title: string }
+    imageData: { src: string; alt: string; title: string },
   ) {
     const uploadInfo = uploadingFiles.value.get(uploadId);
     if (!uploadInfo) return;
@@ -226,7 +235,7 @@ export function useTiptapFileUpload() {
     currentEditor: Editor,
     uploadId: string,
     fileName: string,
-    fileUrl: string
+    fileUrl: string,
   ) {
     const uploadInfo = uploadingFiles.value.get(uploadId);
     if (!uploadInfo) return;
@@ -259,7 +268,7 @@ export function useTiptapFileUpload() {
   function replacePlaceholderWithError(
     currentEditor: Editor,
     uploadId: string,
-    errorMessage: string
+    errorMessage: string,
   ) {
     const uploadInfo = uploadingFiles.value.get(uploadId);
     if (!uploadInfo) return;

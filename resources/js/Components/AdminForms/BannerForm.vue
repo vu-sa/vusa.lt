@@ -21,17 +21,19 @@
 </template>
 
 <script setup lang="ts">
-import { useForm } from "@inertiajs/vue3";
-import { ImageUpload } from "@/Components/ui/upload";
-import { Input } from "@/Components/ui/input";
-import { Switch } from "@/Components/ui/switch";
-import AdminForm from "./AdminForm.vue";
-import FormElement from "./FormElement.vue";
-import FormFieldWrapper from "./FormFieldWrapper.vue";
+import { useForm } from '@inertiajs/vue3';
+
+import AdminForm from './AdminForm.vue';
+import FormElement from './FormElement.vue';
+import FormFieldWrapper from './FormFieldWrapper.vue';
+
+import { ImageUpload } from '@/Components/ui/upload';
+import { Input } from '@/Components/ui/input';
+import { Switch } from '@/Components/ui/switch';
 
 defineEmits<{
-  (event: "submit:form", form: unknown): void;
-  (event: "delete"): void;
+  (event: 'submit:form', form: unknown): void;
+  (event: 'delete'): void;
 }>();
 
 const { banner, rememberKey } = defineProps<{

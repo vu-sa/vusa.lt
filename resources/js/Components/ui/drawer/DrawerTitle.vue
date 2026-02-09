@@ -1,18 +1,3 @@
-<script lang="ts" setup>
-import type { DrawerTitleProps } from 'vaul-vue'
-import { cn } from '@/Utils/Shadcn/utils'
-import { DrawerTitle } from 'vaul-vue'
-import { computed, type HtmlHTMLAttributes } from 'vue'
-
-const props = defineProps<DrawerTitleProps & { class?: HtmlHTMLAttributes['class'] }>()
-
-const delegatedProps = computed(() => {
-  const { class: _, ...delegated } = props
-
-  return delegated
-})
-</script>
-
 <template>
   <DrawerTitle
     data-slot="drawer-title"
@@ -22,3 +7,19 @@ const delegatedProps = computed(() => {
     <slot />
   </DrawerTitle>
 </template>
+
+<script lang="ts" setup>
+import type { DrawerTitleProps } from 'vaul-vue';
+import { DrawerTitle } from 'vaul-vue';
+import { computed, type HtmlHTMLAttributes } from 'vue';
+
+import { cn } from '@/Utils/Shadcn/utils';
+
+const props = defineProps<DrawerTitleProps & { class?: HtmlHTMLAttributes['class'] }>();
+
+const delegatedProps = computed(() => {
+  const { class: _, ...delegated } = props;
+
+  return delegated;
+});
+</script>

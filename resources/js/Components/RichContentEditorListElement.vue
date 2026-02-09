@@ -29,6 +29,7 @@
 
 <script setup lang="ts">
 import type { Component } from 'vue';
+
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 
@@ -38,7 +39,7 @@ defineProps<{
   title: string;
   canDelete: boolean;
   isExpanded?: boolean;
-}>()
+}>();
 
-defineEmits(['expand', 'remove', 'up', 'down'])
+defineEmits(['expand', 'remove', 'up', 'down']);
 </script>

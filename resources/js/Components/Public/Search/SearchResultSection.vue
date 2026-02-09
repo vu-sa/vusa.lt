@@ -49,87 +49,89 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, inject } from 'vue'
-import { AisHighlight } from 'vue-instantsearch/vue3/es'
-import { Button } from '@/Components/ui/button'
-import { trans as $t } from 'laravel-vue-i18n'
-import { useSearchService, type SearchService } from '@/Composables/useSearchService'
-import { useSearchUtils } from '@/Composables/useSearchUtils'
-import IconArrowRight from '~icons/fluent/arrow-right-16-filled'
+import { computed, ref, watch, inject } from 'vue';
+import { AisHighlight } from 'vue-instantsearch/vue3/es';
+import { trans as $t } from 'laravel-vue-i18n';
+
+import { Button } from '@/Components/ui/button';
+import { useSearchService, type SearchService } from '@/Composables/useSearchService';
+import { useSearchUtils } from '@/Composables/useSearchUtils';
+import IconArrowRight from '~icons/fluent/arrow-right-16-filled';
 
 interface Props {
-  indexName: string
-  title: string
-  icon: string
-  type: string
-  resultOrder?: 'relevance' | 'date' | 'type'
+  indexName: string;
+  title: string;
+  icon: string;
+  type: string;
+  resultOrder?: 'relevance' | 'date' | 'type';
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  resultOrder: 'relevance'
-})
+  resultOrder: 'relevance',
+});
 
 const emit = defineEmits<{
-  navigateToItem: [item: any]
-  updateResultCount: [count: number]
-  updateTotalHits: [totalHits: number]
-}>()
+  navigateToItem: [item: any];
+  updateResultCount: [count: number];
+  updateTotalHits: [totalHits: number];
+}>();
 
 // Use centralized search service - inject from parent or create new
-const searchService = inject<SearchService>('searchService') || useSearchService()
+const searchService = inject<SearchService>('searchService') || useSearchService();
 
 // Use shared search utilities
-const { 
-  getIconComponent, 
-  formatDate, 
-  stripHtml, 
-  getItemDate, 
+const {
+  getIconComponent,
+  formatDate,
+  stripHtml,
+  getItemDate,
   getItemContent,
   getSectionHeaderClasses,
   getItemClasses,
   getIconClasses,
-  getLoadMoreClasses
-} = useSearchUtils()
+  getLoadMoreClasses,
+} = useSearchUtils();
 
 // Get results for this content type from the search service
 const typeResults = computed(() => {
-  return searchService.getContentTypeResults(props.type)
-})
+  return searchService.getContentTypeResults(props.type);
+});
 
 // Current hits from the type results
 const currentHits = computed(() => {
-  return typeResults.value?.totalHits || 0
-})
+  return typeResults.value?.totalHits || 0;
+});
 
 // Mobile detection
 const isMobile = computed(() => {
-  if (typeof window === 'undefined') return false
-  return window.innerWidth < 1024
-})
+  if (typeof window === 'undefined') return false;
+  return window.innerWidth < 1024;
+});
 
 // Event handlers - simplified for direct navigation
 const handleItemClick = (item: any, event: MouseEvent) => {
-  const itemWithType = { ...item, type: props.type }
-  emit('navigateToItem', itemWithType)
-}
+  const itemWithType = { ...item, type: props.type };
+  emit('navigateToItem', itemWithType);
+};
 
 const handleItemKeydown = (item: any, event: KeyboardEvent) => {
   if (event.key === 'Enter' || event.key === ' ') {
-    event.preventDefault()
-    emit('navigateToItem', { ...item, type: props.type })
+    event.preventDefault();
+    emit('navigateToItem', { ...item, type: props.type });
   }
-}
+};
 
 // Watch for changes in type results and emit updates
 watch(typeResults, (newTypeResults) => {
   if (newTypeResults) {
-    emit('updateTotalHits', newTypeResults.totalHits)
-    emit('updateResultCount', newTypeResults.results.length)
-  } else {
-    emit('updateTotalHits', 0)
-    emit('updateResultCount', 0)
+    emit('updateTotalHits', newTypeResults.totalHits);
+    emit('updateResultCount', newTypeResults.results.length);
   }
-}, { immediate: true })
+  else {
+    emit('updateTotalHits', 0);
+    emit('updateResultCount', 0);
+  }
+}, { immediate: true });
 
 // All utility functions now imported from useSearchUtils
 </script>

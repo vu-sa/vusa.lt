@@ -167,8 +167,8 @@
           <!-- Section header -->
           <div class="mb-4 flex items-center gap-2">
             <h3 class="text-base font-semibold text-zinc-800 dark:text-zinc-200">
-{{ section.dutyName }}
-</h3>
+              {{ section.dutyName }}
+            </h3>
             <div class="h-px flex-1 bg-zinc-200/50 dark:bg-zinc-700/50" />
           </div>
 
@@ -176,8 +176,8 @@
           <div v-if="section.type === 'grouped_duty'" class="space-y-6">
             <div v-for="group in section.groups" :key="group.name">
               <h4 class="mb-3 text-sm font-medium text-zinc-600 dark:text-zinc-400">
-{{ group.name }}
-</h4>
+                {{ group.name }}
+              </h4>
               <div class="grid gap-3 grid-cols-2 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
                 <ContactCard
                   v-for="contact in group.contacts"
@@ -219,8 +219,8 @@
         <div class="mb-6 flex items-center justify-between">
           <div class="flex items-center gap-3">
             <h2 class="text-xl font-bold text-zinc-900 dark:text-zinc-50">
-{{ $t('Posėdžiai') }}
-</h2>
+              {{ $t('Posėdžiai') }}
+            </h2>
             <div class="h-px flex-1 bg-gradient-to-r from-zinc-200 to-transparent dark:from-zinc-700" />
 
             <!-- Info button -->

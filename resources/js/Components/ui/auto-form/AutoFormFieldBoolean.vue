@@ -1,17 +1,3 @@
-<script setup lang="ts">
-import type { FieldProps } from './interface'
-import { Checkbox } from '@/Components/ui/checkbox'
-import { FormControl, FormDescription, FormField, FormItem, FormMessage } from '@/Components/ui/form'
-import { Switch } from '@/Components/ui/switch'
-import { computed } from 'vue'
-import AutoFormLabel from './AutoFormLabel.vue'
-import { beautifyObjectName, maybeBooleanishToBoolean } from './utils'
-
-const props = defineProps<FieldProps>()
-
-const booleanComponent = computed(() => props.config?.component === 'switch' ? Switch : Checkbox)
-</script>
-
 <template>
   <FormField v-slot="slotProps" :name="fieldName">
     <FormItem>
@@ -27,7 +13,7 @@ const booleanComponent = computed(() => props.config?.component === 'switch' ? S
             />
           </slot>
         </FormControl>
-        <AutoFormLabel v-if="!config?.hideLabel" :required="required">
+        <AutoFormLabel v-if="!config?.hideLabel" :required>
           {{ config?.label || beautifyObjectName(label ?? fieldName) }}
         </AutoFormLabel>
       </div>
@@ -39,3 +25,19 @@ const booleanComponent = computed(() => props.config?.component === 'switch' ? S
     </FormItem>
   </FormField>
 </template>
+
+<script setup lang="ts">
+import { computed } from 'vue';
+
+import type { FieldProps } from './interface';
+import AutoFormLabel from './AutoFormLabel.vue';
+import { beautifyObjectName, maybeBooleanishToBoolean } from './utils';
+
+import { Checkbox } from '@/Components/ui/checkbox';
+import { FormControl, FormDescription, FormField, FormItem, FormMessage } from '@/Components/ui/form';
+import { Switch } from '@/Components/ui/switch';
+
+const props = defineProps<FieldProps>();
+
+const booleanComponent = computed(() => props.config?.component === 'switch' ? Switch : Checkbox);
+</script>

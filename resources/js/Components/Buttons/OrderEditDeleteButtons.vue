@@ -26,7 +26,9 @@
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>{{ $t('forms.cancel') }}</AlertDialogCancel>
-          <AlertDialogAction @click="$emit('delete')">{{ $t('forms.delete') }}</AlertDialogAction>
+          <AlertDialogAction @click="$emit('delete')">
+            {{ $t('forms.delete') }}
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
@@ -36,6 +38,7 @@
 <script setup lang="ts">
 import { Icon } from '@iconify/vue';
 import { Link } from '@inertiajs/vue3';
+
 import { Button } from '@/Components/ui/button';
 import {
   AlertDialog,
@@ -53,7 +56,7 @@ defineProps<{
   index: number;
   length: number;
   editRoute: string;
-}>()
+}>();
 
 defineEmits(['moveUp', 'moveDown', 'delete']);
 </script>

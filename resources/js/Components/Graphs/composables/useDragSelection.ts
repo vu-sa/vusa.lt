@@ -1,47 +1,47 @@
 /**
  * useDragSelection - Shift+drag to create check-in periods
- * 
+ *
  * Composable for handling Shift+drag selection on Gantt chart rows.
  * When user holds Shift and drags on an institution row, a selection
  * rectangle is shown and on mouseup, a check-in creation event is emitted.
  */
-import { ref, onUnmounted, type Ref, type ComputedRef } from 'vue'
-import * as d3 from 'd3'
+import { ref, onUnmounted, type Ref, type ComputedRef } from 'vue';
+import * as d3 from 'd3';
 
 export interface DragSelectionState {
   /** Whether currently dragging */
-  isDragging: boolean
+  isDragging: boolean;
   /** Institution ID of the row being dragged on */
-  institutionId: string | number | null
+  institutionId: string | number | null;
   /** Drag start date */
-  startDate: Date | null
+  startDate: Date | null;
   /** Current drag end date */
-  endDate: Date | null
+  endDate: Date | null;
   /** Pixel X position of drag start */
-  startX: number
+  startX: number;
   /** Pixel Y position (row center) */
-  y: number
+  y: number;
   /** Row height for selection rectangle */
-  rowHeight: number
+  rowHeight: number;
 }
 
 export interface LayoutRow {
-  key: string | number
-  type: 'tenant' | 'institution'
-  tenantId?: string | number
-  institutionId?: string | number
-  top: number
-  height: number
+  key: string | number;
+  type: 'tenant' | 'institution';
+  tenantId?: string | number;
+  institutionId?: string | number;
+  top: number;
+  height: number;
 }
 
 export interface DragSelectionOptions {
   /** Minimum drag distance in pixels before selection starts */
-  minDragDistance?: number
+  minDragDistance?: number;
 }
 
 export interface DragSelectionCallbacks {
   /** Called when drag selection completes successfully */
-  onDragComplete?: (payload: { institution_id: string | number; startDate: Date; endDate: Date }) => void
+  onDragComplete?: (payload: { institution_id: string | number; startDate: Date; endDate: Date }) => void;
 }
 
 /**
@@ -59,9 +59,9 @@ export function useDragSelection(
   /** Callbacks for drag events */
   callbacks: DragSelectionCallbacks = {},
   /** Options */
-  options: DragSelectionOptions = {}
+  options: DragSelectionOptions = {},
 ) {
-  const { minDragDistance = 10 } = options
+  const { minDragDistance = 10 } = options;
 
   // Drag state
   const state = ref<DragSelectionState>({
@@ -72,14 +72,14 @@ export function useDragSelection(
     startX: 0,
     y: 0,
     rowHeight: 0,
-  })
+  });
 
   // Track if Shift is held
-  const isShiftHeld = ref(false)
+  const isShiftHeld = ref(false);
 
   // Track initial mouse position for distance calculation
-  let initialMouseX = 0
-  let dragThresholdMet = false
+  let initialMouseX = 0;
+  let dragThresholdMet = false;
 
   /**
    * Find the layout row at the given Y position
@@ -87,34 +87,34 @@ export function useDragSelection(
   function findRowByY(y: number): LayoutRow | undefined {
     for (const row of layoutRows.value) {
       if (y >= row.top && y < row.top + row.height) {
-        return row
+        return row;
       }
     }
-    return undefined
+    return undefined;
   }
 
   /**
    * Handle mousedown - start potential drag if Shift is held
    */
   function handleMouseDown(event: MouseEvent) {
-    if (!event.shiftKey || !curX.value || !containerRef.value || !svgRef.value) return
+    if (!event.shiftKey || !curX.value || !containerRef.value || !svgRef.value) return;
 
-    const svg = svgRef.value
+    const svg = svgRef.value;
 
-    const [mx, my] = d3.pointer(event, svg)
-    const row = findRowByY(my)
+    const [mx, my] = d3.pointer(event, svg);
+    const row = findRowByY(my);
 
     // Only start drag on institution rows
-    if (!row || row.type !== 'institution') return
+    if (!row || row.type !== 'institution') return;
 
     // Store initial position
-    initialMouseX = mx
-    dragThresholdMet = false
-    isShiftHeld.value = true
+    initialMouseX = mx;
+    dragThresholdMet = false;
+    isShiftHeld.value = true;
 
     // Set up potential drag state (but don't mark as dragging yet)
-    const date = d3.timeDay.floor(curX.value.invert(mx))
-    
+    const date = d3.timeDay.floor(curX.value.invert(mx));
+
     state.value = {
       isDragging: false, // Will become true once threshold is met
       institutionId: row.institutionId!,
@@ -123,45 +123,45 @@ export function useDragSelection(
       startX: mx,
       y: row.top,
       rowHeight: row.height,
-    }
+    };
 
     // Add document-level listeners
-    document.addEventListener('mousemove', handleMouseMove)
-    document.addEventListener('mouseup', handleMouseUp)
-    document.addEventListener('keyup', handleKeyUp)
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+    document.addEventListener('keyup', handleKeyUp);
 
     // Prevent text selection during drag
-    event.preventDefault()
+    event.preventDefault();
   }
 
   /**
    * Handle mousemove - update selection if dragging
    */
   function handleMouseMove(event: MouseEvent) {
-    if (!isShiftHeld.value || !curX.value || !containerRef.value || !svgRef.value) return
+    if (!isShiftHeld.value || !curX.value || !containerRef.value || !svgRef.value) return;
 
     // Check if Shift is still held
     if (!event.shiftKey) {
-      cancelDrag()
-      return
+      cancelDrag();
+      return;
     }
 
-    const svg = svgRef.value
+    const svg = svgRef.value;
 
-    const [mx] = d3.pointer(event, svg)
+    const [mx] = d3.pointer(event, svg);
 
     // Check if we've met the minimum drag distance
     if (!dragThresholdMet) {
-      const distance = Math.abs(mx - initialMouseX)
-      if (distance < minDragDistance) return
-      
-      dragThresholdMet = true
-      state.value.isDragging = true
+      const distance = Math.abs(mx - initialMouseX);
+      if (distance < minDragDistance) return;
+
+      dragThresholdMet = true;
+      state.value.isDragging = true;
     }
 
     // Update end date
-    const endDate = d3.timeDay.floor(curX.value.invert(mx))
-    state.value.endDate = endDate
+    const endDate = d3.timeDay.floor(curX.value.invert(mx));
+    state.value.endDate = endDate;
   }
 
   /**
@@ -169,25 +169,25 @@ export function useDragSelection(
    */
   function handleMouseUp(event: MouseEvent) {
     // Remove listeners first
-    document.removeEventListener('mousemove', handleMouseMove)
-    document.removeEventListener('mouseup', handleMouseUp)
-    document.removeEventListener('keyup', handleKeyUp)
+    document.removeEventListener('mousemove', handleMouseMove);
+    document.removeEventListener('mouseup', handleMouseUp);
+    document.removeEventListener('keyup', handleKeyUp);
 
     // If we were actually dragging (threshold met), emit the event
     if (state.value.isDragging && state.value.startDate && state.value.endDate && state.value.institutionId !== null) {
       // Ensure dates are in correct order
-      const start = state.value.startDate < state.value.endDate ? state.value.startDate : state.value.endDate
-      const end = state.value.startDate < state.value.endDate ? state.value.endDate : state.value.startDate
+      const start = state.value.startDate < state.value.endDate ? state.value.startDate : state.value.endDate;
+      const end = state.value.startDate < state.value.endDate ? state.value.endDate : state.value.startDate;
 
       callbacks.onDragComplete?.({
         institution_id: state.value.institutionId,
         startDate: start,
         endDate: end,
-      })
+      });
     }
 
     // Reset state
-    resetState()
+    resetState();
   }
 
   /**
@@ -195,7 +195,7 @@ export function useDragSelection(
    */
   function handleKeyUp(event: KeyboardEvent) {
     if (event.key === 'Shift') {
-      cancelDrag()
+      cancelDrag();
     }
   }
 
@@ -203,18 +203,18 @@ export function useDragSelection(
    * Cancel the current drag operation
    */
   function cancelDrag() {
-    document.removeEventListener('mousemove', handleMouseMove)
-    document.removeEventListener('mouseup', handleMouseUp)
-    document.removeEventListener('keyup', handleKeyUp)
-    resetState()
+    document.removeEventListener('mousemove', handleMouseMove);
+    document.removeEventListener('mouseup', handleMouseUp);
+    document.removeEventListener('keyup', handleKeyUp);
+    resetState();
   }
 
   /**
    * Reset drag state
    */
   function resetState() {
-    isShiftHeld.value = false
-    dragThresholdMet = false
+    isShiftHeld.value = false;
+    dragThresholdMet = false;
     state.value = {
       isDragging: false,
       institutionId: null,
@@ -223,7 +223,7 @@ export function useDragSelection(
       startX: 0,
       y: 0,
       rowHeight: 0,
-    }
+    };
   }
 
   /**
@@ -231,26 +231,26 @@ export function useDragSelection(
    * Returns a cleanup function
    */
   function attachDragHandler(): () => void {
-    const container = containerRef.value
-    if (!container) return () => {}
+    const container = containerRef.value;
+    if (!container) return () => {};
 
-    container.addEventListener('mousedown', handleMouseDown)
+    container.addEventListener('mousedown', handleMouseDown);
 
     return () => {
-      container.removeEventListener('mousedown', handleMouseDown)
+      container.removeEventListener('mousedown', handleMouseDown);
       // Also clean up any in-progress drag
-      document.removeEventListener('mousemove', handleMouseMove)
-      document.removeEventListener('mouseup', handleMouseUp)
-      document.removeEventListener('keyup', handleKeyUp)
-    }
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener('keyup', handleKeyUp);
+    };
   }
 
   // Cleanup on unmount
   onUnmounted(() => {
-    document.removeEventListener('mousemove', handleMouseMove)
-    document.removeEventListener('mouseup', handleMouseUp)
-    document.removeEventListener('keyup', handleKeyUp)
-  })
+    document.removeEventListener('mousemove', handleMouseMove);
+    document.removeEventListener('mouseup', handleMouseUp);
+    document.removeEventListener('keyup', handleKeyUp);
+  });
 
   return {
     /** Current drag selection state */
@@ -261,7 +261,7 @@ export function useDragSelection(
     attachDragHandler,
     /** Cancel current drag operation */
     cancelDrag,
-  }
+  };
 }
 
-export type { DragSelectionState as DragState }
+export type { DragSelectionState as DragState };

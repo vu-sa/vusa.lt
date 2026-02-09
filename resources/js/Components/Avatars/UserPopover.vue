@@ -8,41 +8,43 @@
         :class="avatarWrapperClass"
       >
         <UserAvatar
-          :user="user"
+          :user
           :size="avatarSize"
           :interactive="true"
         />
       </div>
-      <div 
-        v-else 
-        v-bind="$attrs" 
+      <div
+        v-else
+        v-bind="$attrs"
         class="inline-flex items-center gap-2 px-1 py-0.5 rounded-md transition-colors hover:bg-accent group"
       >
-        <UserAvatar :user="user" :size="avatarSize" :interactive="true" />
+        <UserAvatar :user :size="avatarSize" :interactive="true" />
         <span :class="[nameTextClass, 'font-medium group-hover:text-accent-foreground']">
           {{ user.name }}
         </span>
       </div>
     </HoverCardTrigger>
-    
+
     <HoverCardContent class="w-72 p-0 shadow-lg">
       <div class="relative">
         <!-- User photo header -->
         <div v-if="photo" class="relative h-24 w-full overflow-hidden rounded-t-md">
-          <img 
-            class="w-full h-full object-cover" 
-            :src="photo" 
+          <img
+            class="w-full h-full object-cover"
+            :src="photo"
             alt="User photo"
             loading="lazy"
           >
-          <div class="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent"></div>
+          <div class="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
         </div>
-        
+
         <!-- User information -->
         <div class="flex flex-col gap-4 p-4">
           <!-- User name and role -->
           <div class="flex flex-col gap-1">
-            <h3 class="font-semibold text-base">{{ user.name }}</h3>
+            <h3 class="font-semibold text-base">
+              {{ user.name }}
+            </h3>
             <p v-if="user.role || user.position" class="text-sm text-muted-foreground">
               {{ user.role || user.position }}
             </p>
@@ -61,7 +63,7 @@
           </div>
 
           <!-- Additional information slot -->
-          <slot name="additional-info"></slot>
+          <slot name="additional-info" />
         </div>
       </div>
     </HoverCardContent>
@@ -69,10 +71,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
-import UserAvatar from "./UserAvatar.vue";
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/Components/ui/hover-card";
-import { avatarSizeClasses, mapPixelToSize, type AvatarSize } from "@/Components/ui/avatar";
+import { computed } from 'vue';
+
+import UserAvatar from './UserAvatar.vue';
+
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/Components/ui/hover-card';
+import { avatarSizeClasses, mapPixelToSize, type AvatarSize } from '@/Components/ui/avatar';
 
 const props = defineProps<{
   showName?: boolean;

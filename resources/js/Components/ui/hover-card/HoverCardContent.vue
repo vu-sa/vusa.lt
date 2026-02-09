@@ -1,29 +1,3 @@
-<script setup lang="ts">
-import { cn } from '@/Utils/Shadcn/utils'
-import {
-  HoverCardContent,
-  type HoverCardContentProps,
-  HoverCardPortal,
-  useForwardProps,
-} from 'reka-ui'
-import { computed, type HTMLAttributes } from 'vue'
-
-const props = withDefaults(
-  defineProps<HoverCardContentProps & { class?: HTMLAttributes['class'] }>(),
-  {
-    sideOffset: 4,
-  },
-)
-
-const delegatedProps = computed(() => {
-  const { class: _, ...delegated } = props
-
-  return delegated
-})
-
-const forwardedProps = useForwardProps(delegatedProps)
-</script>
-
 <template>
   <HoverCardPortal>
     <HoverCardContent
@@ -40,3 +14,30 @@ const forwardedProps = useForwardProps(delegatedProps)
     </HoverCardContent>
   </HoverCardPortal>
 </template>
+
+<script setup lang="ts">
+import {
+  HoverCardContent,
+  type HoverCardContentProps,
+  HoverCardPortal,
+  useForwardProps,
+} from 'reka-ui';
+import { computed, type HTMLAttributes } from 'vue';
+
+import { cn } from '@/Utils/Shadcn/utils';
+
+const props = withDefaults(
+  defineProps<HoverCardContentProps & { class?: HTMLAttributes['class'] }>(),
+  {
+    sideOffset: 4,
+  },
+);
+
+const delegatedProps = computed(() => {
+  const { class: _, ...delegated } = props;
+
+  return delegated;
+});
+
+const forwardedProps = useForwardProps(delegatedProps);
+</script>

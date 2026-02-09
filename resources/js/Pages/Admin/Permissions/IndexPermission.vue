@@ -10,19 +10,19 @@
 </template>
 
 <script setup lang="tsx">
-import { trans as $t } from "laravel-vue-i18n";
-import { type ColumnDef } from '@tanstack/vue-table';
-import { ref, computed } from "vue";
+import { trans as $t } from 'laravel-vue-i18n';
+import type { ColumnDef } from '@tanstack/vue-table';
+import { ref, computed } from 'vue';
 
-import Icons from "@/Types/Icons/regular";
-import IndexTablePage from "@/Components/Layouts/IndexTablePage.vue";
+import Icons from '@/Types/Icons/regular';
+import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
 import {
   createTextColumn,
   createTimestampColumn,
 } from '@/Utils/DataTableColumns';
-import {
-  type IndexTablePageProps
-} from "@/Types/TableConfigTypes";
+import type {
+  IndexTablePageProps,
+} from '@/Types/TableConfigTypes';
 
 const props = defineProps<{
   permissions: {
@@ -50,16 +50,16 @@ const getRowId = (row: App.Entities.Permission) => {
 };
 
 const columns = computed<ColumnDef<App.Entities.Permission, any>[]>(() => [
-  createTextColumn<App.Entities.Permission>("name", {
-    title: $t("forms.fields.name"),
+  createTextColumn<App.Entities.Permission>('name', {
+    title: $t('forms.fields.name'),
     width: 300,
   }),
-  createTimestampColumn<App.Entities.Permission>("created_at", {
-    title: $t("forms.fields.created_at"),
+  createTimestampColumn<App.Entities.Permission>('created_at', {
+    title: $t('forms.fields.created_at'),
     width: 180,
   }),
-  createTimestampColumn<App.Entities.Permission>("updated_at", {
-    title: $t("Atnaujintas"),
+  createTimestampColumn<App.Entities.Permission>('updated_at', {
+    title: $t('Atnaujintas'),
     width: 180,
   }),
 ]);
@@ -81,7 +81,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Permission>>(() =>
     enableColumnVisibility: false,
     enableRowSelection: false,
 
-    headerTitle: "Leidimai",
+    headerTitle: 'Leidimai',
     icon: Icons.PERMISSION,
     canCreate: false,
   };

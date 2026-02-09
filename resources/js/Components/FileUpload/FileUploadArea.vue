@@ -2,25 +2,25 @@
   <div class="space-y-4">
     <!-- Upload Area -->
     <div
+      :class="[
+        'relative border-2 border-dashed rounded-lg p-8 text-center transition-colors',
+        isDragOver
+          ? 'border-vusa-red bg-vusa-red/5'
+          : 'border-muted-foreground hover:border-vusa-red hover:bg-muted/50'
+      ]"
       @drop="handleDrop"
       @dragover.prevent
       @dragenter.prevent
-      :class="[
-        'relative border-2 border-dashed rounded-lg p-8 text-center transition-colors',
-        isDragOver 
-          ? 'border-vusa-red bg-vusa-red/5' 
-          : 'border-muted-foreground hover:border-vusa-red hover:bg-muted/50'
-      ]"
     >
       <input
         ref="fileInput"
         type="file"
         multiple
-        @change="handleFileSelect"
         class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
         :accept="acceptString"
-      />
-      
+        @change="handleFileSelect"
+      >
+
       <div class="flex flex-col items-center gap-3">
         <IFluentCloudArrowUp24Regular class="h-12 w-12 text-muted-foreground" />
         <div>
@@ -53,16 +53,16 @@
           Išvalyti
         </Button>
       </div>
-      
+
       <div class="space-y-2 max-h-48 overflow-y-auto">
         <div
           v-for="(file, index) in selectedFiles"
           :key="index"
           class="flex items-center gap-3 p-3 rounded-md border border-border bg-muted/30"
         >
-          <component 
-            :is="getFileIcon(file.name)" 
-            class="h-8 w-8 text-muted-foreground flex-shrink-0" 
+          <component
+            :is="getFileIcon(file.name)"
+            class="h-8 w-8 text-muted-foreground flex-shrink-0"
           />
           <div class="flex-1 min-w-0">
             <p class="text-sm font-medium text-foreground truncate">
@@ -75,8 +75,8 @@
           <Button
             variant="ghost"
             size="sm"
-            @click="removeFile(index)"
             class="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+            @click="removeFile(index)"
           >
             <IFluentDelete24Regular class="h-4 w-4" />
           </Button>
@@ -85,13 +85,13 @@
 
       <!-- Upload Button -->
       <div class="flex justify-end items-center pt-2">
-        <Button 
-          @click="uploadFiles" 
+        <Button
           :disabled="loading || selectedFiles.length === 0"
           class="min-w-24"
+          @click="uploadFiles"
         >
           <div v-if="loading" class="flex items-center gap-2">
-            <div class="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
+            <div class="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
             Įkeliama...
           </div>
           <div v-else class="flex items-center gap-2">
@@ -106,6 +106,7 @@
 
 <script setup lang="ts">
 import { ref, defineEmits, onMounted, computed } from 'vue';
+
 import { Button } from '@/Components/ui/button';
 
 interface FileUploadProps {
@@ -126,14 +127,14 @@ const props = withDefaults(defineProps<FileUploadProps>(), {
 });
 
 const emit = defineEmits<{
-  upload: [files: File[]];
+  'upload': [files: File[]];
   'files-selected': [files: File[]];
 }>();
 
 const fileInput = ref<HTMLInputElement | null>(null);
 const selectedFiles = ref<File[]>([]);
 const isDragOver = ref(false);
-const allowedTypes = ref<{extensions: string[], accept: string, maxSizeMB: number} | null>(null);
+const allowedTypes = ref<{ extensions: string[]; accept: string; maxSizeMB: number } | null>(null);
 
 // Computed accept string for file input
 const acceptString = computed(() => {
@@ -170,7 +171,8 @@ onMounted(async () => {
     if (response.ok) {
       allowedTypes.value = await response.json();
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.warn('Could not fetch allowed file types:', error);
   }
 });
@@ -178,7 +180,7 @@ onMounted(async () => {
 function handleDrop(event: DragEvent) {
   event.preventDefault();
   isDragOver.value = false;
-  
+
   const files = Array.from(event.dataTransfer?.files || []);
   addFiles(files);
 }
@@ -190,14 +192,14 @@ function handleFileSelect(event: Event) {
 }
 
 function addFiles(files: File[]) {
-  const validFiles = files.filter(file => {
+  const validFiles = files.filter((file) => {
     // Check file size
     const maxSize = allowedTypes.value?.maxSizeMB || props.maxSizeMB;
     if (file.size > maxSize * 1024 * 1024) {
       console.warn(`File ${file.name} is too large (max ${maxSize}MB)`);
       return false;
     }
-    
+
     // Resolve allowed extensions: custom filter or server-provided
     const allowedExts = (props.forceAccept && props.extensions?.length)
       ? props.extensions.map(e => e.toLowerCase())
@@ -210,10 +212,10 @@ function addFiles(files: File[]) {
         return false;
       }
     }
-    
+
     return true;
   });
-  
+
   selectedFiles.value = [...selectedFiles.value, ...validFiles];
   emit('files-selected', selectedFiles.value);
 }
@@ -242,59 +244,59 @@ function formatFileSize(bytes: number): string {
   const k = 1024;
   const sizes = ['B', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
 }
 
 function getFileIcon(fileName: string) {
   const extension = fileName.split('.').pop()?.toLowerCase();
-  
+
   if (!extension) return 'IFluentDocument24Regular';
-  
+
   // Document files
   if (['doc', 'docx', 'odt'].includes(extension)) {
     return 'IFluentDocumentText24Regular';
   }
-  
+
   // Spreadsheet files
   if (['xls', 'xlsx', 'csv'].includes(extension)) {
     return 'IFluentDocumentTable24Regular';
   }
-  
+
   // PDF files
   if (extension === 'pdf') {
     return 'IFluentDocumentPdf24Regular';
   }
-  
+
   // Image files
   if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(extension)) {
     return 'IFluentImage24Regular';
   }
-  
+
   // Video files
   if (['mp4', 'avi', 'mkv', 'mov', 'webm'].includes(extension)) {
     return 'IFluentVideo24Regular';
   }
-  
+
   // Audio files
   if (['mp3', 'wav', 'flac', 'aac'].includes(extension)) {
     return 'IFluentMusicNote24Regular';
   }
-  
+
   // Archive files
   if (['zip', 'rar', '7z', 'tar', 'gz'].includes(extension)) {
     return 'IFluentFolderZip24Regular';
   }
-  
+
   // Code files
   if (['js', 'ts', 'vue', 'html', 'css', 'php', 'py', 'java'].includes(extension)) {
     return 'IFluentCode24Regular';
   }
-  
+
   return 'IFluentDocument24Regular';
 }
 
 // Expose method to clear files externally
 defineExpose({
-  clearFiles
+  clearFiles,
 });
 </script>

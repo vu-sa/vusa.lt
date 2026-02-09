@@ -9,7 +9,7 @@
           <template #description>
             {{ $t('settings.authorization_form.role_description') }}
           </template>
-          
+
           <div class="space-y-4">
             <div class="space-y-2">
               <Label class="inline-flex items-center gap-1">
@@ -30,7 +30,7 @@
                 </SelectContent>
               </Select>
             </div>
-            
+
             <Alert>
               <InfoIcon class="h-4 w-4" />
               <AlertDescription>
@@ -45,24 +45,24 @@
 </template>
 
 <script setup lang="ts">
-import { useForm } from "@inertiajs/vue3";
-import { ref, watch } from "vue";
-import { InfoIcon } from "lucide-vue-next";
+import { useForm } from '@inertiajs/vue3';
+import { ref, watch } from 'vue';
+import { InfoIcon } from 'lucide-vue-next';
 
-import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
-import AdminForm from "@/Components/AdminForms/AdminForm.vue";
-import FormElement from "@/Components/AdminForms/FormElement.vue";
-import { Alert, AlertDescription } from "@/Components/ui/alert";
-import { Label } from "@/Components/ui/label";
+import PageContent from '@/Components/Layouts/AdminContentPage.vue';
+import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
+import AdminForm from '@/Components/AdminForms/AdminForm.vue';
+import FormElement from '@/Components/AdminForms/FormElement.vue';
+import { Alert, AlertDescription } from '@/Components/ui/alert';
+import { Label } from '@/Components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/Components/ui/select";
-import Icons from "@/Types/Icons/regular";
+} from '@/Components/ui/select';
+import Icons from '@/Types/Icons/regular';
 
 const props = defineProps<{
   settings_manager_role_id: string | null;
@@ -74,7 +74,7 @@ const NONE_VALUE = '__none__';
 const selectedRoleId = ref<string>(props.settings_manager_role_id ?? NONE_VALUE);
 
 const form = useForm({
-  settings_manager_role_id: props.settings_manager_role_id
+  settings_manager_role_id: props.settings_manager_role_id,
 });
 
 // Sync selected role to form
@@ -83,6 +83,6 @@ watch(selectedRoleId, (newValue) => {
 });
 
 const handleFormSubmit = () => {
-  form.post(route("settings.authorization.update"));
+  form.post(route('settings.authorization.update'));
 };
 </script>

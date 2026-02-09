@@ -5,8 +5,8 @@
         <!-- Desktop: Tooltip on hover -->
         <Tooltip v-if="button.text && !isTouchDevice">
           <TooltipTrigger as-child>
-            <Button 
-              size="icon-sm" 
+            <Button
+              size="icon-sm"
               :variant="currentState === button.type ? 'default' : 'outline'"
               :class="currentState === button.type ? button.activeClass : ''"
               @click="handleClick(button.type)">
@@ -20,8 +20,8 @@
         <!-- Mobile: Popover on click for accessibility -->
         <Popover v-else-if="button.text && isTouchDevice">
           <PopoverTrigger as-child>
-            <Button 
-              size="icon-sm" 
+            <Button
+              size="icon-sm"
               :variant="currentState === button.type ? 'default' : 'outline'"
               :class="currentState === button.type ? button.activeClass : ''"
               @click="handleClick(button.type)">
@@ -29,13 +29,15 @@
             </Button>
           </PopoverTrigger>
           <PopoverContent class="w-48 p-2">
-            <p class="text-xs">{{ button.text }}</p>
+            <p class="text-xs">
+              {{ button.text }}
+            </p>
           </PopoverContent>
         </Popover>
         <!-- Button without tooltip -->
-        <Button 
+        <Button
           v-else
-          size="icon-sm" 
+          size="icon-sm"
           :variant="currentState === button.type ? 'default' : 'outline'"
           :class="currentState === button.type ? button.activeClass : ''"
           @click="handleClick(button.type)">
@@ -43,12 +45,12 @@
         </Button>
       </template>
     </ButtonGroup>
-    
+
     <!-- Clear button when value is selected and showClear is enabled -->
     <Tooltip v-if="showOptions && showClear && currentState !== null">
       <TooltipTrigger as-child>
-        <Button 
-          variant="ghost" 
+        <Button
+          variant="ghost"
           size="icon-sm"
           class="h-6 w-6 text-zinc-400 hover:text-zinc-600"
           @click="handleClear">
@@ -59,9 +61,9 @@
         {{ $t('Išvalyti pasirinkimą') }}
       </TooltipContent>
     </Tooltip>
-    
-    <Button 
-      v-if="!showOptions && ['positive', 'negative', 'neutral'].includes(currentState ?? '')" 
+
+    <Button
+      v-if="!showOptions && ['positive', 'negative', 'neutral'].includes(currentState ?? '')"
       size="icon-sm"
       :class="buttons.find(button => button.type === currentState)?.activeClass">
       <component :is="buttons.find(button => button.type === currentState)?.icon" />
@@ -76,15 +78,16 @@
 <script setup lang="ts">
 import { type Component, ref, computed, onMounted } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
+
 import { Button } from '@/Components/ui/button';
 import { ButtonGroup } from '@/Components/ui/button-group';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/Components/ui/tooltip';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
-import IMdiClose from "~icons/mdi/close";
-import IMdiCheckboxIndeterminateOutline from "~icons/mdi/checkbox-indeterminate-outline";
-import IMdiCloseCircleOutline from "~icons/mdi/close-circle-outline";
-import IFluentCheckmark24Filled from "~icons/fluent/checkmark-24-filled";
-import IMdiCheckboxMultipleMarkedOutline from "~icons/mdi/checkbox-multiple-marked-outline";
+import IMdiClose from '~icons/mdi/close';
+import IMdiCheckboxIndeterminateOutline from '~icons/mdi/checkbox-indeterminate-outline';
+import IMdiCloseCircleOutline from '~icons/mdi/close-circle-outline';
+import IFluentCheckmark24Filled from '~icons/fluent/checkmark-24-filled';
+import IMdiCheckboxMultipleMarkedOutline from '~icons/mdi/checkbox-multiple-marked-outline';
 
 const props = withDefaults(defineProps<{
   row: Record<string, any>;
@@ -98,7 +101,7 @@ const props = withDefaults(defineProps<{
   neutralText?: string;
   showClear?: boolean;
 }>(), {
-  showClear: true
+  showClear: true,
 });
 
 const currentState = ref(props.state);

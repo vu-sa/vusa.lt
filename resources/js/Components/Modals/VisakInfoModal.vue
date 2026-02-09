@@ -1,5 +1,5 @@
 <template>
-  <Dialog :open="open" @update:open="$emit('close')">
+  <Dialog :open @update:open="$emit('close')">
     <DialogContent class="sm:max-w-md">
       <DialogHeader>
         <DialogTitle class="flex items-center gap-3">
@@ -15,7 +15,9 @@
             {{ $t('visak.description') }}
           </p>
           <div class="pt-2 space-y-2">
-            <p class="text-sm font-medium text-foreground">{{ $t('visak.features_title') }}</p>
+            <p class="text-sm font-medium text-foreground">
+              {{ $t('visak.features_title') }}
+            </p>
             <ul class="text-sm space-y-1.5 list-disc list-inside text-muted-foreground">
               <li>{{ $t('visak.feature_1') }}</li>
               <li>{{ $t('visak.feature_2') }}</li>
@@ -41,8 +43,8 @@
 </template>
 
 <script setup lang="ts">
-import { trans as $t } from 'laravel-vue-i18n'
-import { PlayCircle } from 'lucide-vue-next'
+import { trans as $t } from 'laravel-vue-i18n';
+import { PlayCircle } from 'lucide-vue-next';
 
 import {
   Dialog,
@@ -52,20 +54,20 @@ import {
   DialogHeader,
   DialogTitle,
   DialogClose,
-} from '@/Components/ui/dialog'
-import { Button } from '@/Components/ui/button'
+} from '@/Components/ui/dialog';
+import { Button } from '@/Components/ui/button';
 
 defineProps<{
-  open: boolean
-}>()
+  open: boolean;
+}>();
 
 const emit = defineEmits<{
-  close: []
-  'start-tour': []
-}>()
+  'close': [];
+  'start-tour': [];
+}>();
 
 const handleStartTour = () => {
-  emit('close')
-  emit('start-tour')
-}
+  emit('close');
+  emit('start-tour');
+};
 </script>

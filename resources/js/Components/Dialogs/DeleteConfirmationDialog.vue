@@ -13,8 +13,8 @@
             {{ $t('Cancel') }}
           </Button>
         </DialogClose>
-        <Button 
-          variant="destructive" 
+        <Button
+          variant="destructive"
           :disabled="isDeleting"
           @click="$emit('confirm')"
         >

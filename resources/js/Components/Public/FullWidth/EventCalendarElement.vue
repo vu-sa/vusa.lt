@@ -7,14 +7,14 @@
         <div class="w-3 h-3 rounded-full bg-vusa-red animate-pulse" />
         <div class="h-px w-12 bg-gradient-to-l from-transparent to-vusa-red/50" />
       </div>
-      
+
       <h2 class="text-2xl lg:text-3xl font-bold text-zinc-900 dark:text-zinc-50 mb-3">
-        {{ $page.props.app.locale === 'lt' 
-          ? 'Sek visus VU studentų renginius bei įvykius!' 
-          : 'Follow Vilnius University activities for students!' 
+        {{ $page.props.app.locale === 'lt'
+          ? 'Sek visus VU studentų renginius bei įvykius!'
+          : 'Follow Vilnius University activities for students!'
         }}
       </h2>
-      
+
       <p class="text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto">
         {{ $page.props.app.locale === 'lt'
           ? 'Naršyk laiko juostą ir rask tau įdomius renginius'
@@ -46,8 +46,8 @@
       </div>
 
       <!-- Error state -->
-      <div 
-        v-else-if="error" 
+      <div
+        v-else-if="error"
         class="flex flex-col items-center justify-center py-12 text-center"
       >
         <div class="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mb-4">
@@ -66,11 +66,11 @@
       <div v-else>
         <!-- Desktop: Horizontal timeline -->
         <div class="hidden lg:block">
-          <EventTimeline 
-            :events="calendar" 
+          <EventTimeline
+            :events="calendar"
             :locale="$page.props.app.locale"
-            :loading-past="loadingPast"
-            :loading-future="loadingFuture"
+            :loading-past
+            :loading-future
             @open-sync-modal="showModal = true"
             @load-past="fetchPast"
             @load-future="fetchFuture"
@@ -79,11 +79,11 @@
 
         <!-- Mobile: Vertical timeline -->
         <div class="lg:hidden">
-          <EventTimelineVertical 
-            :events="calendar" 
+          <EventTimelineVertical
+            :events="calendar"
             :locale="$page.props.app.locale"
-            :loading-past="loadingPast"
-            :loading-future="loadingFuture"
+            :loading-past
+            :loading-future
             @open-sync-modal="showModal = true"
             @load-past="fetchPast"
             @load-future="fetchFuture"
@@ -95,16 +95,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from "vue";
+import { ref, computed, watch } from 'vue';
 
-import { Button } from "@/Components/ui/button";
-import CalendarSyncModal from "@/Components/Modals/CalendarSyncModal.vue";
-import EventTimeline from "@/Components/Calendar/EventTimeline.vue";
-import EventTimelineVertical from "@/Components/Calendar/EventTimelineVertical.vue";
-import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
-import Skeleton from "@/Components/ui/skeleton/Skeleton.vue";
-import { useCalendarFetch } from "@/Services/ContentService";
-import type { Calendar } from "@/Types/contentParts";
+import { Button } from '@/Components/ui/button';
+import CalendarSyncModal from '@/Components/Modals/CalendarSyncModal.vue';
+import EventTimeline from '@/Components/Calendar/EventTimeline.vue';
+import EventTimelineVertical from '@/Components/Calendar/EventTimelineVertical.vue';
+import FadeTransition from '@/Components/Transitions/FadeTransition.vue';
+import Skeleton from '@/Components/ui/skeleton/Skeleton.vue';
+import { useCalendarFetch } from '@/Services/ContentService';
+import type { Calendar } from '@/Types/contentParts';
 
 // Calendar event type
 interface CalendarEvent {
@@ -134,12 +134,12 @@ const allTenants = computed(() => {
 
 // Use the ContentService to fetch calendar data with date-based loading
 // Only fetch from API if no prefetched data is available
-const { 
-  calendar: apiCalendar, 
-  loading: apiLoading, 
+const {
+  calendar: apiCalendar,
+  loading: apiLoading,
   loadingPast,
   loadingFuture,
-  error: apiError, 
+  error: apiError,
   refresh,
   fetchPast,
   fetchFuture,

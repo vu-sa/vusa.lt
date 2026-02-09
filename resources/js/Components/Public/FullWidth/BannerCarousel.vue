@@ -1,6 +1,8 @@
 <template>
   <section class="px-8 my-8" aria-label="Partner banners">
-    <h2 class="sr-only">{{ $t('accessibility.partner_organizations') }}</h2>
+    <h2 class="sr-only">
+      {{ $t('accessibility.partner_organizations') }}
+    </h2>
     <Carousel :opts="{
       align: 'start',
     }" :plugins="[Autoplay({
@@ -19,13 +21,14 @@
 </template>
 
 <script setup lang="ts">
-import { trans as $t } from "laravel-vue-i18n";
-import Carousel from "@/Components/ui/carousel/Carousel.vue";
-import CarouselContent from "@/Components/ui/carousel/CarouselContent.vue";
-import CarouselItem from "@/Components/ui/carousel/CarouselItem.vue";
+import { trans as $t } from 'laravel-vue-i18n';
 import { useWindowSize } from '@vueuse/core';
-import { computed } from "vue";
-import Autoplay from 'embla-carousel-autoplay'
+import { computed } from 'vue';
+import Autoplay from 'embla-carousel-autoplay';
+
+import Carousel from '@/Components/ui/carousel/Carousel.vue';
+import CarouselContent from '@/Components/ui/carousel/CarouselContent.vue';
+import CarouselItem from '@/Components/ui/carousel/CarouselItem.vue';
 
 defineProps<{
   banners: Array<App.Entities.Banner> | [];
@@ -38,11 +41,14 @@ const { width } = useWindowSize();
 const bannerCount = computed(() => {
   if (width.value < 768) {
     return 1;
-  } else if (width.value < 992) {
+  }
+  else if (width.value < 992) {
     return 2;
-  } else if (width.value < 1200) {
+  }
+  else if (width.value < 1200) {
     return 3;
-  } else {
+  }
+  else {
     return 5;
   }
 });

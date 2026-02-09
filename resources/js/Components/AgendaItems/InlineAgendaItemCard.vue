@@ -133,7 +133,9 @@
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" class="max-w-64">
-                  <p class="text-xs">{{ $t('voting.type_voting_tooltip') }}</p>
+                  <p class="text-xs">
+                    {{ $t('voting.type_voting_tooltip') }}
+                  </p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -151,7 +153,9 @@
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" class="max-w-64">
-                  <p class="text-xs">{{ $t('voting.type_deferred_tooltip') }}</p>
+                  <p class="text-xs">
+                    {{ $t('voting.type_deferred_tooltip') }}
+                  </p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -169,7 +173,9 @@
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" class="max-w-64">
-                  <p class="text-xs">{{ $t('voting.type_informational_tooltip') }}</p>
+                  <p class="text-xs">
+                    {{ $t('voting.type_informational_tooltip') }}
+                  </p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -242,7 +248,9 @@
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent side="left">
-                      <p class="text-xs max-w-48">{{ $t('voting.main_vote_required_tooltip') }}</p>
+                      <p class="text-xs max-w-48">
+                        {{ $t('voting.main_vote_required_tooltip') }}
+                      </p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -256,7 +264,7 @@
                   <X class="h-3.5 w-3.5" />
                 </Button>
               </div>
-              
+
               <!-- Quick Consensus Toggle -->
               <div class="flex items-center gap-2 pb-1">
                 <TooltipProvider :delay-duration="200">

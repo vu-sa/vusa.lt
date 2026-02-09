@@ -1,7 +1,7 @@
 <template>
   <Select
     v-model="modelValue"
-    :disabled="disabled"
+    :disabled
   >
     <SelectTrigger class="w-[180px]">
       <SelectValue :placeholder="$t('tasks.filters.select_filter')" />

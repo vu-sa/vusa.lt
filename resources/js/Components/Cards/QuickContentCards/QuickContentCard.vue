@@ -18,5 +18,5 @@
 </template>
 
 <script setup lang="tsx">
-import { Card, CardContent, CardFooter, CardHeader } from "@/Components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader } from '@/Components/ui/card';
 </script>

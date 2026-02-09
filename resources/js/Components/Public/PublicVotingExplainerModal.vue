@@ -12,8 +12,8 @@
         <!-- Why we publish -->
         <section>
           <h3 class="font-semibold mb-2 text-base">
-{{ $t('Kodėl skelbiame?') }}
-</h3>
+            {{ $t('Kodėl skelbiame?') }}
+          </h3>
           <p class="text-sm text-muted-foreground">
             {{ $t('VU SA užtikrina skaidrumą viešindama, kaip studentų atstovai balsuoja...') }}
           </p>
@@ -22,8 +22,8 @@
         <!-- What each field means -->
         <section>
           <h3 class="font-semibold mb-3 text-base">
-{{ $t('Ką reiškia kiekvienas laukas?') }}
-</h3>
+            {{ $t('Ką reiškia kiekvienas laukas?') }}
+          </h3>
           <dl class="space-y-4">
             <!-- Student vote -->
             <div class="flex flex-col sm:flex-row sm:gap-4">
@@ -76,8 +76,8 @@
         <!-- Symbol meanings -->
         <section>
           <h3 class="font-semibold mb-3 text-base">
-{{ $t('Simbolių reikšmės') }}
-</h3>
+            {{ $t('Simbolių reikšmės') }}
+          </h3>
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div class="flex items-center gap-2">
               <VoteStatusIndicator vote="positive" type="vote" />
@@ -110,8 +110,8 @@
         <!-- Agenda item status types -->
         <section>
           <h3 class="font-semibold mb-3 text-base">
-{{ $t('Darbotvarkės klausimų būsenos') }}
-</h3>
+            {{ $t('Darbotvarkės klausimų būsenos') }}
+          </h3>
           <p class="text-sm text-muted-foreground mb-4">
             {{ $t('Kiekvienas klausimas rodomas pagal jo būseną ir balsavimo rezultatą') }}
           </p>
@@ -122,11 +122,11 @@
               </div>
               <div>
                 <dt class="font-medium text-sm">
-{{ $t('Studentų pozicija priimta') }}
-</dt>
+                  {{ $t('Studentų pozicija priimta') }}
+                </dt>
                 <dd class="text-xs text-muted-foreground">
-{{ $t('Galutinis sprendimas atitinka studentų atstovų balsą') }}
-</dd>
+                  {{ $t('Galutinis sprendimas atitinka studentų atstovų balsą') }}
+                </dd>
               </div>
             </div>
 
@@ -136,11 +136,11 @@
               </div>
               <div>
                 <dt class="font-medium text-sm">
-{{ $t('Studentų pozicija nepriimta') }}
-</dt>
+                  {{ $t('Studentų pozicija nepriimta') }}
+                </dt>
                 <dd class="text-xs text-muted-foreground">
-{{ $t('Galutinis sprendimas skiriasi nuo studentų atstovų balso') }}
-</dd>
+                  {{ $t('Galutinis sprendimas skiriasi nuo studentų atstovų balso') }}
+                </dd>
               </div>
             </div>
 
@@ -150,11 +150,11 @@
               </div>
               <div>
                 <dt class="font-medium text-sm">
-{{ $t('Neutralus sprendimas') }}
-</dt>
+                  {{ $t('Neutralus sprendimas') }}
+                </dt>
                 <dd class="text-xs text-muted-foreground">
-{{ $t('Studentai susilaikė arba sprendimas neturėjo aiškios naudos/žalos') }}
-</dd>
+                  {{ $t('Studentai susilaikė arba sprendimas neturėjo aiškios naudos/žalos') }}
+                </dd>
               </div>
             </div>
 
@@ -164,11 +164,11 @@
               </div>
               <div>
                 <dt class="font-medium text-sm">
-{{ $t('Neaptartas') }}
-</dt>
+                  {{ $t('Neaptartas') }}
+                </dt>
                 <dd class="text-xs text-muted-foreground">
-{{ $t('Balsavimo klausimas, bet balsas neįvyko arba nepažymėtas') }}
-</dd>
+                  {{ $t('Balsavimo klausimas, bet balsas neįvyko arba nepažymėtas') }}
+                </dd>
               </div>
             </div>
 
@@ -178,11 +178,11 @@
               </div>
               <div>
                 <dt class="font-medium text-sm">
-{{ $t('Atidėtas') }}
-</dt>
+                  {{ $t('Atidėtas') }}
+                </dt>
                 <dd class="text-xs text-muted-foreground">
-{{ $t('Klausimo svarstymas atidėtas kitam posėdžiui') }}
-</dd>
+                  {{ $t('Klausimo svarstymas atidėtas kitam posėdžiui') }}
+                </dd>
               </div>
             </div>
 
@@ -192,11 +192,11 @@
               </div>
               <div>
                 <dt class="font-medium text-sm">
-{{ $t('Informacinis') }}
-</dt>
+                  {{ $t('Informacinis') }}
+                </dt>
                 <dd class="text-xs text-muted-foreground">
-{{ $t('Informacinio pobūdžio klausimas, balsavimo nereikalaujantis') }}
-</dd>
+                  {{ $t('Informacinio pobūdžio klausimas, balsavimo nereikalaujantis') }}
+                </dd>
               </div>
             </div>
 
@@ -206,11 +206,11 @@
               </div>
               <div>
                 <dt class="font-medium text-sm">
-{{ $t('Nepažymėtas') }}
-</dt>
+                  {{ $t('Nepažymėtas') }}
+                </dt>
                 <dd class="text-xs text-muted-foreground">
-{{ $t('Klausimo tipas dar nebuvo nurodytas administratoriaus') }}
-</dd>
+                  {{ $t('Klausimo tipas dar nebuvo nurodytas administratoriaus') }}
+                </dd>
               </div>
             </div>
           </dl>

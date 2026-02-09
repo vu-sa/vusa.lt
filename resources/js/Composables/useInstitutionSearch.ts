@@ -4,30 +4,31 @@
  * Uses shared search infrastructure with institution-specific functionality.
  */
 
-import { ref, computed, nextTick, type ComputedRef } from 'vue'
-import { useLocalStorage } from '@vueuse/core'
-import { usePage } from '@inertiajs/vue3'
-import { createTypesenseClients } from './useSearchClient'
-
-import { useBaseSearch, type BaseSearchService } from '@/Shared/Search/composables/useBaseSearch'
-import { FilterUtils } from '@/Shared/Search/services/FilterUtils'
-import type { ProcessedSearchResult } from '@/Shared/Search/types'
+import { ref, computed, nextTick, type ComputedRef } from 'vue';
+import { useLocalStorage } from '@vueuse/core';
+import { usePage } from '@inertiajs/vue3';
 
 import type {
   InstitutionSearchFilters,
   InstitutionFacet,
   InstitutionSearchPreferences,
   InstitutionSearchController,
-  SearchError
-} from '../Types/InstitutionSearchTypes'
-import { InstitutionSearchService } from '../Services/InstitutionSearchService'
+  SearchError,
+} from '../Types/InstitutionSearchTypes';
+import { InstitutionSearchService } from '../Services/InstitutionSearchService';
+
+import { createTypesenseClients } from './useSearchClient';
+
+import { useBaseSearch, type BaseSearchService } from '@/Shared/Search/composables/useBaseSearch';
+import { FilterUtils } from '@/Shared/Search/services/FilterUtils';
+import type { ProcessedSearchResult } from '@/Shared/Search/types';
 
 // Re-export types for backward compatibility
 export type {
   InstitutionSearchFilters,
   InstitutionFacet,
-  InstitutionSearchPreferences
-}
+  InstitutionSearchPreferences,
+};
 
 // ============================================================================
 // Types
@@ -37,8 +38,8 @@ export type {
  * Extended preferences for institution search
  */
 interface InstitutionPreferences extends InstitutionSearchPreferences {
-  viewMode: 'grid' | 'list'
-  recentSearches: string[]
+  viewMode: 'grid' | 'list';
+  recentSearches: string[];
 }
 
 // ============================================================================
@@ -49,42 +50,42 @@ interface InstitutionPreferences extends InstitutionSearchPreferences {
  * Adapter to make InstitutionSearchService compatible with BaseSearchService interface
  */
 class InstitutionSearchServiceAdapter implements BaseSearchService<InstitutionSearchFilters, InstitutionFacet> {
-  private service: InstitutionSearchService
-  private getLocale: () => string
+  private service: InstitutionSearchService;
+  private getLocale: () => string;
 
   constructor(service: InstitutionSearchService, getLocale: () => string) {
-    this.service = service
-    this.getLocale = getLocale
+    this.service = service;
+    this.getLocale = getLocale;
   }
 
   async performSearch(
     filters: InstitutionSearchFilters,
     perPage: number,
     isLoadMore: boolean,
-    currentPage: number
+    currentPage: number,
   ): Promise<ProcessedSearchResult<InstitutionFacet>> {
     const result = await this.service.performSearch(
       filters,
       perPage,
       isLoadMore,
       currentPage,
-      this.getLocale()
-    )
+      this.getLocale(),
+    );
     return {
       hits: result.hits,
       totalHits: result.totalHits,
       totalPages: result.totalPages,
       currentPage: result.currentPage,
-      facets: result.facets
-    }
+      facets: result.facets,
+    };
   }
 
   async loadInitialFacets(): Promise<InstitutionFacet[]> {
-    return this.service.loadInitialFacets()
+    return this.service.loadInitialFacets();
   }
 
   cancelCurrentSearch(): void {
-    this.service.cancelCurrentSearch()
+    this.service.cancelCurrentSearch();
   }
 }
 
@@ -96,39 +97,39 @@ export const useInstitutionSearch = (): InstitutionSearchController => {
   // Extended preferences for institution search
   const institutionPreferences = useLocalStorage<InstitutionPreferences>('institution-search-preferences', {
     viewMode: 'grid', // Default to grid view for institutions
-    recentSearches: []
-  })
+    recentSearches: [],
+  });
 
   // Search client refs (for initialization)
-  const searchClient = ref<any>(null)
-  const typesenseClient = ref<any>(null)
-  const institutionService = ref<InstitutionSearchService | null>(null)
+  const searchClient = ref<any>(null);
+  const typesenseClient = ref<any>(null);
+  const institutionService = ref<InstitutionSearchService | null>(null);
 
   // Get current locale
   const getCurrentLocale = (): string => {
-    const page = usePage()
-    return (page.props.app as any)?.locale || 'lt'
-  }
+    const page = usePage();
+    return (page.props.app as any)?.locale || 'lt';
+  };
 
   // Default filters for institution search
   const defaultFilters: InstitutionSearchFilters = {
     query: '',
     tenants: [],
     types: [],
-    hasContacts: null
-  }
+    hasContacts: null,
+  };
 
   // Filter key mapper for institution facets
   const filterKeyMapper = (field: string, filters: InstitutionSearchFilters): string[] => {
     switch (field) {
       case 'tenant_shortname':
-        return filters.tenants
+        return filters.tenants;
       case 'type_slugs':
-        return filters.types
+        return filters.types;
       default:
-        return []
+        return [];
     }
-  }
+  };
 
   // Initialize base search without service (will be set after client init)
   const baseSearch = useBaseSearch<InstitutionSearchFilters, InstitutionFacet, any>({
@@ -140,33 +141,33 @@ export const useInstitutionSearch = (): InstitutionSearchController => {
     debounceDelay: 200, // Faster debounce for institutions
     maxRetries: 3,
     searchOnMount: false,
-    loadFacetsOnMount: false
-  })
+    loadFacetsOnMount: false,
+  });
 
   // ============================================================================
   // Client Initialization
   // ============================================================================
 
   const initializeSearchClient = async () => {
-    const page = usePage()
-    const typesenseConfig = page.props.typesenseConfig as any
+    const page = usePage();
+    const typesenseConfig = page.props.typesenseConfig as any;
 
     if (!typesenseConfig?.apiKey) {
-      console.warn('Typesense not configured - institution search unavailable')
-      return null
+      console.warn('Typesense not configured - institution search unavailable');
+      return null;
     }
 
     try {
       // Get collection name from config (with staging prefix if applicable)
-      const collectionName = typesenseConfig.collections?.public_institutions || 'public_institutions'
+      const collectionName = typesenseConfig.collections?.public_institutions || 'public_institutions';
 
       // Build collection-specific search parameters
-      const collectionSpecificSearchParameters: Record<string, any> = {}
+      const collectionSpecificSearchParameters: Record<string, any> = {};
       collectionSpecificSearchParameters[collectionName] = {
         query_by: 'name_lt,name_en,short_name_lt,short_name_en,alias',
         facet_by: ['tenant_shortname', 'type_slugs', 'has_contacts'].join(','),
-        per_page: 24
-      }
+        per_page: 24,
+      };
 
       const clients = createTypesenseClients(typesenseConfig, {
         additionalSearchParameters: {
@@ -178,89 +179,90 @@ export const useInstitutionSearch = (): InstitutionSearchController => {
           per_page: 24,
           facet_by: ['tenant_shortname', 'type_slugs', 'has_contacts'].join(','),
           max_facet_values: 50,
-          sort_by: 'duties_count:desc,updated_at:desc'
+          sort_by: 'duties_count:desc,updated_at:desc',
         },
-        collectionSpecificSearchParameters
-      })
+        collectionSpecificSearchParameters,
+      });
 
-      searchClient.value = clients.searchClient
-      typesenseClient.value = clients.typesenseClient
+      searchClient.value = clients.searchClient;
+      typesenseClient.value = clients.typesenseClient;
 
       // Create institution service and adapter
-      institutionService.value = new InstitutionSearchService(typesenseClient.value, collectionName)
-      const adapter = new InstitutionSearchServiceAdapter(institutionService.value, getCurrentLocale)
+      institutionService.value = new InstitutionSearchService(typesenseClient.value, collectionName);
+      const adapter = new InstitutionSearchServiceAdapter(institutionService.value, getCurrentLocale);
 
       // Set the service on base search
-      baseSearch.setSearchService(adapter)
+      baseSearch.setSearchService(adapter);
 
       // Load initial facets
-      await nextTick()
-      await baseSearch.loadInitialFacets()
+      await nextTick();
+      await baseSearch.loadInitialFacets();
 
-      return clients.searchClient
-    } catch (error) {
-      console.error('Failed to initialize Typesense clients:', error)
-      return null
+      return clients.searchClient;
     }
-  }
+    catch (error) {
+      console.error('Failed to initialize Typesense clients:', error);
+      return null;
+    }
+  };
 
   // ============================================================================
   // Institution-Specific Methods
   // ============================================================================
 
   const toggleTenant = (tenantShortname: string) => {
-    const current = baseSearch.filters.value.tenants
+    const current = baseSearch.filters.value.tenants;
     baseSearch.filters.value = {
       ...baseSearch.filters.value,
-      tenants: FilterUtils.toggleArrayValue(current, tenantShortname)
-    }
-    baseSearch.debouncedSearch()
-  }
+      tenants: FilterUtils.toggleArrayValue(current, tenantShortname),
+    };
+    baseSearch.debouncedSearch();
+  };
 
   const toggleType = (typeSlug: string) => {
-    const current = baseSearch.filters.value.types
+    const current = baseSearch.filters.value.types;
     baseSearch.filters.value = {
       ...baseSearch.filters.value,
-      types: FilterUtils.toggleArrayValue(current, typeSlug)
-    }
-    baseSearch.debouncedSearch()
-  }
+      types: FilterUtils.toggleArrayValue(current, typeSlug),
+    };
+    baseSearch.debouncedSearch();
+  };
 
   const setHasContacts = (value: boolean | null) => {
     baseSearch.filters.value = {
       ...baseSearch.filters.value,
-      hasContacts: value
-    }
-    baseSearch.debouncedSearch()
-  }
+      hasContacts: value,
+    };
+    baseSearch.debouncedSearch();
+  };
 
   const setViewMode = (mode: 'grid' | 'list') => {
-    institutionPreferences.value.viewMode = mode
-  }
+    institutionPreferences.value.viewMode = mode;
+  };
 
   const clearFilters = () => {
     baseSearch.filters.value = {
       query: baseSearch.filters.value.query,
       tenants: [],
       types: [],
-      hasContacts: null
-    }
-    baseSearch.debouncedSearch()
-  }
+      hasContacts: null,
+    };
+    baseSearch.debouncedSearch();
+  };
 
   // ============================================================================
   // Recent Searches (using institution preferences)
   // ============================================================================
 
   const clearRecentSearches = () => {
-    institutionPreferences.value.recentSearches = []
-  }
+    institutionPreferences.value.recentSearches = [];
+  };
 
   const removeRecentSearch = (searchToRemove: string) => {
     institutionPreferences.value.recentSearches = institutionPreferences.value.recentSearches.filter(
-      s => s !== searchToRemove
-    )
-  }
+      s => s !== searchToRemove,
+    );
+  };
 
   // ============================================================================
   // Search State (matching original interface)
@@ -277,8 +279,8 @@ export const useInstitutionSearch = (): InstitutionSearchController => {
     viewMode: institutionPreferences.value.viewMode,
     error: baseSearch.error.value,
     isOnline: baseSearch.isOnline.value,
-    status: baseSearch.status.value
-  }))
+    status: baseSearch.status.value,
+  }));
 
   // ============================================================================
   // Return Controller (matching InstitutionSearchController interface)
@@ -325,6 +327,6 @@ export const useInstitutionSearch = (): InstitutionSearchController => {
 
     // Internal
     searchClient: computed(() => searchClient.value),
-    initializeSearchClient
-  }
-}
+    initializeSearchClient,
+  };
+};

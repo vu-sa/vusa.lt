@@ -1,16 +1,50 @@
+<template>
+  <div class="flex items-start gap-2.5 w-full min-w-[280px]">
+    <!-- Icon -->
+    <div
+      :class="[
+        'flex items-center justify-center size-8 rounded-full shrink-0',
+        colors.combined
+      ]"
+    >
+      <component :is="IconComponent" class="size-4" />
+    </div>
+
+    <!-- Content -->
+    <div class="flex-1 min-w-0 py-0.5">
+      <p class="font-medium text-xs text-zinc-900 dark:text-zinc-100 truncate">
+        {{ title }}
+      </p>
+      <p
+        class="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-2 mt-0.5"
+        v-html="message"
+      />
+    </div>
+
+    <!-- View action -->
+    <button
+      v-if="url"
+      class="inline-flex items-center justify-center size-7 rounded-md text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-zinc-100 dark:hover:bg-zinc-800 transition-colors shrink-0"
+      @click="handleView"
+    >
+      <IFluentArrowRight16Filled class="size-4" />
+    </button>
+  </div>
+</template>
+
 <script setup lang="ts">
 import { computed } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { 
-  getNotificationIcon, 
+
+import {
+  getNotificationIcon,
   getNotificationColorClasses,
   getNotificationTitle,
   getNotificationMessage,
   getNotificationUrl,
   notificationColors,
-  type Notification 
+  type Notification,
 } from '@/Composables/useNotificationFormatting';
-
 import IFluentAlert24Regular from '~icons/fluent/alert24-regular';
 import IFluentArrowRight16Filled from '~icons/fluent/arrow-right16-filled';
 
@@ -65,37 +99,3 @@ const handleView = () => {
   }
 };
 </script>
-
-<template>
-  <div class="flex items-start gap-2.5 w-full min-w-[280px]">
-    <!-- Icon -->
-    <div
-      :class="[
-        'flex items-center justify-center size-8 rounded-full shrink-0',
-        colors.combined
-      ]"
-    >
-      <component :is="IconComponent" class="size-4" />
-    </div>
-
-    <!-- Content -->
-    <div class="flex-1 min-w-0 py-0.5">
-      <p class="font-medium text-xs text-zinc-900 dark:text-zinc-100 truncate">
-        {{ title }}
-      </p>
-      <p 
-        class="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-2 mt-0.5"
-        v-html="message"
-      />
-    </div>
-
-    <!-- View action -->
-    <button
-      v-if="url"
-      @click="handleView"
-      class="inline-flex items-center justify-center size-7 rounded-md text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-zinc-100 dark:hover:bg-zinc-800 transition-colors shrink-0"
-    >
-      <IFluentArrowRight16Filled class="size-4" />
-    </button>
-  </div>
-</template>

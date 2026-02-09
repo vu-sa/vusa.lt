@@ -4,11 +4,11 @@
   >
     <!-- Photo section -->
     <div v-if="imageUrl" class="relative aspect-[4/3] w-full overflow-hidden">
-      <img 
-        :src="imageUrl" 
+      <img
+        :src="imageUrl"
         :alt="contact?.name"
         class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-        loading="lazy" 
+        loading="lazy"
         style="object-position: 50% 20%"
       >
       <!-- Subtle gradient overlay at bottom for text readability -->
@@ -21,7 +21,7 @@
         {{ getInitials(contact.name) }}
       </span>
     </div>
-    
+
     <!-- Content section -->
     <div class="flex flex-1 flex-col justify-between gap-2 p-3 sm:gap-3 sm:p-4">
       <div>
@@ -32,11 +32,11 @@
             ({{ contact.pronouns }})
           </span>
         </h3>
-        
+
         <!-- Duties -->
         <div v-if="duties" class="mt-1.5 space-y-0.5 sm:mt-2 sm:space-y-1">
-          <p 
-            v-for="duty in duties" 
+          <p
+            v-for="duty in duties"
             :key="duty.id"
             class="text-[11px] leading-relaxed text-zinc-600 dark:text-zinc-400 sm:text-xs"
           >
@@ -44,10 +44,10 @@
             <span v-if="showAdditionalInfo(duty)" class="text-zinc-400 dark:text-zinc-500">
               {{ showAdditionalInfo(duty) }}
             </span>
-            <InfoPopover 
-              v-if="duty.description && duty.description !== '<p></p>'" 
-              style="max-width: 400px" 
-              trigger="hover" 
+            <InfoPopover
+              v-if="duty.description && duty.description !== '<p></p>'"
+              style="max-width: 400px"
+              trigger="hover"
               color="gray"
               class="ml-0.5 inline align-middle"
             >
@@ -56,7 +56,7 @@
           </p>
         </div>
       </div>
-      
+
       <!-- Action buttons -->
       <div class="flex items-center gap-1 pt-0.5 sm:gap-1.5 sm:pt-1">
         <TooltipProvider v-if="contact.phone">
@@ -73,13 +73,13 @@
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
-        
+
         <a v-if="contact.facebook_url" :href="contact.facebook_url" target="_blank" rel="noopener noreferrer">
           <Button variant="ghost" size="icon-sm" class="size-7 rounded-full text-zinc-500 hover:bg-blue-50 hover:text-blue-600 dark:text-zinc-400 dark:hover:bg-blue-900/30 dark:hover:text-blue-400 sm:size-8">
             <IMdiFacebook class="size-3.5 sm:size-4" />
           </Button>
         </a>
-        
+
         <Popover v-if="shownContactEmail.length > 1">
           <PopoverTrigger as-child>
             <Button variant="ghost" size="icon-sm" class="size-7 rounded-full text-zinc-500 hover:bg-zinc-200/70 hover:text-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-700/70 dark:hover:text-zinc-200 sm:size-8">
@@ -91,8 +91,8 @@
               <template v-for="(email, index) in shownContactEmail" :key="email.email">
                 <div>
                   <span class="block text-xs font-medium text-zinc-500 dark:text-zinc-400">{{ email.name }}</span>
-                  <a 
-                    :href="`mailto:${email.email}`" 
+                  <a
+                    :href="`mailto:${email.email}`"
                     class="text-sm font-medium text-zinc-900 hover:text-vusa-red dark:text-zinc-100"
                   >
                     {{ email.email }}
@@ -103,7 +103,7 @@
             </div>
           </PopoverContent>
         </Popover>
-        
+
         <TooltipProvider v-else-if="shownContactEmail.length === 1">
           <Tooltip>
             <TooltipTrigger as-child>
@@ -124,14 +124,15 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
-import { usePage } from "@inertiajs/vue3";
+import { computed } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 
-import { Button } from "@/Components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/Components/ui/popover";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
-import { changeDutyNameEndings } from "@/Utils/String";
-import InfoPopover from "../Buttons/InfoPopover.vue";
+import InfoPopover from '../Buttons/InfoPopover.vue';
+
+import { Button } from '@/Components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
+import { changeDutyNameEndings } from '@/Utils/String';
 
 const props = defineProps<{
   contact: App.Entities.User;
@@ -139,12 +140,12 @@ const props = defineProps<{
 }>();
 
 const dutyDescription = (duty) => {
-  const locale = usePage().props.app.locale;
+  const { locale } = usePage().props.app;
 
-  if (locale === "en") {
+  if (locale === 'en') {
     return (
-      duty.pivot?.description ??
-      duty.description
+      duty.pivot?.description
+      ?? duty.description
     );
   }
 
@@ -174,7 +175,6 @@ const imageUrl = computed(() => {
   // iterate object simply because it may not be iterable
 
   for (const duty of Object.keys(props.contact.duties)) {
-
     // check if props.contact.duties?.[duty] has pivot
     if (!props.contact.duties?.[duty].pivot) {
       continue;
@@ -189,7 +189,7 @@ const imageUrl = computed(() => {
     return props.contact.pivot?.additional_photo;
   }
 
-  return props.contact.profile_photo_path ?? "";
+  return props.contact.profile_photo_path ?? '';
 });
 
 // Get initials from name for avatar fallback

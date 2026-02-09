@@ -25,7 +25,7 @@
     </CardHeader>
 
     <CardContent class="mb-2 flex flex-col gap-2 text-sm">
-      <CalendarEventMeta 
+      <CalendarEventMeta
         :date="calendarEvent.date"
         :end-date="calendarEvent.end_date"
         :location="calendarEvent.location"
@@ -39,12 +39,12 @@
     <CardFooter v-if="!hideFooter" class="flex justify-between">
       <div v-if="googleLink || calendarEvent.facebook_url" class="flex gap-2">
         <!-- Google Calendar Button -->
-        <Button 
-          v-if="googleLink" 
-          variant="outline" 
-          size="icon" 
-          as="a" 
-          :href="googleLink" 
+        <Button
+          v-if="googleLink"
+          variant="outline"
+          size="icon"
+          as="a"
+          :href="googleLink"
           target="_blank"
           :title="$t('Įsidėk į Google kalendorių')"
           @click.stop
@@ -53,12 +53,12 @@
         </Button>
 
         <!-- Facebook Event Button -->
-        <Button 
-          v-if="calendarEvent.facebook_url" 
-          variant="outline" 
-          size="icon" 
-          as="a" 
-          :href="calendarEvent.facebook_url" 
+        <Button
+          v-if="calendarEvent.facebook_url"
+          variant="outline"
+          size="icon"
+          as="a"
+          :href="calendarEvent.facebook_url"
           target="_blank"
           :title="$t('Facebook renginys')"
         >
@@ -70,8 +70,8 @@
         <!-- Primary Action Button -->
         <Button
           v-if="calendarEvent.url || (calendarEvent.tenant?.alias === 'mif' && calendarEvent.category?.alias === 'freshmen-camps')"
-          as="a" 
-          :href="calendarEvent.url" 
+          as="a"
+          :href="calendarEvent.url"
           target="_blank"
           class="gap-2"
           @click="calendarEvent.tenant?.alias === 'mif' && calendarEvent.category === 'freshmen-camps' ? showModal = true : null"
@@ -81,9 +81,9 @@
         </Button>
 
         <!-- View Details Button -->
-        <Button 
-          v-else 
-          variant="outline" 
+        <Button
+          v-else
+          variant="outline"
           as="a"
           :href="route('calendar.event', { calendar: calendarEvent.id, lang: $page.props.app.locale })"
         >
@@ -95,17 +95,17 @@
 </template>
 
 <script setup lang="tsx">
-import { trans as $t } from "laravel-vue-i18n";
-import { computed, ref } from "vue";
+import { trans as $t } from 'laravel-vue-i18n';
+import { computed, ref } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 
-import Card from "../ui/card/Card.vue";
+import Card from '../ui/card/Card.vue';
 import CardContent from '../ui/card/CardContent.vue';
 import CardFooter from '../ui/card/CardFooter.vue';
 import CardHeader from '../ui/card/CardHeader.vue';
-import Button from "../ui/button/Button.vue";
-import CalendarEventMeta from "./CalendarEventMeta.vue";
+import Button from '../ui/button/Button.vue';
 
-import { usePage } from "@inertiajs/vue3";
+import CalendarEventMeta from './CalendarEventMeta.vue';
 
 const props = defineProps<{
   calendarEvent: App.Entities.Calendar;
@@ -115,8 +115,8 @@ const props = defineProps<{
 
 const eventOrganizer = computed(() => {
   return (
-    props.calendarEvent.organizer ??
-    props.calendarEvent.tenant?.shortname
+    props.calendarEvent.organizer
+    ?? props.calendarEvent.tenant?.shortname
   );
 });
 
@@ -126,8 +126,8 @@ const showModal = ref(false);
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
   return new Intl.DateTimeFormat(usePage().props.app.locale, {
-    month: "short",
-    day: "numeric",
+    month: 'short',
+    day: 'numeric',
   }).format(date);
 };
 </script>

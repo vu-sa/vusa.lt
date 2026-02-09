@@ -1,15 +1,3 @@
-<script setup lang="ts">
-import type { HTMLAttributes } from "vue"
-import type { ButtonGroupVariants } from "."
-import { cn } from '@/Utils/Shadcn/utils'
-import { buttonGroupVariants } from "."
-
-const props = defineProps<{
-  class?: HTMLAttributes["class"]
-  orientation?: ButtonGroupVariants["orientation"]
-}>()
-</script>
-
 <template>
   <div
     role="group"
@@ -20,3 +8,17 @@ const props = defineProps<{
     <slot />
   </div>
 </template>
+
+<script setup lang="ts">
+import type { HTMLAttributes } from 'vue';
+
+import type { ButtonGroupVariants } from '.';
+import { buttonGroupVariants } from '.';
+
+import { cn } from '@/Utils/Shadcn/utils';
+
+const props = defineProps<{
+  class?: HTMLAttributes['class'];
+  orientation?: ButtonGroupVariants['orientation'];
+}>();
+</script>

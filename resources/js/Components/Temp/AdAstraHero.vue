@@ -38,10 +38,6 @@
   </div>
 </template>
 
-<script setup>
-
-</script>
-
 <style scoped>
 #adastra-background {
   animation: saturate 20s infinite;

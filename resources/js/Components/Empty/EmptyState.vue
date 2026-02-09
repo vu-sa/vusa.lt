@@ -11,7 +11,7 @@
     <p class="text-muted-foreground max-w-sm mb-6">
       {{ description }}
     </p>
-    <slot></slot>
+    <slot />
   </div>
 </template>
 

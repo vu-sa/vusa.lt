@@ -1,20 +1,3 @@
-<script setup lang="ts">
-import type { ListboxContentProps } from 'reka-ui'
-import { cn } from '@/Utils/Shadcn/utils'
-import { ListboxContent, useForwardProps } from 'reka-ui'
-import { computed, type HTMLAttributes } from 'vue'
-
-const props = defineProps<ListboxContentProps & { class?: HTMLAttributes['class'] }>()
-
-const delegatedProps = computed(() => {
-  const { class: _, ...delegated } = props
-
-  return delegated
-})
-
-const forwarded = useForwardProps(delegatedProps)
-</script>
-
 <template>
   <ListboxContent
     data-slot="command-list"
@@ -26,3 +9,21 @@ const forwarded = useForwardProps(delegatedProps)
     </div>
   </ListboxContent>
 </template>
+
+<script setup lang="ts">
+import type { ListboxContentProps } from 'reka-ui';
+import { ListboxContent, useForwardProps } from 'reka-ui';
+import { computed, type HTMLAttributes } from 'vue';
+
+import { cn } from '@/Utils/Shadcn/utils';
+
+const props = defineProps<ListboxContentProps & { class?: HTMLAttributes['class'] }>();
+
+const delegatedProps = computed(() => {
+  const { class: _, ...delegated } = props;
+
+  return delegated;
+});
+
+const forwarded = useForwardProps(delegatedProps);
+</script>

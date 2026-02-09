@@ -86,25 +86,25 @@ export interface FileListingResponse {
 export interface FileSourceAdapter {
   /** Fetch files and directories at the given path */
   fetchListing(path: string): Promise<FileListingResponse>;
-  
+
   /** Navigate to parent directory */
   getParentPath(currentPath: string): string;
-  
+
   /** Check if path is at root level */
   isRootPath(path: string): boolean;
-  
+
   /** Upload files to the given path */
   uploadFiles?(path: string, files: File[], fileable?: FileableRef): Promise<void>;
-  
+
   /** Create a directory */
   createDirectory?(path: string, name: string): Promise<void>;
-  
+
   /** Delete a file */
   deleteFile?(path: string): Promise<void>;
-  
+
   /** Delete a directory (must be empty) */
   deleteDirectory?(path: string): Promise<void>;
-  
+
   /** Open file (preview or download) */
   openFile(file: UnifiedFile): void;
 }
@@ -175,7 +175,7 @@ export function transformLocalDirectory(dir: {
 export function transformSharepointFile(item: MyDriveItem, basePath: string): UnifiedFile {
   const itemName = item.name ?? '';
   const path = basePath ? `${basePath}/${itemName}` : itemName;
-  
+
   return {
     id: item.id ?? path,
     path,
@@ -186,13 +186,15 @@ export function transformSharepointFile(item: MyDriveItem, basePath: string): Un
     modifiedAt: item.lastModifiedDateTime ? new Date(item.lastModifiedDateTime) : undefined,
     createdAt: item.createdDateTime ? new Date(item.createdDateTime) : undefined,
     webUrl: item.webUrl ?? undefined,
-    metadata: item.listItem?.fields ? {
-      type: (item.listItem.fields as Record<string, unknown>).Type as string | undefined,
-      date: (item.listItem.fields as Record<string, unknown>).Date 
-        ? new Date((item.listItem.fields as Record<string, unknown>).Date as string) 
-        : undefined,
-      description: (item.listItem.fields as Record<string, unknown>).Description0 as string | undefined,
-    } : undefined,
+    metadata: item.listItem?.fields
+      ? {
+          type: (item.listItem.fields as Record<string, unknown>).Type as string | undefined,
+          date: (item.listItem.fields as Record<string, unknown>).Date
+            ? new Date((item.listItem.fields as Record<string, unknown>).Date as string)
+            : undefined,
+          description: (item.listItem.fields as Record<string, unknown>).Description0 as string | undefined,
+        }
+      : undefined,
   };
 }
 
@@ -202,7 +204,7 @@ export function transformSharepointFile(item: MyDriveItem, basePath: string): Un
 export function transformSharepointDirectory(item: MyDriveItem, basePath: string): UnifiedDirectory {
   const itemName = item.name ?? '';
   const path = basePath ? `${basePath}/${itemName}` : itemName;
-  
+
   return {
     id: item.id ?? path,
     path,

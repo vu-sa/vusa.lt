@@ -18,13 +18,14 @@
 </template>
 
 <script setup lang="ts">
-import { useForm } from "@inertiajs/vue3";
+import { useForm } from '@inertiajs/vue3';
 
-import { Input } from "@/Components/ui/input";
-import { Textarea } from "@/Components/ui/textarea";
-import FormElement from "./FormElement.vue";
-import FormFieldWrapper from "./FormFieldWrapper.vue";
-import AdminForm from "./AdminForm.vue";
+import FormElement from './FormElement.vue';
+import FormFieldWrapper from './FormFieldWrapper.vue';
+import AdminForm from './AdminForm.vue';
+
+import { Textarea } from '@/Components/ui/textarea';
+import { Input } from '@/Components/ui/input';
 
 const { category, rememberKey } = defineProps<{
   category: App.Entities.Category;
@@ -34,7 +35,7 @@ const { category, rememberKey } = defineProps<{
 const form = rememberKey ? useForm(rememberKey, category) : useForm(category);
 
 defineEmits<{
-  (event: "submit:form", form: unknown): void;
-  (event: "delete"): void;
+  (event: 'submit:form', form: unknown): void;
+  (event: 'delete'): void;
 }>();
 </script>

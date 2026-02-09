@@ -7,14 +7,14 @@
 </template>
 
 <script setup lang="ts">
-import BannerForm from "@/Components/AdminForms/BannerForm.vue";
-import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
+import BannerForm from '@/Components/AdminForms/BannerForm.vue';
+import PageContent from '@/Components/Layouts/AdminContentPage.vue';
+import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
 
 const banner = {
-  title: "",
-  link_url: "",
+  title: '',
+  link_url: '',
   is_active: null,
-  image_url: "",
+  image_url: '',
 };
 </script>

@@ -1,1 +1,1 @@
-export { default as DynamicListInput } from './DynamicListInput.vue'
+export { default as DynamicListInput } from './DynamicListInput.vue';

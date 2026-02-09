@@ -1,18 +1,3 @@
-<script setup lang="ts">
-import type { SliderRootEmits, SliderRootProps } from 'reka-ui'
-import type { HTMLAttributes } from 'vue'
-import { reactiveOmit } from '@vueuse/core'
-import { SliderRange, SliderRoot, SliderThumb, SliderTrack, useForwardPropsEmits } from 'reka-ui'
-import { cn } from '@/Utils/Shadcn/utils'
-
-const props = defineProps<SliderRootProps & { class?: HTMLAttributes['class'] }>()
-const emits = defineEmits<SliderRootEmits>()
-
-const delegatedProps = reactiveOmit(props, 'class')
-
-const forwarded = useForwardPropsEmits(delegatedProps, emits)
-</script>
-
 <template>
   <SliderRoot
     v-slot="{ modelValue }"
@@ -35,9 +20,25 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits)
 
     <SliderThumb
       v-for="(_, key) in modelValue"
-      :key="key"
+      :key
       data-slot="slider-thumb"
       class="border-zinc-900 bg-white ring-zinc-950/50 block size-4 shrink-0 rounded-full border border-zinc-200 shadow-sm transition-[color,box-shadow] hover:ring-4 focus-visible:ring-4 focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50 dark:border-zinc-50 dark:bg-zinc-950 dark:ring-zinc-300/50 dark:border-zinc-800"
     />
   </SliderRoot>
 </template>
+
+<script setup lang="ts">
+import type { SliderRootEmits, SliderRootProps } from 'reka-ui';
+import type { HTMLAttributes } from 'vue';
+import { reactiveOmit } from '@vueuse/core';
+import { SliderRange, SliderRoot, SliderThumb, SliderTrack, useForwardPropsEmits } from 'reka-ui';
+
+import { cn } from '@/Utils/Shadcn/utils';
+
+const props = defineProps<SliderRootProps & { class?: HTMLAttributes['class'] }>();
+const emits = defineEmits<SliderRootEmits>();
+
+const delegatedProps = reactiveOmit(props, 'class');
+
+const forwarded = useForwardPropsEmits(delegatedProps, emits);
+</script>

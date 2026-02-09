@@ -99,7 +99,7 @@
 </template>
 
 <script setup lang="ts">
-import { trans as $t } from 'laravel-vue-i18n'
+import { trans as $t } from 'laravel-vue-i18n';
 import {
   Calendar as CalendarIcon,
   Clock,
@@ -108,84 +108,84 @@ import {
   ChevronRight,
   CheckCircle2,
   AlertCircle,
-  Circle
-} from 'lucide-vue-next'
+  Circle,
+} from 'lucide-vue-next';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card'
-import { Badge } from '@/Components/ui/badge'
-import { Button } from '@/Components/ui/button'
-import { formatStaticTime } from '@/Utils/IntlTime'
+import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import { Badge } from '@/Components/ui/badge';
+import { Button } from '@/Components/ui/button';
+import { formatStaticTime } from '@/Utils/IntlTime';
 
 const props = defineProps<{
-  meetings: App.Entities.Meeting[]
-  institution: App.Entities.Institution
-  totalCount: number
-  isOverdue?: boolean
-}>()
+  meetings: App.Entities.Meeting[];
+  institution: App.Entities.Institution;
+  totalCount: number;
+  isOverdue?: boolean;
+}>();
 
 const emit = defineEmits<{
-  'view-all': []
-  'schedule-meeting': []
-  'view-meeting': [meeting: App.Entities.Meeting]
-}>()
+  'view-all': [];
+  'schedule-meeting': [];
+  'view-meeting': [meeting: App.Entities.Meeting];
+}>();
 
 // Date formatting helpers
 const formatMonth = (dateString: string) => {
-  return formatStaticTime(new Date(dateString), { month: 'short' })
-}
+  return formatStaticTime(new Date(dateString), { month: 'short' });
+};
 
 const formatDay = (dateString: string) => {
-  return formatStaticTime(new Date(dateString), { day: 'numeric' })
-}
+  return formatStaticTime(new Date(dateString), { day: 'numeric' });
+};
 
 const formatTime = (dateString: string) => {
-  return formatStaticTime(new Date(dateString), { hour: '2-digit', minute: '2-digit' })
-}
+  return formatStaticTime(new Date(dateString), { hour: '2-digit', minute: '2-digit' });
+};
 
 // Meeting status helpers
 const isFutureMeeting = (meeting: App.Entities.Meeting) => {
-  return new Date(meeting.start_time) > new Date()
-}
+  return new Date(meeting.start_time) > new Date();
+};
 
 const getMeetingTitle = (meeting: App.Entities.Meeting) => {
-  if (meeting.title) return meeting.title
-  return formatStaticTime(new Date(meeting.start_time), {
+  if (meeting.title) return meeting.title;
+  return `${formatStaticTime(new Date(meeting.start_time), {
     year: 'numeric',
     month: 'long',
-    day: 'numeric'
-  }) + ' ' + $t('posėdis')
-}
+    day: 'numeric',
+  })} ${$t('posėdis')}`;
+};
 
 const getMeetingStatusIcon = (meeting: App.Entities.Meeting) => {
-  if (isFutureMeeting(meeting)) return Circle
+  if (isFutureMeeting(meeting)) return Circle;
 
-  const hasProtocol = meeting.has_protocol
-  const hasReport = meeting.has_report
+  const hasProtocol = meeting.has_protocol;
+  const hasReport = meeting.has_report;
 
-  if (hasProtocol && hasReport) return CheckCircle2
-  if (hasProtocol || hasReport) return AlertCircle
-  return AlertCircle
-}
+  if (hasProtocol && hasReport) return CheckCircle2;
+  if (hasProtocol || hasReport) return AlertCircle;
+  return AlertCircle;
+};
 
 const getMeetingStatusIconClass = (meeting: App.Entities.Meeting) => {
-  if (isFutureMeeting(meeting)) return 'text-blue-500 dark:text-blue-400'
+  if (isFutureMeeting(meeting)) return 'text-blue-500 dark:text-blue-400';
 
-  const hasProtocol = meeting.has_protocol
-  const hasReport = meeting.has_report
+  const hasProtocol = meeting.has_protocol;
+  const hasReport = meeting.has_report;
 
-  if (hasProtocol && hasReport) return 'text-emerald-500 dark:text-emerald-400'
-  if (hasProtocol || hasReport) return 'text-amber-500 dark:text-amber-400'
-  return 'text-zinc-400 dark:text-zinc-500'
-}
+  if (hasProtocol && hasReport) return 'text-emerald-500 dark:text-emerald-400';
+  if (hasProtocol || hasReport) return 'text-amber-500 dark:text-amber-400';
+  return 'text-zinc-400 dark:text-zinc-500';
+};
 
 const getMeetingStatusBorderClass = (meeting: App.Entities.Meeting) => {
-  if (isFutureMeeting(meeting)) return 'border-blue-200 dark:border-blue-800'
+  if (isFutureMeeting(meeting)) return 'border-blue-200 dark:border-blue-800';
 
-  const hasProtocol = meeting.has_protocol
-  const hasReport = meeting.has_report
+  const hasProtocol = meeting.has_protocol;
+  const hasReport = meeting.has_report;
 
-  if (hasProtocol && hasReport) return 'border-emerald-200 dark:border-emerald-800'
-  if (hasProtocol || hasReport) return 'border-amber-200 dark:border-amber-800'
-  return 'border-zinc-200 dark:border-zinc-700'
-}
+  if (hasProtocol && hasReport) return 'border-emerald-200 dark:border-emerald-800';
+  if (hasProtocol || hasReport) return 'border-amber-200 dark:border-amber-800';
+  return 'border-zinc-200 dark:border-zinc-700';
+};
 </script>

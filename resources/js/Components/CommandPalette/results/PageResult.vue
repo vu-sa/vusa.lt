@@ -37,21 +37,22 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { router } from '@inertiajs/vue3'
-import { trans as $t } from 'laravel-vue-i18n'
-import { ChevronRight, FileText } from 'lucide-vue-next'
-import { CommandItem } from '@/Components/ui/command'
-import { useCommandPalette, type RecentItem } from '@/Composables/useCommandPalette'
-import type { PageSearchResult } from '@/Composables/useAdminSearch'
+import { computed } from 'vue';
+import { router } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
+import { ChevronRight, FileText } from 'lucide-vue-next';
+
+import { CommandItem } from '@/Components/ui/command';
+import { useCommandPalette, type RecentItem } from '@/Composables/useCommandPalette';
+import type { PageSearchResult } from '@/Composables/useAdminSearch';
 
 const props = defineProps<{
-  page: PageSearchResult
-}>()
+  page: PageSearchResult;
+}>();
 
-const { close, addRecentItem } = useCommandPalette()
+const { close, addRecentItem } = useCommandPalette();
 
-const itemValue = computed(() => `page-${props.page.id}`)
+const itemValue = computed(() => `page-${props.page.id}`);
 
 const handleSelect = () => {
   // Add to recent items
@@ -59,11 +60,11 @@ const handleSelect = () => {
     id: props.page.id,
     type: 'page',
     title: props.page.title || $t('Be pavadinimo'),
-    href: route('pages.edit', props.page.id)
-  } as Omit<RecentItem, 'timestamp'>)
+    href: route('pages.edit', props.page.id),
+  } as Omit<RecentItem, 'timestamp'>);
 
   // Navigate to edit page
-  close()
-  router.visit(route('pages.edit', props.page.id))
-}
+  close();
+  router.visit(route('pages.edit', props.page.id));
+};
 </script>

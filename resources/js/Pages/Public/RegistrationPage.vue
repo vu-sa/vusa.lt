@@ -13,16 +13,17 @@
       </p>
     </div>
     <div class="mt-8 max-w-prose text-base">
-      <RegistrationForm :form :prefilled-values="prefilledValues" @submit="handleSubmit" />
+      <RegistrationForm :form :prefilled-values @submit="handleSubmit" />
     </div>
   </article>
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
-import { trans as $t } from "laravel-vue-i18n";
-import { router, usePage } from "@inertiajs/vue3";
-import RegistrationForm from "../../Features/Registrations/RegistrationForm.vue";
+import { computed } from 'vue';
+import { trans as $t } from 'laravel-vue-i18n';
+import { router, usePage } from '@inertiajs/vue3';
+
+import RegistrationForm from '../../Features/Registrations/RegistrationForm.vue';
 
 const $page = usePage();
 
@@ -39,36 +40,36 @@ const institutionId = computed(() => {
 // Find the institution field and get prefilled values
 const prefilledValues = computed(() => {
   if (!institutionId.value) return {};
-  
+
   // Find the institution field in the form
-  const institutionField = form.form_fields?.find((field: Record<string, any>) => 
-    field.use_model_options && field.options_model === 'App\\Models\\Institution'
+  const institutionField = form.form_fields?.find((field: Record<string, any>) =>
+    field.use_model_options && field.options_model === 'App\\Models\\Institution',
   );
-  
+
   if (!institutionField) return {};
-  
+
   return {
     [institutionField.id]: {
       value: institutionId.value,
       hidden: true, // Mark this field as hidden
-    }
+    },
   };
 });
 
 // Get the institution name for display
 const prefilledInstitutionName = computed(() => {
   if (!institutionId.value) return null;
-  
-  const institutionField = form.form_fields?.find((field: Record<string, any>) => 
-    field.use_model_options && field.options_model === 'App\\Models\\Institution'
+
+  const institutionField = form.form_fields?.find((field: Record<string, any>) =>
+    field.use_model_options && field.options_model === 'App\\Models\\Institution',
   );
-  
+
   if (!institutionField?.options) return null;
-  
-  const institution = institutionField.options.find((opt: { value: string }) => 
-    String(opt.value) === String(institutionId.value)
+
+  const institution = institutionField.options.find((opt: { value: string }) =>
+    String(opt.value) === String(institutionId.value),
   );
-  
+
   return institution?.label ?? null;
 });
 

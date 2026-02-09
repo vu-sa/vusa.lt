@@ -1,8 +1,8 @@
 /**
  * TipTap Editor Components - Public API
- * 
+ *
  * This file exports the unified TipTap editor components.
- * 
+ *
  * @example
  * ```ts
  * import { TiptapEditor, generateHTMLfromTiptap } from '@/Components/TipTap';

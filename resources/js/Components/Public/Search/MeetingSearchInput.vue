@@ -1,10 +1,10 @@
 <template>
   <BaseSearchInput
-    :query="query"
-    :is-searching="isSearching"
-    :recent-searches="recentSearches"
+    :query
+    :is-searching
+    :recent-searches
     placeholder-key="search.search_meetings_placeholder"
-    :type-to-search="typeToSearch"
+    :type-to-search
     @update:query="emit('update:query', $event)"
     @search="emit('search', $event)"
     @select-recent="emit('selectRecent', $event)"
@@ -18,27 +18,27 @@
 </template>
 
 <script setup lang="ts">
-import BaseSearchInput from './Shared/BaseSearchInput.vue'
+import BaseSearchInput from './Shared/BaseSearchInput.vue';
 
 interface Props {
-  query?: string
-  isSearching?: boolean
-  recentSearches?: string[]
-  typeToSearch?: boolean
+  query?: string;
+  isSearching?: boolean;
+  recentSearches?: string[];
+  typeToSearch?: boolean;
 }
 
 interface Emits {
-  (e: 'update:query', value: string): void
-  (e: 'search', query: string): void
-  (e: 'selectRecent', search: string): void
-  (e: 'clear'): void
-  (e: 'focus'): void
-  (e: 'blur'): void
-  (e: 'update:typeToSearch', value: boolean): void
-  (e: 'removeRecent', search: string): void
-  (e: 'clearAllHistory'): void
+  (e: 'update:query', value: string): void;
+  (e: 'search', query: string): void;
+  (e: 'selectRecent', search: string): void;
+  (e: 'clear'): void;
+  (e: 'focus'): void;
+  (e: 'blur'): void;
+  (e: 'update:typeToSearch', value: boolean): void;
+  (e: 'removeRecent', search: string): void;
+  (e: 'clearAllHistory'): void;
 }
 
-defineProps<Props>()
-const emit = defineEmits<Emits>()
+defineProps<Props>();
+const emit = defineEmits<Emits>();
 </script>

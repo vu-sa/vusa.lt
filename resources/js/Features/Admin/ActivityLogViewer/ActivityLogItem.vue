@@ -10,7 +10,7 @@
       </div>
     </div>
     <div v-if="activity.description === 'updated'">
-      <div v-for="key in Object.keys(activity.properties.attributes)" :key="key" class="mt-1">
+      <div v-for="key in Object.keys(activity.properties.attributes)" :key class="mt-1">
         <template v-if="!['updated_at', 'created_at'].includes(key)">
           <pre>{{ key }}:</pre>
           <span class="text-red-500 dark:text-red-300">{{ activity.properties.old[key] }}</span> ->
@@ -26,8 +26,8 @@
 </template>
 
 <script setup lang="ts">
-import { formatRelativeTime } from "@/Utils/IntlTime";
-import UserPopover from "@/Components/Avatars/UserPopover.vue";
+import { formatRelativeTime } from '@/Utils/IntlTime';
+import UserPopover from '@/Components/Avatars/UserPopover.vue';
 
 defineProps<{
   activity: Record<string, any>;

@@ -144,10 +144,10 @@
               </Button>
 
               <!-- Delete button (both sources) -->
-              <Button 
+              <Button
                 v-if="source === 'sharepoint'"
                 :loading="loadingDelete"
-                variant="destructive" 
+                variant="destructive"
                 size="sm"
                 class="flex-1 sm:flex-none"
                 @click="handleDelete"
@@ -155,10 +155,10 @@
                 <IFluentDelete24Filled class="h-4 w-4 mr-2" />
                 Delete
               </Button>
-              <Button 
+              <Button
                 v-else
-                :disabled="!usageData || (!usageData.is_safe_to_delete)" 
-                variant="destructive" 
+                :disabled="!usageData || (!usageData.is_safe_to_delete)"
+                variant="destructive"
                 size="sm"
                 class="flex-1 sm:flex-none"
                 :title="!usageData
@@ -183,7 +183,9 @@
 
             <!-- SharePoint Metadata -->
             <div v-if="source === 'sharepoint' && sharepointFile?.listItem?.fields" class="border rounded-lg p-4 bg-muted/20 mb-6">
-              <h4 class="text-sm font-medium mb-3">Dokumento informacija</h4>
+              <h4 class="text-sm font-medium mb-3">
+                Dokumento informacija
+              </h4>
               <div class="space-y-2 text-sm">
                 <div v-if="sharepointFile.listItem.fields.Date" class="flex gap-2">
                   <span class="text-muted-foreground shrink-0">Failo data:</span>
@@ -191,7 +193,9 @@
                 </div>
                 <div v-if="sharepointFile.listItem.fields.Type" class="flex gap-2">
                   <span class="text-muted-foreground shrink-0">Tipas:</span>
-                  <Badge variant="secondary" class="text-xs">{{ sharepointFile.listItem.fields.Type }}</Badge>
+                  <Badge variant="secondary" class="text-xs">
+                    {{ sharepointFile.listItem.fields.Type }}
+                  </Badge>
                 </div>
                 <div v-if="sharepointFile.listItem.fields.Description0" class="flex gap-2">
                   <span class="text-muted-foreground shrink-0">Aprašymas:</span>
@@ -318,7 +322,7 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
-  SheetDescription
+  SheetDescription,
 } from '@/Components/ui/sheet';
 import { useToasts } from '@/Composables/useToasts';
 
@@ -329,7 +333,7 @@ import IFluentLink24Regular from '~icons/fluent/link-24-regular';
 
 type FileSource = 'local' | 'sharepoint';
 
-interface FileEntry { path: string; size?: number; modified?: number; }
+interface FileEntry { path: string; size?: number; modified?: number }
 interface UsageDetail {
   id: number | string;
   model_type: string;
@@ -360,9 +364,9 @@ const props = withDefaults(defineProps<{
 });
 
 const emit = defineEmits<{
-  'preview': [];
-  'delete': [];
-  'close': [];
+  preview: [];
+  delete: [];
+  close: [];
 }>();
 
 // Unified open state
@@ -396,10 +400,10 @@ const fileName = computed(() => {
 
 // Unified computed: file extension
 const fileExtension = computed(() => {
-  const name = props.source === 'sharepoint' 
-    ? props.sharepointFile?.name 
+  const name = props.source === 'sharepoint'
+    ? props.sharepointFile?.name
     : props.selectedFile?.split('/').pop();
-  
+
   if (!name) return '';
   const extension = name.split('.').pop()?.toLowerCase();
   return extension ? extension.toUpperCase() : 'File';
@@ -412,9 +416,9 @@ const fileSize = computed(() => {
     if (!size) return 'Unknown';
     return formatBytes(size);
   }
-  
+
   if (!props.selectedFile) return 'Unknown';
-  const fileInfo = props.files?.find((file) => file.path === props.selectedFile);
+  const fileInfo = props.files?.find(file => file.path === props.selectedFile);
   if (fileInfo?.size) {
     return formatBytes(fileInfo.size);
   }
@@ -436,7 +440,7 @@ const fileDate = computed(() => {
     if (!dateStr) return 'Unknown';
     return new Date(dateStr).toLocaleDateString('lt-LT');
   }
-  
+
   if (!props.selectedFile) return 'Unknown';
   const fileInfo = props.files?.find((file: FileEntry) => file.path === props.selectedFile);
   if (fileInfo?.modified) {
@@ -454,7 +458,7 @@ const relativePath = computed(() => {
     const parts = parentPath.split('/');
     return parts[parts.length - 1] || '/';
   }
-  
+
   if (!props.selectedFile) return '/';
   const pathWithoutPublicFiles = props.selectedFile.replace('public/files/', '');
   const directory = pathWithoutPublicFiles.substring(0, pathWithoutPublicFiles.lastIndexOf('/'));
@@ -473,7 +477,7 @@ watch([() => props.selectedFile, () => props.sharepointFile], () => {
   usageData.value = null;
   usageError.value = null;
   publicWebUrl.value = null;
-  
+
   // Fetch public link for SharePoint files
   if (props.source === 'sharepoint' && props.sharepointFile?.id && !props.sharepointFile?.folder) {
     fetchPublicLink();
@@ -483,19 +487,21 @@ watch([() => props.selectedFile, () => props.sharepointFile], () => {
 // SharePoint: Fetch existing public link
 async function fetchPublicLink() {
   if (!props.sharepointFile?.id) return;
-  
+
   loadingPublicPermission.value = true;
   try {
     const { data } = await useFetch(
-      route('sharepoint.getDriveItemPublicLink', props.sharepointFile.id)
+      route('sharepoint.getDriveItemPublicLink', props.sharepointFile.id),
     ).json();
-    
+
     if (data.value && Object.keys(data.value).length > 0) {
       publicWebUrl.value = data.value;
-    } else {
+    }
+    else {
       publicWebUrl.value = null;
     }
-  } finally {
+  }
+  finally {
     loadingPublicPermission.value = false;
   }
 }
@@ -506,31 +512,31 @@ async function createPublicPermission() {
     toast.error('No file selected');
     return;
   }
-  
+
   if (props.sharepointFile?.folder) {
     toast.error('Cannot create public link for folders. Please select a file.');
     return;
   }
-  
+
   loadingPublicPermission.value = true;
-  
+
   const { data, error } = await useFetch(
     route('sharepoint.createPublicPermission', props.sharepointFile.id),
     {
       headers: {
         'X-CSRF-TOKEN': usePage().props.csrf_token,
         'Content-Type': 'application/json',
-      }
-    }
+      },
+    },
   ).post().json();
-  
+
   loadingPublicPermission.value = false;
-  
+
   if (error.value || !data.value?.success) {
     toast.error(data.value?.error || 'Failed to create public link');
     return;
   }
-  
+
   publicWebUrl.value = data.value.url;
   toast.success('Public link created successfully');
 }
@@ -540,7 +546,8 @@ function handleDelete() {
   if (props.source === 'sharepoint') {
     if (!props.sharepointFile) return;
     emit('delete');
-  } else {
+  }
+  else {
     if (!props.selectedFile) return;
     emit('delete');
   }
@@ -556,7 +563,7 @@ function scanFileUsage() {
   usageError.value = null;
 
   router.post(route('files.scanUsage'), {
-    path: props.selectedFile
+    path: props.selectedFile,
   }, {
     preserveState: true,
     preserveScroll: true,
@@ -569,11 +576,12 @@ function scanFileUsage() {
       // Handle flash messages
       if (page.props.flash?.success) {
         toasts.success('Scan completed', {
-          description: page.props.flash.success
+          description: page.props.flash.success,
         });
-      } else if (page.props.flash?.info) {
+      }
+      else if (page.props.flash?.info) {
         toasts.info('Scan completed', {
-          description: page.props.flash.info
+          description: page.props.flash.info,
         });
       }
     },
@@ -581,12 +589,12 @@ function scanFileUsage() {
       console.error('File usage scan failed:', errors);
       usageError.value = errors.error || 'Unknown error occurred';
       toasts.error('Failed to scan file usage', {
-        description: errors.error || 'An unknown error occurred'
+        description: errors.error || 'An unknown error occurred',
       });
     },
     onFinish: () => {
       scanningUsage.value = false;
-    }
+    },
   });
 }
 
@@ -597,7 +605,7 @@ const showCompress = computed(() => {
   if (props.source !== 'local') return false;
   if (!props.selectedFile) return false;
   if (!eligibleExtensions.includes(fileExtension.value.toUpperCase())) return false;
-  const fileInfo = props.files?.find((f) => f.path === props.selectedFile);
+  const fileInfo = props.files?.find(f => f.path === props.selectedFile);
   return !!(fileInfo?.size && fileInfo.size > 500 * 1024);
 });
 
@@ -628,7 +636,7 @@ function compressImage() {
     },
     onFinish: () => {
       compressing.value = false;
-    }
+    },
   });
 }
 
@@ -640,9 +648,10 @@ function formatScanTime(timestamp: string): string {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
-  } catch {
+  }
+  catch {
     return 'Unknown';
   }
 }
@@ -660,7 +669,7 @@ function getModelDisplayName(modelType: string): string {
     dutiables: 'Duty Assignments',
     contentParts: 'Content Parts',
     page: 'Pages',
-    tenant: 'Tenants'
+    tenant: 'Tenants',
   };
 
   return modelNames[modelType] || modelType;

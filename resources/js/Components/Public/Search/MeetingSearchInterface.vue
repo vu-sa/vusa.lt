@@ -152,166 +152,168 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
-import { debounce } from 'lodash-es'
-import { trans as $t } from 'laravel-vue-i18n'
+import { computed, onMounted, ref, watch } from 'vue';
+import { debounce } from 'lodash-es';
+import { trans as $t } from 'laravel-vue-i18n';
 import {
   Search,
   Building2,
   CalendarDays,
   TrendingUp,
   X,
-  WifiOff
-} from 'lucide-vue-next'
+  WifiOff,
+} from 'lucide-vue-next';
 
 // Local components
-import SearchPageSwitcher from './SearchPageSwitcher.vue'
-import SearchErrorBoundary from './SearchErrorBoundary.vue'
-import MeetingSearchInput from './MeetingSearchInput.vue'
-import MeetingFacetSidebar from './MeetingFacetSidebar.vue'
-import MeetingResults from './MeetingResults.vue'
+import SearchPageSwitcher from './SearchPageSwitcher.vue';
+import SearchErrorBoundary from './SearchErrorBoundary.vue';
+import MeetingSearchInput from './MeetingSearchInput.vue';
+import MeetingFacetSidebar from './MeetingFacetSidebar.vue';
+import MeetingResults from './MeetingResults.vue';
 
-import { Badge } from '@/Components/ui/badge'
-import { Button } from '@/Components/ui/button'
-import { useMeetingSearch } from '@/Composables/useMeetingSearch'
-import type { MeetingSearchFilters } from '@/Types/MeetingSearchTypes'
+import { Badge } from '@/Components/ui/badge';
+import { Button } from '@/Components/ui/button';
+import { useMeetingSearch } from '@/Composables/useMeetingSearch';
+import type { MeetingSearchFilters } from '@/Types/MeetingSearchTypes';
 
 // Initialize search controller
-const searchController = useMeetingSearch()
+const searchController = useMeetingSearch();
 
 // Local state
-const typeToSearch = ref(true) // Enable by default
-const inputQuery = ref('')
+const typeToSearch = ref(true); // Enable by default
+const inputQuery = ref('');
 
 // Props interface
 interface Props {
-  initialQuery?: string
-  initialFilters?: Partial<MeetingSearchFilters>
+  initialQuery?: string;
+  initialFilters?: Partial<MeetingSearchFilters>;
 }
 
 const {
   initialQuery = '',
-  initialFilters = {}
-} = defineProps<Props>()
+  initialFilters = {},
+} = defineProps<Props>();
 
 // Computed properties for filter state
-const hasActiveFilters = computed(() => Boolean(searchController.hasActiveFilters.value))
+const hasActiveFilters = computed(() => Boolean(searchController.hasActiveFilters.value));
 const activeFilterCount = computed(() => {
-  const filters = searchController.filters.value
-  let count = 0
-  if (filters.tenants.length > 0) count++
-  if (filters.years.length > 0) count++
-  if (filters.successRateRanges.length > 0) count++
-  if ((filters.dateRange.preset && filters.dateRange.preset !== 'recent') || filters.dateRange.from || filters.dateRange.to) count++
-  return count
-})
+  const filters = searchController.filters.value;
+  let count = 0;
+  if (filters.tenants.length > 0) count++;
+  if (filters.years.length > 0) count++;
+  if (filters.successRateRanges.length > 0) count++;
+  if ((filters.dateRange.preset && filters.dateRange.preset !== 'recent') || filters.dateRange.from || filters.dateRange.to) count++;
+  return count;
+});
 
 // Debounced auto-search when typing in auto mode
 const debouncedAutoSearch = debounce((q: string) => {
-  searchController.search(q)
-}, 200)
+  searchController.search(q);
+}, 200);
 
 // Event handlers
 const handleQueryUpdate = (query: string) => {
   // Update local input binding always so UI reflects typed text
-  inputQuery.value = query
+  inputQuery.value = query;
   // Only auto-search if typeToSearch is enabled and query is not empty
   if (typeToSearch.value && query.trim() !== '') {
-    debouncedAutoSearch(query)
-  } else {
+    debouncedAutoSearch(query);
+  }
+  else {
     // Cancel any pending debounced calls when leaving auto conditions
-    debouncedAutoSearch.cancel()
+    debouncedAutoSearch.cancel();
     // If query becomes empty and auto-search is enabled, reset to show all meetings
     if (query.trim() === '' && typeToSearch.value) {
-      searchController.search('*', true)
+      searchController.search('*', true);
     }
   }
-}
+};
 
 const handleSearch = (query: string) => {
   // Keep input in sync and execute immediately, bypassing debounce
-  inputQuery.value = query
+  inputQuery.value = query;
   // Cancel pending auto-search to avoid double-trigger
-  debouncedAutoSearch.cancel()
+  debouncedAutoSearch.cancel();
   // If query is empty, search for '*' to show all meetings (preserves filters)
-  const searchQuery = query.trim() === '' ? '*' : query
-  searchController.search(searchQuery, true)
-}
+  const searchQuery = query.trim() === '' ? '*' : query;
+  searchController.search(searchQuery, true);
+};
 
 const handleSelectRecent = (search: string) => {
   // Selecting a recent search should also search immediately
-  inputQuery.value = search
-  debouncedAutoSearch.cancel()
-  searchController.search(search, true)
-}
+  inputQuery.value = search;
+  debouncedAutoSearch.cancel();
+  searchController.search(search, true);
+};
 
 const handleClear = () => {
   // Reset to the same state as when page first loads - show all meetings
   // This should match the initial load behavior
-  inputQuery.value = ''
-  debouncedAutoSearch.cancel()
-  searchController.search('*', true) // immediate = true to avoid debouncing
-}
+  inputQuery.value = '';
+  debouncedAutoSearch.cancel();
+  searchController.search('*', true); // immediate = true to avoid debouncing
+};
 
 const handleTypeToSearchUpdate = (value: boolean) => {
-  typeToSearch.value = value
-}
+  typeToSearch.value = value;
+};
 
 const handleRemoveRecent = (search: string) => {
-  searchController.removeRecentSearch(search)
-}
+  searchController.removeRecentSearch(search);
+};
 
 const handleClearAllHistory = () => {
-  searchController.clearRecentSearches()
-}
+  searchController.clearRecentSearches();
+};
 
 // Initialize from props and load all meetings
 onMounted(async () => {
   // Initialize search client first
-  await searchController.initializeSearchClient()
+  await searchController.initializeSearchClient();
 
   // Load initial facets for the merged facet system
-  await searchController.loadInitialFacets()
+  await searchController.loadInitialFacets();
 
   // Apply initial filters if provided
   if (Object.keys(initialFilters).length > 0) {
     if (initialFilters.tenants) {
-      (initialFilters.tenants as string[]).forEach((tenant: string) => searchController.toggleTenant(tenant))
+      (initialFilters.tenants as string[]).forEach((tenant: string) => searchController.toggleTenant(tenant));
     }
     if (initialFilters.completionStatus) {
-      (initialFilters.completionStatus as string[]).
-        forEach((status: string) => searchController.toggleCompletionStatus(status))
+      (initialFilters.completionStatus as string[])
+        .forEach((status: string) => searchController.toggleCompletionStatus(status));
     }
     if (initialFilters.years) {
-      (initialFilters.years as number[]).
-        forEach((year: number) => searchController.toggleYear(year))
+      (initialFilters.years as number[])
+        .forEach((year: number) => searchController.toggleYear(year));
     }
     if (initialFilters.successRateRanges) {
-      (initialFilters.successRateRanges as string[]).
-        forEach((range: string) => searchController.toggleSuccessRate(range))
+      (initialFilters.successRateRanges as string[])
+        .forEach((range: string) => searchController.toggleSuccessRate(range));
     }
     if (initialFilters.dateRange) {
-      searchController.setDateRange(initialFilters.dateRange)
+      searchController.setDateRange(initialFilters.dateRange);
     }
   }
 
   // Set initial query if provided, otherwise search all meetings
   if (initialQuery) {
-    searchController.search(initialQuery)
-  } else {
+    searchController.search(initialQuery);
+  }
+  else {
     // Trigger initial "show all meetings" search with newest first sorting
     // Use wildcard search to show all meetings on page load
-    searchController.search('*', true) // immediate = true for initial load
+    searchController.search('*', true); // immediate = true for initial load
   }
   // Sync input with controller's displayed query
-  inputQuery.value = searchController.searchState.value.query
-})
+  inputQuery.value = searchController.searchState.value.query;
+});
 
 // Keep inputQuery in sync with controller query updates (e.g., after searches)
 watch(
   () => searchController.searchState.value.query,
   (q) => {
-    inputQuery.value = q || ''
-  }
-)
+    inputQuery.value = q || '';
+  },
+);
 </script>

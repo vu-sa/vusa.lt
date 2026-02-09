@@ -1,4 +1,4 @@
-import Heading from "@tiptap/extension-heading";
+import Heading from '@tiptap/extension-heading';
 
 export const CustomHeading = Heading.extend({
   addAttributes() {
@@ -12,18 +12,18 @@ export const CustomHeading = Heading.extend({
   parseHTML() {
     return [
       {
-        tag: "h2",
+        tag: 'h2',
         getAttrs: (dom) => {
           return {
-            id: dom.getAttribute("id"),
+            id: dom.getAttribute('id'),
           };
         },
       },
       {
-        tag: "h3",
+        tag: 'h3',
         getAttrs: (dom) => {
           return {
-            id: dom.getAttribute("id"),
+            id: dom.getAttribute('id'),
           };
         },
       },

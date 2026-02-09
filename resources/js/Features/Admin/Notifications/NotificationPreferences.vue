@@ -13,8 +13,12 @@
         <div class="flex items-center gap-3">
           <IFluentAlertOff24Regular class="size-5 text-zinc-500" />
           <div>
-            <p class="font-medium">{{ $t('notifications.preferences.mute_all') }}</p>
-            <p class="text-sm text-muted-foreground">{{ $t('notifications.preferences.mute_all_description') }}</p>
+            <p class="font-medium">
+              {{ $t('notifications.preferences.mute_all') }}
+            </p>
+            <p class="text-sm text-muted-foreground">
+              {{ $t('notifications.preferences.mute_all_description') }}
+            </p>
           </div>
         </div>
         <div v-if="form.muted_until" class="flex items-center gap-2">
@@ -25,15 +29,23 @@
             {{ $t('notifications.preferences.unmute') }}
           </Button>
         </div>
-        <Select v-else v-model="muteSelection" @update:modelValue="handleMuteChange">
+        <Select v-else v-model="muteSelection" @update:model-value="handleMuteChange">
           <SelectTrigger class="w-40">
             <SelectValue :placeholder="$t('notifications.preferences.mute')" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="1">1 {{ $t('hour') }}</SelectItem>
-            <SelectItem value="4">4 {{ $t('hours') }}</SelectItem>
-            <SelectItem value="24">24 {{ $t('hours') }}</SelectItem>
-            <SelectItem value="168">{{ $t('1 week') }}</SelectItem>
+            <SelectItem value="1">
+              1 {{ $t('hour') }}
+            </SelectItem>
+            <SelectItem value="4">
+              4 {{ $t('hours') }}
+            </SelectItem>
+            <SelectItem value="24">
+              24 {{ $t('hours') }}
+            </SelectItem>
+            <SelectItem value="168">
+              {{ $t('1 week') }}
+            </SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -41,15 +53,23 @@
       <!-- Digest Frequency -->
       <FormFieldWrapper id="digest-frequency" :label="$t('notifications.preferences.digest_frequency')">
         <div class="flex items-center gap-4">
-          <Select v-model="digestFrequencyString" @update:modelValue="updateDigestFrequency">
+          <Select v-model="digestFrequencyString" @update:model-value="updateDigestFrequency">
             <SelectTrigger class="w-40">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="1">{{ $t('Every hour') }}</SelectItem>
-              <SelectItem value="4">{{ $t('Every 4 hours') }}</SelectItem>
-              <SelectItem value="12">{{ $t('Every 12 hours') }}</SelectItem>
-              <SelectItem value="24">{{ $t('Once daily') }}</SelectItem>
+              <SelectItem value="1">
+                {{ $t('Every hour') }}
+              </SelectItem>
+              <SelectItem value="4">
+                {{ $t('Every 4 hours') }}
+              </SelectItem>
+              <SelectItem value="12">
+                {{ $t('Every 12 hours') }}
+              </SelectItem>
+              <SelectItem value="24">
+                {{ $t('Once daily') }}
+              </SelectItem>
             </SelectContent>
           </Select>
           <p class="text-sm text-muted-foreground">
@@ -59,14 +79,16 @@
       </FormFieldWrapper>
 
       <!-- Digest Email Selection -->
-      <DigestEmailSelector 
-        v-model="form.digest_emails" 
-        :available-emails="availableDigestEmails" 
+      <DigestEmailSelector
+        v-model="form.digest_emails"
+        :available-emails="availableDigestEmails"
       />
 
       <!-- Category Channel Settings -->
       <div class="space-y-2">
-        <h4 class="font-medium">{{ $t('notifications.preferences.category_settings') }}</h4>
+        <h4 class="font-medium">
+          {{ $t('notifications.preferences.category_settings') }}
+        </h4>
         <p class="text-sm text-muted-foreground mb-4">
           {{ $t('notifications.preferences.category_settings_description') }}
         </p>
@@ -75,16 +97,18 @@
           <table class="w-full text-sm">
             <thead>
               <tr class="border-b dark:border-zinc-700">
-                <th class="text-left py-2 pr-4 font-medium">{{ $t('notifications.category') }}</th>
+                <th class="text-left py-2 pr-4 font-medium">
+                  {{ $t('notifications.category') }}
+                </th>
                 <th v-for="channel in notificationChannels" :key="channel.value" class="text-center py-2 px-2 font-medium">
                   {{ $t(`notifications.channels.${channel.value}`) }}
                 </th>
               </tr>
             </thead>
             <tbody>
-              <tr 
-                v-for="category in notificationCategories" 
-                :key="category.value" 
+              <tr
+                v-for="category in notificationCategories"
+                :key="category.value"
                 class="border-b dark:border-zinc-700 last:border-0"
               >
                 <td class="py-3 pr-4">
@@ -96,9 +120,9 @@
                   </div>
                 </td>
                 <td v-for="channel in notificationChannels" :key="channel.value" class="text-center py-3 px-2">
-                  <Checkbox 
-                    :modelValue="getChannelEnabled(category.value, channel.value)"
-                    @update:modelValue="(val: boolean) => setChannelEnabled(category.value, channel.value, val)"
+                  <Checkbox
+                    :model-value="getChannelEnabled(category.value, channel.value)"
+                    @update:model-value="(val: boolean) => setChannelEnabled(category.value, channel.value, val)"
                   />
                 </td>
               </tr>
@@ -109,8 +133,10 @@
 
       <!-- Reminder Settings -->
       <div class="space-y-4 pt-4 border-t dark:border-zinc-700">
-        <h4 class="font-medium">{{ $t('notifications.preferences.reminder_settings') }}</h4>
-        
+        <h4 class="font-medium">
+          {{ $t('notifications.preferences.reminder_settings') }}
+        </h4>
+
         <!-- Task Reminder Days -->
         <FormFieldWrapper id="task-reminder-days" :label="$t('notifications.preferences.task_reminder_days')">
           <ToggleGroup
@@ -187,7 +213,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/Components/ui/select';
-
 import IFluentAlertOff24Regular from '~icons/fluent/alert-off-24-regular';
 import IFluentSave24Regular from '~icons/fluent/save-24-regular';
 import IMdiLoading from '~icons/mdi/loading';
@@ -249,7 +274,7 @@ const form = useForm({
   digest_frequency_hours: props.notificationPreferences.digest_frequency_hours,
   digest_emails: props.notificationPreferences.digest_emails || [],
   muted_until: props.notificationPreferences.muted_until,
-  reminder_settings: { 
+  reminder_settings: {
     task_reminder_days: props.notificationPreferences.reminder_settings?.task_reminder_days || [7, 3, 1],
     meeting_reminder_hours: props.notificationPreferences.reminder_settings?.meeting_reminder_hours || [24, 1],
     calendar_reminder_hours: props.notificationPreferences.reminder_settings?.calendar_reminder_hours || [24],

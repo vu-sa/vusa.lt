@@ -4,10 +4,10 @@
       <FileButtonSkeletonWrapper
         v-for="file in data"
         :key="file.id"
-        :file="file"
+        :file
         :small="true"
         :show-thumbnail="true"
-      ></FileButtonSkeletonWrapper>
+      />
     </div>
     <FilePropertiesDrawer
       source="sharepoint"
@@ -18,10 +18,12 @@
 </template>
 
 <script setup lang="tsx">
-import { provide, ref } from "vue";
-import FileButtonSkeletonWrapper from "./FileButtonSkeletonWrapper.vue";
-import FilePropertiesDrawer from "@/Features/Admin/FileManager/Components/FilePropertiesDrawer.vue";
-import { useFetch } from "@vueuse/core";
+import { provide, ref } from 'vue';
+import { useFetch } from '@vueuse/core';
+
+import FileButtonSkeletonWrapper from './FileButtonSkeletonWrapper.vue';
+
+import FilePropertiesDrawer from '@/Features/Admin/FileManager/Components/FilePropertiesDrawer.vue';
 
 const props = defineProps<{
   fileable: {
@@ -33,10 +35,10 @@ const props = defineProps<{
 const selectedFile = ref(null);
 
 const { data } = await useFetch(
-  route("sharepoint.getTypesDriveItems", {
+  route('sharepoint.getTypesDriveItems', {
     type: props.fileable.type,
     id: props.fileable.id,
-  })
+  }),
 ).json();
 
 const handleFileSelect = (file: MyDriveItem) => {
@@ -53,7 +55,7 @@ const handleFileSelect = (file: MyDriveItem) => {
 // };
 
 const handleFileDblClick = (file: MyDriveItem) => {
-  if (file.name === "...") {
+  if (file.name === '...') {
     // remove last folder from path
     return;
   }
@@ -63,13 +65,14 @@ const handleFileDblClick = (file: MyDriveItem) => {
   }
 
   if (file.folder) {
-    return;
-  } else {
+
+  }
+  else {
     // TODO: use created link, not weburl
-    window.open(file.webUrl, "_blank");
+    window.open(file.webUrl, '_blank');
   }
 };
 
-provide("handleFileSelect", handleFileSelect);
-provide("handleFileDblClick", handleFileDblClick);
+provide('handleFileSelect', handleFileSelect);
+provide('handleFileDblClick', handleFileDblClick);
 </script>

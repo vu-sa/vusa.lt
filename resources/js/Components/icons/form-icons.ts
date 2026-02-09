@@ -1,21 +1,22 @@
 // Tree-shakable form icons with regular and filled variants
 
-import type { Component } from "vue";
-import type { FormEnum } from "../../Types/otherEnums";
+import type { Component } from 'vue';
+
+import type { FormEnum } from '../../Types/otherEnums';
 
 // =============================================================================
 // REGULAR ICONS - Import each icon only ONCE
 // =============================================================================
-import CalendarLtr24Regular from "~icons/fluent/calendar-ltr24-regular";
-import DocumentSave24Regular from "~icons/fluent/document-save24-regular";
-import TextField24Regular from "~icons/fluent/text-field24-regular";
+import CalendarLtr24Regular from '~icons/fluent/calendar-ltr24-regular';
+import DocumentSave24Regular from '~icons/fluent/document-save24-regular';
+import TextField24Regular from '~icons/fluent/text-field24-regular';
 
 // =============================================================================
 // FILLED ICONS - Import each icon only ONCE
 // =============================================================================
-import CalendarLtr24Filled from "~icons/fluent/calendar-ltr24-filled";
-import DocumentSave24Filled from "~icons/fluent/document-save24-filled";
-import TextField24Filled from "~icons/fluent/text-field24-filled";
+import CalendarLtr24Filled from '~icons/fluent/calendar-ltr24-filled';
+import DocumentSave24Filled from '~icons/fluent/document-save24-filled';
+import TextField24Filled from '~icons/fluent/text-field24-filled';
 
 // =============================================================================
 // TREE-SHAKABLE EXPORTS - Clean, concise naming
@@ -56,18 +57,18 @@ const formIconMappingFilled: Record<keyof typeof FormEnum, Component> = {
  */
 export function getFormIcon(
   formKey: keyof typeof FormEnum,
-  variant: 'regular' | 'filled' = 'regular'
+  variant: 'regular' | 'filled' = 'regular',
 ): Component {
-  return variant === 'filled' 
-    ? formIconMappingFilled[formKey] 
+  return variant === 'filled'
+    ? formIconMappingFilled[formKey]
     : formIconMappingRegular[formKey];
 }
 
 const formIconMapping = formIconMappingRegular;
 
 // Export mappings for external use
-export { 
-  formIconMapping, 
-  formIconMappingRegular, 
-  formIconMappingFilled 
+export {
+  formIconMapping,
+  formIconMappingRegular,
+  formIconMappingFilled,
 };

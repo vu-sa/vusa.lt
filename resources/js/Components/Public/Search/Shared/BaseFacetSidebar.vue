@@ -80,38 +80,39 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { Button } from '@/Components/ui/button'
-import { Badge } from '@/Components/ui/badge'
+import { ref } from 'vue';
+import { Filter, RotateCcw } from 'lucide-vue-next';
+
+import { Button } from '@/Components/ui/button';
+import { Badge } from '@/Components/ui/badge';
 import {
   Sheet,
   SheetTrigger,
   SheetContent,
   SheetHeader,
-  SheetTitle
-} from '@/Components/ui/sheet'
-import { ScrollArea } from '@/Components/ui/scroll-area'
-import { Filter, RotateCcw } from 'lucide-vue-next'
+  SheetTitle,
+} from '@/Components/ui/sheet';
+import { ScrollArea } from '@/Components/ui/scroll-area';
 
 interface Props {
-  activeFilterCount?: number
+  activeFilterCount?: number;
   /** Translation key for mobile sheet title */
-  mobileTitle?: string
+  mobileTitle?: string;
 }
 
 withDefaults(defineProps<Props>(), {
   activeFilterCount: 0,
-  mobileTitle: 'search.filters'
-})
+  mobileTitle: 'search.filters',
+});
 
 const emit = defineEmits<{
-  clearFilters: []
-}>()
+  clearFilters: [];
+}>();
 
-const isMobileFiltersOpen = ref(false)
+const isMobileFiltersOpen = ref(false);
 
 // Expose for parent components that need to close the sheet
 defineExpose({
-  closeSheet: () => { isMobileFiltersOpen.value = false }
-})
+  closeSheet: () => { isMobileFiltersOpen.value = false; },
+});
 </script>

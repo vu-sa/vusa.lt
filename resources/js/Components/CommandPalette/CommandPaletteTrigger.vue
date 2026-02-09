@@ -28,18 +28,19 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { trans as $t } from 'laravel-vue-i18n'
-import { Search } from 'lucide-vue-next'
-import { Button } from '@/Components/ui/button'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip'
-import { useCommandPalette } from '@/Composables/useCommandPalette'
+import { computed } from 'vue';
+import { trans as $t } from 'laravel-vue-i18n';
+import { Search } from 'lucide-vue-next';
 
-const { toggle } = useCommandPalette()
+import { Button } from '@/Components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
+import { useCommandPalette } from '@/Composables/useCommandPalette';
+
+const { toggle } = useCommandPalette();
 
 // Detect Mac for keyboard shortcut display
 const isMac = computed(() => {
-  if (typeof navigator === 'undefined') return false
-  return navigator.platform.toUpperCase().indexOf('MAC') >= 0
-})
+  if (typeof navigator === 'undefined') return false;
+  return navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+});
 </script>

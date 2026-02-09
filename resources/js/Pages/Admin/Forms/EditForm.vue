@@ -9,11 +9,11 @@
 </template>
 
 <script setup lang="ts">
-import { router } from "@inertiajs/vue3";
+import { router } from '@inertiajs/vue3';
 
-import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
-import FormForm from "@/Components/AdminForms/FormForm.vue";
+import PageContent from '@/Components/Layouts/AdminContentPage.vue';
+import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
+import FormForm from '@/Components/AdminForms/FormForm.vue';
 
 defineProps<{
   form: App.Entities.Form;

@@ -1,19 +1,3 @@
-<script lang="ts" setup>
-import { cn } from '@/Utils/Shadcn/utils'
-import { CalendarGrid, type CalendarGridProps, useForwardProps } from 'reka-ui'
-import { computed, type HTMLAttributes } from 'vue'
-
-const props = defineProps<CalendarGridProps & { class?: HTMLAttributes['class'] }>()
-
-const delegatedProps = computed(() => {
-  const { class: _, ...delegated } = props
-
-  return delegated
-})
-
-const forwardedProps = useForwardProps(delegatedProps)
-</script>
-
 <template>
   <CalendarGrid
     data-slot="calendar-grid"
@@ -23,3 +7,20 @@ const forwardedProps = useForwardProps(delegatedProps)
     <slot />
   </CalendarGrid>
 </template>
+
+<script lang="ts" setup>
+import { CalendarGrid, type CalendarGridProps, useForwardProps } from 'reka-ui';
+import { computed, type HTMLAttributes } from 'vue';
+
+import { cn } from '@/Utils/Shadcn/utils';
+
+const props = defineProps<CalendarGridProps & { class?: HTMLAttributes['class'] }>();
+
+const delegatedProps = computed(() => {
+  const { class: _, ...delegated } = props;
+
+  return delegated;
+});
+
+const forwardedProps = useForwardProps(delegatedProps);
+</script>

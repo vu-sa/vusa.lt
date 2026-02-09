@@ -4,61 +4,59 @@
 // Implemented
 
 // Content Grid type - updated with the simplified structure
-export type ContentGrid = {
+export interface ContentGrid {
   json_content: {
     columns: {
       width: string; // e.g. "col-span-4", "col-span-6", etc.
       content: {
         type: string; // Can be "tiptap", "image", etc.
-        value: any;  // Content depends on the type
-      }
+        value: any; // Content depends on the type
+      };
     }[];
   }[];
   options: {
-    gap?: "gap-2" | "gap-4" | "gap-6" | "gap-8";
+    gap?: 'gap-2' | 'gap-4' | 'gap-6' | 'gap-8';
     mobileStacking?: boolean;
     equalHeight?: boolean;
-  }
+  };
 }
 
-export type ImageGrid = {
+export interface ImageGrid {
   json_content: {
-    colspan: "col-span-2" | "col-span-3" | "col-span-4" | "col-span-full";
-    image: string
+    colspan: 'col-span-2' | 'col-span-3' | 'col-span-4' | 'col-span-full';
+    image: string;
   }[];
-  options: null
+  options: null;
 }
 
-export type Tiptap = {
+export interface Tiptap {
   json_content: {
-    type: "doc";
+    type: 'doc';
     content: Record<string, any>[];
   };
-  options: null
-};
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export type ShadcnAccordion = {
-  json_content: {
-    label: string;
-    content: Tiptap["json_content"];
-  }[];
-  options: null
+  options: null;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export type ShadcnCard = {
-  json_content: Tiptap["json_content"];
+export interface ShadcnAccordion {
+  json_content: {
+    label: string;
+    content: Tiptap['json_content'];
+  }[];
+  options: null;
+}
+
+export interface ShadcnCard {
+  json_content: Tiptap['json_content'];
   options: {
-    color?: "zinc" | "red" | "yellow";
-    variant?: "outline" | "soft";
+    color?: 'zinc' | 'red' | 'yellow';
+    variant?: 'outline' | 'soft';
     title?: string;
     isTitleColored?: boolean;
     showIcon?: boolean;
   };
 }
 
-export type Hero = {
+export interface Hero {
   json_content: {
     title: string;
     subtitle: string;
@@ -70,18 +68,18 @@ export type Hero = {
   options: {
     backgroundBlur?: boolean;
     is_active?: boolean;
-    buttonColor: "red" | "yellow" | "zinc" | "white";
-  }
+    buttonColor: 'red' | 'yellow' | 'zinc' | 'white';
+  };
 }
 
-export type SpotifyEmbed = {
+export interface SpotifyEmbed {
   json_content: {
     url: string;
   };
-  options: null
+  options: null;
 }
 
-export type SocialEmbed = {
+export interface SocialEmbed {
   json_content: {
     url: string;
     platform: 'facebook' | 'instagram' | null;
@@ -89,46 +87,46 @@ export type SocialEmbed = {
   };
   options: {
     showCaption?: boolean;
-  }
+  };
 }
 
-export type FlowGraph = {
+export interface FlowGraph {
   json_content: {
     nodes?: Record<string, any>[];
     edges?: Record<string, any>[];
     preset?: 'VusaStructure';
   };
-  options: null
+  options: null;
 }
 
-export type NumberStatSection = {
+export interface NumberStatSection {
   json_content: {
     endNumber: number;
     label: string;
   }[];
   options: {
-    color?: "zinc" | "red" | "yellow";
+    color?: 'zinc' | 'red' | 'yellow';
     title: string;
-  }
+  };
 }
 
 // Now implemented
 
-export type Calendar = {
+export interface Calendar {
   json_content: {
     title: string;
-  }
+  };
   options: {
     allTenants?: boolean;
-  } | null
-};
+  } | null;
+}
 
-export type News = {
+export interface News {
   json_content: {
     title: string;
-  }
-  options: null
-};
+  };
+  options: null;
+}
 
 /**
  * Public-facing news item structure returned by API and Inertia props.

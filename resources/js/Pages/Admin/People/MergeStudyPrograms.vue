@@ -54,18 +54,18 @@
 </template>
 
 <script setup lang="ts">
-import { useForm } from "@inertiajs/vue3";
-import { computed } from "vue";
+import { useForm } from '@inertiajs/vue3';
+import { computed } from 'vue';
 
-import { Badge } from "@/Components/ui/badge";
-import { MultiSelect } from "@/Components/ui/multi-select";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
-import AdminForm from "@/Components/AdminForms/AdminForm.vue";
-import FormElement from "@/Components/AdminForms/FormElement.vue";
-import FormFieldWrapper from "@/Components/AdminForms/FormFieldWrapper.vue";
-import Icons from "@/Types/Icons/regular";
-import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
+import { Badge } from '@/Components/ui/badge';
+import { MultiSelect } from '@/Components/ui/multi-select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import AdminForm from '@/Components/AdminForms/AdminForm.vue';
+import FormElement from '@/Components/AdminForms/FormElement.vue';
+import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
+import Icons from '@/Types/Icons/regular';
+import PageContent from '@/Components/Layouts/AdminContentPage.vue';
+import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
 
 const { studyPrograms } = defineProps<{
   studyPrograms: App.Entities.StudyProgram[];
@@ -81,7 +81,7 @@ const studyProgramOptions = computed(() =>
     label: Array.isArray(program.name) ? program.name.join('') : program.name,
     value: program.id,
     degree: program.degree,
-  }))
+  })),
 );
 
 // Bridge string <-> number for Select
@@ -97,7 +97,7 @@ const selectedSourcePrograms = computed({
 });
 
 function handleFormSubmit() {
-  form.post(route("studyPrograms.mergeStudyPrograms"), {
+  form.post(route('studyPrograms.mergeStudyPrograms'), {
     onSuccess: () => {
       form.reset();
     },

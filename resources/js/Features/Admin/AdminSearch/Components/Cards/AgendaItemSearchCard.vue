@@ -106,64 +106,63 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { router } from '@inertiajs/vue3'
-import { trans as $t } from 'laravel-vue-i18n'
+import { computed } from 'vue';
+import { router } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
 import {
   CheckCircle,
   Gavel,
   UserCheck,
   Vote,
   Pencil,
-} from 'lucide-vue-next'
+} from 'lucide-vue-next';
 
-import { Card, CardContent, CardFooter } from '@/Components/ui/card'
-import { Badge } from '@/Components/ui/badge'
-import { Button } from '@/Components/ui/button'
-import { AgendaItemIcon, MeetingIcon } from '@/Components/icons'
-
-import type { AgendaItemSearchResult } from '@/Composables/useAdminSearch'
+import { Card, CardContent, CardFooter } from '@/Components/ui/card';
+import { Badge } from '@/Components/ui/badge';
+import { Button } from '@/Components/ui/button';
+import { AgendaItemIcon, MeetingIcon } from '@/Components/icons';
+import type { AgendaItemSearchResult } from '@/Composables/useAdminSearch';
 
 interface Props {
-  item: AgendaItemSearchResult
+  item: AgendaItemSearchResult;
 }
 
-const props = defineProps<Props>()
+const props = defineProps<Props>();
 
 // Format the meeting start time
 const formattedDate = computed(() => {
-  if (!props.item.meeting_start_time) return null
-  const date = new Date(props.item.meeting_start_time * 1000)
+  if (!props.item.meeting_start_time) return null;
+  const date = new Date(props.item.meeting_start_time * 1000);
   return date.toLocaleDateString('lt-LT', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
-  })
-})
+  });
+});
 
 // Navigate to meeting show page
 const navigateToMeeting = () => {
   if (props.item.meeting_id) {
-    router.visit(route('meetings.show', props.item.meeting_id))
+    router.visit(route('meetings.show', props.item.meeting_id));
   }
-}
+};
 
 // Navigate to agenda item edit page
 const navigateToEdit = () => {
-  router.visit(route('agendaItems.edit', props.item.id))
-}
+  router.visit(route('agendaItems.edit', props.item.id));
+};
 
 // Get vote badge classes
 const getVoteBadgeClasses = (vote: string) => {
-  const voteLower = vote.toLowerCase()
+  const voteLower = vote.toLowerCase();
   if (voteLower === 'for' || voteLower === 'už') {
-    return 'bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20'
+    return 'bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20';
   }
   if (voteLower === 'against' || voteLower === 'prieš') {
-    return 'bg-red-500/10 text-red-600 hover:bg-red-500/20'
+    return 'bg-red-500/10 text-red-600 hover:bg-red-500/20';
   }
-  return 'bg-amber-500/10 text-amber-600 hover:bg-amber-500/20'
-}
+  return 'bg-amber-500/10 text-amber-600 hover:bg-amber-500/20';
+};
 
 // Get vote label
 const getVoteLabel = (vote: string) => {
@@ -171,9 +170,9 @@ const getVoteLabel = (vote: string) => {
     for: $t('Už'),
     against: $t('Prieš'),
     abstain: $t('Susilaikė'),
-  }
-  return voteMap[vote.toLowerCase()] || vote
-}
+  };
+  return voteMap[vote.toLowerCase()] || vote;
+};
 
 // Get decision label
 const getDecisionLabel = (decision: string) => {
@@ -182,33 +181,33 @@ const getDecisionLabel = (decision: string) => {
     rejected: $t('Atmesta'),
     postponed: $t('Atidėta'),
     noted: $t('Susipažinta'),
-  }
-  return decisionMap[decision.toLowerCase()] || decision
-}
+  };
+  return decisionMap[decision.toLowerCase()] || decision;
+};
 
 // Get vote alignment badge variant
 const getVoteAlignmentVariant = (status: string) => {
   switch (status) {
     case 'aligned':
-      return 'default'
+      return 'default';
     case 'misaligned':
-      return 'destructive'
+      return 'destructive';
     default:
-      return 'secondary'
+      return 'secondary';
   }
-}
+};
 
 // Get vote alignment label
 const getVoteAlignmentLabel = (status: string) => {
   switch (status) {
     case 'aligned':
-      return $t('Balsai atitinka')
+      return $t('Balsai atitinka');
     case 'misaligned':
-      return $t('Balsai neatitinka')
+      return $t('Balsai neatitinka');
     case 'incomplete':
-      return $t('Nepilna informacija')
+      return $t('Nepilna informacija');
     default:
-      return status
+      return status;
   }
-}
+};
 </script>

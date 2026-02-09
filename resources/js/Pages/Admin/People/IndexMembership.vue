@@ -10,15 +10,15 @@
 </template>
 
 <script setup lang="tsx">
-import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
-import { type ColumnDef } from "@tanstack/vue-table";
-import { ref, computed } from "vue";
+import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
+import type { ColumnDef } from '@tanstack/vue-table';
+import { ref, computed } from 'vue';
 
-import { capitalize } from "@/Utils/String";
-import { resolveTranslatable } from "@/Utils/DataTableColumns";
-import IndexTablePage from "@/Components/Layouts/IndexTablePage.vue";
-import { createStandardActionsColumn } from "@/Composables/useTableActions";
-import { type IndexTablePageProps } from "@/Types/TableConfigTypes";
+import { capitalize } from '@/Utils/String';
+import { resolveTranslatable } from '@/Utils/DataTableColumns';
+import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
+import { createStandardActionsColumn } from '@/Composables/useTableActions';
+import type { IndexTablePageProps } from '@/Types/TableConfigTypes';
 
 const props = defineProps<{
   memberships: {
@@ -36,8 +36,8 @@ const props = defineProps<{
   sorting?: { id: string; desc: boolean }[];
 }>();
 
-const modelName = "memberships";
-const entityName = "membership";
+const modelName = 'memberships';
+const entityName = 'membership';
 
 const indexTablePageRef = ref<any>(null);
 
@@ -47,21 +47,21 @@ const getRowId = (row: App.Entities.Membership) => {
 
 const columns = computed<ColumnDef<App.Entities.Membership, any>[]>(() => [
   {
-    accessorKey: "name",
-    header: () => $t("forms.fields.title"),
-    cell: ({ row }) => resolveTranslatable(row.getValue("name")),
+    accessorKey: 'name',
+    header: () => $t('forms.fields.title'),
+    cell: ({ row }) => resolveTranslatable(row.getValue('name')),
     size: 250,
   },
   {
-    accessorKey: "tenant",
-    header: () => $t("Padalinys"),
+    accessorKey: 'tenant',
+    header: () => $t('Padalinys'),
     cell: ({ row }) => {
-      const tenant = row.original.tenant;
-      return tenant ? $t(tenant.shortname ?? "") : null;
+      const { tenant } = row.original;
+      return tenant ? $t(tenant.shortname ?? '') : null;
     },
     size: 200,
   },
-  createStandardActionsColumn<App.Entities.Membership>("memberships", {
+  createStandardActionsColumn<App.Entities.Membership>('memberships', {
     canEdit: true,
   }),
 ]);
@@ -82,8 +82,8 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Membership>>(() =>
   enableColumnVisibility: false,
   enableRowSelection: false,
 
-  headerTitle: capitalize($tChoice("entities.membership.model", 2)),
-  createRoute: route("memberships.create"),
+  headerTitle: capitalize($tChoice('entities.membership.model', 2)),
+  createRoute: route('memberships.create'),
   canCreate: true,
 }));
 

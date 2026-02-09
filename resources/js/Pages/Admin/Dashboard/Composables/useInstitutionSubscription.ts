@@ -1,8 +1,9 @@
 import { ref } from 'vue';
 import { router } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
+
 import { useApiMutation } from '@/Composables/useApi';
 import { useToasts } from '@/Composables/useToasts';
-import { trans as $t } from 'laravel-vue-i18n';
 
 interface SubscriptionState {
   is_followed: boolean;
@@ -23,13 +24,13 @@ interface ToggleResponseData {
 
 /**
  * Composable for managing institution follow/mute subscriptions.
- * 
+ *
  * Provides methods to toggle follow and mute states for institutions,
  * with automatic Inertia reload to refresh page data after changes.
  */
 export function useInstitutionSubscription() {
   const toasts = useToasts();
-  
+
   // Track loading states per institution ID
   const followLoading = ref<Record<string, boolean>>({});
   const muteLoading = ref<Record<string, boolean>>({});
@@ -41,7 +42,7 @@ export function useInstitutionSubscription() {
   async function toggleFollow(
     institutionId: string,
     currentState?: SubscriptionState,
-    reloadProps: string[] = ['userInstitutions', 'relatedInstitutions']
+    reloadProps: string[] = ['userInstitutions', 'relatedInstitutions'],
   ): Promise<boolean> {
     // Prevent unfollowing duty-based institutions
     if (currentState?.is_duty_based && currentState?.is_followed) {
@@ -53,8 +54,8 @@ export function useInstitutionSubscription() {
 
     const isCurrentlyFollowed = currentState?.is_followed ?? false;
     const method = isCurrentlyFollowed ? 'DELETE' : 'POST';
-    const routeName = isCurrentlyFollowed 
-      ? 'api.v1.admin.institutions.unfollow' 
+    const routeName = isCurrentlyFollowed
+      ? 'api.v1.admin.institutions.unfollow'
       : 'api.v1.admin.institutions.follow';
 
     const { execute, isSuccess } = useApiMutation<ToggleResponseData>(
@@ -63,10 +64,10 @@ export function useInstitutionSubscription() {
       undefined,
       {
         showSuccessToast: true,
-        successMessage: isCurrentlyFollowed 
-          ? $t('visak.institution_unfollowed') 
+        successMessage: isCurrentlyFollowed
+          ? $t('visak.institution_unfollowed')
           : $t('visak.institution_followed'),
-      }
+      },
     );
 
     try {
@@ -79,10 +80,12 @@ export function useInstitutionSubscription() {
       }
 
       return isCurrentlyFollowed;
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Failed to toggle follow:', error);
       return isCurrentlyFollowed;
-    } finally {
+    }
+    finally {
       followLoading.value[institutionId] = false;
     }
   }
@@ -94,7 +97,7 @@ export function useInstitutionSubscription() {
   async function toggleMute(
     institutionId: string,
     currentState?: SubscriptionState,
-    reloadProps: string[] = ['userInstitutions', 'relatedInstitutions']
+    reloadProps: string[] = ['userInstitutions', 'relatedInstitutions'],
   ): Promise<boolean> {
     // Prevent muting duty-based institutions
     if (currentState?.is_duty_based && !currentState?.is_muted) {
@@ -106,8 +109,8 @@ export function useInstitutionSubscription() {
 
     const isCurrentlyMuted = currentState?.is_muted ?? false;
     const method = isCurrentlyMuted ? 'DELETE' : 'POST';
-    const routeName = isCurrentlyMuted 
-      ? 'api.v1.admin.institutions.unmute' 
+    const routeName = isCurrentlyMuted
+      ? 'api.v1.admin.institutions.unmute'
       : 'api.v1.admin.institutions.mute';
 
     const { execute, isSuccess } = useApiMutation<ToggleResponseData>(
@@ -116,10 +119,10 @@ export function useInstitutionSubscription() {
       undefined,
       {
         showSuccessToast: true,
-        successMessage: isCurrentlyMuted 
-          ? $t('visak.notifications_unmuted') 
+        successMessage: isCurrentlyMuted
+          ? $t('visak.notifications_unmuted')
           : $t('visak.notifications_muted'),
-      }
+      },
     );
 
     try {
@@ -132,10 +135,12 @@ export function useInstitutionSubscription() {
       }
 
       return isCurrentlyMuted;
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Failed to toggle mute:', error);
       return isCurrentlyMuted;
-    } finally {
+    }
+    finally {
       muteLoading.value[institutionId] = false;
     }
   }

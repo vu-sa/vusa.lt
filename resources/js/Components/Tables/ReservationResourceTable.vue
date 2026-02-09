@@ -9,8 +9,8 @@
       leave-from-class="opacity-100 translate-y-0 scale-100"
       leave-to-class="opacity-0 -translate-y-2 scale-95"
     >
-      <div 
-        v-if="!isMobile && selectedRowIds.length > 0 && hasApprovableSelected" 
+      <div
+        v-if="!isMobile && selectedRowIds.length > 0 && hasApprovableSelected"
         class="absolute -top-12 left-0 z-20 inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-2 shadow-lg dark:border-zinc-700 dark:bg-zinc-800"
       >
         <div class="flex size-6 items-center justify-center rounded-full bg-zinc-900 text-xs font-bold text-white dark:bg-zinc-100 dark:text-zinc-900">
@@ -37,7 +37,7 @@
       v-if="isMobile"
       :resources="reservationResources"
       :selected-ids="selectedRowIds"
-      :has-approvable-selected="hasApprovableSelected"
+      :has-approvable-selected
       @update:selected-ids="handleCardSelectionChange"
       @approve="handleApprovalAction"
       @comment="handleCommentAction"
@@ -51,11 +51,11 @@
     />
 
     <!-- Desktop Table View -->
-    <DataTable 
+    <DataTable
       v-else
-      :columns 
-      :data="reservationResources" 
-      :pagination="false" 
+      :columns
+      :data="reservationResources"
+      :pagination="false"
       :get-row-id="(row) => String(row.pivot?.id ?? row.id)"
       :enable-row-selection="canSelectRow"
       :enable-multi-row-selection="true"
@@ -63,18 +63,20 @@
       :row-selection-state="rowSelection"
       :row-class-name="getRowClassName"
       :show-selection-count="false"
-      @update:rowSelection="handleRowSelectionChange"
+      @update:row-selection="handleRowSelectionChange"
     />
 
     <!-- Empty state for desktop -->
-    <div 
-      v-if="!isMobile && (reservation?.resources?.length ?? 0) === 0" 
+    <div
+      v-if="!isMobile && (reservation?.resources?.length ?? 0) === 0"
       class="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-zinc-200 py-16 dark:border-zinc-700"
     >
       <div class="flex size-20 items-center justify-center rounded-full bg-gradient-to-br from-zinc-100 to-zinc-50 dark:from-zinc-800 dark:to-zinc-900">
         <Box24Regular class="size-10 text-muted-foreground" />
       </div>
-      <h3 class="mt-5 text-lg font-semibold">{{ $t('Nėra rezervuotų išteklių') }}</h3>
+      <h3 class="mt-5 text-lg font-semibold">
+        {{ $t('Nėra rezervuotų išteklių') }}
+      </h3>
       <p class="mt-1.5 max-w-sm text-center text-sm text-muted-foreground">
         {{ $t('Pridėkite išteklius prie šios rezervacijos, kad galėtumėte juos valdyti.') }}
       </p>
@@ -101,14 +103,14 @@
           </template>
         </InfoText>
 
-        <CommentTipTap 
-          v-model:text="commentText" 
-          class="mt-4" 
-          rounded-top 
+        <CommentTipTap
+          v-model:text="commentText"
+          class="mt-4"
+          rounded-top
           :loading="commentLoading"
           :submit-text="$t('Komentuoti')"
           :disabled="false"
-          @submit:comment="submitComment" 
+          @submit:comment="submitComment"
         />
       </div>
     </DialogContent>
@@ -159,7 +161,9 @@
         <div class="space-y-3 rounded-md border bg-muted/30 p-3 text-sm">
           <template v-for="(resources, state) in selectedResourcesByState" :key="state">
             <div v-if="resources.length > 0" class="space-y-1">
-              <div class="font-medium text-muted-foreground">{{ getApproveActionLabel(state) }}</div>
+              <div class="font-medium text-muted-foreground">
+                {{ getApproveActionLabel(state) }}
+              </div>
               <ul class="ml-4 space-y-0.5">
                 <li v-for="(resource, idx) in resources" :key="idx" class="flex items-center gap-2">
                   <span class="size-1.5 rounded-full bg-primary" />
@@ -176,7 +180,9 @@
           <Textarea v-model="bulkNotes" :placeholder="$t('Įveskite pastabas...')" rows="2" />
         </div>
         <div class="flex justify-end gap-2">
-          <Button variant="ghost" @click="showBulkApproveDialog = false">{{ $t('Atšaukti') }}</Button>
+          <Button variant="ghost" @click="showBulkApproveDialog = false">
+            {{ $t('Atšaukti') }}
+          </Button>
           <Button :disabled="bulkLoading" @click="handleBulkApprove">
             <span v-if="bulkLoading" class="i-svg-spinners-90-ring-with-bg mr-2 size-4" />
             {{ $t('Patvirtinti') }}
@@ -195,7 +201,9 @@
       <div class="space-y-4">
         <!-- Resources that will be rejected -->
         <div class="space-y-3 rounded-md border bg-destructive/5 p-3 text-sm">
-          <div class="font-medium text-destructive">{{ getRejectActionLabel() }}</div>
+          <div class="font-medium text-destructive">
+            {{ getRejectActionLabel() }}
+          </div>
           <ul class="ml-4 space-y-0.5">
             <template v-for="(resources, state) in selectedResourcesByState" :key="state">
               <li v-for="(resource, idx) in resources" :key="`${state}-${idx}`" class="flex items-center gap-2">
@@ -212,7 +220,9 @@
           <Textarea v-model="bulkNotes" :placeholder="$t('Įveskite atmetimo priežastį...')" rows="2" />
         </div>
         <div class="flex justify-end gap-2">
-          <Button variant="ghost" @click="showBulkRejectDialog = false">{{ $t('Atšaukti') }}</Button>
+          <Button variant="ghost" @click="showBulkRejectDialog = false">
+            {{ $t('Atšaukti') }}
+          </Button>
           <Button variant="destructive" :disabled="bulkLoading" @click="handleBulkReject">
             <span v-if="bulkLoading" class="i-svg-spinners-90-ring-with-bg mr-2 size-4" />
             {{ $t('Atmesti') }}
@@ -224,38 +234,39 @@
 </template>
 
 <script setup lang="tsx">
-import type { ColumnDef, RowSelectionState } from "@tanstack/vue-table";
-import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
-import { Link, router, usePage } from "@inertiajs/vue3";
-import { computed, ref } from "vue";
-import { useBreakpoints, breakpointsTailwind } from "@vueuse/core";
+import type { ColumnDef, RowSelectionState } from '@tanstack/vue-table';
+import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
+import { Link, router, usePage } from '@inertiajs/vue3';
+import { computed, ref } from 'vue';
+import { useBreakpoints, breakpointsTailwind } from '@vueuse/core';
 
-import InfoText from "../SmallElements/InfoText.vue";
-import ReservationResourceCard from "./ReservationResourceCard.vue";
-import ReservationResourceStateTag from "../Tag/ReservationResourceStateTag.vue";
-import StateProgressIndicator from "../SmallElements/StateProgressIndicator.vue";
-import UsersAvatarGroup from "../Avatars/UsersAvatarGroup.vue";
+import InfoText from '../SmallElements/InfoText.vue';
+import ReservationResourceStateTag from '../Tag/ReservationResourceStateTag.vue';
+import StateProgressIndicator from '../SmallElements/StateProgressIndicator.vue';
+import UsersAvatarGroup from '../Avatars/UsersAvatarGroup.vue';
 
-import Add24Filled from "~icons/fluent/add-24-filled";
-import Box24Regular from "~icons/fluent/box-24-regular";
-import Checkmark24Regular from "~icons/fluent/checkmark-24-regular";
-import Delete16Regular from "~icons/fluent/delete16-regular";
-import Dismiss24Regular from "~icons/fluent/dismiss-24-regular";
-import DismissCircle24Regular from "~icons/fluent/dismiss-circle24-regular";
-import InfoIcon from "~icons/fluent/info-24-regular";
-import Warning24Filled from "~icons/fluent/warning-24-filled";
-import { ApprovalActions } from "@/Features/Admin/Approvals";
-import { Badge } from "@/Components/ui/badge";
-import { Button } from "@/Components/ui/button";
-import { DataTable } from "@/Components/ui/data-table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu";
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/Components/ui/hover-card";
-import { Textarea } from "@/Components/ui/textarea";
-import { RESERVATION_DATE_TIME_FORMAT } from "@/Constants/DateTimeFormats";
-import { capitalize } from "@/Utils/String";
-import { formatStaticTime } from "@/Utils/IntlTime";
-import CommentTipTap from "@/Features/Admin/CommentViewer/CommentTipTap.vue";
+import ReservationResourceCard from './ReservationResourceCard.vue';
+
+import Add24Filled from '~icons/fluent/add-24-filled';
+import Box24Regular from '~icons/fluent/box-24-regular';
+import Checkmark24Regular from '~icons/fluent/checkmark-24-regular';
+import Delete16Regular from '~icons/fluent/delete16-regular';
+import Dismiss24Regular from '~icons/fluent/dismiss-24-regular';
+import DismissCircle24Regular from '~icons/fluent/dismiss-circle24-regular';
+import InfoIcon from '~icons/fluent/info-24-regular';
+import Warning24Filled from '~icons/fluent/warning-24-filled';
+import { ApprovalActions } from '@/Features/Admin/Approvals';
+import { Badge } from '@/Components/ui/badge';
+import { Button } from '@/Components/ui/button';
+import { DataTable } from '@/Components/ui/data-table';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/Components/ui/dropdown-menu';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/Components/ui/hover-card';
+import { Textarea } from '@/Components/ui/textarea';
+import { RESERVATION_DATE_TIME_FORMAT } from '@/Constants/DateTimeFormats';
+import { capitalize } from '@/Utils/String';
+import { formatStaticTime } from '@/Utils/IntlTime';
+import CommentTipTap from '@/Features/Admin/CommentViewer/CommentTipTap.vue';
 
 const props = defineProps<{
   reservation: App.Entities.Reservation & { approvable: boolean };
@@ -264,11 +275,11 @@ const props = defineProps<{
 const emit = defineEmits<{
   'edit:reservationResource': [reservationResource: App.Entities.ReservationResource];
   'add-resource': [];
-}>()
+}>();
 
-const selectedReservationResource =
-  defineModel<App.Entities.ReservationResource | null>(
-    "selectedReservationResource"
+const selectedReservationResource
+  = defineModel<App.Entities.ReservationResource | null>(
+    'selectedReservationResource',
   );
 
 // Mobile detection
@@ -280,7 +291,7 @@ const showCommentModal = ref(false);
 const showApprovalModal = ref(false);
 const showBulkApproveDialog = ref(false);
 const showBulkRejectDialog = ref(false);
-const bulkNotes = ref("");
+const bulkNotes = ref('');
 
 // Resources - use directly from props (DataTable handles sorting)
 const reservationResources = computed(() => props.reservation?.resources ?? []);
@@ -290,8 +301,8 @@ const rowSelection = ref<RowSelectionState>({});
 
 const selectedRowIds = computed(() => Object.keys(rowSelection.value).filter(key => rowSelection.value[key]));
 
-const hasAnyApprovable = computed(() => 
-  props.reservation?.resources?.some(r => r.pivot?.approvable) ?? false
+const hasAnyApprovable = computed(() =>
+  props.reservation?.resources?.some(r => r.pivot?.approvable) ?? false,
 );
 
 // Function-based row selection - disable for rejected/returned/cancelled rows
@@ -303,7 +314,7 @@ const canSelectRow = (row: any) => {
 
 const hasApprovableSelected = computed(() => {
   const resources = props.reservation?.resources ?? [];
-  return selectedRowIds.value.some(id => {
+  return selectedRowIds.value.some((id) => {
     const resource = resources.find(r => String(r.pivot?.id ?? r.id) === String(id));
     return resource?.pivot?.approvable && ['created', 'reserved', 'lent'].includes(resource.pivot?.state ?? '');
   });
@@ -315,7 +326,7 @@ const handleRowSelectionChange = (newSelection: RowSelectionState) => {
 
 const handleCardSelectionChange = (newIds: string[]) => {
   const newSelection: RowSelectionState = {};
-  newIds.forEach(id => { newSelection[id] = true; });
+  newIds.forEach((id) => { newSelection[id] = true; });
   rowSelection.value = newSelection;
 };
 
@@ -323,7 +334,7 @@ const handleCardSelectionChange = (newIds: string[]) => {
 const getRowClassName = (row: App.Entities.Resource) => {
   const state = row.pivot?.state;
   const isOverdue = state === 'lent' && new Date(row.pivot?.end_time ?? '') < new Date();
-  
+
   // Using subtle left border instead of full background color
   switch (state) {
     case 'created':
@@ -331,7 +342,7 @@ const getRowClassName = (row: App.Entities.Resource) => {
     case 'reserved':
       return 'border-l-2 border-l-blue-400 dark:border-l-blue-500';
     case 'lent':
-      return isOverdue 
+      return isOverdue
         ? 'border-l-2 border-l-red-500 bg-red-50/20 dark:border-l-red-400 dark:bg-red-950/10'
         : 'border-l-2 border-l-emerald-400 dark:border-l-emerald-500';
     case 'returned':
@@ -357,9 +368,9 @@ const getResourceName = (pivot: App.Entities.ReservationResource) => {
 
 // Approval modal title based on state
 const approvalModalTitle = computed(() => {
-  const locale = usePage().props.app.locale;
+  const { locale } = usePage().props.app;
   const state = selectedReservationResource.value?.state;
-  
+
   if (state === 'reserved') {
     return locale === 'lt' ? 'Patvirtinti išdavimą' : 'Confirm handover';
   }
@@ -373,14 +384,14 @@ const approvalModalTitle = computed(() => {
 const selectedResourcesByState = computed(() => {
   const resources = props.reservation?.resources ?? [];
   const approvableIds = getApprovableSelectedIds();
-  
+
   const grouped: Record<string, Array<{ name: string; quantity: number }>> = {
     created: [],
     reserved: [],
     lent: [],
   };
-  
-  approvableIds.forEach(id => {
+
+  approvableIds.forEach((id) => {
     const resource = resources.find(r => String(r.pivot?.id ?? r.id) === String(id));
     if (resource?.pivot) {
       const state = resource.pivot.state ?? '';
@@ -392,13 +403,13 @@ const selectedResourcesByState = computed(() => {
       }
     }
   });
-  
+
   return grouped;
 });
 
 // Get action label for each state transition
 const getApproveActionLabel = (state: string) => {
-  const locale = usePage().props.app.locale;
+  const { locale } = usePage().props.app;
   if (state === 'created') {
     return locale === 'lt' ? 'Bus patvirtinta rezervacija →' : 'Reservation will be approved →';
   }
@@ -412,34 +423,34 @@ const getApproveActionLabel = (state: string) => {
 };
 
 const getRejectActionLabel = () => {
-  const locale = usePage().props.app.locale;
+  const { locale } = usePage().props.app;
   return locale === 'lt' ? 'Bus atmesta' : 'Will be rejected';
 };
 
 const columns = computed<ColumnDef<App.Entities.Resource>[]>(() => [
   {
     accessorKey: 'name',
-    header: () => $t("forms.fields.title"),
+    header: () => $t('forms.fields.title'),
     size: 200,
     minSize: 120,
     maxSize: 250,
     cell: ({ row }) => {
       const resource = row.original;
       const hasDetails = resource.media?.length || resource.description;
-      
+
       if (!hasDetails) {
         return (
-          <Link href={route("resources.edit", resource.id)} class="block max-w-[200px] truncate text-primary hover:underline" title={resource.name}>
+          <Link href={route('resources.edit', resource.id)} class="block max-w-[200px] truncate text-primary hover:underline" title={resource.name}>
             {resource.name}
           </Link>
         );
       }
-      
+
       return (
         <HoverCard>
           <HoverCardTrigger asChild>
             <div class="inline-flex max-w-[200px] items-center gap-1">
-              <Link href={route("resources.edit", resource.id)} class="truncate text-primary hover:underline" title={resource.name}>
+              <Link href={route('resources.edit', resource.id)} class="truncate text-primary hover:underline" title={resource.name}>
                 {resource.name}
               </Link>
               <InfoIcon class="size-4 shrink-0 text-muted-foreground" />
@@ -449,7 +460,7 @@ const columns = computed<ColumnDef<App.Entities.Resource>[]>(() => [
             <div class="flex flex-col gap-3">
               {resource.media?.length > 0 && (
                 <div class="flex flex-wrap gap-2">
-                  {resource.media.slice(0, 3).map((image) => (
+                  {resource.media.slice(0, 3).map(image => (
                     <img
                       key={image.id}
                       src={image.original_url}
@@ -459,7 +470,8 @@ const columns = computed<ColumnDef<App.Entities.Resource>[]>(() => [
                   ))}
                   {resource.media.length > 3 && (
                     <span class="text-sm text-muted-foreground self-center">
-                      +{resource.media.length - 3}
+                      +
+                      {resource.media.length - 3}
                     </span>
                   )}
                 </div>
@@ -475,17 +487,17 @@ const columns = computed<ColumnDef<App.Entities.Resource>[]>(() => [
   },
   {
     accessorKey: 'pivot.quantity',
-    header: () => $t("forms.fields.quantity"),
+    header: () => $t('forms.fields.quantity'),
     cell: ({ row }) => row.original.pivot?.quantity,
     size: 80,
   },
   {
     accessorKey: 'tenant.shortname',
-    header: () => capitalize($tChoice("entities.tenant.model", 1)),
+    header: () => capitalize($tChoice('entities.tenant.model', 1)),
     size: 180,
     cell: ({ row }) => (
       <div class="flex min-w-0 items-center gap-1.5">
-        <span class={["shrink-0", row.original.pivot?.state === "created" ? "font-semibold text-vusa-red" : ""].filter(Boolean).join(' ')}>
+        <span class={['shrink-0', row.original.pivot?.state === 'created' ? 'font-semibold text-vusa-red' : ''].filter(Boolean).join(' ')}>
           {$t(row.original.tenant?.shortname ?? '')}
         </span>
         <div class="shrink-0">
@@ -496,16 +508,16 @@ const columns = computed<ColumnDef<App.Entities.Resource>[]>(() => [
   },
   {
     accessorKey: 'pivot.start_time',
-    header: () => capitalize($t("entities.reservation.start_time")),
+    header: () => capitalize($t('entities.reservation.start_time')),
     size: 150,
     cell: ({ row }) => {
       const resource = row.original;
       const startDate = new Date(resource.pivot?.start_time ?? '');
-      const isPickupOverdue = resource.pivot?.state === "reserved" && startDate < new Date();
-      
+      const isPickupOverdue = resource.pivot?.state === 'reserved' && startDate < new Date();
+
       return (
         <div class="flex items-center gap-1.5">
-          <span class={isPickupOverdue ? "font-semibold text-amber-600 dark:text-amber-400" : ""}>
+          <span class={isPickupOverdue ? 'font-semibold text-amber-600 dark:text-amber-400' : ''}>
             {formatStaticTime(startDate, RESERVATION_DATE_TIME_FORMAT, usePage().props.app.locale)}
           </span>
           {isPickupOverdue && (
@@ -519,16 +531,16 @@ const columns = computed<ColumnDef<App.Entities.Resource>[]>(() => [
   },
   {
     accessorKey: 'pivot.end_time',
-    header: () => capitalize($t("entities.reservation.end_time")),
+    header: () => capitalize($t('entities.reservation.end_time')),
     size: 170,
     cell: ({ row }) => {
       const resource = row.original;
       const endDate = new Date(resource.pivot?.end_time ?? '');
-      const isOverdue = resource.pivot?.state === "lent" && endDate < new Date();
-      
+      const isOverdue = resource.pivot?.state === 'lent' && endDate < new Date();
+
       return (
         <div class="flex items-center gap-1.5">
-          <span class={isOverdue ? "font-semibold text-red-600 dark:text-red-400" : ""}>
+          <span class={isOverdue ? 'font-semibold text-red-600 dark:text-red-400' : ''}>
             {formatStaticTime(endDate, RESERVATION_DATE_TIME_FORMAT, usePage().props.app.locale)}
           </span>
           {isOverdue && (
@@ -543,14 +555,14 @@ const columns = computed<ColumnDef<App.Entities.Resource>[]>(() => [
   },
   {
     accessorKey: 'pivot.state',
-    header: () => $t("forms.fields.state"),
+    header: () => $t('forms.fields.state'),
     size: 140,
     cell: ({ row }) => {
       const resource = row.original;
       const stateDescription = resource.pivot?.state_properties?.description;
       const approvals = (resource.pivot as any)?.approvals ?? [];
       const hasApprovals = approvals.length > 0;
-      
+
       return (
         <HoverCard openDelay={200}>
           <HoverCardTrigger asChild>
@@ -568,7 +580,7 @@ const columns = computed<ColumnDef<App.Entities.Resource>[]>(() => [
                 <p class="text-xs font-medium text-muted-foreground">{$t('Eiga')}</p>
                 <StateProgressIndicator currentState={resource.pivot?.state} />
               </div>
-              
+
               {/* Approval history */}
               {hasApprovals && (
                 <div class="border-t pt-3 space-y-2">
@@ -577,10 +589,12 @@ const columns = computed<ColumnDef<App.Entities.Resource>[]>(() => [
                     {approvals.map((approval: any) => (
                       <div key={approval.id} class="flex items-start gap-2 text-xs">
                         <div class={[
-                          "mt-0.5 size-1.5 shrink-0 rounded-full",
-                          approval.decision === 'approved' ? 'bg-green-500' : 
-                          approval.decision === 'rejected' ? 'bg-red-500' : 'bg-amber-500'
-                        ].join(' ')} />
+                          'mt-0.5 size-1.5 shrink-0 rounded-full',
+                          approval.decision === 'approved'
+                            ? 'bg-green-500'
+                            : approval.decision === 'rejected' ? 'bg-red-500' : 'bg-amber-500',
+                        ].join(' ')}
+                        />
                         <div class="min-w-0 flex-1">
                           <div class="flex items-baseline justify-between gap-1">
                             <span class="font-medium truncate">{approval.user?.name ?? $t('Nežinomas')}</span>
@@ -597,7 +611,7 @@ const columns = computed<ColumnDef<App.Entities.Resource>[]>(() => [
                   </div>
                 </div>
               )}
-              
+
               {/* State description */}
               {stateDescription && (
                 <div class="border-t pt-3">
@@ -612,41 +626,41 @@ const columns = computed<ColumnDef<App.Entities.Resource>[]>(() => [
   },
   {
     id: 'actions',
-    header: () => $t("Veiksmai"),
+    header: () => $t('Veiksmai'),
     size: 200,
     cell: ({ row }) => {
       const resource = row.original;
       const pivotState = resource.pivot?.state;
       const isApprovable = resource.pivot?.approvable;
-      
+
       return (
         <div class="flex items-center gap-2">
           {/* Approval button for approvable resources */}
-          {["created", "reserved", "lent"].includes(pivotState ?? '') && isApprovable && (
+          {['created', 'reserved', 'lent'].includes(pivotState ?? '') && isApprovable && (
             <Button
               size="sm"
               variant="default"
               onClick={() => handleApprovalAction(resource)}
             >
-              {pivotState === 'reserved' && $t("Išduoti")}
-              {pivotState === 'lent' && $t("Grąžinti")}
-              {pivotState === 'created' && $t("Tvirtinti")}
+              {pivotState === 'reserved' && $t('Išduoti')}
+              {pivotState === 'lent' && $t('Grąžinti')}
+              {pivotState === 'created' && $t('Tvirtinti')}
             </Button>
           )}
-          
+
           {/* Comment button for non-approvable resources */}
-          {["created", "reserved", "lent"].includes(pivotState ?? '') && !isApprovable && (
+          {['created', 'reserved', 'lent'].includes(pivotState ?? '') && !isApprovable && (
             <Button
               size="sm"
               variant="secondary"
               onClick={() => handleCommentAction(resource)}
             >
-              {$t("Komentuoti")}
+              {$t('Komentuoti')}
             </Button>
           )}
-          
+
           {/* Delete button for cancelled/rejected */}
-          {["cancelled", "rejected"].includes(pivotState ?? '') && (
+          {['cancelled', 'rejected'].includes(pivotState ?? '') && (
             <Button
               size="sm"
               variant="destructive"
@@ -655,9 +669,9 @@ const columns = computed<ColumnDef<App.Entities.Resource>[]>(() => [
               <Delete16Regular />
             </Button>
           )}
-          
+
           {/* More options dropdown */}
-          {["created", "reserved"].includes(pivotState ?? '') && (
+          {['created', 'reserved'].includes(pivotState ?? '') && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon-sm">
@@ -667,12 +681,12 @@ const columns = computed<ColumnDef<App.Entities.Resource>[]>(() => [
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={() => handleEditClick(resource)}>
-                  {$t("Redaguoti")}
+                  {$t('Redaguoti')}
                 </DropdownMenuItem>
                 {!isApprovable && (
                   <DropdownMenuItem onClick={() => handleReservationResourceCancel(resource)}>
                     <DismissCircle24Regular class="mr-2 size-4" />
-                    {$t("Atšaukti rezervaciją")}
+                    {$t('Atšaukti rezervaciją')}
                   </DropdownMenuItem>
                 )}
               </DropdownMenuContent>
@@ -685,10 +699,10 @@ const columns = computed<ColumnDef<App.Entities.Resource>[]>(() => [
 ]);
 
 const handleEditClick = (row: App.Entities.Resource) => {
-  emit('edit:reservationResource', row.pivot)
+  emit('edit:reservationResource', row.pivot);
 };
 
-const commentText = ref("");
+const commentText = ref('');
 const commentLoading = ref(false);
 const bulkLoading = ref(false);
 
@@ -715,14 +729,14 @@ const handleApprovalSuccess = () => {
 const handleBulkApprove = () => {
   const approvableIds = getApprovableSelectedIds().map(id => String(id));
   if (approvableIds.length === 0) return;
-  
+
   bulkLoading.value = true;
   router.post(
-    route("approvals.bulkStore"),
+    route('approvals.bulkStore'),
     {
-      approvable_type: "reservation_resource",
+      approvable_type: 'reservation_resource',
       approvable_ids: approvableIds,
-      decision: "approved",
+      decision: 'approved',
       notes: bulkNotes.value || null,
       step: 1,
     },
@@ -731,13 +745,13 @@ const handleBulkApprove = () => {
       onSuccess: () => {
         bulkLoading.value = false;
         showBulkApproveDialog.value = false;
-        bulkNotes.value = "";
+        bulkNotes.value = '';
         clearSelection();
       },
       onError: () => {
         bulkLoading.value = false;
       },
-    }
+    },
   );
 };
 
@@ -745,14 +759,14 @@ const handleBulkApprove = () => {
 const handleBulkReject = () => {
   const approvableIds = getApprovableSelectedIds().map(id => String(id));
   if (approvableIds.length === 0) return;
-  
+
   bulkLoading.value = true;
   router.post(
-    route("approvals.bulkStore"),
+    route('approvals.bulkStore'),
     {
-      approvable_type: "reservation_resource",
+      approvable_type: 'reservation_resource',
       approvable_ids: approvableIds,
-      decision: "rejected",
+      decision: 'rejected',
       notes: bulkNotes.value || null,
       step: 1,
     },
@@ -761,20 +775,20 @@ const handleBulkReject = () => {
       onSuccess: () => {
         bulkLoading.value = false;
         showBulkRejectDialog.value = false;
-        bulkNotes.value = "";
+        bulkNotes.value = '';
         clearSelection();
       },
       onError: () => {
         bulkLoading.value = false;
       },
-    }
+    },
   );
 };
 
 // Get approvable selected IDs (only those that can be approved)
 const getApprovableSelectedIds = () => {
   const resources = props.reservation?.resources ?? [];
-  return selectedRowIds.value.filter(id => {
+  return selectedRowIds.value.filter((id) => {
     const resource = resources.find(r => String(r.pivot?.id ?? r.id) === String(id));
     return resource?.pivot?.approvable && ['created', 'reserved', 'lent'].includes(resource.pivot?.state ?? '');
   });
@@ -783,13 +797,13 @@ const getApprovableSelectedIds = () => {
 // Cancel reservation via approval system
 const handleReservationResourceCancel = (row: App.Entities.Resource) => {
   selectedReservationResource.value = row.pivot ?? null;
-  
+
   router.post(
-    route("approvals.store"),
+    route('approvals.store'),
     {
-      approvable_type: "reservation_resource",
+      approvable_type: 'reservation_resource',
       approvable_id: String(row.pivot?.id ?? ''),
-      decision: "cancelled",
+      decision: 'cancelled',
       step: 1,
     },
     {
@@ -797,7 +811,7 @@ const handleReservationResourceCancel = (row: App.Entities.Resource) => {
       onSuccess: () => {
         selectedReservationResource.value = null;
       },
-    }
+    },
   );
 };
 
@@ -805,9 +819,9 @@ const handleReservationResourceCancel = (row: App.Entities.Resource) => {
 const submitComment = (comment = commentText.value) => {
   commentLoading.value = true;
   router.post(
-    route("users.comments.store", usePage().props.auth?.user.id as number),
+    route('users.comments.store', usePage().props.auth?.user.id as number),
     {
-      commentable_type: "reservation_resource",
+      commentable_type: 'reservation_resource',
       commentable_id: selectedReservationResource.value?.id,
       comment,
     },
@@ -819,19 +833,19 @@ const submitComment = (comment = commentText.value) => {
         if (!usePage().props.flash.error) {
           showCommentModal.value = false;
           selectedReservationResource.value = null;
-          commentText.value = "";
+          commentText.value = '';
         }
       },
       onError: () => {
         commentLoading.value = false;
       },
-    }
+    },
   );
 };
 
 const handlePivotDelete = (row: App.Entities.Resource) => {
   router.delete(
-    route("reservationResources.destroy", {
+    route('reservationResources.destroy', {
       reservationResource: row.pivot.id,
     }),
     {
@@ -839,7 +853,7 @@ const handlePivotDelete = (row: App.Entities.Resource) => {
       onSuccess: () => {
         selectedReservationResource.value = null;
       },
-    }
+    },
   );
 };
 </script>

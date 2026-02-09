@@ -3,13 +3,13 @@ import { router, usePage } from '@inertiajs/vue3';
 
 /**
  * PWA Composable
- * 
+ *
  * NOTE: PWA features (service worker, install prompt, push notifications) only work
  * in PRODUCTION BUILD mode, not in dev mode. This is because:
  * - Laravel Sail serves the app at https://www.vusa.test
  * - Vite serves assets at http://localhost:5173
  * - Service workers require same-origin, causing redirect errors in dev
- * 
+ *
  * To test PWA features:
  * 1. Run `npm run build`
  * 2. Access the site normally (Laravel will serve built assets)
@@ -80,11 +80,11 @@ let swRegistration: ServiceWorkerRegistration | undefined;
  */
 function checkPWAMode(): boolean {
   if (typeof window === 'undefined') return false;
-  
+
   return (
-    window.matchMedia('(display-mode: standalone)').matches ||
-    window.matchMedia('(display-mode: minimal-ui)').matches ||
-    (window.navigator as any).standalone === true // iOS Safari
+    window.matchMedia('(display-mode: standalone)').matches
+    || window.matchMedia('(display-mode: minimal-ui)').matches
+    || (window.navigator as any).standalone === true // iOS Safari
   );
 }
 
@@ -94,13 +94,13 @@ function checkPWAMode(): boolean {
  */
 function updatePWACookie(): void {
   if (typeof document === 'undefined') return;
-  
+
   const mode = checkPWAMode();
   isPWAMode.value = mode;
-  
+
   const cookieValue = mode ? '1' : '0';
   const maxAge = 60 * 60 * 24 * 365; // 1 year
-  
+
   // Only set if different from current value to avoid unnecessary cookie writes
   const currentValue = document.cookie.match(/(?:^|; )pwa_mode=([^;]*)/)?.[1];
   if (currentValue !== cookieValue) {
@@ -130,13 +130,13 @@ export function usePWA() {
 
     deferredPrompt.value.prompt();
     const { outcome } = await deferredPrompt.value.userChoice;
-    
+
     if (outcome === 'accepted') {
       isInstalled.value = true;
       deferredPrompt.value = null;
       return true;
     }
-    
+
     return false;
   };
 
@@ -197,7 +197,8 @@ export function usePWA() {
           currentBrowserEndpoint.value = subscription?.endpoint ?? null;
           return;
         }
-      } catch (error) {
+      }
+      catch (error) {
         console.warn('[PWA] Error checking subscription via SW:', error);
       }
     }
@@ -207,7 +208,8 @@ export function usePWA() {
     const endpoints = (page.props.pwa as any)?.subscriptionEndpoints ?? [];
     if (currentBrowserEndpoint.value) {
       currentBrowserSubscribed.value = endpoints.includes(currentBrowserEndpoint.value);
-    } else {
+    }
+    else {
       currentBrowserSubscribed.value = false;
     }
   };
@@ -220,7 +222,8 @@ export function usePWA() {
       await checkCurrentBrowserSubscription();
       // Reload page props to get latest server state
       router.reload({ only: ['pwa'] });
-    } finally {
+    }
+    finally {
       isRefreshingSubscriptionStatus.value = false;
     }
   };
@@ -228,7 +231,7 @@ export function usePWA() {
   // Get device name from user agent
   const getDeviceName = (): string => {
     const ua = navigator.userAgent;
-    
+
     // Try to extract meaningful device info
     if (/iPhone/.test(ua)) return 'iPhone';
     if (/iPad/.test(ua)) return 'iPad';
@@ -239,13 +242,13 @@ export function usePWA() {
     if (/Windows/.test(ua)) return 'Windows PC';
     if (/Macintosh/.test(ua)) return 'Mac';
     if (/Linux/.test(ua)) return 'Linux PC';
-    
+
     // Fallback to browser name
     if (/Edge/.test(ua)) return 'Edge Browser';
     if (/Chrome/.test(ua)) return 'Chrome Browser';
     if (/Firefox/.test(ua)) return 'Firefox Browser';
     if (/Safari/.test(ua)) return 'Safari Browser';
-    
+
     return 'Unknown Device';
   };
 
@@ -340,10 +343,12 @@ export function usePWA() {
 
       console.log('[PWA] Push subscription successful');
       return true;
-    } catch (error) {
+    }
+    catch (error) {
       console.error('[PWA] Push subscription failed:', error);
       return false;
-    } finally {
+    }
+    finally {
       isSubscribingToPush.value = false;
     }
   };
@@ -355,10 +360,10 @@ export function usePWA() {
     try {
       // Try to get subscription from service worker
       const registration = swRegistration || await navigator.serviceWorker.getRegistration();
-      
+
       if (registration) {
         const subscription = await registration.pushManager.getSubscription();
-        
+
         if (subscription) {
           // Unsubscribe locally first
           await subscription.unsubscribe();
@@ -414,10 +419,12 @@ export function usePWA() {
 
       console.warn('[PWA] No subscription found to unsubscribe');
       return false;
-    } catch (error) {
+    }
+    catch (error) {
       console.error('[PWA] Push unsubscription failed:', error);
       return false;
-    } finally {
+    }
+    finally {
       isUnsubscribingFromPush.value = false;
     }
   };
@@ -445,7 +452,8 @@ export function usePWA() {
       await checkCurrentBrowserSubscription();
 
       return true;
-    } catch (error) {
+    }
+    catch (error) {
       console.error('[PWA] Error removing subscription:', error);
       return false;
     }
@@ -478,7 +486,8 @@ export function usePWA() {
       }
 
       return subscriptions;
-    } catch (error) {
+    }
+    catch (error) {
       console.error('[PWA] Error fetching subscriptions:', error);
       return [];
     }
@@ -492,15 +501,17 @@ export function usePWA() {
     if (!('setAppBadge' in navigator)) {
       return false;
     }
-    
+
     try {
       if (count > 0) {
         await (navigator as any).setAppBadge(count);
-      } else {
+      }
+      else {
         await (navigator as any).clearAppBadge();
       }
       return true;
-    } catch (error) {
+    }
+    catch (error) {
       // Badging API may fail silently on some platforms
       console.warn('[PWA] Failed to set app badge:', error);
       return false;
@@ -514,11 +525,12 @@ export function usePWA() {
     if (!('clearAppBadge' in navigator)) {
       return false;
     }
-    
+
     try {
       await (navigator as any).clearAppBadge();
       return true;
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('[PWA] Failed to clear app badge:', error);
       return false;
     }
@@ -564,18 +576,18 @@ export async function initPWA() {
 
   // Initialize PWA mode and cookie (consolidated)
   updatePWACookie();
-  
+
   // Listen for display-mode changes (e.g., user installs PWA mid-session)
   const standaloneQuery = window.matchMedia('(display-mode: standalone)');
   const minimalUIQuery = window.matchMedia('(display-mode: minimal-ui)');
-  
+
   const handleDisplayModeChange = () => {
     updatePWACookie();
     if (isPWAMode.value) {
       isInstalled.value = true;
     }
   };
-  
+
   // Modern browsers support addEventListener on MediaQueryList
   standaloneQuery.addEventListener?.('change', handleDisplayModeChange);
   minimalUIQuery.addEventListener?.('change', handleDisplayModeChange);
@@ -600,12 +612,12 @@ export async function initPWA() {
   // Skip service worker registration if registerSW is not available
   if (!registerSW) {
     console.log('[PWA] Skipping VitePWA service worker registration (not available)');
-    
+
     // Still set up push permission state
     if ('Notification' in window) {
       pushPermission.value = Notification.permission;
     }
-    
+
     // Check if already installed via display-mode
     if (isPWAMode.value) {
       isInstalled.value = true;
@@ -623,11 +635,12 @@ export async function initPWA() {
           currentBrowserEndpoint.value = subscription?.endpoint ?? null;
           console.log('[PWA] Found existing SW with push subscription:', subscription !== null);
         }
-      } catch (error) {
+      }
+      catch (error) {
         console.warn('[PWA] Could not check existing service worker:', error);
       }
     }
-    
+
     return;
   }
 
@@ -643,12 +656,12 @@ export async function initPWA() {
     onRegisteredSW(swUrl: string, registration: ServiceWorkerRegistration | undefined) {
       console.log('[PWA] Service worker registered:', swUrl);
       swRegistration = registration;
-      
+
       // Update push permission state
       if ('Notification' in window) {
         pushPermission.value = Notification.permission;
       }
-      
+
       // Check if this browser has an active push subscription and store endpoint
       if (registration) {
         registration.pushManager.getSubscription().then((subscription: PushSubscription | null) => {
@@ -660,7 +673,7 @@ export async function initPWA() {
           currentBrowserEndpoint.value = null;
         });
       }
-      
+
       // Check for updates periodically (every hour)
       if (registration) {
         setInterval(() => {

@@ -36,7 +36,7 @@ const positionClasses = computed(() => {
     'top-right': 'top-4 right-4',
     'bottom-left': 'bottom-4 left-4',
     'bottom-right': 'bottom-4 right-4',
-    'center': 'top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2'
+    'center': 'top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2',
   };
   return positions[props.position];
 });
@@ -44,16 +44,17 @@ const positionClasses = computed(() => {
 const sizeClasses = computed(() => {
   if (props.type === 'line') {
     const sizes = {
-      'sm': 'w-1.5 h-6',
-      'md': 'w-2 h-8',
-      'lg': 'w-3 h-12'
+      sm: 'w-1.5 h-6',
+      md: 'w-2 h-8',
+      lg: 'w-3 h-12',
     };
     return sizes[props.size];
-  } else {
+  }
+  else {
     const sizes = {
-      'sm': 'w-2 h-2',
-      'md': 'w-3 h-3',
-      'lg': 'w-6 h-6'
+      sm: 'w-2 h-2',
+      md: 'w-3 h-3',
+      lg: 'w-6 h-6',
     };
     return sizes[props.size];
   }
@@ -61,7 +62,7 @@ const sizeClasses = computed(() => {
 
 const colorClasses = computed(() => {
   const colors = {
-    'vusa-red': props.type === 'square' 
+    'vusa-red': props.type === 'square'
       ? `border-2 border-vusa-red dark:border-vusa-red bg-white/80 dark:bg-zinc-900/80`
       : 'bg-vusa-red dark:bg-vusa-red',
     'vusa-yellow': props.type === 'square'
@@ -69,16 +70,16 @@ const colorClasses = computed(() => {
       : 'bg-vusa-yellow dark:bg-vusa-yellow',
     'zinc': props.type === 'square'
       ? `border-2 border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800`
-      : 'bg-zinc-400 dark:bg-zinc-500'
+      : 'bg-zinc-400 dark:bg-zinc-500',
   };
   return colors[props.color];
 });
 
 const shapeClasses = computed(() => {
   const shapes = {
-    'circle': 'rounded-full',
-    'line': 'rounded-full',
-    'square': 'rounded-lg'
+    circle: 'rounded-full',
+    line: 'rounded-full',
+    square: 'rounded-lg',
   };
   return shapes[props.type];
 });

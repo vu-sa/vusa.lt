@@ -59,8 +59,8 @@
           <template #heading>
             <div class="flex items-center justify-between w-full">
               <span>{{ $t('Institucijos') }}</span>
-              <button 
-                type="button" 
+              <button
+                type="button"
                 class="flex items-center gap-1 text-[10px] font-medium text-primary hover:text-primary/80 transition-colors"
                 @click.stop="navigateToSearch('institutions')"
               >
@@ -77,8 +77,8 @@
           <template #heading>
             <div class="flex items-center justify-between w-full">
               <span>{{ $t('Posėdžiai') }}</span>
-              <button 
-                type="button" 
+              <button
+                type="button"
                 class="flex items-center gap-1 text-[10px] font-medium text-primary hover:text-primary/80 transition-colors"
                 @click.stop="navigateToSearch('meetings')"
               >
@@ -87,10 +87,10 @@
               </button>
             </div>
           </template>
-          <MeetingResult 
-            v-for="meeting in searchResults.meetings" 
-            :key="`meeting-${meeting.id}`" 
-            :meeting 
+          <MeetingResult
+            v-for="meeting in searchResults.meetings"
+            :key="`meeting-${meeting.id}`"
+            :meeting
             :is-related="isFromRelatedInstitution('meetings', meeting.institution_ids)"
           />
         </CommandGroup>
@@ -100,8 +100,8 @@
           <template #heading>
             <div class="flex items-center justify-between w-full">
               <span>{{ $t('Darbotvarkės punktai') }}</span>
-              <button 
-                type="button" 
+              <button
+                type="button"
                 class="flex items-center gap-1 text-[10px] font-medium text-primary hover:text-primary/80 transition-colors"
                 @click.stop="navigateToSearch('agendaItems')"
               >
@@ -110,10 +110,10 @@
               </button>
             </div>
           </template>
-          <AgendaItemResult 
-            v-for="item in searchResults.agendaItems" 
-            :key="`agenda-${item.id}`" 
-            :item 
+          <AgendaItemResult
+            v-for="item in searchResults.agendaItems"
+            :key="`agenda-${item.id}`"
+            :item
             :is-related="isFromRelatedInstitution('agenda_items', item.institution_ids)"
           />
         </CommandGroup>
@@ -216,10 +216,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, nextTick } from 'vue'
-import { router } from '@inertiajs/vue3'
-import { trans as $t } from 'laravel-vue-i18n'
-import { useDebounceFn } from '@vueuse/core'
+import { ref, computed, watch, nextTick } from 'vue';
+import { router } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
+import { useDebounceFn } from '@vueuse/core';
 import {
   Search,
   Clock,
@@ -228,41 +228,40 @@ import {
   ChevronRight,
   SearchX,
   Sparkles,
-  ArrowRight
-} from 'lucide-vue-next'
+  ArrowRight,
+} from 'lucide-vue-next';
 
+import { useCommandActions } from './useCommandActions';
+import MeetingResult from './results/MeetingResult.vue';
+import AgendaItemResult from './results/AgendaItemResult.vue';
+import ActionResult from './results/ActionResult.vue';
+import NewsResult from './results/NewsResult.vue';
+import PageResult from './results/PageResult.vue';
+import CalendarResult from './results/CalendarResult.vue';
+import InstitutionResult from './results/InstitutionResult.vue';
+import DocumentResult from './results/DocumentResult.vue';
 
-import { useCommandActions } from './useCommandActions'
-import MeetingResult from './results/MeetingResult.vue'
-import AgendaItemResult from './results/AgendaItemResult.vue'
-import ActionResult from './results/ActionResult.vue'
-import NewsResult from './results/NewsResult.vue'
-import PageResult from './results/PageResult.vue'
-import CalendarResult from './results/CalendarResult.vue'
-import InstitutionResult from './results/InstitutionResult.vue'
-import DocumentResult from './results/DocumentResult.vue'
-
-import { useAdminSearch, type MultiSearchResults } from '@/Composables/useAdminSearch'
-import { useCommandPalette, type RecentItem } from '@/Composables/useCommandPalette'
+import { useAdminSearch, type MultiSearchResults } from '@/Composables/useAdminSearch';
+import { useCommandPalette, type RecentItem } from '@/Composables/useCommandPalette';
 import {
   CommandDialog,
   CommandList,
   CommandGroup,
-  CommandItem
-} from '@/Components/ui/command'
+  CommandItem,
+} from '@/Components/ui/command';
 
 // Command palette state
-const { isOpen, query, recentItems, close } = useCommandPalette()
+const { isOpen, query, recentItems, close } = useCommandPalette();
 
 // Admin search
-const { multiSearch, initialize: initializeSearch, isRateLimited, isFromRelatedInstitution } = useAdminSearch()
+const { multiSearch, initialize: initializeSearch, isRateLimited, isFromRelatedInstitution } = useAdminSearch();
 
 // Command actions
-const { filterActions } = useCommandActions()
+const { filterActions } = useCommandActions();
 
 // Local state
-const isSearching = ref(false)
-const searchError = ref<string | null>(null)
+const isSearching = ref(false);
+const searchError = ref<string | null>(null);
 const searchResults = ref<MultiSearchResults>({
   meetings: [],
   agendaItems: [],
@@ -270,46 +269,46 @@ const searchResults = ref<MultiSearchResults>({
   pages: [],
   calendar: [],
   institutions: [],
-  documents: []
-})
-const searchInputRef = ref<HTMLInputElement | null>(null)
+  documents: [],
+});
+const searchInputRef = ref<HTMLInputElement | null>(null);
 
 // Filtered actions based on query
 const filteredActions = computed(() => {
-  return filterActions(query.value).slice(0, 6) // Limit to 6 actions
-})
+  return filterActions(query.value).slice(0, 6); // Limit to 6 actions
+});
 
 // Check if we have any results
 const hasResults = computed(() => {
   return (
-    filteredActions.value.length > 0 ||
-    searchResults.value.meetings.length > 0 ||
-    searchResults.value.agendaItems.length > 0 ||
-    searchResults.value.news.length > 0 ||
-    searchResults.value.pages.length > 0 ||
-    searchResults.value.calendar.length > 0 ||
-    searchResults.value.institutions.length > 0 ||
-    searchResults.value.documents.length > 0
-  )
-})
+    filteredActions.value.length > 0
+    || searchResults.value.meetings.length > 0
+    || searchResults.value.agendaItems.length > 0
+    || searchResults.value.news.length > 0
+    || searchResults.value.pages.length > 0
+    || searchResults.value.calendar.length > 0
+    || searchResults.value.institutions.length > 0
+    || searchResults.value.documents.length > 0
+  );
+});
 
 // Debounced search function - 300ms debounce to reduce request frequency
 const performSearch = useDebounceFn(async (searchQuery: string) => {
   if (!searchQuery.trim()) {
-    searchResults.value = { meetings: [], agendaItems: [], news: [], pages: [], calendar: [], institutions: [], documents: [] }
-    isSearching.value = false
-    return
+    searchResults.value = { meetings: [], agendaItems: [], news: [], pages: [], calendar: [], institutions: [], documents: [] };
+    isSearching.value = false;
+    return;
   }
 
   // Skip if rate limited
   if (isRateLimited.value) {
-    searchError.value = $t('Per daug užklausų. Palaukite ir bandykite vėliau.')
-    isSearching.value = false
-    return
+    searchError.value = $t('Per daug užklausų. Palaukite ir bandykite vėliau.');
+    isSearching.value = false;
+    return;
   }
 
-  isSearching.value = true
-  searchError.value = null
+  isSearching.value = true;
+  searchError.value = null;
 
   try {
     searchResults.value = await multiSearch(searchQuery, {
@@ -319,109 +318,114 @@ const performSearch = useDebounceFn(async (searchQuery: string) => {
       pagesLimit: 3,
       calendarLimit: 3,
       institutionsLimit: 3,
-      documentsLimit: 3
-    })
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Search failed'
+      documentsLimit: 3,
+    });
+  }
+  catch (error) {
+    const message = error instanceof Error ? error.message : 'Search failed';
     // Show user-friendly message for rate limiting
     if (message.includes('Too many requests')) {
-      searchError.value = $t('Per daug užklausų. Palaukite ir bandykite vėliau.')
-    } else {
-      searchError.value = message
+      searchError.value = $t('Per daug užklausų. Palaukite ir bandykite vėliau.');
+    }
+    else {
+      searchError.value = message;
     }
     // Don't clear results on error - keep previous results visible
-  } finally {
-    isSearching.value = false
   }
-}, 300)
+  finally {
+    isSearching.value = false;
+  }
+}, 300);
 
 // Watch query changes
 watch(query, (newQuery) => {
   if (newQuery.trim()) {
-    performSearch(newQuery)
-  } else {
-    searchResults.value = { meetings: [], agendaItems: [], news: [], pages: [], calendar: [], institutions: [], documents: [] }
+    performSearch(newQuery);
   }
-})
+  else {
+    searchResults.value = { meetings: [], agendaItems: [], news: [], pages: [], calendar: [], institutions: [], documents: [] };
+  }
+});
 
 // Track if search has been initialized to prevent duplicate calls
-let searchInitialized = false
+let searchInitialized = false;
 
 // Initialize search and focus input when opened
 watch(isOpen, (opened) => {
   if (opened) {
     // Only initialize once per session
     if (!searchInitialized) {
-      initializeSearch()
-      searchInitialized = true
+      initializeSearch();
+      searchInitialized = true;
     }
     // Focus the search input after dialog opens with fallback for animation delay
     nextTick(() => {
-      searchInputRef.value?.focus()
+      searchInputRef.value?.focus();
       // Fallback in case dialog animation delays rendering
       setTimeout(() => {
-        searchInputRef.value?.focus()
-      }, 50)
-    })
+        searchInputRef.value?.focus();
+      }, 50);
+    });
   }
-})
+});
 
 // Focus the first result when pressing down arrow in the input
 const focusFirstResult = () => {
-  const firstItem = document.querySelector('[data-slot="command"] [role="option"]') as HTMLElement
+  const firstItem = document.querySelector('[data-slot="command"] [role="option"]') as HTMLElement;
   if (firstItem) {
-    firstItem.focus()
+    firstItem.focus();
   }
-}
+};
 
 // Navigate to dedicated search page
 const navigateToSearch = (type: 'institutions' | 'meetings' | 'agendaItems') => {
-  close()
+  close();
   const routes = {
     institutions: route('search.institutions', { q: query.value }),
     meetings: route('search.meetings', { q: query.value }),
-    agendaItems: route('search.agendaItems', { q: query.value })
-  }
-  router.visit(routes[type])
-}
+    agendaItems: route('search.agendaItems', { q: query.value }),
+  };
+  router.visit(routes[type]);
+};
 
 // Handle recent item selection
 const handleRecentSelect = (item: RecentItem) => {
-  close()
+  close();
 
   if (item.href) {
-    router.visit(item.href)
-  } else if (item.type === 'action') {
+    router.visit(item.href);
+  }
+  else if (item.type === 'action') {
     // For actions, find the action and execute it
-    const actions = filterActions('')
-    const action = actions.find((a) => a.id === item.id)
+    const actions = filterActions('');
+    const action = actions.find(a => a.id === item.id);
     if (action) {
-      action.action()
+      action.action();
     }
   }
-}
+};
 
 // Get badge text for recent item type
 const getRecentTypeBadge = (type: RecentItem['type']): string => {
   switch (type) {
     case 'meeting':
-      return $t('Posėdis')
+      return $t('Posėdis');
     case 'agenda_item':
-      return $t('Darbotvarkės punktas')
+      return $t('Darbotvarkės punktas');
     case 'action':
-      return $t('Veiksmas')
+      return $t('Veiksmas');
     case 'news':
-      return $t('Naujiena')
+      return $t('Naujiena');
     case 'page':
-      return $t('Puslapis')
+      return $t('Puslapis');
     case 'calendar':
-      return $t('Įvykis')
+      return $t('Įvykis');
     case 'institution':
-      return $t('Institucija')
+      return $t('Institucija');
     case 'document':
-      return $t('Dokumentas')
+      return $t('Dokumentas');
     default:
-      return ''
+      return '';
   }
-}
+};
 </script>

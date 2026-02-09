@@ -55,6 +55,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
+
 import { Button } from '@/Components/ui/button';
 import { usePWA } from '@/Composables/usePWA';
 import IFluentArrowDownload24Regular from '~icons/fluent/arrow-download-24-regular';
@@ -94,7 +95,7 @@ const shouldShow = computed(() => {
 
 const dismiss = () => {
   dismissed.value = true;
-  
+
   // Store dismissal with expiration
   const dismissedUntil = Date.now() + (DISMISS_DURATION_DAYS * 24 * 60 * 60 * 1000);
   localStorage.setItem(STORAGE_KEY, JSON.stringify({ dismissedUntil }));
@@ -116,12 +117,14 @@ onMounted(() => {
       const { dismissedUntil } = JSON.parse(stored);
       if (dismissedUntil && Date.now() < dismissedUntil) {
         dismissed.value = true;
-      } else {
+      }
+      else {
         // Dismissal expired, clean up
         localStorage.removeItem(STORAGE_KEY);
       }
     }
-  } catch {
+  }
+  catch {
     // Ignore parse errors
   }
 
@@ -130,7 +133,8 @@ onMounted(() => {
     const visits = parseInt(localStorage.getItem('pwa_visit_count') || '0', 10);
     visitCount.value = visits + 1;
     localStorage.setItem('pwa_visit_count', String(visitCount.value));
-  } catch {
+  }
+  catch {
     visitCount.value = 1;
   }
 

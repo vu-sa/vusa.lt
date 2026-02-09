@@ -59,14 +59,14 @@ export interface ApiPaginatedResponse<T = unknown> extends ApiSuccessResponse<T[
 /**
  * Standard API error codes
  */
-export type ApiErrorCode =
-  | 'NOT_FOUND'
-  | 'FORBIDDEN'
-  | 'UNAUTHORIZED'
-  | 'VALIDATION_ERROR'
-  | 'INVALID_PATH'
-  | 'INVALID_TYPE'
-  | 'SERVER_ERROR';
+export type ApiErrorCode
+  = | 'NOT_FOUND'
+    | 'FORBIDDEN'
+    | 'UNAUTHORIZED'
+    | 'VALIDATION_ERROR'
+    | 'INVALID_PATH'
+    | 'INVALID_TYPE'
+    | 'SERVER_ERROR';
 
 /**
  * Type guard to check if response is successful

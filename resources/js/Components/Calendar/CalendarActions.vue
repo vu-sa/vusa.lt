@@ -50,36 +50,36 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { trans as $t } from 'laravel-vue-i18n'
-import { usePage } from '@inertiajs/vue3'
+import { computed } from 'vue';
+import { trans as $t } from 'laravel-vue-i18n';
+import { usePage } from '@inertiajs/vue3';
 
-import { Button } from '@/Components/ui/button'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip'
+import { Button } from '@/Components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 
 interface Props {
   /** Event participation/registration URL */
-  eventUrl?: string
+  eventUrl?: string;
   /** Facebook event URL */
-  facebookUrl?: string
+  facebookUrl?: string;
   /** Google Calendar link */
-  googleLink?: string
+  googleLink?: string;
   /** URL to event detail page */
-  eventDetailUrl?: string
+  eventDetailUrl?: string;
   /** Event ID for generating detail URL */
-  eventId?: number | string
+  eventId?: number | string;
   /** Whether this is for a past event */
-  isPast?: boolean
+  isPast?: boolean;
   /** Button size */
-  size?: 'tiny' | 'small' | 'medium' | 'large'
+  size?: 'tiny' | 'small' | 'medium' | 'large';
   /** Whether to show icons in buttons */
-  showIcons?: boolean
+  showIcons?: boolean;
   /** Whether to show view details button */
-  showViewButton?: boolean
+  showViewButton?: boolean;
   /** Whether to show social media actions */
-  showSocialActions?: boolean
+  showSocialActions?: boolean;
   /** Layout variant */
-  layout?: 'horizontal' | 'vertical' | 'compact'
+  layout?: 'horizontal' | 'vertical' | 'compact';
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -88,54 +88,54 @@ const props = withDefaults(defineProps<Props>(), {
   showIcons: true,
   showViewButton: true,
   showSocialActions: true,
-  layout: 'horizontal'
-})
+  layout: 'horizontal',
+});
 
-const page = usePage()
+const page = usePage();
 
 // Map NButton size to ShadcnVue Button size
 const buttonSize = computed(() => {
-  const sizeMap = { tiny: 'xs', small: 'sm', medium: 'default', large: 'lg' } as const
-  return sizeMap[props.size] ?? 'default'
-})
+  const sizeMap = { tiny: 'xs', small: 'sm', medium: 'default', large: 'lg' } as const;
+  return sizeMap[props.size] ?? 'default';
+});
 
 const iconButtonSize = computed(() => {
-  const sizeMap = { tiny: 'icon-xs', small: 'icon-sm', medium: 'icon', large: 'icon' } as const
-  return sizeMap[props.size] ?? 'icon'
-})
+  const sizeMap = { tiny: 'icon-xs', small: 'icon-sm', medium: 'icon', large: 'icon' } as const;
+  return sizeMap[props.size] ?? 'icon';
+});
 
 // Generate event detail URL if not provided but eventId is available
 const eventDetailUrl = computed(() => {
-  if (props.eventDetailUrl) return props.eventDetailUrl
+  if (props.eventDetailUrl) return props.eventDetailUrl;
 
   if (props.eventId) {
     return route('calendar.event', {
       calendar: props.eventId,
-      lang: page.props.app.locale
-    })
+      lang: page.props.app.locale,
+    });
   }
 
-  return undefined
-})
+  return undefined;
+});
 
 // Dynamic text based on context
 const participateText = computed(() => {
-  if (props.isPast) return $t("Peržiūrėti")
+  if (props.isPast) return $t('Peržiūrėti');
 
   if (props.eventUrl) {
     // Special handling for specific event types
     if (props.eventUrl.includes('freshmen-camps')) {
-      return `${$t("Dalyvauk")}!`
+      return `${$t('Dalyvauk')}!`;
     }
-    return $t("Dalyvauk renginyje")
+    return $t('Dalyvauk renginyje');
   }
 
-  return $t("Daugiau")
-})
+  return $t('Daugiau');
+});
 
 const viewText = computed(() => {
-  return props.isPast ? $t("Peržiūrėti") : $t("Daugiau")
-})
+  return props.isPast ? $t('Peržiūrėti') : $t('Daugiau');
+});
 </script>
 
 <style scoped>

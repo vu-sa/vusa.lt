@@ -33,10 +33,10 @@
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <div class="max-h-48 overflow-y-auto">
-          <DropdownMenuCheckboxItem 
-            v-for="t in tenants" 
+          <DropdownMenuCheckboxItem
+            v-for="t in tenants"
             :key="t.id"
-            :model-value="selectedTenants.includes(String(t.id))" 
+            :model-value="selectedTenants.includes(String(t.id))"
             @update:model-value="(checked: boolean) => toggleTenant(String(t.id), checked)"
             @select.prevent
           >
@@ -45,7 +45,7 @@
         </div>
         <DropdownMenuSeparator />
       </template>
-      
+
       <!-- Display settings label when no tenants -->
       <template v-else>
         <DropdownMenuLabel>{{ $t('Rodymo nustatymai') }}</DropdownMenuLabel>
@@ -53,59 +53,59 @@
       </template>
 
       <!-- Filter options -->
-      <DropdownMenuCheckboxItem 
+      <DropdownMenuCheckboxItem
         :model-value="showOnlyWithActivity"
-        @update:model-value="(val: boolean) => $emit('update:showOnlyWithActivity', val)" 
+        @update:model-value="(val: boolean) => $emit('update:showOnlyWithActivity', val)"
         @select.prevent
       >
         {{ $t('Rodyti tik aktyvius') }}
       </DropdownMenuCheckboxItem>
-      <DropdownMenuCheckboxItem 
+      <DropdownMenuCheckboxItem
         :model-value="showOnlyWithPublicMeetings"
-        @update:model-value="(val: boolean) => $emit('update:showOnlyWithPublicMeetings', val)" 
+        @update:model-value="(val: boolean) => $emit('update:showOnlyWithPublicMeetings', val)"
         @select.prevent
       >
         {{ $t('Rodyti tik viešas institucijas') }}
       </DropdownMenuCheckboxItem>
-      
+
       <DropdownMenuSeparator />
-      
-      <DropdownMenuCheckboxItem 
+
+      <DropdownMenuCheckboxItem
         :model-value="showDutyMembers"
-        @update:model-value="(val: boolean) => $emit('update:showDutyMembers', val)" 
+        @update:model-value="(val: boolean) => $emit('update:showDutyMembers', val)"
         @select.prevent
       >
         {{ $t('Rodyti narius') }}
       </DropdownMenuCheckboxItem>
-      
+
       <!-- Activity status toggle - only visible when showDutyMembers is enabled -->
-      <DropdownMenuCheckboxItem 
+      <DropdownMenuCheckboxItem
         v-if="showDutyMembers && showActivityStatusOption"
         :model-value="showActivityStatus"
-        @update:model-value="(val: boolean) => $emit('update:showActivityStatus', val)" 
+        @update:model-value="(val: boolean) => $emit('update:showActivityStatus', val)"
         @select.prevent
       >
         {{ $t('Rodyti aktyvumo žymėjimą') }}
       </DropdownMenuCheckboxItem>
-      
-      <DropdownMenuCheckboxItem 
+
+      <DropdownMenuCheckboxItem
         :model-value="showTenantHeaders"
-        @update:model-value="(val: boolean) => $emit('update:showTenantHeaders', val)" 
+        @update:model-value="(val: boolean) => $emit('update:showTenantHeaders', val)"
         @select.prevent
       >
         {{ $t('Rodyti padalinių sekcijas') }}
       </DropdownMenuCheckboxItem>
-      
-      <DropdownMenuCheckboxItem 
+
+      <DropdownMenuCheckboxItem
         v-if="hasRelatedInstitutions"
         :model-value="showRelatedInstitutions"
-        @update:model-value="(val: boolean) => $emit('update:showRelatedInstitutions', val)" 
+        @update:model-value="(val: boolean) => $emit('update:showRelatedInstitutions', val)"
         @select.prevent
       >
         <span class="flex items-center gap-1.5">
           <svg class="h-4 w-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
-            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
           </svg>
           {{ $t('Rodyti susijusias institucijas') }}
         </span>
@@ -129,15 +129,15 @@
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import { Button } from "@/Components/ui/button";
+import { Button } from '@/Components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger
-} from "@/Components/ui/dropdown-menu";
+  DropdownMenuTrigger,
+} from '@/Components/ui/dropdown-menu';
 import IFluentArrowReset20Regular from '~icons/fluent/arrow-reset-20-regular';
 
 interface Tenant {
@@ -187,20 +187,20 @@ const emit = defineEmits<{
 // Computed trigger label
 const triggerLabel = computed(() => {
   if (props.triggerLabelOverride) return props.triggerLabelOverride;
-  
+
   if (!props.tenants || props.tenants.length === 0) {
     return $t('Filtrai');
   }
-  
+
   if (props.selectedTenants.length === 0) {
     return $t('Visi padaliniai');
   }
-  
+
   if (props.selectedTenants.length === 1) {
     const tenant = props.tenants.find(t => String(t.id) === props.selectedTenants[0]);
     return tenant?.shortname || $t('Padalinys');
   }
-  
+
   return `${props.selectedTenants.length} ${$t('padaliniai')}`;
 });
 
@@ -211,7 +211,8 @@ function toggleTenant(tenantId: string, checked: boolean) {
     if (!newSelection.includes(tenantId)) {
       newSelection.push(tenantId);
     }
-  } else {
+  }
+  else {
     const index = newSelection.indexOf(tenantId);
     if (index > -1) {
       newSelection.splice(index, 1);

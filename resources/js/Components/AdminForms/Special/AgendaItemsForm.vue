@@ -214,7 +214,9 @@
                   class="text-center py-8 space-y-6">
                   <div>
                     <component :is="IconsRegular.AGENDA_ITEM" class="h-10 w-10 mx-auto text-muted-foreground/50 mb-3" />
-                    <h4 class="font-medium text-lg mb-2">{{ $t('Kaip norite sukurti darbotvarkę?') }}</h4>
+                    <h4 class="font-medium text-lg mb-2">
+                      {{ $t('Kaip norite sukurti darbotvarkę?') }}
+                    </h4>
                     <p class="text-sm text-muted-foreground">
                       {{ $t('Pasirinkite vieną iš būdų arba praleiskite šį žingsnį') }}
                     </p>
@@ -231,7 +233,9 @@
                       @click="recentTemplates.length > 0 && showPreviousMeetingSelector()">
                       <History class="h-8 w-8 text-muted-foreground transition-colors" :class="recentTemplates.length > 0 && 'group-hover:text-primary'" />
                       <div class="text-center">
-                        <p class="font-medium">{{ $t('Naudoti ankstesnį') }}</p>
+                        <p class="font-medium">
+                          {{ $t('Naudoti ankstesnį') }}
+                        </p>
                         <p class="text-xs text-muted-foreground mt-1">
                           {{ recentTemplates.length > 0
                             ? $t('Pasirinkti iš praėjusių posėdžių')
@@ -246,8 +250,12 @@
                       @click="startOneByOne">
                       <PlusIcon class="h-8 w-8 text-muted-foreground group-hover:text-primary transition-colors" />
                       <div class="text-center">
-                        <p class="font-medium">{{ $t('Pridėti po vieną') }}</p>
-                        <p class="text-xs text-muted-foreground mt-1">{{ $t('Įvesti klausimus paeiliui') }}</p>
+                        <p class="font-medium">
+                          {{ $t('Pridėti po vieną') }}
+                        </p>
+                        <p class="text-xs text-muted-foreground mt-1">
+                          {{ $t('Įvesti klausimus paeiliui') }}
+                        </p>
                       </div>
                     </button>
 
@@ -257,8 +265,12 @@
                       @click="showQuestionInputInTextArea = true; agendaInputMode = 'text'">
                       <DocumentIcon class="h-8 w-8 text-muted-foreground group-hover:text-primary transition-colors" />
                       <div class="text-center">
-                        <p class="font-medium">{{ $t('Įkelti iš teksto') }}</p>
-                        <p class="text-xs text-muted-foreground mt-1">{{ $t('Įklijuoti visus klausimus') }}</p>
+                        <p class="font-medium">
+                          {{ $t('Įkelti iš teksto') }}
+                        </p>
+                        <p class="text-xs text-muted-foreground mt-1">
+                          {{ $t('Įklijuoti visus klausimus') }}
+                        </p>
                       </div>
                     </button>
                   </div>
@@ -267,7 +279,9 @@
                 <!-- Previous meeting selector dialog -->
                 <div v-if="showPreviousMeetingList && recentTemplates.length > 0" class="space-y-4">
                   <div class="flex items-center justify-between">
-                    <h4 class="font-medium">{{ $t('Pasirinkite ankstesnį posėdį') }}</h4>
+                    <h4 class="font-medium">
+                      {{ $t('Pasirinkite ankstesnį posėdį') }}
+                    </h4>
                     <Button type="button" size="sm" variant="outline" @click="showPreviousMeetingList = false; agendaInputMode = null">
                       <ArrowLeft class="mr-2 h-3 w-3" />
                       {{ $t('Grįžti') }}
@@ -280,8 +294,12 @@
                       @click="loadFromPreviousMeeting(template.id)">
                       <History class="h-5 w-5 text-muted-foreground flex-shrink-0" />
                       <div class="flex-1 min-w-0">
-                        <p class="font-medium truncate">{{ template.name }}</p>
-                        <p class="text-xs text-muted-foreground">{{ template.agendaItems.length }} {{ $t('klausimai') }}</p>
+                        <p class="font-medium truncate">
+                          {{ template.name }}
+                        </p>
+                        <p class="text-xs text-muted-foreground">
+                          {{ template.agendaItems.length }} {{ $t('klausimai') }}
+                        </p>
                       </div>
                       <ArrowRight class="h-4 w-4 text-muted-foreground" />
                     </button>
@@ -321,7 +339,7 @@
                 <Loader2 class="mr-2 h-4 w-4 animate-spin" />
                 {{ $t('Kuriama...') }}
               </span>
-              <span class="inline-flex items-center" v-else>
+              <span v-else class="inline-flex items-center">
                 {{ props.submitLabel || $t("Sukurti susitikimą") }}
                 <CheckCircle class="ml-2 h-4 w-4" />
               </span>
@@ -334,9 +352,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, useTemplateRef, computed, onMounted, onUnmounted, watch, nextTick } from "vue";
-import { trans as $t } from "laravel-vue-i18n";
-import { Form, FieldArray } from "vee-validate";
+import { ref, useTemplateRef, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
+import { trans as $t } from 'laravel-vue-i18n';
+import { Form, FieldArray } from 'vee-validate';
 import { toTypedSchema } from '@vee-validate/zod';
 import * as z from 'zod';
 import { useSortable } from '@vueuse/integrations/useSortable';
@@ -354,29 +372,29 @@ import {
   Loader2,
   Users as UsersIcon,
   Text as TextIcon,
-} from "lucide-vue-next";
+} from 'lucide-vue-next';
 
-import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
-import IconsFilled from "@/Types/Icons/filled";
-import IconsRegular from "@/Types/Icons/regular";
-import { Badge } from "@/Components/ui/badge";
-import SuggestionAlert from "@/Components/Alerts/SuggestionAlert.vue";
-import SpotlightPopover from "@/Components/Onboarding/SpotlightPopover.vue";
-import { useMeetingTemplates } from "@/Composables/useMeetingTemplates";
-import { useFeatureSpotlight } from "@/Composables/useFeatureSpotlight";
+import FadeTransition from '@/Components/Transitions/FadeTransition.vue';
+import IconsFilled from '@/Types/Icons/filled';
+import IconsRegular from '@/Types/Icons/regular';
+import { Badge } from '@/Components/ui/badge';
+import SuggestionAlert from '@/Components/Alerts/SuggestionAlert.vue';
+import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import { useMeetingTemplates } from '@/Composables/useMeetingTemplates';
+import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 // Import Shadcn components
-import { Button } from "@/Components/ui/button";
-import { Textarea } from "@/Components/ui/textarea";
+import { Button } from '@/Components/ui/button';
+import { Textarea } from '@/Components/ui/textarea';
 import {
   FormControl,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/Components/ui/form";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
+} from '@/Components/ui/form';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 
-const emit = defineEmits<(e: "submit", data: Record<string, any>) => void>();
+const emit = defineEmits<(e: 'submit', data: Record<string, any>) => void>();
 
 const props = withDefaults(defineProps<{
   loading: boolean;
@@ -406,17 +424,17 @@ console.log('[AgendaItemsForm] Props received:', {
   institutionId: props.institutionId,
   recentMeetings: props.recentMeetings,
   mode: props.mode,
-})
+});
 
 // Composables
 const {
   templates,
   getTemplatesForInstitution,
-  applyTemplate
+  applyTemplate,
 } = useMeetingTemplates(props.recentMeetings);
 
-const agendaItemField = useTemplateRef<typeof FormField>("agendaItemField");
-const agendaForm = useTemplateRef<typeof Form>("agendaForm");
+const agendaItemField = useTemplateRef<typeof FormField>('agendaItemField');
+const agendaForm = useTemplateRef<typeof Form>('agendaForm');
 const sortableContainer = ref<HTMLElement | null>(null);
 
 // Feature spotlight for student-brought toggle
@@ -428,7 +446,7 @@ const studentBroughtSpotlight = useFeatureSpotlight('meeting-student-brought-v1'
 // Local state
 const showAlert = ref(true);
 const showQuestionInputInTextArea = ref(false);
-const questionInputInTextArea = ref("");
+const questionInputInTextArea = ref('');
 const agendaInputMode = ref<'previous' | 'one-by-one' | 'text' | null>(null);
 const showPreviousMeetingList = ref(false);
 // Track brought_by_students flag for each item by field.key (survives reordering)
@@ -442,11 +460,11 @@ const currentFieldKeys = ref<string[]>([]);
 
 // Computed properties
 const recentTemplates = computed(() =>
-  getTemplatesForInstitution(props.institutionId).slice(0, 5)
+  getTemplatesForInstitution(props.institutionId).slice(0, 5),
 );
 
 const currentAgendaItems = computed(() =>
-  props.agendaItems?.map(item => item.title) || []
+  props.agendaItems?.map(item => item.title) || [],
 );
 
 // Track the current field count for use outside FieldArray scope
@@ -488,7 +506,8 @@ const handleEnterKey = (index: number, totalFields: number, push: Function) => {
   if (isLastItem) {
     // On last item, create a new one
     addNewItem(index + 1, push);
-  } else {
+  }
+  else {
     // Not last item, focus on next
     const textareas = document.querySelectorAll('textarea[placeholder*="Darbotvarkės klausimas"]');
     const nextTextarea = textareas[index + 1] as HTMLTextAreaElement;
@@ -568,7 +587,7 @@ const skipAgenda = () => {
     broughtByStudentsFlags: [],
   };
 
-  emit("submit", formData);
+  emit('submit', formData);
 };
 
 // New methods for 3-button flow
@@ -607,14 +626,14 @@ const onSubmit = (values: any) => {
   const formData = {
     agendaItemTitles: itemsWithKeys.map((item: { title: string }) => item.title),
     broughtByStudentsFlags: itemsWithKeys.map((item: { key: string }) =>
-      broughtByStudentsFlags.value[item.key] || false
+      broughtByStudentsFlags.value[item.key] || false,
     ),
     descriptions: itemsWithKeys.map((item: { key: string }) =>
-      itemDescriptions.value[item.key] || ''
+      itemDescriptions.value[item.key] || '',
     ),
   };
 
-  emit("submit", formData);
+  emit('submit', formData);
 };
 
 // Watch for field count changes

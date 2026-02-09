@@ -50,6 +50,6 @@
 </template>
 
 <script setup lang="ts">
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/Components/ui/card'
-import { Skeleton } from '@/Components/ui/skeleton'
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/Components/ui/card';
+import { Skeleton } from '@/Components/ui/skeleton';
 </script>

@@ -275,31 +275,31 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
-import { router, useForm, usePage } from "@inertiajs/vue3";
-import { Briefcase, GripVertical, List, Plus, Save } from "lucide-vue-next";
+import { computed, ref } from 'vue';
+import { router, useForm, usePage } from '@inertiajs/vue3';
+import { Briefcase, GripVertical, List, Plus, Save } from 'lucide-vue-next';
 
-import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";
-import SimpleLocaleButton from "../Buttons/SimpleLocaleButton.vue";
-import SmartLink from "../Public/SmartLink.vue";
-import SortableDutiesTable from "../Tables/SortableDutiesTable.vue";
+import MultiLocaleInput from '../FormItems/MultiLocaleInput.vue';
+import SimpleLocaleButton from '../Buttons/SimpleLocaleButton.vue';
+import SmartLink from '../Public/SmartLink.vue';
+import SortableDutiesTable from '../Tables/SortableDutiesTable.vue';
 
-import AdminForm from "./AdminForm.vue";
-import DutyCard from "./DutyCard.vue";
-import FormElement from "./FormElement.vue";
-import FormFieldWrapper from "./FormFieldWrapper.vue";
-import FormStatusHeader from "./FormStatusHeader.vue";
+import AdminForm from './AdminForm.vue';
+import DutyCard from './DutyCard.vue';
+import FormElement from './FormElement.vue';
+import FormFieldWrapper from './FormFieldWrapper.vue';
+import FormStatusHeader from './FormStatusHeader.vue';
 
-import TiptapEditor from "@/Components/TipTap/TiptapEditor.vue";
-import { Button } from "@/Components/ui/button";
-import { Input, InputWithOverlappingLabel } from "@/Components/ui/input";
-import { Label } from "@/Components/ui/label";
-import { MultiSelect } from "@/Components/ui/multi-select";
-import { RadioGroup, RadioGroupItem } from "@/Components/ui/radio-group";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
-import { Separator } from "@/Components/ui/separator";
-import { Switch } from "@/Components/ui/switch";
-import { ImageUpload } from "@/Components/ui/upload";
+import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
+import { Button } from '@/Components/ui/button';
+import { Input, InputWithOverlappingLabel } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
+import { MultiSelect } from '@/Components/ui/multi-select';
+import { RadioGroup, RadioGroupItem } from '@/Components/ui/radio-group';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { Separator } from '@/Components/ui/separator';
+import { Switch } from '@/Components/ui/switch';
+import { ImageUpload } from '@/Components/ui/upload';
 
 const props = defineProps<{
   institution: App.Entities.Institution;
@@ -309,11 +309,11 @@ const props = defineProps<{
 }>();
 
 defineEmits<{
-  (event: "submit:form", form: unknown): void;
-  (event: "delete"): void;
+  (event: 'submit:form', form: unknown): void;
+  (event: 'delete'): void;
 }>();
 
-const locale = ref("lt");
+const locale = ref('lt');
 const dutiesWereReordered = ref(false);
 const dutiesEditMode = ref(false);
 
@@ -325,7 +325,7 @@ const form = props.rememberKey
 
 // Section completion states
 const mainInfoComplete = computed(() =>
-  (form.name?.lt?.length || 0) >= 2 && form.tenant_id
+  (form.name?.lt?.length || 0) >= 2 && form.tenant_id,
 );
 
 // Status header links - Institution has both public and admin views
@@ -360,7 +360,7 @@ const isActiveBoolean = computed({
   get: () => Boolean(form.is_active),
   set: (val: boolean) => {
     form.is_active = val ? 1 : 0;
-  }
+  },
 });
 
 // Handle tenant_id as string for Select component
@@ -368,7 +368,7 @@ const tenantIdString = computed({
   get: () => form.tenant_id ? String(form.tenant_id) : '',
   set: (val: string) => {
     form.tenant_id = val ? parseInt(val) : null;
-  }
+  },
 });
 
 // Institution type options for MultiSelect
@@ -376,7 +376,7 @@ const institutionTypeOptions = computed(() =>
   props.institutionTypes.map(type => ({
     label: type.title,
     value: type.id,
-  }))
+  })),
 );
 
 // Computed to handle type selection - converts between objects and IDs
@@ -389,15 +389,15 @@ const selectedTypes = computed({
   },
   set: (items: { label: string; value: number }[]) => {
     form.types = items.map(item => item.value);
-  }
+  },
 });
 
 const showMoreOptions = computed(() => {
   // HACK: manually added types to check
-  const typesToCheck = ["pkp", "padaliniai"];
+  const typesToCheck = ['pkp', 'padaliniai'];
   const typeIds = props.institutionTypes
-    ?.filter((type) => type.slug && typesToCheck.includes(type.slug))
-    .map((type) => type.id);
+    ?.filter(type => type.slug && typesToCheck.includes(type.slug))
+    .map(type => type.id);
 
   return form.types?.some((type: number) => typeIds.includes(type));
 });
@@ -408,7 +408,7 @@ const saveReorderedDuties = () => {
     return duty;
   });
   router.post(
-    route("institutions.reorderDuties"),
+    route('institutions.reorderDuties'),
     {
       duties: newDuties,
     },
@@ -418,7 +418,7 @@ const saveReorderedDuties = () => {
       onSuccess: () => {
         dutiesWereReordered.value = false;
       },
-    }
+    },
   );
 };
 </script>

@@ -1,15 +1,16 @@
-import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
-import { capitalize } from "@/Utils/String";
+import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
+
+import { capitalize } from '@/Utils/String';
 
 export const tenantColumn = (filters, tenants) => {
   return {
-    key: "tenant.id",
+    key: 'tenant.id',
     title() {
-      return capitalize($tChoice("entities.tenant.model", 1));
+      return capitalize($tChoice('entities.tenant.model', 1));
     },
     width: 120,
     filter: true,
-    filterOptionValues: filters.value["tenant.id"],
+    filterOptionValues: filters.value['tenant.id'],
     filterOptions: tenants.map((tenant) => {
       return {
         label: $t(tenant.shortname),
@@ -21,21 +22,21 @@ export const tenantColumn = (filters, tenants) => {
 
 export const langColumn = (filters) => {
   return {
-    key: "lang",
+    key: 'lang',
     title() {
-      return $t("Kalba");
+      return $t('Kalba');
     },
     width: 100,
     filter: true,
-    filterOptionValues: filters.value["lang"],
+    filterOptionValues: filters.value['lang'],
     filterOptions: [
       {
-        label: "Lietuvių",
-        value: "lt",
+        label: 'Lietuvių',
+        value: 'lt',
       },
       {
-        label: "Anglų",
-        value: "en",
+        label: 'Anglų',
+        value: 'en',
       },
     ],
   };
@@ -48,7 +49,7 @@ export const createTimestampColumn = (key, title, sorters) => {
     sorter: true,
     sortOrder: sorters.value[key],
     render(row) {
-      return new Date(row[key]).toLocaleString("lt-LT");
+      return new Date(row[key]).toLocaleString('lt-LT');
     },
   };
 };

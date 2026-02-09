@@ -25,18 +25,18 @@ export enum TaskActionType {
  * Task progress information for multi-item tasks (e.g., return multiple resources).
  */
 export interface TaskProgress {
-  current: number
-  total: number
-  percentage: number
+  current: number;
+  total: number;
+  percentage: number;
 }
 
 /**
  * Metadata stored in task's JSON metadata column.
  */
 export interface TaskMetadata {
-  items_total?: number
-  items_completed?: number
-  [key: string]: unknown
+  items_total?: number;
+  items_completed?: number;
+  [key: string]: unknown;
 }
 
 /**
@@ -45,73 +45,73 @@ export interface TaskMetadata {
  */
 export interface TaskWithDetails extends Omit<models.Task, 'taskable'> {
   // Action type (from backend enum)
-  action_type?: TaskActionType | null
+  action_type?: TaskActionType | null;
 
   // Metadata JSON for progress tracking
-  metadata?: TaskMetadata | null
+  metadata?: TaskMetadata | null;
 
   // Computed progress (from backend getProgress() or calculated frontend)
-  progress?: TaskProgress | null
+  progress?: TaskProgress | null;
 
   // Icon name based on action type
-  icon?: string
+  icon?: string;
 
   // Color scheme based on action type
-  color?: string
+  color?: string;
 
   // Whether task can be manually completed
-  can_be_manually_completed?: boolean
+  can_be_manually_completed?: boolean;
 
   // Whether task is overdue
-  is_overdue?: boolean
+  is_overdue?: boolean;
 
   // The related model (properly typed, not recursive Task)
   taskable?: {
-    id: string
-    name?: string
-    title?: string
-    [key: string]: unknown
-  } | null
+    id: string;
+    name?: string;
+    title?: string;
+    [key: string]: unknown;
+  } | null;
 }
 
 /**
  * Statistics about a user's tasks.
  */
 export interface TaskStats {
-  total: number
-  overdue: number
-  dueSoon: number
+  total: number;
+  overdue: number;
+  dueSoon: number;
 }
 
 /**
  * Task data for the indicator popover (simplified for header display).
  */
 export interface TaskIndicatorItem {
-  id: string
-  name: string
-  due_date: string | null
-  is_overdue: boolean
-  action_type: TaskActionType | null
-  can_be_manually_completed: boolean
-  progress: TaskProgress | null
-  taskable_type: string
-  taskable_id: string
+  id: string;
+  name: string;
+  due_date: string | null;
+  is_overdue: boolean;
+  action_type: TaskActionType | null;
+  can_be_manually_completed: boolean;
+  progress: TaskProgress | null;
+  taskable_type: string;
+  taskable_id: string;
   taskable?: {
-    id: string
-    name?: string
-    title?: string
-  } | null
+    id: string;
+    name?: string;
+    title?: string;
+  } | null;
 }
 
 /**
  * Configuration for task action type display.
  */
 export interface TaskActionTypeConfig {
-  type: TaskActionType
-  label: string
-  icon: string
-  color: string
-  canBeManuallyCompleted: boolean
+  type: TaskActionType;
+  label: string;
+  icon: string;
+  color: string;
+  canBeManuallyCompleted: boolean;
 }
 
 /**
@@ -126,7 +126,7 @@ export function getActionTypeConfig(actionType: TaskActionType | null | undefine
         icon: 'shield-check',
         color: 'blue',
         canBeManuallyCompleted: false,
-      }
+      };
     case TaskActionType.Pickup:
       return {
         type: TaskActionType.Pickup,
@@ -134,7 +134,7 @@ export function getActionTypeConfig(actionType: TaskActionType | null | undefine
         icon: 'package',
         color: 'amber',
         canBeManuallyCompleted: false,
-      }
+      };
     case TaskActionType.Return:
       return {
         type: TaskActionType.Return,
@@ -142,7 +142,7 @@ export function getActionTypeConfig(actionType: TaskActionType | null | undefine
         icon: 'package-check',
         color: 'emerald',
         canBeManuallyCompleted: false,
-      }
+      };
     case TaskActionType.PeriodicityGap:
       return {
         type: TaskActionType.PeriodicityGap,
@@ -150,7 +150,7 @@ export function getActionTypeConfig(actionType: TaskActionType | null | undefine
         icon: 'calendar-clock',
         color: 'orange',
         canBeManuallyCompleted: true,
-      }
+      };
     case TaskActionType.AgendaCreation:
       return {
         type: TaskActionType.AgendaCreation,
@@ -158,7 +158,7 @@ export function getActionTypeConfig(actionType: TaskActionType | null | undefine
         icon: 'file-plus',
         color: 'violet',
         canBeManuallyCompleted: false,
-      }
+      };
     case TaskActionType.AgendaCompletion:
       return {
         type: TaskActionType.AgendaCompletion,
@@ -166,7 +166,7 @@ export function getActionTypeConfig(actionType: TaskActionType | null | undefine
         icon: 'file-check',
         color: 'green',
         canBeManuallyCompleted: false,
-      }
+      };
     case TaskActionType.Manual:
     default:
       return {
@@ -175,7 +175,7 @@ export function getActionTypeConfig(actionType: TaskActionType | null | undefine
         icon: 'clipboard-check',
         color: 'zinc',
         canBeManuallyCompleted: true,
-      }
+      };
   }
 }
 
@@ -185,16 +185,16 @@ export function getActionTypeConfig(actionType: TaskActionType | null | undefine
 export function canTaskBeManuallyCompleted(task: { action_type?: TaskActionType | null; can_be_manually_completed?: boolean }): boolean {
   // Use backend-computed value if available
   if (task.can_be_manually_completed !== undefined) {
-    return task.can_be_manually_completed
+    return task.can_be_manually_completed;
   }
 
   // Fallback to frontend calculation
-  return getActionTypeConfig(task.action_type).canBeManuallyCompleted
+  return getActionTypeConfig(task.action_type).canBeManuallyCompleted;
 }
 
 /**
  * Check if a task is an auto-completing task.
  */
 export function isAutoCompletingTask(task: { action_type?: TaskActionType | null }): boolean {
-  return !canTaskBeManuallyCompleted(task)
+  return !canTaskBeManuallyCompleted(task);
 }

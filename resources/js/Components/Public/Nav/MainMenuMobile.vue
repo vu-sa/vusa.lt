@@ -23,11 +23,11 @@
       <QuickLink v-for="link in $page.props.tenant?.links" :key="link?.id" class="items-center" :quick-link="link" />
     </div>
     <div class="flex gap-2 mt-8 flex-wrap items-center">
-      <LocaleButton :locale="$page.props.app.locale" :size="'sm'" />
+      <LocaleButton :locale="$page.props.app.locale" size="sm" />
       <SearchButton class="h-6 px-2 text-xs tracking-wide hover:bg-nav-hover-bg-light dark:hover:bg-nav-hover-bg-dark">
         {{ $t('Paieška') }}
       </SearchButton>
-      <DarkModeButton :size="'icon'" />
+      <DarkModeButton size="icon" />
     </div>
   </div>
 </template>
@@ -36,16 +36,18 @@
 import { computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 
+import SmartLink from '../SmartLink.vue';
+
+import LocaleButton from './LocaleButton.vue';
+import MainNavigationMenuContent from './MainNavigationMenuContent.vue';
+import QuickLink from './QuickLink.vue';
+import SearchButton from './SearchButton.vue';
+
 import Accordion from '@/Components/ui/accordion/Accordion.vue';
 import AccordionContent from '@/Components/ui/accordion/AccordionContent.vue';
 import AccordionItem from '@/Components/ui/accordion/AccordionItem.vue';
 import AccordionTrigger from '@/Components/ui/accordion/AccordionTrigger.vue';
 import DarkModeButton from '@/Components/Buttons/DarkModeButton.vue';
-import LocaleButton from './LocaleButton.vue';
-import MainNavigationMenuContent from './MainNavigationMenuContent.vue';
-import QuickLink from './QuickLink.vue';
-import SmartLink from '../SmartLink.vue';
-import SearchButton from './SearchButton.vue';
 
 const mainNavigation = computed(() => usePage().props.mainNavigation);
 
