@@ -115,12 +115,4 @@ trait MeetingTaskTestHelpers
 
         return [$meeting, $task];
     }
-
-    /**
-     * @deprecated Use createMeetingWithCompletionTask instead
-     */
-    protected function createMeetingWithTask(int $agendaItemCount = 3): array
-    {
-        return $this->createMeetingWithCompletionTask($agendaItemCount);
-    }
 }

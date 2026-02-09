@@ -74,30 +74,6 @@ class TypesenseScopedKeyService
     }
 
     /**
-     * Generate a single scoped search key for the given user (legacy method).
-     *
-     * @deprecated Use generateScopedKeysForUser() for per-collection keys
-     *
-     * @param  User  $user  The user to generate a key for
-     * @return array{key: string, expires_at: int, tenant_ids: int[], is_super_admin: bool}
-     */
-    public function generateScopedKeyForUser(User $user): array
-    {
-        $keysData = $this->generateScopedKeysForUser($user);
-
-        // Return the first collection's key for backwards compatibility
-        $firstCollection = array_key_first($keysData['collections']);
-        $firstCollectionData = $keysData['collections'][$firstCollection] ?? [];
-
-        return [
-            'key' => $firstCollectionData['key'] ?? '',
-            'expires_at' => $keysData['expires_at'],
-            'tenant_ids' => $firstCollectionData['tenant_ids'] ?? [],
-            'is_super_admin' => $keysData['is_super_admin'],
-        ];
-    }
-
-    /**
      * Build scoped keys for all collections with per-collection tenant filtering
      *
      * Collections without access are excluded from the response rather than
@@ -311,18 +287,6 @@ class TypesenseScopedKeyService
         }
 
         return collect();
-    }
-
-    /**
-     * Get tenant IDs the user can access for admin search (legacy method)
-     *
-     * @deprecated Use getTenantIdsForPermission() with specific permission
-     */
-    protected function getUserAccessibleTenantIds(User $user): Collection
-    {
-        $this->authorizer->forUser($user);
-
-        return $this->getTenantIdsForPermission('meetings.read.padalinys');
     }
 
     /**

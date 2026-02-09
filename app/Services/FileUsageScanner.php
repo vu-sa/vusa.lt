@@ -624,20 +624,6 @@ class FileUsageScanner
     }
 
     /**
-     * Find all unused files in a directory older than specified days
-     */
-    public function findUnusedFiles(string $directoryPath, int $olderThanDays = 30): array
-    {
-        // This would be implemented to scan filesystem and check usage
-        // For now, return structure for the frontend to use
-        return [
-            'unusedFiles' => [],
-            'checkedFiles' => [],
-            'errors' => [],
-        ];
-    }
-
-    /**
      * Normalize file path to URL format for searching
      */
     private function normalizeFileUrl(string $filePath): string

@@ -135,7 +135,6 @@ class InstitutionController extends AdminController
                     ->with([
                         'tasks' => fn ($q) => $q->with('users:id,name,email,profile_photo_path', 'taskable'),
                         'comments',
-                        'files',
                         'institutions.types',
                         'fileableFiles',
                         'agendaItems.votes',

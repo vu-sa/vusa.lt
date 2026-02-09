@@ -132,18 +132,6 @@ export interface SimpleTableProps<TData> {
   emptyIcon?: any;
 }
 
-// Legacy type aliases for backward compatibility
-/** @deprecated Use BaseTableConfig instead */
-export type TableConfig<TData> = BaseTableConfig<TData>;
-/** @deprecated Use AdvancedTableConfig instead */
-export type PaginationConfig = Pick<BaseTableConfig<any>, 'totalCount' | 'initialPage' | 'pageSize'>;
-/** @deprecated Use PageTableConfig instead */
-export type UIConfig = PageTableConfig;
-/** @deprecated Use AdvancedTableConfig instead */
-export type FilteringConfig = Pick<AdvancedTableConfig, 'initialFilters' | 'initialSorting' | 'allowToggleDeleted' | 'enableFiltering' | 'enableColumnVisibility'>;
-/** @deprecated Use AdvancedTableConfig instead */
-export type RowSelectionConfig = Pick<AdvancedTableConfig, 'enableRowSelection' | 'enableMultiRowSelection' | 'enableRowSelectionColumn' | 'initialRowSelection'>;
-
 /**
  * Preset configurations for common table types
  */

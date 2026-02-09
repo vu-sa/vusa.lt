@@ -182,8 +182,6 @@ Route::resource('tenants', TenantController::class);
 
 Route::get('forms/{form}/export', [FormController::class, 'export'])->name('forms.export');
 Route::resource('forms', FormController::class);
-Route::resource('registrations', RegistrationController::class)->only('show');
-
 Route::resource('types', TypeController::class);
 Route::resource('relationships', RelationshipController::class);
 Route::post('relationships/{relationship}/storeModelRelationship', [RelationshipController::class, 'storeModelRelationship'])->name('relationships.storeModelRelationship');

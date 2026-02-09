@@ -3,7 +3,6 @@
 namespace App\Contracts;
 
 use Illuminate\Database\Eloquent\Relations\MorphMany;
-use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
 /**
  * Contract for models that can have SharePoint files attached
@@ -12,11 +11,6 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
  */
 interface SharepointFileableContract
 {
-    /**
-     * Get the SharePoint files relationship
-     */
-    public function files(): MorphToMany;
-
     /**
      * Get the local fileable files relationship.
      */

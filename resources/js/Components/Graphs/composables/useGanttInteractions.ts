@@ -232,23 +232,6 @@ export function useGanttInteractions(
   }
 
   /**
-   * Auto-scroll to today's position - call this after first render
-   * @deprecated Use applyInitialScrollPosition instead for better centering
-   */
-  function autoScrollToToday() {
-    const el = refs.rightScroll.value
-    const x = refs.curX.value
-    if (!el || !x || didInitialAutoScroll.value) return
-
-    const left = x(new Date())
-    el.scrollLeft = Math.max(0, left - 8)
-    didInitialAutoScroll.value = true
-
-    // Update current year badge
-    updateCurrentYear()
-  }
-
-  /**
    * Update the current year indicator based on viewport center
    */
   function updateCurrentYear() {
@@ -620,7 +603,6 @@ export function useGanttInteractions(
     // Methods
     applyInitialExtension,
     applyInitialScrollPosition,
-    autoScrollToToday,
     updateCurrentYear,
     onScroll,
     onScaleChange,
