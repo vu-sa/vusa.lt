@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5c725f7c58744bf83d3344311cd9e209",
+    "content-hash": "a2c0c174a448014ed2f65f69e97eff0d",
     "packages": [
         {
             "name": "ajcastro/eager-load-pivot-relations",
@@ -9873,30 +9873,30 @@
         },
         {
             "name": "spatie/schema-org",
-            "version": "3.23.1",
+            "version": "4.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/spatie/schema-org.git",
-                "reference": "a8dc1b6fcdd06afc1ab084c3ead9b7a4c3d7a35d"
+                "reference": "f1038b6fa57b976920622477812ff9c39398660b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spatie/schema-org/zipball/a8dc1b6fcdd06afc1ab084c3ead9b7a4c3d7a35d",
-                "reference": "a8dc1b6fcdd06afc1ab084c3ead9b7a4c3d7a35d",
+                "url": "https://api.github.com/repos/spatie/schema-org/zipball/f1038b6fa57b976920622477812ff9c39398660b",
+                "reference": "f1038b6fa57b976920622477812ff9c39398660b",
                 "shasum": ""
             },
             "require": {
                 "ext-json": "*",
-                "php": "^8.0"
+                "php": "^8.2"
             },
             "require-dev": {
-                "friendsofphp/php-cs-fixer": "^3.6",
-                "graham-campbell/analyzer": "^4.2",
-                "illuminate/collections": "^8.62.0",
-                "league/flysystem": "^2.3.0 || ^3.0",
-                "pestphp/pest": "^1.21",
-                "symfony/console": "^5.3.7 || 6.0",
-                "twig/twig": "^3.3.3"
+                "friendsofphp/php-cs-fixer": "^3.88.2",
+                "graham-campbell/analyzer": "^5.0.0",
+                "illuminate/collections": "^10",
+                "league/flysystem": "^3.30",
+                "pestphp/pest": "^2.36.1 || ^3.0",
+                "symfony/console": "^6.0 || ^7.3.4",
+                "twig/twig": "^3.21.1"
             },
             "type": "library",
             "autoload": {
@@ -9930,7 +9930,7 @@
             ],
             "support": {
                 "issues": "https://github.com/spatie/schema-org/issues",
-                "source": "https://github.com/spatie/schema-org/tree/3.23.1"
+                "source": "https://github.com/spatie/schema-org/tree/4.0.0"
             },
             "funding": [
                 {
@@ -9942,7 +9942,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-01-31T14:54:12+00:00"
+            "time": "2026-02-09T14:54:35+00:00"
         },
         {
             "name": "spatie/shiki-php",
