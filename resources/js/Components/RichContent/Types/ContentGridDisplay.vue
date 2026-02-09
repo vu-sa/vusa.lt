@@ -38,7 +38,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
-import RichContentTiptapHTML from '@/Components/RichContentTiptapHTML.vue';
+import RichContentTiptapHTML from '../RichContentTiptapHTML.vue';
 
 const props = defineProps<{
   element: {

@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import { createRenderExtensions, createRenderExtensions as createRenderExtensionsCore } from './TipTap/extensions/presets';
+import { createRenderExtensions, createRenderExtensions as createRenderExtensionsCore } from '../TipTap/extensions/presets';
 
 defineProps<{
   json_content: any;

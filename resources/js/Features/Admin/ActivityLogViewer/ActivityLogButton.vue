@@ -23,7 +23,7 @@ import { ref } from 'vue';
 
 import { Button } from '@/Components/ui/button';
 import ActivityLogItem from '@/Features/Admin/ActivityLogViewer/ActivityLogItem.vue';
-import CardModal from '@/Components/Modals/CardModal.vue';
+import CardModal from '@/Components/Dialogs/CardModal.vue';
 
 defineProps<{
   activities: Record<string, any>;

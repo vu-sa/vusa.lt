@@ -88,7 +88,7 @@ import { ClockIcon } from 'lucide-vue-next';
 
 import FeedbackPopover from '@/Components/Public/FeedbackPopover.vue';
 import HighlightsFloatingButton from '@/Components/Public/HighlightsFloatingButton.vue';
-import RichContentParser from '@/Components/RichContentParser.vue';
+import RichContentParser from '@/Components/RichContent/RichContentParser.vue';
 import TableOfContents from '@/Components/Public/TableOfContents.vue';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import { formatRelativeTime, formatStaticTime } from '@/Utils/IntlTime';

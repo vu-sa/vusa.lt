@@ -22,7 +22,7 @@
 import { computed } from 'vue';
 import { useDark } from '@vueuse/core';
 
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 
 import IconImportant from '~icons/fluent/important24-filled';
 import IconInfo from '~icons/fluent/info24-filled';

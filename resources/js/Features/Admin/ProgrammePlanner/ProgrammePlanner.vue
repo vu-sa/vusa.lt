@@ -55,7 +55,7 @@ import { Input } from '@/Components/ui/input';
 import { Switch } from '@/Components/ui/switch';
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import MultiLocaleInput from '@/Components/FormItems/MultiLocaleInput.vue';
-import CardModal from '@/Components/Modals/CardModal.vue';
+import CardModal from '@/Components/Dialogs/CardModal.vue';
 
 defineEmits<(e: 'close') => void>();
 

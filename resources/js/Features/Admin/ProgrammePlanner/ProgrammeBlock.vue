@@ -60,7 +60,7 @@ import ProgrammePart from './ProgrammePart.vue';
 
 import MultiLocaleInput from '@/Components/FormItems/MultiLocaleInput.vue';
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
-import CardModal from '@/Components/Modals/CardModal.vue';
+import CardModal from '@/Components/Dialogs/CardModal.vue';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { NumberField } from '@/Components/ui/number-field';

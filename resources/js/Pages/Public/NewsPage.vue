@@ -53,7 +53,7 @@ import { computed } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import RichContentParser from '@/Components/RichContentParser.vue';
+import RichContentParser from '@/Components/RichContent/RichContentParser.vue';
 import FeedbackPopover from '@/Components/Public/FeedbackPopover.vue';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import NewsArticleLayout from '@/Components/Public/News/NewsArticleLayout.vue';

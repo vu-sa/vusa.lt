@@ -165,7 +165,7 @@ import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
-import CardModal from '@/Components/Modals/CardModal.vue';
+import CardModal from '@/Components/Dialogs/CardModal.vue';
 import ReservationsWithUnitResources from '@/Components/Tables/ReservationsWithUnitResources.vue';
 import SimpleDataTable from '@/Components/Tables/SimpleDataTable.vue';
 import { Separator } from '@/Components/ui/separator';

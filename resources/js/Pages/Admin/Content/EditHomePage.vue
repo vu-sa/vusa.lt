@@ -11,7 +11,7 @@
 <script setup lang="ts">
 import { useForm } from '@inertiajs/vue3';
 
-import RichContentFormElement from '@/Components/RichContentFormElement.vue';
+import RichContentFormElement from '@/Components/RichContent/RichContentFormElement.vue';
 import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
 import AdminForm from '@/Components/AdminForms/AdminForm.vue';
 import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';

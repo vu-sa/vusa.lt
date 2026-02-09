@@ -101,7 +101,7 @@ import MultiLocaleInput from '../FormItems/MultiLocaleInput.vue';
 import SimpleLocaleButton from '../Buttons/SimpleLocaleButton.vue';
 import TiptapEditor from '../TipTap/TiptapEditor.vue';
 import SortableFormFieldsTable from '../Tables/SortableFormFieldsTable.vue';
-import CardModal from '../Modals/CardModal.vue';
+import CardModal from '../Dialogs/CardModal.vue';
 
 import AdminForm from './AdminForm.vue';
 import FormFieldWrapper from './FormFieldWrapper.vue';

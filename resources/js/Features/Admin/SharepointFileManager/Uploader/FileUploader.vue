@@ -39,7 +39,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import FileForm from './FileForm.vue';
 
 import { Stepper, StepperIndicator, StepperItem, StepperSeparator, StepperTitle, StepperTrigger } from '@/Components/ui/stepper';
-import CardModal from '@/Components/Modals/CardModal.vue';
+import CardModal from '@/Components/Dialogs/CardModal.vue';
 import FadeTransition from '@/Components/Transitions/FadeTransition.vue';
 import FileableForm from '@/Components/AdminForms/Special/FileableForm.vue';
 import ModalHelperButton from '@/Components/Buttons/ModalHelperButton.vue';

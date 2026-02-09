@@ -122,7 +122,7 @@ import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcru
 import { Button } from '@/Components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
-import CalendarSyncModal from '@/Components/Modals/CalendarSyncModal.vue';
+import CalendarSyncModal from '@/Components/Dialogs/CalendarSyncModal.vue';
 import EventListContent from '@/Components/Calendar/EventListContent.vue';
 import IFluentCalendar16Regular from '~icons/fluent/calendar-16-regular';
 

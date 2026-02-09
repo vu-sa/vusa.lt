@@ -164,7 +164,7 @@ const displayComponent = computed(() => {
     case 'shadcn-accordion':
       return defineAsyncComponent(() => import('./RCAccordion.vue'));
     case 'shadcn-card':
-      return defineAsyncComponent(() => import('@/Components/RichContentCard.vue'));
+      return defineAsyncComponent(() => import('./RichContentCard.vue'));
     case 'image-grid':
       return defineAsyncComponent(() => import('./Types/ImageGridDisplay.vue'));
     case 'hero':

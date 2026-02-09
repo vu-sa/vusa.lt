@@ -9,7 +9,7 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
 
-import RichContentParser from '@/Components/RichContentParser.vue';
+import RichContentParser from '@/Components/RichContent/RichContentParser.vue';
 import type { NewsItem } from '@/Types/contentParts';
 
 // Type for content with parts

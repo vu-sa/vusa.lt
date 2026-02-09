@@ -176,7 +176,7 @@ import { useGanttChartData } from './Composables/useGanttChartData';
 import { provideGanttSettings } from './Composables/useGanttSettings';
 import type { AtstovavimosUser, AtstovavimosTenant, AtstovavimosInstitution, RepresentativeActivityData } from './types';
 
-import VisakInfoModal from '@/Components/Modals/VisakInfoModal.vue';
+import VisakInfoModal from '@/Components/Dialogs/VisakInfoModal.vue';
 import { useProductTour } from '@/Composables/useProductTour';
 import { provideTour } from '@/Composables/useTourProvider';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';

@@ -196,10 +196,10 @@ import { moveArrayElement, useSortable } from '@vueuse/integrations/useSortable'
 import { computed, nextTick, ref, onUnmounted, onMounted, watch } from 'vue';
 import { useManualRefHistory } from '@vueuse/core';
 
-import FadeTransition from './Transitions/FadeTransition.vue';
-import ContentEditorFactory from './RichContent/ContentEditorFactory.vue';
+import FadeTransition from '../Transitions/FadeTransition.vue';
+import ContentEditorFactory from './ContentEditorFactory.vue';
 import RichContentParser from './RichContentParser.vue';
-import { getAllContentTypes, createContentItem, getContentType, type ContentPart } from './RichContent/Types';
+import { getAllContentTypes, createContentItem, getContentType, type ContentPart } from './Types';
 
 import { Button } from '@/Components/ui/button';
 import { ButtonGroup } from '@/Components/ui/button-group';

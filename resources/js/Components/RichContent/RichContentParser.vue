@@ -34,28 +34,28 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent, markRaw, shallowRef } from 'vue';
 
-import TiptapDisplay from './RichContent/Types/TiptapDisplay.vue';
+import TiptapDisplay from './Types/TiptapDisplay.vue';
 
 import type { NewsItem } from '@/Types/contentParts';
 
 // Import commonly used components synchronously for better performance
 
-const RichContentTiptapHTML = defineAsyncComponent(() => import('@/Components/RichContentTiptapHTML.vue'));
+const RichContentTiptapHTML = defineAsyncComponent(() => import('./RichContentTiptapHTML.vue'));
 
 // Optimize component registry - simplified async component loading
 const contentComponents = shallowRef({
   'tiptap': markRaw(TiptapDisplay), // Most common component - load synchronously
-  'shadcn-card': markRaw(defineAsyncComponent(() => import('@/Components/RichContentCard.vue'))),
-  'shadcn-accordion': markRaw(defineAsyncComponent(() => import('@/Components/RichContent/RCAccordion.vue'))),
-  'image-grid': markRaw(defineAsyncComponent(() => import('./RichContent/Types/ImageGridDisplay.vue'))),
-  'hero': markRaw(defineAsyncComponent(() => import('@/Components/RichContent/RCHeroSection/HeroElement.vue'))),
-  'spotify-embed': markRaw(defineAsyncComponent(() => import('@/Components/RichContent/RCSpotifyEmbed.vue'))),
-  'social-embed': markRaw(defineAsyncComponent(() => import('@/Components/RichContent/RCSocialEmbed.vue'))),
-  'number-stat-section': markRaw(defineAsyncComponent(() => import('@/Components/RichContent/RCNumberStatSection/RCNumberSection.vue'))),
+  'shadcn-card': markRaw(defineAsyncComponent(() => import('./RichContentCard.vue'))),
+  'shadcn-accordion': markRaw(defineAsyncComponent(() => import('./RCAccordion.vue'))),
+  'image-grid': markRaw(defineAsyncComponent(() => import('./Types/ImageGridDisplay.vue'))),
+  'hero': markRaw(defineAsyncComponent(() => import('./RCHeroSection/HeroElement.vue'))),
+  'spotify-embed': markRaw(defineAsyncComponent(() => import('./RCSpotifyEmbed.vue'))),
+  'social-embed': markRaw(defineAsyncComponent(() => import('./RCSocialEmbed.vue'))),
+  'number-stat-section': markRaw(defineAsyncComponent(() => import('./RCNumberStatSection/RCNumberSection.vue'))),
   'news': markRaw(defineAsyncComponent(() => import('@/Components/Public/NewsElement.vue'))),
   'calendar': markRaw(defineAsyncComponent(() => import('@/Components/Public/FullWidth/EventCalendarElement.vue'))),
-  'flow-graph': markRaw(defineAsyncComponent(() => import('@/Components/RichContent/RCFlowGraph.vue'))),
-  'content-grid': markRaw(defineAsyncComponent(() => import('./RichContent/Types/ContentGridDisplay.vue'))),
+  'flow-graph': markRaw(defineAsyncComponent(() => import('./RCFlowGraph.vue'))),
+  'content-grid': markRaw(defineAsyncComponent(() => import('./Types/ContentGridDisplay.vue'))),
 });
 
 const props = defineProps<{

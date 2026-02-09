@@ -98,7 +98,7 @@
 import { ref, computed, watch } from 'vue';
 
 import { Button } from '@/Components/ui/button';
-import CalendarSyncModal from '@/Components/Modals/CalendarSyncModal.vue';
+import CalendarSyncModal from '@/Components/Dialogs/CalendarSyncModal.vue';
 import EventTimeline from '@/Components/Calendar/EventTimeline.vue';
 import EventTimelineVertical from '@/Components/Calendar/EventTimelineVertical.vue';
 import FadeTransition from '@/Components/Transitions/FadeTransition.vue';

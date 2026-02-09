@@ -100,7 +100,7 @@ import { Input } from '@/Components/ui/input';
 import { NumberField } from '@/Components/ui/number-field';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
-import CardModal from '@/Components/Modals/CardModal.vue';
+import CardModal from '@/Components/Dialogs/CardModal.vue';
 import MultiLocaleInput from '@/Components/FormItems/MultiLocaleInput.vue';
 
 const day = defineModel<App.Entities.ProgrammeDay>('day');

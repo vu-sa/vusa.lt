@@ -66,7 +66,7 @@ import { router } from '@inertiajs/vue3';
 import ProgrammeBlock from './ProgrammeBlock.vue';
 
 import { formatStaticTime } from '@/Utils/IntlTime';
-import CardModal from '@/Components/Modals/CardModal.vue';
+import CardModal from '@/Components/Dialogs/CardModal.vue';
 import { Button } from '@/Components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';

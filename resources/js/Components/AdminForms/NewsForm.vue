@@ -196,7 +196,7 @@
 import { computed, ref, watch, h } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 
-import RichContentFormElement from '../RichContentFormElement.vue';
+import RichContentFormElement from '../RichContent/RichContentFormElement.vue';
 
 import AdminForm from './AdminForm.vue';
 import FormElement from './FormElement.vue';
