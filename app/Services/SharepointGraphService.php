@@ -630,6 +630,16 @@ class SharepointGraphService
             // keyBy list item id
         })->keyBy(fn ($value) => $value['listItem']['uniqueId']);
 
+        // Filter out folders - only process files
+        $folderItems = $driveItemCollections->filter(fn ($item) => isset($item['folder']));
+        if ($folderItems->isNotEmpty()) {
+            Log::warning('Batch processing encountered folders instead of files', [
+                'folder_count' => $folderItems->count(),
+                'folder_ids' => $folderItems->keys()->toArray(),
+            ]);
+            $driveItemCollections = $driveItemCollections->reject(fn ($item) => isset($item['folder']));
+        }
+
         // Get permissions without anonymous url
         $driveItemsWithoutAnonymousUrl = $driveItemCollections->filter(function ($driveItem) {
             return collect($driveItem['permissions'])->contains(function ($permission) {
@@ -688,8 +698,20 @@ class SharepointGraphService
 
         // Update documents
         $documentColection->each(function (Document $document) use ($driveItemCollections): void {
-            // TODO: handle batch update (need to set to current model)
             $driveItem = $driveItemCollections->get($document->sharepoint_id);
+
+            // Handle filtered folders - mark as failed
+            if ($driveItem === null) {
+                Log::warning('Document references a folder, skipping', [
+                    'sharepoint_id' => $document->sharepoint_id,
+                    'title' => $document->title,
+                ]);
+                $document->sync_status = 'failed';
+                $document->sync_error_message = 'Document references a folder (folders not supported)';
+                $document->save();
+
+                return;
+            }
 
             $document->name = $driveItem['name'];
             $document->title = isset($driveItem['listItem']['fields'][SharepointFieldEnum::TITLE()->label]) ? $driveItem['listItem']['fields'][SharepointFieldEnum::TITLE()->label] : $driveItem['name'];
@@ -704,13 +726,16 @@ class SharepointGraphService
             $document->summary = $driveItem['listItem']['fields'][SharepointFieldEnum::SUMMARY()->label] ?? null;
             /* $document->thumbnail_url = $driveItem['thumbnails'][0]['large']['url']; */
 
-            $document->anonymous_url = collect($driveItem['permissions'])->filter(function ($permission) {
+            $anonymousPermission = collect($driveItem['permissions'])->filter(function ($permission) {
 
                 $isAnonymous = isset($permission['link']['scope']) ? $permission['link']['scope'] === SharepointScopeEnum::ANONYMOUS()->label : false;
                 $hasPassword = isset($permission['hasPassword']) ? $permission['hasPassword'] : false;
 
                 return $isAnonymous && ! $hasPassword;
-            })->first()['link']['webUrl'];
+            })->first();
+
+            $document->anonymous_url = $anonymousPermission['link']['webUrl'] ?? null;
+            $document->sharepoint_permission_id = $anonymousPermission['id'] ?? null;
 
             $document->checked_at = Carbon::now();
 

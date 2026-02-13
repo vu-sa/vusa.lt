@@ -14,9 +14,10 @@ class SyncDocumentsCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'sharepoint:sync-documents 
+    protected $signature = 'sharepoint:sync-documents
                             {--all : Sync all documents regardless of staleness}
                             {--failed : Only sync documents with failed status}
+                            {--force : Skip eTag matching and force full sync (useful for backfilling permission IDs)}
                             {--limit=50 : Maximum number of documents to sync}
                             {--dry-run : Show what would be synced without actually syncing}';
 
@@ -106,13 +107,15 @@ class SyncDocumentsCommand extends Command
             return 0;
         }
 
-        $this->info("Dispatching sync jobs for {$documents->count()} documents...");
+        $force = $this->option('force');
+
+        $this->info("Dispatching sync jobs for {$documents->count()} documents...".($force ? ' (force mode)' : ''));
 
         $bar = $this->output->createProgressBar($documents->count());
         $bar->start();
 
         foreach ($documents as $document) {
-            SyncDocumentFromSharePointJob::dispatch($document);
+            SyncDocumentFromSharePointJob::dispatch($document, $force);
             $bar->advance();
             usleep(100000); // 100ms delay between dispatches
         }
@@ -160,10 +163,12 @@ class SyncDocumentsCommand extends Command
             return 0;
         }
 
-        $this->info("Retrying sync for {$failedDocuments->count()} failed documents...");
+        $force = $this->option('force');
+
+        $this->info("Retrying sync for {$failedDocuments->count()} failed documents...".($force ? ' (force mode)' : ''));
 
         foreach ($failedDocuments as $document) {
-            SyncDocumentFromSharePointJob::dispatch($document);
+            SyncDocumentFromSharePointJob::dispatch($document, $force);
             $this->line("Dispatched retry for: {$document->title}");
             usleep(200000); // 200ms delay for retries
         }
