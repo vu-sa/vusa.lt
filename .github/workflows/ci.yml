@@ -139,7 +139,7 @@ jobs:
         docker run -d --name typesense \
           -p 8108:8108 \
           -v /tmp/typesense-data:/data \
-          typesense/typesense:0.29.0 \
+          typesense/typesense:29.0 \
           --data-dir /data \
           --api-key=xyz \
           --enable-cors
