@@ -18,7 +18,7 @@ class SyncDocumentsCommand extends Command
                             {--all : Sync all documents regardless of staleness}
                             {--failed : Only sync documents with failed status}
                             {--force : Skip eTag matching and force full sync (useful for backfilling permission IDs)}
-                            {--limit=50 : Maximum number of documents to sync}
+                            {--limit= : Maximum number of documents to sync (defaults to 50, ignored with --all)}
                             {--dry-run : Show what would be synced without actually syncing}';
 
     /**
@@ -74,16 +74,17 @@ class SyncDocumentsCommand extends Command
 
     private function syncAllDocuments()
     {
-        $limit = (int) $this->option('limit');
-
         $query = Document::query()
             ->where('sync_status', '!=', 'syncing')
-            ->orderBy('checked_at', 'asc')
-            ->limit($limit);
+            ->orderBy('checked_at', 'asc');
+
+        if ($this->option('limit')) {
+            $query->limit((int) $this->option('limit'));
+        }
 
         if ($this->option('dry-run')) {
             $count = $query->count();
-            $this->info("Would sync {$count} documents (limit: {$limit})");
+            $this->info("Would sync {$count} documents");
 
             $documents = $query->get(['id', 'title', 'checked_at', 'sync_status']);
             $this->table(
@@ -129,7 +130,7 @@ class SyncDocumentsCommand extends Command
 
     private function syncFailedDocuments()
     {
-        $limit = (int) $this->option('limit');
+        $limit = $this->option('limit') ? (int) $this->option('limit') : 50;
 
         $query = Document::query()
             ->where('sync_status', 'failed')
