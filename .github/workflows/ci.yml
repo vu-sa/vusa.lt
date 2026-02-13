@@ -135,10 +135,16 @@ jobs:
         path: ./
 
     - name: Start Typesense
-      uses: jirevwe/typesense-github-action@v1.0.1
-      with:
-        typesense-version: "0.29.0"
-        typesense-api-key: xyz
+      run: |
+        docker run -d --name typesense \
+          -p 8108:8108 \
+          -v /tmp/typesense-data:/data \
+          typesense/typesense:0.29.0 \
+          --data-dir /data \
+          --api-key=xyz \
+          --enable-cors
+        # Wait for Typesense to be ready
+        until curl -s http://localhost:8108/health | grep -q '"ok"'; do sleep 1; done
 
     - name: Setup PHP with Xdebug
       uses: shivammathur/setup-php@v2
