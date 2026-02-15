@@ -12,6 +12,17 @@ use App\Services\ResourceServices\SharepointFileService;
 use App\Services\SharepointGraphService;
 use Illuminate\Http\Request;
 
+/**
+ * Allowed fileable model types for SharePoint file operations.
+ * Only these models can be referenced via the type parameter.
+ */
+const ALLOWED_FILEABLE_TYPES = [
+    'Duty' => \App\Models\Duty::class,
+    'Type' => \App\Models\Type::class,
+    'Meeting' => \App\Models\Meeting::class,
+    'Institution' => \App\Models\Institution::class,
+];
+
 class SharepointFileController extends AdminController
 {
     public function __construct(public Authorizer $authorizer) {}
@@ -54,12 +65,14 @@ class SharepointFileController extends AdminController
             'fileable.type' => 'required|string',
         ]);
 
-        $fileable_class = 'App\\Models\\'.$validated['fileable']['type'];
+        $fileableType = $validated['fileable']['type'];
 
-        // check if fileable class exists
-        if (! class_exists($fileable_class)) {
+        // Only allow whitelisted fileable types
+        if (! isset(ALLOWED_FILEABLE_TYPES[$fileableType])) {
             return back()->with('error', 'Failas negali būti priskirtas objektui.');
         }
+
+        $fileable_class = ALLOWED_FILEABLE_TYPES[$fileableType];
 
         // check if fileable exists
         $fileable = $fileable_class::find($validated['fileable']['id']);
@@ -146,11 +159,11 @@ class SharepointFileController extends AdminController
      */
     public function getFileableFiles(Request $request, string $type, string $id)
     {
-        $fileable_class = 'App\\Models\\'.$type;
-
-        if (! class_exists($fileable_class)) {
+        if (! isset(ALLOWED_FILEABLE_TYPES[$type])) {
             return response()->json(['error' => 'Invalid fileable type'], 400);
         }
+
+        $fileable_class = ALLOWED_FILEABLE_TYPES[$type];
 
         /** @var \Illuminate\Database\Eloquent\Model|null $fileable */
         $fileable = $fileable_class::find($id);
@@ -179,11 +192,11 @@ class SharepointFileController extends AdminController
      */
     public function getTypeInheritedFiles(Request $request, string $type, string $id)
     {
-        $fileable_class = 'App\\Models\\'.$type;
-
-        if (! class_exists($fileable_class)) {
+        if (! isset(ALLOWED_FILEABLE_TYPES[$type])) {
             return response()->json(['error' => 'Invalid fileable type'], 400);
         }
+
+        $fileable_class = ALLOWED_FILEABLE_TYPES[$type];
 
         $fileable = $fileable_class::find($id);
 
@@ -221,9 +234,13 @@ class SharepointFileController extends AdminController
         return response()->json($files);
     }
 
-    // get potential fileables, usually when none specified
+    /**
+     * Get potential fileables, usually when none specified.
+     */
     public function getPotentialFileables(Request $request)
     {
+        $this->handleAuthorization('viewAny', SharepointFile::class);
+
         return response()->json([
             'institutions' => Institution::with('meetings:meetings.id,start_time')->whereHas('tenant')->get()->map->only('id', 'name', 'meetings'),
             'types' => Type::all()->map->only('id', 'title'),
@@ -239,7 +256,9 @@ class SharepointFileController extends AdminController
         // remove trailing slash
         $path = rtrim($path, '/');
 
-        // TODO: need to authorize by path
+        // Require SharePoint viewAny permission for drive browsing
+        $this->handleAuthorization('viewAny', SharepointFile::class);
+
         $driveItems = $sharepointService->getDriveItemByPath($path, true);
 
         return response()->json($driveItems);
@@ -275,11 +294,11 @@ class SharepointFileController extends AdminController
      */
     public function getTypesDriveItems(Request $request, string $type, string $id)
     {
-        $fileable_class = 'App\\Models\\'.$type;
-
-        if (! class_exists($fileable_class)) {
+        if (! isset(ALLOWED_FILEABLE_TYPES[$type])) {
             return back()->with('info', 'Neteisinga užklausa. Praneškite administratoriui');
         }
+
+        $fileable_class = ALLOWED_FILEABLE_TYPES[$type];
 
         $fileable = $fileable_class::find($id);
 

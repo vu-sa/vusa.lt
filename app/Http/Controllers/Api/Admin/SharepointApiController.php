@@ -10,6 +10,16 @@ use App\Services\SharepointGraphService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+/**
+ * Allowed fileable model types for SharePoint file API operations.
+ */
+const ALLOWED_FILEABLE_TYPES = [
+    'Duty' => \App\Models\Duty::class,
+    'Type' => \App\Models\Type::class,
+    'Meeting' => \App\Models\Meeting::class,
+    'Institution' => \App\Models\Institution::class,
+];
+
 class SharepointApiController extends ApiController
 {
     /**
@@ -20,11 +30,11 @@ class SharepointApiController extends ApiController
     {
         $this->requireAuth($request);
 
-        $fileable_class = 'App\\Models\\'.$type;
-
-        if (! class_exists($fileable_class)) {
+        if (! isset(ALLOWED_FILEABLE_TYPES[$type])) {
             return $this->jsonError('Invalid fileable type', 400, code: 'INVALID_TYPE');
         }
+
+        $fileable_class = ALLOWED_FILEABLE_TYPES[$type];
 
         /** @var \Illuminate\Database\Eloquent\Model|null $fileable */
         $fileable = $fileable_class::find($id);
@@ -55,11 +65,11 @@ class SharepointApiController extends ApiController
     {
         $this->requireAuth($request);
 
-        $fileable_class = 'App\\Models\\'.$type;
-
-        if (! class_exists($fileable_class)) {
+        if (! isset(ALLOWED_FILEABLE_TYPES[$type])) {
             return $this->jsonError('Invalid fileable type', 400, code: 'INVALID_TYPE');
         }
+
+        $fileable_class = ALLOWED_FILEABLE_TYPES[$type];
 
         $fileable = $fileable_class::find($id);
 
@@ -125,7 +135,9 @@ class SharepointApiController extends ApiController
         $path = $request->get('path');
         $path = rtrim($path, '/');
 
-        // TODO: need to authorize by path
+        // Require authorization for SharePoint browsing
+        $this->authorizeApi('viewAny', \App\Models\SharepointFile::class);
+
         $driveItems = $sharepointService->getDriveItemByPath($path, true);
 
         return $this->jsonSuccess($driveItems);
