@@ -13,7 +13,10 @@ class DocumentController extends ApiController
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Document::query()->select(['id', 'title', 'anonymous_url']);
+        $query = Document::query()
+            ->select(['id', 'title', 'anonymous_url'])
+            ->where('is_active', true)
+            ->whereNotNull('anonymous_url');
 
         // Search functionality
         if ($request->has('search') && $request->search) {

@@ -1,9 +1,11 @@
 <?php
 
+use App\Jobs\RevokeSharepointPermissionJob;
 use App\Models\Document;
 use App\Models\Institution;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Queue;
 
 uses(RefreshDatabase::class);
 
@@ -151,12 +153,23 @@ describe('authorized access', function () {
     });
 
     test('document manager can delete documents', function () {
-        $document = Document::factory()->create(['institution_id' => $this->institution->id]);
+        Queue::fake();
+
+        $document = Document::factory()->create([
+            'institution_id' => $this->institution->id,
+            'anonymous_url' => 'https://example.sharepoint.com/:b:/test',
+            'sharepoint_permission_id' => 'perm-to-revoke',
+        ]);
 
         $response = asUser($this->documentManager)->delete(route('documents.destroy', $document));
         $response->assertRedirect();
 
         $this->assertDatabaseMissing('documents', ['id' => $document->id]);
+
+        Queue::assertPushed(RevokeSharepointPermissionJob::class, function ($job) use ($document) {
+            return $job->sharepointPermissionId === 'perm-to-revoke'
+                && $job->documentId === $document->id;
+        });
     });
 
     test('super admin can delete documents from any tenant', function () {

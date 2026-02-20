@@ -26,8 +26,17 @@ class TypesenseManager
             $collections[$name] = $prefix.$name;
         }
 
+        $searchOnlyKey = Config::get('scout.typesense.client-settings.search_only_key');
+
+        // Never expose the admin API key to the frontend.
+        // The search_only_key must be a dedicated key generated via `artisan typesense:generate-search-key`,
+        // restricted to documents:search on public collections only.
+        if (empty($searchOnlyKey) || $searchOnlyKey === $typesenseConfig['api_key']) {
+            return [];
+        }
+
         return [
-            'apiKey' => Config::get('scout.typesense.client-settings.search_only_key', $typesenseConfig['api_key']),
+            'apiKey' => $searchOnlyKey,
             'nodes' => array_map(function ($node) {
                 // Replace Docker service name with localhost for frontend access
                 $host = $node['host'] === 'typesense' ? 'localhost' : $node['host'];

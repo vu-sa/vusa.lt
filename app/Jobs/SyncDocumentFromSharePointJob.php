@@ -27,7 +27,8 @@ class SyncDocumentFromSharePointJob implements ShouldQueue
      * Create a new job instance.
      */
     public function __construct(
-        public Document $document
+        public Document $document,
+        public bool $force = false,
     ) {
         // Set queue name for better organization
         $this->queue = 'sharepoint-sync';
@@ -46,7 +47,7 @@ class SyncDocumentFromSharePointJob implements ShouldQueue
 
         try {
             // Call the model's sync method which now has proper error handling
-            $result = $this->document->refreshFromSharepoint();
+            $result = $this->document->refreshFromSharepoint($this->force);
 
             if ($result === null) {
                 Log::info('SharePoint document was already up to date', [

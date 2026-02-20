@@ -14,10 +14,11 @@ class SyncDocumentsCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'sharepoint:sync-documents 
+    protected $signature = 'sharepoint:sync-documents
                             {--all : Sync all documents regardless of staleness}
                             {--failed : Only sync documents with failed status}
-                            {--limit=50 : Maximum number of documents to sync}
+                            {--force : Skip eTag matching and force full sync (useful for backfilling permission IDs)}
+                            {--limit= : Maximum number of documents to sync (defaults to 50, ignored with --all)}
                             {--dry-run : Show what would be synced without actually syncing}';
 
     /**
@@ -73,16 +74,17 @@ class SyncDocumentsCommand extends Command
 
     private function syncAllDocuments()
     {
-        $limit = (int) $this->option('limit');
-
         $query = Document::query()
             ->where('sync_status', '!=', 'syncing')
-            ->orderBy('checked_at', 'asc')
-            ->limit($limit);
+            ->orderBy('checked_at', 'asc');
+
+        if ($this->option('limit')) {
+            $query->limit((int) $this->option('limit'));
+        }
 
         if ($this->option('dry-run')) {
             $count = $query->count();
-            $this->info("Would sync {$count} documents (limit: {$limit})");
+            $this->info("Would sync {$count} documents");
 
             $documents = $query->get(['id', 'title', 'checked_at', 'sync_status']);
             $this->table(
@@ -106,13 +108,15 @@ class SyncDocumentsCommand extends Command
             return 0;
         }
 
-        $this->info("Dispatching sync jobs for {$documents->count()} documents...");
+        $force = $this->option('force');
+
+        $this->info("Dispatching sync jobs for {$documents->count()} documents...".($force ? ' (force mode)' : ''));
 
         $bar = $this->output->createProgressBar($documents->count());
         $bar->start();
 
         foreach ($documents as $document) {
-            SyncDocumentFromSharePointJob::dispatch($document);
+            SyncDocumentFromSharePointJob::dispatch($document, $force);
             $bar->advance();
             usleep(100000); // 100ms delay between dispatches
         }
@@ -126,7 +130,7 @@ class SyncDocumentsCommand extends Command
 
     private function syncFailedDocuments()
     {
-        $limit = (int) $this->option('limit');
+        $limit = $this->option('limit') ? (int) $this->option('limit') : 50;
 
         $query = Document::query()
             ->where('sync_status', 'failed')
@@ -160,10 +164,12 @@ class SyncDocumentsCommand extends Command
             return 0;
         }
 
-        $this->info("Retrying sync for {$failedDocuments->count()} failed documents...");
+        $force = $this->option('force');
+
+        $this->info("Retrying sync for {$failedDocuments->count()} failed documents...".($force ? ' (force mode)' : ''));
 
         foreach ($failedDocuments as $document) {
-            SyncDocumentFromSharePointJob::dispatch($document);
+            SyncDocumentFromSharePointJob::dispatch($document, $force);
             $this->line("Dispatched retry for: {$document->title}");
             usleep(200000); // 200ms delay for retries
         }

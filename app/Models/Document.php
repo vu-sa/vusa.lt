@@ -23,6 +23,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string|null $language
  * @property string|null $summary
  * @property string|null $anonymous_url
+ * @property string|null $sharepoint_permission_id
  * @property bool $is_active
  * @property string $sharepoint_site_id
  * @property string $sharepoint_list_id
@@ -52,7 +53,7 @@ class Document extends Model
 
     protected $guarded = [];
 
-    protected $hidden = ['sharepoint_id', 'eTag', 'public_url_created_at', 'sharepoint_site_id', 'sharepoint_list_id', 'created_at', 'updated_at'];
+    protected $hidden = ['sharepoint_id', 'eTag', 'public_url_created_at', 'sharepoint_site_id', 'sharepoint_list_id', 'sharepoint_permission_id', 'created_at', 'updated_at'];
 
     protected function casts(): array
     {
@@ -287,7 +288,7 @@ class Document extends Model
     }
 
     // Also used in SharepointGraphService::batchProcessDocuments
-    public function refreshFromSharepoint()
+    public function refreshFromSharepoint(bool $force = false)
     {
         // Update sync tracking
         $this->sync_status = 'syncing';
@@ -313,10 +314,11 @@ class Document extends Model
                 'etag_matches' => $eTagMatches,
                 'url_masked' => $this->maskUrl($this->anonymous_url),
                 'has_folder_url' => $hasInvalidUrl,
-                'will_skip_permission_check' => $eTagMatches && ! $hasInvalidUrl,
+                'force' => $force,
+                'will_skip_permission_check' => ! $force && $eTagMatches && ! $hasInvalidUrl,
             ]);
 
-            if ($eTagMatches && ! $hasInvalidUrl) {
+            if (! $force && $eTagMatches && ! $hasInvalidUrl) {
                 Log::info('SharePoint document was already up to date', ['document_id' => $this->id]);
                 $this->checked_at = Carbon::now();
                 $this->sync_status = 'success';
@@ -392,6 +394,7 @@ class Document extends Model
                 ]);
 
                 $this->anonymous_url = $newUrl;
+                $this->sharepoint_permission_id = $anonymous_permission->getId();
 
                 /* $this->anonymous_url_expiration_date = Carbon::parse($anonymous_permission->getExpirationDateTime()); */
             } else {
@@ -411,6 +414,7 @@ class Document extends Model
                 }
 
                 $this->anonymous_url = $newUrl;
+                $this->sharepoint_permission_id = $anonymous_permission->getId();
                 /* $this->anonymous_url_expiration_date = Carbon::parse($anonymous_permission->getExpirationDateTime()); */
             }
 
