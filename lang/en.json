@@ -895,5 +895,18 @@
     "Aprašykite veiksmus, kurie jau buvo atlikti bandant išspręsti šią problemą.": "Describe the steps that have already been taken to resolve this problem.",
     "Aprašykite problemos sprendimą, jei toks jau rastas. Šis laukas gali būti užpildytas vėliau.": "Describe the problem solution, if one has already been found. This field can be filled in later.",
     "Užfiksuoti problemą": "Record a problem",
-    "Greitas problemos įrašymas": "Quick problem recording"
+    "Greitas problemos įrašymas": "Quick problem recording",
+    "Sukurta": "Created",
+    "Turinys atnaujintas": "Content updated",
+    "Pavadinimas": "Title",
+    "Atvira": "Open",
+    "Vykdoma": "In progress",
+    "Išspręsta": "Resolved",
+    "Išspręsta per :count d.": "Resolved in :count d.",
+    "Atvira jau :count d.": "Open for :count d.",
+    "Grįžti į sąrašą": "Back to list",
+    "Pridėkite kategoriją, atsakingą asmenį ar instituciją.": "Add a category, responsible person, or institution.",
+    "Pridėti sprendimą": "Add solution",
+    "Sukūrė": "Created by",
+    "Atlikti žingsniai": "Steps taken"
 }

@@ -95,7 +95,7 @@ const columns = computed<ColumnDef<App.Entities.Problem, any>[]>(() => [
     accessorKey: "title",
     header: () => capitalize($t("entities.problem.title")),
     cell: ({ row }) => (
-      <Link href={route("problems.edit", row.original.id)} class="font-medium hover:underline">
+      <Link href={route("problems.show", row.original.id)} class="font-medium hover:underline">
         {row.original.title}
       </Link>
     ),

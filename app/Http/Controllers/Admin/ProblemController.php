@@ -144,6 +144,8 @@ class ProblemController extends AdminController
     {
         $this->handleAuthorization('view', $problem);
 
+        $user = auth()->user();
+
         return $this->inertiaResponse('Admin/Problems/ShowProblem', [
             'problem' => [
                 ...$problem->load([
@@ -155,6 +157,8 @@ class ProblemController extends AdminController
                     'activities.causer',
                 ])->toFullArray(),
             ],
+            'canUpdate' => $user->can('update', $problem),
+            'canDelete' => $user->can('delete', $problem),
         ]);
     }
 
@@ -213,6 +217,32 @@ class ProblemController extends AdminController
         $problem->delete();
 
         return $this->redirectToIndexWithInfo('problems', trans_choice('messages.deleted', 0, ['model' => trans_choice('entities.problem.model', 1)]));
+    }
+
+    /**
+     * Update the status of the specified problem.
+     */
+    public function updateStatus(Request $request, Problem $problem)
+    {
+        $this->handleAuthorization('update', $problem);
+
+        $validated = $request->validate([
+            'status' => 'required|string|in:open,in_progress,resolved',
+        ]);
+
+        $data = ['status' => $validated['status']];
+
+        if ($validated['status'] === 'resolved' && ! $problem->resolved_at) {
+            $data['resolved_at'] = now();
+        }
+
+        if ($validated['status'] !== 'resolved') {
+            $data['resolved_at'] = null;
+        }
+
+        $problem->update($data);
+
+        return back()->with('success', trans_choice('messages.updated', 0, ['model' => trans_choice('entities.problem.model', 1)]));
     }
 
     /**

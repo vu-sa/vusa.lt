@@ -47,7 +47,7 @@ class RoleStudentRepresentativeCoordinatorSeeder extends Seeder
             'sharepointFiles.read.padalinys',
             'sharepointFiles.update.padalinys',
             'tasks.create.padalinys',
-            'tasks.read.padalinys',
+            'tasks.read.own',
             'tasks.update.own',
             'problems.create.padalinys',
             'problems.read.padalinys',
@@ -55,6 +55,6 @@ class RoleStudentRepresentativeCoordinatorSeeder extends Seeder
             'problems.delete.padalinys',
         ]);
 
-        $role->attachable_types()->syncWithoutDetaching([Type::query()->where('slug', 'studentu-atstovai')->firstOrFail()->id]);
+        $role->attachable_types()->attach(Type::query()->where('slug', 'studentu-atstovai')->firstOrFail());
     }
 }

@@ -26,17 +26,11 @@ class ProblemPolicy extends ModelPolicy
     /**
      * Determine whether the user can view the model.
      *
-     * Users can view their own problems even without tenant permission.
+     * All authenticated users can view problems (admin routes already require auth).
      */
     public function view(User $user, Model $problem): bool
     {
-        // Allow users to view their own problems
-        if ($problem->created_by === $user->id) {
-            return true;
-        }
-
-        // Problem belongs to a single tenant
-        return $this->commonChecker($user, $problem, CRUDEnum::READ()->label, $this->pluralModelName, false);
+        return true;
     }
 
     /**
