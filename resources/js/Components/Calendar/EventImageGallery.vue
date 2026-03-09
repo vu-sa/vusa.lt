@@ -1,11 +1,14 @@
 <template>
   <div v-if="images.length > 0">
-    <h3 class="mb-8 text-2xl font-bold text-zinc-900 dark:text-zinc-100">
-      {{ $t("Nuotraukos") }}
-      <span class="ml-2 text-lg font-normal text-zinc-500 dark:text-zinc-400">
-        ({{ images.length }})
-      </span>
-    </h3>
+    <div class="flex items-center gap-4 mb-8">
+      <div class="w-1.5 h-8 bg-vusa-red rounded-full" />
+      <h3 class="text-xl lg:text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+        {{ $t("Nuotraukos") }}
+        <span class="ml-2 text-base font-normal text-zinc-500 dark:text-zinc-400">
+          ({{ images.length }})
+        </span>
+      </h3>
+    </div>
 
     <!-- Main Gallery Grid -->
     <div class="gallery-grid">

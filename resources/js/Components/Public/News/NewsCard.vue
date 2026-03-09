@@ -1,9 +1,10 @@
 <template>
-  <article class="group relative flex flex-col overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm transition-all duration-300 hover:shadow-md dark:border-zinc-700 dark:bg-zinc-800">
+  <article class="group relative flex flex-col overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm transition-all duration-300 hover:shadow-md dark:border-zinc-700 dark:bg-zinc-800">
     <!-- Image section -->
-    <div class="relative aspect-[16/9] w-full overflow-hidden">
+    <div class="relative aspect-[16/9] w-full overflow-hidden rounded-t-xl">
       <img :src="news.image" :alt="news.title" 
-        class="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105" />
+        class="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105 rounded-t-xl"
+        :style="{ viewTransitionName: `news-image-${news.id}` }" />
         
       <!-- Date badge - only shown if publish_time exists -->
       <div v-if="news.publish_time" class="absolute bottom-3 left-3 rounded-full bg-white/90 px-3 py-1.5 text-xs font-medium shadow-sm backdrop-blur-sm dark:bg-zinc-800/90">
@@ -21,7 +22,7 @@
     <!-- Content section -->
     <div class="flex flex-1 flex-col p-4">
       <!-- Title -->
-      <h3 class="mb-2 text-base font-bold leading-tight text-zinc-900 line-clamp-2 dark:text-zinc-50 mt-0">
+      <h3 class="font-heading mb-2 text-base font-bold leading-tight text-zinc-900 line-clamp-2 dark:text-zinc-50 mt-0">
         {{ news.title }}
       </h3>
       

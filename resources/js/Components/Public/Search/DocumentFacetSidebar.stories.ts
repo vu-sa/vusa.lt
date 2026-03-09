@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
 import { fn, userEvent, within } from 'storybook/test'
 import DocumentFacetSidebar from './DocumentFacetSidebar.vue'
-import type { DocumentFacet, DocumentSearchFilters } from '@/Composables/useDocumentSearch'
+import type { DocumentFacet, DocumentSearchFilters } from '@/Types/DocumentSearchTypes'
 
 // Mock facet data that matches the expected DocumentFacet[] structure
 const mockFacets: DocumentFacet[] = [

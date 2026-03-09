@@ -16,51 +16,15 @@ For a quick overview and basic usage, see @README.md in this directory.
 ### JavaScript Testing Setup
 **Mocks Location**: Use `resources/js/mocks/` directory (NOT Storybook mocks):
 - `inertia.mock.ts` - for Inertia.js functionality (usePage, router, useForm)
-- `i18n.mock.ts` - for Laravel translations (trans, wTrans, $t)  
-- `route.mock.ts` - for route generation (route() function, Ziggy)
+- `i18n.ts` - for Laravel translations (trans, wTrans, $t) - uses actual generated translations
+- `route.ts` - for route generation (route() function) - returns predictable mock URLs
 
 **Test Locations**:
 - Composables: `resources/js/Composables/__tests__/`
 - Components: `resources/js/Components/**/__tests__/`
 - Services: `resources/js/Services/__tests__/`
 
-## Testing Commands
-
-**Basic Commands**:
-```bash
-# Run all tests
-./vendor/bin/sail artisan test
-
-# Run specific test file
-./vendor/bin/sail artisan test tests/Feature/System/SystemStatusTest.php
-
-# Run tests with coverage
-./vendor/bin/sail artisan test --coverage
-
-# Parallel execution (faster)
-./vendor/bin/sail artisan test --parallel
-
-# Filter specific tests
-./vendor/bin/sail artisan test --filter="SystemStatus"
-```
-
-**Important Notes**:
-- **Verbose output**: Use `-v` flag, NOT `--verbose` (which doesn't exist)
-- **Multiple verbosity levels**: `-v`, `-vv`, `-vvv` for increasing detail
-- **Stop on failure**: Use `--stop-on-failure` to halt on first failing test
-- **Memory limits**: Add `--memory=512M` if tests run out of memory
-
-**Example verbose commands**:
-```bash
-# Verbose output
-./vendor/bin/sail artisan test -v
-
-# Very verbose (includes test output)
-./vendor/bin/sail artisan test -vv
-
-# Maximum verbosity (debug level)
-./vendor/bin/sail artisan test -vvv
-```
+**Testing Commands**: See [tests/README.md](README.md) for all test commands and environment setup.
 
 ## Test Directory Structure
 
@@ -76,11 +40,8 @@ tests/Feature/
 │   ├── Permissions/# Permission, Role controllers
 │   └── Resources/  # Document, Files, Reservation controllers
 ├── Auth/           # Authentication & Authorization
-├── Content/        # DEPRECATED: Legacy model tests (avoid, use Admin/ instead)
 ├── Forms/          # Dynamic Forms & Registration workflows
-├── Management/     # DEPRECATED: Legacy management tests
 ├── Public/         # Public-facing features
-├── Resources/      # DEPRECATED: Legacy resource tests
 ├── System/         # API, Permissions, Integration, Search
 └── Other/          # Legacy tests (to be cleaned up)
 ```
@@ -199,6 +160,58 @@ uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 - Group related tests using `describe()` blocks
 - Use `test()` function for simple assertions
 - Use `it()` function for BDD-style tests
+
+### Domain Logic Tests (Tasks, Notifications)
+
+**Mirror Pattern**: Test directories mirror `app/` subdirectory structure exactly.
+
+| App Location | Test Location |
+|--------------|---------------|
+| `app/Tasks/Handlers/{Name}.php` | `tests/Feature/Tasks/Handlers/{Name}Test.php` |
+| `app/Tasks/Subscribers/{Name}.php` | `tests/Feature/Tasks/Subscribers/{Name}Test.php` |
+| `app/Notifications/{Name}.php` | Group in `tests/Feature/Notifications/{Behavior}Test.php` |
+| `app/Notifications/Subscribers/{Name}.php` | `tests/Feature/Notifications/Subscribers/{Name}Test.php` |
+
+**Task Handler Test Pattern**:
+```php
+<?php
+use App\Tasks\Handlers\{HandlerName};
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
+
+uses(RefreshDatabase::class);
+
+beforeEach(function () {
+    Notification::fake();
+    config(['queue.default' => 'sync']);
+});
+
+describe('{HandlerName}', function () {
+    test('creates task for valid scenario', function () {
+        // Arrange: Create required models
+        // Act: Invoke handler or trigger event
+        // Assert: Verify task created with correct properties
+    });
+});
+```
+
+**Notification Behavior Test Pattern** (grouped by behavior, not per-class):
+```php
+<?php
+use Tests\Feature\Notifications\NotificationTestHelpers;
+
+uses(RefreshDatabase::class, NotificationTestHelpers::class);
+
+describe('task notifications', function () {
+    test('TaskAssignedNotification fires on task creation', function () {
+        // Test notification firing
+    });
+});
+```
+
+**Helper Traits**: Place shared test utilities in `{Domain}TestHelpers.php`:
+- `tests/Feature/Tasks/MeetingTaskTestHelpers.php`
+- `tests/Feature/Notifications/NotificationTestHelpers.php`
 
 ## Common Test Patterns
 
@@ -343,8 +356,8 @@ describe('ComponentName', () => {
 ```typescript
 // Use existing mocks from resources/js/mocks/
 import { usePage } from '@/mocks/inertia.mock'
-import { trans } from '@/mocks/i18n.mock'
-import { route } from '@/mocks/route.mock'
+import { trans } from '@/mocks/i18n'
+import { route } from '@/mocks/route'
 ```
 
 ## Testing Best Practices

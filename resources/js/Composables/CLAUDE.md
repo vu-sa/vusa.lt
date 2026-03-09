@@ -5,8 +5,9 @@
 **Status**: ✅ FULLY MIGRATED to unified system
 
 ### Single Source of Truth
-- `useBreadcrumbsUnified.ts` - Main breadcrumb composable
-- `UnifiedBreadcrumbs.vue` - Display component (in Components/)
+- `useBreadcrumbsUnified.ts` - Main breadcrumb composable (state management)
+- `AdminBreadcrumbs.vue` - Admin display component (in Components/)
+- `PublicBreadcrumbs.vue` - Public display component (in Components/Public/)
 - `BreadcrumbHelpers` - All helper functions
 
 ### Quick Usage
@@ -38,10 +39,8 @@ usePageBreadcrumbs([
 - **No flashing**: breadcrumbs persist during navigation
 - **Unified API**: same interface for admin and public pages
 
-### Migration Complete
-All old breadcrumb files have been removed:
-- ❌ `useBreadcrumbs.ts` (old admin system)
-- ❌ `usePublicBreadcrumbs.ts` (old public system)  
-- ❌ `breadcrumbHelpers.ts` (deprecated wrappers)
-- ❌ `AdminBreadcrumbs.vue` (old component)
-- ❌ `PublicBreadcrumb.vue` (old component)
+### Architecture
+The system uses Vue's provide/inject pattern:
+1. **Provider**: `createBreadcrumbState()` - called in layout components
+2. **Consumer**: `useBreadcrumbs()` - injects state with graceful fallback
+3. **Page helper**: `usePageBreadcrumbs()` - recommended API, handles lifecycle

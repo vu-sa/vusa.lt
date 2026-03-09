@@ -44,7 +44,7 @@ describe('role index', function () {
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->has('roles.data', 20) // Default pagination size
-                ->has('roles.links')
+                ->has('roles.meta')
             );
     });
 });

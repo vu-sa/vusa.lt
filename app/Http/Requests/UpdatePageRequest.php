@@ -28,6 +28,7 @@ class UpdatePageRequest extends FormRequest
             'category_id' => 'nullable|exists:categories,id',
             'other_lang_id' => 'nullable|exists:pages,id|different:id',
             'is_active' => 'required|boolean',
+            'layout' => 'nullable|string|in:default,wide,focused',
         ];
     }
 }

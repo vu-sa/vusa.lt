@@ -300,16 +300,22 @@ describe('end-to-end refactored meeting flow', function () {
         $response->assertSessionHas('success');
         $this->assertEquals(3, $meeting->fresh()->agendaItems()->count());
 
-        // 3. Update an agenda item
+        // 3. Update an agenda item with votes
         $agendaItem = $meeting->agendaItems()->first();
 
         $response = asUser($this->admin)
             ->patch(route('agendaItems.update', $agendaItem->id), [
                 'title' => 'Updated discussion',
                 'description' => 'This is an important discussion',
-                'decision' => 'positive',
-                'student_vote' => 'neutral',
-                'student_benefit' => 'positive',
+                'type' => 'voting',
+                'votes' => [
+                    [
+                        'is_main' => true,
+                        'decision' => 'positive',
+                        'student_vote' => 'neutral',
+                        'student_benefit' => 'positive',
+                    ],
+                ],
             ]);
 
         $response->assertSessionHas('success');
@@ -317,7 +323,11 @@ describe('end-to-end refactored meeting flow', function () {
         $agendaItem->refresh();
         $this->assertEquals('Updated discussion', $agendaItem->title);
         $this->assertEquals('This is an important discussion', $agendaItem->description);
-        $this->assertEquals('positive', $agendaItem->decision);
+
+        // Check the vote was created
+        $vote = $agendaItem->votes()->first();
+        $this->assertNotNull($vote);
+        $this->assertEquals('positive', $vote->decision);
 
         // 4. Delete an agenda item
         $agendaItemToDelete = $meeting->agendaItems()->skip(1)->first();
@@ -348,5 +358,125 @@ describe('end-to-end refactored meeting flow', function () {
         $meeting->delete();
         $this->assertEquals($initialMeetingCount, Meeting::count());
         $this->assertEquals($initialAgendaItemCount, AgendaItem::count());
+    });
+});
+
+describe('relationship-based meeting access', function () {
+    test('user can view meeting via authorized institution relationship', function () {
+        // Create two institutions
+        $sourceInstitution = Institution::factory()->for($this->tenant)->create();
+        $targetInstitution = Institution::factory()->for($this->tenant)->create();
+
+        // Create a relationship between them
+        $relationship = \App\Models\Relationship::create([
+            'name' => 'Test Advisory Relationship',
+            'slug' => 'test-advisory-'.uniqid(),
+        ]);
+        \App\Models\Pivots\Relationshipable::create([
+            'relationship_id' => $relationship->id,
+            'relationshipable_type' => 'App\\Models\\Institution',
+            'relationshipable_id' => $sourceInstitution->id,
+            'related_model_id' => $targetInstitution->id,
+            'scope' => 'within-tenant',
+            'bidirectional' => false, // Outgoing only authorization
+        ]);
+
+        // Create a meeting for the target institution
+        $meeting = Meeting::factory()->create([
+            'start_time' => Carbon::now()->addDays(1),
+        ]);
+        $meeting->institutions()->attach($targetInstitution->id);
+
+        // Create a user with a duty at the source institution
+        $user = makeUser($this->tenant);
+        $duty = \App\Models\Duty::factory()->for($sourceInstitution)->create();
+        $duty->users()->attach($user->id, [
+            'start_date' => Carbon::now()->subMonth(),
+        ]);
+        // Clear relationship cache
+        \Illuminate\Support\Facades\Cache::forget("related_institutions_{$sourceInstitution->id}");
+
+        // User should be able to view the meeting via authorized relationship
+        $response = asUser($user)->get(route('meetings.show', $meeting->id));
+        $response->assertStatus(200);
+    });
+
+    test('user cannot view meeting via non-bidirectional incoming relationship', function () {
+        // Create two institutions
+        $sourceInstitution = Institution::factory()->for($this->tenant)->create();
+        $targetInstitution = Institution::factory()->for($this->tenant)->create();
+
+        // Create a relationship where source -> target (source is authorized to see target's meetings)
+        // But NOT bidirectional, so target is NOT authorized to see source's meetings
+        $relationship = \App\Models\Relationship::create([
+            'name' => 'Test Advisory Relationship',
+            'slug' => 'test-advisory-'.uniqid(),
+        ]);
+        \App\Models\Pivots\Relationshipable::create([
+            'relationship_id' => $relationship->id,
+            'relationshipable_type' => 'App\\Models\\Institution',
+            'relationshipable_id' => $sourceInstitution->id,
+            'related_model_id' => $targetInstitution->id,
+            'scope' => 'within-tenant',
+            'bidirectional' => false, // NOT bidirectional
+        ]);
+
+        // Create a meeting for the SOURCE institution
+        $meeting = Meeting::factory()->create([
+            'start_time' => Carbon::now()->addDays(1),
+        ]);
+        $meeting->institutions()->attach($sourceInstitution->id);
+
+        // Create a user with a duty at the TARGET institution (incoming relationship side)
+        $user = makeUser($this->tenant);
+        $duty = \App\Models\Duty::factory()->for($targetInstitution)->create();
+        $duty->users()->attach($user->id, [
+            'start_date' => Carbon::now()->subMonth(),
+        ]);
+        // Clear relationship cache
+        \Illuminate\Support\Facades\Cache::forget("related_institutions_{$targetInstitution->id}");
+
+        // User should NOT be able to view the meeting (incoming relationship is not authorized)
+        $response = asUser($user)->get(route('meetings.show', $meeting->id));
+        $response->assertStatus(403);
+    });
+
+    test('user can view meeting via bidirectional incoming relationship', function () {
+        // Create two institutions
+        $sourceInstitution = Institution::factory()->for($this->tenant)->create();
+        $targetInstitution = Institution::factory()->for($this->tenant)->create();
+
+        // Create a bidirectional relationship
+        $relationship = \App\Models\Relationship::create([
+            'name' => 'Test Advisory Relationship',
+            'slug' => 'test-advisory-'.uniqid(),
+        ]);
+        \App\Models\Pivots\Relationshipable::create([
+            'relationship_id' => $relationship->id,
+            'relationshipable_type' => 'App\\Models\\Institution',
+            'relationshipable_id' => $sourceInstitution->id,
+            'related_model_id' => $targetInstitution->id,
+            'scope' => 'within-tenant',
+            'bidirectional' => true, // BIDIRECTIONAL - both sides authorized
+        ]);
+
+        // Create a meeting for the SOURCE institution
+        $meeting = Meeting::factory()->create([
+            'start_time' => Carbon::now()->addDays(1),
+        ]);
+        $meeting->institutions()->attach($sourceInstitution->id);
+
+        // Create a user with a duty at the TARGET institution (incoming relationship side)
+        $user = makeUser($this->tenant);
+        $duty = \App\Models\Duty::factory()->for($targetInstitution)->create();
+        $duty->users()->attach($user->id, [
+            'start_date' => Carbon::now()->subMonth(),
+        ]);
+        // Clear relationship cache
+        \Illuminate\Support\Facades\Cache::forget("related_institutions_{$targetInstitution->id}");
+
+        // User SHOULD be able to view the meeting (bidirectional = authorized)
+        $response = asUser($user)->get(route('meetings.show', $meeting->id));
+        $response->assertStatus(200);
     });
 });

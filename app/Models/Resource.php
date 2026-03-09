@@ -64,15 +64,34 @@ class Resource extends Model implements HasMedia
         'tenant_id', 'resource_category_id', 'media',
     ];
 
-    protected $casts = [
-        'name' => 'array',
-        'description' => 'array',
-        'capacity' => 'integer',
-        'is_reservable' => 'boolean',
-        'deleted_at' => 'datetime',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'name' => 'array',
+            'description' => 'array',
+            'capacity' => 'integer',
+            'is_reservable' => 'boolean',
+            'deleted_at' => 'datetime',
+        ];
+    }
 
     public $translatable = ['name', 'description'];
+
+    /**
+     * Get the name of the index associated with the model.
+     */
+    public function searchableAs(): string
+    {
+        return config('scout.prefix').'resources';
+    }
+
+    /**
+     * Get the engine used to index the model.
+     */
+    public function searchableUsing()
+    {
+        return app(\Laravel\Scout\EngineManager::class)->engine('typesense');
+    }
 
     public function registerMediaCollections(): void
     {
@@ -85,8 +104,21 @@ class Resource extends Model implements HasMedia
     public function toSearchableArray(): array
     {
         return [
-            'name->'.app()->getLocale() => $this->getTranslation('name', app()->getLocale()),
-            'description->'.app()->getLocale() => $this->getTranslation('description', app()->getLocale()),
+            'id' => (string) $this->id,
+            'name_lt' => $this->getTranslation('name', 'lt'),
+            'name_en' => $this->getTranslation('name', 'en'),
+            'description_lt' => $this->getTranslation('description', 'lt'),
+            'description_en' => $this->getTranslation('description', 'en'),
+            'location' => $this->location,
+            'capacity' => $this->capacity,
+            'is_reservable' => $this->is_reservable,
+            'tenant_id' => $this->tenant_id,
+            'tenant_ids' => $this->tenant_id ? [$this->tenant_id] : [],
+            'tenant_shortname' => $this->tenant->shortname,
+            'category_id' => $this->resource_category_id,
+            'category_name' => $this->category?->getTranslation('name', 'lt'),
+            'image_url' => $this->getFirstMediaUrl('images'),
+            'created_at' => $this->created_at->timestamp,
         ];
     }
 

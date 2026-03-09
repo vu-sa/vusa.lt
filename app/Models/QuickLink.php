@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Cache;
 use Laravel\Scout\Searchable;
 
@@ -44,7 +45,7 @@ class QuickLink extends Model
         });
     }
 
-    public function toSearchableArray()
+    public function toSearchableArray(): array
     {
         return [
             'text' => $this->text,
@@ -52,7 +53,7 @@ class QuickLink extends Model
         ];
     }
 
-    public function tenant()
+    public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }

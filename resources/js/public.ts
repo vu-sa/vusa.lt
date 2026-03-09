@@ -27,10 +27,6 @@ const getPosthog = async () => {
 //// get title from appTitle by removing the suffix
 //const pageTitle = metaTitle.replace(" - VU SA", "");
 
-const meta = document.createElement("meta");
-meta.name = "naive-ui-style";
-document.head.appendChild(meta);
-
 createInertiaApp({
   title: (title) => {
     // Ensure title is always a string to prevent Inertia Head escape() errors
@@ -54,6 +50,15 @@ createInertiaApp({
 
     return page;
   },
+  defaults: {
+    visitOptions: (href, options) => {
+      return { viewTransition: true }
+    },
+    // Cache prefetched pages for 5 minutes for smoother navigation
+    prefetch: {
+      cacheFor: 5 * 60 * 1000, // 5 minutes in milliseconds
+    },
+  },
   setup({ App, props, el, plugin }) {
     // https://github.com/inertiajs/inertia/discussions/372#discussioncomment-6052940
     const application = createApp({ render: () => h(App, props) })
@@ -61,8 +66,26 @@ createInertiaApp({
       .use(i18nVue, {
         fallbackLang: "en",
         resolve: async (lang: string) => {
-          const langs = import.meta.glob("../../lang/*.json");
-          return await langs[`../../lang/${lang}.json`]();
+          // Load JSON translations (shared between admin/public)
+          const jsonLangs = import.meta.glob("../../lang/*.json");
+          // Load public-specific PHP translations (shared + public combined)
+          const phpLangs = import.meta.glob("../../lang/php_public_*.json");
+
+          const jsonPath = `../../lang/${lang}.json`;
+          const phpPath = `../../lang/php_public_${lang}.json`;
+
+          // Load both translation sources
+          const jsonModule = jsonLangs[jsonPath] ? await jsonLangs[jsonPath]() : { default: {} };
+          const phpModule = phpLangs[phpPath] ? await phpLangs[phpPath]() : { default: {} };
+
+          // Merge translations: JSON base + PHP compiled
+          // Return in { default: {...} } format expected by laravel-vue-i18n
+          return {
+            default: {
+              ...(jsonModule as { default: Record<string, string> }).default,
+              ...(phpModule as { default: Record<string, string> }).default,
+            }
+          };
         },
       })
       .use(ZiggyVue)

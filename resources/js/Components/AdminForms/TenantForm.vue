@@ -4,32 +4,54 @@
       <template #title>
         {{ $t("forms.context.main_info") }}
       </template>
-      <NFormItem label="Pavadinimas" :required="true">
-        <NInput v-model:value="form.fullname" />
-      </NFormItem>
-      <NFormItem label="Trumpinys" :required="true">
-        <NInput v-model:value="form.shortname" />
-      </NFormItem>
-      <NFormItem label="Tipas" :required="true">
-        <NSelect v-model:value="form.type" :options="typeOptions" />
-      </NFormItem>
-      <NFormItem label="Alias">
-        <NInput v-model:value="form.alias" />
-      </NFormItem>
-      <NFormItem label="Trumpinys VU">
-        <NInput v-model:value="form.shortname_vu" />
-      </NFormItem>
-      <NFormItem label="Pagrindinė įstaiga">
-        <NSelect v-model:value="form.primary_institution_id" filterable :options="institutionOptions" clearable />
-      </NFormItem>
+      <FormFieldWrapper id="fullname" label="Pavadinimas" required>
+        <Input id="fullname" v-model="form.fullname" />
+      </FormFieldWrapper>
+      <FormFieldWrapper id="shortname" label="Trumpinys" required>
+        <Input id="shortname" v-model="form.shortname" />
+      </FormFieldWrapper>
+      <FormFieldWrapper id="type" label="Tipas" required>
+        <Select v-model="form.type">
+          <SelectTrigger>
+            <SelectValue placeholder="Pasirinkite tipą..." />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem v-for="option in typeOptions" :key="option.value" :value="option.value">
+              {{ option.label }}
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </FormFieldWrapper>
+      <FormFieldWrapper id="alias" label="Alias">
+        <Input id="alias" v-model="form.alias" />
+      </FormFieldWrapper>
+      <FormFieldWrapper id="shortname_vu" label="Trumpinys VU">
+        <Input id="shortname_vu" v-model="form.shortname_vu" />
+      </FormFieldWrapper>
+      <FormFieldWrapper id="primary_institution_id" label="Pagrindinė įstaiga">
+        <Select v-model="primaryInstitutionIdString">
+          <SelectTrigger>
+            <SelectValue placeholder="Pasirinkite įstaigą..." />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem v-for="option in institutionOptions" :key="option.value" :value="String(option.value)">
+              {{ option.label }}
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </FormFieldWrapper>
     </FormElement>
   </AdminForm>
 </template>
 
-<script setup lang="tsx">
+<script setup lang="ts">
+import { computed } from "vue";
 import { useForm } from "@inertiajs/vue3";
 
+import { Input } from "@/Components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
 import FormElement from "./FormElement.vue";
+import FormFieldWrapper from "./FormFieldWrapper.vue";
 import AdminForm from "./AdminForm.vue";
 
 const { tenant, assignableInstitutions, rememberKey } = defineProps<{
@@ -55,4 +77,10 @@ const institutionOptions = assignableInstitutions.map((institution) => ({
   label: institution.name,
   value: institution.id,
 }));
+
+// Shadcn Select requires string values
+const primaryInstitutionIdString = computed({
+  get: () => form.primary_institution_id != null ? String(form.primary_institution_id) : '',
+  set: (val: string) => { form.primary_institution_id = val ? Number(val) : null; },
+});
 </script>

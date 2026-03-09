@@ -1,13 +1,12 @@
 <template>
-  <NButton @click="copyToClipboard(textToCopy)">
-    <template v-if="showIcon" #icon>
-      <IFluentClipboardLink24Regular />
-    </template>
+  <Button variant="outline" @click="copyToClipboard(textToCopy)">
+    <IFluentClipboardLink24Regular v-if="showIcon" />
     <slot />
-  </NButton>
+  </Button>
 </template>
 
 <script setup lang="ts">
+import { Button } from '@/Components/ui/button';
 import { useToasts } from '@/Composables/useToasts';
 
 const props = defineProps<{

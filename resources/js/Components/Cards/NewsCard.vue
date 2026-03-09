@@ -12,7 +12,7 @@
       <img :src="news.image"
         class="mb-1 min-h-40 max-h-64 w-full rounded-xs object-cover shadow-md duration-200 hover:shadow-lg">
     </template>
-    <span class="hover:text-vusa-red duration-200 font-semibold text-base leading-tight">{{ news.title }}</span>
+    <span class="font-heading hover:text-vusa-red duration-200 font-semibold text-base leading-tight">{{ news.title }}</span>
   </HomeCard>
 </template>
 

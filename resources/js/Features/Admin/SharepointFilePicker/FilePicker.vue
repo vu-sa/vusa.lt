@@ -1,16 +1,32 @@
 <template>
-  <Button @click="openPicker">
-    <slot />
-  </Button>
+  <Dialog v-model:open="dialogOpen">
+    <DialogTrigger as-child>
+      <Button :loading="loading" :size="size">
+        <slot />
+      </Button>
+    </DialogTrigger>
+    <DialogContent class="sm:max-w-[95vw] w-[1400px] h-[85vh] p-0 gap-0 overflow-hidden" :show-close-button="true">
+      <DialogTitle class="sr-only">{{ options.title }}</DialogTitle>
+      <iframe ref="iframeRef" :name="iframeName" class="w-full h-full border-0" />
+    </DialogContent>
+  </Dialog>
 </template>
 
 <script setup lang="ts">
 import { PublicClientApplication } from "@azure/msal-browser";
 import { combine } from "@pnp/core";
 import { usePage } from "@inertiajs/vue3";
+import { ref, watch, nextTick } from "vue";
 
 import type { FilePickerOptions, Item } from "./picker.ts";
 import { Button } from "@/Components/ui/button";
+import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/Components/ui/dialog";
+
+defineProps<{
+  loading?: boolean;
+  round?: boolean;
+  size?: string;
+}>()
 
 const emit = defineEmits<{
   pick: [items: Item[]]
@@ -18,6 +34,10 @@ const emit = defineEmits<{
 
 // random string generate
 const channelId = Math.random().toString(36).substring(7);
+const iframeName = `sp-picker-${channelId}`;
+
+const dialogOpen = ref(false);
+const iframeRef = ref<HTMLIFrameElement | null>(null);
 
 const options: FilePickerOptions = {
   "sdk": "8.0",
@@ -41,7 +61,6 @@ const options: FilePickerOptions = {
     access: {
       mode: "read",
     },
-    //filters: ['.pdf', '.xlsx', '.docx', '.pptx', '.jpg', '.jpeg', '.png'],
     pivots: {
       oneDrive: false,
       shared: false,
@@ -73,27 +92,24 @@ const msalParams = {
   auth: {
     authority: `https://login.microsoftonline.com/${import.meta.env.VITE_SHAREPOINT_TENANT_ID}`,
     clientId: import.meta.env.VITE_SHAREPOINT_CLIENT_ID,
-    redirectUri: usePage().props.app.url
+    redirectUri: usePage().props.app.url,
   },
 }
 
 const app = new PublicClientApplication(msalParams);
+const msalReady = app.initialize().then(() => app.handleRedirectPromise().catch(() => null));
 
 async function getToken(command): Promise<string> {
   let accessToken = "";
   const authParams = { scopes: [`${combine(command.resource, ".default")}`] };
 
-  await app.initialize()
+  await msalReady;
 
   try {
-
-    // see if we have already the idtoken saved
     const resp = await app.acquireTokenSilent(authParams!);
     accessToken = resp.accessToken;
-
   } catch (e) {
     try {
-      // per examples we fall back to popup
       const resp = await app.loginPopup(authParams!);
       app.setActiveAccount(resp.account);
 
@@ -105,214 +121,68 @@ async function getToken(command): Promise<string> {
       }
     } catch (authError) {
       console.error('SharePoint authentication failed:', authError);
-      throw new Error(`Authentication failed: ${authError.message || 'Please check popup blockers and try again'}`);
+      throw new Error(`Authentication failed: ${authError.message || 'Please try again'}`);
     }
   }
 
   return accessToken;
 }
 
-async function openPicker() {
+let port: MessagePort | null = null;
+let messageListener: ((event: MessageEvent) => void) | null = null;
+
+async function loadPickerInIframe() {
   try {
-    // Notify user about the popup window
-    if (window.document.visibilityState === 'hidden') {
-      alert('📁 Opening SharePoint file picker in a new window...\n\nPlease complete authentication in the popup window.');
-    }
+    const iframe = iframeRef.value;
+    if (!iframe) return;
 
-    const win = window.open("", "SharePoint File Picker", "width=1080,height=680,menubar=no,toolbar=no,location=no,status=no,scrollbars=yes,resizable=yes");
-    
-    if (!win) {
-      alert('⚠️ Popup blocked! Please allow popups for this site and try again.\n\nThe SharePoint file picker needs to open in a new window for authentication.');
-      return;
-    }
+    const accessToken = await getToken({
+      resource: baseUrl,
+      command: "authenticate",
+      type: "SharePoint",
+    });
 
-  const queryString = new URLSearchParams({
-    filePicker: JSON.stringify(options),
-    locale: 'en-us'
-  });
+    const queryString = new URLSearchParams({
+      filePicker: JSON.stringify(options),
+      locale: 'en-us'
+    });
 
-  // we create the absolute url by combining the base url, appending the _layouts path, and including the query string
-  const url = baseUrl + `/_layouts/15/FilePicker.aspx?${queryString}`;
+    const url = baseUrl + `/_layouts/15/FilePicker.aspx?${queryString}`;
 
-  // create a form
-  const form = win?.document.createElement("form");
+    // Create a form targeting the iframe and submit it with the access token
+    const form = document.createElement("form");
+    form.setAttribute("action", url);
+    form.setAttribute("method", "POST");
+    form.setAttribute("target", iframeName);
 
-  const accessToken = await getToken({
-    resource: baseUrl,
-    command: "authenticate",
-    type: "SharePoint",
-  });
+    const tokenInput = document.createElement("input");
+    tokenInput.setAttribute("type", "hidden");
+    tokenInput.setAttribute("name", "access_token");
+    tokenInput.setAttribute("value", accessToken);
+    form.appendChild(tokenInput);
 
-  if (form === undefined) {
-    throw new Error("Unable to create form element.");
+    // Temporarily append form to document body, submit, then remove
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+
+    // Set up PostMessage listener for iframe communication
+    setupMessageListener(iframe);
+  } catch (error) {
+    console.error('SharePoint FilePicker error:', error);
+    dialogOpen.value = false;
   }
+}
 
-  // set the action of the form to the url defined above
-  // This will include the query string options for the picker.
-  form.setAttribute("action", url);
+function setupMessageListener(iframe: HTMLIFrameElement) {
+  // Clean up any previous listener
+  cleanupMessageListener();
 
-  // must be a post request
-  form.setAttribute("method", "POST");
-
-  // Create a hidden input element to send the OAuth token to the Picker.
-  // This optional when using a popup window but required when using an iframe.
-  const tokenInput = win?.document.createElement("input");
-
-  if (tokenInput === undefined) {
-    throw new Error("Unable to create input element.");
-  }
-
-  tokenInput.setAttribute("type", "hidden");
-  tokenInput.setAttribute("name", "access_token");
-  tokenInput.setAttribute("value", accessToken);
-  form.appendChild(tokenInput);
-
-  // append the form to the body
-  win?.document.body.append(form);
-
-  // submit the form, this will load the picker page
-  form.submit();
-
-
-  // Establish Messaging
-  let port: MessagePort;
-
-  async function channelMessageListener(message: MessageEvent): Promise<void> {
-    const payload = message.data;
-
-    switch (payload.type) {
-
-      case "notification":
-        const notification = payload.data;
-
-        if (notification.notification === "page-loaded") {
-          // here we know that the picker page is loaded and ready for user interaction
-        }
-
-        break;
-
-      case "command":
-
-        // all commands must be acknowledged
-        port.postMessage({
-          type: "acknowledge",
-          id: message.data.id,
-        });
-
-        // this is the actual command specific data from the message
-        const command = payload.data;
-
-        // command.command is the string name of the command
-        switch (command.command) {
-
-          case "authenticate":
-            // the first command to handle is authenticate. This command will be issued any time the picker requires a token
-            // 'getToken' represents a method that can take a command and return a valid auth token for the requested resource
-            try {
-              const token = await getToken(command);
-
-              //const token = microsoftToken
-
-              if (!token) {
-                throw new Error("Unable to obtain a token.");
-              }
-
-              // we report a result for the authentication via the previously established port
-              port.postMessage({
-                type: "result",
-                id: message.data.id,
-                data: {
-                  result: "token",
-                  token: token,
-                }
-              });
-            } catch (error) {
-              console.error('SharePoint authentication error:', error);
-              const errorMessage = error.message.includes('popup') 
-                ? 'Authentication failed. Please check popup blocker settings and try again.'
-                : error.message || 'Authentication failed. Please try again.';
-              
-              port.postMessage({
-                type: "result",
-                id: message.data.id,
-                data: {
-                  result: "error",
-                  error: {
-                    code: "unableToObtainToken",
-                    message: errorMessage
-                  }
-                }
-              });
-            }
-
-            break;
-
-          case "close":
-            win?.close();
-            break;
-          case "pick":
-            try {
-
-              emit("pick", message.data.data.items);
-
-              // let the picker know that the pick command was handled (required)
-              port.postMessage({
-                type: "result",
-                id: message.data.id,
-                data: {
-                  result: "success"
-                }
-              });
-
-              port.close();
-
-              win?.close();
-
-            } catch (error) {
-              port.postMessage({
-                type: "result",
-                id: message.data.id,
-                data: {
-                  result: "error",
-                  error: {
-                    code: "unusableItem",
-                    message: error.message
-                  }
-                }
-              });
-            }
-
-            break;
-          default:
-            // Always send a reply, if if that reply is that the command is not supported.
-            port.postMessage({
-              type: "result",
-              id: message.data.id,
-              data: {
-                result: "error",
-                error: {
-                  code: "unsupportedCommand",
-                  message: command.command
-                }
-              }
-            });
-
-            break;
-        }
-
-        break;
-    }
-  }
-
-  // this adds a listener to the current (host) window, which the popup or embed will message when ready
-  window.addEventListener("message", (event) => {
-
-    if (event.source && event.source === win) {
-
+  messageListener = (event: MessageEvent) => {
+    if (event.source && event.source === iframe.contentWindow) {
       const message = event.data;
 
       if (message.type === "initialize" && message.channelId === options.messaging.channelId) {
-
         port = event.ports[0];
         port.addEventListener("message", channelMessageListener);
         port.start();
@@ -322,27 +192,144 @@ async function openPicker() {
         });
       }
     }
-  });
+  };
 
-  window.onbeforeunload = () => {
-    if (port) {
-      port.postMessage({
-        type: "result",
-        id: "close",
-        data: {
-          result: "success"
-        }
-      });
+  window.addEventListener("message", messageListener);
+}
 
-      port.close();
+async function channelMessageListener(message: MessageEvent): Promise<void> {
+  const payload = message.data;
+
+  switch (payload.type) {
+    case "notification": {
+      const notification = payload.data;
+      if (notification.notification === "page-loaded") {
+        // Picker page is loaded and ready for user interaction
+      }
+      break;
     }
 
-    win?.close();
-  }
-  
-  } catch (error) {
-    console.error('SharePoint FilePicker error:', error);
-    alert(`❌ SharePoint connection failed:\n\n${error.message}\n\nPlease check your internet connection and try again.`);
+    case "command": {
+      // All commands must be acknowledged
+      port?.postMessage({
+        type: "acknowledge",
+        id: message.data.id,
+      });
+
+      const command = payload.data;
+
+      switch (command.command) {
+        case "authenticate":
+          try {
+            const token = await getToken(command);
+
+            if (!token) {
+              throw new Error("Unable to obtain a token.");
+            }
+
+            port?.postMessage({
+              type: "result",
+              id: message.data.id,
+              data: {
+                result: "token",
+                token: token,
+              }
+            });
+          } catch (error) {
+            console.error('SharePoint authentication error:', error);
+            port?.postMessage({
+              type: "result",
+              id: message.data.id,
+              data: {
+                result: "error",
+                error: {
+                  code: "unableToObtainToken",
+                  message: error.message || 'Authentication failed. Please try again.'
+                }
+              }
+            });
+          }
+          break;
+
+        case "close":
+          dialogOpen.value = false;
+          break;
+
+        case "pick":
+          try {
+            emit("pick", message.data.data.items);
+
+            port?.postMessage({
+              type: "result",
+              id: message.data.id,
+              data: {
+                result: "success"
+              }
+            });
+
+            cleanup();
+            dialogOpen.value = false;
+          } catch (error) {
+            port?.postMessage({
+              type: "result",
+              id: message.data.id,
+              data: {
+                result: "error",
+                error: {
+                  code: "unusableItem",
+                  message: error.message
+                }
+              }
+            });
+          }
+          break;
+
+        default:
+          port?.postMessage({
+            type: "result",
+            id: message.data.id,
+            data: {
+              result: "error",
+              error: {
+                code: "unsupportedCommand",
+                message: command.command
+              }
+            }
+          });
+          break;
+      }
+      break;
+    }
   }
 }
+
+function cleanupMessageListener() {
+  if (messageListener) {
+    window.removeEventListener("message", messageListener);
+    messageListener = null;
+  }
+}
+
+function cleanup() {
+  if (port) {
+    port.postMessage({
+      type: "result",
+      id: "close",
+      data: { result: "success" }
+    });
+    port.close();
+    port = null;
+  }
+  cleanupMessageListener();
+}
+
+// Load picker when dialog opens, cleanup when it closes
+watch(dialogOpen, async (isOpen) => {
+  if (isOpen) {
+    await nextTick();
+    loadPickerInIframe();
+  } else {
+    cleanup();
+  }
+});
 </script>

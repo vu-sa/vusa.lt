@@ -49,10 +49,10 @@
           <IFluentPerson24Filled v-if="$page.props.auth?.user" class="h-4 w-4" aria-hidden="true" />
           <IFluentPerson24Regular v-else class="h-4 w-4" aria-hidden="true" />
           <span class="hidden sm:inline">
-            {{ $page.props.auth?.user ? $page.props.auth.user?.name : $t('auth.login') }}
+            {{ $page.props.auth?.user ? $page.props.auth.user?.name : $t('Mano VU SA') }}
           </span>
           <span class="sr-only sm:hidden">
-            {{ $page.props.auth?.user ? $page.props.auth.user?.name : $t('auth.login') }}
+            {{ $page.props.auth?.user ? $page.props.auth.user?.name : $t('Mano VU SA') }}
           </span>
         </a>
       </div>

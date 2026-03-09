@@ -58,7 +58,8 @@ trait HasCommonChecks
             } else {
                 $permissableModels = $permissableDuties->load($relationFromDuties)
                     ->pluck($relationFromDuties)
-                    ->flatten();
+                    ->flatten()
+                    ->filter(); // Remove null values from duties without the related model
             }
 
             // Check for direct relationship
@@ -67,11 +68,18 @@ trait HasCommonChecks
             }
 
             // Check related institutions (for institution model)
+            // User can access an institution if any of their own institutions have an
+            // authorized relationship TO the target institution
             if ($resource === 'institutions' && $model instanceof \App\Models\Institution) {
-                $institutions = new Collection(RelationshipService::getRelatedInstitutions($model));
-
-                if ($institutions->intersect((new Collection($permissableModels)))->isNotEmpty()) {
-                    return true;
+                // For each of the user's institutions, check if the target institution
+                // is in their authorized related institutions
+                foreach ($permissableModels as $userInstitution) {
+                    if ($userInstitution instanceof \App\Models\Institution) {
+                        $authorizedRelated = RelationshipService::getRelatedInstitutions($userInstitution, authorizedOnly: true);
+                        if ($authorizedRelated->contains('id', $model->getKey())) {
+                            return true;
+                        }
+                    }
                 }
             }
         }

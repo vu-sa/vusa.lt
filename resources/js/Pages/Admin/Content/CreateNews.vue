@@ -4,7 +4,14 @@
       <template #card-header>
         Puslapio informacija
       </template>
-      <NewsForm :news :available-tags remember-key="CreateNews" @submit:form="(form) => form.post(route('news.store'))" />
+      <NewsForm
+        :news
+        :available-tags
+        remember-key="CreateNews"
+        :submit-url="route('news.store')"
+        submit-method="post"
+        @submit:form="(form) => form.post(route('news.store'))"
+      />
     </UpsertModelLayout>
   </PageContent>
 </template>

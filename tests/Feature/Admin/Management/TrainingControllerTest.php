@@ -217,8 +217,13 @@ describe('filtering and search', function () {
                 ->has('trainings.data')
                 ->where('trainings.data', function ($data) {
                     return collect($data)->contains(function ($training) {
-                        return str_contains($training['name'], 'Test') ||
-                               str_contains($training['description'], 'Test');
+                        $name = $training['name'];
+                        $desc = $training['description'] ?? '';
+                        if (is_array($name)) {
+                            return str_contains($name['lt'] ?? '', 'Test') || str_contains($name['en'] ?? '', 'Test');
+                        }
+
+                        return str_contains($name, 'Test') || str_contains($desc, 'Test');
                     });
                 })
             );

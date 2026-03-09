@@ -86,7 +86,7 @@ provide(FieldContextKey, fieldContext)
                       <TrashIcon :size="16" />
                     </Button>
                   </div>
-                  <Separator v-if="!field.isLast" />
+                  <Separator v-if="!field.isLast" class="my-4" />
                 </div>
               </template>
 

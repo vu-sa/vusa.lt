@@ -195,7 +195,12 @@ describe('filtering and search', function () {
                 ->has('categories.data')
                 ->where('categories.data', function ($data) {
                     return collect($data)->contains(function ($category) {
-                        return str_contains($category['name'], 'Test');
+                        $name = $category['name'];
+                        if (is_array($name)) {
+                            return str_contains($name['lt'] ?? '', 'Test') || str_contains($name['en'] ?? '', 'Test');
+                        }
+
+                        return str_contains($name, 'Test');
                     });
                 })
             );

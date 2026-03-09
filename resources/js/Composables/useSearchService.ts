@@ -194,6 +194,7 @@ export const useSearchService = () => {
       case 'news': return item.publish_time
       case 'documents': return item.document_date
       case 'calendar': return item.date
+      case 'publicInstitutions': return item.updated_at
       default: return item.created_at
     }
   }

@@ -1,70 +1,106 @@
 <template>
-  <IndexPageLayout
-    title="Baneriai"
-    model-name="banners"
-    :can-use-routes="canUseRoutes"
-    :columns="columns"
-    :paginated-models="banners"
-    :icon="Icons.BANNER"
-  >
-  </IndexPageLayout>
+  <IndexTablePage
+    ref="indexTablePageRef"
+    v-bind="tableConfig"
+    @data-loaded="onDataLoaded"
+    @sorting-changed="handleSortingChange"
+    @page-changed="handlePageChange"
+    @filter-changed="handleFilterChange"
+  />
 </template>
 
 <script setup lang="tsx">
-import { computed, provide, ref } from "vue";
-import { usePage } from "@inertiajs/vue3";
-import type { DataTableColumns, DataTableSortState } from "naive-ui";
-
 import { trans as $t } from "laravel-vue-i18n";
-import { tenantColumn } from "@/Composables/dataTableColumns";
-import Icons from "@/Types/Icons/regular";
-import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
+import { type ColumnDef } from '@tanstack/vue-table';
+import { ref, computed } from "vue";
 
-defineProps<{
-  banners: PaginatedModels<App.Entities.Banner[]>;
+import Icons from "@/Types/Icons/regular";
+import IndexTablePage from "@/Components/Layouts/IndexTablePage.vue";
+import { createStandardActionsColumn } from "@/Composables/useTableActions";
+import {
+  createTenantColumn,
+} from '@/Utils/DataTableColumns';
+import {
+  type IndexTablePageProps
+} from "@/Types/TableConfigTypes";
+
+const props = defineProps<{
+  banners: {
+    data: App.Entities.Banner[];
+    meta: {
+      total: number;
+      current_page: number;
+      per_page: number;
+      last_page: number;
+      from: number;
+      to: number;
+    };
+  };
+  filters?: Record<string, any>;
+  sorting?: { id: string; desc: boolean }[];
 }>();
 
-const canUseRoutes = {
-  create: true,
-  show: false,
-  edit: true,
-  destroy: true,
+const modelName = 'banners';
+const entityName = 'banner';
+
+const indexTablePageRef = ref<any>(null);
+
+const getRowId = (row: App.Entities.Banner) => {
+  return `banner-${row.id}`;
 };
 
-const sorters = ref<Record<string, DataTableSortState["order"]>>({
-  title: false,
-});
-
-provide("sorters", sorters);
-
-const filters = ref<Record<string, any>>({
-  "padalinys.id": [],
-});
-
-provide("filters", filters);
-
-const columns = computed<DataTableColumns<App.Entities.Banner>>(() => [
+const columns = computed<ColumnDef<App.Entities.Banner, any>[]>(() => [
   {
-    title: "Pavadinimas",
-    key: "title",
-    sorter: true,
-    sortOrder: sorters.value.name,
-    render(row: App.Entities.Banner) {
+    accessorKey: "title",
+    header: () => "Pavadinimas",
+    cell: ({ row }) => {
+      const banner = row.original;
       return (
         <a
-          class={row.is_active ? "font-bold text-green-700" : "text-red-700"}
-          href={route("banners.edit", { id: row.id })}
+          class={banner.is_active ? "font-bold text-green-700" : "text-red-700"}
+          href={route("banners.edit", { id: banner.id })}
         >
-          {row.title}
+          {banner.title}
         </a>
       );
     },
+    size: 300,
+    enableSorting: true,
   },
-  {
-    ...tenantColumn(filters, usePage().props.tenants),
-    render(row) {
-      return $t(row.tenant?.shortname);
-    },
-  },
+  createTenantColumn<App.Entities.Banner>(),
+  createStandardActionsColumn<App.Entities.Banner>("banners", {
+    canView: false,
+    canEdit: true,
+    canDelete: true,
+  })
 ]);
+
+const tableConfig = computed<IndexTablePageProps<App.Entities.Banner>>(() => {
+  return {
+    modelName,
+    entityName,
+    data: props.banners.data,
+    columns: columns.value,
+    getRowId,
+    totalCount: props.banners.meta.total,
+    initialPage: props.banners.meta.current_page,
+    pageSize: props.banners.meta.per_page,
+
+    initialFilters: props.filters,
+    initialSorting: props.sorting,
+    enableFiltering: true,
+    enableColumnVisibility: false,
+    enableRowSelection: false,
+
+    headerTitle: "Baneriai",
+    icon: Icons.BANNER,
+    createRoute: route('banners.create'),
+    canCreate: true,
+  };
+});
+
+const onDataLoaded = (data: any) => {};
+const handleSortingChange = (sorting: any) => {};
+const handlePageChange = (page: any) => {};
+const handleFilterChange = (filterKey: any, value: any) => {};
 </script>

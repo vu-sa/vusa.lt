@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\Duty;
 use App\Models\Institution;
-use App\Models\Meeting;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -29,10 +28,7 @@ class TypeSeeder extends Seeder
                 ['title' => json_encode(['lt' => 'Kuratorius', 'en' => '']), 'slug' => 'kuratoriai', 'model_type' => Duty::class],
                 ['title' => json_encode(['lt' => 'Vadovas', 'en' => '']), 'slug' => 'vadovas', 'model_type' => Duty::class],
                 ['title' => json_encode(['lt' => 'Studentų atstovas', 'en' => '']), 'slug' => 'studentu-atstovai', 'model_type' => Duty::class],
-                // Meeting::class Types
-                ['title' => json_encode(['lt' => 'Gyvas susitikimas', 'en' => 'In-person Meeting']), 'slug' => 'in-person-meeting', 'model_type' => Meeting::class],
-                ['title' => json_encode(['lt' => 'Nuotolinis susitikimas', 'en' => 'Remote Meeting']), 'slug' => 'remote-meeting', 'model_type' => Meeting::class],
-                ['title' => json_encode(['lt' => 'Elektroninis posėdis (el. laišku)', 'en' => 'E-meeting (via email)']), 'slug' => 'email-meeting', 'model_type' => Meeting::class],
+                // Meeting types are now handled via MeetingType enum in App\Enums\MeetingType
             ]
         );
     }

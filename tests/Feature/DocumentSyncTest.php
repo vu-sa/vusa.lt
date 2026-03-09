@@ -227,7 +227,7 @@ describe('Document Sync Command', function () {
             'checked_at' => now()->subHours(12), // Fresh
         ]);
 
-        $this->artisan('documents:sync --dry-run')
+        $this->artisan('sharepoint:sync-documents --dry-run')
             ->expectsOutputToContain('Would sync')
             ->expectsOutputToContain('documents')
             ->assertExitCode(0);
@@ -251,7 +251,7 @@ describe('Document Sync Command', function () {
             'sync_status' => 'success', // Not failed
         ]);
 
-        $this->artisan('documents:sync --failed --dry-run')
+        $this->artisan('sharepoint:sync-documents --failed --dry-run')
             ->expectsOutputToContain('Would retry 1 failed documents')
             ->assertExitCode(0);
 
@@ -266,7 +266,7 @@ describe('Document Sync Command', function () {
             'checked_at' => now()->subDays(2),
         ]);
 
-        $this->artisan('documents:sync --all --limit=25 --dry-run')
+        $this->artisan('sharepoint:sync-documents --all --limit=25 --dry-run')
             ->expectsOutputToContain('(limit: 25)')
             ->assertExitCode(0);
     });

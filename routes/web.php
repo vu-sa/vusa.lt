@@ -20,18 +20,28 @@ use Laravel\Socialite\Facades\Socialite;
 Route::feeds();
 
 Route::get('/auth/redirect', function () {
+    // Store popup flag in session for callback handling, validating as boolean
+    if (request()->has('popup') && request()->boolean('popup')) {
+        session(['oauth_popup' => true]);
+    }
+
     /** @phpstan-ignore-next-line */
     return Socialite::driver('microsoft')->stateless()->with(['prompt' => 'select_account'])->redirect();
 })->name('microsoft.redirect');
 
-Route::get('/auth/microsoft/callback', [Admin\UserController::class, 'storeFromMicrosoft'])->name('microsoft.callback');
+Route::get('/auth/microsoft/callback', [Admin\AuthController::class, 'storeFromMicrosoft'])->name('microsoft.callback');
 
 Route::inertia('login', 'Admin/LoginForm')->middleware('guest')->name('login');
-Route::post('login', [Admin\UserController::class, 'authenticate'])->middleware('guest');
+Route::post('login', [Admin\AuthController::class, 'authenticate'])->middleware('guest');
 
 Route::post('feedback', [Public\MainController::class, 'sendFeedback'])->name('feedback.send');
 
 Route::post('registration/{form}', [RegistrationController::class, 'store'])->name('registrations.store');
+
+// Short URL redirects for documents
+Route::get('/d/{code}', [Public\DocumentRedirectController::class, 'redirect'])
+    ->where('code', '[0-9A-Za-z]+')
+    ->name('document.short');
 
 // Sitemap routes (outside language group)
 Route::domain('{subdomain}.'.explode('.', config('app.url'), 2)[1])->group(function () {
@@ -85,6 +95,9 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
 
         Route::get('kontaktai/id/{institution}', [Public\ContactController::class, 'institutionContacts'])->name('contacts.institution');
 
+        Route::get('posedziai', [Public\MeetingController::class, 'index'])->name('publicMeetings.index');
+        Route::get('posedziai/{meeting}', [Public\ContactController::class, 'showMeeting'])->name('publicMeetings.show');
+
         Route::get('kontaktai/studentu-atstovai', [Public\ContactController::class, 'studentRepresentatives'])->name('contacts.studentRepresentatives');
         Route::get('kontaktai/{type:slug}', [Public\ContactController::class, 'institutionDutyTypeContacts'])->whereIn('type', [
             'koordinatoriai', 'kuratoriai', 'mentors',
@@ -101,10 +114,7 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
 
         Route::get('kontaktai', [Public\ContactController::class, 'contacts'])->name('contacts');
         Route::get('kontaktai/kategorija/{type:slug}', [Public\ContactController::class, 'institutionCategory'])
-            ->name('contacts.category')
-            ->whereIn(
-                'type', ['padaliniai']
-            );
+            ->name('contacts.category');
 
         Route::get('{newsString}/{news:permalink}', [Public\NewsController::class, 'news'])
             ->whereIn('newsString', ['naujiena', 'news'])

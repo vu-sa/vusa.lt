@@ -206,12 +206,8 @@ class DatabaseSeeder extends Seeder
         $adminKey = config('scout.typesense.client-settings.api_key');
         $searchKey = config('scout.typesense.client-settings.search_only_key');
 
-        // Skip if admin key is not configured properly or search key already exists
-        if (empty($adminKey) || in_array($adminKey, ['xyz', 'xyza'], true) || ! empty($searchKey)) {
-            if (in_array($adminKey, ['xyz', 'xyza'], true)) {
-                $this->command->warn('⚠️  TYPESENSE_API_KEY is using placeholder value. Set a real API key to enable search features.');
-            }
-
+        // Skip if admin key is not configured or search key already exists
+        if (empty($adminKey) || ! empty($searchKey)) {
             return;
         }
 

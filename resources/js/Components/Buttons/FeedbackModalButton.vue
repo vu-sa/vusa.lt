@@ -1,10 +1,8 @@
 <template>
-  <NButton v-bind="$attrs" @click="showModal = true">
-    <template #icon>
-      <IFluentPersonFeedback24Filled />
-    </template>
+  <Button v-bind="$attrs" variant="outline" @click="showModal = true">
+    <IFluentPersonFeedback24Filled />
     <slot />
-  </NButton>
+  </Button>
   <CardModal :title="`${$t('Palik grįžtamąjį ryšį')}`" :show="showModal" @close="showModal = false">
     <template v-if="$page.props.app.locale === 'lt'">
       <p class="mb-4 text-xs">
@@ -27,36 +25,31 @@
         administrator.
       </p>
     </template>
-    <NForm>
-      <NFormItem :show-label="false">
-        <NInput v-model:value="form.feedback" :autosize="{
-          minRows: 3,
-          maxRows: 5,
-        }" :placeholder="`${$t('Parašyk pastebėjimų, pasiūlymų')}...`" show-count class="mt-2" type="textarea" />
-      </NFormItem>
-      <NFormItem :show-feedback="false" :show-label="false">
-        <NCheckbox v-model:checked="form.anonymous">
-          {{
-            $t("Siųsti anonimiškai")
-          }}
-        </NCheckbox>
-      </NFormItem>
-      <NFormItem :show-feedback="false">
-        <NButton :loading="loading" type="primary" :disabled="!form.feedback" @click="handleSend">
-          <template #icon>
-            <IFluentSend24Filled />
-          </template>{{ $t("forms.submit") }}
-        </NButton>
-      </NFormItem>
-    </NForm>
+    <div class="space-y-4">
+      <Textarea v-model="form.feedback" :rows="3" :placeholder="`${$t('Parašyk pastebėjimų, pasiūlymų')}...`" class="mt-2" />
+      <div class="flex items-center gap-2">
+        <Checkbox :checked="form.anonymous" @update:checked="val => form.anonymous = val" />
+        <Label>{{ $t("Siųsti anonimiškai") }}</Label>
+      </div>
+      <Button :disabled="!form.feedback || loading" @click="handleSend">
+        <Spinner v-if="loading" />
+        <IFluentSend24Filled v-else />
+        {{ $t("forms.submit") }}
+      </Button>
+    </div>
   </CardModal>
 </template>
 
-<script setup lang="tsx">
+<script setup lang="ts">
 import { ref } from "vue";
 import { useForm } from "@inertiajs/vue3";
 
 import CardModal from "../Modals/CardModal.vue";
+import { Button } from "@/Components/ui/button";
+import { Checkbox } from "@/Components/ui/checkbox";
+import { Label } from "@/Components/ui/label";
+import { Spinner } from "@/Components/ui/spinner";
+import { Textarea } from "@/Components/ui/textarea";
 
 const showModal = ref(false);
 const loading = ref(false);

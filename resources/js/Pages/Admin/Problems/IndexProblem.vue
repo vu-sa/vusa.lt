@@ -1,256 +1,221 @@
 <template>
-  <IndexPageLayout
-    :title="capitalize($tChoice('entities.problem.model', 2))"
-    model-name="problems"
-    :can-use-routes="canUseRoutes"
-    :columns="columns"
-    :paginated-models="problems"
-    :icon="Icons.PROBLEM"
-  >
-    <div class="mb-4 flex items-center gap-2">
-      <input
-        id="show-my-problems"
-        v-model="showMyProblems"
-        type="checkbox"
-        class="h-4 w-4 rounded border-gray-300 text-vusa-red focus:ring-vusa-red"
-        @change="handleToggleMyProblems"
-      />
-      <label
-        for="show-my-problems"
-        class="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer"
+  <IndexTablePage ref="indexTablePageRef" v-bind="tableConfig" @filter-changed="handleFilterChange">
+    <template #filters>
+      <DataTableFilter
+        v-model:value="selectedStatuses"
+        :options="statusOptions"
+        multiple
+        @update:value="handleStatusFilterChange"
       >
-        {{ $t("Rodyti tik mano sukurtas problemas") }}
-      </label>
-    </div>
-  </IndexPageLayout>
+        {{ capitalize($t("entities.problem.status")) }}
+      </DataTableFilter>
+      <DataTableFilter
+        v-model:value="selectedCategories"
+        :options="categoryOptions"
+        multiple
+        @update:value="handleCategoryFilterChange"
+      >
+        {{ capitalize($t("entities.problem.categories")) }}
+      </DataTableFilter>
+      <DataTableFilter
+        v-model:value="selectedInstitutions"
+        :options="institutionOptions"
+        multiple
+        @update:value="handleInstitutionFilterChange"
+      >
+        {{ capitalize($tChoice("entities.institution.model", 2)) }}
+      </DataTableFilter>
+    </template>
+  </IndexTablePage>
 </template>
 
 <script setup lang="tsx">
-import {
-  type DataTableColumns,
-  type DataTableRowKey,
-  type DataTableSortState,
-  NButton,
-  NEllipsis,
-  NIcon,
-  NTag,
-} from "naive-ui";
-import { computed, provide, ref } from "vue";
-import { router, usePage } from "@inertiajs/vue3";
-import { transChoice as $tChoice } from "laravel-vue-i18n";
+import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
+import { type ColumnDef } from "@tanstack/vue-table";
+import { computed, ref, watch, capitalize } from "vue";
+import { Link, usePage } from "@inertiajs/vue3";
 
-import { capitalize } from "@/Utils/String";
-import { tenantColumn } from "@/Composables/dataTableColumns";
+import IndexTablePage from "@/Components/Layouts/IndexTablePage.vue";
+import DataTableFilter from "@/Components/ui/data-table/DataTableFilter.vue";
+import { Badge } from "@/Components/ui/badge";
+import { createStandardActionsColumn } from "@/Composables/useTableActions";
+import { type IndexTablePageProps } from "@/Types/TableConfigTypes";
 import Icons from "@/Types/Icons/regular";
-import IconsFilled from "@/Types/Icons/filled";
-import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
-import type { PaginatedModels } from "@/Types/PaginatedModels";
 
 const props = defineProps<{
-  problems: PaginatedModels<App.Entities.Problem>;
-  categories: Array<App.Entities.ProblemCategory>;
-  institutions: Array<App.Entities.Institution>;
+  data: App.Entities.Problem[];
+  meta: {
+    total: number;
+    current_page: number;
+    per_page: number;
+    last_page: number;
+    from: number;
+    to: number;
+  };
+  filters?: Record<string, any>;
+  sorting?: { id: string; desc: boolean }[];
+  showDeleted?: boolean;
+  categories: App.Entities.ProblemCategory[];
+  institutions: App.Entities.Institution[];
 }>();
 
-const canUseRoutes = {
-  create: true,
-  show: false,
-  edit: true,
-  destroy: true,
-};
+const modelName = "problems";
+const entityName = "problem";
 
-const checkedRowKeys = ref<DataTableRowKey[]>([]);
-provide("checkedRowKeys", checkedRowKeys);
+const indexTablePageRef = ref<InstanceType<typeof IndexTablePage> | null>(null);
 
-const sorters = ref<Record<string, DataTableSortState["order"]>>({
-  title: false,
-  status: false,
-  occurred_at: false,
-});
+const canCreate = computed(() => usePage().props.auth?.can?.create?.problem || false);
 
-provide("sorters", sorters);
+const selectedStatuses = ref<string[]>(props.filters?.["status"] || []);
+const selectedCategories = ref<number[]>(props.filters?.["category"] || []);
+const selectedInstitutions = ref<string[]>(props.filters?.["institution"] || []);
 
-const filters = ref<Record<string, any>>({
-  "tenant.id": [],
-  status: [],
-  category: [],
-  institution: [],
-});
-
-provide("filters", filters);
-
-const showMyProblems = ref(false);
-
-const handleToggleMyProblems = () => {
-  router.reload({
-    data: {
-      show_my_problems: showMyProblems.value,
-    },
-    only: ["problems"],
-  });
-};
-
-const columns = computed<DataTableColumns<App.Entities.Problem>>(() => [
-  {
-    title: $tChoice("entities.problem.title", 1),
-    key: "title",
-    sorter: true,
-    sortOrder: sorters.value.title,
-    minWidth: 200,
-    render(row) {
-      return (
-        <a
-          href={route("problems.edit", row.id)}
-          class="transition hover:text-vusa-red font-medium"
-        >
-          <NEllipsis style="max-width: 250px">{row.title}</NEllipsis>
-        </a>
-      );
-    },
-  },
-  {
-    ...tenantColumn(filters, usePage().props.tenants),
-    render(row: App.Entities.Problem) {
-      return row.tenant ? (
-        <NTag size="small" round>
-          {row.tenant.shortname}
-        </NTag>
-      ) : null;
-    },
-  },
-  {
-    title: $tChoice("entities.problem.status", 1),
-    key: "status",
-    sorter: true,
-    sortOrder: sorters.value.status,
-    minWidth: 120,
-    filter: true,
-    filterOptionValues: filters.value["status"],
-    filterOptions: [
-      { label: "Atvira", value: "open" },
-      { label: "Vykdoma", value: "in_progress" },
-      { label: "Išspręsta", value: "resolved" },
-    ],
-    render(row: App.Entities.Problem) {
-      const statusConfig = {
-        open: {
-          label: "Atvira",
-          type: "error" as const,
-        },
-        in_progress: {
-          label: "Vykdoma",
-          type: "warning" as const,
-        },
-        resolved: {
-          label: "Išspręsta",
-          type: "success" as const,
-        },
-      };
-      const config = statusConfig[row.status as keyof typeof statusConfig];
-      return (
-        <NTag type={config.type} size="small" round>
-          {config.label}
-        </NTag>
-      );
-    },
-  },
-  {
-    title: $tChoice("entities.problem.occurred_at", 1),
-    key: "occurred_at",
-    sorter: true,
-    sortOrder: sorters.value.occurred_at,
-    minWidth: 110,
-    render(row) {
-      return row.occurred_at
-        ? new Date(row.occurred_at).toLocaleDateString("lt-LT")
-        : "-";
-    },
-  },
-  {
-    title: $tChoice("entities.problem.resolved_at", 1),
-    key: "resolved_at",
-    minWidth: 110,
-    render(row) {
-      return row.resolved_at
-        ? new Date(row.resolved_at).toLocaleDateString("lt-LT")
-        : "-";
-    },
-  },
-  {
-    title: $tChoice("entities.problem.responsible_user", 1),
-    key: "responsible_user.name",
-    minWidth: 150,
-    render(row: App.Entities.Problem) {
-      return row.responsible_user ? (
-        <NEllipsis style="max-width: 150px">
-          {row.responsible_user.name}
-        </NEllipsis>
-      ) : (
-        "-"
-      );
-    },
-  },
-  {
-    title: $tChoice("entities.problem.categories", 2),
-    key: "category",
-    minWidth: 150,
-    filter: true,
-    filterOptionValues: filters.value["category"],
-    filterOptions: props.categories.map((cat) => ({
-      label: cat.name,
-      value: cat.id,
-    })),
-    render(row: App.Entities.Problem) {
-      if (!row.categories || row.categories.length === 0) {
-        return "-";
-      }
-
-      return (
-        <div class="flex flex-wrap gap-1">
-          {row.categories.slice(0, 2).map((category, index) => (
-            <NTag size="tiny" round key={category.id || index}>
-              {category.name}
-            </NTag>
-          ))}
-          {row.categories.length > 2 && (
-            <NTag size="tiny" round>
-              +{row.categories.length - 2}
-            </NTag>
-          )}
-        </div>
-      );
-    },
-  },
-  {
-    title: $tChoice("entities.institution.model", 2),
-    key: "institution",
-    minWidth: 150,
-    filter: true,
-    filterOptionValues: filters.value["institution"],
-    filterOptions: props.institutions.map((inst) => ({
-      label: inst.name,
-      value: inst.id,
-    })),
-    render(row: App.Entities.Problem) {
-      if (!row.institutions || row.institutions.length === 0) {
-        return "-";
-      }
-
-      return (
-        <div class="flex flex-wrap gap-1">
-          {row.institutions.slice(0, 2).map((institution, index) => (
-            <NTag size="tiny" round key={institution.id || index}>
-              {institution.name}
-            </NTag>
-          ))}
-          {row.institutions.length > 2 && (
-            <NTag size="tiny" round>
-              +{row.institutions.length - 2}
-            </NTag>
-          )}
-        </div>
-      );
-    },
-  },
+const statusOptions = computed(() => [
+  { label: $t("Atvira"), value: "open" },
+  { label: $t("Vykdoma"), value: "in_progress" },
+  { label: $t("Išspręsta"), value: "resolved" },
 ]);
+
+const categoryOptions = computed(() =>
+  props.categories.map((cat) => ({ label: cat.name as string, value: cat.id }))
+);
+
+const institutionOptions = computed(() =>
+  props.institutions.map((inst) => ({ label: inst.name as string, value: inst.id }))
+);
+
+const statusVariant = (status: string) =>
+  ({ open: "destructive", in_progress: "warning", resolved: "success" }[status] ?? "secondary");
+
+const statusLabel = (status: string) =>
+  ({ open: $t("Atvira"), in_progress: $t("Vykdoma"), resolved: $t("Išspręsta") }[status] ?? status);
+
+const columns = computed<ColumnDef<App.Entities.Problem, any>[]>(() => [
+  {
+    accessorKey: "title",
+    header: () => capitalize($t("entities.problem.title")),
+    cell: ({ row }) => (
+      <Link href={route("problems.edit", row.original.id)} class="font-medium hover:underline">
+        {row.original.title}
+      </Link>
+    ),
+    enableSorting: true,
+    size: 250,
+  },
+  {
+    accessorKey: "status",
+    header: () => capitalize($t("entities.problem.status")),
+    cell: ({ row }) => (
+      <Badge variant={statusVariant(row.original.status)}>
+        {statusLabel(row.original.status)}
+      </Badge>
+    ),
+    enableSorting: true,
+    size: 120,
+  },
+  {
+    accessorKey: "occurred_at",
+    header: () => capitalize($t("entities.problem.occurred_at")),
+    cell: ({ row }) =>
+      row.original.occurred_at
+        ? new Date(row.original.occurred_at).toLocaleDateString("lt-LT")
+        : "—",
+    enableSorting: true,
+    size: 120,
+  },
+  {
+    accessorKey: "resolved_at",
+    header: () => capitalize($t("entities.problem.resolved_at")),
+    cell: ({ row }) =>
+      row.original.resolved_at
+        ? new Date(row.original.resolved_at).toLocaleDateString("lt-LT")
+        : "—",
+    size: 120,
+  },
+  {
+    id: "responsible_user",
+    header: () => capitalize($t("entities.problem.responsible_user")),
+    cell: ({ row }) => row.original.responsibleUser?.name ?? "—",
+    size: 160,
+  },
+  {
+    id: "categories",
+    header: () => capitalize($t("entities.problem.categories")),
+    cell: ({ row }) => {
+      const cats = row.original.categories ?? [];
+      if (cats.length === 0) return <span class="text-muted-foreground">—</span>;
+      return (
+        <div class="flex flex-wrap gap-1">
+          {cats.slice(0, 2).map((cat) => (
+            <Badge key={cat.id} variant="outline" class="text-xs">{cat.name}</Badge>
+          ))}
+          {cats.length > 2 && (
+            <Badge variant="outline" class="text-xs">+{cats.length - 2}</Badge>
+          )}
+        </div>
+      );
+    },
+    size: 180,
+  },
+  {
+    id: "tenant",
+    header: () => capitalize($tChoice("entities.tenant.model", 1)),
+    cell: ({ row }) => row.original.tenant?.shortname ?? "—",
+    size: 100,
+  },
+  createStandardActionsColumn<App.Entities.Problem>(modelName, {
+    canEdit: true,
+    canDelete: true,
+    canRestore: true,
+  }),
+]);
+
+const tableConfig = computed<IndexTablePageProps<App.Entities.Problem>>(() => ({
+  modelName,
+  entityName,
+  data: props.data,
+  columns: columns.value,
+  totalCount: props.meta.total,
+  initialPage: props.meta.current_page,
+  pageSize: props.meta.per_page,
+  initialFilters: props.filters,
+  initialSorting: props.sorting,
+  enableFiltering: true,
+  enableColumnVisibility: true,
+  allowToggleDeleted: true,
+  showDeleted: props.showDeleted,
+  headerTitle: capitalize($tChoice("entities.problem.model", 2)),
+  icon: Icons.PROBLEM,
+  createRoute: canCreate.value ? route("problems.create") : undefined,
+  canCreate: canCreate.value,
+}));
+
+const handleStatusFilterChange = (values: string[]) => {
+  indexTablePageRef.value?.updateFilter("status", values);
+};
+
+const handleCategoryFilterChange = (values: number[]) => {
+  indexTablePageRef.value?.updateFilter("category", values);
+};
+
+const handleInstitutionFilterChange = (values: string[]) => {
+  indexTablePageRef.value?.updateFilter("institution", values);
+};
+
+const handleFilterChange = (filterKey: string, value: any) => {
+  if (filterKey === "status") selectedStatuses.value = value;
+  if (filterKey === "category") selectedCategories.value = value;
+  if (filterKey === "institution") selectedInstitutions.value = value;
+};
+
+watch(
+  () => props.filters,
+  (newFilters) => {
+    if (!newFilters) return;
+    if (newFilters["status"] !== undefined) selectedStatuses.value = newFilters["status"];
+    if (newFilters["category"] !== undefined) selectedCategories.value = newFilters["category"];
+    if (newFilters["institution"] !== undefined) selectedInstitutions.value = newFilters["institution"];
+  },
+  { deep: true }
+);
 </script>

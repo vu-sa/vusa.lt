@@ -16,7 +16,7 @@ import { trans as $t } from 'laravel-vue-i18n'
 
 // Define component props
 const props = defineProps<{
-  modelValue?: Date | DateValue
+  modelValue?: Date | DateValue | string
   minDate?: DateValue
   maxDate?: DateValue
   placeholder?: string
@@ -41,7 +41,6 @@ const formatter = new DateFormatter(document.documentElement.lang || 'lt', {
 // Internal value management
 const internalValue = computed({
   get: () => {
-    // If we have a model value that's a Date, convert it to DateValue
     if (props.modelValue instanceof Date) {
       return today(getLocalTimeZone()).set({
         year: props.modelValue.getFullYear(),
@@ -49,11 +48,28 @@ const internalValue = computed({
         day: props.modelValue.getDate(),
       })
     }
-    return props.modelValue as DateValue | undefined
+    // Handle date strings from backend (e.g. "2024-06-15" or "2024-06-15 00:00:00")
+    if (typeof props.modelValue === 'string') {
+      const match = props.modelValue.match(/^(\d{4})-(\d{2})-(\d{2})/)
+      if (match) {
+        return today(getLocalTimeZone()).set({
+          year: parseInt(match[1]),
+          month: parseInt(match[2]),
+          day: parseInt(match[3]),
+        })
+      }
+      return undefined
+    }
+    // DateValue - verify it has the expected interface before returning
+    if (props.modelValue && typeof (props.modelValue as DateValue).toDate === 'function') {
+      return props.modelValue as DateValue
+    }
+    return undefined
   },
   set: (value: DateValue | undefined) => {
     if (value) {
-      const dateObject = value.toDate(getLocalTimeZone())
+      // Use noon UTC to prevent date shift during JSON serialization
+      const dateObject = new Date(Date.UTC(value.year, value.month - 1, value.day, 12, 0, 0))
       emit('update:modelValue', dateObject)
       emit('change', dateObject)
     } else {
@@ -80,13 +96,12 @@ const setValueFromField = (fieldValue: any) => {
       day: fieldValue.getDate(),
     })
   } else if (typeof fieldValue === 'string' && fieldValue) {
-    // Handle ISO string format
-    const date = new Date(fieldValue)
-    if (!isNaN(date.getTime())) {
+    const match = fieldValue.match(/^(\d{4})-(\d{2})-(\d{2})/)
+    if (match) {
       internalValue.value = today(getLocalTimeZone()).set({
-        year: date.getFullYear(),
-        month: date.getMonth() + 1,
-        day: date.getDate(),
+        year: parseInt(match[1]),
+        month: parseInt(match[2]),
+        day: parseInt(match[3]),
       })
     }
   }
@@ -121,9 +136,9 @@ const onClose = () => {
       </Button>
     </PopoverTrigger>
     <PopoverContent class="w-auto p-0">
-      <Calendar 
-        v-model="internalValue" 
-        initial-focus 
+      <Calendar
+        v-model="internalValue"
+        initial-focus
         :min-date="minDate"
         :max-date="maxDate"
       />

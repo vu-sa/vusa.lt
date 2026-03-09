@@ -1,9 +1,7 @@
 <template>
   <!-- https://www.joshwcomeau.com/css/full-bleed/ -->
-  <NConfigProvider :theme="isDark ? darkTheme : undefined" :theme-overrides="usedThemeOverrides">
-    <!-- Overwrite image meta -->
-
-    <Head>
+  <!-- Overwrite image meta -->
+  <Head>
       <meta head-key="og:image" property="og:image" :content="safeString(usePage().props.seo.image)">
       <meta head-key="image" name="image" :content="safeString(usePage().props.seo.image)">
     </Head>
@@ -96,30 +94,28 @@
         </template>
       </template>
     </Head>
-    <div class="@container bg-zinc-50 dark:bg-zinc-900">
+    <div class="@container min-h-screen flex flex-col bg-zinc-50 dark:bg-zinc-900 font-public">
+      <!-- Staging environment warning banner -->
+      <StagingBanner />
+      
       <!-- Skip to main content link - positioned first for keyboard navigation -->
       <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[9999] focus:bg-white focus:text-zinc-900 focus:px-4 focus:py-2 focus:rounded-md focus:shadow-lg focus:border-2 focus:border-vusa-red dark:focus:bg-zinc-800 dark:focus:text-zinc-100">
         {{ $t('accessibility.skip_to_main_content') }}
       </a>
       
       <div
-        class="flex flex-col justify-between text-zinc-800 antialiased dark:text-zinc-300 container px-0 @container/main">
+        class="flex-1 flex flex-col text-zinc-800 antialiased dark:text-zinc-300 container px-0 @container/main">
         <MainNavigation :is-theme-dark="isDark" />
 
-        <main id="main-content" class="pb-8 pt-12 mt-16">
+        <main id="main-content" class="pb-8" :class="mainContentMarginClass">
           <!-- Centralized breadcrumb display -->
-          <nav v-if="breadcrumbState.breadcrumbs.value.length > 0" :class="breadcrumbWrapperClass" aria-label="Breadcrumb">
-            <UnifiedBreadcrumbs class="mb-4 md:mb-6" />
-          </nav>
+          <div v-if="breadcrumbState.breadcrumbs.value.length > 0" :class="breadcrumbWrapperClass">
+            <PublicBreadcrumbs />
+          </div>
           
           <!-- <Suspense> -->
           <div>
-            <FadeTransition v-if="!$page.props.disablePageTransition" appear>
-              <div :key="$page.url" :class="contentWrapperClass">
-                <slot />
-              </div>
-            </FadeTransition>
-            <div v-else :class="contentWrapperClass">
+            <div :class="contentWrapperClass">
               <slot />
             </div>
             <div v-if="
@@ -137,12 +133,11 @@
       </div>
       
       <!-- Footer outside container for full-width -->
-      <SiteFooter />
+      <SiteFooter class="mt-auto" />
     </div>
     
-    <!-- Toast notifications -->
-    <Toaster rich-colors />
-  </NConfigProvider>
+  <!-- Toast notifications -->
+  <Toaster rich-colors />
 </template>
 
 <script setup lang="ts">
@@ -171,23 +166,27 @@
  * This ensures the escape() function only receives string values, preventing the error
  * while maintaining all SEO functionality.
  */
-import { NConfigProvider, darkTheme, type GlobalThemeOverrides } from "naive-ui";
-import { computed, defineAsyncComponent, onMounted, ref, toValue, watch, nextTick } from "vue";
+import { computed, defineAsyncComponent, onMounted, ref, watch, nextTick } from "vue";
 import { useDark, useStorage } from "@vueuse/core";
 
 import { Head, usePage, router } from "@inertiajs/vue3";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
-import { Spinner } from "@/Components/ui/spinner";
-import UnifiedBreadcrumbs from "@/Components/UnifiedBreadcrumbs.vue";
+import PublicBreadcrumbs from "@/Components/Public/PublicBreadcrumbs.vue";
 import { createBreadcrumbState } from '@/Composables/useBreadcrumbsUnified';
 import { Toaster } from "@/Components/ui/sonner";
 import { useToasts } from '@/Composables/useToasts';
+import { useSecondMenu } from "@/Composables/useSecondMenu";
 import 'vue-sonner/style.css'
+
+// Critical path components - load synchronously for faster initial render
+import MainNavigation from "@/Components/Public/Layouts/MainNavigation.vue";
+import SiteFooter from "../FullWidth/SiteFooter.vue";
+import StagingBanner from "@/Components/StagingBanner.vue";
 
 // Use existing Skeleton component for consistency
 import { Skeleton } from '@/Components/ui/skeleton';
 
-// Optimize component loading - critical path components should load faster
+// Non-critical components - load asynchronously
 const BannerCarousel = defineAsyncComponent({
   loader: () => import("../FullWidth/BannerCarousel.vue"),
   loadingComponent: {
@@ -202,25 +201,10 @@ const ConsentCard = defineAsyncComponent({
   delay: 0 // Load immediately when needed
 });
 
-const MainNavigation = defineAsyncComponent({
-  loader: () => import("@/Components/Public/Layouts/MainNavigation.vue"),
-  loadingComponent: {
-    components: { Skeleton },
-    template: '<Skeleton class="h-16" />'
-  },
-  delay: 0 // Critical component - load immediately
-});
-
-const SiteFooter = defineAsyncComponent({
-  loader: () => import("../FullWidth/SiteFooter.vue"),
-  loadingComponent: {
-    components: { Skeleton },
-    template: '<div class="w-full border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 py-8"><div class="mx-auto max-w-7xl px-4"><Skeleton class="h-20 w-full" /></div></div>'
-  },
-  delay: 100
-});
-
 const isDark = useDark();
+
+// Use composable for navigation state
+const { hasSecondMenu } = useSecondMenu();
 
 // Initialize breadcrumb state for public pages
 const breadcrumbState = createBreadcrumbState('public');
@@ -249,20 +233,35 @@ const contentWrapperClass = computed(() => {
   }
 });
 
+// Main content margin - uses responsive classes since SecondMenu is hidden on mobile (max-md:hidden)
+// Mobile (max-md): SecondMenu never shown, so use smaller margins
+// Desktop (md+): SecondMenu shown when tenant has links, needs larger margin
+const mainContentMarginClass = computed(() => {
+  const hasBreadcrumbs = breadcrumbState.breadcrumbs.value.length > 0;
+  
+  if (hasBreadcrumbs) {
+    // With breadcrumbs: smaller margin since breadcrumb wrapper has its own padding
+    if (hasSecondMenu.value) {
+      // Mobile: no SecondMenu shown, Desktop: SecondMenu adds height
+      return 'mt-16 md:mt-24';
+    }
+    return 'mt-16';
+  }
+  
+  // Without breadcrumbs: larger margin for content spacing
+  if (hasSecondMenu.value) {
+    // Mobile: no SecondMenu shown (mt-20), Desktop: SecondMenu adds height (mt-32)
+    return 'mt-20 md:mt-32';
+  }
+  return 'mt-20';
+});
+
 const breadcrumbWrapperClass = computed(() => {
-  const width = layoutWidth.value;
+  // Reduced padding since main already has margin
   const baseClasses = 'pt-4 md:pt-6 lg:pt-8';
   
-  switch (width) {
-    case 'wide':
-      return `wrapper-wide ${baseClasses}`;
-    case 'full':
-      return `wrapper-full ${baseClasses}`;
-    case 'content':
-      return `wrapper-content ${baseClasses}`;
-    default:
-      return `wrapper ${baseClasses}`;
-  }
+  // Breadcrumbs always use standard wrapper width for consistency
+  return `wrapper ${baseClasses}`;
 });
 
 // Clear breadcrumbs when on home page
@@ -342,43 +341,6 @@ const seo = computed(() => {
 });
 
 const mounted = ref(false);
-const spinWarning = ref(false);
-
-const themeOverrides: GlobalThemeOverrides = {
-  common: {
-    primaryColor: "#bd2835FF",
-    primaryColorHover: "#CD3543FF",
-    primaryColorPressed: "#CC2130FF",
-    primaryColorSuppl: "#B93945FF",
-    borderRadius: "6px",
-    fontWeightStrong: "600",
-    lineHeight: "1.5",
-  },
-  DataTable: {
-    tdColor: "transparent",
-    borderColor: "#dddddd",
-  }
-};
-
-const darkThemeOverrides: GlobalThemeOverrides = {
-  common: {
-    primaryColor: "#bd2835FF",
-    primaryColorHover: "#CD3543FF",
-    primaryColorPressed: "#CC2130FF",
-    primaryColorSuppl: "#B93945FF",
-    borderRadius: "6px",
-    fontWeightStrong: "600",
-    lineHeight: "1.5",
-  },
-  DataTable: {
-    tdColor: "transparent",
-    borderColor: "#333333",
-  }
-};
-
-const usedThemeOverrides = computed(() => {
-  return isDark.value ? darkThemeOverrides : themeOverrides;
-});
 
 const cookieConsent = useStorage("cookie-consent", false);
 
@@ -390,8 +352,9 @@ watch(() => usePage().props.errors, (errors) => {
   if (errors && typeof errors === 'object' && Object.keys(errors).length > 0) {
     // In public page, show only one error message at a time
     const entries = Object.entries(errors);
-    if (entries.length > 0) {
-      const [key, value] = entries[0];
+    const firstEntry = entries[0];
+    if (firstEntry) {
+      const [key, value] = firstEntry;
       if (key && value) {
         toasts.error(`${key}: ${value}`);
       }
@@ -416,47 +379,45 @@ onMounted(() => {
     // Individual pages will set their own breadcrumbs using usePageBreadcrumbs()
   });
 
-  // Defer non-critical script loading to improve INP
-  nextTick(() => {
-    // Use requestIdleCallback or setTimeout to defer script loading
-    const loadThirdPartyScripts = () => {
-      // UserWay - defer to not block main thread
-      const userWayScript = document.createElement("script");
-      userWayScript.setAttribute("data-account", "5OC3pQZI6r");
-      userWayScript.setAttribute("src", "https://cdn.userway.org/widget.js");
-      userWayScript.defer = true;
-      document.head.appendChild(userWayScript);
+  // Load UserWay immediately for accessibility (needs to modify styles early)
+  const userWayScript = document.createElement("script");
+  userWayScript.setAttribute("data-account", "5OC3pQZI6r");
+  userWayScript.setAttribute("src", "https://cdn.userway.org/widget.js");
+  userWayScript.async = true;
+  document.head.appendChild(userWayScript);
 
-      // Tawk.to - defer to not block main thread
-      const lang = usePage().props.app.locale;
-      const Tawk_SRC = lang === "lt" ? "default" : "1foc6rga3";
-      
-      const tawkScript = document.createElement("script");
-      tawkScript.async = true;
-      tawkScript.defer = true;
-      tawkScript.src = `https://embed.tawk.to/5f71b135f0e7167d00145612/${Tawk_SRC}`;
-      tawkScript.charset = "UTF-8";
-      tawkScript.setAttribute("crossorigin", "*");
-      
-      const firstScript = document.getElementsByTagName("script")[0];
-      if (firstScript && firstScript.parentNode) {
-        firstScript.parentNode.insertBefore(tawkScript, firstScript);
-      } else {
-        document.head.appendChild(tawkScript);
-      }
-    };
+  // Defer Tawk.to loading - not critical for initial experience
+  const loadTawkTo = () => {
+    const lang = usePage().props.app.locale;
+    const Tawk_SRC = lang === "lt" ? "default" : "1foc6rga3";
+    
+    const tawkScript = document.createElement("script");
+    tawkScript.async = true;
+    tawkScript.src = `https://embed.tawk.to/5f71b135f0e7167d00145612/${Tawk_SRC}`;
+    tawkScript.charset = "UTF-8";
+    tawkScript.setAttribute("crossorigin", "anonymous");
+    document.head.appendChild(tawkScript);
+  };
 
-    // Use requestIdleCallback if available, otherwise setTimeout
-    if ('requestIdleCallback' in window) {
-      requestIdleCallback(loadThirdPartyScripts, { timeout: 2000 });
-    } else {
-      setTimeout(loadThirdPartyScripts, 100);
+  // Load Tawk.to after user interaction or after 5 seconds (whichever comes first)
+  let tawkLoaded = false;
+  const loadTawkOnce = () => {
+    if (!tawkLoaded) {
+      tawkLoaded = true;
+      loadTawkTo();
+      // Remove event listeners after loading
+      document.removeEventListener('scroll', loadTawkOnce);
+      document.removeEventListener('click', loadTawkOnce);
+      document.removeEventListener('touchstart', loadTawkOnce);
     }
-  });
+  };
 
-  // Delay spin warning - keep this as is for UX
-  setTimeout(() => {
-    spinWarning.value = true;
-  }, 6900);
+  // Listen for user interaction
+  document.addEventListener('scroll', loadTawkOnce, { once: true, passive: true });
+  document.addEventListener('click', loadTawkOnce, { once: true });
+  document.addEventListener('touchstart', loadTawkOnce, { once: true, passive: true });
+  
+  // Fallback: load after 5 seconds if no interaction
+  setTimeout(loadTawkOnce, 5000);
 });
 </script>

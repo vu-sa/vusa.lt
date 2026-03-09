@@ -1,9 +1,9 @@
 <template>
   <Card class="calendar-card border shadow-sm transition-all duration-300 hover:shadow-md dark:border-zinc-600/30">
     <div class="relative h-40 w-full overflow-hidden">
-      <img v-if="calendarEvent.images && calendarEvent.images?.length > 0"
+      <img v-if="calendarEvent.main_image_url"
         class="h-full w-full rounded-t-md object-cover object-center transition-transform duration-500 hover:scale-105"
-        :src="calendarEvent.images[0].original_url" :alt="calendarEvent.title">
+        :src="calendarEvent.main_image_url" :alt="calendarEvent.title">
       <div v-else
         class="flex h-full w-full items-center justify-center rounded-t-md bg-gradient-to-br from-red-50 to-red-100 dark:from-zinc-800 dark:to-zinc-700">
         <IFluentCalendarLtr24Regular class="text-4xl text-red-500 dark:text-red-400" />

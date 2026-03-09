@@ -4,35 +4,64 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetTenantsForUpserts;
 use App\Http\Controllers\AdminController;
+use App\Http\Requests\IndexMembershipRequest;
 use App\Http\Requests\StoreMembershipRequest;
 use App\Http\Requests\UpdateMembershipRequest;
+use App\Http\Traits\HasTanstackTables;
 use App\Imports\MembershipUsersImport;
 use App\Models\Membership;
 use App\Services\ModelAuthorizer as Authorizer;
-use App\Services\ModelIndexer;
+use App\Services\TanstackTableService;
 use Maatwebsite\Excel\Facades\Excel;
 
 class MembershipController extends AdminController
 {
-    public function __construct(public Authorizer $authorizer) {}
+    use HasTanstackTables;
+
+    public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService) {}
 
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(IndexMembershipRequest $request)
     {
         $this->handleAuthorization('viewAny', Membership::class);
 
-        $indexer = new ModelIndexer(new Membership);
+        $query = Membership::query()->with(['tenant:id,shortname']);
 
-        $memberships = $indexer
-            ->setEloquentQuery()
-            ->filterAllColumns()
-            ->sortAllColumns()
-            ->builder->paginate(15);
+        $searchableColumns = ['name'];
+
+        $query = $this->applyTanstackFilters(
+            $query,
+            $request,
+            $this->tableService,
+            $searchableColumns,
+            [
+                'tenantRelation' => 'tenant',
+                'permission' => 'memberships.read.padalinys',
+            ]
+        );
+
+        $memberships = $query->paginate($request->input('per_page', 15))
+            ->withQueryString();
 
         return $this->inertiaResponse('Admin/People/IndexMembership', [
-            'memberships' => $memberships,
+            'memberships' => [
+                'data' => $memberships->getCollection()->map(function ($membership) {
+                    /** @var \App\Models\Membership $membership */
+                    return $membership->toFullArray();
+                })->values(),
+                'meta' => [
+                    'total' => $memberships->total(),
+                    'per_page' => $memberships->perPage(),
+                    'current_page' => $memberships->currentPage(),
+                    'last_page' => $memberships->lastPage(),
+                    'from' => $memberships->firstItem(),
+                    'to' => $memberships->lastItem(),
+                ],
+            ],
+            'filters' => $request->getFilters(),
+            'sorting' => $request->getSorting(),
         ]);
     }
 

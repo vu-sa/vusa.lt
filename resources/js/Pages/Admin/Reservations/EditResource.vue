@@ -1,9 +1,14 @@
 <template>
   <PageContent :title="resource.name[$page.props.app.locale]" :back-url="route('resources.index')"
     :heading-icon="Icons.RESOURCE">
-    <NCard :title="$t('Rezervacijų istorija')" class="mb-4 min-w-[450px]">
-      <ResourceReservationsTable :reservations="resource.reservations" />
-    </NCard>
+    <Card class="mb-4 min-w-[450px]">
+      <CardHeader>
+        <CardTitle>{{ $t('Rezervacijų istorija') }}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <ResourceReservationsTable :reservations="resource.reservations" />
+      </CardContent>
+    </Card>
     <UpsertModelLayout>
       <ResourceForm enable-delete :resource :categories :assignable-tenants
         @submit:form="handleResourceUpdate"
@@ -16,8 +21,8 @@
 import { computed } from "vue";
 import { trans as $t } from "laravel-vue-i18n";
 import { router, usePage } from "@inertiajs/vue3";
-import { NCard } from "naive-ui";
 
+import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import { BreadcrumbHelpers, usePageBreadcrumbs } from "@/Composables/useBreadcrumbsUnified";
 import Icons from "@/Types/Icons/regular";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
@@ -42,7 +47,7 @@ const { resource } = defineProps<{
 }>();
 
 // Generate breadcrumbs automatically with new simplified API
-usePageBreadcrumbs(() => 
+usePageBreadcrumbs(() =>
   BreadcrumbHelpers.adminForm('Ištekliai', 'resources.index', resource.name[usePage().props.app.locale], Icons.RESOURCE)
 );
 

@@ -53,7 +53,7 @@ class ResourceCategory extends Model
         return $this->hasManyDeepFromRelations($this->resources(), (new Resource)->tenant());
     }
 
-    public function toSearchableArray()
+    public function toSearchableArray(): array
     {
         return [
             'name->'.app()->getLocale() => $this->getTranslation('name', app()->getLocale()),

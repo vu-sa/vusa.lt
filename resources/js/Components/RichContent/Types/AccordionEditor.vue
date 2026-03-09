@@ -1,30 +1,48 @@
 <template>
-  <NDynamicInput v-model:value="modelValue" @create="onCreate">
-    <template #create-button-default>
-      Sukurti
-    </template>
-    <template #default="{ value }">
-      <div
-        class="flex w-full flex-col gap-3 rounded-lg border border-zinc-200/60 bg-zinc-50/30 p-4 dark:border-zinc-800/50 dark:bg-zinc-800/20">
-        <NFormItem label="Pavadinimas" :show-feedback="false">
-          <NInput v-model:value="value.label" type="text" placeholder="Įrašyti pavadinimą..." />
-        </NFormItem>
-        <OriginalTipTap v-model="value.content" />
+  <DynamicListInput
+    v-model="modelValue"
+    :create-item="createItem"
+    :empty-text="$t('rich-content.no_accordion_items')"
+    :add-first-text="$t('rich-content.add_first_accordion_item')"
+    :add-text="$t('rich-content.add_accordion_item')"
+    allow-empty>
+    <template #item="{ item, update }">
+      <div class="flex flex-col gap-3">
+        <Field>
+          <FieldLabel>{{ $t('rich-content.title') }}</FieldLabel>
+          <Input 
+            :model-value="item.label" 
+            type="text" 
+            :placeholder="$t('rich-content.enter_accordion_title')" 
+            @update:model-value="update({ ...item, label: $event })" 
+          />
+        </Field>
+        <Field>
+          <FieldLabel>{{ $t('rich-content.content') }}</FieldLabel>
+          <TiptapEditor 
+            :model-value="item.content" 
+            preset="full"
+            @update:model-value="update({ ...item, content: $event })" 
+          />
+        </Field>
       </div>
     </template>
-  </NDynamicInput>
+  </DynamicListInput>
 </template>
 
 <script setup lang="ts">
-import { defineModel } from 'vue';
-import OriginalTipTap from '@/Components/TipTap/OriginalTipTap.vue';
+import type { ShadcnAccordion } from '@/Types/contentParts';
+import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
+import { DynamicListInput } from '@/Components/ui/dynamic-list-input';
+import { Field, FieldLabel } from '@/Components/ui/field';
+import { Input } from '@/Components/ui/input';
 
-const modelValue = defineModel();
+const modelValue = defineModel<ShadcnAccordion['json_content']>();
 
-function onCreate() {
+function createItem(): ShadcnAccordion['json_content'][number] {
   return {
     label: "",
-    content: {},
+    content: {} as ShadcnAccordion['json_content'][number]['content'],
   };
 }
 </script>

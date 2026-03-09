@@ -104,3 +104,10 @@ flags:
     paths:
       - "resources/js/"
     carryforward: false
+
+# Bundle analysis configuration
+bundle_analysis:
+  status:
+    default:
+      enabled: true
+      informational: true  # Don't block PRs initially

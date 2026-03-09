@@ -9,28 +9,49 @@
           Studijų programa – tai konkreti studijų kryptis, kuriai priskiriami pareigūnai (pvz., studentų atstovai).
         </p>
       </template>
-      
-      <NFormItem :label="$t('forms.fields.title')" :required="true">
+
+      <FormFieldWrapper id="name" :label="$t('forms.fields.title')" required>
         <MultiLocaleInput v-model:input="form.name" />
-      </NFormItem>
+      </FormFieldWrapper>
 
       <div class="grid gap-x-4 lg:grid-cols-2">
-        <NFormItem label="Laipsnis" :required="true">
-          <NSelect v-model:value="form.degree" :options="degreeOptions" placeholder="Pasirinkite laipsnį" />
-        </NFormItem>
+        <FormFieldWrapper id="degree" label="Laipsnis" required>
+          <Select v-model="form.degree">
+            <SelectTrigger>
+              <SelectValue placeholder="Pasirinkite laipsnį" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem v-for="opt in degreeOptions" :key="opt.value" :value="opt.value">
+                {{ opt.label }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </FormFieldWrapper>
 
-        <NFormItem label="Padalinys" :required="true">
-          <NSelect v-model:value="form.tenant_id" :options="tenantOptions" placeholder="Pasirinkite padalinį" />
-        </NFormItem>
+        <FormFieldWrapper id="tenant_id" label="Padalinys" required>
+          <Select v-model="tenantIdString">
+            <SelectTrigger>
+              <SelectValue placeholder="Pasirinkite padalinį" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem v-for="opt in tenantOptions" :key="opt.value" :value="String(opt.value)">
+                {{ opt.label }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </FormFieldWrapper>
       </div>
     </FormElement>
   </AdminForm>
 </template>
 
 <script setup lang="ts">
+import { computed } from "vue";
 import { useForm } from "@inertiajs/vue3";
 
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
 import FormElement from "./FormElement.vue";
+import FormFieldWrapper from "./FormFieldWrapper.vue";
 import AdminForm from "./AdminForm.vue";
 import MultiLocaleInput from "@/Components/FormItems/MultiLocaleInput.vue";
 import { getDegreeOptions } from "@/Utils/Degrees";
@@ -54,4 +75,10 @@ const tenantOptions = tenants.map((tenant) => ({
   label: tenant.shortname,
   value: tenant.id,
 }));
+
+// Shadcn Select requires string values
+const tenantIdString = computed({
+  get: () => form.tenant_id != null ? String(form.tenant_id) : '',
+  set: (val: string) => { form.tenant_id = val ? Number(val) : null; },
+});
 </script>

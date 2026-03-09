@@ -1,0 +1,113 @@
+<?php
+
+return [
+    // Content Types
+    'tiptap' => 'Rich Text',
+    'shadcn-card' => 'Card',
+    'shadcn-accordion' => 'Accordion',
+    'image-grid' => 'Image Grid',
+    'hero' => 'Hero Section',
+    'spotify-embed' => 'Spotify Embed',
+    'social-embed' => 'Facebook / Instagram Post',
+    'number-stat-section' => 'Number Statistics',
+    'news' => 'News',
+    'calendar' => 'Calendar',
+    'flow-graph' => 'Flow Graph',
+    'content-grid' => 'Content Grid',
+    // Technical
+    'add_content_block' => 'Add Content Block',
+    'text_placeholder' => 'Type here...',
+    'restore_content_block_order' => 'Restore Content Block Order',
+    'max_blocks_reached' => 'Maximum number of blocks reached',
+    'select_content_block' => 'Select Content Block',
+    'more_content_types' => 'More Content Types',
+    'more_types' => 'More Types',
+    'drag_drop_images_info' => 'You can drag and drop images directly into the text editor',
+    'drag_drop_hint' => 'You can drag and drop images directly into the text editor',
+    'preview_mode' => 'Preview',
+    'switch_to_preview' => 'Preview',
+    'switch_to_edit' => 'Edit',
+    'preview_all' => 'Preview all',
+    // YouTube modal
+    'youtube_upload_title' => 'Upload YouTube Video',
+    'youtube_upload_description' => 'Enter the YouTube video URL you want to embed.',
+    'youtube_url_label' => 'YouTube URL',
+    'youtube_url_hint' => 'Paste the YouTube video URL',
+    'cancel' => 'Cancel',
+    'upload' => 'Upload',
+    // Accessibility
+    'image_alt_text' => 'Alt text (for accessibility)',
+    'image_alt_placeholder' => 'Describe what is shown in the image',
+    'image_title' => 'Title (optional)',
+    'image_title_placeholder' => 'Title shown on hover',
+    // Form fields
+    'title' => 'Title',
+    'subtitle' => 'Subtitle',
+    'content' => 'Content',
+    'enter_title' => 'Enter title...',
+    'variant' => 'Variant',
+    'color' => 'Color',
+    'select_color' => 'Select color',
+    'color_title' => 'Color the title',
+    'show_icon' => 'Show icon',
+    'icon_description' => 'Icon will be shown on the left side',
+    'icon_exclamation' => 'exclamation mark',
+    'icon_question' => 'question mark',
+    'icon_info' => 'info',
+    // Variants
+    'variants' => [
+        'outline' => 'Outline',
+        'soft' => 'Soft',
+    ],
+    // Colors
+    'colors' => [
+        'gray' => 'Gray',
+        'red' => 'Red',
+        'yellow' => 'Yellow',
+        'black' => 'Black',
+        'white' => 'White',
+    ],
+    // Hero section
+    'background_image' => 'Background image',
+    'right_image' => 'Right side image',
+    'select_image' => 'Select image',
+    'delete_image' => 'Delete image',
+    'blur_background' => 'Darken and blur background image',
+    'button_text' => 'Button text',
+    'button_link' => 'Button link',
+    'button_color' => 'Button color',
+    'enter_button_text' => 'Enter button text...',
+    // Calendar
+    'show_all_tenants' => 'Show events from all units',
+    'show_all_tenants_description' => 'Enable to show events from all VU SA units',
+    // Spotify
+    'spotify_url_hint' => 'Paste a Spotify playlist, album or track URL',
+    'preview' => 'Preview',
+    'valid_url' => 'URL recognized',
+    // Flow graph
+    'flow_graph_preset' => 'Flow graph preset',
+    'presets' => [
+        'vusa_structure' => 'VU SA Structure',
+        'vusa_structure_description' => 'Organizational structure diagram of VU SA',
+    ],
+    // Accordion
+    'no_accordion_items' => 'No accordion items added',
+    'add_first_accordion_item' => 'Add first item',
+    'add_accordion_item' => 'Add item',
+    'enter_accordion_title' => 'Enter title...',
+    // Image grid
+    'no_images' => 'No images added',
+    'add_first_image' => 'Add first image',
+    'add_image' => 'Add image',
+    'image_width' => 'Image width',
+    'select_width' => 'Select width',
+    'image' => 'Image',
+    // Number stats
+    'enter_section_title' => 'Enter section title...',
+    'no_stats' => 'No statistics added',
+    'add_first_stat' => 'Add first statistic',
+    'add_stat' => 'Add statistic',
+    'stat_label' => 'Label',
+    'stat_number' => 'Number',
+    'enter_stat_label' => 'Enter label...',
+];

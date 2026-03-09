@@ -2,9 +2,9 @@
 
 namespace App\Listeners\ReservationResource;
 
+use App\Events\ApprovalRequested;
 use App\Events\ReservationResourceCreated;
 use App\Models\Pivots\ReservationResource;
-use App\Services\TaskService;
 
 class HandleReservationResourceCreated
 {
@@ -17,8 +17,7 @@ class HandleReservationResourceCreated
             return;
         }
 
-        $resourceManagers = $reservationResource->resource->managers();
-
-        TaskService::storeTask('Patvirtinti arba atšaukti rezervaciją', $reservationResource->reservation, $resourceManagers);
+        // Dispatch approval requested event which will create task and notify approvers
+        event(new ApprovalRequested($reservationResource, 1));
     }
 }

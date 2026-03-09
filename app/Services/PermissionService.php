@@ -61,7 +61,7 @@ class PermissionService
             return false;
         }
 
-        return $user->hasRole(config('permission.super_admin_role_name'));
+        return $user->isSuperAdmin();
     }
 
     /**

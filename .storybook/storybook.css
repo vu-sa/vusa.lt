@@ -1,0 +1,45 @@
+/**
+ * Storybook-specific CSS overrides
+ * These styles modify component behavior for better story presentation
+ */
+
+/* Make dialogs/modals render inline without overlay/portal behavior */
+.storybook-modal-container {
+  /* Container styling */
+  padding: 1rem;
+  min-height: 100vh;
+  background: #f5f5f5;
+}
+
+/* Override Radix Dialog overlay to be transparent and non-blocking */
+.storybook-modal-container [data-radix-popper-content-wrapper] {
+  position: relative !important;
+  transform: none !important;
+}
+
+/* Make dialog content render inline instead of as a portal */
+.storybook-modal-container [role="dialog"] {
+  position: relative !important;
+  transform: none !important;
+  margin: 0 auto;
+  max-width: 64rem;
+}
+
+/* Hide the dialog overlay/backdrop */
+.storybook-modal-container [data-slot="dialog-overlay"],
+.storybook-modal-container .fixed.inset-0.bg-black\/80,
+.storybook-modal-container > div > [data-state] > div:first-child:not([role="dialog"]) {
+  display: none !important;
+}
+
+/* Ensure dialog content is visible and positioned correctly */
+.storybook-modal-container [data-slot="dialog-content"] {
+  position: relative !important;
+  left: auto !important;
+  top: auto !important;
+  transform: none !important;
+  margin: 1rem auto;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}

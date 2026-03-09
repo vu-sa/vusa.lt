@@ -1,20 +1,26 @@
 <script lang="ts" setup>
 import type { HTMLAttributes } from 'vue'
 import { cn } from '@/Utils/Shadcn/utils'
-import { Primitive, type PrimitiveProps } from 'reka-ui'
+import SmartLink from '@/Components/Public/SmartLink.vue'
 
-const props = withDefaults(defineProps<PrimitiveProps & { class?: HTMLAttributes['class'] }>(), {
-  as: 'a',
+const props = withDefaults(defineProps<{ 
+  class?: HTMLAttributes['class']
+  href?: string
+  prefetch?: boolean
+  cacheFor?: string | number
+}>(), {
+  prefetch: true,
 })
 </script>
 
 <template>
-  <Primitive
+  <SmartLink
     data-slot="breadcrumb-link"
-    :as="as"
-    :as-child="asChild"
+    :href="href"
+    :prefetch="prefetch"
+    :cache-for="cacheFor"
     :class="cn('text-zinc-600 hover:text-zinc-950 transition-colors dark:text-zinc-400 dark:hover:text-zinc-50', props.class)"
   >
     <slot />
-  </Primitive>
+  </SmartLink>
 </template>

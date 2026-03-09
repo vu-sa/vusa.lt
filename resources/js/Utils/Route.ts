@@ -1,5 +1,4 @@
-import latinize from "latinize";
-import { slugify } from "./String";
+import { slugify, translitLithuanian } from "./String";
 import type { ModelEnum } from "@/Types/enums";
 
 export function getCalendarEvent2Route(calendarEvent, lang: ModelEnum): string {
@@ -7,7 +6,7 @@ export function getCalendarEvent2Route(calendarEvent, lang: ModelEnum): string {
     year: new Date(calendarEvent.date).getFullYear(),
     month: new Date(calendarEvent.date).getMonth() + 1,
     day: new Date(calendarEvent.date).getDate(),
-    slug: slugify(latinize(calendarEvent.title)),
+    slug: slugify(translitLithuanian(calendarEvent.title)),
     lang
   })
 }

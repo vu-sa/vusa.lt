@@ -1,88 +1,119 @@
 <template>
-  <NForm ref="form" :model>
-    <NFormItem label="Pavadinimas" path="label" required>
+  <div class="space-y-4">
+    <FormFieldWrapper id="label" label="Pavadinimas" required>
       <MultiLocaleInput v-model:input="model.label" />
-    </NFormItem>
-    <MultiLocaleTiptapFormItem v-model:input="model.description" path="description" label="Trumpas paaiškinimas" />
-    <NFormItem label="Tipas" path="type" required>
-      <NSelect v-model:value="model.type" :disabled="hasRegistrations" :options />
-    </NFormItem>
-    <NFormItem v-if="subtypeOptions.length > 0" label="Subtipas" path="subtype">
-      <NSelect v-model:value="model.subtype" clearable :disabled="hasRegistrations" :options="subtypeOptions" />
-    </NFormItem>
+    </FormFieldWrapper>
+    <MultiLocaleTiptapFormItem v-model:input="model.description" label="Trumpas paaiškinimas" />
+    <FormFieldWrapper id="type" label="Tipas" required>
+      <Select v-model="model.type" :disabled="hasRegistrations">
+        <SelectTrigger>
+          <SelectValue placeholder="Pasirinkite tipą" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem v-for="opt in options" :key="opt.value" :value="opt.value">
+            {{ opt.label }}
+          </SelectItem>
+        </SelectContent>
+      </Select>
+    </FormFieldWrapper>
+    <FormFieldWrapper v-if="subtypeOptions.length > 0" id="subtype" label="Subtipas">
+      <Select v-model="model.subtype" :disabled="hasRegistrations">
+        <SelectTrigger>
+          <SelectValue placeholder="Pasirinkite subtipą" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem v-for="opt in subtypeOptions" :key="opt.value" :value="opt.value">
+            {{ opt.label }}
+          </SelectItem>
+        </SelectContent>
+      </Select>
+    </FormFieldWrapper>
     <template v-if="model.type === 'enum'">
-      <NFormItem v-if="!model.use_model_options" label="Reikšmės" path="options">
-        <NDynamicInput v-model:value="model.options" :disabled="hasRegistrations" @create="onCreate">
-          <template #default="{ value }">
-            <div class="mt-4 flex flex-row items-center gap-2">
-              <NFormItem :show-feedback="false" label="Reikšmė" path="value" required class="self-start">
-                <NInput v-model:value="value.value" :disabled="hasRegistrations" />
-              </NFormItem>
-              <NFormItem :disabled="hasRegistrations" class="pb-4" :show-feedback="false" label="Pavadinimas"
-                path="label" required>
-                <MultiLocaleInput v-model:input="value.label" />
-              </NFormItem>
+      <FormFieldWrapper v-if="!model.use_model_options" id="options" label="Reikšmės">
+        <DynamicListInput v-model="model.options" :create-item="onCreate" allow-empty
+          empty-text="Nėra pridėtų reikšmių" add-first-text="Pridėti pirmą reikšmę" add-text="Pridėti reikšmę">
+          <template #item="{ item }">
+            <div class="flex flex-row items-center gap-2">
+              <FormFieldWrapper id="value" label="Reikšmė" required>
+                <Input v-model="item.value" :disabled="hasRegistrations" />
+              </FormFieldWrapper>
+              <FormFieldWrapper id="label" label="Pavadinimas" required>
+                <MultiLocaleInput v-model:input="item.label" />
+              </FormFieldWrapper>
             </div>
           </template>
-        </NDynamicInput>
-      </NFormItem>
+        </DynamicListInput>
+      </FormFieldWrapper>
       <Collapsible v-model:open="advancedOpen" class="mb-6">
         <CollapsibleTrigger>
-          <div class="flex items-center gap-2 border p-2 rounded-md cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800">
+          <div
+            class="flex items-center gap-2 border p-2 rounded-md cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800">
             <span>Advanced</span>
             <IFluentChevronDown24Regular v-if="!advancedOpen" />
             <IFluentChevronUp24Regular v-else />
           </div>
         </CollapsibleTrigger>
         <CollapsibleContent>
-          <div class="p-3 pt-4">
-            <NFormItem label="Naudoti iš duombazės?" path="use_model_options" required>
-              <NSwitch v-model:value="model.use_model_options" />
-            </NFormItem>
-            <NFormItem label="Modelio pavadinimas" path="model_name">
-              <NSelect v-model:value="model.options_model" :disabled="!model.use_model_options" :options="fieldModels" />
-            </NFormItem>
-            <NFormItem label="Modelio laukas" path="model_field">
-              <NSelect v-model:value="model.options_model_field" :disabled="!model.use_model_options"
-                :options="fieldModelAttributes" />
-            </NFormItem>
+          <div class="space-y-4 p-3 pt-4">
+            <FormFieldWrapper id="use_model_options" label="Naudoti iš duombazės?" required>
+              <Switch v-model="model.use_model_options" />
+            </FormFieldWrapper>
+            <FormFieldWrapper id="model_name" label="Modelio pavadinimas">
+              <Select v-model="model.options_model" :disabled="!model.use_model_options">
+                <SelectTrigger>
+                  <SelectValue placeholder="Pasirinkite modelį" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem v-for="opt in fieldModels" :key="opt.value" :value="opt.value">
+                    {{ opt.label }}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </FormFieldWrapper>
+            <FormFieldWrapper id="model_field" label="Modelio laukas">
+              <Select v-model="model.options_model_field" :disabled="!model.use_model_options">
+                <SelectTrigger>
+                  <SelectValue placeholder="Pasirinkite lauką" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem v-for="opt in fieldModelAttributes" :key="opt.value" :value="opt.value">
+                    {{ opt.label }}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </FormFieldWrapper>
           </div>
         </CollapsibleContent>
       </Collapsible>
     </template>
-    <NFormItem label="Ar būtinas?" path="is_required" required>
-      <NSwitch v-model:value="model.is_required" />
-    </NFormItem>
-    <NFormItem label="Automatiškai įrašomas atsakymas" path="default_value">
+    <FormFieldWrapper id="is_required" label="Ar būtinas?" required>
+      <Switch v-model="model.is_required" />
+    </FormFieldWrapper>
+    <FormFieldWrapper id="default_value" label="Automatiškai įrašomas atsakymas">
       <MultiLocaleInput v-model:input="model.default_value" />
-    </NFormItem>
-    <NFormItem label="Pagalbinis tekstas laukelyje" path="placeholder">
+    </FormFieldWrapper>
+    <FormFieldWrapper id="placeholder" label="Pagalbinis tekstas laukelyje">
       <MultiLocaleInput v-model:input="model.placeholder" />
-    </NFormItem>
-    <NFormItem :show-label="false">
-      <NButton type="primary" @click="handleSubmit">
-        Pateikti
-      </NButton>
-    </NFormItem>
-  </NForm>
+    </FormFieldWrapper>
+    <Button @click="handleSubmit">
+      Pateikti
+    </Button>
+  </div>
 </template>
 
 <script setup lang="ts">
-import {
-  type FormInst,
-  NButton,
-  NForm,
-} from "naive-ui";
 import { computed, ref } from "vue";
 import { useForm } from "@inertiajs/vue3";
 
+import { Button } from "@/Components/ui/button";
+import { DynamicListInput } from "@/Components/ui/dynamic-list-input";
+import { Input } from "@/Components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
+import { Switch } from "@/Components/ui/switch";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/Components/ui/collapsible";
+import FormFieldWrapper from "./FormFieldWrapper.vue";
 import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";
 import MultiLocaleTiptapFormItem from "../FormItems/MultiLocaleTiptapFormItem.vue";
-import Collapsible from "@/Components/ui/collapsible/Collapsible.vue";
-import CollapsibleContent from "@/Components/ui/collapsible/CollapsibleContent.vue";
-import CollapsibleTrigger from "@/Components/ui/collapsible/CollapsibleTrigger.vue";
-
-// import { modelDefaults } from "@/Types/formOptions";
 
 const emit = defineEmits<{
   (e: "submit", form: any): void;
@@ -95,7 +126,6 @@ const props = defineProps<{
   fieldModelAttributes?: { value: string; label: string }[];
 }>();
 
-const form = ref<FormInst | null>(null);
 const model = useForm(props.formField);
 const advancedOpen = ref(false);
 
@@ -151,17 +181,6 @@ function onCreate() {
 }
 
 const handleSubmit = () => {
-  // validate form
-  form.value?.validate((errors) => {
-    if (!errors) {
-      emit("submit", model.data());
-    }
-  });
+  emit("submit", model.data());
 };
 </script>
-
-<style>
-.n-dynamic-input .n-dynamic-input-item .n-dynamic-input-item__action {
-  align-self: center !important;
-}
-</style>

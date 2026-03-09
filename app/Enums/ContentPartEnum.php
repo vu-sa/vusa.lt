@@ -13,6 +13,7 @@ use Spatie\Enum\Laravel\Enum;
  * @method static self TIPTAP()
  * @method static self HERO()
  * @method static self SPOTIFY_EMBED()
+ * @method static self SOCIAL_EMBED()
  * @method static self FLOW_GRAPH()
  * @method static self NUMBER_STAT_SECTION()
  * @method static self NEWS()
@@ -30,6 +31,7 @@ final class ContentPartEnum extends Enum
             'TIPTAP' => 'tiptap',
             'HERO' => 'hero',
             'SPOTIFY_EMBED' => 'spotify-embed',
+            'SOCIAL_EMBED' => 'social-embed',
             'FLOW_GRAPH' => 'flow-graph',
             'NUMBER_STAT_SECTION' => 'number-stat-section',
             'NEWS' => 'news',

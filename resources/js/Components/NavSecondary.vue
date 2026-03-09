@@ -17,6 +17,7 @@ const props = defineProps<{
     title: string
     url: string
     icon: LucideIcon
+    dataTour?: string
   }[]
 }>()
 
@@ -36,8 +37,8 @@ const handleItemClick = (url: string) => {
     <SidebarGroupLabel>{{ sectionTitle }}</SidebarGroupLabel>
     <SidebarGroupContent>
       <SidebarMenu>
-        <SidebarMenuItem v-for="item in items" :key="item.title">
-          <SidebarMenuButton as-child size="sm" @click="handleItemClick(item.url)">
+        <SidebarMenuItem v-for="item in items" :key="item.title" :data-tour="item.dataTour">
+          <SidebarMenuButton as-child @click="handleItemClick(item.url)">
             <div class="flex items-center">
               <component :is="item.icon" />
               <span>{{ item.title }}</span>

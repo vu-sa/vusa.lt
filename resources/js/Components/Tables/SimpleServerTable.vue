@@ -57,7 +57,7 @@ import { ref, computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import type { ColumnDef, SortingState } from '@tanstack/vue-table';
 import { router } from '@inertiajs/vue3';
-import { debounce } from 'lodash';
+import { useDebounceFn } from '@vueuse/core';
 import { CircleIcon } from 'lucide-vue-next';
 
 import DataTableProvider from '../ui/data-table/DataTableProvider.vue';
@@ -111,7 +111,7 @@ const serverPagination = computed(() => ({
 const dataTableProviderRef = ref<InstanceType<typeof DataTableProvider>>();
 
 // Debounce function for search
-const debouncedReload = debounce(() => {
+const debouncedReload = useDebounceFn(() => {
   reloadData();
 }, 300);
 

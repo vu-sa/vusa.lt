@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetTenantsForUpserts;
 use App\Http\Controllers\AdminController;
+use App\Http\Requests\IndexQuickLinkRequest;
+use App\Http\Traits\HasTanstackTables;
 use App\Models\Calendar;
 use App\Models\Category;
 use App\Models\Institution;
@@ -12,32 +14,57 @@ use App\Models\Page;
 use App\Models\QuickLink;
 use App\Models\Tenant;
 use App\Services\ModelAuthorizer as Authorizer;
-use App\Services\ModelIndexer;
+use App\Services\TanstackTableService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class QuickLinkController extends AdminController
 {
-    public function __construct(public Authorizer $authorizer) {}
+    use HasTanstackTables;
+
+    public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService) {}
 
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index(IndexQuickLinkRequest $request)
     {
         $this->handleAuthorization('viewAny', QuickLink::class);
 
-        $indexer = new ModelIndexer(new QuickLink);
+        $query = QuickLink::query()->with('tenant:id,shortname');
 
-        $quickLinks = $indexer
-            ->setEloquentQuery()
-            ->filterAllColumns()
-            ->sortAllColumns()
-            ->builder->paginate(15);
+        $searchableColumns = ['text', 'link'];
+
+        $query = $this->applyTanstackFilters(
+            $query,
+            $request,
+            $this->tableService,
+            $searchableColumns,
+            [
+                'applySortBeforePagination' => true,
+                'tenantRelation' => 'tenant',
+                'permission' => 'quickLinks.read.padalinys',
+            ]
+        );
+
+        $quickLinks = $query->paginate($request->input('per_page', 20))
+            ->withQueryString();
 
         return $this->inertiaResponse('Admin/Content/IndexQuickLink', [
-            'quickLinks' => $quickLinks,
+            'quickLinks' => [
+                'data' => $quickLinks->items(),
+                'meta' => [
+                    'total' => $quickLinks->total(),
+                    'per_page' => $quickLinks->perPage(),
+                    'current_page' => $quickLinks->currentPage(),
+                    'last_page' => $quickLinks->lastPage(),
+                    'from' => $quickLinks->firstItem(),
+                    'to' => $quickLinks->lastItem(),
+                ],
+            ],
+            'filters' => $request->getFilters(),
+            'sorting' => $request->getSorting(),
         ]);
     }
 
@@ -66,10 +93,10 @@ class QuickLinkController extends AdminController
             'link' => 'required',
         ]);
 
-        if (request()->user()->hasRole(config('permission.super_admin_role_name'))) {
-            $tenant_id = Tenant::where('type', 'pagrindinis')->first()->id;
+        if (request()->user()->isSuperAdmin()) {
+            $tenant_id = Tenant::where('type', 'pagrindinis')->first()?->id;
         } else {
-            $tenant_id = $this->authorizer->permissableDuties->first()->tenants->first()->id;
+            $tenant_id = $this->authorizer->permissableDuties->first()?->tenants->first()?->id;
         }
 
         DB::transaction(function () use ($request, $tenant_id) {

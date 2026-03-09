@@ -71,7 +71,6 @@ export const AgendaItemIcon = DocumentBulletList24Regular;
 export const BannerIcon = ImageArrowBack24Regular;
 export const CalendarIcon = CalendarLtr24Regular;
 export const CategoryIcon = TextBulletListSquare24Regular;
-export const ChangelogItemIcon = DocumentBulletList24Regular;
 export const CommentIcon = Comment24Regular;
 export const DocumentIcon = DocumentMultiple24Regular;
 export const DutiableIcon = PersonClock24Regular;
@@ -107,7 +106,6 @@ export const AgendaItemIconFilled = DocumentBulletList24Filled;
 export const BannerIconFilled = ImageArrowBack24Filled;
 export const CalendarIconFilled = CalendarLtr24Filled;
 export const CategoryIconFilled = TextBulletListSquare24Filled;
-export const ChangelogItemIconFilled = DocumentBulletList24Filled;
 export const CommentIconFilled = Comment24Filled;
 export const DocumentIconFilled = DocumentMultiple24Filled;
 export const DutiableIconFilled = PersonClock24Filled;
@@ -149,7 +147,6 @@ const modelIconMappingRegular: Record<keyof typeof ModelEnum, Component> = {
   BANNER: BannerIcon,
   CALENDAR: CalendarIcon,
   CATEGORY: CategoryIcon,
-  CHANGELOG_ITEM: ChangelogItemIcon,
   COMMENT: CommentIcon,
   DOCUMENT: DocumentIcon,
   DUTIABLE: DutiableIcon,
@@ -187,7 +184,6 @@ const modelIconMappingFilled: Record<keyof typeof ModelEnum, Component> = {
   BANNER: BannerIconFilled,
   CALENDAR: CalendarIconFilled,
   CATEGORY: CategoryIconFilled,
-  CHANGELOG_ITEM: ChangelogItemIconFilled,
   COMMENT: CommentIconFilled,
   DOCUMENT: DocumentIconFilled,
   DUTIABLE: DutiableIconFilled,

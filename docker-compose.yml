@@ -13,10 +13,11 @@ services:
             - SSL_ALT_NAME=${SSL_ALT_NAME:-DNS:localhost}
         volumes:
             - 'sail-nginx:/etc/nginx/certs'
-            - './vendor/ryoluo/sail-ssl/nginx/templates:/etc/nginx/templates'
+            - './docker/nginx/templates:/etc/nginx/templates'
             - './vendor/ryoluo/sail-ssl/nginx/generate-ssl-cert.sh:/docker-entrypoint.d/99-generate-ssl-cert.sh'
         depends_on:
             - ${APP_SERVICE:-laravel.test}
+            - reverb
         networks:
             - sail
     laravel.test:
@@ -108,6 +109,40 @@ services:
             test: [CMD, bash, -c, "exec 3<>/dev/tcp/localhost/8108 && printf 'GET /health HTTP/1.1\\r\\nConnection: close\\r\\n\\r\\n' >&3 && head -n1 <&3 | grep '200' && exec 3>&-"]
             retries: 5
             timeout: 7s
+    reverb:
+        build:
+            context: ./vendor/laravel/sail/runtimes/8.3
+            dockerfile: Dockerfile
+            args:
+                WWWGROUP: '${WWWGROUP}'
+        image: sail-8.3/app
+        extra_hosts:
+            - 'host.docker.internal:host-gateway'
+        ports:
+            - '${REVERB_PORT:-6001}:6001'
+        command: 'php artisan reverb:start --host=0.0.0.0 --port=6001'
+        environment:
+            WWWUSER: '${WWWUSER}'
+            LARAVEL_SAIL: 1
+            APP_ENV: '${APP_ENV:-local}'
+            APP_DEBUG: '${APP_DEBUG:-true}'
+            DB_CONNECTION: '${DB_CONNECTION:-mariadb}'
+            DB_HOST: '${DB_HOST:-mariadb}'
+            DB_PORT: '${DB_PORT:-3306}'
+            DB_DATABASE: '${DB_DATABASE}'
+            DB_USERNAME: '${DB_USERNAME}'
+            DB_PASSWORD: '${DB_PASSWORD}'
+            REDIS_HOST: '${REDIS_HOST:-redis}'
+            REVERB_APP_ID: '${REVERB_APP_ID}'
+            REVERB_APP_KEY: '${REVERB_APP_KEY}'
+            REVERB_APP_SECRET: '${REVERB_APP_SECRET}'
+        volumes:
+            - '.:/var/www/html:delegated'
+        networks:
+            - sail
+        depends_on:
+            - mariadb
+            - redis
 
 networks:
     sail:

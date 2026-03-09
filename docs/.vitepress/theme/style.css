@@ -1,58 +1,59 @@
 /**
- * Customize default theme styling by overriding CSS variables:
- * https://github.com/vuejs/vitepress/blob/main/src/client/theme-default/styles/vars.css
+ * VitePress Documentation Styles - VU SA Brand Theme
+ * 
+ * This file combines:
+ * 1. Tailwind CSS v4 for component demos (without layers to override VitePress styles)
+ * 2. VitePress theme customizations with VU SA brand colors
+ * 3. Full style isolation for component demos
+ * 
+ * See: https://github.com/tailwindlabs/tailwindcss/discussions/15466
  */
 
+/* Import Tailwind CSS v4 without layers (required for VitePress compatibility) */
+@layer theme, base, components, utilities;
+
+@import "tailwindcss/theme.css";
+@import "tailwindcss/utilities.css";
+
+/* Source paths for Tailwind to scan */
+@source '../../../resources/js/Components';
+@source '../../components';
+
+/* Custom dark mode variant matching the app */
+@custom-variant dark (&:is(.dark *));
+
 /**
- * Colors
- *
- * Each colors have exact same color scale system with 3 levels of solid
- * colors with different brightness, and 1 soft color.
- * 
- * - `XXX-1`: The most solid color used mainly for colored text. It must
- *   satisfy the contrast ratio against when used on top of `XXX-soft`.
- *
- * - `XXX-2`: The color used mainly for hover state of the button.
- *
- * - `XXX-3`: The color for solid background, such as bg color of the button.
- *   It must satisfy the contrast ratio with pure white (#ffffff) text on
- *   top of it.
- *
- * - `XXX-soft`: The color used for subtle background such as custom container
- *   or badges. It must satisfy the contrast ratio when putting `XXX-1` colors
- *   on top of it.
- *
- *   The soft color must be semi transparent alpha channel. This is crucial
- *   because it allows adding multiple "soft" colors on top of each other
- *   to create a accent, such as when having inline code block inside
- *   custom containers.
- *
- * - `default`: The color used purely for subtle indication without any
- *   special meanings attched to it such as bg color for menu hover state.
- *
- * - `brand`: Used for primary brand colors, such as link text, button with
- *   brand theme, etc.
- *
- * - `tip`: Used to indicate useful information. The default theme uses the
- *   brand color for this by default.
- *
- * - `warning`: Used to indicate warning to the users. Used in custom
- *   container, badges, etc.
- *
- * - `danger`: Used to show error, or dangerous message to the users. Used
- *   in custom container, badges, etc.
+ * VU SA Brand Colors (OKLCH)
+ * Refined, muted colors for professional documentation appearance
  * -------------------------------------------------------------------------- */
 
- :root {
+:root {
+  /* VU SA Primary Brand Colors - Muted versions for docs */
+  --vusa-red: oklch(0.5 0.12 25);
+  --vusa-red-light: oklch(0.58 0.1 25);
+  --vusa-red-dark: oklch(0.42 0.12 25);
+  --vusa-red-soft: oklch(0.5 0.1 25 / 10%);
+  --vusa-yellow: oklch(0.75 0.12 65);
+  --vusa-yellow-light: oklch(0.82 0.1 70);
+  --vusa-yellow-dark: oklch(0.65 0.12 60);
+}
+
+/**
+ * VitePress Theme Colors
+ * Override default indigo theme with VU SA brand colors
+ * -------------------------------------------------------------------------- */
+
+:root {
   --vp-c-default-1: var(--vp-c-gray-1);
   --vp-c-default-2: var(--vp-c-gray-2);
   --vp-c-default-3: var(--vp-c-gray-3);
   --vp-c-default-soft: var(--vp-c-gray-soft);
 
-  --vp-c-brand-1: var(--vp-c-indigo-1);
-  --vp-c-brand-2: var(--vp-c-indigo-2);
-  --vp-c-brand-3: var(--vp-c-indigo-3);
-  --vp-c-brand-soft: var(--vp-c-indigo-soft);
+  /* VU SA brand colors - refined */
+  --vp-c-brand-1: var(--vusa-red-light);
+  --vp-c-brand-2: var(--vusa-red);
+  --vp-c-brand-3: var(--vusa-red-dark);
+  --vp-c-brand-soft: var(--vusa-red-soft);
 
   --vp-c-tip-1: var(--vp-c-brand-1);
   --vp-c-tip-2: var(--vp-c-brand-2);
@@ -87,23 +88,25 @@
 }
 
 /**
- * Component: Home
+ * Component: Home Hero
+ * VU SA branded gradient - red to yellow
  * -------------------------------------------------------------------------- */
 
 :root {
   --vp-home-hero-name-color: transparent;
-  --vp-home-hero-name-background: -webkit-linear-gradient(
-    120deg,
-    #bd34fe 30%,
-    #41d1ff
+  --vp-home-hero-name-background: linear-gradient(
+    135deg,
+    oklch(0.45 0.12 25) 0%,
+    oklch(0.55 0.14 40) 50%,
+    oklch(0.7 0.12 65) 100%
   );
 
   --vp-home-hero-image-background-image: linear-gradient(
     -45deg,
-    #bd34fe 50%,
-    #47caff 50%
+    oklch(0.5 0.1 25 / 60%) 30%,
+    oklch(0.75 0.1 65 / 60%) 70%
   );
-  --vp-home-hero-image-filter: blur(44px);
+  --vp-home-hero-image-filter: blur(56px);
 }
 
 @media (min-width: 640px) {
@@ -137,3 +140,511 @@
   --docsearch-primary-color: var(--vp-c-brand-1) !important;
 }
 
+/**
+ * Enhanced VitePress Layout
+ * Custom styling for a more distinctive documentation experience
+ * -------------------------------------------------------------------------- */
+
+/* Navbar brand hover effect */
+.VPNavBarTitle .title {
+  transition: color 0.2s ease;
+}
+
+.VPNavBarTitle:hover .title {
+  color: var(--vusa-red) !important;
+}
+
+/* Feature cards with subtle brand accent */
+.VPFeature {
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.VPFeature:hover {
+  border-color: var(--vusa-red-soft) !important;
+  transform: translateY(-2px);
+}
+
+/* Enhanced sidebar styling */
+.VPSidebar .VPSidebarItem.is-active > .item .link > .text {
+  color: var(--vusa-red) !important;
+}
+
+/* Table of contents active state */
+.VPDocAsideOutline .outline-link.active {
+  color: var(--vusa-red) !important;
+  border-left-color: var(--vusa-red) !important;
+}
+
+/* Code block header accent */
+.vp-code-group .tabs label.active {
+  color: var(--vusa-red) !important;
+}
+
+/* Badge styling with brand colors */
+.VPBadge.tip {
+  background-color: var(--vusa-red-soft);
+  color: var(--vusa-red);
+}
+
+/**
+ * Component Demos - Full Style Isolation
+ * Creates a clean environment for app components to render correctly
+ * -------------------------------------------------------------------------- */
+
+/* Style reset container - neutralizes VitePress base styles */
+.component-demo-reset {
+  /* Reset all inherited styles */
+  all: initial;
+  display: block;
+  
+  /* Re-establish essential properties */
+  font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--foreground);
+  background-color: var(--background);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  
+  /* Ensure proper box model */
+  box-sizing: border-box;
+}
+
+.component-demo-reset *,
+.component-demo-reset *::before,
+.component-demo-reset *::after {
+  box-sizing: border-box;
+}
+
+/* Shadcn/Tailwind CSS variables for component demos - Light mode */
+.component-demo {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.141 0.005 285.823);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.141 0.005 285.823);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.141 0.005 285.823);
+  --primary: oklch(0.21 0.006 285.885);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.967 0.001 286.375);
+  --secondary-foreground: oklch(0.21 0.006 285.885);
+  --muted: oklch(0.967 0.001 286.375);
+  --muted-foreground: oklch(0.552 0.016 285.938);
+  --accent: oklch(0.967 0.001 286.375);
+  --accent-foreground: oklch(0.21 0.006 285.885);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.577 0.245 27.325);
+  --border: oklch(0.92 0.004 286.32);
+  --input: oklch(0.92 0.004 286.32);
+  --ring: oklch(0.705 0.015 286.067);
+  --radius: 0.625rem;
+  
+  /* VU SA Brand Colors - for Tailwind utilities */
+  --color-vusa-red: oklch(0.5 0.2 25);
+  --color-vusa-red-secondary: oklch(0.4 0.18 25);
+  --color-vusa-red-tertiary: oklch(0.5 0.2 25);
+  --color-vusa-red-quaternary: oklch(0.6 0.18 25);
+  --color-vusa-red-dark: oklch(0.3 0.15 25);
+  --color-vusa-yellow: oklch(0.82 0.17 75);
+  --color-vusa-yellow-secondary: oklch(0.72 0.16 70);
+  --color-vusa-yellow-tertiary: oklch(0.82 0.17 75);
+  --color-vusa-yellow-quaternary: oklch(0.87 0.14 80);
+  --color-vusa-yellow-dark: oklch(0.55 0.14 65);
+
+  /* Semantic Status Colors */
+  --color-status-success: oklch(0.696 0.17 162.48);
+  --color-status-success-muted: oklch(0.95 0.052 163.051);
+  --color-status-success-foreground: oklch(0.378 0.077 168.94);
+  --color-status-warning: oklch(0.769 0.188 70.08);
+  --color-status-warning-muted: oklch(0.962 0.059 95.617);
+  --color-status-warning-foreground: oklch(0.414 0.112 45.904);
+  --color-status-danger: oklch(0.637 0.237 25.331);
+  --color-status-danger-muted: oklch(0.936 0.032 17.717);
+  --color-status-danger-foreground: oklch(0.396 0.141 25.723);
+  --color-status-info: oklch(0.623 0.214 259.815);
+  --color-status-info-muted: oklch(0.932 0.032 255.585);
+  --color-status-info-foreground: oklch(0.379 0.146 265.522);
+  --color-status-neutral: oklch(0.554 0.046 257.417);
+  --color-status-neutral-muted: oklch(0.968 0.007 247.896);
+  --color-status-neutral-foreground: oklch(0.372 0.044 257.287);
+  
+  /* UI Theme color aliases for Tailwind */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  
+  /* Border radius aliases */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  
+  /* Animation variables */
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+  --animate-collapsible-down: collapsible-down 0.2s ease-in-out;
+  --animate-collapsible-up: collapsible-up 0.2s ease-in-out;
+}
+
+/* Dark mode variables */
+.dark .component-demo {
+  --background: oklch(0.141 0.005 285.823);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.141 0.005 285.823);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.141 0.005 285.823);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.985 0 0);
+  --primary-foreground: oklch(0.21 0.006 285.885);
+  --secondary: oklch(0.274 0.006 286.033);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.274 0.006 286.033);
+  --muted-foreground: oklch(0.705 0.015 286.067);
+  --accent: oklch(0.274 0.006 286.033);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.396 0.141 25.723);
+  --destructive-foreground: oklch(0.637 0.237 25.331);
+  --border: oklch(0.274 0.006 286.033);
+  --input: oklch(0.274 0.006 286.033);
+  --ring: oklch(0.442 0.017 285.786);
+}
+
+/* Keyframe animations for components */
+@keyframes accordion-down {
+  from { height: 0; }
+  to { height: var(--reka-accordion-content-height); }
+}
+
+@keyframes accordion-up {
+  from { height: var(--reka-accordion-content-height); }
+  to { height: 0; }
+}
+
+@keyframes collapsible-down {
+  from { height: 0; }
+  to { height: var(--reka-collapsible-content-height); }
+}
+
+@keyframes collapsible-up {
+  from { height: var(--reka-collapsible-content-height); }
+  to { height: 0; }
+}
+
+/**
+ * Footer with VU SA branding
+ * -------------------------------------------------------------------------- */
+
+.VPFooter {
+  border-top-color: var(--vusa-red-soft) !important;
+}
+
+/**
+ * Smooth page transitions
+ * -------------------------------------------------------------------------- */
+
+.VPContent {
+  transition: opacity 0.15s ease;
+}
+
+/**
+ * Enhanced Feature Cards
+ * More distinctive styling for homepage features
+ * -------------------------------------------------------------------------- */
+
+.VPFeatures {
+  padding: 48px 24px !important;
+}
+
+.VPFeature {
+  background: var(--vp-c-bg) !important;
+  border: 1.5px solid var(--vp-c-gray-2) !important;
+  border-radius: 12px !important;
+  padding: 24px !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.dark .VPFeature {
+  border-color: var(--vp-c-gray-3) !important;
+}
+
+.VPFeature::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, oklch(0.5 0.15 25) 0%, oklch(0.75 0.12 65) 100%);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.VPFeature:hover::before {
+  opacity: 1;
+}
+
+.VPFeature:hover {
+  border-color: oklch(0.5 0.1 25 / 40%) !important;
+  box-shadow: 0 4px 16px -4px rgba(0, 0, 0, 0.08) !important;
+  transform: translateY(-2px);
+}
+
+.dark .VPFeature:hover {
+  border-color: oklch(0.5 0.1 25 / 50%) !important;
+  box-shadow: 0 4px 16px -4px rgba(0, 0, 0, 0.3) !important;
+}
+
+.VPFeature .title {
+  font-weight: 600 !important;
+  color: var(--vp-c-text-1) !important;
+}
+
+.VPFeature .details {
+  color: var(--vp-c-text-2) !important;
+}
+
+/**
+ * Enhanced Home Hero
+ * More impactful hero section
+ * -------------------------------------------------------------------------- */
+
+.VPHero {
+  padding-bottom: 64px !important;
+}
+
+.VPHero .name {
+  font-weight: 800 !important;
+  letter-spacing: -0.02em !important;
+}
+
+.VPHero .text {
+  color: var(--vp-c-text-2) !important;
+  font-size: 20px !important;
+  max-width: 560px !important;
+}
+
+.VPHero .tagline {
+  font-size: 18px !important;
+  color: var(--vp-c-text-3) !important;
+}
+
+/* Action buttons enhancement */
+.VPButton.brand {
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+  transition: all 0.2s ease !important;
+}
+
+.VPButton.brand:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px -2px var(--vusa-red-soft) !important;
+}
+
+.VPButton.alt {
+  border-radius: 8px !important;
+}
+
+/**
+ * Enhanced Sidebar
+ * Better visual hierarchy and brand accent
+ * -------------------------------------------------------------------------- */
+
+.VPSidebar {
+  border-right-color: var(--vp-c-divider) !important;
+}
+
+.VPSidebarItem .text {
+  transition: color 0.15s ease !important;
+}
+
+.VPSidebarItem.is-active > .item .text {
+  color: var(--vusa-red) !important;
+  font-weight: 600 !important;
+}
+
+.VPSidebarItem.is-link:hover .text {
+  color: var(--vusa-red) !important;
+}
+
+/* Sidebar group headers */
+.VPSidebarItem.level-0 > .item .text {
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  font-size: 11px !important;
+  letter-spacing: 0.05em !important;
+  color: var(--vp-c-text-3) !important;
+}
+
+/**
+ * Enhanced Navigation
+ * Cleaner, more refined navigation
+ * -------------------------------------------------------------------------- */
+
+.VPNav {
+  border-bottom-color: var(--vp-c-divider) !important;
+}
+
+.VPNavBarMenuLink:hover .text,
+.VPNavBarMenuLink.active .text {
+  color: var(--vusa-red) !important;
+}
+
+/* Search button styling */
+.VPNavBarSearch .DocSearch-Button {
+  border-radius: 8px !important;
+}
+
+/**
+ * Enhanced Content Area
+ * Better typography and spacing
+ * -------------------------------------------------------------------------- */
+
+.VPDoc {
+  padding-top: 32px !important;
+}
+
+.vp-doc h1 {
+  font-weight: 800 !important;
+  letter-spacing: -0.02em !important;
+}
+
+.vp-doc h2 {
+  border-top: none !important;
+  padding-top: 0 !important;
+  margin-top: 48px !important;
+}
+
+.vp-doc h2::before {
+  content: '';
+  display: block;
+  height: 1px;
+  background: linear-gradient(90deg, var(--vp-c-divider) 0%, transparent 100%);
+  margin-bottom: 24px;
+}
+
+/* Code blocks */
+.vp-doc div[class*='language-'] {
+  border-radius: 8px !important;
+  border: 1px solid var(--vp-c-divider) !important;
+}
+
+/* Inline code */
+.vp-doc :not(pre) > code {
+  border-radius: 4px !important;
+  padding: 2px 6px !important;
+  background: var(--vp-c-bg-soft) !important;
+  color: var(--vusa-red) !important;
+}
+
+/**
+ * Table of Contents (Aside)
+ * Enhanced outline styling
+ * -------------------------------------------------------------------------- */
+
+.VPDocAsideOutline .outline-link {
+  transition: all 0.15s ease !important;
+}
+
+.VPDocAsideOutline .outline-link:hover {
+  color: var(--vusa-red) !important;
+}
+
+.VPDocAsideOutline .outline-link.active {
+  color: var(--vusa-red) !important;
+  font-weight: 500 !important;
+}
+
+/**
+ * Custom Containers Enhancement
+ * Better styled tip/warning/danger boxes
+ * -------------------------------------------------------------------------- */
+
+.custom-block {
+  border-radius: 8px !important;
+  padding: 16px 20px !important;
+}
+
+.custom-block.tip {
+  border-left: 4px solid oklch(0.5 0.12 25) !important;
+  background: oklch(0.5 0.1 25 / 8%) !important;
+}
+
+.custom-block.tip .custom-block-title {
+  color: oklch(0.45 0.12 25) !important;
+}
+
+.custom-block.warning {
+  border-left: 4px solid oklch(0.7 0.12 65) !important;
+}
+
+.custom-block.danger {
+  border-left: 4px solid oklch(0.637 0.237 25.331) !important;
+}
+
+/**
+ * Scrollbar Styling
+ * Subtle, branded scrollbars
+ * -------------------------------------------------------------------------- */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--vp-c-divider);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--vp-c-gray-2);
+}
+
+/**
+ * Selection Styling
+ * Brand-colored text selection
+ * -------------------------------------------------------------------------- */
+
+::selection {
+  background: var(--vusa-red-soft);
+  color: var(--vp-c-text-1);
+}
+
+/**
+ * Print Styles
+ * Clean printing support
+ * -------------------------------------------------------------------------- */
+
+@media print {
+  .VPNav,
+  .VPSidebar,
+  .VPDocAside {
+    display: none !important;
+  }
+  
+  .VPDoc {
+    padding: 0 !important;
+  }
+}

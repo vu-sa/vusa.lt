@@ -5,7 +5,6 @@ namespace App\Models\Pivots;
 use App\Models\Duty;
 use App\Models\StudyProgram;
 use App\Models\Traits\HasTranslations;
-use App\Models\Traits\HasUnitRelation;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -26,7 +25,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property bool $use_original_duty_name
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
- * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $dutiable
+ * @property-read \Illuminate\Database\Eloquent\Model $dutiable
  * @property-read Duty $duty
  * @property-read StudyProgram|null $study_program
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Tenant> $tenants
@@ -48,7 +47,7 @@ class Dutiable extends MorphPivot
 {
     // NOTE: for some reason, if Searchable trait is used on this model, it will cause an error
     // in the update route. But only if the queue driver is set to sync.
-    use HasFactory, HasRelationships, HasTranslations, HasUlids, HasUnitRelation;
+    use HasFactory, HasRelationships, HasTranslations, HasUlids;
 
     protected $table = 'dutiables';
 
@@ -61,25 +60,37 @@ class Dutiable extends MorphPivot
         'deleted' => \App\Events\DutiableChanged::class,
     ];
 
-    protected $casts = [
-        'start_date' => 'datetime',
-        'end_date' => 'datetime',
-        'use_original_duty_name' => 'boolean',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'start_date' => 'date:Y-m-d',
+            'end_date' => 'date:Y-m-d',
+            'use_original_duty_name' => 'boolean',
+        ];
+    }
 
     public $translatable = ['description'];
 
-    public function dutiable()
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\MorphTo<\Illuminate\Database\Eloquent\Model, $this>
+     */
+    public function dutiable(): \Illuminate\Database\Eloquent\Relations\MorphTo
     {
         return $this->morphTo();
     }
 
-    public function duty()
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<Duty, $this>
+     */
+    public function duty(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Duty::class);
     }
 
-    public function study_program()
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<StudyProgram, $this>
+     */
+    public function study_program(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(StudyProgram::class);
     }

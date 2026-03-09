@@ -3,34 +3,59 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\AdminController;
+use App\Http\Requests\IndexResourceCategoryRequest;
 use App\Http\Requests\StoreResourceCategoryRequest;
 use App\Http\Requests\UpdateResourceCategoryRequest;
+use App\Http\Traits\HasTanstackTables;
 use App\Models\Resource;
 use App\Models\ResourceCategory;
 use App\Services\ModelAuthorizer as Authorizer;
-use App\Services\ModelIndexer;
+use App\Services\TanstackTableService;
 
 class ResourceCategoryController extends AdminController
 {
-    public function __construct(public Authorizer $authorizer) {}
+    use HasTanstackTables;
+
+    public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService) {}
 
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(IndexResourceCategoryRequest $request)
     {
         $this->handleAuthorization('viewAny', Resource::class);
 
-        $indexer = new ModelIndexer(new ResourceCategory);
+        $query = ResourceCategory::query();
 
-        $resourceCategories = $indexer
-            ->setEloquentQuery()
-            ->filterAllColumns()
-            ->sortAllColumns()
-            ->builder->paginate(20);
+        $searchableColumns = ['name'];
+
+        $query = $this->applyTanstackFilters(
+            $query,
+            $request,
+            $this->tableService,
+            $searchableColumns,
+        );
+
+        $resourceCategories = $query->paginate($request->input('per_page', 20))
+            ->withQueryString();
 
         return $this->inertiaResponse('Admin/Reservations/IndexResourceCategory', [
-            'resourceCategories' => $resourceCategories,
+            'resourceCategories' => [
+                'data' => $resourceCategories->getCollection()->map(function ($category) {
+                    /** @var \App\Models\ResourceCategory $category */
+                    return $category->toFullArray();
+                })->values(),
+                'meta' => [
+                    'total' => $resourceCategories->total(),
+                    'per_page' => $resourceCategories->perPage(),
+                    'current_page' => $resourceCategories->currentPage(),
+                    'last_page' => $resourceCategories->lastPage(),
+                    'from' => $resourceCategories->firstItem(),
+                    'to' => $resourceCategories->lastItem(),
+                ],
+            ],
+            'filters' => $request->getFilters(),
+            'sorting' => $request->getSorting(),
         ]);
     }
 

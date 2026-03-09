@@ -1,0 +1,15 @@
+/**
+ * Admin-specific styles
+ * 
+ * This file contains styles that are only needed in the admin interface.
+ * 
+ * Imported in admin.ts to avoid loading in public pages.
+ */
+
+/* Reference Tailwind utilities for use in this file */
+@reference "tailwindcss";
+
+/* Naive UI form item alignment for MultiLocaleInput */
+.n-form-item {
+  align-items: start;
+}

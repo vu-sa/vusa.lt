@@ -13,7 +13,7 @@ class GenerateUserPasswordRequest extends FormRequest
     public function authorize(): bool
     {
         // Only super admins can generate passwords for users
-        return $this->user()->hasRole(config('permission.super_admin_role_name'));
+        return $this->user()->isSuperAdmin();
     }
 
     /**

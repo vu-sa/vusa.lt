@@ -1,51 +1,94 @@
 <template>
-  <IndexPageLayout
-    title="Leidimai"
-    model-name="permissions"
-    :can-use-routes="canUseRoutes"
-    :columns="columns"
-    :paginated-models="permissions"
-    :icon="Icons.PERMISSION"
-  >
-  </IndexPageLayout>
+  <IndexTablePage
+    ref="indexTablePageRef"
+    v-bind="tableConfig"
+    @data-loaded="onDataLoaded"
+    @sorting-changed="handleSortingChange"
+    @page-changed="handlePageChange"
+    @filter-changed="handleFilterChange"
+  />
 </template>
 
 <script setup lang="tsx">
-import type { DataTableColumns } from "naive-ui";
+import { trans as $t } from "laravel-vue-i18n";
+import { type ColumnDef } from '@tanstack/vue-table';
+import { ref, computed } from "vue";
 
 import Icons from "@/Types/Icons/regular";
-import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
+import IndexTablePage from "@/Components/Layouts/IndexTablePage.vue";
+import {
+  createTextColumn,
+  createTimestampColumn,
+} from '@/Utils/DataTableColumns';
+import {
+  type IndexTablePageProps
+} from "@/Types/TableConfigTypes";
 
-defineProps<{
-  permissions: PaginatedModels<any>;
+const props = defineProps<{
+  permissions: {
+    data: App.Entities.Permission[];
+    meta: {
+      total: number;
+      current_page: number;
+      per_page: number;
+      last_page: number;
+      from: number;
+      to: number;
+    };
+  };
+  filters?: Record<string, any>;
+  sorting?: { id: string; desc: boolean }[];
 }>();
 
-const canUseRoutes = {
-  create: false,
-  show: false,
-  edit: false,
-  destroy: false,
+const modelName = 'permissions';
+const entityName = 'permission';
+
+const indexTablePageRef = ref<any>(null);
+
+const getRowId = (row: App.Entities.Permission) => {
+  return `permission-${row.id}`;
 };
 
-// add columns
-const columns: DataTableColumns<App.Entities.Permission> = [
-  {
-    title: "Pavadinimas",
-    key: "name",
-  },
-  {
-    title: "Sukurtas",
-    key: "created_at",
-    render(row) {
-      return new Date(row.created_at).toLocaleString("lt-LT");
-    },
-  },
-  {
-    title: "Atnaujintas",
-    key: "updated_at",
-    render(row) {
-      return new Date(row.updated_at).toLocaleString("lt-LT");
-    },
-  },
-];
+const columns = computed<ColumnDef<App.Entities.Permission, any>[]>(() => [
+  createTextColumn<App.Entities.Permission>("name", {
+    title: $t("forms.fields.name"),
+    width: 300,
+  }),
+  createTimestampColumn<App.Entities.Permission>("created_at", {
+    title: $t("forms.fields.created_at"),
+    width: 180,
+  }),
+  createTimestampColumn<App.Entities.Permission>("updated_at", {
+    title: $t("Atnaujintas"),
+    width: 180,
+  }),
+]);
+
+const tableConfig = computed<IndexTablePageProps<App.Entities.Permission>>(() => {
+  return {
+    modelName,
+    entityName,
+    data: props.permissions.data,
+    columns: columns.value,
+    getRowId,
+    totalCount: props.permissions.meta.total,
+    initialPage: props.permissions.meta.current_page,
+    pageSize: props.permissions.meta.per_page,
+
+    initialFilters: props.filters,
+    initialSorting: props.sorting,
+    enableFiltering: true,
+    enableColumnVisibility: false,
+    enableRowSelection: false,
+
+    headerTitle: "Leidimai",
+    icon: Icons.PERMISSION,
+    canCreate: false,
+  };
+});
+
+const onDataLoaded = (data: any) => {};
+const handleSortingChange = (sorting: any) => {};
+const handlePageChange = (page: any) => {};
+const handleFilterChange = (filterKey: any, value: any) => {};
 </script>

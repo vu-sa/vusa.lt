@@ -1,0 +1,52 @@
+server {
+    listen  80  default_server;
+    server_name ${SERVER_NAME};
+
+    return  301 https://$host:${SSL_PORT}$request_uri;
+}
+
+server {
+    listen  443 ssl default_server;
+    server_name ${SERVER_NAME};
+
+    # Self signed certificates
+    # Don't use them in a production server!
+    ssl_certificate     /etc/nginx/certs/server.pem;
+    ssl_certificate_key /etc/nginx/certs/server.key;
+
+    # WebSocket proxy for Laravel Reverb
+    # Handles /app (WebSocket connections) and /apps (API requests)
+    location /app {
+        proxy_http_version 1.1;
+        proxy_set_header Host $http_host;
+        proxy_set_header Scheme $scheme;
+        proxy_set_header SERVER_PORT $server_port;
+        proxy_set_header REMOTE_ADDR $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "Upgrade";
+
+        proxy_pass http://reverb:6001;
+    }
+
+    location /apps {
+        proxy_http_version 1.1;
+        proxy_set_header Host $http_host;
+        proxy_set_header Scheme $scheme;
+        proxy_set_header SERVER_PORT $server_port;
+        proxy_set_header REMOTE_ADDR $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+        proxy_pass http://reverb:6001;
+    }
+
+    location / {
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header X-Forwarded-Port $server_port;
+        proxy_pass	http://${APP_SERVICE};
+    }
+}

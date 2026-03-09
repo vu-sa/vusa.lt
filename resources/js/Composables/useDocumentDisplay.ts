@@ -24,6 +24,7 @@ export interface DocumentDisplayItem {
   expiration_date?: string
   is_in_effect?: boolean | null
   anonymous_url: string
+  share_url?: string
   tenant_shortname?: string
   tenant_name?: string
   institution_name_lt?: string

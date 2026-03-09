@@ -15,12 +15,10 @@ class RoleStudentRepresentativeSeeder extends Seeder
      */
     public function run()
     {
-        $role = new Role;
-
-        $role->name = 'Student Representative';
-        $role->guard_name = 'web';
-
-        $role->save();
+        $role = Role::firstOrCreate([
+            'name' => 'Student Representative',
+            'guard_name' => 'web',
+        ]);
 
         $role->syncPermissions([
             'institutions.read.padalinys',
@@ -46,6 +44,6 @@ class RoleStudentRepresentativeSeeder extends Seeder
             'problems.update.padalinys',
         ]);
 
-        $role->types()->attach(Type::query()->where('slug', 'studentu-atstovai')->firstOrFail());
+        $role->attachable_types()->syncWithoutDetaching([Type::query()->where('slug', 'studentu-atstovai')->firstOrFail()->id]);
     }
 }

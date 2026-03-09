@@ -7,16 +7,16 @@
       <template #description>
         <MdSuspenseWrapper directory="tags" :locale="$page.props.app.locale" file="description" />
       </template>
-      
-      <NFormItem :label="$t('forms.fields.title')" :required="true">
+
+      <FormFieldWrapper id="name" :label="$t('forms.fields.title')" required>
         <MultiLocaleInput v-model:input="form.name" />
-      </NFormItem>
+      </FormFieldWrapper>
 
       <MultiLocaleTiptapFormItem v-model:input="form.description" label="Aprašymas" />
 
-      <NFormItem label="Alias" help="Papildomas pavadinimas žymai (neprivalomas). Jei neįvestas, bus sugeneruotas automatiškai iš pavadinimo.">
-        <NInput v-model:value="form.alias" placeholder="Pvz: stipendijos" />
-      </NFormItem>
+      <FormFieldWrapper id="alias" label="Alias" helper-text="Papildomas pavadinimas žymai (neprivalomas). Jei neįvestas, bus sugeneruotas automatiškai iš pavadinimo.">
+        <Input id="alias" v-model="form.alias" placeholder="Pvz: stipendijos" />
+      </FormFieldWrapper>
     </FormElement>
   </AdminForm>
 </template>
@@ -24,7 +24,9 @@
 <script setup lang="ts">
 import { useForm } from "@inertiajs/vue3";
 
+import { Input } from "@/Components/ui/input";
 import FormElement from "./FormElement.vue";
+import FormFieldWrapper from "./FormFieldWrapper.vue";
 import AdminForm from "./AdminForm.vue";
 import MultiLocaleInput from "@/Components/FormItems/MultiLocaleInput.vue";
 import MultiLocaleTiptapFormItem from "@/Components/FormItems/MultiLocaleTiptapFormItem.vue";

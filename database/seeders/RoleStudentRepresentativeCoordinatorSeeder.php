@@ -15,12 +15,10 @@ class RoleStudentRepresentativeCoordinatorSeeder extends Seeder
      */
     public function run()
     {
-        $role = new Role;
-
-        $role->name = 'Student Representative Coordinator';
-        $role->guard_name = 'web';
-
-        $role->save();
+        $role = Role::firstOrCreate([
+            'name' => 'Student Representative Coordinator',
+            'guard_name' => 'web',
+        ]);
 
         $role->syncPermissions([
             'users.create.padalinys',
@@ -49,7 +47,7 @@ class RoleStudentRepresentativeCoordinatorSeeder extends Seeder
             'sharepointFiles.read.padalinys',
             'sharepointFiles.update.padalinys',
             'tasks.create.padalinys',
-            'tasks.read.own',
+            'tasks.read.padalinys',
             'tasks.update.own',
             'problems.create.padalinys',
             'problems.read.padalinys',
@@ -57,6 +55,6 @@ class RoleStudentRepresentativeCoordinatorSeeder extends Seeder
             'problems.delete.padalinys',
         ]);
 
-        $role->attachable_types()->attach(Type::query()->where('slug', 'studentu-atstovai')->firstOrFail());
+        $role->attachable_types()->syncWithoutDetaching([Type::query()->where('slug', 'studentu-atstovai')->firstOrFail()->id]);
     }
 }

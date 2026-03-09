@@ -1,26 +1,33 @@
 <template>
-  <NForm ref="formRef" :model :rules>
-    <NFormItem :label="$t('forms.fields.type')" path="typeValue">
-      <NSelect v-model:value="model.typeValue" :disabled="!!model.uploadValue" placeholder="Pasirink failo tipą..."
-        :options="sharepointFileTypeOptions" />
-    </NFormItem>
-    <!-- <NFormItem label="Raktažodžiai" path="keywordsValue"
-        ><NSelect
-          v-model:value="model.keywordsValue"
-          multiple
-          filterable
-          tag
-        ></NSelect
-      ></NFormItem> -->
-    <NFormItem :label="$t('Dokumento data')" path="datetimeValue">
-      <NDatePicker v-model:value="model.datetimeValue" placeholder="2022-12-01" type="date" />
-    </NFormItem>
-    <NFormItem :label="$t('forms.fields.description')" path="descriptionValue">
-      <NInput v-model:value="model.description0Value" type="textarea" placeholder="Šis dokumentas yra skirtas..." />
-    </NFormItem>
-    <NFormItem v-if="model.typeValue" label="Įkelti failą" path="uploadValue">
-      <NUpload :max="1" :default-upload="false" @before-upload="beforeUpload" @change="handleUploadChange">
-        <NUploadDragger class="flex flex-col items-center gap-2">
+  <form @submit.prevent="handleValidateClick">
+    <div class="space-y-4">
+      <FormFieldWrapper id="typeValue" :label="$t('forms.fields.type')" required :error="errors.typeValue">
+        <Select v-model="typeValueString" :disabled="!!model.uploadValue">
+          <SelectTrigger>
+            <SelectValue placeholder="Pasirink failo tipą..." />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem v-for="opt in sharepointFileTypeOptions" :key="opt.value" :value="opt.value">
+              {{ opt.label }}
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </FormFieldWrapper>
+
+      <FormFieldWrapper id="datetimeValue" :label="$t('Dokumento data')" required :error="errors.datetimeValue">
+        <DatePicker v-model="dateValue" placeholder="2022-12-01" />
+      </FormFieldWrapper>
+
+      <FormFieldWrapper id="descriptionValue" :label="$t('forms.fields.description')">
+        <Textarea v-model="model.description0Value" placeholder="Šis dokumentas yra skirtas..." />
+      </FormFieldWrapper>
+
+      <FormFieldWrapper v-if="model.typeValue" id="uploadValue" label="Įkelti failą" required :error="errors.uploadValue">
+        <label
+          class="flex cursor-pointer flex-col items-center gap-2 rounded-lg border-2 border-dashed border-zinc-200 bg-zinc-50/50 p-6 transition-colors hover:bg-zinc-100/50 dark:border-zinc-800 dark:bg-zinc-900/50 dark:hover:bg-zinc-800/50"
+          @dragover.prevent
+          @drop.prevent="handleDrop"
+        >
           <IFluentArchive24Regular width="48" height="48" class="opacity-90" />
           <p class="font-bold">
             Paspausk arba nutempk failą čia
@@ -28,36 +35,58 @@
           <p class="text-xs opacity-50">
             Pateikite tik galutinį dokumentą, kuris bus patvirtintas
           </p>
-        </NUploadDragger>
-      </NUpload>
-    </NFormItem>
-    <NFormItem v-if="model.typeValue" label="Sugeneruotas failo pavadinimas">
-      <NInputGroup>
-        <NInput v-model:value="model.tempNameValue" :style="{ width: '85%' }" placeholder=""
-          :disabled="fileNameEditDisabled" />
-        <NInput placeholder="" disabled :value="fileExtension" :style="{ width: '15%' }" />
-      </NInputGroup>
-    </NFormItem>
+          <p v-if="model.uploadValue" class="mt-2 text-sm font-medium text-green-600 dark:text-green-400">
+            {{ model.uploadValue.name }}
+          </p>
+          <input
+            ref="fileInputRef"
+            type="file"
+            class="hidden"
+            accept=".pdf,.docx,.pptx"
+            @change="handleFileSelect"
+          >
+        </label>
+      </FormFieldWrapper>
 
-    <NButton type="primary" :disabled="!model.uploadValue" :loading @click="handleValidateClick">
-      <template #icon>
+      <FormFieldWrapper v-if="model.typeValue" id="tempNameValue" label="Sugeneruotas failo pavadinimas">
+        <div class="flex gap-1">
+          <Input
+            v-model="model.tempNameValue"
+            class="flex-1"
+            placeholder=""
+            :disabled="fileNameEditDisabled"
+          />
+          <Input
+            class="w-[15%]"
+            disabled
+            :model-value="fileExtension"
+            placeholder=""
+          />
+        </div>
+      </FormFieldWrapper>
+
+      <Button :disabled="!model.uploadValue || loading" type="submit">
         <IFluentDocumentAdd24Regular />
-      </template>{{ $t('Įkelti failą') }}
-    </NButton>
-  </NForm>
+        {{ $t('Įkelti failą') }}
+      </Button>
+    </div>
+  </form>
 </template>
 
-<script setup lang="tsx">
+<script setup lang="ts">
 import { ref, watch } from "vue";
-import { useForm } from "@inertiajs/vue3";
-import type { FormInst, FormRules, UploadFileInfo } from "naive-ui";
+import { trans as $t } from "laravel-vue-i18n";
 
+import { Button } from "@/Components/ui/button";
+import { DatePicker } from "@/Components/ui/date-picker";
+import { Input } from "@/Components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
+import { Textarea } from "@/Components/ui/textarea";
+import FormFieldWrapper from "@/Components/AdminForms/FormFieldWrapper.vue";
 import { generateNameForFile } from "./generateNameForFile";
-
 import { modelTypes } from "@/Types/formOptions";
 import { splitFileNameAndExtension } from "@/Utils/String";
 import { useToasts } from "@/Composables/useToasts";
-
 
 const emit = defineEmits<{
   (e: "submit", form: any): void;
@@ -65,8 +94,7 @@ const emit = defineEmits<{
 }>();
 
 const props = defineProps<{
-  // fileable is used for name generation
-  fileable?: Record<string, any>;
+  fileable?: FileableFormData | null;
   loading: boolean;
 }>();
 
@@ -75,25 +103,36 @@ const { error } = useToasts();
 
 const originalFileName = ref("");
 const fileExtension = ref<string | undefined>("");
+const fileInputRef = ref<HTMLInputElement | null>(null);
 
-const formRef = ref<FormInst | null>(null);
+const errors = ref<Record<string, string>>({});
+
 const model = ref<{
-  datetimeValue: number | null;
+  datetimeValue: Date | null;
   description0Value: string;
   nameValue: string | null;
-  // there's a temp, because on submit form, the extension is added to the name and it's not pretty
   tempNameValue: string | null;
-  //   keywordsValue: string[];
   typeValue: string | null;
-  uploadValue: UploadFileInfo | null;
+  uploadValue: File | null;
 }>({
   datetimeValue: null,
   description0Value: "",
   nameValue: null,
   tempNameValue: null,
-  //   keywordsValue: [],
   typeValue: null,
   uploadValue: null,
+});
+
+// Bridge for Select (string) <-> model.typeValue (string | null)
+const typeValueString = ref('');
+watch(typeValueString, (val) => {
+  model.value.typeValue = val || null;
+});
+
+// Bridge for DatePicker (Date) <-> model.datetimeValue
+const dateValue = ref<Date | undefined>(undefined);
+watch(dateValue, (val) => {
+  model.value.datetimeValue = val ?? null;
 });
 
 const sharepointFileTypeOptions = modelTypes.sharepointFile.map((type) => ({
@@ -101,52 +140,15 @@ const sharepointFileTypeOptions = modelTypes.sharepointFile.map((type) => ({
   value: type,
 }));
 
-const rules: FormRules = {
-  typeValue: [
-    {
-      required: true,
-      message: "Pasirinkite tipą",
-      trigger: ["blur-sm", "change"],
-    },
-  ],
-  // keywordsValue: [
-  //   {
-  //     required: true,
-  //     message: "Pasirinkite bent vieną raktažodį",
-  //   },
-  // ],
-  datetimeValue: [
-    {
-      required: true,
-      message: "Pasirinkite dokumento datą",
-      trigger: ["blur-sm", "change"],
-      type: "number",
-    },
-  ],
-  uploadValue: [
-    {
-      required: true,
-      message: "Įkelkite failą",
-      trigger: ["blur-sm", "change"],
-      // type is file object
-      type: "object",
-    },
-  ],
-};
+const validateFile = (file: File): boolean => {
+  if (!file.type) return false;
 
-const beforeUpload = async (data: {
-  file: UploadFileInfo;
-  fileList: UploadFileInfo[];
-}) => {
-  if (!data.file.type) return;
-
-  // check if pristatymai is pptx or pdf
   if (model.value.typeValue === "Pristatymai") {
     if (
       ![
         "application/pdf",
         "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-      ].includes(data.file.type)
+      ].includes(file.type)
     ) {
       error("Pristatymas turi būti PDF arba PPTX formatu.");
       return false;
@@ -154,12 +156,11 @@ const beforeUpload = async (data: {
     return true;
   }
 
-  // others, check if file is pdf or docx
   if (
     ![
       "application/pdf",
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    ].includes(data.file.type)
+    ].includes(file.type)
   ) {
     error("Failas turi būti PDF arba DOCX formatu.");
     return false;
@@ -167,29 +168,28 @@ const beforeUpload = async (data: {
   return true;
 };
 
-const handleUploadChange = ({
-  fileList,
-}: {
-  fileList: Array<UploadFileInfo>;
-}) => {
-  // 1. check if file removed
-  if (fileList.length === 0) {
-    model.value.uploadValue = null;
-    originalFileName.value = "";
-    model.value.tempNameValue = setUploadFileName();
-    return;
-  }
+const processFile = (file: File) => {
+  if (!validateFile(file)) return;
 
-  model.value.uploadValue = fileList[0];
+  model.value.uploadValue = file;
 
-  const { name, extension } = splitFileNameAndExtension(fileList[0].name);
-
+  const { name, extension } = splitFileNameAndExtension(file.name);
   fileExtension.value = extension;
   originalFileName.value = name;
   model.value.tempNameValue = setUploadFileName();
 };
 
-// generate name for this file
+const handleFileSelect = (e: Event) => {
+  const input = e.target as HTMLInputElement;
+  const file = input.files?.[0];
+  if (file) processFile(file);
+};
+
+const handleDrop = (e: DragEvent) => {
+  const file = e.dataTransfer?.files?.[0];
+  if (file) processFile(file);
+};
+
 const setUploadFileName = () => {
   fileNameEditDisabled.value = true;
 
@@ -199,7 +199,7 @@ const setUploadFileName = () => {
 
   const { fileName, isFileNameEditDisabled } = generateNameForFile(
     {
-      dateValue: model.value.datetimeValue,
+      dateValue: model.value.datetimeValue ? model.value.datetimeValue.getTime() : null,
       nameValue: originalFileName.value,
       typeValue: model.value.typeValue,
     },
@@ -210,18 +210,36 @@ const setUploadFileName = () => {
   return fileName;
 };
 
-const handleValidateClick = (e: MouseEvent) => {
-  e.preventDefault();
+const validate = (): boolean => {
+  errors.value = {};
 
-  formRef.value?.validate((errors) => {
-    if (!errors) {
-      model.value = {
-        ...model.value,
-        nameValue: model.value.tempNameValue + fileExtension.value,
-      };
+  if (!model.value.typeValue) {
+    errors.value.typeValue = "Pasirinkite tipą";
+  }
+  if (!model.value.datetimeValue) {
+    errors.value.datetimeValue = "Pasirinkite dokumento datą";
+  }
+  if (!model.value.uploadValue) {
+    errors.value.uploadValue = "Įkelkite failą";
+  }
 
-      emit("submit", model.value);
-    }
-  });
+  return Object.keys(errors.value).length === 0;
+};
+
+const handleValidateClick = () => {
+  if (!validate()) return;
+
+  model.value = {
+    ...model.value,
+    nameValue: model.value.tempNameValue + fileExtension.value,
+  };
+
+  // Convert Date back to timestamp for compatibility with the parent form
+  const submitData = {
+    ...model.value,
+    datetimeValue: model.value.datetimeValue ? model.value.datetimeValue.getTime() : null,
+  };
+
+  emit("submit", submitData);
 };
 </script>

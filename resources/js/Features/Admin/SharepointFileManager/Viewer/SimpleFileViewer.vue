@@ -9,17 +9,18 @@
         :show-thumbnail="true"
       ></FileButtonSkeletonWrapper>
     </div>
-    <FileDrawer
-      :file="selectedFile"
-      @hide:drawer="selectedFile = null"
-    ></FileDrawer>
+    <FilePropertiesDrawer
+      source="sharepoint"
+      :sharepoint-file="selectedFile"
+      @close="selectedFile = null"
+    />
   </div>
 </template>
 
 <script setup lang="tsx">
 import { provide, ref } from "vue";
 import FileButtonSkeletonWrapper from "./FileButtonSkeletonWrapper.vue";
-import FileDrawer from "./FileDrawer.vue";
+import FilePropertiesDrawer from "@/Features/Admin/FileManager/Components/FilePropertiesDrawer.vue";
 import { useFetch } from "@vueuse/core";
 
 const props = defineProps<{

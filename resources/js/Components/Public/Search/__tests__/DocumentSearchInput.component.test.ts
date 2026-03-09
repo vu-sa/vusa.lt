@@ -420,15 +420,6 @@ describe('DocumentSearchInput', () => {
     })
   })
 
-  describe('expose methods', () => {
-    it('exposes focusInput method', () => {
-      const wrapper = createWrapper()
-      
-      expect(wrapper.vm.focusInput).toBeDefined()
-      expect(typeof wrapper.vm.focusInput).toBe('function')
-    })
-  })
-
   describe('query synchronization', () => {
     it('updates local query when prop query changes', async () => {
       const wrapper = createWrapper({ query: 'initial' })

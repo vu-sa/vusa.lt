@@ -2,6 +2,66 @@ import type { DocumentFacet, DocumentSearchFilters } from '@/Types/DocumentSearc
 
 export class FacetMerger {
   /**
+   * Generic facet merging for custom filter mappings
+   */
+  static mergeFacetsWithSelectionMap<
+    T extends { field: string; values: Array<{ value: string; count: number; isSelected?: boolean }> }
+  >(
+    initialFacets: T[],
+    currentFacets: T[],
+    selectedValuesByField: Record<string, string[]>
+  ): T[] {
+    if (initialFacets.length === 0) {
+      return currentFacets
+    }
+
+    return initialFacets.map(initialFacet => {
+      const currentFacet = currentFacets.find(f => f.field === initialFacet.field)
+
+      const currentValueMap = new Map<string, number>()
+      if (currentFacet) {
+        currentFacet.values.forEach(value => {
+          currentValueMap.set(value.value, value.count)
+        })
+      }
+
+      const selectedValues = selectedValuesByField[initialFacet.field] || []
+
+      const mergedValues = initialFacet.values.map(initialValue => ({
+        ...initialValue,
+        count: currentValueMap.get(initialValue.value) || 0,
+        isSelected: selectedValues.includes(initialValue.value)
+      }))
+
+      if (currentFacet) {
+        currentFacet.values.forEach(currentValue => {
+          if (!initialFacet.values.some(iv => iv.value === currentValue.value)) {
+            mergedValues.push({
+              ...currentValue,
+              isSelected: selectedValues.includes(currentValue.value)
+            })
+          }
+        })
+      }
+
+      mergedValues.sort((a, b) => {
+        const aSelected = selectedValues.includes(a.value)
+        const bSelected = selectedValues.includes(b.value)
+
+        if (aSelected && !bSelected) return -1
+        if (!aSelected && bSelected) return 1
+        if (a.count !== b.count) return b.count - a.count
+        return a.value.localeCompare(b.value)
+      })
+
+      return {
+        ...initialFacet,
+        values: mergedValues
+      }
+    })
+  }
+
+  /**
    * Merges initial facets (all available options) with current search facets (current results)
    * This ensures users can see all filter options even when current search has limited results
    */

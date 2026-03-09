@@ -1,5 +1,6 @@
 import { ref, computed, watch, type Ref } from 'vue'
 import { useLocalStorage } from '@vueuse/core'
+import { usePage } from '@inertiajs/vue3'
 
 // Content type definitions
 export interface ContentType {
@@ -29,14 +30,19 @@ export interface SearchState {
 }
 
 export const useSearchController = () => {
-  // Default content types configuration
+  // Get collection names from Inertia props (with fallbacks)
+  const page = usePage()
+  const typesenseConfig = (page.props.typesenseConfig as any) || {}
+  const collections = typesenseConfig.collections || {}
+
+  // Default content types configuration - use collection names from config
   const defaultContentTypes: ContentType[] = [
     {
       id: 'news',
       name: 'News',
       icon: '📰',
       color: 'blue',
-      indexName: 'news',
+      indexName: collections.news || 'news',
       enabled: true,
       order: 1
     },
@@ -45,27 +51,36 @@ export const useSearchController = () => {
       name: 'Pages', 
       icon: '📄',
       color: 'green',
-      indexName: 'pages',
+      indexName: collections.pages || 'pages',
       enabled: true,
       order: 2
+    },
+    {
+      id: 'publicInstitutions',
+      name: 'Institutions',
+      icon: '🏢',
+      color: 'indigo',
+      indexName: collections.public_institutions || 'public_institutions',
+      enabled: true,
+      order: 3
     },
     {
       id: 'documents',
       name: 'Documents',
       icon: '📜',
       color: 'purple', 
-      indexName: 'documents',
+      indexName: collections.documents || 'documents',
       enabled: true,
-      order: 3
+      order: 4
     },
     {
       id: 'calendar',
       name: 'Events',
       icon: '📅',
       color: 'amber',
-      indexName: 'calendar',
+      indexName: collections.calendar || 'calendar',
       enabled: true,
-      order: 4
+      order: 5
     }
   ]
 

@@ -1,21 +1,65 @@
 /**
- * Echo exposes an expressive API for subscribing to channels and listening
- * for events that are broadcast by Laravel. Echo and event broadcasting
- * allows your team to easily build robust real-time web applications.
+ * Laravel Echo with Reverb WebSocket Connection
+ * 
+ * Echo enables real-time notifications and events via Laravel Reverb.
+ * This module exports a function to initialize Echo on-demand for authenticated users.
+ * 
+ * @see https://laravel.com/docs/broadcasting
+ * @see https://laravel.com/docs/reverb
  */
 
 import Echo from "laravel-echo";
 import Pusher from "pusher-js";
 
-window.Pusher = Pusher;
+// Enable Pusher logging in development
+if (import.meta.env.DEV) {
+  Pusher.logToConsole = true;
+}
 
-window.Echo = new Echo({
-  broadcaster: "pusher",
-  key: import.meta.env.VITE_PUSHER_APP_KEY,
-  wsHost: window.location.hostname,
-  wsPort: 6001,
-  wsPath: import.meta.env.VITE_PUSHER_APP_PATH,
-  forceTLS: true,
-  disableStats: true,
-  cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
-});
+// Pusher-js is used as the WebSocket client (Reverb is Pusher-compatible)
+// We need to assign it to window for Echo to find it
+(window as any).Pusher = Pusher;
+
+let echoInstance: Echo<"reverb"> | null = null;
+
+/**
+ * Initialize and return the Echo instance.
+ * Creates a singleton connection to the Reverb WebSocket server.
+ */
+export function initEcho(): Echo<"reverb"> {
+  if (echoInstance) {
+    return echoInstance;
+  }
+
+  echoInstance = new Echo({
+    broadcaster: "reverb",
+    key: import.meta.env.VITE_REVERB_APP_KEY,
+    wsHost: import.meta.env.VITE_REVERB_HOST,
+    wsPort: import.meta.env.VITE_REVERB_PORT ?? 6001,
+    wssPort: import.meta.env.VITE_REVERB_PORT ?? 6001,
+    forceTLS: (import.meta.env.VITE_REVERB_SCHEME ?? "https") === "https",
+    enabledTransports: ["ws", "wss"],
+    authEndpoint: "/broadcasting/auth",
+  });
+
+  return echoInstance;
+}
+
+/**
+ * Get the current Echo instance without initializing.
+ * Returns null if Echo hasn't been initialized yet.
+ */
+export function getEcho(): Echo<"reverb"> | null {
+  return echoInstance;
+}
+
+/**
+ * Disconnect and cleanup the Echo instance.
+ * Call this when the user logs out or the component unmounts.
+ */
+export function disconnectEcho(): void {
+  if (echoInstance) {
+    echoInstance.disconnect();
+    echoInstance = null;
+  }
+}

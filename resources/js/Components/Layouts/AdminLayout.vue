@@ -1,28 +1,59 @@
 <template>
-  <div class="h-screen flex flex-col bg-background">
+  <div class="bg-background">
     <Head :title />
+
+    <!-- Staging environment warning banner -->
+    <StagingBanner />
 
     <SidebarProvider>
       <AppSidebar />
-      <SidebarInset class="flex flex-col min-h-0">
+      <SidebarInset class="flex flex-col">
         <!-- Header with breadcrumbs and actions -->
-        <header class="sticky top-0 z-40 flex h-16 items-center justify-between border-b bg-background px-6">
-          <div class="flex items-center flex-1 gap-3">
-            <SidebarTrigger class="-ml-1" />
-            <Separator orientation="vertical" class="mr-2 h-4" />
-            <UnifiedBreadcrumbs />
+        <header class="sticky top-0 z-40 flex h-14 shrink-0 items-center justify-between border-b bg-background px-4 md:h-16 md:px-6 md:rounded-t-xl">
+          <div class="flex items-center flex-1 gap-2 md:gap-3 min-w-0">
+            <SidebarTrigger class="h-9 w-9 shrink-0 border md:h-7 md:w-7 md:border-0" />
+            <Separator orientation="vertical" class="hidden md:block mr-2 h-4" />
+            <AdminBreadcrumbs />
           </div>
 
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-1.5 md:gap-2">
             <slot name="headerActions" />
+            <CommandPaletteTrigger />
+            <PWAStatusButton />
+            <SpotlightPopover
+              v-if="hasTour"
+              :title="$t('tutorials.help_button_spotlight.title')"
+              :description="$t('tutorials.help_button_spotlight.description')"
+              :is-dismissed="helpButtonSpotlight.isDismissed.value"
+              position="bottom"
+              @dismiss="helpButtonSpotlight.dismiss"
+            >
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger as-child>
+                    <Button 
+                      variant="outline" 
+                      size="icon" 
+                      class="rounded-full" 
+                      data-tour="help-button"
+                      @click="handleHelpClick"
+                    >
+                      <HelpCircle class="h-4 w-4" />
+                      <span class="sr-only">{{ $t('Kaip veikia?') }}</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>{{ $t('Pradėti interaktyvų vadovą') }}</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </SpotlightPopover>
             <TasksIndicator />
             <NotificationsIndicator />
           </div>
         </header>
 
         <!-- Single scroll container -->
-        <main class="flex-1 overflow-auto" style="scroll-behavior: smooth;">
-          <div class="min-h-full p-6">
+        <main class="flex-1 min-w-0 overflow-auto" style="scroll-behavior: smooth;">
+          <div class="min-h-full p-6" :class="{ 'pb-24': isPWA && isMobile }">
         <!-- System announcements banner -->
         <div v-if="systemMessage"
           class="mb-6 rounded-lg border p-4 bg-amber-50 text-amber-900 dark:bg-amber-950 dark:text-amber-50">
@@ -67,6 +98,116 @@
 
     <!-- Toast notifications -->
     <Toaster rich-colors />
+
+    <!-- PWA Install Banner (smart trigger) -->
+    <InstallBanner />
+    
+    <!-- PWA Update Available Banner (only shown in PWA mode) -->
+    <UpdateBanner />
+    
+    <!-- PWA Bottom Navigation Bar (shown only when installed as PWA on mobile) -->
+    <nav 
+      v-if="isPWA && isMobile" 
+      class="fixed bottom-0 left-0 right-0 z-50 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80"
+      :style="{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }"
+    >
+      <div class="flex items-center justify-around h-16 px-2">
+        <Link 
+          :href="route('dashboard')" 
+          class="flex flex-col items-center justify-center flex-1 h-full gap-1 text-muted-foreground transition-colors active:scale-95 active:opacity-70"
+          :class="{ 'text-primary': isCurrentRoute('dashboard') }"
+        >
+          <HomeIcon class="h-5 w-5" />
+          <span class="text-[10px] font-medium">{{ $t('Pradžia') }}</span>
+        </Link>
+        
+        <Link 
+          :href="route('dashboard.atstovavimas')" 
+          class="flex flex-col items-center justify-center flex-1 h-full gap-1 text-muted-foreground transition-colors active:scale-95 active:opacity-70"
+          :class="{ 'text-primary': isCurrentRoute('dashboard.atstovavimas') }"
+        >
+          <GraduationCapIcon class="h-5 w-5" />
+          <span class="text-[10px] font-medium">ViSAK</span>
+        </Link>
+        
+        <button 
+          type="button"
+          class="flex flex-col items-center justify-center flex-1 h-full gap-1 active:scale-90 transition-transform"
+          @click="showQuickCreate = true"
+        >
+          <div class="flex items-center justify-center w-12 h-12 -mt-4 rounded-full bg-primary text-primary-foreground shadow-lg">
+            <PlusIcon class="h-6 w-6" />
+          </div>
+        </button>
+        
+        <Link 
+          :href="route('notifications.index')" 
+          class="relative flex flex-col items-center justify-center flex-1 h-full gap-1 text-muted-foreground transition-colors active:scale-95 active:opacity-70"
+          :class="{ 'text-primary': isCurrentRoute('notifications.index') }"
+        >
+          <div class="relative">
+            <BellIcon class="h-5 w-5" />
+            <span 
+              v-if="unreadNotificationsCount > 0" 
+              class="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-medium text-destructive-foreground"
+            >
+              {{ unreadNotificationsCount > 9 ? '9+' : unreadNotificationsCount }}
+            </span>
+          </div>
+          <span class="text-[10px] font-medium">{{ $t('Pranešimai') }}</span>
+        </Link>
+        
+        <Link 
+          :href="route('profile')" 
+          class="flex flex-col items-center justify-center flex-1 h-full gap-1 text-muted-foreground transition-colors active:scale-95 active:opacity-70"
+          :class="{ 'text-primary': isCurrentRoute('profile') }"
+        >
+          <UserIcon class="h-5 w-5" />
+          <span class="text-[10px] font-medium">{{ $t('Profilis') }}</span>
+        </Link>
+      </div>
+    </nav>
+    
+    <!-- Command Palette (global Cmd+K / Ctrl+K search) -->
+    <AdminCommandPalette />
+
+    <!-- Quick Create Sheet (for PWA bottom nav) -->
+    <Sheet v-model:open="showQuickCreate">
+      <SheetContent side="bottom" class="rounded-t-xl">
+        <SheetHeader>
+          <SheetTitle>{{ $t('Sukurti naują') }}</SheetTitle>
+        </SheetHeader>
+        <div class="grid gap-2 py-4">
+          <Button 
+            v-if="can?.create?.meeting" 
+            variant="ghost" 
+            class="justify-start h-12" 
+            @click="navigateAndClose(route('meetings.create'))"
+          >
+            <CalendarPlusIcon class="h-5 w-5 mr-3" />
+            {{ $t('forms.meeting') }}
+          </Button>
+          <Button 
+            v-if="can?.create?.news" 
+            variant="ghost" 
+            class="justify-start h-12" 
+            @click="navigateAndClose(route('news.create'))"
+          >
+            <FileTextIcon class="h-5 w-5 mr-3" />
+            {{ $t('forms.news') }}
+          </Button>
+          <Button 
+            v-if="can?.create?.reservation" 
+            variant="ghost" 
+            class="justify-start h-12" 
+            @click="navigateAndClose(route('reservations.create'))"
+          >
+            <Building2Icon class="h-5 w-5 mr-3" />
+            {{ $t('forms.reservation') }}
+          </Button>
+        </div>
+      </SheetContent>
+    </Sheet>
   </div>
 </template>
 
@@ -79,12 +220,25 @@ import {
   HomeIcon,
   PlusIcon,
   UserIcon,
+  HelpCircle,
+  BellIcon,
+  GraduationCapIcon,
+  CalendarPlusIcon,
+  FileTextIcon,
+  Building2Icon,
 } from 'lucide-vue-next';
+import { usePWA } from '@/Composables/usePWA';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/Components/ui/sheet';
 import { trans as $t } from "laravel-vue-i18n";
+
 import { useToasts } from '@/Composables/useToasts';
 import 'vue-sonner/style.css'
 
 import AppSidebar from '@/Components/AppSidebar.vue'
+import StagingBanner from '@/Components/StagingBanner.vue'
+import InstallBanner from '@/Components/PWA/InstallBanner.vue'
+import UpdateBanner from '@/Components/PWA/UpdateBanner.vue'
+import PWAStatusButton from '@/Components/PWA/StatusButton.vue'
 import TasksIndicator from '@/Components/TasksIndicator.vue'
 import NotificationsIndicator from '@/Components/NotificationsIndicator.vue'
 import { Separator } from '@/Components/ui/separator'
@@ -94,10 +248,17 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from '@/Components/ui/sidebar'
-import UnifiedBreadcrumbs from '@/Components/UnifiedBreadcrumbs.vue';
+import AdminBreadcrumbs from '@/Components/AdminBreadcrumbs.vue';
 import { createBreadcrumbState } from '@/Composables/useBreadcrumbsUnified';
 import type { BreadcrumbItem } from '@/Composables/useBreadcrumbsUnified';
+import { createTourProvider } from '@/Composables/useTourProvider';
+import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
+import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 import { Toaster } from "@/Components/ui/sonner";
+import { createCommandPaletteProvider } from '@/Composables/useCommandPalette';
+import AdminCommandPalette from '@/Components/CommandPalette/AdminCommandPalette.vue';
+import CommandPaletteTrigger from '@/Components/CommandPalette/CommandPaletteTrigger.vue';
 
 const props = withDefaults(defineProps<{
   title?: string;
@@ -111,15 +272,75 @@ const props = withDefaults(defineProps<{
 // System message (announcements)
 const systemMessage = computed(() => usePage().props.app?.systemMessage || null);
 
+// PWA state
+const { isPWA, setAppBadge } = usePWA();
+const showQuickCreate = ref(false);
+
+// Permissions for quick create
+const can = computed(() => usePage().props.auth?.can);
+
+// Unread notifications count
+const unreadNotificationsCount = computed(() => {
+  const notifications = usePage().props.auth?.user?.unreadNotifications;
+  return Array.isArray(notifications) ? notifications.length : 0;
+});
+
+// Update PWA app badge when notification count changes
+watch(unreadNotificationsCount, (count) => {
+  setAppBadge(count);
+}, { immediate: true });
+
+// Check if current route matches
+function isCurrentRoute(routeName: string): boolean {
+  try {
+    return route().current(routeName);
+  } catch {
+    return false;
+  }
+}
+
+// Navigate and close quick create sheet
+function navigateAndClose(url: string) {
+  showQuickCreate.value = false;
+  router.visit(url);
+}
+
 // Initialize breadcrumb state for the entire admin application
 const breadcrumbState = createBreadcrumbState('admin');
 
-// Clear breadcrumbs when on home page
-watch(() => usePage().component, (component) => {
+// Initialize tour provider - pages can register their tours via provideTour()
+const { hasTour, startTour: startPageTour, clearTour } = createTourProvider();
+
+// Initialize command palette provider for global Cmd+K / Ctrl+K search
+createCommandPaletteProvider();
+
+// Spotlight for help button - shows once to draw attention to the help feature
+const helpButtonSpotlight = useFeatureSpotlight('help-button-v1');
+
+// Handle help button click: dismiss spotlight and start tour
+function handleHelpClick() {
+  helpButtonSpotlight.dismiss();
+  startPageTour(true); // true = voluntary tour
+}
+
+// Track the current page component to detect navigation
+const currentComponent = ref(usePage().component);
+
+// Clear tour registration when navigating to a new page
+// Use flush: 'sync' to ensure this runs immediately when the prop changes,
+// before the new page component's setup runs and registers its tour
+watch(() => usePage().component, (component, oldComponent) => {
+  // Clear breadcrumbs when on home page
   if (component === 'Admin/ShowAdminHome') {
     breadcrumbState.clear();
   }
-}, { immediate: true });
+  
+  // Only clear tour when actually navigating (not on initial load)
+  if (oldComponent && oldComponent !== component) {
+    clearTour();
+  }
+  currentComponent.value = component;
+}, { flush: 'sync' });
 
 // Handle breadcrumb initialization for new pages with prop-provided breadcrumbs
 watch(() => props.breadcrumbs, (newBreadcrumbs) => {

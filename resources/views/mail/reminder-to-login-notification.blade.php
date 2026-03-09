@@ -15,7 +15,7 @@ Rašome tau, nes mūsų duomenimis esi VU SA studentų atstovas (-ė)
 - {{ $institution }}
 @endforeach
 
-Norime tik priminti, kad **prisijungtum prie [VU SA atstovavimo platformos](https://www.vusa.lt/mano)** ir supildytum, kas vyko per Tavo atstovavimo laikotarpį. 
+Norime tik priminti, kad **prisijungtum prie [VU SA atstovavimo platformos]({{ config('app.url') }}/mano)** ir supildytum, kas vyko per Tavo atstovavimo laikotarpį. 
 
 Studentų atstovavimas remiasi kiekvieno (-os) studentų atstovo (-ės) aktyviu įsitraukimu ir atsakomybe už tinkamą informacijos perdavimą. Todėl tikimės, kad:
 
@@ -25,11 +25,11 @@ Studentų atstovavimas remiasi kiekvieno (-os) studentų atstovo (-ės) aktyviu 
 
 Tai, ką įkelsi bus matoma ne tik dabartiniams, bet ir būsimiems studentų atstovams, todėl **Tavo indėlis padės užtikrinti sklandų atstovavimo procesą bei patirties perdavimą**! 🏛️
 
-<x-mail::button :url="'https://www.vusa.lt/mano/dashboard/atstovavimas'">
+<x-mail::button :url="config('app.url') . '/mano/dashboard/atstovavimas'">
 Prisijungti prie vusa.lt/mano
 </x-mail::button>
 
-Jeigu turi klausimų, drąsiai kreipkis į savo atstovų koordinatorių (-ę) arba pasiskaityk **[D.U.K. sekciją VU SA dokumentacijoje](https://www.vusa.lt/docs/faq.html)**.
+Jeigu turi klausimų, drąsiai kreipkis į savo atstovų koordinatorių (-ę) arba pasiskaityk **[D.U.K. sekciją VU SA dokumentacijoje]({{ config('app.url') }}/docs/faq.html)**.
 
 <small>p.s. Jeigu manai, kad gavai šį laišką per klaidą, pranešk mums el. paštu: [it@vusa.lt](mailto:it@vusa.lt). Laiškas buvo sugeneruotas automatiškai pagal vusa.lt/mano esančią informaciją.</small>
 
@@ -54,13 +54,13 @@ We just want to remind you that student representation is based on the active in
 
 What you upload will be visible not only to current, but also to future student representatives, so **your contribution will help ensure a smooth representation process**! 🏛️
 
-<x-mail::button :url="'https://www.vusa.lt/mano/dashboard/atstovavimas'">
+<x-mail::button :url="config('app.url') . '/mano/dashboard/atstovavimas'">
 
 Log in to vusa.lt/mano
 
 </x-mail::button>
 
-If you have any questions, feel free to contact your representative coordinator or read the **[FAQ section in the VU SA documentation](https://www.vusa.lt/docs/en/faq.html)**.
+If you have any questions, feel free to contact your representative coordinator or read the **[FAQ section in the VU SA documentation]({{ config('app.url') }}/docs/en/faq.html)**.
 
 <small>p.s. If you think you received this email by mistake, please let us know by email: [it@vusa.lt](mailto:it@vusa.lt)</small>
 

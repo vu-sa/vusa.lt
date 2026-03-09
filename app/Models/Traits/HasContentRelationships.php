@@ -9,11 +9,11 @@ trait HasContentRelationships
 {
     public function outgoingRelationships()
     {
-        return $this->morphToMany(Relationship::class, 'relationshipable')->using(Relationshipable::class)->withPivot(['related_model_id', 'relationshipable_id']);
+        return $this->morphToMany(Relationship::class, 'relationshipable')->using(Relationshipable::class)->withPivot(['related_model_id', 'relationshipable_id', 'scope', 'bidirectional']);
     }
 
     public function incomingRelationships()
     {
-        return $this->morphToMany(Relationship::class, 'relationshipable', null, 'related_model_id')->using(Relationshipable::class)->withPivot(['related_model_id', 'relationshipable_id']);
+        return $this->morphToMany(Relationship::class, 'relationshipable', null, 'related_model_id')->using(Relationshipable::class)->withPivot(['related_model_id', 'relationshipable_id', 'scope', 'bidirectional']);
     }
 }

@@ -4,7 +4,7 @@
     <div class="align-center flex h-full justify-center overflow-hidden rounded-t-md">
       <FadeTransition mode="out-in">
         <img v-if="thumbnail && showThumbnail" class="size-full rounded-t-md object-cover object-top" :src="thumbnail">
-        <NIcon v-else class="my-auto text-zinc-700 dark:text-zinc-200" :size="small ? 30 : 56" :component="icon" />
+        <component :is="icon" v-else :class="small ? 'size-[30px]' : 'size-14'" class="my-auto text-zinc-700 dark:text-zinc-200" />
       </FadeTransition>
     </div>
     <div

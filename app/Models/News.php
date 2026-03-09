@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Casts\NewsImage;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
@@ -25,16 +24,19 @@ use Spatie\Sitemap\Tags\Url;
  * @property string $lang
  * @property int|null $other_lang_id
  * @property int $content_id
- * @property mixed|null $image
+ * @property string|null $image
  * @property string|null $image_author
  * @property int $important
  * @property int $tenant_id
  * @property Carbon|null $publish_time
  * @property string|null $main_points
+ * @property array $highlights
+ * @property string $layout
  * @property string|null $read_more
  * @property int|null $draft
  * @property Carbon $created_at
  * @property Carbon $updated_at
+ * @property Carbon|null $last_edited_at
  * @property Carbon|null $deleted_at
  * @property-read \App\Models\Content $content
  * @property-read News|null $other_language_news
@@ -62,16 +64,37 @@ class News extends Model implements Feedable, Sitemapable
 
     public $fallback_image = '/images/icons/naujienu_foto.png';
 
-    protected $casts = [
-        'image' => NewsImage::class,
-        'updated_at' => 'datetime:Y-m-d H:i:s',
-        'created_at' => 'datetime:Y-m-d H:i:s',
-        // TODO: convert to datetime in database
-        'publish_time' => 'datetime',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'updated_at' => 'datetime:Y-m-d H:i:s',
+            'created_at' => 'datetime:Y-m-d H:i:s',
+            'last_edited_at' => 'datetime:Y-m-d H:i:s',
+            // TODO: convert to datetime in database
+            'publish_time' => 'datetime',
+            'highlights' => 'array',
+        ];
+    }
+
+    /**
+     * Available layout options for news articles.
+     */
+    public const LAYOUTS = ['modern', 'classic', 'immersive', 'headline'];
 
     protected static function booted()
     {
+        static::saving(function ($news) {
+            // Ensure highlights is limited to 3 items
+            if (is_array($news->highlights) && count($news->highlights) > 3) {
+                $news->highlights = array_slice($news->highlights, 0, 3);
+            }
+
+            // Validate layout
+            if (! in_array($news->layout, self::LAYOUTS)) {
+                $news->layout = 'modern';
+            }
+        });
+
         static::saved(function ($news) {
             // Clear sitemap cache when news is updated
             Cache::tags(['sitemap', 'news', "tenant_{$news->tenant_id}"])->flush();
@@ -81,6 +104,28 @@ class News extends Model implements Feedable, Sitemapable
             // Clear sitemap cache when news is deleted
             Cache::tags(['sitemap', 'news', "tenant_{$news->tenant_id}"])->flush();
         });
+    }
+
+    /**
+     * Get the highlights, ensuring max 3 items.
+     */
+    public function getHighlightsAttribute($value): array
+    {
+        $highlights = is_string($value) ? json_decode($value, true) : $value;
+
+        if (! is_array($highlights)) {
+            return [];
+        }
+
+        return array_slice(array_filter($highlights), 0, 3);
+    }
+
+    /**
+     * Mark the content as edited now.
+     */
+    public function markAsEdited(): void
+    {
+        $this->update(['last_edited_at' => now()]);
     }
 
     public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -123,13 +168,28 @@ class News extends Model implements Feedable, Sitemapable
             ->authorName($this->tenant->shortname);
     }
 
-    public function getImageUrl()
+    /**
+     * Get the public-facing image URL with fallback for missing images.
+     *
+     * Use this method for public display (news pages, feeds, sitemaps, schema).
+     * For admin forms, use $news->image directly (raw value without fallback).
+     */
+    public function getImageUrl(): string
     {
-        if (substr($this->image, 0, 4) === 'http') {
-            return $this->image;
-        } else {
-            return Storage::get(str_replace('uploads', 'public', $this->image)) === null ? '/images/icons/naujienu_foto.png' : $this->image;
+        $image = $this->image;
+
+        // External URLs pass through
+        if ($image && str_starts_with($image, 'http')) {
+            return $image;
         }
+
+        // Check if local file exists
+        if ($image && Storage::disk('public')->exists(str_replace('uploads/', '', $image))) {
+            return $image;
+        }
+
+        // Return fallback image
+        return $this->fallback_image;
     }
 
     public function toNewsArticleSchema()
@@ -147,6 +207,11 @@ class News extends Model implements Feedable, Sitemapable
         // Add description from short field
         if ($this->short) {
             $schema = $schema->description(strip_tags($this->short));
+        }
+
+        // Add highlights as article abstract/about if available
+        if (! empty($this->highlights)) {
+            $schema = $schema->abstract(implode(' • ', $this->highlights));
         }
 
         // Create proper organization with website URL
@@ -176,7 +241,7 @@ class News extends Model implements Feedable, Sitemapable
         return News::query()->where('draft', false)->orderByDesc('publish_time')->take(15)->get();
     }
 
-    public function toSearchableArray()
+    public function toSearchableArray(): array
     {
         return [
             'id' => (string) $this->id,
@@ -186,6 +251,8 @@ class News extends Model implements Feedable, Sitemapable
             'image' => $this->image,
             'publish_time' => $this->publish_time ? $this->publish_time->timestamp : now()->timestamp,
             'lang' => $this->lang,
+            'tenant_id' => $this->tenant_id,
+            'tenant_ids' => [$this->tenant_id],
             'tenant_name' => $this->tenant->fullname,
             'created_at' => $this->created_at->timestamp,
         ];

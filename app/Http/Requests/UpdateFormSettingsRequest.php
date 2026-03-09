@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Settings\SettingsSettings;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateFormSettingsRequest extends FormRequest
@@ -11,7 +12,7 @@ class UpdateFormSettingsRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->user()->isSuperAdmin();
+        return app(SettingsSettings::class)->canUserManageSettings($this->user());
     }
 
     /**
@@ -23,6 +24,9 @@ class UpdateFormSettingsRequest extends FormRequest
     {
         return [
             'member_registration_form_id' => 'required|ulid|exists:forms,id',
+            'student_rep_registration_form_id' => 'nullable|ulid|exists:forms,id',
+            'student_rep_institution_type_ids' => 'nullable|array',
+            'student_rep_institution_type_ids.*' => 'integer|exists:types,id',
         ];
     }
 }

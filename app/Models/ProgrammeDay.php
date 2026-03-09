@@ -43,9 +43,12 @@ class ProgrammeDay extends Model
 
     public $translatable = ['title', 'description'];
 
-    protected $casts = [
-        'start_time' => 'datetime',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'start_time' => 'datetime',
+        ];
+    }
 
     public function programme()
     {

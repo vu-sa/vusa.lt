@@ -162,9 +162,6 @@ return [
     // define super admin role name
     'super_admin_role_name' => 'Super Admin',
 
-    // The app has institution managers, for whom it would be the best to separate them
-    // by their permission and not role name, is it's less dynamic
-    'institution_managership_indicating_permission' => 'institutions.update.padalinys',
-
+    // Permission that indicates resource managers in a tenant (for reservations)
     'resource_managership_indicating_permission' => 'resources.update.padalinys',
 ];

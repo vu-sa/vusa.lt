@@ -11,6 +11,7 @@ use Laravel\Scout\Searchable;
 use Spatie\CalendarLinks\Link;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 /**
  * @property int $id
@@ -21,6 +22,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
  * @property array|string|null $cto_url URL for Call To Action
  * @property string|null $facebook_url
  * @property string|null $video_url
+ * @property string|null $main_image
  * @property bool $is_draft
  * @property int $is_all_day
  * @property int $is_international
@@ -32,7 +34,8 @@ use Spatie\MediaLibrary\InteractsWithMedia;
  * @property Carbon $updated_at
  * @property int|null $registration_form_id
  * @property-read \App\Models\Category|null $category
- * @property-read \Spatie\MediaLibrary\MediaCollections\Models\Collections\MediaCollection<int, \Spatie\MediaLibrary\MediaCollections\Models\Media> $media
+ * @property-read string|null $main_image_url
+ * @property-read \Spatie\MediaLibrary\MediaCollections\Models\Collections\MediaCollection<int, Media> $media
  * @property-read \App\Models\Tenant $tenant
  * @property-read mixed $translations
  *
@@ -55,14 +58,17 @@ class Calendar extends Model implements HasMedia
 
     protected $guarded = ['id', 'created_at', 'updated_at'];
 
-    protected $casts = [
-        // IMPORTANT: just transform date always to datetime, don't keep as number, as problems arise
-        'date' => 'datetime:Y-m-d H:i',
-        'end_date' => 'datetime:Y-m-d H:i',
-        'updated_at' => 'datetime:Y-m-d H:i:s',
-        'created_at' => 'datetime:Y-m-d H:i:s',
-        'is_draft' => 'boolean',
-    ];
+    protected function casts(): array
+    {
+        return [
+            // IMPORTANT: just transform date always to datetime, don't keep as number, as problems arise
+            'date' => 'datetime:Y-m-d H:i',
+            'end_date' => 'datetime:Y-m-d H:i',
+            'updated_at' => 'datetime:Y-m-d H:i:s',
+            'created_at' => 'datetime:Y-m-d H:i:s',
+            'is_draft' => 'boolean',
+        ];
+    }
 
     public $translatable = [
         'title',
@@ -71,6 +77,30 @@ class Calendar extends Model implements HasMedia
         'organizer',
         'cto_url',
     ];
+
+    protected $appends = ['main_image_url'];
+
+    /**
+     * Get the main image URL from Spatie Media collection with fallback to legacy URL field.
+     */
+    public function getMainImageUrlAttribute(): ?string
+    {
+        // First try Spatie Media collection
+        $mainImageMedia = $this->getFirstMedia('main_image');
+        if ($mainImageMedia) {
+            return $mainImageMedia->getUrl();
+        }
+
+        // Fallback to legacy main_image URL field (for backwards compatibility)
+        if ($this->main_image) {
+            return $this->main_image;
+        }
+
+        // Final fallback to first gallery image
+        $firstMedia = $this->getFirstMedia('images');
+
+        return $firstMedia?->getUrl();
+    }
 
     protected static function booted()
     {
@@ -98,13 +128,34 @@ class Calendar extends Model implements HasMedia
     public function registerMediaCollections(): void
     {
         $this
+            ->addMediaCollection('main_image')
+            ->singleFile()
+            ->acceptsMimeTypes(['image/jpeg', 'image/jpg', 'image/png', 'image/webp'])
+            ->useDisk('spatieMediaLibrary')
+            ->withResponsiveImages();
+
+        $this
             ->addMediaCollection('images')
-            ->acceptsMimeTypes(['image/jpeg', 'image/jpg', 'image/png'])
+            ->acceptsMimeTypes(['image/jpeg', 'image/jpg', 'image/png', 'image/webp'])
             ->useDisk('spatieMediaLibrary')
             ->withResponsiveImages();
     }
 
-    public function toSearchableArray()
+    /**
+     * Register media conversions for WebP optimization.
+     */
+    public function registerMediaConversions(?Media $media = null): void
+    {
+        /** @phpstan-ignore method.notFound (Spatie Media Library dynamic method) */
+        $this->addMediaConversion('webp')
+            ->format('webp')
+            ->quality(80)
+            ->width(1600)
+            ->performOnCollections('main_image', 'images')
+            ->nonQueued(); // Run synchronously for immediate availability
+    }
+
+    public function toSearchableArray(): array
     {
         return [
             'id' => (string) $this->id,
@@ -114,6 +165,8 @@ class Calendar extends Model implements HasMedia
             'date' => $this->date->timestamp,
             'end_date' => $this->end_date ? $this->end_date->timestamp : null,
             'lang' => $this->lang ?? app()->getLocale(),
+            'tenant_id' => $this->tenant_id,
+            'tenant_ids' => [$this->tenant_id],
             'tenant_name' => $this->tenant->fullname,
             'created_at' => $this->created_at->timestamp,
         ];

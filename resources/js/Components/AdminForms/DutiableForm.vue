@@ -9,60 +9,50 @@
         pareigybės laikotarpio ėjimo pabaiga, pareigybės pavadinimas bus
         giminizuotas pagal vardą ir pavardę.
       </template>
-      <NFormItem label="Pareigų ėjimo pradžia" required>
-        <NDatePicker v-model:value="form.start_date" type="date" />
-      </NFormItem>
-      <NFormItem label="Pareigų ėjimo pabaiga" required>
-        <NDatePicker v-model:value="form.end_date" clearable type="date" />
-      </NFormItem>
+      <FormFieldWrapper id="start_date" label="Pareigų ėjimo pradžia" required :error="form.errors.start_date">
+        <DatePicker v-model="form.start_date" />
+      </FormFieldWrapper>
+      <FormFieldWrapper id="end_date" label="Pareigų ėjimo pabaiga" required :error="form.errors.end_date">
+        <DatePicker v-model="form.end_date" />
+      </FormFieldWrapper>
     </FormElement>
     <FormElement>
       <template #title>
         Papildoma informacija
       </template>
-      <NFormItem>
-        <template #label>
-          <span class="inline-flex gap-1">
-            <span> Papildomas paštas </span>
-            <InfoPopover>Rodomas šis paštas vietoje vartotojo pašto</InfoPopover>
-          </span>
-        </template>
-        <NInput v-model:value="form.additional_email" placeholder="petras.petraitis@vusa.lt" />
-      </NFormItem>
-      <NFormItem>
-        <template #label>
-          <div class="inline-flex gap-1">
-            <span>Papildoma nuotrauka</span>
-            <InfoPopover>
-              Ši nuotrauka leidžia vienam asmeniui turėti daugiau negu vieną
-              nuotrauką, kuri rodoma, kai puslapyje asmuo vaizduojamas su šia
-              pareigybe.
-            </InfoPopover>
-          </div>
-        </template>
-        <UploadImageWithCropper v-model:url="form.additional_photo" folder="contacts" />
-      </NFormItem>
-      <NFormItem>
-        <template #label>
-          <span class="inline-flex gap-1">
-            <span> Studijų programa </span>
-            <InfoPopover>Kai aktualu, galima pasirinkti studijų programą, kurią rodo prie įrašo</InfoPopover>
-          </span>
-        </template>
-        <NSelect v-model:value="form.study_program_id" filterable :render-label="renderStudyProgramLabel"
-          :options="studyPrograms" value-field="id" placeholder="Studijų programa" clearable />
-      </NFormItem>
-      
-      <NFormItem>
-        <template #label>
-          <div class="inline-flex items-center gap-2">
-            Aprašymas
-            <SimpleLocaleButton v-model:locale="locale" />
-          </div>
-        </template>
-        <TipTap v-if="locale === 'lt'" v-model="form.description.lt" html />
-        <TipTap v-else-if="locale === 'en'" v-model="form.description.en" html />
-      </NFormItem>
+      <FormFieldWrapper id="additional_email" label="Papildomas paštas" hint="Rodomas šis paštas vietoje vartotojo pašto" :error="form.errors.additional_email">
+        <Input id="additional_email" v-model="form.additional_email" placeholder="petras.petraitis@vusa.lt" />
+      </FormFieldWrapper>
+      <FormFieldWrapper id="additional_photo" label="Papildoma nuotrauka" hint="Ši nuotrauka leidžia vienam asmeniui turėti daugiau negu vieną nuotrauką, kuri rodoma, kai puslapyje asmuo vaizduojamas su šia pareigybe." :error="form.errors.additional_photo">
+        <ImageUpload v-model:url="form.additional_photo" mode="immediate" folder="contacts" cropper :existing-url="dutiable?.additional_photo" />
+      </FormFieldWrapper>
+      <FormFieldWrapper id="study_program_id" label="Studijų programa" hint="Kai aktualu, galima pasirinkti studijų programą, kurią rodo prie įrašo" :error="form.errors.study_program_id">
+        <Select v-model="studyProgramIdString">
+          <SelectTrigger>
+            <SelectValue placeholder="Studijų programa" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem v-for="program in studyPrograms" :key="program.id" :value="String(program.id)">
+              <span class="flex items-center gap-2">
+                {{ program.name }}
+                <Badge v-if="program.degree" variant="outline" class="text-xs">{{ program.degree }}</Badge>
+              </span>
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </FormFieldWrapper>
+
+      <div class="space-y-2">
+        <div class="inline-flex items-center gap-2">
+          <Label for="description">Aprašymas</Label>
+          <SimpleLocaleButton v-model:locale="locale" />
+        </div>
+        <TiptapEditor v-if="locale === 'lt'" v-model="form.description.lt" preset="full" :html="true" />
+        <TiptapEditor v-else-if="locale === 'en'" v-model="form.description.en" preset="full" :html="true" />
+        <p v-if="form.errors.description" class="text-xs text-red-600 dark:text-red-400">
+          {{ form.errors.description }}
+        </p>
+      </div>
     </FormElement>
     <FormElement>
       <template #title>
@@ -80,43 +70,29 @@
           Pareigos pavadinimas yra rodomas taip: <strong> {{ shownDutyName }}</strong>
         </p>
       </template>
-      <NFormItem>
-        <template #label>
-          <span class="inline-flex gap-1">
-            <span>
-              Pareigos pavadinimo galūnės
-              <strong>negiminizavimas</strong>
-            </span>
-            <InfoPopover>Išjungia automatinį šios kontakto pareigybės giminizavimą pagal
-              vardą ir pavardę. Bus naudojamas originalus pareigybės
-              pavadinimas.</InfoPopover>
-          </span>
-        </template>
-        <NSwitch v-model:value="form.use_original_duty_name" />
-      </NFormItem>
+      <FormFieldWrapper id="use_original_duty_name" label="Pareigos pavadinimo galūnės negiminizavimas" hint="Išjungia automatinį šios kontakto pareigybės giminizavimą pagal vardą ir pavardę. Bus naudojamas originalus pareigybės pavadinimas." :error="form.errors.use_original_duty_name">
+        <Switch :checked="!!form.use_original_duty_name" @update:checked="(val: boolean) => form.use_original_duty_name = val" />
+      </FormFieldWrapper>
     </FormElement>
   </AdminForm>
 </template>
 
 <script setup lang="ts">
 import { Link, useForm, usePage } from "@inertiajs/vue3";
-import {
-  NDatePicker,
-  NFormItem,
-  NInput,
-  NSelect,
-  NSwitch,
-  NTag,
-  type SelectOption,
-} from "naive-ui";
-import { computed, h, ref } from "vue";
-import TipTap from "@/Components/TipTap/OriginalTipTap.vue";
+import { computed, ref } from "vue";
+import TiptapEditor from "@/Components/TipTap/TiptapEditor.vue";
 
+import { Badge } from "@/Components/ui/badge";
+import { DatePicker } from "@/Components/ui/date-picker";
+import { Input } from "@/Components/ui/input";
+import { Label } from "@/Components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
+import { Switch } from "@/Components/ui/switch";
+import { ImageUpload } from "@/Components/ui/upload";
 import { changeDutyNameEndings } from "@/Utils/String";
 import FormElement from "./FormElement.vue";
-import InfoPopover from "../Buttons/InfoPopover.vue";
+import FormFieldWrapper from "./FormFieldWrapper.vue";
 import SimpleLocaleButton from "../Buttons/SimpleLocaleButton.vue";
-import UploadImageWithCropper from "../Buttons/UploadImageWithCropper.vue";
 import AdminForm from "./AdminForm.vue";
 
 const props = defineProps<{
@@ -140,25 +116,21 @@ if (Array.isArray(form.description)) {
 
 const locale = ref("lt");
 
-// Show study program name simply but add "degree" in a tag
-const renderStudyProgramLabel = (option: SelectOption) => {
-  return h("div", { class: "flex items-center gap-2" },
-    [
-      option.name as string,
-      option?.degree ? h(NTag, { size: "tiny" }, { default: () => option.degree as string }) : null,
-    ].filter(Boolean));
-};
+// Shadcn Select requires string values
+const studyProgramIdString = computed({
+  get: () => form.study_program_id != null ? String(form.study_program_id) : '',
+  set: (val: string) => { form.study_program_id = val ? Number(val) : null; },
+});
 
 const shownDutyName = computed(() => {
   if (!props.dutiable.duty?.name || !props.dutiable.dutiable) return '';
-  
+
   return changeDutyNameEndings(
     props.dutiable.dutiable as any,
     props.dutiable.duty.name,
-    usePage().props.app.locale, 
-    (props.dutiable.dutiable as any)?.pronouns, 
+    usePage().props.app.locale,
+    (props.dutiable.dutiable as any)?.pronouns,
     form.use_original_duty_name as boolean
   );
 });
-
 </script>

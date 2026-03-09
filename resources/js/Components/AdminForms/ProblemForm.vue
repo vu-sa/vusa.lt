@@ -1,7 +1,7 @@
 <template>
   <AdminForm
     :model="form"
-    :label-placement="'top'"
+    :enable-delete="!!form.id"
     @submit:form="$emit('submit:form', form)"
     @delete="$emit('delete')"
   >
@@ -19,99 +19,86 @@
         </p>
       </template>
 
-      <NFormItem :label="$tChoice('entities.problem.title', 1)" required>
+      <FormFieldWrapper id="title" :label="capitalize($tChoice('entities.problem.title', 1))" required>
         <MultiLocaleInput v-model:input="form.title" />
-      </NFormItem>
+      </FormFieldWrapper>
 
       <MultiLocaleTiptapFormItem
         v-model:input="form.description"
-        :label="$tChoice('entities.problem.description', 1)"
+        :label="capitalize($tChoice('entities.problem.description', 1))"
       />
 
       <div class="grid gap-x-4 lg:grid-cols-2">
-        <NFormItem :label="$tChoice('entities.tenant.model', 1)" required>
-          <NSelect
-            v-model:value="form.tenant_id"
-            :options="tenantOptions"
-            :placeholder="$tChoice('entities.tenant.model', 1)"
-          />
-        </NFormItem>
+        <FormFieldWrapper id="tenant_id" :label="capitalize($tChoice('entities.tenant.model', 1))" required>
+          <Select v-model="tenantIdString">
+            <SelectTrigger>
+              <SelectValue :placeholder="capitalize($tChoice('entities.tenant.model', 1))" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem v-for="tenant in tenants" :key="tenant.id" :value="String(tenant.id)">
+                {{ tenant.shortname || tenant.fullname }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </FormFieldWrapper>
 
-        <NFormItem :label="$tChoice('entities.problem.status', 1)" required>
-          <NSelect
-            v-model:value="form.status"
-            :options="statusOptions"
-            :placeholder="$tChoice('entities.problem.status', 1)"
-          />
-        </NFormItem>
+        <FormFieldWrapper id="status" :label="capitalize($tChoice('entities.problem.status', 1))" required>
+          <Select v-model="form.status">
+            <SelectTrigger>
+              <SelectValue :placeholder="capitalize($tChoice('entities.problem.status', 1))" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="open">{{ $t("Atvira") }}</SelectItem>
+              <SelectItem value="in_progress">{{ $t("Vykdoma") }}</SelectItem>
+              <SelectItem value="resolved">{{ $t("Išspręsta") }}</SelectItem>
+            </SelectContent>
+          </Select>
+        </FormFieldWrapper>
       </div>
 
       <div class="grid gap-x-4 lg:grid-cols-2">
-        <NFormItem
-          :label="$tChoice('entities.problem.occurred_at', 1)"
-          required
-        >
-          <NDatePicker
-            v-model:formatted-value="form.occurred_at"
-            type="date"
-            :placeholder="$tChoice('entities.problem.occurred_at', 1)"
-            value-format="yyyy-MM-dd"
-            format="yyyy-MM-dd"
-            class="w-full"
-          />
-        </NFormItem>
+        <FormFieldWrapper id="occurred_at" :label="capitalize($tChoice('entities.problem.occurred_at', 1))" required>
+          <Input v-model="form.occurred_at" type="date" />
+        </FormFieldWrapper>
 
-        <NFormItem :label="$tChoice('entities.problem.resolved_at', 1)">
-          <NDatePicker
-            v-model:formatted-value="form.resolved_at"
-            type="date"
-            :placeholder="$tChoice('entities.problem.resolved_at', 1)"
-            value-format="yyyy-MM-dd"
-            format="yyyy-MM-dd"
-            class="w-full"
-            clearable
-          />
-        </NFormItem>
+        <FormFieldWrapper id="resolved_at" :label="capitalize($tChoice('entities.problem.resolved_at', 1))">
+          <Input v-model="form.resolved_at" type="date" />
+        </FormFieldWrapper>
       </div>
 
-      <NFormItem :label="$tChoice('entities.problem.responsible_user', 1)">
-        <NSelect
-          v-model:value="form.responsible_user_id"
-          :options="userOptions"
-          :placeholder="$tChoice('entities.problem.responsible_user', 1)"
-          clearable
-          filterable
-        />
-      </NFormItem>
+      <FormFieldWrapper id="responsible_user_id" :label="capitalize($tChoice('entities.problem.responsible_user', 1))">
+        <Select v-model="form.responsible_user_id">
+          <SelectTrigger>
+            <SelectValue :placeholder="capitalize($tChoice('entities.problem.responsible_user', 1))" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem v-for="user in users" :key="user.id" :value="user.id">
+              {{ user.name }}
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </FormFieldWrapper>
 
-      <NFormItem :label="$tChoice('entities.problem.categories', 2)">
-        <NSelect
-          v-model:value="form.categories"
+      <FormFieldWrapper id="categories" :label="capitalize($tChoice('entities.problem.categories', 2))">
+        <MultiSelect
+          v-model="selectedCategories"
           :options="categoryOptions"
-          :placeholder="$tChoice('entities.problem.categories', 2)"
-          multiple
-          clearable
+          :placeholder="capitalize($tChoice('entities.problem.categories', 2))"
         />
-      </NFormItem>
+      </FormFieldWrapper>
 
-      <NFormItem
-        :label="$tChoice('entities.institution.model', 2)"
-        class="capitalize"
-      >
-        <NSelect
-          v-model:value="form.institutions"
+      <FormFieldWrapper id="institutions" :label="capitalize($tChoice('entities.institution.model', 2))">
+        <MultiSelect
+          v-model="selectedInstitutions"
           :options="institutionOptions"
-          :placeholder="$tChoice('entities.institution.model', 2)"
-          multiple
-          clearable
-          filterable
+          :placeholder="capitalize($tChoice('entities.institution.model', 2))"
         />
-      </NFormItem>
+      </FormFieldWrapper>
     </FormElement>
 
     <FormElement>
       <template #title>
-        {{ $tChoice("entities.problem.steps_taken", 1) }}
+        {{ capitalize($tChoice("entities.problem.steps_taken", 1)) }}
       </template>
       <template #description>
         <p class="mb-4">
@@ -125,13 +112,13 @@
 
       <MultiLocaleTiptapFormItem
         v-model:input="form.steps_taken"
-        :label="$tChoice('entities.problem.steps_taken', 1)"
+        :label="capitalize($tChoice('entities.problem.steps_taken', 1))"
       />
     </FormElement>
 
     <FormElement>
       <template #title>
-        {{ $tChoice("entities.problem.solution", 1) }}
+        {{ capitalize($tChoice("entities.problem.solution", 1)) }}
       </template>
       <template #description>
         <p class="mb-4">
@@ -145,24 +132,34 @@
 
       <MultiLocaleTiptapFormItem
         v-model:input="form.solution"
-        :label="$tChoice('entities.problem.solution', 1)"
+        :label="capitalize($tChoice('entities.problem.solution', 1))"
       />
     </FormElement>
   </AdminForm>
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
-import { NDatePicker, NFormItem, NSelect } from "naive-ui";
+import { computed, capitalize } from "vue";
 import type { InertiaForm } from "@inertiajs/vue3";
 import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
 
 import AdminForm from "./AdminForm.vue";
 import FormElement from "./FormElement.vue";
+import FormFieldWrapper from "./FormFieldWrapper.vue";
 import MultiLocaleInput from "@/Components/FormItems/MultiLocaleInput.vue";
 import MultiLocaleTiptapFormItem from "@/Components/FormItems/MultiLocaleTiptapFormItem.vue";
+import { Input } from "@/Components/ui/input";
+import { MultiSelect } from "@/Components/ui/multi-select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/Components/ui/select";
 
 type ProblemForm = {
+  id?: string;
   title: { lt: string; en: string };
   description: { lt: string; en: string };
   solution: { lt: string; en: string };
@@ -189,44 +186,51 @@ defineEmits<{
   delete: [];
 }>();
 
-const tenantOptions = computed(() =>
-  props.tenants.map((tenant) => ({
-    label: tenant.shortname || tenant.fullname,
-    value: tenant.id,
-  }))
-);
-
-const statusOptions = computed(() => [
-  { label: "Atvira", value: "open" },
-  { label: "Vykdoma", value: "in_progress" },
-  { label: "Išspręsta", value: "resolved" },
-]);
-
-const userOptions = computed(() =>
-  props.users.map((user) => ({
-    label: user.name,
-    value: user.id,
-  }))
-);
+// Shadcn Select requires string values for v-model
+const tenantIdString = computed({
+  get: () => (props.form.tenant_id != null ? String(props.form.tenant_id) : ""),
+  set: (val: string) => {
+    props.form.tenant_id = val ? Number(val) : null;
+  },
+});
 
 const categoryOptions = computed(() =>
   props.categories.map((category) => ({
-    label: category.name,
+    label: category.name as string,
     value: category.id,
   }))
 );
 
+// Bridge: MultiSelect operates on full objects, form.categories stores number[] IDs
+const selectedCategories = computed({
+  get: () =>
+    (props.form.categories as number[])
+      .map((id) => categoryOptions.value.find((opt) => opt.value === id))
+      .filter((opt): opt is { label: string; value: number } => Boolean(opt)),
+  set: (items: { label: string; value: number }[]) => {
+    props.form.categories = items.map((item) => item.value);
+  },
+});
+
 const institutionOptions = computed(() => {
-  // Filter institutions by selected tenant
-  const filteredInstitutions = props.form.tenant_id
-    ? props.institutions.filter(
-        (institution) => institution.tenant_id === props.form.tenant_id
-      )
+  const filtered = props.form.tenant_id
+    ? props.institutions.filter((i) => i.tenant_id === props.form.tenant_id)
     : props.institutions;
 
-  return filteredInstitutions.map((institution) => ({
-    label: institution.name,
+  return filtered.map((institution) => ({
+    label: institution.name as string,
     value: institution.id,
   }));
+});
+
+// Bridge: MultiSelect operates on full objects, form.institutions stores string[] IDs
+const selectedInstitutions = computed({
+  get: () =>
+    (props.form.institutions as string[])
+      .map((id) => institutionOptions.value.find((opt) => opt.value === id))
+      .filter((opt): opt is { label: string; value: string } => Boolean(opt)),
+  set: (items: { label: string; value: string }[]) => {
+    props.form.institutions = items.map((item) => item.value);
+  },
 });
 </script>

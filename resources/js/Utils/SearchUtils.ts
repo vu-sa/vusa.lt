@@ -61,13 +61,26 @@ export class RecentSearchManager {
  * Filter validation and utilities
  */
 export class FilterUtils {
+  static toggleArrayValue<T>(values: T[], value: T): T[] {
+    const current = [...values]
+    const index = current.indexOf(value)
+
+    if (index >= 0) {
+      current.splice(index, 1)
+    } else {
+      current.push(value)
+    }
+
+    return current
+  }
+
   static hasActiveFilters(filters: DocumentSearchFilters): boolean {
     return filters.tenants.length > 0 ||
-           filters.contentTypes.length > 0 ||
-           filters.languages.length > 0 ||
-           !!filters.dateRange.preset ||
-           !!filters.dateRange.from || 
-           !!filters.dateRange.to
+           filters.contentTypes?.length > 0 ||
+           filters.languages?.length > 0 ||
+           !!filters.dateRange?.preset ||
+           !!filters.dateRange?.from || 
+           !!filters.dateRange?.to
   }
 
   static countActiveFilters(filters: DocumentSearchFilters): number {

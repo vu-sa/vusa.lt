@@ -3,7 +3,9 @@
 namespace App\Observers;
 
 use App\Actions\GetAttachableTypesForDuty;
+use App\Models\Institution;
 use App\Models\Typeable;
+use App\Services\RelationshipService;
 
 class TypeableObserver
 {
@@ -12,6 +14,12 @@ class TypeableObserver
      */
     public function saved(Typeable $typeable): void
     {
+        // Clear relationship cache when an institution's types change
+        // This is needed for within-type sibling relationships
+        if ($typeable->getAttribute('typeable_type') === Institution::class) {
+            RelationshipService::clearRelatedInstitutionsCache($typeable->getAttribute('typeable_id'));
+        }
+
         if ($typeable->getAttribute('typeable_type') === 'App\Models\Duty') {
             $attachable_types = GetAttachableTypesForDuty::execute();
 
@@ -31,6 +39,11 @@ class TypeableObserver
      */
     public function deleted(Typeable $typeable): void
     {
+        // Clear relationship cache when an institution's types change
+        if ($typeable->getAttribute('typeable_type') === Institution::class) {
+            RelationshipService::clearRelatedInstitutionsCache($typeable->getAttribute('typeable_id'));
+        }
+
         if (get_class($typeable->pivotParent) === 'App\Models\Duty') {
             $typeRoles = $typeable->type->roles;
 

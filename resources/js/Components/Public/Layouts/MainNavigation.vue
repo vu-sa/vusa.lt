@@ -72,11 +72,11 @@
 
 <script setup lang="tsx">
 import { breakpointsTailwind, useBreakpoints } from "@vueuse/core";
-import { computed, defineAsyncComponent, ref, watch } from "vue";
+import { computed, defineAsyncComponent, watch } from "vue";
 import { usePage } from "@inertiajs/vue3";
 import { trans as $t } from "laravel-vue-i18n";
 
-import { SCROLL_THRESHOLD } from "@/Constants/navigation";
+import { useSecondMenu } from "@/Composables/useSecondMenu";
 import AppLogo from "@/Components/AppLogo.vue";
 import DarkModeSwitch from "@/Components/Buttons/DarkModeButton.vue";
 import LocaleButton from "../Nav/LocaleButton.vue";
@@ -98,31 +98,16 @@ defineProps<{
 const breakpoints = useBreakpoints(breakpointsTailwind);
 const smallerThanSm = breakpoints.smaller("sm");
 
-const hasScrolledDown = ref(false);
+// Use shared composable for second menu visibility logic
+const { hasSecondMenu, hasScrolledDown } = useSecondMenu();
 
 const currentPath = computed(() => usePage().props.app.path);
-const hasSecondMenu = computed(() => 
-  usePage().props.tenant?.links && 
-  (usePage().props.tenant?.links?.length ?? 0) > 0
-);
 
 // When the route changes, close the drawer
 watch(
   () => currentPath.value,
   () => {
     // Drawer auto-closes when route changes
-  },
-);
-
-// When scrolling down, hide the second menu only when scrolled down from the top
-window.addEventListener(
-  "scroll",
-  () => {
-    if (window.scrollY > SCROLL_THRESHOLD) {
-      hasScrolledDown.value = true;
-    } else {
-      hasScrolledDown.value = false;
-    }
   },
 );
 </script>

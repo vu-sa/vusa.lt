@@ -3,7 +3,6 @@
 namespace App\Http\Middleware;
 
 use App\Enums\ModelEnum;
-use App\Models\ChangelogItem;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\Typesense\TypesenseManager;
@@ -60,13 +59,15 @@ class HandleInertiaRequests extends Middleware
                 'can' => fn () => [
                     'index' => fn () => $this->getIndexPermissions($user),
                     'create' => fn () => $this->getCreatePermissions($user),
+                    'manageSettings' => fn () => $user->can('manage-settings'),
+                    'accessAdministration' => fn () => $user->can('access-administration'),
                 ],
-                'changes' => fn () => $this->getChangesForUser($user),
                 'user' => fn () => [
                     ...$user->toArray(),
                     'isSuperAdmin' => $isSuperAdmin,
                     'tenants' => $user->tenants()->get(['tenants.id', 'tenants.shortname', 'tenants.alias'])->unique(),
                     'unreadNotifications' => $user->unreadNotifications()->get(),
+                    'tutorial_progress' => $user->tutorial_progress ?? [],
                 ],
             ],
             'csrf_token' => fn () => csrf_token(),
@@ -87,6 +88,13 @@ class HandleInertiaRequests extends Middleware
             // 'tenant.banners' property is shared in public pages from \App\Http\Controllers\PublicController.php
             'tenants' => fn () => $this->getTenantsForInertia(),
             'typesenseConfig' => fn () => TypesenseManager::getFrontendConfig(),
+            'pwa' => [
+                'vapidPublicKey' => fn () => config('webpush.vapid.public_key'),
+                'hasPushSubscription' => fn () => $user?->pushSubscriptions()->exists() ?? false,
+                'subscriptionEndpoints' => fn () => $user?->pushSubscriptions()
+                    ->pluck('endpoint')
+                    ->toArray() ?? [],
+            ],
         ]);
     }
 
@@ -156,21 +164,5 @@ class HandleInertiaRequests extends Middleware
                     return [$model => $user->can('create', ['App\\Models\\'.ucfirst($model)])];
                 })->toArray();
         });
-    }
-
-    /**
-     * @return Collection<int, ChangelogItem>
-     */
-    private function getChangesForUser(User $user): Collection
-    {
-        $user->makeVisible('last_changelog_check');
-
-        if (is_null($user->last_changelog_check)) {
-            return ChangelogItem::query()->orderBy('date', 'desc')->get();
-        }
-
-        $changes = ChangelogItem::query()->whereDate('date', '>', $user->last_changelog_check)->get();
-
-        return $changes;
     }
 }

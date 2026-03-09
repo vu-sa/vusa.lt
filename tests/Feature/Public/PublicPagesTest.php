@@ -80,7 +80,7 @@ test('can open institution page', function () {
 
     $this->get(route('contacts.institution', ['subdomain' => 'www', 'lang' => 'lt', 'institution' => $institution->id]))
         ->assertInertia(fn (Assert $page) => $page
-            ->component('Public/Contacts/ContactInstitutionOrType')
+            ->component('Public/Contacts/ShowInstitution')
             ->has('institution')
             ->has('contacts')
         );
@@ -91,6 +91,15 @@ test('can open representation padaliniai category', function () {
         ->assertInertia(fn (Assert $page) => $page
             ->component('Public/Contacts/ShowContactCategory')
             ->has('institutions')
+        );
+});
+
+test('can open student representative organ category', function () {
+    $this->get(route('contacts.category', ['subdomain' => 'www', 'lang' => 'lt', 'type' => 'studentu-atstovu-organas']))
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Public/Contacts/ShowStudentReps')
+            ->has('types')
+            ->has('categoryType')
         );
 });
 
@@ -120,7 +129,7 @@ test('institution page with no grouping shows flat contacts', function () {
 
     $this->get(route('contacts.institution', ['subdomain' => 'www', 'lang' => 'lt', 'institution' => $institution->id]))
         ->assertInertia(fn (Assert $page) => $page
-            ->component('Public/Contacts/ContactInstitutionOrType')
+            ->component('Public/Contacts/ShowInstitution')
             ->has('institution')
             ->has('contacts', 2) // Should have 2 contacts flattened
             ->missing('contactSections') // No sections for flat display
@@ -162,7 +171,7 @@ test('institution page with study program grouping shows grouped sections', func
 
     $this->get(route('contacts.institution', ['subdomain' => 'www', 'lang' => 'lt', 'institution' => $institution->id]))
         ->assertInertia(fn (Assert $page) => $page
-            ->component('Public/Contacts/ContactInstitutionOrType')
+            ->component('Public/Contacts/ShowInstitution')
             ->has('institution')
             ->missing('contacts') // No flat contacts
             ->has('contactSections', 1) // One duty section
@@ -212,7 +221,7 @@ test('institution page with tenant grouping shows grouped sections', function ()
 
     $this->get(route('contacts.institution', ['subdomain' => 'www', 'lang' => 'lt', 'institution' => $institution->id]))
         ->assertInertia(fn (Assert $page) => $page
-            ->component('Public/Contacts/ContactInstitutionOrType')
+            ->component('Public/Contacts/ShowInstitution')
             ->has('institution')
             ->missing('contacts')
             ->has('contactSections', 1)
@@ -263,7 +272,7 @@ test('institution page with mixed grouping shows both flat and grouped duties', 
 
     $this->get(route('contacts.institution', ['subdomain' => 'www', 'lang' => 'lt', 'institution' => $institution->id]))
         ->assertInertia(fn (Assert $page) => $page
-            ->component('Public/Contacts/ContactInstitutionOrType')
+            ->component('Public/Contacts/ShowInstitution')
             ->has('institution')
             ->missing('contacts')
             ->has('contactSections', 2) // Two duty sections
@@ -321,7 +330,7 @@ test('duty grouping respects duty order within institution', function () {
 
     $this->get(route('contacts.institution', ['subdomain' => 'www', 'lang' => 'lt', 'institution' => $institution->id]))
         ->assertInertia(fn (Assert $page) => $page
-            ->component('Public/Contacts/ContactInstitutionOrType')
+            ->component('Public/Contacts/ShowInstitution')
             ->has('contactSections', 3)
             ->where('hasMixedGrouping', true)
             ->where('contactSections.0.dutyName', 'Pirmas') // First by order
@@ -399,7 +408,7 @@ test('duty type contacts page with grouping shows grouped sections', function ()
 
     $this->get(route('contacts.dutyType', ['subdomain' => 'www', 'lang' => 'lt', 'type' => $type->slug]))
         ->assertInertia(fn (Assert $page) => $page
-            ->component('Public/Contacts/ContactInstitutionOrType')
+            ->component('Public/Contacts/ShowInstitution')
             ->has('institution')
             ->missing('contacts') // No flat contacts
             ->has('contactSections') // Has contact sections
@@ -439,7 +448,7 @@ test('duty type contacts page handles both grouped and flat duties correctly', f
     // Verify the page works and shows mixed grouping when there's at least one grouped duty
     $this->get(route('contacts.dutyType', ['subdomain' => 'www', 'lang' => 'lt', 'type' => $type->slug]))
         ->assertInertia(fn (Assert $page) => $page
-            ->component('Public/Contacts/ContactInstitutionOrType')
+            ->component('Public/Contacts/ShowInstitution')
             ->has('institution')
             // Should have either contacts (flat mode) or contactSections (mixed mode)
             ->etc()

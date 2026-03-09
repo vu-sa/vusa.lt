@@ -39,8 +39,8 @@ onUnmounted(() => {
     :class="cn('text-zinc-950 overflow-hidden p-1 dark:text-zinc-50', props.class)"
     :hidden="isRender ? undefined : true"
   >
-    <ListboxGroupLabel v-if="heading" class="px-2 py-1.5 text-xs font-medium text-zinc-500 dark:text-zinc-400">
-      {{ heading }}
+    <ListboxGroupLabel v-if="heading || $slots.heading" class="px-2 py-1.5 text-xs font-medium text-zinc-500 dark:text-zinc-400">
+      <slot name="heading">{{ heading }}</slot>
     </ListboxGroupLabel>
     <slot />
   </ListboxGroup>

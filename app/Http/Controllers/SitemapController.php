@@ -185,13 +185,20 @@ class SitemapController extends Controller
             $host = $request->header('host') ?? $request->getHost();
             $hostParts = explode('.', $host);
             $subdomain = $hostParts[0];
+
+            // Handle staging environment subdomains (e.g., chgf.naujas.vusa.lt)
+            // If first part is a tenant and second part is 'naujas', use the tenant
+            if (count($hostParts) >= 4 && $hostParts[1] === 'naujas') {
+                // chgf.naujas.vusa.lt -> subdomain=chgf (already set above)
+                // No additional processing needed
+            }
         }
 
         // Default to www if not set
         $subdomain = $subdomain ?: 'www';
 
-        // Handle main domain
-        if ($subdomain === 'www') {
+        // Handle main domain (www or naujas -> vusa)
+        if (in_array($subdomain, ['www', 'naujas'])) {
             $subdomain = 'vusa';
         }
 

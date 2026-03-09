@@ -8,7 +8,10 @@ use Illuminate\Database\Eloquent\Builder;
 
 class GetResourceManagers
 {
-    public static function execute(Resource $resource)
+    /**
+     * @return \Illuminate\Support\Collection<int, \App\Models\User>
+     */
+    public static function execute(Resource $resource): \Illuminate\Support\Collection
     {
         $resourceManagers = Duty::whereHas('institution.tenant', function (Builder $query) use ($resource) {
             $query->where('id', $resource->tenant_id);
@@ -16,6 +19,9 @@ class GetResourceManagers
             $query->where('name', config('permission.resource_managership_indicating_permission'));
         })->with('current_users')->get()->pluck('current_users')->flatten()->unique('id')->values();
 
-        return $resourceManagers;
+        /** @var \Illuminate\Support\Collection<int, \App\Models\User> $result */
+        $result = $resourceManagers;
+
+        return $result;
     }
 }

@@ -1,102 +1,150 @@
 <template>
-  <IndexPageLayout :title="capitalize($tChoice('entities.duty.model', 2))" model-name="duties"
-    :can-use-routes="canUseRoutes" :columns="columns" :paginated-models="duties" :icon="Icons.DUTY" />
+  <IndexTablePage
+    ref="indexTablePageRef"
+    v-bind="tableConfig"
+    @data-loaded="onDataLoaded"
+    @sorting-changed="handleSortingChange"
+    @page-changed="handlePageChange"
+    @filter-changed="handleFilterChange"
+  />
 </template>
 
 <script setup lang="tsx">
-import {
-  type DataTableColumns,
-  type DataTableRowKey,
-  type DataTableSortState,
-  NButton,
-  NEllipsis,
-  NIcon,
-  NTag,
-} from "naive-ui";
-import { computed, provide, ref } from "vue";
+import { transChoice as $tChoice } from "laravel-vue-i18n";
+import { type ColumnDef } from "@tanstack/vue-table";
+import { ref, computed } from "vue";
 
+import { Badge } from "@/Components/ui/badge";
+import { Button } from "@/Components/ui/button";
 import { capitalize } from "@/Utils/String";
+import { resolveTranslatable } from "@/Utils/DataTableColumns";
 import Icons from "@/Types/Icons/regular";
-import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
+import IndexTablePage from "@/Components/Layouts/IndexTablePage.vue";
+import { createStandardActionsColumn } from "@/Composables/useTableActions";
+import { type IndexTablePageProps } from "@/Types/TableConfigTypes";
 
-defineProps<{
-  duties: PaginatedModels<App.Entities.Duty>;
+const props = defineProps<{
+  duties: {
+    data: App.Entities.Duty[];
+    meta: {
+      total: number;
+      current_page: number;
+      per_page: number;
+      last_page: number;
+      from: number;
+      to: number;
+    };
+  };
+  filters?: Record<string, any>;
+  sorting?: { id: string; desc: boolean }[];
 }>();
 
-const canUseRoutes = {
-  create: true,
-  show: true,
-  edit: true,
-  destroy: false,
+const modelName = "duties";
+const entityName = "duty";
+
+const indexTablePageRef = ref<any>(null);
+
+const getRowId = (row: App.Entities.Duty) => {
+  return `duty-${row.id}`;
 };
 
-const checkedRowKeys = ref<DataTableRowKey[]>([]);
-
-provide("checkedRowKeys", checkedRowKeys);
-
-const sorters = ref<Record<string, DataTableSortState["order"]>>({
-  name: false,
-});
-
-provide("sorters", sorters);
-
-const columns = computed<DataTableColumns<App.Entities.Duty>>(() => [
+const columns = computed<ColumnDef<App.Entities.Duty, any>[]>(() => [
   {
-    title: "Pavadinimas",
-    key: "name",
-    sorter: true,
-    sortOrder: sorters.value.name,
-    minWidth: 150,
+    accessorKey: "name",
+    header: () => "Pavadinimas",
+    cell: ({ row }) => resolveTranslatable(row.getValue("name")),
+    size: 200,
+    enableSorting: true,
   },
   {
-    title: "El. paštas",
-    key: "email",
-    minWidth: 150,
-    render(row) {
+    accessorKey: "email",
+    header: () => "El. paštas",
+    cell: ({ row }) => {
+      const email = row.original.email;
+      if (!email) return null;
       return (
-        <a href={`mailto:${row.email}`} class="transition hover:text-vusa-red">
-          {row.email}
+        <a href={`mailto:${email}`} class="transition hover:text-vusa-red">
+          <div class="max-w-[200px] truncate" title={email}>
+            {email}
+          </div>
         </a>
       );
     },
+    size: 200,
   },
   {
-    title: "Institucija",
-    key: "institution.id",
-    minWidth: 100,
-    render(row: App.Entities.Duty) {
-      return row.institution ? (
+    accessorKey: "institution",
+    header: () => "Institucija",
+    cell: ({ row }) => {
+      const institution = row.original.institution;
+      if (!institution) return null;
+      const displayName = resolveTranslatable(institution.short_name ?? institution.name);
+      return (
         <a
-          href={route("institutions.edit", {
-            id: row.institution.id,
-          })}
+          href={route("institutions.edit", { id: institution.id })}
           target="_blank"
           class="transition hover:text-vusa-red"
         >
-          <NButton round size="tiny" tertiary>
-            {{
-              default: (
-                <NEllipsis style="max-width: 150px">
-                  {row.institution?.short_name ?? row.institution?.name}
-                </NEllipsis>
-              ),
-              icon: <NIcon component={Icons.INSTITUTION}></NIcon>,
-            }}
-          </NButton>
+          <Button variant="ghost" size="xs" class="rounded-full">
+            <Icons.INSTITUTION />
+            <span class="max-w-[150px] truncate" title={displayName}>
+              {displayName}
+            </span>
+          </Button>
         </a>
-      ) : null;
+      );
     },
+    size: 200,
   },
   {
-    title: "Tipai",
-    key: "types",
-    render(row: App.Entities.Duty) {
-      return row.types?.map((type) => (
-        <NTag class="mr-2 last:mr-0" size="tiny" round>
-          {type.title}
-        </NTag>
-      ));
+    accessorKey: "types",
+    header: () => "Tipai",
+    cell: ({ row }) => {
+      const types = row.original.types;
+      if (!types?.length) return null;
+      return (
+        <div class="flex flex-wrap gap-1">
+          {types.map((type) => (
+            <Badge key={type.id} variant="secondary" class="text-xs">
+              {resolveTranslatable(type.title)}
+            </Badge>
+          ))}
+        </div>
+      );
     },
+    size: 200,
   },
+  createStandardActionsColumn<App.Entities.Duty>("duties", {
+    canView: true,
+    canEdit: true,
+  }),
 ]);
+
+const tableConfig = computed<IndexTablePageProps<App.Entities.Duty>>(() => ({
+  modelName,
+  entityName,
+  data: props.duties.data,
+  columns: columns.value,
+  getRowId,
+  totalCount: props.duties.meta.total,
+  initialPage: props.duties.meta.current_page,
+  pageSize: props.duties.meta.per_page,
+
+  initialFilters: props.filters,
+  initialSorting: props.sorting,
+  enableFiltering: true,
+  enableColumnVisibility: false,
+  enableRowSelection: false,
+  allowToggleDeleted: true,
+
+  headerTitle: capitalize($tChoice("entities.duty.model", 2)),
+  icon: Icons.DUTY,
+  createRoute: route("duties.create"),
+  canCreate: true,
+}));
+
+const onDataLoaded = (data: any) => {};
+const handleSortingChange = (sorting: any) => {};
+const handlePageChange = (page: any) => {};
+const handleFilterChange = (filterKey: any, value: any) => {};
 </script>

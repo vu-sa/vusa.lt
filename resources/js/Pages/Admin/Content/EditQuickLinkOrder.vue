@@ -4,21 +4,19 @@
     <UpsertModelLayout :errors="$page.props.errors" :model="quickLinks">
       <h2>{{ tenant.shortname }} greitosios nuorodos</h2>
       <div ref="el" class="mb-4 flex flex-col gap-1 rounded-xs border p-4 shadow-xs">
-        <NButtonGroup v-for="item in quickLinkList" :key="item.id" size="small">
-          <NButton secondary class="handle">
-            <template #icon>
-              <IFluentDrag24Regular />
-            </template>
-          </NButton>
-          <NButton tag="a" :href="route('quickLinks.edit', item.id)" target="_blank" quaternary>
+        <ButtonGroup v-for="item in quickLinkList" :key="item.id">
+          <Button variant="secondary" class="handle" size="sm">
+            <IFluentDrag24Regular />
+          </Button>
+          <Button as="a" :href="route('quickLinks.edit', item.id)" target="_blank" variant="ghost" size="sm">
             <strong class="mr-2">{{ item.text }}</strong>
             <span class="text-xs text-zinc-500">{{ item.link }}</span>
-          </NButton>
-        </NButtonGroup>
+          </Button>
+        </ButtonGroup>
       </div>
-      <NButton type="primary" @click="handleOrderUpdate">
+      <Button @click="handleOrderUpdate">
         Atnaujinti
-      </NButton>
+      </Button>
     </UpsertModelLayout>
   </PageContent>
 </template>
@@ -28,6 +26,8 @@ import { shallowRef, useTemplateRef } from "vue";
 import { router } from "@inertiajs/vue3";
 import { useSortable } from "@vueuse/integrations/useSortable";
 
+import { Button } from "@/Components/ui/button";
+import { ButtonGroup } from "@/Components/ui/button-group";
 import Icons from "@/Types/Icons/regular";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";

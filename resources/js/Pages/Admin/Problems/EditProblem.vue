@@ -60,7 +60,7 @@ const localizedTitle = computed(() => {
 });
 
 /**
- * Format a date string to yyyy-MM-dd format for naive-ui date picker
+ * Format a date string to yyyy-MM-dd format for date input
  */
 function formatDateForPicker(
   dateValue: string | null | undefined

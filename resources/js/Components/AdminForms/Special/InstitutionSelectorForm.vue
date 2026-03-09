@@ -1,143 +1,521 @@
 <template>
-  <Form class="flex flex-col gap-4" @submit="onSubmit" :validation-schema="schema" v-slot="{ errors }" :initial-values="initialValues">
-    <SuggestionAlert :show-alert="showAlert" @alert-closed="showAlert = false">
-      <p v-if="$page.props.app.locale === 'lt'">
-        Viena svarbiausių veiklų atstovavime yra
-        <strong>dalinimasis informacija</strong>, tada kai ji pasirodo!
-      </p>
-      <p v-else>
-        One of the most important activities in representation is
-        <strong>sharing information</strong> when it appears!
-      </p>
-      <p class="mt-4">
-        {{ $t('Būtent') }}
-        <ModelChip>
-          <template #icon>
-            <Icons.MEETING />
-          </template>{{ $t('posėdžiai') }}
-        </ModelChip>
-        <template v-if="$page.props.app.locale === 'lt'">
-          "
-          ir jų informacija yra labai svarbi – kad galėtume atstovauti studentams geriausiai, kaip tik tai įmanoma!
-        </template>
-        <template v-else>
-          and their information is very important – so we can represent students as best as possible!
-        </template>
-      </p>
-      <p class="mt-4">
-        <strong>{{ $t('Pradėkim') }}! 💪</strong>
-      </p>
-    </SuggestionAlert>
-    
-    <div class="space-y-4">
-      <FormField name="institution_id" v-slot="{ componentField }">
-        <FormItem>
-        <FormLabel class="flex items-center gap-1">
-          <component :is="Icons.INSTITUTION" class="h-4 w-4" />
-          {{ $t("Institucija") }}
-        </FormLabel>
-        <Select v-bind="componentField"
-        >
-          <FormControl>
+  <div class="flex flex-col gap-6">
+    <FadeTransition>
+      <SuggestionAlert :show-alert @alert-closed="showAlert = false">
+        <p v-if="$page.props.app.locale === 'lt'">
+          Viena svarbiausių veiklų atstovavime yra
+          <strong>dalinimasis informacija</strong>, tada kai ji pasirodo!
+        </p>
+        <p v-else>
+          One of the most important activities in representation is
+          <strong>sharing information</strong> when it appears!
+        </p>
+        <p class="mt-4">
+          {{ $t('Būtent') }}
+          <Badge size="tiny" variant="secondary" class="mx-1">
+            <Icons.MEETING class="h-3 w-3" />
+            <strong>{{ $t('posėdžiai') }}</strong>
+          </Badge>
+          <template v-if="$page.props.app.locale === 'lt'">
+            ir jų informacija yra labai svarbi – kad galėtume atstovauti studentams geriausiai, kaip tik tai įmanoma!
+          </template>
+          <template v-else>
+            and their information is very important – so we can represent students as best as possible!
+          </template>
+        </p>
+        <p class="mt-4">
+          <strong>{{ $t('Pradėkim') }}! 💪</strong>
+        </p>
+      </SuggestionAlert>
+    </FadeTransition>
 
-          <SelectTrigger class="min-w-[280px]">
-            <SelectValue :placeholder="$t('Pasirink instituciją')" />
-          </SelectTrigger>
-          </FormControl>
+    <Form v-slot="{ errors }" class="flex flex-col gap-6" :initial-values="initialValues.value" @submit="onSubmit">
+      <!-- Quick Institution Selection as mini cards/badges -->
+      <div v-if="selectedInstitution==''" class="space-y-4">
+        <div class="flex items-center justify-between">
+          <h3 class="text-sm font-medium text-muted-foreground">
+            {{ $t('Jūsų institucijos') }}
+          </h3>
+          <Badge v-if="myInstitutions.length > 0" variant="outline" class="text-xs">
+            {{ myInstitutions.length }}
+          </Badge>
+        </div>
+        
+        <!-- Search input for many institutions (> 8) -->
+        <div v-if="myInstitutions.length > 8" class="relative">
+          <Search class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            v-model="myInstitutionsSearch"
+            :placeholder="$t('Filtruoti institucijas...')"
+            class="pl-9 h-9"
+          />
+        </div>
 
-          <SelectContent>
-            <SelectItem v-for="institution in institutions" :key="institution.value" :value="institution.value">
-              {{ institution.label }}
-            </SelectItem>
-          </SelectContent>
-        </Select>
-        <FormMessage />
-</FormItem>
-      </FormField>
+        <!-- Institution cards with enhanced styling -->
+        <div class="flex flex-wrap gap-2">
+          <button
+            v-for="inst in filteredMyInstitutions"
+            :key="`mine-${inst.value}`"
+            type="button"
+            class="group relative flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2
+              text-sm transition-all duration-200 hover:border-primary hover:bg-accent hover:shadow-sm
+              focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            @click="selectInstitution(inst.value)"
+          >
+            <component
+              :is="Icons.INSTITUTION"
+              class="h-4 w-4 shrink-0 text-muted-foreground group-hover:text-primary transition-colors"
+            />
+            <span class="truncate max-w-48 sm:max-w-56 md:max-w-72" :title="inst.label">{{ inst.label }}</span>
+          </button>
+        </div>
+        
+        <!-- Empty state for filtered results -->
+        <p v-if="myInstitutions.length > 8 && myInstitutionsSearch && filteredMyInstitutions.length === 0" class="text-sm text-muted-foreground text-center py-2">
+          {{ $t('Nerasta institucijų pagal paiešką') }}
+        </p>
+        
+        <!-- External institution notice if one was pre-selected -->
+        <div v-if="externalInstitution" class="mt-2 p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg">
+          <div class="flex items-start gap-3">
+            <AlertCircle class="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-amber-800 dark:text-amber-200">
+                {{ $t('Išorinė institucija') }}
+              </p>
+              <p class="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                {{ externalInstitution.name }}
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                class="mt-2 h-7 text-xs border-amber-300 hover:bg-amber-100
+                  dark:border-amber-700 dark:hover:bg-amber-900/50"
+                @click="selectExternalInstitution"
+              >
+                {{ $t('Pasirinkti šią instituciją') }}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
 
-      <Button type="submit">
-        {{ $t("Toliau") }}...
-      </Button>
-    </div>
-  </Form>
+      <Separator v-if="selectedInstitution==''" />
+
+      <!-- Admin search inside collapsible -->
+      <!-- Only show search section if user has additional admin access -->
+      <div v-if="hasAdditionalInstitutions && selectedInstitution == ''" class="space-y-2">
+        <h3 class="text-sm font-medium text-muted-foreground">
+          {{ $t('Kitos institucijos') }}
+        </h3>
+        <Collapsible v-model:open="showAllInstitutions">
+          <CollapsibleTrigger as-child>
+            <Button type="button" variant="ghost" size="sm" class="w-full justify-between">
+              {{ showAllInstitutions ? $t('Slėpti paiešką') : $t('Rodyti paiešką') }}
+              <ChevronDown class="ml-1 h-3 w-3" :class="{ 'rotate-180': showAllInstitutions }" />
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent class="space-y-3 mt-2">
+            <!-- Search and Select -->
+            <div class="relative">
+              <div class="relative">
+                <Search class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input v-model="searchQuery" :placeholder="$t('Ieškoti institucijos...')" class="pl-9"
+                  @focus="showDropdown = true" />
+              </div>
+              <!-- Dropdown with filtered institutions -->
+              <div v-if="showDropdown && filteredInstitutions.length > 0"
+                class="absolute top-full left-0 right-0 z-50 mt-1 max-h-60 overflow-y-auto rounded-md border bg-popover p-1 shadow-md">
+                <template v-for="institution in filteredInstitutions" :key="institution?.value">
+                  <Button v-if="institution" type="button" variant="ghost" size="sm"
+                    class="w-full justify-start text-left h-auto p-2"
+                    @click="selectInstitutionFromSearch(institution.value, institution.label)">
+                    <div class="flex items-start gap-2 w-full">
+                      <component :is="Icons.INSTITUTION" class="h-4 w-4 mt-0.5 shrink-0" />
+                      <div class="flex-1 min-w-0">
+                        <p class="font-medium">
+                          {{ institution.label }}
+                        </p>
+                        <p v-if="institution.context" class="text-xs text-muted-foreground">
+                          {{ institution.context }}
+                        </p>
+                      </div>
+                      <Badge v-if="institution.origin === 'admin'" variant="outline" class="shrink-0 text-[10px]">
+                        Admin
+                      </Badge>
+                    </div>
+                  </Button>
+                </template>
+              </div>
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+      </div>
+
+      <!-- Full Institution Selector (selected summary only) -->
+      <div class="space-y-4">
+        <FormField v-slot="{ componentField }" name="institution_id">
+          <FormItem>
+            <FormLabel class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <component :is="Icons.INSTITUTION" class="h-4 w-4" />
+                {{ $t("Institucija") }}
+              </div>
+              <div v-if="selectedInstitution" class="text-xs text-muted-foreground">
+                {{ getInstitutionInfo(selectedInstitution) }}
+              </div>
+            </FormLabel>
+
+            <!-- Selected Institution Display -->
+            <div v-if="selectedInstitution && selectedInstitutionData" class="mt-3 p-3 bg-muted/50 rounded-lg">
+              <div class="flex items-start gap-3">
+                <component :is="Icons.INSTITUTION" class="h-5 w-5 mt-0.5 text-primary shrink-0" />
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <h4 class="font-medium truncate" :title="selectedInstitutionData.name">
+                      {{ selectedInstitutionData.name }}
+                    </h4>
+                    <Badge v-if="selectedInstitutionData.isExternal" variant="outline" class="text-xs border-amber-300 text-amber-700 dark:border-amber-700 dark:text-amber-400">
+                      {{ $t('Išorinė') }}
+                    </Badge>
+                  </div>
+                  <div class="mt-2 space-y-1 text-sm text-muted-foreground">
+                    <div v-if="selectedInstitutionData.type" class="flex items-center gap-2">
+                      <Badge variant="secondary" class="text-xs">
+                        {{ selectedInstitutionData.type }}
+                      </Badge>
+                    </div>
+                    <div v-if="selectedInstitutionData.lastMeeting" class="flex items-center gap-1">
+                      <Calendar class="h-3 w-3" />
+                      {{ $t('Paskutinis susitikimas') }}: {{ formatLastMeeting(selectedInstitutionData.lastMeeting) }}
+                    </div>
+                    <div v-if="selectedInstitutionData.activeCheckIn" class="flex items-center gap-1">
+                      <CheckCircle class="h-3 w-3 text-green-600" />
+                      {{ $t('Turi aktyvią pažymą') }}
+                    </div>
+                  </div>
+                </div>
+                <Button type="button" variant="ghost" size="icon" class="h-8 w-8" @click="clearSelection">
+                  <X class="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+            <FormMessage />
+          </FormItem>
+        </FormField>
+
+        <!-- Action Buttons -->
+        <div class="flex items-center justify-between pt-2">
+          <div class="flex items-center gap-2" />
+
+          <Button type="submit" :disabled="!selectedInstitution">
+            {{ $t("Toliau") }}
+            <ArrowRight class="ml-2 h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+    </Form>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, inject } from "vue";
+import { computed, ref, watch, onMounted, onUnmounted } from "vue";
 import { usePage } from "@inertiajs/vue3";
 import { trans as $t } from "laravel-vue-i18n";
 import { useForm, Form } from "vee-validate";
 import { toTypedSchema } from '@vee-validate/zod';
 import * as z from 'zod';
+import {
+  Search,
+  Calendar,
+  CheckCircle,
+  X,
+  ChevronDown,
+  ArrowRight,
+  AlertCircle
+} from "lucide-vue-next";
 
 import Icons from "@/Types/Icons/filled";
-import ModelChip from "@/Components/Tag/ModelChip.vue";
 import SuggestionAlert from "@/Components/Alerts/SuggestionAlert.vue";
+import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 
 // Import Shadcn components
 import { Button } from "@/Components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/Components/ui/select";
+import { Input } from "@/Components/ui/input";
+import { Badge } from "@/Components/ui/badge";
+import { Separator } from "@/Components/ui/separator";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/Components/ui/collapsible";
 import {
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/Components/ui/form";
-import FormControl from "@/Components/ui/form/FormControl.vue";
 
-const emit = defineEmits<{
-  (e: "submit", data: string): void;
+
+// Import Lucide icons
+
+const emit = defineEmits<(e: "submit", data: string) => void>();
+
+const props = defineProps<{
+  selectedInstitution?: App.Entities.Institution;
 }>();
 
 const showAlert = ref(true);
+const searchQuery = ref("");
+const myInstitutionsSearch = ref("");
+const showDropdown = ref(false);
+const selectedInstitution = ref<string>("");
+const showAllInstitutions = ref(false);
+const visibleInstitutionsLimit = 5;
 
-// Access shared form state from parent component
-const formState = inject('meetingFormState');
-
-// Define the validation schema using zod
-const schema = toTypedSchema(z.object({
-  institution_id: z.string({
-    required_error: $t("Institucija yra privaloma"),
-  }),
-}));
-
-// Set initial value from state if available
-const initialValues = {
-  institution_id: formState?.institution_id || ''
-};
-
-const institutions = computed(() => {
-  return usePage()
-    .props.auth?.user?.current_duties?.map((duty) => {
-      if (!duty.institution) {
-        return;
-      }
-
-      return {
-        label: duty.institution?.name,
-        value: duty.institution?.id,
-      };
-    })
-    // filter unique
-    .filter((institution) => institution !== undefined).filter(
-      (value, index, self) =>
-        self.findIndex((t) => t?.value === value?.value) === index
-    );
+// External institution from props (e.g., from Gantt chart selection)
+const externalInstitution = computed(() => {
+  const inst = props.selectedInstitution;
+  if (!inst) return null;
+  
+  // Check if this institution is external (not in user's institutions)
+  const isExternal = (inst as any).isExternal === true;
+  if (!isExternal) return null;
+  
+  return inst;
 });
 
-const onSubmit = ({ institution_id }: { institution_id: string }) => {
-  if (institution_id) {
-    // Update state
-    if (formState) {
-      formState.institution_id = institution_id;
-    }
-    emit("submit", institution_id);
+// Institution will be initialized by the watcher
+
+// Set initial values from props (computed to be reactive)
+const initialValues = computed(() => ({
+  institution_id: props.selectedInstitution?.id || ''
+}));
+
+// Get all available institutions from Inertia props
+const page = usePage()
+const providedInstitutions = computed(() => {
+  const provided = (page.props as any)?.accessibleInstitutions || []
+  return provided.map((i: any) => ({
+    label: i.name,
+    value: String(i.id),
+    context: i.tenant?.shortname || '',
+    lastMeeting: i.last_meeting_date,
+    activeCheckIn: !!i.active_check_in,
+    meetingCount: i.meetings?.length || 0,
+    institution: i,
+    origin: 'admin' as const,
+  }))
+})
+
+// Only the user's own institutions for badge/cards
+const myInstitutions = computed(() => {
+  const duties = usePage().props.auth?.user?.current_duties || []
+  const fromDuties = duties
+    .map((duty: any) => {
+      const inst = duty.institution
+      if (!inst) return null
+      return {
+        label: inst.name,
+        value: inst.id,
+        context: inst.types?.[0]?.title || '',
+        lastMeeting: inst.last_meeting_date,
+        activeCheckIn: inst.active_check_in,
+        meetingCount: inst.meetings?.length || 0,
+        institution: inst,
+      }
+    })
+    .filter(Boolean) as any[]
+
+  // Dedupe and sort
+  const deduped = fromDuties.filter((value, index, self) => self.findIndex(t => t.value === value.value) === index)
+  return deduped.sort((a, b) => a.label.localeCompare(b.label))
+})
+
+// Filtered my institutions based on search (for > 8 institutions)
+const filteredMyInstitutions = computed(() => {
+  const q = myInstitutionsSearch.value.trim().toLowerCase()
+  if (!q) return myInstitutions.value
+  return myInstitutions.value.filter((inst: any) =>
+    inst.label.toLowerCase().includes(q) ||
+    inst.context.toLowerCase().includes(q)
+  )
+})
+
+// Recent institutions based on meeting dates
+const recentInstitutions = computed(() => {
+  return adminOnlyInstitutions.value
+    .filter((inst: any) => inst.lastMeeting)
+    .sort((a: any, b: any) => new Date(b.lastMeeting).getTime() - new Date(a.lastMeeting).getTime())
+    .slice(0, 3)
+    .map((inst: any) => ({
+      id: inst.value,
+      name: inst.label,
+      last_meeting_date: inst.lastMeeting,
+      meetingCount: inst.meetingCount,
+      active_check_in: inst.activeCheckIn,
+    }))
+});
+
+// Favorite institutions based on meeting frequency
+const favoriteInstitutions = computed(() => {
+  return adminOnlyInstitutions.value
+    .filter((inst: any) => inst.meetingCount > 0)
+    .sort((a: any, b: any) => b.meetingCount - a.meetingCount)
+    .slice(0, 4)
+    .map((inst: any) => ({ id: inst.value, name: inst.label }))
+});
+
+// Only admin institutions that user doesn't already have direct access to
+const adminOnlyInstitutions = computed(() => {
+  const myIds = myInstitutions.value.map(inst => inst.value)
+  return providedInstitutions.value.filter(inst => !myIds.includes(inst.value))
+})
+
+// Show search UI only if there are additional admin institutions
+const hasAdditionalInstitutions = computed(() => adminOnlyInstitutions.value.length > 0)
+
+// Filtered institutions for search
+const filteredInstitutions = computed(() => {
+  const q = searchQuery.value.trim()
+  if (!q) return adminOnlyInstitutions.value.slice(0, showAllInstitutions.value ? undefined : visibleInstitutionsLimit)
+  return adminOnlyInstitutions.value.filter((inst: any) =>
+    inst.label.toLowerCase().includes(q.toLowerCase()) ||
+    inst.context.toLowerCase().includes(q.toLowerCase())
+  )
+})
+
+// Selected institution data
+const selectedInstitutionData = computed(() => {
+  if (!selectedInstitution.value) return null;
+
+  // Check if it's an external institution from props
+  if (externalInstitution.value && String(externalInstitution.value.id) === selectedInstitution.value) {
+    return {
+      id: externalInstitution.value.id,
+      name: externalInstitution.value.name,
+      type: null,
+      lastMeeting: null,
+      activeCheckIn: false,
+      meetingCount: 0,
+      isExternal: true
+    };
+  }
+
+  // Check both user institutions and admin institutions
+  const allInstitutions = [...myInstitutions.value, ...adminOnlyInstitutions.value]
+  const institution = allInstitutions.find((inst: any) => inst.value === selectedInstitution.value);
+  if (!institution) return null;
+
+  return {
+    id: institution.value,
+    name: institution.label,
+    type: institution.context,
+    lastMeeting: institution.lastMeeting,
+    activeCheckIn: institution.activeCheckIn,
+    meetingCount: institution.meetingCount,
+    isExternal: false
+  };
+});
+
+// Methods
+const selectInstitution = (institutionId: string) => {
+  selectedInstitution.value = institutionId;
+  searchQuery.value = "";
+  myInstitutionsSearch.value = "";
+  showDropdown.value = false;
+};
+
+const selectExternalInstitution = () => {
+  if (externalInstitution.value) {
+    selectedInstitution.value = String(externalInstitution.value.id);
+    searchQuery.value = "";
+    myInstitutionsSearch.value = "";
+    showDropdown.value = false;
   }
 };
+
+const selectInstitutionFromSearch = (institutionId: string, institutionName: string) => {
+  selectedInstitution.value = institutionId;
+  searchQuery.value = institutionName;
+  myInstitutionsSearch.value = "";
+  showDropdown.value = false;
+};
+
+const clearSelection = () => {
+  selectedInstitution.value = "";
+  searchQuery.value = "";
+  myInstitutionsSearch.value = "";
+};
+
+const getInstitutionInfo = (institutionId: string): string => {
+  const allInstitutions = [...myInstitutions.value, ...adminOnlyInstitutions.value]
+  const institution = allInstitutions.find((inst: any) => inst.value === institutionId);
+  if (!institution) return '';
+
+  const parts: string[] = [];
+  if (institution.meetingCount > 0) {
+    parts.push(`${institution.meetingCount} ${$t('susitikimai')}`);
+  }
+  if (institution.activeCheckIn) {
+    parts.push($t('aktyvi pažyma'));
+  }
+
+  return parts.join(' • ');
+};
+
+const formatLastMeeting = (dateString: string): string => {
+  if (!dateString) return $t('Nėra');
+
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffTime = now.getTime() - date.getTime();
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) {
+    return $t('Šiandien');
+  } else if (diffDays === 1) {
+    return $t('Vakar');
+  } else if (diffDays < 7) {
+    return `${diffDays} ${$t('d. praeityje')}`;
+  } else if (diffDays < 30) {
+    const weeks = Math.floor(diffDays / 7);
+    return `${weeks} ${$t('sav. praeityje')}`;
+  } else {
+    return date.toLocaleDateString();
+  }
+};
+
+const onSubmit = ({ institution_id }: any) => {
+  const institutionToSubmit = selectedInstitution.value || institution_id;
+
+  if (institutionToSubmit) {
+    emit("submit", institutionToSubmit);
+  }
+};
+
+// Handle clicks outside dropdown
+const handleClickOutside = (event: MouseEvent) => {
+  const target = event.target as HTMLElement;
+  if (!target.closest('.relative')) {
+    showDropdown.value = false;
+  }
+};
+
+// Watch for props changes to update selected institution
+watch(() => props.selectedInstitution, (newInstitution) => {
+  if (newInstitution) {
+    // Convert to string for consistent comparison
+    selectedInstitution.value = String(newInstitution.id);
+  } else {
+    selectedInstitution.value = '';
+  }
+}, { immediate: true });
+
+// Lifecycle
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside);
+});
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside);
+});
 </script>

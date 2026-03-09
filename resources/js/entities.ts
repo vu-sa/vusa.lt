@@ -9,7 +9,6 @@ const modelTitles: Record<keyof typeof ModelEnum, string> = {
   BANNER: "Baneriai",
   CALENDAR: "Kalendorius",
   CATEGORY: "Kategorijos",
-  CHANGELOG_ITEM: "Changelog elementai",
   COMMENT: "Komentarai",
   DOCUMENT: "Archyvo Sharepoint dokumentai",
   DUTIABLE: "Pareigybės ėjimo laikotarpiai",

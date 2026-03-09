@@ -4,7 +4,14 @@
       <template #card-header>
         Puslapio informacija
       </template>
-      <PageForm remember-key="CreatePage" :page :categories @submit:form="(form) => form.post(route('pages.store'))" />
+      <PageForm
+        remember-key="CreatePage"
+        :page
+        :categories
+        :submit-url="route('pages.store')"
+        submit-method="post"
+        @submit:form="(form) => form.post(route('pages.store'))"
+      />
     </UpsertModelLayout>
   </PageContent>
 </template>

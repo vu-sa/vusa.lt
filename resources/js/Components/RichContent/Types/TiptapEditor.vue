@@ -1,12 +1,18 @@
+<!--
+  RichContent TiptapEditor Wrapper
+  
+  This component wraps the unified TiptapEditor for the rich content system.
+  It provides a full-featured editor for content blocks.
+-->
 <template>
-  <ModernTipTap v-model="modelValue!" />
+  <TiptapEditor v-model="modelValue!" preset="full" />
 </template>
 
 <script setup lang="ts">
-import { defineModel } from 'vue';
+import type { Tiptap } from '@/Types/contentParts';
 
-import ModernTipTap from '@/Components/TipTap/ModernTipTap.vue';
+import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 
-const modelValue = defineModel<Record<string, unknown> | null>();
+const modelValue = defineModel<Tiptap['json_content'] | null>();
 </script>
 

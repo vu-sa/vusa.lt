@@ -1,22 +1,19 @@
 <template>
-  <NButton round :type="active ? 'primary' : 'default'"
-    ><template #icon
-      ><NIcon v-if="icon" :size="16" :component="icon"></NIcon
-    ></template>
+  <Button class="rounded-full" :variant="active ? 'default' : 'outline'">
+    <component :is="icon" v-if="icon" class="size-4" />
     <div class="inline-flex items-center gap-2">
       <span>{{ name }}</span>
-      <NTag v-if="count !== undefined" :bordered="false" round size="tiny">
-        <span class="text-xs text-zinc-800 dark:text-zinc-300">
-          {{ count }}
-        </span>
-      </NTag>
+      <Badge v-if="count !== undefined" variant="secondary" class="rounded-full px-1.5 py-0 text-xs">
+        {{ count }}
+      </Badge>
     </div>
-  </NButton>
+  </Button>
 </template>
 
-<script setup lang="tsx">
-import { NButton, NIcon, NTag } from "naive-ui";
+<script setup lang="ts">
 import type { Component } from "vue";
+import { Button } from "@/Components/ui/button";
+import { Badge } from "@/Components/ui/badge";
 
 defineProps<{
   name: string;

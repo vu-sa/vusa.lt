@@ -21,7 +21,7 @@ describe('unauthenticated API access', function () {
             'draft' => false,
         ]);
 
-        $response = $this->getJson("/api/v1/lt/news/{$this->tenant->alias}");
+        $response = $this->getJson("/api/v1/tenants/{$this->tenant->alias}/news");
         $response->assertStatus(200);
 
         // Check that response contains some data (flexible structure)
@@ -30,14 +30,14 @@ describe('unauthenticated API access', function () {
     });
 
     test('protected endpoints require authentication', function () {
-        $this->getJson("/api/v1/lt/news/{$this->tenant->alias}")
+        $this->getJson("/api/v1/tenants/{$this->tenant->alias}/news")
             ->assertStatus(200); // Public API, should be accessible
     });
 });
 
 describe('authenticated API access', function () {
     test('can access protected endpoints when authenticated', function () {
-        asUser($this->apiUser)->getJson("/api/v1/lt/news/{$this->tenant->alias}")
+        asUser($this->apiUser)->getJson("/api/v1/tenants/{$this->tenant->alias}/news")
             ->assertStatus(200);
     });
 
@@ -47,14 +47,14 @@ describe('authenticated API access', function () {
             'tenant_id' => $otherTenant->id,
         ]);
 
-        asUser($this->apiUser)->getJson("/api/v1/lt/news/{$otherTenant->alias}")
+        asUser($this->apiUser)->getJson("/api/v1/tenants/{$otherTenant->alias}/news")
             ->assertStatus(200); // API returns data, but should be scoped
     });
 });
 
 describe('API validation and error handling', function () {
     test('handles not found resources gracefully', function () {
-        asUser($this->apiUser)->getJson('/api/v1/lt/news/nonexistent-tenant')
+        asUser($this->apiUser)->getJson('/api/v1/tenants/nonexistent-tenant/news')
             ->assertStatus(404);
     });
 });
@@ -65,7 +65,7 @@ describe('API pagination and filtering', function () {
             'tenant_id' => $this->tenant->id,
         ]);
 
-        $response = asUser($this->apiUser)->getJson("/api/v1/lt/news/{$this->tenant->alias}");
+        $response = asUser($this->apiUser)->getJson("/api/v1/tenants/{$this->tenant->alias}/news");
         $response->assertStatus(200);
 
         // Check that response contains some data (flexible structure)
@@ -84,7 +84,7 @@ describe('API pagination and filtering', function () {
             'draft' => true,
         ]);
 
-        $response = asUser($this->apiUser)->getJson("/api/v1/lt/news/{$this->tenant->alias}?published=true");
+        $response = asUser($this->apiUser)->getJson("/api/v1/tenants/{$this->tenant->alias}/news?published=true");
 
         if ($response->status() === 200) {
             $responseData = $response->json();
@@ -106,7 +106,7 @@ describe('API pagination and filtering', function () {
             'title' => 'Different content',
         ]);
 
-        $response = asUser($this->apiUser)->getJson("/api/v1/lt/news/{$this->tenant->alias}?search=Unique");
+        $response = asUser($this->apiUser)->getJson("/api/v1/tenants/{$this->tenant->alias}/news?search=Unique");
 
         if ($response->status() === 200) {
             $responseData = $response->json();

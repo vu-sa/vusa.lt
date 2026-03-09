@@ -38,7 +38,6 @@ class SystemStatusController extends AdminController
         try {
             // Check if Typesense is configured
             $isConfigured = TypesenseManager::isConfigured();
-            $isUsingPlaceholder = TypesenseManager::isUsingPlaceholderConfig();
             $configWarning = TypesenseManager::getConfigWarning();
 
             // Check if any models are configured to use Typesense (regardless of global driver)
@@ -50,7 +49,6 @@ class SystemStatusController extends AdminController
                     'status' => $isConfigured ? 'disabled' : 'unconfigured',
                     'configured' => $isConfigured,
                     'enabled' => $isEnabled,
-                    'using_placeholder' => $isUsingPlaceholder,
                     'config_warning' => $configWarning,
                     'driver' => 'Individual models use searchableUsing() method',
                     'last_check' => now()->toISOString(),
@@ -59,9 +57,6 @@ class SystemStatusController extends AdminController
 
             // At this point, $isConfigured is always true since $isEnabled is true
             $statusLevel = 'healthy';
-            if ($isUsingPlaceholder) {
-                $statusLevel = 'warning';
-            }
 
             // Test Typesense connection
             $client = app(Client::class);
@@ -151,7 +146,6 @@ class SystemStatusController extends AdminController
                 'configured' => $isConfigured,
                 'enabled' => true,
                 'connected' => true,
-                'using_placeholder' => $isUsingPlaceholder,
                 'config_warning' => $configWarning,
                 'connection_time' => round($connectionTime, 2).'ms',
                 'health' => $health,
@@ -167,7 +161,7 @@ class SystemStatusController extends AdminController
                     'host' => config('scout.typesense.client-settings.nodes.0.host'),
                     'port' => config('scout.typesense.client-settings.nodes.0.port'),
                     'protocol' => config('scout.typesense.client-settings.nodes.0.protocol'),
-                    'api_key_configured' => ! empty(config('scout.typesense.client-settings.api_key')) && config('scout.typesense.client-settings.api_key') !== 'xyz',
+                    'api_key_configured' => ! empty(config('scout.typesense.client-settings.api_key')),
                     'search_only_key_configured' => ! empty(config('scout.typesense.search_only_key')),
                     'queue_enabled' => config('scout.queue'),
                     'configured_models' => $configuredModels,
@@ -178,7 +172,6 @@ class SystemStatusController extends AdminController
 
         } catch (\Exception $e) {
             $isConfigured = TypesenseManager::isConfigured();
-            $isUsingPlaceholder = TypesenseManager::isUsingPlaceholderConfig();
             $configWarning = TypesenseManager::getConfigWarning();
             $configuredModels = TypesenseManager::getCollections();
 
@@ -187,7 +180,6 @@ class SystemStatusController extends AdminController
                 'configured' => $isConfigured,
                 'enabled' => $isConfigured && ! empty($configuredModels),
                 'connected' => false,
-                'using_placeholder' => $isUsingPlaceholder,
                 'config_warning' => $configWarning,
                 'error' => $e->getMessage(),
                 'error_type' => get_class($e),
@@ -196,7 +188,7 @@ class SystemStatusController extends AdminController
                     'global_scout_driver' => config('scout.driver'),
                     'host' => config('scout.typesense.client-settings.nodes.0.host'),
                     'port' => config('scout.typesense.client-settings.nodes.0.port'),
-                    'api_key_configured' => ! empty(config('scout.typesense.client-settings.api_key')) && config('scout.typesense.client-settings.api_key') !== 'xyz',
+                    'api_key_configured' => ! empty(config('scout.typesense.client-settings.api_key')),
                 ],
                 'last_check' => now()->toISOString(),
             ];

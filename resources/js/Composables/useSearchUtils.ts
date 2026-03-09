@@ -6,11 +6,12 @@ import IconNews from '~icons/fluent/news20-regular'
 import IconPage from '~icons/fluent/document-text20-regular'
 import IconDocument from '~icons/fluent/document20-regular'
 import IconCalendar from '~icons/fluent/calendar20-regular'
+import IconInstitution from '~icons/fluent/people-team20-regular'
 
 export interface SearchItem {
   id: string | number
   title: string
-  type: 'documents' | 'pages' | 'news' | 'calendar'
+  type: 'documents' | 'pages' | 'news' | 'calendar' | 'publicInstitutions'
   description?: string
   content?: string
   summary?: string
@@ -26,6 +27,15 @@ export interface SearchItem {
   tenant_name?: string
   lang?: string
   name?: string
+  // Institution-specific fields
+  name_lt?: string
+  name_en?: string
+  alias?: string
+  short_name_lt?: string
+  short_name_en?: string
+  updated_at?: string | number
+  tenant_shortname?: string
+  logo_url?: string
   [key: string]: any
 }
 
@@ -48,6 +58,18 @@ export const useSearchUtils = () => {
           return route('calendar.event', { ...baseParams, calendar: item.id })
         case 'documents':
           return item.anonymous_url || '#'
+        case 'publicInstitutions':
+          // Use alias route if available, otherwise use id route
+          if (item.alias) {
+            return route('contacts.alias', {
+              ...baseParams,
+              institution: item.alias
+            })
+          }
+          return route('contacts.institution', {
+            ...baseParams,
+            institution: item.id
+          })
         default:
           return '#'
       }
@@ -83,7 +105,16 @@ export const useSearchUtils = () => {
       item_id: item.id
     })
     
-    router.visit(getItemUrl(item))
+    const url = getItemUrl(item)
+    
+    // For documents with external URLs (SharePoint), use window.location
+    // to avoid Inertia trying to handle external links
+    if (item.type === 'documents' && item.anonymous_url) {
+      window.open(url, '_blank')
+      return
+    }
+    
+    router.visit(url)
   }
 
   // Shared utility functions for search components
@@ -93,6 +124,7 @@ export const useSearchUtils = () => {
       case 'pages': return IconPage
       case 'documents': return IconDocument
       case 'calendar': return IconCalendar
+      case 'publicInstitutions': return IconInstitution
       default: return IconPage
     }
   }
@@ -132,6 +164,7 @@ export const useSearchUtils = () => {
       case 'news': return item.publish_time
       case 'documents': return item.document_date
       case 'calendar': return item.date
+      case 'publicInstitutions': return item.updated_at
       default: return item.created_at
     }
   }
@@ -150,6 +183,10 @@ export const useSearchUtils = () => {
         break
       case 'calendar': 
         content = item.description || item.summary
+        break
+      case 'publicInstitutions':
+        // Use tenant info or address as content for institutions
+        content = item.tenant_shortname || item.address_lt || item.description || ''
         break
       default: 
         content = item.summary || item.content || item.description

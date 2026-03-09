@@ -25,6 +25,7 @@ import Person24Regular from "~icons/fluent/person24-regular";
 import PersonBoard24Regular from "~icons/fluent/person-board24-regular";
 import PersonClock24Regular from "~icons/fluent/person-clock24-regular";
 import PuzzlePiece24Regular from "~icons/fluent/puzzle-piece24-regular";
+import Settings24Regular from "~icons/fluent/settings24-regular";
 import ShieldKeyhole24Regular from "~icons/fluent/shield-keyhole24-regular";
 import FluentClipboardError24Regular from "~icons/fluent/clipboard-error24-regular";
 import Tag24Regular from "~icons/fluent/tag24-regular";
@@ -41,7 +42,6 @@ const modelIcons: Record<keyof typeof ModelEnum, Component> = {
   BANNER: ImageArrowBack24Regular,
   CALENDAR: CalendarLtr24Regular,
   CATEGORY: TextBulletListSquare24Regular,
-  CHANGELOG_ITEM: DocumentBulletList24Regular,
   COMMENT: Comment24Regular,
   DOCUMENT: DocumentMultiple24Regular,
   DUTIABLE: PersonClock24Regular,
@@ -83,6 +83,7 @@ const otherIcons: Record<keyof typeof OtherIconEnum, Component> = {
   HOME: Home24Regular,
   IMAGE: Image24Regular,
   NOTIFICATION: Alert24Regular,
+  SETTING: Settings24Regular,
 };
 
 export default { ...modelIcons, ...formIcons, ...otherIcons };

@@ -4,76 +4,86 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetTenantsForUpserts;
 use App\Http\Controllers\AdminController;
+use App\Http\Requests\IndexProblemRequest;
 use App\Http\Requests\StoreProblemRequest;
 use App\Http\Requests\UpdateProblemRequest;
+use App\Http\Traits\HasTanstackTables;
 use App\Models\Institution;
 use App\Models\Problem;
 use App\Models\ProblemCategory;
 use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
-use App\Services\ModelIndexer;
+use App\Services\TanstackTableService;
 use Illuminate\Http\Request;
 
 class ProblemController extends AdminController
 {
-    public function __construct(public Authorizer $authorizer) {}
+    use HasTanstackTables;
+
+    public function __construct(
+        public Authorizer $authorizer,
+        private TanstackTableService $tableService
+    ) {}
 
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index(IndexProblemRequest $request)
     {
         $this->handleAuthorization('viewAny', Problem::class);
 
-        $indexer = new ModelIndexer(new Problem);
+        $query = Problem::query()->with(['tenant', 'createdBy', 'responsibleUser', 'categories', 'institutions']);
 
-        // Build callbacks array for filtering
-        $callbacks = [
-            // Eager load relationships
-            fn ($query) => $query->with(['tenant', 'createdBy', 'responsibleUser', 'categories', 'institutions']),
-        ];
+        $query = $this->tableService->applyPermissionFiltering(
+            $query,
+            'tenant',
+            'problems.read.padalinys',
+            $this->authorizer
+        );
 
-        // Manual filtering - extract from indexer filters and handle before filterAllColumns()
-        if ($indexer->filters) {
-            // Status filter
-            if (isset($indexer->filters['status']) && ! empty($indexer->filters['status'])) {
-                $statusValues = $indexer->filters['status'];
-                $callbacks[] = fn ($query) => $query->whereIn('status', $statusValues);
-                unset($indexer->filters['status']);
-            }
+        $query = $this->applyTanstackFilters(
+            $query,
+            $request,
+            $this->tableService,
+            ['title', 'description'],
+            ['applySortBeforePagination' => true]
+        );
 
-            // Category filter (relationship)
-            if (isset($indexer->filters['category']) && ! empty($indexer->filters['category'])) {
-                $categoryValues = $indexer->filters['category'];
-                $callbacks[] = fn ($query) => $query->whereHas('categories', function ($q) use ($categoryValues) {
-                    $q->whereIn('problem_categories.id', $categoryValues);
-                });
-                unset($indexer->filters['category']);
-            }
+        $filters = $request->getFilters();
 
-            // Institution filter (relationship)
-            if (isset($indexer->filters['institution']) && ! empty($indexer->filters['institution'])) {
-                $institutionValues = $indexer->filters['institution'];
-                $callbacks[] = fn ($query) => $query->whereHas('institutions', function ($q) use ($institutionValues) {
-                    $q->whereIn('institutions.id', $institutionValues);
-                });
-                unset($indexer->filters['institution']);
-            }
+        if (isset($filters['status']) && ! empty($filters['status'])) {
+            $query->whereIn('status', (array) $filters['status']);
         }
 
-        // "Show my problems" toggle (from direct request parameter)
+        if (isset($filters['category']) && ! empty($filters['category'])) {
+            $categoryValues = (array) $filters['category'];
+            $query->whereHas('categories', fn ($q) => $q->whereIn('problem_categories.id', $categoryValues));
+        }
+
+        if (isset($filters['institution']) && ! empty($filters['institution'])) {
+            $institutionValues = (array) $filters['institution'];
+            $query->whereHas('institutions', fn ($q) => $q->whereIn('institutions.id', $institutionValues));
+        }
+
         if ($request->boolean('show_my_problems')) {
-            $callbacks[] = fn ($query) => $query->where('created_by', auth()->id());
+            $query->where('created_by', auth()->id());
         }
 
-        $problems = $indexer
-            ->setEloquentQuery($callbacks)
-            ->filterAllColumns()
-            ->sortAllColumns(['occurred_at' => 'descend'])
-            ->builder->paginate(20);
+        $problems = $query->paginate($request->input('per_page', 20))->withQueryString();
 
         return $this->inertiaResponse('Admin/Problems/IndexProblem', [
-            'problems' => $problems,
+            'data' => $problems->items(),
+            'meta' => [
+                'total' => $problems->total(),
+                'per_page' => $problems->perPage(),
+                'current_page' => $problems->currentPage(),
+                'last_page' => $problems->lastPage(),
+                'from' => $problems->firstItem(),
+                'to' => $problems->lastItem(),
+            ],
+            'filters' => $request->getFilters(),
+            'sorting' => $request->getSorting(),
+            'showDeleted' => $request->boolean('showDeleted', false),
             'categories' => ProblemCategory::orderBy('slug')->get()->map(fn ($category) => $category->toArray()),
             'institutions' => Institution::select('id', 'name')->orderBy('name')->get()->map(fn ($institution) => $institution->toArray()),
         ]);

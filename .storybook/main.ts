@@ -35,6 +35,9 @@ const config: StorybookConfig = {
         alias: {
           "@": "/resources/js",
           "ziggy-js": "/vendor/tightenco/ziggy/dist",
+          // Mock @inertiajs/vue3 to use our Storybook-safe mock
+          // This prevents the 'auth' is undefined error in components using usePage()
+          "@inertiajs/vue3": "/resources/js/mocks/inertia.storybook.ts",
         }
       }
     });

@@ -21,18 +21,14 @@
       style="object-position: 50% 35%" loading="lazy" @error="imageError = true">
     <div class="w-full" :class="[imageError ? 'col-span-full' : '']">
       <div>
-        <a class="group inline-flex w-fit items-center gap-3 sm:gap-4" :href="route('contacts.institution', {
-          institution: institution.id,
-          subdomain: institution.tenant?.alias === 'vusa' ? 'www' : institution.tenant?.alias ?? 'www',
-          lang: $page.props.app.locale,
-        })" :aria-describedby="institution.description ? `institution-${institution.id}-description` : undefined">
+        <div class="inline-flex w-fit items-center gap-3 sm:gap-4">
           <img v-if="institution.logo_url && onlyVertical" :alt="`${institution.name} logo`"
-            class="size-12 rounded-full border border-zinc-200 bg-white object-contain shadow-sm transition-shadow group-hover:shadow-md dark:border-zinc-700 sm:size-16"
+            class="size-12 rounded-full border border-zinc-200 bg-white object-contain shadow-sm dark:border-zinc-700 sm:size-16"
             :src="institution.logo_url" loading="lazy">
           <div class="min-w-0 flex-1">
             <div class="space-y-4">
               <h2 :id="`institution-${institution.id}-title`"
-                class="mb-0 mt-0 w-fit text-xl font-bold leading-tight text-zinc-800 transition-colors group-hover:text-vusa-red dark:text-zinc-100 sm:text-2xl xl:text-3xl">
+                class="mb-0 mt-0 w-fit text-xl font-bold leading-tight text-zinc-800 dark:text-zinc-100 sm:text-2xl xl:text-3xl">
                 {{ institution.name }}
               </h2>
               <div class="flex flex-col gap-2 mt-2 sm:flex-row sm:flex-wrap sm:gap-3">
@@ -61,19 +57,19 @@
                 <!-- Contact Links -->
                 <div class="flex flex-wrap gap-1.5">
                   <a v-if="institution.website" :href="institution.website" target="_blank" rel="noopener noreferrer"
-                    class="inline-flex items-center gap-1 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                    class="inline-flex items-center gap-1 rounded-md bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-700 transition-colors hover:bg-zinc-200 dark:bg-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-600"
                     @click.stop>
                     <IFluentGlobe20Regular class="size-3" />
                     <span class="text-xs font-medium">{{ extractDomain(institution.website) }}</span>
                   </a>
                   <a v-if="institution.email" :href="`mailto:${institution.email}`"
-                    class="inline-flex items-center gap-1 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                    class="inline-flex items-center gap-1 rounded-md bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-700 transition-colors hover:bg-zinc-200 dark:bg-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-600"
                     @click.stop>
                     <IFluentMail20Regular class="size-3" />
                     <span class="text-xs font-medium">{{ institution.email }}</span>
                   </a>
                   <a v-if="institution.phone" :href="`tel:${institution.phone}`"
-                    class="inline-flex items-center gap-1 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                    class="inline-flex items-center gap-1 rounded-md bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-700 transition-colors hover:bg-zinc-200 dark:bg-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-600"
                     @click.stop>
                     <IFluentPhone20Regular class="size-3" />
                     <span class="text-xs font-medium">{{ institution.phone }}</span>
@@ -82,12 +78,23 @@
               </div>
             </div>
             <small v-for="institutionType in institution.types" v-show="!props.hideTypes" :key="institutionType.id"
-              class="mb-4 inline-flex gap-2 text-zinc-500 last:mb-0">
-              <span>{{ $t(institutionType.title) }}</span>
+              class="mb-4 inline-flex items-center gap-2 text-zinc-500 last:mb-0">
+              <a 
+                v-if="institutionType.slug"
+                :href="route('contacts.category', {
+                  subdomain: institution.tenant?.alias === 'vusa' ? 'www' : institution.tenant?.alias ?? 'www',
+                  lang: $page.props.app.locale,
+                  type: institutionType.slug,
+                }) + '?all=1'"
+                class="hover:text-vusa-red hover:underline transition-colors"
+              >
+                {{ $t(institutionType.title) }}
+              </a>
+              <span v-else>{{ $t(institutionType.title) }}</span>
               <InfoPopover v-if="institutionType.description"> {{ institutionType.description }} </InfoPopover>
             </small>
           </div>
-        </a>
+        </div>
       </div>
       <slot name="more" />
       <div v-if="institution.description" class="my-4 sm:my-5">

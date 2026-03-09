@@ -8,9 +8,7 @@
       <div class="my-3 sm:my-4 lg:my-6 px-2 sm:px-3 lg:px-4">
         <div class="text-center max-w-2xl mx-auto">
           <div class="flex items-center justify-center gap-3 mb-3 sm:mb-4">
-            <div class="p-2 sm:p-3 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-xl">
-              <Search class="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
-            </div>
+            <SearchPageSwitcher page="documents" />
           </div>
           <h1 class="text-2xl sm:text-4xl font-bold text-foreground mb-2 sm:mb-3">
             {{ $t('search.document_search_title') }}
@@ -45,6 +43,7 @@
           <div class="xl:sticky xl:top-6 xl:self-start xl:flex-shrink-0 xl:w-[300px]">
             <DocumentFacetSidebar :facets="searchController.facets.value" :filters="searchController.filters.value"
               :is-loading="searchController.isLoadingFacets.value" :active-filter-count
+              :important-content-types="importantContentTypes"
               @update:tenant="searchController.toggleTenant" @update:content-type="searchController.toggleContentType"
               @update:language="searchController.toggleLanguage" @update:date-range="searchController.setDateRange"
               @clear-filters="searchController.clearFilters" />
@@ -200,6 +199,7 @@ import {
 } from 'lucide-vue-next'
 
 // Local components
+import SearchPageSwitcher from './SearchPageSwitcher.vue'
 import SearchErrorBoundary from './SearchErrorBoundary.vue'
 import DocumentSearchInput from './DocumentSearchInput.vue'
 import DocumentFacetSidebar from './DocumentFacetSidebar.vue'
@@ -220,13 +220,11 @@ const inputQuery = ref('')
 
 // Props interface
 interface Props {
-  initialQuery?: string
-  initialFilters?: Partial<DocumentSearchFilters>
+  importantContentTypes?: string[]
 }
 
 const {
-  initialQuery = '',
-  initialFilters = {}
+  importantContentTypes = []
 } = defineProps<Props>()
 
 // Computed properties for filter state
@@ -334,33 +332,18 @@ const getLanguageDisplay = (languageValue: string): string => {
 
 // Initialize from props and load all documents
 onMounted(async () => {
-  // Initialize search client first
+  // Initialize search client first (this also loads URL params)
   await searchController.initializeSearchClient()
 
   // Load initial facets for the merged facet system
   await searchController.loadInitialFacets()
 
-  // Apply initial filters if provided
-  if (Object.keys(initialFilters).length > 0) {
-    if (initialFilters.tenants) {
-      (initialFilters.tenants as string[]).forEach((tenant: string) => searchController.toggleTenant(tenant))
-    }
-    if (initialFilters.contentTypes) {
-      (initialFilters.contentTypes as string[]).
-        forEach((contentType: string) => searchController.toggleContentType(contentType))
-    }
-    if (initialFilters.languages) {
-      (initialFilters.languages as string[]).
-        forEach((language: string) => searchController.toggleLanguage(language))
-    }
-    if (initialFilters.dateRange) {
-      searchController.setDateRange(initialFilters.dateRange)
-    }
-  }
+  // Get query from filters (loaded from URL by composable)
+  const initialQuery = searchController.filters.value.query
 
   // Set initial query if provided, otherwise search all documents
-  if (initialQuery) {
-    searchController.search(initialQuery)
+  if (initialQuery && initialQuery !== '') {
+    searchController.search(initialQuery, true)
   } else {
     // Trigger initial "show all documents" search with newest first sorting  
     // Use wildcard search to show all documents on page load

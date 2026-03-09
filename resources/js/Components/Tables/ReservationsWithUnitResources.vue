@@ -1,194 +1,93 @@
 <template>
-  <NDataTable :columns="columnsWithActions" :data="activeReservations" size="small" :row-key="(row) => row.id" />
+  <SimpleDataTable :data="activeReservations" :columns="columns" :enable-pagination="true" :page-size="10" :enable-filtering="true" />
 </template>
 
 <script setup lang="tsx">
 import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
-import {
-  type DataTableColumns,
-  NButton,
-  NIcon,
-  NTag,
-} from "naive-ui";
 import { Link, usePage } from "@inertiajs/vue3";
-import { capitalize, computed } from "vue";
+import type { ColumnDef } from "@tanstack/vue-table";
+import { capitalize } from "vue";
 
 import ArrowForward20Filled from "~icons/fluent/arrow-forward20-filled";
 
+import { Badge } from "@/Components/ui/badge";
+import { Button } from "@/Components/ui/button";
 import { RESERVATION_DATE_TIME_FORMAT } from "@/Constants/DateTimeFormats";
 import { formatRelativeTime, formatStaticTime } from "@/Utils/IntlTime";
+import SimpleDataTable from "@/Components/Tables/SimpleDataTable.vue";
 import UsersAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
 
-const { showIfCompleted } = defineProps<{
+defineProps<{
   activeReservations: App.Entities.Reservation[];
   showIfCompleted?: boolean;
 }>();
 
-// Reuses from IndexReservation, need to use for implementation in dashboard
-const columns = computed<DataTableColumns<App.Entities.Reservation>>(() => {
-  let columns = [
-    {
-      type: "expand",
-      renderExpand(row) {
-        return (
-          <section class="flex flex-col gap-2 p-2">
-            <div>
-              <strong>{$t("forms.fields.description")}</strong>
-              <p>{row.description}</p>
-            </div>
-            <div>
-              <strong>
-                {capitalize($t("entities.reservation.resources"))}
-              </strong>
-              <ul class="list-inside list-disc">
-                {/* add quantity and tenant.shortname */}
-                {row.resources?.map((resource) => (
-                  <li>
-                    <div class="inline-flex items-center gap-2">
-                      <Link href={route("resources.edit", resource.id)}>
-                        {resource.name}
-                      </Link>
-                      <NTag size="tiny" round>
-                        <span class="ml-1 text-xs text-gray-500">
-                          {$t(resource.tenant?.shortname)}
-                        </span>
-                      </NTag>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </section>
-        );
-      },
+const columns: ColumnDef<App.Entities.Reservation, any>[] = [
+  {
+    accessorKey: "name",
+    header: () => $t("forms.fields.title"),
+    cell: ({ row }) => (
+      <Link href={route("reservations.show", row.original.id)}>
+        {row.original.name}
+      </Link>
+    ),
+    size: 300,
+  },
+  {
+    id: "managers",
+    header: () => capitalize($tChoice("entities.reservation.managers", 2)),
+    cell: ({ row }) => {
+      const users = row.original.users;
+      return users && users.length > 0 ? (
+        <UsersAvatarGroup class="align-middle" size={30} users={users} />
+      ) : (
+        "Nėra"
+      );
     },
-    {
-      title() {
-        return $t("forms.fields.title");
-      },
-      key: "name",
-      sorter: 'default',
-      maxWidth: 300,
-      ellipsis: {
-        tooltip: true,
-      },
-      render(row) {
-        return (
-          <Link href={route("reservations.show", row.id)}>
-            {row.name}
-          </Link>
-        );
-      },
-    },
-    {
-      title() {
-        return capitalize($tChoice("entities.reservation.managers", 2));
-      },
-      key: "managers",
-      render(row) {
-        return row.users && row.users?.length > 0 ? (
-          <UsersAvatarGroup class="align-middle" size={30} users={row.users} />
-        ) : (
-          "Nėra"
-        );
-      },
-    },
-    {
-      title() {
-        return capitalize($tChoice("entities.reservation.start_time", 2));
-      },
-      key: "start_time",
-      sorter: (a, b) =>
-        new Date(a.start_time).getTime() - new Date(b.start_time).getTime(),
-      defaultSortOrder: "descend",
-      ellipsis: {
-        tooltip: true,
-      },
-      render(row) {
-        return formatStaticTime(
-          new Date(row.start_time),
-          RESERVATION_DATE_TIME_FORMAT,
-          usePage().props.app.locale,
-        );
-      },
-    },
-    {
-      title() {
-        return capitalize($tChoice("entities.reservation.end_time", 2));
-      },
-      key: "end_time",
-      sorter: (a, b) =>
-        new Date(a.end_time).getTime() - new Date(b.end_time).getTime(),
-      ellipsis: {
-        tooltip: true,
-      },
-      render(row) {
-        return formatStaticTime(
-          new Date(row.end_time),
-          RESERVATION_DATE_TIME_FORMAT,
-          usePage().props.app.locale,
-        );
-      },
-    },
-    {
-      title() {
-        return $t("forms.fields.created_at");
-      },
-      key: "created_at",
-      render(row) {
-        return formatRelativeTime(
-          new Date(row.created_at),
-          {
-            numeric: "auto",
-          },
-          usePage().props.app.locale,
-        );
-      },
-    },
-  ];
-
-  if (showIfCompleted) {
-    columns.push({
-      title: "Ar užbaigta",
-      key: "isCompleted",
-      filter(value, row) {
-        return row.isCompleted === value;
-      },
-      filterOptions: [
-        { label: "Taip", value: true },
-        { label: "Ne", value: false },
-      ],
-      defaultFilterOptionValues: [false],
-      render(row) {
-        return row.isCompleted ? "✅ Taip" : "❌ Ne";
-      },
-    });
-  }
-
-  return columns;
-});
-
-const columnsWithActions = computed(() => {
-  return [
-    ...columns.value,
-    {
-      title() {
-        return $t("Veiksmai");
-      },
-      key: "actions",
-      width: 100,
-      render(row) {
-        return (
-          <Link href={route("reservations.show", row.id)} >
-            <NButton quaternary size="small">
-              <NIcon>
-                <ArrowForward20Filled />
-              </NIcon>
-            </NButton>
-          </Link>
-        );
-      },
-    },
-  ];
-});
+  },
+  {
+    accessorKey: "start_time",
+    header: () => capitalize($tChoice("entities.reservation.start_time", 2)),
+    cell: ({ row }) =>
+      formatStaticTime(
+        new Date(row.original.start_time),
+        RESERVATION_DATE_TIME_FORMAT,
+        usePage().props.app.locale,
+      ),
+    enableSorting: true,
+  },
+  {
+    accessorKey: "end_time",
+    header: () => capitalize($tChoice("entities.reservation.end_time", 2)),
+    cell: ({ row }) =>
+      formatStaticTime(
+        new Date(row.original.end_time),
+        RESERVATION_DATE_TIME_FORMAT,
+        usePage().props.app.locale,
+      ),
+    enableSorting: true,
+  },
+  {
+    accessorKey: "created_at",
+    header: () => $t("forms.fields.created_at"),
+    cell: ({ row }) =>
+      formatRelativeTime(
+        new Date(row.original.created_at),
+        { numeric: "auto" },
+        usePage().props.app.locale,
+      ),
+  },
+  {
+    id: "actions",
+    header: () => $t("Veiksmai"),
+    size: 100,
+    cell: ({ row }) => (
+      <Link href={route("reservations.show", row.original.id)}>
+        <Button variant="ghost" size="icon-sm">
+          <ArrowForward20Filled />
+        </Button>
+      </Link>
+    ),
+  },
+];
 </script>

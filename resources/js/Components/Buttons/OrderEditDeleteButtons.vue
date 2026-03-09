@@ -1,39 +1,53 @@
 <template>
-  <div class="inline-flex items-center gap-2">
-    <NButton v-if="index > 0" size="tiny" circle tertiary class="mr-1" @click="$emit('moveUp')">
-      <template #icon>
-        <Icon icon="fluent:arrow-up-16-regular" width="12" height="12" />
-      </template>
-    </NButton>
-    <NButton v-if="index < length - 1" size="tiny" circle tertiary class="mr-1" @click="$emit('moveDown')">
-      <template #icon>
-        <Icon icon="fluent:arrow-down-16-regular" width="12" height="12" />
-      </template>
-    </NButton>
+  <div class="inline-flex items-center gap-1">
+    <Button v-if="index > 0" size="icon-xs" variant="ghost" @click="$emit('moveUp')">
+      <Icon icon="fluent:arrow-up-16-regular" class="size-3" />
+    </Button>
+    <Button v-if="index < length - 1" size="icon-xs" variant="ghost" @click="$emit('moveDown')">
+      <Icon icon="fluent:arrow-down-16-regular" class="size-3" />
+    </Button>
     <Link :href="editRoute">
-    <NButton size="tiny" circle tertiary>
-      <template #icon>
-        <Icon icon="fluent:edit-16-regular" width="12" height="12" />
-      </template>
-    </NButton>
+      <Button size="icon-xs" variant="ghost">
+        <Icon icon="fluent:edit-16-regular" class="size-3" />
+      </Button>
     </Link>
-    <NPopconfirm @positive-click="$emit('delete')">
-      <template #trigger>
-        <NButton size="tiny" circle type="error">
-          <template #icon>
-            <Icon icon="fluent:delete-16-regular" width="12" height="12" />
-          </template>
-        </NButton>
-      </template>
-      Ar tikrai norite ištrinti šį elementą?
-    </NPopconfirm>
+    <AlertDialog>
+      <AlertDialogTrigger as-child>
+        <Button size="icon-xs" variant="destructive">
+          <Icon icon="fluent:delete-16-regular" class="size-3" />
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{{ $t('Ar tikrai?') }}</AlertDialogTitle>
+          <AlertDialogDescription>
+            {{ $t('Ar tikrai norite ištrinti šį elementą?') }}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>{{ $t('forms.cancel') }}</AlertDialogCancel>
+          <AlertDialogAction @click="$emit('delete')">{{ $t('forms.delete') }}</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import { Icon } from '@iconify/vue';
 import { Link } from '@inertiajs/vue3';
-import { NButton, NPopconfirm } from 'naive-ui';
+import { Button } from '@/Components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/Components/ui/alert-dialog';
 
 defineProps<{
   index: number;

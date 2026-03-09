@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\ModelEnum;
 use App\Http\Controllers\AdminController;
 use App\Models\Comment;
-use App\Models\Traits\MakesDecisions;
 use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -24,7 +23,6 @@ class CommentController extends AdminController
             'commentable_type' => [new EnumRule(ModelEnum::class), 'required'],
             'commentable_id' => 'required',
             'comment' => 'required|string',
-            'decision' => 'nullable|string',
             'route' => 'nullable|string',
         ]);
 
@@ -39,11 +37,7 @@ class CommentController extends AdminController
 
         $model = $modelClass::find($request->commentable_id);
 
-        if (isset($validated['decision']) && in_array(MakesDecisions::class, class_uses($model::class))) {
-            $model->decision($validated['decision']);
-        }
-
-        $model->comment($request->comment, $request->decision);
+        $model->comment($request->comment);
 
         return back()->with('success', 'Komentaras pridėtas.');
     }

@@ -241,7 +241,7 @@ class TanstackTableService
         ModelAuthorizer $authorizer
     ): Builder {
         // Only apply if not all scope and not super admin
-        if (! $authorizer->isAllScope && ! auth()->user()->isSuperAdmin()) {
+        if (! $authorizer->isAllScope && ! auth()->user()?->isSuperAdmin()) {
             return $query->whereHas($tenantRelation, function (Builder $q) use ($tenantRelation, $permission, $authorizer) {
                 $columnName = $tenantRelation === 'tenants' ? 'tenants.id' : 'id';
                 $q->whereIn($columnName, $authorizer->getTenants($permission)->pluck('id'));

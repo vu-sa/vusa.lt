@@ -9,10 +9,12 @@ use App\Models\Category;
 use App\Models\Form;
 use App\Models\Institution;
 use App\Models\Navigation;
+use App\Models\News;
 use App\Models\Page;
 use App\Models\Tenant;
 use App\Models\Type;
 use App\Services\ResourceServices\InstitutionService;
+use App\Settings\FormSettings;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -67,13 +69,32 @@ class PublicPageController extends PublicController
         $content = Cache::tags(['homepage', "tenant_{$this->tenant->id}", "locale_{$locale}"])
             ->remember($cacheKey, 3600, function () {
                 return $this->tenant->content ??
-                    Tenant::query()->where('type', 'pagrindinis')->first()->content;
+                    Tenant::query()->where('type', 'pagrindinis')->first()?->content;
             });
 
-        $seo = $this->shareAndReturnSEOObject(title: __('Pagrindinis puslapis').' - '.$this->tenant->shortname);
+        // Fetch news for homepage to enable LCP image preloading (eliminates API waterfall)
+        $newsCacheKey = "homepage_news_{$this->tenant->id}_{$locale}";
+        $news = Cache::tags(['news', "tenant_{$this->tenant->id}", "locale_{$locale}"])
+            ->remember($newsCacheKey, 1800, function () use ($locale) {
+                return \App\Collections\NewsCollection::getPublishedForTenant(
+                    $this->tenant->id,
+                    $locale
+                )->toPublicArray();
+            });
+
+        // Fetch calendar events for homepage (reduces API calls)
+        $calendarEvents = $this->getEventsForCalendar();
+
+        $seo = $this->shareAndReturnSEOObject(contentTenant: $this->tenant, title: __('Pagrindinis puslapis').' - '.$this->tenant->shortname);
+
+        // Get first news image URL for LCP preload hint
+        $firstNewsImageUrl = $news[0]['image'] ?? null;
 
         return Inertia::render('Public/HomePage', [
             'content' => $content,
+            'news' => $news,
+            'calendarEvents' => $calendarEvents,
+            'firstNewsImageUrl' => $firstNewsImageUrl,
         ])->withViewData([
             'SEOData' => $seo,
         ]);
@@ -138,15 +159,17 @@ class PublicPageController extends PublicController
         ) : null);
 
         // Get description for SEO from first tiptap element
+        // Use the page's tenant for proper canonical URL
         $seo = $this->shareAndReturnSEOObject(
-            title: $page->title.' - '.$this->tenant->shortname,
+            contentTenant: $page->tenant,
+            title: $page->title.' - '.$page->tenant->shortname,
             description: ContentHelper::getDescriptionForSeo($page),
         );
 
         return Inertia::render('Public/ContentPage', [
             'navigationItemId' => $navigation_item?->id,
             'page' => [
-                ...$page->only('id', 'title', 'lang', 'category', 'tenant', 'permalink', 'other_lang_id'),
+                ...$page->only('id', 'title', 'lang', 'category', 'tenant', 'permalink', 'other_lang_id', 'layout', 'highlights', 'featured_image', 'meta_description', 'last_edited_at', 'updated_at'),
                 'content' => $page->content,
                 /* 'content' => [ */
                 /*    ...$page->content->toArray(), */
@@ -180,6 +203,7 @@ class PublicPageController extends PublicController
         }])->load('pages.tenant:id,alias');
 
         $seo = $this->shareAndReturnSEOObject(
+            contentTenant: $this->tenant,
             title: $category->name.' - '.$this->tenant->shortname,
             description: $category->description,
         );
@@ -231,7 +255,9 @@ class PublicPageController extends PublicController
 
         $yearsWhenEventsExist = $yearsWhenEventsExist->selectRaw('YEAR(date) as year')->distinct()->get()->pluck('year');
 
+        // Global content - use main vusa tenant (null defaults to current tenant)
         $seo = $this->shareAndReturnSEOObject(
+            contentTenant: null,
             title: $year == intval(date('Y')) ? 'Pirmakursių stovyklos - VU SA' : $year.' m. pirmakursių stovyklos - VU SA',
             description: 'Universiteto tvarka niekada su ja nesusidūrusiam žmogui gali pasirodyti labai sudėtinga ir būtent dėl to jau prieš septyniolika metų Vilniaus universiteto Studentų atstovybė (VU SA) surengė pirmąją pirmakursių stovyklą.',
             image: config('app.url').'/images/photos/stovykla.jpg',
@@ -253,7 +279,9 @@ class PublicPageController extends PublicController
         $this->getTenantLinks();
         $this->shareOtherLangURL('individualStudies');
 
+        // Global content - use null for current tenant
         $seo = $this->shareAndReturnSEOObject(
+            contentTenant: null,
             title: __('Individualios studijos').' - VU SA',
             description: app()->getLocale() === 'lt' ? 'Nuo 2023 m. Vilniaus universitete kiekvienas naujai įstojęs (-usi) bakalauro ar vientisųjų studijų programos studentas (-ė) turi galimybę dėlioti savo studijas pagal asmeninius interesus, pasinaudodas (-a) individualių studijų galimybe.' : 'Since 2023 m. every newly 
             enrolled bachelor\'s or integrated study program student at Vilnius University has the opportunity to arrange their studies according to personal interests, using the possibility of individual studies.',
@@ -273,7 +301,9 @@ class PublicPageController extends PublicController
 
         $institutions = (new InstitutionService)->getInstitutionsByTypeSlug('pkp')->where('is_active', true);
 
+        // Global content - use null for current tenant
         $seo = $this->shareAndReturnSEOObject(
+            contentTenant: null,
             title: __('Studentiškos iniciatyvos').' - VU SA',
             description: 'VU SA studentiškos iniciatyvos – plati erdvė Vilniaus universiteto studentų(-čių) idėjoms, kūrybiškumui ir savirealizacijai.'
         );
@@ -299,7 +329,9 @@ class PublicPageController extends PublicController
         // Share other language URL for locale switching
         $this->shareOtherLangURL('curatorRegistrations');
 
+        // Global content - use null for current tenant
         $seo = $this->shareAndReturnSEOObject(
+            contentTenant: null,
             title: app()->getLocale() === 'lt' ? 'Registracija į kuratorių programą' : 'Registration to mentor program',
             description: 'Kuratoriai - tai studentai, kurie savo laisvalaikiu padeda naujiems studentams prisitaikyti prie universiteto aplinkos, dalinasi patirtimi ir patarimais, skatina aktyvų studentų gyvenimą.'
         );
@@ -394,12 +426,6 @@ class PublicPageController extends PublicController
         $this->getTenantLinks();
         $this->shareOtherLangURL('calendar.list');
 
-        // Disable page transition on filter changes
-        if (request()->has(['search']) || request()->has(['category']) ||
-            request()->has(['tenant']) || request()->has(['tab']) || request()->has(['page'])) {
-            Inertia::share('disablePageTransition', true);
-        }
-
         $now = Carbon::now();
         $perPage = 20; // Number of events per page
         $tab = request()->get('tab', 'upcoming'); // Default tab is upcoming
@@ -441,9 +467,13 @@ class PublicPageController extends PublicController
         $filterOptions = $this->getCalendarFilterOptions($tab);
 
         $seo = $this->shareAndReturnSEOObject(
+            contentTenant: $this->tenant,
             title: __('Visų renginių sąrašas').' - '.$this->tenant->shortname,
             description: __('Vilniaus universiteto Studentų atstovybės ir bendruomenės renginių sąrašas.'),
         );
+
+        // Share pagination SEO metadata for rel=next/prev links
+        $this->sharePaginationSeoMeta($events, $this->tenant);
 
         return Inertia::render('Public/CalendarEventList', [
             'events' => $events,
@@ -584,8 +614,10 @@ class PublicPageController extends PublicController
 
         $calendar->load('tenant:id,alias,fullname,shortname');
 
+        // Use the calendar event's tenant for proper canonical URL
         $seo = $this->shareAndReturnSEOObject(
-            title: $calendar->title.' - '.$this->tenant->shortname,
+            contentTenant: $calendar->tenant,
+            title: $calendar->title.' - '.$calendar->tenant->shortname,
             // Replace " with empty string, because it breaks JSON-LD
             description: app()->getLocale() === 'lt' ? Str::of((strip_tags($calendar->description)))->limit(160)->replaceMatches(pattern: '/\"/', replace: '') : Str::of((strip_tags($calendar->description)))->limit(160)->replaceMatches(pattern: '/\"/', replace: ''),
             image: $calendar->getFirstMediaUrl('images'),
@@ -625,23 +657,49 @@ class PublicPageController extends PublicController
 
         Inertia::share('otherLangURL', route('registrationPage', ['lang' => $otherLocale, 'registrationString' => $otherLocale === 'lt' ? 'registracija' : 'registration', 'registrationForm' => $form->getTranslation('path', $otherLocale)]));
 
+        // Global content - use null for current tenant
         $seo = $this->shareAndReturnSEOObject(
+            contentTenant: null,
             title: $form->name.' - '.$this->tenant->shortname,
         );
+
+        // Check if this is the student rep registration form
+        $formSettings = app(FormSettings::class);
+        $isStudentRepForm = $form->id === $formSettings->student_rep_registration_form_id;
+
+        // Get pre-selected institution from query param (for autofill)
+        $preselectedInstitutionId = request()->query('institution');
 
         return Inertia::render('Public/RegistrationPage', [
             'form' => [
                 ...$form->toArray(),
-                'form_fields' => $form->formFields->map(function ($field) {
+                'form_fields' => $form->formFields->map(function ($field) use ($isStudentRepForm, $formSettings, $preselectedInstitutionId) {
                     $options = $field->options;
 
                     if ($field->use_model_options) {
-                        $options = $field->options_model::all()->map(function ($model) use ($field) {
-                            return [
-                                'value' => $model->id,
-                                'label' => $model->{$field->options_model_field},
-                            ];
-                        });
+                        // Special handling for Institution model on student rep form
+                        if ($isStudentRepForm && $field->options_model === Institution::class) {
+                            $options = $this->getInstitutionsWithoutActiveReps($formSettings, $preselectedInstitutionId)->map(function (\Illuminate\Database\Eloquent\Model $model) use ($field) {
+                                if (! $model instanceof Institution) {
+                                    return [
+                                        'value' => null,
+                                        'label' => null,
+                                    ];
+                                }
+
+                                return [
+                                    'value' => $model->getKey(),
+                                    'label' => $model->getAttribute($field->options_model_field),
+                                ];
+                            })->filter(fn (array $option) => $option['value'] !== null);
+                        } else {
+                            $options = $field->options_model::all()->map(function (\Illuminate\Database\Eloquent\Model $model) use ($field) {
+                                return [
+                                    'value' => $model->getKey(),
+                                    'label' => $model->getAttribute($field->options_model_field),
+                                ];
+                            });
+                        }
                     }
 
                     return [
@@ -653,6 +711,37 @@ class PublicPageController extends PublicController
         ])->withViewData([
             'SEOData' => $seo,
         ]);
+    }
+
+    /**
+     * Get institutions that have duties with no active members (for student rep registration).
+     * Always includes the preselected institution if provided.
+     */
+    protected function getInstitutionsWithoutActiveReps(FormSettings $formSettings, ?string $preselectedInstitutionId = null): \Illuminate\Database\Eloquent\Collection
+    {
+        $allowedTypeIds = $formSettings->getStudentRepInstitutionTypeIds();
+
+        $query = Institution::query()
+            ->where(function ($q) use ($preselectedInstitutionId) {
+                // Include institutions that do not have duties with active users.
+                // Here `duties` is the Institution -> Duty relationship and `current_users` is a nested
+                // relationship/scope on Duty that returns only the members currently active in that duty.
+                $q->whereDoesntHave('duties.current_users');
+
+                // Always include the preselected institution
+                if ($preselectedInstitutionId) {
+                    $q->orWhere('id', $preselectedInstitutionId);
+                }
+            });
+
+        // Filter by allowed institution types if configured
+        if ($allowedTypeIds->isNotEmpty()) {
+            $query->whereHas('types', function ($q) use ($allowedTypeIds) {
+                $q->whereIn('types.id', $allowedTypeIds);
+            });
+        }
+
+        return $query->get();
     }
 
     /**
@@ -736,6 +825,7 @@ class PublicPageController extends PublicController
         $membershipStats = $this->getMembershipStats();
 
         $seo = $this->shareAndReturnSEOObject(
+            contentTenant: $this->tenant,
             title: __('Tapk VU SA nariu').' - '.$this->tenant->shortname,
             description: __('Prisijunk prie VU SA bendruomenės!')
         );

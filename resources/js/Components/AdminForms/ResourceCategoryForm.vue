@@ -7,13 +7,13 @@
       <template #description>
         <MdSuspenseWrapper directory="reservations" :locale="$page.props.app.locale" file="main-info" />
       </template>
-      <NFormItem :label="$t('forms.fields.title')" required>
+      <FormFieldWrapper id="name" :label="$t('forms.fields.title')" required>
         <MultiLocaleInput v-model:input="form.name" :placeholder="RESOURCE_CATEGORY_PLACEHOLDERS.name" />
-      </NFormItem>
-      <NFormItem :label="$t('forms.fields.description')">
+      </FormFieldWrapper>
+      <FormFieldWrapper id="description" :label="$t('forms.fields.description')">
         <MultiLocaleInput v-model:input="form.description" input-type="textarea"
           :placeholder="RESOURCE_CATEGORY_PLACEHOLDERS.description" />
-      </NFormItem>
+      </FormFieldWrapper>
       <Suspense>
         <FluentIconSelect :icon="form.icon" @update:icon="(value) => form.icon = value" />
       </Suspense>
@@ -28,6 +28,7 @@ import { RESOURCE_CATEGORY_PLACEHOLDERS } from "@/Constants/I18n/Placeholders";
 
 import FluentIconSelect from "../FormItems/FluentIconSelect.vue";
 import FormElement from "./FormElement.vue";
+import FormFieldWrapper from "./FormFieldWrapper.vue";
 import MdSuspenseWrapper from "@/Features/MarkdownGetterFromDocs/MdSuspenseWrapper.vue";
 import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";
 import AdminForm from "./AdminForm.vue";
@@ -42,28 +43,7 @@ defineEmits<{
   (event: "delete"): void;
 }>();
 
-//const routeToSubmit = computed(() => {
-//  return props.resourceCategory?.id
-//    ? route(props.modelRoute, props.resourceCategory.id)
-//    : route(props.modelRoute);
-//});
-
 const form = props.rememberKey
   ? useForm(props.rememberKey, props.resourceCategory)
   : useForm(props.resourceCategory);
-
-//const submit = () => {
-//  // add _method: "patch" if it's an update, to the data of the request
-//  // because formdata doesn't support patch, it's needed
-//  router.post(
-//    routeToSubmit.value,
-//    {
-//      ...form,
-//      _method: props.resourceCategory?.id ? "patch" : "post",
-//    },
-//    {
-//      preserveScroll: true,
-//    },
-//  );
-//};
 </script>

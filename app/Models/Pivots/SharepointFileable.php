@@ -4,7 +4,9 @@ namespace App\Models\Pivots;
 
 use App\Models\Institution;
 use App\Models\Meeting;
+use App\Models\SharepointFile;
 use App\Models\Type;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphPivot;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
@@ -17,6 +19,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $fileable
  * @property-read Institution|null $institution
  * @property-read Meeting|null $meeting
+ * @property-read SharepointFile $sharepointFile
  * @property-read Type|null $type
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SharepointFileable newModelQuery()
@@ -37,6 +40,11 @@ class SharepointFileable extends MorphPivot
     public function fileable()
     {
         return $this->morphTo();
+    }
+
+    public function sharepointFile(): BelongsTo
+    {
+        return $this->belongsTo(SharepointFile::class, 'sharepoint_file_id');
     }
 
     public function meeting()

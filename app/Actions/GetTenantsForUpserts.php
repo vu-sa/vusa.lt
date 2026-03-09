@@ -32,7 +32,7 @@ class GetTenantsForUpserts
 
         $tenants = $duties->load('institution.tenant')->pluck('institution.tenant');
 
-        return $tenants->map(
+        return $tenants->unique('id')->map(
             function ($tenant) {
                 return [
                     'id' => $tenant->id,

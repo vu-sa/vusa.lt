@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import SuggestionAlert from './SuggestionAlert.vue';
 
-// Import the mock for laravel-vue-i18n
-import { trans } from '@/mocks/i18n.mock';
+// Translations are now handled globally in .storybook/preview.ts
+// using real translations from lang/*.json files
 
 const meta: Meta<typeof SuggestionAlert> = {
-  title: 'Alerts/SuggestionAlert',
+  title: 'Components/Alerts/SuggestionAlert',
   component: SuggestionAlert,
   argTypes: {
     modelValue: { control: 'boolean' },
@@ -30,15 +30,7 @@ export const Default: Story = {
   render: (args) => ({
     components: { SuggestionAlert },
     setup() {
-      // Configure mock behavior for this story
-      trans.mockImplementation((key) => {
-        // Add translations for keys used in this component
-        const translations: Record<string, string> = {
-          'Įsidėmėk': 'Remember',
-        };
-        return translations[key] || key;
-      });
-      
+      // Translations are handled globally via .storybook/preview.ts
       return { args };
     },
     template: '<SuggestionAlert v-bind="args">This is a suggestion alert with important information for the user. It can contain <strong>rich text</strong> and <ul><li>list items</li><li>for better readability</li></ul></SuggestionAlert>',

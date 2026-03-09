@@ -1,27 +1,22 @@
 <template>
-  <NCard class="max-w-sm" :segmented="{
-    footer: 'soft',
-  }">
-    <template #header>
-      <slot name="header" />
-    </template>
-    <template #header-extra>
-      <slot name="header-extra" />
-    </template>
-    <slot />
-    <template #footer>
+  <Card class="max-w-sm">
+    <CardHeader class="pb-2">
+      <div class="flex items-center justify-between">
+        <slot name="header" />
+        <slot name="header-extra" />
+      </div>
+    </CardHeader>
+    <CardContent>
+      <slot />
+    </CardContent>
+    <CardFooter>
       <div class="flex flex-row items-center">
         <slot name="action-button" />
       </div>
-    </template>
-  </NCard>
+    </CardFooter>
+  </Card>
 </template>
 
 <script setup lang="tsx">
+import { Card, CardContent, CardFooter, CardHeader } from "@/Components/ui/card";
 </script>
-
-<style>
-.n-card>.n-card-header {
-  padding-bottom: 0.5rem;
-}
-</style>

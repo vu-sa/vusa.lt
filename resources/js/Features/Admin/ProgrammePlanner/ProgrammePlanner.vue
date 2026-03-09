@@ -1,52 +1,45 @@
 <template>
-  <NFormItem v-if="showTimeSwitch" label="Rodyti laikus">
-    <NSwitch v-model:value="showTimes" />
-  </NFormItem>
+  <FormFieldWrapper v-if="showTimeSwitch" id="show-times" label="Rodyti laikus">
+    <Switch :checked="showTimes" @update:checked="val => showTimes = val" />
+  </FormFieldWrapper>
   <div class="flex flex-col gap-4 bg-white dark:bg-zinc-800 rounded-lg">
     <div ref="programmeEl" class="mb-3 flex flex-col gap-2">
       <ProgrammeDay v-for="(day, index) in programmeDays" :key="day.id" v-model:day="programmeDays[index]"
         :data-id="day.id">
         <template v-if="editable" #buttons>
-          <NButton size="tiny" secondary circle @click="showDayEditModal = true; selectedDay = day">
-            <template #icon>
-              <IFluentEdit24Filled />
-            </template>
-          </NButton>
-          <NButton size="tiny" secondary circle @click="deleteProgrammeDay(index)">
-            <template #icon>
-              <IFluentDelete24Filled />
-            </template>
-          </NButton>
+          <Button size="icon-xs" variant="ghost" class="rounded-full" @click="showDayEditModal = true; selectedDay = day">
+            <IFluentEdit24Filled />
+          </Button>
+          <Button size="icon-xs" variant="ghost" class="rounded-full" @click="deleteProgrammeDay(index)">
+            <IFluentDelete24Filled />
+          </Button>
         </template>
       </ProgrammeDay>
     </div>
   </div>
   <CardModal v-model:show="showDayEditModal" @close="showDayEditModal = false">
-    <NFormItem label="Dienos pavadinimas">
+    <FormFieldWrapper id="day-title" label="Dienos pavadinimas">
       <MultiLocaleInput v-model:input="selectedDay.title" />
-    </NFormItem>
-    <NFormItem label="Dienos pradžios laikas">
-      <NDatePicker v-model:value="selectedDay.start_time" :first-day-of-week="0" :format="'yyyy-MM-dd HH:mm'"
-        :time-picker-props="{
-          format: 'HH:mm',
-          minutes: 5,
-          hours: Array.from({ length: 22 - 8 + 1 }, (v, i) => i + 8),
-        }" type="datetime" clearable :actions="['confirm']" />
-    </NFormItem>
-    <NButton @click="showDayEditModal = false">
+    </FormFieldWrapper>
+    <FormFieldWrapper id="day-start-time" label="Dienos pradžios laikas">
+      <Input
+        type="datetime-local"
+        :value="formatDatetimeLocal(selectedDay.start_time)"
+        @input="(e: Event) => selectedDay.start_time = parseDatetimeLocal((e.target as HTMLInputElement).value)"
+      />
+    </FormFieldWrapper>
+    <Button variant="outline" @click="showDayEditModal = false">
       Uždaryti
-    </NButton>
+    </Button>
   </CardModal>
   <div class="flex items-center justify-between gap-2">
-    <NButton v-if="editable" rounded-sm @click="createDay">
-      <template #icon>
-        <IFluentCalendarAdd24Regular />
-      </template>
+    <Button v-if="editable" variant="outline" @click="createDay">
+      <IFluentCalendarAdd24Regular />
       Pridėti programos dieną
-    </NButton>
-    <NButton v-if="editable" type="primary" @click="submitForm">
+    </Button>
+    <Button v-if="editable" @click="submitForm">
       Išsaugoti
-    </NButton>
+    </Button>
   </div>
 </template>
 
@@ -55,6 +48,10 @@ import { provide, ref, useTemplateRef } from 'vue';
 import { useSortable } from '@vueuse/integrations/useSortable'
 import { router } from "@inertiajs/vue3";
 
+import { Button } from '@/Components/ui/button';
+import { Input } from '@/Components/ui/input';
+import { Switch } from '@/Components/ui/switch';
+import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import ProgrammeDay from './ProgrammeDay.vue';
 import MultiLocaleInput from '@/Components/FormItems/MultiLocaleInput.vue';
 import CardModal from '@/Components/Modals/CardModal.vue';
@@ -91,6 +88,19 @@ provide('movedElement', { movedElement, updateMovedElement });
 if (props.editable) useSortable<HTMLDivElement | null>(programmeEl, programmeDays, {
   handle: '.day-handle',
 });
+
+function formatDatetimeLocal(value: string | number | null | undefined): string {
+  if (!value) return '';
+  const date = new Date(value);
+  if (isNaN(date.getTime())) return '';
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+function parseDatetimeLocal(value: string): string {
+  if (!value) return '';
+  return new Date(value).toISOString();
+}
 
 function createDay() {
   programmeDays.value?.push({

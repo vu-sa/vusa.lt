@@ -1,23 +1,23 @@
 <script setup lang="ts">
+import type { HTMLAttributes } from "vue"
+import { computed } from "vue"
 import { cn } from '@/Utils/Shadcn/utils'
 import { Skeleton } from '@/Components/ui/skeleton'
-import { computed, type HTMLAttributes } from 'vue'
 
 const props = defineProps<{
   showIcon?: boolean
-  class?: HTMLAttributes['class']
+  class?: HTMLAttributes["class"]
 }>()
 
 const width = computed(() => {
-  return `${Math.floor(Math.random() * 40) + 50}%`;
+  return `${Math.floor(Math.random() * 40) + 50}%`
 })
 </script>
 
 <template>
   <div
-    data-slot="sidebar-menu-skeleton"
     data-sidebar="menu-skeleton"
-    :class="cn('flex h-8 items-center gap-2 rounded-md px-2', props.class)"
+    :class="cn('rounded-md h-8 flex gap-2 px-2 items-center', props.class)"
   >
     <Skeleton
       v-if="showIcon"
@@ -26,7 +26,7 @@ const width = computed(() => {
     />
 
     <Skeleton
-      class="h-4 max-w-(--skeleton-width) flex-1"
+      class="h-4 flex-1 max-w-[--skeleton-width]"
       data-sidebar="menu-skeleton-text"
       :style="{ '--skeleton-width': width }"
     />

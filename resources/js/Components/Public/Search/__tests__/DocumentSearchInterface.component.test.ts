@@ -44,12 +44,17 @@ vi.mock('@/Composables/useDocumentSearch', () => ({
   useDocumentSearch: () => mockSearchController
 }))
 
-// Mock Inertia.js
-vi.mock('@inertiajs/vue3', () => ({
-  usePage: vi.fn(() => ({
-    props: {}
-  }))
-}))
+// Mock Inertia.js - extend the global mock with test-specific overrides
+vi.mock('@inertiajs/vue3', async () => {
+  const inertiaMock = await import('@/mocks/inertia.mock')
+  return {
+    Link: inertiaMock.Link,
+    Head: inertiaMock.Head,
+    usePage: inertiaMock.usePage,
+    router: inertiaMock.router,
+    useForm: inertiaMock.useForm,
+  }
+})
 
 // Mock Laravel Vue i18n
 vi.mock('laravel-vue-i18n', () => ({
@@ -135,10 +140,16 @@ vi.mock('../DocumentResults.vue', () => ({
   }
 }))
 
+vi.mock('../SearchPageSwitcher.vue', () => ({
+  default: {
+    name: 'SearchPageSwitcher',
+    template: '<div class="search-page-switcher">SearchPageSwitcher</div>'
+  }
+}))
+
 describe('DocumentSearchInterface', () => {
   const defaultProps = {
-    initialQuery: '',
-    initialFilters: {}
+    importantContentTypes: []
   }
 
   const createWrapper = (props = {}) => {
@@ -180,24 +191,11 @@ describe('DocumentSearchInterface', () => {
       expect(wrapper.text()).toContain('search.document_search_description')
     })
 
-    it('accepts initial query prop', () => {
-      const wrapper = createWrapper({ initialQuery: 'test query' })
+    it('accepts importantContentTypes prop', () => {
+      const wrapper = createWrapper({ importantContentTypes: ['protokolas', 'nutarimas'] })
       
       // Verify prop is passed correctly
-      expect(wrapper.props().initialQuery).toBe('test query')
-    })
-
-    it('accepts initial filters prop', () => {
-      const initialFilters = {
-        tenants: ['VU SA'],
-        contentTypes: ['protokolas'],
-        language: ['Lietuvių']
-      }
-      
-      const wrapper = createWrapper({ initialFilters })
-      
-      // Verify prop is passed correctly
-      expect(wrapper.props().initialFilters).toEqual(initialFilters)
+      expect(wrapper.props().importantContentTypes).toEqual(['protokolas', 'nutarimas'])
     })
 
     it('renders search controller state correctly', () => {

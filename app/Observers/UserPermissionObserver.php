@@ -6,9 +6,16 @@ use App\Facades\Permission;
 use App\Models\Duty;
 use App\Models\Role;
 use App\Models\User;
+use App\Services\InstitutionAccessService;
+use App\Services\Typesense\TypesenseScopedKeyService;
+use App\Settings\AtstovavimasSettings;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * Observer to handle permission cache invalidation when relevant models change.
+ *
+ * This observer is registered for User, Role, Duty, and Permission models.
+ * The updated/deleted methods accept Model to handle all registered types.
  */
 class UserPermissionObserver
 {
@@ -22,22 +29,39 @@ class UserPermissionObserver
         }
 
         Permission::resetCache($userId);
+        AtstovavimasSettings::clearManagerCache($userId);
+        InstitutionAccessService::invalidateForUser($userId);
+        TypesenseScopedKeyService::invalidateForUser($userId);
     }
 
     /**
-     * Handle the User "updated" event.
+     * Handle the model "updated" event.
+     *
+     * Routes to appropriate handler based on model type.
      */
-    public function updated(User $user): void
+    public function updated(Model $model): void
     {
-        $this->invalidateUserCache($user->id);
+        match (true) {
+            $model instanceof User => $this->invalidateUserCache($model->id),
+            $model instanceof Role => $this->changedRolePermissions($model),
+            $model instanceof Duty => $this->updatedDuty($model),
+            default => null, // Permission model - no specific handler needed
+        };
     }
 
     /**
-     * Handle the User "deleted" event.
+     * Handle the model "deleted" event.
+     *
+     * Routes to appropriate handler based on model type.
      */
-    public function deleted(User $user): void
+    public function deleted(Model $model): void
     {
-        $this->invalidateUserCache($user->id);
+        match (true) {
+            $model instanceof User => $this->invalidateUserCache($model->id),
+            $model instanceof Role => $this->changedRolePermissions($model),
+            $model instanceof Duty => $this->updatedDuty($model),
+            default => null, // Permission model - no specific handler needed
+        };
     }
 
     /**

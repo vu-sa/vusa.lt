@@ -6,7 +6,9 @@ use App\Actions\GetAliasSubdomainForPublic;
 use App\Models\Navigation;
 use App\Models\QuickLink;
 use App\Models\Tenant;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use RalphJSmit\Laravel\SEO\Support\SEOData;
@@ -125,8 +127,212 @@ class PublicController extends Controller
         return app()->getLocale() === 'lt' ? 'en' : 'lt';
     }
 
-    protected function shareAndReturnSEOObject(...$args)
+    /**
+     * Get the subdomain for a tenant.
+     *
+     * @param  Tenant|null  $tenant  The tenant to get subdomain for (defaults to current tenant)
+     */
+    protected function getSubdomainForTenant(?Tenant $tenant = null): string
     {
+        $tenant = $tenant ?? $this->tenant;
+
+        // Main 'vusa' tenant uses 'www' subdomain
+        if ($tenant->alias === 'vusa') {
+            return 'www';
+        }
+
+        return $tenant->alias;
+    }
+
+    /**
+     * Generate a route URL for a specific tenant's subdomain.
+     *
+     * Uses Laravel's route() helper to generate proper URLs. Any parameters
+     * not matching route parameters will be added as query string.
+     *
+     * @param  string  $routeName  The route name
+     * @param  array  $parameters  Route parameters (extra params become query string)
+     * @param  Tenant|null  $tenant  The tenant to use for subdomain (defaults to current tenant)
+     */
+    protected function tenantRoute(string $routeName, array $parameters = [], ?Tenant $tenant = null): string
+    {
+        $subdomain = $this->getSubdomainForTenant($tenant);
+
+        // Merge subdomain with provided parameters
+        // Note: route() automatically adds non-route params as query string
+        return route($routeName, array_merge([
+            'subdomain' => $subdomain,
+        ], $parameters));
+    }
+
+    /**
+     * Generate the canonical URL for the current page.
+     *
+     * Uses Laravel's Route facade to get current route name and parameters,
+     * then rebuilds the URL with the content owner's subdomain.
+     *
+     * @param  Tenant|null  $contentTenant  The tenant that owns the content (for proper canonical URL)
+     * @param  bool  $includeQueryString  Whether to include query parameters (for pagination, etc.)
+     */
+    protected function getCanonicalUrl(?Tenant $contentTenant = null, bool $includeQueryString = false): string
+    {
+        $currentRoute = Route::current();
+        $routeName = Route::currentRouteName();
+
+        if (! $currentRoute || ! $routeName) {
+            // Fallback to current URL if no named route
+            return request()->url();
+        }
+
+        // Get current route parameters and replace subdomain with content tenant's
+        $parameters = $currentRoute->parameters();
+
+        // Include query string parameters if needed
+        if ($includeQueryString) {
+            $queryParams = request()->query();
+            $parameters = array_merge($parameters, $queryParams);
+        }
+
+        return $this->tenantRoute($routeName, $parameters, $contentTenant);
+    }
+
+    /**
+     * Regenerate a route URL with a different tenant's subdomain.
+     *
+     * Takes a route name and parameters (typically from another route generation)
+     * and rebuilds with the specified tenant's subdomain.
+     *
+     * @param  string  $routeName  The route name to generate
+     * @param  array  $parameters  Route parameters
+     * @param  Tenant|null  $tenant  The tenant to use for subdomain (defaults to current tenant)
+     */
+    protected function regenerateRouteForTenant(string $routeName, array $parameters, ?Tenant $tenant = null): string
+    {
+        return $this->tenantRoute($routeName, $parameters, $tenant);
+    }
+
+    /**
+     * Replace the subdomain in an existing URL with a tenant's subdomain.
+     *
+     * This is used for normalizing URLs that were already generated (like otherLangURL)
+     * to use the content owner's subdomain instead of the accessing subdomain.
+     *
+     * @param  string  $url  The URL to modify
+     * @param  Tenant|null  $tenant  The tenant to use for subdomain (defaults to current tenant)
+     */
+    protected function replaceSubdomainInUrl(string $url, ?Tenant $tenant = null): string
+    {
+        $targetSubdomain = $this->getSubdomainForTenant($tenant);
+        $parsedUrl = parse_url($url);
+
+        if (! $parsedUrl || ! isset($parsedUrl['host'])) {
+            return $url;
+        }
+
+        // Get the base domain from config (e.g., 'vusa.lt' from 'https://www.vusa.lt')
+        $baseUrl = config('app.url');
+        $parsedBase = parse_url($baseUrl);
+        $baseDomain = $parsedBase['host'] ?? 'vusa.lt';
+
+        // Remove any subdomain prefix from base domain
+        if (str_starts_with($baseDomain, 'www.')) {
+            $baseDomain = substr($baseDomain, 4);
+        }
+
+        // Build new URL with target subdomain
+        $scheme = $parsedUrl['scheme'] ?? 'https';
+        $newUrl = $scheme.'://'.$targetSubdomain.'.'.$baseDomain;
+
+        if (isset($parsedUrl['port'])) {
+            $newUrl .= ':'.$parsedUrl['port'];
+        }
+
+        if (isset($parsedUrl['path'])) {
+            $newUrl .= $parsedUrl['path'];
+        }
+
+        if (isset($parsedUrl['query'])) {
+            $newUrl .= '?'.$parsedUrl['query'];
+        }
+
+        return $newUrl;
+    }
+
+    /**
+     * Share pagination SEO metadata for rel=next/prev links.
+     *
+     * Uses Laravel's route() helper to generate proper paginated URLs
+     * with the content owner's subdomain.
+     *
+     * @param  LengthAwarePaginator  $paginator  The paginator instance
+     * @param  Tenant|null  $contentTenant  The tenant that owns the content (for proper canonical URLs)
+     */
+    protected function sharePaginationSeoMeta(LengthAwarePaginator $paginator, ?Tenant $contentTenant = null): void
+    {
+        $paginationSeo = [
+            'currentPage' => $paginator->currentPage(),
+            'lastPage' => $paginator->lastPage(),
+            'prevPageUrl' => null,
+            'nextPageUrl' => null,
+        ];
+
+        $currentRoute = Route::current();
+        $routeName = Route::currentRouteName();
+
+        if (! $currentRoute || ! $routeName) {
+            Inertia::share('seo.pagination', $paginationSeo);
+
+            return;
+        }
+
+        // Get current route parameters and query params (excluding page)
+        $routeParams = $currentRoute->parameters();
+        $queryParams = request()->except(['page']);
+
+        if ($paginator->currentPage() > 1) {
+            $prevParams = array_merge($routeParams, $queryParams);
+            // Only add page param if not going to page 1
+            if ($paginator->currentPage() > 2) {
+                $prevParams['page'] = $paginator->currentPage() - 1;
+            }
+            $paginationSeo['prevPageUrl'] = $this->tenantRoute($routeName, $prevParams, $contentTenant);
+        }
+
+        if ($paginator->currentPage() < $paginator->lastPage()) {
+            $nextParams = array_merge($routeParams, $queryParams, [
+                'page' => $paginator->currentPage() + 1,
+            ]);
+            $paginationSeo['nextPageUrl'] = $this->tenantRoute($routeName, $nextParams, $contentTenant);
+        }
+
+        Inertia::share('seo.pagination', $paginationSeo);
+    }
+
+    /**
+     * Share and return SEO object with proper canonical URL based on content ownership.
+     *
+     * @param  Tenant|null  $contentTenant  The tenant that owns the content (for proper canonical URL)
+     * @param  mixed  ...$args  Additional arguments for SEOData
+     */
+    protected function shareAndReturnSEOObject(?Tenant $contentTenant = null, ...$args)
+    {
+        // Generate canonical URL using the content owner's subdomain
+        // This ensures content is always canonicalized to its owner's subdomain
+        $canonicalUrl = $this->getCanonicalUrl(contentTenant: $contentTenant, includeQueryString: true);
+
+        // If canonical_url is not already set in args, add it
+        $hasCanonicalUrl = false;
+        foreach ($args as $key => $value) {
+            if ($key === 'canonical_url' && $value !== null) {
+                $hasCanonicalUrl = true;
+                break;
+            }
+        }
+
+        if (! $hasCanonicalUrl) {
+            $args['canonical_url'] = $canonicalUrl;
+        }
+
         $seoData = new SEOData(...$args);
 
         $seoDataArray = seo(clone $seoData);
@@ -139,7 +345,9 @@ class PublicController extends Controller
         // Add hreflang tags for bilingual content
         $currentLocale = app()->getLocale();
         $otherLocale = $currentLocale === 'lt' ? 'en' : 'lt';
-        $currentUrl = request()->url();
+
+        // Use canonical URL for hreflang (content owner's subdomain)
+        $currentUrl = $canonicalUrl;
 
         // Generate hreflang URLs for current page
         $hreflangTags = [];
@@ -152,20 +360,27 @@ class PublicController extends Controller
         );
 
         // Other language URL (if available via shared otherLangURL)
+        // Note: otherLangURL is already generated via route() with correct subdomain,
+        // but we need to regenerate it with the content tenant's subdomain
         $otherLangURL = Inertia::getShared('otherLangURL');
+        $normalizedOtherLangUrl = null;
+
         if ($otherLangURL) {
+            // Parse the URL to extract route info and regenerate with content tenant
+            // Since otherLangURL was generated via route(), we can use URL replacement
+            $normalizedOtherLangUrl = $this->replaceSubdomainInUrl($otherLangURL, $contentTenant);
             $hreflangTags[] = sprintf(
                 '<link rel="alternate" hreflang="%s" href="%s" />',
                 $otherLocale,
-                $otherLangURL
+                $normalizedOtherLangUrl
             );
         }
 
-        // x-default to Lithuanian (primary language)
-        $defaultUrl = $currentLocale === 'lt' ? $currentUrl : ($otherLangURL ?? $currentUrl);
+        // x-default to Lithuanian (primary language) - use content owner's subdomain
+        $normalizedDefaultUrl = $currentLocale === 'lt' ? $currentUrl : ($normalizedOtherLangUrl ?? $currentUrl);
         $hreflangTags[] = sprintf(
             '<link rel="alternate" hreflang="x-default" href="%s" />',
-            $defaultUrl
+            $normalizedDefaultUrl
         );
 
         // Share hreflang tags

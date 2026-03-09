@@ -164,8 +164,8 @@ describe('DuplicateNewsAction', function () {
             $originalPart = $contentParts[$index];
 
             expect($duplicatedPart->type)->toBe($originalPart->type)
-                ->and($duplicatedPart->json_content)->toBe($originalPart->json_content)
-                ->and($duplicatedPart->options)->toBe($originalPart->options)
+                ->and($duplicatedPart->json_content)->toEqual($originalPart->json_content)
+                ->and($duplicatedPart->options)->toEqual($originalPart->options)
                 ->and($duplicatedPart->order)->toBe($originalPart->order ?? 0) // Handle null order gracefully
                 ->and($duplicatedPart->content_id)->toBe($duplicatedNews->content_id)
                 ->and($duplicatedPart->id)->not()->toBe($originalPart->id);

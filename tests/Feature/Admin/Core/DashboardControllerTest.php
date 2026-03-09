@@ -1,9 +1,11 @@
 <?php
 
+use App\Models\Calendar;
 use App\Models\News;
 use App\Models\Page;
 use App\Models\QuickLink;
 use App\Models\Resource;
+use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -22,7 +24,6 @@ beforeEach(function () {
     $this->quickLink = QuickLink::factory()->for($this->tenant)->create();
     $this->resource = Resource::factory()->for($this->tenant)->create();
 });
-
 describe('dashboard access', function () {
     test('any authenticated user can access dashboard', function () {
         // Dashboard is accessible to any authenticated user
@@ -34,7 +35,11 @@ describe('dashboard access', function () {
                 ->has('taskStats')
                 ->has('unreadNotificationsCount')
                 ->has('hasNotifications')
-                ->has('user')
+                ->has('upcomingTasks')
+                ->has('upcomingMeetings')
+                ->has('institutionsNeedingAttention')
+                ->has('upcomingCalendarEvents')
+                ->has('latestNews')
             );
     });
 
@@ -45,13 +50,16 @@ describe('dashboard access', function () {
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/ShowAdminHome')
                 ->has('taskStats')
-                ->has('taskStats.completed')
-                ->has('taskStats.pending')
+                ->has('taskStats.total')
                 ->has('taskStats.overdue')
+                ->has('taskStats.dueSoon')
                 ->has('unreadNotificationsCount')
                 ->has('hasNotifications')
-                ->has('user')
-                ->where('user.id', $this->admin->id)
+                ->has('upcomingTasks')
+                ->has('upcomingMeetings')
+                ->has('institutionsNeedingAttention')
+                ->has('upcomingCalendarEvents')
+                ->has('latestNews')
             );
     });
 
@@ -70,9 +78,9 @@ describe('dashboard data structure', function () {
                 ->component('Admin/ShowAdminHome')
                 ->has('taskStats')
                 ->where('taskStats', function ($taskStats) {
-                    return isset($taskStats['completed'])
-                        && isset($taskStats['pending'])
-                        && isset($taskStats['overdue']);
+                    return isset($taskStats['total'])
+                        && isset($taskStats['overdue'])
+                        && isset($taskStats['dueSoon']);
                 })
             );
     });
@@ -94,16 +102,15 @@ describe('dashboard data structure', function () {
             );
     });
 
-    test('user data is included', function () {
+    test('upcoming data is included', function () {
         asUser($this->admin)
             ->get(route('dashboard'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/ShowAdminHome')
-                ->has('user')
-                ->where('user.id', $this->admin->id)
-                ->where('user.name', $this->admin->name)
-                ->where('user.email', $this->admin->email)
+                ->has('upcomingTasks')
+                ->has('upcomingMeetings')
+                ->has('institutionsNeedingAttention')
             );
     });
 });
@@ -123,9 +130,251 @@ describe('dashboard performance', function () {
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/ShowAdminHome')
-                ->where('taskStats.completed', 0)
-                ->where('taskStats.pending', 0)
+                ->where('taskStats.total', 0)
                 ->where('taskStats.overdue', 0)
+                ->where('taskStats.dueSoon', 0)
+            );
+    });
+});
+
+describe('dashboard tasks with due dates', function () {
+    test('tasks with due dates are properly formatted', function () {
+        // Create a task with a due date for the admin user
+        $task = Task::factory()->create([
+            'name' => 'Test Task',
+            'due_date' => now()->addDays(3),
+            'completed_at' => null,
+        ]);
+        $task->users()->attach($this->admin->id);
+
+        asUser($this->admin)
+            ->get(route('dashboard'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/ShowAdminHome')
+                ->has('upcomingTasks')
+                ->where('upcomingTasks.0.name', 'Test Task')
+                ->where('upcomingTasks.0.is_overdue', false)
+                ->has('upcomingTasks.0.due_date')
+            );
+    });
+
+    test('overdue tasks are correctly identified', function () {
+        // Create an overdue task
+        $task = Task::factory()->create([
+            'name' => 'Overdue Task',
+            'due_date' => now()->subDays(2),
+            'completed_at' => null,
+        ]);
+        $task->users()->attach($this->admin->id);
+
+        asUser($this->admin)
+            ->get(route('dashboard'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/ShowAdminHome')
+                ->where('taskStats.overdue', 1)
+            );
+    });
+
+    test('completed tasks are not included in statistics', function () {
+        // Create a completed task
+        $task = Task::factory()->create([
+            'name' => 'Completed Task',
+            'due_date' => now()->addDays(1),
+            'completed_at' => now(),
+        ]);
+        $task->users()->attach($this->admin->id);
+
+        asUser($this->admin)
+            ->get(route('dashboard'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/ShowAdminHome')
+                ->where('taskStats.total', 0)
+            );
+    });
+
+    test('tasks due within 7 days are counted as dueSoon', function () {
+        // Create a task due in 5 days
+        $task = Task::factory()->create([
+            'name' => 'Due Soon Task',
+            'due_date' => now()->addDays(5),
+            'completed_at' => null,
+        ]);
+        $task->users()->attach($this->admin->id);
+
+        asUser($this->admin)
+            ->get(route('dashboard'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/ShowAdminHome')
+                ->where('taskStats.dueSoon', 1)
+            );
+    });
+});
+
+describe('dashboard calendar and news', function () {
+    test('upcoming calendar events are included', function () {
+        // Create upcoming calendar events
+        Calendar::factory()->for($this->tenant)->create([
+            'title' => ['lt' => 'Test Event LT', 'en' => 'Test Event EN'],
+            'date' => now()->addDays(5),
+            'is_draft' => false,
+        ]);
+
+        asUser($this->admin)
+            ->get(route('dashboard'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/ShowAdminHome')
+                ->has('upcomingCalendarEvents')
+            );
+    });
+
+    test('draft calendar events are not included', function () {
+        // Clear existing calendar events
+        Calendar::query()->delete();
+
+        // Create a draft calendar event
+        Calendar::factory()->for($this->tenant)->create([
+            'title' => ['lt' => 'Draft Event', 'en' => 'Draft Event'],
+            'date' => now()->addDays(5),
+            'is_draft' => true,
+        ]);
+
+        asUser($this->admin)
+            ->get(route('dashboard'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/ShowAdminHome')
+                ->has('upcomingCalendarEvents', 0)
+            );
+    });
+
+    test('past calendar events are not included', function () {
+        // Clear existing calendar events
+        Calendar::query()->delete();
+
+        // Create a past calendar event
+        Calendar::factory()->for($this->tenant)->create([
+            'title' => ['lt' => 'Past Event', 'en' => 'Past Event'],
+            'date' => now()->subDays(5),
+            'is_draft' => false,
+        ]);
+
+        asUser($this->admin)
+            ->get(route('dashboard'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/ShowAdminHome')
+                ->has('upcomingCalendarEvents', 0)
+            );
+    });
+
+    test('latest news items are included', function () {
+        // Create published news
+        News::factory()->for($this->tenant)->create([
+            'title' => 'Latest News',
+            'lang' => 'lt',
+            'publish_time' => now()->subHours(1),
+            'draft' => null,
+        ]);
+
+        asUser($this->admin)
+            ->get(route('dashboard'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/ShowAdminHome')
+                ->has('latestNews')
+            );
+    });
+
+    test('draft news items are not included', function () {
+        // Delete any existing news first
+        News::query()->delete();
+
+        // Create draft news
+        News::factory()->for($this->tenant)->create([
+            'title' => 'Draft News',
+            'lang' => 'lt',
+            'publish_time' => now()->subHours(1),
+            'draft' => 1,
+        ]);
+
+        asUser($this->admin)
+            ->get(route('dashboard'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/ShowAdminHome')
+                ->has('latestNews', 0)
+            );
+    });
+
+    test('future news items are not included', function () {
+        // Delete any existing news first
+        News::query()->delete();
+
+        // Create future news (scheduled)
+        News::factory()->for($this->tenant)->create([
+            'title' => 'Future News',
+            'lang' => 'lt',
+            'publish_time' => now()->addDays(1),
+            'draft' => null,
+        ]);
+
+        asUser($this->admin)
+            ->get(route('dashboard'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/ShowAdminHome')
+                ->has('latestNews', 0)
+            );
+    });
+
+    test('news without image returns fallback image', function () {
+        // Delete any existing news first
+        News::query()->delete();
+
+        // Create news without an image
+        News::factory()->for($this->tenant)->create([
+            'title' => 'News Without Image',
+            'lang' => 'lt',
+            'image' => null,
+            'publish_time' => now()->subHours(1),
+            'draft' => false,
+        ]);
+
+        asUser($this->admin)
+            ->get(route('dashboard'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/ShowAdminHome')
+                ->has('latestNews', 1)
+                ->where('latestNews.0.image', '/images/icons/naujienu_foto.png')
+            );
+    });
+
+    test('news with external image returns actual image URL', function () {
+        // Delete any existing news first
+        News::query()->delete();
+
+        // Create news with an external image URL
+        News::factory()->for($this->tenant)->create([
+            'title' => 'News With External Image',
+            'lang' => 'lt',
+            'image' => 'https://example.com/news-image.jpg',
+            'publish_time' => now()->subHours(1),
+            'draft' => false,
+        ]);
+
+        asUser($this->admin)
+            ->get(route('dashboard'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/ShowAdminHome')
+                ->has('latestNews', 1)
+                ->where('latestNews.0.image', 'https://example.com/news-image.jpg')
             );
     });
 });
@@ -138,8 +387,8 @@ describe('atstovavimas dashboard', function () {
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Dashboard/ShowAtstovavimas')
                 ->has('user')
-                ->has('tenants')
-                ->has('providedTenant')
+                ->has('userInstitutions')
+                ->has('availableTenants')
             );
     });
 
@@ -150,7 +399,8 @@ describe('atstovavimas dashboard', function () {
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Dashboard/ShowAtstovavimas')
                 ->has('user')
-                ->has('tenants')
+                ->has('userInstitutions')
+                ->has('availableTenants')
             );
     });
 
@@ -160,20 +410,252 @@ describe('atstovavimas dashboard', function () {
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Dashboard/ShowAtstovavimas')
-                ->where('tenants', function ($tenants) {
+                ->where('availableTenants', function ($tenants) {
                     return collect($tenants)->every(fn ($tenant) => $tenant['type'] !== 'pkp');
                 })
             );
     });
 
-    test('atstovavimas handles tenant selection', function () {
-        asUser($this->admin)
-            ->get(route('dashboard.atstovavimas', ['tenant_id' => $this->tenant->id]))
+    test('atstovavimas provides accessible institutions and available tenants', function () {
+        // Give the admin the institutions.read.padalinys permission so they can see tenant data
+        $permission = \App\Models\Permission::firstOrCreate(['name' => 'institutions.read.padalinys', 'guard_name' => 'web']);
+        $duty = $this->admin->current_duties->first();
+        if ($duty) {
+            $role = \App\Models\Role::firstOrCreate(['name' => 'Institution Reader Test', 'guard_name' => 'web']);
+            $role->givePermissionTo($permission);
+            $duty->assignRole($role);
+        }
+
+        $response = asUser($this->admin)->get(route('dashboard.atstovavimas'));
+
+        $response->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Dashboard/ShowAtstovavimas')
+                ->has('userInstitutions')
+                ->has('availableTenants')
+                ->where('availableTenants', function ($tenants) {
+                    // Convert to collection if it's an array, or keep as collection
+                    $collection = collect($tenants);
+
+                    // Should have at least one tenant and not include PKP type
+                    return $collection->count() > 0 &&
+                           $collection->every(fn ($tenant) => $tenant['type'] !== 'pkp');
+                })
+            );
+    });
+});
+
+describe('atstovavimas dashboard authorization', function () {
+    test('regular user only sees their assigned institutions', function () {
+        // Regular user without coordinator role should only see their own institution
+        $userInstitutionId = $this->user->current_duties->first()->institution_id;
+
+        asUser($this->user)
+            ->get(route('dashboard.atstovavimas'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Dashboard/ShowAtstovavimas')
-                ->has('providedTenant')
-                ->where('providedTenant.id', $this->tenant->id)
+                ->has('userInstitutions')
+                ->where('userInstitutions', function ($institutions) use ($userInstitutionId) {
+                    $collection = collect($institutions);
+
+                    // Should only contain the user's assigned institution
+                    return $collection->count() >= 1 &&
+                           $collection->contains(fn ($inst) => $inst['id'] == $userInstitutionId);
+                })
+            );
+    });
+
+    test('regular user has no available tenants for tenant tab', function () {
+        // Regular user without coordinator role should not see the tenant tab
+        asUser($this->user)
+            ->get(route('dashboard.atstovavimas'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Dashboard/ShowAtstovavimas')
+                ->where('availableTenants', function ($tenants) {
+                    $collection = collect($tenants);
+
+                    // Regular users should have empty availableTenants
+                    return $collection->isEmpty();
+                })
+            );
+    });
+
+    test('user with global read permission sees all tenants', function () {
+        $mainTenant = Tenant::factory()->create(['type' => 'pagrindinis']);
+        $otherTenant = Tenant::factory()->create(['type' => 'padalinys']);
+
+        // Create a user with institutions.read.* permission (global access)
+        $globalPermission = \App\Models\Permission::firstOrCreate(['name' => 'institutions.read.*', 'guard_name' => 'web']);
+        $globalRole = \App\Models\Role::firstOrCreate([
+            'name' => 'Global Institution Reader',
+            'guard_name' => 'web',
+        ]);
+        $globalRole->givePermissionTo($globalPermission);
+
+        $globalUser = makeTenantUserWithRole($globalRole->name, $mainTenant);
+
+        asUser($globalUser)
+            ->get(route('dashboard.atstovavimas'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Dashboard/ShowAtstovavimas')
+                ->where('availableTenants', function ($tenants) use ($mainTenant, $otherTenant) {
+                    $collection = collect($tenants);
+
+                    return $collection->contains(fn ($tenant) => $tenant['id'] == $mainTenant->id)
+                        && $collection->contains(fn ($tenant) => $tenant['id'] == $otherTenant->id);
+                })
+            );
+    });
+
+    test('user with padalinys read permission sees their tenants', function () {
+        // Give the admin the institutions.read.padalinys permission
+        $permission = \App\Models\Permission::firstOrCreate(['name' => 'institutions.read.padalinys', 'guard_name' => 'web']);
+        $duty = $this->admin->current_duties->first();
+        if ($duty) {
+            $role = \App\Models\Role::firstOrCreate(['name' => 'Institution Reader Test', 'guard_name' => 'web']);
+            $role->givePermissionTo($permission);
+            $duty->assignRole($role);
+        }
+
+        // The admin should have available tenants for the tenant tab
+        asUser($this->admin)
+            ->get(route('dashboard.atstovavimas'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Dashboard/ShowAtstovavimas')
+                ->has('userInstitutions')
+                ->where('availableTenants', function ($tenants) {
+                    $collection = collect($tenants);
+
+                    // User with permission should have available tenants for the tenant tab
+                    return $collection->isNotEmpty();
+                })
+            );
+    });
+
+    test('super admin sees all institutions across tenants via tenant tab', function () {
+        $superAdmin = makeAdminUser($this->tenant);
+
+        // Create an institution in a different tenant
+        $otherTenant = Tenant::factory()->create(['type' => 'padalinys']);
+        $otherInstitution = \App\Models\Institution::factory()->for($otherTenant)->create();
+
+        // Verify super admin has access to all tenants via availableTenants
+        asUser($superAdmin)
+            ->get(route('dashboard.atstovavimas'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Dashboard/ShowAtstovavimas')
+                ->has('userInstitutions')
+                ->where('availableTenants', function ($tenants) use ($otherTenant) {
+                    $collection = collect($tenants);
+
+                    // Super admin should see all non-PKP tenants including the other tenant
+                    return $collection->isNotEmpty() &&
+                           $collection->contains(fn ($t) => $t['id'] == $otherTenant->id);
+                })
+            );
+    });
+});
+
+describe('atstovavimas dashboard periodicity', function () {
+    test('user institutions include meeting_periodicity_days', function () {
+        // Create a non-PKP tenant to ensure institution is not filtered out
+        $nonPkpTenant = Tenant::factory()->create(['type' => 'padalinys']);
+
+        // Create a user with an assigned institution that has custom periodicity
+        $institution = \App\Models\Institution::factory()->for($nonPkpTenant)->create([
+            'meeting_periodicity_days' => 21,
+            'alias' => 'periodicity-test-'.uniqid(),
+        ]);
+
+        // Create a duty and assign it to the user
+        $studentRepType = \App\Models\Type::query()->where('slug', 'studentu-atstovai')->first()
+            ?? \App\Models\Type::factory()->create(['slug' => 'studentu-atstovai', 'model_type' => \App\Models\Duty::class]);
+
+        $duty = \App\Models\Duty::factory()
+            ->for($institution)
+            ->hasAttached($studentRepType, [], 'types')
+            ->create();
+
+        // Create a fresh user for this test to avoid interference
+        $testUser = \App\Models\User::factory()->create();
+        $testUser->duties()->attach($duty, [
+            'start_date' => now()->subMonth(),
+            'end_date' => null,
+        ]);
+
+        asUser($testUser)
+            ->get(route('dashboard.atstovavimas'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Dashboard/ShowAtstovavimas')
+                ->has('userInstitutions')
+                ->where('userInstitutions', function ($institutions) use ($institution) {
+                    $collection = collect($institutions);
+
+                    // If no institutions found, the closure returns false which fails the test
+                    if ($collection->isEmpty()) {
+                        return false;
+                    }
+
+                    $testInstitution = $collection->firstWhere('id', $institution->id);
+
+                    // Institution should have meeting_periodicity_days appended
+                    return $testInstitution !== null &&
+                           isset($testInstitution['meeting_periodicity_days']) &&
+                           $testInstitution['meeting_periodicity_days'] === 21;
+                })
+            );
+    });
+
+    test('user institutions use type periodicity when no override', function () {
+        // Create a type with custom periodicity
+        $institutionType = \App\Models\Type::factory()->create([
+            'model_type' => \App\Models\Institution::class,
+            'extra_attributes' => ['meeting_periodicity_days' => 14],
+        ]);
+
+        // Create an institution with no override
+        $institution = \App\Models\Institution::factory()->for($this->tenant)->create([
+            'meeting_periodicity_days' => null,
+            'alias' => 'periodicity-type-test-'.uniqid(),
+        ]);
+        $institution->types()->attach($institutionType);
+
+        // Create a duty and assign it to the user
+        $studentRepType = \App\Models\Type::query()->where('slug', 'studentu-atstovai')->first()
+            ?? \App\Models\Type::factory()->create(['slug' => 'studentu-atstovai', 'model_type' => \App\Models\Duty::class]);
+
+        $duty = \App\Models\Duty::factory()
+            ->for($institution)
+            ->hasAttached($studentRepType, [], 'types')
+            ->create();
+
+        // Create a fresh user for this test to avoid interference
+        $testUser = \App\Models\User::factory()->create();
+        $testUser->duties()->attach($duty, [
+            'start_date' => now()->subMonth(),
+            'end_date' => null,
+        ]);
+
+        asUser($testUser)
+            ->get(route('dashboard.atstovavimas'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Dashboard/ShowAtstovavimas')
+                ->where('userInstitutions', function ($institutions) use ($institution) {
+                    $collection = collect($institutions);
+                    $testInstitution = $collection->firstWhere('id', $institution->id);
+
+                    // Institution should inherit type's periodicity
+                    return $testInstitution !== null &&
+                           isset($testInstitution['meeting_periodicity_days']) &&
+                           $testInstitution['meeting_periodicity_days'] === 14;
+                })
             );
     });
 });
@@ -425,57 +907,34 @@ describe('feedback functionality', function () {
     });
 });
 
-describe('atstovavimas summary', function () {
-    test('admin can access atstovavimas summary', function () {
-        asUser($this->admin)
-            ->get(route('dashboard.atstovavimas.summary'))
-            ->assertStatus(200)
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Dashboard/ShowAtstovavimasActivity')
-                ->has('meetings')
-                ->has('tenants')
-                ->has('date')
-                ->has('providedTenant')
-            );
-    });
-
-    test('atstovavimas summary accepts date parameter', function () {
-        $testDate = '2024-01-15';
-
-        asUser($this->admin)
-            ->get(route('dashboard.atstovavimas.summary', ['date' => $testDate]))
-            ->assertStatus(200)
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Dashboard/ShowAtstovavimasActivity')
-                ->where('date', $testDate)
-            );
-    });
-
-    test('atstovavimas summary handles tenant filtering', function () {
-        asUser($this->admin)
-            ->get(route('dashboard.atstovavimas.summary', ['tenant_id' => $this->tenant->id]))
-            ->assertStatus(200)
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Dashboard/ShowAtstovavimasActivity')
-                ->has('providedTenant')
-                ->where('providedTenant.id', $this->tenant->id)
-            );
-    });
-});
+// Removed: atstovavimas summary feature and component were deprecated.
 
 describe('tenant isolation', function () {
     beforeEach(function () {
         $this->otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->first();
         $this->otherAdmin = makeTenantUserWithRole('Communication Coordinator', $this->otherTenant);
+
+        // Give Communication Coordinators the institutions.read.padalinys permission
+        // This replaces the old role-based visibility settings
+        $permission = \App\Models\Permission::firstOrCreate(['name' => 'institutions.read.padalinys', 'guard_name' => 'web']);
+        $coordinatorRole = \App\Models\Role::where('name', 'Communication Coordinator')->first();
+        if ($coordinatorRole && ! $coordinatorRole->hasPermissionTo($permission)) {
+            $coordinatorRole->givePermissionTo($permission);
+        }
     });
 
-    test('user only sees their tenant data in atstovavimas', function () {
+    test('user sees institutions and tenants based on their permissions', function () {
         asUser($this->admin)
-            ->get(route('dashboard.atstovavimas', ['tenant_id' => $this->tenant->id]))
+            ->get(route('dashboard.atstovavimas'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Dashboard/ShowAtstovavimas')
-                ->where('providedTenant.id', $this->tenant->id)
+                ->has('userInstitutions')
+                ->has('availableTenants')
+                ->where('availableTenants', function ($tenants) {
+                    // User should see tenants they have permissions for
+                    return collect($tenants)->count() > 0;
+                })
             );
     });
 
@@ -491,6 +950,285 @@ describe('tenant isolation', function () {
                         return $tenant['id'] === $this->tenant->id || $tenant['type'] === 'pagrindinis';
                     });
                 })
+            );
+    });
+});
+
+describe('atstovavimas related institutions', function () {
+    beforeEach(function () {
+        // Create a relationship type
+        $this->relationship = new \App\Models\Relationship([
+            'name' => 'Test Relationship',
+            'slug' => 'test-relationship-'.uniqid(),
+            'description' => 'Test relationship for dashboard',
+        ]);
+        $this->relationship->save();
+
+        // Get user's institution
+        $this->userInstitution = $this->user->current_duties->first()->institution;
+
+        // Create a related institution in the same tenant
+        $this->relatedInstitution = \App\Models\Institution::factory()->for($this->tenant)->create([
+            'name' => ['lt' => 'Susijusi institucija', 'en' => 'Related Institution'],
+        ]);
+    });
+
+    test('atstovavimas returns mayHaveRelatedInstitutions flag', function () {
+        asUser($this->user)
+            ->get(route('dashboard.atstovavimas'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Dashboard/ShowAtstovavimas')
+                ->has('mayHaveRelatedInstitutions')
+            );
+    });
+
+    test('relatedInstitutions lazy load returns institutions with outgoing relationship', function () {
+        // Create outgoing relationship (user's institution -> related)
+        $relationshipable = new \App\Models\Pivots\Relationshipable([
+            'relationship_id' => $this->relationship->id,
+            'relationshipable_type' => \App\Models\Institution::class,
+            'relationshipable_id' => $this->userInstitution->id,
+            'related_model_id' => $this->relatedInstitution->id,
+            'bidirectional' => false,
+        ]);
+        $relationshipable->save();
+
+        // Clear cache
+        \App\Services\RelationshipService::clearRelatedInstitutionsCache($this->userInstitution->id);
+
+        // Use reloadOnly to test the lazy-loaded relatedInstitutions prop
+        asUser($this->user)
+            ->get(route('dashboard.atstovavimas'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Dashboard/ShowAtstovavimas')
+                ->missing('relatedInstitutions') // Lazy props are not in initial response
+                ->reloadOnly('relatedInstitutions', fn (Assert $reload) => $reload
+                    ->has('relatedInstitutions')
+                    ->where('relatedInstitutions', function ($institutions) {
+                        $collection = collect($institutions);
+                        if ($collection->isEmpty()) {
+                            return false;
+                        }
+
+                        // Should have the related institution
+                        $found = $collection->firstWhere('id', $this->relatedInstitution->id);
+                        if (! $found) {
+                            return false;
+                        }
+
+                        // Should be marked as related with correct metadata
+                        return $found['is_related'] === true &&
+                               $found['authorized'] === true &&
+                               $found['relationship_direction'] === 'outgoing';
+                    })
+                )
+            );
+    });
+
+    test('relatedInstitutions returns incoming relationships with authorized = false when not bidirectional', function () {
+        // Create incoming relationship (related -> user's institution, NOT bidirectional)
+        $relationshipable = new \App\Models\Pivots\Relationshipable([
+            'relationship_id' => $this->relationship->id,
+            'relationshipable_type' => \App\Models\Institution::class,
+            'relationshipable_id' => $this->relatedInstitution->id,
+            'related_model_id' => $this->userInstitution->id,
+            'bidirectional' => false,
+        ]);
+        $relationshipable->save();
+
+        // Clear cache
+        \App\Services\RelationshipService::clearRelatedInstitutionsCache($this->userInstitution->id);
+
+        // Use reloadOnly to test the lazy-loaded relatedInstitutions prop
+        asUser($this->user)
+            ->get(route('dashboard.atstovavimas'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Dashboard/ShowAtstovavimas')
+                ->missing('relatedInstitutions')
+                ->reloadOnly('relatedInstitutions', fn (Assert $reload) => $reload
+                    ->has('relatedInstitutions')
+                    ->where('relatedInstitutions', function ($institutions) {
+                        $collection = collect($institutions);
+                        if ($collection->isEmpty()) {
+                            return false;
+                        }
+
+                        // Should have the related institution
+                        $found = $collection->firstWhere('id', $this->relatedInstitution->id);
+                        if (! $found) {
+                            return false;
+                        }
+
+                        // Should be marked as incoming with authorized = false
+                        return $found['is_related'] === true &&
+                               $found['authorized'] === false &&
+                               $found['relationship_direction'] === 'incoming';
+                    })
+                )
+            );
+    });
+
+    test('relatedInstitutions returns incoming relationships with authorized = true when bidirectional', function () {
+        // Create incoming relationship (related -> user's institution, IS bidirectional)
+        $relationshipable = new \App\Models\Pivots\Relationshipable([
+            'relationship_id' => $this->relationship->id,
+            'relationshipable_type' => \App\Models\Institution::class,
+            'relationshipable_id' => $this->relatedInstitution->id,
+            'related_model_id' => $this->userInstitution->id,
+            'bidirectional' => true,
+        ]);
+        $relationshipable->save();
+
+        // Clear cache
+        \App\Services\RelationshipService::clearRelatedInstitutionsCache($this->userInstitution->id);
+
+        // Use reloadOnly to test the lazy-loaded relatedInstitutions prop
+        asUser($this->user)
+            ->get(route('dashboard.atstovavimas'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Dashboard/ShowAtstovavimas')
+                ->missing('relatedInstitutions')
+                ->reloadOnly('relatedInstitutions', fn (Assert $reload) => $reload
+                    ->has('relatedInstitutions')
+                    ->where('relatedInstitutions', function ($institutions) {
+                        $collection = collect($institutions);
+                        if ($collection->isEmpty()) {
+                            return false;
+                        }
+
+                        // Should have the related institution
+                        $found = $collection->firstWhere('id', $this->relatedInstitution->id);
+                        if (! $found) {
+                            return false;
+                        }
+
+                        // Should be marked as incoming with authorized = true (bidirectional!)
+                        return $found['is_related'] === true &&
+                               $found['authorized'] === true &&
+                               $found['relationship_direction'] === 'incoming';
+                    })
+                )
+            );
+    });
+
+    test('authorized related institutions include meetings with agenda items', function () {
+        // Create outgoing relationship (authorized)
+        $relationshipable = new \App\Models\Pivots\Relationshipable([
+            'relationship_id' => $this->relationship->id,
+            'relationshipable_type' => \App\Models\Institution::class,
+            'relationshipable_id' => $this->userInstitution->id,
+            'related_model_id' => $this->relatedInstitution->id,
+            'bidirectional' => false,
+        ]);
+        $relationshipable->save();
+
+        // Create meeting with agenda item
+        $meeting = \App\Models\Meeting::factory()->create(['start_time' => now()]);
+        $meeting->institutions()->attach($this->relatedInstitution->id);
+        $agendaItem = \App\Models\Pivots\AgendaItem::factory()->create([
+            'meeting_id' => $meeting->id,
+            'title' => 'Test Agenda Item',
+        ]);
+
+        // Clear cache
+        \App\Services\RelationshipService::clearRelatedInstitutionsCache($this->userInstitution->id);
+
+        // Use reloadOnly to test the lazy-loaded relatedInstitutions prop
+        asUser($this->user)
+            ->get(route('dashboard.atstovavimas'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Dashboard/ShowAtstovavimas')
+                ->missing('relatedInstitutions')
+                ->reloadOnly('relatedInstitutions', fn (Assert $reload) => $reload
+                    ->has('relatedInstitutions')
+                    ->where('relatedInstitutions', function ($institutions) {
+                        $collection = collect($institutions);
+                        $found = $collection->firstWhere('id', $this->relatedInstitution->id);
+                        if (! $found) {
+                            return false;
+                        }
+
+                        // Authorized institution should have meetings with agenda items
+                        $meetings = collect($found['meetings'] ?? []);
+                        if ($meetings->isEmpty()) {
+                            return false;
+                        }
+
+                        $firstMeeting = $meetings->first();
+                        $agendaItems = collect($firstMeeting['agenda_items'] ?? []);
+
+                        return $agendaItems->isNotEmpty();
+                    })
+                )
+            );
+    });
+
+    test('unauthorized related institutions include meetings but no agenda items', function () {
+        // Create incoming relationship (NOT authorized because NOT bidirectional)
+        $relationshipable = new \App\Models\Pivots\Relationshipable([
+            'relationship_id' => $this->relationship->id,
+            'relationshipable_type' => \App\Models\Institution::class,
+            'relationshipable_id' => $this->relatedInstitution->id,
+            'related_model_id' => $this->userInstitution->id,
+            'bidirectional' => false,
+        ]);
+        $relationshipable->save();
+
+        // Create meeting and attach to related institution
+        $meeting = \App\Models\Meeting::factory()->create(['start_time' => now()]);
+        $meeting->institutions()->attach($this->relatedInstitution->id);
+
+        // Create agenda item for this meeting (should NOT be loaded for unauthorized)
+        $agendaItem = \App\Models\Pivots\AgendaItem::factory()->create([
+            'meeting_id' => $meeting->id,
+            'title' => 'Test Agenda Item',
+        ]);
+
+        // Clear cache
+        \App\Services\RelationshipService::clearRelatedInstitutionsCache($this->userInstitution->id);
+
+        // Use reloadOnly to test the lazy-loaded relatedInstitutions prop
+        asUser($this->user)
+            ->get(route('dashboard.atstovavimas'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Dashboard/ShowAtstovavimas')
+                ->missing('relatedInstitutions')
+                ->reloadOnly('relatedInstitutions', fn (Assert $reload) => $reload
+                    ->has('relatedInstitutions')
+                    ->where('relatedInstitutions', function ($institutions) {
+                        $collection = collect($institutions);
+                        $found = $collection->firstWhere('id', $this->relatedInstitution->id);
+
+                        if (! $found) {
+                            return false;
+                        }
+
+                        // Institution should be unauthorized
+                        if ($found['authorized'] !== false) {
+                            return false;
+                        }
+
+                        // Should have meetings
+                        $meetings = collect($found['meetings'] ?? []);
+                        if ($meetings->isEmpty()) {
+                            return false;
+                        }
+
+                        $firstMeeting = $meetings->first();
+
+                        // For unauthorized institutions, agenda_items should NOT be loaded
+                        // Since Laravel doesn't eager load them, the key should be missing or empty
+                        $hasAgendaItems = isset($firstMeeting['agenda_items']) && ! empty($firstMeeting['agenda_items']);
+
+                        return ! $hasAgendaItems;
+                    })
+                )
             );
     });
 });

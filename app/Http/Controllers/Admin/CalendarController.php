@@ -4,38 +4,70 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\DuplicateCalendarAction;
 use App\Actions\GetTenantsForUpserts;
+use App\Actions\HandleModelMediaUploads;
 use App\Http\Controllers\AdminController;
+use App\Http\Requests\IndexCalendarRequest;
 use App\Http\Requests\StoreCalendarRequest;
 use App\Http\Requests\UpdateCalendarRequest;
+use App\Http\Traits\HasTanstackTables;
 use App\Models\Calendar;
 use App\Models\Category;
 use App\Services\ModelAuthorizer as Authorizer;
-use App\Services\ModelIndexer;
+use App\Services\TanstackTableService;
 use Illuminate\Support\Facades\DB;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class CalendarController extends AdminController
 {
-    public function __construct(public Authorizer $authorizer) {}
+    use HasTanstackTables;
+
+    public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService) {}
 
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(IndexCalendarRequest $request)
     {
         $this->handleAuthorization('viewAny', Calendar::class);
 
-        $indexer = new ModelIndexer(new Calendar);
+        $query = Calendar::query()->with(['category', 'tenant:id,shortname']);
 
-        $calendar = $indexer
-            ->setEloquentQuery([fn ($query) => $query->with('category')])
-            ->filterAllColumns()
-            ->sortAllColumns()
-            ->builder->paginate(20);
+        $searchableColumns = ['title'];
+
+        $query = $this->applyTanstackFilters(
+            $query,
+            $request,
+            $this->tableService,
+            $searchableColumns,
+            [
+                'applySortBeforePagination' => true,
+                'tenantRelation' => 'tenant',
+                'permission' => 'calendars.read.padalinys',
+            ]
+        );
+
+        $calendar = $query->paginate($request->input('per_page', 20))
+            ->withQueryString();
 
         return $this->inertiaResponse('Admin/Calendar/IndexCalendarEvents', [
-            'calendar' => $calendar,
+            'calendar' => [
+                'data' => $calendar->getCollection()
+                    ->map(function ($event) {
+                        /** @var \App\Models\Calendar $event */
+                        return $event->toFullArray();
+                    }),
+                'meta' => [
+                    'total' => $calendar->total(),
+                    'per_page' => $calendar->perPage(),
+                    'current_page' => $calendar->currentPage(),
+                    'last_page' => $calendar->lastPage(),
+                    'from' => $calendar->firstItem(),
+                    'to' => $calendar->lastItem(),
+                ],
+            ],
             'allCategories' => Category::all(['id', 'alias', 'name', 'description']),
+            'filters' => $request->getFilters(),
+            'sorting' => $request->getSorting(),
         ]);
     }
 
@@ -59,18 +91,16 @@ class CalendarController extends AdminController
     {
         $calendar = new Calendar;
 
-        $calendar = $calendar->fill($request->except('images'));
+        $calendar = $calendar->fill($request->except(['images', 'main_image']));
         $calendar->category_id = $request->input('category_id');
 
         $calendar->save();
 
-        $images = $request->file('images');
-
-        if ($images) {
-            foreach ($images as $image) {
-                $calendar->addMedia($image['file'])->toMediaCollection('images');
-            }
-        }
+        // Handle media uploads using centralized action
+        HandleModelMediaUploads::execute($calendar, $request, [
+            'main_image' => ['collection' => 'main_image', 'single' => true],
+            'images' => ['collection' => 'images', 'single' => false],
+        ]);
 
         return redirect()->route('calendar.index')->with('success', 'Kalendoriaus įvykis sėkmingai sukurtas!');
     }
@@ -118,24 +148,17 @@ class CalendarController extends AdminController
     public function update(UpdateCalendarRequest $request, Calendar $calendar)
     {
         DB::transaction(function () use ($request, $calendar) {
-            $calendar->fill($request->validated());
+            // Exclude file fields from fill
+            $calendar->fill($request->safe()->except(['images', 'main_image']));
             $calendar->category_id = $request->input('category_id');
 
             $calendar->save();
 
-            // if request has files
-            $images = $request->file('images');
-
-            if ($images) {
-                foreach ($images as $image) {
-                    $calendar->addMedia($image['file'])
-                        ->usingName($image['file']->getClientOriginalName())
-                        ->withCustomProperties(['alt' => ''])
-                        ->toMediaCollection('images');
-                }
-            }
-
-            $calendar->save();
+            // Handle media uploads using centralized action
+            HandleModelMediaUploads::execute($calendar, $request, [
+                'main_image' => ['collection' => 'main_image', 'single' => true],
+                'images' => ['collection' => 'images', 'single' => false],
+            ]);
         });
 
         return back()->with('success', 'Kalendoriaus įvykis sėkmingai atnaujintas!');
@@ -167,7 +190,7 @@ class CalendarController extends AdminController
     {
         $this->handleAuthorization('update', $calendar);
 
-        $calendar->getMedia('images')->where('id', '=', $media->id)->first()->delete();
+        $calendar->getMedia('images')->where('id', '=', $media->id)->first()?->delete();
 
         return back()->with('info', 'Nuotrauka ištrinta!');
     }

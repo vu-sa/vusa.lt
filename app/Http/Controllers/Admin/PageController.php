@@ -3,37 +3,64 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\AdminController;
+use App\Http\Requests\IndexPageRequest;
 use App\Http\Requests\StorePageRequest;
 use App\Http\Requests\UpdatePageRequest;
+use App\Http\Traits\HasTanstackTables;
 use App\Models\Category;
 use App\Models\Content;
 use App\Models\Page;
 use App\Models\Tenant;
 use App\Services\ModelAuthorizer as Authorizer;
-use App\Services\ModelIndexer;
+use App\Services\TanstackTableService;
 use Illuminate\Http\Request;
 
 class PageController extends AdminController
 {
-    public function __construct(public Authorizer $authorizer) {}
+    use HasTanstackTables;
+
+    public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService) {}
 
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index(IndexPageRequest $request)
     {
         $this->handleAuthorization('viewAny', Page::class);
 
-        $indexer = new ModelIndexer(new Page);
+        $query = Page::query()->with('tenant:id,shortname');
 
-        $pages = $indexer
-            ->setEloquentQuery()
-            ->filterAllColumns()
-            ->sortAllColumns(['created_at' => 'desc'])
-            ->builder->paginate(20);
+        $searchableColumns = ['title', 'permalink'];
+
+        $query = $this->applyTanstackFilters(
+            $query,
+            $request,
+            $this->tableService,
+            $searchableColumns,
+            [
+                'applySortBeforePagination' => true,
+                'tenantRelation' => 'tenant',
+                'permission' => 'pages.read.padalinys',
+            ]
+        );
+
+        $pages = $query->paginate($request->input('per_page', 20))
+            ->withQueryString();
 
         return $this->inertiaResponse('Admin/Content/IndexPages', [
-            'pages' => $pages,
+            'pages' => [
+                'data' => $pages->items(),
+                'meta' => [
+                    'total' => $pages->total(),
+                    'per_page' => $pages->perPage(),
+                    'current_page' => $pages->currentPage(),
+                    'last_page' => $pages->lastPage(),
+                    'from' => $pages->firstItem(),
+                    'to' => $pages->lastItem(),
+                ],
+            ],
+            'filters' => $request->getFilters(),
+            'sorting' => $request->getSorting(),
         ]);
     }
 
@@ -61,10 +88,10 @@ class PageController extends AdminController
         $tenant_id = null;
 
         // check if super admin, else set tenant_id
-        if (request()->user()->hasRole(config('permission.super_admin_role_name'))) {
-            $tenant_id = Tenant::where('type', 'pagrindinis')->first()->id;
+        if (request()->user()->isSuperAdmin()) {
+            $tenant_id = Tenant::where('type', 'pagrindinis')->first()?->id;
         } else {
-            $tenant_id = $this->authorizer->permissableDuties->first()->tenants->first()->id;
+            $tenant_id = $this->authorizer->permissableDuties->first()?->tenants->first()?->id;
         }
 
         $content = new Content;
@@ -81,6 +108,7 @@ class PageController extends AdminController
             'lang' => $request->lang,
             'other_lang_id' => $request->other_lang_id,
             'is_active' => $request->is_active,
+            'layout' => $request->layout ?? 'default',
             'tenant_id' => $tenant_id,
         ]);
 
@@ -94,14 +122,17 @@ class PageController extends AdminController
     {
         $this->handleAuthorization('update', $page);
 
-        $other_lang_pages = Page::with('tenant:id,shortname')->when(! request()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) use ($page) {
+        $page->load('tenant:id,alias,shortname');
+
+        $other_lang_pages = Page::with('tenant:id,shortname')->when(! request()->user()->isSuperAdmin(), function ($query) use ($page) {
             $query->where('tenant_id', $page->tenant_id);
         })->where('lang', '!=', $page->lang)->select('id', 'title', 'tenant_id')->get();
 
         return $this->inertiaResponse('Admin/Content/EditPage', [
             'page' => [
-                ...$page->only('id', 'title', 'content', 'permalink', 'text', 'lang', 'category_id', 'tenant_id', 'is_active', 'aside'),
-                'other_lang_id' => $page->getOtherLanguage()?->only('id')['id'],
+                ...$page->only('id', 'title', 'content', 'permalink', 'text', 'lang', 'category_id', 'tenant_id', 'is_active', 'aside', 'layout'),
+                'tenant' => $page->tenant->only('id', 'alias', 'shortname'),
+                'other_lang_id' => $page->getOtherLanguage()?->only('id')['id'] ?? null,
             ],
             'otherLangPages' => $other_lang_pages,
             'categories' => Category::all(['id', 'name']),
@@ -117,7 +148,7 @@ class PageController extends AdminController
 
         $other_lang_page = Page::find($page->other_lang_id);
 
-        $page->update($request->only('title', 'lang', 'other_lang_id', 'category_id', 'is_active'));
+        $page->update($request->only('title', 'lang', 'other_lang_id', 'category_id', 'is_active', 'layout'));
 
         $content = Content::query()->find($page->content->id);
 

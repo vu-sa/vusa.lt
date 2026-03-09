@@ -8,7 +8,7 @@ return [
     | You can override the value by setting enable to true or false instead of null.
     |
     */
-    'enabled' => config('app.env') === 'local' ? true : false,
+    'enabled' => in_array(config('app.env'), ['local', 'staging']),
 
     /*
     |--------------------------------------------------------------------------

@@ -94,11 +94,13 @@ class TypeController extends AdminController
             'parent_id' => 'nullable|exists:types,id|different:id',
             'roles' => 'nullable|array',
             'slug' => 'nullable|string',
+            'extra_attributes' => 'nullable|array',
+            'extra_attributes.meeting_periodicity_days' => 'nullable|integer|min:1|max:365',
         ]);
 
         // TODO: somehow check if model_type is valid and allowed
 
-        $type = Type::query()->create($request->only('title', 'model_type', 'description', 'parent_id', 'slug'));
+        $type = Type::query()->create($request->only('title', 'model_type', 'description', 'parent_id', 'slug', 'extra_attributes'));
 
         if ($request['model_type'] === 'App\Models\Duty') {
             $type->roles()->sync($request->input('roles', []));
@@ -156,9 +158,11 @@ class TypeController extends AdminController
             'description.en' => 'nullable|string',
             'model_type' => 'required',
             'parent_id' => 'nullable|exists:types,id|different:id',
+            'extra_attributes' => 'nullable|array',
+            'extra_attributes.meeting_periodicity_days' => 'nullable|integer|min:1|max:365',
         ]);
 
-        $type->update($request->only('title', 'model_type', 'description', 'parent_id'));
+        $type->update($request->only('title', 'model_type', 'description', 'parent_id', 'extra_attributes'));
 
         $modelType = Str::of($request->model_type)->afterLast('\\')->lower()->plural()->toString();
 

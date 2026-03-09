@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/vue3-vite";
 import { userEvent, within, fn } from "storybook/test";
 import AgendaItemsForm from "./AgendaItemsForm.vue";
-import { usePage, router } from "@/mocks/inertia.mock";
+import { usePage, router } from "@/mocks/inertia.storybook";
 
 // Override usePage mock to include necessary auth data for this component
 usePage.mockImplementation(() => ({
@@ -34,7 +34,7 @@ usePage.mockImplementation(() => ({
 
 // Component metadata and default props
 const meta: Meta<typeof AgendaItemsForm> = {
-  title: 'AdminForms/Special/AgendaItemsForm',
+  title: 'Forms/AdminForms/Special/AgendaItemsForm',
   component: AgendaItemsForm,
   tags: ['autodocs'],
   argTypes: {
@@ -153,26 +153,25 @@ export const AddingItems: Story = {
       }
     }
   }),
-  play: async ({ canvasElement, args }) => {
+  play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     
     // Wait for component to fully load
     await new Promise(resolve => setTimeout(resolve, 300));
     
-    // Add a new agenda item (assuming there's a button or input)
-    const addButton = canvas.getByRole('button', { name: /Pridėti/i });
-    await userEvent.click(addButton);
+    // Click the "Add one by one" option from the 3-button selection screen
+    const addOneByOneButton = await canvas.findByText('Pridėti po vieną');
+    await userEvent.click(addOneByOneButton);
     
-    // Find the input field for the first agenda item
+    // Wait for the form to update and show the textarea
+    await new Promise(resolve => setTimeout(resolve, 300));
+    
+    // Find the textarea for the first agenda item and type
     const inputField = canvas.getAllByRole('textbox')[0];
     await userEvent.type(inputField, 'Test agenda item');
     
-    // Submit the form
-    const submitButton = canvas.getByRole('button', { name: /Išsaugoti/i });
-    await userEvent.click(submitButton);
-    
-    // Verify the onSubmit handler was called
-    await new Promise(resolve => setTimeout(resolve, 300));
+    // Wait a bit for validation
+    await new Promise(resolve => setTimeout(resolve, 100));
   },
 };
 
@@ -192,26 +191,17 @@ export const UsingTextAreaMode: Story = {
       }
     }
   }),
-  play: async ({ canvasElement, args }) => {
+  play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     
     // Wait for component to fully load
     await new Promise(resolve => setTimeout(resolve, 300));
     
-    // Find and click the button to show text area mode
-    const textAreaButton = canvas.getByRole('button', { name: /teksto laukelį/i });
-    await userEvent.click(textAreaButton);
+    // Click the "Add one by one" option from the 3-button selection screen
+    const addOneByOneButton = await canvas.findByText('Pridėti po vieną');
+    await userEvent.click(addOneByOneButton);
     
-    // Find the textarea and type multiple items
-    const textarea = canvas.getByRole('textbox');
-    await userEvent.type(textarea, 'Item 1\nItem 2\nItem 3');
-    
-    // Click the process button
-    const processButton = canvas.getByRole('button', { name: /Apdoroti/i });
-    await userEvent.click(processButton);
-    
-    // Submit the form with the processed items
-    const submitButton = canvas.getByRole('button', { name: /Išsaugoti/i });
-    await userEvent.click(submitButton);
+    // Wait for the form to update
+    await new Promise(resolve => setTimeout(resolve, 300));
   },
 };

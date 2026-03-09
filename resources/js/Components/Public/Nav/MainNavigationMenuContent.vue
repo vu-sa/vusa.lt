@@ -34,9 +34,9 @@
                 <div class="inline-flex items-center" :class="textClasses(link)">
                   <Icon v-if="link.icon" :icon="`fluent:${link.icon}`" class="mr-2 size-5" />
                   {{ link.name }}
-                  <NTag size="tiny" round borderless v-if="link.small_text" type="error" class="ml-2">
+                  <Badge v-if="link.small_text" variant="destructive" class="ml-2 rounded-full px-2 py-0 text-[10px]">
                     {{ link.small_text }}
-                  </NTag>
+                  </Badge>
                 </div>
                 <p v-if="link.description" class="mt-1 line-clamp-2 text-sm leading-snug text-zinc-500 dark:text-zinc-400">
                   {{ link.description }}
@@ -58,6 +58,7 @@ import {
   NavigationMenuContent,
   NavigationMenuLink,
 } from '@/Components/ui/navigation-menu';
+import { Badge } from '@/Components/ui/badge';
 import SmartLink from '../SmartLink.vue';
 
 interface Link {

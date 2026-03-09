@@ -13,7 +13,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string $id
  * @property string|null $parent_id
  * @property string $comment
- * @property string|null $decision The decision made alongside the comment.
  * @property string $user_id
  * @property string $commentable_type
  * @property string $commentable_id

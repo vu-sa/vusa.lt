@@ -21,13 +21,13 @@
         </template>
         <MdSuspenseWrapper directory="reservations" :locale="$page.props.app.locale" file="description" />
       </template>
-      <NFormItem :label="$t('forms.fields.title')" required>
-        <NInput v-model:value="form.name" :placeholder="RESERVATION_PLACEHOLDERS.name[$page.props.app.locale]" />
-      </NFormItem>
-      <NFormItem :label="$t('forms.fields.description')" required>
-        <NInput v-model:value="form.description" :placeholder="RESERVATION_PLACEHOLDERS.description[$page.props.app.locale]
-          " type="textarea" />
-      </NFormItem>
+      <FormFieldWrapper id="name" :label="$t('forms.fields.title')" required>
+        <Input v-model="form.name" :placeholder="RESERVATION_PLACEHOLDERS.name[$page.props.app.locale]" />
+      </FormFieldWrapper>
+      <FormFieldWrapper id="description" :label="$t('forms.fields.description')" required>
+        <Textarea v-model="form.description"
+          :placeholder="RESERVATION_PLACEHOLDERS.description[$page.props.app.locale]" />
+      </FormFieldWrapper>
     </FormElement>
     <FormElement :icon="Icons.RESOURCE">
       <template #title>
@@ -39,7 +39,7 @@
         <MdSuspenseWrapper directory="reservations" :locale="$page.props.app.locale" file="resources" />
         <a class="w-fit" target="_blank" :href="route('resources.index')">
           <div class="inline-flex items-center gap-2">
-            <NIcon :component="Icons.RESOURCE" class="align-center" />
+            <IFluentCube24Regular class="text-gray-400" />
             <strong class="underline">{{
               $t("entities.meta.model_list", {
                 model: capitalize($tChoice("entities.resource.model", 11)),
@@ -48,40 +48,50 @@
           </div>
         </a>
       </template>
-      <NFormItem required :label="capitalize($t('entities.reservation.period'))">
-        <NDatePicker v-model:value="date" :loading="resourceLoading" type="datetimerange" :first-day-of-week="0"
-          format="yyyy-MM-dd HH:mm" default-time="13:00:00" :time-picker-props="{
-            format: 'HH:mm',
-            minutes: 15,
-          }" @update:value="onDateChange" />
-      </NFormItem>
-      <NFormItem>
-        <template #label>
-          <span class="mb-2 inline-flex items-center gap-1">
-            <NIcon :component="Icons.RESOURCE" />
-            {{ $t("Pasirinkti ištekliai") }}
-          </span>
-        </template>
-        <NDynamicInput v-model:value="form.resources" :on-create="onCreate">
-          <template #default="{ value }">
+      <FormFieldWrapper id="period" :label="capitalize($t('entities.reservation.period'))" required>
+        <div class="flex flex-wrap gap-4">
+          <DateTimePicker v-model="startDate" :placeholder="$t('Pradžia')" :minute-step="15" @change="onDateChange" />
+          <DateTimePicker v-model="endDate" :placeholder="$t('Pabaiga')" :minute-step="15" @change="onDateChange" />
+        </div>
+      </FormFieldWrapper>
+      <FormFieldWrapper id="resources" :label="$t('Pasirinkti ištekliai')">
+        <DynamicListInput v-model="form.resources" :create-item="onCreate" allow-empty
+          empty-text="Nėra pridėtų išteklių" add-first-text="Pridėti pirmą išteklių" add-text="Pridėti išteklių">
+          <template #item="{ item }">
             <div class="flex w-full gap-2">
-              <NSelect v-model:value="value.id" filterable clearable value-field="id" label-field="name"
-                :options="allResourceOptions" :placeholder="RESERVATION_PLACEHOLDERS.resource[$page.props.app.locale]
-                  " :render-label="handleRenderResourceLabel" :render-tag="handleRenderResourceTag"
-                @update:value="value.quantity = 1" />
-              <NInputNumber v-model:value="value.quantity" :min="1" :max="getleftCapacity(value.id)"
-                :default-value="1" />
+              <Select v-model="item.id" @update:model-value="item.quantity = 1">
+                <SelectTrigger class="min-w-64">
+                  <SelectValue :placeholder="RESERVATION_PLACEHOLDERS.resource[$page.props.app.locale]" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem v-for="resource in allResourceOptions" :key="resource.id" :value="resource.id"
+                    :disabled="resource.disabled">
+                    <div class="flex items-center gap-2">
+                      <IFluentCube24Regular class="h-4 w-4 text-gray-400" />
+                      <span>{{ resource.name }}</span>
+                      <span class="text-gray-400">
+                        {{ resource.lowestCapacityAtDateTimeRange }} {{ $t("iš") }} {{ resource.capacity }}
+                      </span>
+                      <Badge variant="secondary" class="text-xs">
+                        {{ resource.tenant?.shortname }}
+                      </Badge>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <NumberField v-model="item.quantity" :min="1" :max="getleftCapacity(item.id)" />
             </div>
           </template>
-        </NDynamicInput>
-      </NFormItem>
+        </DynamicListInput>
+      </FormFieldWrapper>
     </FormElement>
     <FormElement>
       <template #title>
         {{ $t("forms.context.additional_info") }}
       </template>
-      <NFormItem :show-label="false">
-        <NCheckbox v-model:checked="conditionAcquaintance">
+      <div class="flex items-center gap-2">
+        <Checkbox id="condition" v-model="conditionAcquaintance" />
+        <Label for="condition">
           <template v-if="$page.props.app.locale === 'lt'">
             Sutinku įdėmiai sekti rezervacijos informaciją, išteklius pasiimti
             ir grąžinti laiku.
@@ -90,40 +100,37 @@
             I agree to carefully follow the reservation information, take and
             return the resources on time.
           </template>
-        </NCheckbox>
-      </NFormItem>
+        </Label>
+      </div>
     </FormElement>
     <template #buttons>
-      <NButton type="primary" :disabled="!conditionAcquaintance" @click="submit">
+      <Button :disabled="!conditionAcquaintance" @click="submit">
         Pateikti
-      </NButton>
+      </Button>
     </template>
   </AdminForm>
 </template>
 
-<script setup lang="tsx">
+<script setup lang="ts">
 import { router, useForm } from "@inertiajs/vue3";
-import {
-  NButton,
-  NCheckbox,
-  NDatePicker,
-  NDynamicInput,
-  NFormItem,
-  NIcon,
-  NInput,
-  NInputNumber,
-  NSelect,
-  type SelectOption,
-} from "naive-ui";
+import { trans as $t } from "laravel-vue-i18n";
 import { computed, ref, watch } from "vue";
+import IFluentCube24Regular from "~icons/fluent/cube24-regular";
 
+import { Badge } from "@/Components/ui/badge";
+import { Button } from "@/Components/ui/button";
+import { Checkbox } from "@/Components/ui/checkbox";
+import { DateTimePicker } from "@/Components/ui/date-picker";
+import { DynamicListInput } from "@/Components/ui/dynamic-list-input";
+import { Input } from "@/Components/ui/input";
+import { Label } from "@/Components/ui/label";
+import { NumberField } from "@/Components/ui/number-field";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
+import { Textarea } from "@/Components/ui/textarea";
 import { RESERVATION_PLACEHOLDERS } from "@/Constants/I18n/Placeholders";
 import { capitalize } from "@/Utils/String";
-import {
-  renderResourceLabel,
-  renderResourceTag,
-} from "@/Features/Admin/Reservations/Helpers";
 import FormElement from "./FormElement.vue";
+import FormFieldWrapper from "./FormFieldWrapper.vue";
 import Icons from "@/Types/Icons/regular";
 import type { ReservationCreationTemplate } from "@/Pages/Admin/Reservations/CreateReservation.vue";
 import type { ReservationEditType } from "@/Pages/Admin/Reservations/EditReservation.vue";
@@ -143,7 +150,6 @@ const props = defineProps<{
   rememberKey?: "CreateReservation";
 }>();
 
-const resourceLoading = ref(false);
 const conditionAcquaintance = ref(false);
 
 const routeToSubmit = computed(() => {
@@ -156,11 +162,13 @@ const form = props.rememberKey
   ? useForm(props.rememberKey, props.reservation)
   : useForm(props.reservation);
 
-const date = ref<[number, number]>([form.start_time, form.end_time]);
+// Convert timestamps to Date objects for DateTimePicker
+const startDate = ref<Date | null>(form.start_time ? new Date(form.start_time) : null);
+const endDate = ref<Date | null>(form.end_time ? new Date(form.end_time) : null);
 
-watch(date, (newVal) => {
-  form.start_time = newVal[0];
-  form.end_time = newVal[1];
+watch([startDate, endDate], ([newStart, newEnd]) => {
+  form.start_time = newStart ? newStart.getTime() : null;
+  form.end_time = newEnd ? newEnd.getTime() : null;
 });
 
 const onCreate = () => {
@@ -170,31 +178,22 @@ const onCreate = () => {
   };
 };
 
-const onDateChange = (value: [number, number]) => {
+const onDateChange = () => {
+  if (!startDate.value || !endDate.value) return;
+
   form.resources = [];
   router.reload({
     data: {
-      dateTimeRange: { start: value[0], end: value[1] },
+      dateTimeRange: { start: startDate.value.getTime(), end: endDate.value.getTime() },
     },
     preserveScroll: true,
     only: ["resources"],
-    onSuccess: () => {
-      resourceLoading.value = false;
-    },
   });
 };
 
 const getleftCapacity = (id: string) => {
   return props.allResources.find((resource) => resource.id === id)
     ?.lowestCapacityAtDateTimeRange;
-};
-
-const handleRenderResourceLabel = (option: SelectOption, selected: boolean) => {
-  return renderResourceLabel(option, selected, getleftCapacity(option.id));
-};
-
-const handleRenderResourceTag = ({ option }: { option: SelectOption }) => {
-  return renderResourceTag(option, props.allResources);
 };
 
 const allResourceOptions = computed(() => {

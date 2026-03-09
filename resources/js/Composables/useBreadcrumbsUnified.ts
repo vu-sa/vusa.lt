@@ -12,6 +12,7 @@ export interface BreadcrumbItem {
   label: string
   icon?: Component
   href?: string
+  prefetch?: boolean
 }
 
 /**
@@ -34,9 +35,10 @@ const breadcrumbsSymbol: InjectionKey<ReturnType<typeof createBreadcrumbState>> 
 export function createBreadcrumbItem(
   label: string,
   href?: string,
-  icon?: Component
+  icon?: Component,
+  prefetch: boolean = true
 ): BreadcrumbItem {
-  return { label, href, icon }
+  return { label, href, icon, prefetch }
 }
 
 /**
@@ -46,12 +48,14 @@ export function createRouteBreadcrumb(
   label: string,
   routeName?: string,
   params?: any,
-  icon?: Component
+  icon?: Component,
+  prefetch: boolean = true
 ): BreadcrumbItem {
   return {
     label,
     href: routeName ? route(routeName, params) : undefined,
-    icon
+    icon,
+    prefetch
   }
 }
 
@@ -66,7 +70,8 @@ export function getHomeBreadcrumb(context: BreadcrumbContext = 'admin'): Breadcr
     return {
       label: $t('Pradinis'),
       href: route('home', { subdomain, lang: locale }),
-      icon: Home24Filled
+      icon: Home24Filled,
+      prefetch: true
     }
   }
 
@@ -74,7 +79,8 @@ export function getHomeBreadcrumb(context: BreadcrumbContext = 'admin'): Breadcr
   return {
     label: $t('Pradinis'),
     href: route('dashboard'),
-    icon: Home24Filled
+    icon: Home24Filled,
+    prefetch: true
   }
 }
 
