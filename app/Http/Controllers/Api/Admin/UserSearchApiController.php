@@ -7,7 +7,6 @@ use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 /**
  * API controller for searching users with tenant-based permission filtering.
