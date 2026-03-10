@@ -54,7 +54,6 @@ const props = defineProps<{
   };
   filters?: Record<string, any>;
   sorting?: { id: string; desc: boolean }[];
-  showDeleted?: boolean;
   categories: App.Entities.ProblemCategory[];
   institutions: App.Entities.Institution[];
 }>();
@@ -135,7 +134,7 @@ const columns = computed<ColumnDef<App.Entities.Problem, any>[]>(() => [
   {
     id: "responsible_user",
     header: () => capitalize($t("entities.problem.responsible_user")),
-    cell: ({ row }) => row.original.responsibleUser?.name ?? "—",
+    cell: ({ row }) => row.original.responsible_user?.name ?? "—",
     size: 160,
   },
   {
@@ -182,8 +181,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Problem>>(() => ({
   initialSorting: props.sorting,
   enableFiltering: true,
   enableColumnVisibility: true,
-  allowToggleDeleted: true,
-  showDeleted: props.showDeleted,
+  allowToggleDeleted: false,
   headerTitle: capitalize($tChoice("entities.problem.model", 2)),
   icon: Icons.PROBLEM,
   createRoute: canCreate.value ? route("problems.create") : undefined,

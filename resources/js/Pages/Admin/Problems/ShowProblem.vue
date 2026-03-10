@@ -168,37 +168,27 @@
       <!-- Right column: Sidebar -->
       <div class="space-y-5 self-start">
         <!-- Responsible User -->
-        <section v-if="problem.responsibleUser">
+        <section v-if="problem.responsible_user">
           <h2 class="text-sm font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
             <User class="h-3.5 w-3.5" />
             {{ $t('entities.problem.responsible_user') }}
           </h2>
           <Card class="h-auto">
             <CardContent class="py-3" size="sm">
-              <div class="flex items-center gap-3">
-                <div class="flex items-center justify-center h-9 w-9 rounded-full bg-primary/10 dark:bg-primary/20 shrink-0">
-                  <User class="h-4 w-4 text-primary" />
-                </div>
-                <span class="text-sm font-medium">{{ problem.responsibleUser.name }}</span>
-              </div>
+              <span class="text-sm font-medium">{{ problem.responsible_user.name }}</span>
             </CardContent>
           </Card>
         </section>
 
         <!-- Created By -->
-        <section v-if="problem.createdBy">
+        <section v-if="createdByUser">
           <h2 class="text-sm font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
             <UserCheck class="h-3.5 w-3.5" />
             {{ $t('Sukūrė') }}
           </h2>
           <Card class="h-auto">
             <CardContent class="py-3" size="sm">
-              <div class="flex items-center gap-3">
-                <div class="flex items-center justify-center h-9 w-9 rounded-full bg-zinc-100 dark:bg-zinc-800 shrink-0">
-                  <UserCheck class="h-4 w-4 text-zinc-500" />
-                </div>
-                <span class="text-sm font-medium">{{ problem.createdBy.name }}</span>
-              </div>
+              <span class="text-sm font-medium">{{ createdByUser.name }}</span>
             </CardContent>
           </Card>
         </section>
@@ -356,9 +346,16 @@ const stripHtml = (html: string): string => html.replace(/<[^>]*>/g, '').trim();
 const hasStepsTaken = computed(() => stripHtml(localizedStepsTaken.value).length > 0);
 const hasSolution = computed(() => stripHtml(localizedSolution.value).length > 0);
 
+// When the createdBy relation is loaded, Laravel serializes it as `created_by` (snake_case),
+// overwriting the FK column value. Cast to User when it's an object.
+const createdByUser = computed(() => {
+  const val = props.problem.created_by;
+  return val && typeof val === 'object' ? (val as unknown as App.Entities.User) : null;
+});
+
 const hasMetadata = computed(() =>
-  !!props.problem.responsibleUser
-  || !!props.problem.createdBy
+  !!props.problem.responsible_user
+  || !!createdByUser.value
   || (props.problem.categories && props.problem.categories.length > 0)
   || (props.problem.institutions && props.problem.institutions.length > 0)
 );

@@ -319,7 +319,7 @@ declare global {
       // relations
       tenant?: Tenant
       createdBy?: User
-      responsibleUser?: User
+      responsible_user?: User
       categories?: ProblemCategory[]
       institutions?: Institution[]
       // counts
