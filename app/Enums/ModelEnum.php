@@ -66,6 +66,7 @@ final class ModelEnum extends Enum
             // Models that belong to padaliniai but not to individual users
             'studyPrograms' => ['padalinys', '*'],
             'quickLinks' => ['padalinys', '*'],
+            'problems' => ['padalinys', '*'],
 
             // Special case: institutions allow "own" scope only for read operations
             // This is handled in the InstitutionPolicy and a special case in the seeder
