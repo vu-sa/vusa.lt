@@ -27,6 +27,7 @@ use Spatie\Enum\Laravel\Enum;
  * @method static self QUICK_LINK()
  * @method static self PAGE()
  * @method static self PERMISSION()
+ * @method static self PROBLEM()
  * @method static self RELATIONSHIP()
  * @method static self RELATIONSHIPABLE()
  * @method static self RESERVATION()
@@ -65,6 +66,7 @@ final class ModelEnum extends Enum
             // Models that belong to padaliniai but not to individual users
             'studyPrograms' => ['padalinys', '*'],
             'quickLinks' => ['padalinys', '*'],
+            'problems' => ['padalinys', '*'],
 
             // Special case: institutions allow "own" scope only for read operations
             // This is handled in the InstitutionPolicy and a special case in the seeder

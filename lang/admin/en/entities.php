@@ -41,4 +41,16 @@ return [
     'membership' => [
         'model' => '{1} membership|[2,*] memberships',
     ],
+    'problem' => [
+        'model' => '{1} problem|[2,*] problems',
+        'title' => 'problem title',
+        'description' => 'problem description',
+        'solution' => 'solution',
+        'steps_taken' => 'Steps taken',
+        'occurred_at' => 'occurred date',
+        'resolved_at' => 'resolved date',
+        'status' => 'status',
+        'responsible_user' => 'responsible person',
+        'categories' => 'categories',
+    ],
 ];

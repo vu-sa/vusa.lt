@@ -64,6 +64,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read mixed $related_institutions
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Relationship> $incomingRelationships
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Meeting> $meetings
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Problem> $problems
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Relationship> $outgoingRelationships
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Task> $tasks
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Task> $tasksFromMeetings
@@ -149,6 +150,11 @@ class Institution extends Model implements SharepointFileableContract
     public function meetings(): BelongsToMany
     {
         return $this->belongsToMany(Meeting::class);
+    }
+
+    public function problems(): BelongsToMany
+    {
+        return $this->belongsToMany(Problem::class);
     }
 
     /**

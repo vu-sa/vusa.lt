@@ -45,6 +45,8 @@ declare namespace App.Entities {
   export type QuickLink = models.QuickLink;
   export type Page = models.Page;
   export type Permission = models.Permission;
+  export type Problem = models.Problem;
+  export type ProblemCategory = models.ProblemCategory;
   export type Programme = models.Programme;
   export type ProgrammeDay = models.ProgrammeDay;
   export type ProgrammeBlock = models.ProgrammeBlock;

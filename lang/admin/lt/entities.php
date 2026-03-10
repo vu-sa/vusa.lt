@@ -63,4 +63,16 @@ return [
     'membership' => [
         'model' => '{1} narystė|[2,9] narystės|[10,*] narystės',
     ],
+    'problem' => [
+        'model' => '{1} problema|[2,9] problemos|[10,*] problemų',
+        'title' => 'problemos pavadinimas',
+        'description' => 'problemos aprašymas',
+        'solution' => 'sprendimas',
+        'steps_taken' => 'Atlikti žingsniai',
+        'occurred_at' => 'įvykimo data',
+        'resolved_at' => 'išsprendimo data',
+        'status' => 'būsena',
+        'responsible_user' => 'atsakingas asmuo',
+        'categories' => 'kategorijos',
+    ],
 ];

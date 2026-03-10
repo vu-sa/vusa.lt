@@ -9,6 +9,7 @@ import {
   Building2,
   Sparkles,
   UserCog,
+  MessageSquareWarning,
 } from 'lucide-vue-next'
 
 import {
@@ -36,6 +37,15 @@ interface QuickAction {
 const quickActions = computed<QuickAction[]>(() => {
   const actions: QuickAction[] = []
   const page = usePage()
+
+  if (page.props.auth?.can?.create?.problem) {
+    actions.push({
+      title: $t('Nauja problema'),
+      icon: MessageSquareWarning,
+      action: () => router.visit(route('problems.create')),
+      gradient: 'from-red-500/15 to-rose-500/15 hover:from-red-500/25 hover:to-rose-500/25 dark:from-red-400/10 dark:to-rose-400/10 dark:hover:from-red-400/20 dark:hover:to-rose-400/20',
+    })
+  }
 
   if (page.props.auth?.can?.create?.meeting) {
     actions.push({
@@ -88,12 +98,12 @@ const sectionTitle = $t('Greiti veiksmai')
     <SidebarGroupContent>
       <SidebarMenu>
         <SidebarMenuItem v-for="action in quickActions" :key="action.title">
-          <SidebarMenuButton 
+          <SidebarMenuButton
             @click="action.action"
             :tooltip="action.title"
             class="transition-colors"
           >
-            <div 
+            <div
               :class="[
                 'flex items-center justify-center rounded-md p-1 bg-gradient-to-br transition-colors',
                 action.gradient

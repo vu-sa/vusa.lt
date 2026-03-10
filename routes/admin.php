@@ -184,6 +184,10 @@ Route::get('forms/{form}/export', [FormController::class, 'export'])->name('form
 Route::resource('forms', FormController::class);
 Route::resource('registrations', RegistrationController::class)->only('show');
 
+Route::patch('problems/{problem}/restore', [ProblemController::class, 'restore'])->name('problems.restore')->withTrashed();
+Route::patch('problems/{problem}/status', [ProblemController::class, 'updateStatus'])->name('problems.updateStatus');
+Route::resource('problems', ProblemController::class);
+
 Route::resource('types', TypeController::class);
 Route::resource('relationships', RelationshipController::class);
 Route::post('relationships/{relationship}/storeModelRelationship', [RelationshipController::class, 'storeModelRelationship'])->name('relationships.storeModelRelationship');
