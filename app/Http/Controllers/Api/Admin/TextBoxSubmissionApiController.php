@@ -1,0 +1,63 @@
+<?php
+
+namespace App\Http\Controllers\Api\Admin;
+
+use App\Exports\TextBoxSubmissionsExport;
+use App\Http\Controllers\Api\ApiController;
+use App\Models\ContentPart;
+use App\Models\TextBoxSubmission;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+
+class TextBoxSubmissionApiController extends ApiController
+{
+    public function index(Request $request): JsonResponse
+    {
+        $this->requireAuth($request);
+
+        $request->validate([
+            'content_part_id' => ['required', 'integer', 'exists:content_parts,id'],
+            'per_page' => ['nullable', 'integer', 'min:5', 'max:100'],
+        ]);
+
+        $paginator = TextBoxSubmission::query()
+            ->where('content_part_id', $request->content_part_id)
+            ->with('user:id,name')
+            ->orderByDesc('created_at')
+            ->paginate($request->integer('per_page', 20));
+
+        $paginator->through(fn (TextBoxSubmission $submission) => [
+            'id' => $submission->id,
+            'text' => $submission->text,
+            'submitted_by' => $submission->user?->name ?? 'Anonymous',
+            'created_at' => $submission->created_at->toIso8601String(),
+        ]);
+
+        return $this->jsonPaginated($paginator);
+    }
+
+    public function export(Request $request): BinaryFileResponse
+    {
+        $this->requireAuth($request);
+
+        $request->validate([
+            'content_part_id' => ['required', 'integer', 'exists:content_parts,id'],
+        ]);
+
+        $contentPart = ContentPart::findOrFail($request->content_part_id);
+
+        $pageTitle = \App\Models\Page::query()
+            ->where('content_id', $contentPart->content_id)
+            ->value('title');
+
+        $slug = $pageTitle
+            ? preg_replace('/[^a-z0-9]+/', '-', strtolower($pageTitle))
+            : 'page';
+
+        $fileName = "text-box-submissions-{$slug}.xlsx";
+
+        return Excel::download(new TextBoxSubmissionsExport($contentPart), $fileName);
+    }
+}

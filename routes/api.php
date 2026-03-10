@@ -5,11 +5,13 @@ use App\Http\Controllers\Api\Admin\InstitutionSubscriptionApiController;
 use App\Http\Controllers\Api\Admin\MeetingApiController;
 use App\Http\Controllers\Api\Admin\SharepointApiController;
 use App\Http\Controllers\Api\Admin\TaskApiController;
+use App\Http\Controllers\Api\Admin\TextBoxSubmissionApiController;
 use App\Http\Controllers\Api\Admin\TutorialApiController;
 use App\Http\Controllers\Api\Admin\UserSearchApiController;
 use App\Http\Controllers\Api\CalendarController;
 use App\Http\Controllers\Api\DocumentController;
 use App\Http\Controllers\Api\NewsController;
+use App\Http\Controllers\Api\TextBoxSubmissionController;
 use App\Http\Controllers\Api\TypeController;
 use Illuminate\Support\Facades\Route;
 
@@ -53,6 +55,11 @@ Route::prefix('v1')->name('v1.')->group(function () {
     Route::get('typesense/config', function () {
         return response()->json(\App\Services\Typesense\TypesenseManager::getFrontendConfig());
     })->name('typesense.config');
+
+    // Text box submissions (public)
+    Route::post('text-box-submissions', [TextBoxSubmissionController::class, 'store'])
+        ->middleware('throttle:textBoxSubmissions')
+        ->name('text-box-submissions.store');
 
     // Tenant-specific public content
     Route::prefix('tenants/{tenant:alias}')->name('tenants.')->group(function () {
@@ -121,5 +128,9 @@ Route::prefix('v1')->name('v1.')->group(function () {
 
         // User search for forms (e.g. responsible user in problems)
         Route::get('users/search', [UserSearchApiController::class, 'search'])->name('users.search');
+
+        // Text box submissions
+        Route::get('text-box-submissions', [TextBoxSubmissionApiController::class, 'index'])->name('text-box-submissions.index');
+        Route::get('text-box-submissions/export', [TextBoxSubmissionApiController::class, 'export'])->name('text-box-submissions.export');
     });
 });

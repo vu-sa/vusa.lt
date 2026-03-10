@@ -63,6 +63,11 @@ class ContentPart extends Model
         return $this->belongsTo(Content::class);
     }
 
+    public function textBoxSubmissions(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(TextBoxSubmission::class);
+    }
+
     /**
      * Get pre-rendered HTML for TipTap content types.
      * Uses caching based on updated_at timestamp for automatic invalidation.

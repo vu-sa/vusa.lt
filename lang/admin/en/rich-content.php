@@ -3,6 +3,7 @@
 return [
     // Content Types
     'tiptap' => 'Rich Text',
+    'text-box' => 'Text Box',
     'shadcn-card' => 'Card',
     'shadcn-accordion' => 'Accordion',
     'image-grid' => 'Image Grid',
@@ -102,6 +103,18 @@ return [
     'image_width' => 'Image width',
     'select_width' => 'Select width',
     'image' => 'Image',
+    // Text box
+    'text_box_placeholder_label' => 'Placeholder text',
+    'text_box_view_answers' => 'View Answers',
+    'text_box_answers_title' => 'Text Box Responses',
+    'text_box_answers_description' => 'All responses submitted for this text box.',
+    'text_box_no_answers' => 'No responses yet.',
+    'text_box_submit' => 'Submit',
+    'text_box_success' => 'Your response has been submitted. Thank you!',
+    'text_box_export_excel' => 'Export to Excel',
+    'new_badge' => 'New',
+    'text_box_privacy_notice' => 'Privacy notice',
+    'text_box_privacy_notice_text' => 'This field is intended for collecting anonymous suggestions, ideas, and feedback. Do not ask respondents to provide any personal data (name, email, phone number, etc.).',
     // Number stats
     'enter_section_title' => 'Enter section title...',
     'no_stats' => 'No statistics added',

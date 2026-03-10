@@ -149,6 +149,8 @@ const editorComponent = computed(() => {
       return defineAsyncComponent(() => import('./Types/CalendarEditor.vue'));
     case 'content-grid':
       return defineAsyncComponent(() => import('./Types/ContentGridEditor.vue'));
+    case 'text-box':
+      return defineAsyncComponent(() => import('./Types/TextBoxEditor.vue'));
     default:
       return defineAsyncComponent(() => import('./Types/TiptapEditor.vue'));
   }
@@ -181,6 +183,8 @@ const displayComponent = computed(() => {
       return defineAsyncComponent(() => import('@/Components/Public/FullWidth/EventCalendarElement.vue'));
     case 'content-grid':
       return defineAsyncComponent(() => import('./Types/ContentGridDisplay.vue'));
+    case 'text-box':
+      return defineAsyncComponent(() => import('./Types/TextBoxDisplay.vue'));
     default:
       return defineAsyncComponent(() => import('./Types/TiptapDisplay.vue'));
   }

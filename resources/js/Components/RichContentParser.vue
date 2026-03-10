@@ -54,6 +54,7 @@ const contentComponents = shallowRef({
   'calendar': markRaw(defineAsyncComponent(() => import("@/Components/Public/FullWidth/EventCalendarElement.vue"))),
   'flow-graph': markRaw(defineAsyncComponent(() => import('@/Components/RichContent/RCFlowGraph.vue'))),
   'content-grid': markRaw(defineAsyncComponent(() => import('./RichContent/Types/ContentGridDisplay.vue'))),
+  'text-box': markRaw(defineAsyncComponent(() => import('./RichContent/Types/TextBoxDisplay.vue'))),
 });
 
 const props = defineProps<{
@@ -90,6 +91,7 @@ function getSpacingClass(type: string, index: number): string {
     'calendar': 'mb-12', // 3rem bottom
     'flow-graph': 'mb-10', // 2.5rem bottom
     'content-grid': 'mb-10', // 2.5rem bottom
+    'text-box': 'mb-10', // 2.5rem bottom
   };
 
   // Default spacing if type not defined
@@ -203,6 +205,16 @@ function getSkeletonForType(type: string): { height: string; template: string } 
           <div v-for="i in 3" :key="i" class="border border-zinc-200 dark:border-zinc-700 rounded-lg p-4">
             <Skeleton class="h-5 w-3/4" />
           </div>
+        </div>
+      `
+    },
+    'text-box': {
+      height: 'min-h-[200px]',
+      template: `
+        <div class="w-full rounded-lg border border-zinc-200 dark:border-zinc-700 p-6">
+          <Skeleton class="h-6 w-48 mb-4" />
+          <Skeleton class="h-28 w-full mb-3" />
+          <Skeleton class="h-10 w-28 rounded-md" />
         </div>
       `
     },

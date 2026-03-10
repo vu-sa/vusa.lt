@@ -3,6 +3,7 @@
 return [
     // Content Types
     'tiptap' => 'Raiškusis tekstas',
+    'text-box' => 'Teksto laukas',
     'shadcn-card' => 'Kortelė',
     'shadcn-accordion' => 'Akordeonas',
     'image-grid' => 'Nuotraukų tinklelis',
@@ -102,6 +103,18 @@ return [
     'image_width' => 'Nuotraukos plotis',
     'select_width' => 'Pasirinkite plotį',
     'image' => 'Nuotrauka',
+    // Text box
+    'text_box_placeholder_label' => 'Pildymo tekstas',
+    'text_box_view_answers' => 'Peržiūrėti atsakymus',
+    'text_box_answers_title' => 'Teksto lauko atsakymai',
+    'text_box_answers_description' => 'Visi šio teksto lauko atsakymai.',
+    'text_box_no_answers' => 'Atsakymų dar nėra.',
+    'text_box_submit' => 'Pateikti',
+    'text_box_success' => 'Jūsų atsakymas buvo pateiktas. Ačiū!',
+    'text_box_export_excel' => 'Eksportuoti į Excel',
+    'new_badge' => 'Nauja',
+    'text_box_privacy_notice' => 'Privatumo pastaba',
+    'text_box_privacy_notice_text' => 'Šis laukas skirtas rinkti anoniminius pasiūlymus, idėjas ir atsiliepimus. Neprašykite respondentų pateikti jokių asmens duomenų (vardo, el. pašto, telefono numerio ir pan.).',
     // Number stats
     'enter_section_title' => 'Įveskite sekcijos pavadinimą...',
     'no_stats' => 'Nėra pridėta statistikų',
