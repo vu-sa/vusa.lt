@@ -67,16 +67,56 @@
       </div>
 
       <FormFieldWrapper id="responsible_user_id" :label="capitalize($tChoice('entities.problem.responsible_user', 1))">
-        <Select v-model="form.responsible_user_id">
-          <SelectTrigger>
-            <SelectValue :placeholder="capitalize($tChoice('entities.problem.responsible_user', 1))" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem v-for="user in users" :key="user.id" :value="user.id">
-              {{ user.name }}
-            </SelectItem>
-          </SelectContent>
-        </Select>
+        <Combobox
+          v-model="selectedUser"
+          :filter-function="() => userOptions"
+          @update:model-value="handleUserSelect"
+        >
+          <ComboboxAnchor :class="[
+            'flex h-9 w-full items-center justify-between gap-2',
+            'rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs',
+            'border-zinc-200 dark:border-zinc-800 dark:bg-zinc-800/30',
+            'focus-within:border-zinc-950 focus-within:ring-zinc-950/50 focus-within:ring-[3px]',
+            'dark:focus-within:border-zinc-300 dark:focus-within:ring-zinc-300/50',
+            'transition-[color,box-shadow] outline-none',
+          ]">
+            <ComboboxInput
+              :display-value="(val: any) => (val as UserOption)?.name ?? ''"
+              :placeholder="capitalize($tChoice('entities.problem.responsible_user', 1))"
+              class="w-full bg-transparent text-sm outline-none placeholder:text-zinc-500 dark:placeholder:text-zinc-400"
+              @input="onUserSearchInput"
+            />
+            <button
+              v-if="selectedUser"
+              type="button"
+              class="shrink-0 rounded-sm opacity-50 hover:opacity-100"
+              @click.prevent.stop="clearSelectedUser"
+            >
+              <X class="size-4" />
+            </button>
+            <ChevronsUpDown v-else class="size-4 shrink-0 opacity-50" />
+          </ComboboxAnchor>
+          <ComboboxList>
+            <ComboboxViewport class="max-h-60">
+              <div v-if="userSearchTerm.length < 2 && !selectedUser" class="px-2 py-4 text-center text-sm text-muted-foreground">
+                {{ $t("Įveskite bent 2 simbolius") }}
+              </div>
+              <div v-else-if="isSearchingUsers" class="px-2 py-4 text-center text-sm text-muted-foreground">
+                {{ $t("Ieškoma...") }}
+              </div>
+              <template v-else>
+                <ComboboxEmpty>{{ $t("Nerasta") }}</ComboboxEmpty>
+                <ComboboxItem
+                  v-for="user in userOptions"
+                  :key="user.id"
+                  :value="user"
+                >
+                  {{ user.name }}
+                </ComboboxItem>
+              </template>
+            </ComboboxViewport>
+          </ComboboxList>
+        </Combobox>
       </FormFieldWrapper>
 
       <FormFieldWrapper id="categories" :label="capitalize($tChoice('entities.problem.categories', 2))">
@@ -139,10 +179,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, capitalize } from "vue";
+import { computed, capitalize, ref, watch } from "vue";
 import type { InertiaForm } from "@inertiajs/vue3";
 import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
+import { useDebounceFn } from "@vueuse/core";
 
+import { useApi } from "@/Composables/useApi";
 import AdminForm from "./AdminForm.vue";
 import FormElement from "./FormElement.vue";
 import FormFieldWrapper from "./FormFieldWrapper.vue";
@@ -150,6 +192,18 @@ import MultiLocaleInput from "@/Components/FormItems/MultiLocaleInput.vue";
 import MultiLocaleTiptapFormItem from "@/Components/FormItems/MultiLocaleTiptapFormItem.vue";
 import { Input } from "@/Components/ui/input";
 import { MultiSelect } from "@/Components/ui/multi-select";
+import { ChevronsUpDown, X } from "lucide-vue-next";
+import {
+  ComboboxAnchor,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxRoot as Combobox,
+} from "reka-ui";
+import {
+  ComboboxItem,
+  ComboboxList,
+  ComboboxViewport,
+} from "@/Components/ui/combobox";
 import {
   Select,
   SelectContent,
@@ -157,6 +211,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/Components/ui/select";
+
+interface UserOption {
+  id: string;
+  name: string;
+}
 
 type ProblemForm = {
   id?: string;
@@ -177,7 +236,7 @@ const props = defineProps<{
   form: InertiaForm<ProblemForm>;
   tenants: Array<App.Entities.Tenant>;
   categories: Array<App.Entities.ProblemCategory>;
-  users: Array<App.Entities.User>;
+  initialResponsibleUser?: { id: string; name: string } | null;
   institutions: Array<App.Entities.Institution>;
 }>();
 
@@ -193,6 +252,48 @@ const tenantIdString = computed({
     props.form.tenant_id = val ? Number(val) : null;
   },
 });
+
+// --- User search ---
+const userSearchTerm = ref("");
+const selectedUser = ref<UserOption | null>(props.initialResponsibleUser ?? null);
+const userSearchUrl = ref("");
+
+const { data: searchedUsers, isFetching: isSearchingUsers, execute: executeUserSearch } = useApi<UserOption[]>(
+  userSearchUrl,
+  { immediate: false, showErrorToast: false }
+);
+
+const userOptions = computed<UserOption[]>(() => searchedUsers.value ?? []);
+
+const debouncedSearch = useDebounceFn(() => {
+  if (userSearchTerm.value.length >= 2) {
+    const params = new URLSearchParams({
+      search: userSearchTerm.value,
+    });
+    userSearchUrl.value = route("api.v1.admin.users.search") + "?" + params.toString();
+    executeUserSearch();
+  }
+}, 300);
+
+function onUserSearchInput(event: Event) {
+  const target = event.target as HTMLInputElement;
+  userSearchTerm.value = target.value;
+  if (userSearchTerm.value.length >= 2) {
+    debouncedSearch();
+  }
+}
+
+function handleUserSelect(val: unknown) {
+  const user = val as UserOption | null;
+  selectedUser.value = user;
+  props.form.responsible_user_id = user?.id ?? null;
+}
+
+function clearSelectedUser() {
+  selectedUser.value = null;
+  userSearchTerm.value = "";
+  props.form.responsible_user_id = null;
+}
 
 const categoryOptions = computed(() =>
   props.categories.map((category) => ({

@@ -9,7 +9,7 @@
         :form="form"
         :tenants="tenants"
         :categories="categories"
-        :users="users"
+        :initial-responsible-user="initialResponsibleUser"
         :institutions="institutions"
         enable-delete
         @submit:form="handleUpdateProblem"
@@ -47,7 +47,7 @@ const props = defineProps<{
   problem: App.Entities.Problem;
   tenants: Array<App.Entities.Tenant>;
   categories: Array<App.Entities.ProblemCategory>;
-  users: Array<App.Entities.User>;
+  initialResponsibleUser?: { id: string; name: string } | null;
   institutions: Array<App.Entities.Institution>;
 }>();
 

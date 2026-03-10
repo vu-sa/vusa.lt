@@ -11,7 +11,6 @@ use App\Http\Traits\HasTanstackTables;
 use App\Models\Institution;
 use App\Models\Problem;
 use App\Models\ProblemCategory;
-use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\TanstackTableService;
 use Illuminate\Http\Request;
@@ -102,7 +101,6 @@ class ProblemController extends AdminController
         return $this->inertiaResponse('Admin/Problems/CreateProblem', [
             'tenants' => $tenants,
             'categories' => ProblemCategory::orderBy('slug')->get()->map(fn ($category) => $category->toArray()),
-            'users' => User::select('id', 'name')->orderBy('name')->get(),
             'institutions' => Institution::select('id', 'name', 'tenant_id')
                 ->whereIn('tenant_id', $tenantIds)
                 ->orderBy('name')
@@ -180,7 +178,9 @@ class ProblemController extends AdminController
             'problem' => $problemData,
             'tenants' => $tenants,
             'categories' => ProblemCategory::orderBy('slug')->get()->map(fn ($category) => $category->toArray()),
-            'users' => User::select('id', 'name')->orderBy('name')->get(),
+            'initialResponsibleUser' => $problem->responsibleUser
+                ? ['id' => $problem->responsibleUser->id, 'name' => $problem->responsibleUser->name]
+                : null,
             'institutions' => Institution::select('id', 'name', 'tenant_id')
                 ->whereIn('tenant_id', $tenantIds)
                 ->orderBy('name')

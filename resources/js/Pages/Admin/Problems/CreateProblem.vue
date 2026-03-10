@@ -13,7 +13,6 @@
         :form="form"
         :tenants="tenants"
         :categories="categories"
-        :users="users"
         :institutions="institutions"
         @submit:form="
           (form) => form.post(route('problems.store'), { preserveScroll: true })
@@ -35,7 +34,6 @@ import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 defineProps<{
   tenants: Array<App.Entities.Tenant>;
   categories: Array<App.Entities.ProblemCategory>;
-  users: Array<App.Entities.User>;
   institutions: Array<App.Entities.Institution>;
 }>();
 

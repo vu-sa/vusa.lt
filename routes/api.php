@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\Admin\MeetingApiController;
 use App\Http\Controllers\Api\Admin\SharepointApiController;
 use App\Http\Controllers\Api\Admin\TaskApiController;
 use App\Http\Controllers\Api\Admin\TutorialApiController;
+use App\Http\Controllers\Api\Admin\UserSearchApiController;
 use App\Http\Controllers\Api\CalendarController;
 use App\Http\Controllers\Api\DocumentController;
 use App\Http\Controllers\Api\NewsController;
@@ -117,5 +118,8 @@ Route::prefix('v1')->name('v1.')->group(function () {
 
         // Notification subscription preferences
         Route::post('notification-subscriptions/reset', [InstitutionSubscriptionApiController::class, 'reset'])->name('subscriptions.reset');
+
+        // User search for forms (e.g. responsible user in problems)
+        Route::get('users/search', [UserSearchApiController::class, 'search'])->name('users.search');
     });
 });
