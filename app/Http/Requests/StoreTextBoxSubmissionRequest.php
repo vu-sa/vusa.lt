@@ -21,4 +21,16 @@ class StoreTextBoxSubmissionRequest extends FormRequest
             'text' => ['required', 'string', 'min:10', 'max:5000'],
         ];
     }
+
+    /**
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'text.required' => __('Atsakymas yra privalomas.'),
+            'text.min' => __('Atsakymas turi būti bent 10 simbolių.'),
+            'text.max' => __('Atsakymas negali būti ilgesnis nei 5000 simbolių.'),
+        ];
+    }
 }

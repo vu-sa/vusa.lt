@@ -97,11 +97,6 @@
             <span v-if="content?.id" class="text-[10px] text-zinc-400">#{{ content.id }}</span>
             <span v-else class="text-[10px] text-emerald-600 dark:text-emerald-400">{{ $t('New') }}</span>
 
-            <!-- View answers button for text-box blocks (only when saved) -->
-            <TextBoxSubmissionsDialog
-              v-if="content?.type === 'text-box' && content?.id"
-              :content-part-id="content.id" />
-
             <!-- Floating controls - only visible on hover -->
             <div class="ml-auto flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
               <!-- Preview toggle button -->
@@ -138,10 +133,18 @@
 
           <!-- Content editor / preview -->
           <div class="p-3">
-            <ContentEditorFactory 
-              :content="content" 
+            <ContentEditorFactory
+              :content="content"
               :preview-mode="isBlockInPreviewMode(content)"
               @update:content="(val) => contents![index] = val" />
+          </div>
+
+          <!-- Text box: view answers footer -->
+          <div
+            v-if="content?.type === 'text-box' && content?.id"
+            class="border-t border-zinc-100 dark:border-zinc-800 px-3 py-2"
+          >
+            <TextBoxSubmissionsDialog :content-part-id="content.id" />
           </div>
         </div>
       </div>
