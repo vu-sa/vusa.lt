@@ -132,5 +132,7 @@ Route::prefix('v1')->name('v1.')->group(function () {
         // Text box submissions
         Route::get('text-box-submissions', [TextBoxSubmissionApiController::class, 'index'])->name('text-box-submissions.index');
         Route::get('text-box-submissions/export', [TextBoxSubmissionApiController::class, 'export'])->name('text-box-submissions.export');
+        Route::delete('text-box-submissions/{submission}', [TextBoxSubmissionApiController::class, 'destroy'])->name('text-box-submissions.destroy');
+        Route::delete('text-box-submissions', [TextBoxSubmissionApiController::class, 'destroyAll'])->name('text-box-submissions.destroyAll');
     });
 });

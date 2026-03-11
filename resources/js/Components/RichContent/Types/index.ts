@@ -132,6 +132,8 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     defaultOptions: () => ({
       title: { lt: '', en: '' },
       placeholder: { lt: '', en: '' },
+      isClosed: false,
+      closedMessage: { lt: '', en: '' },
     }),
   },
   "content-grid": {

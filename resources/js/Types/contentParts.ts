@@ -135,6 +135,8 @@ export type TextBox = {
   options: {
     title?: { lt: string; en: string };
     placeholder?: { lt: string; en: string };
+    isClosed?: boolean;
+    closedMessage?: { lt: string; en: string };
   };
 };
 

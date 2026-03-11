@@ -74,6 +74,34 @@ it('requires the text field', function () {
     $response->assertJsonValidationErrors(['text']);
 });
 
+it('rejects text shorter than 10 characters', function () {
+    $contentPart = makeTextBoxContentPart();
+
+    $response = $this->postJson(route('api.v1.text-box-submissions.store'), [
+        'content_part_id' => $contentPart->id,
+        'text' => 'Short',
+    ]);
+
+    $response->assertUnprocessable();
+    $response->assertJsonValidationErrors(['text']);
+    expect(TextBoxSubmission::count())->toBe(0);
+});
+
+it('silently succeeds when the honeypot field is filled', function () {
+    $contentPart = makeTextBoxContentPart();
+
+    $response = $this->postJson(route('api.v1.text-box-submissions.store'), [
+        'content_part_id' => $contentPart->id,
+        'text' => 'This is bot spam content here.',
+        'website' => 'http://spam.example.com',
+    ]);
+
+    $response->assertCreated();
+    $response->assertJson(['success' => true]);
+    // No real submission was stored
+    expect(TextBoxSubmission::count())->toBe(0);
+});
+
 it('requires a valid content_part_id', function () {
     $response = $this->postJson(route('api.v1.text-box-submissions.store'), [
         'content_part_id' => 99999,

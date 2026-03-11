@@ -18,7 +18,7 @@ class StoreTextBoxSubmissionRequest extends FormRequest
     {
         return [
             'content_part_id' => ['required', 'integer', 'exists:content_parts,id'],
-            'text' => ['required', 'string', 'max:5000'],
+            'text' => ['required', 'string', 'min:10', 'max:5000'],
         ];
     }
 }

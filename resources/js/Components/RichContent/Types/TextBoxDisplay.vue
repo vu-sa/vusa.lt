@@ -4,18 +4,40 @@
       {{ title }}
     </h3>
 
-    <div v-if="submitted" class="rounded-md bg-emerald-50 p-4 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-300">
+    <!-- Closed state -->
+    <div v-if="isClosed" class="rounded-md bg-zinc-50 p-4 text-sm text-zinc-600 dark:bg-zinc-800/50 dark:text-zinc-400">
+      {{ closedMessage || $t('rich-content.text_box_closed_default') }}
+    </div>
+
+    <!-- Already submitted -->
+    <div v-else-if="submitted" class="rounded-md bg-emerald-50 p-4 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-300">
       {{ $t('rich-content.text_box_success') }}
     </div>
 
+    <!-- Form -->
     <form v-else @submit.prevent="submit" class="flex flex-col gap-3">
-      <Textarea
-        v-model="text"
-        :placeholder="placeholder"
-        :disabled="isSubmitting"
-        class="min-h-28 resize-y"
-        required
-      />
+      <!-- Honeypot: hidden from real users, bots fill it in -->
+      <div aria-hidden="true" style="position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;overflow:hidden;">
+        <label for="website">Website</label>
+        <input id="website" v-model="honeypot" type="text" name="website" tabindex="-1" autocomplete="off" />
+      </div>
+
+      <div class="relative">
+        <Textarea
+          v-model="text"
+          :placeholder="placeholder"
+          :disabled="isSubmitting"
+          :maxlength="MAX_LENGTH"
+          class="min-h-28 resize-y"
+          required
+        />
+        <span
+          class="absolute bottom-2 right-2.5 text-xs tabular-nums"
+          :class="remaining <= 100 ? 'text-amber-500 dark:text-amber-400' : 'text-zinc-400 dark:text-zinc-500'"
+        >
+          {{ remaining }} / {{ MAX_LENGTH }}
+        </span>
+      </div>
       <div class="flex items-center gap-3">
         <Button type="submit" :disabled="isSubmitting || !text.trim()">
           <span v-if="isSubmitting" class="flex items-center gap-2">
@@ -31,11 +53,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import type { TextBox } from '@/Types/contentParts';
 import { Button } from '@/Components/ui/button';
 import { Textarea } from '@/Components/ui/textarea';
+
+const MAX_LENGTH = 5000;
 
 const props = defineProps<{
   element: {
@@ -59,10 +83,29 @@ const placeholder = computed(() => {
   return p[locale.value as 'lt' | 'en'] || p.lt || p.en || '';
 });
 
+const isClosed = computed(() => props.element.options?.isClosed === true);
+
+const closedMessage = computed(() => {
+  const m = props.element.options?.closedMessage;
+  if (!m) { return ''; }
+  return m[locale.value as 'lt' | 'en'] || m.lt || m.en || '';
+});
+
+const storageKey = computed(() => `text_box_submitted_${props.element.id}`);
+
 const text = ref('');
+const honeypot = ref('');
 const submitted = ref(false);
 const isSubmitting = ref(false);
 const errorMessage = ref('');
+
+const remaining = computed(() => MAX_LENGTH - text.value.length);
+
+onMounted(() => {
+  if (localStorage.getItem(storageKey.value) === '1') {
+    submitted.value = true;
+  }
+});
 
 async function submit(): Promise<void> {
   if (!text.value.trim() || isSubmitting.value) { return; }
@@ -85,6 +128,7 @@ async function submit(): Promise<void> {
       body: JSON.stringify({
         content_part_id: props.element.id,
         text: text.value,
+        website: honeypot.value,
       }),
     });
 
@@ -92,6 +136,7 @@ async function submit(): Promise<void> {
 
     if (data.success) {
       submitted.value = true;
+      localStorage.setItem(storageKey.value, '1');
     } else {
       errorMessage.value = data.message || 'An error occurred. Please try again.';
     }

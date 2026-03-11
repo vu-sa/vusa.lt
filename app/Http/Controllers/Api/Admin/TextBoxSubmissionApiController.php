@@ -38,6 +38,30 @@ class TextBoxSubmissionApiController extends ApiController
         return $this->jsonPaginated($paginator);
     }
 
+    public function destroy(Request $request, TextBoxSubmission $submission): JsonResponse
+    {
+        $this->requireAuth($request);
+
+        $submission->delete();
+
+        return $this->jsonSuccess(null, 'Atsakymas ištrintas');
+    }
+
+    public function destroyAll(Request $request): JsonResponse
+    {
+        $this->requireAuth($request);
+
+        $request->validate([
+            'content_part_id' => ['required', 'integer', 'exists:content_parts,id'],
+        ]);
+
+        TextBoxSubmission::query()
+            ->where('content_part_id', $request->integer('content_part_id'))
+            ->delete();
+
+        return $this->jsonSuccess(null, 'Visi atsakymai ištrinti');
+    }
+
     public function export(Request $request): BinaryFileResponse
     {
         $this->requireAuth($request);
@@ -56,7 +80,7 @@ class TextBoxSubmissionApiController extends ApiController
             ? preg_replace('/[^a-z0-9]+/', '-', strtolower($pageTitle))
             : 'page';
 
-        $fileName = "text-box-submissions-{$slug}.xlsx";
+        $fileName = "{$slug}-atsakymai.xlsx";
 
         return Excel::download(new TextBoxSubmissionsExport($contentPart), $fileName);
     }

@@ -11,6 +11,12 @@ class TextBoxSubmissionController extends ApiController
 {
     public function store(StoreTextBoxSubmissionRequest $request): JsonResponse
     {
+        // Honeypot: website field must be empty (bots fill it, humans don't)
+        // Return a fake success so bots don't detect the trap
+        if ($request->filled('website')) {
+            return $this->jsonCreated(null, 'Submission received');
+        }
+
         $contentPart = ContentPart::findOrFail($request->content_part_id);
 
         if ($contentPart->type !== 'text-box') {
