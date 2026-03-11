@@ -56,9 +56,9 @@ Route::prefix('v1')->name('v1.')->group(function () {
         return response()->json(\App\Services\Typesense\TypesenseManager::getFrontendConfig());
     })->name('typesense.config');
 
-    // Text box submissions (public)
+    // Text box submissions (public) - 'web' middleware needed to read session for optional user association
     Route::post('text-box-submissions', [TextBoxSubmissionController::class, 'store'])
-        ->middleware('throttle:textBoxSubmissions')
+        ->middleware(['web', 'throttle:textBoxSubmissions'])
         ->name('text-box-submissions.store');
 
     // Tenant-specific public content
