@@ -39,6 +39,7 @@ class StudySetController extends PublicController
             ->map(fn ($sets) => $sets->map(fn (StudySet $set) => [
                 ...$set->toArray(),
                 'total_credits' => $set->courses->sum('credits'),
+                'updated_at' => $set->updated_at->translatedFormat('Y-m-d'),
                 'courses' => $set->courses->map(fn ($course) => [
                     ...$course->toArray(),
                     'reviews' => $course->reviews->map->toArray(),
