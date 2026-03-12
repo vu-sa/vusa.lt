@@ -113,3 +113,26 @@ export const tagTemplate: Pick<
   description: { lt: '', en: '' },
   alias: "",
 };
+
+export const studySetTemplate = {
+  name: { lt: '', en: '' },
+  description: { lt: '', en: '' },
+  order: 0,
+  is_visible: true,
+  tenant_id: null as number | null,
+  courses: [] as Array<{
+    id?: string;
+    name: { lt: string; en: string };
+    semester: string;
+    credits: number;
+    order: number;
+    is_visible: boolean;
+  }>,
+  reviews: [] as Array<{
+    id?: string;
+    study_set_course_id: string;
+    lecturer: { lt: string; en: string };
+    comment: { lt: string; en: string };
+    is_visible: boolean;
+  }>,
+};

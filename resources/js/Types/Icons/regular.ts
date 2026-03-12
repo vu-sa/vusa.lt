@@ -63,6 +63,7 @@ const modelIcons: Record<keyof typeof ModelEnum, Component> = {
   SHAREPOINT_FILE: DocumentMultiple24Regular,
   SHAREPOINT_FILEABLE: DocumentMultiple24Regular,
   STUDY_PROGRAM: BookOpenGlobe24Regular,
+  STUDY_SET: Notebook24Regular,
   TAG: Tag24Regular,
   TASK: TaskListSquareLtr24Regular,
   TENANT: PeopleSearch24Regular,

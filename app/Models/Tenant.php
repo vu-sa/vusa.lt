@@ -102,6 +102,11 @@ class Tenant extends Model
         return $this->hasMany(Resource::class);
     }
 
+    public function studySets(): HasMany
+    {
+        return $this->hasMany(StudySet::class);
+    }
+
     public function users(): HasManyDeep
     {
         return $this->hasManyDeepFromRelations($this->institutions(), (new Institution)->duties(), (new Duty)->current_users());

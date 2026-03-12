@@ -171,6 +171,7 @@ Route::resource('dutiables', DutiableController::class)->except(['index', 'show'
 Route::get('studyPrograms/merge', [StudyProgramController::class, 'merge'])->name('studyPrograms.merge');
 Route::post('studyPrograms/merge', [StudyProgramController::class, 'mergeStudyPrograms'])->name('studyPrograms.mergeStudyPrograms');
 Route::resource('studyPrograms', StudyProgramController::class)->except(['show']);
+Route::resource('studySets', StudySetController::class)->except(['show']);
 Route::post('institutions/reorderDuties', [InstitutionController::class, 'reorderDuties'])->name('institutions.reorderDuties');
 Route::resource('institutions', InstitutionController::class);
 
