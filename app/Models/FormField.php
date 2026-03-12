@@ -3,7 +3,10 @@
 namespace App\Models;
 
 use App\Models\Traits\HasTranslations;
+use Database\Factories\FormFieldFactory;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -20,10 +23,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property bool $use_model_options
  * @property string|null $options_model
  * @property string|null $options_model_field
- * @property \Illuminate\Support\Carbon $created_at
- * @property \Illuminate\Support\Carbon $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\FieldResponse> $fieldResponses
- * @property-read \App\Models\Form $form
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property-read Collection<int, FieldResponse> $fieldResponses
+ * @property-read Form $form
  * @property-read mixed $translations
  *
  * @method static \Database\Factories\FormFieldFactory factory($count = null, $state = [])
@@ -39,7 +42,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  */
 class FormField extends Model
 {
-    /** @use HasFactory<\Database\Factories\FormFieldFactory> */
+    /** @use HasFactory<FormFieldFactory> */
     use HasFactory, HasTranslations;
 
     public $translatable = [

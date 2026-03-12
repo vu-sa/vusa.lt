@@ -4,8 +4,11 @@ namespace App\Models;
 
 use App\Models\Pivots\ProgrammeElement;
 use App\Models\Traits\HasTranslations;
+use Database\Factories\ProgrammePartFactory;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -14,11 +17,11 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $instructor
  * @property int $duration
  * @property string|null $start_time
- * @property \Illuminate\Support\Carbon $created_at
- * @property \Illuminate\Support\Carbon $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ProgrammeBlock> $programmeBlocks
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property-read Collection<int, ProgrammeBlock> $programmeBlocks
  * @property-read ProgrammeElement|null $pivot
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ProgrammeDay> $programmeDays
+ * @property-read Collection<int, ProgrammeDay> $programmeDays
  * @property-read mixed $translations
  *
  * @method static \Database\Factories\ProgrammePartFactory factory($count = null, $state = [])
@@ -34,7 +37,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class ProgrammePart extends Model
 {
-    /** @use HasFactory<\Database\Factories\ProgrammePartFactory> */
+    /** @use HasFactory<ProgrammePartFactory> */
     use HasFactory, HasTranslations;
 
     protected $fillable = ['title', 'description', 'start_time', 'duration', 'instructor'];

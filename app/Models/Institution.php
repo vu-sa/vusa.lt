@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Actions\GetInstitutionManagers;
 use App\Contracts\SharepointFileableContract;
 use App\Events\FileableNameUpdated;
+use App\Models\Pivots\Relationshipable;
 use App\Models\Pivots\Trainable;
 use App\Models\Traits\HasComments;
 use App\Models\Traits\HasContentRelationships;
@@ -13,13 +14,19 @@ use App\Models\Traits\HasTasks;
 use App\Models\Traits\HasTranslations;
 use App\Services\RelationshipService;
 use App\Settings\MeetingSettings;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
+use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Staudenmeir\EloquentHasManyDeep\HasManyDeep;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
@@ -42,36 +49,36 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property int $is_active
  * @property int $meeting_periodicity_days
  * @property string $contacts_layout
- * @property \Illuminate\Support\Carbon $created_at
- * @property \Illuminate\Support\Carbon $updated_at
- * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\FileableFile> $availableFiles
- * @property-read \App\Models\Pivots\Relationshipable|\App\Models\InstitutionFollow|Trainable|null $pivot
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Training> $availableTrainings
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\InstitutionCheckIn> $checkIns
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property Carbon|null $deleted_at
+ * @property-read Collection<int, Activity> $activities
+ * @property-read Collection<int, FileableFile> $availableFiles
+ * @property-read Relationshipable|InstitutionFollow|Trainable|null $pivot
+ * @property-read Collection<int, Training> $availableTrainings
+ * @property-read Collection<int, InstitutionCheckIn> $checkIns
  * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $commentable
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Comment> $comments
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Document> $documents
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Duty> $duties
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\FileableFile> $fileableFiles
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\SharepointFile> $files
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $followers
+ * @property-read Collection<int, Comment> $comments
+ * @property-read Collection<int, Document> $documents
+ * @property-read Collection<int, Duty> $duties
+ * @property-read Collection<int, FileableFile> $fileableFiles
+ * @property-read Collection<int, SharepointFile> $files
+ * @property-read Collection<int, User> $followers
  * @property-read bool $has_protocol
  * @property-read bool $has_public_meetings
  * @property-read bool $has_report
  * @property-read mixed $maybe_short_name
  * @property-read mixed $related_institutions
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Relationship> $incomingRelationships
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Meeting> $meetings
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Problem> $problems
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Relationship> $outgoingRelationships
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Task> $tasks
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Task> $tasksFromMeetings
- * @property-read \App\Models\Tenant|null $tenant
+ * @property-read Collection<int, Relationship> $incomingRelationships
+ * @property-read Collection<int, Meeting> $meetings
+ * @property-read Collection<int, Problem> $problems
+ * @property-read Collection<int, Relationship> $outgoingRelationships
+ * @property-read Collection<int, Task> $tasks
+ * @property-read Collection<int, Task> $tasksFromMeetings
+ * @property-read Tenant|null $tenant
  * @property-read mixed $translations
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Type> $types
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $users
+ * @property-read Collection<int, Type> $types
+ * @property-read Collection<int, User> $users
  * @property-read int|null $tasks_from_meetings_count
  * @property-read int|null $users_count
  *
@@ -110,7 +117,7 @@ class Institution extends Model implements SharepointFileableContract
         return LogOptions::defaults()->logUnguarded()->logOnlyDirty();
     }
 
-    public function duties(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function duties(): HasMany
     {
         return $this->hasMany(Duty::class);
     }
@@ -120,7 +127,7 @@ class Institution extends Model implements SharepointFileableContract
         return $this->morphToMany(Type::class, 'typeable');
     }
 
-    public function tenant(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
@@ -227,7 +234,7 @@ class Institution extends Model implements SharepointFileableContract
      */
     public function searchableUsing()
     {
-        return app(\Laravel\Scout\EngineManager::class)->engine('typesense');
+        return app(EngineManager::class)->engine('typesense');
     }
 
     public function toSearchableArray(): array

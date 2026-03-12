@@ -24,13 +24,13 @@ class AgendaCompletionTaskHandler extends BaseTaskHandler
      *
      * @param  string  $name  The task name
      * @param  Meeting  $meeting  The meeting model
-     * @param  \Illuminate\Database\Eloquent\Collection<int, \App\Models\User>|\Illuminate\Support\Collection<int, \App\Models\User>  $users  Users assigned to the task
+     * @param  \Illuminate\Database\Eloquent\Collection<int, User>|Collection<int, User>  $users  Users assigned to the task
      * @param  string|null  $dueDate  Due date for the task
      */
     public function findOrCreate(
         string $name,
         Meeting $meeting,
-        \Illuminate\Database\Eloquent\Collection|\Illuminate\Support\Collection $users,
+        \Illuminate\Database\Eloquent\Collection|Collection $users,
         ?string $dueDate = null
     ): Task {
         $existingTask = $this->findExistingTask($meeting);
@@ -77,7 +77,7 @@ class AgendaCompletionTaskHandler extends BaseTaskHandler
      * Generate a contextual description for the task.
      *
      * @param  Meeting  $meeting  The meeting model
-     * @param  Collection<int, \App\Models\User>  $users  Users assigned to the task
+     * @param  Collection<int, User>  $users  Users assigned to the task
      */
     protected function generateDescription(Meeting $meeting, Collection $users): string
     {

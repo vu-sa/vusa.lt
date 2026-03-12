@@ -6,6 +6,7 @@ use App\Models\Duty;
 use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Policies\Traits\HasCommonChecks;
 use App\Services\ModelAuthorizer;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
@@ -28,8 +29,8 @@ use Spatie\LaravelSettings\Settings;
  * - Manager role lookups are cached per-tenant
  * - Visibility uses ModelAuthorizer's built-in caching
  *
- * @see \App\Services\ModelAuthorizer for permission-based authorization
- * @see \App\Policies\Traits\HasCommonChecks for policy authorization patterns
+ * @see ModelAuthorizer for permission-based authorization
+ * @see HasCommonChecks for policy authorization patterns
  */
 class AtstovavimasSettings extends Settings
 {
@@ -201,7 +202,7 @@ class AtstovavimasSettings extends Settings
     /**
      * Clear the manager cache for all users associated with a duty.
      */
-    public static function clearManagerCacheForDuty(\App\Models\Duty $duty): void
+    public static function clearManagerCacheForDuty(Duty $duty): void
     {
         $duty->load('users');
         foreach ($duty->users as $user) {

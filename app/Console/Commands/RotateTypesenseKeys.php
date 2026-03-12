@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Services\Typesense\TypesenseCollectionConfig;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Redis;
 use Typesense\Client;
 
 class RotateTypesenseKeys extends Command
@@ -209,7 +210,7 @@ class RotateTypesenseKeys extends Command
                 $prefix = config('cache.prefix');
                 $pattern = $prefix.'typesense_scoped_keys:*';
 
-                $redis = \Illuminate\Support\Facades\Redis::connection('cache');
+                $redis = Redis::connection('cache');
                 $keys = $redis->keys($pattern);
 
                 if (! empty($keys)) {

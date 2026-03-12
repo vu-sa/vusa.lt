@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\PublicController;
+use App\Mail\FeedbackMail;
 use App\Models\News;
 use App\Models\Tenant;
 use App\Services\IcalendarService;
@@ -31,7 +32,7 @@ class MainController extends PublicController
     {
         $data = $request->all();
 
-        Mail::to('it@vusa.lt')->queue(new \App\Mail\FeedbackMail($data['feedback'], auth()->user(), $data['href'], $data['selectedText']));
+        Mail::to('it@vusa.lt')->queue(new FeedbackMail($data['feedback'], auth()->user(), $data['href'], $data['selectedText']));
 
         return back()->with('success', 'Ačiū už atsiliepimą!');
 

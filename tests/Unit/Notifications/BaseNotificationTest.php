@@ -5,6 +5,7 @@ use App\Models\Task;
 use App\Notifications\CommentPostedNotification;
 use App\Notifications\TaskReminderNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use NotificationChannels\WebPush\WebPushChannel;
 use Tests\Feature\Notifications\NotificationTestHelpers;
 
 uses(RefreshDatabase::class, NotificationTestHelpers::class);
@@ -37,7 +38,7 @@ describe('via method', function () {
 
         expect($channels)->toContain('database');
         expect($channels)->toContain('broadcast');
-        expect(in_array(\NotificationChannels\WebPush\WebPushChannel::class, $channels))->toBeTrue();
+        expect(in_array(WebPushChannel::class, $channels))->toBeTrue();
     });
 });
 

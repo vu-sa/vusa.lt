@@ -3,6 +3,7 @@
 namespace App\Policies;
 
 use App\Enums\ModelEnum;
+use App\Models\Duty;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\ModelAuthorizer;
@@ -58,7 +59,7 @@ class TenantPolicy extends ModelPolicy
         }
 
         $tenants = $this->authorizer->getPermissableDuties()->filter(function ($duty) {
-            /** @var \App\Models\Duty $duty */
+            /** @var Duty $duty */
             return $duty->hasPermissionTo('pages.update.padalinys');
         })->load('institution.tenant')->pluck('institution.tenant');
 

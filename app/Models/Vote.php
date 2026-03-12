@@ -5,12 +5,15 @@ namespace App\Models;
 use App\Enums\VoteValue;
 use App\Models\Pivots\AgendaItem;
 use Database\Factories\VoteFactory;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
@@ -29,9 +32,9 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string|null $student_benefit
  * @property string|null $note
  * @property int $order
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read Collection<int, Activity> $activities
  * @property-read AgendaItem $agendaItem
  * @property-read string|null $decision_label
  * @property-read bool $is_complete

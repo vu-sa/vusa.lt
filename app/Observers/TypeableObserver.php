@@ -3,6 +3,7 @@
 namespace App\Observers;
 
 use App\Actions\GetAttachableTypesForDuty;
+use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Typeable;
 use App\Services\RelationshipService;
@@ -27,7 +28,7 @@ class TypeableObserver
                 $roles = $typeable->type->roles;
 
                 // add each role to the duty (ensure it's a Duty model)
-                if ($typeable->typeable instanceof \App\Models\Duty) {
+                if ($typeable->typeable instanceof Duty) {
                     $typeable->typeable->roles()->syncWithoutDetaching($roles);
                 }
             }

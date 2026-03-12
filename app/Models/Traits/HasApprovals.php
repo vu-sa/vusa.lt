@@ -6,6 +6,7 @@ use App\Enums\ApprovalDecision;
 use App\Models\Approval;
 use App\Models\ApprovalFlow;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 /**
@@ -19,7 +20,7 @@ trait HasApprovals
     /**
      * Get all approvals for this model.
      *
-     * @return \Illuminate\Database\Eloquent\Relations\MorphMany<\App\Models\Approval, $this>
+     * @return MorphMany<Approval, $this>
      */
     public function approvals(): MorphMany
     {
@@ -31,14 +32,14 @@ trait HasApprovals
      */
     public function latestApproval(): ?Approval
     {
-        /** @var \App\Models\Approval|null */
+        /** @var Approval|null */
         return $this->approvals()->latest()->first();
     }
 
     /**
      * Get approvals for a specific step.
      *
-     * @return \Illuminate\Database\Eloquent\Collection<int, Approval>
+     * @return Collection<int, Approval>
      */
     public function approvalsForStep(int $step)
     {
@@ -139,7 +140,7 @@ trait HasApprovals
     /**
      * Check if a user can approve this model at the given step.
      *
-     * @param  \App\Enums\ApprovalDecision|null  $decision  The decision being made (for owner-specific restrictions)
+     * @param  ApprovalDecision|null  $decision  The decision being made (for owner-specific restrictions)
      */
     public function canBeApprovedBy(User $user, ?int $step = null, $decision = null): bool
     {

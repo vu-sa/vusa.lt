@@ -6,8 +6,10 @@ use App\Enums\SharepointScopeEnum;
 use App\Models\Document;
 use App\Models\Institution;
 use App\Models\Tenant;
+use App\Models\Traits\HasSharepointFiles;
 use App\Services\ResourceServices\SharepointFileService;
 use App\Services\SharepointGraphService;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -55,7 +57,7 @@ describe('SharepointService Integration', function () {
 
             Log::shouldReceive('info')
                 ->once()
-                ->with('SharepointGraphService initialized', \Mockery::type('array'));
+                ->with('SharepointGraphService initialized', Mockery::type('array'));
 
             new SharepointGraphService(siteId: 'test-site');
         });
@@ -163,7 +165,7 @@ describe('SharepointService Integration', function () {
             }
 
             Log::shouldReceive('info')
-                ->with('SharepointGraphService initialized', \Mockery::type('array'));
+                ->with('SharepointGraphService initialized', Mockery::type('array'));
             Log::shouldReceive('error')->zeroOrMoreTimes(); // Allow error logs during initialization
 
             new SharepointGraphService(siteId: 'test');
@@ -230,14 +232,14 @@ describe('SharepointService Integration', function () {
 
     describe('model trait integration', function () {
         test('models with HasSharepointFiles trait work correctly', function () {
-            expect(in_array(\App\Models\Traits\HasSharepointFiles::class, class_uses($this->institution)))->toBeTrue();
-            expect($this->institution->fileableFiles())->toBeInstanceOf(\Illuminate\Database\Eloquent\Relations\MorphMany::class);
+            expect(in_array(HasSharepointFiles::class, class_uses($this->institution)))->toBeTrue();
+            expect($this->institution->fileableFiles())->toBeInstanceOf(MorphMany::class);
         });
 
         test('path generation works with trait models', function () {
             $institution = Institution::factory()->for($this->tenant)->create();
 
-            expect(in_array(\App\Models\Traits\HasSharepointFiles::class, class_uses($institution)))->toBeTrue();
+            expect(in_array(HasSharepointFiles::class, class_uses($institution)))->toBeTrue();
 
             $path = SharepointFileService::pathForFileableDriveItem($institution);
             expect($path)->toBeString();

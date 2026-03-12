@@ -13,5 +13,5 @@ use Spatie\Enum\Laravel\Enum;
  */
 final class AllowedRelationshipablesEnum extends Enum
 {
-    use hasCamelCaseLabels;
+    use HasCamelCaseLabels;
 }

@@ -1,6 +1,9 @@
 <?php
 
+use App\Models\FieldResponse;
 use App\Models\Form;
+use App\Models\FormField;
+use App\Models\Registration;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -254,16 +257,16 @@ describe('form creation with fields', function () {
         $form = Form::factory()->for($this->tenant)->create();
 
         // Create form field and responses for testing
-        $field = \App\Models\FormField::factory()->create([
+        $field = FormField::factory()->create([
             'form_id' => $form->id,
             'label' => ['lt' => 'Vardas', 'en' => 'Name'],
         ]);
 
-        $registration = \App\Models\Registration::factory()->create([
+        $registration = Registration::factory()->create([
             'form_id' => $form->id,
         ]);
 
-        \App\Models\FieldResponse::factory()->create([
+        FieldResponse::factory()->create([
             'registration_id' => $registration->id,
             'form_field_id' => $field->id,
             'response' => 'Test Response',

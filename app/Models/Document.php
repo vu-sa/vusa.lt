@@ -4,10 +4,14 @@ namespace App\Models;
 
 use App\Helpers\ShortUrlHelper;
 use App\Services\SharepointGraphService;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Log;
+use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
@@ -37,8 +41,8 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon|null $effective_date
  * @property Carbon|null $expiration_date
  * @property-read bool|null $is_in_effect
- * @property-read \App\Models\Institution|null $institution
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Tenant> $tenant
+ * @property-read Institution|null $institution
+ * @property-read Collection<int, Tenant> $tenant
  *
  * @method static \Database\Factories\DocumentFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Document newModelQuery()
@@ -207,7 +211,7 @@ class Document extends Model
     public function shouldBeSearchable()
     {
         // For admin context, index all documents regardless of publication status
-        if (\Illuminate\Support\Facades\Context::get('search_context') === 'admin') {
+        if (Context::get('search_context') === 'admin') {
             return true;
         }
 
@@ -221,10 +225,10 @@ class Document extends Model
      */
     public function searchableUsing()
     {
-        return app(\Laravel\Scout\EngineManager::class)->engine('typesense');
+        return app(EngineManager::class)->engine('typesense');
     }
 
-    public function institution(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function institution(): BelongsTo
     {
         return $this->belongsTo(Institution::class);
     }

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Duty;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
@@ -19,10 +20,10 @@ class ModelAuthorizer
      */
     public User $user;
 
-    /** @var Collection<int, \App\Models\Duty> */
+    /** @var Collection<int, Duty> */
     public Collection $duties;
 
-    /** @var Collection<int, \App\Models\Duty> */
+    /** @var Collection<int, Duty> */
     public Collection $permissableDuties;
 
     public bool $isAllScope = false;

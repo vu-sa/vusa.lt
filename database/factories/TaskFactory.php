@@ -5,11 +5,12 @@ namespace Database\Factories;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Reservation;
+use App\Models\Task;
 use App\Tasks\Enums\ActionType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Task>
+ * @extends Factory<Task>
  */
 class TaskFactory extends Factory
 {

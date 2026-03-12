@@ -2,10 +2,12 @@
 
 namespace Database\Factories;
 
+use App\Models\Tag;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Str;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Tag>
+ * @extends Factory<Tag>
  */
 class TagFactory extends Factory
 {
@@ -30,7 +32,7 @@ class TagFactory extends Factory
                 'lt' => $descriptionLt,
                 'en' => $descriptionEn,
             ],
-            'alias' => \Illuminate\Support\Str::slug($nameEn),
+            'alias' => Str::slug($nameEn),
         ];
     }
 }

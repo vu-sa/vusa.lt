@@ -46,7 +46,7 @@ use Spatie\Enum\Laravel\Enum;
  */
 final class ModelEnum extends Enum
 {
-    use hasCamelCaseLabels;
+    use HasCamelCaseLabels;
 
     /**
      * Get the allowed permission scopes for a specific model.

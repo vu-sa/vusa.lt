@@ -3,6 +3,7 @@
 namespace App\Actions;
 
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
@@ -79,14 +80,14 @@ class HandleModelMediaUploads
         }
 
         // Handle both array of files and array of ['file' => File] structures
-        /** @var array<int|string, \Illuminate\Http\UploadedFile|array<string, mixed>> $filesArray */
+        /** @var array<int|string, UploadedFile|array<string, mixed>> $filesArray */
         $filesArray = is_array($files) ? $files : [$files];
 
         foreach ($filesArray as $fileData) {
-            /** @var \Illuminate\Http\UploadedFile|array<string, mixed>|null $file */
+            /** @var UploadedFile|array<string, mixed>|null $file */
             $file = is_array($fileData) ? ($fileData['file'] ?? $fileData) : $fileData;
 
-            if (! $file instanceof \Illuminate\Http\UploadedFile) {
+            if (! $file instanceof UploadedFile) {
                 continue;
             }
 

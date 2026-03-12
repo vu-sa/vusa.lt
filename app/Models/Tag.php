@@ -3,19 +3,21 @@
 namespace App\Models;
 
 use App\Models\Traits\HasTranslations;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 /**
  * @property int $id
  * @property string|null $alias
- * @property \Illuminate\Support\Carbon $created_at
- * @property \Illuminate\Support\Carbon $updated_at
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
  * @property array|string|null $name
  * @property array|string|null $description
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\News> $news
+ * @property-read Collection<int, News> $news
  * @property-read mixed $translations
  *
  * @method static \Database\Factories\TagFactory factory($count = null, $state = [])

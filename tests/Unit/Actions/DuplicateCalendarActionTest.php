@@ -131,7 +131,7 @@ describe('DuplicateCalendarAction', function () {
         ]);
 
         // Mock a successful transaction
-        \DB::shouldReceive('transaction')
+        DB::shouldReceive('transaction')
             ->once()
             ->andReturnUsing(function ($callback) use ($originalCalendar) {
                 return $callback($originalCalendar);

@@ -3,6 +3,7 @@
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Role;
+use App\Models\StudyProgram;
 use App\Models\Tenant;
 use App\Models\Type;
 use App\Models\User;
@@ -195,7 +196,7 @@ describe('batch update users', function () {
 
     test('batch update can include study program', function () {
         $newUser = makeUser($this->tenant);
-        $studyProgram = \App\Models\StudyProgram::factory()->create(['tenant_id' => $this->tenant->id]);
+        $studyProgram = StudyProgram::factory()->create(['tenant_id' => $this->tenant->id]);
 
         $response = asUser($this->dutyManager)->post(route('duties.batchUpdateUsers', $this->duty), [
             'user_changes' => [

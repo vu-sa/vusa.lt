@@ -3,10 +3,11 @@
 namespace Database\Factories;
 
 use App\Enums\AgendaItemType;
+use App\Models\AgendaItem;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\AgendaItem>
+ * @extends Factory<AgendaItem>
  */
 class AgendaItemFactory extends Factory
 {

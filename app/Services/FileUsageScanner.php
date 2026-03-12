@@ -2,14 +2,20 @@
 
 namespace App\Services;
 
+use App\Models\Banner;
 use App\Models\Calendar;
 use App\Models\ContentPart;
 use App\Models\Duty;
 use App\Models\Form;
 use App\Models\Institution;
 use App\Models\News;
+use App\Models\Page;
+use App\Models\Pivots\Dutiable;
+use App\Models\Tenant;
 use App\Models\Training;
 use App\Models\Type;
+use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -89,7 +95,7 @@ class FileUsageScanner
             }
 
             if (! isset($usage['banners'])) {
-                $usage['banners'] = $this->scanTextField(\App\Models\Banner::class, 'image_url', $variantSet, $fileMetadata);
+                $usage['banners'] = $this->scanTextField(Banner::class, 'image_url', $variantSet, $fileMetadata);
                 $totalFound += $usage['banners']->count();
                 if ($totalFound >= $maxResults) {
                     break;
@@ -138,12 +144,12 @@ class FileUsageScanner
 
             // User profile images
             if (! isset($usage['users'])) {
-                $usage['users'] = $this->scanTextField(\App\Models\User::class, 'profile_photo_path', $variantSet, $fileMetadata);
+                $usage['users'] = $this->scanTextField(User::class, 'profile_photo_path', $variantSet, $fileMetadata);
                 $totalFound += $usage['users']->count();
             }
 
             if (! isset($usage['dutiables'])) {
-                $usage['dutiables'] = $this->scanTextField(\App\Models\Pivots\Dutiable::class, 'additional_photo', $variantSet, $fileMetadata);
+                $usage['dutiables'] = $this->scanTextField(Dutiable::class, 'additional_photo', $variantSet, $fileMetadata);
                 $totalFound += $usage['dutiables']->count();
             }
         }
@@ -422,7 +428,7 @@ class FileUsageScanner
 
         // Cache expires after 1 hour for active scanning
         if ($cachedScannedAt) {
-            $scannedTime = \Carbon\Carbon::parse($cachedScannedAt);
+            $scannedTime = Carbon::parse($cachedScannedAt);
             if ($scannedTime->diffInHours(now()) > 1) {
                 return false;
             }
@@ -982,9 +988,9 @@ class FileUsageScanner
             return $cache[$contentId];
         }
 
-        $owner = \App\Models\Page::where('content_id', $contentId)->first()
-            ?? \App\Models\News::where('content_id', $contentId)->first()
-            ?? \App\Models\Tenant::where('content_id', $contentId)->first();
+        $owner = Page::where('content_id', $contentId)->first()
+            ?? News::where('content_id', $contentId)->first()
+            ?? Tenant::where('content_id', $contentId)->first();
 
         $cache[$contentId] = $owner;
 

@@ -2,18 +2,20 @@
 
 namespace App\Models;
 
+use Database\Factories\FieldResponseFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
  * @property int $registration_id
  * @property int $form_field_id
  * @property array<array-key, mixed> $response
- * @property \Illuminate\Support\Carbon $created_at
- * @property \Illuminate\Support\Carbon $updated_at
- * @property-read \App\Models\FormField $formField
- * @property-read \App\Models\Registration $registration
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property-read FormField $formField
+ * @property-read Registration $registration
  *
  * @method static \Database\Factories\FieldResponseFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|FieldResponse newModelQuery()
@@ -24,7 +26,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class FieldResponse extends Model
 {
-    /** @use HasFactory<\Database\Factories\FieldResponseFactory> */
+    /** @use HasFactory<FieldResponseFactory> */
     use HasFactory;
 
     protected $fillable = [

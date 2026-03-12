@@ -2,6 +2,8 @@
 
 use App\Actions\GetInstitutionFollowersToNotify;
 use App\Actions\GetMeetingAdministrators;
+use App\Enums\AgendaItemType;
+use App\Events\MeetingFullyCreated;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Meeting;
@@ -64,7 +66,7 @@ describe('MeetingTaskSubscriber', function () {
                 ]);
 
             // Dispatch the event (simulating what the controller does after full setup)
-            event(new \App\Events\MeetingFullyCreated($meeting));
+            event(new MeetingFullyCreated($meeting));
 
             // Check that creation task was created
             $creationTask = Task::query()
@@ -142,7 +144,7 @@ describe('MeetingTaskSubscriber', function () {
 
             // Complete one agenda item by setting type and adding a vote with all required fields
             $agendaItem = $meeting->agendaItems->first();
-            $agendaItem->update(['type' => \App\Enums\AgendaItemType::Voting]);
+            $agendaItem->update(['type' => AgendaItemType::Voting]);
             Vote::create([
                 'agenda_item_id' => $agendaItem->id,
                 'is_main' => true,
@@ -166,7 +168,7 @@ describe('MeetingTaskSubscriber', function () {
 
             // Complete all agenda items by setting type and adding votes
             foreach ($meeting->agendaItems as $agendaItem) {
-                $agendaItem->update(['type' => \App\Enums\AgendaItemType::Voting]);
+                $agendaItem->update(['type' => AgendaItemType::Voting]);
                 Vote::create([
                     'agenda_item_id' => $agendaItem->id,
                     'is_main' => true,
@@ -246,7 +248,7 @@ describe('MeetingTaskSubscriber', function () {
                 ->create(['start_time' => now()]);
 
             // Dispatch the event (simulating what the controller does after full setup)
-            event(new \App\Events\MeetingFullyCreated($meeting));
+            event(new MeetingFullyCreated($meeting));
 
             Notification::assertSentTo($admin, MeetingCreatedNotification::class);
         });
@@ -350,7 +352,7 @@ describe('MeetingTaskSubscriber', function () {
                 ->create(['start_time' => now()]);
 
             // Dispatch the event (simulating what the controller does after full setup)
-            event(new \App\Events\MeetingFullyCreated($meeting));
+            event(new MeetingFullyCreated($meeting));
 
             // User should only receive one notification despite having multiple qualifying roles
             Notification::assertSentToTimes($admin, MeetingCreatedNotification::class, 1);
@@ -372,7 +374,7 @@ describe('MeetingTaskSubscriber', function () {
                 ->create(['start_time' => now()]);
 
             // Dispatch the event
-            event(new \App\Events\MeetingFullyCreated($meeting));
+            event(new MeetingFullyCreated($meeting));
 
             Notification::assertSentTo($follower, MeetingCreatedNotification::class);
         });
@@ -394,7 +396,7 @@ describe('MeetingTaskSubscriber', function () {
                 ->create(['start_time' => now()]);
 
             // Dispatch the event
-            event(new \App\Events\MeetingFullyCreated($meeting));
+            event(new MeetingFullyCreated($meeting));
 
             Notification::assertNotSentTo($mutedFollower, MeetingCreatedNotification::class);
         });
@@ -416,7 +418,7 @@ describe('MeetingTaskSubscriber', function () {
                 ->create(['start_time' => now()]);
 
             // Dispatch the event
-            event(new \App\Events\MeetingFullyCreated($meeting));
+            event(new MeetingFullyCreated($meeting));
 
             Notification::assertSentToTimes($follower, MeetingCreatedNotification::class, 1);
         });
@@ -454,7 +456,7 @@ describe('MeetingTaskSubscriber', function () {
                 ->create(['start_time' => now()]);
 
             // Dispatch the event
-            event(new \App\Events\MeetingFullyCreated($meeting));
+            event(new MeetingFullyCreated($meeting));
 
             Notification::assertSentToTimes($manager, MeetingCreatedNotification::class, 1);
         });

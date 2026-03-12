@@ -18,6 +18,7 @@ use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ResourceServices\UserDutyService;
 use App\Services\TanstackTableService;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection as SupportCollection;
 use Illuminate\Support\Facades\Auth;
@@ -59,7 +60,7 @@ class UserController extends AdminController
         $users = $query->paginate($request->input('per_page', 20))
             ->withQueryString();
 
-        /** @var \Illuminate\Database\Eloquent\Collection<int, User> $collection */
+        /** @var Collection<int, User> $collection */
         $collection = $users->getCollection();
         $collection->makeVisible(['last_action']);
 

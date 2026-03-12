@@ -3,16 +3,17 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Relations\Pivot;
+use Illuminate\Support\Carbon;
 
 // * A RoleType is not a type, which role can have, but a role, which (duty) type will also have.
 /**
  * @property int $id
  * @property string $role_id
  * @property int $type_id
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\Role $role
- * @property-read \App\Models\Type $type
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read Role $role
+ * @property-read Type $type
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|RoleType newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|RoleType newQuery()

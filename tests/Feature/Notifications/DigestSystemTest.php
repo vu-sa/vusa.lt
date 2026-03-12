@@ -2,6 +2,8 @@
 
 use App\Enums\NotificationCategory;
 use App\Enums\NotificationChannel;
+use App\Listeners\QueueNotificationForDigest;
+use App\Mail\NotificationDigest;
 use App\Models\NotificationDigestQueue;
 use App\Models\Task;
 use App\Notifications\CommentPostedNotification;
@@ -39,7 +41,7 @@ describe('digest queuing via QueueNotificationForDigest listener', function () {
         // Simulate the NotificationSending event that triggers QueueNotificationForDigest
         $event = new NotificationSending($user, $notification, 'database');
 
-        app(\App\Listeners\QueueNotificationForDigest::class)->handle($event);
+        app(QueueNotificationForDigest::class)->handle($event);
 
         expect($this->getDigestQueueCountForUser($user))->toBe(1);
     });
@@ -55,7 +57,7 @@ describe('digest queuing via QueueNotificationForDigest listener', function () {
 
         $event = new NotificationSending($user, $notification, 'database');
 
-        app(\App\Listeners\QueueNotificationForDigest::class)->handle($event);
+        app(QueueNotificationForDigest::class)->handle($event);
 
         // Should NOT be queued
         expect($this->getDigestQueueCountForUser($user))->toBe(0);
@@ -79,7 +81,7 @@ describe('digest queuing via QueueNotificationForDigest listener', function () {
 
         $event = new NotificationSending($user, $notification, 'database');
 
-        app(\App\Listeners\QueueNotificationForDigest::class)->handle($event);
+        app(QueueNotificationForDigest::class)->handle($event);
 
         // Should NOT be queued because user disabled it
         expect($this->getDigestQueueCountForUser($user))->toBe(0);
@@ -96,7 +98,7 @@ describe('digest queuing via QueueNotificationForDigest listener', function () {
 
         $event = new NotificationSending($user, $notification, 'database');
 
-        app(\App\Listeners\QueueNotificationForDigest::class)->handle($event);
+        app(QueueNotificationForDigest::class)->handle($event);
 
         // Should NOT be queued because user is muted
         expect($this->getDigestQueueCountForUser($user))->toBe(0);
@@ -113,7 +115,7 @@ describe('digest queuing via QueueNotificationForDigest listener', function () {
 
         $event = new NotificationSending($user, $notification, 'database');
 
-        app(\App\Listeners\QueueNotificationForDigest::class)->handle($event);
+        app(QueueNotificationForDigest::class)->handle($event);
 
         $item = $this->getDigestQueueItemsForUser($user)->first();
 
@@ -201,7 +203,7 @@ describe('digest processing command', function () {
         Artisan::call('notifications:send-digests');
 
         // Digest SHOULD be queued (NotificationDigest implements ShouldQueue)
-        Mail::assertQueued(\App\Mail\NotificationDigest::class, function ($mail) use ($user) {
+        Mail::assertQueued(NotificationDigest::class, function ($mail) use ($user) {
             return $mail->hasTo($user->email);
         });
 
@@ -318,7 +320,7 @@ describe('digest processing command', function () {
 
         Artisan::call('notifications:send-digests');
 
-        Mail::assertQueued(\App\Mail\NotificationDigest::class, function ($mail) use ($user) {
+        Mail::assertQueued(NotificationDigest::class, function ($mail) use ($user) {
             // The mail should be queued to the correct user
             return $mail->hasTo($user->email);
         });
@@ -342,7 +344,7 @@ describe('digest frequency settings', function () {
 
         Artisan::call('notifications:send-digests');
 
-        Mail::assertQueued(\App\Mail\NotificationDigest::class);
+        Mail::assertQueued(NotificationDigest::class);
     });
 
     test('user with 24 hour frequency waits full day', function () {
@@ -370,6 +372,6 @@ describe('digest frequency settings', function () {
         Artisan::call('notifications:send-digests');
 
         // NOW it should be queued
-        Mail::assertQueued(\App\Mail\NotificationDigest::class);
+        Mail::assertQueued(NotificationDigest::class);
     });
 });

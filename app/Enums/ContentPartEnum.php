@@ -19,6 +19,7 @@ use Spatie\Enum\Laravel\Enum;
  * @method static self NEWS()
  * @method static self CALENDAR()
  * @method static self CONTENT_GRID()
+ * @method static self TEXT_BOX()
  */
 final class ContentPartEnum extends Enum
 {
@@ -37,6 +38,7 @@ final class ContentPartEnum extends Enum
             'NEWS' => 'news',
             'CALENDAR' => 'calendar',
             'CONTENT_GRID' => 'content-grid',
+            'TEXT_BOX' => 'text-box',
         ];
     }
 }

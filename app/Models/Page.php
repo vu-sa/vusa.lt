@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
+use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
 use Spatie\Feed\Feedable;
 use Spatie\Feed\FeedItem;
@@ -35,10 +36,10 @@ use Spatie\Sitemap\Tags\Url;
  * @property Carbon $updated_at
  * @property Carbon|null $last_edited_at
  * @property Carbon|null $deleted_at
- * @property-read \App\Models\Category|null $category
- * @property-read \App\Models\Content $content
+ * @property-read Category|null $category
+ * @property-read Content $content
  * @property-read Page|null $otherLanguagePage
- * @property-read \App\Models\Tenant $tenant
+ * @property-read Tenant $tenant
  *
  * @method static \Database\Factories\PageFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Page newModelQuery()
@@ -278,7 +279,7 @@ class Page extends Model implements Feedable, Sitemapable
      */
     public function searchableUsing()
     {
-        return app(\Laravel\Scout\EngineManager::class)->engine('typesense');
+        return app(EngineManager::class)->engine('typesense');
     }
 
     public function toSitemapTag(): Url

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Api\ApiController;
+use App\Http\Requests\StoreFilesRequest;
 use App\Models\File;
 use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Http\JsonResponse;
@@ -100,7 +101,7 @@ class FileApiController extends ApiController
         $this->requireAuth($request);
 
         // Import the request class for extensions
-        $extensions = \App\Http\Requests\StoreFilesRequest::getAllowedExtensions();
+        $extensions = StoreFilesRequest::getAllowedExtensions();
 
         return $this->jsonSuccess([
             'extensions' => $extensions,

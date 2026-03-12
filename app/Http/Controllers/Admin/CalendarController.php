@@ -53,7 +53,7 @@ class CalendarController extends AdminController
             'calendar' => [
                 'data' => $calendar->getCollection()
                     ->map(function ($event) {
-                        /** @var \App\Models\Calendar $event */
+                        /** @var Calendar $event */
                         return $event->toFullArray();
                     }),
                 'meta' => [

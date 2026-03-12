@@ -3,6 +3,8 @@
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Route;
@@ -29,7 +31,7 @@ describe('email notification system', function () {
         Notification::fake();
 
         // Create a simple notification for testing
-        $testNotification = new class extends \Illuminate\Notifications\Notification
+        $testNotification = new class extends Illuminate\Notifications\Notification
         {
             public function via($notifiable)
             {
@@ -38,7 +40,7 @@ describe('email notification system', function () {
 
             public function toMail($notifiable)
             {
-                return (new \Illuminate\Notifications\Messages\MailMessage)
+                return (new MailMessage)
                     ->subject('Test Notification')
                     ->line('This is a test notification.');
             }
@@ -52,7 +54,7 @@ describe('email notification system', function () {
     });
 
     test('emails contain required structure', function () {
-        $testNotification = new class extends \Illuminate\Notifications\Notification
+        $testNotification = new class extends Illuminate\Notifications\Notification
         {
             public function via($notifiable)
             {
@@ -61,7 +63,7 @@ describe('email notification system', function () {
 
             public function toMail($notifiable)
             {
-                return (new \Illuminate\Notifications\Messages\MailMessage)
+                return (new MailMessage)
                     ->subject('Test Email')
                     ->greeting('Hello!')
                     ->line('Test content');
@@ -79,7 +81,7 @@ describe('email notification system', function () {
         try {
             Mail::fake();
 
-            $testNotification = new class extends \Illuminate\Notifications\Notification
+            $testNotification = new class extends Illuminate\Notifications\Notification
             {
                 public function via($notifiable)
                 {
@@ -215,8 +217,8 @@ describe('Microsoft authentication integration', function () {
 describe('SharePoint API integration', function () {
     test('SharePoint connection can be established with mocked API', function () {
         // Mock SharePoint authentication
-        \Illuminate\Support\Facades\Http::fake([
-            'login.microsoftonline.com/*' => \Illuminate\Support\Facades\Http::response([
+        Http::fake([
+            'login.microsoftonline.com/*' => Http::response([
                 'access_token' => 'fake-access-token',
                 'token_type' => 'Bearer',
                 'expires_in' => 3599,
@@ -229,7 +231,7 @@ describe('SharePoint API integration', function () {
 
         // If you have SharePoint service, test the authentication
         try {
-            $response = \Illuminate\Support\Facades\Http::post('https://login.microsoftonline.com/fake-tenant/oauth2/v2.0/token', [
+            $response = Http::post('https://login.microsoftonline.com/fake-tenant/oauth2/v2.0/token', [
                 'client_id' => 'fake-client-id',
                 'client_secret' => 'fake-client-secret',
                 'scope' => 'https://graph.microsoft.com/.default',
@@ -238,7 +240,7 @@ describe('SharePoint API integration', function () {
 
             expect($response->successful())->toBeTrue();
             expect($response->json('access_token'))->toBe('fake-access-token');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // HTTP client might not be configured, which is fine for this test
             expect(true)->toBeTrue();
         }
@@ -246,18 +248,18 @@ describe('SharePoint API integration', function () {
 
     test('SharePoint file operations work with mocked responses', function () {
         // Mock comprehensive SharePoint API responses
-        \Illuminate\Support\Facades\Http::fake([
-            'login.microsoftonline.com/*' => \Illuminate\Support\Facades\Http::response([
+        Http::fake([
+            'login.microsoftonline.com/*' => Http::response([
                 'access_token' => 'fake-access-token',
             ], 200),
 
-            'graph.microsoft.com/v1.0/sites/*' => \Illuminate\Support\Facades\Http::response([
+            'graph.microsoft.com/v1.0/sites/*' => Http::response([
                 'id' => 'fake-site-id',
                 'displayName' => 'Test SharePoint Site',
                 'webUrl' => 'https://example.sharepoint.com/sites/test',
             ], 200),
 
-            'graph.microsoft.com/v1.0/sites/*/drives' => \Illuminate\Support\Facades\Http::response([
+            'graph.microsoft.com/v1.0/sites/*/drives' => Http::response([
                 'value' => [
                     [
                         'id' => 'fake-drive-id',
@@ -267,7 +269,7 @@ describe('SharePoint API integration', function () {
                 ],
             ], 200),
 
-            'graph.microsoft.com/v1.0/sites/*/lists' => \Illuminate\Support\Facades\Http::response([
+            'graph.microsoft.com/v1.0/sites/*/lists' => Http::response([
                 'value' => [
                     [
                         'id' => 'fake-list-id',
@@ -277,7 +279,7 @@ describe('SharePoint API integration', function () {
                 ],
             ], 200),
 
-            'graph.microsoft.com/v1.0/sites/*/lists/*/items' => \Illuminate\Support\Facades\Http::response([
+            'graph.microsoft.com/v1.0/sites/*/lists/*/items' => Http::response([
                 'value' => [
                     [
                         'id' => 'fake-item-id-1',
@@ -305,20 +307,20 @@ describe('SharePoint API integration', function () {
 
     test('SharePoint API error handling works correctly', function () {
         // Mock various error scenarios
-        \Illuminate\Support\Facades\Http::fake([
-            'login.microsoftonline.com/*/oauth2/v2.0/token' => \Illuminate\Support\Facades\Http::response([
+        Http::fake([
+            'login.microsoftonline.com/*/oauth2/v2.0/token' => Http::response([
                 'error' => 'invalid_client',
                 'error_description' => 'AADSTS70002: Error validating credentials.',
             ], 401),
 
-            'graph.microsoft.com/v1.0/sites/*' => \Illuminate\Support\Facades\Http::response([
+            'graph.microsoft.com/v1.0/sites/*' => Http::response([
                 'error' => [
                     'code' => 'Forbidden',
                     'message' => 'Insufficient privileges to complete the operation.',
                 ],
             ], 403),
 
-            'graph.microsoft.com/v1.0/sites/*/lists/*/items/*' => \Illuminate\Support\Facades\Http::response([
+            'graph.microsoft.com/v1.0/sites/*/lists/*/items/*' => Http::response([
                 'error' => [
                     'code' => 'itemNotFound',
                     'message' => 'The resource could not be found.',
@@ -328,18 +330,18 @@ describe('SharePoint API integration', function () {
 
         // Verify error responses are properly mocked
         try {
-            $authResponse = \Illuminate\Support\Facades\Http::post('https://login.microsoftonline.com/fake-tenant/oauth2/v2.0/token');
+            $authResponse = Http::post('https://login.microsoftonline.com/fake-tenant/oauth2/v2.0/token');
             expect($authResponse->status())->toBe(401);
             expect($authResponse->json('error'))->toBe('invalid_client');
 
-            $siteResponse = \Illuminate\Support\Facades\Http::get('https://graph.microsoft.com/v1.0/sites/fake-site');
+            $siteResponse = Http::get('https://graph.microsoft.com/v1.0/sites/fake-site');
             expect($siteResponse->status())->toBe(403);
             expect($siteResponse->json('error.code'))->toBe('Forbidden');
 
-            $itemResponse = \Illuminate\Support\Facades\Http::get('https://graph.microsoft.com/v1.0/sites/fake-site/lists/fake-list/items/fake-item');
+            $itemResponse = Http::get('https://graph.microsoft.com/v1.0/sites/fake-site/lists/fake-list/items/fake-item');
             expect($itemResponse->status())->toBe(404);
             expect($itemResponse->json('error.code'))->toBe('itemNotFound');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // HTTP facade might not be used, which is acceptable
             expect(true)->toBeTrue();
         }

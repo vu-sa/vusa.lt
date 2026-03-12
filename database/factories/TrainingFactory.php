@@ -2,10 +2,14 @@
 
 namespace Database\Factories;
 
+use App\Models\Form;
+use App\Models\Institution;
+use App\Models\Training;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Training>
+ * @extends Factory<Training>
  */
 class TrainingFactory extends Factory
 {
@@ -25,9 +29,9 @@ class TrainingFactory extends Factory
             'status' => 'draft',
             'start_time' => $this->faker->dateTimeThisYear,
             'end_time' => $this->faker->dateTimeThisYear,
-            'organizer_id' => \App\Models\User::factory(),
-            'institution_id' => \App\Models\Institution::factory(),
-            'form_id' => \App\Models\Form::factory(),
+            'organizer_id' => User::factory(),
+            'institution_id' => Institution::factory(),
+            'form_id' => Form::factory(),
             'max_participants' => $this->faker->numberBetween(1, 100),
         ];
     }

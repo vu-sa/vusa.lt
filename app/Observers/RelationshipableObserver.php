@@ -2,6 +2,7 @@
 
 namespace App\Observers;
 
+use App\Models\Institution;
 use App\Models\Pivots\Relationshipable;
 use App\Services\InstitutionAccessService;
 use App\Services\RelationshipService;
@@ -76,7 +77,7 @@ class RelationshipableObserver
      */
     protected function invalidateTypesenseKeysForInstitution(string $institutionId): void
     {
-        $institution = \App\Models\Institution::with('duties.users')->find($institutionId);
+        $institution = Institution::with('duties.users')->find($institutionId);
 
         if (! $institution) {
             return;

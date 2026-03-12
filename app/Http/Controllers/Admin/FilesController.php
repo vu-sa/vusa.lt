@@ -11,6 +11,7 @@ use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Laravel\Facades\Image;
 
 class FilesController extends AdminController
 {
@@ -561,7 +562,7 @@ class FilesController extends AdminController
             $fullLocalPath = storage_path('app/'.$path);
             $originalSize = filesize($fullLocalPath) ?: 0;
 
-            $image = \Intervention\Image\Laravel\Facades\Image::read($fullLocalPath);
+            $image = Image::read($fullLocalPath);
             $image->scaleDown(width: 1600);
             $quality = $originalSize > 2 * 1024 * 1024 ? 72 : 78; // 2MB threshold
 

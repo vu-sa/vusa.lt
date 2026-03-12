@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Institution;
 use App\Models\Tenant;
 use App\Models\Training;
 use App\Models\User;
@@ -14,7 +15,7 @@ beforeEach(function () {
     $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant); // Use user with training permissions
 
     // Create an institution that belongs to the tenant
-    $institution = \App\Models\Institution::factory()->for($this->tenant)->create();
+    $institution = Institution::factory()->for($this->tenant)->create();
 
     $this->training = Training::factory()->for($institution, 'institution')->create([
         'name' => 'Test Training',
@@ -41,7 +42,7 @@ describe('unauthorized access', function () {
 
     test('cannot store training', function () {
         $validData = getControllerTestData('Training')['valid'];
-        $institution = \App\Models\Institution::factory()->for($this->tenant)->create();
+        $institution = Institution::factory()->for($this->tenant)->create();
         $validData['institution_id'] = $institution->id;
 
         asUser($this->user)
@@ -57,7 +58,7 @@ describe('unauthorized access', function () {
 
     test('cannot update training', function () {
         $updateData = getControllerTestData('Training')['valid'];
-        $institution = \App\Models\Institution::factory()->for($this->tenant)->create();
+        $institution = Institution::factory()->for($this->tenant)->create();
         $updateData['institution_id'] = $institution->id;
 
         asUser($this->user)
@@ -95,7 +96,7 @@ describe('authorized access', function () {
     });
 
     test('can store training with valid data', function () {
-        $institution = \App\Models\Institution::factory()->for($this->tenant)->create();
+        $institution = Institution::factory()->for($this->tenant)->create();
         $validData = getControllerTestData('Training')['valid'];
         $validData['institution_id'] = $institution->id;
         $uniqueSuffix = time();
@@ -113,13 +114,13 @@ describe('authorized access', function () {
         ]);
 
         // Check that name is stored properly as JSON
-        $training = \App\Models\Training::where('name->lt', $validData['name']['lt'])->first();
+        $training = Training::where('name->lt', $validData['name']['lt'])->first();
         expect($training)->not->toBeNull();
         expect($training->getTranslation('name', 'lt'))->toBe($validData['name']['lt']);
     });
 
     test('cannot store training with invalid data', function () {
-        $institution = \App\Models\Institution::factory()->for($this->tenant)->create();
+        $institution = Institution::factory()->for($this->tenant)->create();
         $invalidData = getControllerTestData('Training')['invalid'];
         $invalidData['institution_id'] = $institution->id;
         $invalidData['name'] = ['lt' => '', 'en' => '']; // Fix invalid name to be array
@@ -144,7 +145,7 @@ describe('authorized access', function () {
     });
 
     test('can update training with valid data', function () {
-        $institution = \App\Models\Institution::factory()->for($this->tenant)->create();
+        $institution = Institution::factory()->for($this->tenant)->create();
         $updateData = getControllerTestData('Training')['valid'];
         $updateData['name'] = ['lt' => 'Updated Training Name', 'en' => 'Updated Training Name EN'];
         $updateData['institution_id'] = $institution->id;
@@ -159,7 +160,7 @@ describe('authorized access', function () {
     });
 
     test('cannot update training with invalid data', function () {
-        $institution = \App\Models\Institution::factory()->for($this->tenant)->create();
+        $institution = Institution::factory()->for($this->tenant)->create();
         $invalidData = getControllerTestData('Training')['invalid'];
         $invalidData['institution_id'] = $institution->id;
         $invalidData['name'] = ['lt' => '', 'en' => '']; // Fix invalid name to be array
@@ -191,7 +192,7 @@ describe('authorized access', function () {
 describe('filtering and search', function () {
     beforeEach(function () {
         // Create additional trainings for testing with institutions in the same tenant
-        $institution = \App\Models\Institution::factory()->for($this->tenant)->create();
+        $institution = Institution::factory()->for($this->tenant)->create();
 
         Training::factory()->for($institution, 'institution')->create([
             'name' => 'Advanced Training',
@@ -263,7 +264,7 @@ describe('filtering and search', function () {
 
 describe('edge cases and business logic', function () {
     test('training name must be unique within tenant', function () {
-        $institution = \App\Models\Institution::factory()->for($this->tenant)->create();
+        $institution = Institution::factory()->for($this->tenant)->create();
         $duplicateData = getControllerTestData('Training')['valid'];
         $duplicateData['name'] = $this->training->getTranslations('name'); // Same name structure as existing training
         $duplicateData['institution_id'] = $institution->id;
@@ -275,7 +276,7 @@ describe('edge cases and business logic', function () {
     });
 
     test('training end time must be after start time', function () {
-        $institution = \App\Models\Institution::factory()->for($this->tenant)->create();
+        $institution = Institution::factory()->for($this->tenant)->create();
         $invalidTimeData = getControllerTestData('Training')['valid'];
         $invalidTimeData['start_time'] = now()->addDays(7)->timestamp * 1000;
         $invalidTimeData['end_time'] = now()->addDays(6)->timestamp * 1000; // End before start
@@ -288,7 +289,7 @@ describe('edge cases and business logic', function () {
     });
 
     test('training handles special characters in name and description', function () {
-        $institution = \App\Models\Institution::factory()->for($this->tenant)->create();
+        $institution = Institution::factory()->for($this->tenant)->create();
         $specialCharsData = getControllerTestData('Training')['valid'];
         $specialCharsData['name'] = ['lt' => 'Mokymas su šiaudiniais žodžiais', 'en' => 'Training with special chars'];
         $specialCharsData['description'] = ['lt' => 'Aprašymas su ąčęėįšųūž simboliais', 'en' => 'Description with special symbols'];
@@ -299,14 +300,14 @@ describe('edge cases and business logic', function () {
             ->assertStatus(302)
             ->assertRedirect(route('trainings.index'));
 
-        $training = \App\Models\Training::where('name->lt', 'Mokymas su šiaudiniais žodžiais')->first();
+        $training = Training::where('name->lt', 'Mokymas su šiaudiniais žodžiais')->first();
         expect($training)->not->toBeNull();
         expect($training->getTranslation('name', 'lt'))->toBe('Mokymas su šiaudiniais žodžiais');
         expect($training->getTranslation('description', 'lt'))->toBe('Aprašymas su ąčęėįšųūž simboliais');
     });
 
     test('training can have zero max participants for unlimited capacity', function () {
-        $institution = \App\Models\Institution::factory()->for($this->tenant)->create();
+        $institution = Institution::factory()->for($this->tenant)->create();
         $unlimitedData = getControllerTestData('Training')['valid'];
         $unlimitedData['max_participants'] = 0; // Unlimited
         $unlimitedData['institution_id'] = $institution->id;
@@ -323,7 +324,7 @@ describe('edge cases and business logic', function () {
     });
 
     test('training location can be empty for online trainings', function () {
-        $institution = \App\Models\Institution::factory()->for($this->tenant)->create();
+        $institution = Institution::factory()->for($this->tenant)->create();
         $onlineTrainingData = getControllerTestData('Training')['valid'];
         $onlineTrainingData['address'] = ''; // Empty address for online
         $onlineTrainingData['institution_id'] = $institution->id;
@@ -341,7 +342,7 @@ describe('edge cases and business logic', function () {
     });
 
     test('training cannot be scheduled in the past', function () {
-        $institution = \App\Models\Institution::factory()->for($this->tenant)->create();
+        $institution = Institution::factory()->for($this->tenant)->create();
         $pastTrainingData = getControllerTestData('Training')['valid'];
         $pastTrainingData['start_time'] = now()->addDays(1)->timestamp * 1000; // Change to future date to avoid past validation
         $pastTrainingData['end_time'] = now()->subDays(1)->addHours(2)->timestamp * 1000; // End before start to trigger end_time validation
@@ -357,7 +358,7 @@ describe('edge cases and business logic', function () {
 describe('tenant isolation', function () {
     beforeEach(function () {
         $this->otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->first();
-        $otherInstitution = \App\Models\Institution::factory()->for($this->otherTenant)->create();
+        $otherInstitution = Institution::factory()->for($this->otherTenant)->create();
         $this->otherTraining = Training::factory()->for($otherInstitution, 'institution')->create();
         $this->otherAdmin = makeTenantUserWithRole('Communication Coordinator', $this->otherTenant);
     });
@@ -379,7 +380,7 @@ describe('tenant isolation', function () {
     });
 
     test('cannot update other tenant training', function () {
-        $institution = \App\Models\Institution::factory()->for($this->tenant)->create();
+        $institution = Institution::factory()->for($this->tenant)->create();
         $updateData = getControllerTestData('Training')['valid'];
         $updateData['institution_id'] = $institution->id;
 
@@ -430,7 +431,7 @@ describe('training participants and registration', function () {
 
 describe('training status and dates', function () {
     test('training can determine if it is upcoming', function () {
-        $institution = \App\Models\Institution::factory()->for($this->tenant)->create();
+        $institution = Institution::factory()->for($this->tenant)->create();
         $futureTraining = Training::factory()->for($institution, 'institution')->create([
             'start_time' => now()->addDays(5),
             'end_time' => now()->addDays(5)->addHours(3),
@@ -440,7 +441,7 @@ describe('training status and dates', function () {
     });
 
     test('training can determine if it is past', function () {
-        $institution = \App\Models\Institution::factory()->for($this->tenant)->create();
+        $institution = Institution::factory()->for($this->tenant)->create();
         $pastTraining = Training::factory()->for($institution, 'institution')->create([
             'start_time' => now()->subDays(5),
             'end_time' => now()->subDays(5)->addHours(3),
@@ -450,7 +451,7 @@ describe('training status and dates', function () {
     });
 
     test('training can determine if it is currently active', function () {
-        $institution = \App\Models\Institution::factory()->for($this->tenant)->create();
+        $institution = Institution::factory()->for($this->tenant)->create();
         $activeTraining = Training::factory()->for($institution, 'institution')->create([
             'start_time' => now()->subHours(1),
             'end_time' => now()->addHours(1),

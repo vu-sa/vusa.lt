@@ -5,6 +5,7 @@ use App\Models\Document;
 use App\Models\Institution;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
 
 uses(RefreshDatabase::class);
@@ -84,14 +85,14 @@ describe('authorized access', function () {
 
     test('document manager can store sharepoint documents with mocked API', function () {
         // Mock SharePoint HTTP requests
-        \Illuminate\Support\Facades\Http::fake([
-            'login.microsoftonline.com/*' => \Illuminate\Support\Facades\Http::response([
+        Http::fake([
+            'login.microsoftonline.com/*' => Http::response([
                 'access_token' => 'fake-access-token',
                 'token_type' => 'Bearer',
                 'expires_in' => 3599,
             ], 200),
 
-            '*.sharepoint.com/*' => \Illuminate\Support\Facades\Http::response([
+            '*.sharepoint.com/*' => Http::response([
                 'id' => 'mocked-document-id',
                 'name' => 'Test Document.pdf',
                 'size' => 1024,
@@ -116,11 +117,11 @@ describe('authorized access', function () {
 
         // If SharePoint service is implemented, verify HTTP calls were made
         try {
-            \Illuminate\Support\Facades\Http::assertSent(function ($request) {
+            Http::assertSent(function ($request) {
                 return str_contains($request->url(), 'sharepoint.com') ||
                        str_contains($request->url(), 'microsoftonline.com');
             });
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // HTTP facade might not be used in current implementation
             expect(true)->toBeTrue();
         }
@@ -133,12 +134,12 @@ describe('authorized access', function () {
         ]);
 
         // Mock SharePoint API response for document refresh
-        \Illuminate\Support\Facades\Http::fake([
-            'login.microsoftonline.com/*' => \Illuminate\Support\Facades\Http::response([
+        Http::fake([
+            'login.microsoftonline.com/*' => Http::response([
                 'access_token' => 'fake-access-token',
             ], 200),
 
-            '*.sharepoint.com/*' => \Illuminate\Support\Facades\Http::response([
+            '*.sharepoint.com/*' => Http::response([
                 'id' => 'existing-doc-id',
                 'name' => 'Refreshed Document.pdf',
                 'size' => 2048,
@@ -241,13 +242,13 @@ describe('authorized access', function () {
 describe('validation', function () {
     test('handles sharepoint API errors gracefully', function () {
         // Mock SharePoint API error responses
-        \Illuminate\Support\Facades\Http::fake([
-            'login.microsoftonline.com/*' => \Illuminate\Support\Facades\Http::response([
+        Http::fake([
+            'login.microsoftonline.com/*' => Http::response([
                 'error' => 'invalid_client',
                 'error_description' => 'Invalid client credentials',
             ], 401),
 
-            '*.sharepoint.com/*' => \Illuminate\Support\Facades\Http::response([
+            '*.sharepoint.com/*' => Http::response([
                 'error' => [
                     'code' => 'itemNotFound',
                     'message' => 'The requested item was not found',

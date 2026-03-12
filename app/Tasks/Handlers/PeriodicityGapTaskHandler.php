@@ -4,6 +4,7 @@ namespace App\Tasks\Handlers;
 
 use App\Models\Institution;
 use App\Models\Task;
+use App\Models\User;
 use App\Tasks\DTOs\CreateTaskData;
 use App\Tasks\Enums\ActionType;
 use Carbon\Carbon;
@@ -25,7 +26,7 @@ class PeriodicityGapTaskHandler extends BaseTaskHandler
      * Find or create a periodicity gap task for an institution.
      *
      * @param  Institution  $institution  The institution model
-     * @param  Collection<int, \App\Models\User>  $users  Users assigned to the task
+     * @param  Collection<int, User>  $users  Users assigned to the task
      * @param  Carbon  $dueDate  Due date for the task (threshold date)
      */
     public function findOrCreate(
@@ -103,7 +104,7 @@ class PeriodicityGapTaskHandler extends BaseTaskHandler
      * Sync task users with new collection of representatives.
      *
      * @param  Task  $task  The task to update
-     * @param  Collection<int, \App\Models\User>  $users  New set of users
+     * @param  Collection<int, User>  $users  New set of users
      */
     protected function syncUsers(Task $task, Collection $users): void
     {

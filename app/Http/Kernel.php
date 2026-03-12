@@ -2,7 +2,38 @@
 
 namespace App\Http;
 
+use App\Http\Middleware\Authenticate;
+use App\Http\Middleware\BlockRobotsOnStagingDomains;
+use App\Http\Middleware\EncryptCookies;
+use App\Http\Middleware\ExtendPWASession;
+use App\Http\Middleware\GetNavigationForPublic;
+use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\PreventRequestsDuringMaintenance;
+use App\Http\Middleware\RedirectIfAuthenticated;
+use App\Http\Middleware\RewriteUploadsUrl;
+use App\Http\Middleware\SetLocale;
+use App\Http\Middleware\StagingBasicAuth;
+use App\Http\Middleware\StagingEnvironmentWarnings;
+use App\Http\Middleware\StagingReadOnlyMode;
+use App\Http\Middleware\TenantPermission;
+use App\Http\Middleware\TrimStrings;
+use App\Http\Middleware\TrustProxies;
+use App\Http\Middleware\UpdateLastAction;
+use App\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Auth\Middleware\AuthenticateWithBasicAuth;
+use Illuminate\Auth\Middleware\Authorize;
+use Illuminate\Auth\Middleware\RequirePassword;
+use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
+use Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull;
+use Illuminate\Foundation\Http\Middleware\ValidatePostSize;
+use Illuminate\Http\Middleware\HandleCors;
+use Illuminate\Http\Middleware\SetCacheHeaders;
+use Illuminate\Routing\Middleware\SubstituteBindings;
+use Illuminate\Routing\Middleware\ThrottleRequests;
+use Illuminate\Routing\Middleware\ValidateSignature;
+use Illuminate\Session\Middleware\StartSession;
+use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class Kernel extends HttpKernel
 {
@@ -14,15 +45,15 @@ class Kernel extends HttpKernel
      * @var array<int, string>
      */
     protected $middleware = [
-        \App\Http\Middleware\StagingBasicAuth::class,
-        \App\Http\Middleware\BlockRobotsOnStagingDomains::class,
-        \Illuminate\Http\Middleware\HandleCors::class,
+        StagingBasicAuth::class,
+        BlockRobotsOnStagingDomains::class,
+        HandleCors::class,
         // \App\Http\Middleware\TrustHosts::class,
-        \App\Http\Middleware\TrustProxies::class,
-        \App\Http\Middleware\PreventRequestsDuringMaintenance::class,
-        \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,
-        \App\Http\Middleware\TrimStrings::class,
-        \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
+        TrustProxies::class,
+        PreventRequestsDuringMaintenance::class,
+        ValidatePostSize::class,
+        TrimStrings::class,
+        ConvertEmptyStringsToNull::class,
     ];
 
     /**
@@ -33,7 +64,7 @@ class Kernel extends HttpKernel
      * @var string[]
      */
     protected $middlewarePriority = [
-        \App\Http\Middleware\SetLocale::class,
+        SetLocale::class,
         // getting navigation
         // getting padalinys links
     ];
@@ -45,29 +76,29 @@ class Kernel extends HttpKernel
      */
     protected $middlewareGroups = [
         'web' => [
-            \App\Http\Middleware\EncryptCookies::class,
-            \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
-            \App\Http\Middleware\ExtendPWASession::class,
-            \Illuminate\Session\Middleware\StartSession::class,
-            \Illuminate\View\Middleware\ShareErrorsFromSession::class,
-            \App\Http\Middleware\VerifyCsrfToken::class,
-            \Illuminate\Routing\Middleware\SubstituteBindings::class,
-            \App\Http\Middleware\StagingReadOnlyMode::class,
-            \App\Http\Middleware\RewriteUploadsUrl::class,
-            \App\Http\Middleware\SetLocale::class,
-            \App\Http\Middleware\HandleInertiaRequests::class,
-            \App\Http\Middleware\StagingEnvironmentWarnings::class,
-            \App\Http\Middleware\UpdateLastAction::class,
+            EncryptCookies::class,
+            AddQueuedCookiesToResponse::class,
+            ExtendPWASession::class,
+            StartSession::class,
+            ShareErrorsFromSession::class,
+            VerifyCsrfToken::class,
+            SubstituteBindings::class,
+            StagingReadOnlyMode::class,
+            RewriteUploadsUrl::class,
+            SetLocale::class,
+            HandleInertiaRequests::class,
+            StagingEnvironmentWarnings::class,
+            UpdateLastAction::class,
         ],
 
         'api' => [
             'throttle:api',
-            \Illuminate\Routing\Middleware\SubstituteBindings::class,
-            \App\Http\Middleware\StagingReadOnlyMode::class,
+            SubstituteBindings::class,
+            StagingReadOnlyMode::class,
         ],
 
         'main' => [
-            \App\Http\Middleware\GetNavigationForPublic::class,
+            GetNavigationForPublic::class,
         ],
     ];
 
@@ -79,16 +110,16 @@ class Kernel extends HttpKernel
      * @var array<string, string>
      */
     protected $middlewareAliases = [
-        'auth' => \App\Http\Middleware\Authenticate::class,
-        'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
-        'cache.headers' => \Illuminate\Http\Middleware\SetCacheHeaders::class,
-        'can' => \Illuminate\Auth\Middleware\Authorize::class,
-        'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
-        'locale' => \App\Http\Middleware\SetLocale::class,
-        'password.confirm' => \Illuminate\Auth\Middleware\RequirePassword::class,
-        'signed' => \Illuminate\Routing\Middleware\ValidateSignature::class,
-        'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
+        'auth' => Authenticate::class,
+        'auth.basic' => AuthenticateWithBasicAuth::class,
+        'cache.headers' => SetCacheHeaders::class,
+        'can' => Authorize::class,
+        'guest' => RedirectIfAuthenticated::class,
+        'locale' => SetLocale::class,
+        'password.confirm' => RequirePassword::class,
+        'signed' => ValidateSignature::class,
+        'throttle' => ThrottleRequests::class,
         // 'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
-        'tenant.permission' => \App\Http\Middleware\TenantPermission::class,
+        'tenant.permission' => TenantPermission::class,
     ];
 }

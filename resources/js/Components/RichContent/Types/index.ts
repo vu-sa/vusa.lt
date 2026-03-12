@@ -14,12 +14,14 @@ import NumberIcon from '~icons/fluent/number-symbol24-regular';
 import HeroIcon from '~icons/fluent/slide-play24-regular';
 import GridIcon from '~icons/fluent/table-simple24-regular';
 import SocialIcon from '~icons/fluent/share-24-regular';
+import TextBoxIcon from '~icons/fluent/text-field24-regular';
 
 export interface ContentType {
   value: string;
   label: string;
   icon: Component;
   description?: string;
+  isNew?: boolean;
   defaultContent: () => any;
   defaultOptions?: () => Record<string, any>;
 }
@@ -119,6 +121,20 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     description: "Skaičių statistikos sekcija",
     defaultContent: () => ([]),
     defaultOptions: () => ({ title: "", color: "zinc" }),
+  },
+  "text-box": {
+    value: "text-box",
+    label: "Teksto laukas",
+    icon: TextBoxIcon,
+    description: "Teksto įvedimo laukas su pateikimo mygtuku",
+    isNew: true,
+    defaultContent: () => ({}),
+    defaultOptions: () => ({
+      title: { lt: '', en: '' },
+      placeholder: { lt: '', en: '' },
+      isClosed: false,
+      closedMessage: { lt: '', en: '' },
+    }),
   },
   "content-grid": {
     value: "content-grid",

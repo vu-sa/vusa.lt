@@ -4,8 +4,10 @@ namespace App\Models;
 
 use AjCastro\EagerLoadPivotRelations\EagerLoadPivotTrait;
 use App\Models\Pivots\Relationshipable;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -13,11 +15,11 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $slug
  * @property string|null $description
  * @property string|null $type
- * @property \Illuminate\Support\Carbon $created_at
- * @property \Illuminate\Support\Carbon $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Institution> $institutions
- * @property-read \Illuminate\Database\Eloquent\Collection<int, Relationshipable> $relationshipables
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Type> $types
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property-read Collection<int, Institution> $institutions
+ * @property-read Collection<int, Relationshipable> $relationshipables
+ * @property-read Collection<int, Type> $types
  *
  * @method static \AjCastro\EagerLoadPivotRelations\EagerLoadPivotBuilder<static>|Relationship newModelQuery()
  * @method static \AjCastro\EagerLoadPivotRelations\EagerLoadPivotBuilder<static>|Relationship newQuery()

@@ -3,13 +3,16 @@
 namespace App\Models;
 
 use App\Models\Traits\HasTranslations;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 use Laravel\Scout\Searchable;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
@@ -21,20 +24,20 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int $tenant_id
  * @property string $created_by
  * @property string|null $responsible_user_id
- * @property \Illuminate\Support\Carbon $occurred_at
- * @property \Illuminate\Support\Carbon|null $resolved_at
+ * @property Carbon $occurred_at
+ * @property Carbon|null $resolved_at
  * @property string $status
- * @property \Illuminate\Support\Carbon $created_at
- * @property \Illuminate\Support\Carbon $updated_at
- * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property-read \App\Models\Tenant $tenant
- * @property-read \App\Models\User $createdBy
- * @property-read \App\Models\User|null $responsibleUser
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ProblemCategory> $categories
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Institution> $institutions
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Comment> $comments
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Task> $tasks
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property Carbon|null $deleted_at
+ * @property-read Tenant $tenant
+ * @property-read User $createdBy
+ * @property-read User|null $responsibleUser
+ * @property-read Collection<int, ProblemCategory> $categories
+ * @property-read Collection<int, Institution> $institutions
+ * @property-read Collection<int, Comment> $comments
+ * @property-read Collection<int, Task> $tasks
+ * @property-read Collection<int, Activity> $activities
  *
  * @method static \Database\Factories\ProblemFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Problem newModelQuery()

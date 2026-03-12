@@ -2,9 +2,18 @@
 
 namespace App\Models;
 
+use App\Enums\MeetingType;
 use App\Models\Pivots\AgendaItem;
 use App\Settings\MeetingSettings;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use Illuminate\Support\Carbon;
+use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
+use Spatie\Activitylog\Models\Activity;
 
 /**
  * PublicMeeting - Extends Meeting for public display and search indexing
@@ -16,30 +25,30 @@ use Laravel\Scout\Searchable;
  * @property string $id
  * @property string $title
  * @property string|null $description
- * @property \App\Enums\MeetingType|null $type
- * @property \Illuminate\Support\Carbon $start_time
+ * @property MeetingType|null $type
+ * @property Carbon $start_time
  * @property string|null $end_time
- * @property \Illuminate\Support\Carbon $created_at
- * @property \Illuminate\Support\Carbon $updated_at
- * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
- * @property-read \Illuminate\Database\Eloquent\Collection<int, AgendaItem> $agendaItems
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\FileableFile> $availableFiles
- * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $commentable
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Comment> $comments
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\FileableFile> $fileableFiles
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\SharepointFile> $files
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property Carbon|null $deleted_at
+ * @property-read Collection<int, Activity> $activities
+ * @property-read Collection<int, AgendaItem> $agendaItems
+ * @property-read Collection<int, FileableFile> $availableFiles
+ * @property-read Model|\Eloquent $commentable
+ * @property-read Collection<int, Comment> $comments
+ * @property-read Collection<int, FileableFile> $fileableFiles
+ * @property-read Collection<int, SharepointFile> $files
  * @property-read string $completion_status
  * @property-read bool $has_protocol
  * @property-read bool $has_report
  * @property-read bool $is_public
  * @property-read string|null $type_label
  * @property-read string|null $type_slug
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Institution> $institutions
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Task> $tasks
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Tenant> $tenants
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Type> $types
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $users
+ * @property-read Collection<int, Institution> $institutions
+ * @property-read Collection<int, Task> $tasks
+ * @property-read Collection<int, Tenant> $tenants
+ * @property-read Collection<int, Type> $types
+ * @property-read Collection<int, User> $users
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicMeeting newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicMeeting newQuery()
@@ -66,7 +75,7 @@ class PublicMeeting extends Meeting
      * Override institutions relationship to use correct pivot table
      * Laravel would default to 'institution_public_meeting' based on model name
      */
-    public function institutions(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function institutions(): BelongsToMany
     {
         return $this->belongsToMany(Institution::class, 'institution_meeting', 'meeting_id', 'institution_id');
     }
@@ -75,7 +84,7 @@ class PublicMeeting extends Meeting
      * Override types relationship to use correct morph name
      * Laravel would default to 'public_meeting' based on model name
      */
-    public function types(): \Illuminate\Database\Eloquent\Relations\MorphToMany
+    public function types(): MorphToMany
     {
         return $this->morphToMany(Type::class, 'typeable');
     }
@@ -84,7 +93,7 @@ class PublicMeeting extends Meeting
      * Override agendaItems relationship to use correct foreign key
      * Laravel would default to 'public_meeting_id' based on model name
      */
-    public function agendaItems(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function agendaItems(): HasMany
     {
         return $this->hasMany(AgendaItem::class, 'meeting_id', 'id');
     }
@@ -263,6 +272,6 @@ class PublicMeeting extends Meeting
      */
     public function searchableUsing()
     {
-        return app(\Laravel\Scout\EngineManager::class)->engine('typesense');
+        return app(EngineManager::class)->engine('typesense');
     }
 }

@@ -2,7 +2,10 @@
 
 namespace App\Services;
 
+use App\Enums\ContentPartEnum;
 use App\Models\Content;
+use App\Models\ContentPart;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 
 class ContentService
@@ -24,7 +27,7 @@ class ContentService
     public function updateContentParts(Content $content, array $contentParts): Content
     {
         // First, collect existing parts by ID for efficient lookup
-        /** @var \Illuminate\Support\Collection<int, \App\Models\ContentPart> $existingPartsById */
+        /** @var Collection<int, ContentPart> $existingPartsById */
         $existingPartsById = $content->parts()->get()->keyBy('id');
 
         // Track which IDs we've processed
@@ -41,7 +44,7 @@ class ContentService
             // Check if we're updating an existing part or creating a new one
             if ($id && isset($existingPartsById[$id])) {
                 // Update existing part
-                /** @var \App\Models\ContentPart $part */
+                /** @var ContentPart $part */
                 $part = $existingPartsById[$id];
                 $part->type = $partData['type'];
                 $part->json_content = $partData['json_content'];
@@ -52,7 +55,7 @@ class ContentService
                 $handledIds[] = $id;
             } else {
                 // Validate content type
-                if (! in_array($partData['type'], \App\Enums\ContentPartEnum::toArray())) {
+                if (! in_array($partData['type'], ContentPartEnum::toArray())) {
                     Log::warning("Invalid content part type: {$partData['type']}");
 
                     continue;

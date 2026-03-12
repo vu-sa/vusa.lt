@@ -4,6 +4,7 @@ use App\Models\Calendar;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 return new class extends Migration
@@ -58,7 +59,7 @@ return new class extends Migration
                         $this->copyMediaToMainImage($sourceMedia);
                         $processedCalendarIds[] = $sourceMedia->model_id;
                         $calendarsWithMainImage[] = $sourceMedia->model_id;
-                    } catch (\Exception $e) {
+                    } catch (Exception $e) {
                         Log::warning(
                             "Failed to copy gallery image to main_image for calendar {$sourceMedia->model_id}: {$e->getMessage()}"
                         );
@@ -82,7 +83,7 @@ return new class extends Migration
         $sourceDirectory = $sourceMedia->id.'/';
         $targetDirectory = $newMedia->id.'/';
 
-        $storage = \Illuminate\Support\Facades\Storage::disk($sourceDisk);
+        $storage = Storage::disk($sourceDisk);
 
         // Copy all files from source to target directory
         $files = $storage->allFiles($sourceDirectory);
@@ -105,7 +106,7 @@ return new class extends Migration
         foreach ($mainImageMedia as $media) {
             try {
                 // Delete the physical files
-                $storage = \Illuminate\Support\Facades\Storage::disk($media->disk);
+                $storage = Storage::disk($media->disk);
                 $directory = $media->id.'/';
 
                 if ($storage->exists($directory)) {
@@ -114,7 +115,7 @@ return new class extends Migration
 
                 // Delete the media record
                 $media->delete();
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 Log::warning(
                     "Failed to remove main_image media {$media->id}: {$e->getMessage()}"
                 );

@@ -2,6 +2,7 @@
 
 namespace App\Tasks\Handlers;
 
+use App\Models\Task;
 use App\Tasks\DTOs\CreateTaskData;
 use App\Tasks\Enums\ActionType;
 
@@ -16,7 +17,7 @@ class ManualTaskHandler extends BaseTaskHandler
     /**
      * Create a manual task.
      */
-    public function create(CreateTaskData $data): \App\Models\Task
+    public function create(CreateTaskData $data): Task
     {
         // Ensure action type is set to Manual (or null for legacy compatibility)
         $data = new CreateTaskData(

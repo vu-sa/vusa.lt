@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Contracts\SharepointFileableContract;
+use App\Enums\AgendaItemType;
 use App\Enums\MeetingType;
 use App\Events\FileableNameUpdated;
 use App\Models\Pivots\AgendaItem;
@@ -14,8 +15,11 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
+use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
@@ -24,28 +28,28 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string $title
  * @property string|null $description
  * @property MeetingType|null $type
- * @property \Illuminate\Support\Carbon $start_time
+ * @property Carbon $start_time
  * @property string|null $end_time
- * @property \Illuminate\Support\Carbon $created_at
- * @property \Illuminate\Support\Carbon $updated_at
- * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property-read Collection<int, \Spatie\Activitylog\Models\Activity> $activities
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property Carbon|null $deleted_at
+ * @property-read Collection<int, Activity> $activities
  * @property-read Collection<int, AgendaItem> $agendaItems
- * @property-read Collection<int, \App\Models\FileableFile> $availableFiles
+ * @property-read Collection<int, FileableFile> $availableFiles
  * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $commentable
- * @property-read Collection<int, \App\Models\Comment> $comments
- * @property-read Collection<int, \App\Models\FileableFile> $fileableFiles
- * @property-read Collection<int, \App\Models\SharepointFile> $files
+ * @property-read Collection<int, Comment> $comments
+ * @property-read Collection<int, FileableFile> $fileableFiles
+ * @property-read Collection<int, SharepointFile> $files
  * @property-read string $completion_status
  * @property-read bool $has_protocol
  * @property-read bool $has_report
  * @property-read bool $is_public
  * @property-read string|null $type_label
  * @property-read string|null $type_slug
- * @property-read Collection<int, \App\Models\Institution> $institutions
- * @property-read Collection<int, \App\Models\Task> $tasks
- * @property-read Collection<int, \App\Models\Tenant> $tenants
- * @property-read Collection<int, \App\Models\User> $users
+ * @property-read Collection<int, Institution> $institutions
+ * @property-read Collection<int, Task> $tasks
+ * @property-read Collection<int, Tenant> $tenants
+ * @property-read Collection<int, User> $users
  *
  * @method static \Database\Factories\MeetingFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Meeting newModelQuery()
@@ -109,7 +113,7 @@ class Meeting extends Model implements SharepointFileableContract
      */
     public function searchableUsing()
     {
-        return app(\Laravel\Scout\EngineManager::class)->engine('typesense');
+        return app(EngineManager::class)->engine('typesense');
     }
 
     /**
@@ -295,7 +299,7 @@ class Meeting extends Model implements SharepointFileableContract
      * Get student representatives who were active at the time of this meeting.
      * Filters duties by 'studentu-atstovai' type and checks dutiables pivot dates.
      *
-     * @return \Illuminate\Database\Eloquent\Collection<int, User>
+     * @return Collection<int, User>
      */
     public function getRepresentativesActiveAt(): Collection
     {
@@ -392,7 +396,7 @@ class Meeting extends Model implements SharepointFileableContract
         $allComplete = $agendaItems->every(function ($item) {
             // Informational items don't need votes
             $type = $item->getAttribute('type');
-            if ($type instanceof \App\Enums\AgendaItemType && $type->value === 'informational') {
+            if ($type instanceof AgendaItemType && $type->value === 'informational') {
                 return true;
             }
 

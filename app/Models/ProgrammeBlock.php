@@ -3,17 +3,20 @@
 namespace App\Models;
 
 use App\Models\Traits\HasTranslations;
+use Database\Factories\ProgrammeBlockFactory;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
  * @property int $programme_section_id
  * @property array|string $title
  * @property array|string|null $description
- * @property \Illuminate\Support\Carbon $created_at
- * @property \Illuminate\Support\Carbon $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ProgrammePart> $parts
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property-read Collection<int, ProgrammePart> $parts
  * @property-read mixed $translations
  *
  * @method static \Database\Factories\ProgrammeBlockFactory factory($count = null, $state = [])
@@ -29,7 +32,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class ProgrammeBlock extends Model
 {
-    /** @use HasFactory<\Database\Factories\ProgrammeBlockFactory> */
+    /** @use HasFactory<ProgrammeBlockFactory> */
     use HasFactory, HasTranslations;
 
     protected $fillable = ['title', 'description'];

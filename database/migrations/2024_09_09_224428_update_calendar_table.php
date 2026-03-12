@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Calendar;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -29,7 +30,7 @@ return new class extends Migration
             $table->boolean('is_international')->default(false)->after('is_all_day');
         });
 
-        $calendar = \App\Models\Calendar::all();
+        $calendar = Calendar::all();
 
         foreach ($calendar as $calendarEvent) {
 

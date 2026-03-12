@@ -4,6 +4,7 @@ namespace App\Models\Traits;
 
 use App\Enums\NotificationCategory;
 use App\Enums\NotificationChannel;
+use App\Models\Duty;
 use App\Notifications\BaseNotification;
 use Illuminate\Support\Carbon;
 
@@ -315,7 +316,7 @@ trait HasNotificationPreferences
         ];
 
         // Current duty emails
-        /** @var \App\Models\Duty $duty */
+        /** @var Duty $duty */
         foreach ($this->current_duties()->get() as $duty) {
             if (! empty($duty->email)) {
                 $emails[] = [

@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Api\ApiController;
 use App\Models\Institution;
 use App\Services\InstitutionSubscriptionService;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -21,7 +23,7 @@ class InstitutionSubscriptionApiController extends ApiController
     {
         $user = $this->requireAuth($request);
 
-        /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\Institution> $institutions */
+        /** @var Collection<int, Institution> $institutions */
         $institutions = $user->followedInstitutions()
             ->with(['types', 'meetings' => function ($query) {
                 $query->where('start_time', '>=', now())
@@ -29,7 +31,7 @@ class InstitutionSubscriptionApiController extends ApiController
                     ->limit(1);
             }])
             ->get()
-            ->map(function (\Illuminate\Database\Eloquent\Model $institution) use ($user) {
+            ->map(function (Model $institution) use ($user) {
                 if (! $institution instanceof Institution) {
                     return [];
                 }

@@ -2,10 +2,11 @@
 
 namespace Database\Factories;
 
+use App\Models\ApprovalFlow;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ApprovalFlow>
+ * @extends Factory<ApprovalFlow>
  */
 class ApprovalFlowFactory extends Factory
 {

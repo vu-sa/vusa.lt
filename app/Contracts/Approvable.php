@@ -4,6 +4,7 @@ namespace App\Contracts;
 
 use App\Enums\ApprovalDecision;
 use App\Models\ApprovalFlow;
+use App\Models\User;
 use Illuminate\Support\Collection;
 
 /**
@@ -25,7 +26,7 @@ interface Approvable
     /**
      * Get the users who can approve this model at the given step.
      *
-     * @return Collection<int, \App\Models\User>
+     * @return Collection<int, User>
      */
     public function getApproversForStep(int $step): Collection;
 
@@ -62,7 +63,7 @@ interface Approvable
     /**
      * Check if a user can approve at the given step with the given decision.
      */
-    public function canBeApprovedBy(\App\Models\User $user, ?int $step = null, ?ApprovalDecision $decision = null): bool;
+    public function canBeApprovedBy(User $user, ?int $step = null, ?ApprovalDecision $decision = null): bool;
 
     /**
      * Check if a specific step is complete.

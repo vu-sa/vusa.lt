@@ -130,6 +130,16 @@ export type News = {
   options: null
 };
 
+export type TextBox = {
+  json_content: Record<string, never>;
+  options: {
+    title?: { lt: string; en: string };
+    placeholder?: { lt: string; en: string };
+    isClosed?: boolean;
+    closedMessage?: { lt: string; en: string };
+  };
+};
+
 /**
  * Public-facing news item structure returned by API and Inertia props.
  * Matches the shape from NewsCollection::toPublicArray()

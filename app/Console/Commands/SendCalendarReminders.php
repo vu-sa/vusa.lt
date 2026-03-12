@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Notifications\CalendarReminderNotification;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -75,7 +76,7 @@ class SendCalendarReminders extends Command
     /**
      * Get calendar events that start within a specific time window.
      *
-     * @return \Illuminate\Database\Eloquent\Collection<int, \App\Models\Calendar>
+     * @return \Illuminate\Database\Eloquent\Collection<int, Calendar>
      */
     protected function getEventsInTimeWindow(int $hoursAhead): \Illuminate\Database\Eloquent\Collection
     {
@@ -95,7 +96,7 @@ class SendCalendarReminders extends Command
     /**
      * Get users who have opted in to calendar notifications.
      */
-    protected function getUsersOptedInForCalendar(): \Illuminate\Support\Collection
+    protected function getUsersOptedInForCalendar(): Collection
     {
         return User::all()->filter(function (User $user) {
             // Check if user has enabled at least one channel for calendar

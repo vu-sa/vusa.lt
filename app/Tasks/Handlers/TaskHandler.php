@@ -2,6 +2,7 @@
 
 namespace App\Tasks\Handlers;
 
+use App\Models\Task;
 use App\Tasks\DTOs\CreateTaskData;
 
 /**
@@ -15,14 +16,14 @@ interface TaskHandler
     /**
      * Create a task using the provided data.
      *
-     * @return \App\Models\Task
+     * @return Task
      */
     public function create(CreateTaskData $data);
 
     /**
      * Complete a task with an optional reason.
      *
-     * @param  \App\Models\Task  $task
+     * @param  Task  $task
      */
     public function complete($task, ?string $reason = null): void;
 }

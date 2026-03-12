@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\MeetingType;
+use App\Events\MeetingFullyCreated;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexMeetingRequest;
 use App\Http\Requests\StoreMeetingRequest;
@@ -10,13 +11,17 @@ use App\Http\Traits\HasTanstackTables;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
+use App\Models\Task;
+use App\Models\User;
 use App\Services\CheckInService;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ResourceServices\SharepointFileService;
 use App\Services\TanstackTableService;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rules\Enum;
 use Inertia\Inertia;
 
 class MeetingController extends AdminController
@@ -190,7 +195,7 @@ class MeetingController extends AdminController
             DB::commit();
 
             // Dispatch event after meeting is fully set up with all relationships
-            event(new \App\Events\MeetingFullyCreated($meeting));
+            event(new MeetingFullyCreated($meeting));
 
             // For Inertia requests (from modal), redirect to meeting show page
             return redirect()->route('meetings.show', $meeting)->with(['success' => 'Posėdis sukurtas sėkmingai!']);
@@ -222,8 +227,8 @@ class MeetingController extends AdminController
         $meeting->append(['is_public', 'has_protocol', 'has_report']);
 
         // Transform tasks with computed properties (same as userTasks method)
-        $transformedTasks = $meeting->tasks->map(function (\App\Models\Task $task, int $key) {
-            /** @var \Illuminate\Database\Eloquent\Model|null $taskable */
+        $transformedTasks = $meeting->tasks->map(function (Task $task, int $key) {
+            /** @var Model|null $taskable */
             $taskable = $task->taskable;
 
             return [
@@ -247,7 +252,7 @@ class MeetingController extends AdminController
                 ] : null,
                 'taskable_type' => class_basename($task->taskable_type ?? ''),
                 'taskable_id' => $task->taskable_id,
-                'users' => $task->users->map(fn (\App\Models\User $u) => [
+                'users' => $task->users->map(fn (User $u) => [
                     'id' => $u->id,
                     'name' => $u->name,
                     'profile_photo_path' => $u->profile_photo_path,
@@ -317,7 +322,7 @@ class MeetingController extends AdminController
         $validated = $request->validate([
             // 'title' => 'required|string',
             'start_time' => 'required|date',
-            'type' => ['nullable', new \Illuminate\Validation\Rules\Enum(MeetingType::class)],
+            'type' => ['nullable', new Enum(MeetingType::class)],
         ]);
 
         $validated['title'] = Carbon::parse($validated['start_time'])->locale('lt-LT')->isoFormat('YYYY MMMM DD [d.] HH.mm [val.]').' posėdis';

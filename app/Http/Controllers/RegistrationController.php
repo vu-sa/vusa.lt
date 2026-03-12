@@ -5,11 +5,13 @@ namespace App\Http\Controllers;
 use App\Events\MemberRegistrationCreated;
 use App\Events\StudentRepRegistrationCreated;
 use App\Http\Requests\StoreRegistrationRequest;
+use App\Models\FieldResponse;
 use App\Models\Form;
 use App\Models\FormField;
 use App\Models\Institution;
 use App\Models\Registration;
 use App\Settings\FormSettings;
+use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -24,7 +26,7 @@ class RegistrationController extends Controller
         // Check if form is published
         // If publish_time is null, form is available by default
         // If publish_time is set and in the future, block access
-        if ($form->publish_time && \Carbon\Carbon::parse($form->publish_time)->isFuture()) {
+        if ($form->publish_time && Carbon::parse($form->publish_time)->isFuture()) {
             abort(403, 'Form is not yet published');
         }
 
@@ -40,7 +42,7 @@ class RegistrationController extends Controller
                 }
 
                 $formData = $request->validated()['data'];
-                /** @var Collection<int, \App\Models\FieldResponse> $fieldResponses */
+                /** @var Collection<int, FieldResponse> $fieldResponses */
                 $fieldResponses = collect();
 
                 // Use foreach instead of collect()->each() so return statements work properly
@@ -113,7 +115,7 @@ class RegistrationController extends Controller
     /**
      * Dispatch the student rep registration event if the form matches the setting.
      *
-     * @param  \Illuminate\Support\Collection<int, \App\Models\FieldResponse>  $fieldResponses
+     * @param  Collection<int, FieldResponse>  $fieldResponses
      */
     private function dispatchStudentRepRegistrationEvent(Form $form, Registration $registration, Collection $fieldResponses): void
     {
@@ -137,7 +139,7 @@ class RegistrationController extends Controller
         }
 
         // Find the institution from field responses
-        $institutionResponse = $fieldResponses->first(function (\App\Models\FieldResponse $fieldResponse) use ($institutionField) {
+        $institutionResponse = $fieldResponses->first(function (FieldResponse $fieldResponse) use ($institutionField) {
             return $fieldResponse->formField->id === $institutionField->id;
         });
 

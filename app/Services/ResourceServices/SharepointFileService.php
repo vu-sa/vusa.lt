@@ -7,6 +7,7 @@ use App\Models\Duty;
 use App\Models\FileableFile;
 use App\Models\Institution;
 use App\Models\Meeting;
+use App\Models\Traits\HasSharepointFiles;
 use App\Models\Type;
 use App\Services\SharepointGraphService;
 use Illuminate\Database\Eloquent\Model;
@@ -34,7 +35,7 @@ class SharepointFileService
     public static function pathForFileableDriveItem(Model $fileable): string
     {
         // check if model has a trait HasSharepointFiles
-        if (! in_array(\App\Models\Traits\HasSharepointFiles::class, class_uses_recursive($fileable))) {
+        if (! in_array(HasSharepointFiles::class, class_uses_recursive($fileable))) {
             abort(500, 'Model does not have HasSharepointFiles trait');
         }
 

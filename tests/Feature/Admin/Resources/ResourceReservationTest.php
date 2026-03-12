@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Duty;
+use App\Models\Institution;
 use App\Models\Reservation;
 use App\Models\Resource;
 use App\Models\ResourceCategory;
@@ -49,7 +51,7 @@ describe('auth: simple user', function () {
         ]);
 
         // Check user is attached to reservation
-        $reservation = \App\Models\Reservation::where('name', 'Team Meeting')->first();
+        $reservation = Reservation::where('name', 'Team Meeting')->first();
         expect($reservation->users->contains($this->user))->toBeTrue();
     });
 
@@ -206,7 +208,7 @@ describe('auth: resource manager', function () {
     test('can manage all reservations in tenant', function () {
         $otherUser = User::factory()->create();
         // For this test, let's create the user within the same tenant structure
-        $duty = \App\Models\Duty::factory()->create([
+        $duty = Duty::factory()->create([
             'institution_id' => $this->resourceManager->duties->first()->institution_id,
         ]);
         $otherUser->duties()->attach($duty->id, [
@@ -228,8 +230,8 @@ describe('auth: resource manager', function () {
     test('cannot manage reservations from other tenants', function () {
         // Create a user from completely different tenant structure
         $otherTenant = Tenant::factory()->create();
-        $otherInstitution = \App\Models\Institution::factory()->create(['tenant_id' => $otherTenant->id]);
-        $otherDuty = \App\Models\Duty::factory()->create(['institution_id' => $otherInstitution->id]);
+        $otherInstitution = Institution::factory()->create(['tenant_id' => $otherTenant->id]);
+        $otherDuty = Duty::factory()->create(['institution_id' => $otherInstitution->id]);
         $otherUser = User::factory()->create();
         $otherUser->duties()->attach($otherDuty->id, [
             'start_date' => now(),

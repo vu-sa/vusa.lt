@@ -14,7 +14,9 @@ use App\Models\Resource;
 use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Trait providing common notification test utilities.
@@ -96,7 +98,7 @@ trait NotificationTestHelpers
 
         // Use DB::table to insert and get the ID, then fetch the model
         // This is needed because Pivot::create() doesn't properly populate the ID
-        $id = \Illuminate\Support\Facades\DB::table('reservation_resource')->insertGetId([
+        $id = DB::table('reservation_resource')->insertGetId([
             'reservation_id' => $reservation->id,
             'resource_id' => $resource->id,
             'start_time' => now()->addDays(3),
@@ -160,7 +162,7 @@ trait NotificationTestHelpers
         return NotificationDigestQueue::where('user_id', $user->id)->count();
     }
 
-    protected function getDigestQueueItemsForUser(User $user): \Illuminate\Database\Eloquent\Collection
+    protected function getDigestQueueItemsForUser(User $user): Collection
     {
         return NotificationDigestQueue::where('user_id', $user->id)->get();
     }

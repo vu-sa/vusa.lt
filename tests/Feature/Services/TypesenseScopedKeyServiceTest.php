@@ -1,15 +1,20 @@
 <?php
 
+use App\Models\Meeting;
+use App\Models\News;
+use App\Models\Pivots\AgendaItem;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Services\ModelAuthorizer;
 use App\Services\Typesense\TypesenseCollectionConfig;
 use App\Services\Typesense\TypesenseManager;
 use App\Services\Typesense\TypesenseScopedKeyService;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery\MockInterface;
 use Typesense\Client;
 use Typesense\Keys;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+uses(RefreshDatabase::class);
 
 beforeEach(function () {
     // Configure Typesense settings for these tests
@@ -84,9 +89,9 @@ describe('TypesenseCollectionConfig', function () {
     test('returns all model classes', function () {
         $models = TypesenseCollectionConfig::getAllModelClasses();
 
-        expect($models)->toContain(\App\Models\News::class)
-            ->toContain(\App\Models\Meeting::class)
-            ->toContain(\App\Models\Pivots\AgendaItem::class);
+        expect($models)->toContain(News::class)
+            ->toContain(Meeting::class)
+            ->toContain(AgendaItem::class);
     });
 });
 
@@ -110,7 +115,7 @@ describe('TypesenseScopedKeyService', function () {
         $mockClient = Mockery::mock(Client::class);
         $mockClient->shouldReceive('getKeys')->andReturn($mockKeys);
 
-        $service = new TypesenseScopedKeyService($mockClient, app(\App\Services\ModelAuthorizer::class));
+        $service = new TypesenseScopedKeyService($mockClient, app(ModelAuthorizer::class));
 
         $result = $service->generateScopedKeysForUser($superAdmin);
 
@@ -160,7 +165,7 @@ describe('TypesenseScopedKeyService', function () {
         $mockClient = Mockery::mock(Client::class);
         $mockClient->shouldReceive('getKeys')->andReturn($mockKeys);
 
-        $service = new TypesenseScopedKeyService($mockClient, app(\App\Services\ModelAuthorizer::class));
+        $service = new TypesenseScopedKeyService($mockClient, app(ModelAuthorizer::class));
 
         // Clear cache for this user first
         TypesenseScopedKeyService::invalidateForUser($user->id);
@@ -194,7 +199,7 @@ describe('TypesenseScopedKeyService', function () {
         $mockClient = Mockery::mock(Client::class);
         $mockClient->shouldReceive('getKeys')->andReturn($mockKeys);
 
-        $service = new TypesenseScopedKeyService($mockClient, app(\App\Services\ModelAuthorizer::class));
+        $service = new TypesenseScopedKeyService($mockClient, app(ModelAuthorizer::class));
 
         // Clear cache
         TypesenseScopedKeyService::invalidateForUser($user->id);
@@ -223,7 +228,7 @@ describe('TypesenseScopedKeyService', function () {
         $mockClient = Mockery::mock(Client::class);
         $mockClient->shouldReceive('getKeys')->andReturn($mockKeys);
 
-        $service = new TypesenseScopedKeyService($mockClient, app(\App\Services\ModelAuthorizer::class));
+        $service = new TypesenseScopedKeyService($mockClient, app(ModelAuthorizer::class));
 
         // Clear cache first
         TypesenseScopedKeyService::invalidateForUser($superAdmin->id);
@@ -290,7 +295,7 @@ describe('TypesenseScopedKeyService', function () {
         $mockClient = Mockery::mock(Client::class);
         $mockClient->shouldReceive('getKeys')->andReturn($mockKeys);
 
-        $service = new TypesenseScopedKeyService($mockClient, app(\App\Services\ModelAuthorizer::class));
+        $service = new TypesenseScopedKeyService($mockClient, app(ModelAuthorizer::class));
 
         TypesenseScopedKeyService::invalidateForUser($user->id);
 

@@ -3,7 +3,7 @@
 /**
  * Tests for ReservationTaskSubscriber.
  *
- * @see \App\Tasks\Subscribers\ReservationTaskSubscriber
+ * @see ReservationTaskSubscriber
  */
 
 use App\Models\Pivots\ReservationResource;
@@ -18,6 +18,7 @@ use App\States\ReservationResource\Lent;
 use App\States\ReservationResource\Reserved;
 use App\States\ReservationResource\Returned;
 use App\Tasks\Enums\ActionType;
+use App\Tasks\Subscribers\ReservationTaskSubscriber;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 

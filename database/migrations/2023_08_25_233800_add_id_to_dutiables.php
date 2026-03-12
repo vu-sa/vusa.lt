@@ -5,6 +5,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 
 return new class extends Migration
 {
@@ -20,7 +21,7 @@ return new class extends Migration
 
         // add ulid to every existing dutiable
         DB::table('dutiables')->get()->each(function ($dutiable) {
-            $ulid = strtolower(\Illuminate\Support\Str::ulid());
+            $ulid = strtolower(Str::ulid());
             DB::table('dutiables')->where('duty_id', $dutiable->duty_id)->where('dutiable_id', $dutiable->dutiable_id)->where('start_date', $dutiable->start_date)->update(['id' => $ulid]);
         });
 

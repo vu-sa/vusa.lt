@@ -1,6 +1,7 @@
 <?php
 
 use App\Facades\Permission;
+use App\Models\Content;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\News;
@@ -14,7 +15,7 @@ uses(RefreshDatabase::class);
 
 function createContent(): string
 {
-    $content = \App\Models\Content::create();
+    $content = Content::create();
     $content->parts()->createMany([
         ['type' => 'text', 'json_content' => json_encode(['text' => 'Test content'])],
         ['type' => 'image', 'json_content' => json_encode(['url' => 'test.jpg'])],
@@ -53,8 +54,8 @@ beforeEach(function () {
     ];
 
     foreach ($permissions as $permission) {
-        if (! \App\Models\Permission::where('name', $permission)->exists()) {
-            \App\Models\Permission::create(['name' => $permission, 'guard_name' => 'web']);
+        if (! App\Models\Permission::where('name', $permission)->exists()) {
+            App\Models\Permission::create(['name' => $permission, 'guard_name' => 'web']);
         }
     }
 

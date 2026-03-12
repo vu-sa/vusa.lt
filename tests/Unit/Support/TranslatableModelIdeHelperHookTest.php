@@ -1,7 +1,9 @@
 <?php
 
+use App\Models\Traits\HasTranslations;
 use App\Support\TranslatableModelIdeHelperHook;
 use Barryvdh\LaravelIdeHelper\Console\ModelsCommand;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -21,7 +23,7 @@ beforeEach(function () {
     });
 
     // Create a mock for the hook to override the protected getNullableColumns method
-    $this->hook = \Mockery::mock(TranslatableModelIdeHelperHook::class)->makePartial();
+    $this->hook = Mockery::mock(TranslatableModelIdeHelperHook::class)->makePartial();
     $this->hook->shouldAllowMockingProtectedMethods();
     $this->hook->shouldReceive('getNullableColumns')->andReturn([
         'name' => true,
@@ -41,9 +43,9 @@ describe('TranslatableModelIdeHelperHook functionality', function () {
 
     test('modifies properties for translatable models', function () {
         // Create a concrete class instance for testing
-        $modelClass = new class extends \Illuminate\Database\Eloquent\Model
+        $modelClass = new class extends Model
         {
-            use \App\Models\Traits\HasTranslations;
+            use HasTranslations;
 
             public $translatable = ['name', 'description', 'title'];
 
@@ -69,7 +71,7 @@ describe('TranslatableModelIdeHelperHook functionality', function () {
 
     test('does not modify non-translatable model properties', function () {
         // Mock a non-translatable model
-        $mockModel = new class extends \Illuminate\Database\Eloquent\Model
+        $mockModel = new class extends Model
         {
             // No translatable methods
         };
@@ -82,23 +84,23 @@ describe('TranslatableModelIdeHelperHook functionality', function () {
     });
 
     test('handles models without getTranslatableAttributes method', function () {
-        $mockModel = new class extends \Illuminate\Database\Eloquent\Model
+        $mockModel = new class extends Model
         {
             // No getTranslatableAttributes method
         };
 
         // Should not throw an error
         expect(fn () => $this->hook->run($this->mockCommand, $mockModel))
-            ->not->toThrow(\Exception::class);
+            ->not->toThrow(Exception::class);
 
         // No setProperty calls should be made
         expect($this->setPropertyCalls)->toHaveCount(0);
     });
 
     test('sets correct type for all translatable fields', function () {
-        $modelClass = new class extends \Illuminate\Database\Eloquent\Model
+        $modelClass = new class extends Model
         {
-            use \App\Models\Traits\HasTranslations;
+            use HasTranslations;
 
             public $translatable = ['name', 'description'];
 
@@ -120,9 +122,9 @@ describe('TranslatableModelIdeHelperHook functionality', function () {
     });
 
     test('calls setProperty for each translatable attribute', function () {
-        $modelClass = new class extends \Illuminate\Database\Eloquent\Model
+        $modelClass = new class extends Model
         {
-            use \App\Models\Traits\HasTranslations;
+            use HasTranslations;
 
             public $translatable = ['name'];
 
@@ -142,9 +144,9 @@ describe('TranslatableModelIdeHelperHook functionality', function () {
     });
 
     test('handles empty translatable attributes array', function () {
-        $modelClass = new class extends \Illuminate\Database\Eloquent\Model
+        $modelClass = new class extends Model
         {
-            use \App\Models\Traits\HasTranslations;
+            use HasTranslations;
 
             public $translatable = [];
 
@@ -156,16 +158,16 @@ describe('TranslatableModelIdeHelperHook functionality', function () {
 
         // Should not throw an error
         expect(fn () => $this->hook->run($this->mockCommand, $modelClass))
-            ->not->toThrow(\Exception::class);
+            ->not->toThrow(Exception::class);
 
         // No setProperty calls should be made
         expect($this->setPropertyCalls)->toHaveCount(0);
     });
 
     test('processes all translatable attributes', function () {
-        $modelClass = new class extends \Illuminate\Database\Eloquent\Model
+        $modelClass = new class extends Model
         {
-            use \App\Models\Traits\HasTranslations;
+            use HasTranslations;
 
             public $translatable = ['name', 'description', 'field1'];
 
@@ -177,7 +179,7 @@ describe('TranslatableModelIdeHelperHook functionality', function () {
 
         // Should not throw an error
         expect(fn () => $this->hook->run($this->mockCommand, $modelClass))
-            ->not->toThrow(\Exception::class);
+            ->not->toThrow(Exception::class);
 
         // Verify setProperty was called for all translatable attributes
         expect($this->setPropertyCalls)->toHaveCount(3);
@@ -189,14 +191,14 @@ describe('TranslatableModelIdeHelperHook functionality', function () {
     });
 
     test('handles models without HasTranslations trait', function () {
-        $modelClass = new class extends \Illuminate\Database\Eloquent\Model
+        $modelClass = new class extends Model
         {
             // No HasTranslations trait
         };
 
         // Should not throw an error
         expect(fn () => $this->hook->run($this->mockCommand, $modelClass))
-            ->not->toThrow(\Exception::class);
+            ->not->toThrow(Exception::class);
 
         // No setProperty calls should be made
         expect($this->setPropertyCalls)->toHaveCount(0);

@@ -2,6 +2,8 @@
 
 namespace App\Services\Typesense;
 
+use App\Models\Duty;
+use App\Models\Role;
 use App\Models\User;
 use App\Services\InstitutionAccessService;
 use App\Services\ModelAuthorizer;
@@ -423,7 +425,7 @@ class TypesenseScopedKeyService
     /**
      * Invalidate scoped keys for all users with a specific duty
      */
-    public static function invalidateForDuty(\App\Models\Duty $duty): void
+    public static function invalidateForDuty(Duty $duty): void
     {
         $duty->loadMissing('users');
         foreach ($duty->users as $user) {
@@ -434,7 +436,7 @@ class TypesenseScopedKeyService
     /**
      * Invalidate scoped keys for all users with a specific role
      */
-    public static function invalidateForRole(\App\Models\Role $role): void
+    public static function invalidateForRole(Role $role): void
     {
         // Direct role assignments
         $role->loadMissing('users');

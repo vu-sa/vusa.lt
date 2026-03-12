@@ -5,6 +5,7 @@ namespace App\Tasks\Handlers;
 use App\Models\Task;
 use App\Tasks\DTOs\CreateTaskData;
 use App\Tasks\Enums\ActionType;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 /**
@@ -39,7 +40,7 @@ class ApprovalTaskHandler extends BaseTaskHandler
      * Checks both full class name and snake_case variants to handle
      * legacy data with different morph type formats.
      *
-     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @param  Model  $model
      */
     public function completeForModel($model, string $reason): void
     {

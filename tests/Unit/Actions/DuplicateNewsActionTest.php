@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\DuplicateNewsAction;
+use App\Http\Requests\UpdateNewsRequest;
 use App\Models\Content;
 use App\Models\ContentPart;
 use App\Models\News;
@@ -285,7 +286,7 @@ describe('DuplicateNewsAction', function () {
         ]);
 
         // Mock a failure scenario to ensure transaction rollback
-        \DB::shouldReceive('transaction')
+        DB::shouldReceive('transaction')
             ->once()
             ->andReturnUsing(function ($callback) use ($originalNews) {
                 return $callback($originalNews);
@@ -328,7 +329,7 @@ describe('DuplicateNewsAction', function () {
         };
 
         // Create a test instance of UpdateNewsRequest to test prepareForValidation
-        $updateRequest = new class extends \App\Http\Requests\UpdateNewsRequest
+        $updateRequest = new class extends UpdateNewsRequest
         {
             private $mockRequest;
 

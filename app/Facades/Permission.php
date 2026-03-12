@@ -2,6 +2,7 @@
 
 namespace App\Facades;
 
+use App\Services\PermissionService;
 use Illuminate\Support\Facades\Facade;
 
 /**
@@ -11,7 +12,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static \Illuminate\Database\Eloquent\Collection getTenants(\App\Models\User $user = null)
  * @method static void resetCache(\App\Models\User|int|string $user)
  *
- * @see \App\Services\PermissionService
+ * @see PermissionService
  */
 class Permission extends Facade
 {

@@ -12,6 +12,7 @@ use App\Models\Content;
 use App\Models\News;
 use App\Models\Tag;
 use App\Models\Tenant;
+use App\Services\ContentService;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\TanstackTableService;
 
@@ -196,7 +197,7 @@ class NewsController extends AdminController
 
         $content = Content::query()->find($news->content->id);
 
-        app(\App\Services\ContentService::class)->updateContentParts($content, $request->content['parts']);
+        app(ContentService::class)->updateContentParts($content, $request->content['parts']);
 
         // Sync tags if provided
         if ($request->has('tags') && is_array($request->tags)) {

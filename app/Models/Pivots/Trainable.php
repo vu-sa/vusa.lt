@@ -7,7 +7,9 @@ use App\Models\Institution;
 use App\Models\Membership;
 use App\Models\Tenant;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphPivot;
+use Illuminate\Support\Carbon;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 /**
@@ -17,13 +19,13 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string $trainable_id
  * @property int|null $tenant_id
  * @property int|null $quota
- * @property \Illuminate\Support\Carbon $created_at
- * @property \Illuminate\Support\Carbon $updated_at
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
  * @property-read Duty|null $duty
  * @property-read Institution|null $institution
  * @property-read Membership|null $membership
  * @property-read Tenant|null $tenant
- * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $trainable
+ * @property-read Model|\Eloquent $trainable
  * @property-read User|null $user
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Trainable newModelQuery()

@@ -7,7 +7,9 @@ use App\Models\Meeting;
 use App\Models\Tenant;
 use App\Models\Type;
 use App\Services\ResourceServices\SharepointFileService;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
 
 uses(RefreshDatabase::class);
@@ -49,10 +51,10 @@ describe('SharepointFileService', function () {
 
     describe('pathForFileableDriveItem (human-readable paths)', function () {
         test('throws exception for models without HasSharepointFiles trait', function () {
-            $modelWithoutTrait = new class extends \Illuminate\Database\Eloquent\Model {};
+            $modelWithoutTrait = new class extends Model {};
 
             expect(fn () => SharepointFileService::pathForFileableDriveItem($modelWithoutTrait))
-                ->toThrow(\Exception::class, 'Model does not have HasSharepointFiles trait');
+                ->toThrow(Exception::class, 'Model does not have HasSharepointFiles trait');
         });
 
         test('generates correct path for Type model', function () {
@@ -80,7 +82,7 @@ describe('SharepointFileService', function () {
             $institution = Institution::factory()->make(['name' => 'Test', 'tenant_id' => null]);
 
             expect(fn () => SharepointFileService::pathForFileableDriveItem($institution))
-                ->toThrow(\Exception::class, 'Institution does not have a tenant. Tenant must be assigned.');
+                ->toThrow(Exception::class, 'Institution does not have a tenant. Tenant must be assigned.');
         });
 
         test('generates correct path for Meeting model', function () {
@@ -124,7 +126,7 @@ describe('SharepointFileService', function () {
             $meeting->setRelation('institutions', collect([]));
 
             expect(fn () => SharepointFileService::pathForFileableDriveItem($meeting))
-                ->toThrow(\Exception::class, 'Meeting does not have an institution. Institution must be assigned.');
+                ->toThrow(Exception::class, 'Meeting does not have an institution. Institution must be assigned.');
         });
 
         test('throws exception for Meeting institution without tenant', function () {
@@ -134,7 +136,7 @@ describe('SharepointFileService', function () {
             $meeting->institutions()->attach($institutionWithoutTenant->id);
 
             expect(fn () => SharepointFileService::pathForFileableDriveItem($meeting))
-                ->toThrow(\Exception::class, 'Institution does not have a tenant. Tenant must be assigned.');
+                ->toThrow(Exception::class, 'Institution does not have a tenant. Tenant must be assigned.');
         });
 
         test('generates correct path for Duty model', function () {
@@ -216,15 +218,15 @@ describe('SharepointFileService', function () {
 
     describe('uploadFile', function () {
         test('validates fileable has HasSharepointFiles trait', function () {
-            $modelWithoutTrait = new class extends \Illuminate\Database\Eloquent\Model {};
-            $file = \Illuminate\Http\UploadedFile::fake()->create('test.pdf');
+            $modelWithoutTrait = new class extends Model {};
+            $file = UploadedFile::fake()->create('test.pdf');
 
             expect(fn () => $this->service->uploadFile(
                 $file,
                 'test-filename.pdf',
                 $modelWithoutTrait,
                 []
-            ))->toThrow(\Exception::class, 'Model does not have HasSharepointFiles trait');
+            ))->toThrow(Exception::class, 'Model does not have HasSharepointFiles trait');
         });
 
         // Note: Full uploadFile testing would require mocking SharepointGraphService

@@ -1,9 +1,12 @@
 <?php
 
+use App\Models\Duty;
 use App\Models\Tenant;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->tenant = Tenant::factory()->create();
@@ -83,7 +86,7 @@ describe('authorized access', function () {
     });
 
     test('can store user', function () {
-        $duty = \App\Models\Duty::factory()->create();
+        $duty = Duty::factory()->create();
 
         $userData = [
             'name' => 'Test User',
@@ -250,6 +253,6 @@ describe('relationships', function () {
         $user = User::factory()->create();
 
         // Check if user can have duties (relationship exists)
-        expect($user->duties())->toBeInstanceOf(\Illuminate\Database\Eloquent\Relations\BelongsToMany::class);
+        expect($user->duties())->toBeInstanceOf(BelongsToMany::class);
     });
 });

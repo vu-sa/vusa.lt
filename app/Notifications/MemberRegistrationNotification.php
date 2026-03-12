@@ -5,6 +5,7 @@ namespace App\Notifications;
 use App\Enums\NotificationCategory;
 use App\Mail\InformChairAboutMemberRegistration;
 use App\Models\Institution;
+use Illuminate\Contracts\Mail\Mailable;
 
 /**
  * Notification sent when a new member registers.
@@ -106,7 +107,7 @@ class MemberRegistrationNotification extends BaseNotification
     /**
      * Use custom mailable for rich email content.
      */
-    public function toMail(object $notifiable): \Illuminate\Contracts\Mail\Mailable
+    public function toMail(object $notifiable): Mailable
     {
         return (new InformChairAboutMemberRegistration(
             (string) $this->registrationId,

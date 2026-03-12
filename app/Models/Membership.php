@@ -5,22 +5,25 @@ namespace App\Models;
 use App\Models\Pivots\MembershipUser;
 use App\Models\Pivots\Trainable;
 use App\Models\Traits\HasTranslations;
+use Database\Factories\MembershipFactory;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 use Laravel\Scout\Searchable;
 
 /**
  * @property string $id
  * @property array|string $name
  * @property int $tenant_id
- * @property \Illuminate\Support\Carbon $created_at
- * @property \Illuminate\Support\Carbon $updated_at
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
  * @property-read MembershipUser|Trainable|null $pivot
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Training> $availableTrainings
- * @property-read \App\Models\Tenant $tenant
+ * @property-read Collection<int, Training> $availableTrainings
+ * @property-read Tenant $tenant
  * @property-read mixed $translations
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $users
+ * @property-read Collection<int, User> $users
  *
  * @method static \Database\Factories\MembershipFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Membership newModelQuery()
@@ -35,7 +38,7 @@ use Laravel\Scout\Searchable;
  */
 class Membership extends Model
 {
-    /** @use HasFactory<\Database\Factories\MembershipFactory> */
+    /** @use HasFactory<MembershipFactory> */
     use HasFactory, HasTranslations, HasUlids, Searchable;
 
     public $translatable = [
