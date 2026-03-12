@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
@@ -39,7 +40,7 @@ class TanstackTableService
                         $relatedTable = $relationObj->getRelated()->getTable();
 
                         // Handle different relationship types
-                        if ($relationObj instanceof \Illuminate\Database\Eloquent\Relations\BelongsTo) {
+                        if ($relationObj instanceof BelongsTo) {
                             $foreignKey = $relationObj->getForeignKeyName();
                             $ownerKey = $relationObj->getOwnerKeyName();
 

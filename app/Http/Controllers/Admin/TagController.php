@@ -8,9 +8,12 @@ use App\Http\Requests\MergeTagsRequest;
 use App\Http\Requests\StoreTagRequest;
 use App\Http\Requests\UpdateTagRequest;
 use App\Http\Traits\HasTanstackTables;
+use App\Models\News;
 use App\Models\Tag;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\TanstackTableService;
+use Illuminate\Http\RedirectResponse;
+use Inertia\Response;
 
 class TagController extends AdminController
 {
@@ -21,7 +24,7 @@ class TagController extends AdminController
     /**
      * Display a listing of the resource.
      */
-    public function index(IndexTagRequest $request): \Inertia\Response
+    public function index(IndexTagRequest $request): Response
     {
         $this->handleAuthorization('viewAny', Tag::class);
 
@@ -53,7 +56,7 @@ class TagController extends AdminController
             'tags' => [
                 'data' => $tags->getCollection()
                     ->map(function ($tag) {
-                        /** @var \App\Models\Tag $tag */
+                        /** @var Tag $tag */
                         return $tag->toFullArray();
                     }),
                 'meta' => [
@@ -74,7 +77,7 @@ class TagController extends AdminController
     /**
      * Show the form for creating a new resource.
      */
-    public function create(): \Inertia\Response
+    public function create(): Response
     {
         $this->handleAuthorization('create', Tag::class);
 
@@ -84,7 +87,7 @@ class TagController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreTagRequest $request): \Illuminate\Http\RedirectResponse
+    public function store(StoreTagRequest $request): RedirectResponse
     {
         $this->handleAuthorization('create', Tag::class);
 
@@ -97,7 +100,7 @@ class TagController extends AdminController
     /**
      * Display the specified resource.
      */
-    public function show(Tag $tag): \Inertia\Response
+    public function show(Tag $tag): Response
     {
         $this->handleAuthorization('view', $tag);
 
@@ -109,7 +112,7 @@ class TagController extends AdminController
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Tag $tag): \Inertia\Response
+    public function edit(Tag $tag): Response
     {
         $this->handleAuthorization('update', $tag);
 
@@ -120,7 +123,7 @@ class TagController extends AdminController
             ->orderBy('publish_time', 'desc')
             ->get()
             ->map(function ($newsItem) {
-                /** @var \App\Models\News $newsItem */
+                /** @var News $newsItem */
                 return [
                     'id' => $newsItem->id,
                     'title' => $newsItem->title,
@@ -140,7 +143,7 @@ class TagController extends AdminController
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateTagRequest $request, Tag $tag): \Illuminate\Http\RedirectResponse
+    public function update(UpdateTagRequest $request, Tag $tag): RedirectResponse
     {
         $this->handleAuthorization('update', $tag);
 

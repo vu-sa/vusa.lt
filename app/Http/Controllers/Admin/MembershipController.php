@@ -48,7 +48,7 @@ class MembershipController extends AdminController
         return $this->inertiaResponse('Admin/People/IndexMembership', [
             'memberships' => [
                 'data' => $memberships->getCollection()->map(function ($membership) {
-                    /** @var \App\Models\Membership $membership */
+                    /** @var Membership $membership */
                     return $membership->toFullArray();
                 })->values(),
                 'meta' => [

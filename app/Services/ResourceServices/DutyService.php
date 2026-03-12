@@ -4,6 +4,7 @@ namespace App\Services\ResourceServices;
 
 use App\Models\Institution;
 use App\Models\Meeting;
+use App\Models\User;
 use App\Services\ModelAuthorizer;
 use App\Settings\AtstovavimasSettings;
 use App\Settings\MeetingSettings;
@@ -225,7 +226,7 @@ class DutyService
         $meetingSettings = app(MeetingSettings::class);
         $excludedTypeIds = $meetingSettings->getExcludedInstitutionTypeIds();
 
-        $users = \App\Models\User::query()
+        $users = User::query()
             ->select('id', 'name', 'email', 'profile_photo_path', 'last_action')
             ->whereHas('current_duties', function ($query) use ($accessibleTenantIds, $excludedTypeIds) {
                 $query->whereHas('institution', function ($q) use ($accessibleTenantIds, $excludedTypeIds) {
@@ -270,7 +271,7 @@ class DutyService
         ];
 
         // Categorize users for frontend display
-        $categorizedUsers = $users->map(function (\App\Models\User $user) use ($today, $sevenDaysAgo, $thirtyDaysAgo) {
+        $categorizedUsers = $users->map(function (User $user) use ($today, $sevenDaysAgo, $thirtyDaysAgo) {
             $lastAction = $user->last_action;
 
             // Determine activity category

@@ -9,6 +9,7 @@ use App\Http\Requests\UpdateCategoryRequest;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Category;
 use App\Services\TanstackTableService;
+use Inertia\Response;
 
 class CategoryController extends AdminController
 {
@@ -19,7 +20,7 @@ class CategoryController extends AdminController
     /**
      * Display a listing of the resource.
      */
-    public function index(IndexCategoryRequest $request): \Inertia\Response
+    public function index(IndexCategoryRequest $request): Response
     {
         $this->handleAuthorization(Category::class, 'viewAny');
 
@@ -46,7 +47,7 @@ class CategoryController extends AdminController
             'categories' => [
                 'data' => $categories->getCollection()
                     ->map(function ($category) {
-                        /** @var \App\Models\Category $category */
+                        /** @var Category $category */
                         return $category->toFullArray();
                     }),
                 'meta' => [

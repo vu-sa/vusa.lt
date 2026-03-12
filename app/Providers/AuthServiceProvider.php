@@ -2,7 +2,12 @@
 
 namespace App\Providers;
 
+use App\Enums\ModelEnum;
+use App\Models\FileableFile;
+use App\Models\InstitutionCheckIn;
 use App\Models\User;
+use App\Policies\FileableFilePolicy;
+use App\Policies\InstitutionCheckInPolicy;
 use App\Settings\SettingsSettings;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
@@ -16,8 +21,8 @@ class AuthServiceProvider extends ServiceProvider
      */
     protected $policies = [
         // explicit policies that are not inferred from model names
-        \App\Models\InstitutionCheckIn::class => \App\Policies\InstitutionCheckInPolicy::class,
-        \App\Models\FileableFile::class => \App\Policies\FileableFilePolicy::class,
+        InstitutionCheckIn::class => InstitutionCheckInPolicy::class,
+        FileableFile::class => FileableFilePolicy::class,
     ];
 
     /**
@@ -46,7 +51,7 @@ class AuthServiceProvider extends ServiceProvider
         // User can access if they have viewAny permission on any administrative model
         // Excludes resource model since it's managed through the Reservations dashboard
         Gate::define('access-administration', function (User $user) {
-            $labels = \App\Enums\ModelEnum::toLabels();
+            $labels = ModelEnum::toLabels();
 
             // Remove special cases that don't grant admin access
             $excludedModels = [

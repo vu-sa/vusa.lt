@@ -6,6 +6,7 @@ use App\Enums\NotificationCategory;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Support\Str;
 
 /**
  * Notification sent when a comment is posted on a model.
@@ -85,7 +86,7 @@ class CommentPostedNotification extends BaseNotification
     {
         return __('notifications.comment_posted_body', [
             'commenter' => $this->commenter['name'],
-            'comment' => \Illuminate\Support\Str::limit(strip_tags($this->commentText), 150),
+            'comment' => Str::limit(strip_tags($this->commentText), 150),
         ]);
     }
 

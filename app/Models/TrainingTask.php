@@ -3,16 +3,17 @@
 namespace App\Models;
 
 use App\Models\Traits\HasTranslations;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
  * @property string $training_id
  * @property array|string $name
  * @property array|string|null $description
- * @property \Illuminate\Support\Carbon|null $due_date
- * @property \Illuminate\Support\Carbon $created_at
- * @property \Illuminate\Support\Carbon $updated_at
- * @property-read \App\Models\Training $training
+ * @property Carbon|null $due_date
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property-read Training $training
  * @property-read mixed $translations
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TrainingTask newModelQuery()

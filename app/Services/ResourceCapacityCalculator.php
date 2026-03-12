@@ -8,6 +8,7 @@ use App\Models\Resource;
 use App\ValueObjects\TimeRange;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
  * Service for calculating resource capacity and availability
@@ -117,7 +118,7 @@ class ResourceCapacityCalculator
     /**
      * Build query for active reservations within time constraints
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     * @return BelongsToMany
      */
     private function buildActiveReservationsQuery(Carbon $datetime, string $symbolStart, string $symbolEnd)
     {
@@ -130,7 +131,7 @@ class ResourceCapacityCalculator
     /**
      * Apply exception filters to query
      *
-     * @param  \Illuminate\Database\Eloquent\Relations\BelongsToMany  $query
+     * @param  BelongsToMany  $query
      * @param  array<int, string>  $exceptReservations
      * @param  array<int, string>  $exceptResources
      */

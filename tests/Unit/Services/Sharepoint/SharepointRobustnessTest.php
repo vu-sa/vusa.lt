@@ -1,13 +1,18 @@
 <?php
 
 use App\Enums\SharepointConfigEnum;
+use App\Models\SharepointFile;
 use App\Services\SharepointGraphService;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Sleep;
+use Microsoft\Graph\GraphServiceClient;
 
 describe('SharePoint Service Robustness', function () {
     beforeEach(function () {
         // Mock Laravel Sleep to prevent actual delays in tests
-        \Illuminate\Support\Sleep::fake();
+        Sleep::fake();
 
         $this->service = new SharepointGraphService(
             siteId: 'test-site',
@@ -31,7 +36,7 @@ describe('SharePoint Service Robustness', function () {
             $operation = function () use (&$attempts) {
                 $attempts++;
                 if ($attempts <= 3) {
-                    throw new \Exception('Temporary failure');
+                    throw new Exception('Temporary failure');
                 }
 
                 return 'success';
@@ -56,14 +61,14 @@ describe('SharePoint Service Robustness', function () {
             $attempts = 0;
             $operation = function () use (&$attempts) {
                 $attempts++;
-                throw new \Exception('Always fails');
+                throw new Exception('Always fails');
             };
 
             Log::shouldReceive('info')->times((int) SharepointConfigEnum::MAX_RETRIES()->label);
             Log::shouldReceive('error')->once();
 
             expect(fn () => $method->invoke($this->service, $operation, 'test-max-retries'))
-                ->toThrow(\Exception::class, 'Always fails');
+                ->toThrow(Exception::class, 'Always fails');
 
             expect($attempts)->toBe((int) SharepointConfigEnum::MAX_RETRIES()->label + 1);
         });
@@ -95,9 +100,9 @@ describe('SharePoint Service Robustness', function () {
             $method->setAccessible(true);
 
             $exceptionTypes = [
-                new \RuntimeException('Runtime error'),
-                new \InvalidArgumentException('Invalid argument'),
-                new \Exception('Generic exception'),
+                new RuntimeException('Runtime error'),
+                new InvalidArgumentException('Invalid argument'),
+                new Exception('Generic exception'),
             ];
 
             foreach ($exceptionTypes as $exception) {
@@ -119,7 +124,7 @@ describe('SharePoint Service Robustness', function () {
             $attempts = 0;
             $operation = function () use (&$attempts) {
                 $attempts++;
-                throw new \Exception('Custom retry test');
+                throw new Exception('Custom retry test');
             };
 
             $customMaxRetries = 1;
@@ -128,7 +133,7 @@ describe('SharePoint Service Robustness', function () {
             Log::shouldReceive('error')->once();
 
             expect(fn () => $method->invoke($this->service, $operation, 'test-custom-retries', $customMaxRetries))
-                ->toThrow(\Exception::class);
+                ->toThrow(Exception::class);
 
             expect($attempts)->toBe($customMaxRetries + 1);
         });
@@ -149,7 +154,7 @@ describe('SharePoint Service Robustness', function () {
 
             foreach ($invalidCases as $params) {
                 expect(fn () => $method->invoke($this->service, $params))
-                    ->toThrow(\InvalidArgumentException::class);
+                    ->toThrow(InvalidArgumentException::class);
             }
 
             // Test cases that should NOT throw exceptions
@@ -187,7 +192,7 @@ describe('SharePoint Service Robustness', function () {
                 'param1' => 'value1',
                 'param2' => '',  // Empty
                 'param3' => 'value3',
-            ]))->toThrow(\InvalidArgumentException::class, "Parameter 'param2' cannot be empty");
+            ]))->toThrow(InvalidArgumentException::class, "Parameter 'param2' cannot be empty");
         });
 
         test('validation error messages are informative', function () {
@@ -198,7 +203,7 @@ describe('SharePoint Service Robustness', function () {
             try {
                 $method->invoke($this->service, ['important_parameter' => null]);
                 expect(false)->toBeTrue(); // Should not reach here
-            } catch (\InvalidArgumentException $e) {
+            } catch (InvalidArgumentException $e) {
                 expect($e->getMessage())->toContain('important_parameter');
                 expect($e->getMessage())->toContain('cannot be empty');
             }
@@ -211,7 +216,7 @@ describe('SharePoint Service Robustness', function () {
 
             // Empty array should be considered empty
             expect(fn () => $method->invoke($this->service, ['array_param' => []]))
-                ->toThrow(\InvalidArgumentException::class);
+                ->toThrow(InvalidArgumentException::class);
 
             // Non-empty array should be valid
             $method->invoke($this->service, ['array_param' => ['value']]);
@@ -225,13 +230,13 @@ describe('SharePoint Service Robustness', function () {
             $method = $reflection->getMethod('executeWithRetry');
             $method->setAccessible(true);
 
-            $operation = fn () => throw new \Exception('Request timeout');
+            $operation = fn () => throw new Exception('Request timeout');
 
             Log::shouldReceive('info')->times((int) SharepointConfigEnum::MAX_RETRIES()->label);
             Log::shouldReceive('error')->once();
 
             expect(fn () => $method->invoke($this->service, $operation, 'timeout-test'))
-                ->toThrow(\Exception::class, 'Request timeout');
+                ->toThrow(Exception::class, 'Request timeout');
         });
 
         test('handles API rate limiting', function () {
@@ -243,7 +248,7 @@ describe('SharePoint Service Robustness', function () {
             $operation = function () use (&$attempts) {
                 $attempts++;
                 if ($attempts <= 2) {
-                    throw new \Exception('Rate limit exceeded (429)');
+                    throw new Exception('Rate limit exceeded (429)');
                 }
 
                 return 'success-after-rate-limit';
@@ -262,13 +267,13 @@ describe('SharePoint Service Robustness', function () {
             $method = $reflection->getMethod('executeWithRetry');
             $method->setAccessible(true);
 
-            $operation = fn () => throw new \Exception('Authentication failed (401)');
+            $operation = fn () => throw new Exception('Authentication failed (401)');
 
             Log::shouldReceive('info')->times((int) SharepointConfigEnum::MAX_RETRIES()->label);
             Log::shouldReceive('error')->once();
 
             expect(fn () => $method->invoke($this->service, $operation, 'auth-failure-test'))
-                ->toThrow(\Exception::class, 'Authentication failed (401)');
+                ->toThrow(Exception::class, 'Authentication failed (401)');
         });
 
         test('handles service unavailable errors', function () {
@@ -280,7 +285,7 @@ describe('SharePoint Service Robustness', function () {
             $operation = function () use (&$attempts) {
                 $attempts++;
                 if ($attempts === 1) {
-                    throw new \Exception('Service Unavailable (503)');
+                    throw new Exception('Service Unavailable (503)');
                 }
 
                 return 'service-restored';
@@ -298,13 +303,13 @@ describe('SharePoint Service Robustness', function () {
             $method = $reflection->getMethod('executeWithRetry');
             $method->setAccessible(true);
 
-            $operation = fn () => throw new \Exception('Invalid JSON response');
+            $operation = fn () => throw new Exception('Invalid JSON response');
 
             Log::shouldReceive('info')->times((int) SharepointConfigEnum::MAX_RETRIES()->label);
             Log::shouldReceive('error')->once();
 
             expect(fn () => $method->invoke($this->service, $operation, 'malformed-response-test'))
-                ->toThrow(\Exception::class, 'Invalid JSON response');
+                ->toThrow(Exception::class, 'Invalid JSON response');
         });
     });
 
@@ -319,7 +324,7 @@ describe('SharePoint Service Robustness', function () {
             $operation = function () use (&$attempts) {
                 $attempts++;
                 if ($attempts <= 3) {
-                    throw new \Exception('Performance test');
+                    throw new Exception('Performance test');
                 }
 
                 return 'success';
@@ -339,7 +344,7 @@ describe('SharePoint Service Robustness', function () {
             $method = $reflection->getMethod('executeWithRetry');
             $method->setAccessible(true);
 
-            $operation = fn () => throw new \Exception('Bounded time test');
+            $operation = fn () => throw new Exception('Bounded time test');
 
             Log::shouldReceive('info')->times((int) SharepointConfigEnum::MAX_RETRIES()->label);
             Log::shouldReceive('error')->once();
@@ -354,7 +359,7 @@ describe('SharePoint Service Robustness', function () {
             expect($maxRetryTime)->toBeLessThan(30000);
 
             expect(fn () => $method->invoke($this->service, $operation, 'bounded-time-test'))
-                ->toThrow(\Exception::class);
+                ->toThrow(Exception::class);
         });
 
         test('does not add unnecessary delay on immediate success', function () {
@@ -383,7 +388,7 @@ describe('SharePoint Service Robustness', function () {
             $operation = function () use (&$attempts) {
                 $attempts++;
                 if ($attempts <= 2) {
-                    throw new \Exception('Retry logging test');
+                    throw new Exception('Retry logging test');
                 }
 
                 return 'success';
@@ -408,7 +413,7 @@ describe('SharePoint Service Robustness', function () {
             $method = $reflection->getMethod('executeWithRetry');
             $method->setAccessible(true);
 
-            $operation = fn () => throw new \Exception('Final failure test');
+            $operation = fn () => throw new Exception('Final failure test');
 
             Log::shouldReceive('info')->times((int) SharepointConfigEnum::MAX_RETRIES()->label);
 
@@ -420,7 +425,7 @@ describe('SharePoint Service Robustness', function () {
                 }));
 
             expect(fn () => $method->invoke($this->service, $operation, 'final-failure-test'))
-                ->toThrow(\Exception::class);
+                ->toThrow(Exception::class);
         });
 
         test('includes operation name in all log entries', function () {
@@ -429,7 +434,7 @@ describe('SharePoint Service Robustness', function () {
             $method->setAccessible(true);
 
             $operationName = 'test-operation-logging';
-            $operation = fn () => throw new \Exception('Test');
+            $operation = fn () => throw new Exception('Test');
 
             Log::shouldReceive('info')
                 ->withArgs(function ($message, $context) use ($operationName) {
@@ -442,7 +447,7 @@ describe('SharePoint Service Robustness', function () {
                 })->once();
 
             expect(fn () => $method->invoke($this->service, $operation, $operationName))
-                ->toThrow(\Exception::class);
+                ->toThrow(Exception::class);
         });
     });
 
@@ -455,13 +460,13 @@ describe('SharePoint Service Robustness', function () {
             $attempts = 0;
             $operation = function () use (&$attempts) {
                 $attempts++;
-                throw new \Exception('Zero retry test');
+                throw new Exception('Zero retry test');
             };
 
             Log::shouldReceive('error')->once();
 
             expect(fn () => $method->invoke($this->service, $operation, 'zero-retry-test', 0))
-                ->toThrow(\Exception::class);
+                ->toThrow(Exception::class);
 
             expect($attempts)->toBe(1); // Only initial attempt
         });
@@ -477,7 +482,7 @@ describe('SharePoint Service Robustness', function () {
                 if ($attempts === 2) {
                     return 'success-on-second-attempt';
                 }
-                throw new \Exception('Large retry test');
+                throw new Exception('Large retry test');
             };
 
             Log::shouldReceive('info')->twice(); // 1 retry + 1 success
@@ -505,15 +510,15 @@ describe('SharePoint Service Robustness', function () {
         test('createPublicPermission validates required parameters', function () {
             // Test parameter validation for createPublicPermission
             expect(fn () => $this->service->createPublicPermission(null, ''))
-                ->toThrow(\InvalidArgumentException::class, "Parameter 'driveItemId' cannot be empty");
+                ->toThrow(InvalidArgumentException::class, "Parameter 'driveItemId' cannot be empty");
 
             expect(fn () => $this->service->createPublicPermission('test-site', null))
-                ->toThrow(\TypeError::class);
+                ->toThrow(TypeError::class);
         });
 
         test('createPublicPermission handles different datetime scenarios', function () {
             // Mock the GraphServiceClient behavior
-            $mockGraphClient = Mockery::mock(\Microsoft\Graph\GraphServiceClient::class);
+            $mockGraphClient = Mockery::mock(GraphServiceClient::class);
             $mockDriveBuilder = Mockery::mock();
             $mockItemsBuilder = Mockery::mock();
             $mockItemBuilder = Mockery::mock();
@@ -530,12 +535,12 @@ describe('SharePoint Service Robustness', function () {
         });
 
         test('batchProcessDocuments handles empty collections', function () {
-            $emptyCollection = new \Illuminate\Database\Eloquent\Collection([]);
+            $emptyCollection = new Collection([]);
 
             // Should return empty collection when no documents to process
             $result = $this->service->batchProcessDocuments($emptyCollection);
 
-            expect($result)->toBeInstanceOf(\Illuminate\Database\Eloquent\Collection::class);
+            expect($result)->toBeInstanceOf(Collection::class);
             expect($result->isEmpty())->toBeTrue();
         });
 
@@ -577,9 +582,9 @@ describe('SharePoint Service Robustness', function () {
             $this->markTestSkipped('SharepointFile whereIn test requires proper database setup');
 
             try {
-                \App\Models\SharepointFile::whereIn('id', [])->get();
+                SharepointFile::whereIn('id', [])->get();
                 expect(true)->toBeTrue(); // If this works, the method exists
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 expect(false)->toBeTrue('SharepointFile::whereIn method is not available');
             }
 
@@ -695,7 +700,7 @@ describe('SharePoint Service Robustness', function () {
             foreach ($scenarios as $params) {
                 [$siteId, $driveId, $listId] = $params;
 
-                $reflection = new ReflectionClass(\App\Services\SharepointGraphService::class);
+                $reflection = new ReflectionClass(SharepointGraphService::class);
                 $constructor = $reflection->getConstructor();
 
                 expect($constructor->getNumberOfParameters())->toBe(3);
@@ -810,9 +815,9 @@ describe('SharePoint Service Robustness', function () {
             foreach ($dateFormats as $dateString) {
                 if ($dateString) {
                     try {
-                        \Carbon\Carbon::parseFromLocale($dateString, null, 'UTC');
+                        Carbon::parseFromLocale($dateString, null, 'UTC');
                         expect(true)->toBeTrue(); // If no exception, parsing succeeded
-                    } catch (\Exception $e) {
+                    } catch (Exception $e) {
                         expect(false)->toBeTrue("Failed to parse date: {$dateString}"); // This will fail the test
                     }
                 }

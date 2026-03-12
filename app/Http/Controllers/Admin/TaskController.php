@@ -4,11 +4,18 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\StoreTaskRequest;
+use App\Models\Institution;
+use App\Models\Meeting;
+use App\Models\Reservation;
 use App\Models\Task;
+use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Response;
 
 class TaskController extends AdminController
 {
@@ -17,7 +24,7 @@ class TaskController extends AdminController
     /**
      * Display a listing of tasks.
      *
-     * @return \Inertia\Response
+     * @return Response
      */
     public function index()
     {
@@ -39,7 +46,7 @@ class TaskController extends AdminController
      * Return tasks for the current user in JSON format.
      * Used by the TasksIndicator component.
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function userTasksForIndicator(Request $request)
     {
@@ -147,7 +154,7 @@ class TaskController extends AdminController
      * Requires tasks.read.padalinys permission and compound authorization
      * with the related taskable models.
      *
-     * @return \Inertia\Response
+     * @return Response
      */
     public function summary(Request $request)
     {
@@ -175,8 +182,8 @@ class TaskController extends AdminController
             // Meeting tasks - user must have meetings.read.padalinys
             if ($meetingPermissibleTenants->isNotEmpty()) {
                 $q->orWhere(function ($subQ) use ($meetingPermissibleTenants) {
-                    $subQ->where('taskable_type', \App\Models\Meeting::class)
-                        ->whereHasMorph('taskable', [\App\Models\Meeting::class], function ($meetingQ) use ($meetingPermissibleTenants) {
+                    $subQ->where('taskable_type', Meeting::class)
+                        ->whereHasMorph('taskable', [Meeting::class], function ($meetingQ) use ($meetingPermissibleTenants) {
                             $meetingQ->whereHas('tenants', function ($tenantQ) use ($meetingPermissibleTenants) {
                                 $tenantQ->whereIn('tenants.id', $meetingPermissibleTenants->pluck('id'));
                             });
@@ -187,8 +194,8 @@ class TaskController extends AdminController
             // Reservation tasks - user must have reservations.read.padalinys
             if ($reservationPermissibleTenants->isNotEmpty()) {
                 $q->orWhere(function ($subQ) use ($reservationPermissibleTenants) {
-                    $subQ->where('taskable_type', \App\Models\Reservation::class)
-                        ->whereHasMorph('taskable', [\App\Models\Reservation::class], function ($reservationQ) use ($reservationPermissibleTenants) {
+                    $subQ->where('taskable_type', Reservation::class)
+                        ->whereHasMorph('taskable', [Reservation::class], function ($reservationQ) use ($reservationPermissibleTenants) {
                             $reservationQ->whereHas('tenants', function ($tenantQ) use ($reservationPermissibleTenants) {
                                 $tenantQ->whereIn('tenants.id', $reservationPermissibleTenants->pluck('id'));
                             });
@@ -199,8 +206,8 @@ class TaskController extends AdminController
             // Institution tasks (e.g., PeriodicityGap) - user must have institutions.read.padalinys
             if ($institutionPermissibleTenants->isNotEmpty()) {
                 $q->orWhere(function ($subQ) use ($institutionPermissibleTenants) {
-                    $subQ->where('taskable_type', \App\Models\Institution::class)
-                        ->whereHasMorph('taskable', [\App\Models\Institution::class], function ($institutionQ) use ($institutionPermissibleTenants) {
+                    $subQ->where('taskable_type', Institution::class)
+                        ->whereHasMorph('taskable', [Institution::class], function ($institutionQ) use ($institutionPermissibleTenants) {
                             $institutionQ->whereHas('tenant', function ($tenantQ) use ($institutionPermissibleTenants) {
                                 $tenantQ->whereIn('tenants.id', $institutionPermissibleTenants->pluck('id'));
                             });
@@ -239,13 +246,13 @@ class TaskController extends AdminController
         // Type counts using direct database queries
         $institutionsCount = (clone $statsQuery)
             ->whereIn('taskable_type', [
-                \App\Models\Institution::class,
-                \App\Models\Meeting::class,
+                Institution::class,
+                Meeting::class,
             ])
             ->count();
 
         $reservationsCount = (clone $statsQuery)
-            ->where('taskable_type', \App\Models\Reservation::class)
+            ->where('taskable_type', Reservation::class)
             ->count();
 
         $taskStats = [
@@ -264,8 +271,8 @@ class TaskController extends AdminController
         $taskableType = $request->input('taskable_type');
         if ($taskableType === 'institutions') {
             $baseQuery->whereIn('taskable_type', [
-                \App\Models\Institution::class,
-                \App\Models\Meeting::class,
+                Institution::class,
+                Meeting::class,
             ]);
         } elseif ($taskableType) {
             $baseQuery->where('taskable_type', $taskableType);
@@ -289,8 +296,8 @@ class TaskController extends AdminController
             ->withQueryString();
 
         // Transform tasks for frontend
-        $transformedTasks = $tasks->getCollection()->map(function (\App\Models\Task $task, int $key) {
-            /** @var \Illuminate\Database\Eloquent\Model|null $taskable */
+        $transformedTasks = $tasks->getCollection()->map(function (Task $task, int $key) {
+            /** @var Model|null $taskable */
             $taskable = $task->taskable;
 
             return [
@@ -314,7 +321,7 @@ class TaskController extends AdminController
                 ] : null,
                 'taskable_type' => class_basename($task->taskable_type ?? ''),
                 'taskable_id' => $task->taskable_id,
-                'users' => $task->users->map(fn (\App\Models\User $u) => [
+                'users' => $task->users->map(fn (User $u) => [
                     'id' => $u->id,
                     'name' => $u->name,
                     'profile_photo_path' => $u->profile_photo_path,

@@ -7,9 +7,11 @@ use App\Actions\GetMeetingAdministrators;
 use App\Events\MeetingFullyCreated;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
+use App\Models\Task;
 use App\Models\User;
 use App\Notifications\MeetingAgendaCompletedNotification;
 use App\Notifications\MeetingCreatedNotification;
+use App\Tasks\Enums\ActionType;
 use App\Tasks\Handlers\AgendaCompletionTaskHandler;
 use App\Tasks\Handlers\AgendaCreationTaskHandler;
 use App\Tasks\Handlers\PeriodicityGapTaskHandler;
@@ -245,10 +247,10 @@ class MeetingTaskSubscriber
         }
 
         // Also check for completed tasks (reopenIfNeeded would have handled them already)
-        $hasCompletedTask = \App\Models\Task::query()
+        $hasCompletedTask = Task::query()
             ->where('taskable_type', Meeting::class)
             ->where('taskable_id', $meeting->getKey())
-            ->where('action_type', \App\Tasks\Enums\ActionType::AgendaCompletion)
+            ->where('action_type', ActionType::AgendaCompletion)
             ->whereNotNull('completed_at')
             ->exists();
 

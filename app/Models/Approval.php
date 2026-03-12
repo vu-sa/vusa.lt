@@ -3,12 +3,15 @@
 namespace App\Models;
 
 use App\Enums\ApprovalDecision;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
@@ -19,12 +22,12 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property ApprovalDecision $decision
  * @property int $step
  * @property string|null $notes
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
+ * @property-read Collection<int, Activity> $activities
  * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $approvable
- * @property-read \App\Models\User $user
+ * @property-read User $user
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Approval approved()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Approval cancelled()

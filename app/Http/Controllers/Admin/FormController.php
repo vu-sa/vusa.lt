@@ -18,6 +18,7 @@ use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\TanstackTableService;
 use App\Settings\FormSettings;
 use Illuminate\Support\Str;
+use Inertia\Response;
 use Maatwebsite\Excel\Facades\Excel;
 
 class FormController extends AdminController
@@ -29,7 +30,7 @@ class FormController extends AdminController
     /**
      * Display a listing of the resource.
      */
-    public function index(IndexFormRequest $request): \Inertia\Response
+    public function index(IndexFormRequest $request): Response
     {
         $this->handleAuthorization('viewAny', Form::class);
 
@@ -66,7 +67,7 @@ class FormController extends AdminController
             'forms' => [
                 'data' => $forms->getCollection()
                     ->map(function ($form) {
-                        /** @var \App\Models\Form $form */
+                        /** @var Form $form */
                         return [
                             ...$form->toFullArray(),
                             'tenant' => [
@@ -216,7 +217,7 @@ class FormController extends AdminController
                 ...$form->toFullArray(),
                 'form_fields' => $form->formFields()->orderBy('order')->get()
                     ->map(function ($field) {
-                        /** @var \App\Models\FormField $field */
+                        /** @var FormField $field */
                         return $field->toFullArray();
                     }),
                 'registrations_count' => $form->registrations()->count(),

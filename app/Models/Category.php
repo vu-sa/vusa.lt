@@ -3,20 +3,22 @@
 namespace App\Models;
 
 use App\Models\Traits\HasTranslations;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
  * @property string|null $alias
- * @property \Illuminate\Support\Carbon $created_at
- * @property \Illuminate\Support\Carbon $updated_at
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
  * @property array|string|null $name
  * @property array|string|null $description
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Calendar> $calendars
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\News> $news
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Page> $pages
+ * @property-read Collection<int, Calendar> $calendars
+ * @property-read Collection<int, News> $news
+ * @property-read Collection<int, Page> $pages
  * @property-read mixed $translations
  *
  * @method static \Database\Factories\CategoryFactory factory($count = null, $state = [])

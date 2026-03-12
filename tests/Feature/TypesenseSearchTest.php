@@ -5,8 +5,9 @@ use App\Models\Document;
 use App\Models\News;
 use App\Models\Page;
 use App\Services\Typesense\TypesenseManager;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+uses(RefreshDatabase::class);
 
 test('typesense configuration is available', function () {
     // Configure Typesense settings for this test

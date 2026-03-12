@@ -1,6 +1,7 @@
 <?php
 
 use Spatie\TypeScriptTransformer\Formatters\PrettierFormatter;
+use Spatie\TypeScriptTransformer\Writers\ModuleWriter;
 
 // NOTE: Unedited variables were removed
 return [
@@ -16,7 +17,7 @@ return [
      * But you can also use the `ModuleWriter` or implement your own.
      */
 
-    'writer' => Spatie\TypeScriptTransformer\Writers\ModuleWriter::class,
+    'writer' => ModuleWriter::class,
 
     /*
      * The generated TypeScript file can be formatted. We ship a Prettier formatter

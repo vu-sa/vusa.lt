@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Enums\NotificationCategory;
+use App\Models\Task;
 use Illuminate\Support\Collection;
 
 /**
@@ -15,14 +16,14 @@ class TaskOverdueNotification extends BaseNotification
     /**
      * The collection of overdue tasks.
      *
-     * @var Collection<\App\Models\Task>
+     * @var Collection<Task>
      */
     protected Collection $tasks;
 
     /**
      * Create a new notification instance.
      *
-     * @param  Collection<\App\Models\Task>  $tasks
+     * @param  Collection<Task>  $tasks
      */
     public function __construct(Collection $tasks)
     {

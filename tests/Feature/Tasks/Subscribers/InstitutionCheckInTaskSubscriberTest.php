@@ -3,7 +3,7 @@
 /**
  * Tests for InstitutionCheckInTaskSubscriber.
  *
- * @see \App\Tasks\Subscribers\InstitutionCheckInTaskSubscriber
+ * @see InstitutionCheckInTaskSubscriber
  */
 
 use App\Actions\GetInstitutionRepresentatives;
@@ -15,6 +15,7 @@ use App\Models\Tenant;
 use App\Models\Type;
 use App\Models\User;
 use App\Tasks\Handlers\PeriodicityGapTaskHandler;
+use App\Tasks\Subscribers\InstitutionCheckInTaskSubscriber;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 

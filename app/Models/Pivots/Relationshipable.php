@@ -3,7 +3,9 @@
 namespace App\Models\Pivots;
 
 use App\Models\Relationship;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphPivot;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -13,11 +15,11 @@ use Illuminate\Database\Eloquent\Relations\MorphPivot;
  * @property string $related_model_id
  * @property string $scope
  * @property bool $bidirectional
- * @property \Illuminate\Support\Carbon $created_at
- * @property \Illuminate\Support\Carbon $updated_at
- * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $related_model
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property-read Model|\Eloquent $related_model
  * @property-read Relationship $relationship
- * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $relationshipable
+ * @property-read Model|\Eloquent $relationshipable
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Relationshipable newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Relationshipable newQuery()

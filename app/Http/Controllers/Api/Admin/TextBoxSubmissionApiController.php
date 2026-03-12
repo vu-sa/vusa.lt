@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Exports\TextBoxSubmissionsExport;
 use App\Http\Controllers\Api\ApiController;
 use App\Models\ContentPart;
+use App\Models\Page;
 use App\Models\TextBoxSubmission;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -72,7 +73,7 @@ class TextBoxSubmissionApiController extends ApiController
 
         $contentPart = ContentPart::findOrFail($request->content_part_id);
 
-        $pageTitle = \App\Models\Page::query()
+        $pageTitle = Page::query()
             ->where('content_id', $contentPart->content_id)
             ->value('title');
 

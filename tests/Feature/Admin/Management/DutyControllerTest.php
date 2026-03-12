@@ -2,10 +2,12 @@
 
 use App\Models\Duty;
 use App\Models\Institution;
+use App\Models\News;
 use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Permission\PermissionRegistrar;
 
 uses(RefreshDatabase::class);
 
@@ -273,7 +275,7 @@ describe('duty role management', function () {
 
         // Refresh user permissions cache
         $this->dutyManager->refresh();
-        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
         expect($this->dutyManager->can('news.create.padalinys'))->toBeTrue();
     })->todo('Permission inheritance through duties needs investigation');
@@ -282,7 +284,7 @@ describe('duty role management', function () {
         $this->dutyManagerDuty->assignRole('Communication Coordinator');
 
         $otherTenant = Tenant::factory()->create();
-        $otherNews = \App\Models\News::factory()->create([
+        $otherNews = News::factory()->create([
             'tenant_id' => $otherTenant->id,
         ]);
 

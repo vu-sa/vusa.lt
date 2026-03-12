@@ -8,12 +8,13 @@ use App\Models\Page;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
+use Tiptap\Editor;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
     // Create or find the main tenant that the controller expects
-    $this->tenant = \App\Models\Tenant::firstOrCreate(
+    $this->tenant = Tenant::firstOrCreate(
         ['alias' => 'vusa'],
         [
             'shortname' => 'VU SA',
@@ -29,7 +30,7 @@ test('page renders successfully with content', function () {
     ContentPart::factory()->create([
         'content_id' => $content->id,
         'type' => 'tiptap',
-        'json_content' => (new \Tiptap\Editor)->setContent('<p>Test content</p>')->getDocument(),
+        'json_content' => (new Editor)->setContent('<p>Test content</p>')->getDocument(),
     ]);
 
     $page = Page::factory()->create([
@@ -139,7 +140,7 @@ test('page with multiple content parts including tiptap renders successfully', f
     ContentPart::factory()->create([
         'content_id' => $content->id,
         'type' => 'tiptap',
-        'json_content' => (new \Tiptap\Editor)->setContent('<p>Tiptap content for SEO</p>')->getDocument(),
+        'json_content' => (new Editor)->setContent('<p>Tiptap content for SEO</p>')->getDocument(),
         'order' => 2,
     ]);
 
@@ -173,7 +174,7 @@ test('page with navigation item renders successfully', function () {
     ContentPart::factory()->create([
         'content_id' => $content->id,
         'type' => 'tiptap',
-        'json_content' => (new \Tiptap\Editor)->setContent('<p>Test content</p>')->getDocument(),
+        'json_content' => (new Editor)->setContent('<p>Test content</p>')->getDocument(),
     ]);
 
     $page = Page::factory()->create([
@@ -210,7 +211,7 @@ test('page with category renders successfully', function () {
     ContentPart::factory()->create([
         'content_id' => $content->id,
         'type' => 'tiptap',
-        'json_content' => (new \Tiptap\Editor)->setContent('<p>Category page content</p>')->getDocument(),
+        'json_content' => (new Editor)->setContent('<p>Category page content</p>')->getDocument(),
     ]);
 
     $page = Page::factory()->create([
@@ -238,7 +239,7 @@ test('seo description is extracted from first tiptap content', function () {
     ContentPart::factory()->create([
         'content_id' => $content->id,
         'type' => 'tiptap',
-        'json_content' => (new \Tiptap\Editor)->setContent('<p>This is the SEO description content.</p>')->getDocument(),
+        'json_content' => (new Editor)->setContent('<p>This is the SEO description content.</p>')->getDocument(),
     ]);
 
     $page = Page::factory()->create([

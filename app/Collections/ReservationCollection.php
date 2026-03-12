@@ -4,6 +4,7 @@ namespace App\Collections;
 
 use App\Models\Pivots\ReservationResource;
 use App\Models\Reservation;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 
 /**
@@ -48,14 +49,14 @@ class ReservationCollection extends Collection
     /**
      * Filter reservations that overlap with a given time range
      */
-    public function whereOverlaps(\Carbon\Carbon $start, \Carbon\Carbon $end): static
+    public function whereOverlaps(Carbon $start, Carbon $end): static
     {
         return $this->filter(function (Reservation $reservation) use ($start, $end) {
             /** @var ReservationResource $pivot */
             $pivot = $reservation->pivot;
 
-            $pivotStart = \Carbon\Carbon::parse($pivot->start_time);
-            $pivotEnd = \Carbon\Carbon::parse($pivot->end_time);
+            $pivotStart = Carbon::parse($pivot->start_time);
+            $pivotEnd = Carbon::parse($pivot->end_time);
 
             return $pivotStart->isBefore($end) && $pivotEnd->isAfter($start);
         });
@@ -77,26 +78,26 @@ class ReservationCollection extends Collection
     /**
      * Get reservations that start before a given time
      */
-    public function whereStartsBefore(\Carbon\Carbon $time): static
+    public function whereStartsBefore(Carbon $time): static
     {
         return $this->filter(function (Reservation $reservation) use ($time) {
             /** @var ReservationResource $pivot */
             $pivot = $reservation->pivot;
 
-            return \Carbon\Carbon::parse($pivot->start_time)->isBefore($time);
+            return Carbon::parse($pivot->start_time)->isBefore($time);
         });
     }
 
     /**
      * Get reservations that end after a given time
      */
-    public function whereEndsAfter(\Carbon\Carbon $time): static
+    public function whereEndsAfter(Carbon $time): static
     {
         return $this->filter(function (Reservation $reservation) use ($time) {
             /** @var ReservationResource $pivot */
             $pivot = $reservation->pivot;
 
-            return \Carbon\Carbon::parse($pivot->end_time)->isAfter($time);
+            return Carbon::parse($pivot->end_time)->isAfter($time);
         });
     }
 
@@ -109,7 +110,7 @@ class ReservationCollection extends Collection
             /** @var ReservationResource $pivot */
             $pivot = $reservation->pivot;
 
-            return \Carbon\Carbon::parse($pivot->start_time);
+            return Carbon::parse($pivot->start_time);
         }, SORT_REGULAR, $descending);
     }
 
@@ -122,7 +123,7 @@ class ReservationCollection extends Collection
             /** @var ReservationResource $pivot */
             $pivot = $reservation->pivot;
 
-            return \Carbon\Carbon::parse($pivot->end_time);
+            return Carbon::parse($pivot->end_time);
         }, SORT_REGULAR, $descending);
     }
 

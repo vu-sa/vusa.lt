@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -16,9 +17,9 @@ use Illuminate\Support\Facades\Cache;
  * @property int $order
  * @property int $is_active
  * @property array<array-key, mixed>|null $extra_attributes column, icon, image, style
- * @property \Illuminate\Support\Carbon $created_at
- * @property \Illuminate\Support\Carbon $updated_at
- * @property-read \App\Models\User|null $user
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property-read User|null $user
  *
  * @method static \Database\Factories\NavigationFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Navigation newModelQuery()

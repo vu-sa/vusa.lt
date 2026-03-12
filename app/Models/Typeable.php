@@ -3,11 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphPivot;
 
 /**
- * @property-read \App\Models\Type|null $type
- * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $typeable
+ * @property-read Type|null $type
+ * @property-read Model|\Eloquent $typeable
  *
  * @method static \Database\Factories\TypeableFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Typeable newModelQuery()

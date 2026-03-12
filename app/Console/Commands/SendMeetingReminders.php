@@ -2,11 +2,13 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Duty;
 use App\Models\Meeting;
 use App\Models\User;
 use App\Notifications\MeetingReminderNotification;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Notification;
 
 /**
@@ -54,7 +56,7 @@ class SendMeetingReminders extends Command
     /**
      * Get meetings that start within a specific time window.
      *
-     * @return \Illuminate\Database\Eloquent\Collection<int, \App\Models\Meeting>
+     * @return \Illuminate\Database\Eloquent\Collection<int, Meeting>
      */
     protected function getMeetingsInTimeWindow(int $hoursAhead): \Illuminate\Database\Eloquent\Collection
     {
@@ -73,21 +75,21 @@ class SendMeetingReminders extends Command
     /**
      * Get users who should receive reminders for a meeting.
      *
-     * @return \Illuminate\Support\Collection<int, \App\Models\User>
+     * @return Collection<int, User>
      */
-    protected function getMeetingParticipants(Meeting $meeting): \Illuminate\Support\Collection
+    protected function getMeetingParticipants(Meeting $meeting): Collection
     {
         // Get users attached to the meeting's institutions
-        /** @var \Illuminate\Support\Collection<int, \App\Models\User> $users */
+        /** @var Collection<int, User> $users */
         $users = collect();
 
         foreach ($meeting->institutions as $institution) {
-            /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\Duty> $duties */
+            /** @var \Illuminate\Database\Eloquent\Collection<int, Duty> $duties */
             $duties = $institution->duties()
                 ->with('users')
                 ->get();
 
-            /** @var \Illuminate\Support\Collection<int, \App\Models\User> $institutionUsers */
+            /** @var Collection<int, User> $institutionUsers */
             $institutionUsers = $duties->flatMap(fn ($duty) => $duty->users);
 
             $users = $users->merge($institutionUsers);

@@ -15,5 +15,5 @@ use Spatie\Enum\Laravel\Enum;
  */
 final class CRUDEnum extends Enum
 {
-    use hasCamelCaseLabels;
+    use HasCamelCaseLabels;
 }

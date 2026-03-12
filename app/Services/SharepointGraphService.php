@@ -14,6 +14,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Sleep;
 use Microsoft\Graph\BatchRequestBuilder;
 use Microsoft\Graph\Core\Requests\BatchRequestContent;
 use Microsoft\Graph\Core\Requests\BatchRequestItem;
@@ -21,6 +22,7 @@ use Microsoft\Graph\Generated\Drives\Item\Items\Item\Children\ChildrenRequestBui
 use Microsoft\Graph\Generated\Drives\Item\Items\Item\CreateLink\CreateLinkPostRequestBody;
 use Microsoft\Graph\Generated\Drives\Item\Items\Item\DriveItemItemRequestBuilderGetRequestConfiguration;
 use Microsoft\Graph\Generated\Models;
+use Microsoft\Graph\Generated\Models\DriveItem;
 use Microsoft\Graph\Generated\Models\FieldValueSet;
 use Microsoft\Graph\Generated\Models\ODataErrors\ODataError;
 use Microsoft\Graph\Generated\Models\PermissionCollectionResponse;
@@ -59,7 +61,7 @@ class SharepointGraphService
      * This service uses technical constants from SharepointConfigEnum for API URLs,
      * retry logic, timeouts, and other static configuration values.
      *
-     * @see \App\Enums\SharepointConfigEnum For static technical configuration
+     * @see SharepointConfigEnum For static technical configuration
      *
      * Set for which sharepoint site and drive to interact with
      * If no siteId or driveId is provided, it will use the default values from config
@@ -131,7 +133,7 @@ class SharepointGraphService
      * Get a DriveItem object by path (not parsed into collection).
      * Returns the actual Microsoft Graph DriveItem model.
      */
-    public function getDriveItemObjectByPath(string $path): ?Models\DriveItem
+    public function getDriveItemObjectByPath(string $path): ?DriveItem
     {
         try {
             $sharepointPathFinal = $this->graphApiBaseUrl.'drives/'.$this->driveId.'/root:'."/{$path}?\$expand=listItem";
@@ -178,7 +180,7 @@ class SharepointGraphService
     /**
      * Get a drive item by its ID with list item metadata.
      */
-    public function getDriveItemById(string $driveItemId): ?Models\DriveItem
+    public function getDriveItemById(string $driveItemId): ?DriveItem
     {
         try {
             $requestConfiguration = new DriveItemItemRequestBuilderGetRequestConfiguration;
@@ -201,7 +203,7 @@ class SharepointGraphService
         }
     }
 
-    public function getDriveItemByListItem(string $siteId, string $listId, string $listItemId): Models\DriveItem
+    public function getDriveItemByListItem(string $siteId, string $listId, string $listItemId): DriveItem
     {
         $requestConfiguration = new DriveItemRequestBuilderGetRequestConfiguration;
         $queryParameters = DriveItemRequestBuilderGetRequestConfiguration::createQueryParameters();
@@ -215,7 +217,7 @@ class SharepointGraphService
         return $driveItem;
     }
 
-    public function updateDriveItemByPath(string $path, array $fields): ?Models\DriveItem
+    public function updateDriveItemByPath(string $path, array $fields): ?DriveItem
     {
         try {
             $path = rawurlencode($path);
@@ -249,13 +251,13 @@ class SharepointGraphService
         }
     }
 
-    public function getListItem(string $siteId, string $listId, string $listItemId): Models\FieldValueSet
+    public function getListItem(string $siteId, string $listId, string $listItemId): FieldValueSet
     {
         try {
             $listItem = $this->graph->sites()->bySiteId($siteId)->lists()->byListId($listId)->items()->byListItemId($listItemId)->fields()->get()->wait();
 
             return $listItem;
-        } catch (\Microsoft\Graph\Generated\Models\ODataErrors\ODataError $e) {
+        } catch (ODataError $e) {
             // List item doesn't exist (404) or access denied (403)
             $this->logWarning('SharePoint list item not found or inaccessible', [
                 'site_id' => $siteId,
@@ -268,7 +270,7 @@ class SharepointGraphService
         }
     }
 
-    public function updateListItem(string $listId, string $listItemId, array $fields): Models\FieldValueSet
+    public function updateListItem(string $listId, string $listItemId, array $fields): FieldValueSet
     {
         try {
             $requestConfiguration = new FieldsRequestBuilderPatchRequestConfiguration;
@@ -329,7 +331,7 @@ class SharepointGraphService
 
             // flatten driveItemCollection
             return $driveItemCollection;
-        })->reject(fn ($value) => $value === false)->flatten()->map(function (Models\DriveItem $driveItem) {
+        })->reject(fn ($value) => $value === false)->flatten()->map(function (DriveItem $driveItem) {
             // turn to simple array
             return $driveItem->getBackingStore()->enumerate();
         });
@@ -455,7 +457,7 @@ class SharepointGraphService
         ]);
     }
 
-    public function uploadDriveItem(string $filePath, UploadedFile $file): Models\DriveItem
+    public function uploadDriveItem(string $filePath, UploadedFile $file): DriveItem
     {
         $factory = new Psr17Factory;
 
@@ -479,7 +481,7 @@ class SharepointGraphService
      *
      * @param  string  $folderPath  The full path for the folder (e.g., "General/Padaliniai/NewFolder")
      */
-    public function createFolder(string $folderPath): Models\DriveItem
+    public function createFolder(string $folderPath): DriveItem
     {
         $pathParts = explode('/', trim($folderPath, '/'));
         $folderName = array_pop($pathParts);
@@ -491,7 +493,7 @@ class SharepointGraphService
             $parentUrl .= ':/'.$parentPath.':';
         }
 
-        $requestBody = new Models\DriveItem;
+        $requestBody = new DriveItem;
         $requestBody->setName($folderName);
         $requestBody->setFolder(new Models\Folder);
         $requestBody->setAdditionalData([
@@ -520,7 +522,7 @@ class SharepointGraphService
      * @param  string  $filePath  The full path including filename (e.g., "Folder/Subfolder/shortcut.url")
      * @param  string  $content  The .url file content
      */
-    public function uploadUrlShortcut(string $filePath, string $content): Models\DriveItem
+    public function uploadUrlShortcut(string $filePath, string $content): DriveItem
     {
         $factory = new Psr17Factory;
 
@@ -675,7 +677,7 @@ class SharepointGraphService
             $batchResponse = $batchRequestBuilder->postAsync($batch)->wait();
 
             $permissionCollection = collect($batch->getRequests())->map(function (BatchRequestItem $request) use ($batchResponse) {
-                $additionalData = $batchResponse->getResponseBody($request->getId(), Models\PermissionCollectionResponse::class)->getAdditionalData();
+                $additionalData = $batchResponse->getResponseBody($request->getId(), PermissionCollectionResponse::class)->getAdditionalData();
 
                 $additionalData['list_item_unique_id'] = $request->getId();
 
@@ -834,7 +836,7 @@ class SharepointGraphService
                 }
 
                 // Check for ODataError which has more details
-                if ($e instanceof \Microsoft\Graph\Generated\Models\ODataErrors\ODataError) {
+                if ($e instanceof ODataError) {
                     $errorDetails['odata_error'] = $e->getError()?->getMessage() ?? 'No OData error message';
                     $errorDetails['odata_code'] = $e->getError()?->getCode() ?? 'No code';
                 }
@@ -861,7 +863,7 @@ class SharepointGraphService
 
                 // Exponential backoff
                 $delay = (int) SharepointConfigEnum::RETRY_DELAY_MS()->label * pow(2, $attempt - 1);
-                \Illuminate\Support\Sleep::for($delay)->milliseconds();
+                Sleep::for($delay)->milliseconds();
 
                 $attempt++;
             }
@@ -887,7 +889,7 @@ class SharepointGraphService
      *
      * @throws \InvalidArgumentException if item is a folder or not a file
      */
-    private function validateItemIsFile(string $driveItemId): \Microsoft\Graph\Generated\Models\DriveItem
+    private function validateItemIsFile(string $driveItemId): DriveItem
     {
         $driveItem = $this->graph->drives()
             ->byDriveId($this->driveId)

@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use App\Notifications\TestPushNotification;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -16,10 +18,10 @@ class PushSubscriptionController extends Controller
      */
     public function index(): JsonResponse
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = Auth::user();
 
-        /** @var \Illuminate\Database\Eloquent\Collection<int, PushSubscription> $subscriptions */
+        /** @var Collection<int, PushSubscription> $subscriptions */
         $subscriptions = $user->pushSubscriptions()
             ->select(['id', 'endpoint', 'device_name', 'created_at', 'updated_at'])
             ->orderByDesc('updated_at')
@@ -57,7 +59,7 @@ class PushSubscriptionController extends Controller
             'deviceName' => 'nullable|string|max:255',
         ]);
 
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = Auth::user();
 
         // Delete existing subscription for this endpoint to avoid duplicates
@@ -95,7 +97,7 @@ class PushSubscriptionController extends Controller
             'endpoint' => 'required|url',
         ]);
 
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = Auth::user();
 
         $deleted = $user->pushSubscriptions()
@@ -115,7 +117,7 @@ class PushSubscriptionController extends Controller
      */
     public function destroyById(int $id): JsonResponse
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = Auth::user();
 
         $deleted = $user->pushSubscriptions()
@@ -135,7 +137,7 @@ class PushSubscriptionController extends Controller
      */
     public function sendTest(): JsonResponse
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = Auth::user();
 
         if (! $user->pushSubscriptions()->exists()) {

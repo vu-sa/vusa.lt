@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -55,9 +56,9 @@ Route::patch('types/{type}/restore', [TypeController::class, 'restore'])->name('
 
 // Resources with Precognition (live validation)
 Route::resource('pages', PageController::class)->except(['show'])
-    ->middleware(\Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests::class);
+    ->middleware(HandlePrecognitiveRequests::class);
 Route::resource('news', NewsController::class)->except(['show'])
-    ->middleware(\Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests::class);
+    ->middleware(HandlePrecognitiveRequests::class);
 Route::resource('categories', CategoryController::class)->except(['show']);
 Route::resource('tags', TagController::class)->except(['show']);
 Route::get('tags/merge', [TagController::class, 'mergeTags'])->name('tags.merge');
@@ -115,7 +116,7 @@ Route::post('programmeSections/{programmeSection}/attach', [ProgrammeSectionCont
 Route::post('programmeSections/{programmeSection}/detach', [ProgrammeSectionController::class, 'detach'])->name('programmeSections.detach');
 
 Route::resource('calendar', CalendarController::class)
-    ->middleware(\Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests::class);
+    ->middleware(HandlePrecognitiveRequests::class);
 Route::post('calendar/{calendar}/media/{media}', [CalendarController::class, 'destroyMedia'])->name('calendar.destroyMedia');
 Route::post('calendar/{calendar}/duplicate', [CalendarController::class, 'duplicate'])->name('calendar.duplicate');
 Route::resource('agendaItems', AgendaItemController::class)->except(['index', 'create']);

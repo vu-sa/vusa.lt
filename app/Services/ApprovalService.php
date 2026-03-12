@@ -164,7 +164,7 @@ class ApprovalService
     /**
      * Get pending approvals for a user across all approvable types.
      *
-     * @return Collection<int, \Illuminate\Database\Eloquent\Model>
+     * @return Collection<int, Model>
      */
     public function getPendingApprovalsForUser(User $user, ?string $approvableType = null): Collection
     {

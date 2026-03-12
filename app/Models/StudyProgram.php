@@ -2,22 +2,25 @@
 
 namespace App\Models;
 
+use App\Models\Pivots\Dutiable;
 use App\Models\Traits\HasTranslations;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
  * @property array|string $name
  * @property string $degree
  * @property int $tenant_id
- * @property \Illuminate\Support\Carbon $created_at
- * @property \Illuminate\Support\Carbon $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Pivots\Dutiable> $dutiables
- * @property-read \App\Models\Tenant $tenant
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property-read Collection<int, Dutiable> $dutiables
+ * @property-read Tenant $tenant
  * @property-read mixed $translations
  *
  * @method static \Database\Factories\StudyProgramFactory factory($count = null, $state = [])
@@ -50,6 +53,6 @@ class StudyProgram extends Model
 
     public function dutiables(): HasMany
     {
-        return $this->hasMany(\App\Models\Pivots\Dutiable::class);
+        return $this->hasMany(Dutiable::class);
     }
 }

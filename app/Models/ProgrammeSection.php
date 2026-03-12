@@ -4,19 +4,22 @@ namespace App\Models;
 
 use App\Models\Pivots\ProgrammeElement;
 use App\Models\Traits\HasTranslations;
+use Database\Factories\ProgrammeSectionFactory;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
  * @property array|string $title
  * @property int $duration
  * @property string|null $start_time
- * @property \Illuminate\Support\Carbon $created_at
- * @property \Illuminate\Support\Carbon $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ProgrammeBlock> $blocks
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property-read Collection<int, ProgrammeBlock> $blocks
  * @property-read ProgrammeElement|null $pivot
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ProgrammeDay> $programmeDays
+ * @property-read Collection<int, ProgrammeDay> $programmeDays
  * @property-read mixed $translations
  *
  * @method static \Database\Factories\ProgrammeSectionFactory factory($count = null, $state = [])
@@ -32,7 +35,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class ProgrammeSection extends Model
 {
-    /** @use HasFactory<\Database\Factories\ProgrammeSectionFactory> */
+    /** @use HasFactory<ProgrammeSectionFactory> */
     use HasFactory, HasTranslations;
 
     protected $fillable = ['title'];

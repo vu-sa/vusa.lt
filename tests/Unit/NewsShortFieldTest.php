@@ -6,6 +6,7 @@ use App\Models\ContentPart;
 use App\Models\News;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tiptap\Editor;
 
 uses(RefreshDatabase::class);
 
@@ -17,7 +18,7 @@ test('news uses short field for SEO when available', function () {
     ContentPart::factory()->create([
         'content_id' => $content->id,
         'type' => 'tiptap',
-        'json_content' => (new \Tiptap\Editor)->setContent('<p>This should not be used in SEO</p>')->getDocument(),
+        'json_content' => (new Editor)->setContent('<p>This should not be used in SEO</p>')->getDocument(),
     ]);
 
     $news = News::factory()->create([

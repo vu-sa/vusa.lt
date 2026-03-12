@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Institution;
 use App\Models\User;
+use App\Settings\AtstovavimasSettings;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
@@ -28,8 +29,8 @@ use Illuminate\Support\Facades\Cache;
  *   - UserPermissionObserver (duty/role changes)
  *   - RelationshipableObserver (relationship changes) - triggers invalidation for affected institutions' users
  *
- * @see \App\Services\RelationshipService for institution relationship logic
- * @see \App\Settings\AtstovavimasSettings for institution manager role configuration
+ * @see RelationshipService for institution relationship logic
+ * @see AtstovavimasSettings for institution manager role configuration
  */
 class InstitutionAccessService
 {

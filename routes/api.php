@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\Admin\FileApiController;
 use App\Http\Controllers\Api\Admin\InstitutionSubscriptionApiController;
 use App\Http\Controllers\Api\Admin\MeetingApiController;
+use App\Http\Controllers\Api\Admin\SearchApiController;
 use App\Http\Controllers\Api\Admin\SharepointApiController;
 use App\Http\Controllers\Api\Admin\TaskApiController;
 use App\Http\Controllers\Api\Admin\TextBoxSubmissionApiController;
@@ -13,6 +14,7 @@ use App\Http\Controllers\Api\DocumentController;
 use App\Http\Controllers\Api\NewsController;
 use App\Http\Controllers\Api\TextBoxSubmissionController;
 use App\Http\Controllers\Api\TypeController;
+use App\Services\Typesense\TypesenseManager;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -53,7 +55,7 @@ Route::prefix('v1')->name('v1.')->group(function () {
 
     // Typesense configuration for frontend search
     Route::get('typesense/config', function () {
-        return response()->json(\App\Services\Typesense\TypesenseManager::getFrontendConfig());
+        return response()->json(TypesenseManager::getFrontendConfig());
     })->name('typesense.config');
 
     // Text box submissions (public) - 'web' middleware needed to read session for optional user association
@@ -110,8 +112,8 @@ Route::prefix('v1')->name('v1.')->group(function () {
         Route::post('tutorials/reset-all', [TutorialApiController::class, 'resetAll'])->name('tutorials.resetAll');
 
         // Typesense admin search configuration with scoped API keys
-        Route::get('search/config', [\App\Http\Controllers\Api\Admin\SearchApiController::class, 'config'])->name('search.config');
-        Route::post('search/refresh-key', [\App\Http\Controllers\Api\Admin\SearchApiController::class, 'refreshKey'])->name('search.refreshKey');
+        Route::get('search/config', [SearchApiController::class, 'config'])->name('search.config');
+        Route::post('search/refresh-key', [SearchApiController::class, 'refreshKey'])->name('search.refreshKey');
 
         // Institution subscription (follow/mute) management
         Route::prefix('institutions')->name('institutions.')->group(function () {

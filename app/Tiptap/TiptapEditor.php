@@ -3,6 +3,16 @@
 namespace App\Tiptap;
 
 use Tiptap\Editor;
+use Tiptap\Extensions\StarterKit;
+use Tiptap\Marks\Link;
+use Tiptap\Marks\Subscript;
+use Tiptap\Marks\Superscript;
+use Tiptap\Marks\Underline;
+use Tiptap\Nodes\Image;
+use Tiptap\Nodes\Table;
+use Tiptap\Nodes\TableCell;
+use Tiptap\Nodes\TableHeader;
+use Tiptap\Nodes\TableRow;
 
 /**
  * TipTap Editor for server-side HTML rendering.
@@ -17,7 +27,7 @@ class TiptapEditor extends Editor
         parent::__construct([
             'extensions' => [
                 // StarterKit provides basic nodes and marks
-                new \Tiptap\Extensions\StarterKit([
+                new StarterKit([
                     'heading' => false, // Use CustomHeading instead
                     'codeBlock' => false,
                     'listItem' => false, // Use custom ListItem to fix doubled closing tags
@@ -32,7 +42,7 @@ class TiptapEditor extends Editor
                 ]),
 
                 // Image with responsive classes
-                new \Tiptap\Nodes\Image([
+                new Image([
                     'HTMLAttributes' => [
                         'class' => 'w-full rounded-md',
                         'loading' => 'lazy',
@@ -40,22 +50,22 @@ class TiptapEditor extends Editor
                 ]),
 
                 // Table components with Tailwind classes
-                new \Tiptap\Nodes\Table([
+                new Table([
                     'HTMLAttributes' => [
                         'class' => 'border-collapse table-auto w-full tracking-normal',
                     ],
                 ]),
-                new \Tiptap\Nodes\TableCell([
+                new TableCell([
                     'HTMLAttributes' => [
                         'class' => 'border border-zinc-400 dark:border-zinc-500 px-4 py-1 text-left tracking-normal [&[align=center]]:text-center [&[align=right]]:text-right',
                     ],
                 ]),
-                new \Tiptap\Nodes\TableHeader([
+                new TableHeader([
                     'HTMLAttributes' => [
                         'class' => 'border border-zinc-400 dark:border-zinc-500 px-4 py-1 text-left font-bold tracking-normal [&[align=center]]:text-center [&[align=right]]:text-right',
                     ],
                 ]),
-                new \Tiptap\Nodes\TableRow([
+                new TableRow([
                     'HTMLAttributes' => [
                         'class' => 'm-0 border-t p-0 even:bg-zinc-100 dark:even:bg-zinc-800/20',
                     ],
@@ -74,14 +84,14 @@ class TiptapEditor extends Editor
                 ]),
 
                 // Text marks
-                new \Tiptap\Marks\Link([
+                new Link([
                     'HTMLAttributes' => [
                         'class' => 'text-vusa-red underline font-medium tracking-normal',
                     ],
                 ]),
-                new \Tiptap\Marks\Underline,
-                new \Tiptap\Marks\Subscript,
-                new \Tiptap\Marks\Superscript,
+                new Underline,
+                new Subscript,
+                new Superscript,
             ],
         ]);
     }

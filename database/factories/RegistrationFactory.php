@@ -3,10 +3,11 @@
 namespace Database\Factories;
 
 use App\Models\Form;
+use App\Models\Registration;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Registration>
+ * @extends Factory<Registration>
  */
 class RegistrationFactory extends Factory
 {

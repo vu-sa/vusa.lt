@@ -2,12 +2,13 @@
 
 namespace Database\Factories;
 
+use App\Models\FieldResponse;
 use App\Models\FormField;
 use App\Models\Registration;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\FieldResponse>
+ * @extends Factory<FieldResponse>
  */
 class FieldResponseFactory extends Factory
 {

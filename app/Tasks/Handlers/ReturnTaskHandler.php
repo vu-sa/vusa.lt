@@ -3,9 +3,11 @@
 namespace App\Tasks\Handlers;
 
 use App\Models\Task;
+use App\Models\User;
 use App\Tasks\DTOs\CreateTaskData;
 use App\Tasks\Enums\ActionType;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
 /**
@@ -23,7 +25,7 @@ class ReturnTaskHandler extends BaseTaskHandler
      * If a task already exists for the model, increments the total items count.
      *
      * @param  Model  $model  The reservation model
-     * @param  Collection<int, \App\Models\User>  $users  Users assigned to the task
+     * @param  Collection<int, User>  $users  Users assigned to the task
      */
     public function findOrCreate(
         string $name,
@@ -109,7 +111,7 @@ class ReturnTaskHandler extends BaseTaskHandler
 
         // Update due date if provided date is later (return tasks should use latest end time)
         if ($dueDate) {
-            $parsedDueDate = \Illuminate\Support\Carbon::parse($dueDate);
+            $parsedDueDate = Carbon::parse($dueDate);
             if (! $task->due_date || $parsedDueDate->greaterThan($task->due_date)) {
                 $task->due_date = $parsedDueDate;
             }

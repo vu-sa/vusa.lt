@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Duty;
+use App\Models\Institution;
 use App\Models\News;
 use App\Models\Tag;
 use App\Models\Tenant;
@@ -14,7 +16,7 @@ beforeEach(function () {
 
     // Create a user with Communication Coordinator role for news management
     $this->newsManager = User::factory()->create();
-    $communicationCoordinatorDuty = \App\Models\Duty::factory()->has(\App\Models\Institution::factory()->state(
+    $communicationCoordinatorDuty = Duty::factory()->has(Institution::factory()->state(
         ['tenant_id' => $this->tenant->id]
     ))->hasAttached($this->newsManager, ['start_date' => now()->subDay(), 'end_date' => now()->addDays(1)])->create();
     $communicationCoordinatorDuty->assignRole('Communication Coordinator');

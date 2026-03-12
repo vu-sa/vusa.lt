@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Support\Carbon;
 
 /**
  * ApprovalFlow defines multi-step approval configurations.
@@ -26,8 +27,8 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * @property array<array-key, mixed> $steps
  * @property bool $is_sequential
  * @property int|null $escalation_days
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent|null $flowable
  * @property-read int $total_steps
  *

@@ -1,5 +1,15 @@
 <?php
 
+use App\Models\Calendar;
+use App\Models\Document;
+use App\Models\Institution;
+use App\Models\Meeting;
+use App\Models\News;
+use App\Models\Page;
+use App\Models\Pivots\AgendaItem;
+use App\Models\PublicInstitution;
+use App\Models\PublicMeeting;
+
 return [
 
     /*
@@ -161,7 +171,7 @@ return [
         'model-settings' => [
 
             // News Articles - Only published, non-draft content
-            \App\Models\News::class => [
+            News::class => [
                 'collection-schema' => [
                     'fields' => [
                         ['name' => 'id', 'type' => 'string'],
@@ -190,7 +200,7 @@ return [
             ],
 
             // Static Pages - Only published pages
-            \App\Models\Page::class => [
+            Page::class => [
                 'collection-schema' => [
                     'fields' => [
                         ['name' => 'id', 'type' => 'string'],
@@ -218,7 +228,7 @@ return [
             ],
 
             // Calendar Events - Only public events with multilingual support
-            \App\Models\Calendar::class => [
+            Calendar::class => [
                 'collection-schema' => [
                     'fields' => [
                         ['name' => 'id', 'type' => 'string'],
@@ -247,7 +257,7 @@ return [
             ],
 
             // Documents - Only public documents with metadata
-            \App\Models\Document::class => [
+            Document::class => [
                 'collection-schema' => [
                     'fields' => [
                         ['name' => 'id', 'type' => 'string'],
@@ -284,7 +294,7 @@ return [
             ],
 
             // Public Meetings - Transparency for student representation work
-            \App\Models\PublicMeeting::class => [
+            PublicMeeting::class => [
                 'collection-schema' => [
                     'fields' => [
                         ['name' => 'id', 'type' => 'string'],
@@ -327,7 +337,7 @@ return [
             ],
 
             // Public Institutions - For contacts search
-            \App\Models\PublicInstitution::class => [
+            PublicInstitution::class => [
                 'collection-schema' => [
                     'fields' => [
                         ['name' => 'id', 'type' => 'string'],
@@ -379,7 +389,7 @@ return [
             ],
 
             // Institution - Admin search with tenant-based access
-            \App\Models\Institution::class => [
+            Institution::class => [
                 'collection-schema' => [
                     'fields' => [
                         ['name' => 'id', 'type' => 'string'],
@@ -421,7 +431,7 @@ return [
             */
 
             // Meetings - All meetings for authorized admin users (scoped by tenant_ids)
-            \App\Models\Meeting::class => [
+            Meeting::class => [
                 'collection-schema' => [
                     'fields' => [
                         ['name' => 'id', 'type' => 'string'],
@@ -476,7 +486,7 @@ return [
             ],
 
             // Agenda Items - All agenda items for authorized admin users (scoped by tenant_ids)
-            \App\Models\Pivots\AgendaItem::class => [
+            AgendaItem::class => [
                 'collection-schema' => [
                     'fields' => [
                         ['name' => 'id', 'type' => 'string'],
@@ -535,7 +545,7 @@ return [
             ],
 
             // Resources - Reservable resources with tenant-based access
-            \App\Models\Resource::class => [
+            App\Models\Resource::class => [
                 'collection-schema' => [
                     'fields' => [
                         ['name' => 'id', 'type' => 'string'],

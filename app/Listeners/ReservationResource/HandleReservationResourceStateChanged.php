@@ -3,6 +3,7 @@
 namespace App\Listeners\ReservationResource;
 
 use App\Models\Pivots\ReservationResource;
+use App\Models\Reservation;
 use App\Notifications\ReservationStatusChangedNotification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Notification;
@@ -35,7 +36,7 @@ class HandleReservationResourceStateChanged implements ShouldQueue
         }
 
         // Load the reservation with users
-        /** @var \App\Models\Reservation|null $reservation */
+        /** @var Reservation|null $reservation */
         $reservation = $model->reservation()->with('users')->first();
 
         if (! $reservation || $reservation->users->isEmpty()) {

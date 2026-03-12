@@ -3,7 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetTenantsForUpserts;
+use App\Enums\NotificationCategory;
+use App\Enums\NotificationChannel;
 use App\Http\Controllers\AdminController;
+use App\Http\Requests\UpdatePasswordRequest;
+use App\Mail\FeedbackMail;
 use App\Models\Calendar;
 use App\Models\Institution;
 use App\Models\Meeting;
@@ -204,7 +208,7 @@ class DashboardController extends AdminController
         $userInstitutions = DutyService::getUserInstitutionsForDashboard();
 
         // Filter out institutions with excluded types (e.g., padalinys, pkp - institutions that don't have formal meetings)
-        $excludedTypeIds = app(\App\Settings\MeetingSettings::class)->getExcludedInstitutionTypeIds();
+        $excludedTypeIds = app(MeetingSettings::class)->getExcludedInstitutionTypeIds();
         if ($excludedTypeIds->isNotEmpty()) {
             $userInstitutions = $userInstitutions->filter(function ($institution) use ($excludedTypeIds) {
                 // Exclude institution if any of its types are in the excluded list
@@ -451,8 +455,8 @@ class DashboardController extends AdminController
         return $this->inertiaResponse('Admin/ShowUserSettings', [
             'user' => $user->append('has_password')->toFullArray(),
             'notificationPreferences' => $user->notification_preferences,
-            'notificationCategories' => \App\Enums\NotificationCategory::toOptions(),
-            'notificationChannels' => \App\Enums\NotificationChannel::toOptions(),
+            'notificationCategories' => NotificationCategory::toOptions(),
+            'notificationChannels' => NotificationChannel::toOptions(),
             'availableDigestEmails' => $user->getAvailableDigestEmails(),
         ]);
     }
@@ -471,7 +475,7 @@ class DashboardController extends AdminController
         return $this->redirectBackWithSuccess('Nustatymai išsaugoti.');
     }
 
-    public function updatePassword(\App\Http\Requests\UpdatePasswordRequest $request)
+    public function updatePassword(UpdatePasswordRequest $request)
     {
         $user = User::find(Auth::id());
 
@@ -632,7 +636,7 @@ class DashboardController extends AdminController
         ]);
 
         // just send simple email to it@vusa.lt with feedback, conditional user name and with in a queue
-        Mail::to('it@vusa.lt')->queue(new \App\Mail\FeedbackMail($request->input('feedback'), $request->input('anonymous') ? null : Auth::user()));
+        Mail::to('it@vusa.lt')->queue(new FeedbackMail($request->input('feedback'), $request->input('anonymous') ? null : Auth::user()));
 
         return $this->redirectBackWithSuccess('Ačiū už atsiliepimą!');
     }

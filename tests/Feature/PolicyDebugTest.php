@@ -4,6 +4,7 @@ use App\Models\Form;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;
+use Spatie\Permission\Models\Role;
 
 uses(RefreshDatabase::class);
 
@@ -44,12 +45,12 @@ describe('Policy Debug', function () {
         $user = makeUser($tenant);
         $user->assignRole('Super Admin');
 
-        $role = \Spatie\Permission\Models\Role::first();
+        $role = Role::first();
 
         // Check authorization using Gate
-        expect(Gate::forUser($user)->allows('viewAny', \Spatie\Permission\Models\Role::class))->toBeTrue();
+        expect(Gate::forUser($user)->allows('viewAny', Role::class))->toBeTrue();
         expect(Gate::forUser($user)->allows('view', $role))->toBeTrue();
-        expect(Gate::forUser($user)->allows('create', \Spatie\Permission\Models\Role::class))->toBeTrue();
+        expect(Gate::forUser($user)->allows('create', Role::class))->toBeTrue();
         expect(Gate::forUser($user)->allows('update', $role))->toBeTrue();
         expect(Gate::forUser($user)->allows('delete', $role))->toBeTrue();
     });

@@ -6,6 +6,7 @@ use App\Enums\SearchableModelEnum;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 use Typesense\Client;
+use Typesense\Exceptions\ObjectNotFound;
 
 class ReindexSearchCommand extends Command
 {
@@ -89,7 +90,7 @@ class ReindexSearchCommand extends Command
             $client = new Client(config('scout.typesense.client-settings'));
             $client->collections[$collectionName]->delete();
             $this->line("  - Deleted collection '{$collectionName}' to update schema");
-        } catch (\Typesense\Exceptions\ObjectNotFound $e) {
+        } catch (ObjectNotFound $e) {
             // Collection doesn't exist yet, which is fine for first run
             $this->line("  - Collection '{$collectionName}' not found (will be created)");
         } catch (\Exception $e) {

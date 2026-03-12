@@ -5,6 +5,7 @@ namespace App\Listeners;
 use App\Events\MemberRegistrationCreated;
 use App\Helpers\AddressivizeHelper;
 use App\Mail\ConfirmMemberRegistration;
+use App\Models\Duty;
 use App\Models\FieldResponse;
 use App\Models\Institution;
 use App\Models\Tenant;
@@ -80,7 +81,7 @@ class SendMemberRegistrationNotification implements ShouldQueue
             $query->where('id', app(FormSettings::class)->member_registration_notification_recipient_role_id);
         })->get();
 
-        /** @var \App\Models\Duty|null $dutyContact */
+        /** @var Duty|null $dutyContact */
         $dutyContact = $mailableDuties->first();
 
         if ($dutyContact === null) {
@@ -108,7 +109,7 @@ class SendMemberRegistrationNotification implements ShouldQueue
         ));
 
         foreach ($mailableDuties as $mailableDuty) {
-            /** @var \App\Models\Duty $mailableDuty */
+            /** @var Duty $mailableDuty */
             Notification::send($mailableDuty->current_users()->first(), new MemberRegistrationNotification($event->registration->id, $nameResponse->getValue(), $institution, $mailableDuty->email, $form->id));
         }
     }

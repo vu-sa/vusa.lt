@@ -3,7 +3,10 @@
 use App\Models\Calendar;
 use App\Models\Tenant;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 uses(RefreshDatabase::class);
 
@@ -260,7 +263,7 @@ describe('validation', function () {
     });
 
     test('saves images to calendar', function () {
-        $image = \Illuminate\Http\UploadedFile::fake()->image('calendar-image.jpg', 800, 600);
+        $image = UploadedFile::fake()->image('calendar-image.jpg', 800, 600);
 
         $calendarData = [
             'date' => now()->addDays(1)->format('Y-m-d'),
@@ -279,7 +282,7 @@ describe('validation', function () {
         if ($response->status() === 302) {
             $calendar = Calendar::latest()->first();
             if ($calendar && $calendar->image_path) {
-                expect(\Illuminate\Support\Facades\Storage::exists($calendar->image_path))->toBeTrue();
+                expect(Storage::exists($calendar->image_path))->toBeTrue();
             }
         }
     });
@@ -290,7 +293,7 @@ describe('relationships', function () {
         $calendar = Calendar::factory()->create();
 
         // Check if calendar can have category relationship
-        expect($calendar->category())->toBeInstanceOf(\Illuminate\Database\Eloquent\Relations\BelongsTo::class);
+        expect($calendar->category())->toBeInstanceOf(BelongsTo::class);
     });
 
     test('can duplicate calendar with proper translations', function () {

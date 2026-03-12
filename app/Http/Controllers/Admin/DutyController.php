@@ -61,7 +61,7 @@ class DutyController extends AdminController
         return $this->inertiaResponse('Admin/People/IndexDuty', [
             'duties' => [
                 'data' => $duties->getCollection()->map(function ($duty) {
-                    /** @var \App\Models\Duty $duty */
+                    /** @var Duty $duty */
                     return $duty->toFullArray();
                 })->values(),
                 'meta' => [

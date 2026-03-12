@@ -3,12 +3,15 @@
 namespace App\Models;
 
 use App\Tasks\Enums\ActionType;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
+use Staudenmeir\EloquentHasManyDeep\HasManyDeep;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 /**
@@ -17,18 +20,18 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string|null $description
  * @property ActionType|null $action_type
  * @property array<array-key, mixed>|null $metadata
- * @property \Illuminate\Support\Carbon|null $due_date
+ * @property Carbon|null $due_date
  * @property string $taskable_type
  * @property string $taskable_id
- * @property \Illuminate\Support\Carbon|null $completed_at
- * @property \Illuminate\Support\Carbon $created_at
- * @property \Illuminate\Support\Carbon $updated_at
- * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property Carbon|null $completed_at
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property Carbon|null $deleted_at
  * @property-read string $color
  * @property-read string $icon
  * @property-read Model|\Eloquent $taskable
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Tenant> $tenants
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $users
+ * @property-read Collection<int, Tenant> $tenants
+ * @property-read Collection<int, User> $users
  * @property-read int|null $tenants_count
  *
  * @method static \Database\Factories\TaskFactory factory($count = null, $state = [])
@@ -67,7 +70,7 @@ class Task extends Model
         return $this->belongsToMany(User::class);
     }
 
-    public function tenants(): \Staudenmeir\EloquentHasManyDeep\HasManyDeep
+    public function tenants(): HasManyDeep
     {
         return $this->hasManyDeepFromRelations($this->users(), (new User)->tenants());
     }

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 
 /**
  * Local metadata storage for SharePoint files attached to fileables.
@@ -25,15 +26,15 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string|null $file_type Semantic type: protokolas, ataskaita, etc.
  * @property string|null $mime_type
  * @property int|null $size_bytes
- * @property \Illuminate\Support\Carbon|null $file_date Document date (not upload date)
+ * @property Carbon|null $file_date Document date (not upload date)
  * @property string|null $description
  * @property string|null $public_link SharePoint anonymous sharing link
- * @property \Illuminate\Support\Carbon|null $public_link_expires_at
- * @property \Illuminate\Support\Carbon|null $last_synced_at
- * @property \Illuminate\Support\Carbon|null $deleted_externally_at Set when file deleted in SharePoint
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property Carbon|null $public_link_expires_at
+ * @property Carbon|null $last_synced_at
+ * @property Carbon|null $deleted_externally_at Set when file deleted in SharePoint
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
  * @property-read Model|\Eloquent $fileable
  * @property-read string|null $file_type_label
  * @property-read string|null $formatted_size

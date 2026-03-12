@@ -10,6 +10,7 @@ use App\Http\Requests\MergeStudyProgramsRequest;
 use App\Http\Requests\StoreStudyProgramRequest;
 use App\Http\Requests\UpdateStudyProgramRequest;
 use App\Http\Traits\HasTanstackTables;
+use App\Models\Pivots\Dutiable;
 use App\Models\StudyProgram;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\TanstackTableService;
@@ -137,7 +138,7 @@ class StudyProgramController extends AdminController
         $this->handleAuthorization('delete', $studyProgram);
 
         // Check if the study program is being used by any dutiables
-        $dutiablesCount = \App\Models\Pivots\Dutiable::where('study_program_id', $studyProgram->id)->count();
+        $dutiablesCount = Dutiable::where('study_program_id', $studyProgram->id)->count();
 
         if ($dutiablesCount > 0) {
             return back()->with('error', "Cannot delete study program. It is currently assigned to {$dutiablesCount} duty assignment(s).");
@@ -177,7 +178,7 @@ class StudyProgramController extends AdminController
 
             foreach ($sourceStudyPrograms as $sourceStudyProgram) {
                 // Transfer all dutiables from source to target
-                \App\Models\Pivots\Dutiable::where('study_program_id', $sourceStudyProgram->id)
+                Dutiable::where('study_program_id', $sourceStudyProgram->id)
                     ->update(['study_program_id' => $targetId]);
 
                 // Delete the source study program

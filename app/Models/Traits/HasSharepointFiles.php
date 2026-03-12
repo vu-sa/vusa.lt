@@ -6,6 +6,7 @@ use App\Contracts\SharepointFileableContract;
 use App\Models\FileableFile;
 use App\Models\SharepointFile;
 use App\Services\ResourceServices\SharepointFileService;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
@@ -15,7 +16,7 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
  * Models using this trait should implement SharepointFileableContract
  * for proper type safety when working with file operations.
  *
- * @property-read \Illuminate\Database\Eloquent\Collection<int, FileableFile> $fileableFiles
+ * @property-read Collection<int, FileableFile> $fileableFiles
  *
  * @mixin \Eloquent
  */
@@ -96,11 +97,11 @@ trait HasSharepointFiles
     /**
      * Get files of a specific type.
      *
-     * @return \Illuminate\Database\Eloquent\Collection<int, FileableFile>
+     * @return Collection<int, FileableFile>
      */
     public function filesOfType(string $type)
     {
-        /** @var \Illuminate\Database\Eloquent\Collection<int, FileableFile> $files */
+        /** @var Collection<int, FileableFile> $files */
         $files = $this->fileableFiles()
             ->where('file_type', $type)
             ->whereNull('deleted_externally_at')

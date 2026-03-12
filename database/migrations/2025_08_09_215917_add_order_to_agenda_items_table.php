@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Pivots\AgendaItem;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -17,8 +18,8 @@ return new class extends Migration
 
         // Update existing records to set proper order based on creation time
         // Use withoutEvents to prevent task handlers from querying columns that don't exist yet
-        \App\Models\Pivots\AgendaItem::withoutEvents(function () {
-            \App\Models\Pivots\AgendaItem::orderBy('created_at')
+        AgendaItem::withoutEvents(function () {
+            AgendaItem::orderBy('created_at')
                 ->get()
                 ->groupBy('meeting_id')
                 ->each(function ($agendaItems) {

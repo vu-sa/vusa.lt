@@ -2,7 +2,17 @@
 
 namespace App\Models;
 
+use App\Models\Pivots\Relationshipable;
+use App\Models\Pivots\Trainable;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use Illuminate\Support\Carbon;
+use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
+use Spatie\Activitylog\Models\Activity;
 
 /**
  * PublicInstitution - Extends Institution for public display and search indexing
@@ -27,35 +37,35 @@ use Laravel\Scout\Searchable;
  * @property int $is_active
  * @property int $meeting_periodicity_days
  * @property string $contacts_layout
- * @property \Illuminate\Support\Carbon $created_at
- * @property \Illuminate\Support\Carbon $updated_at
- * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\FileableFile> $availableFiles
- * @property-read \App\Models\Pivots\Relationshipable|\App\Models\InstitutionFollow|\App\Models\Pivots\Trainable|null $pivot
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Training> $availableTrainings
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\InstitutionCheckIn> $checkIns
- * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $commentable
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Comment> $comments
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Document> $documents
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Duty> $duties
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\FileableFile> $fileableFiles
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\SharepointFile> $files
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $followers
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property Carbon|null $deleted_at
+ * @property-read Collection<int, Activity> $activities
+ * @property-read Collection<int, FileableFile> $availableFiles
+ * @property-read Relationshipable|InstitutionFollow|Trainable|null $pivot
+ * @property-read Collection<int, Training> $availableTrainings
+ * @property-read Collection<int, InstitutionCheckIn> $checkIns
+ * @property-read Model|\Eloquent $commentable
+ * @property-read Collection<int, Comment> $comments
+ * @property-read Collection<int, Document> $documents
+ * @property-read Collection<int, Duty> $duties
+ * @property-read Collection<int, FileableFile> $fileableFiles
+ * @property-read Collection<int, SharepointFile> $files
+ * @property-read Collection<int, User> $followers
  * @property-read bool $has_protocol
  * @property-read bool $has_public_meetings
  * @property-read bool $has_report
  * @property-read mixed $maybe_short_name
  * @property-read mixed $related_institutions
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Relationship> $incomingRelationships
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Meeting> $meetings
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Relationship> $outgoingRelationships
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Task> $tasks
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Task> $tasksFromMeetings
- * @property-read \App\Models\Tenant|null $tenant
+ * @property-read Collection<int, Relationship> $incomingRelationships
+ * @property-read Collection<int, Meeting> $meetings
+ * @property-read Collection<int, Relationship> $outgoingRelationships
+ * @property-read Collection<int, Task> $tasks
+ * @property-read Collection<int, Task> $tasksFromMeetings
+ * @property-read Tenant|null $tenant
  * @property-read mixed $translations
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Type> $types
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $users
+ * @property-read Collection<int, Type> $types
+ * @property-read Collection<int, User> $users
  * @property-read int|null $tasks_from_meetings_count
  * @property-read int|null $users_count
  *
@@ -97,7 +107,7 @@ class PublicInstitution extends Institution
      * Override types relationship to use correct morph name
      * Laravel would default to 'public_institution' based on model name
      */
-    public function types(): \Illuminate\Database\Eloquent\Relations\MorphToMany
+    public function types(): MorphToMany
     {
         return $this->morphToMany(Type::class, 'typeable');
     }
@@ -106,7 +116,7 @@ class PublicInstitution extends Institution
      * Override duties relationship to use correct foreign key
      * Laravel would default to 'public_institution_id' based on model name
      */
-    public function duties(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function duties(): HasMany
     {
         return $this->hasMany(Duty::class, 'institution_id', 'id');
     }
@@ -115,7 +125,7 @@ class PublicInstitution extends Institution
      * Override meetings relationship to use correct pivot table
      * Laravel would default to 'institution_public_institution' based on model name
      */
-    public function meetings(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function meetings(): BelongsToMany
     {
         return $this->belongsToMany(Meeting::class, 'institution_meeting', 'institution_id', 'meeting_id');
     }
@@ -202,6 +212,6 @@ class PublicInstitution extends Institution
      */
     public function searchableUsing()
     {
-        return app(\Laravel\Scout\EngineManager::class)->engine('typesense');
+        return app(EngineManager::class)->engine('typesense');
     }
 }

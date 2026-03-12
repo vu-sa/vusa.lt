@@ -5,6 +5,7 @@ namespace App\Notifications;
 use App\Enums\NotificationCategory;
 use App\Mail\InformManagerAboutStudentRepRegistration;
 use App\Models\Institution;
+use Illuminate\Contracts\Mail\Mailable;
 
 /**
  * Notification sent when a new student representative registers.
@@ -102,7 +103,7 @@ class StudentRepRegistrationNotification extends BaseNotification
     /**
      * Use custom mailable for rich email content.
      */
-    public function toMail(object $notifiable): \Illuminate\Contracts\Mail\Mailable
+    public function toMail(object $notifiable): Mailable
     {
         return (new InformManagerAboutStudentRepRegistration(
             $this->registrationId,

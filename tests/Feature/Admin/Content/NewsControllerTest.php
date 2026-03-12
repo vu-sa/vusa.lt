@@ -3,6 +3,7 @@
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\News;
+use App\Models\Tag;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -227,7 +228,7 @@ describe('auth: news manager', function () {
         $news = News::query()->first();
 
         // Add some tags to the original news
-        $tags = \App\Models\Tag::factory()->count(2)->create();
+        $tags = Tag::factory()->count(2)->create();
         $news->tags()->attach($tags->pluck('id'));
 
         $initialCount = News::count();

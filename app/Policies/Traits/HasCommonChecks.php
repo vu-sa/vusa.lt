@@ -4,6 +4,7 @@ namespace App\Policies\Traits;
 
 use App\Enums\CRUDEnum;
 use App\Enums\PermissionScopeEnum;
+use App\Models\Institution;
 use App\Models\User;
 use App\Services\ModelAuthorizer;
 use App\Services\RelationshipService;
@@ -70,11 +71,11 @@ trait HasCommonChecks
             // Check related institutions (for institution model)
             // User can access an institution if any of their own institutions have an
             // authorized relationship TO the target institution
-            if ($resource === 'institutions' && $model instanceof \App\Models\Institution) {
+            if ($resource === 'institutions' && $model instanceof Institution) {
                 // For each of the user's institutions, check if the target institution
                 // is in their authorized related institutions
                 foreach ($permissableModels as $userInstitution) {
-                    if ($userInstitution instanceof \App\Models\Institution) {
+                    if ($userInstitution instanceof Institution) {
                         $authorizedRelated = RelationshipService::getRelatedInstitutions($userInstitution, authorizedOnly: true);
                         if ($authorizedRelated->contains('id', $model->getKey())) {
                             return true;

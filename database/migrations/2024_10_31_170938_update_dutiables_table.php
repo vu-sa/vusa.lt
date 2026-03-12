@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Pivots\Dutiable;
+use App\Models\StudyProgram;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -29,14 +31,14 @@ return new class extends Migration
             $table->boolean('use_original_duty_name')->default(false)->after('description');
         });
 
-        $dutiables = \App\Models\Pivots\Dutiable::all();
+        $dutiables = Dutiable::all();
 
         foreach ($dutiables as $dutiable) {
 
             $extra_attributes = json_decode($dutiable->extra_attributes);
 
             if (isset($extra_attributes?->study_program)) {
-                $studyProgram = \App\Models\StudyProgram::where('name->lt', $extra_attributes->study_program)->first();
+                $studyProgram = StudyProgram::where('name->lt', $extra_attributes->study_program)->first();
 
                 echo $studyProgram.'\n';
                 echo $extra_attributes->study_program;
@@ -45,7 +47,7 @@ return new class extends Migration
                     $dutiable->study_program_id = $studyProgram->id;
                     echo $studyProgram->id.' old'.'\n';
                 } else {
-                    $studyProgram = new \App\Models\StudyProgram;
+                    $studyProgram = new StudyProgram;
                     $studyProgram->setTranslation('name', 'lt', $extra_attributes->study_program);
                     $studyProgram->degree = 'BA';
                     $studyProgram->tenant_id = $dutiable->duty->institution->tenant_id;

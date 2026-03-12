@@ -11,6 +11,7 @@ use App\Models\Category;
 use App\Models\Content;
 use App\Models\Page;
 use App\Models\Tenant;
+use App\Services\ContentService;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\TanstackTableService;
 use Illuminate\Http\Request;
@@ -153,7 +154,7 @@ class PageController extends AdminController
         $content = Content::query()->find($page->content->id);
 
         // Use ContentService to efficiently update content parts
-        app(\App\Services\ContentService::class)->updateContentParts($content, $request->content['parts']);
+        app(ContentService::class)->updateContentParts($content, $request->content['parts']);
 
         // update other lang id page
         if ($request->other_lang_id) {

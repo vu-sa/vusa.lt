@@ -4,10 +4,13 @@ namespace App\Models;
 
 use App\Models\Pivots\Trainable;
 use App\Models\Traits\HasTranslations;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Carbon;
 use Laravel\Scout\Searchable;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
@@ -19,23 +22,23 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string|null $meeting_url
  * @property string|null $image
  * @property string $status
- * @property \Illuminate\Support\Carbon $start_time
- * @property \Illuminate\Support\Carbon|null $end_time
+ * @property Carbon $start_time
+ * @property Carbon|null $end_time
  * @property string $organizer_id
  * @property string $institution_id
  * @property string|null $form_id
  * @property int|null $max_participants
- * @property \Illuminate\Support\Carbon $created_at
- * @property \Illuminate\Support\Carbon $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
- * @property-read \App\Models\Form|null $form
- * @property-read \App\Models\Institution $institution
- * @property-read \App\Models\User $organizer
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Programme> $programmes
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\TrainingTask> $tasks
- * @property-read \Illuminate\Database\Eloquent\Collection<int, Trainable> $trainables
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property-read Collection<int, Activity> $activities
+ * @property-read Form|null $form
+ * @property-read Institution $institution
+ * @property-read User $organizer
+ * @property-read Collection<int, Programme> $programmes
+ * @property-read Collection<int, TrainingTask> $tasks
+ * @property-read Collection<int, Trainable> $trainables
  * @property-read mixed $translations
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $users
+ * @property-read Collection<int, User> $users
  *
  * @method static \Database\Factories\TrainingFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Training newModelQuery()

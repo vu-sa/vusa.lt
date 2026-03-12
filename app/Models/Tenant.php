@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -23,18 +24,18 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string|null $shortname_vu
  * @property string|null $primary_institution_id
  * @property int|null $content_id
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Banner> $banners
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Calendar> $calendar
- * @property-read \App\Models\Content|null $content
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Duty> $duties
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Institution> $institutions
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\News> $news
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Page> $pages
- * @property-read \App\Models\Institution|null $primary_institution
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\QuickLink> $quickLinks
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Reservation> $reservations
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Resource> $resources
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $users
+ * @property-read Collection<int, Banner> $banners
+ * @property-read Collection<int, Calendar> $calendar
+ * @property-read Content|null $content
+ * @property-read Collection<int, Duty> $duties
+ * @property-read Collection<int, Institution> $institutions
+ * @property-read Collection<int, News> $news
+ * @property-read Collection<int, Page> $pages
+ * @property-read Institution|null $primary_institution
+ * @property-read Collection<int, QuickLink> $quickLinks
+ * @property-read Collection<int, Reservation> $reservations
+ * @property-read Collection<int, \App\Models\Resource> $resources
+ * @property-read Collection<int, User> $users
  * @property-read int|null $users_count
  * @property-read int|null $reservations_count
  *
@@ -76,7 +77,7 @@ class Tenant extends Model
         return $this->hasManyThrough(Duty::class, Institution::class, 'tenant_id', 'institution_id');
     }
 
-    public function institutions(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function institutions(): HasMany
     {
         return $this->hasMany(Institution::class);
     }

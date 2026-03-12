@@ -1,10 +1,15 @@
 <?php
 
+use App\Http\Controllers\SitemapController;
+use App\Models\Category;
 use App\Models\News;
 use App\Models\Page;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Spatie\Sitemap\Tags\Url;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 uses(RefreshDatabase::class);
 
@@ -285,7 +290,7 @@ describe('Multi-tenant Support', function () {
             ['shortname' => 'VU SA IF']
         );
 
-        $category = \App\Models\Category::factory()->create();
+        $category = Category::factory()->create();
 
         News::factory()->create([
             'tenant_id' => $ifTenant->id,
@@ -308,8 +313,8 @@ describe('Multi-tenant Support', function () {
         ]);
 
         // Test if tenant directly using controller
-        $controller = new \App\Http\Controllers\SitemapController;
-        $request1 = \Illuminate\Http\Request::create('/sitemap-news.xml');
+        $controller = new SitemapController;
+        $request1 = Request::create('/sitemap-news.xml');
         $request1->headers->set('host', 'if.vusa.test');
 
         $response1 = $controller->news($request1);
@@ -320,7 +325,7 @@ describe('Multi-tenant Support', function () {
         expect($content1)->not->toContain('vusa-news');
 
         // Test www tenant
-        $request2 = \Illuminate\Http\Request::create('/sitemap-news.xml');
+        $request2 = Request::create('/sitemap-news.xml');
         $request2->headers->set('host', 'www.vusa.test');
 
         $response2 = $controller->news($request2);
@@ -334,13 +339,13 @@ describe('Multi-tenant Support', function () {
 
 describe('Error Handling', function () {
     it('handles missing tenant gracefully', function () {
-        $controller = new \App\Http\Controllers\SitemapController;
-        $request = \Illuminate\Http\Request::create('/sitemap.xml');
+        $controller = new SitemapController;
+        $request = Request::create('/sitemap.xml');
         $request->headers->set('host', 'nonexistent123.vusa.test');
 
         expect(function () use ($controller, $request) {
             $controller->index($request);
-        })->toThrow(\Symfony\Component\HttpKernel\Exception\NotFoundHttpException::class);
+        })->toThrow(NotFoundHttpException::class);
     });
 
     it('returns valid XML even when database is empty', function () {
@@ -370,7 +375,7 @@ describe('Model Sitemap Integration', function () {
 
         $sitemapTag = $news->toSitemapTag();
 
-        expect($sitemapTag)->toBeInstanceOf(\Spatie\Sitemap\Tags\Url::class);
+        expect($sitemapTag)->toBeInstanceOf(Url::class);
         expect($sitemapTag->url)->toBe('/naujiena/test-news');
         expect($sitemapTag->priority)->toBe(0.6);
         expect($sitemapTag->changeFrequency)->toBe('never');
@@ -386,7 +391,7 @@ describe('Model Sitemap Integration', function () {
 
         $sitemapTag = $page->toSitemapTag();
 
-        expect($sitemapTag)->toBeInstanceOf(\Spatie\Sitemap\Tags\Url::class);
+        expect($sitemapTag)->toBeInstanceOf(Url::class);
         expect($sitemapTag->url)->toBe('/test-page');
         expect($sitemapTag->priority)->toBe(0.7);
         expect($sitemapTag->changeFrequency)->toBe('monthly');

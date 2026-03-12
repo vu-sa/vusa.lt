@@ -2,11 +2,16 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
+use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
 use Spatie\Feed\Feedable;
 use Spatie\Feed\FeedItem;
@@ -38,11 +43,11 @@ use Spatie\Sitemap\Tags\Url;
  * @property Carbon $updated_at
  * @property Carbon|null $last_edited_at
  * @property Carbon|null $deleted_at
- * @property-read \App\Models\Content $content
+ * @property-read Content $content
  * @property-read News|null $other_language_news
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Tag> $tags
- * @property-read \App\Models\Tenant $tenant
- * @property-read \App\Models\User|null $user
+ * @property-read Collection<int, Tag> $tags
+ * @property-read Tenant $tenant
+ * @property-read User|null $user
  *
  * @method static \Database\Factories\NewsFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|News newModelQuery()
@@ -128,27 +133,27 @@ class News extends Model implements Feedable, Sitemapable
         $this->update(['last_edited_at' => now()]);
     }
 
-    public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function tenant(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
-    public function other_language_news(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function other_language_news(): HasOne
     {
         return $this->hasOne(News::class, 'id', 'other_lang_id');
     }
 
-    public function tags(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function tags(): BelongsToMany
     {
         return $this->belongsToMany(Tag::class, 'posts_tags', 'news_id', 'tag_id');
     }
 
-    public function content(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function content(): BelongsTo
     {
         return $this->belongsTo(Content::class);
     }
@@ -275,7 +280,7 @@ class News extends Model implements Feedable, Sitemapable
      */
     public function searchableUsing()
     {
-        return app(\Laravel\Scout\EngineManager::class)->engine('typesense');
+        return app(EngineManager::class)->engine('typesense');
     }
 
     public function toSitemapTag(): Url

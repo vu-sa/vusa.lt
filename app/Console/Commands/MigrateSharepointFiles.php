@@ -5,11 +5,14 @@ namespace App\Console\Commands;
 use App\Models\FileableFile;
 use App\Models\Pivots\SharepointFileable;
 use App\Models\SharepointFile;
+use App\Models\Traits\HasSharepointFiles;
 use App\Services\ResourceServices\SharepointFileService;
 use App\Services\SharepointGraphService;
+use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class MigrateSharepointFiles extends Command
 {
@@ -193,7 +196,7 @@ class MigrateSharepointFiles extends Command
         }
 
         // Check if the model implements SharepointFileableContract
-        if (! in_array(\App\Models\Traits\HasSharepointFiles::class, class_uses_recursive($fileable))) {
+        if (! in_array(HasSharepointFiles::class, class_uses_recursive($fileable))) {
             Log::warning('Skipping migration: fileable does not have HasSharepointFiles trait', [
                 'fileable_type' => $fileableClass,
                 'fileable_id' => $pivot->fileable_id,
@@ -247,7 +250,7 @@ class MigrateSharepointFiles extends Command
 
             $this->successCount++;
             $this->migratedPivotIds[] = $pivot->id;
-        } catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
+        } catch (HttpException $e) {
             // pathForFileableDriveItem uses abort() for missing relationships
             Log::warning('Skipping migration: failed to generate path', [
                 'fileable_type' => $pivot->fileable_type,
@@ -275,7 +278,7 @@ class MigrateSharepointFiles extends Command
                 'size' => $driveItem->getSize(),
                 'mime_type' => $driveItem->getFile()?->getMimeType(),
                 'file_type' => $fields['Type'] ?? null,
-                'date' => isset($fields['Date']) ? \Carbon\Carbon::parse($fields['Date']) : null,
+                'date' => isset($fields['Date']) ? Carbon::parse($fields['Date']) : null,
                 'description' => $fields['Description0'] ?? null,
             ];
         } catch (\Exception $e) {

@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Institution;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -32,7 +33,7 @@ return new class extends Migration
             $table->boolean('is_active')->default(true)->after('tenant_id');
         });
 
-        $institutions = \App\Models\Institution::all();
+        $institutions = Institution::all();
 
         foreach ($institutions as $institution) {
 

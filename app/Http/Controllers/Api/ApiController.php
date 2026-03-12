@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Concerns\ApiResponses;
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 /**
  * Base controller for API endpoints.
@@ -39,11 +41,11 @@ abstract class ApiController extends Controller
     /**
      * Safely get the authenticated user or return 401.
      *
-     * @throws \Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException
+     * @throws UnauthorizedHttpException
      */
-    protected function requireAuth(Request $request): \App\Models\User
+    protected function requireAuth(Request $request): User
     {
-        /** @var \App\Models\User|null $user */
+        /** @var User|null $user */
         $user = $request->user();
 
         if (! $user) {
