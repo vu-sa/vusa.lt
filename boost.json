@@ -1,12 +1,25 @@
 {
     "agents": [
         "claude_code",
-        "copilot"
+        "copilot",
+        "gemini",
+        "codex"
     ],
-    "editors": [
-        "claude_code",
-        "vscode"
+    "guidelines": true,
+    "herd_mcp": false,
+    "mcp": true,
+    "nightwatch_mcp": false,
+    "packages": [
+        "spatie/laravel-medialibrary"
     ],
-    "guidelines": [],
-    "sail": true
+    "sail": true,
+    "skills": [
+        "scout-development",
+        "socialite-development",
+        "pest-testing",
+        "inertia-vue-development",
+        "echo-development",
+        "tailwindcss-development",
+        "medialibrary-development"
+    ]
 }
