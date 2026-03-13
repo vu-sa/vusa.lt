@@ -1727,6 +1727,7 @@ declare global {
       meeting_1_date?: string | null
       meeting_2_notes?: string | null
       meeting_2_date?: string | null
+      additional_meetings?: Array<{ date?: string | null; notes?: string | null }> | null
       selected_problem_id?: string | null
       goal_text?: string | null
       goal_approved_at?: string | null

@@ -195,6 +195,8 @@ Route::patch('planningProcesses/{planningProcess}/goal', [PlanningProcessControl
 Route::post('planningProcesses/{planningProcess}/upload-document', [PlanningProcessController::class, 'uploadDocument'])->name('planningProcesses.uploadDocument');
 Route::patch('planningProcesses/{planningProcess}/approve-document', [PlanningProcessController::class, 'approveDocument'])->name('planningProcesses.approveDocument');
 Route::patch('planningProcesses/{planningProcess}/advance-stage', [PlanningProcessController::class, 'advanceStage'])->name('planningProcesses.advanceStage');
+Route::post('planningProcesses/{planningProcess}/upload-template', [PlanningProcessController::class, 'uploadTemplate'])->name('planningProcesses.uploadTemplate');
+Route::delete('planningProcesses/{planningProcess}/delete-template', [PlanningProcessController::class, 'deleteTemplate'])->name('planningProcesses.deleteTemplate');
 Route::resource('planningProcesses', PlanningProcessController::class)->except(['edit']);
 Route::resource('planningActivities', PlanningActivityController::class)->only(['store', 'update', 'destroy']);
 Route::resource('planningMonitoringEntries', PlanningMonitoringController::class)->only(['store', 'update']);

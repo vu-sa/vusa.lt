@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Enums\ModelEnum;
+use App\Models\PlanningProcess;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\Typesense\TypesenseManager;
@@ -69,6 +70,7 @@ class HandleInertiaRequests extends Middleware
                     'unreadNotifications' => $user->unreadNotifications()->get(),
                     'tutorial_progress' => $user->tutorial_progress ?? [],
                 ],
+                'planningProcessId' => fn () => $this->getUserPlanningProcessId($user),
             ],
             'csrf_token' => fn () => csrf_token(),
             // 'flash' is used in the admin navigation to show only the allowed pages
@@ -123,6 +125,21 @@ class HandleInertiaRequests extends Middleware
         $tenants->load('primary_institution:id,short_name,image_url');
 
         return $tenants;
+    }
+
+    private function getUserPlanningProcessId(User $user): ?string
+    {
+        $tenantId = $user->tenants()->first()?->id;
+
+        if (! $tenantId) {
+            return null;
+        }
+
+        $academicYear = now()->month >= 9 ? now()->year : now()->year - 1;
+
+        return PlanningProcess::where('tenant_id', $tenantId)
+            ->where('academic_year_start', $academicYear)
+            ->value('id');
     }
 
     /**

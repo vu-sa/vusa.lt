@@ -28,6 +28,7 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
       date: string;
     }>;
     user: User;
+    planningProcessId?: string | null;
   } | null;
   csrf_token: string;
   flash: {

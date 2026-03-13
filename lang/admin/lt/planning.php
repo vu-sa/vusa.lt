@@ -8,5 +8,12 @@ return [
     'already_finished' => 'Procesas jau yra užbaigtas.',
     'activity' => 'veikla',
     'monitoring_entry' => 'stebėsenos įrašas',
-    'deadlines' => 'etapų datos',
+    'template_uploaded' => 'Šablonas sėkmingai įkeltas.',
+    'template_deleted' => 'Šablonas pašalintas.',
+    'deadlines' => 'Etapų datos',
+    'deadline_until' => 'iki :date',
+    'deadline_overdue' => 'Vėluojama :days d.',
+    'deadline_days_remaining' => 'Liko :days d.',
+    'current_stage_deadline' => 'Dabartinio etapo terminas',
+    'no_deadline_set' => 'Terminas nenustatytas',
 ];

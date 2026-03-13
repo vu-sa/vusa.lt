@@ -1,34 +1,57 @@
 <template>
+  <div class="flex flex-col gap-4">
+  <DeadlineBanner :deadline="deadline ?? null" :is-stage-complete="!!planningProcess.expectations_submitted_at" />
   <Card>
     <CardHeader>
-      <CardTitle class="text-base">{{ $t("I etapas: Lūkesčiai") }}</CardTitle>
-      <CardDescription>{{ $t("Padalinys įveda lūkesčius moderatoriui") }}</CardDescription>
+      <div class="flex items-center gap-3">
+        <div class="shrink-0 h-9 w-9 rounded-lg bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
+          <SparklesIcon class="h-4.5 w-4.5 text-primary" />
+        </div>
+        <div class="flex-1 min-w-0">
+          <CardTitle class="text-base">{{ $t("I etapas: Lūkesčiai") }}</CardTitle>
+          <CardDescription>{{ $t("Padalinys įveda lūkesčius moderatoriui") }}</CardDescription>
+        </div>
+        <Badge v-if="planningProcess.expectations_submitted_at" variant="success" class="shrink-0 gap-1">
+          <CheckIcon class="h-3 w-3" />
+          {{ $t("Pateikta") }}
+        </Badge>
+      </div>
     </CardHeader>
     <CardContent>
       <div v-if="!editing" class="flex flex-col gap-4">
-        <div v-if="planningProcess.expectations_text" class="text-sm whitespace-pre-wrap">
+        <div
+          v-if="planningProcess.expectations_text"
+          class="rounded-lg border bg-muted/30 p-4 text-sm whitespace-pre-wrap leading-relaxed"
+        >
           {{ planningProcess.expectations_text }}
         </div>
-        <div v-else class="text-sm text-muted-foreground">
-          {{ $t("Lūkesčiai dar neįvesti.") }}
+        <div v-else class="rounded-lg border border-dashed p-6 text-center">
+          <SparklesIcon class="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
+          <p class="text-sm text-muted-foreground">{{ $t("Lūkesčiai dar neįvesti.") }}</p>
         </div>
+
         <div
           v-if="planningProcess.expectations_submitted_at"
-          class="text-xs text-muted-foreground"
+          class="flex items-center gap-1.5 text-xs text-muted-foreground"
         >
+          <CalendarIcon class="h-3.5 w-3.5" />
           {{ $t("Pateikta:") }}
           {{ new Date(planningProcess.expectations_submitted_at).toLocaleDateString("lt-LT") }}
         </div>
+
         <div v-if="canUpdate" class="flex gap-2">
-          <Button variant="outline" size="sm" @click="startEditing">
+          <Button variant="outline" size="sm" class="gap-1.5" @click="startEditing">
+            <PencilIcon class="h-3.5 w-3.5" />
             {{ $t("Redaguoti") }}
           </Button>
           <Button
             v-if="!planningProcess.expectations_submitted_at"
             size="sm"
+            class="gap-1.5"
             :disabled="submitForm.processing || !planningProcess.expectations_text"
             @click="submitExpectations"
           >
+            <SendIcon class="h-3.5 w-3.5" />
             {{ $t("Pateikti") }}
           </Button>
         </div>
@@ -39,6 +62,7 @@
           v-model="form.expectations_text"
           :placeholder="$t('Įveskite lūkesčius...')"
           rows="5"
+          class="resize-y"
         />
         <div class="flex gap-2">
           <Button size="sm" :disabled="form.processing" @click="save">
@@ -51,19 +75,30 @@
       </div>
     </CardContent>
   </Card>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from "vue";
 import { useForm } from "@inertiajs/vue3";
 import { trans as $t } from "laravel-vue-i18n";
+import {
+  Sparkles as SparklesIcon,
+  Check as CheckIcon,
+  Calendar as CalendarIcon,
+  Pencil as PencilIcon,
+  Send as SendIcon,
+} from "lucide-vue-next";
 
+import { Badge } from "@/Components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/Components/ui/card";
+import DeadlineBanner from "@/Components/PlanningProcess/DeadlineBanner.vue";
 import { Button } from "@/Components/ui/button";
 import { Textarea } from "@/Components/ui/textarea";
 
 const props = defineProps<{
   planningProcess: App.Entities.PlanningProcess;
+  deadline?: App.Entities.PlanningStageDeadline | null;
   canUpdate: boolean;
 }>();
 

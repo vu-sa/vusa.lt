@@ -59,6 +59,21 @@ class PlanningProcessPolicy extends ModelPolicy
     }
 
     /**
+     * Determine if the user can approve goals/documents (coordinator only, not the assigned moderator).
+     */
+    public function approve(User $user, Model $planningProcess): bool
+    {
+        /** @var PlanningProcess $planningProcess */
+
+        // Moderators cannot approve their own planning process
+        if ($planningProcess->moderator_user_id === $user->id) {
+            return false;
+        }
+
+        return $this->commonChecker($user, $planningProcess, CRUDEnum::UPDATE()->label, $this->pluralModelName, false);
+    }
+
+    /**
      * Override delete method.
      */
     public function delete(User $user, Model $planningProcess): bool

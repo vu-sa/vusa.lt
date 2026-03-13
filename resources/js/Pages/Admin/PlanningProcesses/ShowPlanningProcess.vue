@@ -4,82 +4,141 @@
 
     <ShowPageHero
       :title="pageTitle"
-      :subtitle="planningProcess.tenant?.shortname"
       :icon="CalendarLtr24Regular"
     >
-      <template #actions>
-        <Badge v-if="isFinished" variant="success">
+      <template #badge>
+        <Badge v-if="isFinished" variant="success" class="gap-1">
+          <CheckCircleIcon class="h-3 w-3" />
           {{ $t("Užbaigta") }}
         </Badge>
+        <Badge v-else variant="secondary" class="gap-1">
+          {{ $t("Etapas") }} {{ planningProcess.current_stage }} / 5
+        </Badge>
+      </template>
+
+      <template #subtitle>
+        {{ planningProcess.tenant?.shortname }}
+      </template>
+
+      <template #info>
+        <div class="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <UserIcon class="h-3.5 w-3.5" />
+          <span v-if="planningProcess.moderator">{{ planningProcess.moderator.name }}</span>
+          <span v-else class="italic">{{ $t("Moderatorius nepriskirtas") }}</span>
+        </div>
+      </template>
+
+      <template #actions>
         <Button
-          v-if="canUpdate && !isFinished && planningProcess.current_stage === 5"
-          variant="default"
-          size="sm"
-          :disabled="advanceForm.processing"
-          @click="advanceStage"
-        >
-          {{ $t("Užbaigti procesą") }}
-        </Button>
-        <Button
-          v-if="canUpdate && !isFinished && planningProcess.current_stage < 5"
+          v-if="canUpdate && !isFinished && planningProcess.current_stage === 4"
           variant="outline"
           size="sm"
+          class="gap-1.5"
           :disabled="advanceForm.processing"
           @click="advanceStage"
         >
+          <ArrowRightIcon class="h-3.5 w-3.5" />
           {{ $t("Pereiti į kitą etapą") }}
         </Button>
-        <Button
-          v-if="canDelete"
-          variant="destructive"
-          size="sm"
-          @click="showDeleteDialog = true"
-        >
-          {{ $t("Šalinti") }}
-        </Button>
+        <DropdownMenu v-if="canDelete">
+          <DropdownMenuTrigger as-child>
+            <Button variant="ghost" size="icon" class="h-8 w-8">
+              <MoreHorizontalIcon class="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem
+              class="text-destructive focus:text-destructive"
+              @click="showDeleteDialog = true"
+            >
+              <Trash2Icon class="h-4 w-4 mr-2" />
+              {{ $t("Šalinti procesą") }}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </template>
+
+      <template #navigation>
+        <StageStepper
+          :current-stage="planningProcess.current_stage"
+          :selected-stage="selectedStage"
+          :is-finished="isFinished"
+          :deadlines="deadlines"
+          @select="selectStage"
+        />
       </template>
     </ShowPageHero>
 
-    <!-- Stage stepper -->
-    <StageStepper :current-stage="planningProcess.current_stage" class="mt-6" />
+    <div class="mt-6">
+      <!-- Overview (stage 0) -->
+      <div v-if="selectedStage === 0">
+        <StageOverview
+          :planning-process="planningProcess"
+          :deadlines="deadlines"
+          :can-update="canUpdate"
+          :is-finished="isFinished"
+          @edit-moderator="selectedStage = -1"
+          @navigate-to-stage="selectStage"
+        />
+      </div>
 
-    <div class="mt-8 flex flex-col gap-6">
-      <!-- Moderator assignment -->
-      <ModeratorAssignment
-        :planning-process="planningProcess"
-        :can-update="canUpdate"
-      />
+      <!-- Any non-overview stage -->
+      <div v-else>
+        <div class="mb-4">
+          <Button variant="ghost" size="sm" class="gap-1.5 -ml-2" @click="selectedStage = 0">
+            <ArrowLeftIcon class="h-3.5 w-3.5" />
+            {{ $t("Grįžti į apžvalgą") }}
+          </Button>
+        </div>
 
-      <!-- Stage I: Expectations -->
-      <StageExpectations
-        :planning-process="planningProcess"
-        :can-update="canUpdate"
-      />
+        <!-- Moderator assignment (stage -1) -->
+        <ModeratorAssignment
+          v-if="selectedStage === -1"
+          :planning-process="planningProcess"
+          :can-update="canUpdate"
+        />
 
-      <!-- Stage II: Meetings & Goal -->
-      <StageMeetings
-        :planning-process="planningProcess"
-        :tenant-problems="tenantProblems"
-        :can-update="canUpdate"
-      />
+        <!-- Stage I -->
+        <StageExpectations
+          v-else-if="selectedStage === 1"
+          :planning-process="planningProcess"
+          :deadline="deadlineForStage(1)"
+          :can-update="canUpdate"
+        />
 
-      <!-- Stage III: Documents -->
-      <StageDocuments
-        :planning-process="planningProcess"
-        :can-update="canUpdate"
-      />
+        <!-- Stage II -->
+        <StageMeetings
+          v-else-if="selectedStage === 2"
+          :planning-process="planningProcess"
+          :deadline="deadlineForStage(2)"
+          :tenant-problems="tenantProblems"
+          :can-update="canUpdate"
+        />
 
-      <!-- Stage IV: Activity Grid -->
-      <ActivityGrid
-        :planning-process="planningProcess"
-        :can-update="canUpdate"
-      />
+        <!-- Stage III -->
+        <StageDocuments
+          v-else-if="selectedStage === 3"
+          :planning-process="planningProcess"
+          :deadline="deadlineForStage(3)"
+          :can-update="canUpdate"
+        />
 
-      <!-- Stage V: Monitoring & Reflection -->
-      <StageMonitoring
-        :planning-process="planningProcess"
-        :can-update="canUpdate"
-      />
+        <!-- Stage IV -->
+        <ActivityGrid
+          v-else-if="selectedStage === 4"
+          :planning-process="planningProcess"
+          :deadline="deadlineForStage(4)"
+          :can-update="canUpdate"
+        />
+
+        <!-- Stage V -->
+        <StageMonitoring
+          v-else-if="selectedStage === 5"
+          :planning-process="planningProcess"
+          :deadline="deadlineForStage(5)"
+          :can-update="canUpdate"
+        />
+      </div>
     </div>
 
     <!-- Delete dialog -->
@@ -113,6 +172,14 @@ import { ref, computed } from "vue";
 import { useForm, Head } from "@inertiajs/vue3";
 import { transChoice as $tChoice, trans as $t } from "laravel-vue-i18n";
 import CalendarLtr24Regular from "~icons/fluent/calendar-ltr24-regular";
+import {
+  User as UserIcon,
+  CheckCircle as CheckCircleIcon,
+  ArrowRight as ArrowRightIcon,
+  ArrowLeft as ArrowLeftIcon,
+  MoreHorizontal as MoreHorizontalIcon,
+  Trash2 as Trash2Icon,
+} from "lucide-vue-next";
 
 import AdminContentPage from "@/Components/Layouts/AdminContentPage.vue";
 import ShowPageHero from "@/Components/Hero/ShowPageHero.vue";
@@ -128,7 +195,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/Components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/Components/ui/dropdown-menu";
 import StageStepper from "@/Components/PlanningProcess/StageStepper.vue";
+import StageOverview from "@/Components/PlanningProcess/StageOverview.vue";
 import ModeratorAssignment from "@/Components/PlanningProcess/ModeratorAssignment.vue";
 import StageExpectations from "@/Components/PlanningProcess/StageExpectations.vue";
 import StageMeetings from "@/Components/PlanningProcess/StageMeetings.vue";
@@ -138,11 +212,15 @@ import StageMonitoring from "@/Components/PlanningProcess/StageMonitoring.vue";
 
 const props = defineProps<{
   planningProcess: App.Entities.PlanningProcess;
+  deadlines: App.Entities.PlanningStageDeadline[];
   tenantProblems: App.Entities.Problem[];
   canUpdate: boolean;
   canDelete: boolean;
   isFinished: boolean;
 }>();
+
+const deadlineForStage = (stage: number) =>
+  props.deadlines?.find((d) => d.stage === stage) ?? null;
 
 usePageBreadcrumbs(() =>
   BreadcrumbHelpers.adminShow(
@@ -155,12 +233,17 @@ usePageBreadcrumbs(() =>
 );
 
 const showDeleteDialog = ref(false);
+const selectedStage = ref(0); // 0 = overview
 
 const pageTitle = computed(() => {
   const year = props.planningProcess.academic_year_start;
   const tenant = props.planningProcess.tenant?.shortname ?? "";
   return `${tenant} ${year}–${year + 1}`;
 });
+
+const selectStage = (stage: number) => {
+  selectedStage.value = stage;
+};
 
 const advanceForm = useForm({});
 const deleteForm = useForm({});

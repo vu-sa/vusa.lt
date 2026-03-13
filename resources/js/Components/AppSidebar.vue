@@ -339,12 +339,17 @@ const navMainItems = computed(() => {
   }
 
   // Planning processes
-  if (usePage().props.auth?.can.viewAny?.planningProcess) {
+  const planningProcessId = usePage().props.auth?.planningProcessId
+  const canViewAnyPlanning = usePage().props.auth?.can.index?.planningProcess
+
+  if (planningProcessId || canViewAnyPlanning) {
     items.push({
-      title: $t('Planavimas'),
-      url: route('planningProcesses.index'),
+      title: $t('Planavimai'),
+      url: planningProcessId
+        ? route('planningProcesses.show', planningProcessId)
+        : route('planningProcesses.index'),
       icon: markRaw(CalendarLtr24Regular),
-      isActive: route().current('planningProcesses.*') || route().current('planningActivities.*') || route().current('planningMonitoringEntries.*'),
+      isActive: route().current('planningProcesses.*') || route().current('planningActivities.*') || route().current('planningMonitoringEntries.*') || route().current('planningDeadlines.*'),
     })
   }
 

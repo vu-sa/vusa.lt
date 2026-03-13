@@ -34,6 +34,9 @@ class UpdatePlanningProcessRequest extends FormRequest
             'meeting_1_date' => ['nullable', 'date'],
             'meeting_2_notes' => ['nullable', 'string'],
             'meeting_2_date' => ['nullable', 'date'],
+            'additional_meetings' => ['nullable', 'array'],
+            'additional_meetings.*.date' => ['nullable', 'date'],
+            'additional_meetings.*.notes' => ['nullable', 'string'],
             'selected_problem_id' => ['nullable', 'string', 'exists:problems,id', function ($attribute, $value, $fail) {
                 if ($value) {
                     /** @var PlanningProcess $planningProcess */

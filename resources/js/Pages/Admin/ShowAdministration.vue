@@ -458,6 +458,27 @@ const menuItems = computed(() => [
     visibleItems: [] as MenuItemType[],
   },
   {
+    category: $t("Planavimai"),
+    items: [
+      {
+        title: $t("Padalinio planavimas"),
+        icon: Icons.PLANNING_PROCESS,
+        href: auth?.planningProcessId
+          ? route("planningProcesses.show", auth.planningProcessId)
+          : "#",
+        show: !!auth?.planningProcessId,
+      },
+      {
+        title: $t("Planavimo procesai"),
+        icon: Icons.PLANNING_PROCESS,
+        href: route("planningProcesses.index"),
+        show: auth?.can.index?.planningProcess,
+      },
+    ],
+    show: !!auth?.planningProcessId || auth?.can.index?.planningProcess,
+    visibleItems: [] as MenuItemType[],
+  },
+  {
     category: $t("Rezervacijos"),
     items: [
       {

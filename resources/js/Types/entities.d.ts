@@ -50,6 +50,10 @@ declare namespace App.Entities {
     tip_document_name?: string | null;
     mvp_document_url?: string | null;
     mvp_document_name?: string | null;
+    tip_template_url?: string | null;
+    tip_template_name?: string | null;
+    mvp_template_url?: string | null;
+    mvp_template_name?: string | null;
   };
   export type PlanningActivity = models.PlanningActivity;
   export type PlanningMonitoringEntry = models.PlanningMonitoringEntry;

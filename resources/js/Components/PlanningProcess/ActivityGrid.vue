@@ -1,26 +1,38 @@
 <template>
+  <div class="flex flex-col gap-4">
+  <DeadlineBanner :deadline="deadline ?? null" :is-stage-complete="(planningProcess.activities ?? []).length > 0" />
   <Card>
     <CardHeader>
-      <div class="flex items-center justify-between">
-        <div>
+      <div class="flex items-center gap-3">
+        <div class="shrink-0 h-9 w-9 rounded-lg bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
+          <LayoutGridIcon class="h-4.5 w-4.5 text-primary" />
+        </div>
+        <div class="flex-1 min-w-0">
           <CardTitle class="text-base">{{ $t("IV etapas: Metų veiklos tinklelis (MVT)") }}</CardTitle>
           <CardDescription>{{ $t("Padalinio veiklų sąrašas su lygmenimis") }}</CardDescription>
         </div>
-        <Button v-if="canUpdate" size="sm" @click="showAddForm = !showAddForm">
-          {{ showAddForm ? $t("Atšaukti") : $t("Pridėti veiklą") }}
+        <Button v-if="canUpdate" size="sm" class="gap-1.5 shrink-0" @click="showAddForm = !showAddForm">
+          <template v-if="showAddForm">
+            <XIcon class="h-3.5 w-3.5" />
+            {{ $t("Atšaukti") }}
+          </template>
+          <template v-else>
+            <PlusIcon class="h-3.5 w-3.5" />
+            {{ $t("Pridėti veiklą") }}
+          </template>
         </Button>
       </div>
     </CardHeader>
     <CardContent class="flex flex-col gap-4">
       <!-- Add activity form -->
-      <div v-if="showAddForm && canUpdate" class="border rounded-lg p-4 flex flex-col gap-3 bg-muted/30">
+      <div v-if="showAddForm && canUpdate" class="rounded-lg border border-dashed bg-muted/20 p-4 flex flex-col gap-3">
         <div class="grid sm:grid-cols-2 gap-3">
-          <div class="flex flex-col gap-1">
-            <Label>{{ $t("Veiklos pavadinimas") }}</Label>
+          <div class="flex flex-col gap-1.5">
+            <Label class="text-xs font-medium">{{ $t("Veiklos pavadinimas") }}</Label>
             <Input v-model="addForm.name" :placeholder="$t('Pavadinimas')" />
           </div>
-          <div class="flex flex-col gap-1">
-            <Label>{{ $t("Mėnuo") }}</Label>
+          <div class="flex flex-col gap-1.5">
+            <Label class="text-xs font-medium">{{ $t("Mėnuo") }}</Label>
             <Select v-model="addForm.month">
               <SelectTrigger>
                 <SelectValue :placeholder="$t('Pasirinkite mėnesį')" />
@@ -32,12 +44,12 @@
               </SelectContent>
             </Select>
           </div>
-          <div class="flex flex-col gap-1">
-            <Label>{{ $t("Atsakingas asmuo") }}</Label>
+          <div class="flex flex-col gap-1.5">
+            <Label class="text-xs font-medium">{{ $t("Atsakingas asmuo") }}</Label>
             <Input v-model="addForm.responsible_person" :placeholder="$t('Vardas Pavardė')" />
           </div>
-          <div class="flex flex-col gap-1">
-            <Label>{{ $t("Lygmuo") }}</Label>
+          <div class="flex flex-col gap-1.5">
+            <Label class="text-xs font-medium">{{ $t("Lygmuo") }}</Label>
             <Select v-model="addForm.level">
               <SelectTrigger>
                 <SelectValue :placeholder="$t('Pasirinkite lygmenį')" />
@@ -50,41 +62,45 @@
             </Select>
           </div>
         </div>
-        <div class="flex gap-2">
-          <Button size="sm" :disabled="addForm.processing || !addForm.name" @click="addActivity">
+        <div>
+          <Button size="sm" class="gap-1.5" :disabled="addForm.processing || !addForm.name" @click="addActivity">
+            <PlusIcon class="h-3.5 w-3.5" />
             {{ $t("Pridėti") }}
           </Button>
         </div>
       </div>
 
-      <!-- Activities list -->
-      <div v-if="activities.length === 0" class="text-sm text-muted-foreground">
-        {{ $t("Veiklų nėra. Pridėkite pirmąją veiklą.") }}
+      <!-- Empty state -->
+      <div v-if="activities.length === 0 && !showAddForm" class="rounded-lg border border-dashed p-8 text-center">
+        <LayoutGridIcon class="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" />
+        <p class="text-sm font-medium text-muted-foreground">{{ $t("Veiklų nėra") }}</p>
+        <p class="text-xs text-muted-foreground mt-1">{{ $t("Pridėkite pirmąją veiklą.") }}</p>
       </div>
 
-      <div v-else class="overflow-x-auto">
+      <!-- Activities table -->
+      <div v-else-if="activities.length > 0" class="overflow-x-auto rounded-lg border">
         <table class="w-full text-sm">
           <thead>
-            <tr class="border-b">
-              <th class="text-left py-2 pr-4 font-medium">{{ $t("Veikla") }}</th>
-              <th class="text-left py-2 pr-4 font-medium">{{ $t("Mėnuo") }}</th>
-              <th class="text-left py-2 pr-4 font-medium">{{ $t("Atsakingas") }}</th>
-              <th class="text-left py-2 pr-4 font-medium">{{ $t("Lygmuo") }}</th>
-              <th v-if="canUpdate" class="py-2" />
+            <tr class="border-b bg-muted/30">
+              <th class="text-left py-2.5 px-3 font-medium text-xs text-muted-foreground uppercase tracking-wider">{{ $t("Veikla") }}</th>
+              <th class="text-left py-2.5 px-3 font-medium text-xs text-muted-foreground uppercase tracking-wider">{{ $t("Mėnuo") }}</th>
+              <th class="text-left py-2.5 px-3 font-medium text-xs text-muted-foreground uppercase tracking-wider hidden sm:table-cell">{{ $t("Atsakingas") }}</th>
+              <th class="text-left py-2.5 px-3 font-medium text-xs text-muted-foreground uppercase tracking-wider">{{ $t("Lygmuo") }}</th>
+              <th v-if="canUpdate" class="py-2.5 px-3 w-20" />
             </tr>
           </thead>
           <tbody>
             <tr
               v-for="activity in activities"
               :key="activity.id"
-              class="border-b last:border-0 hover:bg-muted/30"
+              class="border-b last:border-0 transition-colors hover:bg-muted/20"
             >
               <!-- Editing row -->
               <template v-if="editingId === activity.id">
-                <td class="py-2 pr-2">
+                <td class="py-2 px-3">
                   <Input v-model="editForm.name" class="h-8 text-sm" />
                 </td>
-                <td class="py-2 pr-2">
+                <td class="py-2 px-3">
                   <Select v-model="editForm.month">
                     <SelectTrigger class="h-8 text-sm">
                       <SelectValue />
@@ -96,10 +112,10 @@
                     </SelectContent>
                   </Select>
                 </td>
-                <td class="py-2 pr-2">
+                <td class="py-2 px-3 hidden sm:table-cell">
                   <Input v-model="editForm.responsible_person" class="h-8 text-sm" />
                 </td>
-                <td class="py-2 pr-2">
+                <td class="py-2 px-3">
                   <Select v-model="editForm.level">
                     <SelectTrigger class="h-8 text-sm">
                       <SelectValue />
@@ -111,7 +127,7 @@
                     </SelectContent>
                   </Select>
                 </td>
-                <td class="py-2">
+                <td class="py-2 px-3">
                   <div class="flex gap-1">
                     <Button
                       variant="ghost"
@@ -136,15 +152,15 @@
 
               <!-- Display row -->
               <template v-else>
-                <td class="py-2 pr-4">{{ activity.name }}</td>
-                <td class="py-2 pr-4">{{ monthName(activity.month) }}</td>
-                <td class="py-2 pr-4">{{ activity.responsible_person ?? "—" }}</td>
-                <td class="py-2 pr-4">
+                <td class="py-2.5 px-3 font-medium">{{ activity.name }}</td>
+                <td class="py-2.5 px-3 text-muted-foreground">{{ monthName(activity.month) }}</td>
+                <td class="py-2.5 px-3 text-muted-foreground hidden sm:table-cell">{{ activity.responsible_person ?? "—" }}</td>
+                <td class="py-2.5 px-3">
                   <Badge :variant="levelVariant(activity.level)" class="text-xs">
                     {{ levelLabel(activity.level) }}
                   </Badge>
                 </td>
-                <td v-if="canUpdate" class="py-2">
+                <td v-if="canUpdate" class="py-2.5 px-3">
                   <div class="flex gap-1">
                     <Button
                       variant="ghost"
@@ -171,13 +187,21 @@
       </div>
     </CardContent>
   </Card>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import { useForm, router } from "@inertiajs/vue3";
 import { trans as $t } from "laravel-vue-i18n";
-import { Check as CheckIcon, Pencil as PencilIcon, Trash2 as Trash2Icon, X as XIcon } from "lucide-vue-next";
+import {
+  Check as CheckIcon,
+  LayoutGrid as LayoutGridIcon,
+  Pencil as PencilIcon,
+  Plus as PlusIcon,
+  Trash2 as Trash2Icon,
+  X as XIcon,
+} from "lucide-vue-next";
 
 import { Badge } from "@/Components/ui/badge";
 import { Button } from "@/Components/ui/button";
@@ -191,9 +215,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/Components/ui/select";
+import DeadlineBanner from "@/Components/PlanningProcess/DeadlineBanner.vue";
 
 const props = defineProps<{
   planningProcess: App.Entities.PlanningProcess;
+  deadline?: App.Entities.PlanningStageDeadline | null;
   canUpdate: boolean;
 }>();
 

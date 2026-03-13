@@ -8,5 +8,12 @@ return [
     'already_finished' => 'The process is already finished.',
     'activity' => 'activity',
     'monitoring_entry' => 'monitoring entry',
-    'deadlines' => 'stage deadlines',
+    'template_uploaded' => 'Template uploaded successfully.',
+    'template_deleted' => 'Template deleted.',
+    'deadlines' => 'Stage deadlines',
+    'deadline_until' => 'until :date',
+    'deadline_overdue' => ':days d. overdue',
+    'deadline_days_remaining' => ':days d. remaining',
+    'current_stage_deadline' => 'Current stage deadline',
+    'no_deadline_set' => 'No deadline set',
 ];

@@ -28,6 +28,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  * @property Carbon|null $meeting_1_date
  * @property string|null $meeting_2_notes
  * @property Carbon|null $meeting_2_date
+ * @property array<int, array{date: string|null, notes: string|null}>|null $additional_meetings
  * @property string|null $selected_problem_id
  * @property string|null $goal_text
  * @property Carbon|null $goal_approved_at
@@ -74,6 +75,7 @@ class PlanningProcess extends Model implements HasMedia
             'expectations_submitted_at' => 'datetime',
             'meeting_1_date' => 'date',
             'meeting_2_date' => 'date',
+            'additional_meetings' => 'array',
             'goal_approved_at' => 'datetime',
             'tip_approved_at' => 'datetime',
             'mvp_approved_at' => 'datetime',
@@ -99,6 +101,30 @@ class PlanningProcess extends Model implements HasMedia
             ->addMediaCollection('mvp_document')
             ->singleFile()
             ->acceptsMimeTypes(['application/pdf'])
+            ->useDisk('spatieMediaLibrary');
+
+        $this
+            ->addMediaCollection('tip_template')
+            ->singleFile()
+            ->acceptsMimeTypes([
+                'application/pdf',
+                'application/msword',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'application/vnd.ms-excel',
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            ])
+            ->useDisk('spatieMediaLibrary');
+
+        $this
+            ->addMediaCollection('mvp_template')
+            ->singleFile()
+            ->acceptsMimeTypes([
+                'application/pdf',
+                'application/msword',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'application/vnd.ms-excel',
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            ])
             ->useDisk('spatieMediaLibrary');
     }
 
@@ -166,6 +192,56 @@ class PlanningProcess extends Model implements HasMedia
         }
 
         return $this->isStageComplete($stage - 1);
+    }
+
+    /**
+     * Automatically advance to the next stage if the current stage is complete.
+     * Locks the process when advancing past stage 5.
+     */
+    public function advanceIfCurrentStageComplete(): bool
+    {
+        if ($this->isFinished() || ! $this->isStageComplete($this->current_stage)) {
+            return false;
+        }
+
+        $nextStage = $this->current_stage + 1;
+        $updateData = ['current_stage' => $nextStage];
+
+        if ($nextStage > 5) {
+            $updateData['locked_at'] = now();
+        }
+
+        $this->update($updateData);
+
+        return true;
+    }
+
+    /**
+     * Check if the planning coordinator needs to take action on this process.
+     * Returns true when a goal or document is awaiting coordinator approval.
+     */
+    public function needsCoordinatorAction(): bool
+    {
+        if ($this->isFinished()) {
+            return false;
+        }
+
+        // Goal submitted but not yet approved
+        if ($this->goal_text && is_null($this->goal_approved_at)) {
+            return true;
+        }
+
+        // TIP document uploaded but not approved
+        if ($this->getFirstMedia('tip_document') && is_null($this->tip_approved_at)) {
+            return true;
+        }
+
+        // MVP document uploaded but not approved
+        if ($this->getFirstMedia('mvp_document') && is_null($this->mvp_approved_at)) {
+            return true;
+        }
+
+        return false;
     }
 
     public function academicYearLabel(): string
