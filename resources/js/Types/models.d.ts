@@ -596,6 +596,7 @@ declare global {
       user_id: string
       commentable_type: string
       commentable_id: string
+      stage?: number | null
       created_at: string
       updated_at: string
       deleted_at?: string | null
@@ -1749,6 +1750,7 @@ declare global {
       mvp_approved_by_user?: User
       activities?: PlanningActivity[]
       monitoring_entries?: PlanningMonitoringEntry[]
+      comments?: Comment[]
       media?: Medium[]
       // counts
       activities_count: number

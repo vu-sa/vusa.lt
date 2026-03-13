@@ -64,6 +64,7 @@ const props = defineProps<{
   model: Record<string, any> | null;
   commentable_type: string;
   comments?: App.Entities.Comment[];
+  extraData?: Record<string, any>;
 }>();
 
 const loading = ref(false);
@@ -84,6 +85,7 @@ const submitComment = () => {
       commentable_type: props.commentable_type,
       commentable_id: props.model?.id,
       comment: text.value,
+      ...props.extraData,
     },
     {
       preserveScroll: true,

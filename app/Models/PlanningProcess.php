@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\Traits\HasComments;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Spatie\Activitylog\LogOptions;
@@ -49,6 +51,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  * @property-read User|null $mvpApprovedByUser
  * @property-read Collection<int, PlanningActivity> $activities
  * @property-read Collection<int, PlanningMonitoringEntry> $monitoringEntries
+ * @property-read Collection<int, Comment> $comments
  * @property-read MediaCollection<int, Media> $media
  *
  * @method static \Database\Factories\PlanningProcessFactory factory($count = null, $state = [])
@@ -63,7 +66,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  */
 class PlanningProcess extends Model implements HasMedia
 {
-    use HasFactory, HasUlids, InteractsWithMedia, LogsActivity, SoftDeletes;
+    use HasComments, HasFactory, HasUlids, InteractsWithMedia, LogsActivity, SoftDeletes;
 
     protected $guarded = [];
 
@@ -161,6 +164,26 @@ class PlanningProcess extends Model implements HasMedia
     public function monitoringEntries(): HasMany
     {
         return $this->hasMany(PlanningMonitoringEntry::class)->orderBy('quarter');
+    }
+
+    /**
+     * Get comments for a specific planning stage.
+     *
+     * @return MorphMany<Comment, $this>
+     */
+    public function stageComments(int $stage)
+    {
+        return $this->comments()->where('stage', $stage);
+    }
+
+    /**
+     * Get users related to this planning process (for comment notifications).
+     *
+     * @return Collection<int, User>
+     */
+    public function getUsersAttribute(): Collection
+    {
+        return new Collection(array_filter([$this->moderator]));
     }
 
     public function isLocked(): bool

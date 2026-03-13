@@ -75,6 +75,12 @@
       </div>
     </CardContent>
   </Card>
+
+  <StageCommentThread
+    :planning-process="planningProcess"
+    :stage="1"
+    :comments="comments"
+  />
   </div>
 </template>
 
@@ -93,6 +99,7 @@ import {
 import { Badge } from "@/Components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/Components/ui/card";
 import DeadlineBanner from "@/Components/PlanningProcess/DeadlineBanner.vue";
+import StageCommentThread from "@/Components/PlanningProcess/StageCommentThread.vue";
 import { Button } from "@/Components/ui/button";
 import { Textarea } from "@/Components/ui/textarea";
 
@@ -100,6 +107,7 @@ const props = defineProps<{
   planningProcess: App.Entities.PlanningProcess;
   deadline?: App.Entities.PlanningStageDeadline | null;
   canUpdate: boolean;
+  comments: App.Entities.Comment[];
 }>();
 
 const editing = ref(false);

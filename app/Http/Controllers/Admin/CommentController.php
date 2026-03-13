@@ -25,6 +25,7 @@ class CommentController extends AdminController
             'commentable_id' => 'required',
             'comment' => 'required|string',
             'route' => 'nullable|string',
+            'stage' => 'nullable|integer|min:1|max:5',
         ]);
 
         // convert to camelCase
@@ -38,7 +39,9 @@ class CommentController extends AdminController
 
         $model = $modelClass::find($request->commentable_id);
 
-        $model->comment($request->comment);
+        $model->comment($request->comment, array_filter([
+            'stage' => $validated['stage'] ?? null,
+        ]));
 
         return back()->with('success', 'Komentaras pridėtas.');
     }

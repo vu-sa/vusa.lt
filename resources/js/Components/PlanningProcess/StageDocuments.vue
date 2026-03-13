@@ -252,6 +252,12 @@
       </div>
     </CardContent>
   </Card>
+
+  <StageCommentThread
+    :planning-process="planningProcess"
+    :stage="3"
+    :comments="comments"
+  />
   </div>
 </template>
 
@@ -277,11 +283,13 @@ import { Button } from "@/Components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Input } from "@/Components/ui/input";
 import DeadlineBanner from "@/Components/PlanningProcess/DeadlineBanner.vue";
+import StageCommentThread from "@/Components/PlanningProcess/StageCommentThread.vue";
 
 const props = defineProps<{
   planningProcess: App.Entities.PlanningProcess;
   deadline?: App.Entities.PlanningStageDeadline | null;
   canUpdate: boolean;
+  comments: App.Entities.Comment[];
 }>();
 
 const hasTemplates = computed(

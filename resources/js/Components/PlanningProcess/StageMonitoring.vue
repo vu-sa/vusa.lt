@@ -129,6 +129,12 @@
         </div>
       </CardContent>
     </Card>
+
+    <StageCommentThread
+      :planning-process="planningProcess"
+      :stage="5"
+      :comments="comments"
+    />
   </div>
 </template>
 
@@ -149,11 +155,13 @@ import { Button } from "@/Components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Textarea } from "@/Components/ui/textarea";
 import DeadlineBanner from "@/Components/PlanningProcess/DeadlineBanner.vue";
+import StageCommentThread from "@/Components/PlanningProcess/StageCommentThread.vue";
 
 const props = defineProps<{
   planningProcess: App.Entities.PlanningProcess;
   deadline?: App.Entities.PlanningStageDeadline | null;
   canUpdate: boolean;
+  comments: App.Entities.Comment[];
 }>();
 
 const getEntry = (quarter: number) =>

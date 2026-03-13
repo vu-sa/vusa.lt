@@ -17,15 +17,17 @@ trait HasComments
         return $this->morphMany(Comment::class, 'commentable');
     }
 
-    public function comment(string $body): Comment
+    /**
+     * @param  array<string, mixed>  $extra
+     */
+    public function comment(string $body, array $extra = []): Comment
     {
-        $comment = $this->comments()->create([
+        $comment = $this->comments()->create(array_merge([
             'comment' => $body,
             'user_id' => auth()->id(),
-            // get id and class type of the current object
             'commentable_id' => $this->id,
             'commentable_type' => get_class($this),
-        ]);
+        ], $extra));
 
         CommentPosted::dispatch($comment);
 

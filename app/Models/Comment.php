@@ -19,6 +19,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string $user_id
  * @property string $commentable_type
  * @property string $commentable_id
+ * @property int|null $stage
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at

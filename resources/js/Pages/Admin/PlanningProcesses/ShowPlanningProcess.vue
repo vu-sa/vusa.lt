@@ -104,6 +104,7 @@
           :planning-process="planningProcess"
           :deadline="deadlineForStage(1)"
           :can-update="canUpdate"
+          :comments="stageComments?.[1] ?? []"
         />
 
         <!-- Stage II -->
@@ -113,6 +114,7 @@
           :deadline="deadlineForStage(2)"
           :tenant-problems="tenantProblems"
           :can-update="canUpdate"
+          :comments="stageComments?.[2] ?? []"
         />
 
         <!-- Stage III -->
@@ -121,6 +123,7 @@
           :planning-process="planningProcess"
           :deadline="deadlineForStage(3)"
           :can-update="canUpdate"
+          :comments="stageComments?.[3] ?? []"
         />
 
         <!-- Stage IV -->
@@ -129,6 +132,7 @@
           :planning-process="planningProcess"
           :deadline="deadlineForStage(4)"
           :can-update="canUpdate"
+          :comments="stageComments?.[4] ?? []"
         />
 
         <!-- Stage V -->
@@ -137,6 +141,7 @@
           :planning-process="planningProcess"
           :deadline="deadlineForStage(5)"
           :can-update="canUpdate"
+          :comments="stageComments?.[5] ?? []"
         />
       </div>
     </div>
@@ -214,6 +219,7 @@ const props = defineProps<{
   planningProcess: App.Entities.PlanningProcess;
   deadlines: App.Entities.PlanningStageDeadline[];
   tenantProblems: App.Entities.Problem[];
+  stageComments: Record<number, App.Entities.Comment[]>;
   canUpdate: boolean;
   canDelete: boolean;
   isFinished: boolean;

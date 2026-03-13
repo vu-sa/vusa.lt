@@ -14,6 +14,7 @@ use App\Models\Problem;
 use App\Models\Tenant;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\TanstackTableService;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Response;
@@ -115,7 +116,7 @@ class PlanningProcessController extends AdminController
     /**
      * Build summary statistics for the coordinator overview.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder<PlanningProcess>  $query
+     * @param  Builder<PlanningProcess>  $query
      * @return array<string, int>
      */
     private function buildSummaryStats($query): array
@@ -199,6 +200,7 @@ class PlanningProcessController extends AdminController
             'mvpApprovedByUser',
             'activities',
             'monitoringEntries.submittedBy',
+            'comments' => fn ($q) => $q->whereNotNull('stage')->orderBy('created_at'),
         ]);
 
         $tipDocument = $planningProcess->getFirstMedia('tip_document');
@@ -227,6 +229,9 @@ class PlanningProcessController extends AdminController
                 ->select('id', 'title')
                 ->get()
                 ->map->toArray(),
+            'stageComments' => $planningProcess->comments
+                ->groupBy('stage')
+                ->mapWithKeys(fn ($comments, $stage) => [(int) $stage => $comments->toArray()]),
             'canUpdate' => $user->can('update', $planningProcess),
             'canDelete' => $user->can('delete', $planningProcess),
             'isFinished' => $planningProcess->isFinished(),

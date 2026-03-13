@@ -187,6 +187,12 @@
       </div>
     </CardContent>
   </Card>
+
+  <StageCommentThread
+    :planning-process="planningProcess"
+    :stage="4"
+    :comments="comments"
+  />
   </div>
 </template>
 
@@ -216,11 +222,13 @@ import {
   SelectValue,
 } from "@/Components/ui/select";
 import DeadlineBanner from "@/Components/PlanningProcess/DeadlineBanner.vue";
+import StageCommentThread from "@/Components/PlanningProcess/StageCommentThread.vue";
 
 const props = defineProps<{
   planningProcess: App.Entities.PlanningProcess;
   deadline?: App.Entities.PlanningStageDeadline | null;
   canUpdate: boolean;
+  comments: App.Entities.Comment[];
 }>();
 
 const showAddForm = ref(false);

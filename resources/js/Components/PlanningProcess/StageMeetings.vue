@@ -238,6 +238,12 @@
         </div>
       </CardContent>
     </Card>
+
+    <StageCommentThread
+      :planning-process="planningProcess"
+      :stage="2"
+      :comments="comments"
+    />
   </div>
 </template>
 
@@ -268,12 +274,14 @@ import {
 } from "@/Components/ui/select";
 import { Textarea } from "@/Components/ui/textarea";
 import DeadlineBanner from "@/Components/PlanningProcess/DeadlineBanner.vue";
+import StageCommentThread from "@/Components/PlanningProcess/StageCommentThread.vue";
 
 const props = defineProps<{
   planningProcess: App.Entities.PlanningProcess;
   deadline?: App.Entities.PlanningStageDeadline | null;
   tenantProblems: App.Entities.Problem[];
   canUpdate: boolean;
+  comments: App.Entities.Comment[];
 }>();
 
 const formatDate = (value: string | null | undefined): string => {
