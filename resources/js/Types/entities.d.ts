@@ -45,6 +45,15 @@ declare namespace App.Entities {
   export type QuickLink = models.QuickLink;
   export type Page = models.Page;
   export type Permission = models.Permission;
+  export type PlanningProcess = models.PlanningProcess & {
+    tip_document_url?: string | null;
+    tip_document_name?: string | null;
+    mvp_document_url?: string | null;
+    mvp_document_name?: string | null;
+  };
+  export type PlanningActivity = models.PlanningActivity;
+  export type PlanningMonitoringEntry = models.PlanningMonitoringEntry;
+  export type PlanningStageDeadline = models.PlanningStageDeadline;
   export type Problem = models.Problem;
   export type ProblemCategory = models.ProblemCategory;
   export type Programme = models.Programme;

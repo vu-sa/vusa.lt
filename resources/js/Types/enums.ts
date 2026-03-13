@@ -84,6 +84,7 @@ export enum ModelEnum {
   "QUICK_LINK" = "quickLink",
   "PAGE" = "page",
   "PERMISSION" = "permission",
+  "PLANNING_PROCESS" = "planningProcess",
   "PROBLEM" = "problem",
   "RELATIONSHIP" = "relationship",
   "RELATIONSHIPABLE" = "relationshipable",

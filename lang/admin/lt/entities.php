@@ -75,4 +75,11 @@ return [
         'responsible_user' => 'atsakingas asmuo',
         'categories' => 'kategorijos',
     ],
+    'planningProcess' => [
+        'model' => '{1} planavimo procesas|[2,9] planavimo procesai|[10,*] planavimo procesų',
+        'academic_year' => 'akademiniai metai',
+        'current_stage' => 'dabartinis etapas',
+        'moderator' => 'moderatorius',
+        'tenant' => 'padalinys',
+    ],
 ];

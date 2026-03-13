@@ -81,6 +81,10 @@ class RoleCommunicationCoordinatorSeeder extends Seeder
             'problems.read.padalinys',
             'problems.update.padalinys',
             'problems.delete.padalinys',
+            'planningProcesses.create.padalinys',
+            'planningProcesses.read.padalinys',
+            'planningProcesses.update.padalinys',
+            'planningProcesses.delete.padalinys',
         ]);
 
         $role->attachable_types()->attach(Type::query()->where('slug', 'pirmininkas')->firstOrFail());

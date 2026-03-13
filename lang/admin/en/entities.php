@@ -53,4 +53,11 @@ return [
         'responsible_user' => 'responsible person',
         'categories' => 'categories',
     ],
+    'planningProcess' => [
+        'model' => '{1} planning process|[2,*] planning processes',
+        'academic_year' => 'academic year',
+        'current_stage' => 'current stage',
+        'moderator' => 'moderator',
+        'tenant' => 'unit',
+    ],
 ];

@@ -194,6 +194,7 @@
 </template>
 
 <script setup lang="ts">
+import CalendarLtr24Regular from '~icons/fluent/calendar-ltr24-regular'
 import {
   BookOpen,
   GraduationCap,
@@ -334,6 +335,16 @@ const navMainItems = computed(() => {
       url: route('dashboard.svetaine'),
       icon: markRaw(Globe),
       isActive: false,
+    })
+  }
+
+  // Planning processes
+  if (usePage().props.auth?.can.viewAny?.planningProcess) {
+    items.push({
+      title: $t('Planavimas'),
+      url: route('planningProcesses.index'),
+      icon: markRaw(CalendarLtr24Regular),
+      isActive: route().current('planningProcesses.*') || route().current('planningActivities.*') || route().current('planningMonitoringEntries.*'),
     })
   }
 

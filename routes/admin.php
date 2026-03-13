@@ -189,6 +189,18 @@ Route::patch('problems/{problem}/restore', [ProblemController::class, 'restore']
 Route::patch('problems/{problem}/status', [ProblemController::class, 'updateStatus'])->name('problems.updateStatus');
 Route::resource('problems', ProblemController::class);
 
+// Planning process routes
+Route::patch('planningProcesses/{planningProcess}/assign-moderator', [PlanningProcessController::class, 'assignModerator'])->name('planningProcesses.assignModerator');
+Route::patch('planningProcesses/{planningProcess}/goal', [PlanningProcessController::class, 'updateGoal'])->name('planningProcesses.updateGoal');
+Route::post('planningProcesses/{planningProcess}/upload-document', [PlanningProcessController::class, 'uploadDocument'])->name('planningProcesses.uploadDocument');
+Route::patch('planningProcesses/{planningProcess}/approve-document', [PlanningProcessController::class, 'approveDocument'])->name('planningProcesses.approveDocument');
+Route::patch('planningProcesses/{planningProcess}/advance-stage', [PlanningProcessController::class, 'advanceStage'])->name('planningProcesses.advanceStage');
+Route::resource('planningProcesses', PlanningProcessController::class)->except(['edit']);
+Route::resource('planningActivities', PlanningActivityController::class)->only(['store', 'update', 'destroy']);
+Route::resource('planningMonitoringEntries', PlanningMonitoringController::class)->only(['store', 'update']);
+Route::get('planningDeadlines/{academicYear}/edit', [PlanningStageDeadlineController::class, 'edit'])->name('planningDeadlines.edit');
+Route::patch('planningDeadlines/{academicYear}', [PlanningStageDeadlineController::class, 'update'])->name('planningDeadlines.update');
+
 Route::resource('types', TypeController::class);
 Route::resource('relationships', RelationshipController::class);
 Route::post('relationships/{relationship}/storeModelRelationship', [RelationshipController::class, 'storeModelRelationship'])->name('relationships.storeModelRelationship');
