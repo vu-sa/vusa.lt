@@ -1,9 +1,12 @@
 <?php
 
+use App\Enums\ApprovalDecision;
+use App\Models\Approval;
 use App\Models\PlanningProcess;
 use App\Models\PlanningStageDeadline;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Inertia\Testing\AssertableInertia as Assert;
 
 uses(RefreshDatabase::class);
@@ -365,5 +368,280 @@ describe('deadlines in show page', function () {
                 ->has('deadlines', 1)
                 ->where('deadlines.0.academic_year_start', 2026)
             );
+    });
+});
+
+describe('document rejection', function () {
+    test('coordinator can reject a document with feedback', function () {
+        $this->planningProcess->update([
+            'current_stage' => 3,
+            'goal_approved_at' => now(),
+        ]);
+
+        asUser($this->superAdmin)->patch(route('planningProcesses.rejectDocument', $this->planningProcess), [
+            'collection' => 'tip_document',
+            'notes' => 'The document needs more detail in section 2.',
+        ])->assertRedirect();
+
+        // Approval record created with rejection
+        $approval = Approval::where('approvable_type', PlanningProcess::class)
+            ->where('approvable_id', $this->planningProcess->id)
+            ->where('context', 'tip_document')
+            ->latest()
+            ->first();
+
+        expect($approval)->not->toBeNull();
+        expect($approval->decision)->toBe(ApprovalDecision::Rejected);
+        expect($approval->notes)->toBe('The document needs more detail in section 2.');
+    });
+
+    test('rejecting a document clears approval timestamps', function () {
+        $this->planningProcess->update([
+            'current_stage' => 3,
+            'goal_approved_at' => now(),
+            'tip_approved_at' => now(),
+            'tip_approved_by' => $this->superAdmin->id,
+        ]);
+
+        asUser($this->superAdmin)->patch(route('planningProcesses.rejectDocument', $this->planningProcess), [
+            'collection' => 'tip_document',
+            'notes' => 'Needs revision.',
+        ])->assertRedirect();
+
+        $fresh = $this->planningProcess->fresh();
+        expect($fresh->tip_approved_at)->toBeNull();
+        expect($fresh->tip_approved_by)->toBeNull();
+    });
+
+    test('rejection requires notes', function () {
+        $this->planningProcess->update([
+            'current_stage' => 3,
+            'goal_approved_at' => now(),
+        ]);
+
+        asUser($this->superAdmin)->patch(route('planningProcesses.rejectDocument', $this->planningProcess), [
+            'collection' => 'tip_document',
+            'notes' => '',
+        ])->assertSessionHasErrors('notes');
+    });
+
+    test('moderator cannot reject documents on their own process', function () {
+        $moderator = makeUser($this->otherTenant);
+        $this->planningProcess->update([
+            'moderator_user_id' => $moderator->id,
+            'current_stage' => 3,
+            'goal_approved_at' => now(),
+        ]);
+
+        asUser($moderator)->patch(route('planningProcesses.rejectDocument', $this->planningProcess), [
+            'collection' => 'tip_document',
+            'notes' => 'Reject this.',
+        ])->assertStatus(403);
+    });
+});
+
+describe('goal rejection', function () {
+    test('coordinator can reject a goal with feedback', function () {
+        $this->planningProcess->update([
+            'current_stage' => 2,
+            'expectations_submitted_at' => now(),
+            'goal_text' => 'Our annual goal',
+        ]);
+
+        asUser($this->superAdmin)->patch(route('planningProcesses.rejectGoal', $this->planningProcess), [
+            'notes' => 'Goal is too vague, please be more specific.',
+        ])->assertRedirect();
+
+        $approval = Approval::where('approvable_type', PlanningProcess::class)
+            ->where('approvable_id', $this->planningProcess->id)
+            ->where('context', 'goal')
+            ->latest()
+            ->first();
+
+        expect($approval)->not->toBeNull();
+        expect($approval->decision)->toBe(ApprovalDecision::Rejected);
+        expect($approval->notes)->toBe('Goal is too vague, please be more specific.');
+        expect($this->planningProcess->fresh()->goal_approved_at)->toBeNull();
+    });
+
+    test('goal rejection requires notes', function () {
+        $this->planningProcess->update([
+            'current_stage' => 2,
+            'expectations_submitted_at' => now(),
+            'goal_text' => 'Some goal',
+        ]);
+
+        asUser($this->superAdmin)->patch(route('planningProcesses.rejectGoal', $this->planningProcess), [
+            'notes' => '',
+        ])->assertSessionHasErrors('notes');
+    });
+});
+
+describe('approval records', function () {
+    test('approving a document creates an approval record', function () {
+        $this->planningProcess->update([
+            'current_stage' => 3,
+            'goal_approved_at' => now(),
+        ]);
+
+        asUser($this->superAdmin)->patch(route('planningProcesses.approveDocument', $this->planningProcess), [
+            'collection' => 'tip_document',
+        ])->assertRedirect();
+
+        $approval = Approval::where('approvable_type', PlanningProcess::class)
+            ->where('approvable_id', $this->planningProcess->id)
+            ->where('context', 'tip_document')
+            ->latest()
+            ->first();
+
+        expect($approval)->not->toBeNull();
+        expect($approval->decision)->toBe(ApprovalDecision::Approved);
+    });
+
+    test('approving a goal creates an approval record', function () {
+        $this->planningProcess->update([
+            'current_stage' => 2,
+            'expectations_submitted_at' => now(),
+        ]);
+
+        asUser($this->superAdmin)->patch(route('planningProcesses.updateGoal', $this->planningProcess), [
+            'goal_text' => 'Our annual goal',
+            'goal_approved_at' => now()->toISOString(),
+        ])->assertRedirect();
+
+        $approval = Approval::where('approvable_type', PlanningProcess::class)
+            ->where('approvable_id', $this->planningProcess->id)
+            ->where('context', 'goal')
+            ->latest()
+            ->first();
+
+        expect($approval)->not->toBeNull();
+        expect($approval->decision)->toBe(ApprovalDecision::Approved);
+    });
+
+    test('show page includes approval history and field changes', function () {
+        // Create an approval record
+        Approval::create([
+            'approvable_type' => PlanningProcess::class,
+            'approvable_id' => $this->planningProcess->id,
+            'user_id' => $this->superAdmin->id,
+            'decision' => ApprovalDecision::Rejected,
+            'step' => 1,
+            'context' => 'tip_document',
+            'notes' => 'Needs revision',
+        ]);
+
+        asUser($this->superAdmin)->get(route('planningProcesses.show', $this->planningProcess))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('approvalHistory')
+                ->has('fieldChanges')
+                ->has('tipDocuments')
+                ->has('mvpDocuments')
+                ->has('canApprove')
+            );
+    });
+
+    test('rejection then re-approval flow works correctly', function () {
+        $this->planningProcess->update([
+            'current_stage' => 3,
+            'goal_approved_at' => now(),
+        ]);
+
+        // Reject TIP
+        asUser($this->superAdmin)->patch(route('planningProcesses.rejectDocument', $this->planningProcess), [
+            'collection' => 'tip_document',
+            'notes' => 'Needs more detail.',
+        ])->assertRedirect();
+
+        expect($this->planningProcess->fresh()->tip_approved_at)->toBeNull();
+
+        // Approve TIP after revision
+        asUser($this->superAdmin)->patch(route('planningProcesses.approveDocument', $this->planningProcess), [
+            'collection' => 'tip_document',
+        ])->assertRedirect();
+
+        $fresh = $this->planningProcess->fresh();
+        expect($fresh->tip_approved_at)->not->toBeNull();
+
+        // Should have 2 approval records (1 reject + 1 approve)
+        $approvalCount = Approval::where('approvable_type', PlanningProcess::class)
+            ->where('approvable_id', $this->planningProcess->id)
+            ->where('context', 'tip_document')
+            ->count();
+
+        expect($approvalCount)->toBe(2);
+    });
+});
+
+describe('reapproval on change', function () {
+    test('changing goal text after approval clears approval', function () {
+        $this->planningProcess->update([
+            'current_stage' => 2,
+            'expectations_submitted_at' => now(),
+            'goal_text' => 'Original goal',
+            'goal_approved_at' => now(),
+        ]);
+
+        asUser($this->superAdmin)->patch(route('planningProcesses.updateGoal', $this->planningProcess), [
+            'goal_text' => 'Modified goal',
+        ])->assertRedirect();
+
+        $fresh = $this->planningProcess->fresh();
+        expect($fresh->goal_text)->toBe('Modified goal');
+        expect($fresh->goal_approved_at)->toBeNull();
+    });
+
+    test('saving same goal text does not clear approval', function () {
+        $this->planningProcess->update([
+            'current_stage' => 2,
+            'expectations_submitted_at' => now(),
+            'goal_text' => 'Original goal',
+            'goal_approved_at' => now(),
+        ]);
+
+        asUser($this->superAdmin)->patch(route('planningProcesses.updateGoal', $this->planningProcess), [
+            'goal_text' => 'Original goal',
+        ])->assertRedirect();
+
+        expect($this->planningProcess->fresh()->goal_approved_at)->not->toBeNull();
+    });
+
+    test('uploading new document after approval clears approval', function () {
+        $this->planningProcess->update([
+            'current_stage' => 3,
+            'goal_approved_at' => now(),
+            'tip_approved_at' => now(),
+            'tip_approved_by' => $this->superAdmin->id,
+        ]);
+
+        $file = UploadedFile::fake()->createWithContent('new_tip.pdf', '%PDF-1.4 test content');
+
+        asUser($this->superAdmin)->post(route('planningProcesses.uploadDocument', $this->planningProcess), [
+            'collection' => 'tip_document',
+            'document' => $file,
+        ])->assertRedirect();
+
+        $fresh = $this->planningProcess->fresh();
+        expect($fresh->tip_approved_at)->toBeNull();
+        expect($fresh->tip_approved_by)->toBeNull();
+        expect($fresh->tip_approved_media_id)->toBeNull();
+    });
+
+    test('uploading document to unapproved collection does not affect anything', function () {
+        $this->planningProcess->update([
+            'current_stage' => 3,
+            'goal_approved_at' => now(),
+        ]);
+
+        $file = UploadedFile::fake()->createWithContent('tip.pdf', '%PDF-1.4 test content');
+
+        asUser($this->superAdmin)->post(route('planningProcesses.uploadDocument', $this->planningProcess), [
+            'collection' => 'tip_document',
+            'document' => $file,
+        ])->assertRedirect();
+
+        // tip_approved_at was already null, should stay null
+        expect($this->planningProcess->fresh()->tip_approved_at)->toBeNull();
     });
 });

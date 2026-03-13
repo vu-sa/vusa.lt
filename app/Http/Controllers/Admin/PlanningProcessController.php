@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetTenantsForUpserts;
+use App\Enums\ApprovalDecision;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexPlanningProcessRequest;
 use App\Http\Requests\StorePlanningProcessRequest;
 use App\Http\Requests\UpdatePlanningProcessRequest;
 use App\Http\Traits\HasTanstackTables;
+use App\Models\Approval;
 use App\Models\PlanningProcess;
 use App\Models\PlanningStageDeadline;
 use App\Models\Problem;
@@ -18,6 +20,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Response;
+use Spatie\Activitylog\Models\Activity;
 
 class PlanningProcessController extends AdminController
 {
@@ -198,13 +201,17 @@ class PlanningProcessController extends AdminController
             'selectedProblem',
             'tipApprovedByUser',
             'mvpApprovedByUser',
+            'tipApprovedMedia',
+            'mvpApprovedMedia',
             'activities',
             'monitoringEntries.submittedBy',
+            'approvals.user',
             'comments' => fn ($q) => $q->whereNotNull('stage')->orderBy('created_at'),
         ]);
 
-        $tipDocument = $planningProcess->getFirstMedia('tip_document');
-        $mvpDocument = $planningProcess->getFirstMedia('mvp_document');
+        // All document versions (not just the latest)
+        $tipDocuments = $planningProcess->getMedia('tip_document');
+        $mvpDocuments = $planningProcess->getMedia('mvp_document');
         $tipTemplate = $planningProcess->getFirstMedia('tip_template');
         $mvpTemplate = $planningProcess->getFirstMedia('mvp_template');
 
@@ -212,18 +219,71 @@ class PlanningProcessController extends AdminController
             ->orderBy('stage')
             ->get();
 
+        // Approval history grouped by context
+        $approvalHistory = $planningProcess->approvals
+            ->groupBy('context')
+            ->map(fn ($approvals) => $approvals->sortByDesc('created_at')->values()->map(fn (Approval $a) => [
+                'id' => $a->id,
+                'decision' => $a->decision->value,
+                'notes' => $a->notes,
+                'created_at' => $a->created_at->toISOString(),
+                'user' => $a->user ? [
+                    'id' => $a->user->id,
+                    'name' => $a->user->name,
+                    'profile_photo_path' => $a->user->profile_photo_path ?? null,
+                ] : null,
+            ])->all());
+
+        // Field change history from activity log
+        $fieldChanges = Activity::where('subject_type', PlanningProcess::class)
+            ->where('subject_id', $planningProcess->id)
+            ->whereNotNull('properties->old')
+            ->orderBy('created_at', 'desc')
+            ->limit(50)
+            ->get()
+            ->map(fn (Activity $a) => [
+                'id' => $a->id,
+                'description' => $a->description,
+                'old' => $a->properties['old'] ?? [],
+                'new' => $a->properties['attributes'] ?? [],
+                'created_at' => $a->created_at->toISOString(),
+                'causer_name' => $a->causer?->name ?? null,
+            ])->all();
+
+        // Latest document URL (last in collection)
+        $latestTip = $tipDocuments->last();
+        $latestMvp = $mvpDocuments->last();
+
         return $this->inertiaResponse('Admin/PlanningProcesses/ShowPlanningProcess', [
             'planningProcess' => [
                 ...$planningProcess->toArray(),
-                'tip_document_url' => $tipDocument?->getUrl(),
-                'tip_document_name' => $tipDocument?->file_name,
-                'mvp_document_url' => $mvpDocument?->getUrl(),
-                'mvp_document_name' => $mvpDocument?->file_name,
+                'tip_document_url' => $latestTip?->getUrl(),
+                'tip_document_name' => $latestTip?->file_name,
+                'mvp_document_url' => $latestMvp?->getUrl(),
+                'mvp_document_name' => $latestMvp?->file_name,
                 'tip_template_url' => $tipTemplate?->getUrl(),
                 'tip_template_name' => $tipTemplate?->file_name,
                 'mvp_template_url' => $mvpTemplate?->getUrl(),
                 'mvp_template_name' => $mvpTemplate?->file_name,
+                'tip_approved_media_id' => $planningProcess->tip_approved_media_id,
+                'mvp_approved_media_id' => $planningProcess->mvp_approved_media_id,
             ],
+            'tipDocuments' => $tipDocuments->map(fn ($media) => [
+                'id' => $media->id,
+                'file_name' => $media->file_name,
+                'url' => $media->getUrl(),
+                'size' => $media->size,
+                'created_at' => $media->created_at->toISOString(),
+            ])->values()->all(),
+            'mvpDocuments' => $mvpDocuments->map(fn ($media) => [
+                'id' => $media->id,
+                'file_name' => $media->file_name,
+                'url' => $media->getUrl(),
+                'size' => $media->size,
+                'created_at' => $media->created_at->toISOString(),
+            ])->values()->all(),
+            'approvalHistory' => $approvalHistory->all(),
+            'fieldChanges' => $fieldChanges,
             'deadlines' => $deadlines->toArray(),
             'tenantProblems' => Problem::where('tenant_id', $planningProcess->tenant_id)
                 ->select('id', 'title')
@@ -233,6 +293,7 @@ class PlanningProcessController extends AdminController
                 ->groupBy('stage')
                 ->mapWithKeys(fn ($comments, $stage) => [(int) $stage => $comments->toArray()]),
             'canUpdate' => $user->can('update', $planningProcess),
+            'canApprove' => $user->can('approve', $planningProcess),
             'canDelete' => $user->can('delete', $planningProcess),
             'isFinished' => $planningProcess->isFinished(),
         ]);
@@ -296,6 +357,25 @@ class PlanningProcessController extends AdminController
         // Goal approval requires coordinator-level permission (not the assigned moderator)
         if (array_key_exists('goal_approved_at', $validated) && $validated['goal_approved_at'] !== null) {
             $this->handleAuthorization('approve', $planningProcess);
+
+            // Create an approval record for the goal
+            Approval::create([
+                'approvable_type' => PlanningProcess::class,
+                'approvable_id' => $planningProcess->id,
+                'user_id' => auth()->id(),
+                'decision' => ApprovalDecision::Approved,
+                'step' => 1,
+                'context' => 'goal',
+            ]);
+        }
+
+        // If goal text is being changed and the goal was previously approved, require reapproval
+        if (array_key_exists('goal_text', $validated)
+            && $validated['goal_text'] !== $planningProcess->goal_text
+            && $planningProcess->goal_approved_at !== null
+            && ! (array_key_exists('goal_approved_at', $validated) && $validated['goal_approved_at'] !== null)
+        ) {
+            $validated['goal_approved_at'] = null;
         }
 
         $planningProcess->update($validated);
@@ -303,6 +383,32 @@ class PlanningProcessController extends AdminController
         $planningProcess->advanceIfCurrentStageComplete();
 
         return back()->with('success', trans_choice('messages.updated', 0, ['model' => trans_choice('entities.planningProcess.model', 1)]));
+    }
+
+    /**
+     * Reject the goal (coordinator only).
+     */
+    public function rejectGoal(Request $request, PlanningProcess $planningProcess): RedirectResponse
+    {
+        $this->handleAuthorization('approve', $planningProcess);
+
+        $validated = $request->validate([
+            'notes' => ['required', 'string', 'max:1000'],
+        ]);
+
+        Approval::create([
+            'approvable_type' => PlanningProcess::class,
+            'approvable_id' => $planningProcess->id,
+            'user_id' => auth()->id(),
+            'decision' => ApprovalDecision::Rejected,
+            'step' => 1,
+            'context' => 'goal',
+            'notes' => $validated['notes'],
+        ]);
+
+        $planningProcess->update(['goal_approved_at' => null]);
+
+        return back()->with('success', __('planning.goal_rejected'));
     }
 
     /**
@@ -317,9 +423,26 @@ class PlanningProcessController extends AdminController
             'document' => ['required', 'file', 'mimes:pdf', 'max:20480'],
         ]);
 
+        $collection = $validated['collection'];
+
         $planningProcess
             ->addMediaFromRequest('document')
-            ->toMediaCollection($validated['collection']);
+            ->toMediaCollection($collection);
+
+        // If the document was previously approved, require reapproval
+        if ($collection === 'tip_document' && $planningProcess->tip_approved_at !== null) {
+            $planningProcess->update([
+                'tip_approved_at' => null,
+                'tip_approved_by' => null,
+                'tip_approved_media_id' => null,
+            ]);
+        } elseif ($collection === 'mvp_document' && $planningProcess->mvp_approved_at !== null) {
+            $planningProcess->update([
+                'mvp_approved_at' => null,
+                'mvp_approved_by' => null,
+                'mvp_approved_media_id' => null,
+            ]);
+        }
 
         return back()->with('success', __('planning.document_uploaded'));
     }
@@ -333,19 +456,38 @@ class PlanningProcessController extends AdminController
 
         $validated = $request->validate([
             'collection' => ['required', 'string', 'in:tip_document,mvp_document'],
+            'notes' => ['nullable', 'string', 'max:1000'],
         ]);
 
         $user = auth()->user();
+        $collection = $validated['collection'];
 
-        if ($validated['collection'] === 'tip_document') {
+        // Get the latest document in this collection
+        $latestMedia = $planningProcess->getMedia($collection)->last();
+
+        // Create an approval record
+        Approval::create([
+            'approvable_type' => PlanningProcess::class,
+            'approvable_id' => $planningProcess->id,
+            'user_id' => $user->id,
+            'decision' => ApprovalDecision::Approved,
+            'step' => 1,
+            'context' => $collection,
+            'notes' => $validated['notes'] ?? null,
+        ]);
+
+        // Update timestamp fields and approved media ID
+        if ($collection === 'tip_document') {
             $planningProcess->update([
                 'tip_approved_at' => now(),
                 'tip_approved_by' => $user->id,
+                'tip_approved_media_id' => $latestMedia?->id,
             ]);
         } else {
             $planningProcess->update([
                 'mvp_approved_at' => now(),
                 'mvp_approved_by' => $user->id,
+                'mvp_approved_media_id' => $latestMedia?->id,
             ]);
         }
 
@@ -353,6 +495,48 @@ class PlanningProcessController extends AdminController
         $planningProcess->advanceIfCurrentStageComplete();
 
         return back()->with('success', __('planning.document_approved'));
+    }
+
+    /**
+     * Reject a document with feedback (coordinator only).
+     */
+    public function rejectDocument(Request $request, PlanningProcess $planningProcess): RedirectResponse
+    {
+        $this->handleAuthorization('approve', $planningProcess);
+
+        $validated = $request->validate([
+            'collection' => ['required', 'string', 'in:tip_document,mvp_document'],
+            'notes' => ['required', 'string', 'max:1000'],
+        ]);
+
+        $collection = $validated['collection'];
+
+        Approval::create([
+            'approvable_type' => PlanningProcess::class,
+            'approvable_id' => $planningProcess->id,
+            'user_id' => auth()->id(),
+            'decision' => ApprovalDecision::Rejected,
+            'step' => 1,
+            'context' => $collection,
+            'notes' => $validated['notes'],
+        ]);
+
+        // Clear approval so moderator can re-upload
+        if ($collection === 'tip_document') {
+            $planningProcess->update([
+                'tip_approved_at' => null,
+                'tip_approved_by' => null,
+                'tip_approved_media_id' => null,
+            ]);
+        } else {
+            $planningProcess->update([
+                'mvp_approved_at' => null,
+                'mvp_approved_by' => null,
+                'mvp_approved_media_id' => null,
+            ]);
+        }
+
+        return back()->with('success', __('planning.document_rejected'));
     }
 
     /**

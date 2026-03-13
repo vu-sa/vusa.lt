@@ -144,6 +144,13 @@
             >
               {{ $t("Vėluojama") }}
             </Badge>
+            <Badge
+              v-if="hasRejection(stage.number) && !stage.completed"
+              variant="warning"
+              class="text-[10px] px-1.5 py-0"
+            >
+              {{ $t("Reikia pataisymų") }}
+            </Badge>
           </div>
           <p class="text-xs text-muted-foreground">{{ stage.description }}</p>
         </div>
@@ -178,6 +185,7 @@ const props = defineProps<{
   deadlines?: App.Entities.PlanningStageDeadline[];
   canUpdate: boolean;
   isFinished: boolean;
+  approvalHistory?: Record<string, App.Entities.ApprovalRecord[]>;
 }>();
 
 defineEmits<{
@@ -234,6 +242,22 @@ const isStageOverdue = (stageNumber: number) => {
   const endsAt = new Date(deadline.ends_at);
   endsAt.setHours(0, 0, 0, 0);
   return today > endsAt;
+};
+
+const hasRejection = (stageNumber: number) => {
+  if (!props.approvalHistory) return false;
+  if (stageNumber === 2) {
+    const goalApprovals = props.approvalHistory.goal ?? [];
+    return goalApprovals.length > 0 && goalApprovals[0]?.decision === "rejected" && !props.planningProcess.goal_approved_at;
+  }
+  if (stageNumber === 3) {
+    const tipApprovals = props.approvalHistory.tip_document ?? [];
+    const mvpApprovals = props.approvalHistory.mvp_document ?? [];
+    const tipRejected = tipApprovals.length > 0 && tipApprovals[0]?.decision === "rejected" && !props.planningProcess.tip_approved_at;
+    const mvpRejected = mvpApprovals.length > 0 && mvpApprovals[0]?.decision === "rejected" && !props.planningProcess.mvp_approved_at;
+    return tipRejected || mvpRejected;
+  }
+  return false;
 };
 
 const stageItems = computed(() => {

@@ -123,133 +123,46 @@
       </div>
 
       <!-- TIP document -->
-      <div class="rounded-lg border p-4 flex flex-col gap-3">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2">
-            <FileIcon class="h-4 w-4 text-blue-600 dark:text-blue-400" />
-            <h4 class="font-medium text-sm">{{ $t("TĮP (Tikslo įgyvendinimo planas)") }}</h4>
-          </div>
-          <Badge v-if="planningProcess.tip_approved_at" variant="success" class="gap-1">
-            <CheckIcon class="h-3 w-3" />
-            {{ $t("Patvirtinta") }}
-          </Badge>
-        </div>
-
-        <div v-if="planningProcess.tip_document_url" class="flex items-center gap-3">
-          <a
-            :href="planningProcess.tip_document_url"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm transition-colors hover:bg-muted"
-          >
-            <DownloadIcon class="h-4 w-4 text-primary" />
-            {{ planningProcess.tip_document_name ?? "TĮP.pdf" }}
-            <ExternalLinkIcon class="h-3 w-3 text-muted-foreground" />
-          </a>
-        </div>
-        <div v-else class="flex items-center gap-2 text-sm text-muted-foreground">
-          <UploadCloudIcon class="h-4 w-4" />
-          {{ $t("TĮP dokumentas dar neįkeltas") }}
-        </div>
-
-        <div v-if="canUpdate && !planningProcess.tip_approved_at" class="flex flex-wrap items-center gap-2">
-          <Input
-            type="file"
-            accept=".pdf"
-            class="w-auto max-w-64"
-            @change="onTipFileChange"
-          />
-          <Button
-            size="sm"
-            class="gap-1.5"
-            :disabled="tipForm.processing || !tipFile"
-            @click="uploadTip"
-          >
-            <UploadIcon class="h-3.5 w-3.5" />
-            {{ $t("Įkelti") }}
-          </Button>
-          <Button
-            v-if="planningProcess.tip_document_url"
-            variant="outline"
-            size="sm"
-            class="gap-1.5"
-            :disabled="tipApproveForm.processing"
-            @click="approveTip"
-          >
-            <CheckIcon class="h-3.5 w-3.5" />
-            {{ $t("Patvirtinti") }}
-          </Button>
-        </div>
-      </div>
+      <DocumentSection
+        :title="$t('TĮP (Tikslo įgyvendinimo planas)')"
+        :icon-class="'text-blue-600 dark:text-blue-400'"
+        :documents="tipDocuments"
+        :approved-at="planningProcess.tip_approved_at"
+        :approved-media-id="planningProcess.tip_approved_media_id"
+        :approvals="tipApprovals"
+        :can-update="canUpdate"
+        :can-approve="canApprove"
+        :empty-text="$t('TĮP dokumentas dar neįkeltas')"
+        :is-processing-upload="tipForm.processing"
+        :is-processing-approve="tipApproveForm.processing"
+        :is-processing-reject="tipRejectForm.processing"
+        @file-change="onTipFileChange"
+        @upload="uploadTip"
+        @approve="approveTip"
+        @reject="rejectTip"
+      />
 
       <!-- MVP document -->
-      <div class="rounded-lg border p-4 flex flex-col gap-3">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2">
-            <FileIcon class="h-4 w-4 text-purple-600 dark:text-purple-400" />
-            <h4 class="font-medium text-sm">{{ $t("MVP (Mokslo metų veiklos planas)") }}</h4>
-          </div>
-          <Badge v-if="planningProcess.mvp_approved_at" variant="success" class="gap-1">
-            <CheckIcon class="h-3 w-3" />
-            {{ $t("Patvirtinta") }}
-          </Badge>
-        </div>
-
-        <div v-if="planningProcess.mvp_document_url" class="flex items-center gap-3">
-          <a
-            :href="planningProcess.mvp_document_url"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm transition-colors hover:bg-muted"
-          >
-            <DownloadIcon class="h-4 w-4 text-primary" />
-            {{ planningProcess.mvp_document_name ?? "MVP.pdf" }}
-            <ExternalLinkIcon class="h-3 w-3 text-muted-foreground" />
-          </a>
-        </div>
-        <div v-else class="flex items-center gap-2 text-sm text-muted-foreground">
-          <UploadCloudIcon class="h-4 w-4" />
-          {{ $t("MVP dokumentas dar neįkeltas") }}
-        </div>
-
-        <div
-          v-if="canUpdate && !planningProcess.mvp_approved_at"
-          class="flex flex-wrap items-center gap-2"
-        >
-          <template v-if="planningProcess.tip_document_url">
-            <Input
-              type="file"
-              accept=".pdf"
-              class="w-auto max-w-64"
-              @change="onMvpFileChange"
-            />
-            <Button
-              size="sm"
-              class="gap-1.5"
-              :disabled="mvpForm.processing || !mvpFile"
-              @click="uploadMvp"
-            >
-              <UploadIcon class="h-3.5 w-3.5" />
-              {{ $t("Įkelti") }}
-            </Button>
-          </template>
-          <div v-else class="flex items-center gap-2 text-sm text-amber-600 dark:text-amber-400">
-            <AlertCircleIcon class="h-4 w-4" />
-            {{ $t("Pirmiausia įkelkite TĮP dokumentą") }}
-          </div>
-          <Button
-            v-if="planningProcess.mvp_document_url"
-            variant="outline"
-            size="sm"
-            class="gap-1.5"
-            :disabled="mvpApproveForm.processing"
-            @click="approveMvp"
-          >
-            <CheckIcon class="h-3.5 w-3.5" />
-            {{ $t("Patvirtinti") }}
-          </Button>
-        </div>
-      </div>
+      <DocumentSection
+        :title="$t('MVP (Mokslo metų veiklos planas)')"
+        :icon-class="'text-purple-600 dark:text-purple-400'"
+        :documents="mvpDocuments"
+        :approved-at="planningProcess.mvp_approved_at"
+        :approved-media-id="planningProcess.mvp_approved_media_id"
+        :approvals="mvpApprovals"
+        :can-update="canUpdate"
+        :can-approve="canApprove"
+        :empty-text="$t('MVP dokumentas dar neįkeltas')"
+        :prerequisite-met="tipDocuments.length > 0"
+        :prerequisite-text="$t('Pirmiausia įkelkite TĮP dokumentą')"
+        :is-processing-upload="mvpForm.processing"
+        :is-processing-approve="mvpApproveForm.processing"
+        :is-processing-reject="mvpRejectForm.processing"
+        @file-change="onMvpFileChange"
+        @upload="uploadMvp"
+        @approve="approveMvp"
+        @reject="rejectMvp"
+      />
     </CardContent>
   </Card>
 
@@ -267,29 +180,30 @@ import { useForm } from "@inertiajs/vue3";
 import { trans as $t } from "laravel-vue-i18n";
 import {
   FileText as FileTextIcon,
-  File as FileIcon,
   FileArchive as FileArchiveIcon,
-  Check as CheckIcon,
   Download as DownloadIcon,
   ExternalLink as ExternalLinkIcon,
   Upload as UploadIcon,
-  UploadCloud as UploadCloudIcon,
-  AlertCircle as AlertCircleIcon,
   Trash2 as Trash2Icon,
 } from "lucide-vue-next";
 
-import { Badge } from "@/Components/ui/badge";
 import { Button } from "@/Components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Input } from "@/Components/ui/input";
 import DeadlineBanner from "@/Components/PlanningProcess/DeadlineBanner.vue";
 import StageCommentThread from "@/Components/PlanningProcess/StageCommentThread.vue";
+import DocumentSection from "@/Components/PlanningProcess/DocumentSection.vue";
 
 const props = defineProps<{
   planningProcess: App.Entities.PlanningProcess;
   deadline?: App.Entities.PlanningStageDeadline | null;
   canUpdate: boolean;
+  canApprove: boolean;
   comments: App.Entities.Comment[];
+  tipDocuments: App.Entities.DocumentVersion[];
+  mvpDocuments: App.Entities.DocumentVersion[];
+  tipApprovals: App.Entities.ApprovalRecord[];
+  mvpApprovals: App.Entities.ApprovalRecord[];
 }>();
 
 const hasTemplates = computed(
@@ -307,8 +221,10 @@ const mvpTemplateFile = ref<File | null>(null);
 // Document forms
 const tipForm = useForm({ collection: "tip_document", document: null as File | null });
 const mvpForm = useForm({ collection: "mvp_document", document: null as File | null });
-const tipApproveForm = useForm({ collection: "tip_document" });
-const mvpApproveForm = useForm({ collection: "mvp_document" });
+const tipApproveForm = useForm({ collection: "tip_document", notes: "" });
+const mvpApproveForm = useForm({ collection: "mvp_document", notes: "" });
+const tipRejectForm = useForm({ collection: "tip_document", notes: "" });
+const mvpRejectForm = useForm({ collection: "mvp_document", notes: "" });
 
 // Template forms
 const tipTemplateForm = useForm({ collection: "tip_template", template: null as File | null });
@@ -343,6 +259,7 @@ const uploadTip = () => {
   tipForm.post(route("planningProcesses.uploadDocument", props.planningProcess.id), {
     preserveScroll: true,
     forceFormData: true,
+    onSuccess: () => { tipFile.value = null; },
   });
 };
 
@@ -353,6 +270,7 @@ const uploadMvp = () => {
   mvpForm.post(route("planningProcesses.uploadDocument", props.planningProcess.id), {
     preserveScroll: true,
     forceFormData: true,
+    onSuccess: () => { mvpFile.value = null; },
   });
 };
 
@@ -378,14 +296,30 @@ const deleteTemplate = (collection: "tip_template" | "mvp_template") => {
   });
 };
 
-const approveTip = () => {
+const approveTip = (notes: string) => {
+  tipApproveForm.notes = notes;
   tipApproveForm.patch(route("planningProcesses.approveDocument", props.planningProcess.id), {
     preserveScroll: true,
   });
 };
 
-const approveMvp = () => {
+const approveMvp = (notes: string) => {
+  mvpApproveForm.notes = notes;
   mvpApproveForm.patch(route("planningProcesses.approveDocument", props.planningProcess.id), {
+    preserveScroll: true,
+  });
+};
+
+const rejectTip = (notes: string) => {
+  tipRejectForm.notes = notes;
+  tipRejectForm.patch(route("planningProcesses.rejectDocument", props.planningProcess.id), {
+    preserveScroll: true,
+  });
+};
+
+const rejectMvp = (notes: string) => {
+  mvpRejectForm.notes = notes;
+  mvpRejectForm.patch(route("planningProcesses.rejectDocument", props.planningProcess.id), {
     preserveScroll: true,
   });
 };

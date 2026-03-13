@@ -71,15 +71,17 @@
 
     <div class="mt-6">
       <!-- Overview (stage 0) -->
-      <div v-if="selectedStage === 0">
+      <div v-if="selectedStage === 0" class="flex flex-col gap-4">
         <StageOverview
           :planning-process="planningProcess"
           :deadlines="deadlines"
           :can-update="canUpdate"
           :is-finished="isFinished"
+          :approval-history="approvalHistory"
           @edit-moderator="selectedStage = -1"
           @navigate-to-stage="selectStage"
         />
+        <FieldChangeHistory :changes="fieldChanges" />
       </div>
 
       <!-- Any non-overview stage -->
@@ -114,7 +116,9 @@
           :deadline="deadlineForStage(2)"
           :tenant-problems="tenantProblems"
           :can-update="canUpdate"
+          :can-approve="canApprove"
           :comments="stageComments?.[2] ?? []"
+          :goal-approvals="approvalHistory?.goal ?? []"
         />
 
         <!-- Stage III -->
@@ -123,7 +127,12 @@
           :planning-process="planningProcess"
           :deadline="deadlineForStage(3)"
           :can-update="canUpdate"
+          :can-approve="canApprove"
           :comments="stageComments?.[3] ?? []"
+          :tip-documents="tipDocuments"
+          :mvp-documents="mvpDocuments"
+          :tip-approvals="approvalHistory?.tip_document ?? []"
+          :mvp-approvals="approvalHistory?.mvp_document ?? []"
         />
 
         <!-- Stage IV -->
@@ -214,13 +223,19 @@ import StageMeetings from "@/Components/PlanningProcess/StageMeetings.vue";
 import StageDocuments from "@/Components/PlanningProcess/StageDocuments.vue";
 import ActivityGrid from "@/Components/PlanningProcess/ActivityGrid.vue";
 import StageMonitoring from "@/Components/PlanningProcess/StageMonitoring.vue";
+import FieldChangeHistory from "@/Components/PlanningProcess/FieldChangeHistory.vue";
 
 const props = defineProps<{
   planningProcess: App.Entities.PlanningProcess;
   deadlines: App.Entities.PlanningStageDeadline[];
   tenantProblems: App.Entities.Problem[];
   stageComments: Record<number, App.Entities.Comment[]>;
+  tipDocuments: App.Entities.DocumentVersion[];
+  mvpDocuments: App.Entities.DocumentVersion[];
+  approvalHistory: Record<string, App.Entities.ApprovalRecord[]>;
+  fieldChanges: App.Entities.FieldChange[];
   canUpdate: boolean;
+  canApprove: boolean;
   canDelete: boolean;
   isFinished: boolean;
 }>();

@@ -21,6 +21,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string $user_id
  * @property ApprovalDecision $decision
  * @property int $step
+ * @property string|null $context
  * @property string|null $notes
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -108,5 +109,13 @@ class Approval extends Model
     public function scopeCancelled($query)
     {
         return $query->where('decision', ApprovalDecision::Cancelled);
+    }
+
+    /**
+     * Scope to filter by context.
+     */
+    public function scopeForContext($query, string $context)
+    {
+        return $query->where('context', $context);
     }
 }

@@ -16,4 +16,6 @@ return [
     'deadline_days_remaining' => 'Liko :days d.',
     'current_stage_deadline' => 'Dabartinio etapo terminas',
     'no_deadline_set' => 'Terminas nenustatytas',
+    'document_rejected' => 'Dokumentas atmestas.',
+    'goal_rejected' => 'Tikslas atmestas.',
 ];

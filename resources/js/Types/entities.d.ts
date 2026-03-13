@@ -54,7 +54,38 @@ declare namespace App.Entities {
     tip_template_name?: string | null;
     mvp_template_url?: string | null;
     mvp_template_name?: string | null;
+    tip_approved_media_id?: number | null;
+    mvp_approved_media_id?: number | null;
   };
+
+  export interface DocumentVersion {
+    id: number;
+    file_name: string;
+    url: string;
+    size: number;
+    created_at: string;
+  }
+
+  export interface ApprovalRecord {
+    id: string;
+    decision: 'approved' | 'rejected' | 'cancelled';
+    notes: string | null;
+    created_at: string;
+    user?: {
+      id: string;
+      name: string;
+      profile_photo_path: string | null;
+    };
+  }
+
+  export interface FieldChange {
+    id: number;
+    description: string;
+    old: Record<string, unknown>;
+    new: Record<string, unknown>;
+    created_at: string;
+    causer_name: string | null;
+  }
   export type PlanningActivity = models.PlanningActivity;
   export type PlanningMonitoringEntry = models.PlanningMonitoringEntry;
   export type PlanningStageDeadline = models.PlanningStageDeadline;

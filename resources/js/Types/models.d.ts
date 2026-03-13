@@ -1734,8 +1734,10 @@ declare global {
       goal_approved_at?: string | null
       tip_approved_at?: string | null
       tip_approved_by?: string | null
+      tip_approved_media_id?: number | null
       mvp_approved_at?: string | null
       mvp_approved_by?: string | null
+      mvp_approved_media_id?: number | null
       reflection_text?: string | null
       reflection_submitted_at?: string | null
       locked_at?: string | null

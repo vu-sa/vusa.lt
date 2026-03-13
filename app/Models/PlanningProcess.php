@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\ApprovalDecision;
+use App\Models\Traits\HasApprovals;
 use App\Models\Traits\HasComments;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -36,8 +38,10 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  * @property Carbon|null $goal_approved_at
  * @property Carbon|null $tip_approved_at
  * @property string|null $tip_approved_by
+ * @property int|null $tip_approved_media_id
  * @property Carbon|null $mvp_approved_at
  * @property string|null $mvp_approved_by
+ * @property int|null $mvp_approved_media_id
  * @property string|null $reflection_text
  * @property Carbon|null $reflection_submitted_at
  * @property Carbon|null $locked_at
@@ -49,9 +53,12 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  * @property-read Problem|null $selectedProblem
  * @property-read User|null $tipApprovedByUser
  * @property-read User|null $mvpApprovedByUser
+ * @property-read Media|null $tipApprovedMedia
+ * @property-read Media|null $mvpApprovedMedia
  * @property-read Collection<int, PlanningActivity> $activities
  * @property-read Collection<int, PlanningMonitoringEntry> $monitoringEntries
  * @property-read Collection<int, Comment> $comments
+ * @property-read Collection<int, Approval> $approvals
  * @property-read MediaCollection<int, Media> $media
  *
  * @method static \Database\Factories\PlanningProcessFactory factory($count = null, $state = [])
@@ -66,7 +73,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  */
 class PlanningProcess extends Model implements HasMedia
 {
-    use HasComments, HasFactory, HasUlids, InteractsWithMedia, LogsActivity, SoftDeletes;
+    use HasApprovals, HasComments, HasFactory, HasUlids, InteractsWithMedia, LogsActivity, SoftDeletes;
 
     protected $guarded = [];
 
@@ -96,13 +103,11 @@ class PlanningProcess extends Model implements HasMedia
     {
         $this
             ->addMediaCollection('tip_document')
-            ->singleFile()
             ->acceptsMimeTypes(['application/pdf'])
             ->useDisk('spatieMediaLibrary');
 
         $this
             ->addMediaCollection('mvp_document')
-            ->singleFile()
             ->acceptsMimeTypes(['application/pdf'])
             ->useDisk('spatieMediaLibrary');
 
@@ -156,6 +161,16 @@ class PlanningProcess extends Model implements HasMedia
         return $this->belongsTo(User::class, 'mvp_approved_by');
     }
 
+    public function tipApprovedMedia(): BelongsTo
+    {
+        return $this->belongsTo(Media::class, 'tip_approved_media_id');
+    }
+
+    public function mvpApprovedMedia(): BelongsTo
+    {
+        return $this->belongsTo(Media::class, 'mvp_approved_media_id');
+    }
+
     public function activities(): HasMany
     {
         return $this->hasMany(PlanningActivity::class)->orderBy('order');
@@ -174,6 +189,30 @@ class PlanningProcess extends Model implements HasMedia
     public function stageComments(int $stage)
     {
         return $this->comments()->where('stage', $stage);
+    }
+
+    /**
+     * Get approvals for a specific context (e.g., tip_document, mvp_document, goal).
+     *
+     * @return MorphMany<Approval, $this>
+     */
+    public function contextApprovals(string $context): MorphMany
+    {
+        return $this->approvals()->where('context', $context);
+    }
+
+    /**
+     * Get the latest approval decision for a given context.
+     */
+    public function latestContextDecision(string $context): ?ApprovalDecision
+    {
+        /** @var Approval|null $approval */
+        $approval = $this->approvals()
+            ->where('context', $context)
+            ->latest()
+            ->first();
+
+        return $approval?->decision;
     }
 
     /**
@@ -241,7 +280,7 @@ class PlanningProcess extends Model implements HasMedia
 
     /**
      * Check if the planning coordinator needs to take action on this process.
-     * Returns true when a goal or document is awaiting coordinator approval.
+     * Returns true when a goal or document is awaiting coordinator review.
      */
     public function needsCoordinatorAction(): bool
     {
@@ -254,17 +293,44 @@ class PlanningProcess extends Model implements HasMedia
             return true;
         }
 
-        // TIP document uploaded but not approved
-        if ($this->getFirstMedia('tip_document') && is_null($this->tip_approved_at)) {
+        // TIP document uploaded but not approved — check if there's a document newer than the last rejection
+        if (is_null($this->tip_approved_at) && $this->hasDocumentPendingReview('tip_document')) {
             return true;
         }
 
         // MVP document uploaded but not approved
-        if ($this->getFirstMedia('mvp_document') && is_null($this->mvp_approved_at)) {
+        if (is_null($this->mvp_approved_at) && $this->hasDocumentPendingReview('mvp_document')) {
             return true;
         }
 
         return false;
+    }
+
+    /**
+     * Check if a document collection has a file pending review.
+     * Returns true if there's a document uploaded (after any rejection).
+     */
+    public function hasDocumentPendingReview(string $collection): bool
+    {
+        $latestMedia = $this->getMedia($collection)->last();
+
+        if (! $latestMedia) {
+            return false;
+        }
+
+        // Check if there was a rejection after the latest upload
+        $latestRejection = $this->approvals()
+            ->where('context', $collection)
+            ->where('decision', ApprovalDecision::Rejected)
+            ->latest()
+            ->first();
+
+        if (! $latestRejection) {
+            return true;
+        }
+
+        // Document is pending review if it was uploaded after the last rejection
+        return $latestMedia->created_at->greaterThan($latestRejection->created_at);
     }
 
     public function academicYearLabel(): string

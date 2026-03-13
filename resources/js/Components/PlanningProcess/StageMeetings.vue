@@ -193,9 +193,26 @@
             <CheckIcon class="h-3 w-3" />
             {{ $t("Patvirtinta") }}
           </Badge>
+          <Badge v-else-if="isGoalRejected" variant="destructive" class="shrink-0 gap-1">
+            <XIcon class="h-3 w-3" />
+            {{ $t("Atmesta") }}
+          </Badge>
         </div>
       </CardHeader>
       <CardContent class="flex flex-col gap-3">
+        <!-- Rejection feedback banner -->
+        <div v-if="isGoalRejected && latestGoalRejection" class="rounded-md border border-destructive/30 bg-destructive/5 p-3 flex flex-col gap-1">
+          <div class="flex items-center gap-2 text-sm font-medium text-destructive">
+            <AlertCircleIcon class="h-4 w-4" />
+            {{ $t("Reikia pataisymų") }}
+          </div>
+          <p class="text-sm text-muted-foreground">{{ latestGoalRejection.notes }}</p>
+          <span class="text-xs text-muted-foreground">
+            — {{ latestGoalRejection.user?.name ?? $t("Nežinomas") }},
+            {{ formatDate(latestGoalRejection.created_at) }}
+          </span>
+        </div>
+
         <div v-if="canUpdate" class="flex flex-col gap-3">
           <Textarea
             v-model="goalForm.goal_text"
@@ -203,7 +220,7 @@
             rows="3"
             class="resize-y"
           />
-          <div class="flex gap-2">
+          <div class="flex flex-wrap gap-2">
             <Button
               size="sm"
               variant="outline"
@@ -213,16 +230,33 @@
             >
               {{ $t("Išsaugoti tikslą") }}
             </Button>
-            <Button
-              v-if="!planningProcess.goal_approved_at"
-              size="sm"
-              class="gap-1.5"
-              :disabled="goalForm.processing"
-              @click="approveGoal"
-            >
-              <CheckIcon class="h-3.5 w-3.5" />
-              {{ $t("Patvirtinti tikslą") }}
-            </Button>
+            <template v-if="canApprove && !planningProcess.goal_approved_at && planningProcess.goal_text">
+              <Textarea
+                v-model="goalReviewNotes"
+                :placeholder="$t('Pastabos (neprivaloma tvirtinant, privaloma atmetant)...')"
+                rows="2"
+                class="w-full text-sm"
+              />
+              <Button
+                size="sm"
+                variant="outline"
+                class="gap-1.5"
+                :disabled="rejectGoalForm.processing || !goalReviewNotes.trim()"
+                @click="rejectGoal"
+              >
+                <XIcon class="h-3.5 w-3.5 text-destructive" />
+                {{ $t("Atmesti tikslą") }}
+              </Button>
+              <Button
+                size="sm"
+                class="gap-1.5"
+                :disabled="approveGoalForm.processing"
+                @click="approveGoal"
+              >
+                <CheckIcon class="h-3.5 w-3.5" />
+                {{ $t("Patvirtinti tikslą") }}
+              </Button>
+            </template>
           </div>
         </div>
         <div v-else>
@@ -236,6 +270,18 @@
             {{ $t("Tikslas dar nesuformuluotas") }}
           </p>
         </div>
+
+        <!-- Goal approval history -->
+        <Collapsible v-if="goalApprovals.length > 0" v-model:open="showGoalHistory">
+          <CollapsibleTrigger class="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <HistoryIcon class="h-3.5 w-3.5" />
+            {{ $t("Tvirtinimo istorija") }} ({{ goalApprovals.length }})
+            <ChevronDownIcon :class="['h-3.5 w-3.5 transition-transform', showGoalHistory && 'rotate-180']" />
+          </CollapsibleTrigger>
+          <CollapsibleContent class="mt-2">
+            <ApprovalTimeline :approvals="goalApprovals" />
+          </CollapsibleContent>
+        </Collapsible>
       </CardContent>
     </Card>
 
@@ -248,7 +294,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { useForm } from "@inertiajs/vue3";
 import { trans as $t } from "laravel-vue-i18n";
 import {
@@ -259,11 +305,15 @@ import {
   Check as CheckIcon,
   Plus as PlusIcon,
   X as XIcon,
+  AlertCircle as AlertCircleIcon,
+  History as HistoryIcon,
+  ChevronDown as ChevronDownIcon,
 } from "lucide-vue-next";
 
 import { Badge } from "@/Components/ui/badge";
 import { Button } from "@/Components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/Components/ui/card";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/Components/ui/collapsible";
 import { Input } from "@/Components/ui/input";
 import {
   Select,
@@ -273,6 +323,7 @@ import {
   SelectValue,
 } from "@/Components/ui/select";
 import { Textarea } from "@/Components/ui/textarea";
+import ApprovalTimeline from "@/Features/Admin/Approvals/ApprovalTimeline.vue";
 import DeadlineBanner from "@/Components/PlanningProcess/DeadlineBanner.vue";
 import StageCommentThread from "@/Components/PlanningProcess/StageCommentThread.vue";
 
@@ -281,7 +332,9 @@ const props = defineProps<{
   deadline?: App.Entities.PlanningStageDeadline | null;
   tenantProblems: App.Entities.Problem[];
   canUpdate: boolean;
+  canApprove: boolean;
   comments: App.Entities.Comment[];
+  goalApprovals: App.Entities.ApprovalRecord[];
 }>();
 
 const formatDate = (value: string | null | undefined): string => {
@@ -347,6 +400,31 @@ const approveGoal = () => {
   approveGoalForm.goal_approved_at = new Date().toISOString();
   approveGoalForm.patch(route("planningProcesses.updateGoal", props.planningProcess.id), {
     preserveScroll: true,
+    onSuccess: () => { goalReviewNotes.value = ""; },
   });
 };
+
+const goalReviewNotes = ref("");
+const showGoalHistory = ref(false);
+
+const rejectGoalForm = useForm({
+  notes: "",
+});
+
+const rejectGoal = () => {
+  rejectGoalForm.notes = goalReviewNotes.value;
+  rejectGoalForm.patch(route("planningProcesses.rejectGoal", props.planningProcess.id), {
+    preserveScroll: true,
+    onSuccess: () => { goalReviewNotes.value = ""; },
+  });
+};
+
+const isGoalRejected = computed(() => {
+  if (props.planningProcess.goal_approved_at) return false;
+  return props.goalApprovals.length > 0 && props.goalApprovals[0]?.decision === "rejected";
+});
+
+const latestGoalRejection = computed(() => {
+  return props.goalApprovals.find((a) => a.decision === "rejected") ?? null;
+});
 </script>

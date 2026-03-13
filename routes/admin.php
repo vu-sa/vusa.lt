@@ -194,6 +194,8 @@ Route::patch('planningProcesses/{planningProcess}/assign-moderator', [PlanningPr
 Route::patch('planningProcesses/{planningProcess}/goal', [PlanningProcessController::class, 'updateGoal'])->name('planningProcesses.updateGoal');
 Route::post('planningProcesses/{planningProcess}/upload-document', [PlanningProcessController::class, 'uploadDocument'])->name('planningProcesses.uploadDocument');
 Route::patch('planningProcesses/{planningProcess}/approve-document', [PlanningProcessController::class, 'approveDocument'])->name('planningProcesses.approveDocument');
+Route::patch('planningProcesses/{planningProcess}/reject-document', [PlanningProcessController::class, 'rejectDocument'])->name('planningProcesses.rejectDocument');
+Route::patch('planningProcesses/{planningProcess}/reject-goal', [PlanningProcessController::class, 'rejectGoal'])->name('planningProcesses.rejectGoal');
 Route::patch('planningProcesses/{planningProcess}/advance-stage', [PlanningProcessController::class, 'advanceStage'])->name('planningProcesses.advanceStage');
 Route::post('planningProcesses/{planningProcess}/upload-template', [PlanningProcessController::class, 'uploadTemplate'])->name('planningProcesses.uploadTemplate');
 Route::delete('planningProcesses/{planningProcess}/delete-template', [PlanningProcessController::class, 'deleteTemplate'])->name('planningProcesses.deleteTemplate');

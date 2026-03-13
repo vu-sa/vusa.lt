@@ -16,4 +16,6 @@ return [
     'deadline_days_remaining' => ':days d. remaining',
     'current_stage_deadline' => 'Current stage deadline',
     'no_deadline_set' => 'No deadline set',
+    'document_rejected' => 'Document rejected.',
+    'goal_rejected' => 'Goal rejected.',
 ];
