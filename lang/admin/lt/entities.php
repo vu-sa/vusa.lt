@@ -76,7 +76,7 @@ return [
         'categories' => 'kategorijos',
     ],
     'planningProcess' => [
-        'model' => '{1} planavimo procesas|[2,9] planavimo procesai|[10,*] planavimo procesų',
+        'model' => '{1} planavimas|[2,9] planavimai|[10,*] planavimų',
         'academic_year' => 'akademiniai metai',
         'current_stage' => 'dabartinis etapas',
         'moderator' => 'moderatorius',

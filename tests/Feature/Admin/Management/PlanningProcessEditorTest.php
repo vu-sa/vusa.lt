@@ -30,24 +30,24 @@ beforeEach(function () {
 
 describe('editor view access', function () {
     test('editor can view the planning process', function () {
-        asUser($this->editor)->get(route('planningProcesses.show', $this->planningProcess))
+        asUser($this->editor)->get(route('planavimai.show', $this->planningProcess))
             ->assertStatus(200);
     });
 
     test('same-tenant user can view the planning process (read-only)', function () {
-        asUser($this->tenantUser)->get(route('planningProcesses.show', $this->planningProcess))
+        asUser($this->tenantUser)->get(route('planavimai.show', $this->planningProcess))
             ->assertStatus(200);
     });
 
     test('outside-tenant user cannot view the planning process', function () {
-        asUser($this->outsideUser)->get(route('planningProcesses.show', $this->planningProcess))
+        asUser($this->outsideUser)->get(route('planavimai.show', $this->planningProcess))
             ->assertStatus(403);
     });
 });
 
 describe('editor update access', function () {
     test('editor can update the planning process', function () {
-        asUser($this->editor)->patch(route('planningProcesses.update', $this->planningProcess), [
+        asUser($this->editor)->patch(route('planavimai.update', $this->planningProcess), [
             'goal_text' => 'Editor updated goal',
         ])->assertRedirect();
 
@@ -55,7 +55,7 @@ describe('editor update access', function () {
     });
 
     test('same-tenant user cannot update the planning process', function () {
-        asUser($this->tenantUser)->patch(route('planningProcesses.update', $this->planningProcess), [
+        asUser($this->tenantUser)->patch(route('planavimai.update', $this->planningProcess), [
             'goal_text' => 'Unauthorized update',
         ])->assertStatus(403);
     });
@@ -68,7 +68,7 @@ describe('editor cannot approve', function () {
             'expectations_submitted_at' => now(),
         ]);
 
-        asUser($this->editor)->patch(route('planningProcesses.updateGoal', $this->planningProcess), [
+        asUser($this->editor)->patch(route('planavimai.updateGoal', $this->planningProcess), [
             'goal_text' => 'Goal text',
             'goal_approved_at' => now()->toISOString(),
         ])->assertStatus(403);
@@ -82,7 +82,7 @@ describe('editor cannot approve', function () {
             'goal_approved_at' => now(),
         ]);
 
-        asUser($this->editor)->patch(route('planningProcesses.approveDocument', $this->planningProcess), [
+        asUser($this->editor)->patch(route('planavimai.approveDocument', $this->planningProcess), [
             'collection' => 'tip_document',
         ])->assertStatus(403);
     });
@@ -93,7 +93,7 @@ describe('editor cannot approve', function () {
             'goal_approved_at' => now(),
         ]);
 
-        asUser($this->editor)->patch(route('planningProcesses.rejectDocument', $this->planningProcess), [
+        asUser($this->editor)->patch(route('planavimai.rejectDocument', $this->planningProcess), [
             'collection' => 'tip_document',
             'notes' => 'Reject',
         ])->assertStatus(403);
@@ -104,7 +104,7 @@ describe('editor management', function () {
     test('coordinator can add an editor', function () {
         $newEditor = makeUser($this->tenant);
 
-        asUser($this->coordinator)->post(route('planningProcesses.addEditor', $this->planningProcess), [
+        asUser($this->coordinator)->post(route('planavimai.addEditor', $this->planningProcess), [
             'user_id' => $newEditor->id,
         ])->assertRedirect();
 
@@ -114,7 +114,7 @@ describe('editor management', function () {
     test('moderator can add an editor', function () {
         $newEditor = makeUser($this->tenant);
 
-        asUser($this->moderator)->post(route('planningProcesses.addEditor', $this->planningProcess), [
+        asUser($this->moderator)->post(route('planavimai.addEditor', $this->planningProcess), [
             'user_id' => $newEditor->id,
         ])->assertRedirect();
 
@@ -122,7 +122,7 @@ describe('editor management', function () {
     });
 
     test('coordinator can remove an editor', function () {
-        asUser($this->coordinator)->delete(route('planningProcesses.removeEditor', $this->planningProcess), [
+        asUser($this->coordinator)->delete(route('planavimai.removeEditor', $this->planningProcess), [
             'user_id' => $this->editor->id,
         ])->assertRedirect();
 
@@ -130,7 +130,7 @@ describe('editor management', function () {
     });
 
     test('moderator can remove an editor', function () {
-        asUser($this->moderator)->delete(route('planningProcesses.removeEditor', $this->planningProcess), [
+        asUser($this->moderator)->delete(route('planavimai.removeEditor', $this->planningProcess), [
             'user_id' => $this->editor->id,
         ])->assertRedirect();
 
@@ -140,7 +140,7 @@ describe('editor management', function () {
     test('editor cannot add other editors', function () {
         $newEditor = makeUser($this->tenant);
 
-        asUser($this->editor)->post(route('planningProcesses.addEditor', $this->planningProcess), [
+        asUser($this->editor)->post(route('planavimai.addEditor', $this->planningProcess), [
             'user_id' => $newEditor->id,
         ])->assertStatus(403);
     });
@@ -148,13 +148,13 @@ describe('editor management', function () {
     test('regular tenant user cannot add editors', function () {
         $newEditor = makeUser($this->tenant);
 
-        asUser($this->tenantUser)->post(route('planningProcesses.addEditor', $this->planningProcess), [
+        asUser($this->tenantUser)->post(route('planavimai.addEditor', $this->planningProcess), [
             'user_id' => $newEditor->id,
         ])->assertStatus(403);
     });
 
     test('cannot add the moderator as an editor', function () {
-        asUser($this->coordinator)->post(route('planningProcesses.addEditor', $this->planningProcess), [
+        asUser($this->coordinator)->post(route('planavimai.addEditor', $this->planningProcess), [
             'user_id' => $this->moderator->id,
         ])->assertRedirect()
             ->assertSessionHas('error');
@@ -164,7 +164,7 @@ describe('editor management', function () {
         $this->planningProcess->update(['locked_at' => now()]);
         $newEditor = makeUser($this->tenant);
 
-        asUser($this->coordinator)->post(route('planningProcesses.addEditor', $this->planningProcess), [
+        asUser($this->coordinator)->post(route('planavimai.addEditor', $this->planningProcess), [
             'user_id' => $newEditor->id,
         ])->assertStatus(403);
     });
@@ -174,7 +174,7 @@ describe('expectations visibility', function () {
     test('editor can view expectations', function () {
         $this->planningProcess->update(['expectations_text' => 'Secret expectations']);
 
-        asUser($this->editor)->get(route('planningProcesses.show', $this->planningProcess))
+        asUser($this->editor)->get(route('planavimai.show', $this->planningProcess))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->where('canViewExpectations', true)
@@ -185,7 +185,7 @@ describe('expectations visibility', function () {
     test('moderator cannot view expectations', function () {
         $this->planningProcess->update(['expectations_text' => 'Secret expectations']);
 
-        asUser($this->moderator)->get(route('planningProcesses.show', $this->planningProcess))
+        asUser($this->moderator)->get(route('planavimai.show', $this->planningProcess))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->where('canViewExpectations', false)
@@ -196,7 +196,7 @@ describe('expectations visibility', function () {
     test('same-tenant user cannot view expectations', function () {
         $this->planningProcess->update(['expectations_text' => 'Secret expectations']);
 
-        asUser($this->tenantUser)->get(route('planningProcesses.show', $this->planningProcess))
+        asUser($this->tenantUser)->get(route('planavimai.show', $this->planningProcess))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->where('canViewExpectations', false)
@@ -207,7 +207,7 @@ describe('expectations visibility', function () {
     test('coordinator can view expectations', function () {
         $this->planningProcess->update(['expectations_text' => 'Secret expectations']);
 
-        asUser($this->coordinator)->get(route('planningProcesses.show', $this->planningProcess))
+        asUser($this->coordinator)->get(route('planavimai.show', $this->planningProcess))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->where('canViewExpectations', true)
@@ -220,7 +220,7 @@ describe('moderator assignment restrictions', function () {
     test('coordinator can assign moderator', function () {
         $newModerator = makeUser($this->tenant);
 
-        asUser($this->coordinator)->patch(route('planningProcesses.assignModerator', $this->planningProcess), [
+        asUser($this->coordinator)->patch(route('planavimai.assignModerator', $this->planningProcess), [
             'moderator_user_id' => $newModerator->id,
         ])->assertRedirect();
 
@@ -230,7 +230,7 @@ describe('moderator assignment restrictions', function () {
     test('moderator cannot assign moderator', function () {
         $newModerator = makeUser($this->tenant);
 
-        asUser($this->moderator)->patch(route('planningProcesses.assignModerator', $this->planningProcess), [
+        asUser($this->moderator)->patch(route('planavimai.assignModerator', $this->planningProcess), [
             'moderator_user_id' => $newModerator->id,
         ])->assertStatus(403);
 
@@ -240,7 +240,7 @@ describe('moderator assignment restrictions', function () {
     test('editor cannot assign moderator', function () {
         $newModerator = makeUser($this->tenant);
 
-        asUser($this->editor)->patch(route('planningProcesses.assignModerator', $this->planningProcess), [
+        asUser($this->editor)->patch(route('planavimai.assignModerator', $this->planningProcess), [
             'moderator_user_id' => $newModerator->id,
         ])->assertStatus(403);
 
@@ -250,27 +250,27 @@ describe('moderator assignment restrictions', function () {
 
 describe('template management restrictions', function () {
     test('moderator cannot upload template', function () {
-        asUser($this->moderator)->post(route('planningProcesses.uploadTemplate', $this->planningProcess), [
+        asUser($this->moderator)->post(route('planavimai.uploadTemplate', $this->planningProcess), [
             'collection' => 'tip_template',
             'template' => UploadedFile::fake()->create('template.pdf', 100, 'application/pdf'),
         ])->assertStatus(403);
     });
 
     test('editor cannot upload template', function () {
-        asUser($this->editor)->post(route('planningProcesses.uploadTemplate', $this->planningProcess), [
+        asUser($this->editor)->post(route('planavimai.uploadTemplate', $this->planningProcess), [
             'collection' => 'tip_template',
             'template' => UploadedFile::fake()->create('template.pdf', 100, 'application/pdf'),
         ])->assertStatus(403);
     });
 
     test('moderator cannot delete template', function () {
-        asUser($this->moderator)->delete(route('planningProcesses.deleteTemplate', $this->planningProcess), [
+        asUser($this->moderator)->delete(route('planavimai.deleteTemplate', $this->planningProcess), [
             'collection' => 'tip_template',
         ])->assertStatus(403);
     });
 
     test('editor cannot delete template', function () {
-        asUser($this->editor)->delete(route('planningProcesses.deleteTemplate', $this->planningProcess), [
+        asUser($this->editor)->delete(route('planavimai.deleteTemplate', $this->planningProcess), [
             'collection' => 'tip_template',
         ])->assertStatus(403);
     });
@@ -278,7 +278,7 @@ describe('template management restrictions', function () {
 
 describe('field change history visibility', function () {
     test('coordinator can see field changes', function () {
-        asUser($this->coordinator)->get(route('planningProcesses.show', $this->planningProcess))
+        asUser($this->coordinator)->get(route('planavimai.show', $this->planningProcess))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->where('canViewFieldChanges', true)
@@ -286,7 +286,7 @@ describe('field change history visibility', function () {
     });
 
     test('editor can see field changes', function () {
-        asUser($this->editor)->get(route('planningProcesses.show', $this->planningProcess))
+        asUser($this->editor)->get(route('planavimai.show', $this->planningProcess))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->where('canViewFieldChanges', true)
@@ -294,7 +294,7 @@ describe('field change history visibility', function () {
     });
 
     test('moderator can see field changes', function () {
-        asUser($this->moderator)->get(route('planningProcesses.show', $this->planningProcess))
+        asUser($this->moderator)->get(route('planavimai.show', $this->planningProcess))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->where('canViewFieldChanges', true)
@@ -302,7 +302,7 @@ describe('field change history visibility', function () {
     });
 
     test('same-tenant user cannot see field changes', function () {
-        asUser($this->tenantUser)->get(route('planningProcesses.show', $this->planningProcess))
+        asUser($this->tenantUser)->get(route('planavimai.show', $this->planningProcess))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->where('canViewFieldChanges', false)
@@ -312,7 +312,7 @@ describe('field change history visibility', function () {
 
 describe('show page props', function () {
     test('show page includes editors and management props', function () {
-        asUser($this->coordinator)->get(route('planningProcesses.show', $this->planningProcess))
+        asUser($this->coordinator)->get(route('planavimai.show', $this->planningProcess))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->has('editors', 1)

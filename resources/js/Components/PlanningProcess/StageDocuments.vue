@@ -257,7 +257,7 @@ const uploadTip = () => {
   if (!tipFile.value) return;
   tipForm.collection = "tip_document";
   tipForm.document = tipFile.value;
-  tipForm.post(route("planningProcesses.uploadDocument", props.planningProcess.id), {
+  tipForm.post(route("planavimai.uploadDocument", props.planningProcess.id), {
     preserveScroll: true,
     forceFormData: true,
     onSuccess: () => { tipFile.value = null; },
@@ -268,7 +268,7 @@ const uploadMvp = () => {
   if (!mvpFile.value) return;
   mvpForm.collection = "mvp_document";
   mvpForm.document = mvpFile.value;
-  mvpForm.post(route("planningProcesses.uploadDocument", props.planningProcess.id), {
+  mvpForm.post(route("planavimai.uploadDocument", props.planningProcess.id), {
     preserveScroll: true,
     forceFormData: true,
     onSuccess: () => { mvpFile.value = null; },
@@ -283,7 +283,7 @@ const uploadTemplate = (collection: "tip_template" | "mvp_template") => {
 
   form.collection = collection;
   form.template = file;
-  form.post(route("planningProcesses.uploadTemplate", props.planningProcess.id), {
+  form.post(route("planavimai.uploadTemplate", props.planningProcess.id), {
     preserveScroll: true,
     forceFormData: true,
   });
@@ -292,35 +292,35 @@ const uploadTemplate = (collection: "tip_template" | "mvp_template") => {
 const deleteTemplate = (collection: "tip_template" | "mvp_template") => {
   const form = collection === "tip_template" ? deleteTipTemplateForm : deleteMvpTemplateForm;
   form.collection = collection;
-  form.delete(route("planningProcesses.deleteTemplate", props.planningProcess.id), {
+  form.delete(route("planavimai.deleteTemplate", props.planningProcess.id), {
     preserveScroll: true,
   });
 };
 
 const approveTip = (notes: string) => {
   tipApproveForm.notes = notes;
-  tipApproveForm.patch(route("planningProcesses.approveDocument", props.planningProcess.id), {
+  tipApproveForm.patch(route("planavimai.approveDocument", props.planningProcess.id), {
     preserveScroll: true,
   });
 };
 
 const approveMvp = (notes: string) => {
   mvpApproveForm.notes = notes;
-  mvpApproveForm.patch(route("planningProcesses.approveDocument", props.planningProcess.id), {
+  mvpApproveForm.patch(route("planavimai.approveDocument", props.planningProcess.id), {
     preserveScroll: true,
   });
 };
 
 const rejectTip = (notes: string) => {
   tipRejectForm.notes = notes;
-  tipRejectForm.patch(route("planningProcesses.rejectDocument", props.planningProcess.id), {
+  tipRejectForm.patch(route("planavimai.rejectDocument", props.planningProcess.id), {
     preserveScroll: true,
   });
 };
 
 const rejectMvp = (notes: string) => {
   mvpRejectForm.notes = notes;
-  mvpRejectForm.patch(route("planningProcesses.rejectDocument", props.planningProcess.id), {
+  mvpRejectForm.patch(route("planavimai.rejectDocument", props.planningProcess.id), {
     preserveScroll: true,
   });
 };

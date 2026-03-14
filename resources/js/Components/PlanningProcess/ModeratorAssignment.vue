@@ -186,7 +186,7 @@ const cancelEditing = () => {
 
 const save = () => {
   form.moderator_user_id = selectedUser.value?.id ?? null;
-  form.patch(route("planningProcesses.assignModerator", props.planningProcess.id), {
+  form.patch(route("planavimai.assignModerator", props.planningProcess.id), {
     preserveScroll: true,
     onSuccess: () => {
       editing.value = false;

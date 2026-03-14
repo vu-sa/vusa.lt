@@ -1,33 +1,29 @@
 <template>
   <AdminContentPage>
     <div class="space-y-6">
-      <!-- Page Header -->
-      <div class="flex flex-col space-y-2 md:flex-row md:items-center md:justify-between">
-        <div class="flex items-center space-x-4">
-          <div class="hidden rounded-md bg-primary/10 p-2 text-primary md:block">
-            <CalendarLtr24Regular class="h-5 w-5" />
+      <!-- Hero -->
+      <PageHero :subtitle="$t('Padalinių planavimo procesų valdymas ir stebėjimas')">
+        <h1 class="text-3xl font-bold tracking-tight sm:text-4xl text-foreground flex items-center gap-3">
+          <CalendarRangeIcon class="h-8 w-8 sm:h-9 sm:w-9 text-primary" />
+          {{ capitalize($tChoice("entities.planningProcess.model", 2)) }}
+        </h1>
+        <template #actions>
+          <div class="flex items-center gap-2">
+            <Button v-if="canCreate" as-child variant="outline" class="gap-1.5">
+              <Link :href="route('planningDeadlines.edit', activeAcademicYear)">
+                <ClockIcon class="h-4 w-4" />
+                <span>{{ $t("planning.deadlines") }}</span>
+              </Link>
+            </Button>
+            <Button v-if="canCreate" as-child variant="default" class="gap-1.5">
+              <Link :href="route('planavimai.create')">
+                <PlusCircleIcon class="h-4 w-4" />
+                <span>{{ $t("forms.add") }}</span>
+              </Link>
+            </Button>
           </div>
-          <div>
-            <h2 class="text-2xl font-bold tracking-tight">
-              {{ capitalize($tChoice("entities.planningProcess.model", 2)) }}
-            </h2>
-          </div>
-        </div>
-        <div class="flex items-center gap-2">
-          <Button v-if="canCreate" as-child variant="outline" class="gap-1.5">
-            <Link :href="route('planningDeadlines.edit', activeAcademicYear)">
-              <ClockIcon class="h-4 w-4" />
-              <span>{{ $t("planning.deadlines") }}</span>
-            </Link>
-          </Button>
-          <Button v-if="canCreate" as-child variant="default" class="gap-1.5">
-            <Link :href="route('planningProcesses.create')">
-              <PlusCircleIcon class="h-4 w-4" />
-              <span>{{ $t("forms.add") }}</span>
-            </Link>
-          </Button>
-        </div>
-      </div>
+        </template>
+      </PageHero>
 
       <!-- Summary cards -->
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -211,6 +207,7 @@ import {
   AlertCircle as AlertCircleIcon,
   CheckCircle2 as CheckCircle2Icon,
   Clock as ClockIcon,
+  CalendarRange as CalendarRangeIcon,
   LayoutList as LayoutListIcon,
   PlusCircle as PlusCircleIcon,
   UserX as UserXIcon,
@@ -225,11 +222,11 @@ import { Card, CardContent } from "@/Components/ui/card";
 import { Progress } from "@/Components/ui/progress";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/Components/ui/tooltip";
 import { createStandardActionsColumn } from "@/Composables/useTableActions";
+import PageHero from "@/Components/Hero/PageHero.vue";
 import { BreadcrumbHelpers, usePageBreadcrumbs } from "@/Composables/useBreadcrumbsUnified";
 import Icons from "@/Types/Icons/regular";
-import CalendarLtr24Regular from "~icons/fluent/calendar-ltr24-regular";
 
-usePageBreadcrumbs(BreadcrumbHelpers.adminIndex($tChoice("entities.planningProcess.model", 2), Icons.PLANNING_PROCESS));
+usePageBreadcrumbs(BreadcrumbHelpers.adminIndex(capitalize($tChoice("entities.planningProcess.model", 2)), Icons.PLANNING_PROCESS));
 
 interface SummaryStats {
   total: number;
@@ -261,7 +258,7 @@ const activeAcademicYear = computed(() => {
   return now.getMonth() >= 8 ? now.getFullYear() : now.getFullYear() - 1;
 });
 
-const modelName = "planningProcesses";
+const modelName = "planavimai";
 const entityName = "planningProcess";
 
 const dataTableRef = ref<InstanceType<typeof ServerDataTable> | null>(null);
@@ -319,7 +316,7 @@ const columns = computed<ColumnDef<App.Entities.PlanningProcess, any>[]>(() => [
     id: "tenant",
     header: () => capitalize($tChoice("entities.tenant.model", 1)),
     cell: ({ row }) => (
-      <Link href={route("planningProcesses.show", row.original.id)} class="font-medium hover:underline">
+      <Link href={route("planavimai.show", row.original.id)} class="font-medium hover:underline">
         {row.original.tenant?.shortname ?? "—"}
       </Link>
     ),
@@ -452,7 +449,7 @@ const columns = computed<ColumnDef<App.Entities.PlanningProcess, any>[]>(() => [
     canEdit: false,
     canDelete: true,
     canRestore: false,
-    showRoute: (row) => route("planningProcesses.show", row.id),
+    showRoute: (row) => route("planavimai.show", row.id),
   }),
 ]);
 

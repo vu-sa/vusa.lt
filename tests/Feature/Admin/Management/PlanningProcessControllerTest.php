@@ -32,31 +32,31 @@ beforeEach(function () {
 
 describe('unauthorized access', function () {
     test('cannot index planning processes', function () {
-        asUser($this->user)->get(route('planningProcesses.index'))
+        asUser($this->user)->get(route('planavimai.index'))
             ->assertStatus(403);
     });
 
     test('cannot access create page', function () {
-        asUser($this->user)->get(route('planningProcesses.create'))
+        asUser($this->user)->get(route('planavimai.create'))
             ->assertStatus(403);
     });
 
     test('cannot store planning process', function () {
-        asUser($this->user)->post(route('planningProcesses.store'), [
+        asUser($this->user)->post(route('planavimai.store'), [
             'tenant_id' => $this->tenant->id,
             'academic_year_start' => 2025,
         ])->assertStatus(403);
     });
 
     test('cannot delete planning process', function () {
-        asUser($this->user)->delete(route('planningProcesses.destroy', $this->planningProcess))
+        asUser($this->user)->delete(route('planavimai.destroy', $this->planningProcess))
             ->assertStatus(403);
     });
 });
 
 describe('authorized access', function () {
     test('super admin can index planning processes', function () {
-        asUser($this->superAdmin)->get(route('planningProcesses.index'))
+        asUser($this->superAdmin)->get(route('planavimai.index'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/PlanningProcesses/IndexPlanningProcess')
@@ -66,7 +66,7 @@ describe('authorized access', function () {
     });
 
     test('super admin can access create page', function () {
-        asUser($this->superAdmin)->get(route('planningProcesses.create'))
+        asUser($this->superAdmin)->get(route('planavimai.create'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/PlanningProcesses/CreatePlanningProcess')
@@ -77,17 +77,17 @@ describe('authorized access', function () {
     test('super admin can store planning process', function () {
         $newTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->first();
 
-        asUser($this->superAdmin)->post(route('planningProcesses.store'), [
+        asUser($this->superAdmin)->post(route('planavimai.store'), [
             'tenant_id' => $newTenant->id,
             'academic_year_start' => 2030,
-        ])->assertRedirect(route('planningProcesses.index'));
+        ])->assertRedirect(route('planavimai.index'));
 
         expect(PlanningProcess::where('tenant_id', $newTenant->id)->where('academic_year_start', 2030)->exists())
             ->toBeTrue();
     });
 
     test('super admin can view planning process', function () {
-        asUser($this->superAdmin)->get(route('planningProcesses.show', $this->planningProcess))
+        asUser($this->superAdmin)->get(route('planavimai.show', $this->planningProcess))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/PlanningProcesses/ShowPlanningProcess')
@@ -96,7 +96,7 @@ describe('authorized access', function () {
     });
 
     test('super admin can update planning process', function () {
-        asUser($this->superAdmin)->patch(route('planningProcesses.update', $this->planningProcess), [
+        asUser($this->superAdmin)->patch(route('planavimai.update', $this->planningProcess), [
             'expectations_text' => 'Updated expectations',
         ])->assertRedirect();
 
@@ -104,8 +104,8 @@ describe('authorized access', function () {
     });
 
     test('super admin can delete planning process', function () {
-        asUser($this->superAdmin)->delete(route('planningProcesses.destroy', $this->planningProcess))
-            ->assertRedirect(route('planningProcesses.index'));
+        asUser($this->superAdmin)->delete(route('planavimai.destroy', $this->planningProcess))
+            ->assertRedirect(route('planavimai.index'));
 
         expect(PlanningProcess::withTrashed()->find($this->planningProcess->id)->deleted_at)
             ->not->toBeNull();
@@ -119,12 +119,12 @@ describe('moderator access', function () {
     });
 
     test('moderator can view their assigned process', function () {
-        asUser($this->moderator)->get(route('planningProcesses.show', $this->planningProcess))
+        asUser($this->moderator)->get(route('planavimai.show', $this->planningProcess))
             ->assertStatus(200);
     });
 
     test('moderator can update their assigned process', function () {
-        asUser($this->moderator)->patch(route('planningProcesses.update', $this->planningProcess), [
+        asUser($this->moderator)->patch(route('planavimai.update', $this->planningProcess), [
             'goal_text' => 'Moderator updated goal',
         ])->assertRedirect();
 
@@ -137,7 +137,7 @@ describe('moderator access', function () {
             'expectations_submitted_at' => now(),
         ]);
 
-        asUser($this->moderator)->patch(route('planningProcesses.updateGoal', $this->planningProcess), [
+        asUser($this->moderator)->patch(route('planavimai.updateGoal', $this->planningProcess), [
             'goal_text' => 'Our goal',
             'goal_approved_at' => now()->toISOString(),
         ])->assertStatus(403);
@@ -151,7 +151,7 @@ describe('moderator access', function () {
             'goal_approved_at' => now(),
         ]);
 
-        asUser($this->moderator)->patch(route('planningProcesses.approveDocument', $this->planningProcess), [
+        asUser($this->moderator)->patch(route('planavimai.approveDocument', $this->planningProcess), [
             'collection' => 'tip_document',
         ])->assertStatus(403);
 
@@ -164,7 +164,7 @@ describe('moderator access', function () {
             'expectations_submitted_at' => now(),
         ]);
 
-        asUser($this->moderator)->patch(route('planningProcesses.advanceStage', $this->planningProcess))
+        asUser($this->moderator)->patch(route('planavimai.advanceStage', $this->planningProcess))
             ->assertStatus(403);
 
         expect($this->planningProcess->fresh()->current_stage)->toBe(1);
@@ -173,7 +173,7 @@ describe('moderator access', function () {
     test('moderator can update goal text without approving', function () {
         $this->planningProcess->update(['current_stage' => 2, 'expectations_submitted_at' => now()]);
 
-        asUser($this->moderator)->patch(route('planningProcesses.updateGoal', $this->planningProcess), [
+        asUser($this->moderator)->patch(route('planavimai.updateGoal', $this->planningProcess), [
             'goal_text' => 'Updated by moderator',
         ])->assertRedirect();
 
@@ -183,7 +183,7 @@ describe('moderator access', function () {
 
 describe('stage advancement', function () {
     test('cannot advance stage if current stage is not complete', function () {
-        asUser($this->superAdmin)->patch(route('planningProcesses.advanceStage', $this->planningProcess))
+        asUser($this->superAdmin)->patch(route('planavimai.advanceStage', $this->planningProcess))
             ->assertRedirect();
 
         expect($this->planningProcess->fresh()->current_stage)->toBe(1);
@@ -195,7 +195,7 @@ describe('stage advancement', function () {
             'expectations_submitted_at' => now(),
         ]);
 
-        asUser($this->superAdmin)->patch(route('planningProcesses.advanceStage', $this->planningProcess))
+        asUser($this->superAdmin)->patch(route('planavimai.advanceStage', $this->planningProcess))
             ->assertRedirect();
 
         expect($this->planningProcess->fresh()->current_stage)->toBe(2);
@@ -206,7 +206,7 @@ describe('auto stage advancement', function () {
     test('submitting expectations auto-advances from stage 1 to stage 2', function () {
         expect($this->planningProcess->current_stage)->toBe(1);
 
-        asUser($this->superAdmin)->patch(route('planningProcesses.update', $this->planningProcess), [
+        asUser($this->superAdmin)->patch(route('planavimai.update', $this->planningProcess), [
             'expectations_text' => 'My expectations',
             'expectations_submitted_at' => now()->toISOString(),
         ])->assertRedirect();
@@ -220,7 +220,7 @@ describe('auto stage advancement', function () {
             'expectations_submitted_at' => now(),
         ]);
 
-        asUser($this->superAdmin)->patch(route('planningProcesses.updateGoal', $this->planningProcess), [
+        asUser($this->superAdmin)->patch(route('planavimai.updateGoal', $this->planningProcess), [
             'goal_text' => 'Our annual goal',
             'goal_approved_at' => now()->toISOString(),
         ])->assertRedirect();
@@ -235,14 +235,14 @@ describe('auto stage advancement', function () {
         ]);
 
         // Approve TIP - should not advance yet (MVP still missing)
-        asUser($this->superAdmin)->patch(route('planningProcesses.approveDocument', $this->planningProcess), [
+        asUser($this->superAdmin)->patch(route('planavimai.approveDocument', $this->planningProcess), [
             'collection' => 'tip_document',
         ])->assertRedirect();
 
         expect($this->planningProcess->fresh()->current_stage)->toBe(3);
 
         // Approve MVP - now both are approved, should advance
-        asUser($this->superAdmin)->patch(route('planningProcesses.approveDocument', $this->planningProcess), [
+        asUser($this->superAdmin)->patch(route('planavimai.approveDocument', $this->planningProcess), [
             'collection' => 'mvp_document',
         ])->assertRedirect();
 
@@ -258,7 +258,7 @@ describe('auto stage advancement', function () {
             'mvp_approved_at' => now(),
         ]);
 
-        asUser($this->superAdmin)->patch(route('planningProcesses.update', $this->planningProcess), [
+        asUser($this->superAdmin)->patch(route('planavimai.update', $this->planningProcess), [
             'reflection_text' => 'Year-end reflection',
             'reflection_submitted_at' => now()->toISOString(),
         ])->assertRedirect();
@@ -270,7 +270,7 @@ describe('auto stage advancement', function () {
 
     test('does not auto-advance when stage completion criteria not met', function () {
         // Update expectations text but don't submit (no expectations_submitted_at)
-        asUser($this->superAdmin)->patch(route('planningProcesses.update', $this->planningProcess), [
+        asUser($this->superAdmin)->patch(route('planavimai.update', $this->planningProcess), [
             'expectations_text' => 'Draft expectations',
         ])->assertRedirect();
 
@@ -282,7 +282,7 @@ describe('tenant isolation', function () {
     test('admin cannot update process from different tenant', function () {
         $originalText = $this->otherProcess->expectations_text;
 
-        asUser($this->admin)->patch(route('planningProcesses.update', $this->otherProcess), [
+        asUser($this->admin)->patch(route('planavimai.update', $this->otherProcess), [
             'expectations_text' => 'Injected text',
         ])->assertStatus(403);
 
@@ -334,7 +334,7 @@ describe('deadlines in show page', function () {
             'ends_at' => '2026-10-31',
         ]);
 
-        asUser($this->superAdmin)->get(route('planningProcesses.show', $this->planningProcess))
+        asUser($this->superAdmin)->get(route('planavimai.show', $this->planningProcess))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/PlanningProcesses/ShowPlanningProcess')
@@ -345,7 +345,7 @@ describe('deadlines in show page', function () {
     });
 
     test('show page returns empty deadlines when none exist', function () {
-        asUser($this->superAdmin)->get(route('planningProcesses.show', $this->planningProcess))
+        asUser($this->superAdmin)->get(route('planavimai.show', $this->planningProcess))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->has('deadlines', 0)
@@ -362,7 +362,7 @@ describe('deadlines in show page', function () {
             'stage' => 1,
         ]);
 
-        asUser($this->superAdmin)->get(route('planningProcesses.show', $this->planningProcess))
+        asUser($this->superAdmin)->get(route('planavimai.show', $this->planningProcess))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->has('deadlines', 1)
@@ -378,7 +378,7 @@ describe('document rejection', function () {
             'goal_approved_at' => now(),
         ]);
 
-        asUser($this->superAdmin)->patch(route('planningProcesses.rejectDocument', $this->planningProcess), [
+        asUser($this->superAdmin)->patch(route('planavimai.rejectDocument', $this->planningProcess), [
             'collection' => 'tip_document',
             'notes' => 'The document needs more detail in section 2.',
         ])->assertRedirect();
@@ -403,7 +403,7 @@ describe('document rejection', function () {
             'tip_approved_by' => $this->superAdmin->id,
         ]);
 
-        asUser($this->superAdmin)->patch(route('planningProcesses.rejectDocument', $this->planningProcess), [
+        asUser($this->superAdmin)->patch(route('planavimai.rejectDocument', $this->planningProcess), [
             'collection' => 'tip_document',
             'notes' => 'Needs revision.',
         ])->assertRedirect();
@@ -419,7 +419,7 @@ describe('document rejection', function () {
             'goal_approved_at' => now(),
         ]);
 
-        asUser($this->superAdmin)->patch(route('planningProcesses.rejectDocument', $this->planningProcess), [
+        asUser($this->superAdmin)->patch(route('planavimai.rejectDocument', $this->planningProcess), [
             'collection' => 'tip_document',
             'notes' => '',
         ])->assertSessionHasErrors('notes');
@@ -433,7 +433,7 @@ describe('document rejection', function () {
             'goal_approved_at' => now(),
         ]);
 
-        asUser($moderator)->patch(route('planningProcesses.rejectDocument', $this->planningProcess), [
+        asUser($moderator)->patch(route('planavimai.rejectDocument', $this->planningProcess), [
             'collection' => 'tip_document',
             'notes' => 'Reject this.',
         ])->assertStatus(403);
@@ -448,7 +448,7 @@ describe('goal rejection', function () {
             'goal_text' => 'Our annual goal',
         ]);
 
-        asUser($this->superAdmin)->patch(route('planningProcesses.rejectGoal', $this->planningProcess), [
+        asUser($this->superAdmin)->patch(route('planavimai.rejectGoal', $this->planningProcess), [
             'notes' => 'Goal is too vague, please be more specific.',
         ])->assertRedirect();
 
@@ -471,7 +471,7 @@ describe('goal rejection', function () {
             'goal_text' => 'Some goal',
         ]);
 
-        asUser($this->superAdmin)->patch(route('planningProcesses.rejectGoal', $this->planningProcess), [
+        asUser($this->superAdmin)->patch(route('planavimai.rejectGoal', $this->planningProcess), [
             'notes' => '',
         ])->assertSessionHasErrors('notes');
     });
@@ -484,7 +484,7 @@ describe('approval records', function () {
             'goal_approved_at' => now(),
         ]);
 
-        asUser($this->superAdmin)->patch(route('planningProcesses.approveDocument', $this->planningProcess), [
+        asUser($this->superAdmin)->patch(route('planavimai.approveDocument', $this->planningProcess), [
             'collection' => 'tip_document',
         ])->assertRedirect();
 
@@ -504,7 +504,7 @@ describe('approval records', function () {
             'expectations_submitted_at' => now(),
         ]);
 
-        asUser($this->superAdmin)->patch(route('planningProcesses.updateGoal', $this->planningProcess), [
+        asUser($this->superAdmin)->patch(route('planavimai.updateGoal', $this->planningProcess), [
             'goal_text' => 'Our annual goal',
             'goal_approved_at' => now()->toISOString(),
         ])->assertRedirect();
@@ -531,7 +531,7 @@ describe('approval records', function () {
             'notes' => 'Needs revision',
         ]);
 
-        asUser($this->superAdmin)->get(route('planningProcesses.show', $this->planningProcess))
+        asUser($this->superAdmin)->get(route('planavimai.show', $this->planningProcess))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->has('approvalHistory')
@@ -549,7 +549,7 @@ describe('approval records', function () {
         ]);
 
         // Reject TIP
-        asUser($this->superAdmin)->patch(route('planningProcesses.rejectDocument', $this->planningProcess), [
+        asUser($this->superAdmin)->patch(route('planavimai.rejectDocument', $this->planningProcess), [
             'collection' => 'tip_document',
             'notes' => 'Needs more detail.',
         ])->assertRedirect();
@@ -557,7 +557,7 @@ describe('approval records', function () {
         expect($this->planningProcess->fresh()->tip_approved_at)->toBeNull();
 
         // Approve TIP after revision
-        asUser($this->superAdmin)->patch(route('planningProcesses.approveDocument', $this->planningProcess), [
+        asUser($this->superAdmin)->patch(route('planavimai.approveDocument', $this->planningProcess), [
             'collection' => 'tip_document',
         ])->assertRedirect();
 
@@ -583,7 +583,7 @@ describe('reapproval on change', function () {
             'goal_approved_at' => now(),
         ]);
 
-        asUser($this->superAdmin)->patch(route('planningProcesses.updateGoal', $this->planningProcess), [
+        asUser($this->superAdmin)->patch(route('planavimai.updateGoal', $this->planningProcess), [
             'goal_text' => 'Modified goal',
         ])->assertRedirect();
 
@@ -600,7 +600,7 @@ describe('reapproval on change', function () {
             'goal_approved_at' => now(),
         ]);
 
-        asUser($this->superAdmin)->patch(route('planningProcesses.updateGoal', $this->planningProcess), [
+        asUser($this->superAdmin)->patch(route('planavimai.updateGoal', $this->planningProcess), [
             'goal_text' => 'Original goal',
         ])->assertRedirect();
 
@@ -617,7 +617,7 @@ describe('reapproval on change', function () {
 
         $file = UploadedFile::fake()->createWithContent('new_tip.pdf', '%PDF-1.4 test content');
 
-        asUser($this->superAdmin)->post(route('planningProcesses.uploadDocument', $this->planningProcess), [
+        asUser($this->superAdmin)->post(route('planavimai.uploadDocument', $this->planningProcess), [
             'collection' => 'tip_document',
             'document' => $file,
         ])->assertRedirect();
@@ -636,7 +636,7 @@ describe('reapproval on change', function () {
 
         $file = UploadedFile::fake()->createWithContent('tip.pdf', '%PDF-1.4 test content');
 
-        asUser($this->superAdmin)->post(route('planningProcesses.uploadDocument', $this->planningProcess), [
+        asUser($this->superAdmin)->post(route('planavimai.uploadDocument', $this->planningProcess), [
             'collection' => 'tip_document',
             'document' => $file,
         ])->assertRedirect();

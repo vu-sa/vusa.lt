@@ -139,7 +139,7 @@ const cancelEditing = () => {
 };
 
 const save = () => {
-  form.patch(route("planningProcesses.update", props.planningProcess.id), {
+  form.patch(route("planavimai.update", props.planningProcess.id), {
     preserveScroll: true,
     onSuccess: () => {
       editing.value = false;
@@ -149,7 +149,7 @@ const save = () => {
 
 const submitExpectations = () => {
   submitForm.expectations_submitted_at = new Date().toISOString();
-  submitForm.patch(route("planningProcesses.update", props.planningProcess.id), {
+  submitForm.patch(route("planavimai.update", props.planningProcess.id), {
     preserveScroll: true,
   });
 };

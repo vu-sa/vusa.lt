@@ -76,7 +76,7 @@ describe('stage comments', function () {
         $this->planningProcess->comment('Another stage 1 comment', ['stage' => 1]);
 
         asUser($this->superAdmin)->get(
-            route('planningProcesses.show', $this->planningProcess)
+            route('planavimai.show', $this->planningProcess)
         )->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/PlanningProcesses/ShowPlanningProcess')
@@ -93,7 +93,7 @@ describe('stage comments', function () {
         $this->planningProcess->comment('Stage 2 comment', ['stage' => 2]);
 
         asUser($this->superAdmin)->get(
-            route('planningProcesses.show', $this->planningProcess)
+            route('planavimai.show', $this->planningProcess)
         )->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/PlanningProcesses/ShowPlanningProcess')

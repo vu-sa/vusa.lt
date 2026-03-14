@@ -384,13 +384,13 @@ const saveMeetings = () => {
   meetingForm.additional_meetings = additionalMeetings.value.length > 0
     ? additionalMeetings.value
     : null;
-  meetingForm.patch(route("planningProcesses.update", props.planningProcess.id), {
+  meetingForm.patch(route("planavimai.update", props.planningProcess.id), {
     preserveScroll: true,
   });
 };
 
 const saveGoal = () => {
-  goalForm.patch(route("planningProcesses.updateGoal", props.planningProcess.id), {
+  goalForm.patch(route("planavimai.updateGoal", props.planningProcess.id), {
     preserveScroll: true,
   });
 };
@@ -403,7 +403,7 @@ const approveGoalForm = useForm({
 const approveGoal = () => {
   approveGoalForm.goal_text = goalForm.goal_text;
   approveGoalForm.goal_approved_at = new Date().toISOString();
-  approveGoalForm.patch(route("planningProcesses.updateGoal", props.planningProcess.id), {
+  approveGoalForm.patch(route("planavimai.updateGoal", props.planningProcess.id), {
     preserveScroll: true,
     onSuccess: () => { goalReviewNotes.value = ""; },
   });
@@ -418,7 +418,7 @@ const rejectGoalForm = useForm({
 
 const rejectGoal = () => {
   rejectGoalForm.notes = goalReviewNotes.value;
-  rejectGoalForm.patch(route("planningProcesses.rejectGoal", props.planningProcess.id), {
+  rejectGoalForm.patch(route("planavimai.rejectGoal", props.planningProcess.id), {
     preserveScroll: true,
     onSuccess: () => { goalReviewNotes.value = ""; },
   });

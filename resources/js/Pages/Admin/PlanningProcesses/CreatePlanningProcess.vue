@@ -5,7 +5,7 @@
         model: $tChoice('entities.planningProcess.model', 1),
       })
     "
-    :back-url="route('planningProcesses.index')"
+    :back-url="route('planavimai.index')"
     :heading-icon="CalendarLtr24Regular"
   >
     <UpsertModelLayout>
@@ -44,7 +44,7 @@
 
           <div class="flex justify-end gap-2 mt-4">
             <Button type="button" variant="outline" as-child>
-              <Link :href="route('planningProcesses.index')">{{ $t("Atšaukti") }}</Link>
+              <Link :href="route('planavimai.index')">{{ $t("Atšaukti") }}</Link>
             </Button>
             <Button type="submit" :disabled="form.processing">
               {{ $t("Sukurti") }}
@@ -83,8 +83,8 @@ defineProps<{
 
 usePageBreadcrumbs(
   BreadcrumbHelpers.adminForm(
-    $tChoice("entities.planningProcess.model", 2),
-    "planningProcesses.index",
+    capitalize($tChoice("entities.planningProcess.model", 2)),
+    "planavimai.index",
     $tChoice("forms.new_model", 0, { model: $tChoice("entities.planningProcess.model", 1) }),
     Icons.PLANNING_PROCESS,
   )
@@ -97,6 +97,6 @@ const form = useForm({
 });
 
 const submit = () => {
-  form.post(route("planningProcesses.store"), { preserveScroll: true });
+  form.post(route("planavimai.store"), { preserveScroll: true });
 };
 </script>

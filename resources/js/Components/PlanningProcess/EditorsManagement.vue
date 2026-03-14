@@ -6,8 +6,8 @@
           <UsersIcon class="h-4.5 w-4.5 text-primary" />
         </div>
         <div class="flex-1 min-w-0">
-          <CardTitle class="text-base">{{ $t("Redaktoriai") }}</CardTitle>
-          <CardDescription>{{ $t("Redaktoriai turi pilną prieigą redaguoti planavimo procesą") }}</CardDescription>
+          <CardTitle class="text-base">{{ $t("Atsakingi asmenys") }}</CardTitle>
+          <CardDescription>{{ $t("Atsakingi asmenys turi pilną prieigą redaguoti planavimo procesą") }}</CardDescription>
         </div>
       </div>
     </CardHeader>
@@ -35,11 +35,11 @@
           </Button>
         </div>
       </div>
-      <p v-else class="text-sm text-muted-foreground italic mb-4">{{ $t("Nėra priskirtų redaktorių") }}</p>
+      <p v-else class="text-sm text-muted-foreground italic mb-4">{{ $t("Nėra priskirtų atsakingų asmenų") }}</p>
 
       <!-- Add editor -->
       <div v-if="canManageEditors" class="flex flex-col gap-1.5">
-        <Label class="text-xs font-medium">{{ $t("Pridėti redaktorių") }}</Label>
+        <Label class="text-xs font-medium">{{ $t("Pridėti atsakingą asmenį") }}</Label>
         <Combobox
           v-model="selectedUser"
           :filter-function="() => userOptions"
@@ -168,14 +168,14 @@ const removeForm = useForm({ user_id: "" });
 
 const addEditor = (userId: string) => {
   addForm.user_id = userId;
-  addForm.post(route("planningProcesses.addEditor", props.planningProcess.id), {
+  addForm.post(route("planavimai.addEditor", props.planningProcess.id), {
     preserveScroll: true,
   });
 };
 
 const removeEditor = (userId: string) => {
   removeForm.user_id = userId;
-  removeForm.delete(route("planningProcesses.removeEditor", props.planningProcess.id), {
+  removeForm.delete(route("planavimai.removeEditor", props.planningProcess.id), {
     preserveScroll: true,
   });
 };

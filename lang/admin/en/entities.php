@@ -54,7 +54,7 @@ return [
         'categories' => 'categories',
     ],
     'planningProcess' => [
-        'model' => '{1} planning process|[2,*] planning processes',
+        'model' => '{1} planning|[2,*] plannings',
         'academic_year' => 'academic year',
         'current_stage' => 'current stage',
         'moderator' => 'moderator',

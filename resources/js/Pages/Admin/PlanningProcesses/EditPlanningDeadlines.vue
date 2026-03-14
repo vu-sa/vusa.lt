@@ -1,7 +1,7 @@
 <template>
   <PageContent
     :title="`${$t('planning.deadlines')} ${academicYear}–${academicYear + 1}`"
-    :back-url="route('planningProcesses.index')"
+    :back-url="route('planavimai.index')"
     :heading-icon="CalendarLtr24Regular"
   >
     <UpsertModelLayout>
@@ -143,7 +143,7 @@
 
           <div class="flex justify-end gap-2 mt-2">
             <Button type="button" variant="outline" as-child>
-              <Link :href="route('planningProcesses.index')">{{ $t("Atšaukti") }}</Link>
+              <Link :href="route('planavimai.index')">{{ $t("Atšaukti") }}</Link>
             </Button>
             <Button type="submit" :disabled="form.processing" class="gap-1.5">
               <SaveIcon class="h-4 w-4" />
@@ -157,7 +157,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, computed } from "vue";
+import { reactive, computed, capitalize } from "vue";
 import { useForm, Link } from "@inertiajs/vue3";
 import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
 import CalendarLtr24Regular from "~icons/fluent/calendar-ltr24-regular";
@@ -198,8 +198,8 @@ const props = defineProps<{
 
 usePageBreadcrumbs(() =>
   BreadcrumbHelpers.adminForm(
-    $tChoice("entities.planningProcess.model", 2),
-    "planningProcesses.index",
+    capitalize($tChoice("entities.planningProcess.model", 2)),
+    "planavimai.index",
     `${$t("planning.deadlines")} ${props.academicYear}–${props.academicYear + 1}`,
     Icons.PLANNING_PROCESS,
   )

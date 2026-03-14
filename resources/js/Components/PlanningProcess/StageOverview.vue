@@ -19,7 +19,7 @@
           </Button>
         </div>
         <div v-if="editors && editors.length > 0" class="mt-3 pt-3 border-t border-zinc-200 dark:border-zinc-800">
-          <p class="text-xs text-muted-foreground font-medium mb-1.5">{{ $t("Redaktoriai") }}</p>
+          <p class="text-xs text-muted-foreground font-medium mb-1.5">{{ $t("Atsakingi asmenys") }}</p>
           <div class="flex flex-wrap gap-1.5">
             <Badge v-for="editor in editors" :key="editor.id" variant="secondary" class="text-xs">
               {{ editor.name }}
@@ -38,7 +38,7 @@
           </div>
           <div class="min-w-0 flex-1">
             <p class="text-xs text-muted-foreground font-medium">{{ $t("Progresas") }}</p>
-            <p class="text-sm font-semibold">{{ completedStages }} / 5 {{ $t("etapai") }}</p>
+            <p class="text-sm font-semibold">{{ completedStages }} / 5 {{ $t("etapų") }}</p>
           </div>
         </div>
         <Progress :model-value="progressPercent" class="mt-3 h-1.5" />

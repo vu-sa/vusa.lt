@@ -193,7 +193,7 @@ const submitQuarter = (quarter: 1 | 2 | 3 | 4) => {
 
 const submitReflection = () => {
   reflectionForm.reflection_submitted_at = new Date().toISOString();
-  reflectionForm.patch(route("planningProcesses.update", props.planningProcess.id), {
+  reflectionForm.patch(route("planavimai.update", props.planningProcess.id), {
     preserveScroll: true,
   });
 };

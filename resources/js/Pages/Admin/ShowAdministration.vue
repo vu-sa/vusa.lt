@@ -464,14 +464,14 @@ const menuItems = computed(() => [
         title: $t("Padalinio planavimas"),
         icon: Icons.PLANNING_PROCESS,
         href: auth?.planningProcessId
-          ? route("planningProcesses.show", auth.planningProcessId)
+          ? route("planavimai.show", auth.planningProcessId)
           : "#",
         show: !!auth?.planningProcessId,
       },
       {
-        title: $t("Planavimo procesai"),
+        title: $t("Planavimai"),
         icon: Icons.PLANNING_PROCESS,
-        href: route("planningProcesses.index"),
+        href: route("planavimai.index"),
         show: auth?.can.index?.planningProcess,
       },
     ],

@@ -203,7 +203,7 @@ class PlanningProcessController extends AdminController
         }
 
         return $this->redirectToIndexWithSuccess(
-            'planningProcesses',
+            'planavimai',
             trans_choice('messages.created', 0, ['model' => trans_choice('entities.planningProcess.model', 1)])
         );
     }
@@ -389,7 +389,7 @@ class PlanningProcessController extends AdminController
         $planningProcess->delete();
 
         return $this->redirectToIndexWithInfo(
-            'planningProcesses',
+            'planavimai',
             trans_choice('messages.deleted', 0, ['model' => trans_choice('entities.planningProcess.model', 1)])
         );
     }

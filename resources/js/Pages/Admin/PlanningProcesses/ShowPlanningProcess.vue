@@ -2,73 +2,79 @@
   <AdminContentPage>
     <Head :title="pageTitle" />
 
-    <ShowPageHero
-      :title="pageTitle"
-      :icon="CalendarLtr24Regular"
-    >
-      <template #badge>
-        <Badge v-if="isFinished" variant="success" class="gap-1">
-          <CheckCircleIcon class="h-3 w-3" />
-          {{ $t("Užbaigta") }}
-        </Badge>
-        <Badge v-else variant="secondary" class="gap-1">
-          {{ $t("Etapas") }} {{ planningProcess.current_stage }} / 5
-        </Badge>
-      </template>
-
-      <template #subtitle>
-        {{ planningProcess.tenant?.shortname }}
-      </template>
-
-      <template #info>
-        <div class="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <UserIcon class="h-3.5 w-3.5" />
-          <span v-if="planningProcess.moderator">{{ planningProcess.moderator.name }}</span>
-          <span v-else class="italic">{{ $t("Moderatorius nepriskirtas") }}</span>
+    <PageHero>
+      <div class="flex items-start gap-4">
+        <GoalIcon class="h-16 w-16 sm:h-20 sm:w-20 text-primary shrink-0" />
+        <div>
+          <h1 class="text-3xl font-bold tracking-tight sm:text-4xl text-foreground flex items-center gap-3">
+            {{ planningProcess.tenant?.shortname }} {{ capitalize($tChoice("entities.planningProcess.model", 2)) }}
+            <Badge v-if="isFinished" variant="success" class="gap-1">
+              <CheckCircleIcon class="h-3 w-3" />
+              {{ $t("Užbaigta") }}
+            </Badge>
+          </h1>
+          <p class="mt-0.5 text-lg text-muted-foreground font-medium">
+            {{ planningProcess.academic_year_start }}–{{ planningProcess.academic_year_start + 1 }}
+          </p>
+          <div class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+            <div class="flex items-center gap-1.5">
+              <UserIcon class="h-3.5 w-3.5" />
+              <span class="font-medium">{{ $t("Moderatorius") }}:</span>
+              <span v-if="planningProcess.moderator">{{ planningProcess.moderator.name }}</span>
+              <span v-else class="italic">{{ $t("Nepriskirtas") }}</span>
+            </div>
+            <div v-if="editors.length > 0" class="flex items-center gap-1.5">
+              <component :is="editors.length === 1 ? UserIcon : UsersIcon" class="h-3.5 w-3.5" />
+              <span class="font-medium">{{ editors.length === 1 ? $t("Atsakingas asmuo") : $t("Atsakingi asmenys") }}:</span>
+              <span>{{ editors.map(e => e.name).join(', ') }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <template #actions>
+        <div class="flex items-center gap-2">
+          <Button
+            v-if="canUpdate && !isFinished && planningProcess.current_stage === 4"
+            variant="outline"
+            size="sm"
+            class="gap-1.5"
+            :disabled="advanceForm.processing"
+            @click="advanceStage"
+          >
+            <ArrowRightIcon class="h-3.5 w-3.5" />
+            {{ $t("Pereiti į kitą etapą") }}
+          </Button>
+          <DropdownMenu v-if="canDelete">
+            <DropdownMenuTrigger as-child>
+              <Button variant="ghost" size="icon" class="h-8 w-8">
+                <MoreHorizontalIcon class="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                class="text-destructive focus:text-destructive"
+                @click="showDeleteDialog = true"
+              >
+                <Trash2Icon class="h-4 w-4 mr-2" />
+                {{ $t("Šalinti procesą") }}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </template>
-
-      <template #actions>
-        <Button
-          v-if="canUpdate && !isFinished && planningProcess.current_stage === 4"
-          variant="outline"
-          size="sm"
-          class="gap-1.5"
-          :disabled="advanceForm.processing"
-          @click="advanceStage"
-        >
-          <ArrowRightIcon class="h-3.5 w-3.5" />
-          {{ $t("Pereiti į kitą etapą") }}
-        </Button>
-        <DropdownMenu v-if="canDelete">
-          <DropdownMenuTrigger as-child>
-            <Button variant="ghost" size="icon" class="h-8 w-8">
-              <MoreHorizontalIcon class="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem
-              class="text-destructive focus:text-destructive"
-              @click="showDeleteDialog = true"
-            >
-              <Trash2Icon class="h-4 w-4 mr-2" />
-              {{ $t("Šalinti procesą") }}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+      <template #content>
+        <div class="mt-4 pt-4 border-t border-zinc-200 dark:border-zinc-700">
+          <StageStepper
+            :current-stage="planningProcess.current_stage"
+            :selected-stage="selectedStage"
+            :is-finished="isFinished"
+            :deadlines="deadlines"
+            :can-view-expectations="canViewExpectations"
+            @select="selectStage"
+          />
+        </div>
       </template>
-
-      <template #navigation>
-        <StageStepper
-          :current-stage="planningProcess.current_stage"
-          :selected-stage="selectedStage"
-          :is-finished="isFinished"
-          :deadlines="deadlines"
-          :can-view-expectations="canViewExpectations"
-          @select="selectStage"
-        />
-      </template>
-    </ShowPageHero>
+    </PageHero>
 
     <div class="mt-6">
       <!-- Overview (stage 0) -->
@@ -195,12 +201,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, capitalize } from "vue";
 import { useForm, Head } from "@inertiajs/vue3";
 import { transChoice as $tChoice, trans as $t } from "laravel-vue-i18n";
-import CalendarLtr24Regular from "~icons/fluent/calendar-ltr24-regular";
 import {
+  Goal as GoalIcon,
   User as UserIcon,
+  Users as UsersIcon,
   CheckCircle as CheckCircleIcon,
   ArrowRight as ArrowRightIcon,
   ArrowLeft as ArrowLeftIcon,
@@ -209,7 +216,7 @@ import {
 } from "lucide-vue-next";
 
 import AdminContentPage from "@/Components/Layouts/AdminContentPage.vue";
-import ShowPageHero from "@/Components/Hero/ShowPageHero.vue";
+import PageHero from "@/Components/Hero/PageHero.vue";
 import { BreadcrumbHelpers, usePageBreadcrumbs } from "@/Composables/useBreadcrumbsUnified";
 import Icons from "@/Types/Icons/regular";
 import { Badge } from "@/Components/ui/badge";
@@ -266,8 +273,8 @@ const deadlineForStage = (stage: number) =>
 
 usePageBreadcrumbs(() =>
   BreadcrumbHelpers.adminShow(
-    $tChoice("entities.planningProcess.model", 2),
-    "planningProcesses.index",
+    capitalize($tChoice("entities.planningProcess.model", 2)),
+    "planavimai.index",
     {},
     pageTitle.value,
     Icons.PLANNING_PROCESS,
@@ -292,13 +299,13 @@ const advanceForm = useForm({});
 const deleteForm = useForm({});
 
 const advanceStage = () => {
-  advanceForm.patch(route("planningProcesses.advanceStage", props.planningProcess.id), {
+  advanceForm.patch(route("planavimai.advanceStage", props.planningProcess.id), {
     preserveScroll: true,
   });
 };
 
 const destroyProcess = () => {
-  deleteForm.delete(route("planningProcesses.destroy", props.planningProcess.id), {
+  deleteForm.delete(route("planavimai.destroy", props.planningProcess.id), {
     onSuccess: () => {
       showDeleteDialog.value = false;
     },

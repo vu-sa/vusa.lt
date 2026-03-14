@@ -194,7 +194,6 @@
 </template>
 
 <script setup lang="ts">
-import CalendarLtr24Regular from '~icons/fluent/calendar-ltr24-regular'
 import {
   BookOpen,
   GraduationCap,
@@ -213,6 +212,7 @@ import {
   ExternalLink,
   Bell,
   Search,
+  CalendarRange,
   type LucideIcon
 } from 'lucide-vue-next'
 import { Link, router, usePage, useForm } from '@inertiajs/vue3'
@@ -345,16 +345,16 @@ const navMainItems = computed(() => {
   if (canViewAnyPlanning) {
     items.push({
       title: $t('Planavimai'),
-      url: route('planningProcesses.index'),
-      icon: markRaw(CalendarLtr24Regular),
-      isActive: route().current('planningProcesses.*') || route().current('planningActivities.*') || route().current('planningMonitoringEntries.*') || route().current('planningDeadlines.*'),
+      url: route('planavimai.index'),
+      icon: markRaw(CalendarRange),
+      isActive: route().current('planavimai.*') || route().current('planningActivities.*') || route().current('planningMonitoringEntries.*') || route().current('planningDeadlines.*'),
     })
   } else if (planningProcessId) {
     items.push({
       title: $t('Planavimai'),
-      url: route('planningProcesses.show', planningProcessId),
-      icon: markRaw(CalendarLtr24Regular),
-      isActive: route().current('planningProcesses.*') || route().current('planningActivities.*') || route().current('planningMonitoringEntries.*') || route().current('planningDeadlines.*'),
+      url: route('planavimai.show', planningProcessId),
+      icon: markRaw(CalendarRange),
+      isActive: route().current('planavimai.*') || route().current('planningActivities.*') || route().current('planningMonitoringEntries.*') || route().current('planningDeadlines.*'),
     })
   }
 

@@ -190,18 +190,18 @@ Route::patch('problems/{problem}/status', [ProblemController::class, 'updateStat
 Route::resource('problems', ProblemController::class);
 
 // Planning process routes
-Route::patch('planningProcesses/{planningProcess}/assign-moderator', [PlanningProcessController::class, 'assignModerator'])->name('planningProcesses.assignModerator');
-Route::patch('planningProcesses/{planningProcess}/goal', [PlanningProcessController::class, 'updateGoal'])->name('planningProcesses.updateGoal');
-Route::post('planningProcesses/{planningProcess}/upload-document', [PlanningProcessController::class, 'uploadDocument'])->name('planningProcesses.uploadDocument');
-Route::patch('planningProcesses/{planningProcess}/approve-document', [PlanningProcessController::class, 'approveDocument'])->name('planningProcesses.approveDocument');
-Route::patch('planningProcesses/{planningProcess}/reject-document', [PlanningProcessController::class, 'rejectDocument'])->name('planningProcesses.rejectDocument');
-Route::patch('planningProcesses/{planningProcess}/reject-goal', [PlanningProcessController::class, 'rejectGoal'])->name('planningProcesses.rejectGoal');
-Route::patch('planningProcesses/{planningProcess}/advance-stage', [PlanningProcessController::class, 'advanceStage'])->name('planningProcesses.advanceStage');
-Route::post('planningProcesses/{planningProcess}/upload-template', [PlanningProcessController::class, 'uploadTemplate'])->name('planningProcesses.uploadTemplate');
-Route::delete('planningProcesses/{planningProcess}/delete-template', [PlanningProcessController::class, 'deleteTemplate'])->name('planningProcesses.deleteTemplate');
-Route::post('planningProcesses/{planningProcess}/editors', [PlanningProcessController::class, 'addEditor'])->name('planningProcesses.addEditor');
-Route::delete('planningProcesses/{planningProcess}/editors', [PlanningProcessController::class, 'removeEditor'])->name('planningProcesses.removeEditor');
-Route::resource('planningProcesses', PlanningProcessController::class)->except(['edit']);
+Route::patch('planavimai/{planningProcess}/assign-moderator', [PlanningProcessController::class, 'assignModerator'])->name('planavimai.assignModerator');
+Route::patch('planavimai/{planningProcess}/goal', [PlanningProcessController::class, 'updateGoal'])->name('planavimai.updateGoal');
+Route::post('planavimai/{planningProcess}/upload-document', [PlanningProcessController::class, 'uploadDocument'])->name('planavimai.uploadDocument');
+Route::patch('planavimai/{planningProcess}/approve-document', [PlanningProcessController::class, 'approveDocument'])->name('planavimai.approveDocument');
+Route::patch('planavimai/{planningProcess}/reject-document', [PlanningProcessController::class, 'rejectDocument'])->name('planavimai.rejectDocument');
+Route::patch('planavimai/{planningProcess}/reject-goal', [PlanningProcessController::class, 'rejectGoal'])->name('planavimai.rejectGoal');
+Route::patch('planavimai/{planningProcess}/advance-stage', [PlanningProcessController::class, 'advanceStage'])->name('planavimai.advanceStage');
+Route::post('planavimai/{planningProcess}/upload-template', [PlanningProcessController::class, 'uploadTemplate'])->name('planavimai.uploadTemplate');
+Route::delete('planavimai/{planningProcess}/delete-template', [PlanningProcessController::class, 'deleteTemplate'])->name('planavimai.deleteTemplate');
+Route::post('planavimai/{planningProcess}/editors', [PlanningProcessController::class, 'addEditor'])->name('planavimai.addEditor');
+Route::delete('planavimai/{planningProcess}/editors', [PlanningProcessController::class, 'removeEditor'])->name('planavimai.removeEditor');
+Route::resource('planavimai', PlanningProcessController::class)->except(['edit'])->parameters(['planavimai' => 'planningProcess']);
 Route::resource('planningActivities', PlanningActivityController::class)->only(['store', 'update', 'destroy']);
 Route::resource('planningMonitoringEntries', PlanningMonitoringController::class)->only(['store', 'update']);
 Route::get('planningDeadlines/{academicYear}/edit', [PlanningStageDeadlineController::class, 'edit'])->name('planningDeadlines.edit');
