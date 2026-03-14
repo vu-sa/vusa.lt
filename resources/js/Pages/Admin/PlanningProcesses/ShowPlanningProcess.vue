@@ -33,6 +33,7 @@
       </div>
       <template #actions>
         <div class="flex items-center gap-2">
+          <FieldChangeHistory v-if="canViewFieldChanges" :changes="fieldChanges" />
           <Button
             v-if="canUpdate && !isFinished && planningProcess.current_stage === 4"
             variant="outline"
@@ -91,7 +92,6 @@
           @edit-team="selectedStage = -1"
           @navigate-to-stage="selectStage"
         />
-        <FieldChangeHistory v-if="canViewFieldChanges" :changes="fieldChanges" />
       </div>
 
       <!-- Any non-overview stage -->

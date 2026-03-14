@@ -272,14 +272,32 @@ class PlanningProcessController extends AdminController
 
         if ($canViewFieldChanges) {
             $stage1Fields = ['expectations_text', 'expectations_submitted_at'];
+            $userIdFields = ['moderator_user_id', 'tip_approved_by', 'mvp_approved_by'];
 
-            $fieldChanges = Activity::where('subject_type', PlanningProcess::class)
+            $activities = Activity::where('subject_type', PlanningProcess::class)
                 ->where('subject_id', $planningProcess->id)
                 ->whereNotNull('properties->old')
                 ->orderBy('created_at', 'desc')
                 ->limit(50)
-                ->get()
-                ->map(function (Activity $a) use ($isModerator, $isCoordinator, $stage1Fields) {
+                ->get();
+
+            // Collect all user IDs referenced in changes for batch resolution
+            $userIds = collect();
+            foreach ($activities as $a) {
+                foreach (['old', 'attributes'] as $prop) {
+                    $values = $a->properties[$prop] ?? [];
+                    foreach ($userIdFields as $field) {
+                        if (! empty($values[$field])) {
+                            $userIds->push($values[$field]);
+                        }
+                    }
+                }
+            }
+            /** @var \Illuminate\Support\Collection<string, string> $userNames */
+            $userNames = User::whereIn('id', $userIds->unique()->filter())->pluck('name', 'id');
+
+            $fieldChanges = $activities
+                ->map(function (Activity $a) use ($isModerator, $isCoordinator, $stage1Fields, $userIdFields, $userNames) {
                     $old = $a->properties['old'] ?? [];
                     $new = $a->properties['attributes'] ?? [];
 
@@ -290,6 +308,16 @@ class PlanningProcessController extends AdminController
 
                         if (empty($new)) {
                             return null;
+                        }
+                    }
+
+                    // Resolve user IDs to names for human-readable display
+                    foreach ($userIdFields as $field) {
+                        if (isset($old[$field]) && $old[$field]) {
+                            $old[$field] = $userNames[$old[$field]] ?? $old[$field];
+                        }
+                        if (isset($new[$field]) && $new[$field]) {
+                            $new[$field] = $userNames[$new[$field]] ?? $new[$field];
                         }
                     }
 

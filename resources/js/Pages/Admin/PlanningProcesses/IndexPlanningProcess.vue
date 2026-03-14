@@ -293,12 +293,12 @@ const stageBarSegments = computed(() => {
   const total = props.summary.total || 1;
 
   return [
-    { stageNumber: 1, label: $t("I. Pasiruošimas"), count: sc[1] ?? 0, percent: ((sc[1] ?? 0) / total) * 100, color: "bg-zinc-400 dark:bg-zinc-500", dotColor: "bg-zinc-400" },
-    { stageNumber: 2, label: $t("II. Susitikimai"), count: sc[2] ?? 0, percent: ((sc[2] ?? 0) / total) * 100, color: "bg-blue-400 dark:bg-blue-500", dotColor: "bg-blue-400" },
-    { stageNumber: 3, label: $t("III. Dokumentai"), count: sc[3] ?? 0, percent: ((sc[3] ?? 0) / total) * 100, color: "bg-amber-400 dark:bg-amber-500", dotColor: "bg-amber-400" },
-    { stageNumber: 4, label: $t("IV. MVT"), count: sc[4] ?? 0, percent: ((sc[4] ?? 0) / total) * 100, color: "bg-purple-400 dark:bg-purple-500", dotColor: "bg-purple-400" },
-    { stageNumber: 5, label: $t("V. Monitoringas"), count: sc[5] ?? 0, percent: ((sc[5] ?? 0) / total) * 100, color: "bg-cyan-400 dark:bg-cyan-500", dotColor: "bg-cyan-400" },
-    { stageNumber: 6, label: $t("Užbaigta"), count: props.summary.finished, percent: (props.summary.finished / total) * 100, color: "bg-green-500 dark:bg-green-500", dotColor: "bg-green-500" },
+    { stageNumber: 1, label: $t("I. Pasiruošimas"), count: sc[1] ?? 0, percent: ((sc[1] ?? 0) / total) * 100, color: "bg-zinc-300 dark:bg-zinc-600", dotColor: "bg-zinc-300 dark:bg-zinc-600" },
+    { stageNumber: 2, label: $t("II. Susitikimai"), count: sc[2] ?? 0, percent: ((sc[2] ?? 0) / total) * 100, color: "bg-blue-200 dark:bg-blue-800", dotColor: "bg-blue-300 dark:bg-blue-700" },
+    { stageNumber: 3, label: $t("III. Dokumentai"), count: sc[3] ?? 0, percent: ((sc[3] ?? 0) / total) * 100, color: "bg-amber-200 dark:bg-amber-800", dotColor: "bg-amber-300 dark:bg-amber-700" },
+    { stageNumber: 4, label: $t("IV. MVT"), count: sc[4] ?? 0, percent: ((sc[4] ?? 0) / total) * 100, color: "bg-purple-200 dark:bg-purple-800", dotColor: "bg-purple-300 dark:bg-purple-700" },
+    { stageNumber: 5, label: $t("V. Monitoringas"), count: sc[5] ?? 0, percent: ((sc[5] ?? 0) / total) * 100, color: "bg-cyan-200 dark:bg-cyan-800", dotColor: "bg-cyan-300 dark:bg-cyan-700" },
+    { stageNumber: 6, label: $t("Užbaigta"), count: props.summary.finished, percent: (props.summary.finished / total) * 100, color: "bg-green-200 dark:bg-green-800", dotColor: "bg-green-300 dark:bg-green-700" },
   ];
 });
 

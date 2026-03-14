@@ -8,15 +8,14 @@
       @page-change="handlePageChange" @update:sorting="handleSortChange" @update:global-filter="updateSearchText"
       @update:row-selection="handleRowSelectionChange">
       <template #filters>
-        <div class="flex gap-2 w-full">
-          <Input v-model="searchText" :placeholder="`${$t('Paieška')}...`" class="max-w-sm"
+        <div class="flex w-full gap-2">
+          <Input v-model="searchText" :placeholder="`${$t('Paieška')}...`" class="flex-1"
             @keydown.enter="handleSearch" />
           <Button @click="handleSearch">
             {{ $t('Paieška') }}
           </Button>
         </div>
-        <div class="flex gap-2">
-          <!-- Toggle deleted items -->
+        <div class="flex flex-wrap items-center gap-2">
           <slot name="filters" />
           <div v-if="allowToggleDeleted" class="flex ml-2 items-center space-x-2">
             <Checkbox id="show-deleted" :model-value="showDeleted" @update:model-value="handleShowDeletedChange" />
