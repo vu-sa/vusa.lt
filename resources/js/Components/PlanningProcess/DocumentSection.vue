@@ -13,6 +13,10 @@
         <XIcon class="h-3 w-3" />
         {{ $t("Atmesta") }}
       </Badge>
+      <Badge v-else-if="documents.length > 0 && !approvedAt" variant="warning" class="gap-1">
+        <ClockIcon class="h-3 w-3" />
+        {{ $t("Laukia patvirtinimo") }}
+      </Badge>
     </div>
 
     <!-- Rejection feedback banner -->
@@ -118,6 +122,7 @@ import { trans as $t } from "laravel-vue-i18n";
 import {
   File as FileIcon,
   Check as CheckIcon,
+  Clock as ClockIcon,
   X as XIcon,
   Upload as UploadIcon,
   AlertCircle as AlertCircleIcon,

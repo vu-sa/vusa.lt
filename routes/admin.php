@@ -199,6 +199,8 @@ Route::patch('planningProcesses/{planningProcess}/reject-goal', [PlanningProcess
 Route::patch('planningProcesses/{planningProcess}/advance-stage', [PlanningProcessController::class, 'advanceStage'])->name('planningProcesses.advanceStage');
 Route::post('planningProcesses/{planningProcess}/upload-template', [PlanningProcessController::class, 'uploadTemplate'])->name('planningProcesses.uploadTemplate');
 Route::delete('planningProcesses/{planningProcess}/delete-template', [PlanningProcessController::class, 'deleteTemplate'])->name('planningProcesses.deleteTemplate');
+Route::post('planningProcesses/{planningProcess}/editors', [PlanningProcessController::class, 'addEditor'])->name('planningProcesses.addEditor');
+Route::delete('planningProcesses/{planningProcess}/editors', [PlanningProcessController::class, 'removeEditor'])->name('planningProcesses.removeEditor');
 Route::resource('planningProcesses', PlanningProcessController::class)->except(['edit']);
 Route::resource('planningActivities', PlanningActivityController::class)->only(['store', 'update', 'destroy']);
 Route::resource('planningMonitoringEntries', PlanningMonitoringController::class)->only(['store', 'update']);

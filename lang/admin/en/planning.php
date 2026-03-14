@@ -18,4 +18,7 @@ return [
     'no_deadline_set' => 'No deadline set',
     'document_rejected' => 'Document rejected.',
     'goal_rejected' => 'Goal rejected.',
+    'editor_added' => 'Editor added.',
+    'editor_removed' => 'Editor removed.',
+    'editor_is_moderator' => 'This user is already the moderator.',
 ];

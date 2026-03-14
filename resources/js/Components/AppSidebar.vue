@@ -338,16 +338,21 @@ const navMainItems = computed(() => {
     })
   }
 
-  // Planning processes
+  // Planning processes — coordinator goes to index, everyone else to their process
   const planningProcessId = usePage().props.auth?.planningProcessId
   const canViewAnyPlanning = usePage().props.auth?.can.index?.planningProcess
 
-  if (planningProcessId || canViewAnyPlanning) {
+  if (canViewAnyPlanning) {
     items.push({
       title: $t('Planavimai'),
-      url: planningProcessId
-        ? route('planningProcesses.show', planningProcessId)
-        : route('planningProcesses.index'),
+      url: route('planningProcesses.index'),
+      icon: markRaw(CalendarLtr24Regular),
+      isActive: route().current('planningProcesses.*') || route().current('planningActivities.*') || route().current('planningMonitoringEntries.*') || route().current('planningDeadlines.*'),
+    })
+  } else if (planningProcessId) {
+    items.push({
+      title: $t('Planavimai'),
+      url: route('planningProcesses.show', planningProcessId),
       icon: markRaw(CalendarLtr24Regular),
       isActive: route().current('planningProcesses.*') || route().current('planningActivities.*') || route().current('planningMonitoringEntries.*') || route().current('planningDeadlines.*'),
     })

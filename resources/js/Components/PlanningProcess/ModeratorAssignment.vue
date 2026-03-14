@@ -29,7 +29,7 @@
             <p v-else class="text-sm text-muted-foreground italic">{{ $t("Nepriskirtas") }}</p>
           </div>
         </div>
-        <Button v-if="canUpdate" variant="outline" size="sm" class="gap-1.5 shrink-0" @click="startEditing">
+        <Button v-if="canAssignModerator" variant="outline" size="sm" class="gap-1.5 shrink-0" @click="startEditing">
           <PencilIcon class="h-3.5 w-3.5" />
           {{ $t("Keisti") }}
         </Button>
@@ -127,7 +127,7 @@ type UserOption = { id: string; name: string };
 
 const props = defineProps<{
   planningProcess: App.Entities.PlanningProcess;
-  canUpdate: boolean;
+  canAssignModerator: boolean;
 }>();
 
 const editing = ref(false);
@@ -148,7 +148,7 @@ const userOptions = computed<UserOption[]>(() => searchedUsers.value ?? []);
 
 const debouncedSearch = useDebounceFn(() => {
   if (searchTerm.value.length >= 2) {
-    const params = new URLSearchParams({ search: searchTerm.value });
+    const params = new URLSearchParams({ search: searchTerm.value, permission: "planningProcesses.update.padalinys" });
     searchUrl.value = route("api.v1.admin.users.search") + "?" + params.toString();
     execute();
   }

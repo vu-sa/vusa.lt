@@ -22,8 +22,10 @@ trait HasComments
      */
     public function comment(string $body, array $extra = []): Comment
     {
+        $sanitizedBody = strip_tags($body, '<p><br><strong><em><b><i><u><s><ul><ol><li><a><blockquote><code><pre><h1><h2><h3><h4><h5><h6>');
+
         $comment = $this->comments()->create(array_merge([
-            'comment' => $body,
+            'comment' => $sanitizedBody,
             'user_id' => auth()->id(),
             'commentable_id' => $this->id,
             'commentable_type' => get_class($this),

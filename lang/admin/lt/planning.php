@@ -18,4 +18,7 @@ return [
     'no_deadline_set' => 'Terminas nenustatytas',
     'document_rejected' => 'Dokumentas atmestas.',
     'goal_rejected' => 'Tikslas atmestas.',
+    'editor_added' => 'Redaktorius pridėtas.',
+    'editor_removed' => 'Redaktorius pašalintas.',
+    'editor_is_moderator' => 'Šis vartotojas jau yra moderatorius.',
 ];

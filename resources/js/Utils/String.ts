@@ -12,6 +12,10 @@ export const pluralizeModels = (word: string, forPermissions = true) => {
     return forPermissions ? word + "s" : word;
   }
 
+  if (word.endsWith("ss")) {
+    return word + "es";
+  }
+
   if (word.endsWith("s")) {
     return word;
   }

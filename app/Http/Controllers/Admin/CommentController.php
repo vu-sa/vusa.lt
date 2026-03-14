@@ -55,8 +55,13 @@ class CommentController extends AdminController
     {
         $this->handleAuthorization('update', $comment);
 
-        // update comment
-        $comment->update($request->all());
+        $validated = $request->validate([
+            'comment' => 'required|string',
+        ]);
+
+        $validated['comment'] = strip_tags($validated['comment'], '<p><br><strong><em><b><i><u><s><ul><ol><li><a><blockquote><code><pre><h1><h2><h3><h4><h5><h6>');
+
+        $comment->update($validated);
 
         return back()->with('success', 'Komentaras atnaujintas.');
     }

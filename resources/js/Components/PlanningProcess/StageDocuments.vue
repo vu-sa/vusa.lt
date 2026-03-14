@@ -17,7 +17,7 @@
     </CardHeader>
     <CardContent class="flex flex-col gap-4">
       <!-- Templates section -->
-      <div v-if="hasTemplates || canUpdate" class="rounded-lg border border-dashed border-muted-foreground/30 bg-muted/30 p-4 flex flex-col gap-3">
+      <div v-if="hasTemplates || canManageTemplates" class="rounded-lg border border-dashed border-muted-foreground/30 bg-muted/30 p-4 flex flex-col gap-3">
         <div class="flex items-center gap-2">
           <FileArchiveIcon class="h-4 w-4 text-muted-foreground" />
           <h4 class="font-medium text-sm text-muted-foreground">{{ $t("Šablonai") }}</h4>
@@ -39,7 +39,7 @@
                 <ExternalLinkIcon class="h-3 w-3 text-muted-foreground" />
               </a>
               <Button
-                v-if="canUpdate"
+                v-if="canManageTemplates"
                 variant="ghost"
                 size="icon"
                 class="h-7 w-7 text-muted-foreground hover:text-destructive"
@@ -49,7 +49,7 @@
                 <Trash2Icon class="h-3.5 w-3.5" />
               </Button>
             </div>
-            <div v-else-if="canUpdate" class="flex flex-wrap items-center gap-2">
+            <div v-else-if="canManageTemplates" class="flex flex-wrap items-center gap-2">
               <Input
                 type="file"
                 accept=".pdf,.doc,.docx,.xls,.xlsx"
@@ -87,7 +87,7 @@
                 <ExternalLinkIcon class="h-3 w-3 text-muted-foreground" />
               </a>
               <Button
-                v-if="canUpdate"
+                v-if="canManageTemplates"
                 variant="ghost"
                 size="icon"
                 class="h-7 w-7 text-muted-foreground hover:text-destructive"
@@ -97,7 +97,7 @@
                 <Trash2Icon class="h-3.5 w-3.5" />
               </Button>
             </div>
-            <div v-else-if="canUpdate" class="flex flex-wrap items-center gap-2">
+            <div v-else-if="canManageTemplates" class="flex flex-wrap items-center gap-2">
               <Input
                 type="file"
                 accept=".pdf,.doc,.docx,.xls,.xlsx"
@@ -199,6 +199,7 @@ const props = defineProps<{
   deadline?: App.Entities.PlanningStageDeadline | null;
   canUpdate: boolean;
   canApprove: boolean;
+  canManageTemplates: boolean;
   comments: App.Entities.Comment[];
   tipDocuments: App.Entities.DocumentVersion[];
   mvpDocuments: App.Entities.DocumentVersion[];

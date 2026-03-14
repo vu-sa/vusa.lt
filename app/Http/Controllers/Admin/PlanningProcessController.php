@@ -10,10 +10,13 @@ use App\Http\Requests\StorePlanningProcessRequest;
 use App\Http\Requests\UpdatePlanningProcessRequest;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Approval;
+use App\Models\Duty;
 use App\Models\PlanningProcess;
 use App\Models\PlanningStageDeadline;
 use App\Models\Problem;
 use App\Models\Tenant;
+use App\Models\Type;
+use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\TanstackTableService;
 use Illuminate\Database\Eloquent\Builder;
@@ -180,6 +183,25 @@ class PlanningProcessController extends AdminController
 
         $planningProcess = PlanningProcess::create($validated);
 
+        // Auto-assign users with pirmininkas duty type as editors
+        $pirmininkasTypeId = Type::where('slug', 'pirmininkas')
+            ->where('model_type', Duty::class)
+            ->value('id');
+
+        if ($pirmininkasTypeId) {
+            $userIds = User::whereHas('current_duties', function ($q) use ($planningProcess, $pirmininkasTypeId) {
+                $q->whereHas('institution', function ($iq) use ($planningProcess) {
+                    $iq->whereHas('tenant', function ($tq) use ($planningProcess) {
+                        $tq->where('tenants.id', $planningProcess->tenant_id);
+                    });
+                })->whereHas('types', function ($tq) use ($pirmininkasTypeId) {
+                    $tq->where('types.id', $pirmininkasTypeId);
+                });
+            })->pluck('id');
+
+            $planningProcess->editors()->syncWithoutDetaching($userIds);
+        }
+
         return $this->redirectToIndexWithSuccess(
             'planningProcesses',
             trans_choice('messages.created', 0, ['model' => trans_choice('entities.planningProcess.model', 1)])
@@ -195,9 +217,12 @@ class PlanningProcessController extends AdminController
 
         $user = auth()->user();
 
+        $isModerator = $planningProcess->moderator_user_id === $user->id;
+
         $planningProcess->load([
             'tenant',
             'moderator',
+            'editors',
             'selectedProblem',
             'tipApprovedByUser',
             'mvpApprovedByUser',
@@ -234,29 +259,62 @@ class PlanningProcessController extends AdminController
                 ] : null,
             ])->all());
 
-        // Field change history from activity log
-        $fieldChanges = Activity::where('subject_type', PlanningProcess::class)
-            ->where('subject_id', $planningProcess->id)
-            ->whereNotNull('properties->old')
-            ->orderBy('created_at', 'desc')
-            ->limit(50)
-            ->get()
-            ->map(fn (Activity $a) => [
-                'id' => $a->id,
-                'description' => $a->description,
-                'old' => $a->properties['old'] ?? [],
-                'new' => $a->properties['attributes'] ?? [],
-                'created_at' => $a->created_at->toISOString(),
-                'causer_name' => $a->causer?->name ?? null,
-            ])->all();
-
         // Latest document URL (last in collection)
         $latestTip = $tipDocuments->last();
         $latestMvp = $mvpDocuments->last();
 
+        $isEditor = $planningProcess->isEditor($user);
+        $isCoordinator = $user->can('approve', $planningProcess);
+
+        // Field change history — only visible to coordinator, editor, moderator
+        $canViewFieldChanges = $isCoordinator || $isEditor || $isModerator;
+        $fieldChanges = [];
+
+        if ($canViewFieldChanges) {
+            $stage1Fields = ['expectations_text', 'expectations_submitted_at'];
+
+            $fieldChanges = Activity::where('subject_type', PlanningProcess::class)
+                ->where('subject_id', $planningProcess->id)
+                ->whereNotNull('properties->old')
+                ->orderBy('created_at', 'desc')
+                ->limit(50)
+                ->get()
+                ->map(function (Activity $a) use ($isModerator, $isCoordinator, $stage1Fields) {
+                    $old = $a->properties['old'] ?? [];
+                    $new = $a->properties['attributes'] ?? [];
+
+                    // Hide stage 1 fields from moderators (who aren't also coordinators)
+                    if ($isModerator && ! $isCoordinator) {
+                        $old = array_diff_key($old, array_flip($stage1Fields));
+                        $new = array_diff_key($new, array_flip($stage1Fields));
+
+                        if (empty($new)) {
+                            return null;
+                        }
+                    }
+
+                    return [
+                        'id' => $a->id,
+                        'description' => $a->description,
+                        'old' => $old,
+                        'new' => $new,
+                        'created_at' => $a->created_at->toISOString(),
+                        'causer_name' => $a->causer?->name ?? null,
+                    ];
+                })->filter()->values()->all();
+        }
+
+        // Only coordinators and editors can see expectations text
+        $canViewExpectations = $isCoordinator || $isEditor;
+
+        $planningProcessData = $planningProcess->toArray();
+        if (! $canViewExpectations) {
+            $planningProcessData['expectations_text'] = null;
+        }
+
         return $this->inertiaResponse('Admin/PlanningProcesses/ShowPlanningProcess', [
             'planningProcess' => [
-                ...$planningProcess->toArray(),
+                ...$planningProcessData,
                 'tip_document_url' => $latestTip?->getUrl(),
                 'tip_document_name' => $latestTip?->file_name,
                 'mvp_document_url' => $latestMvp?->getUrl(),
@@ -292,9 +350,19 @@ class PlanningProcessController extends AdminController
             'stageComments' => $planningProcess->comments
                 ->groupBy('stage')
                 ->mapWithKeys(fn ($comments, $stage) => [(int) $stage => $comments->toArray()]),
+            'editors' => $planningProcess->editors->map(fn (User $u) => [
+                'id' => $u->id,
+                'name' => $u->name,
+            ])->values()->all(),
             'canUpdate' => $user->can('update', $planningProcess),
-            'canApprove' => $user->can('approve', $planningProcess),
+            'canApprove' => $isCoordinator,
             'canDelete' => $user->can('delete', $planningProcess),
+            'canManageEditors' => $user->can('manageEditors', $planningProcess),
+            'canAssignModerator' => $user->can('assignModerator', $planningProcess),
+            'canManageTemplates' => $isCoordinator,
+            'canViewExpectations' => $canViewExpectations,
+            'canViewFieldChanges' => $canViewFieldChanges,
+            'isModerator' => $isModerator,
             'isFinished' => $planningProcess->isFinished(),
         ]);
     }
@@ -331,7 +399,7 @@ class PlanningProcessController extends AdminController
      */
     public function assignModerator(Request $request, PlanningProcess $planningProcess): RedirectResponse
     {
-        $this->handleAuthorization('update', $planningProcess);
+        $this->handleAuthorization('assignModerator', $planningProcess);
 
         $validated = $request->validate([
             'moderator_user_id' => ['nullable', 'string', 'exists:users,id'],
@@ -544,7 +612,7 @@ class PlanningProcessController extends AdminController
      */
     public function uploadTemplate(Request $request, PlanningProcess $planningProcess): RedirectResponse
     {
-        $this->handleAuthorization('update', $planningProcess);
+        $this->handleAuthorization('approve', $planningProcess);
 
         $validated = $request->validate([
             'collection' => ['required', 'string', 'in:tip_template,mvp_template'],
@@ -563,7 +631,7 @@ class PlanningProcessController extends AdminController
      */
     public function deleteTemplate(Request $request, PlanningProcess $planningProcess): RedirectResponse
     {
-        $this->handleAuthorization('update', $planningProcess);
+        $this->handleAuthorization('approve', $planningProcess);
 
         $validated = $request->validate([
             'collection' => ['required', 'string', 'in:tip_template,mvp_template'],
@@ -572,6 +640,42 @@ class PlanningProcessController extends AdminController
         $planningProcess->clearMediaCollection($validated['collection']);
 
         return back()->with('success', __('planning.template_deleted'));
+    }
+
+    /**
+     * Add an editor to the planning process.
+     */
+    public function addEditor(Request $request, PlanningProcess $planningProcess): RedirectResponse
+    {
+        $this->handleAuthorization('manageEditors', $planningProcess);
+
+        $validated = $request->validate([
+            'user_id' => ['required', 'string', 'exists:users,id'],
+        ]);
+
+        if ($validated['user_id'] === $planningProcess->moderator_user_id) {
+            return back()->with('error', __('planning.editor_is_moderator'));
+        }
+
+        $planningProcess->editors()->syncWithoutDetaching([$validated['user_id']]);
+
+        return back()->with('success', __('planning.editor_added'));
+    }
+
+    /**
+     * Remove an editor from the planning process.
+     */
+    public function removeEditor(Request $request, PlanningProcess $planningProcess): RedirectResponse
+    {
+        $this->handleAuthorization('manageEditors', $planningProcess);
+
+        $validated = $request->validate([
+            'user_id' => ['required', 'string', 'exists:users,id'],
+        ]);
+
+        $planningProcess->editors()->detach($validated['user_id']);
+
+        return back()->with('success', __('planning.editor_removed'));
     }
 
     /**

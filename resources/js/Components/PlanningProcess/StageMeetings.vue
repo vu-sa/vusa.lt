@@ -197,6 +197,10 @@
             <XIcon class="h-3 w-3" />
             {{ $t("Atmesta") }}
           </Badge>
+          <Badge v-else-if="planningProcess.goal_text && !planningProcess.goal_approved_at" variant="warning" class="shrink-0 gap-1">
+            <ClockIcon class="h-3 w-3" />
+            {{ $t("Laukia patvirtinimo") }}
+          </Badge>
         </div>
       </CardHeader>
       <CardContent class="flex flex-col gap-3">
@@ -303,6 +307,7 @@ import {
   Target as TargetIcon,
   Goal as GoalIcon,
   Check as CheckIcon,
+  Clock as ClockIcon,
   Plus as PlusIcon,
   X as XIcon,
   AlertCircle as AlertCircleIcon,

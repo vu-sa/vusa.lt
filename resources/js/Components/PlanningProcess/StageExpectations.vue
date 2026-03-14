@@ -18,60 +18,67 @@
       </div>
     </CardHeader>
     <CardContent>
-      <div v-if="!editing" class="flex flex-col gap-4">
-        <div
-          v-if="planningProcess.expectations_text"
-          class="rounded-lg border bg-muted/30 p-4 text-sm whitespace-pre-wrap leading-relaxed"
-        >
-          {{ planningProcess.expectations_text }}
-        </div>
-        <div v-else class="rounded-lg border border-dashed p-6 text-center">
-          <SparklesIcon class="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
-          <p class="text-sm text-muted-foreground">{{ $t("Lūkesčiai dar neįvesti.") }}</p>
-        </div>
-
-        <div
-          v-if="planningProcess.expectations_submitted_at"
-          class="flex items-center gap-1.5 text-xs text-muted-foreground"
-        >
-          <CalendarIcon class="h-3.5 w-3.5" />
-          {{ $t("Pateikta:") }}
-          {{ new Date(planningProcess.expectations_submitted_at).toLocaleDateString("lt-LT") }}
-        </div>
-
-        <div v-if="canUpdate" class="flex gap-2">
-          <Button variant="outline" size="sm" class="gap-1.5" @click="startEditing">
-            <PencilIcon class="h-3.5 w-3.5" />
-            {{ $t("Redaguoti") }}
-          </Button>
-          <Button
-            v-if="!planningProcess.expectations_submitted_at"
-            size="sm"
-            class="gap-1.5"
-            :disabled="submitForm.processing || !planningProcess.expectations_text"
-            @click="submitExpectations"
+      <template v-if="canViewExpectations">
+        <div v-if="!editing" class="flex flex-col gap-4">
+          <div
+            v-if="planningProcess.expectations_text"
+            class="rounded-lg border bg-muted/30 p-4 text-sm whitespace-pre-wrap leading-relaxed"
           >
-            <SendIcon class="h-3.5 w-3.5" />
-            {{ $t("Pateikti") }}
-          </Button>
-        </div>
-      </div>
+            {{ planningProcess.expectations_text }}
+          </div>
+          <div v-else class="rounded-lg border border-dashed p-6 text-center">
+            <SparklesIcon class="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
+            <p class="text-sm text-muted-foreground">{{ $t("Lūkesčiai dar neįvesti.") }}</p>
+          </div>
 
-      <div v-else class="flex flex-col gap-4">
-        <Textarea
-          v-model="form.expectations_text"
-          :placeholder="$t('Įveskite lūkesčius...')"
-          rows="5"
-          class="resize-y"
-        />
-        <div class="flex gap-2">
-          <Button size="sm" :disabled="form.processing" @click="save">
-            {{ $t("Išsaugoti") }}
-          </Button>
-          <Button variant="outline" size="sm" @click="cancelEditing">
-            {{ $t("Atšaukti") }}
-          </Button>
+          <div
+            v-if="planningProcess.expectations_submitted_at"
+            class="flex items-center gap-1.5 text-xs text-muted-foreground"
+          >
+            <CalendarIcon class="h-3.5 w-3.5" />
+            {{ $t("Pateikta:") }}
+            {{ new Date(planningProcess.expectations_submitted_at).toLocaleDateString("lt-LT") }}
+          </div>
+
+          <div v-if="canUpdate" class="flex gap-2">
+            <Button variant="outline" size="sm" class="gap-1.5" @click="startEditing">
+              <PencilIcon class="h-3.5 w-3.5" />
+              {{ $t("Redaguoti") }}
+            </Button>
+            <Button
+              v-if="!planningProcess.expectations_submitted_at"
+              size="sm"
+              class="gap-1.5"
+              :disabled="submitForm.processing || !planningProcess.expectations_text"
+              @click="submitExpectations"
+            >
+              <SendIcon class="h-3.5 w-3.5" />
+              {{ $t("Pateikti") }}
+            </Button>
+          </div>
         </div>
+
+        <div v-else class="flex flex-col gap-4">
+          <Textarea
+            v-model="form.expectations_text"
+            :placeholder="$t('Įveskite lūkesčius...')"
+            rows="5"
+            class="resize-y"
+          />
+          <div class="flex gap-2">
+            <Button size="sm" :disabled="form.processing" @click="save">
+              {{ $t("Išsaugoti") }}
+            </Button>
+            <Button variant="outline" size="sm" @click="cancelEditing">
+              {{ $t("Atšaukti") }}
+            </Button>
+          </div>
+        </div>
+      </template>
+
+      <div v-else class="rounded-lg border border-dashed p-6 text-center">
+        <SparklesIcon class="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
+        <p class="text-sm text-muted-foreground">{{ $t("Lūkesčiai matomi tik padaliniui ir planavimo koordinatoriui.") }}</p>
       </div>
     </CardContent>
   </Card>
@@ -107,6 +114,7 @@ const props = defineProps<{
   planningProcess: App.Entities.PlanningProcess;
   deadline?: App.Entities.PlanningStageDeadline | null;
   canUpdate: boolean;
+  canViewExpectations: boolean;
   comments: App.Entities.Comment[];
 }>();
 

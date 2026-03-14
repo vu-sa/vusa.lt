@@ -26,7 +26,7 @@ class PlanningProcessPolicy extends ModelPolicy
     }
 
     /**
-     * All authenticated users in the admin area can view planning processes.
+     * Allow viewing if user is moderator, editor, same-tenant member, or has read permission.
      */
     public function view(User $user, Model $planningProcess): bool
     {
@@ -35,11 +35,21 @@ class PlanningProcessPolicy extends ModelPolicy
             return true;
         }
 
+        if ($planningProcess->isEditor($user)) {
+            return true;
+        }
+
+        // Any user in the same tenant can view (read-only)
+        if ($user->tenants()->where('tenants.id', $planningProcess->tenant_id)->exists()) {
+            return true;
+        }
+
         return $this->commonChecker($user, $planningProcess, CRUDEnum::READ()->label, $this->pluralModelName, false);
     }
 
     /**
-     * Override update to check moderator access and locking logic.
+     * Allow updating if user is moderator, editor, or has update permission.
+     * Locked processes require global (all-scope) update permission.
      */
     public function update(User $user, Model $planningProcess): bool
     {
@@ -55,11 +65,16 @@ class PlanningProcessPolicy extends ModelPolicy
             return true;
         }
 
+        // Editors can edit the process
+        if ($planningProcess->isEditor($user)) {
+            return true;
+        }
+
         return $this->commonChecker($user, $planningProcess, CRUDEnum::UPDATE()->label, $this->pluralModelName, false);
     }
 
     /**
-     * Determine if the user can approve goals/documents (coordinator only, not the assigned moderator).
+     * Only coordinators can approve goals/documents — moderators and editors cannot.
      */
     public function approve(User $user, Model $planningProcess): bool
     {
@@ -68,6 +83,49 @@ class PlanningProcessPolicy extends ModelPolicy
         // Moderators cannot approve their own planning process
         if ($planningProcess->moderator_user_id === $user->id) {
             return false;
+        }
+
+        // Editors cannot approve
+        if ($planningProcess->isEditor($user)) {
+            return false;
+        }
+
+        return $this->commonChecker($user, $planningProcess, CRUDEnum::UPDATE()->label, $this->pluralModelName, false);
+    }
+
+    /**
+     * Only coordinators can assign moderators — moderators and editors cannot.
+     */
+    public function assignModerator(User $user, Model $planningProcess): bool
+    {
+        /** @var PlanningProcess $planningProcess */
+
+        // Moderators cannot assign themselves
+        if ($planningProcess->moderator_user_id === $user->id) {
+            return false;
+        }
+
+        // Editors cannot assign moderators
+        if ($planningProcess->isEditor($user)) {
+            return false;
+        }
+
+        return $this->commonChecker($user, $planningProcess, CRUDEnum::UPDATE()->label, $this->pluralModelName, false);
+    }
+
+    /**
+     * Moderators and coordinators can manage editors. Not allowed on locked processes.
+     */
+    public function manageEditors(User $user, Model $planningProcess): bool
+    {
+        /** @var PlanningProcess $planningProcess */
+        if ($planningProcess->isLocked()) {
+            return false;
+        }
+
+        // Moderator can manage editors for their process
+        if ($planningProcess->moderator_user_id === $user->id) {
+            return true;
         }
 
         return $this->commonChecker($user, $planningProcess, CRUDEnum::UPDATE()->label, $this->pluralModelName, false);

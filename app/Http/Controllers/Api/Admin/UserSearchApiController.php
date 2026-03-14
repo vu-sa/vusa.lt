@@ -32,10 +32,12 @@ class UserSearchApiController extends ApiController
         $request->validate([
             'search' => 'required|string|min:2',
             'permission' => 'nullable|string',
+            'tenant_id' => 'nullable|integer|exists:tenants,id',
         ]);
 
         $search = $request->input('search');
         $permission = $request->input('permission', 'problems.create.padalinys');
+        $tenantId = $request->input('tenant_id');
 
         $user = $this->requireAuth($request);
 
@@ -47,7 +49,14 @@ class UserSearchApiController extends ApiController
             ->orderBy('name')
             ->limit(20);
 
-        if (! $this->authorizer->isAllScope) {
+        // If tenant_id is explicitly provided, restrict to that tenant's users
+        if ($tenantId) {
+            $query->whereHas('duties', function ($q) use ($tenantId) {
+                $q->whereHas('institution', function ($q2) use ($tenantId) {
+                    $q2->where('tenant_id', $tenantId);
+                });
+            });
+        } elseif (! $this->authorizer->isAllScope) {
             $duties = $this->authorizer->getPermissableDuties();
             $tenantIds = $duties->load('institution.tenant')
                 ->pluck('institution.tenant.id')

@@ -129,6 +129,20 @@ class HandleInertiaRequests extends Middleware
 
     private function getUserPlanningProcessId(User $user): ?string
     {
+        // First check if user is moderator or editor of any active planning process
+        $assignedProcess = PlanningProcess::where(function ($q) use ($user) {
+            $q->where('moderator_user_id', $user->id)
+                ->orWhereHas('editors', fn ($eq) => $eq->where('user_id', $user->id));
+        })
+            ->whereNull('locked_at')
+            ->orderByDesc('academic_year_start')
+            ->value('id');
+
+        if ($assignedProcess) {
+            return $assignedProcess;
+        }
+
+        // Fall back to tenant-based lookup for the current academic year
         $tenantId = $user->tenants()->first()?->id;
 
         if (! $tenantId) {

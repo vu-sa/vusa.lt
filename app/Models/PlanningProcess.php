@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -59,6 +60,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  * @property-read Collection<int, PlanningMonitoringEntry> $monitoringEntries
  * @property-read Collection<int, Comment> $comments
  * @property-read Collection<int, Approval> $approvals
+ * @property-read Collection<int, User> $editors
  * @property-read MediaCollection<int, Media> $media
  *
  * @method static \Database\Factories\PlanningProcessFactory factory($count = null, $state = [])
@@ -171,6 +173,23 @@ class PlanningProcess extends Model implements HasMedia
         return $this->belongsTo(Media::class, 'mvp_approved_media_id');
     }
 
+    public function editors(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'planning_process_editors')->withTimestamps();
+    }
+
+    /**
+     * Check if the given user is an assigned editor of this planning process.
+     */
+    public function isEditor(User $user): bool
+    {
+        if ($this->relationLoaded('editors')) {
+            return $this->editors->contains('id', $user->id);
+        }
+
+        return $this->editors()->where('user_id', $user->id)->exists();
+    }
+
     public function activities(): HasMany
     {
         return $this->hasMany(PlanningActivity::class)->orderBy('order');
@@ -222,7 +241,9 @@ class PlanningProcess extends Model implements HasMedia
      */
     public function getUsersAttribute(): Collection
     {
-        return new Collection(array_filter([$this->moderator]));
+        $users = new Collection(array_filter([$this->moderator]));
+
+        return $users->merge($this->editors)->unique('id');
     }
 
     public function isLocked(): bool

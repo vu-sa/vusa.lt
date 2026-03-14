@@ -64,6 +64,7 @@
           :selected-stage="selectedStage"
           :is-finished="isFinished"
           :deadlines="deadlines"
+          :can-view-expectations="canViewExpectations"
           @select="selectStage"
         />
       </template>
@@ -75,13 +76,16 @@
         <StageOverview
           :planning-process="planningProcess"
           :deadlines="deadlines"
+          :editors="editors"
           :can-update="canUpdate"
+          :can-manage-editors="canManageEditors"
+          :can-view-expectations="canViewExpectations"
           :is-finished="isFinished"
           :approval-history="approvalHistory"
-          @edit-moderator="selectedStage = -1"
+          @edit-team="selectedStage = -1"
           @navigate-to-stage="selectStage"
         />
-        <FieldChangeHistory :changes="fieldChanges" />
+        <FieldChangeHistory v-if="canViewFieldChanges" :changes="fieldChanges" />
       </div>
 
       <!-- Any non-overview stage -->
@@ -93,12 +97,19 @@
           </Button>
         </div>
 
-        <!-- Moderator assignment (stage -1) -->
-        <ModeratorAssignment
-          v-if="selectedStage === -1"
-          :planning-process="planningProcess"
-          :can-update="canUpdate"
-        />
+        <!-- Team management (stage -1) -->
+        <div v-if="selectedStage === -1" class="flex flex-col gap-4">
+          <ModeratorAssignment
+            :planning-process="planningProcess"
+            :can-assign-moderator="canAssignModerator"
+          />
+          <EditorsManagement
+            :planning-process="planningProcess"
+            :editors="editors"
+            :can-manage-editors="canManageEditors"
+            :is-moderator="isModerator"
+          />
+        </div>
 
         <!-- Stage I -->
         <StageExpectations
@@ -106,6 +117,7 @@
           :planning-process="planningProcess"
           :deadline="deadlineForStage(1)"
           :can-update="canUpdate"
+          :can-view-expectations="canViewExpectations"
           :comments="stageComments?.[1] ?? []"
         />
 
@@ -128,6 +140,7 @@
           :deadline="deadlineForStage(3)"
           :can-update="canUpdate"
           :can-approve="canApprove"
+          :can-manage-templates="canManageTemplates"
           :comments="stageComments?.[3] ?? []"
           :tip-documents="tipDocuments"
           :mvp-documents="mvpDocuments"
@@ -223,6 +236,7 @@ import StageMeetings from "@/Components/PlanningProcess/StageMeetings.vue";
 import StageDocuments from "@/Components/PlanningProcess/StageDocuments.vue";
 import ActivityGrid from "@/Components/PlanningProcess/ActivityGrid.vue";
 import StageMonitoring from "@/Components/PlanningProcess/StageMonitoring.vue";
+import EditorsManagement from "@/Components/PlanningProcess/EditorsManagement.vue";
 import FieldChangeHistory from "@/Components/PlanningProcess/FieldChangeHistory.vue";
 
 const props = defineProps<{
@@ -234,9 +248,16 @@ const props = defineProps<{
   mvpDocuments: App.Entities.DocumentVersion[];
   approvalHistory: Record<string, App.Entities.ApprovalRecord[]>;
   fieldChanges: App.Entities.FieldChange[];
+  editors: Array<{ id: string; name: string }>;
   canUpdate: boolean;
   canApprove: boolean;
   canDelete: boolean;
+  canManageEditors: boolean;
+  canAssignModerator: boolean;
+  canManageTemplates: boolean;
+  canViewExpectations: boolean;
+  canViewFieldChanges: boolean;
+  isModerator: boolean;
   isFinished: boolean;
 }>();
 
@@ -263,6 +284,7 @@ const pageTitle = computed(() => {
 });
 
 const selectStage = (stage: number) => {
+  if (stage === 1 && !props.canViewExpectations) return;
   selectedStage.value = stage;
 };
 

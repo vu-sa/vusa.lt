@@ -21,6 +21,32 @@ class UpdatePlanningProcessRequest extends FormRequest
     }
 
     /**
+     * Strip expectations fields if the user is the assigned moderator.
+     *
+     * @return array<string, mixed>
+     */
+    public function validated($key = null, $default = null): mixed
+    {
+        $validated = parent::validated($key, $default);
+
+        if ($key === null) {
+            /** @var PlanningProcess $planningProcess */
+            $planningProcess = $this->route('planningProcess');
+
+            if ($planningProcess->moderator_user_id === $this->user()->id) {
+                unset($validated['expectations_text'], $validated['expectations_submitted_at']);
+            }
+
+            // Goal approval requires the 'approve' permission — strip for unauthorized users
+            if (! $this->user()->can('approve', $planningProcess)) {
+                unset($validated['goal_approved_at']);
+            }
+        }
+
+        return $validated;
+    }
+
+    /**
      * Get the validation rules that apply to the request.
      *
      * @return array<string, ValidationRule|array<mixed>|string>

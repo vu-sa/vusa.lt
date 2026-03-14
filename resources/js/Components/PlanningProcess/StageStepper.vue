@@ -10,14 +10,18 @@
         <button
           type="button"
           class="group flex flex-col items-center gap-1.5 min-w-0"
-          :class="stage.number <= currentStage || isFinished ? 'cursor-pointer' : 'cursor-default'"
-          @click="$emit('select', stage.number)"
+          :class="[
+            stage.number <= currentStage || isFinished ? 'cursor-pointer' : 'cursor-default',
+            isStageRestricted(stage.number) && 'opacity-50 cursor-not-allowed',
+          ]"
+          @click="handleSelect(stage.number)"
         >
           <div
             class="relative flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full text-sm font-semibold shrink-0 transition-all duration-200 ring-2 ring-offset-2 ring-offset-background"
             :class="stepClasses(stage.number)"
           >
-            <CheckIcon v-if="isStageComplete(stage.number)" class="w-4 h-4 sm:w-5 sm:h-5" />
+            <LockIcon v-if="isStageRestricted(stage.number)" class="w-4 h-4 sm:w-5 sm:h-5" />
+            <CheckIcon v-else-if="isStageComplete(stage.number)" class="w-4 h-4 sm:w-5 sm:h-5" />
             <component
               :is="stage.icon"
               v-else-if="stage.number === selectedStage"
@@ -70,6 +74,7 @@ import { computed } from "vue";
 import { trans as $t } from "laravel-vue-i18n";
 import {
   Check as CheckIcon,
+  Lock as LockIcon,
   Sparkles,
   Users,
   FileText,
@@ -82,11 +87,17 @@ const props = defineProps<{
   selectedStage: number;
   isFinished?: boolean;
   deadlines?: App.Entities.PlanningStageDeadline[];
+  canViewExpectations?: boolean;
 }>();
 
-defineEmits<{
+const emit = defineEmits<{
   select: [stage: number];
 }>();
+
+const handleSelect = (stageNumber: number) => {
+  if (stageNumber === 1 && !props.canViewExpectations) return;
+  emit("select", stageNumber);
+};
 
 const stages = computed(() => [
   { number: 1, label: $t("Pasiruošimas"), icon: Sparkles },
@@ -95,6 +106,9 @@ const stages = computed(() => [
   { number: 4, label: $t("MVT"), icon: LayoutGrid },
   { number: 5, label: $t("Monitoringas"), icon: BarChart3 },
 ]);
+
+const isStageRestricted = (stageNumber: number) =>
+  stageNumber === 1 && !props.canViewExpectations;
 
 const isStageComplete = (stageNumber: number) =>
   props.isFinished || stageNumber < props.currentStage;

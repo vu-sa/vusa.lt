@@ -1,6 +1,6 @@
 <template>
   <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-    <!-- Moderator card -->
+    <!-- Team card (moderator + editors) -->
     <Card class="sm:col-span-2 xl:col-span-1">
       <CardContent class="p-4">
         <div class="flex items-center gap-3">
@@ -14,9 +14,17 @@
             </p>
             <p v-else class="text-sm text-muted-foreground italic">{{ $t("Nepriskirtas") }}</p>
           </div>
-          <Button v-if="canUpdate" variant="ghost" size="icon" class="shrink-0 h-8 w-8" @click="$emit('editModerator')">
+          <Button v-if="canUpdate || canManageEditors" variant="ghost" size="icon" class="shrink-0 h-8 w-8" @click="$emit('editTeam')">
             <PencilIcon class="h-3.5 w-3.5" />
           </Button>
+        </div>
+        <div v-if="editors && editors.length > 0" class="mt-3 pt-3 border-t border-zinc-200 dark:border-zinc-800">
+          <p class="text-xs text-muted-foreground font-medium mb-1.5">{{ $t("Redaktoriai") }}</p>
+          <div class="flex flex-wrap gap-1.5">
+            <Badge v-for="editor in editors" :key="editor.id" variant="secondary" class="text-xs">
+              {{ editor.name }}
+            </Badge>
+          </div>
         </div>
       </CardContent>
     </Card>
@@ -115,7 +123,8 @@
         :key="stage.number"
         type="button"
         class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-muted/50"
-        @click="$emit('navigateToStage', stage.number)"
+        :class="stage.restricted && 'opacity-50 cursor-not-allowed'"
+        @click="handleNavigate(stage.number)"
       >
         <div
           class="shrink-0 h-7 w-7 rounded-full flex items-center justify-center text-xs font-medium"
@@ -125,7 +134,8 @@
               ? 'bg-primary/10 text-primary dark:bg-primary/20'
               : 'bg-zinc-100 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500'"
         >
-          <CheckCircleIcon v-if="stage.completed" class="h-4 w-4" />
+          <LockIcon v-if="stage.restricted" class="h-4 w-4" />
+          <CheckCircleIcon v-else-if="stage.completed" class="h-4 w-4" />
           <CircleDotIcon v-else-if="stage.current" class="h-4 w-4" />
           <CircleIcon v-else class="h-4 w-4" />
         </div>
@@ -172,6 +182,7 @@ import {
   CheckCircle as CheckCircleIcon,
   CircleDot as CircleDotIcon,
   Circle as CircleIcon,
+  Lock as LockIcon,
   ChevronRight as ChevronRightIcon,
   Pencil as PencilIcon,
 } from "lucide-vue-next";
@@ -183,15 +194,23 @@ import { Progress } from "@/Components/ui/progress";
 const props = defineProps<{
   planningProcess: App.Entities.PlanningProcess;
   deadlines?: App.Entities.PlanningStageDeadline[];
+  editors?: Array<{ id: string; name: string }>;
   canUpdate: boolean;
+  canManageEditors?: boolean;
+  canViewExpectations?: boolean;
   isFinished: boolean;
   approvalHistory?: Record<string, App.Entities.ApprovalRecord[]>;
 }>();
 
-defineEmits<{
-  editModerator: [];
+const emit = defineEmits<{
+  editTeam: [];
   navigateToStage: [stage: number];
 }>();
+
+const handleNavigate = (stageNumber: number) => {
+  if (stageNumber === 1 && !props.canViewExpectations) return;
+  emit("navigateToStage", stageNumber);
+};
 
 const completedStages = computed(() => {
   if (props.isFinished) return 5;
@@ -269,6 +288,7 @@ const stageItems = computed(() => {
       description: $t("Lūkesčių suformulavimas moderatoriui"),
       completed: props.isFinished || cs > 1,
       current: cs === 1 && !props.isFinished,
+      restricted: !props.canViewExpectations,
     },
     {
       number: 2,
@@ -276,6 +296,7 @@ const stageItems = computed(() => {
       description: $t("Susitikimai, problemos pasirinkimas, tikslo formulavimas"),
       completed: props.isFinished || cs > 2,
       current: cs === 2 && !props.isFinished,
+      restricted: false,
     },
     {
       number: 3,
@@ -283,6 +304,7 @@ const stageItems = computed(() => {
       description: $t("TĮP ir MVP dokumentų įkėlimas ir tvirtinimas"),
       completed: props.isFinished || cs > 3,
       current: cs === 3 && !props.isFinished,
+      restricted: false,
     },
     {
       number: 4,
@@ -290,6 +312,7 @@ const stageItems = computed(() => {
       description: $t("Padalinio veiklų sąrašas su lygmenimis"),
       completed: props.isFinished || cs > 4,
       current: cs === 4 && !props.isFinished,
+      restricted: false,
     },
     {
       number: 5,
@@ -297,6 +320,7 @@ const stageItems = computed(() => {
       description: $t("Ketvirtinė stebėsena ir metų pabaigos refleksija"),
       completed: props.isFinished || cs > 5,
       current: cs === 5 && !props.isFinished,
+      restricted: false,
     },
   ];
 });
