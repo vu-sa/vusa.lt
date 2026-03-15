@@ -645,3 +645,40 @@ describe('reapproval on change', function () {
         expect($this->planningProcess->fresh()->tip_approved_at)->toBeNull();
     });
 });
+
+describe('download documents', function () {
+    test('unauthorized user cannot download documents', function () {
+        asUser($this->user)->get(route('planavimai.downloadDocuments', ['academic_year_start' => 2026]))
+            ->assertStatus(403);
+    });
+
+    test('super admin can download documents zip', function () {
+        // Upload documents to planning processes
+        $tipFile = UploadedFile::fake()->createWithContent('tip.pdf', '%PDF-1.4 tip content');
+        $mvpFile = UploadedFile::fake()->createWithContent('mvp.pdf', '%PDF-1.4 mvp content');
+
+        $this->planningProcess
+            ->addMedia($tipFile)
+            ->toMediaCollection('tip_document');
+
+        $this->planningProcess
+            ->addMedia($mvpFile)
+            ->toMediaCollection('mvp_document');
+
+        $response = asUser($this->superAdmin)->get(route('planavimai.downloadDocuments', ['academic_year_start' => 2026]));
+
+        $response->assertSuccessful();
+        $response->assertHeader('content-type', 'application/zip');
+    });
+
+    test('returns redirect with error when no documents exist', function () {
+        asUser($this->superAdmin)->get(route('planavimai.downloadDocuments', ['academic_year_start' => 2099]))
+            ->assertRedirect()
+            ->assertSessionHas('error');
+    });
+
+    test('defaults to current academic year when no parameter given', function () {
+        asUser($this->superAdmin)->get(route('planavimai.downloadDocuments'))
+            ->assertRedirect(); // No docs for current year, redirects with error
+    });
+});

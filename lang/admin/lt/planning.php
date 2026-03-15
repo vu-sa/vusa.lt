@@ -27,4 +27,6 @@ return [
     'editor_added' => 'Redaktorius pridėtas.',
     'editor_removed' => 'Redaktorius pašalintas.',
     'editor_is_moderator' => 'Šis vartotojas jau yra moderatorius.',
+    'download_documents' => 'Atsisiųsti dokumentus',
+    'no_documents_to_download' => 'Nėra dokumentų atsisiuntimui.',
 ];

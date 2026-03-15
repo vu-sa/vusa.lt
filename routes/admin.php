@@ -202,6 +202,7 @@ Route::patch('planning-resources/{planningResource}', [PlanningResourceControlle
 Route::delete('planning-resources/{planningResource}', [PlanningResourceController::class, 'destroy'])->name('planningResources.destroy');
 Route::post('planavimai/{planningProcess}/editors', [PlanningProcessController::class, 'addEditor'])->name('planavimai.addEditor');
 Route::delete('planavimai/{planningProcess}/editors', [PlanningProcessController::class, 'removeEditor'])->name('planavimai.removeEditor');
+Route::get('planavimai/download-documents', [PlanningProcessController::class, 'downloadDocuments'])->name('planavimai.downloadDocuments');
 Route::resource('planavimai', PlanningProcessController::class)->except(['edit'])->parameters(['planavimai' => 'planningProcess']);
 Route::resource('planningActivities', PlanningActivityController::class)->only(['store', 'update', 'destroy']);
 Route::resource('planningMonitoringEntries', PlanningMonitoringController::class)->only(['store', 'update']);

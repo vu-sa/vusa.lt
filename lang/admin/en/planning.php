@@ -27,4 +27,6 @@ return [
     'editor_added' => 'Editor added.',
     'editor_removed' => 'Editor removed.',
     'editor_is_moderator' => 'This user is already the moderator.',
+    'download_documents' => 'Download documents',
+    'no_documents_to_download' => 'No documents to download.',
 ];

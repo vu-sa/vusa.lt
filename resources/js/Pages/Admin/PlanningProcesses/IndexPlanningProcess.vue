@@ -9,6 +9,12 @@
         </h1>
         <template #actions>
           <div class="flex items-center gap-2">
+            <Button v-if="canManageResources" as-child variant="outline" class="gap-1.5">
+              <a :href="route('planavimai.downloadDocuments')">
+                <DownloadIcon class="h-4 w-4" />
+                <span>{{ $t("planning.download_documents") }}</span>
+              </a>
+            </Button>
             <Button v-if="canManageResources" variant="outline" class="gap-1.5" @click="showResourcesSheet = true">
               <FileArchiveIcon class="h-4 w-4" />
               <span>{{ $t("planning.resources_title") }}</span>
@@ -219,6 +225,7 @@ import {
   CheckCircle2 as CheckCircle2Icon,
   Clock as ClockIcon,
   CalendarRange as CalendarRangeIcon,
+  Download as DownloadIcon,
   FileArchive as FileArchiveIcon,
   LayoutList as LayoutListIcon,
   PlusCircle as PlusCircleIcon,

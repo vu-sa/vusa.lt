@@ -26,6 +26,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Inertia\Response;
 use Spatie\Activitylog\Models\Activity;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use ZipArchive;
 
 class PlanningProcessController extends AdminController
 {
@@ -719,5 +721,71 @@ class PlanningProcessController extends AdminController
         $planningProcess->update($updateData);
 
         return back()->with('success', __('planning.stage_advanced'));
+    }
+
+    /**
+     * Download the latest TIP and MVP documents from all padaliniai as a ZIP.
+     */
+    public function downloadDocuments(Request $request): BinaryFileResponse|RedirectResponse
+    {
+        $this->handleAuthorization('viewAny', PlanningProcess::class);
+
+        $defaultYear = PlanningProcess::max('academic_year_start') ?? (now()->month >= 9 ? now()->year : now()->year - 1);
+        $academicYear = $request->integer('academic_year_start', $defaultYear);
+
+        $query = PlanningProcess::query()
+            ->where('academic_year_start', $academicYear)
+            ->with('tenant');
+
+        $query = $this->tableService->applyPermissionFiltering(
+            $query,
+            'tenant',
+            'planningProcesses.read.padalinys',
+            $this->authorizer
+        );
+
+        $processes = $query->get();
+
+        // Collect all documents first to check if there are any
+        $documents = [];
+
+        foreach ($processes as $process) {
+            $tenantName = $process->tenant?->shortname ?? 'Unknown';
+
+            $latestTip = $process->getMedia('tip_document')->last();
+            $latestMvp = $process->getMedia('mvp_document')->last();
+
+            if ($latestTip) {
+                $documents[] = ['path' => $latestTip->getPath(), 'name' => "{$tenantName}/TIP.pdf"];
+            }
+
+            if ($latestMvp) {
+                $documents[] = ['path' => $latestMvp->getPath(), 'name' => "{$tenantName}/MVP.pdf"];
+            }
+        }
+
+        if (empty($documents)) {
+            return back()->with('error', __('planning.no_documents_to_download'));
+        }
+
+        $tempPath = tempnam(sys_get_temp_dir(), 'planning_docs_').'.zip';
+
+        $zip = new ZipArchive;
+
+        if ($zip->open($tempPath, ZipArchive::CREATE) !== true) {
+            return back()->with('error', __('planning.no_documents_to_download'));
+        }
+
+        foreach ($documents as $doc) {
+            $zip->addFile($doc['path'], $doc['name']);
+        }
+
+        $zip->close();
+
+        $fileName = "planavimo_dokumentai_{$academicYear}-".($academicYear + 1).'.zip';
+
+        return response()->download($tempPath, $fileName, [
+            'Content-Type' => 'application/zip',
+        ])->deleteFileAfterSend(true);
     }
 }
