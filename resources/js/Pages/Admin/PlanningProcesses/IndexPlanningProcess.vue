@@ -224,9 +224,7 @@ import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/Comp
 import { createStandardActionsColumn } from "@/Composables/useTableActions";
 import PageHero from "@/Components/Hero/PageHero.vue";
 import { BreadcrumbHelpers, usePageBreadcrumbs } from "@/Composables/useBreadcrumbsUnified";
-import Icons from "@/Types/Icons/regular";
-
-usePageBreadcrumbs(BreadcrumbHelpers.adminIndex(capitalize($tChoice("entities.planningProcess.model", 2)), Icons.PLANNING_PROCESS));
+usePageBreadcrumbs(BreadcrumbHelpers.adminIndex(capitalize($tChoice("entities.planningProcess.model", 2)), CalendarRangeIcon));
 
 interface SummaryStats {
   total: number;

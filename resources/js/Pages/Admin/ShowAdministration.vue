@@ -209,6 +209,8 @@ import {
   ListFilterIcon,
   ChevronDownIcon,
   AlertCircleIcon,
+  CalendarRange as CalendarRangeIcon,
+  Goal as GoalIcon,
 } from "lucide-vue-next";
 
 // UI components
@@ -462,7 +464,7 @@ const menuItems = computed(() => [
     items: [
       {
         title: $t("Padalinio planavimas"),
-        icon: Icons.PLANNING_PROCESS,
+        icon: GoalIcon,
         href: auth?.planningProcessId
           ? route("planavimai.show", auth.planningProcessId)
           : "#",
@@ -470,7 +472,7 @@ const menuItems = computed(() => [
       },
       {
         title: $t("Planavimai"),
-        icon: Icons.PLANNING_PROCESS,
+        icon: CalendarRangeIcon,
         href: route("planavimai.index"),
         show: auth?.can.index?.planningProcess,
       },

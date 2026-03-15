@@ -218,7 +218,6 @@ import {
 import AdminContentPage from "@/Components/Layouts/AdminContentPage.vue";
 import PageHero from "@/Components/Hero/PageHero.vue";
 import { BreadcrumbHelpers, usePageBreadcrumbs } from "@/Composables/useBreadcrumbsUnified";
-import Icons from "@/Types/Icons/regular";
 import { Badge } from "@/Components/ui/badge";
 import { Button } from "@/Components/ui/button";
 import {
@@ -277,7 +276,7 @@ usePageBreadcrumbs(() =>
     "planavimai.index",
     {},
     pageTitle.value,
-    Icons.PLANNING_PROCESS,
+    GoalIcon,
   )
 );
 
