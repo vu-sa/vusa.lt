@@ -3,7 +3,6 @@
 use App\Models\PlanningProcess;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\UploadedFile;
 use Inertia\Testing\AssertableInertia as Assert;
 
 uses(RefreshDatabase::class);
@@ -248,30 +247,22 @@ describe('moderator assignment restrictions', function () {
     });
 });
 
-describe('template management restrictions', function () {
-    test('moderator cannot upload template', function () {
-        asUser($this->moderator)->post(route('planavimai.uploadTemplate', $this->planningProcess), [
-            'collection' => 'tip_template',
-            'template' => UploadedFile::fake()->create('template.pdf', 100, 'application/pdf'),
+describe('centralized resource management restrictions', function () {
+    test('moderator cannot create planning resource', function () {
+        asUser($this->moderator)->post(route('planningResources.store'), [
+            'title' => 'Test Resource',
+            'type' => 'url',
+            'content' => 'https://example.com',
+            'academic_year_start' => $this->planningProcess->academic_year_start,
         ])->assertStatus(403);
     });
 
-    test('editor cannot upload template', function () {
-        asUser($this->editor)->post(route('planavimai.uploadTemplate', $this->planningProcess), [
-            'collection' => 'tip_template',
-            'template' => UploadedFile::fake()->create('template.pdf', 100, 'application/pdf'),
-        ])->assertStatus(403);
-    });
-
-    test('moderator cannot delete template', function () {
-        asUser($this->moderator)->delete(route('planavimai.deleteTemplate', $this->planningProcess), [
-            'collection' => 'tip_template',
-        ])->assertStatus(403);
-    });
-
-    test('editor cannot delete template', function () {
-        asUser($this->editor)->delete(route('planavimai.deleteTemplate', $this->planningProcess), [
-            'collection' => 'tip_template',
+    test('editor cannot create planning resource', function () {
+        asUser($this->editor)->post(route('planningResources.store'), [
+            'title' => 'Test Resource',
+            'type' => 'url',
+            'content' => 'https://example.com',
+            'academic_year_start' => $this->planningProcess->academic_year_start,
         ])->assertStatus(403);
     });
 });
@@ -318,7 +309,7 @@ describe('show page props', function () {
                 ->has('editors', 1)
                 ->has('canManageEditors')
                 ->has('canAssignModerator')
-                ->has('canManageTemplates')
+                ->has('planningResources')
                 ->has('canViewFieldChanges')
                 ->has('isModerator')
             );

@@ -9,6 +9,10 @@
         </h1>
         <template #actions>
           <div class="flex items-center gap-2">
+            <Button v-if="canManageResources" variant="outline" class="gap-1.5" @click="showResourcesSheet = true">
+              <FileArchiveIcon class="h-4 w-4" />
+              <span>{{ $t("planning.resources_title") }}</span>
+            </Button>
             <Button v-if="canCreate" as-child variant="outline" class="gap-1.5">
               <Link :href="route('planningDeadlines.edit', activeAcademicYear)">
                 <ClockIcon class="h-4 w-4" />
@@ -195,6 +199,13 @@
         </template>
       </ServerDataTable>
     </div>
+
+    <PlanningResourcesSheet
+      v-model:open="showResourcesSheet"
+      :planning-resources="planningResources"
+      :academic-years="resourceAcademicYears"
+      :can-manage="canManageResources"
+    />
   </AdminContentPage>
 </template>
 
@@ -208,6 +219,7 @@ import {
   CheckCircle2 as CheckCircle2Icon,
   Clock as ClockIcon,
   CalendarRange as CalendarRangeIcon,
+  FileArchive as FileArchiveIcon,
   LayoutList as LayoutListIcon,
   PlusCircle as PlusCircleIcon,
   UserX as UserXIcon,
@@ -223,6 +235,7 @@ import { Progress } from "@/Components/ui/progress";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/Components/ui/tooltip";
 import { createStandardActionsColumn } from "@/Composables/useTableActions";
 import PageHero from "@/Components/Hero/PageHero.vue";
+import PlanningResourcesSheet from "@/Components/PlanningProcess/PlanningResourcesSheet.vue";
 import { BreadcrumbHelpers, usePageBreadcrumbs } from "@/Composables/useBreadcrumbsUnified";
 usePageBreadcrumbs(BreadcrumbHelpers.adminIndex(capitalize($tChoice("entities.planningProcess.model", 2)), CalendarRangeIcon));
 
@@ -249,12 +262,17 @@ const props = defineProps<{
   filters?: Record<string, any>;
   sorting?: { id: string; desc: boolean }[];
   tenants: App.Entities.Tenant[];
+  planningResources: App.Entities.PlanningResource[];
+  canManageResources: boolean;
+  resourceAcademicYears: number[];
 }>();
 
 const activeAcademicYear = computed(() => {
   const now = new Date();
   return now.getMonth() >= 8 ? now.getFullYear() : now.getFullYear() - 1;
 });
+
+const showResourcesSheet = ref(false);
 
 const modelName = "planavimai";
 const entityName = "planningProcess";

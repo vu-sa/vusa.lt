@@ -113,29 +113,6 @@ class PlanningProcess extends Model implements HasMedia
             ->acceptsMimeTypes(['application/pdf'])
             ->useDisk('spatieMediaLibrary');
 
-        $this
-            ->addMediaCollection('tip_template')
-            ->singleFile()
-            ->acceptsMimeTypes([
-                'application/pdf',
-                'application/msword',
-                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                'application/vnd.ms-excel',
-                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            ])
-            ->useDisk('spatieMediaLibrary');
-
-        $this
-            ->addMediaCollection('mvp_template')
-            ->singleFile()
-            ->acceptsMimeTypes([
-                'application/pdf',
-                'application/msword',
-                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                'application/vnd.ms-excel',
-                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            ])
-            ->useDisk('spatieMediaLibrary');
     }
 
     public function tenant(): BelongsTo

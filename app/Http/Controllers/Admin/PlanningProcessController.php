@@ -12,6 +12,7 @@ use App\Http\Traits\HasTanstackTables;
 use App\Models\Approval;
 use App\Models\Duty;
 use App\Models\PlanningProcess;
+use App\Models\PlanningResource;
 use App\Models\PlanningStageDeadline;
 use App\Models\Problem;
 use App\Models\Tenant;
@@ -22,6 +23,7 @@ use App\Services\TanstackTableService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Inertia\Response;
 use Spatie\Activitylog\Models\Activity;
 
@@ -116,6 +118,22 @@ class PlanningProcessController extends AdminController
             'sorting' => $request->getSorting(),
             'showDeleted' => $request->boolean('showDeleted', false),
             'tenants' => Tenant::select('id', 'fullname', 'shortname')->orderBy('shortname')->get()->map->toArray(),
+            'planningResources' => PlanningResource::ordered()
+                ->get()
+                ->map(function (PlanningResource $resource) {
+                    $data = $resource->toArray();
+                    $media = $resource->getFirstMedia('resource_file');
+                    $data['file_url'] = $media?->getUrl();
+                    $data['file_name'] = $media?->file_name;
+
+                    return $data;
+                }),
+            'canManageResources' => $this->authorizer->forUser(auth()->user())->check('planningProcesses.update.padalinys'),
+            'resourceAcademicYears' => PlanningProcess::query()
+                ->select('academic_year_start')
+                ->distinct()
+                ->orderByDesc('academic_year_start')
+                ->pluck('academic_year_start'),
         ]);
     }
 
@@ -237,9 +255,6 @@ class PlanningProcessController extends AdminController
         // All document versions (not just the latest)
         $tipDocuments = $planningProcess->getMedia('tip_document');
         $mvpDocuments = $planningProcess->getMedia('mvp_document');
-        $tipTemplate = $planningProcess->getFirstMedia('tip_template');
-        $mvpTemplate = $planningProcess->getFirstMedia('mvp_template');
-
         $deadlines = PlanningStageDeadline::where('academic_year_start', $planningProcess->academic_year_start)
             ->orderBy('stage')
             ->get();
@@ -293,7 +308,7 @@ class PlanningProcessController extends AdminController
                     }
                 }
             }
-            /** @var \Illuminate\Support\Collection<string, string> $userNames */
+            /** @var Collection<string, string> $userNames */
             $userNames = User::whereIn('id', $userIds->unique()->filter())->pluck('name', 'id');
 
             $fieldChanges = $activities
@@ -347,10 +362,6 @@ class PlanningProcessController extends AdminController
                 'tip_document_name' => $latestTip?->file_name,
                 'mvp_document_url' => $latestMvp?->getUrl(),
                 'mvp_document_name' => $latestMvp?->file_name,
-                'tip_template_url' => $tipTemplate?->getUrl(),
-                'tip_template_name' => $tipTemplate?->file_name,
-                'mvp_template_url' => $mvpTemplate?->getUrl(),
-                'mvp_template_name' => $mvpTemplate?->file_name,
                 'tip_approved_media_id' => $planningProcess->tip_approved_media_id,
                 'mvp_approved_media_id' => $planningProcess->mvp_approved_media_id,
             ],
@@ -387,7 +398,17 @@ class PlanningProcessController extends AdminController
             'canDelete' => $user->can('delete', $planningProcess),
             'canManageEditors' => $user->can('manageEditors', $planningProcess),
             'canAssignModerator' => $user->can('assignModerator', $planningProcess),
-            'canManageTemplates' => $isCoordinator,
+            'planningResources' => PlanningResource::forAcademicYear($planningProcess->academic_year_start)
+                ->ordered()
+                ->get()
+                ->map(function (PlanningResource $resource) {
+                    $data = $resource->toArray();
+                    $media = $resource->getFirstMedia('resource_file');
+                    $data['file_url'] = $media?->getUrl();
+                    $data['file_name'] = $media?->file_name;
+
+                    return $data;
+                }),
             'canViewExpectations' => $canViewExpectations,
             'canViewFieldChanges' => $canViewFieldChanges,
             'isModerator' => $isModerator,
@@ -633,41 +654,6 @@ class PlanningProcessController extends AdminController
         }
 
         return back()->with('success', __('planning.document_rejected'));
-    }
-
-    /**
-     * Upload a template file (TIP or MVP) for coordinators.
-     */
-    public function uploadTemplate(Request $request, PlanningProcess $planningProcess): RedirectResponse
-    {
-        $this->handleAuthorization('approve', $planningProcess);
-
-        $validated = $request->validate([
-            'collection' => ['required', 'string', 'in:tip_template,mvp_template'],
-            'template' => ['required', 'file', 'mimes:pdf,doc,docx,xls,xlsx', 'max:20480'],
-        ]);
-
-        $planningProcess
-            ->addMediaFromRequest('template')
-            ->toMediaCollection($validated['collection']);
-
-        return back()->with('success', __('planning.template_uploaded'));
-    }
-
-    /**
-     * Delete a template file (TIP or MVP).
-     */
-    public function deleteTemplate(Request $request, PlanningProcess $planningProcess): RedirectResponse
-    {
-        $this->handleAuthorization('approve', $planningProcess);
-
-        $validated = $request->validate([
-            'collection' => ['required', 'string', 'in:tip_template,mvp_template'],
-        ]);
-
-        $planningProcess->clearMediaCollection($validated['collection']);
-
-        return back()->with('success', __('planning.template_deleted'));
     }
 
     /**

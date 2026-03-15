@@ -146,7 +146,7 @@
           :deadline="deadlineForStage(3)"
           :can-update="canUpdate"
           :can-approve="canApprove"
-          :can-manage-templates="canManageTemplates"
+          :planning-resources="planningResources"
           :comments="stageComments?.[3] ?? []"
           :tip-documents="tipDocuments"
           :mvp-documents="mvpDocuments"
@@ -260,7 +260,7 @@ const props = defineProps<{
   canDelete: boolean;
   canManageEditors: boolean;
   canAssignModerator: boolean;
-  canManageTemplates: boolean;
+  planningResources: App.Entities.PlanningResource[];
   canViewExpectations: boolean;
   canViewFieldChanges: boolean;
   isModerator: boolean;

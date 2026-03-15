@@ -197,8 +197,9 @@ Route::patch('planavimai/{planningProcess}/approve-document', [PlanningProcessCo
 Route::patch('planavimai/{planningProcess}/reject-document', [PlanningProcessController::class, 'rejectDocument'])->name('planavimai.rejectDocument');
 Route::patch('planavimai/{planningProcess}/reject-goal', [PlanningProcessController::class, 'rejectGoal'])->name('planavimai.rejectGoal');
 Route::patch('planavimai/{planningProcess}/advance-stage', [PlanningProcessController::class, 'advanceStage'])->name('planavimai.advanceStage');
-Route::post('planavimai/{planningProcess}/upload-template', [PlanningProcessController::class, 'uploadTemplate'])->name('planavimai.uploadTemplate');
-Route::delete('planavimai/{planningProcess}/delete-template', [PlanningProcessController::class, 'deleteTemplate'])->name('planavimai.deleteTemplate');
+Route::post('planning-resources', [PlanningResourceController::class, 'store'])->name('planningResources.store');
+Route::patch('planning-resources/{planningResource}', [PlanningResourceController::class, 'update'])->name('planningResources.update');
+Route::delete('planning-resources/{planningResource}', [PlanningResourceController::class, 'destroy'])->name('planningResources.destroy');
 Route::post('planavimai/{planningProcess}/editors', [PlanningProcessController::class, 'addEditor'])->name('planavimai.addEditor');
 Route::delete('planavimai/{planningProcess}/editors', [PlanningProcessController::class, 'removeEditor'])->name('planavimai.removeEditor');
 Route::resource('planavimai', PlanningProcessController::class)->except(['edit'])->parameters(['planavimai' => 'planningProcess']);

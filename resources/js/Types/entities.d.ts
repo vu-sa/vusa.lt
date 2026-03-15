@@ -50,13 +50,23 @@ declare namespace App.Entities {
     tip_document_name?: string | null;
     mvp_document_url?: string | null;
     mvp_document_name?: string | null;
-    tip_template_url?: string | null;
-    tip_template_name?: string | null;
-    mvp_template_url?: string | null;
-    mvp_template_name?: string | null;
     tip_approved_media_id?: number | null;
     mvp_approved_media_id?: number | null;
   };
+
+  export interface PlanningResource {
+    id: string;
+    academic_year_start: number;
+    title: string;
+    type: 'file' | 'url' | 'text';
+    content: string | null;
+    category: string | null;
+    sort_order: number;
+    file_url?: string | null;
+    file_name?: string | null;
+    created_at?: string | null;
+    updated_at?: string | null;
+  }
 
   export interface DocumentVersion {
     id: number;
