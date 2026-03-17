@@ -92,6 +92,18 @@ class ModelAuthorizer
 
         // Direct user permission check
         if ($this->user->hasPermissionTo($permission)) {
+            // Check if user also has global scope through direct permissions
+            $permParts = explode('.', $permission);
+
+            if (count($permParts) >= 3) {
+                $permParts[2] = '*';
+                $globalPermVariant = implode('.', $permParts);
+
+                if ($this->user->hasPermissionTo($globalPermVariant)) {
+                    $this->isAllScope = true;
+                }
+            }
+
             return true;
         }
 
@@ -179,6 +191,11 @@ class ModelAuthorizer
         // If a specific permission is provided, filter duties by that permission
         if ($effectivePermission) {
             $this->checkAllRoleables($effectivePermission);
+        }
+
+        // Re-check after checkAllRoleables may have set isAllScope
+        if ($this->isAllScope) {
+            return Tenant::all();
         }
 
         // If no specific permission, or no permissible duties found, use all current duties
