@@ -47,7 +47,7 @@ const options: FilePickerOptions = {
         // TODO: Move to configuration - hardcoded SharePoint URLs and paths
         "web": "https://vustudentuatstovybe.sharepoint.com/sites/vieningai",
         "list": "Bendrai naudojami dokumentai", // TODO: Make configurable
-        "folder": "Archyvas" // TODO: Make configurable
+        "folder": "Dokumentų sistema" // TODO: Make configurable
       }
     }
   },
