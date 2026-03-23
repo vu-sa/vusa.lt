@@ -60,6 +60,27 @@ describe('observer dispatches revocation on delete', function () {
 
         Queue::assertNotPushed(RevokeSharepointPermissionJob::class);
     });
+
+    test('does not dispatch job in local environment', function () {
+        Queue::fake();
+
+        $document = Document::factory()->create([
+            'institution_id' => $this->institution->id,
+            'anonymous_url' => 'https://example.sharepoint.com/:b:/test',
+            'sharepoint_permission_id' => 'perm-123',
+        ]);
+
+        $originalEnv = app()['env'];
+        app()['env'] = 'local';
+
+        try {
+            $document->delete();
+        } finally {
+            app()['env'] = $originalEnv;
+        }
+
+        Queue::assertNotPushed(RevokeSharepointPermissionJob::class);
+    });
 });
 
 describe('observer dispatches revocation on deactivation', function () {

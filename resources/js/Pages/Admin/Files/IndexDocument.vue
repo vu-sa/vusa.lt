@@ -35,6 +35,18 @@
         {{ $t("institution") }}
       </DataTableFilter>
     </template>
+
+        <div class="hidden items-center gap-2 rounded-md border border-border bg-muted/40 px-3 py-1.5 text-xs text-muted-foreground lg:flex">
+          <span>{{ $t("Environment") }}:</span>
+          <Badge :variant="appEnvironment === 'production' ? 'default' : 'secondary'">
+            {{ appEnvironmentLabel }}
+          </Badge>
+          <span class="mx-1 text-muted-foreground/50">|</span>
+          <span>{{ $t("Work mode") }}:</span>
+          <Badge :variant="appEnvironment === 'production' ? 'default' : 'secondary'">
+            {{ appWorkModeLabel }}
+          </Badge>
+        </div>
   </IndexTablePage>
 </template>
 
@@ -50,6 +62,7 @@ import FilePicker from "@/Features/Admin/SharepointFilePicker/FilePicker.vue";
 import Icons from "@/Types/Icons/regular";
 import IndexTablePage from "@/Components/Layouts/IndexTablePage.vue";
 import SmartLink from "@/Components/Public/SmartLink.vue";
+import { Badge } from "@/Components/ui/badge";
 import { Button } from "@/Components/ui/button";
 import DataTableFilter from "@/Components/ui/data-table/DataTableFilter.vue";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
@@ -98,6 +111,18 @@ usePageBreadcrumbs(() => [
 const loading = ref(false);
 const bulkSyncLoading = ref(false);
 const indexTablePageRef = ref<InstanceType<typeof IndexTablePage> | null>(null);
+const page = usePage();
+
+const appEnvironment = computed(() => String(page.props.app?.env ?? 'unknown').toLowerCase());
+const appEnvironmentLabel = computed(() => {
+  if (appEnvironment.value === 'production') return $t("Production");
+  if (appEnvironment.value === 'local') return $t("Local");
+
+  return appEnvironment.value;
+});
+const appWorkModeLabel = computed(() => {
+  return appEnvironment.value === 'production' ? $t("Production mode") : $t("Development mode");
+});
 
 // Initialize filter states
 const selectedContentType = ref<string | null>(props.filters?.['content_type'] || null);
@@ -122,7 +147,7 @@ const languageOptions = computed(() => {
 });
 
 const institutionOptions = computed(() => {
-  const institutions = usePage().props.institutions || [];
+  const institutions = page.props.institutions || [];
   return institutions.map(institution => ({
     label: institution.short_name || institution.name,
     value: institution.id,
@@ -311,6 +336,13 @@ const columns = computed<ColumnDef<App.Entities.Document, any>[]>(() => [
           dotColor: 'bg-gray-400',
           label: 'Pending',
           icon: '⏳'
+        },
+        'imported': {
+          color: 'text-indigo-600',
+          bgColor: 'bg-indigo-50',
+          dotColor: 'bg-indigo-500',
+          label: 'Imported',
+          icon: '📥'
         },
         'syncing': {
           color: 'text-blue-600',
