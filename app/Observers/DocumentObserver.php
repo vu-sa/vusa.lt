@@ -14,6 +14,10 @@ class DocumentObserver
      */
     public function deleting(Document $document): void
     {
+        if (app()->isLocal()) {
+            return;
+        }
+
         $this->dispatchRevocationIfNeeded($document);
     }
 
